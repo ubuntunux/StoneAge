@@ -1,2 +1,1 @@
-# StoneAge
-prehistorik clone game
+Prehistorik clone game

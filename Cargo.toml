@@ -1,0 +1,71 @@
+[package]
+name = "rust_engine_3d_demo"
+version = "0.2.0"
+authors = ["ubuntunux <ubuntunux@gmail.com>"]
+license = "BSD 2-Clause"
+homepage = "https://github.com/ubuntunux/rust_engine_3d_demo"
+repository = "https://github.com/ubuntunux/rust_engine_3d_demo"
+readme = "README.md"
+edition = "2021"
+
+[dependencies]
+rust_engine_3d = { path = "RustEngine3D" }
+ash = "0.37.3"
+log = "0.4"
+nalgebra = {version = "0.32.3", features = ["serde-serialize"]}
+nalgebra-glm = "0.18.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+winit = "0.28.7"
+
+[[bin]]
+name = "rust_engine_3d_demo"
+
+[target.'cfg(target_os = "android")'.dependencies]
+ndk-glue = "0.7.0"
+
+[package.metadata.android]
+apk_label = "RustEngine3D"
+#android_version = 29
+#target_sdk_version = 29
+#min_sdk_version = 26
+assets = "resources"
+#package_name = "rust.cargo.apk.advanced"
+#res = "resources"
+#fullscreen = false
+#icon = "@mipmap/ic_launcher"
+#opengles_version_major = 3
+#opengles_version_minor = 2
+build_targets = [
+    "armv7-linux-androideabi",
+    "aarch64-linux-android",
+    "i686-linux-android",
+    "x86_64-linux-android"
+]
+
+#[package.metadata.android.activity_attributes]
+#"android:screenOrientation" = "unspecified"
+#"android:uiOptions" = "none"
+
+#[[package.metadata.android.feature]]
+#name = "android.hardware.camera"
+
+[[package.metadata.android.feature]]
+name = "android.hardware.vulkan.level"
+version = "1"
+required = true
+
+[[package.metadata.android.permission]]
+name = "android.permission.WRITE_EXTERNAL_STORAGE"
+#max_sdk_version = 18
+
+[[package.metadata.android.permission]]
+name = "android.permission.READ_EXTERNAL_STORAGE"
+#max_sdk_version = 18
+
+[[package.metadata.android.permission]]
+name = "android.permission.MANAGE_EXTERNAL_STORAGE"
+#max_sdk_version = 18
+
+#[[package.metadata.android.permission]]
+#name = "android.permission.CAMERA"

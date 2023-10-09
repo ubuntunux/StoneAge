@@ -1,0 +1,2 @@
+{"material_name": "render_test",
+ "material_parameters": {"textureBase": "common/flat_white", "textureMaterial": "common/flat_green", "textureNormal": "common/default_n"}}
