@@ -1,10 +1,10 @@
 [package]
-name = "rust_engine_3d_demo"
+name = "StoneAge"
 version = "0.2.0"
 authors = ["ubuntunux <ubuntunux@gmail.com>"]
 license = "BSD 2-Clause"
-homepage = "https://github.com/ubuntunux/rust_engine_3d_demo"
-repository = "https://github.com/ubuntunux/rust_engine_3d_demo"
+homepage = "https://github.com/ubuntunux/StoneAge"
+repository = "https://github.com/ubuntunux/StoneAge"
 readme = "README.md"
 edition = "2021"
 
@@ -19,7 +19,7 @@ serde_json = "1.0"
 winit = "0.28.7"
 
 [[bin]]
-name = "rust_engine_3d_demo"
+name = "StoneAge"
 
 [target.'cfg(target_os = "android")'.dependencies]
 ndk-glue = "0.7.0"

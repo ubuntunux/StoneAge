@@ -148,7 +148,7 @@ impl UISwitch {
         ui_component.set_border_color(get_color32(0, 0, 0, 128));
         ui_component.set_halign(HorizontalAlign::CENTER);
         ui_component.set_valign(VerticalAlign::CENTER);
-        ui_component.set_margine(5.0);
+        ui_component.set_margin(5.0);
         ui_component.set_round(10.0);
         ui_component.set_border(2.0);
         ui_component.set_touchable(true);

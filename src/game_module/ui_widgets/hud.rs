@@ -51,7 +51,7 @@ impl CrossHair {
         );
         ui_component.set_size(ui_size, ui_size);
         ui_component
-            .set_material_instance(&project_resources.get_material_instance_data("ui/crosshair"));
+            .set_material_instance(&project_resources.get_engine_resources().get_material_instance_data("ui/crosshair"));
         root_widget.add_widget(&crosshair_widget);
 
         CrossHair {
@@ -70,7 +70,7 @@ impl TargetHud {
         let hud_layer_padding: f32 = 10.0;
         let hud_ui_width: f32 = 100.0;
         let hud_ui_height: f32 = 25.0;
-        let hud_ui_margine: f32 = 2.0;
+        let hud_ui_margin: f32 = 2.0;
         let hud_ui_padding: f32 = 4.0;
 
         let target_widget = UIManager::create_widget("target_widget", UIWidgetTypes::Default);
@@ -95,7 +95,7 @@ impl TargetHud {
         ui_component.set_valign(VerticalAlign::CENTER);
         ui_component.set_color(get_color32(255, 0, 0, 20));
         ui_component.set_font_color(get_color32(255, 255, 255, 255));
-        ui_component.set_margine(hud_ui_margine);
+        ui_component.set_margin(hud_ui_margin);
         ui_component.set_padding(hud_ui_padding);
         ui_component.set_expandable(true);
         ptr_as_mut(target_widget.as_ref()).add_widget(&target_distance);

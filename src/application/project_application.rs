@@ -45,6 +45,7 @@ impl ProjectApplicationBase for ProjectApplication {
 
         self.get_project_scene_manager_mut()
             .initialize_project_scene_manager(
+                self._project_resources.as_ref(),
                 engine_application.get_scene_manager_mut(),
                 engine_application.get_renderer_context(),
                 engine_application.get_effect_manager(),
@@ -60,7 +61,7 @@ impl ProjectApplicationBase for ProjectApplication {
 
     fn terminate_project_application(&mut self) {
         // close scene
-        self._project_scene_manager.close_scene_data();
+        self._project_scene_manager.close_game_scene_data();
 
         // destroy managers
         self._game_client.destroy_game_client();

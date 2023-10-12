@@ -6,7 +6,7 @@ use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 
 const WIDGET_UI_WIDTH: f32 = 120.0;
 const WIDGET_UI_HEIGHT: f32 = 24.0;
-const WIDGET_UI_MARGINE: f32 = 2.0;
+const WIDGET_UI_MARGIN: f32 = 2.0;
 const WIDGET_UI_PADDING: f32 = 2.0;
 
 pub struct HullPointWidget {
@@ -33,7 +33,7 @@ fn create_hit_point_layer_widget(parent_widget: &mut dyn Widget) -> *const Widge
     ui_component.set_border_color(get_color32(0, 0, 0, 255));
     ui_component.set_round(5.0);
     ui_component.set_border(2.0);
-    ui_component.set_margine(WIDGET_UI_MARGINE);
+    ui_component.set_margin(WIDGET_UI_MARGIN);
     ui_component.set_padding(WIDGET_UI_PADDING);
     parent_widget.add_widget(&hit_point_layer);
     hit_point_layer.as_ref() as *const dyn Widget as *const WidgetDefault

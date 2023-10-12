@@ -104,7 +104,7 @@ impl GameClient {
 
     pub fn start_game(&mut self) {
         self.get_project_scene_manager_mut()
-            .open_scene_data("sponza");
+            .open_game_scene_data("intro_stage");
     }
 
     pub fn set_game_mode(&mut self, is_game_mode: bool) {
