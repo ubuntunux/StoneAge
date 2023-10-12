@@ -1,8 +1,8 @@
 use rust_engine_3d::scene::render_object::RenderObjectData;
 use rust_engine_3d::scene::transform_object::TransformObjectData;
 use rust_engine_3d::utilities::system::RcRefCell;
-use crate::game_module::game_character::character::{Character, CharacterController, CharacterData, CharacterDataType, CharacterProperty};
 
+use crate::game_module::game_character::character::{Character, CharacterController, CharacterData, CharacterDataType, CharacterProperty};
 
 impl Default for CharacterData {
     fn default() -> CharacterData {

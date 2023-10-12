@@ -1,19 +1,12 @@
-use std::fs::{ File };
+use std::fs::File;
 use std::io::prelude::*;
-use std::path::{ Path, PathBuf };
+use std::path::{Path, PathBuf};
 
-use serde_json::{ self };
+use rust_engine_3d::renderer::renderer_context::RendererContext;
+use rust_engine_3d::resource::resource::{EngineResources, get_unique_resource_name, PROJECT_RESOURCE_PATH, ProjectResourcesBase, RenderPassDataCreateInfoMap, ResourceDataMap};
+use rust_engine_3d::utilities::system::{self, newRcRefCell, RcRefCell};
+use serde_json::{self};
 
-use rust_engine_3d::resource::resource::{PROJECT_RESOURCE_PATH, ResourceData, ResourceDataMap, ProjectResourcesBase, EngineResources, get_unique_resource_name, RenderPassDataCreateInfoMap};
-use rust_engine_3d::effect::effect_data::EffectData;
-use rust_engine_3d::renderer::renderer_context::{ RendererContext };
-use rust_engine_3d::utilities::system::{ self, RcRefCell, newRcRefCell };
-use rust_engine_3d::scene::font::FontData;
-use rust_engine_3d::scene::model::ModelData;
-use rust_engine_3d::scene::mesh::MeshData;
-use rust_engine_3d::vulkan_context::texture::TextureData;
-use rust_engine_3d::scene::material::MaterialData;
-use rust_engine_3d::scene::material_instance::MaterialInstanceData;
 use crate::application::project_scene_manager::GameSceneDataCreateInfo;
 use crate::game_module::game_character::character::CharacterData;
 use crate::render_pass::render_pass;

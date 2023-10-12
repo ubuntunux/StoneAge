@@ -1,4 +1,8 @@
 use nalgebra::{Vector2, Vector3};
+use rust_engine_3d::application::application::TimeData;
+use rust_engine_3d::application::input::{KeyboardInputData, MouseInputData, MouseMoveData};
+use rust_engine_3d::scene::camera::CameraObjectData;
+use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
 use winit::event::VirtualKeyCode;
 
 use crate::game_module::game_client::GameClient;
@@ -6,10 +10,6 @@ use crate::game_module::game_constants::{
     CAMERA_EDGE_SCROLL_SPEED, MOUSE_PITCH_MAX, MOUSE_PITCH_MIN, MOUSE_ROTATION_SPEED,
 };
 use crate::game_module::game_ui::GameUIManager;
-use rust_engine_3d::application::application::TimeData;
-use rust_engine_3d::application::input::{KeyboardInputData, MouseInputData, MouseMoveData};
-use rust_engine_3d::scene::camera::CameraObjectData;
-use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
 
 pub struct GameController {
     pub _game_client: *const GameClient,

@@ -7,6 +7,7 @@ use rust_engine_3d::resource::resource::EngineResources;
 use rust_engine_3d::scene::scene_manager::{ProjectSceneManagerBase, SceneManager};
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
 use serde::{Deserialize, Serialize};
+
 use crate::resource::project_resource::ProjectResources;
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]

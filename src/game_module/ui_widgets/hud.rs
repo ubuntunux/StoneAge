@@ -1,14 +1,13 @@
 use std::os::raw::c_void;
+use std::rc::Rc;
 
 use nalgebra::Vector2;
+use rust_engine_3d::scene::ui::{CallbackTouchEvent, HorizontalAlign, Orientation, UIComponentInstance, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, Widget, WidgetDefault};
+use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
+use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 
 use crate::game_module::ui_widgets::hit_point_widgets::{HullPointWidget, ShieldPointWidget};
 use crate::resource::project_resource::ProjectResources;
-use rust_engine_3d::resource::resource::ProjectResourcesBase;
-use rust_engine_3d::scene::ui::*;
-use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
-use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
-use std::rc::Rc;
 
 pub struct TargetHud {
     pub _widget: *const WidgetDefault,
