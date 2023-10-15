@@ -34,12 +34,12 @@ impl CharacterController {
 
 impl Character {
     pub fn create_character_instance(
-        character_name: String,
+        character_name: &String,
         character_data: &RcRefCell<CharacterData>,
         render_object: &RcRefCell<RenderObjectData>
     ) -> Character {
         Character {
-            _character_name: character_name,
+            _character_name: character_name.clone(),
             _character_data: character_data.clone(),
             _render_object: render_object.clone(),
             _character_property: CharacterProperty::create_character_property(),
