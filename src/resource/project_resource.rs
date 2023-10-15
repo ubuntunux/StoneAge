@@ -7,8 +7,8 @@ use rust_engine_3d::resource::resource::{EngineResources, get_unique_resource_na
 use rust_engine_3d::utilities::system::{self, newRcRefCell, RcRefCell};
 use serde_json::{self};
 
-use crate::application::project_scene_manager::GameSceneDataCreateInfo;
-use crate::game_module::game_character::character::CharacterData;
+use crate::game_module::character::character::CharacterData;
+use crate::game_module::game_scene_manager::GameSceneDataCreateInfo;
 use crate::render_pass::render_pass;
 
 pub const GAME_SCENE_FILE_PATH: &str = "game_data/game_scenes";

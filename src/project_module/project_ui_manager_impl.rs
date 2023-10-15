@@ -11,7 +11,7 @@ use rust_engine_3d::scene::ui::{
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 
-use crate::scene::project_ui::{ProjectUIManager, UISwitch, UIWorldAxis};
+use crate::project_module::project_ui_manager::{ProjectUIManager, UISwitch, UIWorldAxis};
 
 impl ProjectUIManager {
     pub fn create_project_ui_manager() -> Box<ProjectUIManager> {

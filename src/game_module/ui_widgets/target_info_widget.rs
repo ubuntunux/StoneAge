@@ -13,7 +13,7 @@
 // };
 // use rust_engine_3d::resource::resource::ProjectResourcesBase;
 //
-// use crate::application::project_application::ProjectApplication;
+// use crate::project_module::project_application::ProjectApplication;
 // use crate::game_module::actor_manager::ActorManager;
 // use crate::renderer::project_ui::ProjectUIManager;
 //
