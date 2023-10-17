@@ -118,27 +118,13 @@ impl ProjectResources {
     fn load_character_data(&mut self) {
         let game_data_directory = PathBuf::from(CHARACTER_DATA_FILE_PATH);
 
-        // create character data
-        let mut default_character_data_file_path: PathBuf = PathBuf::from(PROJECT_RESOURCE_PATH);
-        default_character_data_file_path.push(&game_data_directory);
-        default_character_data_file_path.push(&DEFAULT_GAME_DATA_NAME);
-        default_character_data_file_path.set_extension(EXT_GAME_DATA);
-        #[cfg(not(target_os = "android"))]
-        if false == default_character_data_file_path.is_file() {
-            let default_character_data_create_info = CharacterData::default();
-            let mut write_file = File::create(&default_character_data_file_path).expect("Failed to create file");
-            let mut write_contents: String = serde_json::to_string(&default_character_data_create_info).expect("Failed to serialize.");
-            write_contents = write_contents.replace(",\"", ",\n\"");
-            write_file.write(write_contents.as_bytes()).expect("Failed to write");
-        }
-
         // load_character_data
         let game_data_files: Vec<PathBuf> = self.collect_resources(&game_data_directory, &[EXT_GAME_DATA]);
         for game_data_file in game_data_files {
-            let game_data_name = get_unique_resource_name(&self._character_data_map, &game_data_directory, &game_data_file);
+            let character_data_name = get_unique_resource_name(&self._character_data_map, &game_data_directory, &game_data_file);
             let loaded_contents = system::load(&game_data_file);
             let character_data: CharacterData = serde_json::from_reader(loaded_contents).expect("Failed to deserialize.");
-            self._character_data_map.insert(game_data_name.clone(), newRcRefCell(character_data));
+            self._character_data_map.insert(character_data_name.clone(), newRcRefCell(character_data));
         }
     }
 

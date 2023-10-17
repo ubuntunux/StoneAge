@@ -446,7 +446,7 @@ resources/material_instances/render_test.matinst
 resources/shaders/render_test.frag
 resources/shaders/render_test.vert
 resources/scenes/sponza.scene
-resources/game_data/characters/default.data
+resources/game_data/characters/mutant.data
 resources/game_data/game_scenes/intro_stage.data
 resources/models/sponza/sponza.model
 resources/materials/render_test.mat

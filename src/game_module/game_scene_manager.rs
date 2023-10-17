@@ -5,19 +5,23 @@ use rust_engine_3d::effect::effect_manager::EffectManager;
 use rust_engine_3d::renderer::renderer_context::RendererContext;
 use rust_engine_3d::renderer::renderer_data::RendererData;
 use rust_engine_3d::resource::resource::EngineResources;
+use rust_engine_3d::scene::render_object::RenderObjectCreateInfo;
 use rust_engine_3d::scene::scene_manager::{ProjectSceneManagerBase, SceneManager};
 use rust_engine_3d::utilities::system;
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
 use serde::{Deserialize, Serialize};
-use crate::game_module::character::character::{Character, CharacterData};
+use winit::event::VirtualKeyCode;
+use crate::game_module::character::character::{Character, CharacterCreateInfo};
 use crate::resource::project_resource::ProjectResources;
 
+type CharacterCreateInfoMap = HashMap<String, CharacterCreateInfo>;
 type CharacterMap = HashMap<String, RcRefCell<Character>>;
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[serde(default)]
 pub struct GameSceneDataCreateInfo {
     pub _scene_data_name: String,
+    pub _characters: CharacterCreateInfoMap,
     pub _start_point: Vector3<f32>,
 }
 
@@ -92,8 +96,9 @@ impl GameSceneManager {
             .open_scene_data(scene_data_name);
 
         // character
-        //game_scene_data._start_point;
-        self.create_character(String::from("Pickle"));
+        for (character_name, character_create_info) in game_scene_data._characters.iter() {
+            self.create_character(character_name, character_create_info);
+        }
     }
 
     pub fn close_game_scene_data(&mut self) {
@@ -104,17 +109,34 @@ impl GameSceneManager {
         self.get_scene_manager_mut().destroy_scene_manager();
     }
 
-    pub fn create_character(&mut self, object_name: String) -> RcRefCell<Character> {
-        let new_object_name = system::generate_unique_name(&self._character_map, &object_name);
-        let character_data = newRcRefCell(CharacterData::default());
-        let render_object_data = self.get_scene_manager().get_skeletal_render_object("skeletal0").unwrap();
+    pub fn create_character(&mut self, character_name: &str, character_create_info: &CharacterCreateInfo) -> RcRefCell<Character> {
+        let project_resouces = ptr_as_ref(self._project_resources);
+        let new_object_name = system::generate_unique_name(&self._character_map, character_name);
+        let character_data = project_resouces.get_character_data(character_create_info._character_data_name.as_str());
+        let render_object_create_info = RenderObjectCreateInfo {
+            _model_data_name: character_data.borrow()._model_data_name.clone(),
+            ..Default::default()
+        };
+        let render_object_data = self.get_scene_manager_mut().add_skeletal_render_object(
+            character_create_info._character_data_name.as_str(),
+            &render_object_create_info
+        );
         let character = newRcRefCell(Character::create_character_instance(
             &new_object_name,
-            &character_data,
+            character_data,
             &render_object_data
         ));
-        self._character_map
-            .insert(new_object_name, character.clone());
+
+        // set character transform
+        {
+            let mut character_mut = character.borrow_mut();
+            let transform = character_mut.get_character_transform_mut();
+            transform.set_position(&character_create_info._position);
+            transform.set_rotation(&character_create_info._rotation);
+            transform.set_scale(&character_create_info._scale);
+        }
+
+        self._character_map.insert(new_object_name, character.clone());
         character
     }
 
@@ -135,11 +157,17 @@ impl GameSceneManager {
         delta_time: f64,
     ) {
         {
-            let pickle = self._character_map.get("Pickle");
-            let object = pickle.as_ref().unwrap().borrow();
-            let mut object_mut = object._render_object.borrow_mut();
-            let height = object_mut._transform_object.get_position().y;
-            object_mut._transform_object.set_position(&Vector3::new(0.0, height + height * delta_time as f32 * 0.1, 0.0));
+            let is_left = engine_application._keyboard_input_data.get_key_hold(VirtualKeyCode::Left);
+            let is_right = engine_application._keyboard_input_data.get_key_hold(VirtualKeyCode::Right);
+
+            if is_left || is_right {
+                let pickle = self._character_map.get("mutant");
+                let mut object = pickle.as_ref().unwrap().borrow_mut();
+                let transform = object.get_character_transform_mut();
+                let position = &transform.get_position();
+                transform.set_position(&Vector3::new(position.x + delta_time as f32 * if is_left { 0.2 } else { -0.2 }, 0.0, 0.0));
+                object.update_character(delta_time as f32);
+            }
         }
 
         self.get_scene_manager_mut()

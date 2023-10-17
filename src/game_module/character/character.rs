@@ -1,3 +1,4 @@
+use nalgebra::Vector3;
 use rust_engine_3d::scene::render_object::RenderObjectData;
 use rust_engine_3d::scene::transform_object::TransformObjectData;
 use rust_engine_3d::utilities::system::RcRefCell;
@@ -24,10 +25,19 @@ pub struct CharacterController {
     pub _transform_object: TransformObjectData,
 }
 
+#[derive(Serialize, Deserialize, Default, Debug, Clone, PartialEq)]
+#[serde(default)]
+pub struct CharacterCreateInfo {
+    pub _character_data_name: String,
+    pub _position: Vector3<f32>,
+    pub _rotation: Vector3<f32>,
+    pub _scale: Vector3<f32>,
+}
+
 pub struct Character {
     pub _character_name: String,
     pub _character_data: RcRefCell<CharacterData>,
     pub _render_object: RcRefCell<RenderObjectData>,
-    pub _character_property: CharacterProperty,
-    pub _controller: CharacterController,
+    pub _character_property: Box<CharacterProperty>,
+    pub _controller: Box<CharacterController>,
 }
