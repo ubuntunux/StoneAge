@@ -4,7 +4,7 @@ use rust_engine_3d::effect::effect_manager::EffectManager;
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
 
 use crate::game_module::game_controller::GameController;
-use crate::game_module::game_scene_manager::GameSceneManager;
+use crate::game_module::project_scene_manager::ProjectSceneManager;
 use crate::game_module::game_ui::GameUIManager;
 use crate::project_module::project_application::ProjectApplication;
 use crate::project_module::project_ui_manager::ProjectUIManager;
@@ -12,7 +12,7 @@ use crate::resource::project_resource::ProjectResources;
 
 pub struct GameClient {
     pub _project_application: *const ProjectApplication,
-    pub _game_scene_manager: *const GameSceneManager,
+    pub _project_scene_manager: *const ProjectSceneManager,
     pub _project_resources: *const ProjectResources,
     pub _project_ui_manager: *const ProjectUIManager,
     pub _audio_manager: *const AudioManager,
@@ -25,7 +25,7 @@ impl GameClient {
     pub fn create_game_client() -> Box<GameClient> {
         Box::new(GameClient {
             _project_application: std::ptr::null(),
-            _game_scene_manager: std::ptr::null(),
+            _project_scene_manager: std::ptr::null(),
             _project_resources: std::ptr::null(),
             _project_ui_manager: std::ptr::null(),
             _audio_manager: std::ptr::null(),
@@ -38,15 +38,13 @@ impl GameClient {
     pub fn initialize_game_client(&mut self, project_application: &ProjectApplication) {
         let game_client = project_application.get_game_client();
         self._project_application = project_application;
-        self._game_scene_manager = project_application.get_game_scene_manager();
+        self._project_scene_manager = project_application.get_project_scene_manager();
         self._project_resources = project_application.get_project_resources();
         self._project_ui_manager = project_application.get_project_ui_manager();
         self._audio_manager = project_application.get_audio_manager();
         self._effect_manager = project_application.get_effect_manager();
-        self._game_ui_manager
-            .initialize_game_ui_manager(game_client);
-        self._game_controller
-            .initialize_game_controller(game_client);
+        self._game_ui_manager.initialize_game_ui_manager(game_client);
+        self._game_controller.initialize_game_controller(game_client);
     }
 
     pub fn destroy_game_client(&mut self) {
@@ -59,11 +57,11 @@ impl GameClient {
     pub fn get_project_application_mut(&self) -> &mut ProjectApplication {
         ptr_as_mut(self._project_application)
     }
-    pub fn get_game_scene_manager(&self) -> &GameSceneManager {
-        ptr_as_ref(self._game_scene_manager)
+    pub fn get_project_scene_manager(&self) -> &ProjectSceneManager {
+        ptr_as_ref(self._project_scene_manager)
     }
-    pub fn get_game_scene_manager_mut(&self) -> &mut GameSceneManager {
-        ptr_as_mut(self._game_scene_manager)
+    pub fn get_project_scene_manager_mut(&self) -> &mut ProjectSceneManager {
+        ptr_as_mut(self._project_scene_manager)
     }
     pub fn get_project_resources(&self) -> &ProjectResources {
         ptr_as_ref(self._project_resources)
@@ -103,7 +101,7 @@ impl GameClient {
     }
 
     pub fn start_game(&mut self) {
-        self.get_game_scene_manager_mut()
+        self.get_project_scene_manager_mut()
             .open_game_scene_data("intro_stage");
     }
 
@@ -117,7 +115,7 @@ impl GameClient {
     pub fn update_game_event(&mut self) {
         let project_application = ptr_as_ref(self._project_application);
         let engine_application = project_application.get_engine_application();
-        let project_scene_manager = project_application.get_game_scene_manager();
+        let project_scene_manager = project_application.get_project_scene_manager();
         let scene_manager = project_scene_manager.get_scene_manager();
         let time_data = &engine_application._time_data;
         let mouse_move_data = &engine_application._mouse_move_data;

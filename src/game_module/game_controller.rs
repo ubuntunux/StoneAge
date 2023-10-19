@@ -42,13 +42,13 @@ impl GameController {
     }
     pub fn get_main_camera(&self) -> &CameraObjectData {
         self.get_game_client()
-            .get_game_scene_manager()
+            .get_project_scene_manager()
             .get_scene_manager()
             .get_main_camera()
     }
     pub fn get_main_camera_mut(&self) -> &mut CameraObjectData {
         self.get_game_client()
-            .get_game_scene_manager()
+            .get_project_scene_manager()
             .get_scene_manager()
             .get_main_camera_mut()
     }

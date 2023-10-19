@@ -13,7 +13,7 @@ use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
 use winit::event::VirtualKeyCode;
 
 use crate::game_module::game_client::GameClient;
-use crate::game_module::game_scene_manager::GameSceneManager;
+use crate::game_module::project_scene_manager::ProjectSceneManager;
 use crate::project_module::project_constants;
 use crate::project_module::project_ui_manager::ProjectUIManager;
 use crate::resource::project_resource::ProjectResources;
@@ -24,7 +24,7 @@ pub struct ProjectApplication {
     pub _effect_manager: *const EffectManager,
     pub _renderer_data: *const RendererData,
     pub _project_resources: Box<ProjectResources>,
-    pub _game_scene_manager: Box<GameSceneManager>,
+    pub _project_scene_manager: Box<ProjectSceneManager>,
     pub _project_ui_manager: Box<ProjectUIManager>,
     pub _game_client: Box<GameClient>,
     pub _is_game_mode: bool,
@@ -43,8 +43,8 @@ impl ProjectApplicationBase for ProjectApplication {
             .get_renderer_context()
             .get_renderer_data();
 
-        self.get_game_scene_manager_mut()
-            .initialize_game_scene_manager(
+        self.get_project_scene_manager_mut()
+            .initialize_project_scene_manager(
                 self._project_resources.as_ref(),
                 engine_application.get_scene_manager_mut(),
                 engine_application.get_renderer_context(),
@@ -61,11 +61,11 @@ impl ProjectApplicationBase for ProjectApplication {
 
     fn terminate_project_application(&mut self) {
         // close scene
-        self._game_scene_manager.close_game_scene_data();
+        self._project_scene_manager.close_game_scene_data();
 
         // destroy managers
         self._game_client.destroy_game_client();
-        self._game_scene_manager.destroy_game_scene_manager();
+        self._project_scene_manager.destroy_project_scene_manager();
     }
 
     fn update_event(&mut self) {
@@ -126,7 +126,7 @@ impl ProjectApplicationBase for ProjectApplication {
             let released_key_equals = keyboard_input_data.get_key_released(VirtualKeyCode::Equals);
             let modifier_keys_shift = keyboard_input_data.get_key_hold(VirtualKeyCode::LShift);
 
-            let scene_manager = self.get_game_scene_manager().get_scene_manager();
+            let scene_manager = self.get_project_scene_manager().get_scene_manager();
             let main_camera = scene_manager.get_main_camera_mut();
             let mut main_light = scene_manager._main_light.borrow_mut();
             let camera_move_speed_multiplier = if modifier_keys_shift { 2.0 } else { 1.0 };
@@ -211,8 +211,8 @@ impl ProjectApplicationBase for ProjectApplication {
             self._game_client.update_game_client(delta_time as f32);
         }
 
-        self._game_scene_manager
-            .update_game_scene_manager(engine_application, delta_time);
+        self._project_scene_manager
+            .update_project_scene_manager(engine_application, delta_time);
         self._project_ui_manager
             .update_ui_manager(engine_application, delta_time);
     }
@@ -237,11 +237,11 @@ impl ProjectApplication {
     pub fn get_project_resources_mut(&self) -> &mut ProjectResources {
         ptr_as_mut(self._project_resources.as_ref())
     }
-    pub fn get_game_scene_manager(&self) -> &GameSceneManager {
-        ptr_as_ref(self._game_scene_manager.as_ref())
+    pub fn get_project_scene_manager(&self) -> &ProjectSceneManager {
+        ptr_as_ref(self._project_scene_manager.as_ref())
     }
-    pub fn get_game_scene_manager_mut(&self) -> &mut GameSceneManager {
-        ptr_as_mut(self._game_scene_manager.as_ref())
+    pub fn get_project_scene_manager_mut(&self) -> &mut ProjectSceneManager {
+        ptr_as_mut(self._project_scene_manager.as_ref())
     }
     pub fn get_renderer_data(&self) -> &RendererData {
         ptr_as_ref(self._renderer_data)
@@ -346,7 +346,7 @@ pub fn run_project_application() {
 
     // create project application & managers
     let project_resources = ProjectResources::create_project_resources();
-    let game_scene_manager = GameSceneManager::create_game_scene_manager();
+    let project_scene_manager = ProjectSceneManager::create_project_scene_manager();
     let project_ui_manager = ProjectUIManager::create_project_ui_manager();
     let game_client = GameClient::create_game_client();
     let application = ProjectApplication {
@@ -355,7 +355,7 @@ pub fn run_project_application() {
         _effect_manager: std::ptr::null(),
         _audio_manager: std::ptr::null(),
         _project_resources: project_resources,
-        _game_scene_manager: game_scene_manager,
+        _project_scene_manager: project_scene_manager,
         _project_ui_manager: project_ui_manager,
         _game_client: game_client,
         _is_game_mode: false,
@@ -370,7 +370,7 @@ pub fn run_project_application() {
         log_level,
         &application,
         application.get_project_resources(),
-        application.get_game_scene_manager(),
+        application.get_project_scene_manager(),
         application.get_project_ui_manager(),
     );
 }

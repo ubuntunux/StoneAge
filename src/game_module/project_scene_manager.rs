@@ -25,7 +25,7 @@ pub struct GameSceneDataCreateInfo {
     pub _start_point: Vector3<f32>,
 }
 
-pub struct GameSceneManager {
+pub struct ProjectSceneManager {
     pub _scene_manager: *const SceneManager,
     pub _project_resources: *const ProjectResources,
     pub _engine_resources: *const EngineResources,
@@ -35,9 +35,9 @@ pub struct GameSceneManager {
     pub _character_map: CharacterMap,
 }
 
-impl ProjectSceneManagerBase for GameSceneManager {}
+impl ProjectSceneManagerBase for ProjectSceneManager {}
 
-impl GameSceneManager {
+impl ProjectSceneManager {
     pub fn get_scene_manager(&self) -> &SceneManager {
         ptr_as_ref(self._scene_manager)
     }
@@ -45,8 +45,8 @@ impl GameSceneManager {
         ptr_as_mut(self._scene_manager)
     }
 
-    pub fn create_game_scene_manager() -> Box<GameSceneManager> {
-        Box::new(GameSceneManager {
+    pub fn create_project_scene_manager() -> Box<ProjectSceneManager> {
+        Box::new(ProjectSceneManager {
             _scene_manager: std::ptr::null(),
             _project_resources: std::ptr::null(),
             _engine_resources: std::ptr::null(),
@@ -57,7 +57,7 @@ impl GameSceneManager {
         })
     }
 
-    pub fn initialize_game_scene_manager(
+    pub fn initialize_project_scene_manager(
         &mut self,
         project_resources: &ProjectResources,
         scene_manager: &mut SceneManager,
@@ -105,7 +105,7 @@ impl GameSceneManager {
         self.get_scene_manager_mut().close_scene_data();
     }
 
-    pub fn destroy_game_scene_manager(&mut self) {
+    pub fn destroy_project_scene_manager(&mut self) {
         self.get_scene_manager_mut().destroy_scene_manager();
     }
 
@@ -151,7 +151,7 @@ impl GameSceneManager {
         self._character_map.remove(object_name);
     }
 
-    pub fn update_game_scene_manager(
+    pub fn update_project_scene_manager(
         &mut self,
         engine_application: &EngineApplication,
         delta_time: f64,
