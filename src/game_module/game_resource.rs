@@ -3,12 +3,12 @@ use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 
 use rust_engine_3d::renderer::renderer_context::RendererContext;
-use rust_engine_3d::resource::resource::{EngineResources, get_unique_resource_name, PROJECT_RESOURCE_PATH, ProjectResourcesBase, RenderPassDataCreateInfoMap, ResourceDataMap};
+use rust_engine_3d::resource::resource::{EngineResources, get_unique_resource_name, PROJECT_RESOURCE_PATH, ApplicationResourcesBase, RenderPassDataCreateInfoMap, ResourceDataMap};
 use rust_engine_3d::utilities::system::{self, newRcRefCell, RcRefCell};
 use serde_json::{self};
 
 use crate::game_module::character::character::CharacterData;
-use crate::game_module::project_scene_manager::GameSceneDataCreateInfo;
+use crate::game_module::game_scene_manager::GameSceneDataCreateInfo;
 use crate::render_pass::render_pass;
 
 pub const GAME_SCENE_FILE_PATH: &str = "game_data/game_scenes";
@@ -22,23 +22,23 @@ pub type GameSceneDataCreateInfoMap = ResourceDataMap<GameSceneDataCreateInfo>;
 pub type CharacterDataMap = ResourceDataMap<CharacterData>;
 
 #[derive(Clone)]
-pub struct ProjectResources {
+pub struct GameResources {
     _engine_resources: *const EngineResources,
     _game_scene_data_create_infos_map: GameSceneDataCreateInfoMap,
     _character_data_map: CharacterDataMap,
 }
 
-impl ProjectResourcesBase for ProjectResources {
-    fn initialize_project_resources(&mut self, engine_resources: &EngineResources) {
+impl ApplicationResourcesBase for GameResources {
+    fn initialize_application_resources(&mut self, engine_resources: &EngineResources) {
         self._engine_resources = engine_resources;
     }
 
-    fn load_project_resources(&mut self, renderer_context: &RendererContext) {
+    fn load_application_resources(&mut self, renderer_context: &RendererContext) {
         self.load_game_scene_data(renderer_context);
         self.load_game_data();
     }
 
-    fn destroy_project_resources(&mut self, renderer_context: &RendererContext) {
+    fn destroy_application_resources(&mut self, renderer_context: &RendererContext) {
         self.unload_game_data();
         self.unload_game_scene_data(renderer_context);
     }
@@ -48,9 +48,9 @@ impl ProjectResourcesBase for ProjectResources {
     }
 }
 
-impl ProjectResources {
-    pub fn create_project_resources() -> Box<ProjectResources> {
-        Box::new(ProjectResources {
+impl GameResources {
+    pub fn create_game_resources() -> Box<GameResources> {
+        Box::new(GameResources {
             _engine_resources: std::ptr::null(),
             _game_scene_data_create_infos_map: GameSceneDataCreateInfoMap::new(),
             _character_data_map: CharacterDataMap::new(),

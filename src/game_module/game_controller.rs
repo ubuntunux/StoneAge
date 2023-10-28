@@ -1,15 +1,16 @@
 use nalgebra::{Vector2, Vector3};
-use rust_engine_3d::application::application::TimeData;
-use rust_engine_3d::application::input::{KeyboardInputData, MouseInputData, MouseMoveData};
+use rust_engine_3d::core::engine_core::TimeData;
+use rust_engine_3d::core::input::{KeyboardInputData, MouseInputData, MouseMoveData};
 use rust_engine_3d::scene::camera::CameraObjectData;
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
 use winit::event::VirtualKeyCode;
+use crate::application::application::Application;
 
 use crate::game_module::game_client::GameClient;
 use crate::game_module::game_constants::{
     CAMERA_EDGE_SCROLL_SPEED, MOUSE_PITCH_MAX, MOUSE_PITCH_MIN, MOUSE_ROTATION_SPEED,
 };
-use crate::game_module::game_ui::GameUIManager;
+use crate::game_module::game_ui_manager::GameUIManager;
 
 pub struct GameController {
     pub _game_client: *const GameClient,
@@ -24,9 +25,10 @@ impl GameController {
         })
     }
 
-    pub fn initialize_game_controller(&mut self, game_client: &GameClient) {
-        self._game_client = game_client;
-        self._game_ui_manager = game_client._game_ui_manager.as_ref();
+    pub fn initialize_game_controller(&mut self, application: &Application) {
+        log::info!("initialize_game_controller");
+        self._game_client = application.get_game_client();
+        self._game_ui_manager = application.get_game_ui_manager();
     }
     pub fn get_game_client(&self) -> &GameClient {
         ptr_as_ref(self._game_client)
@@ -42,13 +44,13 @@ impl GameController {
     }
     pub fn get_main_camera(&self) -> &CameraObjectData {
         self.get_game_client()
-            .get_project_scene_manager()
+            .get_game_scene_manager()
             .get_scene_manager()
             .get_main_camera()
     }
     pub fn get_main_camera_mut(&self) -> &mut CameraObjectData {
         self.get_game_client()
-            .get_project_scene_manager()
+            .get_game_scene_manager()
             .get_scene_manager()
             .get_main_camera_mut()
     }
@@ -116,7 +118,7 @@ impl GameController {
 
         // update cross hair
         self.get_game_ui_manager_mut()
-            .set_crosshair_pos(&mouse_move_data._mouse_pos);
+            .set_cross_hair_pos(&mouse_move_data._mouse_pos);
     }
 
     pub fn update_game_controller(&mut self, _delta_time: f32) {}

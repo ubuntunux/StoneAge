@@ -6,8 +6,8 @@ use rust_engine_3d::scene::ui::{CallbackTouchEvent, HorizontalAlign, Orientation
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 
-use crate::game_module::ui_widgets::hit_point_widgets::{HullPointWidget, ShieldPointWidget};
-use crate::resource::project_resource::ProjectResources;
+use crate::game_module::widgets::hit_point_widgets::{HullPointWidget, ShieldPointWidget};
+use crate::game_module::game_resource::GameResources;
 
 pub struct TargetHud {
     pub _widget: *const WidgetDefault,
@@ -36,8 +36,8 @@ pub struct SelectionArea {
 
 // CrossHair
 impl CrossHair {
-    pub fn create_crosshair(
-        project_resources: &ProjectResources,
+    pub fn create_cross_hair(
+        game_resources: &GameResources,
         root_widget: &mut dyn Widget,
         window_center: &Vector2<f32>,
     ) -> CrossHair {
@@ -50,7 +50,7 @@ impl CrossHair {
         );
         ui_component.set_size(ui_size, ui_size);
         ui_component
-            .set_material_instance(&project_resources.get_engine_resources().get_material_instance_data("ui/crosshair"));
+            .set_material_instance(&game_resources.get_engine_resources().get_material_instance_data("ui/crosshair"));
         root_widget.add_widget(&crosshair_widget);
 
         CrossHair {
