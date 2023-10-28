@@ -18,6 +18,7 @@ pub struct SpawnPointData {
     pub _rotation: Vector3<f32>
 }
 
+//noinspection SpellCheckingInspection
 #[derive(Serialize, Deserialize,Clone, Copy, Debug, PartialEq)]
 pub enum CharacterDataType {
     UrsusArctos,

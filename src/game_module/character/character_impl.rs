@@ -2,7 +2,7 @@ use nalgebra::Vector3;
 use rust_engine_3d::scene::render_object::RenderObjectData;
 use rust_engine_3d::utilities::system::RcRefCell;
 
-use crate::game_module::character::character::{Character, CharacterController, CharacterData, CharacterDataType, CharacterProperty};
+use crate::game_module::character::character::*;
 
 impl Default for CharacterData {
     fn default() -> CharacterData {

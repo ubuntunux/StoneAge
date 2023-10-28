@@ -1,18 +1,16 @@
 use std::collections::HashMap;
+
 use nalgebra::{Vector2, Vector3};
 use rust_engine_3d::core::engine_core::EngineCore;
 use rust_engine_3d::effect::effect_manager::EffectManager;
-use rust_engine_3d::renderer::renderer_context::RendererContext;
-use rust_engine_3d::renderer::renderer_data::RendererData;
-use rust_engine_3d::resource::resource::EngineResources;
 use rust_engine_3d::scene::scene_manager::{ProjectSceneManagerBase, SceneManager};
-use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
+use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
 use serde::{Deserialize, Serialize};
 use winit::event::VirtualKeyCode;
+
 use crate::application::application::Application;
-use crate::game_module::character::character::{Character, CharacterCreateInfo};
+use crate::game_module::character::character::CharacterCreateInfo;
 use crate::game_module::character::character_manager::CharacterManager;
-use crate::game_module::game_client::GameClient;
 use crate::game_module::game_resource::GameResources;
 
 type CharacterCreateInfoMap = HashMap<String, CharacterCreateInfo>;

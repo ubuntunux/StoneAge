@@ -1,13 +1,13 @@
 use std::collections::HashMap;
-use rust_engine_3d::scene::render_object::{RenderObjectCreateInfo, RenderObjectData};
-use rust_engine_3d::scene::scene_manager::SceneManager;
-use rust_engine_3d::utilities::system;
+
+use rust_engine_3d::scene::render_object::RenderObjectCreateInfo;
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
+
 use crate::application::application::Application;
-use crate::game_module::character::character::{Character, CharacterCreateInfo, SpawnPointData, SpawnPointType};
+use crate::game_module::character::character::{Character, CharacterCreateInfo};
 use crate::game_module::game_client::GameClient;
-use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::game_resource::GameResources;
+use crate::game_module::game_scene_manager::GameSceneManager;
 
 pub type CharacterMap = HashMap<u64, RcRefCell<Character>>;
 
