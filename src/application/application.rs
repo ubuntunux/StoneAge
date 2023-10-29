@@ -8,7 +8,6 @@ use rust_engine_3d::audio::audio_manager::AudioManager;
 use rust_engine_3d::constants;
 use rust_engine_3d::effect::effect_manager::EffectManager;
 use rust_engine_3d::renderer::renderer_data::RendererData;
-use rust_engine_3d::scene::ui::ApplicationUIManagerBase;
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
 use winit::event::VirtualKeyCode;
 use crate::game_module::character::character_manager::CharacterManager;
@@ -51,11 +50,12 @@ impl ApplicationBase for Application {
         let application = ptr_as_ref(self);
         self.get_character_manager_mut().initialize_character_manager(application);
         self.get_game_scene_manager_mut().initialize_game_scene_manager(application, engine_core, window_size);
-        self.get_game_ui_manager_mut().initialize_game_ui_manager(application);
+        self.get_game_ui_manager_mut().initialize_game_ui_manager(application, engine_core);
         self.get_game_controller_mut().initialize_game_controller(application);
         self.get_game_client_mut().initialize_game_client(self);
 
         // start game
+        self.get_game_ui_manager_mut().build_game_ui(window_size);
         self.set_game_mode(self._is_game_mode);
         self.get_game_client_mut().start_game();
 
@@ -71,24 +71,21 @@ impl ApplicationBase for Application {
     }
 
     fn update_event(&mut self) {
-        if self
-            .get_engine_core()
-            ._keyboard_input_data
-            .get_key_pressed(VirtualKeyCode::Tab)
+        let engine_core = ptr_as_ref(self._engine_core);
+        let time_data = &engine_core._time_data;
+        let mouse_move_data = &engine_core._mouse_move_data;
+        let mouse_input_data = &engine_core._mouse_input_data;
+        let keyboard_input_data = &engine_core._keyboard_input_data;
+
+        if engine_core._keyboard_input_data.get_key_pressed(VirtualKeyCode::Tab)
         {
             self.toggle_game_mode();
         }
 
         if self._is_game_mode {
             self.get_game_client_mut().update_game_event();
+            self.get_game_ui_manager_mut().set_crosshair_pos(&mouse_move_data._mouse_pos);
         } else {
-            // editor mode
-            let engine_core = self.get_engine_core();
-            let time_data = &engine_core._time_data;
-            let mouse_move_data = &engine_core._mouse_move_data;
-            let mouse_input_data = &engine_core._mouse_input_data;
-            let keyboard_input_data = &engine_core._keyboard_input_data;
-
             const MOUSE_DELTA_RATIO: f32 = 500.0;
             let delta_time = time_data._delta_time;
             let _mouse_pos = &mouse_move_data._mouse_pos;
@@ -209,11 +206,12 @@ impl ApplicationBase for Application {
         let font_manager = engine_core.get_font_manager_mut();
         font_manager.clear_logs();
         if self._is_game_mode {
-            self._game_client.update_game_client(delta_time as f32);
+            self._game_controller.as_mut().update_game_controller(delta_time);
+            self._game_client.update_game_client(delta_time);
         }
         self._game_scene_manager.update_game_scene_manager(engine_core, delta_time);
         self._character_manager.update_character_manager(engine_core, delta_time);
-        self._game_ui_manager.as_mut().update_ui_manager(engine_core, delta_time);
+        self._game_ui_manager.as_mut().update_game_ui(delta_time);
     }
 }
 
@@ -278,8 +276,7 @@ impl Application {
     pub fn set_game_mode(&mut self, is_game_mode: bool) {
         self._is_game_mode = is_game_mode;
         self.get_game_client_mut().set_game_mode(is_game_mode);
-        self.get_engine_core_mut()
-            .set_grab_mode(is_game_mode);
+        self.get_engine_core_mut().set_grab_mode(is_game_mode);
     }
 }
 
@@ -380,8 +377,7 @@ pub fn run_application() {
         window_mode,
         log_level,
         &application,
-        application.get_game_resources(),
-        application.get_game_scene_manager(),
-        application.get_game_ui_manager(),
+        application.get_game_resources(), // TODO: Remove
+        application.get_game_scene_manager() // TODO: Remove
     );
 }

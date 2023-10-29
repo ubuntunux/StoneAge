@@ -80,16 +80,12 @@ impl GameClient {
     pub fn get_game_ui_manager_mut(&self) -> &mut GameUIManager { ptr_as_mut(self._game_ui_manager) }
     pub fn start_game(&mut self) {
         log::info!("start_game");
-        self.get_game_ui_manager_mut().build_game_ui();
-        self.get_game_scene_manager_mut()
-            .open_game_scene_data("intro_stage");
+        self.get_game_scene_manager_mut().open_game_scene_data("intro_stage");
     }
 
     pub fn set_game_mode(&mut self, is_game_mode: bool) {
         let game_ui_layout_mut = ptr_as_mut(self.get_game_ui_manager().game_ui_layout());
-        game_ui_layout_mut
-            .get_ui_component_mut()
-            .set_visible(is_game_mode);
+        game_ui_layout_mut.get_ui_component_mut().set_visible(is_game_mode);
     }
 
     pub fn update_game_event(&mut self) {
@@ -118,8 +114,6 @@ impl GameClient {
         );
     }
 
-    pub fn update_game_client(&mut self, delta_time: f32) {
-        ptr_as_mut(self._game_controller).update_game_controller(delta_time);
-        ptr_as_mut(self._game_ui_manager).update_game_ui(delta_time);
+    pub fn update_game_client(&mut self, _delta_time: f64) {
     }
 }

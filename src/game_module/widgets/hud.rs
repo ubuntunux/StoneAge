@@ -22,7 +22,7 @@ pub struct PlayerHud {
     pub _shield_point_widget: ShieldPointWidget,
 }
 
-pub struct CrossHair {
+pub struct Crosshair {
     pub _widget: *const WidgetDefault,
     pub _pos: Vector2<i32>,
     pub _tracking_mouse: bool,
@@ -34,13 +34,13 @@ pub struct SelectionArea {
     pub _drag_mouse: bool,
 }
 
-// CrossHair
-impl CrossHair {
-    pub fn create_cross_hair(
+// Crosshair
+impl Crosshair {
+    pub fn create_crosshair(
         game_resources: &GameResources,
         root_widget: &mut dyn Widget,
         window_center: &Vector2<f32>,
-    ) -> CrossHair {
+    ) -> Crosshair {
         let crosshair_widget = UIManager::create_widget("cursor", UIWidgetTypes::Default);
         let ui_component = ptr_as_mut(crosshair_widget.as_ref()).get_ui_component_mut();
         let ui_size = 50.0f32;
@@ -53,7 +53,7 @@ impl CrossHair {
             .set_material_instance(&game_resources.get_engine_resources().get_material_instance_data("ui/crosshair"));
         root_widget.add_widget(&crosshair_widget);
 
-        CrossHair {
+        Crosshair {
             _widget: crosshair_widget.as_ref() as *const dyn Widget as *const WidgetDefault,
             _pos: Vector2::zeros(),
             _tracking_mouse: true,

@@ -58,7 +58,7 @@ impl GameController {
         &mut self,
         time_data: &TimeData,
         keyboard_input_data: &KeyboardInputData,
-        mouse_move_data: &MouseMoveData,
+        _mouse_move_data: &MouseMoveData,
         mouse_input_data: &MouseInputData,
         mouse_delta: &Vector2<f32>,
         main_camera: &mut CameraObjectData,
@@ -115,11 +115,9 @@ impl GameController {
             ));
             main_camera._transform_object.set_pitch(pitch);
         }
-
-        // update cross hair
-        self.get_game_ui_manager_mut()
-            .set_cross_hair_pos(&mouse_move_data._mouse_pos);
     }
 
-    pub fn update_game_controller(&mut self, _delta_time: f32) {}
+    pub fn update_game_controller(&mut self, _delta_time: f64) {
+
+    }
 }
