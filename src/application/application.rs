@@ -212,6 +212,7 @@ impl ApplicationBase for Application {
             self._game_client.update_game_client(delta_time as f32);
         }
         self._game_scene_manager.update_game_scene_manager(engine_core, delta_time);
+        self._character_manager.update_character_manager(engine_core, delta_time);
         self._game_ui_manager.as_mut().update_ui_manager(engine_core, delta_time);
     }
 }
@@ -346,6 +347,8 @@ pub fn run_application() {
         // effect
         constants::MAX_EMITTER_COUNT = 1024;
         constants::MAX_PARTICLE_COUNT = 262144;
+        // render option
+        constants::RENDER_OCEAN = false;
     }
 
     // create project application & managers

@@ -1,7 +1,9 @@
 use std::collections::HashMap;
+use rust_engine_3d::core::engine_core::EngineCore;
 
 use rust_engine_3d::scene::render_object::RenderObjectCreateInfo;
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
+use winit::event::VirtualKeyCode;
 
 use crate::application::application::Application;
 use crate::game_module::character::character::{Character, CharacterCreateInfo};
@@ -79,9 +81,9 @@ impl CharacterManager {
         // set character transform
         {
             let mut character_mut = character.borrow_mut();
-            character_mut._controller.as_mut()._position.clone_from(&character_create_info._position);
-            character_mut._controller.as_mut()._rotation.clone_from(&character_create_info._rotation);
-            character_mut._controller.as_mut()._scale.clone_from(&character_create_info._scale);
+            character_mut._controller._position.clone_from(&character_create_info._position);
+            character_mut._controller._rotation.clone_from(&character_create_info._rotation);
+            character_mut._controller._scale.clone_from(&character_create_info._scale);
         }
         self._characters.insert(id, character.clone());
         character
@@ -92,13 +94,20 @@ impl CharacterManager {
     pub fn get_player(&self) -> &RcRefCell<Character> {
         self._player.as_ref().unwrap()
     }
-    pub fn update_character_manager(&mut self, _delta_time: f32) {
-        // let game_client = ptr_as_ref(self._game_client);
-        // for character in self._characters.values() {
-        //     let character_mut = ptr_as_mut(character.as_ref());
-        //     if character_mut._is_player {
-        //         character_mut.update_character_controller(game_client, delta_time);
-        //     }
-        // }
+    pub fn update_character_manager(&mut self, engine_core: &EngineCore, delta_time: f64) {
+        {
+            let is_left = engine_core._keyboard_input_data.get_key_hold(VirtualKeyCode::Left);
+            let is_right = engine_core._keyboard_input_data.get_key_hold(VirtualKeyCode::Right);
+            if is_left || is_right {
+                let pickle = self.get_player();
+                let mut object = pickle.borrow_mut();
+                object._controller._position.x += delta_time as f32 * if is_left { 10.0 } else { -10.0 };
+            }
+        }
+
+        for character in self._characters.values() {
+            let mut character_mut = character.borrow_mut();
+            character_mut.update_character(delta_time);
+        }
     }
 }

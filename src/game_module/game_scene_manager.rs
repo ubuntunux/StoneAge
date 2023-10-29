@@ -6,7 +6,6 @@ use rust_engine_3d::effect::effect_manager::EffectManager;
 use rust_engine_3d::scene::scene_manager::{ProjectSceneManagerBase, SceneManager};
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
 use serde::{Deserialize, Serialize};
-use winit::event::VirtualKeyCode;
 
 use crate::application::application::Application;
 use crate::game_module::character::character::CharacterCreateInfo;
@@ -76,14 +75,9 @@ impl GameSceneManager {
         self._game_scene_name = String::from(game_scene_data_name);
         let game_resources = ptr_as_ref(self._game_resources);
 
-
-        log::info!("1: {:?}", self._game_resources);
-
         if false == game_resources.has_game_scene_data(game_scene_data_name) {
             // TODO
         }
-
-        log::info!("2");
 
         // load scene
         let game_scene_data = game_resources.get_game_scene_data(game_scene_data_name).borrow();
@@ -91,15 +85,11 @@ impl GameSceneManager {
         self.get_scene_manager_mut()
             .open_scene_data(scene_data_name);
 
-        log::info!("3");
-
         // character
         for (character_name, character_create_info) in game_scene_data._characters.iter() {
             let is_player = true;
-            log::info!("4");
             ptr_as_mut(self._character_manager).create_character(character_name, character_create_info, is_player);
         }
-        log::info!("5");
     }
 
     pub fn close_game_scene_data(&mut self) {
@@ -110,25 +100,6 @@ impl GameSceneManager {
         self.get_scene_manager_mut().destroy_scene_manager();
     }
 
-    pub fn update_game_scene_manager(
-        &mut self,
-        engine_core: &EngineCore,
-        delta_time: f64,
-    ) {
-        {
-            let is_left = engine_core._keyboard_input_data.get_key_hold(VirtualKeyCode::Left);
-            let is_right = engine_core._keyboard_input_data.get_key_hold(VirtualKeyCode::Right);
-
-            if is_left || is_right {
-                let character_manager = ptr_as_ref(self._character_manager);
-                let pickle = character_manager.get_player();
-                let mut object = pickle.borrow_mut();
-                object._controller._position.x += delta_time as f32 * if is_left { 0.2 } else { -0.2 };
-                object.update_character(delta_time as f32);
-            }
-        }
-
-        self.get_scene_manager_mut()
-            .update_scene_manager(engine_core, delta_time);
+    pub fn update_game_scene_manager(&mut self, _engine_core: &EngineCore, _delta_time: f64) {
     }
 }

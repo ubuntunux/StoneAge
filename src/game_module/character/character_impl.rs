@@ -61,7 +61,7 @@ impl Character {
         render_object._transform_object.set_scale(&controller._scale);
     }
 
-    pub fn update_character(&mut self, _delta_time: f32) {
+    pub fn update_character(&mut self, _delta_time: f64) {
         self.update_transform();
     }
 }
