@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 
 use rust_engine_3d::renderer::renderer_context::RendererContext;
 use rust_engine_3d::resource::resource::{EngineResources, get_unique_resource_name, PROJECT_RESOURCE_PATH, ApplicationResourcesBase, RenderPassDataCreateInfoMap, ResourceDataMap};
-use rust_engine_3d::utilities::system::{self, newRcRefCell, RcRefCell};
+use rust_engine_3d::utilities::system::{self, newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
 use serde_json::{self};
 
 use crate::game_module::character::character::CharacterData;
@@ -57,10 +57,10 @@ impl GameResources {
         })
     }
     pub fn get_engine_resources(&self) -> &EngineResources {
-        unsafe { &*self._engine_resources }
+        ptr_as_ref(self._engine_resources)
     }
     pub fn get_engine_resources_mut(&self) -> &mut EngineResources {
-        unsafe { &mut *(self._engine_resources as *mut EngineResources) }
+        ptr_as_mut(self._engine_resources)
     }
     pub fn collect_resources(&self, dir: &Path, extensions: &[&str]) -> Vec<PathBuf> {
         self.get_engine_resources().collect_resources(dir, extensions)

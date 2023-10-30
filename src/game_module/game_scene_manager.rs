@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use nalgebra::{Vector2, Vector3};
 use rust_engine_3d::core::engine_core::EngineCore;
 use rust_engine_3d::effect::effect_manager::EffectManager;
-use rust_engine_3d::scene::scene_manager::{ProjectSceneManagerBase, SceneManager};
+use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
 use serde::{Deserialize, Serialize};
 
@@ -29,8 +29,6 @@ pub struct GameSceneManager {
     pub _character_manager: *const CharacterManager,
     pub _game_scene_name: String,
 }
-
-impl ProjectSceneManagerBase for GameSceneManager {}
 
 impl GameSceneManager {
     pub fn get_scene_manager(&self) -> &SceneManager {
@@ -62,7 +60,6 @@ impl GameSceneManager {
         self._character_manager = application.get_character_manager();
         self._game_resources = application.get_game_resources();
         engine_core.get_scene_manager_mut().initialize_scene_manager(
-            self as *const dyn ProjectSceneManagerBase,
             engine_core.get_renderer_context(),
             engine_core.get_effect_manager(),
             engine_core.get_engine_resources(),

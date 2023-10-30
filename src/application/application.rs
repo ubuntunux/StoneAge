@@ -42,9 +42,7 @@ impl ApplicationBase for Application {
         self._engine_core = engine_core;
         self._audio_manager = engine_core.get_audio_manager();
         self._effect_manager = engine_core.get_effect_manager();
-        self._renderer_data = engine_core
-            .get_renderer_context()
-            .get_renderer_data();
+        self._renderer_data = engine_core.get_renderer_context().get_renderer_data();
 
         // initialize project managers
         let application = ptr_as_ref(self);
@@ -58,7 +56,6 @@ impl ApplicationBase for Application {
         self.get_game_ui_manager_mut().build_game_ui(window_size);
         self.set_game_mode(self._is_game_mode);
         self.get_game_client_mut().start_game();
-
     }
 
     fn terminate_application(&mut self) {
@@ -282,7 +279,7 @@ impl Application {
 
 pub fn run_application() {
     // application setting
-    let app_name: String = "Rust Engine 3D Demo".to_string();
+    let app_name: String = "Stone Age".to_string();
     let app_version: u32 = 1;
     let initial_window_size: Vector2<i32> = Vector2::new(1024, 768);
     let window_mode = WindowMode::WindowMode;
@@ -376,8 +373,7 @@ pub fn run_application() {
         initial_window_size,
         window_mode,
         log_level,
-        &application,
+        &application, // TODO: Remove
         application.get_game_resources(), // TODO: Remove
-        application.get_game_scene_manager() // TODO: Remove
     );
 }
