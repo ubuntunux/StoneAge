@@ -8,6 +8,7 @@ use rust_engine_3d::audio::audio_manager::AudioManager;
 use rust_engine_3d::constants;
 use rust_engine_3d::effect::effect_manager::EffectManager;
 use rust_engine_3d::renderer::renderer_data::RendererData;
+use rust_engine_3d::resource::resource::CallbackLoadRenderPassCreateInfo;
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
 use winit::event::VirtualKeyCode;
 use crate::game_module::character::character_manager::CharacterManager;
@@ -17,6 +18,7 @@ use crate::game_module::game_constants;
 use crate::game_module::game_controller::GameController;
 use crate::game_module::game_ui_manager::GameUIManager;
 use crate::game_module::game_resource::GameResources;
+use crate::render_pass;
 
 pub struct Application {
     pub _engine_core: *const EngineCore,
@@ -46,11 +48,13 @@ impl ApplicationBase for Application {
 
         // initialize project managers
         let application = ptr_as_ref(self);
+        self.get_game_resources_mut().initialize_game_resources(engine_core.get_engine_resources());
+        self.get_game_resources_mut().load_game_resources(engine_core.get_renderer_context());
         self.get_character_manager_mut().initialize_character_manager(application);
         self.get_game_scene_manager_mut().initialize_game_scene_manager(application, engine_core, window_size);
         self.get_game_ui_manager_mut().initialize_game_ui_manager(application, engine_core);
         self.get_game_controller_mut().initialize_game_controller(application);
-        self.get_game_client_mut().initialize_game_client(self);
+        self.get_game_client_mut().initialize_game_client(application);
 
         // start game
         self.get_game_ui_manager_mut().build_game_ui(window_size);
@@ -59,12 +63,15 @@ impl ApplicationBase for Application {
     }
 
     fn terminate_application(&mut self) {
-        // close scene
         self._game_scene_manager.close_game_scene_data();
-
-        // destroy managers
         self._game_client.destroy_game_client();
         self._game_scene_manager.destroy_game_scene_manager();
+        self._game_resources.destroy_game_resources();
+    }
+
+    fn get_render_pass_create_info_callback(&self) -> *const CallbackLoadRenderPassCreateInfo {
+        static FUNC: CallbackLoadRenderPassCreateInfo = render_pass::render_pass::get_render_pass_data_create_infos;
+        &FUNC
     }
 
     fn update_event(&mut self) {
@@ -374,6 +381,5 @@ pub fn run_application() {
         window_mode,
         log_level,
         &application, // TODO: Remove
-        application.get_game_resources(), // TODO: Remove
     );
 }

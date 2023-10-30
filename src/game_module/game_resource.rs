@@ -3,13 +3,12 @@ use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 
 use rust_engine_3d::renderer::renderer_context::RendererContext;
-use rust_engine_3d::resource::resource::{EngineResources, get_unique_resource_name, PROJECT_RESOURCE_PATH, ApplicationResourcesBase, RenderPassDataCreateInfoMap, ResourceDataMap};
+use rust_engine_3d::resource::resource::{EngineResources, get_unique_resource_name, APPLICATION_RESOURCE_PATH, ResourceDataMap};
 use rust_engine_3d::utilities::system::{self, newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
 use serde_json::{self};
 
 use crate::game_module::character::character::CharacterData;
 use crate::game_module::game_scene_manager::GameSceneDataCreateInfo;
-use crate::render_pass::render_pass;
 
 pub const GAME_SCENE_FILE_PATH: &str = "game_data/game_scenes";
 pub const CHARACTER_DATA_FILE_PATH: &str = "game_data/characters";
@@ -26,26 +25,6 @@ pub struct GameResources {
     _engine_resources: *const EngineResources,
     _game_scene_data_create_infos_map: GameSceneDataCreateInfoMap,
     _character_data_map: CharacterDataMap,
-}
-
-impl ApplicationResourcesBase for GameResources {
-    fn initialize_application_resources(&mut self, engine_resources: &EngineResources) {
-        self._engine_resources = engine_resources;
-    }
-
-    fn load_application_resources(&mut self, renderer_context: &RendererContext) {
-        self.load_game_scene_data(renderer_context);
-        self.load_game_data();
-    }
-
-    fn destroy_application_resources(&mut self, renderer_context: &RendererContext) {
-        self.unload_game_data();
-        self.unload_game_scene_data(renderer_context);
-    }
-
-    fn load_render_pass_data_create_infos(&mut self, renderer_context: &RendererContext, render_pass_data_create_info_map: &mut RenderPassDataCreateInfoMap) {
-        render_pass::get_render_pass_data_create_infos(renderer_context, render_pass_data_create_info_map);
-    }
 }
 
 impl GameResources {
@@ -65,8 +44,17 @@ impl GameResources {
     pub fn collect_resources(&self, dir: &Path, extensions: &[&str]) -> Vec<PathBuf> {
         self.get_engine_resources().collect_resources(dir, extensions)
     }
-
-    // GameSceneData
+    pub fn initialize_game_resources(&mut self, engine_resources: &EngineResources) {
+        self._engine_resources = engine_resources;
+    }
+    pub fn load_game_resources(&mut self, renderer_context: &RendererContext) {
+        self.load_game_scene_data(renderer_context);
+        self.load_game_data();
+    }
+    pub fn destroy_game_resources(&mut self) {
+        self.unload_game_data();
+        self.unload_game_scene_data();
+    }
     pub fn load_game_scene_data(&mut self, _renderer_context: &RendererContext) {
         log::info!("    load_game_scene_data");
         let game_scene_directory = PathBuf::from(GAME_SCENE_FILE_PATH);
@@ -79,12 +67,12 @@ impl GameResources {
         }
     }
 
-    pub fn unload_game_scene_data(&mut self, _renderer_context: &RendererContext) {
+    pub fn unload_game_scene_data(&mut self) {
         self._game_scene_data_create_infos_map.clear();
     }
 
     pub fn save_game_scene_data(&mut self, game_scene_data_name: &str, game_scene_data_create_info: &GameSceneDataCreateInfo) {
-        let mut game_scene_data_filepath = PathBuf::from(PROJECT_RESOURCE_PATH);
+        let mut game_scene_data_filepath = PathBuf::from(APPLICATION_RESOURCE_PATH);
         game_scene_data_filepath.push(GAME_SCENE_FILE_PATH);
         game_scene_data_filepath.push(game_scene_data_name);
         game_scene_data_filepath.set_extension(EXT_GAME_DATA);
