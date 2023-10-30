@@ -88,7 +88,7 @@ impl GameClient {
         game_ui_layout_mut.get_ui_component_mut().set_visible(is_game_mode);
     }
 
-    pub fn update_game_event(&mut self) {
+    pub fn update_game_mode(&mut self, _delta_time: f64) {
         let application = ptr_as_ref(self._application);
         let engine_core = application.get_engine_core();
         let game_scene_manager = application.get_game_scene_manager();
@@ -104,7 +104,7 @@ impl GameClient {
         );
         let _scroll_delta = &mouse_move_data._scroll_delta;
         let main_camera = scene_manager.get_main_camera_mut();
-        ptr_as_mut(self._game_controller).update_game_event(
+        ptr_as_mut(self._game_controller).update_game_controller(
             time_data,
             &keyboard_input_data,
             &mouse_move_data,
@@ -112,8 +112,5 @@ impl GameClient {
             &mouse_delta,
             main_camera,
         );
-    }
-
-    pub fn update_game_client(&mut self, _delta_time: f64) {
     }
 }

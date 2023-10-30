@@ -13,8 +13,8 @@ use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
 use winit::event::VirtualKeyCode;
 use crate::game_module::character::character_manager::CharacterManager;
 use crate::game_module::game_client::GameClient;
-use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::game_constants;
+use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::game_controller::GameController;
 use crate::game_module::game_ui_manager::GameUIManager;
 use crate::game_module::game_resource::GameResources;
@@ -70,8 +70,8 @@ impl ApplicationBase for Application {
     }
 
     fn get_render_pass_create_info_callback(&self) -> *const CallbackLoadRenderPassCreateInfo {
-        static FUNC: CallbackLoadRenderPassCreateInfo = render_pass::render_pass::get_render_pass_data_create_infos;
-        &FUNC
+        static CALLBACK: CallbackLoadRenderPassCreateInfo = render_pass::render_pass::get_render_pass_data_create_infos;
+        &CALLBACK
     }
 
     fn update_event(&mut self) {
@@ -86,10 +86,7 @@ impl ApplicationBase for Application {
             self.toggle_game_mode();
         }
 
-        if self._is_game_mode {
-            self.get_game_client_mut().update_game_event();
-            self.get_game_ui_manager_mut().set_crosshair_pos(&mouse_move_data._mouse_pos);
-        } else {
+        if false == self._is_game_mode {
             const MOUSE_DELTA_RATIO: f32 = 500.0;
             let delta_time = time_data._delta_time;
             let _mouse_pos = &mouse_move_data._mouse_pos;
@@ -121,14 +118,11 @@ impl ApplicationBase for Application {
             let pressed_key_c = keyboard_input_data.get_key_hold(VirtualKeyCode::C);
             let pressed_key_comma = keyboard_input_data.get_key_hold(VirtualKeyCode::Comma);
             let pressed_key_period = keyboard_input_data.get_key_hold(VirtualKeyCode::Period);
-            let released_key_left_bracket =
-                keyboard_input_data.get_key_released(VirtualKeyCode::LBracket);
-            let released_key_right_bracket =
-                keyboard_input_data.get_key_released(VirtualKeyCode::RBracket);
+            let released_key_left_bracket = keyboard_input_data.get_key_released(VirtualKeyCode::LBracket);
+            let released_key_right_bracket = keyboard_input_data.get_key_released(VirtualKeyCode::RBracket);
             let released_key_subtract = keyboard_input_data.get_key_released(VirtualKeyCode::Minus);
             let released_key_equals = keyboard_input_data.get_key_released(VirtualKeyCode::Equals);
             let modifier_keys_shift = keyboard_input_data.get_key_hold(VirtualKeyCode::LShift);
-
             let scene_manager = self.get_game_scene_manager().get_scene_manager();
             let main_camera = scene_manager.get_main_camera_mut();
             let mut main_light = scene_manager._main_light.borrow_mut();
@@ -209,9 +203,11 @@ impl ApplicationBase for Application {
         let engine_core = ptr_as_ref(self._engine_core);
         let font_manager = engine_core.get_font_manager_mut();
         font_manager.clear_logs();
+
+        // update managers
         if self._is_game_mode {
-            self._game_controller.as_mut().update_game_controller(delta_time);
-            self._game_client.update_game_client(delta_time);
+            self._game_client.update_game_mode(delta_time);
+            self.get_game_ui_manager_mut().set_crosshair_pos(&engine_core._mouse_move_data._mouse_pos);
         }
         self._game_scene_manager.update_game_scene_manager(engine_core, delta_time);
         self._character_manager.update_character_manager(engine_core, delta_time);
@@ -235,33 +231,23 @@ impl Application {
     pub fn get_game_resources(&self) -> &GameResources {
         ptr_as_ref(self._game_resources.as_ref())
     }
-    pub fn get_game_resources_mut(&self) -> &mut GameResources {
-        ptr_as_mut(self._game_resources.as_ref())
-    }
+    pub fn get_game_resources_mut(&self) -> &mut GameResources { ptr_as_mut(self._game_resources.as_ref()) }
     pub fn get_character_manager(&self) -> &CharacterManager {
         self._character_manager.as_ref()
     }
-    pub fn get_character_manager_mut(&mut self) -> &mut CharacterManager {
-        self._character_manager.as_mut()
-    }
+    pub fn get_character_manager_mut(&mut self) -> &mut CharacterManager { self._character_manager.as_mut() }
     pub fn get_game_scene_manager(&self) -> &GameSceneManager {
         self._game_scene_manager.as_ref()
     }
-    pub fn get_game_scene_manager_mut(&mut self) -> &mut GameSceneManager {
-        self._game_scene_manager.as_mut()
-    }
+    pub fn get_game_scene_manager_mut(&mut self) -> &mut GameSceneManager { self._game_scene_manager.as_mut() }
     pub fn get_renderer_data(&self) -> &RendererData {
         ptr_as_ref(self._renderer_data)
     }
     pub fn get_renderer_data_mut(&self) -> &mut RendererData {
         ptr_as_mut(self._renderer_data)
     }
-    pub fn get_game_ui_manager(&self) -> &GameUIManager {
-        ptr_as_ref(self._game_ui_manager.as_ref())
-    }
-    pub fn get_game_ui_manager_mut(&self) -> &mut GameUIManager {
-        ptr_as_mut(self._game_ui_manager.as_ref())
-    }
+    pub fn get_game_ui_manager(&self) -> &GameUIManager { ptr_as_ref(self._game_ui_manager.as_ref()) }
+    pub fn get_game_ui_manager_mut(&self) -> &mut GameUIManager { ptr_as_mut(self._game_ui_manager.as_ref()) }
     pub fn get_audio_manager(&self) -> &AudioManager {
         ptr_as_ref(self._audio_manager)
     }

@@ -54,14 +54,14 @@ impl GameController {
             .get_scene_manager()
             .get_main_camera_mut()
     }
-    pub fn update_game_event(
+    pub fn update_game_controller(
         &mut self,
         time_data: &TimeData,
         keyboard_input_data: &KeyboardInputData,
         _mouse_move_data: &MouseMoveData,
         mouse_input_data: &MouseInputData,
         mouse_delta: &Vector2<f32>,
-        main_camera: &mut CameraObjectData,
+        main_camera: &mut CameraObjectData
     ) {
         let _btn_left: bool = mouse_input_data._btn_l_pressed;
         let _btn_right: bool = mouse_input_data._btn_r_pressed;
@@ -115,9 +115,5 @@ impl GameController {
             ));
             main_camera._transform_object.set_pitch(pitch);
         }
-    }
-
-    pub fn update_game_controller(&mut self, _delta_time: f64) {
-
     }
 }
