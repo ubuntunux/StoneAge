@@ -86,7 +86,7 @@ impl UISwitch {
 }
 
 impl GameUIManager {
-    pub fn initialize_game_ui_manager(&mut self, application: &Application, engine_core: &EngineCore) {
+    pub fn initialize_game_ui_manager(&mut self, engine_core: &EngineCore, application: &Application) {
         log::info!("initialize_game_ui_manager");
         self._game_client = application.get_game_client();
         self._ui_manager = engine_core.get_ui_manager();

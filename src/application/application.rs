@@ -1,23 +1,24 @@
 use ash::vk;
 use log::LevelFilter;
 use nalgebra::Vector2;
-use rust_engine_3d::core::engine_core::{
-    self, EngineCore, ApplicationBase, WindowMode,
-};
 use rust_engine_3d::audio::audio_manager::AudioManager;
 use rust_engine_3d::constants;
+use rust_engine_3d::core::engine_core::{
+    self, ApplicationBase, EngineCore, WindowMode,
+};
 use rust_engine_3d::effect::effect_manager::EffectManager;
 use rust_engine_3d::renderer::renderer_data::RendererData;
 use rust_engine_3d::resource::resource::CallbackLoadRenderPassCreateInfo;
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
 use winit::event::VirtualKeyCode;
+
 use crate::game_module::character::character_manager::CharacterManager;
 use crate::game_module::game_client::GameClient;
 use crate::game_module::game_constants;
-use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::game_controller::GameController;
-use crate::game_module::game_ui_manager::GameUIManager;
 use crate::game_module::game_resource::GameResources;
+use crate::game_module::game_scene_manager::GameSceneManager;
+use crate::game_module::game_ui_manager::GameUIManager;
 use crate::render_pass;
 
 pub struct Application {
@@ -52,9 +53,9 @@ impl ApplicationBase for Application {
         self.get_game_resources_mut().load_game_resources(engine_core.get_renderer_context());
         self.get_character_manager_mut().initialize_character_manager(application);
         self.get_game_scene_manager_mut().initialize_game_scene_manager(application, engine_core, window_size);
-        self.get_game_ui_manager_mut().initialize_game_ui_manager(application, engine_core);
+        self.get_game_ui_manager_mut().initialize_game_ui_manager(engine_core, application);
         self.get_game_controller_mut().initialize_game_controller(application);
-        self.get_game_client_mut().initialize_game_client(application);
+        self.get_game_client_mut().initialize_game_client(engine_core, application);
 
         // start game
         self.get_game_ui_manager_mut().build_game_ui(window_size);
@@ -127,11 +128,11 @@ impl ApplicationBase for Application {
             let main_camera = scene_manager.get_main_camera_mut();
             let mut main_light = scene_manager._main_light.borrow_mut();
             let camera_move_speed_multiplier = if modifier_keys_shift { 2.0 } else { 1.0 };
-            let move_speed: f32 = game_constants::CAMERA_MOVE_SPEED
+            let move_speed: f32 = game_constants::EDITOR_CAMERA_MOVE_SPEED
                 * camera_move_speed_multiplier
                 * delta_time as f32;
-            let pan_speed = game_constants::CAMERA_PAN_SPEED * camera_move_speed_multiplier;
-            let rotation_speed = game_constants::CAMERA_ROTATION_SPEED;
+            let pan_speed = game_constants::EDITOR_CAMERA_PAN_SPEED * camera_move_speed_multiplier;
+            let rotation_speed = game_constants::EDITOR_CAMERA_ROTATION_SPEED;
 
             if released_key_left_bracket {
                 self.get_renderer_data_mut().prev_debug_render_target();

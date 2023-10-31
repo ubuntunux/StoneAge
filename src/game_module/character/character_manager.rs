@@ -1,9 +1,8 @@
 use std::collections::HashMap;
-use rust_engine_3d::core::engine_core::EngineCore;
 
+use rust_engine_3d::core::engine_core::EngineCore;
 use rust_engine_3d::scene::render_object::RenderObjectCreateInfo;
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
-use winit::event::VirtualKeyCode;
 
 use crate::application::application::Application;
 use crate::game_module::character::character::{Character, CharacterCreateInfo};
@@ -94,17 +93,7 @@ impl CharacterManager {
     pub fn get_player(&self) -> &RcRefCell<Character> {
         self._player.as_ref().unwrap()
     }
-    pub fn update_character_manager(&mut self, engine_core: &EngineCore, delta_time: f64) {
-        {
-            let is_left = engine_core._keyboard_input_data.get_key_hold(VirtualKeyCode::Left);
-            let is_right = engine_core._keyboard_input_data.get_key_hold(VirtualKeyCode::Right);
-            if is_left || is_right {
-                let pickle = self.get_player();
-                let mut object = pickle.borrow_mut();
-                object._controller._position.x += delta_time as f32 * if is_left { 10.0 } else { -10.0 };
-            }
-        }
-
+    pub fn update_character_manager(&mut self, _engine_core: &EngineCore, delta_time: f64) {
         for character in self._characters.values() {
             let mut character_mut = character.borrow_mut();
             character_mut.update_character(delta_time);
