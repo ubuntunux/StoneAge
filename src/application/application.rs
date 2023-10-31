@@ -335,7 +335,7 @@ pub fn run_application() {
         constants::MAX_EMITTER_COUNT = 1024;
         constants::MAX_PARTICLE_COUNT = 262144;
         // render option
-        constants::RENDER_OCEAN = false;
+        constants::RENDER_OCEAN = true;
     }
 
     // create project application & managers
