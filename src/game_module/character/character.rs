@@ -1,7 +1,16 @@
 use nalgebra::Vector3;
+use rust_engine_3d::scene::mesh::MeshData;
 use rust_engine_3d::scene::render_object::RenderObjectData;
 use rust_engine_3d::utilities::system::RcRefCell;
 use serde::{Deserialize, Serialize};
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum AnimationState {
+    IDLE,
+    WALK,
+    JUMP,
+    ATTACK
+}
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum SpawnPointType {
@@ -29,6 +38,9 @@ pub enum CharacterDataType {
 pub struct CharacterData {
     pub _character_type: CharacterDataType,
     pub _model_data_name: String,
+    pub _idle_animation_mesh: String,
+    pub _walk_animation_mesh: String,
+    pub _jump_animation_mesh: String,
     pub _max_hp: i32,
 }
 
@@ -40,6 +52,10 @@ pub struct CharacterController {
     pub _position: Vector3<f32>,
     pub _rotation: Vector3<f32>,
     pub _scale: Vector3<f32>,
+    pub _velocity: Vector3<f32>,
+    pub _is_ground: bool,
+    pub _is_jump: bool,
+    pub _move_direction: f32
 }
 
 #[derive(Serialize, Deserialize, Default, Debug, Clone, PartialEq)]
@@ -58,4 +74,8 @@ pub struct Character {
     pub _render_object: RcRefCell<RenderObjectData>,
     pub _character_property: Box<CharacterProperty>,
     pub _controller: Box<CharacterController>,
+    pub _animation_state: AnimationState,
+    pub _idle_animation: RcRefCell<MeshData>,
+    pub _walk_animation: RcRefCell<MeshData>,
+    pub _jump_animation: RcRefCell<MeshData>,
 }

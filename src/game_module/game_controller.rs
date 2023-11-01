@@ -10,13 +10,13 @@ use winit::event::VirtualKeyCode;
 use crate::application::application::Application;
 use crate::game_module::character::character::Character;
 use crate::game_module::game_client::GameClient;
-use crate::game_module::game_constants::{CAMERA_DISTANCE_MAX, PLAYER_MOVE_SPEED};
+use crate::game_module::game_constants::CAMERA_DISTANCE_MAX;
 use crate::game_module::game_ui_manager::GameUIManager;
 
 pub struct GameController {
     pub _game_client: *const GameClient,
     pub _game_ui_manager: *const GameUIManager,
-    pub _camera_distance: f32,
+    pub _camera_distance: f32
 }
 
 impl GameController {
@@ -59,7 +59,7 @@ impl GameController {
     }
     pub fn update_game_controller(
         &mut self,
-        time_data: &TimeData,
+        _time_data: &TimeData,
         keyboard_input_data: &KeyboardInputData,
         _mouse_move_data: &MouseMoveData,
         mouse_input_data: &MouseInputData,
@@ -72,14 +72,18 @@ impl GameController {
         let _btn_right_hold: bool = mouse_input_data._btn_r_hold;
         let is_left = keyboard_input_data.get_key_hold(VirtualKeyCode::Left) | keyboard_input_data.get_key_hold(VirtualKeyCode::A);
         let is_right = keyboard_input_data.get_key_hold(VirtualKeyCode::Right) | keyboard_input_data.get_key_hold(VirtualKeyCode::D);
+        let is_jump = keyboard_input_data.get_key_hold(VirtualKeyCode::Up) | keyboard_input_data.get_key_hold(VirtualKeyCode::W) | keyboard_input_data.get_key_hold(VirtualKeyCode::Space);
         let _modifier_keys_ctrl = keyboard_input_data.get_key_hold(VirtualKeyCode::LControl);
 
-        // update character control
+        // update player control
         if is_left || is_right {
-            let move_speed = PLAYER_MOVE_SPEED * time_data._delta_time as f32;
             let mut player_mut = player.borrow_mut();
-            player_mut._controller._position.x += move_speed * if is_left { -1.0 } else { 1.0 };
-            player_mut._controller._rotation.y = std::f32::consts::PI * if is_left { 0.5 } else { -0.5 };
+            player_mut.walk(is_left);
+        }
+
+        if is_jump {
+            let mut player_mut = player.borrow_mut();
+            player_mut.set_jump();
         }
 
         // update camera

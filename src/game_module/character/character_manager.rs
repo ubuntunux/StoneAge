@@ -65,12 +65,18 @@ impl CharacterManager {
             character_create_info._character_data_name.as_str(),
             &render_object_create_info
         );
+        let idle_animation = game_resources.get_engine_resources().get_mesh_data(&character_data.borrow()._idle_animation_mesh);
+        let walk_animation = game_resources.get_engine_resources().get_mesh_data(&character_data.borrow()._walk_animation_mesh);
+        let jump_animation = game_resources.get_engine_resources().get_mesh_data(&character_data.borrow()._jump_animation_mesh);
         let id = self.generate_id();
         let character = newRcRefCell(Character::create_character_instance(
             id,
             character_name,
             character_data,
-            &render_object_data
+            &render_object_data,
+            idle_animation,
+            walk_animation,
+            jump_animation
         ));
 
         if is_player {
@@ -96,7 +102,7 @@ impl CharacterManager {
     pub fn update_character_manager(&mut self, _engine_core: &EngineCore, delta_time: f64) {
         for character in self._characters.values() {
             let mut character_mut = character.borrow_mut();
-            character_mut.update_character(delta_time);
+            character_mut.update_character(delta_time as f32);
         }
     }
 }

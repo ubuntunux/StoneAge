@@ -19,11 +19,11 @@
 "_shadow_dimensions":[500.0,500.0,-2000.0,2000.0],
 "_shadow_update_distance":10.0}},
 "_effects":{
-    "effect_test":{"_effect_data_name":"effect_test","_effect_position":[-10.0,15.0,0.0],"_effect_rotation":[0.0,0.0,0.0],"_effect_scale":[1.0,1.0,1.0]}
+    "effect_test":{"_effect_data_name":"effect_test","_effect_position":[-1.0,1.0,0.0],"_effect_rotation":[0.0,0.0,0.0],"_effect_scale":[1.0,1.0,1.0]}
 },
 "_static_objects":{
-    "suzan":{"_model_data_name":"suzan","_position":[20.0,15.0,0.0],"_rotation":[0.0,0.0,0.0],"_scale":[3.0,3.0,3.0]},
-    "sphere":{"_model_data_name":"sphere","_position":[35.0,15.0,0.0],"_rotation":[0.0,0.0,0.0],"_scale":[3.0,3.0,3.0]}
+    "suzan":{"_model_data_name":"suzan","_position":[2.0,2.0,0.0],"_rotation":[0.0,0.0,0.0],"_scale":[1.0,1.0,1.0]},
+    "sphere":{"_model_data_name":"sphere","_position":[5.0,1.0,0.0],"_rotation":[0.0,0.0,0.0],"_scale":[1.0,1.0,1.0]}
 },
 "_skeletal_objects":{
 }
