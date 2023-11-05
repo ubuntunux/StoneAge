@@ -16,6 +16,7 @@ impl Default for CharacterData {
             _idle_animation_mesh: String::default(),
             _walk_animation_mesh: String::default(),
             _jump_animation_mesh: String::default(),
+            _attack_animation_mesh: String::default(),
             _max_hp: 100,
         }
     }
@@ -56,7 +57,7 @@ impl CharacterController {
         self._velocity.x == 0.0 && self._velocity.y == 0.0
     }
 
-    pub fn walk(&mut self, is_left: bool) {
+    pub fn set_walk(&mut self, is_left: bool) {
         self._move_direction = if is_left { -1.0 } else { 1.0 };
     }
 
@@ -105,7 +106,8 @@ impl Character {
         render_object: &RcRefCell<RenderObjectData>,
         idle_animation: &RcRefCell<MeshData>,
         walk_animation: &RcRefCell<MeshData>,
-        jump_animation: &RcRefCell<MeshData>
+        jump_animation: &RcRefCell<MeshData>,
+        attack_animation: &RcRefCell<MeshData>
     ) -> Character {
         Character {
             _character_id: character_id,
@@ -114,10 +116,11 @@ impl Character {
             _render_object: render_object.clone(),
             _character_property: Box::new(CharacterProperty::create_character_property()),
             _controller: Box::new(CharacterController::create_character_controller()),
-            _animation_state: AnimationState::IDLE,
+            _animation_state: AnimationState::NONE,
             _idle_animation: idle_animation.clone(),
             _walk_animation: walk_animation.clone(),
             _jump_animation: jump_animation.clone(),
+            _attack_animation: attack_animation.clone(),
         }
     }
     pub fn get_character_id(&self) -> u64 { self._character_id }
@@ -140,6 +143,10 @@ impl Character {
                 animation_info._loop = false;
                 self._render_object.borrow_mut().set_animation(&self._jump_animation, &animation_info);
             },
+            AnimationState::ATTACK => {
+                animation_info._loop = false;
+                self._render_object.borrow_mut().set_animation(&self._attack_animation, &animation_info);
+            },
             _ => ()
         }
         self._animation_state = animation_state;
@@ -149,11 +156,17 @@ impl Character {
         self.set_animation(AnimationState::IDLE);
     }
 
-    pub fn walk(&mut self, is_left: bool) {
-        self.get_character_controller_mut().walk(is_left);
-        if AnimationState::WALK != self._animation_state && self.get_character_controller()._is_ground {
+    pub fn set_walk(&mut self, is_left: bool) {
+        self.get_character_controller_mut().set_walk(is_left);
+        if AnimationState::ATTACK != self._animation_state &&
+            AnimationState::WALK != self._animation_state &&
+            self.get_character_controller()._is_ground {
             self.set_animation(AnimationState::WALK);
         }
+    }
+
+    pub fn set_attack(&mut self) {
+        self.set_animation(AnimationState::ATTACK);
     }
 
     pub fn set_jump(&mut self) {
@@ -174,7 +187,14 @@ impl Character {
     pub fn update_character(&mut self, delta_time: f32) {
         self.get_character_controller_mut().update_character_controller(delta_time);
         self.update_transform();
-        if AnimationState::IDLE != self._animation_state && self.get_character_controller().is_stop() {
+
+        if AnimationState::ATTACK == self._animation_state {
+            if self._render_object.borrow()._animation_play_info.as_ref().unwrap()._is_animation_end {
+                self.set_idle();
+            }
+        } else if AnimationState::ATTACK != self._animation_state &&
+            AnimationState::IDLE != self._animation_state &&
+            self.get_character_controller().is_stop() {
             self.set_idle();
         }
     }

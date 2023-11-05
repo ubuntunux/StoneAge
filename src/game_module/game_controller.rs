@@ -67,7 +67,7 @@ impl GameController {
         main_camera: &mut CameraObjectData,
         player: &RefCell<Character>
     ) {
-        let _btn_left: bool = mouse_input_data._btn_l_pressed;
+        let btn_left: bool = mouse_input_data._btn_l_pressed;
         let _btn_right: bool = mouse_input_data._btn_r_pressed;
         let _btn_right_hold: bool = mouse_input_data._btn_r_hold;
         let is_left = keyboard_input_data.get_key_hold(VirtualKeyCode::Left) | keyboard_input_data.get_key_hold(VirtualKeyCode::A);
@@ -78,12 +78,17 @@ impl GameController {
         // update player control
         if is_left || is_right {
             let mut player_mut = player.borrow_mut();
-            player_mut.walk(is_left);
+            player_mut.set_walk(is_left);
         }
 
         if is_jump {
             let mut player_mut = player.borrow_mut();
             player_mut.set_jump();
+        }
+
+        if btn_left {
+            let mut player_mut = player.borrow_mut();
+            player_mut.set_attack();
         }
 
         // update camera

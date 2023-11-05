@@ -3,4 +3,5 @@
 "_idle_animation_mesh":"characters/pickle_idle",
 "_walk_animation_mesh":"characters/pickle_walk",
 "_jump_animation_mesh":"characters/pickle_jump",
+"_attack_animation_mesh":"characters/pickle_attack",
 "_max_hp":100}

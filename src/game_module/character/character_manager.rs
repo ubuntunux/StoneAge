@@ -68,6 +68,7 @@ impl CharacterManager {
         let idle_animation = game_resources.get_engine_resources().get_mesh_data(&character_data.borrow()._idle_animation_mesh);
         let walk_animation = game_resources.get_engine_resources().get_mesh_data(&character_data.borrow()._walk_animation_mesh);
         let jump_animation = game_resources.get_engine_resources().get_mesh_data(&character_data.borrow()._jump_animation_mesh);
+        let attack_animation = game_resources.get_engine_resources().get_mesh_data(&character_data.borrow()._attack_animation_mesh);
         let id = self.generate_id();
         let character = newRcRefCell(Character::create_character_instance(
             id,
@@ -76,7 +77,8 @@ impl CharacterManager {
             &render_object_data,
             idle_animation,
             walk_animation,
-            jump_animation
+            jump_animation,
+            attack_animation
         ));
 
         if is_player {

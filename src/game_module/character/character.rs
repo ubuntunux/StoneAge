@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum AnimationState {
+    NONE,
     IDLE,
     WALK,
     JUMP,
@@ -41,6 +42,7 @@ pub struct CharacterData {
     pub _idle_animation_mesh: String,
     pub _walk_animation_mesh: String,
     pub _jump_animation_mesh: String,
+    pub _attack_animation_mesh: String,
     pub _max_hp: i32,
 }
 
@@ -78,4 +80,5 @@ pub struct Character {
     pub _idle_animation: RcRefCell<MeshData>,
     pub _walk_animation: RcRefCell<MeshData>,
     pub _jump_animation: RcRefCell<MeshData>,
+    pub _attack_animation: RcRefCell<MeshData>,
 }
