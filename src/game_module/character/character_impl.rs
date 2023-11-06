@@ -140,11 +140,12 @@ impl Character {
                 self._render_object.borrow_mut().set_animation(&self._walk_animation, &animation_info);
             },
             AnimationState::JUMP => {
-                animation_info._loop = false;
+                animation_info._animation_loop = false;
                 self._render_object.borrow_mut().set_animation(&self._jump_animation, &animation_info);
             },
             AnimationState::ATTACK => {
-                animation_info._loop = false;
+                animation_info._animation_loop = false;
+                animation_info._force_animation_setting = true;
                 self._render_object.borrow_mut().set_animation(&self._attack_animation, &animation_info);
             },
             _ => ()
