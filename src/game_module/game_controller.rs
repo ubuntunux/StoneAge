@@ -78,17 +78,17 @@ impl GameController {
         // update player control
         if is_left || is_right {
             let mut player_mut = player.borrow_mut();
-            player_mut.set_walk(is_left);
+            player_mut.set_move_walk(is_left);
         }
 
         if is_jump {
             let mut player_mut = player.borrow_mut();
-            player_mut.set_jump();
+            player_mut.set_move_jump();
         }
 
         if btn_left {
             let mut player_mut = player.borrow_mut();
-            player_mut.set_attack();
+            player_mut.set_action_attack();
         }
 
         // update camera

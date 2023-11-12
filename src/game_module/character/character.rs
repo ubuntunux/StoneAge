@@ -5,11 +5,16 @@ use rust_engine_3d::utilities::system::RcRefCell;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Copy, Debug, PartialEq)]
-pub enum AnimationState {
+pub enum MoveAnimationState {
     NONE,
     IDLE,
     WALK,
     JUMP,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum ActionAnimationState {
+    NONE,
     ATTACK
 }
 
@@ -76,7 +81,8 @@ pub struct Character {
     pub _render_object: RcRefCell<RenderObjectData>,
     pub _character_property: Box<CharacterProperty>,
     pub _controller: Box<CharacterController>,
-    pub _animation_state: AnimationState,
+    pub _move_animation_state: MoveAnimationState,
+    pub _action_animation_state: ActionAnimationState,
     pub _idle_animation: RcRefCell<MeshData>,
     pub _walk_animation: RcRefCell<MeshData>,
     pub _jump_animation: RcRefCell<MeshData>,

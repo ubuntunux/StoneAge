@@ -1,7 +1,7 @@
-use nalgebra::Vector3;
+use nalgebra::{Vector3};
 use rust_engine_3d::scene::animation::AnimationPlayArgs;
 use rust_engine_3d::scene::mesh::MeshData;
-use rust_engine_3d::scene::render_object::RenderObjectData;
+use rust_engine_3d::scene::render_object::{AnimationLayer, RenderObjectData};
 use rust_engine_3d::utilities::system::RcRefCell;
 
 use crate::game_module::character::character::*;
@@ -57,11 +57,11 @@ impl CharacterController {
         self._velocity.x == 0.0 && self._velocity.y == 0.0
     }
 
-    pub fn set_walk(&mut self, is_left: bool) {
+    pub fn set_move_walk(&mut self, is_left: bool) {
         self._move_direction = if is_left { -1.0 } else { 1.0 };
     }
 
-    pub fn set_jump(&mut self) {
+    pub fn set_move_jump(&mut self) {
         if self._is_ground {
             self._is_jump = true;
         }
@@ -116,7 +116,8 @@ impl Character {
             _render_object: render_object.clone(),
             _character_property: Box::new(CharacterProperty::create_character_property()),
             _controller: Box::new(CharacterController::create_character_controller()),
-            _animation_state: AnimationState::NONE,
+            _move_animation_state: MoveAnimationState::NONE,
+            _action_animation_state: ActionAnimationState::NONE,
             _idle_animation: idle_animation.clone(),
             _walk_animation: walk_animation.clone(),
             _jump_animation: jump_animation.clone(),
@@ -129,52 +130,126 @@ impl Character {
     }
     pub fn get_character_controller_mut(&mut self) -> &mut CharacterController { &mut self._controller }
 
-    pub fn set_animation(&mut self, animation_state: AnimationState) {
+    pub fn set_move_animation(&mut self, move_animation_state: MoveAnimationState) {
         let mut animation_info = AnimationPlayArgs::default();
-        log::info!("animation_state: {:?}", animation_state);
-        match animation_state {
-            AnimationState::IDLE => {
-                self._render_object.borrow_mut().set_animation(&self._idle_animation, &animation_info);
+        let mut render_object = self._render_object.borrow_mut();
+        match move_animation_state {
+            MoveAnimationState::IDLE => {
+                render_object.set_animation(&self._idle_animation, &animation_info, AnimationLayer::BaseLayer);
             },
-            AnimationState::WALK => {
-                self._render_object.borrow_mut().set_animation(&self._walk_animation, &animation_info);
+            MoveAnimationState::WALK => {
+                render_object.set_animation(&self._walk_animation, &animation_info, AnimationLayer::BaseLayer);
             },
-            AnimationState::JUMP => {
+            MoveAnimationState::JUMP => {
                 animation_info._animation_loop = false;
-                self._render_object.borrow_mut().set_animation(&self._jump_animation, &animation_info);
-            },
-            AnimationState::ATTACK => {
-                animation_info._animation_loop = false;
-                animation_info._force_animation_setting = true;
-                self._render_object.borrow_mut().set_animation(&self._attack_animation, &animation_info);
+                render_object.set_animation(&self._jump_animation, &animation_info, AnimationLayer::BaseLayer);
             },
             _ => ()
         }
-        self._animation_state = animation_state;
+        self._move_animation_state = move_animation_state;
     }
 
-    pub fn set_idle(&mut self) {
-        self.set_animation(AnimationState::IDLE);
+    pub fn set_action_animation(&mut self, action_animation_state: ActionAnimationState) {
+        let mut animation_info = AnimationPlayArgs::default();
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:Spine"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:Spine1"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:Spine2"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:Neck"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:Head"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:HeadTop_End"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:LeftEye"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:RightEye"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:Hair1"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:Hair2"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:Hair3"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:Hair4"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:LeftShoulder"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:LeftArm"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:LeftForeArm"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:LeftHand"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:LeftHandThumb1"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:LeftHandThumb2"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:LeftHandThumb3"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:LeftHandThumb4"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:LeftHandIndex1"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:LeftHandIndex2"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:LeftHandIndex3"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:LeftHandIndex4"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:LeftHandMiddle1"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:LeftHandMiddle2"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:LeftHandMiddle3"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:LeftHandMiddle4"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:LeftHandRing1"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:LeftHandRing2"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:LeftHandRing3"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:LeftHandRing4"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:LeftHandPinky1"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:LeftHandPinky2"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:LeftHandPinky3"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:LeftHandPinky4"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:RightShoulder"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:RightArm"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:RightForeArm"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:RightHand"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:RightHandThumb1"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:RightHandThumb2"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:RightHandThumb3"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:RightHandThumb4"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:RightHandIndex1"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:RightHandIndex2"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:RightHandIndex3"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:RightHandIndex4"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:RightHandMiddle1"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:RightHandMiddle2"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:RightHandMiddle3"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:RightHandMiddle4"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:RightHandRing1"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:RightHandRing2"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:RightHandRing3"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:RightHandRing4"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:RightHandPinky1"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:RightHandPinky2"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:RightHandPinky3"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:RightHandPinky4"), 1.0);
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:Weapon"), 1.0);
+
+        let mut render_object = self._render_object.borrow_mut();
+        match action_animation_state {
+            ActionAnimationState::ATTACK => {
+                animation_info._animation_loop = false;
+                animation_info._force_animation_setting = true;
+                render_object.set_animation(&self._attack_animation, &animation_info, AnimationLayer::AdditiveLayer);
+            },
+            _ => ()
+        }
+        self._action_animation_state = action_animation_state;
     }
 
-    pub fn set_walk(&mut self, is_left: bool) {
-        self.get_character_controller_mut().set_walk(is_left);
-        if AnimationState::ATTACK != self._animation_state &&
-            AnimationState::WALK != self._animation_state &&
+    pub fn set_move_idle(&mut self) {
+        self.set_move_animation(MoveAnimationState::IDLE);
+    }
+
+    pub fn set_move_walk(&mut self, is_left: bool) {
+        self.get_character_controller_mut().set_move_walk(is_left);
+        if MoveAnimationState::WALK != self._move_animation_state &&
             self.get_character_controller()._is_ground {
-            self.set_animation(AnimationState::WALK);
+            self.set_move_animation(MoveAnimationState::WALK);
         }
     }
 
-    pub fn set_attack(&mut self) {
-        self.set_animation(AnimationState::ATTACK);
-    }
-
-    pub fn set_jump(&mut self) {
+    pub fn set_move_jump(&mut self) {
         if self.get_character_controller()._is_ground {
-            self.get_character_controller_mut().set_jump();
-            self.set_animation(AnimationState::JUMP);
+            self.get_character_controller_mut().set_move_jump();
+            self.set_move_animation(MoveAnimationState::JUMP);
         }
+    }
+
+    pub fn set_action_idle(&mut self) {
+        self.set_action_animation(ActionAnimationState::NONE);
+    }
+
+    pub fn set_action_attack(&mut self) {
+        self.set_action_animation(ActionAnimationState::ATTACK);
     }
 
     pub fn update_transform(&mut self) {
@@ -189,14 +264,15 @@ impl Character {
         self.get_character_controller_mut().update_character_controller(delta_time);
         self.update_transform();
 
-        if AnimationState::ATTACK == self._animation_state {
-            if self._render_object.borrow()._animation_play_info.as_ref().unwrap()._is_animation_end {
-                self.set_idle();
-            }
-        } else if AnimationState::ATTACK != self._animation_state &&
-            AnimationState::IDLE != self._animation_state &&
+        if MoveAnimationState::IDLE != self._move_animation_state &&
             self.get_character_controller().is_stop() {
-            self.set_idle();
+            self.set_move_idle();
+        }
+
+        if ActionAnimationState::ATTACK == self._action_animation_state {
+            if self._render_object.borrow()._animation_play_infos[AnimationLayer::AdditiveLayer as usize]._is_animation_end {
+                self.set_action_idle();
+            }
         }
     }
 }
