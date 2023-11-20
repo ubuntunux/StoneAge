@@ -151,6 +151,7 @@ impl Character {
 
     pub fn set_action_animation(&mut self, action_animation_state: ActionAnimationState) {
         let mut animation_info = AnimationPlayArgs::default();
+        animation_info._animation_blend_masks.insert(String::from("mixamorig:Hips"), 0.5);
         animation_info._animation_blend_masks.insert(String::from("mixamorig:Spine"), 1.0);
         animation_info._animation_blend_masks.insert(String::from("mixamorig:Spine1"), 1.0);
         animation_info._animation_blend_masks.insert(String::from("mixamorig:Spine2"), 1.0);
