@@ -1,14 +1,13 @@
-use std::cell::RefCell;
-
 use nalgebra::Vector2;
 use rust_engine_3d::core::engine_core::TimeData;
 use rust_engine_3d::core::input::{KeyboardInputData, MouseInputData, MouseMoveData};
 use rust_engine_3d::scene::camera::CameraObjectData;
-use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
+use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use winit::event::VirtualKeyCode;
 
 use crate::application::application::Application;
-use crate::game_module::character::character::Character;
+use crate::game_module::character::character::CharacterBase;
+use crate::game_module::character::player::Player;
 use crate::game_module::game_client::GameClient;
 use crate::game_module::game_constants::CAMERA_DISTANCE_MAX;
 use crate::game_module::game_ui_manager::GameUIManager;
@@ -65,7 +64,7 @@ impl GameController {
         mouse_input_data: &MouseInputData,
         _mouse_delta: &Vector2<f32>,
         main_camera: &mut CameraObjectData,
-        player: &RefCell<Character>
+        player: &RcRefCell<Player>
     ) {
         let btn_left: bool = mouse_input_data._btn_l_pressed;
         let _btn_right: bool = mouse_input_data._btn_r_pressed;
@@ -74,25 +73,23 @@ impl GameController {
         let is_right = keyboard_input_data.get_key_hold(VirtualKeyCode::Right) | keyboard_input_data.get_key_hold(VirtualKeyCode::D);
         let is_jump = keyboard_input_data.get_key_hold(VirtualKeyCode::Up) | keyboard_input_data.get_key_hold(VirtualKeyCode::W) | keyboard_input_data.get_key_hold(VirtualKeyCode::Space);
         let _modifier_keys_ctrl = keyboard_input_data.get_key_hold(VirtualKeyCode::LControl);
+        let mut player_mut = player.borrow_mut();
 
         // update player control
         if is_left || is_right {
-            let mut player_mut = player.borrow_mut();
             player_mut.set_move_walk(is_left);
         }
 
         if is_jump {
-            let mut player_mut = player.borrow_mut();
             player_mut.set_move_jump();
         }
 
         if btn_left {
-            let mut player_mut = player.borrow_mut();
             player_mut.set_action_attack();
         }
 
         // update camera
-        let camera_position = &player.borrow().get_character_controller()._position - main_camera._transform_object.get_front() * CAMERA_DISTANCE_MAX;
+        let camera_position = player_mut.get_position() - main_camera._transform_object.get_front() * CAMERA_DISTANCE_MAX;
         main_camera._transform_object.set_position(&camera_position);
         main_camera._transform_object.set_pitch(0.0);
         main_camera._transform_object.set_yaw(0.0);

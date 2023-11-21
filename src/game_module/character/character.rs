@@ -89,3 +89,12 @@ pub struct Character {
     pub _attack_animation: RcRefCell<MeshData>,
     pub _animation_blend_masks: *const AnimationBlendMasks
 }
+
+pub trait CharacterBase {
+    fn set_move_idle(&mut self);
+    fn set_move_walk(&mut self, is_left: bool);
+    fn set_move_jump(&mut self);
+    fn set_action_attack(&mut self);
+    fn get_position(&self) -> &Vector3<f32>;
+    fn update_character(&mut self, delta_time: f32);
+}

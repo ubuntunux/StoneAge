@@ -109,9 +109,12 @@ impl Character {
         walk_animation: &RcRefCell<MeshData>,
         jump_animation: &RcRefCell<MeshData>,
         attack_animation: &RcRefCell<MeshData>,
-        animation_blend_masks: *const AnimationBlendMasks
+        animation_blend_masks: *const AnimationBlendMasks,
+        position: &Vector3<f32>,
+        rotation: &Vector3<f32>,
+        scale: &Vector3<f32>
     ) -> Character {
-        Character {
+        let mut character = Character {
             _character_id: character_id,
             _character_name: String::from(character_name),
             _character_data: character_data.clone(),
@@ -125,7 +128,11 @@ impl Character {
             _jump_animation: jump_animation.clone(),
             _attack_animation: attack_animation.clone(),
             _animation_blend_masks: animation_blend_masks
-        }
+        };
+        character._controller._position.clone_from(position);
+        character._controller._rotation.clone_from(rotation);
+        character._controller._scale.clone_from(scale);
+        character
     }
     pub fn get_character_id(&self) -> u64 { self._character_id }
     pub fn get_character_controller(&self) -> &CharacterController {
