@@ -6,8 +6,7 @@ use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use winit::event::VirtualKeyCode;
 
 use crate::application::application::Application;
-use crate::game_module::character::character::CharacterBase;
-use crate::game_module::character::player::Player;
+use crate::game_module::character::character::Character;
 use crate::game_module::game_client::GameClient;
 use crate::game_module::game_constants::CAMERA_DISTANCE_MAX;
 use crate::game_module::game_ui_manager::GameUIManager;
@@ -64,7 +63,7 @@ impl GameController {
         mouse_input_data: &MouseInputData,
         _mouse_delta: &Vector2<f32>,
         main_camera: &mut CameraObjectData,
-        player: &RcRefCell<Player>
+        player: &RcRefCell<Character>
     ) {
         let btn_left: bool = mouse_input_data._btn_l_pressed;
         let _btn_right: bool = mouse_input_data._btn_r_pressed;

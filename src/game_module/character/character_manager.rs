@@ -6,13 +6,12 @@ use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, Rc
 
 use crate::application::application::Application;
 use crate::game_module::character::animation_blend_mask::AnimationBlendMasks;
-use crate::game_module::character::character::{Character, CharacterBase, CharacterCreateInfo};
-use crate::game_module::character::player::Player;
+use crate::game_module::character::character::{Character, CharacterCreateInfo};
 use crate::game_module::game_client::GameClient;
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
 
-pub type CharacterMap = HashMap<u64, RcRefCell<dyn CharacterBase>>;
+pub type CharacterMap = HashMap<u64, RcRefCell<Character>>;
 
 pub struct CharacterManager {
     pub _game_client: *const GameClient,
@@ -20,7 +19,7 @@ pub struct CharacterManager {
     pub _game_resources: *const GameResources,
     pub _animation_blend_masks: Box<AnimationBlendMasks>,
     pub _id_generator: u64,
-    pub _player: Option<RcRefCell<Player>>,
+    pub _player: Option<RcRefCell<Character>>,
     pub _characters: CharacterMap
 }
 
@@ -55,10 +54,10 @@ impl CharacterManager {
         self._id_generator += 1;
         id
     }
-    pub fn get_character(&self, character_id: u64) -> Option<&RcRefCell<dyn CharacterBase>> {
+    pub fn get_character(&self, character_id: u64) -> Option<&RcRefCell<Character>> {
         self._characters.get(&character_id)
     }
-    pub fn create_character(&mut self, character_name: &str, character_create_info: &CharacterCreateInfo, is_player: bool) -> RcRefCell<dyn CharacterBase> {
+    pub fn create_character(&mut self, character_name: &str, character_create_info: &CharacterCreateInfo, is_player: bool) -> RcRefCell<Character> {
         let game_resources = ptr_as_ref(self._game_resources);
         let character_data = game_resources.get_character_data(character_create_info._character_data_name.as_str());
         let render_object_create_info = RenderObjectCreateInfo {
@@ -74,7 +73,7 @@ impl CharacterManager {
         let jump_animation = game_resources.get_engine_resources().get_mesh_data(&character_data.borrow()._jump_animation_mesh);
         let attack_animation = game_resources.get_engine_resources().get_mesh_data(&character_data.borrow()._attack_animation_mesh);
         let id = self.generate_id();
-        let behavior = Box::new(Character::create_character_instance(
+        let character = newRcRefCell(Character::create_character_instance(
             id,
             character_name,
             character_data,
@@ -88,8 +87,6 @@ impl CharacterManager {
             &character_create_info._rotation,
             &character_create_info._scale
         ));
-        let character = newRcRefCell(Player::create_player(behavior));
-
         if is_player {
             self._player = Some(character.clone());
         }
@@ -99,7 +96,7 @@ impl CharacterManager {
     pub fn remove_character(&mut self, character: &mut Character) {
         self._characters.remove(&character.get_character_id());
     }
-    pub fn get_player(&self) -> &RcRefCell<Player> {
+    pub fn get_player(&self) -> &RcRefCell<Character> {
         self._player.as_ref().unwrap()
     }
     pub fn update_character_manager(&mut self, _engine_core: &EngineCore, delta_time: f64) {

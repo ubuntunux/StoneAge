@@ -135,10 +135,6 @@ impl Character {
         character
     }
     pub fn get_character_id(&self) -> u64 { self._character_id }
-    pub fn get_character_controller(&self) -> &CharacterController {
-        &self._controller
-    }
-    pub fn get_character_controller_mut(&mut self) -> &mut CharacterController { &mut self._controller }
 
     pub fn set_move_animation(&mut self, move_animation_state: MoveAnimationState) {
         let mut animation_info = AnimationPlayArgs::default();
@@ -179,16 +175,16 @@ impl Character {
     }
 
     pub fn set_move_walk(&mut self, is_left: bool) {
-        self.get_character_controller_mut().set_move_walk(is_left);
+        self._controller.set_move_walk(is_left);
         if MoveAnimationState::WALK != self._move_animation_state &&
-            self.get_character_controller()._is_ground {
+            self._controller._is_ground {
             self.set_move_animation(MoveAnimationState::WALK);
         }
     }
 
     pub fn set_move_jump(&mut self) {
-        if self.get_character_controller()._is_ground {
-            self.get_character_controller_mut().set_move_jump();
+        if self._controller._is_ground {
+            self._controller.set_move_jump();
             self.set_move_animation(MoveAnimationState::JUMP);
         }
     }
@@ -201,20 +197,23 @@ impl Character {
         self.set_action_animation(ActionAnimationState::ATTACK);
     }
 
+    pub fn get_position(&self) -> &Vector3<f32> {
+        &self._controller._position
+    }
+
     pub fn update_transform(&mut self) {
-        let controller = self.get_character_controller();
         let mut render_object = self._render_object.borrow_mut();
-        render_object._transform_object.set_position(&controller._position);
-        render_object._transform_object.set_rotation(&controller._rotation);
-        render_object._transform_object.set_scale(&controller._scale);
+        render_object._transform_object.set_position(&self._controller._position);
+        render_object._transform_object.set_rotation(&self._controller._rotation);
+        render_object._transform_object.set_scale(&self._controller._scale);
     }
 
     pub fn update_character(&mut self, delta_time: f32) {
-        self.get_character_controller_mut().update_character_controller(delta_time);
+        self._controller.update_character_controller(delta_time);
         self.update_transform();
 
         if MoveAnimationState::IDLE != self._move_animation_state &&
-            self.get_character_controller().is_stop() {
+            self._controller.is_stop() {
             self.set_move_idle();
         }
 
