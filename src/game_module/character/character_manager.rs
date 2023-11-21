@@ -5,6 +5,7 @@ use rust_engine_3d::scene::render_object::RenderObjectCreateInfo;
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
 
 use crate::application::application::Application;
+use crate::game_module::character::animation_blend_mask::AnimationBlendMasks;
 use crate::game_module::character::character::{Character, CharacterCreateInfo};
 use crate::game_module::game_client::GameClient;
 use crate::game_module::game_resource::GameResources;
@@ -16,6 +17,7 @@ pub struct CharacterManager {
     pub _game_client: *const GameClient,
     pub _game_scene_manager: *const GameSceneManager,
     pub _game_resources: *const GameResources,
+    pub _animation_blend_masks: Box<AnimationBlendMasks>,
     pub _id_generator: u64,
     pub _player: Option<RcRefCell<Character>>,
     pub _characters: CharacterMap
@@ -27,6 +29,7 @@ impl CharacterManager {
             _game_client: std::ptr::null(),
             _game_scene_manager: std::ptr::null(),
             _game_resources: std::ptr::null(),
+            _animation_blend_masks: Box::new(AnimationBlendMasks::create_animation_blend_maks()),
             _id_generator: 0,
             _player: None,
             _characters: HashMap::new(),
@@ -78,7 +81,8 @@ impl CharacterManager {
             idle_animation,
             walk_animation,
             jump_animation,
-            attack_animation
+            attack_animation,
+            self._animation_blend_masks.as_ref()
         ));
 
         if is_player {

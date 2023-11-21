@@ -2,7 +2,8 @@ use nalgebra::{Vector3};
 use rust_engine_3d::scene::animation::AnimationPlayArgs;
 use rust_engine_3d::scene::mesh::MeshData;
 use rust_engine_3d::scene::render_object::{AnimationLayer, RenderObjectData};
-use rust_engine_3d::utilities::system::RcRefCell;
+use rust_engine_3d::utilities::system::{ptr_as_ref, RcRefCell};
+use crate::game_module::character::animation_blend_mask::AnimationBlendMasks;
 
 use crate::game_module::character::character::*;
 use crate::game_module::game_constants::{GRAVITY, GROUND_HEIGHT, PLAYER_JUMP_SPEED, PLAYER_MOVE_SPEED};
@@ -107,7 +108,8 @@ impl Character {
         idle_animation: &RcRefCell<MeshData>,
         walk_animation: &RcRefCell<MeshData>,
         jump_animation: &RcRefCell<MeshData>,
-        attack_animation: &RcRefCell<MeshData>
+        attack_animation: &RcRefCell<MeshData>,
+        animation_blend_masks: *const AnimationBlendMasks
     ) -> Character {
         Character {
             _character_id: character_id,
@@ -122,6 +124,7 @@ impl Character {
             _walk_animation: walk_animation.clone(),
             _jump_animation: jump_animation.clone(),
             _attack_animation: attack_animation.clone(),
+            _animation_blend_masks: animation_blend_masks
         }
     }
     pub fn get_character_id(&self) -> u64 { self._character_id }
@@ -151,69 +154,7 @@ impl Character {
 
     pub fn set_action_animation(&mut self, action_animation_state: ActionAnimationState) {
         let mut animation_info = AnimationPlayArgs::default();
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:Hips"), 0.5);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:Spine"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:Spine1"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:Spine2"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:Neck"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:Head"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:HeadTop_End"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:LeftEye"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:RightEye"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:Hair1"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:Hair2"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:Hair3"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:Hair4"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:LeftShoulder"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:LeftArm"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:LeftForeArm"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:LeftHand"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:LeftHandThumb1"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:LeftHandThumb2"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:LeftHandThumb3"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:LeftHandThumb4"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:LeftHandIndex1"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:LeftHandIndex2"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:LeftHandIndex3"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:LeftHandIndex4"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:LeftHandMiddle1"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:LeftHandMiddle2"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:LeftHandMiddle3"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:LeftHandMiddle4"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:LeftHandRing1"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:LeftHandRing2"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:LeftHandRing3"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:LeftHandRing4"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:LeftHandPinky1"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:LeftHandPinky2"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:LeftHandPinky3"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:LeftHandPinky4"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:RightShoulder"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:RightArm"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:RightForeArm"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:RightHand"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:RightHandThumb1"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:RightHandThumb2"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:RightHandThumb3"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:RightHandThumb4"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:RightHandIndex1"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:RightHandIndex2"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:RightHandIndex3"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:RightHandIndex4"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:RightHandMiddle1"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:RightHandMiddle2"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:RightHandMiddle3"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:RightHandMiddle4"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:RightHandRing1"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:RightHandRing2"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:RightHandRing3"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:RightHandRing4"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:RightHandPinky1"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:RightHandPinky2"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:RightHandPinky3"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:RightHandPinky4"), 1.0);
-        animation_info._animation_blend_masks.insert(String::from("mixamorig:Weapon"), 1.0);
-
+        animation_info._animation_blend_masks = &ptr_as_ref(self._animation_blend_masks)._upper_animation_mask;
         let mut render_object = self._render_object.borrow_mut();
         match action_animation_state {
             ActionAnimationState::ATTACK => {
