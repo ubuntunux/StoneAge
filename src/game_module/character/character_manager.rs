@@ -6,7 +6,7 @@ use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, Rc
 
 use crate::application::application::Application;
 use crate::game_module::character::animation_blend_mask::AnimationBlendMasks;
-use crate::game_module::character::character::{Character, CharacterCreateInfo};
+use crate::game_module::character::character::{ActionAnimationState, Character, CharacterCreateInfo};
 use crate::game_module::game_client::GameClient;
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
@@ -65,7 +65,7 @@ impl CharacterManager {
             ..Default::default()
         };
         let render_object_data = self.get_game_scene_manager().get_scene_manager_mut().add_skeletal_render_object(
-            character_create_info._character_data_name.as_str(),
+            character_name,
             &render_object_create_info
         );
         let idle_animation = game_resources.get_engine_resources().get_mesh_data(&character_data.borrow()._idle_animation_mesh);
@@ -75,6 +75,7 @@ impl CharacterManager {
         let id = self.generate_id();
         let character = newRcRefCell(Character::create_character_instance(
             id,
+            is_player,
             character_name,
             character_data,
             &render_object_data,
@@ -91,18 +92,30 @@ impl CharacterManager {
             self._player = Some(character.clone());
         }
         self._characters.insert(id, character.clone());
+        character.borrow_mut().set_move_walk(true);
         character
     }
-    pub fn remove_character(&mut self, character: &mut Character) {
-        self._characters.remove(&character.get_character_id());
+    pub fn remove_character(&mut self, character: &RcRefCell<Character>) {
+        self._characters.remove(&character.borrow().get_character_id());
+        self.get_game_scene_manager().get_scene_manager_mut().remove_skeletal_render_object(&character.borrow()._character_name);
     }
     pub fn get_player(&self) -> &RcRefCell<Character> {
         self._player.as_ref().unwrap()
     }
     pub fn update_character_manager(&mut self, _engine_core: &EngineCore, delta_time: f64) {
+        let mut dead_characters: Vec<RcRefCell<Character>> = Vec::new();
+        let player = ptr_as_ref(self._player.as_ref().unwrap().as_ptr());
+
         for character in self._characters.values() {
             let mut character_mut = character.borrow_mut();
             character_mut.update_character(delta_time as f32);
+            if character_mut._character_id != player._character_id && player.is_action(ActionAnimationState::ATTACK) {
+                dead_characters.push(character.clone());
+            }
+        }
+
+        for character in dead_characters.iter_mut() {
+            self.remove_character(character);
         }
     }
 }

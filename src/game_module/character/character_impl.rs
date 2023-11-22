@@ -39,7 +39,7 @@ impl CharacterController {
             _scale: Vector3::new(1.0, 1.0, 1.0),
             _velocity: Vector3::zeros(),
             _is_jump: false,
-            _is_ground: true,
+            _is_ground: false,
             _move_direction: 0.0
         }
     }
@@ -102,6 +102,7 @@ impl CharacterController {
 impl Character {
     pub fn create_character_instance(
         character_id: u64,
+        is_player: bool,
         character_name: &str,
         character_data: &RcRefCell<CharacterData>,
         render_object: &RcRefCell<RenderObjectData>,
@@ -116,6 +117,7 @@ impl Character {
     ) -> Character {
         let mut character = Character {
             _character_id: character_id,
+            _is_player: is_player,
             _character_name: String::from(character_name),
             _character_data: character_data.clone(),
             _render_object: render_object.clone(),
@@ -197,6 +199,10 @@ impl Character {
         self.set_action_animation(ActionAnimationState::ATTACK);
     }
 
+    pub fn is_action(&self, action: ActionAnimationState) -> bool {
+        action == self._action_animation_state
+    }
+
     pub fn get_position(&self) -> &Vector3<f32> {
         &self._controller._position
     }
@@ -217,7 +223,7 @@ impl Character {
             self.set_move_idle();
         }
 
-        if ActionAnimationState::ATTACK == self._action_animation_state {
+        if self.is_action(ActionAnimationState::ATTACK) {
             if self._render_object.borrow()._animation_play_infos[AnimationLayer::AdditiveLayer as usize]._is_animation_end {
                 self.set_action_idle();
             }

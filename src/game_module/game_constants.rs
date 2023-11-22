@@ -11,4 +11,4 @@ pub const CAMERA_DISTANCE_MAX: f32 = 10.0;
 pub const PLAYER_MOVE_SPEED: f32 = 5.0;
 pub const PLAYER_JUMP_SPEED: f32 = 12.0;
 pub const GRAVITY: f32 = 30.0;
-pub const GROUND_HEIGHT: f32 = 1.0;
+pub const GROUND_HEIGHT: f32 = 10.0;

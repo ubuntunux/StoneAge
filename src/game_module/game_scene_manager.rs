@@ -18,6 +18,7 @@ type CharacterCreateInfoMap = HashMap<String, CharacterCreateInfo>;
 #[serde(default)]
 pub struct GameSceneDataCreateInfo {
     pub _scene_data_name: String,
+    pub _player: CharacterCreateInfoMap,
     pub _characters: CharacterCreateInfoMap,
     pub _start_point: Vector3<f32>,
 }
@@ -83,9 +84,12 @@ impl GameSceneManager {
             .open_scene_data(scene_data_name);
 
         // character
+        let character_manager = ptr_as_mut(self._character_manager);
+        for (character_name, character_create_info) in game_scene_data._player.iter() {
+            character_manager.create_character(character_name, character_create_info, true);
+        }
         for (character_name, character_create_info) in game_scene_data._characters.iter() {
-            let is_player = true;
-            ptr_as_mut(self._character_manager).create_character(character_name, character_create_info, is_player);
+            character_manager.create_character(character_name, character_create_info, false);
         }
     }
 

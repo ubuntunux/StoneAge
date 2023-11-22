@@ -77,6 +77,7 @@ pub struct CharacterCreateInfo {
 pub struct Character {
     pub _character_name: String,
     pub _character_id: u64,
+    pub _is_player: bool,
     pub _character_data: RcRefCell<CharacterData>,
     pub _render_object: RcRefCell<RenderObjectData>,
     pub _character_property: Box<CharacterProperty>,

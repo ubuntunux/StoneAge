@@ -1,5 +1,8 @@
 {"_scene_data_name":"intro_stage",
+"_player":{
+    "player": {"_character_data_name":"pickle", "_position":[2.0,1.0,0.0], "_rotation":[0.0,0.0,0.0], "_scale":[1.0,1.0,1.0]}
+},
 "_characters":{
-    "pickle": {"_character_data_name":"pickle", "_position":[0.0,1.0,0.0], "_rotation":[0.0,0.0,0.0], "_scale":[1.0,1.0,1.0]}
+    "enemy00": {"_character_data_name":"pickle", "_position":[2.0,1.0,0.0], "_rotation":[0.0,0.0,0.0], "_scale":[1.0,1.0,1.0]}
 },
 "_start_point":[0.0,1.0,0.0]}
