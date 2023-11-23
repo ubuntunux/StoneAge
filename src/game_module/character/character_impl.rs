@@ -159,9 +159,7 @@ impl Character {
 
     pub fn set_action_animation(&mut self, action_animation_state: ActionAnimationState) {
         let mut animation_info = AnimationPlayArgs::default();
-        if MoveAnimationState::IDLE != self._move_animation_state {
-            animation_info._animation_blend_masks = &ptr_as_ref(self._animation_blend_masks)._upper_animation_mask;
-        }
+        animation_info._animation_blend_masks = &ptr_as_ref(self._animation_blend_masks)._upper_animation_mask;
         let mut render_object = self._render_object.borrow_mut();
         match action_animation_state {
             ActionAnimationState::ATTACK => {
