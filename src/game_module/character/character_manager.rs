@@ -92,7 +92,6 @@ impl CharacterManager {
             self._player = Some(character.clone());
         }
         self._characters.insert(id, character.clone());
-        character.borrow_mut().set_move_walk(true);
         character
     }
     pub fn remove_character(&mut self, character: &RcRefCell<Character>) {

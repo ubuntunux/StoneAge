@@ -2,7 +2,7 @@ use nalgebra::{Vector3};
 use rust_engine_3d::scene::animation::AnimationPlayArgs;
 use rust_engine_3d::scene::mesh::MeshData;
 use rust_engine_3d::scene::render_object::{AnimationLayer, RenderObjectData};
-use rust_engine_3d::utilities::system::{ptr_as_ref, RcRefCell};
+use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use crate::game_module::character::animation_blend_mask::AnimationBlendMasks;
 
 use crate::game_module::character::character::*;
@@ -155,21 +155,30 @@ impl Character {
             _ => ()
         }
         self._move_animation_state = move_animation_state;
+        self.update_animation_blend_masks();
     }
 
     pub fn set_action_animation(&mut self, action_animation_state: ActionAnimationState) {
         let mut animation_info = AnimationPlayArgs::default();
-        animation_info._animation_blend_masks = &ptr_as_ref(self._animation_blend_masks)._upper_animation_mask;
         let mut render_object = self._render_object.borrow_mut();
+        let additive_animation_play_info = render_object.get_animation_play_info(AnimationLayer::AdditiveLayer);
         match action_animation_state {
             ActionAnimationState::ATTACK => {
-                animation_info._animation_loop = false;
-                animation_info._force_animation_setting = true;
-                render_object.set_animation(&self._attack_animation, &animation_info, AnimationLayer::AdditiveLayer);
+                if self._action_animation_state == ActionAnimationState::NONE || 0.15 < additive_animation_play_info._animation_play_time {
+                    animation_info._animation_loop = false;
+                    animation_info._force_animation_setting = true;
+                    animation_info._animation_fade_out_time = 0.1;
+                    render_object.set_animation(&self._attack_animation, &animation_info, AnimationLayer::AdditiveLayer);
+                }
             },
             _ => ()
         }
         self._action_animation_state = action_animation_state;
+        self.update_animation_blend_masks();
+    }
+
+    pub fn is_move_state(&self, move_state: MoveAnimationState) -> bool {
+        move_state == self._move_animation_state
     }
 
     pub fn set_move_idle(&mut self) {
@@ -178,8 +187,7 @@ impl Character {
 
     pub fn set_move_walk(&mut self, is_left: bool) {
         self._controller.set_move_walk(is_left);
-        if MoveAnimationState::WALK != self._move_animation_state &&
-            self._controller._is_ground {
+        if false == self.is_move_state(MoveAnimationState::WALK) && self._controller._is_ground {
             self.set_move_animation(MoveAnimationState::WALK);
         }
     }
@@ -191,16 +199,16 @@ impl Character {
         }
     }
 
+    pub fn is_action(&self, action: ActionAnimationState) -> bool {
+        action == self._action_animation_state
+    }
+
     pub fn set_action_idle(&mut self) {
         self.set_action_animation(ActionAnimationState::NONE);
     }
 
     pub fn set_action_attack(&mut self) {
         self.set_action_animation(ActionAnimationState::ATTACK);
-    }
-
-    pub fn is_action(&self, action: ActionAnimationState) -> bool {
-        action == self._action_animation_state
     }
 
     pub fn get_position(&self) -> &Vector3<f32> {
@@ -214,17 +222,35 @@ impl Character {
         render_object._transform_object.set_scale(&self._controller._scale);
     }
 
+    pub fn update_animation_blend_masks(&self) {
+        let render_object = ptr_as_mut(self._render_object.as_ptr());
+        if self.is_action(ActionAnimationState::ATTACK) {
+            let additive_animation_play_info = render_object.get_animation_play_info(AnimationLayer::AdditiveLayer);
+            if false == additive_animation_play_info._is_animation_end {
+                if self.is_move_state(MoveAnimationState::IDLE) {
+                    render_object.clear_animation_blend_masks(AnimationLayer::AdditiveLayer);
+                } else {
+                    render_object.set_animation_blend_masks(
+                        &ptr_as_ref(self._animation_blend_masks)._upper_animation_mask,
+                        AnimationLayer::AdditiveLayer
+                    );
+                }
+            }
+        }
+    }
+
     pub fn update_character(&mut self, delta_time: f32) {
         self._controller.update_character_controller(delta_time);
         self.update_transform();
 
-        if MoveAnimationState::IDLE != self._move_animation_state &&
-            self._controller.is_stop() {
+        let animation_play_infos = &ptr_as_ref(self._render_object.as_ptr())._animation_play_infos;
+
+        if false == self.is_move_state(MoveAnimationState::IDLE) && self._controller.is_stop() {
             self.set_move_idle();
         }
 
         if self.is_action(ActionAnimationState::ATTACK) {
-            if self._render_object.borrow()._animation_play_infos[AnimationLayer::AdditiveLayer as usize]._is_animation_end {
+            if animation_play_infos[AnimationLayer::AdditiveLayer as usize]._is_animation_end {
                 self.set_action_idle();
             }
         }
