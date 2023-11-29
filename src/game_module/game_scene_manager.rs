@@ -83,11 +83,13 @@ impl GameSceneManager {
         self.get_scene_manager_mut()
             .open_scene_data(scene_data_name);
 
-        // character
+        // create player
         let character_manager = ptr_as_mut(self._character_manager);
         for (character_name, character_create_info) in game_scene_data._player.iter() {
             character_manager.create_character(character_name, character_create_info, true);
         }
+
+        // create npc
         for (character_name, character_create_info) in game_scene_data._characters.iter() {
             character_manager.create_character(character_name, character_create_info, false);
         }

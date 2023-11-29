@@ -6,7 +6,7 @@ use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use crate::game_module::character::animation_blend_mask::AnimationBlendMasks;
 
 use crate::game_module::character::character::*;
-use crate::game_module::game_constants::{GRAVITY, GROUND_HEIGHT, PLAYER_JUMP_SPEED, PLAYER_MOVE_SPEED};
+use crate::game_module::game_constants::{CONTINUOUS_ATTACK_TIME, GRAVITY, GROUND_HEIGHT, PLAYER_JUMP_SPEED, PLAYER_MOVE_SPEED};
 
 
 impl Default for CharacterData {
@@ -164,7 +164,7 @@ impl Character {
         let additive_animation_play_info = render_object.get_animation_play_info(AnimationLayer::AdditiveLayer);
         match action_animation_state {
             ActionAnimationState::ATTACK => {
-                if self._action_animation_state == ActionAnimationState::NONE || 0.15 < additive_animation_play_info._animation_play_time {
+                if self._action_animation_state == ActionAnimationState::NONE || CONTINUOUS_ATTACK_TIME < additive_animation_play_info._animation_play_time {
                     animation_info._animation_loop = false;
                     animation_info._force_animation_setting = true;
                     animation_info._animation_fade_out_time = 0.1;
