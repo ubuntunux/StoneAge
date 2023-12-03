@@ -102,14 +102,20 @@ impl CharacterManager {
         self._player.as_ref().unwrap()
     }
     pub fn update_character_manager(&mut self, _engine_core: &EngineCore, delta_time: f64) {
-        let mut dead_characters: Vec<RcRefCell<Character>> = Vec::new();
-        let player = ptr_as_ref(self._player.as_ref().unwrap().as_ptr());
-
         for character in self._characters.values() {
             let mut character_mut = character.borrow_mut();
             character_mut.update_character(delta_time as f32);
-            if character_mut._character_id != player._character_id && player.is_action(ActionAnimationState::ATTACK) {
-                dead_characters.push(character.clone());
+        }
+
+        let mut dead_characters: Vec<RcRefCell<Character>> = Vec::new();
+        let player = ptr_as_ref(self._player.as_ref().unwrap().as_ptr());
+        for character in self._characters.values() {
+            let character_ref = character.borrow_mut();
+            if character_ref._character_id != player._character_id && player.is_action(ActionAnimationState::ATTACK) {
+                let dist = (character_ref.get_position() - player.get_position()).norm();
+                if dist < 1.0 {
+                    dead_characters.push(character.clone());
+                }
             }
         }
 

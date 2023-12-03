@@ -98,6 +98,22 @@ impl CharacterController {
     }
 }
 
+impl CharacterBehavior {
+    pub fn create_character_behavior() -> CharacterBehavior {
+        CharacterBehavior {
+            _move_time: 0.0,
+        }
+    }
+
+    pub fn update_behavior(&mut self, character: &mut Character, delta_time: f32) {
+        character.set_move_walk(self._move_time < 2.0);
+        self._move_time += delta_time;
+        if 4.0 <= self._move_time {
+            self._move_time = 0.0;
+        }
+    }
+}
+
 
 impl Character {
     pub fn create_character_instance(
@@ -123,6 +139,7 @@ impl Character {
             _render_object: render_object.clone(),
             _character_property: Box::new(CharacterProperty::create_character_property()),
             _controller: Box::new(CharacterController::create_character_controller()),
+            _behavior: Box::new(CharacterBehavior::create_character_behavior()),
             _move_animation_state: MoveAnimationState::NONE,
             _action_animation_state: ActionAnimationState::NONE,
             _idle_animation: idle_animation.clone(),
@@ -240,6 +257,10 @@ impl Character {
     }
 
     pub fn update_character(&mut self, delta_time: f32) {
+        if false == self._is_player {
+            self._behavior.update_behavior(ptr_as_mut(self), delta_time);
+        }
+
         self._controller.update_character_controller(delta_time);
         self.update_transform();
 

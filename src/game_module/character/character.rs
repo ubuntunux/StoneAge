@@ -65,6 +65,10 @@ pub struct CharacterController {
     pub _move_direction: f32
 }
 
+pub struct CharacterBehavior {
+    pub _move_time: f32
+}
+
 #[derive(Serialize, Deserialize, Default, Debug, Clone, PartialEq)]
 #[serde(default)]
 pub struct CharacterCreateInfo {
@@ -82,6 +86,7 @@ pub struct Character {
     pub _render_object: RcRefCell<RenderObjectData>,
     pub _character_property: Box<CharacterProperty>,
     pub _controller: Box<CharacterController>,
+    pub _behavior: Box<CharacterBehavior>,
     pub _move_animation_state: MoveAnimationState,
     pub _action_animation_state: ActionAnimationState,
     pub _idle_animation: RcRefCell<MeshData>,
