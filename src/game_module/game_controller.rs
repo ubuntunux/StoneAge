@@ -8,7 +8,7 @@ use winit::event::VirtualKeyCode;
 use crate::application::application::Application;
 use crate::game_module::character::character::Character;
 use crate::game_module::game_client::GameClient;
-use crate::game_module::game_constants::CAMERA_DISTANCE_MAX;
+use crate::game_module::game_constants::*;
 use crate::game_module::game_ui_manager::GameUIManager;
 
 pub struct GameController {

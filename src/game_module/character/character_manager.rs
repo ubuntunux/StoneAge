@@ -6,7 +6,7 @@ use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, Rc
 
 use crate::application::application::Application;
 use crate::game_module::character::animation_blend_mask::AnimationBlendMasks;
-use crate::game_module::character::character::{ActionAnimationState, Character, CharacterCreateInfo};
+use crate::game_module::character::character::{Character, CharacterCreateInfo};
 use crate::game_module::game_client::GameClient;
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
@@ -111,7 +111,7 @@ impl CharacterManager {
         let player = ptr_as_ref(self._player.as_ref().unwrap().as_ptr());
         for character in self._characters.values() {
             let character_ref = character.borrow_mut();
-            if character_ref._character_id != player._character_id && player.is_action(ActionAnimationState::ATTACK) {
+            if character_ref._character_id != player._character_id && player.is_attacking() {
                 let dist = (character_ref.get_position() - player.get_position()).norm();
                 if dist < 1.0 {
                     dead_characters.push(character.clone());

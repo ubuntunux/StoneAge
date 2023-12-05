@@ -6,7 +6,7 @@ use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use crate::game_module::character::animation_blend_mask::AnimationBlendMasks;
 
 use crate::game_module::character::character::*;
-use crate::game_module::game_constants::{CONTINUOUS_ATTACK_TIME, GRAVITY, GROUND_HEIGHT, PLAYER_JUMP_SPEED, PLAYER_MOVE_SPEED};
+use crate::game_module::game_constants::*;
 
 
 impl Default for CharacterData {
@@ -66,6 +66,14 @@ impl CharacterController {
         if self._is_ground {
             self._is_jump = true;
         }
+    }
+
+    pub fn get_direction(&self) -> f32 {
+        if self._rotation.y.is_sign_positive() { -1.0 } else { 1.0 }
+    }
+
+    pub fn set_direction(&mut self, direction: f32) {
+        self._rotation.y = direction * std::f32::consts::PI * -0.5;
     }
 
     pub fn update_character_controller(&mut self, delta_time: f32) {
@@ -226,6 +234,16 @@ impl Character {
 
     pub fn set_action_attack(&mut self) {
         self.set_action_animation(ActionAnimationState::ATTACK);
+    }
+
+    pub fn is_attacking(&self) -> bool {
+        if self.is_action(ActionAnimationState::ATTACK) {
+            let animation_play_infos = &ptr_as_ref(self._render_object.as_ptr())._animation_play_infos;
+            let animation_play_info = &animation_play_infos[AnimationLayer::AdditiveLayer as usize];
+            let attack_time: f32 = 0.15;
+            return animation_play_info._prev_animation_play_time < attack_time && attack_time <= animation_play_info._animation_play_time;
+        }
+        false
     }
 
     pub fn get_position(&self) -> &Vector3<f32> {
