@@ -76,7 +76,16 @@ impl CharacterController {
         self._rotation.y = direction * std::f32::consts::PI * -0.5;
     }
 
-    pub fn update_character_controller(&mut self, delta_time: f32) {
+    pub fn set_on_ground(&mut self, ground_height: f32) {
+        self._position.y = ground_height;
+        self._is_ground = true;
+        self._velocity.y = 0.0;
+    }
+
+    pub fn update_character_controller(&mut self, blocks: &Vec<*const RenderObjectData>, delta_time: f32) {
+        let prev_position = self._position.clone_owned();
+
+        // move on ground
         if 0.0 != self._move_direction {
             self._velocity.x = self._move_direction * PLAYER_MOVE_SPEED;
             self._position.x += self._velocity.x * delta_time;
@@ -90,13 +99,22 @@ impl CharacterController {
             self._is_ground = false;
         }
 
-        if false == self._is_ground {
-            self._velocity.y -= GRAVITY * delta_time;
-            self._position.y += self._velocity.y * delta_time;
-            if self._position.y <= GROUND_HEIGHT {
-                self._position.y = GROUND_HEIGHT;
-                self._is_ground = true;
-                self._velocity.y = 0.0;
+        // fall
+        self._velocity.y -= GRAVITY * delta_time;
+        self._position.y += self._velocity.y * delta_time;
+        if self._position.y <= GROUND_HEIGHT {
+            self.set_on_ground(GROUND_HEIGHT);
+        }
+
+
+        for block in blocks.iter() {
+            let bound_box = &ptr_as_ref(*block)._bound_box;
+            if bound_box.is_in_bound_box(&self._position) {
+                if bound_box.is_in_bound_box_x(&prev_position) && false == bound_box.is_in_bound_box_y(&prev_position) {
+                    self.set_on_ground(bound_box._max.y);
+                } else if bound_box.is_in_bound_box_y(&prev_position) && false == bound_box.is_in_bound_box_x(&prev_position) {
+                    self._position.x = prev_position.x;
+                }
             }
         }
 
@@ -274,12 +292,12 @@ impl Character {
         }
     }
 
-    pub fn update_character(&mut self, delta_time: f32) {
+    pub fn update_character(&mut self, blocks: &Vec<*const RenderObjectData>, delta_time: f32) {
         if false == self._is_player {
             self._behavior.update_behavior(ptr_as_mut(self), delta_time);
         }
 
-        self._controller.update_character_controller(delta_time);
+        self._controller.update_character_controller(blocks, delta_time);
         self.update_transform();
 
         let animation_play_infos = &ptr_as_ref(self._render_object.as_ptr())._animation_play_infos;

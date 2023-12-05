@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use rust_engine_3d::core::engine_core::EngineCore;
-use rust_engine_3d::scene::render_object::RenderObjectCreateInfo;
+use rust_engine_3d::scene::render_object::{RenderObjectCreateInfo, RenderObjectData};
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
 
 use crate::application::application::Application;
@@ -102,9 +102,13 @@ impl CharacterManager {
         self._player.as_ref().unwrap()
     }
     pub fn update_character_manager(&mut self, _engine_core: &EngineCore, delta_time: f64) {
+        let rock00 = self.get_game_scene_manager().get_scene_manager().get_static_render_object("rock00");
+        let rock01 = self.get_game_scene_manager().get_scene_manager().get_static_render_object("rock01");
+        let blocks: Vec<*const RenderObjectData> = vec![rock00.unwrap().as_ptr(), rock01.unwrap().as_ptr()];
+
         for character in self._characters.values() {
             let mut character_mut = character.borrow_mut();
-            character_mut.update_character(delta_time as f32);
+            character_mut.update_character(&blocks, delta_time as f32);
         }
 
         let mut dead_characters: Vec<RcRefCell<Character>> = Vec::new();
