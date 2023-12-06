@@ -1,6 +1,8 @@
 use std::collections::HashMap;
+use rust_engine_3d::audio::audio_manager::AudioLoop;
 
 use rust_engine_3d::core::engine_core::EngineCore;
+use rust_engine_3d::effect::effect_data::EffectCreateInfo;
 use rust_engine_3d::scene::render_object::{RenderObjectCreateInfo, RenderObjectData};
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
 
@@ -119,6 +121,16 @@ impl CharacterManager {
                 if character_ref._character_id != player._character_id {
                     if character_ref.collide_bound_box(&player.get_attack_point()) {
                         dead_characters.push(character.clone());
+
+                        let effect_create_info = EffectCreateInfo {
+                            _effect_position: character_ref.get_attack_point().clone_owned(),
+                            _effect_data_name: String::from("effect_test"),
+                            ..Default::default()
+                        };
+
+                        // fx & audio
+                        self.get_game_scene_manager().get_scene_manager_mut().add_effect("hit_effect", &effect_create_info);
+                        self.get_game_client().get_application().get_audio_manager_mut().create_audio_instance("default", AudioLoop::ONCE);
                     }
                 }
             }
