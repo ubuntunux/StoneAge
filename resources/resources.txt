@@ -20,7 +20,8 @@ resources/externals/meshes/characters/pickle_jump.gltf
 resources/externals/meshes/characters/pickle_attack.gltf
 resources/externals/meshes/characters/pickle_walk.gltf
 resources/externals/meshes/characters/pickle_idle.gltf
-resources/externals/meshes/environments/rock.glb
+resources/externals/meshes/environments/rock.gltf
+resources/externals/meshes/environments/rock.bin
 resources/externals/meshes/environments/rock.blend
 resources/externals/meshes/stages/intro_stage.blend
 resources/engine_resources/shader_caches/common/render_object_RenderMode2_RenderObjectType1.vert.spirv
@@ -364,6 +365,7 @@ resources/shaders/render_test.frag
 resources/shaders/render_test.vert
 resources/scenes/intro_stage.scene
 resources/game_data/characters/pickle.data
+resources/game_data/blocks/rock.data
 resources/game_data/game_scenes/intro_stage.data
 resources/models/characters/pickle_walk.model
 resources/models/environments/rock.model

@@ -113,12 +113,13 @@ impl CharacterManager {
 
         let mut dead_characters: Vec<RcRefCell<Character>> = Vec::new();
         let player = ptr_as_ref(self._player.as_ref().unwrap().as_ptr());
-        for character in self._characters.values() {
-            let character_ref = character.borrow_mut();
-            if character_ref._character_id != player._character_id && player.is_attacking() {
-                let dist = (character_ref.get_position() - player.get_position()).norm();
-                if dist < 1.0 {
-                    dead_characters.push(character.clone());
+        if player.is_attacking() {
+            for character in self._characters.values() {
+                let character_ref = character.borrow_mut();
+                if character_ref._character_id != player._character_id {
+                    if character_ref.collide_bound_box(&player.get_attack_point()) {
+                        dead_characters.push(character.clone());
+                    }
                 }
             }
         }

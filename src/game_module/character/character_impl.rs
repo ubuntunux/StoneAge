@@ -109,10 +109,10 @@ impl CharacterController {
 
         for block in blocks.iter() {
             let bound_box = &ptr_as_ref(*block)._bound_box;
-            if bound_box.is_in_bound_box(&self._position) {
-                if bound_box.is_in_bound_box_x(&prev_position) && false == bound_box.is_in_bound_box_y(&prev_position) {
+            if bound_box.collide_bound_box(&self._position) {
+                if bound_box.collide_bound_box_x(&prev_position) && false == bound_box.collide_bound_box_y(&prev_position) {
                     self.set_on_ground(bound_box._max.y);
-                } else if bound_box.is_in_bound_box_y(&prev_position) && false == bound_box.is_in_bound_box_x(&prev_position) {
+                } else if bound_box.collide_bound_box_y(&prev_position) && false == bound_box.collide_bound_box_x(&prev_position) {
                     self._position.x = prev_position.x;
                 }
             }
@@ -264,8 +264,16 @@ impl Character {
         false
     }
 
+    pub fn get_attack_point(&self) -> Vector3<f32> {
+        self._controller._position + Vector3::new(self._controller.get_direction(), 1.0, 0.0)
+    }
+
     pub fn get_position(&self) -> &Vector3<f32> {
         &self._controller._position
+    }
+
+    pub fn collide_bound_box(&self, pos: &Vector3<f32>) -> bool {
+        self._render_object.borrow()._bound_box.collide_bound_box_xy(pos)
     }
 
     pub fn update_transform(&mut self) {

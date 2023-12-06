@@ -6,11 +6,13 @@ use rust_engine_3d::renderer::renderer_context::RendererContext;
 use rust_engine_3d::resource::resource::{EngineResources, get_unique_resource_name, APPLICATION_RESOURCE_PATH, ResourceDataMap};
 use rust_engine_3d::utilities::system::{self, newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
 use serde_json::{self};
+use crate::game_module::character::block::BlockData;
 
 use crate::game_module::character::character::CharacterData;
 use crate::game_module::game_scene_manager::GameSceneDataCreateInfo;
 
 pub const GAME_SCENE_FILE_PATH: &str = "game_data/game_scenes";
+pub const BLOCK_DATA_FILE_PATH: &str = "game_data/blocks";
 pub const CHARACTER_DATA_FILE_PATH: &str = "game_data/characters";
 
 pub const EXT_GAME_DATA: &str = "data";
@@ -18,12 +20,14 @@ pub const EXT_GAME_DATA: &str = "data";
 pub const DEFAULT_GAME_DATA_NAME: &str = "default";
 
 pub type GameSceneDataCreateInfoMap = ResourceDataMap<GameSceneDataCreateInfo>;
+pub type BlockDataMap = ResourceDataMap<BlockData>;
 pub type CharacterDataMap = ResourceDataMap<CharacterData>;
 
 #[derive(Clone)]
 pub struct GameResources {
     _engine_resources: *const EngineResources,
     _game_scene_data_create_infos_map: GameSceneDataCreateInfoMap,
+    _block_data_map: BlockDataMap,
     _character_data_map: CharacterDataMap,
 }
 
@@ -32,6 +36,7 @@ impl GameResources {
         Box::new(GameResources {
             _engine_resources: std::ptr::null(),
             _game_scene_data_create_infos_map: GameSceneDataCreateInfoMap::new(),
+            _block_data_map: BlockDataMap::new(),
             _character_data_map: CharacterDataMap::new(),
         })
     }
@@ -95,14 +100,42 @@ impl GameResources {
     // Game Data
     fn load_game_data(&mut self) {
         log::info!("    load_game_data");
+        self.load_block_data();
         self.load_character_data();
     }
 
     fn unload_game_data(&mut self) {
         self.unload_character_data();
+        self.unload_block_data();
     }
 
-    // ship controller data
+    // block data
+    fn load_block_data(&mut self) {
+        let game_data_directory = PathBuf::from(BLOCK_DATA_FILE_PATH);
+
+        // load_block_data
+        let game_data_files: Vec<PathBuf> = self.collect_resources(&game_data_directory, &[EXT_GAME_DATA]);
+        for game_data_file in game_data_files {
+            let block_data_name = get_unique_resource_name(&self._block_data_map, &game_data_directory, &game_data_file);
+            let loaded_contents = system::load(&game_data_file);
+            let block_data: BlockData = serde_json::from_reader(loaded_contents).expect("Failed to deserialize.");
+            self._block_data_map.insert(block_data_name.clone(), newRcRefCell(block_data));
+        }
+    }
+
+    fn unload_block_data(&mut self) {
+        self._block_data_map.clear();
+    }
+
+    pub fn has_block_data(&self, resource_name: &str) -> bool {
+        self._block_data_map.get(resource_name).is_some()
+    }
+
+    pub fn get_block_data(&self, resource_name: &str) -> &RcRefCell<BlockData> {
+        self._block_data_map.get(resource_name).unwrap()
+    }
+
+    // character data
     fn load_character_data(&mut self) {
         let game_data_directory = PathBuf::from(CHARACTER_DATA_FILE_PATH);
 
