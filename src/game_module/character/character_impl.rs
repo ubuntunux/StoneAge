@@ -2,6 +2,7 @@ use nalgebra::{Vector3};
 use rust_engine_3d::scene::animation::AnimationPlayArgs;
 use rust_engine_3d::scene::mesh::MeshData;
 use rust_engine_3d::scene::render_object::{AnimationLayer, RenderObjectData};
+use rust_engine_3d::utilities::bounding_box::BoundingBox;
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use crate::game_module::character::animation_blend_mask::AnimationBlendMasks;
 
@@ -82,7 +83,7 @@ impl CharacterController {
         self._velocity.y = 0.0;
     }
 
-    pub fn update_character_controller(&mut self, blocks: &Vec<*const RenderObjectData>, delta_time: f32) {
+    pub fn update_character_controller(&mut self, actor_bound_box: &BoundingBox, blocks: &Vec<*const RenderObjectData>, delta_time: f32) {
         let prev_position = self._position.clone_owned();
 
         // move on ground
@@ -106,13 +107,12 @@ impl CharacterController {
             self.set_on_ground(GROUND_HEIGHT);
         }
 
-
         for block in blocks.iter() {
-            let bound_box = &ptr_as_ref(*block)._bound_box;
-            if bound_box.collide_bound_box(&self._position) {
-                if bound_box.collide_bound_box_x(&prev_position) && false == bound_box.collide_bound_box_y(&prev_position) {
-                    self.set_on_ground(bound_box._max.y);
-                } else if bound_box.collide_bound_box_y(&prev_position) && false == bound_box.collide_bound_box_x(&prev_position) {
+            let block_bound_box = &ptr_as_ref(*block)._bound_box;
+            if block_bound_box.collide_bound_box(&self._position) {
+                if block_bound_box.collide_bound_box_x(&prev_position) && block_bound_box._max.y <= prev_position.y {
+                    self.set_on_ground(block_bound_box._max.y)
+                } else if block_bound_box.collide_bound_box_y(&prev_position) && false == block_bound_box.collide_bound_box_x(&prev_position) {
                     self._position.x = prev_position.x;
                 }
             }
@@ -305,7 +305,7 @@ impl Character {
             self._behavior.update_behavior(ptr_as_mut(self), delta_time);
         }
 
-        self._controller.update_character_controller(blocks, delta_time);
+        self._controller.update_character_controller(&self._render_object.borrow()._bound_box,  blocks, delta_time);
         self.update_transform();
 
         let animation_play_infos = &ptr_as_ref(self._render_object.as_ptr())._animation_play_infos;
