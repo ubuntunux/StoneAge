@@ -116,6 +116,7 @@ impl CharacterManager {
         let mut dead_characters: Vec<RcRefCell<Character>> = Vec::new();
         let player = ptr_as_ref(self._player.as_ref().unwrap().as_ptr());
         if player.is_attacking() {
+            self.get_game_client().get_application().get_audio_manager_mut().create_audio_instance_from_bank("swoosh", AudioLoop::ONCE);
             for character in self._characters.values() {
                 let character_ref = character.borrow_mut();
                 if character_ref._character_id != player._character_id {
@@ -130,7 +131,8 @@ impl CharacterManager {
 
                         // fx & audio
                         self.get_game_scene_manager().get_scene_manager_mut().add_effect("hit_effect", &effect_create_info);
-                        self.get_game_client().get_application().get_audio_manager_mut().create_audio_instance("default", AudioLoop::ONCE);
+                        self.get_game_client().get_application().get_audio_manager_mut().create_audio_instance_from_bank("hit", AudioLoop::ONCE);
+                        self.get_game_client().get_application().get_audio_manager_mut().create_audio_instance_from_bank("pain_short", AudioLoop::ONCE);
                     }
                 }
             }

@@ -83,7 +83,7 @@ impl CharacterController {
         self._velocity.y = 0.0;
     }
 
-    pub fn update_character_controller(&mut self, actor_bound_box: &BoundingBox, blocks: &Vec<*const RenderObjectData>, delta_time: f32) {
+    pub fn update_character_controller(&mut self, _actor_bound_box: &BoundingBox, blocks: &Vec<*const RenderObjectData>, delta_time: f32) {
         let prev_position = self._position.clone_owned();
 
         // move on ground
