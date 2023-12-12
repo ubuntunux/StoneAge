@@ -16,6 +16,7 @@ resources/externals/textures/ui/crosshair_box.png
 resources/externals/textures/ui/crosshair.png
 resources/externals/textures/effects/fire.png
 resources/externals/textures/effects/smoke.png
+resources/externals/textures/environments/cliff_grass_d.png
 resources/externals/meshes/characters/pickle.blend
 resources/externals/meshes/characters/pickle_jump.gltf
 resources/externals/meshes/characters/pickle_attack.gltf
@@ -23,6 +24,8 @@ resources/externals/meshes/characters/pickle_walk.gltf
 resources/externals/meshes/characters/pickle_idle.gltf
 resources/externals/meshes/environments/rock.gltf
 resources/externals/meshes/environments/rock.bin
+resources/externals/meshes/environments/environments.blend
+resources/externals/meshes/environments/cliff_grass.obj
 resources/externals/meshes/environments/rock.blend
 resources/externals/meshes/stages/intro_stage.blend
 resources/sounds/finish_03.wav
@@ -395,14 +398,15 @@ resources/material_instances/ui/crosshair.matinst
 resources/material_instances/effects/smoke.matinst
 resources/material_instances/effects/default.matinst
 resources/material_instances/characters/pickle.matinst
+resources/material_instances/environments/cliff_grass.matinst
 resources/material_instances/color_white.matinst
 resources/material_instances/render_test.matinst
 resources/shaders/render_test.frag
 resources/shaders/render_test.vert
 resources/scenes/intro_stage.scene
 resources/game_data/characters/pickle.data
-resources/game_data/blocks/rock.data
+resources/game_data/blocks/cliff_grass.data
 resources/game_data/game_scenes/intro_stage.data
 resources/models/characters/pickle_walk.model
-resources/models/environments/rock.model
+resources/models/environments/cliff_grass.model
 resources/materials/render_test.mat
