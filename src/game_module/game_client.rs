@@ -74,8 +74,10 @@ impl GameClient {
     }
 
     pub fn set_game_mode(&mut self, is_game_mode: bool) {
-        let game_ui_layout_mut = ptr_as_mut(self.get_game_ui_manager().game_ui_layout());
-        game_ui_layout_mut.get_ui_component_mut().set_visible(is_game_mode);
+        if false == self.get_game_ui_manager().game_ui_layout().is_null() {
+            let game_ui_layout_mut = ptr_as_mut(self.get_game_ui_manager().game_ui_layout());
+            game_ui_layout_mut.get_ui_component_mut().set_visible(is_game_mode);
+        }
     }
 
     pub fn update_game_mode(&mut self, _delta_time: f64) {

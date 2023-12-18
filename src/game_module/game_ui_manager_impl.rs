@@ -195,21 +195,23 @@ impl GameUIManager {
             ._window_size;
 
         // Cross Hair
-        let crosshair = self._crosshair.as_ref().unwrap();
-        let crosshair_widget = ptr_as_mut(crosshair._widget);
-        if crosshair_widget.get_ui_component().get_visible() {
-            let crosshair_pos_x: i32;
-            let crosshair_pos_y: i32;
+        if self._crosshair.is_some() {
+            let crosshair = self._crosshair.as_ref().unwrap();
+            let crosshair_widget = ptr_as_mut(crosshair._widget);
+            if crosshair_widget.get_ui_component().get_visible() {
+                let crosshair_pos_x: i32;
+                let crosshair_pos_y: i32;
 
-            if crosshair._tracking_mouse {
-                crosshair_pos_x = crosshair._pos.x;
-                crosshair_pos_y = crosshair._pos.y;
-            } else {
-                crosshair_pos_x = window_size.x / 2;
-                crosshair_pos_y = window_size.y / 2;
+                if crosshair._tracking_mouse {
+                    crosshair_pos_x = crosshair._pos.x;
+                    crosshair_pos_y = crosshair._pos.y;
+                } else {
+                    crosshair_pos_x = window_size.x / 2;
+                    crosshair_pos_y = window_size.y / 2;
+                }
+                let ui_component = crosshair_widget.get_ui_component_mut();
+                ui_component.set_center(crosshair_pos_x as f32, crosshair_pos_y as f32);
             }
-            let ui_component = crosshair_widget.get_ui_component_mut();
-            ui_component.set_center(crosshair_pos_x as f32, crosshair_pos_y as f32);
         }
     }
 }
