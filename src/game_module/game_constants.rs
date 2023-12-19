@@ -5,7 +5,7 @@ pub const EDITOR_CAMERA_ROTATION_SPEED: f32 = 0.005;
 
 // game constant
 pub const CAMERA_DISTANCE_MIN: f32 = 1.0;
-pub const CAMERA_DISTANCE_MAX: f32 = 10.0;
+pub const CAMERA_DISTANCE_MAX: f32 = 6.0;
 
 // player
 pub const PLAYER_MOVE_SPEED: f32 = 3.0;
