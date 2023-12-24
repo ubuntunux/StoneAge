@@ -417,7 +417,7 @@ resources/scenes/intro_stage.scene
 resources/game_data/characters/jack.data
 resources/game_data/characters/pickle.data
 resources/game_data/blocks/cliff_grass.data
-resources/game_data/game_scenes/intro_stage.data
+resources/game_data/game_scenes/intro_stage.game_scene
 resources/models/characters/pickle.model
 resources/models/characters/jack.model
 resources/models/environments/cliff_grass.model

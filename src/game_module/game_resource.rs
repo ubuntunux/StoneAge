@@ -16,6 +16,7 @@ pub const BLOCK_DATA_FILE_PATH: &str = "game_data/blocks";
 pub const CHARACTER_DATA_FILE_PATH: &str = "game_data/characters";
 
 pub const EXT_GAME_DATA: &str = "data";
+pub const EXT_GAME_SCENE: &str = "game_scene";
 
 pub const DEFAULT_GAME_DATA_NAME: &str = "default";
 
@@ -63,7 +64,7 @@ impl GameResources {
     pub fn load_game_scene_data(&mut self, _renderer_context: &RendererContext) {
         log::info!("    load_game_scene_data");
         let game_scene_directory = PathBuf::from(GAME_SCENE_FILE_PATH);
-        let game_scene_data_files: Vec<PathBuf> = self.collect_resources(&game_scene_directory, &[EXT_GAME_DATA]);
+        let game_scene_data_files: Vec<PathBuf> = self.collect_resources(&game_scene_directory, &[EXT_GAME_SCENE]);
         for game_scene_data_file in game_scene_data_files {
             let game_scene_data_name = get_unique_resource_name(&self._game_scene_data_create_infos_map, &game_scene_directory, &game_scene_data_file);
             let loaded_contents = system::load(&game_scene_data_file);
