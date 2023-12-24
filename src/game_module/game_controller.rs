@@ -14,7 +14,8 @@ use crate::game_module::game_ui_manager::GameUIManager;
 pub struct GameController {
     pub _game_client: *const GameClient,
     pub _game_ui_manager: *const GameUIManager,
-    pub _camera_distance: f32
+    pub _camera_distance: f32,
+    pub _camera_goal_distance: f32
 }
 
 impl GameController {
@@ -22,7 +23,8 @@ impl GameController {
         Box::new(GameController {
             _game_client: std::ptr::null(),
             _game_ui_manager: std::ptr::null(),
-            _camera_distance: CAMERA_DISTANCE_MAX,
+            _camera_goal_distance: CAMERA_DISTANCE_MAX,
+            _camera_distance: 0.0,
         })
     }
 
@@ -57,9 +59,9 @@ impl GameController {
     }
     pub fn update_game_controller(
         &mut self,
-        _time_data: &TimeData,
+        time_data: &TimeData,
         keyboard_input_data: &KeyboardInputData,
-        _mouse_move_data: &MouseMoveData,
+        mouse_move_data: &MouseMoveData,
         mouse_input_data: &MouseInputData,
         _mouse_delta: &Vector2<f32>,
         main_camera: &mut CameraObjectData,
@@ -68,6 +70,8 @@ impl GameController {
         let btn_left: bool = mouse_input_data._btn_l_pressed;
         let _btn_right: bool = mouse_input_data._btn_r_pressed;
         let _btn_right_hold: bool = mouse_input_data._btn_r_hold;
+
+
         let is_left = keyboard_input_data.get_key_hold(VirtualKeyCode::Left) | keyboard_input_data.get_key_hold(VirtualKeyCode::A);
         let is_right = keyboard_input_data.get_key_hold(VirtualKeyCode::Right) | keyboard_input_data.get_key_hold(VirtualKeyCode::D);
         let is_jump = keyboard_input_data.get_key_hold(VirtualKeyCode::Up) | keyboard_input_data.get_key_hold(VirtualKeyCode::W) | keyboard_input_data.get_key_hold(VirtualKeyCode::Space);
@@ -88,9 +92,22 @@ impl GameController {
         }
 
         // update camera
-        let camera_position = player_mut.get_position() - main_camera._transform_object.get_front() * CAMERA_DISTANCE_MAX;
-        main_camera._transform_object.set_position(&camera_position);
-        main_camera._transform_object.set_pitch(0.0);
-        main_camera._transform_object.set_yaw(0.0);
+        self._camera_goal_distance -= mouse_move_data._scroll_delta.y as f32;
+        self._camera_goal_distance = CAMERA_DISTANCE_MIN.max(CAMERA_DISTANCE_MAX.min(self._camera_goal_distance));
+        if self._camera_goal_distance != self._camera_distance {
+            let diff = (self._camera_goal_distance - self._camera_distance) * CAMERA_ZOOM_SPEED;
+            let sign = diff.signum();
+            let delta =  diff * time_data._delta_time as f32;
+            self._camera_distance += delta;
+            if sign != (self._camera_goal_distance - self._camera_distance).signum() {
+                self._camera_distance = self._camera_goal_distance;
+            }
+
+            let mut camera_position = player_mut.get_position() - main_camera._transform_object.get_front() * self._camera_distance;
+            camera_position.y += 1.5;
+            main_camera._transform_object.set_position(&camera_position);
+            main_camera._transform_object.set_pitch(0.2);
+            main_camera._transform_object.set_yaw(0.0);
+        }
     }
 }

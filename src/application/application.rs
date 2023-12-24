@@ -59,6 +59,7 @@ impl ApplicationBase for Application {
 
         // start game
         self.get_game_ui_manager_mut().build_game_ui(window_size);
+        self.get_game_ui_manager_mut().show_ui(false);
         self.set_game_mode(self._is_game_mode);
         self.get_game_client_mut().start_game();
     }
@@ -268,6 +269,7 @@ impl Application {
         self._is_game_mode = is_game_mode;
         self.get_game_client_mut().set_game_mode(is_game_mode);
         self.get_engine_core_mut().set_grab_mode(is_game_mode);
+        self.get_engine_core_mut().get_ui_manager_mut().set_visible_world_axis(!is_game_mode);
     }
 }
 

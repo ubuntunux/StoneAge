@@ -161,6 +161,13 @@ impl GameUIManager {
         ptr_as_mut(self._crosshair.as_ref().unwrap()._widget)
     }
 
+    pub fn show_ui(&mut self, show: bool) {
+        if false == self._game_ui_layout.is_null() {
+            let game_ui_layout_mut = ptr_as_mut(self._game_ui_layout);
+            game_ui_layout_mut.get_ui_component_mut().set_visible(show);
+        }
+    }
+
     pub fn show_selection_area(&mut self, show: bool) {
         let selection_area_widget = self
             ._selection_area

@@ -36,6 +36,7 @@ impl GameClient {
         log::info!("initialize_game_client");
         self._engine_core = engine_core;
         self._application = application;
+        self._game_controller = application.get_game_controller();
         self._character_manager = application.get_character_manager();
         self._game_scene_manager = application.get_game_scene_manager();
         self._game_resources = application.get_game_resources();
@@ -73,11 +74,8 @@ impl GameClient {
         self.get_game_scene_manager_mut().open_game_scene_data("intro_stage");
     }
 
-    pub fn set_game_mode(&mut self, is_game_mode: bool) {
-        if false == self.get_game_ui_manager().game_ui_layout().is_null() {
-            let game_ui_layout_mut = ptr_as_mut(self.get_game_ui_manager().game_ui_layout());
-            game_ui_layout_mut.get_ui_component_mut().set_visible(is_game_mode);
-        }
+    pub fn set_game_mode(&mut self, _is_game_mode: bool) {
+        //self.get_game_ui_manager_mut().show_ui(is_game_mode);
     }
 
     pub fn update_game_mode(&mut self, _delta_time: f64) {
@@ -95,15 +93,17 @@ impl GameClient {
         );
         let player = self.get_character_manager().get_player();
         let main_camera = scene_manager.get_main_camera_mut();
-        let game_controller = ptr_as_mut(self._game_controller);
-        game_controller.update_game_controller(
-            time_data,
-            &keyboard_input_data,
-            &mouse_move_data,
-            &mouse_input_data,
-            &mouse_delta,
-            main_camera,
-            player,
-        );
+        if false == self._game_controller.is_null() {
+            let game_controller = ptr_as_mut(self._game_controller);
+            game_controller.update_game_controller(
+                time_data,
+                &keyboard_input_data,
+                &mouse_move_data,
+                &mouse_input_data,
+                &mouse_delta,
+                main_camera,
+                player,
+            );
+        }
     }
 }
