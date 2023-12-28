@@ -15,12 +15,9 @@ resources/externals/textures/ui/alert.png
 resources/externals/textures/ui/crosshair_box.png
 resources/externals/textures/ui/crosshair.png
 resources/externals/textures/effects/fire.png
-resources/externals/textures/effects/smoke.png
 resources/externals/textures/characters/jack/jack_d.png
-resources/externals/textures/environments/ocean_d.png
 resources/externals/textures/environments/cliff_grass_d.png
 resources/externals/textures/environments/snow_moutain.png
-resources/externals/textures/environments/desert_moutain.png
 resources/externals/textures/environments/desert_ground.png
 resources/externals/meshes/characters/jack/jack.bin
 resources/externals/meshes/characters/jack/jack_attack.bin
