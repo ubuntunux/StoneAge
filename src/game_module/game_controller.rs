@@ -104,10 +104,9 @@ impl GameController {
             }
 
             let mut camera_position = player_mut.get_position() - main_camera._transform_object.get_front() * self._camera_distance;
-            camera_position.y += 1.5;
+            camera_position.y += CAMERA_PITCH;
             main_camera._transform_object.set_position(&camera_position);
-            main_camera._transform_object.set_pitch(0.2);
-            main_camera._transform_object.set_yaw(0.0);
+            main_camera._transform_object.set_pitch(CAMERA_PITCH);
         }
     }
 }
