@@ -57,21 +57,34 @@ def save(operator, context, filepath='', **keywords):
         return {'FINISHED'}
     
     resource_info = ResourceInfo(ResourceType.MESH, filepath)
-    print(resource_info.__dict__)
     
     context.window.cursor_set('WAIT')
 
     scene = context.scene
     objects = scene.objects
     mesh_objects = [ob for ob in objects if ob.type == 'MESH']
+    
+    for mesh in mesh_objects:
+        for material in mesh.data.materials:
+            catalog = material.asset_data.catalog_simple_name.replace('-', '/')
+            relative_filepath = os.path.join(catalog, material.name)
+            print(relative_filepath)
+            
 
-    game_scene_data = {
+    material_instance_data = {
         "material_name": "common/render_static_object",
         "material_parameters": {
             "textureBase": "environments/desert_ground",
             "textureMaterial": "common/default_m",
             "textureNormal": "common/default_n"
         }
+    }
+    
+    model_data = {
+        "material_instances": [
+            "environments/cactus"
+        ], 
+        "mesh": "environments/cactus"
     }
 
 
