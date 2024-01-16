@@ -9,7 +9,6 @@ VERSION 1
 51076800-bec8-483d-ab24-d675b18c5ce9:StoneAge:StoneAge
 7bfecec5-f078-4f7b-969a-4feaec100529:StoneAge/game_data:StoneAge-game_data
 b5442a40-dbb5-4b0e-a731-697d94abef6a:StoneAge/game_data/blocks:StoneAge-game_data-blocks
-eb57d00b-866d-4d4e-bf74-e2d06aab68c4:StoneAge/game_data/game_scenes:StoneAge-game_data-game_scenes
 8a3855e5-fe95-4387-8ca5-c9f74e6aaeff:StoneAge/game_data/properties:StoneAge-game_data-properties
 c021cad1-00f6-4a65-94ea-13204785bff0:StoneAge/material_instances:StoneAge-material_instances
 63ecc6f3-e09c-4c2c-a25b-54c7c43a6602:StoneAge/material_instances/environments:StoneAge-material_instances-environments
