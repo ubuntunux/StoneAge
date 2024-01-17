@@ -1,7 +1,0 @@
-{"_character_type":"UrsusArctos",
-"_model_data_name":"characters/pickle",
-"_idle_animation_mesh":"characters/pickle/pickle_idle",
-"_walk_animation_mesh":"characters/pickle/pickle_walk",
-"_jump_animation_mesh":"characters/pickle/pickle_jump",
-"_attack_animation_mesh":"characters/pickle/pickle_attack",
-"_max_hp":100}

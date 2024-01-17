@@ -273,7 +273,7 @@ impl Character {
     }
 
     pub fn collide_bound_box(&self, pos: &Vector3<f32>) -> bool {
-        self._render_object.borrow()._bound_box.collide_bound_box_xy(pos)
+        self._render_object.borrow()._bound_box.collide_in_radius(pos)
     }
 
     pub fn update_transform(&mut self) {
