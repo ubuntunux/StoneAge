@@ -36,6 +36,7 @@ resources/externals/blender_assets.cats.txt
 resources/externals/blender_assets.cats.txt~
 resources/externals/meshes/characters/jack/jack_walk.blend
 resources/externals/meshes/characters/jack/jack.bin
+resources/externals/meshes/characters/jack/jack_idle.bin
 resources/externals/meshes/characters/jack/jack_attack.bin
 resources/externals/meshes/characters/jack/jack_jump.gltf
 resources/externals/meshes/characters/jack/jack_attack.blend
@@ -43,6 +44,8 @@ resources/externals/meshes/characters/jack/jack.gltf
 resources/externals/meshes/characters/jack/jack.blend
 resources/externals/meshes/characters/jack/jack_attack.gltf
 resources/externals/meshes/characters/jack/jack_walk.gltf
+resources/externals/meshes/characters/jack/jack_idle.gltf
+resources/externals/meshes/characters/jack/jack_idle.blend
 resources/externals/meshes/characters/jack/jack_jump.blend
 resources/externals/meshes/characters/jack/jack_jump.bin
 resources/externals/meshes/characters/jack/jack_walk.bin
@@ -69,6 +72,7 @@ resources/externals/scenes/stage_dry_forest.blend
 resources/externals/game_data/blocks/cliff_grass.blend
 resources/externals/game_data/properties/properties.blend
 resources/externals/game_data/game_scenes/intro_stage.blend
+resources/externals/models/characters/jack.blend
 resources/externals/models/environments/desert_ground.blend
 resources/externals/models/environments/landscape.blend
 resources/externals/models/environments/cloud1.blend
@@ -80,6 +84,7 @@ resources/externals/models/environments/ocean.blend
 resources/externals/models/environments/cloud2.blend
 resources/externals/models/environments/grass.blend
 resources/externals/materials/common/render_static_object.blend
+resources/externals/materials/common/render_skeletal_object.blend
 resources/sounds/finish_03.wav
 resources/sounds/Char_jump_land01.meta
 resources/sounds/Voc_Pain_Short_03.meta
