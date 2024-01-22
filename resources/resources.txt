@@ -33,7 +33,6 @@ resources/externals/textures/environments/snow_moutain.png
 resources/externals/textures/environments/desert_moutain.png
 resources/externals/textures/environments/desert_ground.png
 resources/externals/blender_assets.cats.txt
-resources/externals/blender_assets.cats.txt~
 resources/externals/meshes/characters/jack/jack_walk.blend
 resources/externals/meshes/characters/jack/jack.bin
 resources/externals/meshes/characters/jack/jack_idle.bin
@@ -72,6 +71,11 @@ resources/externals/scenes/stage_dry_forest.blend
 resources/externals/game_data/blocks/cliff_grass.blend
 resources/externals/game_data/properties/properties.blend
 resources/externals/game_data/game_scenes/intro_stage.blend
+resources/externals/scripts/exporter.blend
+resources/externals/scripts/rust_engine_3d_exporter/export_scene.py
+resources/externals/scripts/rust_engine_3d_exporter/export_game_scene.py
+resources/externals/scripts/rust_engine_3d_exporter/__init__.py
+resources/externals/scripts/rust_engine_3d_exporter/export_mesh.py
 resources/externals/models/characters/jack.blend
 resources/externals/models/environments/desert_ground.blend
 resources/externals/models/environments/landscape.blend
@@ -235,13 +239,6 @@ resources/engine_resources/externals/textures/common/flat_none.png
 resources/engine_resources/externals/textures/common/water_caustic_00.png
 resources/engine_resources/externals/textures/common/flat_yellow.png
 resources/engine_resources/externals/textures/common/water_caustic_01.png
-resources/engine_resources/externals/textures/fonts/NanumBarunGothicBold_Basic_Latin.png
-resources/engine_resources/externals/textures/fonts/NanumMyeongjo_Basic_Latin.png
-resources/engine_resources/externals/textures/fonts/NanumGothic_Coding_Basic_Latin.png
-resources/engine_resources/externals/textures/fonts/NanumGothicBold_Basic_Latin.png
-resources/engine_resources/externals/textures/fonts/NanumBarunGothic_Basic_Latin.png
-resources/engine_resources/externals/textures/fonts/NanumGothic_Basic_Latin.png
-resources/engine_resources/externals/textures/fonts/NanumMyeongjoBold_Basic_Latin.png
 resources/engine_resources/externals/textures/mutant/mutant_normal.png
 resources/engine_resources/externals/textures/mutant/mutant_diffuse.png
 resources/engine_resources/externals/fonts/NanumMyeongjoBold.ttf
