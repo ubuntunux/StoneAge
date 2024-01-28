@@ -97,3 +97,40 @@ def save(operator, context, filepath='', **keywords):
 
 
 save(None, bpy.context, filepath=bpy.data.filepath)
+
+
+''' 
+# model
+>>> cactus = bpy.context.selected_objects[0]
+>>> cactus.instance_collection.library.filepath
+'//../models/environments/cactus.blend'
+
+>>> cactus.instance_collection.id_data.asset_data.catalog_simple_name
+'StoneAge-models-environments'
+
+
+# mesh
+>>> mesh = cactus.instance_collection.objects[0]
+>>> mesh.data.library.filepath
+'//../meshes/environments/cactus.blend'
+
+
+
+# material
+>>> material = mesh.data.materials[0]
+>>> material.library.filepath
+'//../materials/common/render_static_object.blend'
+
+>>> material.asset_data.catalog_simple_name
+'materials-common'
+
+
+# material instance
+>>> material_instance = mesh.material_slots[0].material
+>>> material_instance.library.filepath
+'//../models/environments/desert_ground.blend'
+
+>>> material_instance.asset_data.catalog_simple_name
+'StoneAge-material_instances-environments'
+
+'''
