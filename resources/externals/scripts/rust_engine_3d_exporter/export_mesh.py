@@ -1,12 +1,46 @@
 from enum import Enum
+import datetime
 import os
+import time
 import json
+
+import importlib
+import logging
+importlib.reload(logging)
+from logging.handlers import RotatingFileHandler
 
 import bpy
 import bpy_extras
 
 
-class ResouerceTypeInfo:
+def create_logger(logger_name, log_dirname, level):
+    # prepare log directory
+    if not os.path.exists(log_dirname):
+        os.makedirs(log_dirname)
+    log_file_basename = datetime.datetime.fromtimestamp(time.time()).strftime(f'{logger_name}_%Y%m%d_%H%M%S.log')
+    log_filename = os.path.join(log_dirname, log_file_basename)
+
+    # create logger
+    logger = logging.getLogger(log_dirname)
+    logger.setLevel(level=level)
+
+    # add handler
+    stream_handler = logging.StreamHandler()
+    file_max_byte = 1024 * 1024 * 100 #100MB
+    backup_count = 10
+    file_handler = logging.handlers.RotatingFileHandler(log_filename, maxBytes=file_max_byte, backupCount=backup_count)
+
+    logger.addHandler(stream_handler)
+    logger.addHandler(file_handler)
+
+    # set formatter
+    formatter = logging.Formatter(fmt='%(asctime)s,%(msecs)03d [%(levelname)s|%(filename)s:%(lineno)d] %(message)s', datefmt='%Y-%m-%d:%H:%M:%S')
+    stream_handler.setFormatter(formatter)
+    file_handler.setFormatter(formatter)
+    return logger
+
+
+class ResourceTypeInfo:
     def __init__(self, resource_dirname, resource_ext, external_ext):
         self.resource_dirname = resource_dirname
         self.resource_ext = resource_ext
@@ -14,90 +48,104 @@ class ResouerceTypeInfo:
         
 
 class ResourceType(Enum):
-    MODEL = ResouerceTypeInfo('models', '.model', '.gltf')
-    MESH = ResouerceTypeInfo('meshes', '.mesh', '.gltf')
+    MATERIAL_INSTANCE = ResourceTypeInfo('material_instances', '.matinst', None)
+    MODEL = ResourceTypeInfo('models', '.model', None)
+    MESH = ResourceTypeInfo('meshes', '.mesh', '.gltf')
     
     
-class ResourceInfo:
-    def __init__(self, resource_type, filepath):
-        # initialize
-        self.resource_type = resource_type
-        self.filepath = filepath
-        self.external_filepath = ''
-        self.resource_name = ''
-        self.resource_filepath = ''
-        
-        resource_type_info = resource_type.value
-        
-        # extract filename
-        dirname, filename = os.path.split(filepath)
-        basename = os.path.splitext(filename)[0]
-        external_filename = filename
-        resource_filename = filename
-        external_file_basename = basename + resource_type_info.external_ext
-        resource_file_basename = basename + resource_type_info.resource_ext
+class RustEngine3DExporter:
+    def __init__(self, library_name):
+        self.library_name = library_name
+        self.asset_library = bpy.context.preferences.filepaths.asset_libraries.get(library_name)
+        if self.asset_library:
+            log_dirname = os.path.join(self.asset_library.path, '.log')
+            self.logger = create_logger(logger_name=library_name, log_dirname=log_dirname, level=logging.DEBUG)
             
-        # external filepath
-        self.external_filepath = os.path.join(dirname, external_file_basename)
-        
-        # extract resource name, filepath
-        while True:
-            head, tail = os.path.split(dirname)
-            if '' == tail or resource_type_info.resource_dirname == tail:
-                resource_dirname = resource_filepath = os.path.split(head)[0]
-                relative_dirname = os.path.split(os.path.relpath(filepath, head))[0]                
-                self.resource_name = os.path.join(relative_dirname, basename)
-                self.resource_filepath = os.path.join(resource_dirname, os.path.join(relative_dirname, resource_file_basename))
-                break
-            dirname = head
-
-
-def save(operator, context, filepath='', **keywords):
-    if filepath == '':
-        return {'FINISHED'}
-    
-    resource_info = ResourceInfo(ResourceType.MESH, filepath)
-    
-    context.window.cursor_set('WAIT')
-
-    scene = context.scene
-    objects = scene.objects
-    mesh_objects = [ob for ob in objects if ob.type == 'MESH']
-    
-    for mesh in mesh_objects:
-        for material in mesh.data.materials:
-            catalog = material.asset_data.catalog_simple_name.replace('-', '/')
-            relative_filepath = os.path.join(catalog, material.name)
-            print(relative_filepath)
+    def export_collection(self, collection):
+        asset_path = collection.asset_data.catalog_simple_name.split('-')
+        if 2 < len(asset_path):
+            asset_library_name = asset_path[0]
+            asset_type_name = asset_path[1]
+            relative_path = '/'.join(asset_path[1:])
             
-
-    material_instance_data = {
-        "material_name": "common/render_static_object",
-        "material_parameters": {
-            "textureBase": "environments/desert_ground",
-            "textureMaterial": "common/default_m",
-            "textureNormal": "common/default_n"
-        }
-    }
+            if 'meshes' == asset_type_name:
+                for obj in collection.all_objects:
+                    self.logger.info(f'{obj.name}: {obj.type}')
+            empty = bpy.data.objects.new(collection.name, None)
+            empty.instance_type = 'COLLECTION'
+            empty.instance_collection = collection
+            bpy.context.scene.collection.objects.link(empty)
+                
+    def spawn_asset(self, collection):
+        bpy.ops.object.collection_instance_add(collection=collection.name)
+        
+    def export_blend(self, blend_file):
+        with bpy.data.libraries.load(blend_file, assets_only=True, link=True) as (data_from, data_to):
+            data_to.materials = data_from.materials
+            data_to.meshes = data_from.meshes
+            data_to.collections = data_from.collections
+            data_to.actions = data_from.actions
+            data_to.armatures = data_from.armatures
+            data_to.object = data_from.objects
+            
+        for (i, collection) in enumerate(data_to.collections):
+            self.export_collection(collection)
+            
+        return data_to
     
-    model_data = {
-        "material_instances": [
-            "environments/cactus"
-        ], 
-        "mesh": "environments/cactus"
-    }
+    def export_resources(self):
+        self.logger.info(f'>>> export_resource: {self.asset_library.path}')
+        for dirpath, dirnames, filenames in os.walk(self.asset_library.path):
+            for filename in filenames:
+                if '.blend' == os.path.splitext(filename)[1].lower():
+                    data = self.export_blend(os.path.join(dirpath, filename))
+                    
+                    
 
 
-#    with open(resource_info.resource_filepath, 'w') as f:
-#        f.write(json.dumps(game_scene_data, sort_keys=True, indent=4))
+def run_export_resources():
+    bpy.context.window.cursor_set('WAIT')
 
-    context.window.cursor_set('DEFAULT')
+    exporter = RustEngine3DExporter('StoneAge')
+    exporter.export_blend('/home/ubuntunux/WorkSpace/StoneAge/resources/externals/meshes/characters/jack/jack_jump.blend')
+    #exporter.export_resources()
+
+    # scene = context.scene
+    # objects = scene.objects
+    # mesh_objects = [ob for ob in objects if ob.type == 'MESH']
+    #
+    # for mesh in mesh_objects:
+    #     for material in mesh.data.materials:
+    #         catalog = material.asset_data.catalog_simple_name.replace('-', '/')
+    #         relative_filepath = os.path.join(catalog, material.name)
+    #         print(relative_filepath)
+    #
+    #
+    # material_instance_data = {
+    #     "material_name": "common/render_static_object",
+    #     "material_parameters": {
+    #         "textureBase": "environments/desert_ground",
+    #         "textureMaterial": "common/default_m",
+    #         "textureNormal": "common/default_n"
+    #     }
+    # }
+    #
+    # model_data = {
+    #     "material_instances": [
+    #         "environments/cactus"
+    #     ],
+    #     "mesh": "environments/cactus"
+    # }
+
+
+    #    with open(resource_info.resource_filepath, 'w') as f:
+    #        f.write(json.dumps(game_scene_data, sort_keys=True, indent=4))
+
+    bpy.context.window.cursor_set('DEFAULT')
     return {'FINISHED'}
 
 
-
-save(None, bpy.context, filepath=bpy.data.filepath)
-
+run_export_resources()
 
 ''' 
 # model
