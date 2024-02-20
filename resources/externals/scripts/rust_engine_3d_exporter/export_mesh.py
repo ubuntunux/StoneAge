@@ -106,6 +106,15 @@ class RustEngine3DExporter:
                     export_force_sampling=True,
                     export_optimize_animation_size=False
                 )
+            elif 'models' == asset_type_name:
+                if 0 < len(collection.children):
+                    for mesh_collection in collection.children:
+                        mesh_collection.override_library.reference.asset_data.catalog_simple_name
+                         
+                        mesh_data = self.load_blend_file(mesh_collection.library.filepath)
+                        print(f'mesh file: {mesh_collection.library.filepath}')
+                        for mesh_collection in mesh_data.collections:
+                            print(f'mesh_collection: {mesh_collection.asset_data.catalog_simple_name}')
             
             self.logger.info(f'Export {asset_type_name}: {export_filepath}')
             
@@ -116,7 +125,7 @@ class RustEngine3DExporter:
     def spawn_asset(self, collection):
         bpy.ops.object.collection_instance_add(collection=collection.name)
         
-    def export_blend(self, blend_file):
+    def load_blend_file(self, blend_file):
         with bpy.data.libraries.load(blend_file, assets_only=True, link=True) as (data_from, data_to):
             data_to.materials = data_from.materials
             data_to.meshes = data_from.meshes
@@ -124,11 +133,15 @@ class RustEngine3DExporter:
             data_to.actions = data_from.actions
             data_to.armatures = data_from.armatures
             data_to.object = data_from.objects
+            return data_to
+        
+    def export_blend(self, blend_file):
+        data = self.load_blend_file(blend_file)
             
-        for (i, collection) in enumerate(data_to.collections):
+        for (i, collection) in enumerate(data.collections):
             self.export_collection(collection)
             
-        return data_to
+        return data
     
     def export_resources(self):
         self.logger.info(f'>>> export_resource: {self.asset_library.path}')
@@ -136,15 +149,13 @@ class RustEngine3DExporter:
             for filename in filenames:
                 if '.blend' == os.path.splitext(filename)[1].lower():
                     data = self.export_blend(os.path.join(dirpath, filename))
-                    
-                    
 
 
 def run_export_resources():
     bpy.context.window.cursor_set('WAIT')
 
     exporter = RustEngine3DExporter('StoneAge')
-    exporter.export_blend('/home/ubuntunux/WorkSpace/StoneAge/resources/externals/meshes/characters/jack/jack_jump.blend')
+    exporter.export_blend('/home/ubuntunux/WorkSpace/StoneAge/resources/externals/models/characters/jack.blend')
     #exporter.export_resources()
 
     # scene = context.scene
