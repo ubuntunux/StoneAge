@@ -60,6 +60,54 @@ class RustEngine3DExporter:
         if self.asset_library:
             log_dirname = os.path.join(self.asset_library.path, '.log')
             self.logger = create_logger(logger_name=library_name, log_dirname=log_dirname, level=logging.DEBUG)
+    
+    def export_meshes(self, collection, external_filepname):
+        # create collection
+        empty = bpy.data.objects.new(collection.name, None)
+        empty.instance_type = 'COLLECTION'
+        empty.instance_collection = collection
+        bpy.context.scene.collection.objects.link(empty)
+        
+        # TODO: select specify object
+        # bpy.ops.object.select_all()
+        bpy.ops.object.select_all(action='DESELECT')
+        empty.select_set(True)
+
+        # export resource
+        export_filepath = external_filepname + '.gltf'
+        bpy.ops.export_scene.gltf(
+            filepath=export_filepath,
+            export_format='GLTF_SEPARATE',
+            use_selection=True,
+            export_yup=True,
+            export_texcoords=True,
+            export_normals=True,
+            export_tangents=True,
+            export_colors=True,
+            export_materials='NONE',
+            export_skins=True,
+            export_animations=True,
+            export_force_sampling=True,
+            export_optimize_animation_size=False
+        )
+        self.logger.info(f'export_meshes {collection.name}: {export_filepath}')
+        
+        # remove collection
+        bpy.context.scene.collection.objects.unlink(empty)
+        bpy.data.objects.remove(empty)
+        
+    def export_models(self, collection, external_filepname, resource_filename):
+        if 0 < len(collection.children):
+            for mesh_collection in collection.children:
+                mesh_data = mesh_collection.override_library.reference
+                mesh_library_path = mesh_data.asset_data.catalog_simple_name
+                print(f'mesh_library_path: {mesh_library_path}')
+                for child_object in mesh_data.objects:
+                    if 'MESH' == child_object.type:                                
+                        print(f'child_object: {child_object.name}, material: {child_object.active_material}')
+                for child_object in mesh_collection.objects:
+                    if 'MESH' == child_object.type:                                
+                        print(f'child_object: {child_object.name}, material_instance: {child_object.active_material}')
             
     def export_collection(self, collection):
         asset_path = collection.asset_data.catalog_simple_name.split('-')
@@ -69,61 +117,17 @@ class RustEngine3DExporter:
             relative_path = '/'.join(asset_path[1:])
             external_path = self.asset_library.path
             resource_path = os.path.split(external_path)[0]
-            
-            self.logger.info(f'relative_path: {relative_path}, external_path: {external_path}, resource_path: {resource_path}, collection.name: {collection.name}')
-
-            for obj in collection.all_objects:
-                self.logger.info(f'{obj.name}: {obj.type}')
-
-            # create collection
-            empty = bpy.data.objects.new(collection.name, None)
-            empty.instance_type = 'COLLECTION'
-            empty.instance_collection = collection
-            bpy.context.scene.collection.objects.link(empty)
-            
-            # TODO: select specify object
-            bpy.ops.object.select_all()
-
-            # export resource
             external_filepname = os.path.join(external_path, relative_path, collection.name)
             resource_filename = os.path.join(resource_path, relative_path, collection.name)
-            export_filepath = ''
             
+            self.logger.info(f'export_collection: {relative_path}, external_path: {external_path}, resource_path: {resource_path}, collection.name: {collection.name}')
+
+            # export resource            
+            export_filepath = ''            
             if 'meshes' == asset_type_name:
-                export_filepath = external_filepname + '.gltf'
-                bpy.ops.export_scene.gltf(
-                    filepath=export_filepath,
-                    export_format='GLTF_SEPARATE',
-                    use_selection=True,
-                    export_yup=True,
-                    export_texcoords=True,
-                    export_normals=True,
-                    export_tangents=True,
-                    export_colors=True,
-                    export_materials='NONE',
-                    export_skins=True,
-                    export_animations=True,
-                    export_force_sampling=True,
-                    export_optimize_animation_size=False
-                )
+                self.export_meshes(collection, external_filepname)
             elif 'models' == asset_type_name:
-                if 0 < len(collection.children):
-                    for mesh_collection in collection.children:
-                        mesh_data = mesh_collection.override_library.reference
-                        mesh_library_path = mesh_data.asset_data.catalog_simple_name
-                        print(f'mesh_library_path: {mesh_library_path}')
-                        for child_object in mesh_data.objects:
-                            if 'MESH' == child_object.type:                                
-                                print(f'child_object: {child_object.name}, material: {child_object.active_material}')
-                        for child_object in mesh_collection.objects:
-                            if 'MESH' == child_object.type:                                
-                                print(f'child_object: {child_object.name}, material_instance: {child_object.active_material}')
-            
-            self.logger.info(f'Export {asset_type_name}: {export_filepath}')
-            
-            # remove collection
-            bpy.context.scene.collection.objects.unlink(empty)
-            bpy.data.objects.remove(empty)
+                self.export_models(collection, external_filepname, resource_filename)
                 
     def spawn_asset(self, collection):
         bpy.ops.object.collection_instance_add(collection=collection.name)
