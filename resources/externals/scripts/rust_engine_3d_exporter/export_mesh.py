@@ -109,12 +109,15 @@ class RustEngine3DExporter:
             elif 'models' == asset_type_name:
                 if 0 < len(collection.children):
                     for mesh_collection in collection.children:
-                        mesh_collection.override_library.reference.asset_data.catalog_simple_name
-                         
-                        mesh_data = self.load_blend_file(mesh_collection.library.filepath)
-                        print(f'mesh file: {mesh_collection.library.filepath}')
-                        for mesh_collection in mesh_data.collections:
-                            print(f'mesh_collection: {mesh_collection.asset_data.catalog_simple_name}')
+                        mesh_data = mesh_collection.override_library.reference
+                        mesh_library_path = mesh_data.asset_data.catalog_simple_name
+                        print(f'mesh_library_path: {mesh_library_path}')
+                        for child_object in mesh_data.objects:
+                            if 'MESH' == child_object.type:                                
+                                print(f'child_object: {child_object.name}, material: {child_object.active_material}')
+                        for child_object in mesh_collection.objects:
+                            if 'MESH' == child_object.type:                                
+                                print(f'child_object: {child_object.name}, material_instance: {child_object.active_material}')
             
             self.logger.info(f'Export {asset_type_name}: {export_filepath}')
             
