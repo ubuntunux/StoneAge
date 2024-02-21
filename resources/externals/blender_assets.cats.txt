@@ -12,6 +12,8 @@ b5442a40-dbb5-4b0e-a731-697d94abef6a:StoneAge/game_data/blocks:StoneAge-game_dat
 e5381335-2e00-4db8-9a85-1d38959ec30b:StoneAge/game_data/characters:StoneAge-game_data-characters
 8a3855e5-fe95-4387-8ca5-c9f74e6aaeff:StoneAge/game_data/properties:StoneAge-game_data-properties
 c021cad1-00f6-4a65-94ea-13204785bff0:StoneAge/material_instances:StoneAge-material_instances
+f4fd25bb-393b-4e39-a128-4e29cc75e5f6:StoneAge/material_instances/characters:StoneAge-material_instances-characters
+2b9f06e8-2737-4c50-ac60-be32d945c36e:StoneAge/material_instances/characters/jack:StoneAge-material_instances-characters-jack
 63ecc6f3-e09c-4c2c-a25b-54c7c43a6602:StoneAge/material_instances/environments:StoneAge-material_instances-environments
 c0d03080-1ee0-4f98-9217-4e8f80e916fa:StoneAge/materials:StoneAge-materials
 e3ddd55b-bd11-4603-9e0e-d3917d6520a9:StoneAge/materials/common:StoneAge-materials-common

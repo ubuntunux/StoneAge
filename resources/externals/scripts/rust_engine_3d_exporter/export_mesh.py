@@ -51,30 +51,48 @@ class ResourceType(Enum):
     MATERIAL_INSTANCE = ResourceTypeInfo('material_instances', '.matinst', None)
     MODEL = ResourceTypeInfo('models', '.model', None)
     MESH = ResourceTypeInfo('meshes', '.mesh', '.gltf')
+    
+
+class AssetInfo:
+    def __init__(self, asset):
+        self.asset_name = asset.name
+        
+        tokens = asset.asset_data.catalog_simple_name.split('-')
+        self.asset_library_path = '/'.join(tokens)
+        self.asset_library_name = tokens[0]
+        self.asset_type_name = tokens[1]
+        self.asset_relative_path = '/'.join(tokens[1:])
+    
+    def __str__(self):
+        return str(self.__dict__)
+    
+    def get_asset_filepath(self, resource_path, ext):
+        return os.path.join(resource_path, self.asset_relative_path, self.asset_name) + ext
 
 
 class RustEngine3DExporter:
     def __init__(self, library_name):
         self.library_name = library_name
-        self.asset_library = bpy.context.preferences.filepaths.asset_libraries.get(library_name)
+        self.asset_library = bpy.context.preferences.filepaths.asset_libraries.get(library_name)        
+        self.external_path = self.asset_library.path
+        self.resource_path = os.path.split(self.external_path)[0]
         if self.asset_library:
             log_dirname = os.path.join(self.asset_library.path, '.log')
             self.logger = create_logger(logger_name=library_name, log_dirname=log_dirname, level=logging.DEBUG)
     
-    def export_meshes(self, collection, external_filepname):
-        # create collection
-        empty = bpy.data.objects.new(collection.name, None)
-        empty.instance_type = 'COLLECTION'
-        empty.instance_collection = collection
-        bpy.context.scene.collection.objects.link(empty)
+    def export_material_instance(self, material):
+        '''
+        jack.matinst
         
-        # TODO: select specify object
-        # bpy.ops.object.select_all()
-        bpy.ops.object.select_all(action='DESELECT')
-        empty.select_set(True)
+        {
+"material_name": "common/render_skeletal_object",
+"material_parameters": {"textureBase": "characters/jack/jack_d", "textureMaterial": "common/default_m", "textureNormal": "common/default_n"}
+ }
 
-        # export resource
-        export_filepath = external_filepname + '.gltf'
+        '''
+    
+    def export_meshes(self, collection, asset_info):
+        export_filepath = asset_info.get_asset_filepath(self.external_path, '.gltf')
         bpy.ops.export_scene.gltf(
             filepath=export_filepath,
             export_format='GLTF_SEPARATE',
@@ -92,43 +110,65 @@ class RustEngine3DExporter:
         )
         self.logger.info(f'export_meshes {collection.name}: {export_filepath}')
         
+    def export_models(self, collection, asset_info):
+        if 0 < len(collection.children):
+            model_resource_filename = asset_info.get_asset_filepath(self.resource_path, '.model')
+            
+            for mesh_collection in collection.children:
+                mesh_data = mesh_collection.override_library.reference
+                mesh_library_path = mesh_data.asset_data.catalog_simple_name
+                
+                material_slots_list = []
+                for child_object in mesh_data.objects:
+                    if 'MESH' == child_object.type:
+                        material_slots_list.append(child_object.material_slots)
+                
+                for child_object in mesh_collection.objects:
+                    if 'MESH' == child_object.type:
+                        material_slots = material_slots_list.pop(0)
+                        material_instance_slots = child_object.material_slots
+                        for material_index in range(len(material_instance_slots)):
+                            material = material_slots[material_index].material
+                            material_instance = material_instance_slots[material_index].material
+                            material_asset_info = AssetInfo(material)
+                            material_instance_asset_info = AssetInfo(material_instance)
+                            print(material_asset_info)
+                            print(material_instance_asset_info)
+                            for node in material_instance.node_tree.nodes:
+                                if 'TEX_IMAGE' == node.type:
+                                    image_relative_filepath = node.image.filepath.replace('//', '')
+                                    image_filepath = os.path.abspath(os.path.join(self.resource_path, asset_info.asset_relative_path, image_relative_filepath))                                    
+                                    print(f'Type: {node.type}, Name: {node.name}, Label: {node.label}, Image: {image_filepath}')
+
+            
+    def export_collection(self, collection):
+        self.logger.info(f'export_collection: {collection.asset_data.catalog_simple_name}')
+        asset_info = AssetInfo(collection)
+        
+        # create collection
+        empty = bpy.data.objects.new(collection.name, None)
+        empty.instance_type = 'COLLECTION'
+        empty.instance_collection = collection
+        bpy.context.scene.collection.objects.link(empty)
+        
+        # TODO: select specify object
+        # bpy.ops.object.select_all()
+        bpy.ops.object.select_all(action='DESELECT')
+        empty.select_set(True)
+        
+        # export resource
+        if 'meshes' == asset_info.asset_type_name:
+            self.export_meshes(collection, asset_info)
+        elif 'models' == asset_info.asset_type_name:
+            self.export_models(collection, asset_info)
+            
         # remove collection
         bpy.context.scene.collection.objects.unlink(empty)
         bpy.data.objects.remove(empty)
         
-    def export_models(self, collection, external_filepname, resource_filename):
-        if 0 < len(collection.children):
-            for mesh_collection in collection.children:
-                mesh_data = mesh_collection.override_library.reference
-                mesh_library_path = mesh_data.asset_data.catalog_simple_name
-                print(f'mesh_library_path: {mesh_library_path}')
-                for child_object in mesh_data.objects:
-                    if 'MESH' == child_object.type:                                
-                        print(f'child_object: {child_object.name}, material: {child_object.active_material}')
-                for child_object in mesh_collection.objects:
-                    if 'MESH' == child_object.type:                                
-                        print(f'child_object: {child_object.name}, material_instance: {child_object.active_material}')
+        # clean-up recursive unused data-blocks
+        #bpy.ops.outliner.orphans_purge(do_local_ids=True, do_linked_ids=True, do_recursive=True)
             
-    def export_collection(self, collection):
-        asset_path = collection.asset_data.catalog_simple_name.split('-')
-        if 2 < len(asset_path):
-            asset_library_name = asset_path[0]
-            asset_type_name = asset_path[1]
-            relative_path = '/'.join(asset_path[1:])
-            external_path = self.asset_library.path
-            resource_path = os.path.split(external_path)[0]
-            external_filepname = os.path.join(external_path, relative_path, collection.name)
-            resource_filename = os.path.join(resource_path, relative_path, collection.name)
-            
-            self.logger.info(f'export_collection: {relative_path}, external_path: {external_path}, resource_path: {resource_path}, collection.name: {collection.name}')
-
-            # export resource            
-            export_filepath = ''            
-            if 'meshes' == asset_type_name:
-                self.export_meshes(collection, external_filepname)
-            elif 'models' == asset_type_name:
-                self.export_models(collection, external_filepname, resource_filename)
-                
     def spawn_asset(self, collection):
         bpy.ops.object.collection_instance_add(collection=collection.name)
         
@@ -163,6 +203,7 @@ def run_export_resources():
 
     exporter = RustEngine3DExporter('StoneAge')
     exporter.export_blend('/home/ubuntunux/WorkSpace/StoneAge/resources/externals/models/characters/jack.blend')
+    #exporter.export_blend('/home/ubuntunux/WorkSpace/StoneAge/resources/externals/meshes/characters/jack/jack.blend')
     #exporter.export_resources()
 
     # scene = context.scene
