@@ -74,6 +74,7 @@ resources/externals/game_data/blocks/cliff_grass.blend
 resources/externals/game_data/properties/properties.blend
 resources/externals/game_data/game_scenes/intro_stage.blend
 resources/externals/scripts/rust_engine_3d_exporter/__pycache__/export_mesh.cpython-310.pyc
+resources/externals/.log/StoneAge_20240224_024306.log
 resources/externals/.log/StoneAge_20240222_010741.log
 resources/externals/.log/StoneAge_20240222_013757.log
 resources/externals/.log/StoneAge_20240222_000955.log
@@ -117,6 +118,7 @@ resources/externals/.log/StoneAge_20240222_021444.log
 resources/externals/.log/StoneAge_20240222_021038.log
 resources/externals/.log/StoneAge_20240220_015343.log
 resources/externals/.log/StoneAge_20240223_012001.log
+resources/externals/.log/StoneAge_20240224_024215.log
 resources/externals/.log/StoneAge_20240222_010315.log
 resources/externals/.log/StoneAge_20240222_023758.log
 resources/externals/.log/StoneAge_20240220_020615.log
@@ -133,6 +135,7 @@ resources/externals/.log/StoneAge_20240222_021818.log
 resources/externals/.log/StoneAge_20240224_015724.log
 resources/externals/.log/StoneAge_20240222_021901.log
 resources/externals/.log/StoneAge_20240220_014014.log
+resources/externals/.log/StoneAge_20240224_024103.log
 resources/externals/.log/StoneAge_20240220_011954.log
 resources/externals/.log/StoneAge_20240224_015424.log
 resources/externals/.log/StoneAge_20240222_005924.log
@@ -165,6 +168,7 @@ resources/externals/.log/StoneAge_20240222_024728.log
 resources/externals/.log/StoneAge_20240221_020217.log
 resources/externals/.log/StoneAge_20240221_023217.log
 resources/externals/.log/StoneAge_20240224_021156.log
+resources/externals/.log/StoneAge_20240224_024348.log
 resources/externals/.log/StoneAge_20240220_014611.log
 resources/externals/.log/StoneAge_20240222_005937.log
 resources/externals/.log/StoneAge_20240222_023814.log
@@ -174,6 +178,7 @@ resources/externals/.log/StoneAge_20240224_014838.log
 resources/externals/.log/StoneAge_20240221_082022.log
 resources/externals/.log/StoneAge_20240220_233132.log
 resources/externals/.log/StoneAge_20240222_005918.log
+resources/externals/.log/StoneAge_20240224_024432.log
 resources/externals/.log/StoneAge_20240223_011041.log
 resources/externals/.log/StoneAge_20240220_015013.log
 resources/externals/.log/StoneAge_20240222_021427.log
@@ -181,6 +186,7 @@ resources/externals/.log/StoneAge_20240220_014303.log
 resources/externals/.log/StoneAge_20240221_022150.log
 resources/externals/.log/StoneAge_20240222_010243.log
 resources/externals/.log/StoneAge_20240223_011647.log
+resources/externals/.log/StoneAge_20240224_024556.log
 resources/externals/.log/StoneAge_20240222_022853.log
 resources/externals/.log/StoneAge_20240223_011349.log
 resources/externals/.log/StoneAge_20240220_020036.log
@@ -197,6 +203,7 @@ resources/externals/.log/StoneAge_20240224_015512.log
 resources/externals/.log/StoneAge_20240220_233804.log
 resources/externals/.log/StoneAge_20240221_013247.log
 resources/externals/.log/StoneAge_20240220_013829.log
+resources/externals/.log/StoneAge_20240224_024543.log
 resources/externals/.log/StoneAge_20240223_012008.log
 resources/externals/.log/StoneAge_20240224_022044.log
 resources/externals/.log/StoneAge_20240222_023849.log
@@ -216,6 +223,7 @@ resources/externals/.log/StoneAge_20240222_022744.log
 resources/externals/.log/StoneAge_20240224_020959.log
 resources/externals/.log/StoneAge_20240220_011909.log
 resources/externals/.log/StoneAge_20240222_022920.log
+resources/externals/.log/StoneAge_20240224_024609.log
 resources/externals/.log/StoneAge_20240222_024753.log
 resources/externals/.log/StoneAge_20240224_023259.log
 resources/externals/.log/StoneAge_20240220_020217.log
