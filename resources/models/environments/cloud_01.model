@@ -1,1 +1,6 @@
-{"material_instances": ["environments/cloud"], "mesh": "environments/cloud_01"}
+{
+    "material_instances": [
+        "environments/cloud"
+    ],
+    "mesh": "environments/cloud_01"
+}

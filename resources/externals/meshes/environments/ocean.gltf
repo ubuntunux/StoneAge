@@ -8,13 +8,19 @@
 		{
 			"name":"Scene",
 			"nodes":[
-				0
+				1
 			]
 		}
 	],
 	"nodes":[
 		{
 			"mesh":0,
+			"name":"ocean"
+		},
+		{
+			"children":[
+				0
+			],
 			"name":"ocean"
 		}
 	],

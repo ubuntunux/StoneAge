@@ -1,1 +1,6 @@
-{"material_instances": ["environments/grass"], "mesh": "environments/grass"}
+{
+    "material_instances": [
+        "environments/desert_ground"
+    ],
+    "mesh": "environments/grass"
+}
