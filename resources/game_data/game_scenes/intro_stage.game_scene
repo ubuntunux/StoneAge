@@ -1,4 +1,4 @@
-{"_scene_data_name":"intro_stage",
+{"_scene_data_name":"stage_dry_forest",
 "_player":{
     "player": {"_character_data_name":"jack", "_position":[0.0,1.0,0.0], "_rotation":[0.0,0.0,0.0], "_scale":[0.25,0.25,0.25]}
 },
