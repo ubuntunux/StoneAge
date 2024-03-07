@@ -116,7 +116,7 @@
     "_scene_data_name": "stage_dry_forest",
     "_start_point": [
         0.0,
-        0.0,
+        1.0,
         0.0
     ]
 }
