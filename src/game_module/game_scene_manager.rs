@@ -82,6 +82,10 @@ impl GameSceneManager {
         id
     }
 
+    pub fn get_blocks(&self) -> &HashMap<u64, RcRefCell<Block>> {
+        &self._blocks
+    }
+
     pub fn register_block(&mut self, block: &RcRefCell<Block>) {
         self._blocks.insert(block.borrow().get_block_id(), block.clone());
     }

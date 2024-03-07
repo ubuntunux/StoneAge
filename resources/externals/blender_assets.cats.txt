@@ -21,6 +21,7 @@ e3ddd55b-bd11-4603-9e0e-d3917d6520a9:StoneAge/materials/common:StoneAge-material
 b4a6efe7-0f70-477b-b168-13bf22b4b568:StoneAge/meshes:StoneAge-meshes
 f16677b8-5725-4004-80f4-4129b0cd7dfe:StoneAge/meshes/characters:StoneAge-meshes-characters
 8773c78b-4d23-4740-bedb-820a9f3daf7f:StoneAge/meshes/characters/jack:StoneAge-meshes-characters-jack
+62b356be-d218-4b44-89d5-d2fb0504c09c:StoneAge/meshes/characters/mutant:StoneAge-meshes-characters-mutant
 6fa9671c-4f94-4b42-807a-85314e85e643:StoneAge/meshes/environments:StoneAge-meshes-environments
 93a67db6-5233-43e8-a026-ecf93c4beb74:StoneAge/models:StoneAge-models
 32cad476-de75-4b5f-a048-8e7957ee42cd:StoneAge/models/characters:StoneAge-models-characters

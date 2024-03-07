@@ -35,6 +35,78 @@
                 1.0,
                 1.0
             ]
+        },
+        "rock01.001": {
+            "_block_data_name": "cliff_grass",
+            "_position": [
+                8.0,
+                14.0,
+                0.0
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "rock01.002": {
+            "_block_data_name": "cliff_grass",
+            "_position": [
+                6.0,
+                14.0,
+                0.0
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "rock01.003": {
+            "_block_data_name": "cliff_grass",
+            "_position": [
+                10.0,
+                14.0,
+                0.0
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "rock01.004": {
+            "_block_data_name": "cliff_grass",
+            "_position": [
+                14.0,
+                14.0,
+                0.0
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
         }
     },
     "_characters": {

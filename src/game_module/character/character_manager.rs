@@ -104,13 +104,16 @@ impl CharacterManager {
         self._player.as_ref().unwrap()
     }
     pub fn update_character_manager(&mut self, _engine_core: &EngineCore, delta_time: f64) {
-        let rock00 = self.get_game_scene_manager().get_scene_manager().get_static_render_object("rock00");
-        let rock01 = self.get_game_scene_manager().get_scene_manager().get_static_render_object("rock01");
-        let blocks: Vec<*const RenderObjectData> = vec![rock00.unwrap().as_ptr(), rock01.unwrap().as_ptr()];
+        // gather block mesh
+        let blocks = self.get_game_scene_manager().get_blocks();
+        let mut block_meshes: Vec<*const RenderObjectData> = Vec::new();
+        for (_key, block) in blocks.iter() {
+            block_meshes.push(block.borrow()._render_object.as_ptr());
+        }
 
         for character in self._characters.values() {
             let mut character_mut = character.borrow_mut();
-            character_mut.update_character(&blocks, delta_time as f32);
+            character_mut.update_character(&block_meshes, delta_time as f32);
         }
 
         let mut dead_characters: Vec<RcRefCell<Character>> = Vec::new();
