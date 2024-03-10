@@ -1,7 +1,313 @@
 {
     "_blocks": {
-        "rock00": {
-            "_block_data_name": "cliff_grass",
+        "rock": {
+            "_block_data_name": "rock",
+            "_position": [
+                0.0,
+                10.0,
+                0.0
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "rock.001": {
+            "_block_data_name": "rock",
+            "_position": [
+                -2.0,
+                10.0,
+                0.0
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "rock.002": {
+            "_block_data_name": "rock",
+            "_position": [
+                -4.0,
+                10.0,
+                0.0
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "rock.003": {
+            "_block_data_name": "rock",
+            "_position": [
+                -6.0,
+                10.0,
+                0.0
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "rock.004": {
+            "_block_data_name": "rock",
+            "_position": [
+                -8.0,
+                10.0,
+                0.0
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "rock.005": {
+            "_block_data_name": "rock",
+            "_position": [
+                -10.0,
+                10.0,
+                0.0
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "rock.006": {
+            "_block_data_name": "rock",
+            "_position": [
+                -12.0,
+                10.0,
+                0.0
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "rock.007": {
+            "_block_data_name": "rock",
+            "_position": [
+                -14.0,
+                10.0,
+                0.0
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "rock.008": {
+            "_block_data_name": "rock",
+            "_position": [
+                -16.0,
+                10.0,
+                0.0
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "rock.009": {
+            "_block_data_name": "rock",
+            "_position": [
+                18.0,
+                10.0,
+                0.0
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "rock.010": {
+            "_block_data_name": "rock",
+            "_position": [
+                16.0,
+                10.0,
+                0.0
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "rock.011": {
+            "_block_data_name": "rock",
+            "_position": [
+                14.0,
+                10.0,
+                0.0
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "rock.012": {
+            "_block_data_name": "rock",
+            "_position": [
+                12.0,
+                10.0,
+                0.0
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "rock.013": {
+            "_block_data_name": "rock",
+            "_position": [
+                10.0,
+                10.0,
+                0.0
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "rock.014": {
+            "_block_data_name": "rock",
+            "_position": [
+                8.0,
+                10.0,
+                0.0
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "rock.015": {
+            "_block_data_name": "rock",
+            "_position": [
+                6.0,
+                10.0,
+                0.0
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "rock.016": {
+            "_block_data_name": "rock",
+            "_position": [
+                4.0,
+                10.0,
+                0.0
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "rock.017": {
+            "_block_data_name": "rock",
             "_position": [
                 2.0,
                 10.0,
@@ -18,12 +324,138 @@
                 1.0
             ]
         },
-        "rock01": {
-            "_block_data_name": "cliff_grass",
+        "rock.018": {
+            "_block_data_name": "rock",
+            "_position": [
+                18.0,
+                12.0,
+                2.0
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "rock.019": {
+            "_block_data_name": "rock",
+            "_position": [
+                16.0,
+                12.0,
+                2.0
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "rock.020": {
+            "_block_data_name": "rock",
+            "_position": [
+                14.0,
+                12.0,
+                2.0
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "rock.021": {
+            "_block_data_name": "rock",
+            "_position": [
+                12.0,
+                12.0,
+                2.0
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "rock.022": {
+            "_block_data_name": "rock",
+            "_position": [
+                10.0,
+                12.0,
+                2.0
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "rock.023": {
+            "_block_data_name": "rock",
+            "_position": [
+                8.0,
+                12.0,
+                2.0
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "rock.024": {
+            "_block_data_name": "rock",
+            "_position": [
+                6.0,
+                12.0,
+                2.0
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "rock.025": {
+            "_block_data_name": "rock",
             "_position": [
                 4.0,
                 12.0,
-                0.0
+                2.0
             ],
             "_rotation": [
                 0.0,
@@ -36,12 +468,12 @@
                 1.0
             ]
         },
-        "rock01.001": {
-            "_block_data_name": "cliff_grass",
+        "rock.026": {
+            "_block_data_name": "rock",
             "_position": [
-                8.0,
-                14.0,
-                0.0
+                2.0,
+                12.0,
+                2.0
             ],
             "_rotation": [
                 0.0,
@@ -54,12 +486,12 @@
                 1.0
             ]
         },
-        "rock01.002": {
-            "_block_data_name": "cliff_grass",
+        "rock.027": {
+            "_block_data_name": "rock",
             "_position": [
-                6.0,
+                18.0,
                 14.0,
-                0.0
+                4.0
             ],
             "_rotation": [
                 0.0,
@@ -72,12 +504,66 @@
                 1.0
             ]
         },
-        "rock01.003": {
-            "_block_data_name": "cliff_grass",
+        "rock.028": {
+            "_block_data_name": "rock",
+            "_position": [
+                16.0,
+                14.0,
+                4.0
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "rock.029": {
+            "_block_data_name": "rock",
+            "_position": [
+                14.0,
+                14.0,
+                4.0
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "rock.030": {
+            "_block_data_name": "rock",
+            "_position": [
+                12.0,
+                14.0,
+                4.0
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "rock.031": {
+            "_block_data_name": "rock",
             "_position": [
                 10.0,
                 14.0,
-                0.0
+                4.0
             ],
             "_rotation": [
                 0.0,
@@ -90,12 +576,66 @@
                 1.0
             ]
         },
-        "rock01.004": {
-            "_block_data_name": "cliff_grass",
+        "rock.032": {
+            "_block_data_name": "rock",
             "_position": [
+                8.0,
                 14.0,
-                14.0,
+                4.0
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
                 0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "rock.033": {
+            "_block_data_name": "rock",
+            "_position": [
+                6.0,
+                14.0,
+                4.0
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "rock.034": {
+            "_block_data_name": "rock",
+            "_position": [
+                4.0,
+                14.0,
+                4.0
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "rock.035": {
+            "_block_data_name": "rock",
+            "_position": [
+                2.0,
+                14.0,
+                4.0
             ],
             "_rotation": [
                 0.0,
@@ -110,29 +650,11 @@
         }
     },
     "_characters": {
-        "enemy00": {
-            "_character_data_name": "jack",
-            "_position": [
-                2.0,
-                1.0,
-                0.0
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                0.25,
-                0.25,
-                0.25
-            ]
-        },
         "enemy01": {
             "_character_data_name": "jack",
             "_position": [
-                -2.0,
-                1.0,
+                3.0,
+                41.0,
                 0.0
             ],
             "_rotation": [
@@ -144,24 +666,6 @@
                 0.25,
                 0.25,
                 0.25
-            ]
-        },
-        "enemy02": {
-            "_character_data_name": "jack",
-            "_position": [
-                0.0,
-                1.0,
-                0.0
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
             ]
         }
     },
@@ -169,8 +673,8 @@
         "player": {
             "_character_data_name": "jack",
             "_position": [
-                0.0,
-                1.0,
+                -6.0,
+                41.0,
                 0.0
             ],
             "_rotation": [
@@ -187,8 +691,8 @@
     },
     "_scene_data_name": "stage_dry_forest",
     "_start_point": [
-        0.0,
-        1.0,
+        -15.0,
+        41.0,
         0.0
     ]
 }

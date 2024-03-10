@@ -1,0 +1,6 @@
+{
+    "material_instances": [
+        "environments/desert_ground"
+    ],
+    "mesh": "environments/rock"
+}

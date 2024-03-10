@@ -49,11 +49,12 @@ resources/externals/meshes/characters/jack/jack_idle.blend
 resources/externals/meshes/characters/jack/jack_jump.blend
 resources/externals/meshes/characters/jack/jack_jump.bin
 resources/externals/meshes/characters/jack/jack_walk.bin
-resources/externals/meshes/characters/mutant/mutant.blend
 resources/externals/meshes/environments/ocean.bin
 resources/externals/meshes/environments/desert_ground.blend
+resources/externals/meshes/environments/rock.gltf
 resources/externals/meshes/environments/cloud_01.blend
 resources/externals/meshes/environments/grass_darken.bin
+resources/externals/meshes/environments/rock.bin
 resources/externals/meshes/environments/landscape_00.bin
 resources/externals/meshes/environments/grass.bin
 resources/externals/meshes/environments/cliff_grass.blend
@@ -75,6 +76,7 @@ resources/externals/meshes/environments/cloud_02.blend
 resources/externals/meshes/environments/desert_ground.bin
 resources/externals/meshes/environments/ocean.gltf
 resources/externals/meshes/environments/grass.gltf
+resources/externals/meshes/environments/rock.blend
 resources/externals/meshes/environments/landscape_00.gltf
 resources/externals/meshes/environments/cliff_grass.gltf
 resources/externals/meshes/environments/cloud_00.blend
@@ -83,21 +85,23 @@ resources/externals/meshes/environments/landscape_00.blend
 resources/externals/scenes/stage_dry_forest.blend
 resources/externals/game_data/characters/jack.blend
 resources/externals/game_data/blocks/cliff_grass.blend
+resources/externals/game_data/blocks/rock.blend
 resources/externals/game_data/properties/properties.blend
 resources/externals/game_data/game_scenes/intro_stage.blend
-resources/externals/scripts/rust_engine_3d_exporter/__pycache__/export_mesh.cpython-310.pyc
 resources/externals/.log/StoneAge_20240303_180157.log
 resources/externals/.log/StoneAge_20240224_024306.log
 resources/externals/.log/StoneAge_20240303_173330.log
 resources/externals/.log/StoneAge_20240303_173505.log
 resources/externals/.log/StoneAge_20240229_014858.log
 resources/externals/.log/StoneAge_20240306_011619.log
+resources/externals/.log/StoneAge_20240311_005646.log
 resources/externals/.log/StoneAge_20240303_224837.log
 resources/externals/.log/StoneAge_20240303_035719.log
 resources/externals/.log/StoneAge_20240222_010741.log
 resources/externals/.log/StoneAge_20240303_033503.log
 resources/externals/.log/StoneAge_20240305_230945.log
 resources/externals/.log/StoneAge_20240305_231910.log
+resources/externals/.log/StoneAge_20240311_003818.log
 resources/externals/.log/StoneAge_20240222_013757.log
 resources/externals/.log/StoneAge_20240307_005801.log
 resources/externals/.log/StoneAge_20240303_205154.log
@@ -105,6 +109,7 @@ resources/externals/.log/StoneAge_20240303_210010.log
 resources/externals/.log/StoneAge_20240305_014904.log
 resources/externals/.log/StoneAge_20240229_020000.log
 resources/externals/.log/StoneAge_20240303_235526.log
+resources/externals/.log/StoneAge_20240311_010952.log
 resources/externals/.log/StoneAge_20240222_000955.log
 resources/externals/.log/StoneAge_20240222_010725.log
 resources/externals/.log/StoneAge_20240222_010333.log
@@ -166,6 +171,7 @@ resources/externals/.log/StoneAge_20240303_180204.log
 resources/externals/.log/StoneAge_20240303_033514.log
 resources/externals/.log/StoneAge_20240303_033448.log
 resources/externals/.log/StoneAge_20240303_233451.log
+resources/externals/.log/StoneAge_20240311_003831.log
 resources/externals/.log/StoneAge_20240220_015902.log
 resources/externals/.log/StoneAge_20240303_035733.log
 resources/externals/.log/StoneAge_20240303_045033.log
@@ -186,6 +192,7 @@ resources/externals/.log/StoneAge_20240222_010734.log
 resources/externals/.log/StoneAge_20240303_044018.log
 resources/externals/.log/StoneAge_20240221_015932.log
 resources/externals/.log/StoneAge_20240303_224942.log
+resources/externals/.log/StoneAge_20240311_010953.log
 resources/externals/.log/StoneAge_20240303_044324.log
 resources/externals/.log/StoneAge_20240222_013740.log
 resources/externals/.log/StoneAge_20240303_045057.log
@@ -198,6 +205,7 @@ resources/externals/.log/StoneAge_20240303_033501.log
 resources/externals/.log/StoneAge_20240222_025005.log
 resources/externals/.log/StoneAge_20240221_023136.log
 resources/externals/.log/StoneAge_20240303_033506.log
+resources/externals/.log/StoneAge_20240311_011032.log
 resources/externals/.log/StoneAge_20240224_020511.log
 resources/externals/.log/StoneAge_20240303_232817.log
 resources/externals/.log/StoneAge_20240305_232757.log
@@ -242,6 +250,7 @@ resources/externals/.log/StoneAge_20240223_012001.log
 resources/externals/.log/StoneAge_20240224_024215.log
 resources/externals/.log/StoneAge_20240222_010315.log
 resources/externals/.log/StoneAge_20240307_233637.log
+resources/externals/.log/StoneAge_20240311_004449.log
 resources/externals/.log/StoneAge_20240222_023758.log
 resources/externals/.log/StoneAge_20240305_004229.log
 resources/externals/.log/StoneAge_20240303_043814.log
@@ -358,6 +367,7 @@ resources/externals/.log/StoneAge_20240303_041152.log
 resources/externals/.log/StoneAge_20240303_033609.log
 resources/externals/.log/StoneAge_20240303_041650.log
 resources/externals/.log/StoneAge_20240221_020246.log
+resources/externals/.log/StoneAge_20240311_010026.log
 resources/externals/.log/StoneAge_20240303_045540.log
 resources/externals/.log/StoneAge_20240307_235400.log
 resources/externals/.log/StoneAge_20240303_011633.log
@@ -424,6 +434,7 @@ resources/externals/.log/StoneAge_20240223_011041.log
 resources/externals/.log/StoneAge_20240303_040108.log
 resources/externals/.log/StoneAge_20240305_232150.log
 resources/externals/.log/StoneAge_20240229_011210.log
+resources/externals/.log/StoneAge_20240308_010749.log
 resources/externals/.log/StoneAge_20240220_015013.log
 resources/externals/.log/StoneAge_20240303_205054.log
 resources/externals/.log/StoneAge_20240222_021427.log
@@ -577,6 +588,7 @@ resources/externals/.log/StoneAge_20240303_230724.log
 resources/externals/.log/StoneAge_20240220_015956.log
 resources/externals/.log/StoneAge_20240305_001705.log
 resources/externals/.log/StoneAge_20240303_043547.log
+resources/externals/.log/StoneAge_20240311_010954.log
 resources/externals/.log/StoneAge_20240303_033101.log
 resources/externals/.log/StoneAge_20240305_232645.log
 resources/externals/.log/StoneAge_20240220_014817.log
@@ -662,7 +674,6 @@ resources/externals/.log/StoneAge_20240303_044257.log
 resources/externals/.log/StoneAge_20240222_014455.log
 resources/externals/.log/StoneAge_20240303_032448.log
 resources/externals/models/characters/jack.blend
-resources/externals/models/characters/mutant.blend
 resources/externals/models/environments/desert_ground.blend
 resources/externals/models/environments/landscape.blend
 resources/externals/models/environments/cloud_01.blend
@@ -672,6 +683,7 @@ resources/externals/models/environments/cactus.blend
 resources/externals/models/environments/ocean.blend
 resources/externals/models/environments/grass.blend
 resources/externals/models/environments/cloud_02.blend
+resources/externals/models/environments/rock.blend
 resources/externals/models/environments/cloud_00.blend
 resources/externals/materials/common/render_static_object.blend
 resources/externals/materials/common/render_skeletal_object.blend
@@ -834,6 +846,8 @@ resources/engine_resources/externals/textures/fonts/NanumGothic_Basic_Latin.png
 resources/engine_resources/externals/textures/fonts/NanumMyeongjoBold_Basic_Latin.png
 resources/engine_resources/externals/textures/mutant/mutant_normal.png
 resources/engine_resources/externals/textures/mutant/mutant_diffuse.png
+resources/engine_resources/externals/blender_assets.cats.txt
+resources/engine_resources/externals/blender_assets.cats.txt~
 resources/engine_resources/externals/fonts/NanumMyeongjoBold.ttf
 resources/engine_resources/externals/fonts/NanumBarunGothic.ttf
 resources/engine_resources/externals/fonts/NanumBarunGothicBold.ttf
@@ -844,6 +858,8 @@ resources/engine_resources/externals/fonts/NanumGothic_Coding.ttf
 resources/engine_resources/externals/meshes/mutant.gltf
 resources/engine_resources/externals/meshes/sphere.obj
 resources/engine_resources/externals/meshes/suzan.obj
+resources/engine_resources/externals/.log/engine_resources_20240308_010853.log
+resources/engine_resources/externals/.log/engine_resources_20240311_005521.log
 resources/engine_resources/sounds/default.wav
 resources/engine_resources/fonts/NanumMyeongjoBold_Basic_Latin.font
 resources/engine_resources/fonts/NanumGothic_Coding_Basic_Latin.font
@@ -1045,7 +1061,6 @@ resources/material_instances/ui/crosshair.matinst
 resources/material_instances/effects/smoke.matinst
 resources/material_instances/effects/default.matinst
 resources/material_instances/characters/jack/jack.matinst
-resources/material_instances/characters/pickle/pickle.matinst
 resources/material_instances/environments/desert_ground.matinst
 resources/material_instances/environments/ocean.matinst
 resources/material_instances/environments/cliff_grass.matinst
@@ -1058,6 +1073,7 @@ resources/shaders/render_test.vert
 resources/scenes/stage_dry_forest.scene
 resources/scenes/intro_stage.scene
 resources/game_data/characters/jack.data
+resources/game_data/blocks/rock.data
 resources/game_data/blocks/cliff_grass.data
 resources/game_data/game_scenes/intro_stage.data
 resources/models/characters/jack.model
@@ -1069,6 +1085,7 @@ resources/models/environments/cloud_00.model
 resources/models/environments/cloud_01.model
 resources/models/environments/cliff_grass.model
 resources/models/environments/desert_ground.model
+resources/models/environments/rock.model
 resources/models/environments/cloud_02.model
 resources/models/environments/ocean.model
 resources/materials/render_test.mat
