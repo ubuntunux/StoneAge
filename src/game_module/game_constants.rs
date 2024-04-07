@@ -10,6 +10,11 @@ pub const CAMERA_DISTANCE_MIN: f32 = 4.0;
 pub const CAMERA_DISTANCE_MAX: f32 = 10.0;
 pub const CAMERA_ZOOM_SPEED: f32 = 4.0;
 
+// block
+pub const BLOCK_ID_NONE: u64 = u64::MAX;
+pub const BLOCK_WIDTH: f32 = 2.0;
+pub const BLOCK_HEIGHT: f32 = 2.0;
+
 // player
 pub const PLAYER_MOVE_SPEED: f32 = 3.0;
 pub const PLAYER_JUMP_SPEED: f32 = 12.0;

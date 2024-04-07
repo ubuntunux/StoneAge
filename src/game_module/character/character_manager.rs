@@ -3,7 +3,7 @@ use rust_engine_3d::audio::audio_manager::AudioLoop;
 
 use rust_engine_3d::core::engine_core::EngineCore;
 use rust_engine_3d::effect::effect_data::EffectCreateInfo;
-use rust_engine_3d::scene::render_object::{RenderObjectCreateInfo, RenderObjectData};
+use rust_engine_3d::scene::render_object::RenderObjectCreateInfo;
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
 
 use crate::application::application::Application;
@@ -104,16 +104,9 @@ impl CharacterManager {
         self._player.as_ref().unwrap()
     }
     pub fn update_character_manager(&mut self, _engine_core: &EngineCore, delta_time: f64) {
-        // gather block mesh
-        let blocks = self.get_game_scene_manager().get_blocks();
-        let mut block_meshes: Vec<*const RenderObjectData> = Vec::new();
-        for (_key, block) in blocks.iter() {
-            block_meshes.push(block.borrow()._render_object.as_ptr());
-        }
-
         for character in self._characters.values() {
             let mut character_mut = character.borrow_mut();
-            character_mut.update_character(&block_meshes, delta_time as f32);
+            character_mut.update_character(self.get_game_scene_manager(), delta_time as f32);
         }
 
         let mut dead_characters: Vec<RcRefCell<Character>> = Vec::new();

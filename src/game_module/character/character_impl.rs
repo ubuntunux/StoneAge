@@ -8,6 +8,7 @@ use crate::game_module::character::animation_blend_mask::AnimationBlendMasks;
 
 use crate::game_module::character::character::*;
 use crate::game_module::game_constants::*;
+use crate::game_module::game_scene_manager::GameSceneManager;
 
 
 impl Default for CharacterData {
@@ -83,7 +84,7 @@ impl CharacterController {
         self._velocity.y = 0.0;
     }
 
-    pub fn update_character_controller(&mut self, _actor_bound_box: &BoundingBox, blocks: &Vec<*const RenderObjectData>, delta_time: f32) {
+    pub fn update_character_controller(&mut self, game_scene_manager: &GameSceneManager, _actor_bound_box: &BoundingBox, delta_time: f32) {
         let prev_position = self._position.clone_owned();
 
         // move on ground
@@ -107,14 +108,18 @@ impl CharacterController {
             self.set_on_ground(GROUND_HEIGHT);
         }
 
-        for block in blocks.iter() {
-            let block_bound_box = &ptr_as_ref(*block)._bound_box;
-            if block_bound_box.collide_bound_box(&self._position) {
-                if block_bound_box.collide_bound_box_x(&prev_position) && block_bound_box._max.y <= prev_position.y {
-                    self.set_on_ground(block_bound_box._max.y)
-                } else if block_bound_box.collide_bound_box_y(&prev_position) && false == block_bound_box.collide_bound_box_x(&prev_position) {
-                    self._position.x = prev_position.x;
-                }
+        // check collide with block
+        if let Some(block) = game_scene_manager.get_block(&self._position) {
+            let block = block.borrow();
+            let block_render_object = block._render_object.borrow();
+            let block_bound_box = &block_render_object._bound_box;
+
+            if block_bound_box.collide_bound_box_x(&prev_position) && block_bound_box._max.y <= prev_position.y {
+                self.set_on_ground(block_bound_box._max.y);
+            }
+
+            if block_bound_box.collide_bound_box_y(&prev_position) && false == block_bound_box.collide_bound_box_x(&prev_position) {
+                self._position.x = prev_position.x;
             }
         }
 
@@ -300,12 +305,12 @@ impl Character {
         }
     }
 
-    pub fn update_character(&mut self, blocks: &Vec<*const RenderObjectData>, delta_time: f32) {
+    pub fn update_character(&mut self, game_scene_manager: &GameSceneManager, delta_time: f32) {
         if false == self._is_player {
             self._behavior.update_behavior(ptr_as_mut(self), delta_time);
         }
 
-        self._controller.update_character_controller(&self._render_object.borrow()._bound_box,  blocks, delta_time);
+        self._controller.update_character_controller(game_scene_manager, &self._render_object.borrow()._bound_box, delta_time);
         self.update_transform();
 
         let animation_play_infos = &ptr_as_ref(self._render_object.as_ptr())._animation_play_infos;

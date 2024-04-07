@@ -12,6 +12,7 @@ use crate::application::application::Application;
 use crate::game_module::character::block::{Block, BlockCreateInfo};
 use crate::game_module::character::character::CharacterCreateInfo;
 use crate::game_module::character::character_manager::CharacterManager;
+use crate::game_module::game_constants::{BLOCK_HEIGHT, BLOCK_ID_NONE, BLOCK_WIDTH};
 use crate::game_module::game_resource::GameResources;
 
 type BlockCreateInfoMap = HashMap<String, BlockCreateInfo>;
@@ -34,13 +35,19 @@ pub struct GameSceneManager {
     pub _character_manager: *const CharacterManager,
     pub _game_scene_name: String,
     pub _blocks: HashMap<u64, RcRefCell<Block>>,
-    pub _block_id_generator: u64
+    pub _block_id_generator: u64,
+    pub _map_min_pos: Vector2<f32>,
+    pub _map_max_pos: Vector2<f32>,
+    pub _map_size: Vector2<f32>,
+    pub _block_nums: Vector2<i32>,
+    pub _block_map: Vec<Vec<u64>>
 }
 
 impl GameSceneManager {
     pub fn get_scene_manager(&self) -> &SceneManager {
         ptr_as_ref(self._scene_manager)
     }
+
     pub fn get_scene_manager_mut(&self) -> &mut SceneManager {
         ptr_as_mut(self._scene_manager)
     }
@@ -54,6 +61,11 @@ impl GameSceneManager {
             _game_scene_name: String::new(),
             _blocks: HashMap::new(),
             _block_id_generator: 0,
+            _map_min_pos: Vector2::new(f32::MAX, f32::MAX),
+            _map_max_pos: Vector2::new(f32::MIN, f32::MIN),
+            _map_size: Vector2::zeros(),
+            _block_nums: Vector2::zeros(),
+            _block_map: Vec::new()
         })
     }
 
@@ -76,14 +88,33 @@ impl GameSceneManager {
         )
     }
 
+    pub fn convert_pos_to_block_indices(&self, block_pos: &Vector3<f32>) -> Option<Vector2<usize>> {
+        let x: i32 = ((block_pos.x - self._map_min_pos.x) / self._map_size.x * (self._block_nums.x - 1) as f32) as i32;
+        let y: i32 = ((block_pos.y - self._map_min_pos.y) / self._map_size.y * (self._block_nums.y - 1) as f32) as i32;
+        if 0 <= y && y < self._block_nums.y && 0 <= x && x < self._block_nums.x {
+            return Some(Vector2::new(x as usize, y as usize));
+        }
+        None
+    }
+
+    pub fn set_block_id(&mut self, block_id: u64, block_pos: &Vector3<f32>) {
+        if let Some(pos) = self.convert_pos_to_block_indices(block_pos) {
+            self._block_map[pos.y][pos.x] = block_id;
+        }
+    }
+
+    pub fn get_block(&self, pos: &Vector3<f32>) -> Option<&RcRefCell<Block>> {
+        if let Some(indices) = self.convert_pos_to_block_indices(pos) {
+            let block_id = self._block_map[indices.y][indices.x];
+            return self._blocks.get(&block_id);
+        }
+        None
+    }
+
     pub fn generate_block_id(&mut self) -> u64 {
         let id = self._block_id_generator;
         self._block_id_generator += 1;
         id
-    }
-
-    pub fn get_blocks(&self) -> &HashMap<u64, RcRefCell<Block>> {
-        &self._blocks
     }
 
     pub fn register_block(&mut self, block: &RcRefCell<Block>) {
@@ -94,7 +125,7 @@ impl GameSceneManager {
         self._blocks.remove(&block.borrow().get_block_id());
     }
 
-    pub fn create_block(&mut self, block_name: &str, block_create_info: &BlockCreateInfo) {
+    pub fn create_block(&mut self, block_name: &str, block_create_info: &BlockCreateInfo) -> RcRefCell<Block> {
         let game_resources = ptr_as_ref(self._game_resources);
         let block_data = game_resources.get_block_data(block_create_info._block_data_name.as_str());
         let render_object_create_info = RenderObjectCreateInfo {
@@ -106,7 +137,7 @@ impl GameSceneManager {
             &render_object_create_info
         );
         let block_id = self.generate_block_id();
-        let block = newRcRefCell(Block::create_block(
+        newRcRefCell(Block::create_block(
             block_id,
             block_name,
             block_data,
@@ -114,8 +145,7 @@ impl GameSceneManager {
             &block_create_info._position,
             &block_create_info._rotation,
             &block_create_info._scale
-        ));
-        self._blocks.insert(block_id, block.clone());
+        ))
     }
 
     pub fn open_game_scene_data(&mut self, game_scene_data_name: &str) {
@@ -134,9 +164,32 @@ impl GameSceneManager {
             .open_scene_data(scene_data_name);
 
         // create blocks
+        self._map_min_pos = Vector2::new(f32::MAX, f32::MAX);
+        self._map_max_pos = Vector2::new(f32::MIN, f32::MIN);
         for (block_name, block_create_info) in game_scene_data._blocks.iter() {
-            self.create_block(block_name, block_create_info);
+            let block = self.create_block(block_name, block_create_info);
+            let block_ref = block.borrow();
+            let pos = &block_ref._block_properties._position;
+            if pos.x < self._map_min_pos.x { self._map_min_pos.x = pos.x; }
+            if pos.y < self._map_min_pos.y { self._map_min_pos.y = pos.y; }
+            if self._map_max_pos.x < pos.x { self._map_max_pos.x = pos.x; }
+            if self._map_max_pos.y < pos.y { self._map_max_pos.y = pos.y; }
+            self.register_block(&block);
         }
+
+        // register block id
+        self._map_size = self._map_max_pos - self._map_min_pos;
+        self._block_nums.x = (self._map_size.x / BLOCK_WIDTH) as i32 + 1;
+        self._block_nums.y = (self._map_size.y / BLOCK_HEIGHT) as i32 + 1;
+        let none_blocks: Vec<u64> = vec![BLOCK_ID_NONE; self._block_nums.x as usize];
+        self._block_map = vec![none_blocks; self._block_nums.y as usize];
+        let blocks = self._blocks.clone();
+        for (block_id, block) in blocks {
+            let block_pos = block.borrow()._block_properties._position;
+            self.set_block_id(block_id, &block_pos);
+        }
+
+        log::info!("min: {:?}, max: {:?}, size: {:?}, nums: {:?}", self._map_min_pos, self._map_max_pos, self._map_size, self._block_nums);
 
         // create player
         let character_manager = ptr_as_mut(self._character_manager);
