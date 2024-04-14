@@ -88,9 +88,27 @@ impl GameSceneManager {
         )
     }
 
+    pub fn check_is_on_block(&self, prev_position: &Vector3<f32>, pos: &Vector3<f32>) -> Option<Vector3<f32>> {
+        if let Some(block_indices) = self.convert_pos_to_block_indices(&pos) {
+            if let Some(_block) = self.get_block_by_indices(&block_indices) {
+                let block_ground_pos_y = self.convert_block_indices_to_pos(&block_indices).y + BLOCK_HEIGHT * 0.5;
+                if block_ground_pos_y <= prev_position.y {
+                    return Some(Vector3::new(pos.x, block_ground_pos_y, pos.z));
+                }
+            }
+        }
+        None
+    }
+
+    pub fn convert_block_indices_to_pos(&self, block_indices: &Vector2<usize>) -> Vector3<f32> {
+        let x: f32 = self._map_min_pos.x + block_indices.x as f32 * BLOCK_WIDTH + BLOCK_WIDTH * 0.5;
+        let y: f32 = self._map_min_pos.y + block_indices.y as f32 * BLOCK_HEIGHT + BLOCK_HEIGHT * 0.5;
+        Vector3::new(x, y, 0.0)
+    }
+
     pub fn convert_pos_to_block_indices(&self, block_pos: &Vector3<f32>) -> Option<Vector2<usize>> {
-        let x: i32 = ((block_pos.x - self._map_min_pos.x) / self._map_size.x * (self._block_nums.x - 1) as f32) as i32;
-        let y: i32 = ((block_pos.y - self._map_min_pos.y) / self._map_size.y * (self._block_nums.y - 1) as f32) as i32;
+        let x: i32 = ((block_pos.x - self._map_min_pos.x) / BLOCK_WIDTH) as i32;
+        let y: i32 = ((block_pos.y - self._map_min_pos.y) / BLOCK_HEIGHT) as i32;
         if 0 <= y && y < self._block_nums.y && 0 <= x && x < self._block_nums.x {
             return Some(Vector2::new(x as usize, y as usize));
         }
@@ -109,6 +127,11 @@ impl GameSceneManager {
             return self._blocks.get(&block_id);
         }
         None
+    }
+
+    pub fn get_block_by_indices(&self, indices: &Vector2<usize>) -> Option<&RcRefCell<Block>> {
+        let block_id = self._block_map[indices.y][indices.x];
+        self._blocks.get(&block_id)
     }
 
     pub fn generate_block_id(&mut self) -> u64 {
@@ -178,9 +201,13 @@ impl GameSceneManager {
         }
 
         // register block id
+        self._map_min_pos.x -= BLOCK_WIDTH * 0.5;
+        self._map_min_pos.y -= BLOCK_HEIGHT * 0.5;
+        self._map_max_pos.x += BLOCK_WIDTH * 0.5;
+        self._map_max_pos.y += BLOCK_HEIGHT * 0.5;
         self._map_size = self._map_max_pos - self._map_min_pos;
-        self._block_nums.x = (self._map_size.x / BLOCK_WIDTH) as i32 + 1;
-        self._block_nums.y = (self._map_size.y / BLOCK_HEIGHT) as i32 + 1;
+        self._block_nums.x = (self._map_size.x / BLOCK_WIDTH).ceil() as i32;
+        self._block_nums.y = (self._map_size.y / BLOCK_HEIGHT).ceil() as i32;
         let none_blocks: Vec<u64> = vec![BLOCK_ID_NONE; self._block_nums.x as usize];
         self._block_map = vec![none_blocks; self._block_nums.y as usize];
         let blocks = self._blocks.clone();

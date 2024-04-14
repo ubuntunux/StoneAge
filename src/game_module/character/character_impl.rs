@@ -1,4 +1,4 @@
-use nalgebra::{Vector3};
+use nalgebra::{Vector2, Vector3};
 use rust_engine_3d::scene::animation::AnimationPlayArgs;
 use rust_engine_3d::scene::mesh::MeshData;
 use rust_engine_3d::scene::render_object::{AnimationLayer, RenderObjectData};
@@ -102,26 +102,45 @@ impl CharacterController {
         }
 
         // fall
-        self._velocity.y -= GRAVITY * delta_time;
+        if false == self._is_ground {
+            self._velocity.y -= GRAVITY * delta_time;
+        }
         self._position.y += self._velocity.y * delta_time;
+
+        // check collide with block
+        let center_pos = self._position + Vector3::new(0.0, 1.0, 0.0);
+        if self._position.y <= prev_position.y {
+            if self._is_ground {
+                self._is_ground = false;
+                if let Some(block_indices) = game_scene_manager.convert_pos_to_block_indices(&self._position) {
+                    if 0 < block_indices.y {
+                        let bottom_block_indices = Vector2::new(block_indices.x, block_indices.y - 1);
+                        if let Some(_block) = game_scene_manager.get_block_by_indices(&bottom_block_indices) {
+                            self.set_on_ground(self._position.y);
+                        }
+                    }
+                }
+            }
+            else if let Some(collide_pos) = game_scene_manager.check_is_on_block(&prev_position, &self._position) {
+                self.set_on_ground(collide_pos.y);
+            }
+        }
+
         if self._position.y <= GROUND_HEIGHT {
             self.set_on_ground(GROUND_HEIGHT);
         }
 
-        // check collide with block
-        if let Some(block) = game_scene_manager.get_block(&self._position) {
-            let block = block.borrow();
-            let block_render_object = block._render_object.borrow();
-            let block_bound_box = &block_render_object._bound_box;
-
-            if block_bound_box.collide_bound_box_x(&prev_position) && block_bound_box._max.y <= prev_position.y {
-                self.set_on_ground(block_bound_box._max.y);
-            }
-
-            if block_bound_box.collide_bound_box_y(&prev_position) && false == block_bound_box.collide_bound_box_x(&prev_position) {
-                self._position.x = prev_position.x;
-            }
-        }
+        // let block = block.borrow();
+        // let block_render_object = block._render_object.borrow();
+        // let block_bound_box = &block_render_object._bound_box;
+        //
+        // if block_bound_box.collide_bound_box_x(&prev_position) && block_bound_box._max.y <= prev_position.y {
+        //     self.set_on_ground(block_bound_box._max.y);
+        // }
+        //
+        // if block_bound_box.collide_bound_box_y(&prev_position) && false == block_bound_box.collide_bound_box_x(&prev_position) {
+        //     self._position.x = prev_position.x;
+        // }
 
         // reset
         self._is_jump = false;
@@ -306,6 +325,10 @@ impl Character {
     }
 
     pub fn update_character(&mut self, game_scene_manager: &GameSceneManager, delta_time: f32) {
+        if false == self._is_player {
+            return;
+        }
+
         if false == self._is_player {
             self._behavior.update_behavior(ptr_as_mut(self), delta_time);
         }

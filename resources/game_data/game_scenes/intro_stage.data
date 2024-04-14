@@ -90,24 +90,6 @@
                 1.0
             ]
         },
-        "rock.005": {
-            "_block_data_name": "rock",
-            "_position": [
-                -10.0,
-                10.0,
-                0.0
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
         "rock.006": {
             "_block_data_name": "rock",
             "_position": [
@@ -198,24 +180,6 @@
                 1.0
             ]
         },
-        "rock.011": {
-            "_block_data_name": "rock",
-            "_position": [
-                14.0,
-                10.0,
-                0.0
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
         "rock.012": {
             "_block_data_name": "rock",
             "_position": [
@@ -238,42 +202,6 @@
             "_block_data_name": "rock",
             "_position": [
                 10.0,
-                10.0,
-                0.0
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "rock.014": {
-            "_block_data_name": "rock",
-            "_position": [
-                8.0,
-                10.0,
-                0.0
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "rock.015": {
-            "_block_data_name": "rock",
-            "_position": [
-                6.0,
                 10.0,
                 0.0
             ],
@@ -324,30 +252,12 @@
                 1.0
             ]
         },
-        "rock.018": {
-            "_block_data_name": "rock",
-            "_position": [
-                18.0,
-                12.0,
-                2.0
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
         "rock.019": {
             "_block_data_name": "rock",
             "_position": [
                 16.0,
                 12.0,
-                2.0
+                0.0
             ],
             "_rotation": [
                 0.0,
@@ -365,7 +275,7 @@
             "_position": [
                 14.0,
                 12.0,
-                2.0
+                0.0
             ],
             "_rotation": [
                 0.0,
@@ -383,7 +293,7 @@
             "_position": [
                 12.0,
                 12.0,
-                2.0
+                0.0
             ],
             "_rotation": [
                 0.0,
@@ -401,7 +311,7 @@
             "_position": [
                 10.0,
                 12.0,
-                2.0
+                0.0
             ],
             "_rotation": [
                 0.0,
@@ -419,7 +329,7 @@
             "_position": [
                 8.0,
                 12.0,
-                2.0
+                0.0
             ],
             "_rotation": [
                 0.0,
@@ -437,25 +347,7 @@
             "_position": [
                 6.0,
                 12.0,
-                2.0
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
                 0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "rock.025": {
-            "_block_data_name": "rock",
-            "_position": [
-                4.0,
-                12.0,
-                2.0
             ],
             "_rotation": [
                 0.0,
@@ -473,43 +365,7 @@
             "_position": [
                 2.0,
                 12.0,
-                2.0
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
                 0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "rock.027": {
-            "_block_data_name": "rock",
-            "_position": [
-                18.0,
-                14.0,
-                4.0
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "rock.028": {
-            "_block_data_name": "rock",
-            "_position": [
-                16.0,
-                14.0,
-                4.0
             ],
             "_rotation": [
                 0.0,
@@ -527,25 +383,7 @@
             "_position": [
                 14.0,
                 14.0,
-                4.0
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
                 0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "rock.030": {
-            "_block_data_name": "rock",
-            "_position": [
-                12.0,
-                14.0,
-                4.0
             ],
             "_rotation": [
                 0.0,
@@ -563,7 +401,7 @@
             "_position": [
                 10.0,
                 14.0,
-                4.0
+                0.0
             ],
             "_rotation": [
                 0.0,
@@ -581,61 +419,7 @@
             "_position": [
                 8.0,
                 14.0,
-                4.0
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
                 0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "rock.033": {
-            "_block_data_name": "rock",
-            "_position": [
-                6.0,
-                14.0,
-                4.0
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "rock.034": {
-            "_block_data_name": "rock",
-            "_position": [
-                4.0,
-                14.0,
-                4.0
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "rock.035": {
-            "_block_data_name": "rock",
-            "_position": [
-                2.0,
-                14.0,
-                4.0
             ],
             "_rotation": [
                 0.0,

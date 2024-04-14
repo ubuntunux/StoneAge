@@ -17,7 +17,7 @@ pub const BLOCK_HEIGHT: f32 = 2.0;
 
 // player
 pub const PLAYER_MOVE_SPEED: f32 = 3.0;
-pub const PLAYER_JUMP_SPEED: f32 = 12.0;
+pub const PLAYER_JUMP_SPEED: f32 = 15.0;
 pub const GRAVITY: f32 = 30.0;
 pub const GROUND_HEIGHT: f32 = 9.0;
 pub const CONTINUOUS_ATTACK_TIME: f32 = 0.15;
