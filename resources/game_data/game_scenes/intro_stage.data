@@ -437,8 +437,8 @@
         "enemy01": {
             "_character_data_name": "jack",
             "_position": [
-                3.0,
-                41.0,
+                -2.0,
+                12.0,
                 0.0
             ],
             "_rotation": [
@@ -457,8 +457,8 @@
         "player": {
             "_character_data_name": "jack",
             "_position": [
-                -6.0,
-                41.0,
+                -14.0,
+                12.0,
                 0.0
             ],
             "_rotation": [

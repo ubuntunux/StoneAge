@@ -88,6 +88,7 @@ resources/externals/game_data/blocks/cliff_grass.blend
 resources/externals/game_data/blocks/rock.blend
 resources/externals/game_data/properties/properties.blend
 resources/externals/game_data/game_scenes/intro_stage.blend
+resources/externals/.log/StoneAge_20240416_014806.log
 resources/externals/.log/StoneAge_20240415_012952.log
 resources/externals/.log/StoneAge_20240415_012817.log
 resources/externals/.log/StoneAge_20240415_012803.log

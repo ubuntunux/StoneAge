@@ -88,12 +88,12 @@ impl GameSceneManager {
         )
     }
 
-    pub fn check_is_on_block(&self, prev_position: &Vector3<f32>, pos: &Vector3<f32>) -> Option<Vector3<f32>> {
-        if let Some(block_indices) = self.convert_pos_to_block_indices(&pos) {
+    pub fn check_is_on_block(&self, prev_position: &Vector3<f32>, position: &Vector3<f32>) -> Option<Vector3<f32>> {
+        if let Some(block_indices) = self.convert_pos_to_block_indices(&position) {
             if let Some(_block) = self.get_block_by_indices(&block_indices) {
                 let block_ground_pos_y = self.convert_block_indices_to_pos(&block_indices).y + BLOCK_HEIGHT * 0.5;
                 if block_ground_pos_y <= prev_position.y {
-                    return Some(Vector3::new(pos.x, block_ground_pos_y, pos.z));
+                    return Some(Vector3::new(position.x, block_ground_pos_y, position.z));
                 }
             }
         }
@@ -107,8 +107,8 @@ impl GameSceneManager {
     }
 
     pub fn convert_pos_to_block_indices(&self, block_pos: &Vector3<f32>) -> Option<Vector2<usize>> {
-        let x: i32 = ((block_pos.x - self._map_min_pos.x) / BLOCK_WIDTH) as i32;
-        let y: i32 = ((block_pos.y - self._map_min_pos.y) / BLOCK_HEIGHT) as i32;
+        let x: i32 = ((block_pos.x - self._map_min_pos.x) / BLOCK_WIDTH).floor() as i32;
+        let y: i32 = ((block_pos.y - self._map_min_pos.y) / BLOCK_HEIGHT).floor() as i32;
         if 0 <= y && y < self._block_nums.y && 0 <= x && x < self._block_nums.x {
             return Some(Vector2::new(x as usize, y as usize));
         }
@@ -116,8 +116,9 @@ impl GameSceneManager {
     }
 
     pub fn set_block_id(&mut self, block_id: u64, block_pos: &Vector3<f32>) {
-        if let Some(pos) = self.convert_pos_to_block_indices(block_pos) {
-            self._block_map[pos.y][pos.x] = block_id;
+        if let Some(indices) = self.convert_pos_to_block_indices(block_pos) {
+            log::info!("set_block_id: {:?} -> {:?}", block_pos, indices);
+            self._block_map[indices.y][indices.x] = block_id;
         }
     }
 
