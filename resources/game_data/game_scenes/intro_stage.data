@@ -72,11 +72,11 @@
                 1.0
             ]
         },
-        "rock.004": {
+        "rock.005": {
             "_block_data_name": "rock",
             "_position": [
-                -8.0,
-                10.0,
+                16.0,
+                16.0,
                 0.0
             ],
             "_rotation": [
@@ -180,6 +180,24 @@
                 1.0
             ]
         },
+        "rock.011": {
+            "_block_data_name": "rock",
+            "_position": [
+                18.0,
+                18.0,
+                0.0
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
         "rock.012": {
             "_block_data_name": "rock",
             "_position": [
@@ -216,6 +234,42 @@
                 1.0
             ]
         },
+        "rock.014": {
+            "_block_data_name": "rock",
+            "_position": [
+                20.0,
+                20.0,
+                0.0
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "rock.015": {
+            "_block_data_name": "rock",
+            "_position": [
+                22.0,
+                22.0,
+                0.0
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
         "rock.016": {
             "_block_data_name": "rock",
             "_position": [
@@ -239,6 +293,24 @@
             "_position": [
                 2.0,
                 10.0,
+                0.0
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "rock.018": {
+            "_block_data_name": "rock",
+            "_position": [
+                24.0,
+                24.0,
                 0.0
             ],
             "_rotation": [
@@ -360,6 +432,24 @@
                 1.0
             ]
         },
+        "rock.025": {
+            "_block_data_name": "rock",
+            "_position": [
+                26.0,
+                26.0,
+                0.0
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
         "rock.026": {
             "_block_data_name": "rock",
             "_position": [
@@ -438,6 +528,42 @@
             "_character_data_name": "jack",
             "_position": [
                 -2.0,
+                12.0,
+                0.0
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                0.25,
+                0.25,
+                0.25
+            ]
+        },
+        "enemy01.001": {
+            "_character_data_name": "jack",
+            "_position": [
+                -4.0,
+                12.0,
+                0.0
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                0.25,
+                0.25,
+                0.25
+            ]
+        },
+        "enemy01.002": {
+            "_character_data_name": "jack",
+            "_position": [
+                -10.0,
                 12.0,
                 0.0
             ],

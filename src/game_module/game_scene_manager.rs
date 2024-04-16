@@ -160,6 +160,8 @@ impl GameSceneManager {
             block_name,
             &render_object_create_info
         );
+        //render_object_data.borrow_mut().set_render(false);
+
         let block_id = self.generate_block_id();
         newRcRefCell(Block::create_block(
             block_id,
@@ -217,7 +219,7 @@ impl GameSceneManager {
             self.set_block_id(block_id, &block_pos);
         }
 
-        log::info!("min: {:?}, max: {:?}, size: {:?}, nums: {:?}", self._map_min_pos, self._map_max_pos, self._map_size, self._block_nums);
+        //log::info!("min: {:?}, max: {:?}, size: {:?}, nums: {:?}", self._map_min_pos, self._map_max_pos, self._map_size, self._block_nums);
 
         // create player
         let character_manager = ptr_as_mut(self._character_manager);

@@ -66,7 +66,8 @@ pub struct CharacterController {
 }
 
 pub struct CharacterBehavior {
-    pub _move_time: f32
+    pub _move_time: f32,
+    pub _move_direction: bool
 }
 
 #[derive(Serialize, Deserialize, Default, Debug, Clone, PartialEq)]

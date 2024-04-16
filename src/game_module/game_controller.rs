@@ -70,8 +70,6 @@ impl GameController {
         let btn_left: bool = mouse_input_data._btn_l_pressed;
         let _btn_right: bool = mouse_input_data._btn_r_pressed;
         let _btn_right_hold: bool = mouse_input_data._btn_r_hold;
-
-
         let is_left = keyboard_input_data.get_key_hold(VirtualKeyCode::Left) | keyboard_input_data.get_key_hold(VirtualKeyCode::A);
         let is_right = keyboard_input_data.get_key_hold(VirtualKeyCode::Right) | keyboard_input_data.get_key_hold(VirtualKeyCode::D);
         let is_jump = keyboard_input_data.get_key_hold(VirtualKeyCode::Up) | keyboard_input_data.get_key_hold(VirtualKeyCode::W) | keyboard_input_data.get_key_hold(VirtualKeyCode::Space);
@@ -102,11 +100,27 @@ impl GameController {
             if sign != (self._camera_goal_distance - self._camera_distance).signum() {
                 self._camera_distance = self._camera_goal_distance;
             }
-
-            let mut camera_position = player_mut.get_position() - main_camera._transform_object.get_front() * self._camera_distance;
-            camera_position.y += CAMERA_PITCH;
-            main_camera._transform_object.set_position(&camera_position);
-            main_camera._transform_object.set_pitch(CAMERA_PITCH);
         }
+
+        let player_pos = player_mut.get_position();
+        let mut camera_pos_y = main_camera._transform_object.get_position().y;
+        let mut camera_position = player_pos - main_camera._transform_object.get_front() * self._camera_distance;
+        let upper_camera_pos_y = camera_pos_y + UPPER_CAMERA_OFFSET_Y;
+        let bottom_camera_pos_y = camera_pos_y - BOTTOM_CAMERA_OFFSET_Y;
+        if upper_camera_pos_y < player_pos.y {
+            camera_pos_y = player_pos.y - UPPER_CAMERA_OFFSET_Y;
+        } else if player_pos.y < bottom_camera_pos_y {
+            camera_pos_y = player_pos.y + BOTTOM_CAMERA_OFFSET_Y;
+        }
+
+        if camera_pos_y < CAMERA_POSITION_Y_MIN {
+            camera_pos_y = CAMERA_POSITION_Y_MIN;
+        }
+        camera_position.y = camera_pos_y;
+
+        main_camera._transform_object.set_position(&camera_position);
+        main_camera._transform_object.set_pitch(CAMERA_PITCH);
+        main_camera._transform_object.set_yaw(0.0);
+        main_camera._transform_object.set_roll(0.0);
     }
 }

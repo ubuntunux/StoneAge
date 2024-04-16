@@ -138,7 +138,7 @@ impl CharacterController {
             self.set_on_ground(GROUND_HEIGHT);
         }
 
-        // check collide with side
+        // check blocked with side block
         if self._position.x != prev_position.x {
             let side_pos = self._position + Vector3::new((self._position.x - prev_position.x).signum() * 0.5, 0.0, 0.0);
             if let Some(_block) = game_scene_manager.get_block(&side_pos) {
@@ -156,15 +156,21 @@ impl CharacterBehavior {
     pub fn create_character_behavior() -> CharacterBehavior {
         CharacterBehavior {
             _move_time: 0.0,
+            _move_direction: false,
         }
     }
 
     pub fn update_behavior(&mut self, character: &mut Character, delta_time: f32) {
-        character.set_move_walk(self._move_time < 2.0);
+        character.set_move_walk(self._move_direction);
         self._move_time += delta_time;
-        if 4.0 <= self._move_time {
+        if 2.0 <= self._move_time {
             self._move_time = 0.0;
+            self._move_direction = !self._move_direction;
         }
+    }
+
+    pub fn toggle_move_direction(&mut self) {
+        self._move_direction = !self._move_direction;
     }
 }
 
@@ -217,6 +223,7 @@ impl Character {
                 render_object.set_animation(&self._idle_animation, &animation_info, AnimationLayer::BaseLayer);
             },
             MoveAnimationState::WALK => {
+                animation_info._animation_speed = 1.5;
                 render_object.set_animation(&self._walk_animation, &animation_info, AnimationLayer::BaseLayer);
             },
             MoveAnimationState::JUMP => {
@@ -239,6 +246,7 @@ impl Character {
                     animation_info._animation_loop = false;
                     animation_info._force_animation_setting = true;
                     animation_info._animation_fade_out_time = 0.1;
+                    animation_info._animation_speed = 1.5;
                     render_object.set_animation(&self._attack_animation, &animation_info, AnimationLayer::AdditiveLayer);
                 }
             },

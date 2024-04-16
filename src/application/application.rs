@@ -60,7 +60,7 @@ impl ApplicationBase for Application {
         // start game
         self.get_game_ui_manager_mut().build_game_ui(window_size);
         self.get_game_ui_manager_mut().show_ui(false);
-        self.set_game_mode(self._is_game_mode);
+        self.set_game_mode(true);
         self.get_game_client_mut().start_game();
     }
 
@@ -83,8 +83,7 @@ impl ApplicationBase for Application {
         let mouse_input_data = &engine_core._mouse_input_data;
         let keyboard_input_data = &engine_core._keyboard_input_data;
 
-        if engine_core._keyboard_input_data.get_key_pressed(VirtualKeyCode::Tab)
-        {
+        if engine_core._keyboard_input_data.get_key_pressed(VirtualKeyCode::Tab) {
             self.toggle_game_mode();
         }
 
@@ -278,7 +277,7 @@ pub fn run_application() {
     let app_name: String = "Stone Age".to_string();
     let app_version: u32 = 1;
     let initial_window_size: Vector2<i32> = Vector2::new(1024, 768);
-    let window_mode = WindowMode::WindowMode;
+    let window_mode = WindowMode::FullScreenBorderlessMode;
     let log_level = LevelFilter::Info;
 
     // vulkan setting

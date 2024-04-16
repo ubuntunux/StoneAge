@@ -93,8 +93,14 @@ resources/externals/.log/StoneAge_20240415_012952.log
 resources/externals/.log/StoneAge_20240415_012817.log
 resources/externals/.log/StoneAge_20240415_012803.log
 resources/externals/.log/StoneAge_20240415_012525.log
+resources/externals/.log/StoneAge_20240416_235138.log
+resources/externals/.log/StoneAge_20240416_222332.log
+resources/externals/.log/StoneAge_20240417_010854.log
 resources/externals/.log/StoneAge_20240415_011808.log
+resources/externals/.log/StoneAge_20240416_232909.log
 resources/externals/.log/StoneAge_20240415_012941.log
+resources/externals/.log/StoneAge_20240416_234904.log
+resources/externals/.log/StoneAge_20240417_010617.log
 resources/externals/.log/StoneAge_20240415_011953.log
 resources/externals/.log/StoneAge_20240415_012412.log
 resources/externals/models/characters/jack.blend
@@ -494,7 +500,6 @@ resources/material_instances/render_test.matinst
 resources/shaders/render_test.frag
 resources/shaders/render_test.vert
 resources/scenes/stage_dry_forest.scene
-resources/scenes/intro_stage.scene
 resources/game_data/characters/jack.data
 resources/game_data/blocks/rock.data
 resources/game_data/blocks/cliff_grass.data
