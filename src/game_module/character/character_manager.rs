@@ -1,9 +1,10 @@
 use std::collections::HashMap;
-use rust_engine_3d::audio::audio_manager::AudioLoop;
+use rust_engine_3d::audio::audio_manager::{AudioLoop, AudioManager};
 
 use rust_engine_3d::core::engine_core::EngineCore;
 use rust_engine_3d::effect::effect_data::EffectCreateInfo;
 use rust_engine_3d::scene::render_object::RenderObjectCreateInfo;
+use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
 
 use crate::application::application::Application;
@@ -19,6 +20,8 @@ pub struct CharacterManager {
     pub _game_client: *const GameClient,
     pub _game_scene_manager: *const GameSceneManager,
     pub _game_resources: *const GameResources,
+    pub _audio_manager: *const AudioManager,
+    pub _scene_manager: *const SceneManager,
     pub _animation_blend_masks: Box<AnimationBlendMasks>,
     pub _id_generator: u64,
     pub _player: Option<RcRefCell<Character>>,
@@ -31,6 +34,8 @@ impl CharacterManager {
             _game_client: std::ptr::null(),
             _game_scene_manager: std::ptr::null(),
             _game_resources: std::ptr::null(),
+            _audio_manager: std::ptr::null(),
+            _scene_manager: std::ptr::null(),
             _animation_blend_masks: Box::new(AnimationBlendMasks::create_animation_blend_maks()),
             _id_generator: 0,
             _player: None,
@@ -43,6 +48,8 @@ impl CharacterManager {
         self._game_client = application.get_game_client();
         self._game_scene_manager = application.get_game_scene_manager();
         self._game_resources = application.get_game_resources();
+        self._audio_manager = application.get_audio_manager();
+        self._scene_manager = application.get_game_scene_manager().get_scene_manager();
     }
     pub fn destroy_character_manager(&mut self) {
 
@@ -51,6 +58,10 @@ impl CharacterManager {
     pub fn get_game_client_mut(&self) -> &mut GameClient { ptr_as_mut(self._game_client) }
     pub fn get_game_scene_manager(&self) -> &GameSceneManager { ptr_as_ref(self._game_scene_manager) }
     pub fn get_game_scene_manager_mut(&self) -> &mut GameSceneManager { ptr_as_mut(self._game_scene_manager) }
+    pub fn get_audio_manager(&self) -> &AudioManager { ptr_as_ref(self._audio_manager) }
+    pub fn get_audio_manager_mut(&self) -> &mut AudioManager { ptr_as_mut(self._audio_manager) }
+    pub fn get_scene_manager(&self) -> &SceneManager { ptr_as_ref(self._scene_manager) }
+    pub fn get_scene_manager_mut(&self) -> &mut SceneManager { ptr_as_mut(self._scene_manager) }
     pub fn generate_id(&mut self) -> u64 {
         let id = self._id_generator;
         self._id_generator += 1;
@@ -76,6 +87,7 @@ impl CharacterManager {
         let attack_animation = game_resources.get_engine_resources().get_mesh_data(&character_data.borrow()._attack_animation_mesh);
         let id = self.generate_id();
         let character = newRcRefCell(Character::create_character_instance(
+            self,
             id,
             is_player,
             character_name,
@@ -103,6 +115,15 @@ impl CharacterManager {
     pub fn get_player(&self) -> &RcRefCell<Character> {
         self._player.as_ref().unwrap()
     }
+
+    pub fn play_audio(&self, audio_name_bank: &str) {
+        self.get_audio_manager_mut().create_audio_instance_from_bank(audio_name_bank, AudioLoop::ONCE);
+    }
+
+    pub fn play_effect(&self, effect_name: &str, effect_create_info: &EffectCreateInfo) {
+        self.get_game_scene_manager().get_scene_manager_mut().add_effect(effect_name, effect_create_info);
+    }
+
     pub fn update_character_manager(&mut self, _engine_core: &EngineCore, delta_time: f64) {
         for character in self._characters.values() {
             let mut character_mut = character.borrow_mut();
@@ -112,23 +133,14 @@ impl CharacterManager {
         let mut dead_characters: Vec<RcRefCell<Character>> = Vec::new();
         let player = ptr_as_ref(self._player.as_ref().unwrap().as_ptr());
         if player.is_attacking() {
-            self.get_game_client().get_application().get_audio_manager_mut().create_audio_instance_from_bank("swoosh", AudioLoop::ONCE);
             for character in self._characters.values() {
-                let character_ref = character.borrow_mut();
-                if character_ref._character_id != player._character_id {
-                    if character_ref.collide_bound_box(&player.get_attack_point()) {
-                        dead_characters.push(character.clone());
-
-                        let effect_create_info = EffectCreateInfo {
-                            _effect_position: character_ref.get_attack_point().clone_owned(),
-                            _effect_data_name: String::from("effect_test"),
-                            ..Default::default()
-                        };
-
-                        // fx & audio
-                        self.get_game_scene_manager().get_scene_manager_mut().add_effect("hit_effect", &effect_create_info);
-                        self.get_game_client().get_application().get_audio_manager_mut().create_audio_instance_from_bank("hit", AudioLoop::ONCE);
-                        self.get_game_client().get_application().get_audio_manager_mut().create_audio_instance_from_bank("pain_short", AudioLoop::ONCE);
+                let mut character_mut = character.borrow_mut();
+                if character_mut._character_id != player._character_id {
+                    if character_mut.collide_bound_box(&player.get_attack_point()) {
+                        character_mut.set_damage(player.get_attack_point(), player.get_power());
+                        if false == character_mut._is_alive {
+                            dead_characters.push(character.clone());
+                        }
                     }
                 }
             }

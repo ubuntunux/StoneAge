@@ -1,4 +1,5 @@
 use nalgebra::Vector3;
+use rust_engine_3d::effect::effect_data::EffectCreateInfo;
 use rust_engine_3d::scene::animation::AnimationPlayArgs;
 use rust_engine_3d::scene::mesh::MeshData;
 use rust_engine_3d::scene::render_object::{AnimationLayer, RenderObjectData};
@@ -7,6 +8,7 @@ use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use crate::game_module::character::animation_blend_mask::AnimationBlendMasks;
 
 use crate::game_module::character::character::*;
+use crate::game_module::character::character_manager::CharacterManager;
 use crate::game_module::game_constants::*;
 use crate::game_module::game_scene_manager::GameSceneManager;
 
@@ -28,7 +30,7 @@ impl Default for CharacterData {
 impl CharacterProperty {
     pub fn create_character_property() -> CharacterProperty {
         CharacterProperty {
-            _hp: 0.0,
+            _hp: 100,
         }
     }
 }
@@ -42,6 +44,7 @@ impl CharacterController {
             _velocity: Vector3::zeros(),
             _is_jump: false,
             _is_ground: false,
+            _is_blocked: false,
             _move_direction: 0.0
         }
     }
@@ -139,10 +142,12 @@ impl CharacterController {
         }
 
         // check blocked with side block
+        self._is_blocked = false;
         if self._position.x != prev_position.x {
             let side_pos = self._position + Vector3::new((self._position.x - prev_position.x).signum() * 0.5, 0.0, 0.0);
             if let Some(_block) = game_scene_manager.get_block(&side_pos) {
                 self._position.x = prev_position.x;
+                self._is_blocked = true;
             }
         }
 
@@ -160,13 +165,14 @@ impl CharacterBehavior {
         }
     }
 
-    pub fn update_behavior(&mut self, character: &mut Character, delta_time: f32) {
-        character.set_move_walk(self._move_direction);
+    pub fn update_behavior(&mut self, character: &mut Character, delta_time: f32, toggle_move_direction: bool) {
         self._move_time += delta_time;
-        if 2.0 <= self._move_time {
-            self._move_time = 0.0;
+        if 2.0 <= self._move_time || toggle_move_direction {
             self._move_direction = !self._move_direction;
+            self._move_time = 0.0;
         }
+
+        character.set_move_walk(self._move_direction);
     }
 
     pub fn toggle_move_direction(&mut self) {
@@ -177,6 +183,7 @@ impl CharacterBehavior {
 
 impl Character {
     pub fn create_character_instance(
+        character_manager: &CharacterManager,
         character_id: u64,
         is_player: bool,
         character_name: &str,
@@ -192,8 +199,10 @@ impl Character {
         scale: &Vector3<f32>
     ) -> Character {
         let mut character = Character {
+            _character_manager: character_manager,
             _character_id: character_id,
             _is_player: is_player,
+            _is_alive: true,
             _character_name: String::from(character_name),
             _character_data: character_data.clone(),
             _render_object: render_object.clone(),
@@ -213,6 +222,15 @@ impl Character {
         character._controller._scale.clone_from(scale);
         character
     }
+
+    pub fn get_character_manager(&self) -> &CharacterManager {
+        ptr_as_ref(self._character_manager)
+    }
+
+    pub fn get_character_manager_mut(&self) -> &mut CharacterManager {
+        ptr_as_mut(self._character_manager)
+    }
+
     pub fn get_character_id(&self) -> u64 { self._character_id }
 
     pub fn set_move_animation(&mut self, move_animation_state: MoveAnimationState) {
@@ -248,6 +266,7 @@ impl Character {
                     animation_info._animation_fade_out_time = 0.1;
                     animation_info._animation_speed = 1.5;
                     render_object.set_animation(&self._attack_animation, &animation_info, AnimationLayer::AdditiveLayer);
+                    self.get_character_manager().play_audio("swoosh");
                 }
             },
             _ => ()
@@ -312,6 +331,31 @@ impl Character {
         self._render_object.borrow()._bound_box.collide_in_radius(pos)
     }
 
+    pub fn get_power(&self) -> i32 {
+        50
+    }
+
+    pub fn set_damage(&mut self, attack_point: Vector3<f32>, damage: i32) {
+        self._character_property._hp -= damage;
+
+        if self._character_property._hp <= 0 {
+            self.set_dead();
+        }
+
+        let effect_create_info = EffectCreateInfo {
+            _effect_position: attack_point.clone_owned(),
+            _effect_data_name: String::from("effect_test"),
+            ..Default::default()
+        };
+        self.get_character_manager_mut().play_effect("hit_effect", &effect_create_info);
+        self.get_character_manager_mut().play_audio("hit");
+        self.get_character_manager_mut().play_audio("pain_short");
+    }
+
+    pub fn set_dead(&mut self) {
+        self._is_alive = false;
+    }
+
     pub fn update_transform(&mut self) {
         let mut render_object = self._render_object.borrow_mut();
         render_object._transform_object.set_position(&self._controller._position);
@@ -338,12 +382,13 @@ impl Character {
 
     pub fn update_character(&mut self, game_scene_manager: &GameSceneManager, delta_time: f32) {
         if false == self._is_player {
-            self._behavior.update_behavior(ptr_as_mut(self), delta_time);
+            self._behavior.update_behavior(ptr_as_mut(self), delta_time, self._controller._is_blocked);
         }
 
         self._controller.update_character_controller(game_scene_manager, &self._render_object.borrow()._bound_box, delta_time);
         self.update_transform();
 
+        // update animations
         let animation_play_infos = &ptr_as_ref(self._render_object.as_ptr())._animation_play_infos;
 
         if false == self.is_move_state(MoveAnimationState::IDLE) && self._controller.is_stop() {

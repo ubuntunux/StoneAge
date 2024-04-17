@@ -4,6 +4,7 @@ use rust_engine_3d::scene::render_object::RenderObjectData;
 use rust_engine_3d::utilities::system::RcRefCell;
 use serde::{Deserialize, Serialize};
 use crate::game_module::character::animation_blend_mask::AnimationBlendMasks;
+use crate::game_module::character::character_manager::CharacterManager;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum MoveAnimationState {
@@ -52,7 +53,7 @@ pub struct CharacterData {
 }
 
 pub struct CharacterProperty {
-    pub _hp: f32,
+    pub _hp: i32,
 }
 
 pub struct CharacterController {
@@ -62,6 +63,7 @@ pub struct CharacterController {
     pub _velocity: Vector3<f32>,
     pub _is_ground: bool,
     pub _is_jump: bool,
+    pub _is_blocked: bool,
     pub _move_direction: f32
 }
 
@@ -80,9 +82,11 @@ pub struct CharacterCreateInfo {
 }
 
 pub struct Character {
+    pub _character_manager: *const CharacterManager,
     pub _character_name: String,
     pub _character_id: u64,
     pub _is_player: bool,
+    pub _is_alive: bool,
     pub _character_data: RcRefCell<CharacterData>,
     pub _render_object: RcRefCell<RenderObjectData>,
     pub _character_property: Box<CharacterProperty>,
