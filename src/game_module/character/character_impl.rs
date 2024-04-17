@@ -337,10 +337,11 @@ impl Character {
 
     pub fn set_damage(&mut self, attack_point: Vector3<f32>, damage: i32) {
         self._character_property._hp -= damage;
-
         if self._character_property._hp <= 0 {
             self.set_dead();
         }
+
+        self.set_move_jump();
 
         let effect_create_info = EffectCreateInfo {
             _effect_position: attack_point.clone_owned(),
@@ -349,11 +350,12 @@ impl Character {
         };
         self.get_character_manager_mut().play_effect("hit_effect", &effect_create_info);
         self.get_character_manager_mut().play_audio("hit");
-        self.get_character_manager_mut().play_audio("pain_short");
+
     }
 
     pub fn set_dead(&mut self) {
         self._is_alive = false;
+        self.get_character_manager_mut().play_audio("pain_short");
     }
 
     pub fn update_transform(&mut self) {
