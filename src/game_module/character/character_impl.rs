@@ -1,6 +1,6 @@
 use nalgebra::Vector3;
 use rust_engine_3d::effect::effect_data::EffectCreateInfo;
-use rust_engine_3d::scene::animation::AnimationPlayArgs;
+use rust_engine_3d::scene::animation::{AnimationPlayArgs, AnimationPlayInfo};
 use rust_engine_3d::scene::mesh::MeshData;
 use rust_engine_3d::scene::render_object::{AnimationLayer, RenderObjectData};
 use rust_engine_3d::utilities::bounding_box::BoundingBox;
@@ -18,7 +18,9 @@ impl Default for CharacterData {
         CharacterData {
             _character_type: CharacterDataType::UrsusArctos,
             _model_data_name: String::default(),
+            _dead_animation_mesh: String::default(),
             _idle_animation_mesh: String::default(),
+            _hit_animation_mesh: String::default(),
             _walk_animation_mesh: String::default(),
             _jump_animation_mesh: String::default(),
             _attack_animation_mesh: String::default(),
@@ -166,13 +168,17 @@ impl CharacterBehavior {
     }
 
     pub fn update_behavior(&mut self, character: &mut Character, delta_time: f32, toggle_move_direction: bool) {
-        self._move_time += delta_time;
-        if 2.0 <= self._move_time || toggle_move_direction {
-            self._move_direction = !self._move_direction;
-            self._move_time = 0.0;
-        }
+        let movable: bool = !character.is_action(ActionAnimationState::DEAD) && !character.is_action(ActionAnimationState::HIT);
 
-        character.set_move_walk(self._move_direction);
+        if movable {
+            self._move_time += delta_time;
+            if 2.0 <= self._move_time || toggle_move_direction {
+                self._move_direction = !self._move_direction;
+                self._move_time = 0.0;
+            }
+
+            character.set_move_walk(self._move_direction);
+        }
     }
 
     pub fn toggle_move_direction(&mut self) {
@@ -189,7 +195,9 @@ impl Character {
         character_name: &str,
         character_data: &RcRefCell<CharacterData>,
         render_object: &RcRefCell<RenderObjectData>,
+        dead_animation: &RcRefCell<MeshData>,
         idle_animation: &RcRefCell<MeshData>,
+        hit_animation: &RcRefCell<MeshData>,
         walk_animation: &RcRefCell<MeshData>,
         jump_animation: &RcRefCell<MeshData>,
         attack_animation: &RcRefCell<MeshData>,
@@ -211,7 +219,9 @@ impl Character {
             _behavior: Box::new(CharacterBehavior::create_character_behavior()),
             _move_animation_state: MoveAnimationState::NONE,
             _action_animation_state: ActionAnimationState::NONE,
+            _dead_animation: dead_animation.clone(),
             _idle_animation: idle_animation.clone(),
+            _hit_animation: hit_animation.clone(),
             _walk_animation: walk_animation.clone(),
             _jump_animation: jump_animation.clone(),
             _attack_animation: attack_animation.clone(),
@@ -234,7 +244,9 @@ impl Character {
     pub fn get_character_id(&self) -> u64 { self._character_id }
 
     pub fn set_move_animation(&mut self, move_animation_state: MoveAnimationState) {
-        let mut animation_info = AnimationPlayArgs::default();
+        let mut animation_info = AnimationPlayArgs {
+            ..Default::default()
+        };
         let mut render_object = self._render_object.borrow_mut();
         match move_animation_state {
             MoveAnimationState::IDLE => {
@@ -255,19 +267,24 @@ impl Character {
     }
 
     pub fn set_action_animation(&mut self, action_animation_state: ActionAnimationState) {
-        let mut animation_info = AnimationPlayArgs::default();
+        let mut animation_info = AnimationPlayArgs {
+            _animation_loop: false,
+            _force_animation_setting: true,
+            _animation_fade_out_time: 0.1,
+            ..Default::default()
+        };
         let mut render_object = self._render_object.borrow_mut();
-        let additive_animation_play_info = render_object.get_animation_play_info(AnimationLayer::AdditiveLayer);
         match action_animation_state {
             ActionAnimationState::ATTACK => {
-                if self._action_animation_state == ActionAnimationState::NONE || CONTINUOUS_ATTACK_TIME < additive_animation_play_info._animation_play_time {
-                    animation_info._animation_loop = false;
-                    animation_info._force_animation_setting = true;
-                    animation_info._animation_fade_out_time = 0.1;
-                    animation_info._animation_speed = 1.5;
-                    render_object.set_animation(&self._attack_animation, &animation_info, AnimationLayer::AdditiveLayer);
-                    self.get_character_manager().play_audio("swoosh");
-                }
+                animation_info._animation_speed = 1.5;
+                render_object.set_animation(&self._attack_animation, &animation_info, AnimationLayer::AdditiveLayer);
+            },
+            ActionAnimationState::DEAD => {
+                render_object.set_animation(&self._dead_animation, &animation_info, AnimationLayer::BaseLayer);
+            },
+            ActionAnimationState::HIT => {
+                animation_info._animation_speed = 1.5;
+                render_object.set_animation(&self._hit_animation, &animation_info, AnimationLayer::BaseLayer);
             },
             _ => ()
         }
@@ -277,6 +294,10 @@ impl Character {
 
     pub fn is_move_state(&self, move_state: MoveAnimationState) -> bool {
         move_state == self._move_animation_state
+    }
+
+    pub fn set_move_none(&mut self) {
+        self.set_move_animation(MoveAnimationState::NONE);
     }
 
     pub fn set_move_idle(&mut self) {
@@ -301,18 +322,36 @@ impl Character {
         action == self._action_animation_state
     }
 
-    pub fn set_action_idle(&mut self) {
+    pub fn set_action_none(&mut self) {
         self.set_action_animation(ActionAnimationState::NONE);
     }
 
     pub fn set_action_attack(&mut self) {
-        self.set_action_animation(ActionAnimationState::ATTACK);
+        let additive_animation_play_info = self.get_animation_play_info(AnimationLayer::AdditiveLayer);
+        if self.is_action(ActionAnimationState::NONE) || self.is_action(ActionAnimationState::ATTACK) && CONTINUOUS_ATTACK_TIME < additive_animation_play_info._animation_play_time {
+            self.set_action_animation(ActionAnimationState::ATTACK);
+            self.get_character_manager().play_audio("swoosh");
+        }
+    }
+
+    pub fn set_action_hit(&mut self) {
+        self.set_move_idle();
+        self.set_action_animation(ActionAnimationState::HIT);
+    }
+
+    pub fn set_action_dead(&mut self) {
+        self.set_move_idle();
+        self.set_action_animation(ActionAnimationState::DEAD);
+        self.get_character_manager_mut().play_audio("pain_short");
+    }
+
+    pub fn get_animation_play_info(&self, layer: AnimationLayer) -> &AnimationPlayInfo {
+        &ptr_as_ref(self._render_object.as_ptr())._animation_play_infos[layer as usize]
     }
 
     pub fn is_attacking(&self) -> bool {
         if self.is_action(ActionAnimationState::ATTACK) {
-            let animation_play_infos = &ptr_as_ref(self._render_object.as_ptr())._animation_play_infos;
-            let animation_play_info = &animation_play_infos[AnimationLayer::AdditiveLayer as usize];
+            let animation_play_info = self.get_animation_play_info(AnimationLayer::AdditiveLayer);
             let attack_time: f32 = 0.15;
             return animation_play_info._prev_animation_play_time < attack_time && attack_time <= animation_play_info._animation_play_time;
         }
@@ -339,9 +378,9 @@ impl Character {
         self._character_property._hp -= damage;
         if self._character_property._hp <= 0 {
             self.set_dead();
+        } else {
+            self.set_action_hit();
         }
-
-        self.set_move_jump();
 
         let effect_create_info = EffectCreateInfo {
             _effect_position: attack_point.clone_owned(),
@@ -350,12 +389,11 @@ impl Character {
         };
         self.get_character_manager_mut().play_effect("hit_effect", &effect_create_info);
         self.get_character_manager_mut().play_audio("hit");
-
     }
 
     pub fn set_dead(&mut self) {
         self._is_alive = false;
-        self.get_character_manager_mut().play_audio("pain_short");
+        self.set_action_dead();
     }
 
     pub fn update_transform(&mut self) {
@@ -390,17 +428,22 @@ impl Character {
         self._controller.update_character_controller(game_scene_manager, &self._render_object.borrow()._bound_box, delta_time);
         self.update_transform();
 
-        // update animations
-        let animation_play_infos = &ptr_as_ref(self._render_object.as_ptr())._animation_play_infos;
-
-        if false == self.is_move_state(MoveAnimationState::IDLE) && self._controller.is_stop() {
-            self.set_move_idle();
+        // update action animations
+        if self.is_action(ActionAnimationState::ATTACK) {
+            if self.get_animation_play_info(AnimationLayer::AdditiveLayer)._is_animation_end {
+                self.set_action_none();
+            }
+        }
+        else if self.is_action(ActionAnimationState::HIT) {
+            if self.get_animation_play_info(AnimationLayer::BaseLayer)._is_animation_end {
+                self.set_action_none();
+            }
         }
 
-        if self.is_action(ActionAnimationState::ATTACK) {
-            if animation_play_infos[AnimationLayer::AdditiveLayer as usize]._is_animation_end {
-                self.set_action_idle();
-            }
+        // update move animation
+        let is_movable_action: bool = self.is_action(ActionAnimationState::NONE) || self.is_action(ActionAnimationState::ATTACK);
+        if  is_movable_action && !self.is_move_state(MoveAnimationState::IDLE) && self._controller.is_stop() {
+            self.set_move_idle();
         }
     }
 }

@@ -277,7 +277,7 @@ pub fn run_application() {
     let app_name: String = "Stone Age".to_string();
     let app_version: u32 = 1;
     let initial_window_size: Vector2<i32> = Vector2::new(1024, 768);
-    let window_mode = WindowMode::FullScreenBorderlessMode;
+    let window_mode = WindowMode::WindowMode;// WindowMode::FullScreenBorderlessMode;
     let log_level = LevelFilter::Info;
 
     // vulkan setting

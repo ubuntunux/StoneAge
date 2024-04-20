@@ -17,7 +17,9 @@ pub enum MoveAnimationState {
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum ActionAnimationState {
     NONE,
-    ATTACK
+    ATTACK,
+    HIT,
+    DEAD
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -45,7 +47,9 @@ pub enum CharacterDataType {
 pub struct CharacterData {
     pub _character_type: CharacterDataType,
     pub _model_data_name: String,
+    pub _dead_animation_mesh: String,
     pub _idle_animation_mesh: String,
+    pub _hit_animation_mesh: String,
     pub _walk_animation_mesh: String,
     pub _jump_animation_mesh: String,
     pub _attack_animation_mesh: String,
@@ -94,7 +98,9 @@ pub struct Character {
     pub _behavior: Box<CharacterBehavior>,
     pub _move_animation_state: MoveAnimationState,
     pub _action_animation_state: ActionAnimationState,
+    pub _dead_animation: RcRefCell<MeshData>,
     pub _idle_animation: RcRefCell<MeshData>,
+    pub _hit_animation: RcRefCell<MeshData>,
     pub _walk_animation: RcRefCell<MeshData>,
     pub _jump_animation: RcRefCell<MeshData>,
     pub _attack_animation: RcRefCell<MeshData>,

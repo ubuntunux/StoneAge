@@ -81,7 +81,9 @@ impl CharacterManager {
             character_name,
             &render_object_create_info
         );
+        let dead_animation = game_resources.get_engine_resources().get_mesh_data(&character_data.borrow()._dead_animation_mesh);
         let idle_animation = game_resources.get_engine_resources().get_mesh_data(&character_data.borrow()._idle_animation_mesh);
+        let hit_animation = game_resources.get_engine_resources().get_mesh_data(&character_data.borrow()._hit_animation_mesh);
         let walk_animation = game_resources.get_engine_resources().get_mesh_data(&character_data.borrow()._walk_animation_mesh);
         let jump_animation = game_resources.get_engine_resources().get_mesh_data(&character_data.borrow()._jump_animation_mesh);
         let attack_animation = game_resources.get_engine_resources().get_mesh_data(&character_data.borrow()._attack_animation_mesh);
@@ -93,7 +95,9 @@ impl CharacterManager {
             character_name,
             character_data,
             &render_object_data,
+            dead_animation,
             idle_animation,
+            hit_animation,
             walk_animation,
             jump_animation,
             attack_animation,
@@ -135,19 +139,21 @@ impl CharacterManager {
         if player.is_attacking() {
             for character in self._characters.values() {
                 let mut character_mut = character.borrow_mut();
-                if character_mut._character_id != player._character_id {
-                    if character_mut.collide_bound_box(&player.get_attack_point()) {
-                        character_mut.set_damage(player.get_attack_point(), player.get_power());
-                        if false == character_mut._is_alive {
-                            dead_characters.push(character.clone());
+                if character_mut._is_alive {
+                    if character_mut._character_id != player._character_id {
+                        if character_mut.collide_bound_box(&player.get_attack_point()) {
+                            character_mut.set_damage(player.get_attack_point(), player.get_power());
+                            if false == character_mut._is_alive {
+                                dead_characters.push(character.clone());
+                            }
                         }
                     }
                 }
             }
         }
 
-        for character in dead_characters.iter_mut() {
-            self.remove_character(character);
-        }
+        // for character in dead_characters.iter_mut() {
+        //     self.remove_character(character);
+        // }
     }
 }
