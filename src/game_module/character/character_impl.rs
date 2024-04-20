@@ -280,10 +280,11 @@ impl Character {
                 render_object.set_animation(&self._attack_animation, &animation_info, AnimationLayer::AdditiveLayer);
             },
             ActionAnimationState::DEAD => {
+                animation_info._animation_speed = 1.5;
                 render_object.set_animation(&self._dead_animation, &animation_info, AnimationLayer::BaseLayer);
             },
             ActionAnimationState::HIT => {
-                animation_info._animation_speed = 1.5;
+                animation_info._animation_speed = 2.0;
                 render_object.set_animation(&self._hit_animation, &animation_info, AnimationLayer::BaseLayer);
             },
             _ => ()
