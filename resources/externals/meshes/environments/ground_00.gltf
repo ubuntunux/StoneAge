@@ -15,23 +15,18 @@
 	"nodes":[
 		{
 			"mesh":0,
-			"name":"landscape_00",
-			"scale":[
-				1,
-				1,
-				1.3388029336929321
-			]
+			"name":"Icosphere"
 		},
 		{
 			"children":[
 				0
 			],
-			"name":"landscape_00"
+			"name":"ground_00"
 		}
 	],
 	"meshes":[
 		{
-			"name":"mountain",
+			"name":"Icosphere",
 			"primitives":[
 				{
 					"attributes":{
@@ -49,80 +44,80 @@
 		{
 			"bufferView":0,
 			"componentType":5126,
-			"count":18652,
+			"count":484,
 			"max":[
-				100.03890991210938,
-				39.093082427978516,
-				25.485816955566406
+				5.047726631164551,
+				1.3009074926376343,
+				5.273014545440674
 			],
 			"min":[
-				-100.09494018554688,
-				-0.39573952555656433,
-				-30.71592903137207
+				-4.777489185333252,
+				-0.601351261138916,
+				-4.446765422821045
 			],
 			"type":"VEC3"
 		},
 		{
 			"bufferView":1,
 			"componentType":5126,
-			"count":18652,
+			"count":484,
 			"type":"VEC3"
 		},
 		{
 			"bufferView":2,
 			"componentType":5126,
-			"count":18652,
+			"count":484,
 			"type":"VEC2"
 		},
 		{
 			"bufferView":3,
 			"componentType":5126,
-			"count":18652,
+			"count":484,
 			"type":"VEC4"
 		},
 		{
 			"bufferView":4,
 			"componentType":5123,
-			"count":18666,
+			"count":726,
 			"type":"SCALAR"
 		}
 	],
 	"bufferViews":[
 		{
 			"buffer":0,
-			"byteLength":223824,
+			"byteLength":5808,
 			"byteOffset":0,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":223824,
-			"byteOffset":223824,
+			"byteLength":5808,
+			"byteOffset":5808,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":149216,
-			"byteOffset":447648,
+			"byteLength":3872,
+			"byteOffset":11616,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":298432,
-			"byteOffset":596864,
+			"byteLength":7744,
+			"byteOffset":15488,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":37332,
-			"byteOffset":895296,
+			"byteLength":1452,
+			"byteOffset":23232,
 			"target":34963
 		}
 	],
 	"buffers":[
 		{
-			"byteLength":932628,
-			"uri":"landscape_00.bin"
+			"byteLength":24684,
+			"uri":"ground_00.bin"
 		}
 	]
 }

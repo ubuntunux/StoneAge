@@ -1,0 +1,96 @@
+{
+    "_cameras": {
+        "Camera": {
+            "position": [
+                2.0,
+                10.866233825683594,
+                -10.0
+            ],
+            "rotation": [
+                0.19894059101608796,
+                0.0,
+                0.0
+            ]
+        }
+    },
+    "_sea_height": 12.0,
+    "_directional_lights": {
+        "Light": {
+            "_light_constants": {
+                "_light_color": [
+                    5.0,
+                    5.0,
+                    5.0
+                ],
+                "_light_direction": [
+                    1.4835298220303397,
+                    0.0,
+                    -0.3490658402442932
+                ]
+            },
+            "_rotation": [
+                1.4835298220303397,
+                0.0,
+                -0.3490658402442932
+            ]
+        }
+    },
+    "_effects": {},
+    "_skeletal_objects": {},
+    "_static_objects": {
+        "cliff_grass": {
+            "_model_data_name": "environments/cliff_grass",
+            "_position": [
+                -16.0,
+                10.0,
+                0.0
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "desert_ground": {
+            "_model_data_name": "environments/desert_ground",
+            "_position": [
+                -11.142715454101562,
+                9.48636245727539,
+                14.003606796264648
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                0.34625133872032166,
+                0.34625133872032166,
+                0.34625133872032166
+            ]
+        },
+        "landscape_00": {
+            "_model_data_name": "environments/landscape_00",
+            "_position": [
+                -10.841785430908203,
+                10.836697578430176,
+                96.3907241821289
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                2.0,
+                2.0,
+                2.0
+            ]
+        }
+    }
+}
