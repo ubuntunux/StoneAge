@@ -1,0 +1,11 @@
+{
+    "_attack_animation_mesh": "characters/trex/trex_attack",
+    "_character_type": "UrsusArctos",
+    "_dead_animation_mesh": "characters/trex/trex_dead",
+    "_hit_animation_mesh": "characters/trex/trex_attack",
+    "_idle_animation_mesh": "characters/trex/trex_idle",
+    "_jump_animation_mesh": "characters/trex/trex_jump",
+    "_max_hp": 100,
+    "_model_data_name": "characters/trex",
+    "_walk_animation_mesh": "characters/trex/trex_walk"
+}

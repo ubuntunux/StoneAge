@@ -1,0 +1,6 @@
+{
+    "material_instances": [
+        "characters/trex/trex"
+    ],
+    "mesh": "characters/trex/trex"
+}

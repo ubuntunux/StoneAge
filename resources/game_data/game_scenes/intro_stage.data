@@ -525,57 +525,57 @@
     },
     "_characters": {
         "enemy01": {
-            "_character_data_name": "jack",
+            "_character_data_name": "trex",
             "_position": [
                 -2.0,
                 12.0,
                 0.0
             ],
             "_rotation": [
-                0.0,
+                3.141592,
                 0.0,
                 0.0
             ],
             "_scale": [
-                0.25,
-                0.25,
-                0.25
+                0.1,
+                0.1,
+                0.1
             ]
         },
         "enemy01.001": {
-            "_character_data_name": "jack",
+            "_character_data_name": "trex",
             "_position": [
                 -4.0,
                 12.0,
                 0.0
             ],
             "_rotation": [
-                0.0,
+                3.141592,
                 0.0,
                 0.0
             ],
             "_scale": [
-                0.25,
-                0.25,
-                0.25
+                0.1,
+                0.1,
+                0.1
             ]
         },
         "enemy01.002": {
-            "_character_data_name": "jack",
+            "_character_data_name": "trex",
             "_position": [
                 -10.0,
                 12.0,
                 0.0
             ],
             "_rotation": [
-                0.0,
+                3.141592,
                 0.0,
                 0.0
             ],
             "_scale": [
-                0.25,
-                0.25,
-                0.25
+                0.1,
+                0.1,
+                0.1
             ]
         }
     },
