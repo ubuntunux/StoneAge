@@ -13,7 +13,6 @@
             ]
         }
     },
-    "_sea_height": 0.0,
     "_directional_lights": {
         "Light": {
             "_light_constants": {
@@ -60,7 +59,7 @@
             "_model_data_name": "environments/desert_ground",
             "_position": [
                 -11.142715454101562,
-                9.48636245727539,
+                7.642728328704834,
                 14.003606796264648
             ],
             "_rotation": [
