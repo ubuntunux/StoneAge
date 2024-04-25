@@ -1,0 +1,6 @@
+{
+    "material_instances": [
+        "props/meat"
+    ],
+    "mesh": "props/meat"
+}

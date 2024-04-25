@@ -14,6 +14,7 @@ pub const CAMERA_DISTANCE_MAX: f32 = 10.0;
 pub const CAMERA_ZOOM_SPEED: f32 = 4.0;
 
 // block
+pub const SHOW_BLOCK: bool = false;
 pub const BLOCK_ID_NONE: u64 = u64::MAX;
 pub const BLOCK_WIDTH: f32 = 2.0;
 pub const BLOCK_HEIGHT: f32 = 2.0;
