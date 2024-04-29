@@ -12,6 +12,7 @@ use crate::application::application::Application;
 use crate::game_module::actors::block::{Block, BlockCreateInfo};
 use crate::game_module::actors::character::CharacterCreateInfo;
 use crate::game_module::actors::character_manager::CharacterManager;
+use crate::game_module::actors::foods::FoodManager;
 use crate::game_module::game_constants::{BLOCK_HEIGHT, BLOCK_ID_NONE, BLOCK_WIDTH, SHOW_BLOCK};
 use crate::game_module::game_resource::GameResources;
 
@@ -33,6 +34,7 @@ pub struct GameSceneManager {
     pub _scene_manager: *const SceneManager,
     pub _game_resources: *const GameResources,
     pub _character_manager: *const CharacterManager,
+    pub _food_manager: *const FoodManager,
     pub _game_scene_name: String,
     pub _blocks: HashMap<u64, RcRefCell<Block>>,
     pub _block_id_generator: u64,
@@ -58,6 +60,7 @@ impl GameSceneManager {
             _scene_manager: std::ptr::null(),
             _game_resources: std::ptr::null(),
             _character_manager: std::ptr::null(),
+            _food_manager: std::ptr::null(),
             _game_scene_name: String::new(),
             _blocks: HashMap::new(),
             _block_id_generator: 0,
@@ -79,6 +82,7 @@ impl GameSceneManager {
         self._scene_manager = engine_core.get_scene_manager();
         self._effect_manager = engine_core.get_effect_manager();
         self._character_manager = application.get_character_manager();
+        self._food_manager = application.get_food_manager();
         self._game_resources = application.get_game_resources();
         engine_core.get_scene_manager_mut().initialize_scene_manager(
             engine_core.get_renderer_context(),
@@ -223,7 +227,7 @@ impl GameSceneManager {
         //log::info!("min: {:?}, max: {:?}, size: {:?}, nums: {:?}", self._map_min_pos, self._map_max_pos, self._map_size, self._block_nums);
 
         // create player
-        let character_manager = ptr_as_mut(self._character_manager);
+        let character_manager = ptr_as_mut(self._character_manager.clone());
         for (character_name, character_create_info) in game_scene_data._player.iter() {
             let _character = character_manager.create_character(character_name, character_create_info, true);
         }
@@ -242,6 +246,8 @@ impl GameSceneManager {
         self.get_scene_manager_mut().destroy_scene_manager();
     }
 
-    pub fn update_game_scene_manager(&mut self, _engine_core: &EngineCore, _delta_time: f64) {
+    pub fn update_game_scene_manager(&mut self, delta_time: f64) {
+        ptr_as_mut(self._food_manager).update_food_manager(delta_time);
+        ptr_as_mut(self._character_manager).update_character_manager(delta_time);
     }
 }

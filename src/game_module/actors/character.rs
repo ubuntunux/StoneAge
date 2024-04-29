@@ -431,7 +431,7 @@ impl Character {
         let additive_animation_play_info = self.get_animation_play_info(AnimationLayer::AdditiveLayer);
         if self.is_action(ActionAnimationState::NONE) || self.is_action(ActionAnimationState::ATTACK) && CONTINUOUS_ATTACK_TIME < additive_animation_play_info._animation_play_time {
             self.set_action_animation(ActionAnimationState::ATTACK);
-            self.get_character_manager().play_audio("swoosh");
+            self.get_character_manager().play_audio(AUDIO_ATTACK);
         }
     }
 
@@ -443,7 +443,7 @@ impl Character {
     pub fn set_action_dead(&mut self) {
         self.set_move_idle();
         self.set_action_animation(ActionAnimationState::DEAD);
-        self.get_character_manager_mut().play_audio("pain_short");
+        self.get_character_manager_mut().play_audio(AUDIO_DEAD);
     }
 
     pub fn get_animation_play_info(&self, layer: AnimationLayer) -> &AnimationPlayInfo {
@@ -488,8 +488,8 @@ impl Character {
             _effect_data_name: String::from("effect_test"),
             ..Default::default()
         };
-        self.get_character_manager_mut().play_effect("hit_effect", &effect_create_info);
-        self.get_character_manager_mut().play_audio("hit");
+        self.get_character_manager_mut().play_effect(EFFECT_HIT, &effect_create_info);
+        self.get_character_manager_mut().play_audio(AUDIO_HIT);
     }
 
     pub fn set_dead(&mut self) {

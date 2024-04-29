@@ -13,6 +13,7 @@ use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
 use winit::event::VirtualKeyCode;
 
 use crate::game_module::actors::character_manager::CharacterManager;
+use crate::game_module::actors::foods::FoodManager;
 use crate::game_module::game_client::GameClient;
 use crate::game_module::game_constants;
 use crate::game_module::game_controller::GameController;
@@ -27,6 +28,7 @@ pub struct Application {
     pub _effect_manager: *const EffectManager,
     pub _renderer_data: *const RendererData,
     pub _character_manager: Box<CharacterManager>,
+    pub _food_manager: Box<FoodManager>,
     pub _game_resources: Box<GameResources>,
     pub _game_scene_manager: Box<GameSceneManager>,
     pub _game_ui_manager: Box<GameUIManager>,
@@ -52,6 +54,7 @@ impl ApplicationBase for Application {
         self.get_game_resources_mut().initialize_game_resources(engine_core.get_engine_resources());
         self.get_game_resources_mut().load_game_resources(engine_core.get_renderer_context());
         self.get_character_manager_mut().initialize_character_manager(application);
+        self.get_food_manager_mut().initialize_food_manager(application);
         self.get_game_scene_manager_mut().initialize_game_scene_manager(application, engine_core, window_size);
         self.get_game_ui_manager_mut().initialize_game_ui_manager(engine_core, application);
         self.get_game_controller_mut().initialize_game_controller(application);
@@ -201,7 +204,7 @@ impl ApplicationBase for Application {
     }
 
     fn update_application(&mut self, delta_time: f64) {
-        let engine_core = ptr_as_ref(self._engine_core);
+        let engine_core = ptr_as_ref(self._engine_core.clone());
         let font_manager = engine_core.get_font_manager_mut();
         font_manager.clear_logs();
 
@@ -210,8 +213,7 @@ impl ApplicationBase for Application {
             self._game_client.update_game_mode(delta_time);
             self.get_game_ui_manager_mut().set_crosshair_pos(&engine_core._mouse_move_data._mouse_pos);
         }
-        self._game_scene_manager.update_game_scene_manager(engine_core, delta_time);
-        self._character_manager.update_character_manager(engine_core, delta_time);
+        self._game_scene_manager.update_game_scene_manager(delta_time);
         self._game_ui_manager.as_mut().update_game_ui(delta_time);
     }
 }
@@ -237,6 +239,10 @@ impl Application {
         self._character_manager.as_ref()
     }
     pub fn get_character_manager_mut(&mut self) -> &mut CharacterManager { self._character_manager.as_mut() }
+    pub fn get_food_manager(&self) -> &FoodManager {
+        self._food_manager.as_ref()
+    }
+    pub fn get_food_manager_mut(&mut self) -> &mut FoodManager { self._food_manager.as_mut() }
     pub fn get_game_scene_manager(&self) -> &GameSceneManager {
         self._game_scene_manager.as_ref()
     }
@@ -344,6 +350,7 @@ pub fn run_application() {
     let game_resources = GameResources::create_game_resources();
     let game_scene_manager = GameSceneManager::create_game_scene_manager();
     let character_manager = CharacterManager::create_character_manager();
+    let food_manager = FoodManager::create_food_manager();
     let game_ui_manager = GameUIManager::create_game_ui_manager();
     let game_controller = GameController::create_game_controller();
     let game_client = GameClient::create_game_client();
@@ -355,6 +362,7 @@ pub fn run_application() {
         _game_resources: game_resources,
         _game_scene_manager: game_scene_manager,
         _character_manager: character_manager,
+        _food_manager: food_manager,
         _game_ui_manager: game_ui_manager,
         _game_controller: game_controller,
         _game_client: game_client,

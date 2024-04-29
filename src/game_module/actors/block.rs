@@ -40,6 +40,7 @@ pub struct Block {
     pub _block_properties: Box<BlockProperties>
 }
 
+// Implementations
 impl Default for BlockData {
     fn default() -> Self {
         BlockData {

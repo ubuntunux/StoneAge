@@ -26,3 +26,11 @@ pub const GRAVITY: f32 = 30.0;
 pub const GROUND_HEIGHT: f32 = 9.0;
 pub const CONTINUOUS_ATTACK_TIME: f32 = 0.15;
 pub const ATTACK_TIME: f32 = 0.15;
+
+// AUDIO DATA
+pub const AUDIO_ATTACK: &str = "swoosh";
+pub const AUDIO_DEAD: &str = "pain_short";
+pub const AUDIO_HIT: &str = "hit";
+
+// EFFECT DATA
+pub const EFFECT_HIT: &str = "hit_effect";

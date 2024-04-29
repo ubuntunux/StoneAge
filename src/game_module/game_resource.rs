@@ -9,26 +9,30 @@ use serde_json::{self};
 
 use crate::game_module::actors::block::BlockData;
 use crate::game_module::actors::character::CharacterData;
+use crate::game_module::actors::foods::FoodData;
 use crate::game_module::game_scene_manager::GameSceneDataCreateInfo;
 
-pub const GAME_SCENE_FILE_PATH: &str = "game_data/game_scenes";
 pub const BLOCK_DATA_FILE_PATH: &str = "game_data/blocks";
 pub const CHARACTER_DATA_FILE_PATH: &str = "game_data/characters";
+pub const FOOD_DATA_FILE_PATH: &str = "game_data/foods";
+pub const GAME_SCENE_FILE_PATH: &str = "game_data/game_scenes";
 
 pub const EXT_GAME_DATA: &str = "data";
 
 pub const DEFAULT_GAME_DATA_NAME: &str = "default";
 
-pub type GameSceneDataCreateInfoMap = ResourceDataMap<GameSceneDataCreateInfo>;
 pub type BlockDataMap = ResourceDataMap<BlockData>;
 pub type CharacterDataMap = ResourceDataMap<CharacterData>;
+pub type FoodDataMap = ResourceDataMap<FoodData>;
+pub type GameSceneDataCreateInfoMap = ResourceDataMap<GameSceneDataCreateInfo>;
 
 #[derive(Clone)]
 pub struct GameResources {
     _engine_resources: *const EngineResources,
-    _game_scene_data_create_infos_map: GameSceneDataCreateInfoMap,
     _block_data_map: BlockDataMap,
     _character_data_map: CharacterDataMap,
+    _food_data_map: FoodDataMap,
+    _game_scene_data_create_infos_map: GameSceneDataCreateInfoMap,
 }
 
 impl GameResources {
@@ -37,6 +41,7 @@ impl GameResources {
             _engine_resources: std::ptr::null(),
             _game_scene_data_create_infos_map: GameSceneDataCreateInfoMap::new(),
             _block_data_map: BlockDataMap::new(),
+            _food_data_map: FoodDataMap::new(),
             _character_data_map: CharacterDataMap::new(),
         })
     }
@@ -102,9 +107,11 @@ impl GameResources {
         log::info!("    load_game_data");
         self.load_block_data();
         self.load_character_data();
+        self.load_food_data();
     }
 
     fn unload_game_data(&mut self) {
+        self.unload_food_data();
         self.unload_character_data();
         self.unload_block_data();
     }
@@ -159,5 +166,31 @@ impl GameResources {
 
     pub fn get_character_data(&self, resource_name: &str) -> &RcRefCell<CharacterData> {
         self._character_data_map.get(resource_name).unwrap()
+    }
+
+    // food data
+    fn load_food_data(&mut self) {
+        let game_data_directory = PathBuf::from(FOOD_DATA_FILE_PATH);
+
+        // load_food_data
+        let game_data_files: Vec<PathBuf> = self.collect_resources(&game_data_directory, &[EXT_GAME_DATA]);
+        for game_data_file in game_data_files {
+            let food_data_name = get_unique_resource_name(&self._food_data_map, &game_data_directory, &game_data_file);
+            let loaded_contents = system::load(&game_data_file);
+            let food_data: FoodData = serde_json::from_reader(loaded_contents).expect("Failed to deserialize.");
+            self._food_data_map.insert(food_data_name.clone(), newRcRefCell(food_data));
+        }
+    }
+
+    fn unload_food_data(&mut self) {
+        self._food_data_map.clear();
+    }
+
+    pub fn has_food_data(&self, resource_name: &str) -> bool {
+        self._food_data_map.get(resource_name).is_some()
+    }
+
+    pub fn get_food_data(&self, resource_name: &str) -> &RcRefCell<FoodData> {
+        self._food_data_map.get(resource_name).unwrap()
     }
 }

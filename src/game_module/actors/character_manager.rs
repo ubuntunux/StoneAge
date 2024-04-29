@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
 use rust_engine_3d::audio::audio_manager::{AudioLoop, AudioManager};
-use rust_engine_3d::core::engine_core::EngineCore;
 use rust_engine_3d::effect::effect_data::EffectCreateInfo;
 use rust_engine_3d::scene::render_object::RenderObjectCreateInfo;
 use rust_engine_3d::scene::scene_manager::SceneManager;
@@ -10,6 +9,7 @@ use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, Rc
 use crate::application::application::Application;
 use crate::game_module::actors::animation_blend_mask::AnimationBlendMasks;
 use crate::game_module::actors::character::{Character, CharacterCreateInfo};
+use crate::game_module::actors::foods::FoodCreateInfo;
 use crate::game_module::game_client::GameClient;
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
@@ -128,7 +128,7 @@ impl CharacterManager {
         self.get_game_scene_manager().get_scene_manager_mut().add_effect(effect_name, effect_create_info);
     }
 
-    pub fn update_character_manager(&mut self, _engine_core: &EngineCore, delta_time: f64) {
+    pub fn update_character_manager(&mut self, delta_time: f64) {
         for character in self._characters.values() {
             let mut character_mut = character.borrow_mut();
             character_mut.update_character(self.get_game_scene_manager(), delta_time as f32);
@@ -145,6 +145,14 @@ impl CharacterManager {
                             character_mut.set_damage(player.get_attack_point(), player.get_power());
                             if false == character_mut._is_alive {
                                 dead_characters.push(character.clone());
+
+                                // TestCode: Food
+                                let food_create_info = FoodCreateInfo {
+                                    _food_data_name: String::from("meat"),
+                                    _position: character_mut.get_position().clone(),
+                                    ..Default::default()
+                                };
+                                ptr_as_mut(self.get_game_scene_manager()._food_manager.clone()).create_food("food", &food_create_info);
                             }
                         }
                     }
