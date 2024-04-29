@@ -3,12 +3,12 @@ use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 
 use rust_engine_3d::renderer::renderer_context::RendererContext;
-use rust_engine_3d::resource::resource::{EngineResources, get_unique_resource_name, APPLICATION_RESOURCE_PATH, ResourceDataMap};
+use rust_engine_3d::resource::resource::{APPLICATION_RESOURCE_PATH, EngineResources, get_unique_resource_name, ResourceDataMap};
 use rust_engine_3d::utilities::system::{self, newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
 use serde_json::{self};
-use crate::game_module::character::block::BlockData;
 
-use crate::game_module::character::character::CharacterData;
+use crate::game_module::actors::block::BlockData;
+use crate::game_module::actors::character::CharacterData;
 use crate::game_module::game_scene_manager::GameSceneDataCreateInfo;
 
 pub const GAME_SCENE_FILE_PATH: &str = "game_data/game_scenes";

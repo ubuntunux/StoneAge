@@ -12,7 +12,7 @@ use rust_engine_3d::resource::resource::CallbackLoadRenderPassCreateInfo;
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
 use winit::event::VirtualKeyCode;
 
-use crate::game_module::character::character_manager::CharacterManager;
+use crate::game_module::actors::character_manager::CharacterManager;
 use crate::game_module::game_client::GameClient;
 use crate::game_module::game_constants;
 use crate::game_module::game_controller::GameController;

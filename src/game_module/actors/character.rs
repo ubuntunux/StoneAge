@@ -5,14 +5,115 @@ use rust_engine_3d::scene::mesh::MeshData;
 use rust_engine_3d::scene::render_object::{AnimationLayer, RenderObjectData};
 use rust_engine_3d::utilities::bounding_box::BoundingBox;
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
-use crate::game_module::character::animation_blend_mask::AnimationBlendMasks;
+use serde::{Deserialize, Serialize};
 
-use crate::game_module::character::character::*;
-use crate::game_module::character::character_manager::CharacterManager;
+use crate::game_module::actors::animation_blend_mask::AnimationBlendMasks;
+use crate::game_module::actors::character_manager::CharacterManager;
 use crate::game_module::game_constants::*;
 use crate::game_module::game_scene_manager::GameSceneManager;
 
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum MoveAnimationState {
+    NONE,
+    IDLE,
+    WALK,
+    JUMP,
+}
 
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum ActionAnimationState {
+    NONE,
+    ATTACK,
+    HIT,
+    DEAD
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub enum SpawnPointType {
+    None,
+    Player(SpawnPointData),
+    NonPlayer(SpawnPointData),
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[serde(default)]
+pub struct SpawnPointData {
+    pub _character_data_name: String,
+    pub _position: Vector3<f32>,
+    pub _rotation: Vector3<f32>
+}
+
+#[derive(Serialize, Deserialize,Clone, Copy, Debug, PartialEq)]
+pub enum CharacterDataType {
+    UrsusArctos,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[serde(default)]
+pub struct CharacterData {
+    pub _character_type: CharacterDataType,
+    pub _model_data_name: String,
+    pub _dead_animation_mesh: String,
+    pub _idle_animation_mesh: String,
+    pub _hit_animation_mesh: String,
+    pub _walk_animation_mesh: String,
+    pub _jump_animation_mesh: String,
+    pub _attack_animation_mesh: String,
+    pub _max_hp: i32,
+}
+
+pub struct CharacterProperty {
+    pub _hp: i32,
+}
+
+pub struct CharacterController {
+    pub _position: Vector3<f32>,
+    pub _rotation: Vector3<f32>,
+    pub _scale: Vector3<f32>,
+    pub _velocity: Vector3<f32>,
+    pub _is_ground: bool,
+    pub _is_jump: bool,
+    pub _is_blocked: bool,
+    pub _move_direction: f32
+}
+
+pub struct CharacterBehavior {
+    pub _move_time: f32,
+    pub _move_direction: bool
+}
+
+#[derive(Serialize, Deserialize, Default, Debug, Clone, PartialEq)]
+#[serde(default)]
+pub struct CharacterCreateInfo {
+    pub _character_data_name: String,
+    pub _position: Vector3<f32>,
+    pub _rotation: Vector3<f32>,
+    pub _scale: Vector3<f32>,
+}
+
+pub struct Character {
+    pub _character_manager: *const CharacterManager,
+    pub _character_name: String,
+    pub _character_id: u64,
+    pub _is_player: bool,
+    pub _is_alive: bool,
+    pub _character_data: RcRefCell<CharacterData>,
+    pub _render_object: RcRefCell<RenderObjectData>,
+    pub _character_property: Box<CharacterProperty>,
+    pub _controller: Box<CharacterController>,
+    pub _behavior: Box<CharacterBehavior>,
+    pub _move_animation_state: MoveAnimationState,
+    pub _action_animation_state: ActionAnimationState,
+    pub _dead_animation: RcRefCell<MeshData>,
+    pub _idle_animation: RcRefCell<MeshData>,
+    pub _hit_animation: RcRefCell<MeshData>,
+    pub _walk_animation: RcRefCell<MeshData>,
+    pub _jump_animation: RcRefCell<MeshData>,
+    pub _attack_animation: RcRefCell<MeshData>,
+    pub _animation_blend_masks: *const AnimationBlendMasks
+}
+
+// Implementations
 impl Default for CharacterData {
     fn default() -> CharacterData {
         CharacterData {
@@ -47,7 +148,7 @@ impl CharacterController {
             _is_jump: false,
             _is_ground: false,
             _is_blocked: false,
-            _move_direction: 0.0
+            _move_direction: 0.0,
         }
     }
 
@@ -133,8 +234,7 @@ impl CharacterController {
                 } else {
                     self._is_ground = false;
                 }
-            }
-            else if let Some(collide_pos) = game_scene_manager.check_is_on_block(&prev_position, &self._position) {
+            } else if let Some(collide_pos) = game_scene_manager.check_is_on_block(&prev_position, &self._position) {
                 self.set_on_ground(collide_pos.y);
             }
         }
@@ -204,7 +304,7 @@ impl Character {
         animation_blend_masks: *const AnimationBlendMasks,
         position: &Vector3<f32>,
         rotation: &Vector3<f32>,
-        scale: &Vector3<f32>
+        scale: &Vector3<f32>,
     ) -> Character {
         let mut character = Character {
             _character_manager: character_manager,
@@ -225,7 +325,7 @@ impl Character {
             _walk_animation: walk_animation.clone(),
             _jump_animation: jump_animation.clone(),
             _attack_animation: attack_animation.clone(),
-            _animation_blend_masks: animation_blend_masks
+            _animation_blend_masks: animation_blend_masks,
         };
         character._controller._position.clone_from(position);
         character._controller._rotation.clone_from(rotation);
@@ -414,7 +514,7 @@ impl Character {
                 } else {
                     render_object.set_animation_blend_masks(
                         &ptr_as_ref(self._animation_blend_masks)._upper_animation_mask,
-                        AnimationLayer::AdditiveLayer
+                        AnimationLayer::AdditiveLayer,
                     );
                 }
             }
@@ -434,8 +534,7 @@ impl Character {
             if self.get_animation_play_info(AnimationLayer::AdditiveLayer)._is_animation_end {
                 self.set_action_none();
             }
-        }
-        else if self.is_action(ActionAnimationState::HIT) {
+        } else if self.is_action(ActionAnimationState::HIT) {
             if self.get_animation_play_info(AnimationLayer::BaseLayer)._is_animation_end {
                 self.set_action_none();
             }
@@ -443,7 +542,7 @@ impl Character {
 
         // update move animation
         let is_movable_action: bool = self.is_action(ActionAnimationState::NONE) || self.is_action(ActionAnimationState::ATTACK);
-        if  is_movable_action && !self.is_move_state(MoveAnimationState::IDLE) && self._controller.is_stop() {
+        if is_movable_action && !self.is_move_state(MoveAnimationState::IDLE) && self._controller.is_stop() {
             self.set_move_idle();
         }
     }

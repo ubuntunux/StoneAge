@@ -1,6 +1,6 @@
 use std::collections::HashMap;
-use rust_engine_3d::audio::audio_manager::{AudioLoop, AudioManager};
 
+use rust_engine_3d::audio::audio_manager::{AudioLoop, AudioManager};
 use rust_engine_3d::core::engine_core::EngineCore;
 use rust_engine_3d::effect::effect_data::EffectCreateInfo;
 use rust_engine_3d::scene::render_object::RenderObjectCreateInfo;
@@ -8,8 +8,8 @@ use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
 
 use crate::application::application::Application;
-use crate::game_module::character::animation_blend_mask::AnimationBlendMasks;
-use crate::game_module::character::character::{Character, CharacterCreateInfo};
+use crate::game_module::actors::animation_blend_mask::AnimationBlendMasks;
+use crate::game_module::actors::character::{Character, CharacterCreateInfo};
 use crate::game_module::game_client::GameClient;
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;

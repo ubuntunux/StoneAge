@@ -3,7 +3,7 @@ use rust_engine_3d::core::engine_core::EngineCore;
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
 
 use crate::application::application::Application;
-use crate::game_module::character::character_manager::CharacterManager;
+use crate::game_module::actors::character_manager::CharacterManager;
 use crate::game_module::game_controller::GameController;
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;

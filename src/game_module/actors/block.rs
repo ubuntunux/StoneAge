@@ -3,7 +3,6 @@ use rust_engine_3d::scene::render_object::RenderObjectData;
 use rust_engine_3d::utilities::system::RcRefCell;
 use serde::{Deserialize, Serialize};
 
-
 #[derive(Serialize, Deserialize,Clone, Copy, Debug, PartialEq)]
 pub enum BlockDataType {
     Ground,

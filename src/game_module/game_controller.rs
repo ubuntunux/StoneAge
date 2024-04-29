@@ -6,7 +6,7 @@ use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use winit::event::VirtualKeyCode;
 
 use crate::application::application::Application;
-use crate::game_module::character::character::Character;
+use crate::game_module::actors::character::Character;
 use crate::game_module::game_client::GameClient;
 use crate::game_module::game_constants::*;
 use crate::game_module::game_ui_manager::GameUIManager;

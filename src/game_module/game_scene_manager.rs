@@ -9,9 +9,9 @@ use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, Rc
 use serde::{Deserialize, Serialize};
 
 use crate::application::application::Application;
-use crate::game_module::character::block::{Block, BlockCreateInfo};
-use crate::game_module::character::character::CharacterCreateInfo;
-use crate::game_module::character::character_manager::CharacterManager;
+use crate::game_module::actors::block::{Block, BlockCreateInfo};
+use crate::game_module::actors::character::CharacterCreateInfo;
+use crate::game_module::actors::character_manager::CharacterManager;
 use crate::game_module::game_constants::{BLOCK_HEIGHT, BLOCK_ID_NONE, BLOCK_WIDTH, SHOW_BLOCK};
 use crate::game_module::game_resource::GameResources;
 
