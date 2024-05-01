@@ -1,6 +1,8 @@
 use std::collections::HashMap;
+use nalgebra::Vector3;
 
 use rust_engine_3d::audio::audio_manager::{AudioLoop, AudioManager};
+use rust_engine_3d::core::engine_core::EngineCore;
 use rust_engine_3d::effect::effect_data::EffectCreateInfo;
 use rust_engine_3d::scene::render_object::RenderObjectCreateInfo;
 use rust_engine_3d::scene::scene_manager::SceneManager;
@@ -43,13 +45,13 @@ impl CharacterManager {
         })
     }
 
-    pub fn initialize_character_manager(&mut self, application: &Application) {
+    pub fn initialize_character_manager(&mut self, engine_core: &EngineCore, application: &Application) {
         log::info!("initialize_character_manager");
         self._game_client = application.get_game_client();
         self._game_scene_manager = application.get_game_scene_manager();
         self._game_resources = application.get_game_resources();
         self._audio_manager = application.get_audio_manager();
-        self._scene_manager = application.get_game_scene_manager().get_scene_manager();
+        self._scene_manager = engine_core.get_scene_manager();
     }
     pub fn destroy_character_manager(&mut self) {
 
@@ -77,7 +79,7 @@ impl CharacterManager {
             _model_data_name: character_data.borrow()._model_data_name.clone(),
             ..Default::default()
         };
-        let render_object_data = self.get_game_scene_manager().get_scene_manager_mut().add_skeletal_render_object(
+        let render_object_data = self.get_scene_manager_mut().add_skeletal_render_object(
             character_name,
             &render_object_create_info
         );
@@ -114,7 +116,7 @@ impl CharacterManager {
     }
     pub fn remove_character(&mut self, character: &RcRefCell<Character>) {
         self._characters.remove(&character.borrow().get_character_id());
-        self.get_game_scene_manager().get_scene_manager_mut().remove_skeletal_render_object(&character.borrow()._character_name);
+        self.get_scene_manager_mut().remove_skeletal_render_object(&character.borrow()._character_name);
     }
     pub fn get_player(&self) -> &RcRefCell<Character> {
         self._player.as_ref().unwrap()
@@ -125,7 +127,7 @@ impl CharacterManager {
     }
 
     pub fn play_effect(&self, effect_name: &str, effect_create_info: &EffectCreateInfo) {
-        self.get_game_scene_manager().get_scene_manager_mut().add_effect(effect_name, effect_create_info);
+        self.get_scene_manager_mut().add_effect(effect_name, effect_create_info);
     }
 
     pub fn update_character_manager(&mut self, delta_time: f64) {
@@ -149,7 +151,7 @@ impl CharacterManager {
                                 // TestCode: Food
                                 let food_create_info = FoodCreateInfo {
                                     _food_data_name: String::from("meat"),
-                                    _position: character_mut.get_position().clone(),
+                                    _position: character_mut.get_position().clone() + Vector3::new(0.0, 0.5, 0.0),
                                     ..Default::default()
                                 };
                                 ptr_as_mut(self.get_game_scene_manager()._food_manager.clone()).create_food("food", &food_create_info);
@@ -160,8 +162,8 @@ impl CharacterManager {
             }
         }
 
-        // for character in dead_characters.iter_mut() {
-        //     self.remove_character(character);
-        // }
+        for character in dead_characters.iter() {
+            self.remove_character(character);
+        }
     }
 }

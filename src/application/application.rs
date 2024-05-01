@@ -53,12 +53,12 @@ impl ApplicationBase for Application {
         let application = ptr_as_ref(self);
         self.get_game_resources_mut().initialize_game_resources(engine_core.get_engine_resources());
         self.get_game_resources_mut().load_game_resources(engine_core.get_renderer_context());
-        self.get_character_manager_mut().initialize_character_manager(application);
-        self.get_food_manager_mut().initialize_food_manager(application);
-        self.get_game_scene_manager_mut().initialize_game_scene_manager(application, engine_core, window_size);
-        self.get_game_ui_manager_mut().initialize_game_ui_manager(engine_core, application);
-        self.get_game_controller_mut().initialize_game_controller(application);
         self.get_game_client_mut().initialize_game_client(engine_core, application);
+        self.get_game_controller_mut().initialize_game_controller(application);
+        self.get_game_ui_manager_mut().initialize_game_ui_manager(engine_core, application);
+        self.get_game_scene_manager_mut().initialize_game_scene_manager(application, engine_core, window_size);
+        self.get_character_manager_mut().initialize_character_manager(engine_core, application);
+        self.get_food_manager_mut().initialize_food_manager(engine_core, application);
 
         // start game
         self.get_game_ui_manager_mut().build_game_ui(window_size);

@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use nalgebra::Vector3;
 
 use rust_engine_3d::audio::audio_manager::{AudioLoop, AudioManager};
+use rust_engine_3d::core::engine_core::EngineCore;
 use rust_engine_3d::effect::effect_data::EffectCreateInfo;
 use rust_engine_3d::scene::render_object::{RenderObjectCreateInfo, RenderObjectData};
 use rust_engine_3d::scene::scene_manager::SceneManager;
@@ -9,6 +10,7 @@ use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, Rc
 use serde::{Deserialize, Serialize};
 
 use crate::application::application::Application;
+use crate::game_module::actors::character_manager::CharacterManager;
 use crate::game_module::game_client::GameClient;
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
@@ -52,6 +54,7 @@ pub struct Food {
 
 pub struct FoodManager {
     pub _game_client: *const GameClient,
+    pub _character_manager: *const CharacterManager,
     pub _game_scene_manager: *const GameSceneManager,
     pub _game_resources: *const GameResources,
     pub _audio_manager: *const AudioManager,
@@ -109,6 +112,14 @@ impl Food {
         self._food_id
     }
 
+    pub fn collide_bound_box(&self, pos: &Vector3<f32>) -> bool {
+        self._render_object.borrow()._bound_box.collide_in_radius(pos)
+    }
+
+    pub fn update_food(&mut self, _delta_time: f64) {
+        //self.update_transform();
+    }
+
     pub fn update_transform(&mut self) {
         let mut render_object = self._render_object.borrow_mut();
         render_object._transform_object.set_position(&self._food_properties._position);
@@ -121,6 +132,7 @@ impl FoodManager {
     pub fn create_food_manager() -> Box<FoodManager> {
         Box::new(FoodManager {
             _game_client: std::ptr::null(),
+            _character_manager: std::ptr::null(),
             _game_scene_manager: std::ptr::null(),
             _game_resources: std::ptr::null(),
             _audio_manager: std::ptr::null(),
@@ -130,21 +142,24 @@ impl FoodManager {
         })
     }
 
-    pub fn initialize_food_manager(&mut self, application: &Application) {
+    pub fn initialize_food_manager(&mut self, engine_core: &EngineCore, application: &Application) {
         log::info!("initialize_food_manager");
         self._game_client = application.get_game_client();
+        self._character_manager = application.get_character_manager();
         self._game_scene_manager = application.get_game_scene_manager();
         self._game_resources = application.get_game_resources();
         self._audio_manager = application.get_audio_manager();
-        self._scene_manager = application.get_game_scene_manager().get_scene_manager();
+        self._scene_manager = engine_core.get_scene_manager();
     }
     pub fn destroy_food_manager(&mut self) {
 
     }
-    pub fn get_game_client(&self) -> *const GameClient { self._game_client }
-    pub fn get_game_scene_manager(&self) -> *const GameSceneManager { self._game_scene_manager }
-    pub fn get_audio_manager(&self) -> *const AudioManager { self._audio_manager }
-    pub fn get_scene_manager(&self) -> *const SceneManager { self._scene_manager }
+    pub fn get_game_resources(&self) -> &GameResources { ptr_as_ref(self._game_resources) }
+    pub fn get_game_client(&self) -> &GameClient { ptr_as_ref(self._game_client) }
+    pub fn get_game_scene_manager(&self) -> &GameSceneManager { ptr_as_ref(self._game_scene_manager) }
+    pub fn get_character_manager(&self) -> &CharacterManager { ptr_as_ref(self._character_manager) }
+    pub fn get_audio_manager_mut(&self) -> &mut AudioManager { ptr_as_mut(self._audio_manager) }
+    pub fn get_scene_manager_mut(&self) -> &mut SceneManager { ptr_as_mut(self._scene_manager) }
     pub fn generate_id(&mut self) -> u64 {
         let id = self._id_generator;
         self._id_generator += 1;
@@ -160,7 +175,7 @@ impl FoodManager {
             _model_data_name: food_data.borrow()._model_data_name.clone(),
             ..Default::default()
         };
-        let render_object_data = ptr_as_ref(self.get_game_scene_manager()).get_scene_manager_mut().add_static_render_object(
+        let render_object_data = self.get_scene_manager_mut().add_static_render_object(
             food_name,
             &render_object_create_info
         );
@@ -177,44 +192,41 @@ impl FoodManager {
         self._foods.insert(id, food.clone());
         food
     }
+
     pub fn remove_food(&mut self, food: &RcRefCell<Food>) {
         self._foods.remove(&food.borrow().get_food_id());
-        ptr_as_mut(self.get_scene_manager()).remove_skeletal_render_object(&food.borrow()._food_name);
+        self.get_scene_manager_mut().remove_static_render_object(&food.borrow()._food_name);
     }
+
     pub fn play_audio(&self, audio_name_bank: &str) {
-        ptr_as_mut(self.get_audio_manager()).create_audio_instance_from_bank(audio_name_bank, AudioLoop::ONCE);
+        self.get_audio_manager_mut().create_audio_instance_from_bank(audio_name_bank, AudioLoop::ONCE);
     }
 
     pub fn play_effect(&self, effect_name: &str, effect_create_info: &EffectCreateInfo) {
-        ptr_as_mut(self.get_scene_manager()).add_effect(effect_name, effect_create_info);
+        self.get_scene_manager_mut().add_effect(effect_name, effect_create_info);
     }
 
-    pub fn update_food_manager(&mut self, _delta_time: f64) {
+    pub fn update_food_manager(&mut self, delta_time: f64) {
         for food in self._foods.values() {
-            let mut food_mut = food.borrow_mut();
-            food_mut.update_transform();
+            food.borrow_mut().update_food(delta_time);
         }
 
-        // let mut dead_foods: Vec<RcRefCell<Food>> = Vec::new();
-        // let player = ptr_as_ref(self._player.as_ref().unwrap().as_ptr());
-        // if player.is_attacking() {
-        //     for food in self._foods.values() {
-        //         let mut food_mut = food.borrow_mut();
-        //         if food_mut._is_alive {
-        //             if food_mut._food_id != player._food_id {
-        //                 if food_mut.collide_bound_box(&player.get_attack_point()) {
-        //                     food_mut.set_damage(player.get_attack_point(), player.get_power());
-        //                     if false == food_mut._is_alive {
-        //                         dead_foods.push(food.clone());
-        //                     }
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
-        //
-        // for food in dead_foods.iter_mut() {
-        //     self.remove_food(food);
-        // }
+        let mut eaten_foods: Vec<RcRefCell<Food>> = Vec::new();
+        {
+            let player = self.get_character_manager().get_player();
+            let player_mut = player.borrow_mut();
+            let player_position = player_mut.get_position();
+            for food in self._foods.values() {
+                let food_ref = food.borrow();
+                let dist = (food_ref._food_properties._position - player_position).norm();
+                if dist <= food_ref._render_object.borrow()._bound_box._radius {
+                    eaten_foods.push(food.clone());
+                }
+            }
+        }
+
+        for food in eaten_foods.iter() {
+            self.remove_food(food);
+        }
     }
 }
