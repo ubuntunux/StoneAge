@@ -12,6 +12,7 @@ use serde::{Deserialize, Serialize};
 use crate::application::application::Application;
 use crate::game_module::actors::character_manager::CharacterManager;
 use crate::game_module::game_client::GameClient;
+use crate::game_module::game_constants::AUDIO_CRUNCH;
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
 
@@ -195,7 +196,7 @@ impl FoodManager {
 
     pub fn remove_food(&mut self, food: &RcRefCell<Food>) {
         self._foods.remove(&food.borrow().get_food_id());
-        self.get_scene_manager_mut().remove_static_render_object(&food.borrow()._food_name);
+        self.get_scene_manager_mut().remove_static_render_object(food.borrow()._render_object.borrow()._object_id);
     }
 
     pub fn play_audio(&self, audio_name_bank: &str) {
@@ -219,13 +220,16 @@ impl FoodManager {
             for food in self._foods.values() {
                 let food_ref = food.borrow();
                 let dist = (food_ref._food_properties._position - player_position).norm();
-                if dist <= food_ref._render_object.borrow()._bound_box._radius {
+                if dist <= 1.0 {
                     eaten_foods.push(food.clone());
+                    log::info!("add to eaten_foods");
                 }
             }
         }
 
         for food in eaten_foods.iter() {
+            self.get_character_manager().play_audio(AUDIO_CRUNCH);
+            log::info!("Remove food");
             self.remove_food(food);
         }
     }

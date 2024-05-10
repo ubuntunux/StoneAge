@@ -6,7 +6,7 @@ use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use winit::event::VirtualKeyCode;
 
 use crate::application::application::Application;
-use crate::game_module::actors::character::Character;
+use crate::game_module::actors::character::{Character, MoveDirections};
 use crate::game_module::game_client::GameClient;
 use crate::game_module::game_constants::*;
 use crate::game_module::game_ui_manager::GameUIManager;
@@ -72,13 +72,20 @@ impl GameController {
         let _btn_right_hold: bool = mouse_input_data._btn_r_hold;
         let is_left = keyboard_input_data.get_key_hold(VirtualKeyCode::Left) | keyboard_input_data.get_key_hold(VirtualKeyCode::A);
         let is_right = keyboard_input_data.get_key_hold(VirtualKeyCode::Right) | keyboard_input_data.get_key_hold(VirtualKeyCode::D);
-        let is_jump = keyboard_input_data.get_key_hold(VirtualKeyCode::Up) | keyboard_input_data.get_key_hold(VirtualKeyCode::W) | keyboard_input_data.get_key_hold(VirtualKeyCode::Space);
+        let is_down = keyboard_input_data.get_key_hold(VirtualKeyCode::Down) | keyboard_input_data.get_key_hold(VirtualKeyCode::S);
+        let is_up = keyboard_input_data.get_key_hold(VirtualKeyCode::Up) | keyboard_input_data.get_key_hold(VirtualKeyCode::W);
+        let is_jump = keyboard_input_data.get_key_hold(VirtualKeyCode::Space);
         let _modifier_keys_ctrl = keyboard_input_data.get_key_hold(VirtualKeyCode::LControl);
         let mut player_mut = player.borrow_mut();
 
-        // update player control
-        if is_left || is_right {
-            player_mut.set_move_walk(is_left);
+        if is_left {
+            player_mut.set_move_walk(MoveDirections::LEFT);
+        } else if is_right {
+            player_mut.set_move_walk(MoveDirections::RIGHT);
+        } else if is_up {
+            player_mut.set_move_walk(MoveDirections::UP);
+        } else if is_down {
+            player_mut.set_move_walk(MoveDirections::DOWN);
         }
 
         if is_jump {

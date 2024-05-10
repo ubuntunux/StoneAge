@@ -28,6 +28,16 @@ pub enum ActionAnimationState {
     DEAD
 }
 
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum MoveDirections {
+    NONE,
+    LEFT,
+    RIGHT,
+    UP,
+    DOWN
+}
+
+
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum SpawnPointType {
     None,
@@ -74,12 +84,12 @@ pub struct CharacterController {
     pub _is_ground: bool,
     pub _is_jump: bool,
     pub _is_blocked: bool,
-    pub _move_direction: f32
+    pub _move_direction: MoveDirections
 }
 
 pub struct CharacterBehavior {
     pub _move_time: f32,
-    pub _move_direction: bool
+    pub _move_direction: MoveDirections
 }
 
 #[derive(Serialize, Deserialize, Default, Debug, Clone, PartialEq)]
@@ -148,26 +158,20 @@ impl CharacterController {
             _is_jump: false,
             _is_ground: false,
             _is_blocked: false,
-            _move_direction: 0.0,
+            _move_direction: MoveDirections::NONE
         }
     }
 
     pub fn initialize(&mut self) {
-        self._position = Vector3::zeros();
-        self._rotation = Vector3::zeros();
-        self._scale = Vector3::new(1.0, 1.0, 1.0);
-        self._velocity = Vector3::zeros();
-        self._is_ground = true;
-        self._is_jump = false;
-        self._move_direction = 0.0;
+        *self = CharacterController::create_character_controller();
     }
 
     pub fn is_stop(&self) -> bool {
         self._velocity.x == 0.0 && self._velocity.y == 0.0
     }
 
-    pub fn set_move_walk(&mut self, is_left: bool) {
-        self._move_direction = if is_left { -1.0 } else { 1.0 };
+    pub fn set_move_walk(&mut self, move_direction: MoveDirections) {
+        self._move_direction = move_direction;
     }
 
     pub fn set_move_jump(&mut self) {
@@ -194,13 +198,28 @@ impl CharacterController {
         let prev_position = self._position.clone_owned();
 
         // move on ground
-        if 0.0 != self._move_direction {
-            self._velocity.x = self._move_direction * PLAYER_MOVE_SPEED;
-            self._position.x += self._velocity.x * delta_time;
-            self._rotation.y = self._move_direction * std::f32::consts::PI * -0.5;
-        } else {
-            self._velocity.x = 0.0;
+        match self._move_direction {
+            MoveDirections::LEFT => {
+                self._velocity.x = -PLAYER_MOVE_SPEED;
+                self._rotation.y = std::f32::consts::PI * 0.5
+            },
+            MoveDirections::RIGHT => {
+                self._velocity.x = PLAYER_MOVE_SPEED;
+                self._rotation.y = -std::f32::consts::PI * 0.5
+            },
+            MoveDirections::UP => {
+                self._velocity.x = 0.0;
+                self._rotation.y = std::f32::consts::PI;
+            },
+            MoveDirections::DOWN => {
+                self._velocity.x = 0.0;
+                self._rotation.y = 0.0;
+            },
+            _ => {
+                self._velocity.x = 0.0;
+            }
         }
+        self._position.x += self._velocity.x * delta_time;
 
         if self._is_jump {
             self._velocity.y = PLAYER_JUMP_SPEED;
@@ -255,7 +274,7 @@ impl CharacterController {
 
         // reset
         self._is_jump = false;
-        self._move_direction = 0.0;
+        self._move_direction = MoveDirections::NONE;
     }
 }
 
@@ -263,7 +282,7 @@ impl CharacterBehavior {
     pub fn create_character_behavior() -> CharacterBehavior {
         CharacterBehavior {
             _move_time: 0.0,
-            _move_direction: false,
+            _move_direction: MoveDirections::NONE,
         }
     }
 
@@ -273,16 +292,12 @@ impl CharacterBehavior {
         if movable {
             self._move_time += delta_time;
             if 2.0 <= self._move_time || toggle_move_direction {
-                self._move_direction = !self._move_direction;
+                self._move_direction = if MoveDirections::LEFT == self._move_direction { MoveDirections::RIGHT } else { MoveDirections::LEFT };
                 self._move_time = 0.0;
             }
 
             character.set_move_walk(self._move_direction);
         }
-    }
-
-    pub fn toggle_move_direction(&mut self) {
-        self._move_direction = !self._move_direction;
     }
 }
 
@@ -405,8 +420,8 @@ impl Character {
         self.set_move_animation(MoveAnimationState::IDLE);
     }
 
-    pub fn set_move_walk(&mut self, is_left: bool) {
-        self._controller.set_move_walk(is_left);
+    pub fn set_move_walk(&mut self, move_direction: MoveDirections) {
+        self._controller.set_move_walk(move_direction);
         if false == self.is_move_state(MoveAnimationState::WALK) && self._controller._is_ground {
             self.set_move_animation(MoveAnimationState::WALK);
         }
@@ -443,7 +458,7 @@ impl Character {
     pub fn set_action_dead(&mut self) {
         self.set_move_idle();
         self.set_action_animation(ActionAnimationState::DEAD);
-        self.get_character_manager_mut().play_audio(AUDIO_DEAD);
+        self.get_character_manager().play_audio(AUDIO_DEAD);
     }
 
     pub fn get_animation_play_info(&self, layer: AnimationLayer) -> &AnimationPlayInfo {
@@ -488,8 +503,8 @@ impl Character {
             _effect_data_name: String::from("effect_test"),
             ..Default::default()
         };
-        self.get_character_manager_mut().play_effect(EFFECT_HIT, &effect_create_info);
-        self.get_character_manager_mut().play_audio(AUDIO_HIT);
+        self.get_character_manager().play_effect(EFFECT_HIT, &effect_create_info);
+        self.get_character_manager().play_audio(AUDIO_HIT);
     }
 
     pub fn set_dead(&mut self) {

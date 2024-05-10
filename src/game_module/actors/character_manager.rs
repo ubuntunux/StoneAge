@@ -116,7 +116,7 @@ impl CharacterManager {
     }
     pub fn remove_character(&mut self, character: &RcRefCell<Character>) {
         self._characters.remove(&character.borrow().get_character_id());
-        self.get_scene_manager_mut().remove_skeletal_render_object(&character.borrow()._character_name);
+        self.get_scene_manager_mut().remove_skeletal_render_object(character.borrow()._render_object.borrow()._object_id);
     }
     pub fn get_player(&self) -> &RcRefCell<Character> {
         self._player.as_ref().unwrap()

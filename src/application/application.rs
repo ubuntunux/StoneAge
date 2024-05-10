@@ -129,7 +129,7 @@ impl ApplicationBase for Application {
             let modifier_keys_shift = keyboard_input_data.get_key_hold(VirtualKeyCode::LShift);
             let scene_manager = self.get_game_scene_manager().get_scene_manager();
             let main_camera = scene_manager.get_main_camera_mut();
-            let mut main_light = scene_manager._main_light.borrow_mut();
+            let main_light = ptr_as_mut(scene_manager.get_main_light().as_ptr());
             let camera_move_speed_multiplier = if modifier_keys_shift { 2.0 } else { 1.0 };
             let move_speed: f32 = game_constants::EDITOR_CAMERA_MOVE_SPEED
                 * camera_move_speed_multiplier

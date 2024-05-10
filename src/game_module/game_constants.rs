@@ -31,6 +31,7 @@ pub const ATTACK_TIME: f32 = 0.15;
 pub const AUDIO_ATTACK: &str = "swoosh";
 pub const AUDIO_DEAD: &str = "pain_short";
 pub const AUDIO_HIT: &str = "hit";
+pub const AUDIO_CRUNCH: &str = "crunch";
 
 // EFFECT DATA
 pub const EFFECT_HIT: &str = "hit_effect";
