@@ -143,7 +143,7 @@ impl CharacterManager {
                 let mut character_mut = character.borrow_mut();
                 if character_mut._is_alive {
                     if character_mut._character_id != player._character_id {
-                        if character_mut.collide_bound_box(&player.get_attack_point()) {
+                        if character_mut.collide_point(&player.get_attack_point()) {
                             character_mut.set_damage(player.get_attack_point(), player.get_power());
                             if false == character_mut._is_alive {
                                 dead_characters.push(character.clone());

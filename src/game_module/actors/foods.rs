@@ -113,7 +113,7 @@ impl Food {
         self._food_id
     }
 
-    pub fn collide_bound_box(&self, pos: &Vector3<f32>) -> bool {
+    pub fn collide_point(&self, pos: &Vector3<f32>) -> bool {
         self._render_object.borrow()._bound_box.collide_in_radius(pos)
     }
 

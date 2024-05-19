@@ -194,7 +194,7 @@ impl CharacterController {
         self._velocity.y = 0.0;
     }
 
-    pub fn update_character_controller(&mut self, game_scene_manager: &GameSceneManager, _actor_bound_box: &BoundingBox, delta_time: f32) {
+    pub fn update_character_controller(&mut self, game_scene_manager: &GameSceneManager, actor_bound_box: &BoundingBox, delta_time: f32) {
         let prev_position = self._position.clone_owned();
 
         // move on ground
@@ -245,31 +245,23 @@ impl CharacterController {
         }
 
         // check collide with block
-        if self._position.y <= prev_position.y {
-            if self._is_ground {
-                let bottom_block_pos = self._position + Vector3::new(0.0, -BLOCK_HEIGHT, 0.0);
-                if let Some(_bottom_block) = game_scene_manager.get_block(&bottom_block_pos) {
-                    self.set_on_ground(self._position.y);
-                } else {
-                    self._is_ground = false;
-                }
-            } else if let Some(collide_pos) = game_scene_manager.check_is_on_block(&prev_position, &self._position) {
-                self.set_on_ground(collide_pos.y);
-            }
-        }
-
-        if self._position.y <= GROUND_HEIGHT {
-            self.set_on_ground(GROUND_HEIGHT);
-        }
-
-        // check blocked with side block
+        let move_delta = self._position - prev_position;
+        let bound_box_min = actor_bound_box._min.clone() + move_delta;
+        let bound_box_max = actor_bound_box._max.clone() + move_delta;
         self._is_blocked = false;
-        if self._position.x != prev_position.x {
-            let side_pos = self._position + Vector3::new((self._position.x - prev_position.x).signum() * 0.5, 0.0, 0.0);
-            if let Some(_block) = game_scene_manager.get_block(&side_pos) {
+        self._is_ground = false;
+        if let Some(collide_pos) = game_scene_manager.check_is_on_block(&bound_box_min, &bound_box_max) {
+            if collide_pos.y <= prev_position.y {
+                self.set_on_ground(collide_pos.y);
+            } else {
                 self._position.x = prev_position.x;
                 self._is_blocked = true;
             }
+        }
+
+        // check ground
+        if self._position.y <= GROUND_HEIGHT {
+            self.set_on_ground(GROUND_HEIGHT);
         }
 
         // reset
@@ -482,7 +474,7 @@ impl Character {
         &self._controller._position
     }
 
-    pub fn collide_bound_box(&self, pos: &Vector3<f32>) -> bool {
+    pub fn collide_point(&self, pos: &Vector3<f32>) -> bool {
         self._render_object.borrow()._bound_box.collide_in_radius(pos)
     }
 

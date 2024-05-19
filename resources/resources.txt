@@ -129,6 +129,7 @@ resources/externals/game_data/game_scenes/intro_stage.blend
 resources/externals/.log/StoneAge_20240429_224107.log
 resources/externals/.log/StoneAge_20240519_220236.log
 resources/externals/.log/StoneAge_20240519_215558.log
+resources/externals/.log/StoneAge_20240519_224553.log
 resources/externals/.log/StoneAge_20240429_224056.log
 resources/externals/.log/StoneAge_20240519_151223.log
 resources/externals/.log/StoneAge_20240519_154424.log
@@ -139,6 +140,7 @@ resources/externals/.log/StoneAge_20240519_153939.log
 resources/externals/.log/StoneAge_20240501_015353.log
 resources/externals/.log/StoneAge_20240501_012648.log
 resources/externals/.log/StoneAge_20240501_011015.log
+resources/externals/.log/StoneAge_20240519_224816.log
 resources/externals/.log/StoneAge_20240519_165659.log
 resources/externals/.log/StoneAge_20240429_223838.log
 resources/externals/.log/StoneAge_20240519_214743.log
@@ -184,8 +186,10 @@ resources/externals/.log/StoneAge_20240501_014424.log
 resources/externals/.log/StoneAge_20240501_015357.log
 resources/externals/.log/StoneAge_20240429_223127.log
 resources/externals/.log/StoneAge_20240519_135030.log
+resources/externals/.log/StoneAge_20240519_224656.log
 resources/externals/.log/StoneAge_20240501_015407.log
 resources/externals/.log/StoneAge_20240429_223833.log
+resources/externals/.log/StoneAge_20240519_224809.log
 resources/externals/.log/StoneAge_20240501_013332.log
 resources/externals/.log/StoneAge_20240519_214046.log
 resources/externals/.log/StoneAge_20240519_215054.log
@@ -196,6 +200,7 @@ resources/externals/.log/StoneAge_20240429_223720.log
 resources/externals/.log/StoneAge_20240519_212848.log
 resources/externals/.log/StoneAge_20240519_220531.log
 resources/externals/.log/StoneAge_20240501_011024.log
+resources/externals/.log/StoneAge_20240519_224646.log
 resources/externals/.log/StoneAge_20240501_011323.log
 resources/externals/.log/StoneAge_20240519_220839.log
 resources/externals/.log/StoneAge_20240519_165739.log
