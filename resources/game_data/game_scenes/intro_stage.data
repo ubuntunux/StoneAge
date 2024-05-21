@@ -1,43 +1,7 @@
 {
     "_blocks": {
-        "rock.006": {
-            "_block_data_name": "rock",
-            "_position": [
-                -12.0,
-                10.0,
-                0.0
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "rock.007": {
-            "_block_data_name": "rock",
-            "_position": [
-                -14.0,
-                10.0,
-                0.0
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "rock.008": {
-            "_block_data_name": "rock",
+        "cliff_grass": {
+            "_block_data_name": "cliff_grass",
             "_position": [
                 -16.0,
                 10.0,
@@ -46,6 +10,42 @@
             "_rotation": [
                 0.0,
                 0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "cliff_grass.001": {
+            "_block_data_name": "cliff_grass",
+            "_position": [
+                -14.0,
+                10.0,
+                0.0
+            ],
+            "_rotation": [
+                0.0,
+                1.1989812850952148,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "cliff_grass.002": {
+            "_block_data_name": "cliff_grass",
+            "_position": [
+                -12.0,
+                10.0,
+                0.0
+            ],
+            "_rotation": [
+                0.0,
+                4.085937976837158,
                 0.0
             ],
             "_scale": [
@@ -115,7 +115,7 @@
         "player": {
             "_character_data_name": "jack",
             "_position": [
-                -14.0,
+                -16.0,
                 12.0,
                 0.0
             ],
@@ -131,7 +131,7 @@
             ]
         }
     },
-    "_scene_data_name": "stage_00",
+    "_scene_data_name": "stage_forest",
     "_start_point": [
         -15.0,
         41.0,

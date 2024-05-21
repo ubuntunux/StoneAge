@@ -211,10 +211,10 @@ impl ApplicationBase for Application {
         // update managers
         if self._is_game_mode {
             self._game_client.update_game_mode(delta_time);
+            self._game_scene_manager.update_game_scene_manager(delta_time);
             self.get_game_ui_manager_mut().set_crosshair_pos(&engine_core._mouse_move_data._mouse_pos);
         }
-        self._game_scene_manager.update_game_scene_manager(delta_time);
-        self._game_ui_manager.as_mut().update_game_ui(delta_time);
+        self.get_game_ui_manager_mut().update_game_ui(delta_time);
     }
 }
 

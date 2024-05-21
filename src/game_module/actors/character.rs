@@ -235,12 +235,12 @@ impl CharacterController {
         // check delta limited - prevent pass block
         {
             let delta = self._position - prev_position;
-            if BLOCK_WIDTH < delta.x.abs() {
-                self._position.x = prev_position.x + delta.x.signum() * BLOCK_WIDTH;
+            if MOVE_LIMIT < delta.x.abs() {
+                self._position.x = prev_position.x + delta.x.signum() * MOVE_LIMIT;
             }
 
-            if BLOCK_HEIGHT < delta.y.abs() {
-                self._position.y = prev_position.y + delta.y.signum() * BLOCK_HEIGHT;
+            if MOVE_LIMIT < delta.y.abs() {
+                self._position.y = prev_position.y + delta.y.signum() * MOVE_LIMIT;
             }
         }
 

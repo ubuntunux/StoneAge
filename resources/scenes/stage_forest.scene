@@ -37,60 +37,6 @@
     "_effects": {},
     "_skeletal_objects": {},
     "_static_objects": {
-        "cliff_grass": {
-            "_model_data_name": "environments/cliff_grass",
-            "_position": [
-                -16.0,
-                10.0,
-                0.0
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "cliff_grass.001": {
-            "_model_data_name": "environments/cliff_grass",
-            "_position": [
-                -14.0,
-                10.0,
-                0.0
-            ],
-            "_rotation": [
-                0.0,
-                -2.9358749389648438,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "cliff_grass.002": {
-            "_model_data_name": "environments/cliff_grass",
-            "_position": [
-                -12.0,
-                10.0,
-                0.0
-            ],
-            "_rotation": [
-                0.0,
-                2.1311304569244385,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
         "desert_ground": {
             "_model_data_name": "environments/desert_ground",
             "_position": [
