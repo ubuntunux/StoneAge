@@ -250,12 +250,18 @@ impl CharacterController {
         let bound_box_max = actor_bound_box._max.clone() + move_delta;
         self._is_blocked = false;
         self._is_ground = false;
-        if let Some(collide_pos) = game_scene_manager.check_is_on_block(&bound_box_min, &bound_box_max) {
-            if collide_pos.y <= prev_position.y {
-                self.set_on_ground(collide_pos.y);
-            } else {
-                self._position.x = prev_position.x;
-                self._is_blocked = true;
+        for (_key, block) in game_scene_manager.get_blocks().iter() {
+            let block_ref = block.borrow();
+            let render_object_ref = block_ref._render_object.borrow();
+            if render_object_ref._bound_box.collide_bound_box_xy(&bound_box_min, &bound_box_max) {
+                let collide_pos_y = render_object_ref._bound_box._max.y;
+                if self._velocity.y <= 0.0 && (collide_pos_y <= prev_position.y || (collide_pos_y - BLOCK_TOLERANCE) <= self._position.y) {
+                    self.set_on_ground(collide_pos_y);
+                } else {
+                    // side
+                    self._position.x = prev_position.x;
+                    self._is_blocked = true;
+                }
             }
         }
 

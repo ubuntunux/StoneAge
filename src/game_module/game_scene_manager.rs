@@ -81,6 +81,10 @@ impl GameSceneManager {
         )
     }
 
+    pub fn get_blocks(&self) -> &HashMap<u64, RcRefCell<Block>> {
+        &self._blocks
+    }
+
     pub fn check_is_on_block(&self, min: &Vector3<f32>, max: &Vector3<f32>) -> Option<Vector3<f32>> {
         for (_key, block) in self._blocks.iter() {
             let block_ref = block.borrow();

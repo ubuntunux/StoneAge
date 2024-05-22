@@ -125,6 +125,7 @@ resources/externals/game_data/blocks/rock.blend
 resources/externals/game_data/foods/meat.blend
 resources/externals/game_data/properties/properties.blend
 resources/externals/game_data/game_scenes/intro_stage.blend
+resources/externals/.log/StoneAge_20240523_001218.log
 resources/externals/.log/StoneAge_20240429_224107.log
 resources/externals/.log/StoneAge_20240519_220236.log
 resources/externals/.log/StoneAge_20240519_215558.log
@@ -153,15 +154,19 @@ resources/externals/.log/StoneAge_20240521_234338.log
 resources/externals/.log/StoneAge_20240519_224115.log
 resources/externals/.log/StoneAge_20240519_151120.log
 resources/externals/.log/StoneAge_20240519_150930.log
+resources/externals/.log/StoneAge_20240523_000547.log
 resources/externals/.log/StoneAge_20240519_220537.log
 resources/externals/.log/StoneAge_20240519_155928.log
 resources/externals/.log/StoneAge_20240519_160013.log
+resources/externals/.log/StoneAge_20240523_001035.log
 resources/externals/.log/StoneAge_20240429_223644.log
 resources/externals/.log/StoneAge_20240501_011332.log
+resources/externals/.log/StoneAge_20240523_001219.log
 resources/externals/.log/StoneAge_20240501_004816.log
 resources/externals/.log/StoneAge_20240519_134908.log
 resources/externals/.log/StoneAge_20240501_012100.log
 resources/externals/.log/StoneAge_20240501_004306.log
+resources/externals/.log/StoneAge_20240523_003856.log
 resources/externals/.log/StoneAge_20240429_223713.log
 resources/externals/.log/StoneAge_20240519_215607.log
 resources/externals/.log/StoneAge_20240501_012657.log
@@ -199,6 +204,7 @@ resources/externals/.log/StoneAge_20240519_214046.log
 resources/externals/.log/StoneAge_20240519_215054.log
 resources/externals/.log/StoneAge_20240519_154846.log
 resources/externals/.log/StoneAge_20240519_165351.log
+resources/externals/.log/StoneAge_20240523_001140.log
 resources/externals/.log/StoneAge_20240519_145644.log
 resources/externals/.log/StoneAge_20240429_223720.log
 resources/externals/.log/StoneAge_20240519_212848.log
@@ -216,6 +222,7 @@ resources/externals/.log/StoneAge_20240501_015351.log
 resources/externals/.log/StoneAge_20240501_014343.log
 resources/externals/.log/StoneAge_20240501_002913.log
 resources/externals/.log/StoneAge_20240522_012137.log
+resources/externals/.log/StoneAge_20240523_000717.log
 resources/externals/.log/StoneAge_20240519_154653.log
 resources/externals/.log/StoneAge_20240518_160850.log
 resources/externals/.log/StoneAge_20240519_160611.log

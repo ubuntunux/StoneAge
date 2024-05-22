@@ -53,6 +53,60 @@
                 1.0,
                 1.0
             ]
+        },
+        "cliff_grass.004": {
+            "_block_data_name": "cliff_grass",
+            "_position": [
+                -8.0,
+                14.0,
+                0.0
+            ],
+            "_rotation": [
+                0.0,
+                4.085937976837158,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "cliff_grass.005": {
+            "_block_data_name": "cliff_grass",
+            "_position": [
+                -18.0,
+                10.510727882385254,
+                0.0
+            ],
+            "_rotation": [
+                0.0,
+                4.085937976837158,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "cliff_grass.006": {
+            "_block_data_name": "cliff_grass",
+            "_position": [
+                -19.8239803314209,
+                10.91407585144043,
+                0.0
+            ],
+            "_rotation": [
+                0.0,
+                4.085937976837158,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
         }
     },
     "_characters": {
