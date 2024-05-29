@@ -495,7 +495,6 @@ resources/engine_resources/shaders/common/PCFKernels.glsl
 resources/engine_resources/shaders/common/bloom.frag
 resources/engine_resources/shaders/common/render_object_common.glsl
 resources/engine_resources/shaders/common/render_object_id.frag
-resources/engine_resources/shaders/common/render_ssao_blur.frag
 resources/engine_resources/shaders/common/default.vert
 resources/engine_resources/shaders/common/render_bloom_downsampling.frag
 resources/engine_resources/shaders/common/light_scatter.frag
