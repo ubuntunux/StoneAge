@@ -28,9 +28,9 @@ pub struct GameSceneDataCreateInfo {
     pub _start_point: Vector3<f32>,
 }
 
-pub struct GameSceneManager {
-    pub _effect_manager: *const EffectManager,
-    pub _scene_manager: *const SceneManager,
+pub struct GameSceneManager<'a> {
+    pub _effect_manager: *const EffectManager<'a>,
+    pub _scene_manager: *const SceneManager<'a>,
     pub _game_resources: *const GameResources,
     pub _character_manager: *const CharacterManager,
     pub _food_manager: *const FoodManager,
@@ -39,16 +39,16 @@ pub struct GameSceneManager {
     pub _block_id_generator: u64
 }
 
-impl GameSceneManager {
-    pub fn get_scene_manager(&self) -> &SceneManager {
+impl<'a> GameSceneManager<'a> {
+    pub fn get_scene_manager(&self) -> &SceneManager<'a> {
         ptr_as_ref(self._scene_manager)
     }
 
-    pub fn get_scene_manager_mut(&self) -> &mut SceneManager {
+    pub fn get_scene_manager_mut(&self) -> &mut SceneManager<'a> {
         ptr_as_mut(self._scene_manager)
     }
 
-    pub fn create_game_scene_manager() -> Box<GameSceneManager> {
+    pub fn create_game_scene_manager() -> Box<GameSceneManager<'a>> {
         Box::new(GameSceneManager {
             _effect_manager: std::ptr::null(),
             _scene_manager: std::ptr::null(),

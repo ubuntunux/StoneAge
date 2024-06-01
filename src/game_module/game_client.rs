@@ -9,18 +9,18 @@ use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::game_ui_manager::GameUIManager;
 
-pub struct GameClient {
-    pub _engine_core: *const EngineCore,
-    pub _application: *const Application,
-    pub _character_manager: *const CharacterManager,
-    pub _game_scene_manager: *const GameSceneManager,
-    pub _game_resources: *const GameResources,
+pub struct GameClient<'a> {
+    pub _engine_core: *const EngineCore<'a>,
+    pub _application: *const Application<'a>,
+    pub _character_manager: *const CharacterManager<'a>,
+    pub _game_scene_manager: *const GameSceneManager<'a>,
+    pub _game_resources: *const GameResources<'a>,
     pub _game_controller: *const GameController,
-    pub _game_ui_manager: *const GameUIManager,
+    pub _game_ui_manager: *const GameUIManager<'a>,
 }
 
-impl GameClient {
-    pub fn create_game_client() -> Box<GameClient> {
+impl<'a> GameClient<'a> {
+    pub fn create_game_client() -> Box<GameClient<'a>> {
         Box::new(GameClient {
             _engine_core: std::ptr::null(),
             _application: std::ptr::null(),
@@ -32,7 +32,7 @@ impl GameClient {
         })
     }
 
-    pub fn initialize_game_client(&mut self, engine_core: *const EngineCore, application: &Application) {
+    pub fn initialize_game_client(&mut self, engine_core: *const EngineCore<'a>, application: &Application) {
         log::info!("initialize_game_client");
         self._engine_core = engine_core;
         self._application = application;

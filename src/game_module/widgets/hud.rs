@@ -9,17 +9,17 @@ use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use crate::game_module::widgets::hit_point_widgets::{HullPointWidget, ShieldPointWidget};
 use crate::game_module::game_resource::GameResources;
 
-pub struct TargetHud {
-    pub _widget: *const WidgetDefault,
-    pub _distance: *const WidgetDefault,
-    pub _hull_point_widget: HullPointWidget,
-    pub _shield_point_widget: ShieldPointWidget,
+pub struct TargetHud<'a> {
+    pub _widget: *const WidgetDefault<'a>,
+    pub _distance: *const WidgetDefault<'a>,
+    pub _hull_point_widget: HullPointWidget<'a>,
+    pub _shield_point_widget: ShieldPointWidget<'a>,
 }
 
-pub struct PlayerHud {
-    pub _widget: *const WidgetDefault,
-    pub _hull_point_widget: HullPointWidget,
-    pub _shield_point_widget: ShieldPointWidget,
+pub struct PlayerHud<'a> {
+    pub _widget: *const WidgetDefault<'a>,
+    pub _hull_point_widget: HullPointWidget<'a>,
+    pub _shield_point_widget: ShieldPointWidget<'a>,
 }
 
 pub struct Crosshair {
@@ -54,7 +54,7 @@ impl Crosshair {
         root_widget.add_widget(&crosshair_widget);
 
         Crosshair {
-            _widget: crosshair_widget.as_ref() as *const dyn Widget as *const WidgetDefault,
+            _widget: crosshair_widget.as_ref() as *const dyn Widget as *const WidgetDefault<'a>,
             _pos: Vector2::zeros(),
             _tracking_mouse: true,
         }
@@ -100,8 +100,8 @@ impl TargetHud {
         ptr_as_mut(target_widget.as_ref()).add_widget(&target_distance);
 
         TargetHud {
-            _widget: target_widget.as_ref() as *const dyn Widget as *const WidgetDefault,
-            _distance: target_distance.as_ref() as *const dyn Widget as *const WidgetDefault,
+            _widget: target_widget.as_ref() as *const dyn Widget as *const WidgetDefault<'a>,
+            _distance: target_distance.as_ref() as *const dyn Widget as *const WidgetDefault<'a>,
             _hull_point_widget: HullPointWidget::create_hull_point_widget(ptr_as_mut(
                 target_widget.as_ref(),
             )),
@@ -133,7 +133,7 @@ impl PlayerHud {
         root_widget.add_widget(&player_widget);
 
         PlayerHud {
-            _widget: player_widget.as_ref() as *const dyn Widget as *const WidgetDefault,
+            _widget: player_widget.as_ref() as *const dyn Widget as *const WidgetDefault<'a>,
             _hull_point_widget: HullPointWidget::create_hull_point_widget(ptr_as_mut(
                 player_widget.as_ref(),
             )),

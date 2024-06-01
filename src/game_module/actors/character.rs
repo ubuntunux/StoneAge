@@ -101,14 +101,14 @@ pub struct CharacterCreateInfo {
     pub _scale: Vector3<f32>,
 }
 
-pub struct Character {
+pub struct Character<'a> {
     pub _character_manager: *const CharacterManager,
     pub _character_name: String,
     pub _character_id: u64,
     pub _is_player: bool,
     pub _is_alive: bool,
     pub _character_data: RcRefCell<CharacterData>,
-    pub _render_object: RcRefCell<RenderObjectData>,
+    pub _render_object: RcRefCell<RenderObjectData<'a>>,
     pub _character_property: Box<CharacterProperty>,
     pub _controller: Box<CharacterController>,
     pub _behavior: Box<CharacterBehavior>,
@@ -300,14 +300,14 @@ impl CharacterBehavior {
 }
 
 
-impl Character {
+impl<'a> Character<'a> {
     pub fn create_character_instance(
         character_manager: &CharacterManager,
         character_id: u64,
         is_player: bool,
         character_name: &str,
         character_data: &RcRefCell<CharacterData>,
-        render_object: &RcRefCell<RenderObjectData>,
+        render_object: &RcRefCell<RenderObjectData<'a>>,
         dead_animation: &RcRefCell<MeshData>,
         idle_animation: &RcRefCell<MeshData>,
         hit_animation: &RcRefCell<MeshData>,

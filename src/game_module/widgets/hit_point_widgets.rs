@@ -9,18 +9,18 @@ const WIDGET_UI_HEIGHT: f32 = 24.0;
 const WIDGET_UI_MARGIN: f32 = 2.0;
 const WIDGET_UI_PADDING: f32 = 2.0;
 
-pub struct HullPointWidget {
-    pub _hull_point_layer: *const WidgetDefault,
-    pub _hull_point_bar: *const WidgetDefault,
+pub struct HullPointWidget<'a> {
+    pub _hull_point_layer: *const WidgetDefault<'a>,
+    pub _hull_point_bar: *const WidgetDefault<'a>,
 }
 
-pub struct ShieldPointWidget {
-    pub _shield_point_layer: *const WidgetDefault,
-    pub _shield_point_bar: *const WidgetDefault,
+pub struct ShieldPointWidget<'a> {
+    pub _shield_point_layer: *const WidgetDefault<'a>,
+    pub _shield_point_bar: *const WidgetDefault<'a>,
 }
 
 // Implementation
-fn create_hit_point_layer_widget(parent_widget: &mut dyn Widget) -> *const WidgetDefault {
+fn create_hit_point_layer_widget<'a>(parent_widget: &mut dyn Widget<'a>) -> *const WidgetDefault<'a> {
     let hit_point_layer = UIManager::create_widget("hit_point_layer", UIWidgetTypes::Default);
     let ui_component = ptr_as_mut(hit_point_layer.as_ref()).get_ui_component_mut();
     ui_component.set_layout_type(UILayoutType::BoxLayout);
@@ -36,10 +36,10 @@ fn create_hit_point_layer_widget(parent_widget: &mut dyn Widget) -> *const Widge
     ui_component.set_margin(WIDGET_UI_MARGIN);
     ui_component.set_padding(WIDGET_UI_PADDING);
     parent_widget.add_widget(&hit_point_layer);
-    hit_point_layer.as_ref() as *const dyn Widget as *const WidgetDefault
+    hit_point_layer.as_ref() as *const dyn Widget<'a> as *const WidgetDefault<'a>
 }
 
-fn create_hit_point_bar_widget(parent_widget: &mut dyn Widget, color: u32) -> *const WidgetDefault {
+fn create_hit_point_bar_widget<'a>(parent_widget: &mut dyn Widget<'a>, color: u32) -> *const WidgetDefault<'a> {
     let hull_point_bar = UIManager::create_widget("hit_point_bar", UIWidgetTypes::Default);
     let ui_component = ptr_as_mut(hull_point_bar.as_ref()).get_ui_component_mut();
     ui_component.set_size_hint_x(Some(0.5));
@@ -49,11 +49,11 @@ fn create_hit_point_bar_widget(parent_widget: &mut dyn Widget, color: u32) -> *c
     ui_component.set_color(color);
     ui_component.set_round(1.0);
     parent_widget.add_widget(&hull_point_bar);
-    hull_point_bar.as_ref() as *const dyn Widget as *const WidgetDefault
+    hull_point_bar.as_ref() as *const dyn Widget<'a> as *const WidgetDefault<'a>
 }
 
-impl HullPointWidget {
-    pub fn create_hull_point_widget(parent_widget: &mut dyn Widget) -> HullPointWidget {
+impl<'a> HullPointWidget<'a> {
+    pub fn create_hull_point_widget(parent_widget: &mut dyn Widget<'a>) -> HullPointWidget<'a> {
         let hull_point_layer = create_hit_point_layer_widget(parent_widget);
         let hull_point_bar =
             create_hit_point_bar_widget(ptr_as_mut(hull_point_layer), get_color32(255, 75, 0, 75));
@@ -72,8 +72,8 @@ impl HullPointWidget {
     }
 }
 
-impl ShieldPointWidget {
-    pub fn create_shield_point_widget(parent_widget: &mut dyn Widget) -> ShieldPointWidget {
+impl<'a> ShieldPointWidget<'a> {
+    pub fn create_shield_point_widget(parent_widget: &mut dyn Widget<'a>) -> ShieldPointWidget<'a> {
         let shield_point_layer = create_hit_point_layer_widget(parent_widget);
         let shield_point_bar = create_hit_point_bar_widget(
             ptr_as_mut(shield_point_layer),

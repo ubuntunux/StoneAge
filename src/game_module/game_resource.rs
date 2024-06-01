@@ -27,8 +27,8 @@ pub type FoodDataMap = ResourceDataMap<FoodData>;
 pub type GameSceneDataCreateInfoMap = ResourceDataMap<GameSceneDataCreateInfo>;
 
 #[derive(Clone)]
-pub struct GameResources {
-    _engine_resources: *const EngineResources,
+pub struct GameResources<'a> {
+    _engine_resources: *const EngineResources<'a>,
     _block_data_map: BlockDataMap,
     _character_data_map: CharacterDataMap,
     _food_data_map: FoodDataMap,
@@ -45,10 +45,10 @@ impl GameResources {
             _character_data_map: CharacterDataMap::new(),
         })
     }
-    pub fn get_engine_resources(&self) -> &EngineResources {
+    pub fn get_engine_resources(&self) -> &EngineResources<'a> {
         ptr_as_ref(self._engine_resources)
     }
-    pub fn get_engine_resources_mut(&self) -> &mut EngineResources {
+    pub fn get_engine_resources_mut(&self) -> &mut EngineResources<'a> {
         ptr_as_mut(self._engine_resources)
     }
     pub fn collect_resources(&self, dir: &Path, extensions: &[&str]) -> Vec<PathBuf> {

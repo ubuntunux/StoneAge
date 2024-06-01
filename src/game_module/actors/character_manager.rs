@@ -16,22 +16,22 @@ use crate::game_module::game_client::GameClient;
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
 
-pub type CharacterMap = HashMap<u64, RcRefCell<Character>>;
+pub type CharacterMap<'a> = HashMap<u64, RcRefCell<Character<'a>>>;
 
-pub struct CharacterManager {
-    pub _game_client: *const GameClient,
-    pub _game_scene_manager: *const GameSceneManager,
-    pub _game_resources: *const GameResources,
-    pub _audio_manager: *const AudioManager,
-    pub _scene_manager: *const SceneManager,
+pub struct CharacterManager<'a> {
+    pub _game_client: *const GameClient<'a>,
+    pub _game_scene_manager: *const GameSceneManager<'a>,
+    pub _game_resources: *const GameResources<'a>,
+    pub _audio_manager: *const AudioManager<'a>,
+    pub _scene_manager: *const SceneManager<'a>,
     pub _animation_blend_masks: Box<AnimationBlendMasks>,
     pub _id_generator: u64,
-    pub _player: Option<RcRefCell<Character>>,
-    pub _characters: CharacterMap
+    pub _player: Option<RcRefCell<Character<'a>>>,
+    pub _characters: CharacterMap<'a>
 }
 
-impl CharacterManager {
-    pub fn create_character_manager() -> Box<CharacterManager> {
+impl<'a> CharacterManager<'a> {
+    pub fn create_character_manager() -> Box<CharacterManager<'a>> {
         Box::new(CharacterManager {
             _game_client: std::ptr::null(),
             _game_scene_manager: std::ptr::null(),

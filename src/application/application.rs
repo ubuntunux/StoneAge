@@ -22,11 +22,11 @@ use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::game_ui_manager::GameUIManager;
 use crate::render_pass;
 
-pub struct Application {
-    pub _engine_core: *const EngineCore,
-    pub _audio_manager: *const AudioManager,
-    pub _effect_manager: *const EffectManager,
-    pub _renderer_data: *const RendererData,
+pub struct Application<'a> {
+    pub _engine_core: *const EngineCore<'a>,
+    pub _audio_manager: *const AudioManager<'a>,
+    pub _effect_manager: *const EffectManager<'a>,
+    pub _renderer_data: *const RendererData<'a>,
     pub _character_manager: Box<CharacterManager>,
     pub _food_manager: Box<FoodManager>,
     pub _game_resources: Box<GameResources>,
@@ -37,7 +37,7 @@ pub struct Application {
     pub _is_game_mode: bool,
 }
 
-impl ApplicationBase for Application {
+impl<'a> ApplicationBase for Application<'a> {
     fn initialize_application(
         &mut self,
         engine_core: &EngineCore,
@@ -225,10 +225,10 @@ impl Application {
     pub fn get_engine_core_mut(&self) -> &mut EngineCore {
         ptr_as_mut(self._engine_core)
     }
-    pub fn get_effect_manager(&self) -> &EffectManager {
+    pub fn get_effect_manager(&self) -> &EffectManager<'a> {
         ptr_as_ref(self._effect_manager)
     }
-    pub fn get_effect_manager_mut(&self) -> &mut EffectManager {
+    pub fn get_effect_manager_mut(&self) -> &mut EffectManager<'a> {
         ptr_as_mut(self._effect_manager)
     }
     pub fn get_game_resources(&self) -> &GameResources {
@@ -247,7 +247,7 @@ impl Application {
         self._game_scene_manager.as_ref()
     }
     pub fn get_game_scene_manager_mut(&mut self) -> &mut GameSceneManager { self._game_scene_manager.as_mut() }
-    pub fn get_renderer_data(&self) -> &RendererData {
+    pub fn get_renderer_data(&self) -> &RendererData<'a> {
         ptr_as_ref(self._renderer_data)
     }
     pub fn get_renderer_data_mut(&self) -> &mut RendererData {

@@ -45,21 +45,21 @@ pub struct FoodProperties {
     pub _scale: Vector3<f32>
 }
 
-pub struct Food {
+pub struct Food<'a> {
     pub _food_name: String,
     pub _food_id: u64,
     pub _food_data: RcRefCell<FoodData>,
-    pub _render_object: RcRefCell<RenderObjectData>,
+    pub _render_object: RcRefCell<RenderObjectData<'a>>,
     pub _food_properties: Box<FoodProperties>
 }
 
-pub struct FoodManager {
-    pub _game_client: *const GameClient,
+pub struct FoodManager<'a> {
+    pub _game_client: *const GameClient<'a>,
     pub _character_manager: *const CharacterManager,
-    pub _game_scene_manager: *const GameSceneManager,
-    pub _game_resources: *const GameResources,
-    pub _audio_manager: *const AudioManager,
-    pub _scene_manager: *const SceneManager,
+    pub _game_scene_manager: *const GameSceneManager<'a>,
+    pub _game_resources: *const GameResources<'a>,
+    pub _audio_manager: *const AudioManager<'a>,
+    pub _scene_manager: *const SceneManager<'a>,
     pub _id_generator: u64,
     pub _foods: FoodMap
 }
@@ -85,15 +85,15 @@ impl Default for FoodData {
     }
 }
 
-impl Food {
+impl<'a> Food<'a> {
     pub fn create_food(
         food_id: u64,
         food_name: &str,
         food_data: &RcRefCell<FoodData>,
-        render_object: &RcRefCell<RenderObjectData>,
+        render_object: &RcRefCell<RenderObjectData<'a>>,
         position: &Vector3<f32>,
         rotation: &Vector3<f32>,
-        scale: &Vector3<f32>) -> Food {
+        scale: &Vector3<f32>) -> Food<'a> {
         let mut food = Food {
             _food_name: String::from(food_name),
             _food_id: food_id,

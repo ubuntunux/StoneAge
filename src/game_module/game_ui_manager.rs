@@ -15,11 +15,11 @@ use crate::application::application::Application;
 use crate::game_module::game_client::GameClient;
 use crate::game_module::widgets::hud::{Crosshair, PlayerHud, SelectionArea, TargetHud};
 
-pub struct GameUIManager {
-    pub _ui_manager: *const UIManager,
-    pub _game_client: *const GameClient,
-    pub _root_widget: *const dyn Widget,
-    pub _game_ui_layout: *const dyn Widget,
+pub struct GameUIManager<'a> {
+    pub _ui_manager: *const UIManager<'a>,
+    pub _game_client: *const GameClient<'a>,
+    pub _root_widget: *const dyn Widget<'a>,
+    pub _game_ui_layout: *const dyn Widget<'a>,
     pub _ui_switch: Option<Box<UISwitch>>,
     pub _crosshair: Option<Box<Crosshair>>,
     pub _target_hud: Option<Box<TargetHud>>,
@@ -27,20 +27,20 @@ pub struct GameUIManager {
     pub _selection_area: Option<Box<SelectionArea>>,
 }
 
-pub struct UISwitch {
-    pub _ui_switch_widget: Rc<dyn Widget>,
+pub struct UISwitch<'a> {
+    pub _ui_switch_widget: Rc<dyn Widget<'a>>,
 }
 
 
 // Implementations
 
-impl GameUIManager {
-    pub fn create_game_ui_manager() -> Box<GameUIManager> {
+impl<'a> GameUIManager<'a> {
+    pub fn create_game_ui_manager() -> Box<GameUIManager<'a>> {
         Box::new(GameUIManager {
             _ui_manager: std::ptr::null(),
             _game_client: std::ptr::null(),
-            _root_widget: std::ptr::null() as *const WidgetDefault,
-            _game_ui_layout: std::ptr::null() as *const WidgetDefault,
+            _root_widget: std::ptr::null() as *const WidgetDefault<'a>,
+            _game_ui_layout: std::ptr::null() as *const WidgetDefault<'a>,
             _ui_switch: None,
             _crosshair: None,
             _target_hud: None,
@@ -49,17 +49,17 @@ impl GameUIManager {
         })
     }
 
-    pub fn game_ui_layout(&self) -> *const dyn Widget {
+    pub fn game_ui_layout(&self) -> *const dyn Widget<'a> {
         self._game_ui_layout
     }
 }
 
-impl UISwitch {
+impl<'a> UISwitch<'a> {
     pub fn create_ui_switch(
-        _engine_resources: &EngineResources,
-        root_widget: &mut dyn Widget,
-        game_ui_widget: &dyn Widget,
-    ) -> UISwitch {
+        _engine_resources: &EngineResources<'a>,
+        root_widget: &mut dyn Widget<'a>,
+        game_ui_widget: &dyn Widget<'a>,
+    ) -> UISwitch<'a> {
         let ui_switch_widget = UIManager::create_widget("ui_switch", UIWidgetTypes::Default);
         let ui_component = ptr_as_mut(ui_switch_widget.as_ref()).get_ui_component_mut();
         ui_component.set_text("UI On/Off");
@@ -112,22 +112,22 @@ impl GameUIManager {
         self._root_widget = ptr_as_ref(self._ui_manager).get_root_ptr();
     }
     pub fn destroy_game_ui_manager(&mut self) {}
-    pub fn get_game_client(&self) -> &GameClient {
+    pub fn get_game_client(&self) -> &GameClient<'a> {
         ptr_as_ref(self._game_client)
     }
-    pub fn get_game_client_mut(&self) -> &mut GameClient {
+    pub fn get_game_client_mut(&self) -> &mut GameClient<'a> {
         ptr_as_mut(self._game_client)
     }
-    pub fn get_ui_manager(&self) -> &UIManager {
+    pub fn get_ui_manager(&self) -> &UIManager<'a> {
         ptr_as_ref(self._ui_manager)
     }
-    pub fn get_ui_manager_mut(&self) -> &mut UIManager {
+    pub fn get_ui_manager_mut(&self) -> &mut UIManager<'a> {
         ptr_as_mut(self._ui_manager)
     }
-    pub fn get_root_widget(&self) -> &dyn Widget {
+    pub fn get_root_widget(&self) -> &dyn Widget<'a> {
         ptr_as_ref(self._root_widget)
     }
-    pub fn get_root_widget_mut(&self) -> &mut dyn Widget {
+    pub fn get_root_widget_mut(&self) -> &mut dyn Widget<'a> {
         ptr_as_mut(self._root_widget as *mut dyn Widget)
     }
     pub fn build_game_ui(&mut self, window_size: &Vector2<i32>) {
