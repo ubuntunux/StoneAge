@@ -10,7 +10,7 @@ use rust_engine_3d::effect::effect_manager::EffectManager;
 use rust_engine_3d::renderer::renderer_data::RendererData;
 use rust_engine_3d::resource::resource::CallbackLoadRenderPassCreateInfo;
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
-use winit::event::VirtualKeyCode;
+use winit::keyboard::KeyCode;
 
 use crate::game_module::actors::character_manager::CharacterManager;
 use crate::game_module::actors::foods::FoodManager;
@@ -86,7 +86,7 @@ impl ApplicationBase for Application {
         let mouse_input_data = &engine_core._mouse_input_data;
         let keyboard_input_data = &engine_core._keyboard_input_data;
 
-        if engine_core._keyboard_input_data.get_key_pressed(VirtualKeyCode::Tab) {
+        if engine_core._keyboard_input_data.get_key_pressed(KeyCode::Tab) {
             self.toggle_game_mode();
         }
 
@@ -112,21 +112,21 @@ impl ApplicationBase for Application {
                 self.get_engine_core_mut().set_grab_mode(false);
             }
 
-            let pressed_key_a = keyboard_input_data.get_key_hold(VirtualKeyCode::A);
-            let pressed_key_d = keyboard_input_data.get_key_hold(VirtualKeyCode::D);
-            let pressed_key_w = keyboard_input_data.get_key_hold(VirtualKeyCode::W);
-            let pressed_key_s = keyboard_input_data.get_key_hold(VirtualKeyCode::S);
-            let pressed_key_q = keyboard_input_data.get_key_hold(VirtualKeyCode::Q);
-            let pressed_key_e = keyboard_input_data.get_key_hold(VirtualKeyCode::E);
-            let pressed_key_z = keyboard_input_data.get_key_hold(VirtualKeyCode::Z);
-            let pressed_key_c = keyboard_input_data.get_key_hold(VirtualKeyCode::C);
-            let pressed_key_comma = keyboard_input_data.get_key_hold(VirtualKeyCode::Comma);
-            let pressed_key_period = keyboard_input_data.get_key_hold(VirtualKeyCode::Period);
-            let released_key_left_bracket = keyboard_input_data.get_key_released(VirtualKeyCode::LBracket);
-            let released_key_right_bracket = keyboard_input_data.get_key_released(VirtualKeyCode::RBracket);
-            let released_key_subtract = keyboard_input_data.get_key_released(VirtualKeyCode::Minus);
-            let released_key_equals = keyboard_input_data.get_key_released(VirtualKeyCode::Equals);
-            let modifier_keys_shift = keyboard_input_data.get_key_hold(VirtualKeyCode::LShift);
+            let pressed_key_a = keyboard_input_data.get_key_hold(KeyCode::A);
+            let pressed_key_d = keyboard_input_data.get_key_hold(KeyCode::D);
+            let pressed_key_w = keyboard_input_data.get_key_hold(KeyCode::W);
+            let pressed_key_s = keyboard_input_data.get_key_hold(KeyCode::S);
+            let pressed_key_q = keyboard_input_data.get_key_hold(KeyCode::Q);
+            let pressed_key_e = keyboard_input_data.get_key_hold(KeyCode::E);
+            let pressed_key_z = keyboard_input_data.get_key_hold(KeyCode::Z);
+            let pressed_key_c = keyboard_input_data.get_key_hold(KeyCode::C);
+            let pressed_key_comma = keyboard_input_data.get_key_hold(KeyCode::Comma);
+            let pressed_key_period = keyboard_input_data.get_key_hold(KeyCode::Period);
+            let released_key_left_bracket = keyboard_input_data.get_key_released(KeyCode::LBracket);
+            let released_key_right_bracket = keyboard_input_data.get_key_released(KeyCode::RBracket);
+            let released_key_subtract = keyboard_input_data.get_key_released(KeyCode::Minus);
+            let released_key_equals = keyboard_input_data.get_key_released(KeyCode::Equals);
+            let modifier_keys_shift = keyboard_input_data.get_key_hold(KeyCode::LShift);
             let scene_manager = self.get_game_scene_manager().get_scene_manager();
             let main_camera = scene_manager.get_main_camera_mut();
             let main_light = ptr_as_mut(scene_manager.get_main_light().as_ptr());

@@ -3,7 +3,7 @@ use rust_engine_3d::core::engine_core::TimeData;
 use rust_engine_3d::core::input::{KeyboardInputData, MouseInputData, MouseMoveData};
 use rust_engine_3d::scene::camera::CameraObjectData;
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
-use winit::event::VirtualKeyCode;
+use winit::keyboard::KeyCode;
 
 use crate::application::application::Application;
 use crate::game_module::actors::character::{Character, MoveDirections};
@@ -70,12 +70,12 @@ impl GameController {
         let btn_left: bool = mouse_input_data._btn_l_pressed;
         let _btn_right: bool = mouse_input_data._btn_r_pressed;
         let _btn_right_hold: bool = mouse_input_data._btn_r_hold;
-        let is_left = keyboard_input_data.get_key_hold(VirtualKeyCode::Left) | keyboard_input_data.get_key_hold(VirtualKeyCode::A);
-        let is_right = keyboard_input_data.get_key_hold(VirtualKeyCode::Right) | keyboard_input_data.get_key_hold(VirtualKeyCode::D);
-        let is_down = keyboard_input_data.get_key_hold(VirtualKeyCode::Down) | keyboard_input_data.get_key_hold(VirtualKeyCode::S);
-        let is_up = keyboard_input_data.get_key_hold(VirtualKeyCode::Up) | keyboard_input_data.get_key_hold(VirtualKeyCode::W);
-        let is_jump = keyboard_input_data.get_key_hold(VirtualKeyCode::Space);
-        let _modifier_keys_ctrl = keyboard_input_data.get_key_hold(VirtualKeyCode::LControl);
+        let is_left = keyboard_input_data.get_key_hold(KeyCode::Left) | keyboard_input_data.get_key_hold(KeyCode::A);
+        let is_right = keyboard_input_data.get_key_hold(KeyCode::Right) | keyboard_input_data.get_key_hold(KeyCode::D);
+        let is_down = keyboard_input_data.get_key_hold(KeyCode::Down) | keyboard_input_data.get_key_hold(KeyCode::S);
+        let is_up = keyboard_input_data.get_key_hold(KeyCode::Up) | keyboard_input_data.get_key_hold(KeyCode::W);
+        let is_jump = keyboard_input_data.get_key_hold(KeyCode::Space);
+        let _modifier_keys_ctrl = keyboard_input_data.get_key_hold(KeyCode::LControl);
         let mut player_mut = player.borrow_mut();
 
         if is_left {
