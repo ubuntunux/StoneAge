@@ -35,8 +35,8 @@ pub struct GameResources<'a> {
     _game_scene_data_create_infos_map: GameSceneDataCreateInfoMap,
 }
 
-impl GameResources {
-    pub fn create_game_resources() -> Box<GameResources> {
+impl<'a> GameResources<'a> {
+    pub fn create_game_resources() -> Box<GameResources<'a>> {
         Box::new(GameResources {
             _engine_resources: std::ptr::null(),
             _game_scene_data_create_infos_map: GameSceneDataCreateInfoMap::new(),
@@ -54,7 +54,7 @@ impl GameResources {
     pub fn collect_resources(&self, dir: &Path, extensions: &[&str]) -> Vec<PathBuf> {
         self.get_engine_resources().collect_resources(dir, extensions)
     }
-    pub fn initialize_game_resources(&mut self, engine_resources: &EngineResources) {
+    pub fn initialize_game_resources(&mut self, engine_resources: &EngineResources<'a>) {
         self._engine_resources = engine_resources;
     }
     pub fn load_game_resources(&mut self, renderer_context: &RendererContext) {

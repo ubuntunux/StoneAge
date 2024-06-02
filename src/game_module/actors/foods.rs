@@ -16,7 +16,7 @@ use crate::game_module::game_constants::AUDIO_CRUNCH;
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
 
-pub type FoodMap = HashMap<u64, RcRefCell<Food>>;
+pub type FoodMap<'a> = HashMap<u64, RcRefCell<Food<'a>>>;
 
 #[derive(Serialize, Deserialize,Clone, Copy, Debug, PartialEq)]
 pub enum FoodDataType {
@@ -55,13 +55,13 @@ pub struct Food<'a> {
 
 pub struct FoodManager<'a> {
     pub _game_client: *const GameClient<'a>,
-    pub _character_manager: *const CharacterManager,
+    pub _character_manager: *const CharacterManager<'a>,
     pub _game_scene_manager: *const GameSceneManager<'a>,
     pub _game_resources: *const GameResources<'a>,
     pub _audio_manager: *const AudioManager<'a>,
     pub _scene_manager: *const SceneManager<'a>,
     pub _id_generator: u64,
-    pub _foods: FoodMap
+    pub _foods: FoodMap<'a>
 }
 
 // Implementations
@@ -129,8 +129,8 @@ impl<'a> Food<'a> {
     }
 }
 
-impl FoodManager {
-    pub fn create_food_manager() -> Box<FoodManager> {
+impl<'a> FoodManager<'a> {
+    pub fn create_food_manager() -> Box<FoodManager<'a>> {
         Box::new(FoodManager {
             _game_client: std::ptr::null(),
             _character_manager: std::ptr::null(),
@@ -143,7 +143,7 @@ impl FoodManager {
         })
     }
 
-    pub fn initialize_food_manager(&mut self, engine_core: &EngineCore, application: &Application) {
+    pub fn initialize_food_manager(&mut self, engine_core: &EngineCore<'a>, application: &Application<'a>) {
         log::info!("initialize_food_manager");
         self._game_client = application.get_game_client();
         self._character_manager = application.get_character_manager();
@@ -155,21 +155,33 @@ impl FoodManager {
     pub fn destroy_food_manager(&mut self) {
 
     }
-    pub fn get_game_resources(&self) -> &GameResources { ptr_as_ref(self._game_resources) }
-    pub fn get_game_client(&self) -> &GameClient { ptr_as_ref(self._game_client) }
-    pub fn get_game_scene_manager(&self) -> &GameSceneManager { ptr_as_ref(self._game_scene_manager) }
-    pub fn get_character_manager(&self) -> &CharacterManager { ptr_as_ref(self._character_manager) }
-    pub fn get_audio_manager_mut(&self) -> &mut AudioManager { ptr_as_mut(self._audio_manager) }
-    pub fn get_scene_manager_mut(&self) -> &mut SceneManager { ptr_as_mut(self._scene_manager) }
+    pub fn get_game_resources(&self) -> &GameResources<'a> {
+        ptr_as_ref(self._game_resources)
+    }
+    pub fn get_game_client(&self) -> &GameClient<'a> {
+        ptr_as_ref(self._game_client)
+    }
+    pub fn get_game_scene_manager(&self) -> &GameSceneManager<'a> {
+        ptr_as_ref(self._game_scene_manager)
+    }
+    pub fn get_character_manager(&self) -> &CharacterManager<'a> {
+        ptr_as_ref(self._character_manager)
+    }
+    pub fn get_audio_manager_mut(&self) -> &mut AudioManager<'a> {
+        ptr_as_mut(self._audio_manager)
+    }
+    pub fn get_scene_manager_mut(&self) -> &mut SceneManager<'a> {
+        ptr_as_mut(self._scene_manager)
+    }
     pub fn generate_id(&mut self) -> u64 {
         let id = self._id_generator;
         self._id_generator += 1;
         id
     }
-    pub fn get_food(&self, food_id: u64) -> Option<&RcRefCell<Food>> {
+    pub fn get_food(&self, food_id: u64) -> Option<&RcRefCell<Food<'a>>> {
         self._foods.get(&food_id)
     }
-    pub fn create_food(&mut self, food_name: &str, food_create_info: &FoodCreateInfo) -> RcRefCell<Food> {
+    pub fn create_food(&mut self, food_name: &str, food_create_info: &FoodCreateInfo) -> RcRefCell<Food<'a>> {
         let game_resources = ptr_as_ref(self._game_resources);
         let food_data = game_resources.get_food_data(food_create_info._food_data_name.as_str());
         let render_object_create_info = RenderObjectCreateInfo {

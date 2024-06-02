@@ -2,7 +2,10 @@ use std::os::raw::c_void;
 use std::rc::Rc;
 
 use nalgebra::Vector2;
-use rust_engine_3d::scene::ui::{CallbackTouchEvent, HorizontalAlign, Orientation, UIComponentInstance, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, Widget, WidgetDefault};
+use rust_engine_3d::scene::ui::{
+    CallbackTouchEvent, HorizontalAlign, Orientation, UIComponentInstance,
+    UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault
+};
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 
@@ -22,25 +25,25 @@ pub struct PlayerHud<'a> {
     pub _shield_point_widget: ShieldPointWidget<'a>,
 }
 
-pub struct Crosshair {
-    pub _widget: *const WidgetDefault,
+pub struct Crosshair<'a> {
+    pub _widget: *const WidgetDefault<'a>,
     pub _pos: Vector2<i32>,
     pub _tracking_mouse: bool,
 }
 
-pub struct SelectionArea {
-    pub _selection_area_layout: Rc<dyn Widget>,
-    pub _selection_widget: Rc<dyn Widget>,
+pub struct SelectionArea<'a> {
+    pub _selection_area_layout: Rc<WidgetDefault<'a>>,
+    pub _selection_widget: Rc<WidgetDefault<'a>>,
     pub _drag_mouse: bool,
 }
 
 // Crosshair
-impl Crosshair {
+impl<'a> Crosshair<'a> {
     pub fn create_crosshair(
-        game_resources: &GameResources,
-        root_widget: &mut dyn Widget,
+        game_resources: &GameResources<'a>,
+        root_widget: &mut WidgetDefault<'a>,
         window_center: &Vector2<f32>,
-    ) -> Crosshair {
+    ) -> Crosshair<'a> {
         let crosshair_widget = UIManager::create_widget("cursor", UIWidgetTypes::Default);
         let ui_component = ptr_as_mut(crosshair_widget.as_ref()).get_ui_component_mut();
         let ui_size = 50.0f32;
@@ -54,7 +57,7 @@ impl Crosshair {
         root_widget.add_widget(&crosshair_widget);
 
         Crosshair {
-            _widget: crosshair_widget.as_ref() as *const dyn Widget as *const WidgetDefault<'a>,
+            _widget: crosshair_widget.as_ref(),
             _pos: Vector2::zeros(),
             _tracking_mouse: true,
         }
@@ -62,8 +65,8 @@ impl Crosshair {
 }
 
 // TargetHud
-impl TargetHud {
-    pub fn create_target_hud(root_widget: &mut dyn Widget, center: &Vector2<f32>) -> TargetHud {
+impl<'a> TargetHud<'a> {
+    pub fn create_target_hud(root_widget: &mut WidgetDefault<'a>, center: &Vector2<f32>) -> TargetHud<'a> {
         let hud_layer_width: f32 = 100.0;
         let hud_layer_height: f32 = 100.0;
         let hud_layer_padding: f32 = 10.0;
@@ -100,8 +103,8 @@ impl TargetHud {
         ptr_as_mut(target_widget.as_ref()).add_widget(&target_distance);
 
         TargetHud {
-            _widget: target_widget.as_ref() as *const dyn Widget as *const WidgetDefault<'a>,
-            _distance: target_distance.as_ref() as *const dyn Widget as *const WidgetDefault<'a>,
+            _widget: target_widget.as_ref(),
+            _distance: target_distance.as_ref(),
             _hull_point_widget: HullPointWidget::create_hull_point_widget(ptr_as_mut(
                 target_widget.as_ref(),
             )),
@@ -113,8 +116,8 @@ impl TargetHud {
 }
 
 // PlayerHud
-impl PlayerHud {
-    pub fn create_player_hud(root_widget: &mut dyn Widget, pos: &Vector2<f32>) -> PlayerHud {
+impl<'a> PlayerHud<'a> {
+    pub fn create_player_hud(root_widget: &mut WidgetDefault<'a>, pos: &Vector2<f32>) -> PlayerHud<'a> {
         let hud_layer_width: f32 = 100.0;
         let hud_layer_height: f32 = 100.0;
         let hud_layer_padding: f32 = 10.0;
@@ -133,7 +136,7 @@ impl PlayerHud {
         root_widget.add_widget(&player_widget);
 
         PlayerHud {
-            _widget: player_widget.as_ref() as *const dyn Widget as *const WidgetDefault<'a>,
+            _widget: player_widget.as_ref(),
             _hull_point_widget: HullPointWidget::create_hull_point_widget(ptr_as_mut(
                 player_widget.as_ref(),
             )),
@@ -145,11 +148,11 @@ impl PlayerHud {
 }
 
 // Selection Area
-impl SelectionArea {
+impl<'a> SelectionArea<'a> {
     pub fn create_selection_area(
-        root_widget: &mut dyn Widget,
+        root_widget: &mut WidgetDefault<'a>,
         window_size: &Vector2<i32>,
-    ) -> Box<SelectionArea> {
+    ) -> Box<SelectionArea<'a>> {
         let selection_area_layout =
             UIManager::create_widget("selection_area_layout", UIWidgetTypes::Default);
         let layout_ui_component = ptr_as_mut(selection_area_layout.as_ref()).get_ui_component_mut();
@@ -158,17 +161,17 @@ impl SelectionArea {
         layout_ui_component.set_color(get_color32(0, 0, 0, 0));
         layout_ui_component.set_border_color(get_color32(255, 255, 0, 255));
         layout_ui_component.set_border(2.0);
-        layout_ui_component.set_touchable(true);
-        static TOUCH_DOWN: CallbackTouchEvent = SelectionArea::touch_down;
-        static TOUCH_MOVE: CallbackTouchEvent = SelectionArea::touch_move;
-        static TOUCH_UP: CallbackTouchEvent = SelectionArea::touch_up;
-        layout_ui_component.set_callback_touch_down(&TOUCH_DOWN);
-        layout_ui_component.set_callback_touch_move(&TOUCH_MOVE);
-        layout_ui_component.set_callback_touch_up(&TOUCH_UP);
+        // todo: touch event
+        // layout_ui_component.set_touchable(true);
+        // static TOUCH_DOWN: CallbackTouchEvent = SelectionArea::touch_down;
+        // static TOUCH_MOVE: CallbackTouchEvent<'static> = SelectionArea::touch_move;
+        // static TOUCH_UP: CallbackTouchEvent<'static> = SelectionArea::touch_up;
+        // layout_ui_component.set_callback_touch_down(&TOUCH_DOWN);
+        // layout_ui_component.set_callback_touch_move(&TOUCH_MOVE);
+        // layout_ui_component.set_callback_touch_up(&TOUCH_UP);
         root_widget.add_widget(&selection_area_layout);
 
-        let selection_widget =
-            UIManager::create_widget("selection_area_widget", UIWidgetTypes::Default);
+        let selection_widget = UIManager::create_widget("selection_area_widget", UIWidgetTypes::Default);
         let ui_component = ptr_as_mut(selection_widget.as_ref()).get_ui_component_mut();
         ui_component.set_color(get_color32(255, 255, 0, 128));
         ui_component.set_border_color(get_color32(255, 255, 0, 255));
@@ -192,7 +195,7 @@ impl SelectionArea {
     }
 
     pub fn touch_down(
-        ui_component: &mut UIComponentInstance,
+        ui_component: &mut UIComponentInstance<'a>,
         touched_pos: &Vector2<f32>,
         _touched_pos_delta: &Vector2<f32>,
     ) -> bool {
@@ -206,7 +209,7 @@ impl SelectionArea {
     }
 
     pub fn touch_move(
-        ui_component: &mut UIComponentInstance,
+        ui_component: &mut UIComponentInstance<'a>,
         touched_pos: &Vector2<f32>,
         _touched_pos_delta: &Vector2<f32>,
     ) -> bool {
@@ -223,7 +226,7 @@ impl SelectionArea {
     }
 
     pub fn touch_up(
-        ui_component: &mut UIComponentInstance,
+        ui_component: &mut UIComponentInstance<'a>,
         touched_pos: &Vector2<f32>,
         _touched_pos_delta: &Vector2<f32>,
     ) -> bool {

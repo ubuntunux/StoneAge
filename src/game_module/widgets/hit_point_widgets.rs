@@ -1,5 +1,5 @@
 use rust_engine_3d::scene::ui::{
-    HorizontalAlign, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, Widget, WidgetDefault,
+    HorizontalAlign, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault,
 };
 use rust_engine_3d::utilities::system::ptr_as_mut;
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
@@ -20,7 +20,7 @@ pub struct ShieldPointWidget<'a> {
 }
 
 // Implementation
-fn create_hit_point_layer_widget<'a>(parent_widget: &mut dyn Widget<'a>) -> *const WidgetDefault<'a> {
+fn create_hit_point_layer_widget<'a>(parent_widget: &mut WidgetDefault<'a>) -> *const WidgetDefault<'a> {
     let hit_point_layer = UIManager::create_widget("hit_point_layer", UIWidgetTypes::Default);
     let ui_component = ptr_as_mut(hit_point_layer.as_ref()).get_ui_component_mut();
     ui_component.set_layout_type(UILayoutType::BoxLayout);
@@ -36,10 +36,10 @@ fn create_hit_point_layer_widget<'a>(parent_widget: &mut dyn Widget<'a>) -> *con
     ui_component.set_margin(WIDGET_UI_MARGIN);
     ui_component.set_padding(WIDGET_UI_PADDING);
     parent_widget.add_widget(&hit_point_layer);
-    hit_point_layer.as_ref() as *const dyn Widget<'a> as *const WidgetDefault<'a>
+    hit_point_layer.as_ref()
 }
 
-fn create_hit_point_bar_widget<'a>(parent_widget: &mut dyn Widget<'a>, color: u32) -> *const WidgetDefault<'a> {
+fn create_hit_point_bar_widget<'a>(parent_widget: &mut WidgetDefault<'a>, color: u32) -> *const WidgetDefault<'a> {
     let hull_point_bar = UIManager::create_widget("hit_point_bar", UIWidgetTypes::Default);
     let ui_component = ptr_as_mut(hull_point_bar.as_ref()).get_ui_component_mut();
     ui_component.set_size_hint_x(Some(0.5));
@@ -49,11 +49,11 @@ fn create_hit_point_bar_widget<'a>(parent_widget: &mut dyn Widget<'a>, color: u3
     ui_component.set_color(color);
     ui_component.set_round(1.0);
     parent_widget.add_widget(&hull_point_bar);
-    hull_point_bar.as_ref() as *const dyn Widget<'a> as *const WidgetDefault<'a>
+    hull_point_bar.as_ref()
 }
 
 impl<'a> HullPointWidget<'a> {
-    pub fn create_hull_point_widget(parent_widget: &mut dyn Widget<'a>) -> HullPointWidget<'a> {
+    pub fn create_hull_point_widget(parent_widget: &mut WidgetDefault<'a>) -> HullPointWidget<'a> {
         let hull_point_layer = create_hit_point_layer_widget(parent_widget);
         let hull_point_bar =
             create_hit_point_bar_widget(ptr_as_mut(hull_point_layer), get_color32(255, 75, 0, 75));
@@ -73,7 +73,7 @@ impl<'a> HullPointWidget<'a> {
 }
 
 impl<'a> ShieldPointWidget<'a> {
-    pub fn create_shield_point_widget(parent_widget: &mut dyn Widget<'a>) -> ShieldPointWidget<'a> {
+    pub fn create_shield_point_widget(parent_widget: &mut WidgetDefault<'a>) -> ShieldPointWidget<'a> {
         let shield_point_layer = create_hit_point_layer_widget(parent_widget);
         let shield_point_bar = create_hit_point_bar_widget(
             ptr_as_mut(shield_point_layer),

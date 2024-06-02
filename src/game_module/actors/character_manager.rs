@@ -45,7 +45,7 @@ impl<'a> CharacterManager<'a> {
         })
     }
 
-    pub fn initialize_character_manager(&mut self, engine_core: &EngineCore, application: &Application) {
+    pub fn initialize_character_manager(&mut self, engine_core: &EngineCore<'a>, application: &Application<'a>) {
         log::info!("initialize_character_manager");
         self._game_client = application.get_game_client();
         self._game_scene_manager = application.get_game_scene_manager();
@@ -56,23 +56,39 @@ impl<'a> CharacterManager<'a> {
     pub fn destroy_character_manager(&mut self) {
 
     }
-    pub fn get_game_client(&self) -> &GameClient { ptr_as_ref(self._game_client) }
-    pub fn get_game_client_mut(&self) -> &mut GameClient { ptr_as_mut(self._game_client) }
-    pub fn get_game_scene_manager(&self) -> &GameSceneManager { ptr_as_ref(self._game_scene_manager) }
-    pub fn get_game_scene_manager_mut(&self) -> &mut GameSceneManager { ptr_as_mut(self._game_scene_manager) }
-    pub fn get_audio_manager(&self) -> &AudioManager { ptr_as_ref(self._audio_manager) }
-    pub fn get_audio_manager_mut(&self) -> &mut AudioManager { ptr_as_mut(self._audio_manager) }
-    pub fn get_scene_manager(&self) -> &SceneManager { ptr_as_ref(self._scene_manager) }
-    pub fn get_scene_manager_mut(&self) -> &mut SceneManager { ptr_as_mut(self._scene_manager) }
+    pub fn get_game_client(&self) -> &GameClient<'a> {
+        ptr_as_ref(self._game_client)
+    }
+    pub fn get_game_client_mut(&self) -> &mut GameClient<'a> {
+        ptr_as_mut(self._game_client)
+    }
+    pub fn get_game_scene_manager(&self) -> &GameSceneManager<'a> {
+        ptr_as_ref(self._game_scene_manager)
+    }
+    pub fn get_game_scene_manager_mut(&self) -> &mut GameSceneManager<'a> {
+        ptr_as_mut(self._game_scene_manager)
+    }
+    pub fn get_audio_manager(&self) -> &AudioManager<'a> {
+        ptr_as_ref(self._audio_manager)
+    }
+    pub fn get_audio_manager_mut(&self) -> &mut AudioManager<'a> {
+        ptr_as_mut(self._audio_manager)
+    }
+    pub fn get_scene_manager(&self) -> &SceneManager<'a> {
+        ptr_as_ref(self._scene_manager)
+    }
+    pub fn get_scene_manager_mut(&self) -> &mut SceneManager<'a> {
+        ptr_as_mut(self._scene_manager)
+    }
     pub fn generate_id(&mut self) -> u64 {
         let id = self._id_generator;
         self._id_generator += 1;
         id
     }
-    pub fn get_character(&self, character_id: u64) -> Option<&RcRefCell<Character>> {
+    pub fn get_character(&self, character_id: u64) -> Option<&RcRefCell<Character<'a>>> {
         self._characters.get(&character_id)
     }
-    pub fn create_character(&mut self, character_name: &str, character_create_info: &CharacterCreateInfo, is_player: bool) -> RcRefCell<Character> {
+    pub fn create_character(&mut self, character_name: &str, character_create_info: &CharacterCreateInfo, is_player: bool) -> RcRefCell<Character<'a>> {
         let game_resources = ptr_as_ref(self._game_resources);
         let character_data = game_resources.get_character_data(character_create_info._character_data_name.as_str());
         let render_object_create_info = RenderObjectCreateInfo {
@@ -118,7 +134,7 @@ impl<'a> CharacterManager<'a> {
         self._characters.remove(&character.borrow().get_character_id());
         self.get_scene_manager_mut().remove_skeletal_render_object(character.borrow()._render_object.borrow()._object_id);
     }
-    pub fn get_player(&self) -> &RcRefCell<Character> {
+    pub fn get_player(&self) -> &RcRefCell<Character<'a>> {
         self._player.as_ref().unwrap()
     }
 

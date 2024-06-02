@@ -11,15 +11,15 @@ use crate::game_module::game_client::GameClient;
 use crate::game_module::game_constants::*;
 use crate::game_module::game_ui_manager::GameUIManager;
 
-pub struct GameController {
-    pub _game_client: *const GameClient,
-    pub _game_ui_manager: *const GameUIManager,
+pub struct GameController<'a> {
+    pub _game_client: *const GameClient<'a>,
+    pub _game_ui_manager: *const GameUIManager<'a>,
     pub _camera_distance: f32,
     pub _camera_goal_distance: f32
 }
 
-impl GameController {
-    pub fn create_game_controller() -> Box<GameController> {
+impl<'a> GameController<'a> {
+    pub fn create_game_controller() -> Box<GameController<'a>> {
         Box::new(GameController {
             _game_client: std::ptr::null(),
             _game_ui_manager: std::ptr::null(),
@@ -28,21 +28,21 @@ impl GameController {
         })
     }
 
-    pub fn initialize_game_controller(&mut self, application: &Application) {
+    pub fn initialize_game_controller(&mut self, application: &Application<'a>) {
         log::info!("initialize_game_controller");
         self._game_client = application.get_game_client();
         self._game_ui_manager = application.get_game_ui_manager();
     }
-    pub fn get_game_client(&self) -> &GameClient {
+    pub fn get_game_client(&self) -> &GameClient<'a> {
         ptr_as_ref(self._game_client)
     }
-    pub fn get_game_client_mut(&self) -> &mut GameClient {
+    pub fn get_game_client_mut(&self) -> &mut GameClient<'a> {
         ptr_as_mut(self._game_client)
     }
-    pub fn get_game_ui_manager(&self) -> &GameUIManager {
+    pub fn get_game_ui_manager(&self) -> &GameUIManager<'a> {
         ptr_as_ref(self._game_ui_manager)
     }
-    pub fn get_game_ui_manager_mut(&self) -> &mut GameUIManager {
+    pub fn get_game_ui_manager_mut(&self) -> &mut GameUIManager<'a> {
         ptr_as_mut(self._game_ui_manager)
     }
     pub fn get_main_camera(&self) -> &CameraObjectData {
@@ -70,12 +70,12 @@ impl GameController {
         let btn_left: bool = mouse_input_data._btn_l_pressed;
         let _btn_right: bool = mouse_input_data._btn_r_pressed;
         let _btn_right_hold: bool = mouse_input_data._btn_r_hold;
-        let is_left = keyboard_input_data.get_key_hold(KeyCode::Left) | keyboard_input_data.get_key_hold(KeyCode::A);
-        let is_right = keyboard_input_data.get_key_hold(KeyCode::Right) | keyboard_input_data.get_key_hold(KeyCode::D);
-        let is_down = keyboard_input_data.get_key_hold(KeyCode::Down) | keyboard_input_data.get_key_hold(KeyCode::S);
-        let is_up = keyboard_input_data.get_key_hold(KeyCode::Up) | keyboard_input_data.get_key_hold(KeyCode::W);
+        let is_left = keyboard_input_data.get_key_hold(KeyCode::ArrowLeft) | keyboard_input_data.get_key_hold(KeyCode::KeyA);
+        let is_right = keyboard_input_data.get_key_hold(KeyCode::ArrowRight) | keyboard_input_data.get_key_hold(KeyCode::KeyD);
+        let is_down = keyboard_input_data.get_key_hold(KeyCode::ArrowDown) | keyboard_input_data.get_key_hold(KeyCode::KeyS);
+        let is_up = keyboard_input_data.get_key_hold(KeyCode::ArrowUp) | keyboard_input_data.get_key_hold(KeyCode::KeyW);
         let is_jump = keyboard_input_data.get_key_hold(KeyCode::Space);
-        let _modifier_keys_ctrl = keyboard_input_data.get_key_hold(KeyCode::LControl);
+        let _modifier_keys_ctrl = keyboard_input_data.get_key_hold(KeyCode::ControlLeft);
         let mut player_mut = player.borrow_mut();
 
         if is_left {

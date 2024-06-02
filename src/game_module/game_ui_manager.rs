@@ -6,7 +6,7 @@ use rust_engine_3d::core::engine_core::EngineCore;
 use rust_engine_3d::resource::resource::EngineResources;
 use rust_engine_3d::scene::ui::{
     CallbackTouchEvent, HorizontalAlign, UIComponentInstance, UIManager,
-    UIWidgetTypes, VerticalAlign, Widget, WidgetDefault,
+    UIWidgetTypes, VerticalAlign, WidgetDefault,
 };
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
@@ -18,17 +18,17 @@ use crate::game_module::widgets::hud::{Crosshair, PlayerHud, SelectionArea, Targ
 pub struct GameUIManager<'a> {
     pub _ui_manager: *const UIManager<'a>,
     pub _game_client: *const GameClient<'a>,
-    pub _root_widget: *const dyn Widget<'a>,
-    pub _game_ui_layout: *const dyn Widget<'a>,
-    pub _ui_switch: Option<Box<UISwitch>>,
-    pub _crosshair: Option<Box<Crosshair>>,
-    pub _target_hud: Option<Box<TargetHud>>,
-    pub _player_hud: Option<Box<PlayerHud>>,
-    pub _selection_area: Option<Box<SelectionArea>>,
+    pub _root_widget: *const WidgetDefault<'a>,
+    pub _game_ui_layout: *const WidgetDefault<'a>,
+    pub _ui_switch: Option<Box<UISwitch<'a>>>,
+    pub _crosshair: Option<Box<Crosshair<'a>>>,
+    pub _target_hud: Option<Box<TargetHud<'a>>>,
+    pub _player_hud: Option<Box<PlayerHud<'a>>>,
+    pub _selection_area: Option<Box<SelectionArea<'a>>>,
 }
 
 pub struct UISwitch<'a> {
-    pub _ui_switch_widget: Rc<dyn Widget<'a>>,
+    pub _ui_switch_widget: Rc<WidgetDefault<'a>>,
 }
 
 
@@ -39,8 +39,8 @@ impl<'a> GameUIManager<'a> {
         Box::new(GameUIManager {
             _ui_manager: std::ptr::null(),
             _game_client: std::ptr::null(),
-            _root_widget: std::ptr::null() as *const WidgetDefault<'a>,
-            _game_ui_layout: std::ptr::null() as *const WidgetDefault<'a>,
+            _root_widget: std::ptr::null(),
+            _game_ui_layout: std::ptr::null(),
             _ui_switch: None,
             _crosshair: None,
             _target_hud: None,
@@ -49,7 +49,7 @@ impl<'a> GameUIManager<'a> {
         })
     }
 
-    pub fn game_ui_layout(&self) -> *const dyn Widget<'a> {
+    pub fn game_ui_layout(&self) -> *const WidgetDefault<'a> {
         self._game_ui_layout
     }
 }
@@ -57,8 +57,8 @@ impl<'a> GameUIManager<'a> {
 impl<'a> UISwitch<'a> {
     pub fn create_ui_switch(
         _engine_resources: &EngineResources<'a>,
-        root_widget: &mut dyn Widget<'a>,
-        game_ui_widget: &dyn Widget<'a>,
+        root_widget: &mut WidgetDefault<'a>,
+        game_ui_widget: &WidgetDefault<'a>,
     ) -> UISwitch<'a> {
         let ui_switch_widget = UIManager::create_widget("ui_switch", UIWidgetTypes::Default);
         let ui_component = ptr_as_mut(ui_switch_widget.as_ref()).get_ui_component_mut();
@@ -78,8 +78,8 @@ impl<'a> UISwitch<'a> {
         ui_component.set_touchable(true);
         //ui_component.set_material_instance(&engine_resources.get_material_instance_data("ui/render_ui_test"));
 
-        static TOUCH_DOWN: CallbackTouchEvent = UISwitch::touch_down;
-        ui_component.set_callback_touch_down(&TOUCH_DOWN);
+        static TOUCH_DOWN: CallbackTouchEvent<'static> = UISwitch::touch_down;
+        ui_component.set_callback_touch_down((&TOUCH_DOWN as *const CallbackTouchEvent<'static>) as *const CallbackTouchEvent<'a>);
         ui_component.set_user_data(
             game_ui_widget.get_ui_component() as *const UIComponentInstance as *const c_void,
         );
@@ -93,19 +93,18 @@ impl<'a> UISwitch<'a> {
     }
 
     pub fn touch_down(
-        ui_component: &mut UIComponentInstance,
+        ui_component: &mut UIComponentInstance<'a>,
         _touched_pos: &Vector2<f32>,
         _touched_pos_delta: &Vector2<f32>,
     ) -> bool {
-        let game_ui_component =
-            ptr_as_mut(ui_component.get_user_data() as *const UIComponentInstance);
+        let game_ui_component = ptr_as_mut(ui_component.get_user_data() as *const UIComponentInstance<'a>);
         game_ui_component.set_visible(!game_ui_component.get_visible());
         true
     }
 }
 
-impl GameUIManager {
-    pub fn initialize_game_ui_manager(&mut self, engine_core: &EngineCore, application: &Application) {
+impl<'a> GameUIManager<'a> {
+    pub fn initialize_game_ui_manager(&mut self, engine_core: &EngineCore<'a>, application: &Application<'a>) {
         log::info!("initialize_game_ui_manager");
         self._game_client = application.get_game_client();
         self._ui_manager = engine_core.get_ui_manager();
@@ -124,11 +123,11 @@ impl GameUIManager {
     pub fn get_ui_manager_mut(&self) -> &mut UIManager<'a> {
         ptr_as_mut(self._ui_manager)
     }
-    pub fn get_root_widget(&self) -> &dyn Widget<'a> {
+    pub fn get_root_widget(&self) -> &WidgetDefault<'a> {
         ptr_as_ref(self._root_widget)
     }
-    pub fn get_root_widget_mut(&self) -> &mut dyn Widget<'a> {
-        ptr_as_mut(self._root_widget as *mut dyn Widget)
+    pub fn get_root_widget_mut(&self) -> &mut WidgetDefault<'a> {
+        ptr_as_mut(self._root_widget)
     }
     pub fn build_game_ui(&mut self, window_size: &Vector2<i32>) {
         log::info!("build_game_ui");
@@ -175,7 +174,7 @@ impl GameUIManager {
         ));
     }
 
-    pub fn get_crosshair_widget_mut(&mut self) -> &mut WidgetDefault {
+    pub fn get_crosshair_widget_mut(&mut self) -> &mut WidgetDefault<'a> {
         ptr_as_mut(self._crosshair.as_ref().unwrap()._widget)
     }
 

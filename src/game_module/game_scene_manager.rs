@@ -31,11 +31,11 @@ pub struct GameSceneDataCreateInfo {
 pub struct GameSceneManager<'a> {
     pub _effect_manager: *const EffectManager<'a>,
     pub _scene_manager: *const SceneManager<'a>,
-    pub _game_resources: *const GameResources,
-    pub _character_manager: *const CharacterManager,
-    pub _food_manager: *const FoodManager,
+    pub _game_resources: *const GameResources<'a>,
+    pub _character_manager: *const CharacterManager<'a>,
+    pub _food_manager: *const FoodManager<'a>,
     pub _game_scene_name: String,
-    pub _blocks: HashMap<u64, RcRefCell<Block>>,
+    pub _blocks: HashMap<u64, RcRefCell<Block<'a>>>,
     pub _block_id_generator: u64
 }
 
@@ -63,8 +63,8 @@ impl<'a> GameSceneManager<'a> {
 
     pub fn initialize_game_scene_manager(
         &mut self,
-        application: &Application,
-        engine_core: &EngineCore,
+        application: &Application<'a>,
+        engine_core: &EngineCore<'a>,
         window_size: &Vector2<i32>,
     ) {
         log::info!("initialize_game_scene_manager");
@@ -81,7 +81,7 @@ impl<'a> GameSceneManager<'a> {
         )
     }
 
-    pub fn get_blocks(&self) -> &HashMap<u64, RcRefCell<Block>> {
+    pub fn get_blocks(&self) -> &HashMap<u64, RcRefCell<Block<'a>>> {
         &self._blocks
     }
 
@@ -106,15 +106,15 @@ impl<'a> GameSceneManager<'a> {
         id
     }
 
-    pub fn register_block(&mut self, block: RcRefCell<Block>) {
+    pub fn register_block(&mut self, block: RcRefCell<Block<'a>>) {
         self._blocks.insert(block.borrow().get_block_id(), block.clone());
     }
 
-    pub fn unregister_block(&mut self, block: &RcRefCell<Block>) {
+    pub fn unregister_block(&mut self, block: &RcRefCell<Block<'a>>) {
         self._blocks.remove(&block.borrow().get_block_id());
     }
 
-    pub fn create_block(&mut self, block_name: &str, block_create_info: &BlockCreateInfo) -> RcRefCell<Block> {
+    pub fn create_block(&mut self, block_name: &str, block_create_info: &BlockCreateInfo) -> RcRefCell<Block<'a>> {
         let game_resources = ptr_as_ref(self._game_resources);
         let block_data = game_resources.get_block_data(block_create_info._block_data_name.as_str());
         let render_object_create_info = RenderObjectCreateInfo {
@@ -140,7 +140,7 @@ impl<'a> GameSceneManager<'a> {
         ))
     }
 
-    pub fn open_game_scene_data(&mut self, game_scene_data_name: &str) {
+    pub fn open_game_scene_data(&'a mut self, game_scene_data_name: &str) {
         log::info!("open_game_scene_data: {:?}", game_scene_data_name);
         self._game_scene_name = String::from(game_scene_data_name);
         let game_resources = ptr_as_ref(self._game_resources);

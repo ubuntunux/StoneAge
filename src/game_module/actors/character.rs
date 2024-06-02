@@ -102,7 +102,7 @@ pub struct CharacterCreateInfo {
 }
 
 pub struct Character<'a> {
-    pub _character_manager: *const CharacterManager,
+    pub _character_manager: *const CharacterManager<'a>,
     pub _character_name: String,
     pub _character_id: u64,
     pub _is_player: bool,
@@ -302,7 +302,7 @@ impl CharacterBehavior {
 
 impl<'a> Character<'a> {
     pub fn create_character_instance(
-        character_manager: &CharacterManager,
+        character_manager: &CharacterManager<'a>,
         character_id: u64,
         is_player: bool,
         character_name: &str,
@@ -318,7 +318,7 @@ impl<'a> Character<'a> {
         position: &Vector3<f32>,
         rotation: &Vector3<f32>,
         scale: &Vector3<f32>,
-    ) -> Character {
+    ) -> Character<'a> {
         let mut character = Character {
             _character_manager: character_manager,
             _character_id: character_id,
@@ -346,11 +346,11 @@ impl<'a> Character<'a> {
         character
     }
 
-    pub fn get_character_manager(&self) -> &CharacterManager {
+    pub fn get_character_manager(&self) -> &CharacterManager<'a> {
         ptr_as_ref(self._character_manager)
     }
 
-    pub fn get_character_manager_mut(&self) -> &mut CharacterManager {
+    pub fn get_character_manager_mut(&self) -> &mut CharacterManager<'a> {
         ptr_as_mut(self._character_manager)
     }
 

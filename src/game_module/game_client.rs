@@ -15,7 +15,7 @@ pub struct GameClient<'a> {
     pub _character_manager: *const CharacterManager<'a>,
     pub _game_scene_manager: *const GameSceneManager<'a>,
     pub _game_resources: *const GameResources<'a>,
-    pub _game_controller: *const GameController,
+    pub _game_controller: *const GameController<'a>,
     pub _game_ui_manager: *const GameUIManager<'a>,
 }
 
@@ -32,7 +32,7 @@ impl<'a> GameClient<'a> {
         })
     }
 
-    pub fn initialize_game_client(&mut self, engine_core: *const EngineCore<'a>, application: &Application) {
+    pub fn initialize_game_client(&mut self, engine_core: *const EngineCore<'a>, application: &Application<'a>) {
         log::info!("initialize_game_client");
         self._engine_core = engine_core;
         self._application = application;
@@ -45,31 +45,49 @@ impl<'a> GameClient<'a> {
     pub fn destroy_game_client(&mut self) {
         ptr_as_mut(self._game_ui_manager).destroy_game_ui_manager();
     }
-    pub fn get_engine_core(&self) -> &EngineCore {
+    pub fn get_engine_core(&self) -> &EngineCore<'a> {
         ptr_as_ref(self._engine_core)
     }
-    pub fn get_engine_core_mut(&self) -> &EngineCore {
+    pub fn get_engine_core_mut(&self) -> &EngineCore<'a> {
         ptr_as_mut(self._engine_core)
     }
-    pub fn get_application(&self) -> &Application {
+    pub fn get_application(&self) -> &Application<'a> {
         ptr_as_ref(self._application)
     }
-    pub fn get_application_mut(&self) -> &mut Application {
+    pub fn get_application_mut(&self) -> &mut Application<'a> {
         ptr_as_mut(self._application)
     }
-    pub fn get_character_manager(&self) -> &CharacterManager { ptr_as_ref(self._character_manager) }
-    pub fn get_character_manager_mut(&self) -> &mut CharacterManager { ptr_as_mut(self._character_manager) }
-    pub fn get_game_scene_manager(&self) -> &GameSceneManager { ptr_as_ref(self._game_scene_manager) }
-    pub fn get_game_scene_manager_mut(&self) -> &mut GameSceneManager { ptr_as_mut(self._game_scene_manager)}
-    pub fn get_game_resources(&self) -> &GameResources { ptr_as_ref(self._game_resources) }
-    pub fn get_game_resources_mut(&self) -> &mut GameResources {
+    pub fn get_character_manager(&self) -> &CharacterManager<'a> {
+        ptr_as_ref(self._character_manager)
+    }
+    pub fn get_character_manager_mut(&self) -> &mut CharacterManager<'a> {
+        ptr_as_mut(self._character_manager)
+    }
+    pub fn get_game_scene_manager(&self) -> &GameSceneManager<'a> {
+        ptr_as_ref(self._game_scene_manager)
+    }
+    pub fn get_game_scene_manager_mut(&self) -> &mut GameSceneManager<'a> {
+        ptr_as_mut(self._game_scene_manager)
+    }
+    pub fn get_game_resources(&self) -> &GameResources<'a> {
+        ptr_as_ref(self._game_resources)
+    }
+    pub fn get_game_resources_mut(&self) -> &mut GameResources<'a> {
         ptr_as_mut(self._game_resources)
     }
-    pub fn get_game_controller(&self) -> &GameController { ptr_as_ref(self._game_controller) }
-    pub fn get_game_controller_mut(&self) -> &mut GameController { ptr_as_mut(self._game_controller) }
-    pub fn get_game_ui_manager(&self) -> &GameUIManager { ptr_as_ref(self._game_ui_manager) }
-    pub fn get_game_ui_manager_mut(&self) -> &mut GameUIManager { ptr_as_mut(self._game_ui_manager) }
-    pub fn start_game(&mut self) {
+    pub fn get_game_controller(&self) -> &GameController<'a> {
+        ptr_as_ref(self._game_controller)
+    }
+    pub fn get_game_controller_mut(&self) -> &mut GameController<'a> {
+        ptr_as_mut(self._game_controller)
+    }
+    pub fn get_game_ui_manager(&self) -> &GameUIManager<'a> {
+        ptr_as_ref(self._game_ui_manager)
+    }
+    pub fn get_game_ui_manager_mut(&self) -> &mut GameUIManager<'a> {
+        ptr_as_mut(self._game_ui_manager)
+    }
+    pub fn start_game(&'a mut self) {
         log::info!("start_game");
         self.get_game_scene_manager_mut().open_game_scene_data("intro_stage");
     }

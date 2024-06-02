@@ -27,20 +27,20 @@ pub struct Application<'a> {
     pub _audio_manager: *const AudioManager<'a>,
     pub _effect_manager: *const EffectManager<'a>,
     pub _renderer_data: *const RendererData<'a>,
-    pub _character_manager: Box<CharacterManager>,
-    pub _food_manager: Box<FoodManager>,
-    pub _game_resources: Box<GameResources>,
-    pub _game_scene_manager: Box<GameSceneManager>,
-    pub _game_ui_manager: Box<GameUIManager>,
-    pub _game_controller: Box<GameController>,
-    pub _game_client: Box<GameClient>,
+    pub _character_manager: Box<CharacterManager<'a>>,
+    pub _food_manager: Box<FoodManager<'a>>,
+    pub _game_resources: Box<GameResources<'a>>,
+    pub _game_scene_manager: Box<GameSceneManager<'a>>,
+    pub _game_ui_manager: Box<GameUIManager<'a>>,
+    pub _game_controller: Box<GameController<'a>>,
+    pub _game_client: Box<GameClient<'a>>,
     pub _is_game_mode: bool,
 }
 
-impl<'a> ApplicationBase for Application<'a> {
+impl<'a> ApplicationBase<'a> for Application<'a> {
     fn initialize_application(
-        &mut self,
-        engine_core: &EngineCore,
+        &'a mut self,
+        engine_core: &EngineCore<'a>,
         window_size: &Vector2<i32>,
     ) {
         // engine managers
@@ -112,21 +112,21 @@ impl<'a> ApplicationBase for Application<'a> {
                 self.get_engine_core_mut().set_grab_mode(false);
             }
 
-            let pressed_key_a = keyboard_input_data.get_key_hold(KeyCode::A);
-            let pressed_key_d = keyboard_input_data.get_key_hold(KeyCode::D);
-            let pressed_key_w = keyboard_input_data.get_key_hold(KeyCode::W);
-            let pressed_key_s = keyboard_input_data.get_key_hold(KeyCode::S);
-            let pressed_key_q = keyboard_input_data.get_key_hold(KeyCode::Q);
-            let pressed_key_e = keyboard_input_data.get_key_hold(KeyCode::E);
-            let pressed_key_z = keyboard_input_data.get_key_hold(KeyCode::Z);
-            let pressed_key_c = keyboard_input_data.get_key_hold(KeyCode::C);
+            let pressed_key_a = keyboard_input_data.get_key_hold(KeyCode::KeyA);
+            let pressed_key_d = keyboard_input_data.get_key_hold(KeyCode::KeyD);
+            let pressed_key_w = keyboard_input_data.get_key_hold(KeyCode::KeyW);
+            let pressed_key_s = keyboard_input_data.get_key_hold(KeyCode::KeyS);
+            let pressed_key_q = keyboard_input_data.get_key_hold(KeyCode::KeyQ);
+            let pressed_key_e = keyboard_input_data.get_key_hold(KeyCode::KeyE);
+            let pressed_key_z = keyboard_input_data.get_key_hold(KeyCode::KeyZ);
+            let pressed_key_c = keyboard_input_data.get_key_hold(KeyCode::KeyC);
             let pressed_key_comma = keyboard_input_data.get_key_hold(KeyCode::Comma);
             let pressed_key_period = keyboard_input_data.get_key_hold(KeyCode::Period);
-            let released_key_left_bracket = keyboard_input_data.get_key_released(KeyCode::LBracket);
-            let released_key_right_bracket = keyboard_input_data.get_key_released(KeyCode::RBracket);
+            let released_key_left_bracket = keyboard_input_data.get_key_released(KeyCode::BracketLeft);
+            let released_key_right_bracket = keyboard_input_data.get_key_released(KeyCode::BracketRight);
             let released_key_subtract = keyboard_input_data.get_key_released(KeyCode::Minus);
-            let released_key_equals = keyboard_input_data.get_key_released(KeyCode::Equals);
-            let modifier_keys_shift = keyboard_input_data.get_key_hold(KeyCode::LShift);
+            let released_key_equals = keyboard_input_data.get_key_released(KeyCode::Equal);
+            let modifier_keys_shift = keyboard_input_data.get_key_hold(KeyCode::ShiftLeft);
             let scene_manager = self.get_game_scene_manager().get_scene_manager();
             let main_camera = scene_manager.get_main_camera_mut();
             let main_light = ptr_as_mut(scene_manager.get_main_light().as_ptr());
@@ -218,11 +218,11 @@ impl<'a> ApplicationBase for Application<'a> {
     }
 }
 
-impl Application {
-    pub fn get_engine_core(&self) -> &EngineCore {
+impl<'a> Application<'a> {
+    pub fn get_engine_core(&self) -> &EngineCore<'a> {
         ptr_as_ref(self._engine_core)
     }
-    pub fn get_engine_core_mut(&self) -> &mut EngineCore {
+    pub fn get_engine_core_mut(&self) -> &mut EngineCore<'a> {
         ptr_as_mut(self._engine_core)
     }
     pub fn get_effect_manager(&self) -> &EffectManager<'a> {
@@ -231,42 +231,60 @@ impl Application {
     pub fn get_effect_manager_mut(&self) -> &mut EffectManager<'a> {
         ptr_as_mut(self._effect_manager)
     }
-    pub fn get_game_resources(&self) -> &GameResources {
+    pub fn get_game_resources(&self) -> &GameResources<'a> {
         ptr_as_ref(self._game_resources.as_ref())
     }
-    pub fn get_game_resources_mut(&self) -> &mut GameResources { ptr_as_mut(self._game_resources.as_ref()) }
-    pub fn get_character_manager(&self) -> &CharacterManager {
+    pub fn get_game_resources_mut(&self) -> &mut GameResources<'a> {
+        ptr_as_mut(self._game_resources.as_ref())
+    }
+    pub fn get_character_manager(&self) -> &CharacterManager<'a> {
         self._character_manager.as_ref()
     }
-    pub fn get_character_manager_mut(&mut self) -> &mut CharacterManager { self._character_manager.as_mut() }
-    pub fn get_food_manager(&self) -> &FoodManager {
+    pub fn get_character_manager_mut(&mut self) -> &mut CharacterManager<'a> {
+        self._character_manager.as_mut()
+    }
+    pub fn get_food_manager(&self) -> &FoodManager<'a> {
         self._food_manager.as_ref()
     }
-    pub fn get_food_manager_mut(&mut self) -> &mut FoodManager { self._food_manager.as_mut() }
-    pub fn get_game_scene_manager(&self) -> &GameSceneManager {
+    pub fn get_food_manager_mut(&mut self) -> &mut FoodManager<'a> {
+        self._food_manager.as_mut()
+    }
+    pub fn get_game_scene_manager(&self) -> &GameSceneManager<'a> {
         self._game_scene_manager.as_ref()
     }
-    pub fn get_game_scene_manager_mut(&mut self) -> &mut GameSceneManager { self._game_scene_manager.as_mut() }
+    pub fn get_game_scene_manager_mut(&mut self) -> &mut GameSceneManager<'a> {
+        self._game_scene_manager.as_mut()
+    }
     pub fn get_renderer_data(&self) -> &RendererData<'a> {
         ptr_as_ref(self._renderer_data)
     }
-    pub fn get_renderer_data_mut(&self) -> &mut RendererData {
+    pub fn get_renderer_data_mut(&self) -> &mut RendererData<'a> {
         ptr_as_mut(self._renderer_data)
     }
-    pub fn get_game_ui_manager(&self) -> &GameUIManager { ptr_as_ref(self._game_ui_manager.as_ref()) }
-    pub fn get_game_ui_manager_mut(&self) -> &mut GameUIManager { ptr_as_mut(self._game_ui_manager.as_ref()) }
-    pub fn get_audio_manager(&self) -> &AudioManager {
+    pub fn get_game_ui_manager(&self) -> &GameUIManager<'a> {
+        ptr_as_ref(self._game_ui_manager.as_ref())
+    }
+    pub fn get_game_ui_manager_mut(&self) -> &mut GameUIManager<'a> {
+        ptr_as_mut(self._game_ui_manager.as_ref())
+    }
+    pub fn get_audio_manager(&self) -> &AudioManager<'a> {
         ptr_as_ref(self._audio_manager)
     }
-    pub fn get_audio_manager_mut(&self) -> &mut AudioManager {
+    pub fn get_audio_manager_mut(&self) -> &mut AudioManager<'a> {
         ptr_as_mut(self._audio_manager)
     }
-    pub fn get_game_controller(&self) -> &GameController { self._game_controller.as_ref() }
-    pub fn get_game_controller_mut(&self) -> &mut GameController { ptr_as_mut(self._game_controller.as_ref()) }
-    pub fn get_game_client(&self) -> &GameClient {
+    pub fn get_game_controller(&self) -> &GameController<'a> {
+        self._game_controller.as_ref()
+    }
+    pub fn get_game_controller_mut(&self) -> &mut GameController<'a> {
+        ptr_as_mut(self._game_controller.as_ref())
+    }
+    pub fn get_game_client(&self) -> &GameClient<'a> {
         self._game_client.as_ref()
     }
-    pub fn get_game_client_mut(&self) -> &mut GameClient { ptr_as_mut(self._game_client.as_ref()) }
+    pub fn get_game_client_mut(&self) -> &mut GameClient<'a> {
+        ptr_as_mut(self._game_client.as_ref())
+    }
     pub fn toggle_game_mode(&mut self) {
         self.set_game_mode(!self._is_game_mode);
     }
