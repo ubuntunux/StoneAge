@@ -5,7 +5,7 @@ use nalgebra::Vector2;
 use rust_engine_3d::core::engine_core::EngineCore;
 use rust_engine_3d::resource::resource::EngineResources;
 use rust_engine_3d::scene::ui::{
-    CallbackTouchEvent, HorizontalAlign, UIComponentInstance, UIManager,
+    HorizontalAlign, UIComponentInstance, UIManager,
     UIWidgetTypes, VerticalAlign, WidgetDefault,
 };
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
@@ -78,8 +78,18 @@ impl<'a> UISwitch<'a> {
         ui_component.set_touchable(true);
         //ui_component.set_material_instance(&engine_resources.get_material_instance_data("ui/render_ui_test"));
 
-        static TOUCH_DOWN: CallbackTouchEvent<'static> = UISwitch::touch_down;
-        ui_component.set_callback_touch_down((&TOUCH_DOWN as *const CallbackTouchEvent<'static>) as *const CallbackTouchEvent<'a>);
+        ui_component.set_callback_touch_down(
+            Some(Box::new(
+                |ui_component: &UIComponentInstance<'a>,
+                 _touched_pos: &Vector2<f32>,
+                 _touched_pos_delta: &Vector2<f32>
+                | -> bool {
+                    let game_ui_component = ptr_as_mut(ui_component.get_user_data() as *const UIComponentInstance<'a>);
+                    game_ui_component.set_visible(!game_ui_component.get_visible());
+                    true
+                }
+            ))
+        );
         ui_component.set_user_data(
             game_ui_widget.get_ui_component() as *const UIComponentInstance as *const c_void,
         );
@@ -90,16 +100,6 @@ impl<'a> UISwitch<'a> {
         };
 
         ui_switch
-    }
-
-    pub fn touch_down(
-        ui_component: &mut UIComponentInstance<'a>,
-        _touched_pos: &Vector2<f32>,
-        _touched_pos_delta: &Vector2<f32>,
-    ) -> bool {
-        let game_ui_component = ptr_as_mut(ui_component.get_user_data() as *const UIComponentInstance<'a>);
-        game_ui_component.set_visible(!game_ui_component.get_visible());
-        true
     }
 }
 
