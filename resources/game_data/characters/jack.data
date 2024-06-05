@@ -1,11 +1,11 @@
 {
-    "_attack_animation_mesh": "characters/jack/jack_attack",
+    "_attack_animation_mesh": "characters/jack/jack_power_attack",
     "_character_type": "UrsusArctos",
     "_dead_animation_mesh": "characters/jack/jack_dead",
     "_hit_animation_mesh": "characters/jack/jacK_hit",
-    "_idle_animation_mesh": "characters/jack/jack_idle",
-    "_jump_animation_mesh": "characters/jack/jack_jump",
+    "_idle_animation_mesh": "characters/jack/jack_roll",
+    "_jump_animation_mesh": "characters/jack/jack_running_jump",
     "_max_hp": 100,
     "_model_data_name": "characters/jack",
-    "_walk_animation_mesh": "characters/jack/jack_walk"
+    "_walk_animation_mesh": "characters/jack/jack_run"
 }
