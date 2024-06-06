@@ -15,7 +15,9 @@ pub const CAMERA_ZOOM_SPEED: f32 = 4.0;
 
 // player
 pub const PLAYER_MOVE_SPEED: f32 = 3.0;
+pub const PLAYER_RUN_SPEED: f32 = PLAYER_MOVE_SPEED * 2.0;
 pub const PLAYER_JUMP_SPEED: f32 = 13.0;
+pub const PLAYER_SHORT_JUMP_SPEED: f32 = 10.0;
 pub const GRAVITY: f32 = 30.0;
 pub const GROUND_HEIGHT: f32 = 9.0;
 pub const CONTINUOUS_ATTACK_TIME: f32 = 0.15;

@@ -4,7 +4,6 @@ use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::{AudioLoop, AudioManager};
 use rust_engine_3d::core::engine_core::EngineCore;
 use rust_engine_3d::effect::effect_data::EffectCreateInfo;
-use rust_engine_3d::scene::mesh::MeshData;
 use rust_engine_3d::scene::render_object::RenderObjectCreateInfo;
 use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
@@ -163,7 +162,8 @@ impl<'a> CharacterManager<'a> {
 
         let mut dead_characters: Vec<RcRefCell<Character>> = Vec::new();
         let player = ptr_as_ref(self._player.as_ref().unwrap().as_ptr());
-        if player.is_attacking() {
+        let is_attack_event = player.update_keyframe_event();
+        if is_attack_event {
             for character in self._characters.values() {
                 let mut character_mut = character.borrow_mut();
                 if character_mut._is_alive {

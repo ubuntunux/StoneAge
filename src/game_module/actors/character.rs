@@ -14,18 +14,23 @@ use crate::game_module::game_scene_manager::GameSceneManager;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum MoveAnimationState {
-    NONE,
-    IDLE,
-    WALK,
-    JUMP,
+    None,
+    Idle,
+    Jump,
+    Roll,
+    Run,
+    RunningJump,
+    ShortJump,
+    Walk,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum ActionAnimationState {
-    NONE,
-    ATTACK,
-    HIT,
-    DEAD
+    None,
+    Attack,
+    Dead,
+    Hit,
+    PowerAttack,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -86,7 +91,7 @@ pub struct CharacterController {
     pub _scale: Vector3<f32>,
     pub _velocity: Vector3<f32>,
     pub _is_ground: bool,
-    pub _is_jump: bool,
+    pub _is_jump_start: bool,
     pub _is_blocked: bool,
     pub _move_direction: MoveDirections
 }
@@ -167,7 +172,7 @@ impl CharacterController {
             _rotation: Vector3::zeros(),
             _scale: Vector3::new(1.0, 1.0, 1.0),
             _velocity: Vector3::zeros(),
-            _is_jump: false,
+            _is_jump_start: false,
             _is_ground: false,
             _is_blocked: false,
             _move_direction: MoveDirections::NONE
@@ -178,17 +183,17 @@ impl CharacterController {
         *self = CharacterController::create_character_controller();
     }
 
-    pub fn is_stop(&self) -> bool {
+    pub fn is_stopped(&self) -> bool {
         self._velocity.x == 0.0 && self._velocity.y == 0.0
     }
 
-    pub fn set_move_walk(&mut self, move_direction: MoveDirections) {
+    pub fn set_move_direction(&mut self, move_direction: MoveDirections) {
         self._move_direction = move_direction;
     }
 
-    pub fn set_move_jump(&mut self) {
+    pub fn set_jump_start(&mut self) {
         if self._is_ground {
-            self._is_jump = true;
+            self._is_jump_start = true;
         }
     }
 
@@ -206,17 +211,24 @@ impl CharacterController {
         self._velocity.y = 0.0;
     }
 
-    pub fn update_character_controller(&mut self, game_scene_manager: &GameSceneManager, actor_bound_box: &BoundingBox, delta_time: f32) {
+    pub fn update_character_controller(
+        &mut self,
+        game_scene_manager: &GameSceneManager,
+        is_speed_running: bool,
+        is_power_attack: bool,
+        actor_bound_box: &BoundingBox,
+        delta_time: f32
+    ) {
         let prev_position = self._position.clone_owned();
 
         // move on ground
         match self._move_direction {
             MoveDirections::LEFT => {
-                self._velocity.x = -PLAYER_MOVE_SPEED;
+                self._velocity.x = -(if is_speed_running { PLAYER_RUN_SPEED } else { PLAYER_MOVE_SPEED });
                 self._rotation.y = std::f32::consts::PI * 0.5
             },
             MoveDirections::RIGHT => {
-                self._velocity.x = PLAYER_MOVE_SPEED;
+                self._velocity.x = if is_speed_running { PLAYER_RUN_SPEED } else { PLAYER_MOVE_SPEED };
                 self._rotation.y = -std::f32::consts::PI * 0.5
             },
             MoveDirections::UP => {
@@ -233,8 +245,8 @@ impl CharacterController {
         }
         self._position.x += self._velocity.x * delta_time;
 
-        if self._is_jump {
-            self._velocity.y = PLAYER_JUMP_SPEED;
+        if self._is_jump_start {
+            self._velocity.y = if is_power_attack { PLAYER_SHORT_JUMP_SPEED } else { PLAYER_JUMP_SPEED };
             self._is_ground = false;
         }
 
@@ -283,8 +295,8 @@ impl CharacterController {
         }
 
         // reset
-        self._is_jump = false;
-        self._move_direction = MoveDirections::NONE;
+        self._is_jump_start = false;
+        self.set_move_direction(MoveDirections::NONE);
     }
 }
 
@@ -297,7 +309,7 @@ impl CharacterBehavior {
     }
 
     pub fn update_behavior(&mut self, character: &mut Character, delta_time: f32, toggle_move_direction: bool) {
-        let movable: bool = !character.is_action(ActionAnimationState::DEAD) && !character.is_action(ActionAnimationState::HIT);
+        let movable: bool = !character.is_action(ActionAnimationState::Dead) && !character.is_action(ActionAnimationState::Hit);
 
         if movable {
             self._move_time += delta_time;
@@ -306,7 +318,8 @@ impl CharacterBehavior {
                 self._move_time = 0.0;
             }
 
-            character.set_move_walk(self._move_direction);
+            let is_running = false;
+            character.set_move(self._move_direction, is_running);
         }
     }
 }
@@ -346,8 +359,8 @@ impl<'a> Character<'a> {
             _character_property: Box::new(CharacterProperty::create_character_property()),
             _controller: Box::new(CharacterController::create_character_controller()),
             _behavior: Box::new(CharacterBehavior::create_character_behavior()),
-            _move_animation_state: MoveAnimationState::NONE,
-            _action_animation_state: ActionAnimationState::NONE,
+            _move_animation_state: MoveAnimationState::None,
+            _action_animation_state: ActionAnimationState::None,
             _attack_animation: attack_animation.clone(),
             _dead_animation: dead_animation.clone(),
             _hit_animation: hit_animation.clone(),
@@ -380,20 +393,29 @@ impl<'a> Character<'a> {
         let mut animation_info = AnimationPlayArgs {
             ..Default::default()
         };
+
         let mut render_object = self._render_object.borrow_mut();
         match move_animation_state {
-            MoveAnimationState::IDLE => {
+            MoveAnimationState::Idle => {
                 render_object.set_animation(&self._idle_animation, &animation_info, AnimationLayer::BaseLayer);
             },
-            MoveAnimationState::WALK => {
+            MoveAnimationState::Walk => {
                 animation_info._animation_speed = 1.5;
                 render_object.set_animation(&self._walk_animation, &animation_info, AnimationLayer::BaseLayer);
             },
-            MoveAnimationState::JUMP => {
+            MoveAnimationState::Run => {
+                animation_info._animation_speed = 1.5;
+                render_object.set_animation(&self._run_animation, &animation_info, AnimationLayer::BaseLayer);
+            },
+            MoveAnimationState::Jump | MoveAnimationState::ShortJump => {
                 animation_info._animation_loop = false;
                 render_object.set_animation(&self._jump_animation, &animation_info, AnimationLayer::BaseLayer);
             },
-            _ => ()
+            MoveAnimationState::RunningJump => {
+                animation_info._animation_loop = false;
+                render_object.set_animation(&self._running_jump_animation, &animation_info, AnimationLayer::BaseLayer);
+            },
+            _ => log::info!("Unimplemented move animation: {:?}", move_animation_state)
         }
         self._move_animation_state = move_animation_state;
         self.update_animation_blend_masks();
@@ -408,19 +430,23 @@ impl<'a> Character<'a> {
         };
         let mut render_object = self._render_object.borrow_mut();
         match action_animation_state {
-            ActionAnimationState::ATTACK => {
+            ActionAnimationState::Attack => {
                 animation_info._animation_speed = 1.5;
                 render_object.set_animation(&self._attack_animation, &animation_info, AnimationLayer::AdditiveLayer);
             },
-            ActionAnimationState::DEAD => {
+            ActionAnimationState::Dead => {
                 animation_info._animation_speed = 1.5;
                 render_object.set_animation(&self._dead_animation, &animation_info, AnimationLayer::BaseLayer);
             },
-            ActionAnimationState::HIT => {
+            ActionAnimationState::Hit => {
                 animation_info._animation_speed = 2.0;
                 render_object.set_animation(&self._hit_animation, &animation_info, AnimationLayer::BaseLayer);
             },
-            _ => ()
+            ActionAnimationState::PowerAttack => {
+                animation_info._animation_speed = 1.5;
+                render_object.set_animation(&self._power_attack_animation, &animation_info, AnimationLayer::BaseLayer);
+            },
+            _ => log::info!("Unimplemented action animation: {:?}", action_animation_state)
         }
         self._action_animation_state = action_animation_state;
         self.update_animation_blend_masks();
@@ -431,24 +457,40 @@ impl<'a> Character<'a> {
     }
 
     pub fn set_move_none(&mut self) {
-        self.set_move_animation(MoveAnimationState::NONE);
+        self.set_move_animation(MoveAnimationState::None);
     }
 
     pub fn set_move_idle(&mut self) {
-        self.set_move_animation(MoveAnimationState::IDLE);
+        self.set_move_animation(MoveAnimationState::Idle);
     }
 
-    pub fn set_move_walk(&mut self, move_direction: MoveDirections) {
-        self._controller.set_move_walk(move_direction);
-        if false == self.is_move_state(MoveAnimationState::WALK) && self._controller._is_ground {
-            self.set_move_animation(MoveAnimationState::WALK);
+    pub fn set_move(&mut self, move_direction: MoveDirections, is_running: bool) {
+        if self.is_action_available_move() {
+            self._controller.set_move_direction(move_direction);
+            let move_animation = if is_running { MoveAnimationState::Run } else { MoveAnimationState::Walk };
+            if false == self.is_move_state(move_animation) && self._controller._is_ground {
+                self.set_move_animation(move_animation);
+            }
         }
     }
 
-    pub fn set_move_jump(&mut self) {
-        if self._controller._is_ground {
-            self._controller.set_move_jump();
-            self.set_move_animation(MoveAnimationState::JUMP);
+    pub fn set_jump(&mut self) {
+        if self.is_available_jump() {
+            self._controller.set_jump_start();
+            self.set_move_animation(
+                if self.is_move_state(MoveAnimationState::Run) {
+                    MoveAnimationState::RunningJump
+                } else {
+                    MoveAnimationState::Jump
+                }
+            );
+        }
+    }
+
+    pub fn set_short_jump(&mut self) {
+        if self.is_available_jump() {
+            self._controller.set_jump_start();
+            self.set_move_animation(MoveAnimationState::ShortJump);
         }
     }
 
@@ -457,39 +499,60 @@ impl<'a> Character<'a> {
     }
 
     pub fn set_action_none(&mut self) {
-        self.set_action_animation(ActionAnimationState::NONE);
+        self.set_action_animation(ActionAnimationState::None);
     }
 
     pub fn set_action_attack(&mut self) {
-        let additive_animation_play_info = self.get_animation_play_info(AnimationLayer::AdditiveLayer);
-        if self.is_action(ActionAnimationState::NONE) || self.is_action(ActionAnimationState::ATTACK) && CONTINUOUS_ATTACK_TIME < additive_animation_play_info._animation_play_time {
-            self.set_action_animation(ActionAnimationState::ATTACK);
-            self.get_character_manager().play_audio(AUDIO_ATTACK);
+        if self.is_available_attack() {
+            self.set_action_animation(ActionAnimationState::Attack);
+        }
+    }
+
+    pub fn set_action_power_attack(&mut self) {
+        if self.is_available_power_attack() {
+            self.set_short_jump();
+            self.set_action_animation(ActionAnimationState::PowerAttack);
         }
     }
 
     pub fn set_action_hit(&mut self) {
         self.set_move_idle();
-        self.set_action_animation(ActionAnimationState::HIT);
+        self.set_action_animation(ActionAnimationState::Hit);
     }
 
     pub fn set_action_dead(&mut self) {
         self.set_move_idle();
-        self.set_action_animation(ActionAnimationState::DEAD);
-        self.get_character_manager().play_audio(AUDIO_DEAD);
+        self.set_action_animation(ActionAnimationState::Dead);
     }
 
     pub fn get_animation_play_info(&self, layer: AnimationLayer) -> &AnimationPlayInfo {
         &ptr_as_ref(self._render_object.as_ptr())._animation_play_infos[layer as usize]
     }
 
-    pub fn is_attacking(&self) -> bool {
-        if self.is_action(ActionAnimationState::ATTACK) {
-            let animation_play_info = self.get_animation_play_info(AnimationLayer::AdditiveLayer);
+    pub fn update_keyframe_event(&self) -> bool {
+        let mut is_attack_event = false;
+        let base_animation_play_info = self.get_animation_play_info(AnimationLayer::BaseLayer);
+        let additive_animation_play_info = self.get_animation_play_info(AnimationLayer::AdditiveLayer);
+        if self.is_action(ActionAnimationState::Attack) {
             let attack_time: f32 = 0.15;
-            return animation_play_info._prev_animation_play_time < attack_time && attack_time <= animation_play_info._animation_play_time;
+            if additive_animation_play_info._prev_animation_play_time == 0.0 {
+                self.get_character_manager().play_audio(AUDIO_ATTACK);
+            } else if additive_animation_play_info._prev_animation_play_time < attack_time && attack_time <= additive_animation_play_info._animation_play_time {
+                is_attack_event = true;
+            }
+        } else if self.is_action(ActionAnimationState::PowerAttack) {
+            let attack_time: f32 = 1.0;
+            if base_animation_play_info._prev_animation_play_time < attack_time && attack_time <= base_animation_play_info._animation_play_time {
+                self.get_character_manager().play_audio(AUDIO_ATTACK);
+                is_attack_event = true;
+            }
+        } else if self.is_action(ActionAnimationState::Dead) {
+            if base_animation_play_info._prev_animation_play_time == 0.0 {
+                self.get_character_manager().play_audio(AUDIO_DEAD);
+            }
         }
-        false
+
+        is_attack_event
     }
 
     pub fn get_attack_point(&self) -> Vector3<f32> {
@@ -539,10 +602,10 @@ impl<'a> Character<'a> {
 
     pub fn update_animation_blend_masks(&self) {
         let render_object = ptr_as_mut(self._render_object.as_ptr());
-        if self.is_action(ActionAnimationState::ATTACK) {
+        if self.is_action(ActionAnimationState::Attack) {
             let additive_animation_play_info = render_object.get_animation_play_info(AnimationLayer::AdditiveLayer);
             if false == additive_animation_play_info._is_animation_end {
-                if self.is_move_state(MoveAnimationState::IDLE) {
+                if self.is_move_state(MoveAnimationState::Idle) {
                     render_object.clear_animation_blend_masks(AnimationLayer::AdditiveLayer);
                 } else {
                     render_object.set_animation_blend_masks(
@@ -551,7 +614,34 @@ impl<'a> Character<'a> {
                     );
                 }
             }
+        } else {
+            render_object.clear_animation_blend_masks(AnimationLayer::AdditiveLayer);
         }
+    }
+
+    pub fn is_available_attack(&self) -> bool {
+        let additive_animation_play_info = self.get_animation_play_info(AnimationLayer::AdditiveLayer);
+        if self.is_action(ActionAnimationState::None) ||
+            self.is_action(ActionAnimationState::Attack) && CONTINUOUS_ATTACK_TIME < additive_animation_play_info._animation_play_time {
+            return true;
+        }
+        false
+    }
+
+    pub fn is_available_power_attack(&self) -> bool {
+        self.is_available_attack()
+    }
+
+    pub fn is_action_available_move(&self) -> bool {
+        self.is_action(ActionAnimationState::None) || self.is_action(ActionAnimationState::Attack)
+    }
+
+    pub fn is_available_jump(&self) -> bool {
+        self._controller._is_ground && (self.is_action(ActionAnimationState::None) || self.is_action(ActionAnimationState::Attack))
+    }
+
+    pub fn is_speed_running(&self) -> bool {
+        self._move_animation_state == MoveAnimationState::Run || self._move_animation_state == MoveAnimationState::RunningJump
     }
 
     pub fn update_character(&mut self, game_scene_manager: &GameSceneManager, delta_time: f32) {
@@ -559,23 +649,34 @@ impl<'a> Character<'a> {
             self._behavior.update_behavior(ptr_as_mut(self), delta_time, self._controller._is_blocked);
         }
 
-        self._controller.update_character_controller(game_scene_manager, &self._render_object.borrow()._bound_box, delta_time);
+        let is_speed_running: bool = self.is_speed_running();
+        let is_power_attack: bool = self.is_action(ActionAnimationState::PowerAttack);
+        self._controller.update_character_controller(
+            game_scene_manager,
+            is_speed_running,
+            is_power_attack,
+            &self._render_object.borrow()._bound_box,
+            delta_time
+        );
         self.update_transform();
 
         // update action animations
-        if self.is_action(ActionAnimationState::ATTACK) {
+        if self.is_action(ActionAnimationState::Attack) {
             if self.get_animation_play_info(AnimationLayer::AdditiveLayer)._is_animation_end {
                 self.set_action_none();
             }
-        } else if self.is_action(ActionAnimationState::HIT) {
+        } else if self.is_action(ActionAnimationState::PowerAttack) {
+            if self.get_animation_play_info(AnimationLayer::BaseLayer)._is_animation_end {
+                self.set_action_none();
+            }
+        } else if self.is_action(ActionAnimationState::Hit) {
             if self.get_animation_play_info(AnimationLayer::BaseLayer)._is_animation_end {
                 self.set_action_none();
             }
         }
 
         // update move animation
-        let is_movable_action: bool = self.is_action(ActionAnimationState::NONE) || self.is_action(ActionAnimationState::ATTACK);
-        if is_movable_action && !self.is_move_state(MoveAnimationState::IDLE) && self._controller.is_stop() {
+        if self.is_action_available_move() && !self.is_move_state(MoveAnimationState::Idle) && self._controller.is_stopped() {
             self.set_move_idle();
         }
     }

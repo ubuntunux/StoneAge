@@ -68,32 +68,37 @@ impl<'a> GameController<'a> {
         player: &RcRefCell<Character>
     ) {
         let btn_left: bool = mouse_input_data._btn_l_pressed;
-        let _btn_right: bool = mouse_input_data._btn_r_pressed;
+        let btn_right: bool = mouse_input_data._btn_r_pressed;
         let _btn_right_hold: bool = mouse_input_data._btn_r_hold;
         let is_left = keyboard_input_data.get_key_hold(KeyCode::ArrowLeft) | keyboard_input_data.get_key_hold(KeyCode::KeyA);
         let is_right = keyboard_input_data.get_key_hold(KeyCode::ArrowRight) | keyboard_input_data.get_key_hold(KeyCode::KeyD);
         let is_down = keyboard_input_data.get_key_hold(KeyCode::ArrowDown) | keyboard_input_data.get_key_hold(KeyCode::KeyS);
         let is_up = keyboard_input_data.get_key_hold(KeyCode::ArrowUp) | keyboard_input_data.get_key_hold(KeyCode::KeyW);
         let is_jump = keyboard_input_data.get_key_hold(KeyCode::Space);
+        let is_run = keyboard_input_data.get_key_hold(KeyCode::ShiftLeft);
         let _modifier_keys_ctrl = keyboard_input_data.get_key_hold(KeyCode::ControlLeft);
         let mut player_mut = player.borrow_mut();
 
         if is_left {
-            player_mut.set_move_walk(MoveDirections::LEFT);
+            player_mut.set_move(MoveDirections::LEFT, is_run);
         } else if is_right {
-            player_mut.set_move_walk(MoveDirections::RIGHT);
+            player_mut.set_move(MoveDirections::RIGHT, is_run);
         } else if is_up {
-            player_mut.set_move_walk(MoveDirections::UP);
+            player_mut.set_move(MoveDirections::UP, is_run);
         } else if is_down {
-            player_mut.set_move_walk(MoveDirections::DOWN);
+            player_mut.set_move(MoveDirections::DOWN, is_run);
         }
 
         if is_jump {
-            player_mut.set_move_jump();
+            player_mut.set_jump();
         }
 
         if btn_left {
             player_mut.set_action_attack();
+        }
+
+        if btn_right {
+            player_mut.set_action_power_attack();
         }
 
         // update camera
