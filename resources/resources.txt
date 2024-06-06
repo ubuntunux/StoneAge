@@ -39,7 +39,6 @@ resources/externals/blender_assets.cats.txt~
 resources/externals/meshes/props/meat.blend
 resources/externals/meshes/props/meat.bin
 resources/externals/meshes/props/meat.gltf
-resources/externals/meshes/characters/jack/jack_run.gltf
 resources/externals/meshes/characters/jack/jacK_hit.gltf
 resources/externals/meshes/characters/jack/jack_walk.blend
 resources/externals/meshes/characters/jack/jack_running_jump.gltf
@@ -52,7 +51,6 @@ resources/externals/meshes/characters/jack/jack_attack.bin
 resources/externals/meshes/characters/jack/jack_run.blend
 resources/externals/meshes/characters/jack/jack_hit.blend
 resources/externals/meshes/characters/jack/jack_jump.gltf
-resources/externals/meshes/characters/jack/jack_run.bin
 resources/externals/meshes/characters/jack/jack_roll.gltf
 resources/externals/meshes/characters/jack/jack_attack.blend
 resources/externals/meshes/characters/jack/jack.gltf
@@ -257,7 +255,6 @@ resources/externals/.log/StoneAge_20240519_215220.log
 resources/externals/.log/StoneAge_20240522_012222.log
 resources/externals/.log/StoneAge_20240501_014527.log
 resources/externals/.log/StoneAge_20240501_011308.log
-resources/externals/.log/StoneAge_20240606_020238.log
 resources/externals/.log/StoneAge_20240501_015410.log
 resources/externals/.log/StoneAge_20240501_012749.log
 resources/externals/.log/StoneAge_20240429_223704.log
