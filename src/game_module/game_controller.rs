@@ -70,11 +70,12 @@ impl<'a> GameController<'a> {
     ) {
         let is_attack: bool =
             mouse_input_data._btn_l_pressed ||
-            joystick_input_data._btn_x == ButtonState::Pressed;
+            joystick_input_data._btn_x == ButtonState::Pressed ||
+            joystick_input_data._btn_right_trigger == ButtonState::Pressed;
         let is_power_attack: bool =
             mouse_input_data._btn_r_pressed ||
-            joystick_input_data._btn_b == ButtonState::Pressed;
-        let _btn_right_hold: bool = mouse_input_data._btn_r_hold;
+            joystick_input_data._btn_b == ButtonState::Pressed ||
+            joystick_input_data._btn_left_trigger == ButtonState::Pressed;
         let is_left =
             keyboard_input_data.get_key_hold(KeyCode::ArrowLeft) ||
             keyboard_input_data.get_key_hold(KeyCode::KeyA) ||
@@ -100,9 +101,8 @@ impl<'a> GameController<'a> {
             joystick_input_data._btn_a == ButtonState::Pressed;
         let is_run =
             keyboard_input_data.get_key_hold(KeyCode::ShiftLeft) ||
-            joystick_input_data._btn_left_sholder == ButtonState::Hold ||
-            joystick_input_data._btn_left_sholder == ButtonState::Hold;
-        let _modifier_keys_ctrl = keyboard_input_data.get_key_hold(KeyCode::ControlLeft);
+            joystick_input_data._btn_left_shoulder == ButtonState::Hold ||
+            joystick_input_data._btn_left_shoulder == ButtonState::Hold;
         let mut player_mut = player.borrow_mut();
 
         if is_left {
