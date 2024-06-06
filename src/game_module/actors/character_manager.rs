@@ -4,6 +4,7 @@ use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::{AudioLoop, AudioManager};
 use rust_engine_3d::core::engine_core::EngineCore;
 use rust_engine_3d::effect::effect_data::EffectCreateInfo;
+use rust_engine_3d::scene::mesh::MeshData;
 use rust_engine_3d::scene::render_object::RenderObjectCreateInfo;
 use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
@@ -99,12 +100,16 @@ impl<'a> CharacterManager<'a> {
             character_name,
             &render_object_create_info
         );
-        let dead_animation = game_resources.get_engine_resources().get_mesh_data(&character_data.borrow()._dead_animation_mesh);
-        let idle_animation = game_resources.get_engine_resources().get_mesh_data(&character_data.borrow()._idle_animation_mesh);
-        let hit_animation = game_resources.get_engine_resources().get_mesh_data(&character_data.borrow()._hit_animation_mesh);
-        let walk_animation = game_resources.get_engine_resources().get_mesh_data(&character_data.borrow()._walk_animation_mesh);
-        let jump_animation = game_resources.get_engine_resources().get_mesh_data(&character_data.borrow()._jump_animation_mesh);
         let attack_animation = game_resources.get_engine_resources().get_mesh_data(&character_data.borrow()._attack_animation_mesh);
+        let dead_animation = game_resources.get_engine_resources().get_mesh_data(&character_data.borrow()._dead_animation_mesh);
+        let hit_animation = game_resources.get_engine_resources().get_mesh_data(&character_data.borrow()._hit_animation_mesh);
+        let idle_animation = game_resources.get_engine_resources().get_mesh_data(&character_data.borrow()._idle_animation_mesh);
+        let jump_animation = game_resources.get_engine_resources().get_mesh_data(&character_data.borrow()._jump_animation_mesh);
+        let power_attack_animation = game_resources.get_engine_resources().get_mesh_data(&character_data.borrow()._power_attack_animation_mesh);
+        let roll_animation = game_resources.get_engine_resources().get_mesh_data(&character_data.borrow()._roll_animation_mesh);
+        let run_animation = game_resources.get_engine_resources().get_mesh_data(&character_data.borrow()._run_animation_mesh);
+        let running_jump_animation = game_resources.get_engine_resources().get_mesh_data(&character_data.borrow()._running_jump_animation_mesh);
+        let walk_animation = game_resources.get_engine_resources().get_mesh_data(&character_data.borrow()._walk_animation_mesh);
         let id = self.generate_id();
         let character = newRcRefCell(Character::create_character_instance(
             self,
@@ -113,12 +118,16 @@ impl<'a> CharacterManager<'a> {
             character_name,
             character_data,
             &render_object_data,
-            dead_animation,
-            idle_animation,
-            hit_animation,
-            walk_animation,
-            jump_animation,
             attack_animation,
+            dead_animation,
+            hit_animation,
+            idle_animation,
+            jump_animation,
+            power_attack_animation,
+            roll_animation,
+            run_animation,
+            running_jump_animation,
+            walk_animation,
             self._animation_blend_masks.as_ref(),
             &character_create_info._position,
             &character_create_info._rotation,
