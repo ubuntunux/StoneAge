@@ -525,7 +525,7 @@ impl<'a> Character<'a> {
         let additive_animation_play_info = self.get_animation_play_info(AnimationLayer::AdditiveLayer);
         if self.is_action(ActionAnimationState::Attack) {
             let attack_time: f32 = 0.15;
-            if additive_animation_play_info._prev_animation_play_time == 0.0 {
+            if additive_animation_play_info._prev_animation_play_time == 0.0 && 0.0 < additive_animation_play_info._animation_play_time {
                 self.get_character_manager().play_audio(AUDIO_ATTACK);
             } else if additive_animation_play_info._prev_animation_play_time < attack_time && attack_time <= additive_animation_play_info._animation_play_time {
                 is_attack_event = true;

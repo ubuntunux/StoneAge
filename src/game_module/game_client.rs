@@ -103,6 +103,7 @@ impl<'a> GameClient<'a> {
         let time_data = &engine_core._time_data;
         let mouse_move_data = &engine_core._mouse_move_data;
         let mouse_input_data = &engine_core._mouse_input_data;
+        let joystick_input_data = &engine_core._joystick_input_data;
         let keyboard_input_data = &engine_core._keyboard_input_data;
         let mouse_speed_ratio = 1.0;
         let mouse_delta: Vector2<f32> = Vector2::new(
@@ -115,6 +116,7 @@ impl<'a> GameClient<'a> {
             let game_controller = ptr_as_mut(self._game_controller);
             game_controller.update_game_controller(
                 time_data,
+                &joystick_input_data,
                 &keyboard_input_data,
                 &mouse_move_data,
                 &mouse_input_data,

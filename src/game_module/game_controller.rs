@@ -1,6 +1,6 @@
 use nalgebra::Vector2;
 use rust_engine_3d::core::engine_core::TimeData;
-use rust_engine_3d::core::input::{KeyboardInputData, MouseInputData, MouseMoveData};
+use rust_engine_3d::core::input::{ButtonState, JoystickInputData, KeyboardInputData, MouseInputData, MouseMoveData};
 use rust_engine_3d::scene::camera::CameraObjectData;
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use winit::keyboard::KeyCode;
@@ -60,6 +60,7 @@ impl<'a> GameController<'a> {
     pub fn update_game_controller(
         &mut self,
         time_data: &TimeData,
+        joystick_input_data: &JoystickInputData,
         keyboard_input_data: &KeyboardInputData,
         mouse_move_data: &MouseMoveData,
         mouse_input_data: &MouseInputData,
@@ -67,15 +68,40 @@ impl<'a> GameController<'a> {
         main_camera: &mut CameraObjectData,
         player: &RcRefCell<Character>
     ) {
-        let btn_left: bool = mouse_input_data._btn_l_pressed;
-        let btn_right: bool = mouse_input_data._btn_r_pressed;
+        let is_attack: bool =
+            mouse_input_data._btn_l_pressed ||
+            joystick_input_data._btn_x == ButtonState::Pressed;
+        let is_power_attack: bool =
+            mouse_input_data._btn_r_pressed ||
+            joystick_input_data._btn_b == ButtonState::Pressed;
         let _btn_right_hold: bool = mouse_input_data._btn_r_hold;
-        let is_left = keyboard_input_data.get_key_hold(KeyCode::ArrowLeft) | keyboard_input_data.get_key_hold(KeyCode::KeyA);
-        let is_right = keyboard_input_data.get_key_hold(KeyCode::ArrowRight) | keyboard_input_data.get_key_hold(KeyCode::KeyD);
-        let is_down = keyboard_input_data.get_key_hold(KeyCode::ArrowDown) | keyboard_input_data.get_key_hold(KeyCode::KeyS);
-        let is_up = keyboard_input_data.get_key_hold(KeyCode::ArrowUp) | keyboard_input_data.get_key_hold(KeyCode::KeyW);
-        let is_jump = keyboard_input_data.get_key_hold(KeyCode::Space);
-        let is_run = keyboard_input_data.get_key_hold(KeyCode::ShiftLeft);
+        let is_left =
+            keyboard_input_data.get_key_hold(KeyCode::ArrowLeft) ||
+            keyboard_input_data.get_key_hold(KeyCode::KeyA) ||
+            joystick_input_data._btn_left == ButtonState::Hold ||
+            joystick_input_data._stick_left_direction.x < 0;
+        let is_right =
+            keyboard_input_data.get_key_hold(KeyCode::ArrowRight) ||
+            keyboard_input_data.get_key_hold(KeyCode::KeyD) ||
+            joystick_input_data._btn_right == ButtonState::Hold||
+            0 < joystick_input_data._stick_left_direction.x;
+        let is_down =
+            keyboard_input_data.get_key_hold(KeyCode::ArrowDown) ||
+            keyboard_input_data.get_key_hold(KeyCode::KeyS) ||
+            joystick_input_data._btn_down  == ButtonState::Hold ||
+            0 < joystick_input_data._stick_left_direction.y;
+        let is_up =
+            keyboard_input_data.get_key_hold(KeyCode::ArrowUp) ||
+            keyboard_input_data.get_key_hold(KeyCode::KeyW) ||
+            joystick_input_data._btn_up  == ButtonState::Hold ||
+            joystick_input_data._stick_left_direction.y < 0;
+        let is_jump =
+            keyboard_input_data.get_key_hold(KeyCode::Space) ||
+            joystick_input_data._btn_a == ButtonState::Pressed;
+        let is_run =
+            keyboard_input_data.get_key_hold(KeyCode::ShiftLeft) ||
+            joystick_input_data._btn_left_sholder == ButtonState::Hold ||
+            joystick_input_data._btn_left_sholder == ButtonState::Hold;
         let _modifier_keys_ctrl = keyboard_input_data.get_key_hold(KeyCode::ControlLeft);
         let mut player_mut = player.borrow_mut();
 
@@ -93,11 +119,11 @@ impl<'a> GameController<'a> {
             player_mut.set_jump();
         }
 
-        if btn_left {
+        if is_attack {
             player_mut.set_action_attack();
         }
 
-        if btn_right {
+        if is_power_attack {
             player_mut.set_action_power_attack();
         }
 
