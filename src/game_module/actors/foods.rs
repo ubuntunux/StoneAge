@@ -1,6 +1,6 @@
 use std::collections::HashMap;
-use nalgebra::Vector3;
 
+use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::{AudioLoop, AudioManager};
 use rust_engine_3d::core::engine_core::EngineCore;
 use rust_engine_3d::effect::effect_data::EffectCreateInfo;
@@ -18,7 +18,7 @@ use crate::game_module::game_scene_manager::GameSceneManager;
 
 pub type FoodMap<'a> = HashMap<u64, RcRefCell<Food<'a>>>;
 
-#[derive(Serialize, Deserialize,Clone, Copy, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq)]
 pub enum FoodDataType {
     Meat,
 }
@@ -42,7 +42,7 @@ pub struct FoodData {
 pub struct FoodProperties {
     pub _position: Vector3<f32>,
     pub _rotation: Vector3<f32>,
-    pub _scale: Vector3<f32>
+    pub _scale: Vector3<f32>,
 }
 
 pub struct Food<'a> {
@@ -50,7 +50,7 @@ pub struct Food<'a> {
     pub _food_id: u64,
     pub _food_data: RcRefCell<FoodData>,
     pub _render_object: RcRefCell<RenderObjectData<'a>>,
-    pub _food_properties: Box<FoodProperties>
+    pub _food_properties: Box<FoodProperties>,
 }
 
 pub struct FoodManager<'a> {
@@ -61,7 +61,7 @@ pub struct FoodManager<'a> {
     pub _audio_manager: *const AudioManager<'a>,
     pub _scene_manager: *const SceneManager<'a>,
     pub _id_generator: u64,
-    pub _foods: FoodMap<'a>
+    pub _foods: FoodMap<'a>,
 }
 
 // Implementations
@@ -152,9 +152,7 @@ impl<'a> FoodManager<'a> {
         self._audio_manager = application.get_audio_manager();
         self._scene_manager = engine_core.get_scene_manager();
     }
-    pub fn destroy_food_manager(&mut self) {
-
-    }
+    pub fn destroy_food_manager(&mut self) {}
     pub fn get_game_resources(&self) -> &GameResources<'a> {
         ptr_as_ref(self._game_resources)
     }
@@ -190,7 +188,7 @@ impl<'a> FoodManager<'a> {
         };
         let render_object_data = self.get_scene_manager_mut().add_static_render_object(
             food_name,
-            &render_object_create_info
+            &render_object_create_info,
         );
         let id = self.generate_id();
         let food = newRcRefCell(Food::create_food(
@@ -200,7 +198,7 @@ impl<'a> FoodManager<'a> {
             &render_object_data,
             &food_create_info._position,
             &food_create_info._rotation,
-            &food_create_info._scale
+            &food_create_info._scale,
         ));
         self._foods.insert(id, food.clone());
         food

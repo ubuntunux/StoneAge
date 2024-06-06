@@ -8,7 +8,7 @@ use rust_engine_3d::utilities::system::{self, newRcRefCell, ptr_as_mut, ptr_as_r
 use serde_json::{self};
 
 use crate::game_module::actors::block::BlockData;
-use crate::game_module::actors::character::CharacterData;
+use crate::game_module::actors::character_data::CharacterData;
 use crate::game_module::actors::foods::FoodData;
 use crate::game_module::game_scene_manager::GameSceneDataCreateInfo;
 

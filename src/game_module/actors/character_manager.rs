@@ -1,6 +1,6 @@
 use std::collections::HashMap;
-use nalgebra::Vector3;
 
+use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::{AudioLoop, AudioManager};
 use rust_engine_3d::core::engine_core::EngineCore;
 use rust_engine_3d::effect::effect_data::EffectCreateInfo;
@@ -27,7 +27,7 @@ pub struct CharacterManager<'a> {
     pub _animation_blend_masks: Box<AnimationBlendMasks>,
     pub _id_generator: u64,
     pub _player: Option<RcRefCell<Character<'a>>>,
-    pub _characters: CharacterMap<'a>
+    pub _characters: CharacterMap<'a>,
 }
 
 impl<'a> CharacterManager<'a> {
@@ -53,9 +53,7 @@ impl<'a> CharacterManager<'a> {
         self._audio_manager = application.get_audio_manager();
         self._scene_manager = engine_core.get_scene_manager();
     }
-    pub fn destroy_character_manager(&mut self) {
-
-    }
+    pub fn destroy_character_manager(&mut self) {}
     pub fn get_game_client(&self) -> &GameClient<'a> {
         ptr_as_ref(self._game_client)
     }
@@ -97,7 +95,7 @@ impl<'a> CharacterManager<'a> {
         };
         let render_object_data = self.get_scene_manager_mut().add_skeletal_render_object(
             character_name,
-            &render_object_create_info
+            &render_object_create_info,
         );
         let attack_animation = game_resources.get_engine_resources().get_mesh_data(&character_data.borrow()._attack_animation_mesh);
         let dead_animation = game_resources.get_engine_resources().get_mesh_data(&character_data.borrow()._dead_animation_mesh);
@@ -130,7 +128,7 @@ impl<'a> CharacterManager<'a> {
             self._animation_blend_masks.as_ref(),
             &character_create_info._position,
             &character_create_info._rotation,
-            &character_create_info._scale
+            &character_create_info._scale,
         ));
         if is_player {
             self._player = Some(character.clone());
@@ -157,13 +155,14 @@ impl<'a> CharacterManager<'a> {
     pub fn update_character_manager(&mut self, delta_time: f64) {
         for character in self._characters.values() {
             let mut character_mut = character.borrow_mut();
+            character_mut.update_move_keyframe_event();
+            character_mut.update_action_keyframe_event();
             character_mut.update_character(self.get_game_scene_manager(), delta_time as f32);
         }
 
         let mut dead_characters: Vec<RcRefCell<Character>> = Vec::new();
         let player = ptr_as_ref(self._player.as_ref().unwrap().as_ptr());
-        let is_attack_event = player.update_keyframe_event();
-        if is_attack_event {
+        if player._is_attack_event {
             for character in self._characters.values() {
                 let mut character_mut = character.borrow_mut();
                 if character_mut._is_alive {

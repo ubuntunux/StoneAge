@@ -3,7 +3,7 @@ use rust_engine_3d::scene::render_object::RenderObjectData;
 use rust_engine_3d::utilities::system::RcRefCell;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize,Clone, Copy, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq)]
 pub enum BlockDataType {
     Ground,
 }
@@ -29,7 +29,7 @@ pub struct BlockProperties {
     pub _block_hp: f32,
     pub _position: Vector3<f32>,
     pub _rotation: Vector3<f32>,
-    pub _scale: Vector3<f32>
+    pub _scale: Vector3<f32>,
 }
 
 pub struct Block<'a> {
@@ -37,7 +37,7 @@ pub struct Block<'a> {
     pub _block_id: u64,
     pub _block_data: RcRefCell<BlockData>,
     pub _render_object: RcRefCell<RenderObjectData<'a>>,
-    pub _block_properties: Box<BlockProperties>
+    pub _block_properties: Box<BlockProperties>,
 }
 
 // Implementations

@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 pub struct AnimationBlendMasks {
-    pub _upper_animation_mask: HashMap<String, f32>
+    pub _upper_animation_mask: HashMap<String, f32>,
 }
 
 impl AnimationBlendMasks {

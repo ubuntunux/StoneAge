@@ -9,6 +9,7 @@ use rust_engine_3d::core::engine_core::{
 use rust_engine_3d::effect::effect_manager::EffectManager;
 use rust_engine_3d::renderer::renderer_data::RendererData;
 use rust_engine_3d::resource::resource::CallbackLoadRenderPassCreateInfo;
+use rust_engine_3d::utilities::logger;
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
 use winit::keyboard::KeyCode;
 
@@ -298,11 +299,11 @@ impl<'a> Application<'a> {
 
 pub fn run_application() {
     // application setting
+    logger::initialize_logger(LevelFilter::Info);
     let app_name: String = "Stone Age".to_string();
     let app_version: u32 = 1;
-    let initial_window_size: Vector2<i32> = Vector2::new(1024, 768);
-    let window_mode = WindowMode::FullScreenBorderlessMode;
-    let log_level = LevelFilter::Info;
+    let initial_window_size: Option<Vector2<u32>> = None;// Some(Vector2::new(1024, 768));
+    let window_mode = WindowMode::WindowMode;
 
     // vulkan setting
     let vulkan_api_version: u32;
@@ -393,7 +394,6 @@ pub fn run_application() {
         app_version,
         initial_window_size,
         window_mode,
-        log_level,
         &application, // TODO: Remove
     );
 }

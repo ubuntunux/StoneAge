@@ -6,7 +6,8 @@ use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use winit::keyboard::KeyCode;
 
 use crate::application::application::Application;
-use crate::game_module::actors::character::{Character, MoveDirections};
+use crate::game_module::actors::character::Character;
+use crate::game_module::actors::character_data::MoveDirections;
 use crate::game_module::game_client::GameClient;
 use crate::game_module::game_constants::*;
 use crate::game_module::game_ui_manager::GameUIManager;
@@ -97,14 +98,17 @@ impl<'a> GameController<'a> {
             joystick_input_data._btn_up  == ButtonState::Hold ||
             joystick_input_data._stick_left_direction.y < 0;
         let is_jump =
-            keyboard_input_data.get_key_hold(KeyCode::Space) ||
+            keyboard_input_data.get_key_pressed(KeyCode::Space) ||
             joystick_input_data._btn_a == ButtonState::Pressed;
         let is_run =
             keyboard_input_data.get_key_hold(KeyCode::ShiftLeft) ||
-            joystick_input_data._btn_left_shoulder == ButtonState::Hold ||
             joystick_input_data._btn_left_shoulder == ButtonState::Hold;
-        let mut player_mut = player.borrow_mut();
+        let is_roll =
+            keyboard_input_data.get_key_pressed(KeyCode::AltLeft) ||
+            joystick_input_data._btn_right_shoulder == ButtonState::Pressed;
 
+        // set action & move
+        let mut player_mut = player.borrow_mut();
         if is_left {
             player_mut.set_move(MoveDirections::LEFT, is_run);
         } else if is_right {
@@ -117,6 +121,10 @@ impl<'a> GameController<'a> {
 
         if is_jump {
             player_mut.set_jump();
+        }
+
+        if is_roll {
+            player_mut.set_roll();
         }
 
         if is_attack {
