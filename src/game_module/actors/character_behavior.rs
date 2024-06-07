@@ -2,6 +2,7 @@ use rand;
 
 use crate::game_module::actors::character::Character;
 use crate::game_module::actors::character_data::{ActionAnimationState, CharacterDataType, MoveDirections};
+use crate::game_module::game_constants::EAT_FOOD_DISTANCE;
 
 pub trait BehaviorBase {
     fn update_behavior<'a>(&mut self, character: &mut Character, delta_time: f32, is_blocked: bool, player: &Character<'a>);
@@ -55,8 +56,11 @@ impl BehaviorBase for TyrannosaurusBehavior {
     fn update_behavior<'a>(&mut self, character: &mut Character, delta_time: f32, is_blocked: bool, player: &Character<'a>) {
         if 0.0 < self._property._behavior_attack_time {
             self._property._behavior_attack_time -= delta_time;
+        }
 
-            if self._property._behavior_attack_time <= 0.0 {
+        if self._property._behavior_attack_time <= 0.0 {
+            let dist = (character.get_position() - player.get_position()).norm();
+            if dist <= EAT_FOOD_DISTANCE {
                 character.set_action_attack();
                 self._property._behavior_attack_time = generate_attack_time();
             }

@@ -177,7 +177,7 @@ impl<'a> CharacterManager<'a> {
                                 // TestCode: Food
                                 let food_create_info = FoodCreateInfo {
                                     _food_data_name: String::from("meat"),
-                                    _position: character_mut.get_position().clone() + Vector3::new(0.0, 0.5, 0.0),
+                                    _position: target_character_mut.get_position().clone() + Vector3::new(0.0, 0.5, 0.0),
                                     ..Default::default()
                                 };
                                 ptr_as_mut(self.get_game_scene_manager()._food_manager.clone()).create_food("food", &food_create_info);

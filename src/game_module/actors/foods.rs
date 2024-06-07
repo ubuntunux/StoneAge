@@ -12,7 +12,7 @@ use serde::{Deserialize, Serialize};
 use crate::application::application::Application;
 use crate::game_module::actors::character_manager::CharacterManager;
 use crate::game_module::game_client::GameClient;
-use crate::game_module::game_constants::AUDIO_CRUNCH;
+use crate::game_module::game_constants::{AUDIO_CRUNCH, EAT_FOOD_DISTANCE};
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
 
@@ -230,7 +230,7 @@ impl<'a> FoodManager<'a> {
             for food in self._foods.values() {
                 let food_ref = food.borrow();
                 let dist = (food_ref._food_properties._position - player_position).norm();
-                if dist <= 1.0 {
+                if dist <= EAT_FOOD_DISTANCE {
                     eaten_foods.push(food.clone());
                     log::info!("add to eaten_foods");
                 }
