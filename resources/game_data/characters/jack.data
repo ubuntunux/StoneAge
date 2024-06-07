@@ -1,6 +1,6 @@
 {
     "_attack_animation_mesh": "characters/jack/jack_attack",
-    "_character_type": "UrsusArctos",
+    "_character_type": "HomoSapiens",
     "_dead_animation_mesh": "characters/jack/jack_dead",
     "_hit_animation_mesh": "characters/jack/jacK_hit",
     "_idle_animation_mesh": "characters/jack/jack_idle",

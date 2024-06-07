@@ -7,7 +7,7 @@ use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use serde::{Deserialize, Serialize};
 
 use crate::game_module::actors::animation_blend_mask::AnimationBlendMasks;
-use crate::game_module::actors::character_behavior::CharacterBehavior;
+use crate::game_module::actors::character_behavior::{self, BehaviorBase};
 use crate::game_module::actors::character_controller::CharacterController;
 use crate::game_module::actors::character_data::{ActionAnimationState, CharacterData, MoveAnimationState, MoveDirections};
 use crate::game_module::actors::character_manager::CharacterManager;
@@ -38,7 +38,7 @@ pub struct Character<'a> {
     pub _render_object: RcRefCell<RenderObjectData<'a>>,
     pub _character_property: Box<CharacterProperty>,
     pub _controller: Box<CharacterController>,
-    pub _behavior: Box<CharacterBehavior>,
+    pub _behavior: Box<dyn BehaviorBase>,
     pub _move_animation_state: MoveAnimationState,
     pub _action_animation_state: ActionAnimationState,
     pub _attack_animation: RcRefCell<MeshData>,
@@ -97,7 +97,7 @@ impl<'a> Character<'a> {
             _render_object: render_object.clone(),
             _character_property: Box::new(CharacterProperty::create_character_property()),
             _controller: Box::new(CharacterController::create_character_controller()),
-            _behavior: Box::new(CharacterBehavior::create_character_behavior()),
+            _behavior: character_behavior::create_character_behavior(character_data.borrow()._character_type),
             _move_animation_state: MoveAnimationState::None,
             _action_animation_state: ActionAnimationState::None,
             _attack_animation: attack_animation.clone(),
@@ -519,9 +519,9 @@ impl<'a> Character<'a> {
         self.is_move_state(MoveAnimationState::RunningJump)
     }
 
-    pub fn update_character(&mut self, game_scene_manager: &GameSceneManager, delta_time: f32) {
+    pub fn update_character(&mut self, game_scene_manager: &GameSceneManager, delta_time: f32, player: &Character<'a>) {
         if false == self._is_player {
-            self._behavior.update_behavior(ptr_as_mut(self), delta_time, self._controller._is_blocked);
+            self._behavior.update_behavior(ptr_as_mut(self), delta_time, self._controller._is_blocked, player);
         }
 
         self._controller.update_character_controller(

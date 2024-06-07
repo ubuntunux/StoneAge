@@ -153,24 +153,26 @@ impl<'a> CharacterManager<'a> {
     }
 
     pub fn update_character_manager(&mut self, delta_time: f64) {
+        let player = ptr_as_mut(self._player.as_ref().unwrap().as_ptr());
+        let mut dead_characters: Vec<RcRefCell<Character>> = Vec::new();
+
         for character in self._characters.values() {
-            let mut character_mut = character.borrow_mut();
+            let character_mut = ptr_as_mut(character.as_ptr());
             character_mut.update_move_keyframe_event();
             character_mut.update_action_keyframe_event();
-            character_mut.update_character(self.get_game_scene_manager(), delta_time as f32);
-        }
+            character_mut.update_character(self.get_game_scene_manager(), delta_time as f32, player);
 
-        let mut dead_characters: Vec<RcRefCell<Character>> = Vec::new();
-        let player = ptr_as_ref(self._player.as_ref().unwrap().as_ptr());
-        if player._is_attack_event {
-            for character in self._characters.values() {
-                let mut character_mut = character.borrow_mut();
-                if character_mut._is_alive {
-                    if character_mut._character_id != player._character_id {
-                        if character_mut.collide_point(&player.get_attack_point()) {
-                            character_mut.set_damage(player.get_attack_point(), player.get_power());
-                            if false == character_mut._is_alive {
-                                dead_characters.push(character.clone());
+            if character_mut._is_attack_event {
+                if character_mut._is_player {
+                    for target_character in self._characters.values() {
+                        let target_character_mut = ptr_as_mut(target_character.as_ptr());
+                        if false == target_character_mut._is_player &&
+                            target_character_mut._is_alive &&
+                            target_character_mut.collide_point(&character_mut.get_attack_point())
+                        {
+                            target_character_mut.set_damage(character_mut.get_attack_point(), character_mut.get_power());
+                            if false == target_character_mut._is_alive {
+                                dead_characters.push(target_character.clone());
 
                                 // TestCode: Food
                                 let food_create_info = FoodCreateInfo {
@@ -181,6 +183,10 @@ impl<'a> CharacterManager<'a> {
                                 ptr_as_mut(self.get_game_scene_manager()._food_manager.clone()).create_food("food", &food_create_info);
                             }
                         }
+                    }
+                } else {
+                    if player._is_alive && player.collide_point(&character_mut.get_attack_point()) {
+                        player.set_damage(character_mut.get_attack_point(), character_mut.get_power());
                     }
                 }
             }

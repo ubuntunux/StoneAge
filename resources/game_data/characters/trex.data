@@ -1,6 +1,6 @@
 {
     "_attack_animation_mesh": "characters/trex/trex_attack",
-    "_character_type": "UrsusArctos",
+    "_character_type": "Tyrannosaurus",
     "_dead_animation_mesh": "characters/trex/trex_dead",
     "_hit_animation_mesh": "characters/trex/trex_attack",
     "_idle_animation_mesh": "characters/trex/trex_idle",
