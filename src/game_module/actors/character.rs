@@ -219,10 +219,20 @@ impl<'a> Character<'a> {
         self.set_move_animation(MoveAnimationState::Idle);
     }
 
-    pub fn set_move(&mut self, move_direction: MoveDirections, is_running: bool) {
+    pub fn set_run(&mut self, run: bool) {
+        self._controller.set_run(run);
+    }
+
+    pub fn toggle_run(&mut self) {
+        if self.is_move_state(MoveAnimationState::Run) || self.is_move_state(MoveAnimationState::Walk) {
+            self._controller.toggle_run();
+        }
+    }
+
+    pub fn set_move(&mut self, move_direction: MoveDirections) {
         if self.is_available_move() {
             let (move_animation, move_speed) =
-                if is_running {
+                if self._controller._is_running {
                     (MoveAnimationState::Run, PLAYER_RUN_SPEED)
                 } else {
                     (MoveAnimationState::Walk, PLAYER_WALK_SPEED)

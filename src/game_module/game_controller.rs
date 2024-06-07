@@ -101,8 +101,8 @@ impl<'a> GameController<'a> {
             keyboard_input_data.get_key_pressed(KeyCode::Space) ||
             joystick_input_data._btn_a == ButtonState::Pressed;
         let is_run =
-            keyboard_input_data.get_key_hold(KeyCode::ShiftLeft) ||
-            joystick_input_data._btn_left_shoulder == ButtonState::Hold;
+            keyboard_input_data.get_key_pressed(KeyCode::ShiftLeft) ||
+            joystick_input_data._btn_left_shoulder == ButtonState::Pressed;
         let is_roll =
             keyboard_input_data.get_key_pressed(KeyCode::AltLeft) ||
             joystick_input_data._btn_right_shoulder == ButtonState::Pressed;
@@ -110,13 +110,17 @@ impl<'a> GameController<'a> {
         // set action & move
         let mut player_mut = player.borrow_mut();
         if is_left {
-            player_mut.set_move(MoveDirections::LEFT, is_run);
+            player_mut.set_move(MoveDirections::LEFT);
         } else if is_right {
-            player_mut.set_move(MoveDirections::RIGHT, is_run);
+            player_mut.set_move(MoveDirections::RIGHT);
         } else if is_up {
-            player_mut.set_move(MoveDirections::UP, is_run);
+            player_mut.set_move(MoveDirections::UP);
         } else if is_down {
-            player_mut.set_move(MoveDirections::DOWN, is_run);
+            player_mut.set_move(MoveDirections::DOWN);
+        }
+
+        if is_run {
+            player_mut.toggle_run();
         }
 
         if is_jump {

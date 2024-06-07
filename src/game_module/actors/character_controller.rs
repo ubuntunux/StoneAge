@@ -11,6 +11,7 @@ pub struct CharacterController {
     pub _scale: Vector3<f32>,
     pub _velocity: Vector3<f32>,
     pub _is_ground: bool,
+    pub _is_running: bool,
     pub _is_jump_start: bool,
     pub _move_speed: f32,
     pub _is_blocked: bool,
@@ -27,6 +28,7 @@ impl CharacterController {
             _velocity: Vector3::zeros(),
             _is_jump_start: false,
             _move_speed: PLAYER_WALK_SPEED,
+            _is_running: false,
             _is_ground: false,
             _is_blocked: false,
             _face_direction: MoveDirections::NONE,
@@ -40,6 +42,14 @@ impl CharacterController {
 
     pub fn is_move_stopped(&self) -> bool {
         self._velocity.x == 0.0 && self._is_ground && !self._is_jump_start
+    }
+
+    pub fn set_run(&mut self, is_running: bool) {
+        self._is_running = is_running;
+    }
+
+    pub fn toggle_run(&mut self) {
+        self._is_running = !self._is_running;
     }
 
     pub fn set_move_direction(&mut self, move_direction: MoveDirections) {

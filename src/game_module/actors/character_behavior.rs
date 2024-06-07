@@ -27,8 +27,7 @@ impl CharacterBehavior {
                 self._behavior_move_time = 0.0;
             }
 
-            let is_running = false;
-            character.set_move(self._behavior_move_direction, is_running);
+            character.set_move(self._behavior_move_direction);
         }
     }
 }

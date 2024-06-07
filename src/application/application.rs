@@ -348,13 +348,14 @@ pub fn run_application() {
         constants::IS_CONCURRENT_MODE = is_concurrent_mode;
         constants::METER_PER_UNIT = 1.0;
         constants::NEAR = 0.1;
-        constants::FAR = 2000.0;
+        constants::FAR = 200000.0;
         constants::FOV = 60.0;
         // shadow
         constants::SHADOW_MAP_SIZE = 2048;
         constants::SHADOW_SAMPLES = 8;
-        constants::SHADOW_DISTANCE = 500.0;
-        constants::SHADOW_DEPTH = 2000.0;
+        constants::SHADOW_DISTANCE = 100.0;
+        constants::SHADOW_DEPTH = 10000.0;
+        constants::SHADOW_DEPTH_SLOPE_BIAS = 2.5;
         // capture height map
         constants::CAPTURE_HEIGHT_MAP_DISTANCE = 1000.0;
         constants::CAPTURE_HEIGHT_MAP_DEPTH = 2000.0;
