@@ -118,6 +118,8 @@ impl<'a> GameController<'a> {
             player_mut.set_move(MoveDirections::UP);
         } else if is_down {
             player_mut.set_move(MoveDirections::DOWN);
+        } else {
+            player_mut.set_run(false);
         }
 
         if is_run {
