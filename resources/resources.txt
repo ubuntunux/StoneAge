@@ -138,9 +138,15 @@ resources/externals/game_data/foods/meat.blend
 resources/externals/game_data/properties/properties.blend
 resources/externals/game_data/game_scenes/intro_stage.blend
 resources/externals/animation_blend_masks/jack/jack_upper_animation_mask.blend
+resources/externals/.log/StoneAge_20240610_230550.log
 resources/externals/.log/StoneAge_20240610_203826.log
+resources/externals/.log/StoneAge_20240610_230724.log
 resources/externals/.log/StoneAge_20240610_204824.log
+resources/externals/.log/StoneAge_20240610_225007.log
 resources/externals/.log/StoneAge_20240610_204722.log
+resources/externals/.log/StoneAge_20240610_230045.log
+resources/externals/.log/StoneAge_20240610_231246.log
+resources/externals/.log/StoneAge_20240610_231555.log
 resources/externals/models/props/meat.blend
 resources/externals/models/characters/trex.blend
 resources/externals/models/characters/jack.blend
