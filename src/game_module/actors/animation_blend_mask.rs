@@ -1,17 +1,18 @@
 use std::collections::HashMap;
+use rust_engine_3d::scene::animation::AnimationBlendMaskData;
 
 pub struct AnimationBlendMasks {
-    pub _upper_animation_mask: HashMap<String, f32>,
+    pub _upper_animation_mask: AnimationBlendMaskData,
 }
 
 impl AnimationBlendMasks {
-    pub fn create_animation_blend_maks() -> AnimationBlendMasks {
+    pub fn create_animation_blend_masks() -> AnimationBlendMasks {
         AnimationBlendMasks {
             _upper_animation_mask: AnimationBlendMasks::get_upper_animation_mask()
         }
     }
 
-    pub fn get_upper_animation_mask() -> HashMap<String, f32> {
+    pub fn get_upper_animation_mask() -> AnimationBlendMaskData {
         let mut animation_mask: HashMap<String, f32> = HashMap::new();
         animation_mask.insert(String::from("mixamorig:Spine"), 1.0);
         animation_mask.insert(String::from("mixamorig:Spine1"), 1.0);
@@ -74,6 +75,9 @@ impl AnimationBlendMasks {
         animation_mask.insert(String::from("mixamorig:RightHandPinky3"), 1.0);
         animation_mask.insert(String::from("mixamorig:RightHandPinky4"), 1.0);
         animation_mask.insert(String::from("mixamorig:Weapon"), 1.0);
-        animation_mask
+
+        AnimationBlendMaskData {
+            _bone_blend_map: animation_mask,
+        }
     }
 }

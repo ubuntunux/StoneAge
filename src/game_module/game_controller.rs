@@ -75,7 +75,7 @@ impl<'a> GameController<'a> {
             joystick_input_data._btn_right_trigger == ButtonState::Pressed;
         let is_power_attack: bool =
             mouse_input_data._btn_r_pressed ||
-            joystick_input_data._btn_b == ButtonState::Pressed ||
+            joystick_input_data._btn_y == ButtonState::Pressed ||
             joystick_input_data._btn_left_trigger == ButtonState::Pressed;
         let is_left =
             keyboard_input_data.get_key_hold(KeyCode::ArrowLeft) ||
@@ -105,6 +105,7 @@ impl<'a> GameController<'a> {
             joystick_input_data._btn_left_shoulder == ButtonState::Pressed;
         let is_roll =
             keyboard_input_data.get_key_pressed(KeyCode::AltLeft) ||
+            joystick_input_data._btn_b == ButtonState::Pressed ||
             joystick_input_data._btn_right_shoulder == ButtonState::Pressed;
 
         // set action & move

@@ -38,7 +38,7 @@ impl<'a> CharacterManager<'a> {
             _game_resources: std::ptr::null(),
             _audio_manager: std::ptr::null(),
             _scene_manager: std::ptr::null(),
-            _animation_blend_masks: Box::new(AnimationBlendMasks::create_animation_blend_maks()),
+            _animation_blend_masks: Box::new(AnimationBlendMasks::create_animation_blend_masks()),
             _id_generator: 0,
             _player: None,
             _characters: HashMap::new(),
