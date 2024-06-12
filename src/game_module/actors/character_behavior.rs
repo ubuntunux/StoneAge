@@ -66,7 +66,7 @@ impl BehaviorBase for TyrannosaurusBehavior {
             }
         }
 
-        if character.is_available_move() && !character.is_action(ActionAnimationState::Attack) {
+        if !character.is_action(ActionAnimationState::Attack) && character.is_available_move() {
             self._property._behavior_move_time += delta_time;
             if 2.0 <= self._property._behavior_move_time || is_blocked {
                 self._property._behavior_move_direction =

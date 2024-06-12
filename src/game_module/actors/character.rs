@@ -167,12 +167,6 @@ impl<'a> Character<'a> {
     pub fn set_action_animation(&mut self, action_animation_state: ActionAnimationState) {
         let mut render_object = self._render_object.borrow_mut();
 
-        // clear animation layer mask
-        if !self.is_action(action_animation_state) {
-            let animation_layer = self.get_current_action_animation_layer();
-            render_object.clear_animation_layers(animation_layer);
-        }
-
         // set action animation
         let mut animation_info = AnimationPlayArgs {
             _animation_loop: false,
@@ -444,6 +438,11 @@ impl<'a> Character<'a> {
     pub fn update_animation_layers(&self) {
         let render_object = ptr_as_mut(self._render_object.as_ptr());
         let animation_layer = self.get_current_action_animation_layer();
+
+        // clear
+        render_object.clear_animation_layers(animation_layer);
+
+        // set additive animation layer
         if animation_layer == AnimationLayer::AdditiveLayer {
             if self.is_action(ActionAnimationState::Attack) || self.is_action(ActionAnimationState::PowerAttack) {
                 if !self.is_move_state(MoveAnimationState::Idle) && !self.is_move_state(MoveAnimationState::None) {
