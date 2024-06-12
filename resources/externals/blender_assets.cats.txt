@@ -9,6 +9,7 @@ VERSION 1
 51076800-bec8-483d-ab24-d675b18c5ce9:StoneAge:StoneAge
 fa46e7b2-70fd-4bef-849a-1f00f8241032:StoneAge/animation_blend_masks:StoneAge-animation_blend_masks
 1bbc0027-d246-41b8-a2b9-b9a6c2fe4a29:StoneAge/animation_blend_masks/jack:StoneAge-animation_blend_masks-jack
+0ebbd3cf-ae0b-438a-a0f7-dc166046796a:StoneAge/animation_blend_masks/trex:StoneAge-animation_blend_masks-trex
 7bfecec5-f078-4f7b-969a-4feaec100529:StoneAge/game_data:StoneAge-game_data
 b5442a40-dbb5-4b0e-a731-697d94abef6a:StoneAge/game_data/blocks:StoneAge-game_data-blocks
 e5381335-2e00-4db8-9a85-1d38959ec30b:StoneAge/game_data/characters:StoneAge-game_data-characters
