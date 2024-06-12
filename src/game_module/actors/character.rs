@@ -1,12 +1,11 @@
 use nalgebra::Vector3;
 use rust_engine_3d::effect::effect_data::EffectCreateInfo;
-use rust_engine_3d::scene::animation::{AnimationPlayArgs, AnimationPlayInfo};
+use rust_engine_3d::scene::animation::{AnimationLayerData, AnimationPlayArgs, AnimationPlayInfo};
 use rust_engine_3d::scene::mesh::MeshData;
 use rust_engine_3d::scene::render_object::{AnimationLayer, RenderObjectData};
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use serde::{Deserialize, Serialize};
 
-use crate::game_module::actors::animation_blend_mask::AnimationBlendMasks;
 use crate::game_module::actors::character_behavior::{self, BehaviorBase};
 use crate::game_module::actors::character_controller::CharacterController;
 use crate::game_module::actors::character_data::{ActionAnimationState, CharacterData, MoveAnimationState, MoveDirections};
@@ -51,7 +50,7 @@ pub struct Character<'a> {
     pub _run_animation: RcRefCell<MeshData>,
     pub _running_jump_animation: RcRefCell<MeshData>,
     pub _walk_animation: RcRefCell<MeshData>,
-    pub _animation_blend_masks: *const AnimationBlendMasks,
+    pub _upper_animation_layer: RcRefCell<AnimationLayerData>,
 }
 
 impl CharacterProperty {
@@ -81,7 +80,7 @@ impl<'a> Character<'a> {
         run_animation: &RcRefCell<MeshData>,
         running_jump_animation: &RcRefCell<MeshData>,
         walk_animation: &RcRefCell<MeshData>,
-        animation_blend_masks: *const AnimationBlendMasks,
+        upper_animation_layer: &RcRefCell<AnimationLayerData>,
         position: &Vector3<f32>,
         rotation: &Vector3<f32>,
         scale: &Vector3<f32>,
@@ -110,7 +109,7 @@ impl<'a> Character<'a> {
             _run_animation: run_animation.clone(),
             _running_jump_animation: running_jump_animation.clone(),
             _walk_animation: walk_animation.clone(),
-            _animation_blend_masks: animation_blend_masks,
+            _upper_animation_layer: upper_animation_layer.clone(),
         };
         character._controller._position.clone_from(position);
         character._controller._rotation.clone_from(rotation);
@@ -162,7 +161,7 @@ impl<'a> Character<'a> {
             _ => log::info!("Unimplemented move animation: {:?}", move_animation_state)
         }
         self._move_animation_state = move_animation_state;
-        self.update_animation_blend_masks();
+        self.update_animation_layers();
     }
 
     pub fn set_action_animation(&mut self, action_animation_state: ActionAnimationState) {
@@ -171,7 +170,7 @@ impl<'a> Character<'a> {
         // clear animation layer mask
         if !self.is_action(action_animation_state) {
             let animation_layer = self.get_current_action_animation_layer();
-            render_object.clear_animation_blend_masks(animation_layer);
+            render_object.clear_animation_layers(animation_layer);
         }
 
         // set action animation
@@ -204,7 +203,7 @@ impl<'a> Character<'a> {
             }
         }
         self._action_animation_state = action_animation_state;
-        self.update_animation_blend_masks();
+        self.update_animation_layers();
     }
 
     pub fn is_move_state(&self, move_state: MoveAnimationState) -> bool {
@@ -442,14 +441,14 @@ impl<'a> Character<'a> {
         render_object._transform_object.set_scale(&self._controller._scale);
     }
 
-    pub fn update_animation_blend_masks(&self) {
+    pub fn update_animation_layers(&self) {
         let render_object = ptr_as_mut(self._render_object.as_ptr());
         let animation_layer = self.get_current_action_animation_layer();
         if animation_layer == AnimationLayer::AdditiveLayer {
             if self.is_action(ActionAnimationState::Attack) || self.is_action(ActionAnimationState::PowerAttack) {
                 if !self.is_move_state(MoveAnimationState::Idle) && !self.is_move_state(MoveAnimationState::None) {
-                    render_object.set_animation_blend_masks(
-                        &ptr_as_ref(self._animation_blend_masks)._upper_animation_mask,
+                    render_object.set_animation_layers(
+                        self._upper_animation_layer.as_ptr(),
                         animation_layer,
                     );
                 }

@@ -11,6 +11,6 @@
     "_roll_animation_mesh": "characters/jack/jack_roll",
     "_run_animation_mesh": "characters/jack/jack_run",
     "_running_jump_animation_mesh": "characters/jack/jack_running_jump",
-    "_upper_animation_mask": "characters/jack/jack_upper_animation_mask",
+    "_upper_animation_layer": "jack/upper_animation_layer",
     "_walk_animation_mesh": "characters/jack/jack_walk"
 }

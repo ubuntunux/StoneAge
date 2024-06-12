@@ -65,6 +65,7 @@ pub struct CharacterData {
     pub _roll_animation_mesh: String,
     pub _run_animation_mesh: String,
     pub _running_jump_animation_mesh: String,
+    pub _upper_animation_layer: String,
     pub _walk_animation_mesh: String,
     pub _max_hp: i32,
 }
@@ -83,6 +84,7 @@ impl Default for CharacterData {
             _roll_animation_mesh: String::default(),
             _run_animation_mesh: String::default(),
             _running_jump_animation_mesh: String::default(),
+            _upper_animation_layer: String::default(),
             _walk_animation_mesh: String::default(),
             _max_hp: 100,
         }

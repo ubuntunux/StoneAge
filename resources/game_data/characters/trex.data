@@ -11,5 +11,6 @@
     "_roll_animation_mesh": "characters/trex/trex_idle",
     "_run_animation_mesh": "characters/trex/trex_walk",
     "_running_jump_animation_mesh": "characters/trex/trex_jump",
+    "_upper_animation_layer": "trex/upper_animation_layer",
     "_walk_animation_mesh": "characters/trex/trex_walk"
 }
