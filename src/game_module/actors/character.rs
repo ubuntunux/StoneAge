@@ -24,6 +24,7 @@ pub struct CharacterCreateInfo {
 
 pub struct CharacterProperty {
     pub _hp: i32,
+    pub _invincibility: bool,
 }
 
 pub struct Character<'a> {
@@ -39,7 +40,9 @@ pub struct Character<'a> {
     pub _controller: Box<CharacterController>,
     pub _behavior: Box<dyn BehaviorBase>,
     pub _move_animation_state: MoveAnimationState,
+    pub _prev_move_animation_state: MoveAnimationState,
     pub _action_animation_state: ActionAnimationState,
+    pub _prev_action_animation_state: ActionAnimationState,
     pub _attack_animation: RcRefCell<MeshData>,
     pub _dead_animation: RcRefCell<MeshData>,
     pub _hit_animation: RcRefCell<MeshData>,
@@ -57,7 +60,13 @@ impl CharacterProperty {
     pub fn create_character_property() -> CharacterProperty {
         CharacterProperty {
             _hp: 100,
+            _invincibility: false,
         }
+    }
+
+    pub fn initialize_property(&mut self, character_data: &CharacterData) {
+        self._hp = character_data._max_hp;
+        self._invincibility = false;
     }
 }
 
@@ -98,7 +107,9 @@ impl<'a> Character<'a> {
             _controller: Box::new(CharacterController::create_character_controller()),
             _behavior: character_behavior::create_character_behavior(character_data.borrow()._character_type),
             _move_animation_state: MoveAnimationState::None,
+            _prev_move_animation_state: MoveAnimationState::None,
             _action_animation_state: ActionAnimationState::None,
+            _prev_action_animation_state: ActionAnimationState::None,
             _attack_animation: attack_animation.clone(),
             _dead_animation: dead_animation.clone(),
             _hit_animation: hit_animation.clone(),
@@ -114,7 +125,16 @@ impl<'a> Character<'a> {
         character._controller._position.clone_from(position);
         character._controller._rotation.clone_from(rotation);
         character._controller._scale.clone_from(scale);
+        character.initialize_character();
         character
+    }
+
+    pub fn initialize_character(&mut self) {
+        self._move_animation_state = MoveAnimationState::None;
+        self._prev_move_animation_state = MoveAnimationState::None;
+        self._action_animation_state = ActionAnimationState::None;
+        self._prev_action_animation_state = ActionAnimationState::None;
+        self._character_property.initialize_property(&self._character_data.borrow());
     }
 
     pub fn get_character_manager(&self) -> &CharacterManager<'a> {
@@ -160,6 +180,7 @@ impl<'a> Character<'a> {
             }
             _ => log::info!("Unimplemented move animation: {:?}", move_animation_state)
         }
+
         self._move_animation_state = move_animation_state;
         self.update_animation_layers();
     }
@@ -196,6 +217,7 @@ impl<'a> Character<'a> {
                 render_object.set_animation(&self._power_attack_animation, &animation_info, animation_layer);
             }
         }
+
         self._action_animation_state = action_animation_state;
         self.update_animation_layers();
     }
@@ -296,7 +318,34 @@ impl<'a> Character<'a> {
         &ptr_as_ref(self._render_object.as_ptr())._animation_play_infos[layer as usize]
     }
 
-    pub fn update_move_keyframe_event(&mut self) {
+    pub fn update_move_animation_begin_event(&mut self) {
+        match self._move_animation_state {
+            MoveAnimationState::None => {
+                // nothing
+            },
+            MoveAnimationState::Idle => {
+                // nothing
+            },
+            MoveAnimationState::Jump => {
+                self.get_character_manager().play_audio(AUDIO_ATTACK);
+            },
+            MoveAnimationState::Roll => {
+                self._character_property._invincibility = true;
+                self.get_character_manager().play_audio(AUDIO_ATTACK);
+            },
+            MoveAnimationState::Run => {
+                // nothing
+            },
+            MoveAnimationState::RunningJump => {
+                self.get_character_manager().play_audio(AUDIO_ATTACK);
+            },
+            MoveAnimationState::Walk => {
+                // nothing
+            }
+        }
+    }
+
+    pub fn update_move_animation_loop_event(&mut self) {
         let move_animation = self._move_animation_state;
         let animation_layer = Character::get_move_animation_layer(move_animation);
         let render_object = ptr_as_mut(self._render_object.as_ptr());
@@ -309,14 +358,10 @@ impl<'a> Character<'a> {
                 // nothing
             },
             MoveAnimationState::Jump => {
-                if animation_play_info._is_animation_start {
-                    self.get_character_manager().play_audio(AUDIO_ATTACK);
-                }
+                // nothing
             },
             MoveAnimationState::Roll => {
-                if animation_play_info._is_animation_start {
-                    self.get_character_manager().play_audio(AUDIO_ATTACK);
-                } else if animation_play_info._is_animation_end {
+                if animation_play_info._is_animation_end {
                     self.set_move_idle();
                 }
             },
@@ -324,14 +369,49 @@ impl<'a> Character<'a> {
                 // nothing
             },
             MoveAnimationState::RunningJump => {
-                if animation_play_info._is_animation_start {
-                    self.get_character_manager().play_audio(AUDIO_ATTACK);
-                }
+                // nothing
             },
             MoveAnimationState::Walk => {
                 // nothing
             }
         }
+    }
+
+    pub fn update_move_animation_end_event(&mut self) {
+        match self._prev_move_animation_state {
+            MoveAnimationState::None => {
+                // nothing
+            },
+            MoveAnimationState::Idle => {
+                // nothing
+            },
+            MoveAnimationState::Jump => {
+                // nothing
+            },
+            MoveAnimationState::Roll => {
+                self._character_property._invincibility = false;
+            },
+            MoveAnimationState::Run => {
+                // nothing
+            },
+            MoveAnimationState::RunningJump => {
+                // nothing
+            },
+            MoveAnimationState::Walk => {
+                // nothing
+            }
+        }
+    }
+
+    pub fn update_move_keyframe_event(&mut self) {
+        if self._prev_move_animation_state != self._move_animation_state {
+            self.update_move_animation_end_event();
+            self.update_move_animation_begin_event();
+        }
+
+        self.update_move_animation_loop_event();
+
+        self._prev_move_animation_state = self._move_animation_state;
 
         // set idle animation
         if self.is_available_move_idle() {
@@ -339,9 +419,28 @@ impl<'a> Character<'a> {
         }
     }
 
-    pub fn update_action_keyframe_event(&mut self) {
-        self._is_attack_event = false;
 
+    pub fn update_action_animation_begin_event(&mut self) {
+        match self._action_animation_state {
+            ActionAnimationState::None => {
+                // nothing
+            },
+            ActionAnimationState::Attack => {
+                self.get_character_manager().play_audio(AUDIO_ATTACK);
+            },
+            ActionAnimationState::Dead => {
+                self.get_character_manager().play_audio(AUDIO_DEAD);
+            },
+            ActionAnimationState::Hit => {
+                // nothing
+            },
+            ActionAnimationState::PowerAttack => {
+                // nothing
+            }
+        }
+    }
+
+    pub fn update_action_animation_loop_event(&mut self) {
         let action_animation = self._action_animation_state;
         let animation_layer = Character::get_action_animation_layer(action_animation);
         let render_object = ptr_as_mut(self._render_object.as_ptr());
@@ -352,9 +451,7 @@ impl<'a> Character<'a> {
             },
             ActionAnimationState::Attack => {
                 let attack_time: f32 = 0.15;
-                if animation_play_info._is_animation_start {
-                    self.get_character_manager().play_audio(AUDIO_ATTACK);
-                } else if animation_play_info._prev_animation_play_time < attack_time && attack_time <= animation_play_info._animation_play_time {
+                if animation_play_info._prev_animation_play_time < attack_time && attack_time <= animation_play_info._animation_play_time {
                     self._is_attack_event = true;
                 }
 
@@ -363,9 +460,7 @@ impl<'a> Character<'a> {
                 }
             },
             ActionAnimationState::Dead => {
-                if animation_play_info._is_animation_start {
-                    self.get_character_manager().play_audio(AUDIO_DEAD);
-                }
+                // nothing
             },
             ActionAnimationState::Hit => {
                 if animation_play_info._is_animation_end {
@@ -383,7 +478,40 @@ impl<'a> Character<'a> {
                     self.set_action_none();
                 }
             }
-        };
+        }
+    }
+
+    pub fn update_action_animation_end_event(&mut self) {
+        match self._prev_action_animation_state {
+            ActionAnimationState::None => {
+                // nothing
+            },
+            ActionAnimationState::Attack => {
+                // nothing
+            },
+            ActionAnimationState::Dead => {
+                // nothing
+            },
+            ActionAnimationState::Hit => {
+                // nothing
+            },
+            ActionAnimationState::PowerAttack => {
+                // nothing
+            }
+        }
+    }
+
+    pub fn update_action_keyframe_event(&mut self) {
+        self._is_attack_event = false;
+
+        if self._prev_action_animation_state != self._action_animation_state {
+            self.update_action_animation_end_event();
+            self.update_action_animation_begin_event();
+        }
+
+        self.update_action_animation_loop_event();
+
+        self._prev_action_animation_state = self._action_animation_state;
     }
 
     pub fn get_attack_point(&self) -> Vector3<f32> {

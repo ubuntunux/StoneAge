@@ -157,8 +157,10 @@ impl<'a> CharacterManager<'a> {
 
         for character in self._characters.values() {
             let character_mut = ptr_as_mut(character.as_ptr());
+
             character_mut.update_move_keyframe_event();
             character_mut.update_action_keyframe_event();
+
             character_mut.update_character(self.get_game_scene_manager(), delta_time as f32, player);
 
             if character_mut._is_attack_event {
@@ -167,6 +169,7 @@ impl<'a> CharacterManager<'a> {
                         let target_character_mut = ptr_as_mut(target_character.as_ptr());
                         if false == target_character_mut._is_player &&
                             target_character_mut._is_alive &&
+                            false == target_character_mut._character_property._invincibility &&
                             target_character_mut.collide_point(&character_mut.get_attack_point())
                         {
                             target_character_mut.set_damage(character_mut.get_attack_point(), character_mut.get_power());
@@ -184,7 +187,10 @@ impl<'a> CharacterManager<'a> {
                         }
                     }
                 } else {
-                    if player._is_alive && player.collide_point(&character_mut.get_attack_point()) {
+                    if player._is_alive &&
+                        false == player._character_property._invincibility &&
+                        player.collide_point(&character_mut.get_attack_point()
+                    ) {
                         player.set_damage(character_mut.get_attack_point(), character_mut.get_power());
                     }
                 }
