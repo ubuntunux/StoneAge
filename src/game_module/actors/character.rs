@@ -155,7 +155,7 @@ impl<'a> Character<'a> {
         let mut render_object = self._render_object.borrow_mut();
         let animation_layer = Character::get_move_animation_layer(move_animation_state);
         match move_animation_state {
-            MoveAnimationState::Idle => {
+            MoveAnimationState::Idle | MoveAnimationState::None => {
                 render_object.set_animation(&self._idle_animation, &animation_info, animation_layer);
             }
             MoveAnimationState::Walk => {
@@ -178,7 +178,6 @@ impl<'a> Character<'a> {
                 animation_info._animation_loop = false;
                 render_object.set_animation(&self._running_jump_animation, &animation_info, animation_layer);
             }
-            _ => log::info!("Unimplemented move animation: {:?}", move_animation_state)
         }
 
         self._move_animation_state = move_animation_state;
@@ -330,7 +329,7 @@ impl<'a> Character<'a> {
                 self.get_character_manager().play_audio(AUDIO_ATTACK);
             },
             MoveAnimationState::Roll => {
-                self._character_property._invincibility = true;
+                self.set_invincibility(true);
                 self.get_character_manager().play_audio(AUDIO_ATTACK);
             },
             MoveAnimationState::Run => {
@@ -389,7 +388,7 @@ impl<'a> Character<'a> {
                 // nothing
             },
             MoveAnimationState::Roll => {
-                self._character_property._invincibility = false;
+                self.set_invincibility(false);
             },
             MoveAnimationState::Run => {
                 // nothing
@@ -407,11 +406,10 @@ impl<'a> Character<'a> {
         if self._prev_move_animation_state != self._move_animation_state {
             self.update_move_animation_end_event();
             self.update_move_animation_begin_event();
+            self._prev_move_animation_state = self._move_animation_state;
         }
 
         self.update_move_animation_loop_event();
-
-        self._prev_move_animation_state = self._move_animation_state;
 
         // set idle animation
         if self.is_available_move_idle() {
@@ -507,11 +505,10 @@ impl<'a> Character<'a> {
         if self._prev_action_animation_state != self._action_animation_state {
             self.update_action_animation_end_event();
             self.update_action_animation_begin_event();
+            self._prev_action_animation_state = self._action_animation_state;
         }
 
         self.update_action_animation_loop_event();
-
-        self._prev_action_animation_state = self._action_animation_state;
     }
 
     pub fn get_attack_point(&self) -> Vector3<f32> {
@@ -549,6 +546,10 @@ impl<'a> Character<'a> {
         };
         self.get_character_manager().play_effect(EFFECT_HIT, &effect_create_info);
         self.get_character_manager().play_audio(AUDIO_HIT);
+    }
+
+    pub fn set_invincibility(&mut self, invincibility: bool) {
+        self._character_property._invincibility = invincibility;
     }
 
     pub fn set_dead(&mut self) {

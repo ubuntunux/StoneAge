@@ -204,6 +204,10 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
         }
     }
 
+    fn focused(&mut self, focused: bool) {
+        self.set_game_mode(focused);
+    }
+
     fn update_application(&mut self, delta_time: f64) {
         let engine_core = ptr_as_ref(self._engine_core.clone());
         let font_manager = engine_core.get_font_manager_mut();
