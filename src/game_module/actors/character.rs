@@ -130,11 +130,12 @@ impl<'a> Character<'a> {
     }
 
     pub fn initialize_character(&mut self) {
+        self._character_property.initialize_property(&self._character_data.borrow());
+        self._is_alive = true;
         self._move_animation_state = MoveAnimationState::None;
         self._prev_move_animation_state = MoveAnimationState::None;
         self._action_animation_state = ActionAnimationState::None;
         self._prev_action_animation_state = ActionAnimationState::None;
-        self._character_property.initialize_property(&self._character_data.borrow());
     }
 
     pub fn get_character_manager(&self) -> &CharacterManager<'a> {
@@ -153,7 +154,7 @@ impl<'a> Character<'a> {
         };
 
         let mut render_object = self._render_object.borrow_mut();
-        let animation_layer = Character::get_move_animation_layer(move_animation_state);
+        let animation_layer = AnimationLayer::BaseLayer;
         match move_animation_state {
             MoveAnimationState::Idle | MoveAnimationState::None => {
                 render_object.set_animation(&self._idle_animation, &animation_info, animation_layer);
@@ -194,7 +195,7 @@ impl<'a> Character<'a> {
             _animation_fade_out_time: 0.1,
             ..Default::default()
         };
-        let animation_layer = Character::get_action_animation_layer(action_animation_state);
+        let animation_layer = AnimationLayer::ActionLayer;
         match action_animation_state {
             ActionAnimationState::None => {
                 // nothing
@@ -346,9 +347,9 @@ impl<'a> Character<'a> {
 
     pub fn update_move_animation_loop_event(&mut self) {
         let move_animation = self._move_animation_state;
-        let animation_layer = Character::get_move_animation_layer(move_animation);
         let render_object = ptr_as_mut(self._render_object.as_ptr());
-        let animation_play_info = render_object.get_animation_play_info(animation_layer);
+        let animation_play_info =
+            render_object.get_animation_play_info(AnimationLayer::BaseLayer);
         match move_animation {
             MoveAnimationState::None => {
                 // nothing
@@ -417,7 +418,6 @@ impl<'a> Character<'a> {
         }
     }
 
-
     pub fn update_action_animation_begin_event(&mut self) {
         match self._action_animation_state {
             ActionAnimationState::None => {
@@ -440,9 +440,9 @@ impl<'a> Character<'a> {
 
     pub fn update_action_animation_loop_event(&mut self) {
         let action_animation = self._action_animation_state;
-        let animation_layer = Character::get_action_animation_layer(action_animation);
         let render_object = ptr_as_mut(self._render_object.as_ptr());
-        let animation_play_info = render_object.get_animation_play_info(animation_layer);
+        let animation_play_info =
+            render_object.get_animation_play_info(AnimationLayer::ActionLayer);
         match action_animation {
             ActionAnimationState::None => {
                 // nothing
@@ -458,7 +458,9 @@ impl<'a> Character<'a> {
                 }
             },
             ActionAnimationState::Dead => {
-                // nothing
+                if animation_play_info._is_animation_end {
+                    self.initialize_character();
+                }
             },
             ActionAnimationState::Hit => {
                 if animation_play_info._is_animation_end {
@@ -488,7 +490,7 @@ impl<'a> Character<'a> {
                 // nothing
             },
             ActionAnimationState::Dead => {
-                // nothing
+               // nothing
             },
             ActionAnimationState::Hit => {
                 // nothing
@@ -566,53 +568,24 @@ impl<'a> Character<'a> {
 
     pub fn update_animation_layers(&self) {
         let render_object = ptr_as_mut(self._render_object.as_ptr());
-        let animation_layer = self.get_current_action_animation_layer();
 
         // clear
-        render_object.clear_animation_layers(animation_layer);
+        render_object.clear_animation_layers(AnimationLayer::ActionLayer);
 
         // set additive animation layer
-        if animation_layer == AnimationLayer::AdditiveLayer {
-            if self.is_action(ActionAnimationState::Attack) || self.is_action(ActionAnimationState::PowerAttack) {
-                if !self.is_move_state(MoveAnimationState::Idle) && !self.is_move_state(MoveAnimationState::None) {
-                    render_object.set_animation_layers(
-                        self._upper_animation_layer.as_ptr(),
-                        animation_layer,
-                    );
-                }
+        if self.is_action(ActionAnimationState::Attack) || self.is_action(ActionAnimationState::PowerAttack) {
+            if !self.is_move_state(MoveAnimationState::Idle) && !self.is_move_state(MoveAnimationState::None) {
+                render_object.set_animation_layers(
+                    self._upper_animation_layer.as_ptr(),
+                    AnimationLayer::ActionLayer
+                );
             }
         }
-    }
-
-    pub fn get_current_action_animation_layer(&self) -> AnimationLayer {
-        Character::get_action_animation_layer(self._action_animation_state)
-    }
-
-    pub fn get_action_animation_layer(action_anim: ActionAnimationState) -> AnimationLayer {
-        match action_anim {
-            ActionAnimationState::None |
-            ActionAnimationState::Attack |
-            ActionAnimationState::PowerAttack => {
-                AnimationLayer::AdditiveLayer
-            },
-            ActionAnimationState::Dead |
-            ActionAnimationState::Hit => {
-                AnimationLayer::BaseLayer
-            }
-        }
-    }
-
-    pub fn get_current_move_animation_layer(&self) -> AnimationLayer {
-        Character::get_move_animation_layer(self._move_animation_state)
-    }
-
-    pub fn get_move_animation_layer(_move_anim: MoveAnimationState) -> AnimationLayer {
-        AnimationLayer::BaseLayer
     }
 
     pub fn is_available_attack(&self) -> bool {
         if self.is_available_move() {
-            let action_animation_play_info = self.get_animation_play_info(self.get_current_action_animation_layer());
+            let action_animation_play_info = self.get_animation_play_info(AnimationLayer::ActionLayer);
             if self.is_action(ActionAnimationState::None) ||
                 self.is_action(ActionAnimationState::Attack) && CONTINUOUS_ATTACK_TIME < action_animation_play_info._animation_play_time {
                 return true;
