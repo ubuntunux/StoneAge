@@ -36,8 +36,23 @@ impl CharacterController {
         }
     }
 
-    pub fn initialize(&mut self) {
-        *self = CharacterController::create_character_controller();
+    pub fn initialize_controller(
+        &mut self,
+        position: &Vector3<f32>,
+        rotation: &Vector3<f32>,
+        scale: &Vector3<f32>
+    ) {
+        self._position = position.clone();
+        self._rotation = rotation.clone();
+        self._scale = scale.clone();
+        self._velocity = Vector3::zeros();
+        self._is_jump_start = false;
+        self._move_speed = PLAYER_WALK_SPEED;
+        self._is_running = false;
+        self._is_ground = false;
+        self._is_blocked = false;
+        self._face_direction = MoveDirections::NONE;
+        self._move_direction = MoveDirections::NONE;
     }
 
     pub fn is_move_stopped(&self) -> bool {
@@ -141,19 +156,25 @@ impl CharacterController {
 
         // check collide with block
         let move_delta = self._position - prev_position;
-        let bound_box_min = actor_bound_box._min.clone() + move_delta;
-        let bound_box_max = actor_bound_box._max.clone() + move_delta;
+        let prev_bound_box_min = &actor_bound_box._min;
+        let prev_bound_box_max = &actor_bound_box._max;
+        let bound_box_min = prev_bound_box_min + move_delta;
+        let bound_box_max = prev_bound_box_max + move_delta;
         self._is_blocked = false;
         self._is_ground = false;
         for (_key, block) in game_scene_manager.get_blocks().iter() {
             let block_ref = block.borrow();
             let render_object_ref = block_ref._render_object.borrow();
             if render_object_ref._bound_box.collide_bound_box_xy(&bound_box_min, &bound_box_max) {
-                let collide_pos_y = render_object_ref._bound_box._max.y;
-                if self._velocity.y <= 0.0 && (collide_pos_y <= prev_position.y || (collide_pos_y - BLOCK_TOLERANCE) <= self._position.y) {
-                    self.set_on_ground(collide_pos_y);
-                } else {
-                    // side
+                let block_max_pos_y = render_object_ref._bound_box._max.y;
+                let block_min_pos_y = render_object_ref._bound_box._min.y;
+                if 0.0 < self._velocity.y && prev_bound_box_max.y < block_min_pos_y {
+                    self._velocity.y = 0.0;
+                    self._position.y = prev_position.y;
+                } else if self._velocity.y <= 0.0 && (block_max_pos_y <= prev_position.y || (block_max_pos_y - BLOCK_TOLERANCE) <= self._position.y) {
+                    self.set_on_ground(block_max_pos_y);
+                } else if bound_box_min.y < (block_max_pos_y - BLOCK_TOLERANCE) && (block_min_pos_y + BLOCK_TOLERANCE) < bound_box_max.y {
+                    // collide from side
                     self._position.x = prev_position.x;
                     self._is_blocked = true;
                 }

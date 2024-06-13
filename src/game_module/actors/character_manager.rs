@@ -89,8 +89,11 @@ impl<'a> CharacterManager<'a> {
         let character_data_ref = character_data.borrow();
         let render_object_create_info = RenderObjectCreateInfo {
             _model_data_name: character_data_ref._model_data_name.clone(),
-            ..Default::default()
+            _position: character_create_info._position.clone(),
+            _rotation: character_create_info._rotation.clone(),
+            _scale: character_create_info._scale.clone(),
         };
+
         let render_object_data = self.get_scene_manager_mut().add_skeletal_render_object(
             character_name,
             &render_object_create_info,
@@ -129,9 +132,11 @@ impl<'a> CharacterManager<'a> {
             &character_create_info._rotation,
             &character_create_info._scale,
         ));
+
         if is_player {
             self._player = Some(character.clone());
         }
+
         self._characters.insert(id, character.clone());
         character
     }

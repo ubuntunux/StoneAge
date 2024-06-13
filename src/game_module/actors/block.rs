@@ -73,6 +73,7 @@ impl<'a> Block<'a> {
             }),
         };
         block.update_transform();
+        block.update_render_object();
         block
     }
 
@@ -85,5 +86,10 @@ impl<'a> Block<'a> {
         render_object._transform_object.set_position(&self._block_properties._position);
         render_object._transform_object.set_rotation(&self._block_properties._rotation);
         render_object._transform_object.set_scale(&self._block_properties._scale);
+    }
+
+    pub fn update_render_object(&mut self) {
+        let mut render_object = self._render_object.borrow_mut();
+        render_object.update_render_object_data(0.0);
     }
 }

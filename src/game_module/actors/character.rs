@@ -122,20 +122,27 @@ impl<'a> Character<'a> {
             _walk_animation: walk_animation.clone(),
             _upper_animation_layer: upper_animation_layer.clone(),
         };
-        character._controller._position.clone_from(position);
-        character._controller._rotation.clone_from(rotation);
-        character._controller._scale.clone_from(scale);
-        character.initialize_character();
+
+        character.initialize_character(position, rotation, scale);
         character
     }
 
-    pub fn initialize_character(&mut self) {
-        self._character_property.initialize_property(&self._character_data.borrow());
+    pub fn initialize_character(
+        &mut self,
+        position: &Vector3<f32>,
+        rotation: &Vector3<f32>,
+        scale: &Vector3<f32>
+    ) {
         self._is_alive = true;
         self._move_animation_state = MoveAnimationState::None;
         self._prev_move_animation_state = MoveAnimationState::None;
         self._action_animation_state = ActionAnimationState::None;
         self._prev_action_animation_state = ActionAnimationState::None;
+        self._character_property.initialize_property(&self._character_data.borrow());
+        self._controller.initialize_controller(position, rotation, scale);
+
+        self.update_transform();
+        self.update_render_object();
     }
 
     pub fn get_character_manager(&self) -> &CharacterManager<'a> {
@@ -459,7 +466,11 @@ impl<'a> Character<'a> {
             },
             ActionAnimationState::Dead => {
                 if animation_play_info._is_animation_end {
-                    self.initialize_character();
+                    self.initialize_character(
+                        &self._controller._position.clone(),
+                        &self._controller._rotation.clone(),
+                        &self._controller._scale.clone(),
+                    );
                 }
             },
             ActionAnimationState::Hit => {
@@ -564,6 +575,11 @@ impl<'a> Character<'a> {
         render_object._transform_object.set_position(&self._controller._position);
         render_object._transform_object.set_rotation(&self._controller._rotation);
         render_object._transform_object.set_scale(&self._controller._scale);
+    }
+
+    pub fn update_render_object(&mut self) {
+        let mut render_object = self._render_object.borrow_mut();
+        render_object.update_render_object_data(0.0);
     }
 
     pub fn update_animation_layers(&self) {

@@ -23,7 +23,7 @@ pub const GROUND_HEIGHT: f32 = 9.0;
 pub const CONTINUOUS_ATTACK_TIME: f32 = 0.15;
 pub const ATTACK_TIME: f32 = 0.15;
 pub const MOVE_LIMIT: f32 = 2.0;
-pub const BLOCK_TOLERANCE: f32 = 0.6;
+pub const BLOCK_TOLERANCE: f32 = 0.5;
 pub const EAT_FOOD_DISTANCE: f32 = 1.0;
 
 // AUDIO DATA
