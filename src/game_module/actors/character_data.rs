@@ -39,8 +39,7 @@ pub enum SpawnPointType {
 
 #[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq)]
 pub enum CharacterDataType {
-    HomoSapiens,
-    Tyrannosaurus
+    Roamer
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
@@ -73,7 +72,7 @@ pub struct CharacterData {
 impl Default for CharacterData {
     fn default() -> CharacterData {
         CharacterData {
-            _character_type: CharacterDataType::HomoSapiens,
+            _character_type: CharacterDataType::Roamer,
             _model_data_name: String::default(),
             _attack_animation_mesh: String::default(),
             _dead_animation_mesh: String::default(),
