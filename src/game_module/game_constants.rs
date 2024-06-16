@@ -26,6 +26,11 @@ pub const MOVE_LIMIT: f32 = 2.0;
 pub const BLOCK_TOLERANCE: f32 = 0.5;
 pub const EAT_FOOD_DISTANCE: f32 = 1.0;
 
+// npc
+pub const NPC_ATTACK_TERM: f32 = 2.0;
+pub const NPC_ATTACK_DISTANCE: f32 = 1.0;
+pub const NPC_ROAMING_TERM: f32 = 10.0;
+
 // AUDIO DATA
 pub const AUDIO_ATTACK: &str = "swoosh";
 pub const AUDIO_DEAD: &str = "pain_short";

@@ -3,6 +3,7 @@ use rust_engine_3d::effect::effect_data::EffectCreateInfo;
 use rust_engine_3d::scene::animation::{AnimationLayerData, AnimationPlayArgs, AnimationPlayInfo};
 use rust_engine_3d::scene::mesh::MeshData;
 use rust_engine_3d::scene::render_object::{AnimationLayer, RenderObjectData};
+use rust_engine_3d::utilities::bounding_box::BoundingBox;
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use serde::{Deserialize, Serialize};
 
@@ -154,6 +155,10 @@ impl<'a> Character<'a> {
     }
 
     pub fn get_character_id(&self) -> u64 { self._character_id }
+
+    pub fn get_bounding_box(&self) -> &BoundingBox {
+        &ptr_as_ref(self._render_object.as_ptr())._bound_box
+    }
 
     pub fn set_move_animation(&mut self, move_animation_state: MoveAnimationState) {
         let mut animation_info = AnimationPlayArgs {
@@ -637,7 +642,7 @@ impl<'a> Character<'a> {
 
     pub fn update_character(&mut self, game_scene_manager: &GameSceneManager, delta_time: f32, player: &Character<'a>) {
         if false == self._is_player {
-            self._behavior.update_behavior(ptr_as_mut(self), delta_time, self._controller._is_blocked, player);
+            self._behavior.update_behavior(ptr_as_mut(self), player, delta_time);
         }
 
         self._controller.update_character_controller(

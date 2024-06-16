@@ -1,5 +1,6 @@
 use nalgebra::Vector3;
 use rust_engine_3d::utilities::bounding_box::BoundingBox;
+use rust_engine_3d::utilities::system::ptr_as_ref;
 
 use crate::game_module::actors::character_data::MoveDirections;
 use crate::game_module::game_constants::{BLOCK_TOLERANCE, GRAVITY, GROUND_HEIGHT, MOVE_LIMIT, PLAYER_JUMP_SPEED, PLAYER_WALK_SPEED};
@@ -13,6 +14,7 @@ pub struct CharacterController {
     pub _is_ground: bool,
     pub _is_running: bool,
     pub _is_jump_start: bool,
+    pub _is_cliff: bool,
     pub _move_speed: f32,
     pub _is_blocked: bool,
     pub _face_direction: MoveDirections,
@@ -31,7 +33,8 @@ impl CharacterController {
             _is_running: false,
             _is_ground: false,
             _is_blocked: false,
-            _face_direction: MoveDirections::NONE,
+            _is_cliff: false,
+            _face_direction: MoveDirections::RIGHT,
             _move_direction: MoveDirections::NONE,
         }
     }
@@ -51,7 +54,7 @@ impl CharacterController {
         self._is_running = false;
         self._is_ground = false;
         self._is_blocked = false;
-        self._face_direction = MoveDirections::NONE;
+        self._is_cliff = false;
         self._move_direction = MoveDirections::NONE;
     }
 
@@ -160,24 +163,53 @@ impl CharacterController {
         let prev_bound_box_max = &actor_bound_box._max;
         let bound_box_min = prev_bound_box_min + move_delta;
         let bound_box_max = prev_bound_box_max + move_delta;
+        let front_bottom_point: Vector3<f32> = Vector3::new(
+            if 0.0 < move_delta.x { bound_box_max.x } else { bound_box_min.x },
+            bound_box_min.y - 0.1,
+            self._position.z
+        );
+
+        // reset flags
+        self._is_cliff = true;
         self._is_blocked = false;
         self._is_ground = false;
         for (_key, block) in game_scene_manager.get_blocks().iter() {
-            let block_ref = block.borrow();
-            let render_object_ref = block_ref._render_object.borrow();
-            if render_object_ref._bound_box.collide_bound_box_xy(&bound_box_min, &bound_box_max) {
-                let block_max_pos_y = render_object_ref._bound_box._max.y;
-                let block_min_pos_y = render_object_ref._bound_box._min.y;
-                if 0.0 < self._velocity.y && prev_bound_box_max.y < block_min_pos_y {
+            let block = ptr_as_ref(block.as_ptr());
+            let block_render_objecct = ptr_as_ref(block._render_object.as_ptr());
+            let block_bound_box = &block_render_objecct._bound_box;
+
+            // check collide with block
+            if block_bound_box.collide_bound_box_xy(&bound_box_min, &bound_box_max) {
+                let block_direction: MoveDirections =
+                    if actor_bound_box._center.x < block_bound_box._center.x {
+                        MoveDirections::RIGHT
+                    } else {
+                        MoveDirections::LEFT
+                    };
+
+                if 0.0 < self._velocity.y && actor_bound_box._center.y < block_bound_box._min.y {
+                    // check top block
                     self._velocity.y = 0.0;
                     self._position.y = prev_position.y;
-                } else if self._velocity.y <= 0.0 && (block_max_pos_y <= prev_position.y || (block_max_pos_y - BLOCK_TOLERANCE) <= self._position.y) {
-                    self.set_on_ground(block_max_pos_y);
-                } else if bound_box_min.y < (block_max_pos_y - BLOCK_TOLERANCE) && (block_min_pos_y + BLOCK_TOLERANCE) < bound_box_max.y {
-                    // collide from side
+                } else if self._velocity.y <= 0.0 && (block_bound_box._max.y <= prev_position.y || (block_bound_box._max.y - BLOCK_TOLERANCE) <= self._position.y) {
+                    // check ground block
+                    self.set_on_ground(block_bound_box._max.y);
+                } else if block_direction == move_direction &&
+                    bound_box_min.y < (block_bound_box._max.y - BLOCK_TOLERANCE) &&
+                    (block_bound_box._min.y + BLOCK_TOLERANCE) < bound_box_max.y
+                {
+                    // check side block
                     self._position.x = prev_position.x;
                     self._is_blocked = true;
                 }
+            }
+
+            // check front bottom block
+            if self._position.y <= GROUND_HEIGHT ||
+                false == self._is_ground ||
+                move_delta.x == 0.0 ||
+                block_bound_box.collide_point_xy(&front_bottom_point) {
+                self._is_cliff = false;
             }
         }
 
