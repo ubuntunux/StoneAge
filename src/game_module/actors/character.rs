@@ -258,6 +258,10 @@ impl<'a> Character<'a> {
 
     pub fn set_move(&mut self, move_direction: MoveDirections) {
         if self.is_available_move() {
+            if self._controller._face_direction != move_direction {
+                self.set_run(false);
+            }
+
             let (move_animation, move_speed) =
                 if self._controller._is_running {
                     (MoveAnimationState::Run, PLAYER_RUN_SPEED)
