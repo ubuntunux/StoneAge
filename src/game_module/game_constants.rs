@@ -29,7 +29,7 @@ pub const EAT_FOOD_DISTANCE: f32 = 1.0;
 // npc
 pub const NPC_ATTACK_TERM: f32 = 2.0;
 pub const NPC_ATTACK_DISTANCE: f32 = 1.0;
-pub const NPC_ROAMING_TERM: f32 = 10.0;
+pub const NPC_ROAMING_TERM: f32 = 5.0;
 
 // AUDIO DATA
 pub const AUDIO_ATTACK: &str = "swoosh";

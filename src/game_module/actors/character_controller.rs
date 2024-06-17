@@ -164,7 +164,7 @@ impl CharacterController {
         let bound_box_min = prev_bound_box_min + move_delta;
         let bound_box_max = prev_bound_box_max + move_delta;
         let front_bottom_point: Vector3<f32> = Vector3::new(
-            if 0.0 < move_delta.x { bound_box_max.x } else { bound_box_min.x },
+            if 0.0 < move_delta.x { bound_box_max.x + 0.1 } else { bound_box_min.x - 0.1 },
             bound_box_min.y - 0.1,
             self._position.z
         );
@@ -173,10 +173,12 @@ impl CharacterController {
         self._is_cliff = true;
         self._is_blocked = false;
         self._is_ground = false;
+
+        // check ground and side
         for (_key, block) in game_scene_manager.get_blocks().iter() {
             let block = ptr_as_ref(block.as_ptr());
-            let block_render_objecct = ptr_as_ref(block._render_object.as_ptr());
-            let block_bound_box = &block_render_objecct._bound_box;
+            let block_render_object = ptr_as_ref(block._render_object.as_ptr());
+            let block_bound_box = &block_render_object._bound_box;
 
             // check collide with block
             if block_bound_box.collide_bound_box_xy(&bound_box_min, &bound_box_max) {
@@ -203,11 +205,17 @@ impl CharacterController {
                     self._is_blocked = true;
                 }
             }
+        }
 
+        // check cliff
+        for (_key, block) in game_scene_manager.get_blocks().iter() {
+            let block = ptr_as_ref(block.as_ptr());
+            let block_render_object = ptr_as_ref(block._render_object.as_ptr());
+            let block_bound_box = &block_render_object._bound_box;
             // check front bottom block
-            if self._position.y <= GROUND_HEIGHT ||
-                false == self._is_ground ||
-                move_delta.x == 0.0 ||
+            if false == self._is_ground ||
+                0.0 == move_delta.x ||
+                0.0 < move_delta.y ||
                 block_bound_box.collide_point_xy(&front_bottom_point) {
                 self._is_cliff = false;
             }
