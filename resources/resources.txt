@@ -80,7 +80,6 @@ resources/externals/meshes/characters/triceratops/triceratops_dead.blend
 resources/externals/meshes/characters/triceratops/triceratops_idle.bin
 resources/externals/meshes/characters/triceratops/triceratops_dead.gltf
 resources/externals/meshes/characters/triceratops/triceratops_walk.blend
-resources/externals/meshes/characters/triceratops/triceratops_attack2.blend
 resources/externals/meshes/characters/triceratops/triceratops.bin
 resources/externals/meshes/characters/triceratops/triceratops_walk.bin
 resources/externals/meshes/characters/triceratops/triceratops.gltf
@@ -236,6 +235,7 @@ resources/externals/.log/StoneAge_20240619_031219.log
 resources/externals/.log/StoneAge_20240618_235038.log
 resources/externals/.log/StoneAge_20240619_032945.log
 resources/externals/.log/StoneAge_20240619_025821.log
+resources/externals/.log/StoneAge_20240619_033536.log
 resources/externals/.log/StoneAge_20240619_030431.log
 resources/externals/.log/StoneAge_20240618_231615.log
 resources/externals/.log/StoneAge_20240618_232830.log
