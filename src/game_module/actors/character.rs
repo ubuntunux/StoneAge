@@ -171,31 +171,35 @@ impl<'a> Character<'a> {
             ..Default::default()
         };
 
+        let character_data = self.get_character_data();
         let mut render_object = self._render_object.borrow_mut();
-        let animation_layer = AnimationLayer::BaseLayer;
         match move_animation_state {
             MoveAnimationState::Idle | MoveAnimationState::None => {
-                render_object.set_animation(&self._idle_animation, &animation_info, animation_layer);
+                animation_info._animation_speed = character_data._idle_animation_speed;
+                render_object.set_animation(&self._idle_animation, &animation_info, AnimationLayer::BaseLayer);
             }
             MoveAnimationState::Walk => {
-                animation_info._animation_speed = 1.5;
-                render_object.set_animation(&self._walk_animation, &animation_info, animation_layer);
+                animation_info._animation_speed = character_data._walk_animation_speed;
+                render_object.set_animation(&self._walk_animation, &animation_info, AnimationLayer::BaseLayer);
             }
             MoveAnimationState::Run => {
-                animation_info._animation_speed = 1.5;
-                render_object.set_animation(&self._run_animation, &animation_info, animation_layer);
+                animation_info._animation_speed = character_data._run_animation_speed;
+                render_object.set_animation(&self._run_animation, &animation_info, AnimationLayer::BaseLayer);
             }
             MoveAnimationState::Jump => {
                 animation_info._animation_loop = false;
-                render_object.set_animation(&self._jump_animation, &animation_info, animation_layer);
+                animation_info._animation_speed = character_data._jump_animation_speed;
+                render_object.set_animation(&self._jump_animation, &animation_info, AnimationLayer::BaseLayer);
             }
             MoveAnimationState::Roll => {
                 animation_info._animation_loop = false;
-                render_object.set_animation(&self._roll_animation, &animation_info, animation_layer);
+                animation_info._animation_speed = character_data._roll_animation_speed;
+                render_object.set_animation(&self._roll_animation, &animation_info, AnimationLayer::BaseLayer);
             }
             MoveAnimationState::RunningJump => {
                 animation_info._animation_loop = false;
-                render_object.set_animation(&self._running_jump_animation, &animation_info, animation_layer);
+                animation_info._animation_speed = character_data._running_jump_animation_speed;
+                render_object.set_animation(&self._running_jump_animation, &animation_info, AnimationLayer::BaseLayer);
             }
         }
 
@@ -204,8 +208,6 @@ impl<'a> Character<'a> {
     }
 
     pub fn set_action_animation(&mut self, action_animation_state: ActionAnimationState) {
-        let mut render_object = self._render_object.borrow_mut();
-
         // set action animation
         let mut animation_info = AnimationPlayArgs {
             _animation_loop: false,
@@ -213,26 +215,28 @@ impl<'a> Character<'a> {
             _animation_fade_out_time: 0.1,
             ..Default::default()
         };
-        let animation_layer = AnimationLayer::ActionLayer;
+
+        let character_data = self.get_character_data();
+        let mut render_object = self._render_object.borrow_mut();
         match action_animation_state {
             ActionAnimationState::None => {
                 // nothing
             },
             ActionAnimationState::Attack => {
-                animation_info._animation_speed = 1.5;
-                render_object.set_animation(&self._attack_animation, &animation_info, animation_layer);
+                animation_info._animation_speed = character_data._attack_animation_speed;
+                render_object.set_animation(&self._attack_animation, &animation_info, AnimationLayer::ActionLayer);
             }
             ActionAnimationState::Dead => {
-                animation_info._animation_speed = 1.5;
-                render_object.set_animation(&self._dead_animation, &animation_info, animation_layer);
+                animation_info._animation_speed = character_data._dead_animation_speed;
+                render_object.set_animation(&self._dead_animation, &animation_info, AnimationLayer::ActionLayer);
             }
             ActionAnimationState::Hit => {
-                animation_info._animation_speed = 2.0;
-                render_object.set_animation(&self._hit_animation, &animation_info, animation_layer);
+                animation_info._animation_speed = character_data._hit_animation_speed;
+                render_object.set_animation(&self._hit_animation, &animation_info, AnimationLayer::ActionLayer);
             }
             ActionAnimationState::PowerAttack => {
-                animation_info._animation_speed = 1.5;
-                render_object.set_animation(&self._power_attack_animation, &animation_info, animation_layer);
+                animation_info._animation_speed = character_data._power_attack_animation_speed;
+                render_object.set_animation(&self._power_attack_animation, &animation_info, AnimationLayer::ActionLayer);
             }
         }
 
