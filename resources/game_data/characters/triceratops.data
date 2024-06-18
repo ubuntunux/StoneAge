@@ -29,5 +29,5 @@
     "_running_jump_animation_speed": 1.0,
     "_upper_animation_layer": "triceratops/upper_animation_layer",
     "_walk_animation_mesh": "characters/triceratops/triceratops_walk",
-    "_walk_animation_speed": 1.0
+    "_walk_animation_speed": 3.0
 }
