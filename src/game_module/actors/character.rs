@@ -34,7 +34,7 @@ pub struct Character<'a> {
     pub _character_id: u64,
     pub _is_player: bool,
     pub _is_alive: bool,
-    pub _is_attack_event: bool,
+    pub _attack_event: ActionAnimationState,
     pub _character_data: RcRefCell<CharacterData>,
     pub _render_object: RcRefCell<RenderObjectData<'a>>,
     pub _character_property: Box<CharacterProperty>,
@@ -100,7 +100,7 @@ impl<'a> Character<'a> {
             _character_id: character_id,
             _is_player: is_player,
             _is_alive: true,
-            _is_attack_event: false,
+            _attack_event: ActionAnimationState::None,
             _character_name: String::from(character_name),
             _character_data: character_data.clone(),
             _render_object: render_object.clone(),
@@ -154,7 +154,13 @@ impl<'a> Character<'a> {
         ptr_as_mut(self._character_manager)
     }
 
-    pub fn get_character_id(&self) -> u64 { self._character_id }
+    pub fn get_character_id(&self) -> u64 {
+        self._character_id
+    }
+
+    pub fn get_character_data(&self) -> &CharacterData {
+        ptr_as_ref(self._character_data.as_ptr())
+    }
 
     pub fn get_bounding_box(&self) -> &BoundingBox {
         &ptr_as_ref(self._render_object.as_ptr())._bound_box
@@ -455,6 +461,7 @@ impl<'a> Character<'a> {
     }
 
     pub fn update_action_animation_loop_event(&mut self) {
+        let character_data = self.get_character_data();
         let action_animation = self._action_animation_state;
         let render_object = ptr_as_mut(self._render_object.as_ptr());
         let animation_play_info =
@@ -464,9 +471,9 @@ impl<'a> Character<'a> {
                 // nothing
             },
             ActionAnimationState::Attack => {
-                let attack_time: f32 = 0.15;
-                if animation_play_info._prev_animation_play_time < attack_time && attack_time <= animation_play_info._animation_play_time {
-                    self._is_attack_event = true;
+                if animation_play_info._prev_animation_play_time < character_data._attack_event_time &&
+                    character_data._attack_event_time <= animation_play_info._animation_play_time {
+                    self._attack_event = ActionAnimationState::Attack;
                 }
 
                 if animation_play_info._is_animation_end {
@@ -488,10 +495,10 @@ impl<'a> Character<'a> {
                 }
             },
             ActionAnimationState::PowerAttack => {
-                let attack_time: f32 = 1.0;
-                if animation_play_info._prev_animation_play_time < attack_time && attack_time <= animation_play_info._animation_play_time {
+                if animation_play_info._prev_animation_play_time < character_data._power_attack_event_time &&
+                    character_data._power_attack_event_time <= animation_play_info._animation_play_time {
                     self.get_character_manager().play_audio(AUDIO_ATTACK);
-                    self._is_attack_event = true;
+                    self._attack_event = ActionAnimationState::PowerAttack;
                 }
 
                 if animation_play_info._is_animation_end {
@@ -522,7 +529,7 @@ impl<'a> Character<'a> {
     }
 
     pub fn update_action_keyframe_event(&mut self) {
-        self._is_attack_event = false;
+        self._attack_event = ActionAnimationState::None;
 
         if self._prev_action_animation_state != self._action_animation_state {
             self.update_action_animation_end_event();
@@ -533,8 +540,42 @@ impl<'a> Character<'a> {
         self.update_action_animation_loop_event();
     }
 
-    pub fn get_attack_point(&self) -> Vector3<f32> {
-        self._controller._position + Vector3::new(self._controller.get_direction(), 1.0, 0.0)
+    pub fn check_attack_range(&self, attack_event: ActionAnimationState, target_bounding_box: &BoundingBox) -> bool {
+        let character_data = self.get_character_data();
+        let attack_range: f32 = match attack_event {
+            ActionAnimationState::Attack => character_data._attack_range,
+            ActionAnimationState::PowerAttack => character_data._power_attack_range,
+            _ => panic!("check_attack_range not implemented: {:?}", attack_event)
+        };
+        let attack_thickness: f32 = character_data._attack_thickness;
+
+        let bounding_box = self.get_bounding_box();
+        let box_min: Vector3<f32>;
+        let box_max: Vector3<f32>;
+        if self._controller._face_direction == MoveDirections::LEFT {
+            box_min = Vector3::new(
+                bounding_box._min.x - attack_range,
+                bounding_box._center.y - attack_thickness,
+                bounding_box._min.z
+            );
+            box_max = Vector3::new(
+                bounding_box._center.x,
+                bounding_box._center.y + attack_thickness,
+                bounding_box._max.z
+            );
+        } else {
+            box_min = Vector3::new(
+                bounding_box._center.x,
+                bounding_box._center.y - attack_thickness,
+                bounding_box._min.z
+            );
+            box_max = Vector3::new(
+                bounding_box._max.x + attack_range,
+                bounding_box._center.y + attack_thickness,
+                bounding_box._max.z
+            );
+        }
+        target_bounding_box.collide_bound_box_xy(&box_min, &box_max)
     }
 
     pub fn get_position(&self) -> &Vector3<f32> {
@@ -545,11 +586,11 @@ impl<'a> Character<'a> {
         self._render_object.borrow()._bound_box.collide_in_radius(pos)
     }
 
-    pub fn get_power(&self) -> i32 {
-        match self._action_animation_state {
-            ActionAnimationState::Attack => 50,
-            ActionAnimationState::PowerAttack => 100,
-            _ => 0,
+    pub fn get_power(&self, attack_event: ActionAnimationState) -> i32 {
+        match attack_event {
+            ActionAnimationState::Attack => self.get_character_data()._attack_damage,
+            ActionAnimationState::PowerAttack => self.get_character_data()._power_attack_damage,
+            _ => panic!("get_power not implemented: {:?}", attack_event)
         }
     }
 
@@ -562,7 +603,7 @@ impl<'a> Character<'a> {
         }
 
         let effect_create_info = EffectCreateInfo {
-            _effect_position: attack_point.clone_owned(),
+            _effect_position: attack_point,
             _effect_data_name: String::from("effect_test"),
             ..Default::default()
         };

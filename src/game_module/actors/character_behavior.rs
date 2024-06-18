@@ -1,8 +1,9 @@
 use rand;
+use rust_engine_3d::utilities::math::lerp;
 
 use crate::game_module::actors::character::Character;
 use crate::game_module::actors::character_data::{ActionAnimationState, CharacterDataType, MoveDirections};
-use crate::game_module::game_constants::{NPC_ATTACK_TERM, NPC_ROAMING_TERM};
+use crate::game_module::game_constants::{NPC_ATTACK_TERM_MIN, NPC_ATTACK_TERM_MAX, NPC_ROAMING_TERM};
 
 pub trait BehaviorBase {
     fn update_behavior<'a>(&mut self, character: &mut Character, player: &Character<'a>, delta_time: f32);
@@ -26,7 +27,7 @@ impl Default for RoamerBehavior {
 
 // implements
 fn generate_attack_time() -> f32 {
-    rand::random::<f32>() * NPC_ATTACK_TERM
+    lerp(NPC_ATTACK_TERM_MIN, NPC_ATTACK_TERM_MAX, rand::random::<f32>())
 }
 
 pub fn create_character_behavior(character_type: CharacterDataType) -> Box<dyn BehaviorBase> {
@@ -49,9 +50,8 @@ impl BehaviorBase for RoamerBehavior {
                 } else {
                     MoveDirections::LEFT
                 };
-            let bounding_box = owner.get_bounding_box();
-            let player_bounding_box = player.get_bounding_box();
-            if bounding_box.collide_bound_box_xy(&player_bounding_box._min, &player_bounding_box._max) {
+
+            if owner.check_attack_range(ActionAnimationState::Attack, player.get_bounding_box()) {
                 owner._controller.set_move_direction(to_player_direction);
                 owner.set_action_attack();
                 self._roamer_attack_time = generate_attack_time();

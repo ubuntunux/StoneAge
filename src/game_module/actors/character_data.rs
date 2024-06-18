@@ -67,6 +67,13 @@ pub struct CharacterData {
     pub _upper_animation_layer: String,
     pub _walk_animation_mesh: String,
     pub _max_hp: i32,
+    pub _attack_damage: i32,
+    pub _attack_event_time: f32,
+    pub _attack_range: f32,
+    pub _attack_thickness: f32,
+    pub _power_attack_damage: i32,
+    pub _power_attack_event_time: f32,
+    pub _power_attack_range: f32,
 }
 
 impl Default for CharacterData {
@@ -86,6 +93,13 @@ impl Default for CharacterData {
             _upper_animation_layer: String::default(),
             _walk_animation_mesh: String::default(),
             _max_hp: 100,
+            _attack_damage: 50,
+            _attack_event_time: 0.15,
+            _attack_range: 0.5,
+            _attack_thickness: 0.5,
+            _power_attack_damage: 100,
+            _power_attack_event_time: 1.0,
+            _power_attack_range: 1.0,
         }
     }
 }

@@ -10,6 +10,7 @@ use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, Rc
 
 use crate::application::application::Application;
 use crate::game_module::actors::character::{Character, CharacterCreateInfo};
+use crate::game_module::actors::character_data::ActionAnimationState;
 use crate::game_module::actors::foods::FoodCreateInfo;
 use crate::game_module::game_client::GameClient;
 use crate::game_module::game_resource::GameResources;
@@ -159,25 +160,27 @@ impl<'a> CharacterManager<'a> {
     pub fn update_character_manager(&mut self, delta_time: f64) {
         let player = ptr_as_mut(self._player.as_ref().unwrap().as_ptr());
         let mut dead_characters: Vec<RcRefCell<Character>> = Vec::new();
-
         for character in self._characters.values() {
             let character_mut = ptr_as_mut(character.as_ptr());
 
+            // update animation key frames
             character_mut.update_move_keyframe_event();
             character_mut.update_action_keyframe_event();
 
+            // update character
             character_mut.update_character(self.get_game_scene_manager(), delta_time as f32, player);
 
-            if character_mut._is_attack_event {
+            // check attack
+            if character_mut._attack_event != ActionAnimationState::None {
                 if character_mut._is_player {
+                    // player attack to npc
                     for target_character in self._characters.values() {
                         let target_character_mut = ptr_as_mut(target_character.as_ptr());
                         if false == target_character_mut._is_player &&
                             target_character_mut._is_alive &&
                             false == target_character_mut._character_property._invincibility &&
-                            target_character_mut.collide_point(&character_mut.get_attack_point())
-                        {
-                            target_character_mut.set_damage(character_mut.get_attack_point(), character_mut.get_power());
+                            character_mut.check_attack_range(character_mut._attack_event, target_character_mut.get_bounding_box()) {
+                            target_character_mut.set_damage(target_character_mut.get_position().clone(), character_mut.get_power(character_mut._attack_event));
                             if false == target_character_mut._is_alive {
                                 dead_characters.push(target_character.clone());
 
@@ -192,16 +195,17 @@ impl<'a> CharacterManager<'a> {
                         }
                     }
                 } else {
+                    // npc attack to player
                     if player._is_alive &&
                         false == player._character_property._invincibility &&
-                        player.collide_point(&character_mut.get_attack_point()
-                    ) {
-                        player.set_damage(character_mut.get_attack_point(), character_mut.get_power());
+                        character_mut.check_attack_range(character_mut._attack_event, &player.get_bounding_box()) {
+                        player.set_damage(player.get_position().clone(), character_mut.get_power(character_mut._attack_event));
                     }
                 }
             }
         }
 
+        // remove characters
         for character in dead_characters.iter() {
             self.remove_character(character);
         }
