@@ -251,24 +251,6 @@ impl<'a> Character<'a> {
         move_state == self._move_animation_state
     }
 
-    pub fn set_move_idle(&mut self) {
-        self.set_run(false);
-        self._controller.set_move_speed(0.0);
-        self.set_move_animation(MoveAnimationState::Idle);
-    }
-
-    pub fn set_move_stop(&mut self) {
-        if !self.is_move_state(MoveAnimationState::Roll) {
-            self.set_run(false);
-            self._controller.set_move_speed(0.0);
-            self._controller.set_move_direction(MoveDirections::NONE);
-
-            if !self.is_move_state(MoveAnimationState::Idle) && self.is_on_ground() {
-                self.set_move_animation(MoveAnimationState::Idle);
-            }
-        }
-    }
-
     pub fn set_run(&mut self, run: bool) {
         self._controller.set_run(run);
     }
@@ -277,6 +259,33 @@ impl<'a> Character<'a> {
         if self.is_move_state(MoveAnimationState::Run) || self.is_move_state(MoveAnimationState::Walk) {
             self._controller.toggle_run();
         }
+    }
+
+    pub fn set_move_idle(&mut self) {
+        self.set_run(false);
+        self.set_move_speed(0.0);
+        self.set_move_direction(MoveDirections::NONE);
+        self.set_move_animation(MoveAnimationState::Idle);
+    }
+
+    pub fn set_move_stop(&mut self) {
+        if !self.is_move_state(MoveAnimationState::Roll) {
+            self.set_run(false);
+            self.set_move_speed(0.0);
+            self.set_move_direction(MoveDirections::NONE);
+
+            if !self.is_move_state(MoveAnimationState::Idle) && self.is_on_ground() {
+                self.set_move_animation(MoveAnimationState::Idle);
+            }
+        }
+    }
+
+    pub fn set_move_speed(&mut self, speed: f32) {
+        self._controller.set_move_speed(speed);
+    }
+
+    pub fn set_move_direction(&mut self, move_direction: MoveDirections) {
+        self._controller.set_move_direction(move_direction);
     }
 
     pub fn set_move(&mut self, move_direction: MoveDirections) {
@@ -293,8 +302,8 @@ impl<'a> Character<'a> {
                     (MoveAnimationState::Walk, character_data._walk_speed)
                 };
 
-            self._controller.set_move_speed(move_speed);
-            self._controller.set_move_direction(move_direction);
+            self.set_move_speed(move_speed);
+            self.set_move_direction(move_direction);
 
             if false == self.is_move_state(move_animation) && self._controller._is_ground {
                 self.set_move_animation(move_animation);
@@ -318,9 +327,9 @@ impl<'a> Character<'a> {
         if self.is_available_roll() {
             let character_data = self.get_character_data();
             if self.is_move_state(MoveAnimationState::Run) {
-                self._controller.set_move_speed(character_data._run_speed);
+                self.set_move_speed(character_data._run_speed);
             } else {
-                self._controller.set_move_speed(character_data._roll_speed);
+                self.set_move_speed(character_data._roll_speed);
             }
             self.set_move_animation(MoveAnimationState::Roll);
         }
@@ -487,8 +496,7 @@ impl<'a> Character<'a> {
                 // nothing
             },
             ActionAnimationState::Attack => {
-                if animation_play_info._prev_animation_play_time < character_data._attack_event_time &&
-                    character_data._attack_event_time <= animation_play_info._animation_play_time {
+                if animation_play_info.check_animation_event_time(character_data._attack_event_time) {
                     self._attack_event = ActionAnimationState::Attack;
                 }
 
@@ -511,8 +519,7 @@ impl<'a> Character<'a> {
                 }
             },
             ActionAnimationState::PowerAttack => {
-                if animation_play_info._prev_animation_play_time < character_data._power_attack_event_time &&
-                    character_data._power_attack_event_time <= animation_play_info._animation_play_time {
+                if animation_play_info.check_animation_event_time(character_data._power_attack_event_time) {
                     self.get_character_manager().play_audio(AUDIO_ATTACK);
                     self._attack_event = ActionAnimationState::PowerAttack;
                 }
@@ -662,6 +669,10 @@ impl<'a> Character<'a> {
                 );
             }
         }
+    }
+
+    pub fn is_attack_animation(&self) -> bool {
+        self.is_action(ActionAnimationState::Attack) || self.is_action(ActionAnimationState::PowerAttack)
     }
 
     pub fn is_available_attack(&self) -> bool {

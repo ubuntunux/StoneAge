@@ -2,7 +2,7 @@
     "_attack_animation_mesh": "characters/triceratops/triceratops_attack",
     "_attack_animation_speed": 1.0,
     "_attack_damage": 50,
-    "_attack_event_time": 0.15000000596046448,
+    "_attack_event_time": 0.5,
     "_attack_range": 0.5,
     "_attack_thickness": 0.25,
     "_character_type": "Roamer",

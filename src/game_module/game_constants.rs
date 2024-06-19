@@ -16,17 +16,24 @@ pub const CAMERA_ZOOM_SPEED: f32 = 4.0;
 // player
 pub const GRAVITY: f32 = 30.0;
 pub const GROUND_HEIGHT: f32 = 9.0;
-pub const CONTINUOUS_ATTACK_TIME: f32 = 0.2;
+pub const CONTINUOUS_ATTACK_TIME: f32 = 0.3;
 pub const ATTACK_TIME: f32 = 0.15;
 pub const MOVE_LIMIT: f32 = 2.0;
 pub const BLOCK_TOLERANCE: f32 = 0.5;
 pub const EAT_FOOD_DISTANCE: f32 = 1.0;
 
 // npc
+pub const NPC_IDLE_TERM_MIN: f32 = 3.0;
+pub const NPC_IDLE_TERM_MAX: f32 = 10.0;
+pub const NPC_IDLE_PLAY_MIN: f32 = 1.0;
+pub const NPC_IDLE_PLAY_MAX: f32 = 2.0;
 pub const NPC_ATTACK_TERM_MIN: f32 = 1.0;
 pub const NPC_ATTACK_TERM_MAX: f32 = 2.0;
 pub const NPC_ATTACK_DISTANCE: f32 = 1.0;
+pub const NPC_TRACKING_RANGE_X: f32 = 5.0;
+pub const NPC_TRACKING_RANGE_Y: f32 = 1.0;
 pub const NPC_ROAMING_TERM: f32 = 5.0;
+pub const NPC_AVAILABLE_MOVING_ATTACK: bool = true;
 
 // AUDIO DATA
 pub const AUDIO_ATTACK: &str = "swoosh";
