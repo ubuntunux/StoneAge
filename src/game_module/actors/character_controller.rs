@@ -55,11 +55,10 @@ impl CharacterController {
         self._is_ground = false;
         self._is_blocked = false;
         self._is_cliff = false;
-        self._move_direction = MoveDirections::NONE;
     }
 
-    pub fn is_move_stopped(&self) -> bool {
-        self._velocity.x == 0.0 && self._is_ground && !self._is_jump_start
+    pub fn is_on_ground(&self) -> bool {
+        self._is_ground && !self._is_jump_start
     }
 
     pub fn set_run(&mut self, is_running: bool) {
@@ -72,7 +71,7 @@ impl CharacterController {
 
     pub fn set_move_direction(&mut self, move_direction: MoveDirections) {
         self._move_direction = move_direction;
-        if move_direction != MoveDirections::NONE {
+        if MoveDirections::NONE != move_direction {
             self._face_direction = move_direction;
         }
     }
@@ -81,8 +80,8 @@ impl CharacterController {
         self._is_jump_start = true;
     }
 
-    pub fn set_move_speed(&mut self, rolling_speed: f32) {
-        self._move_speed = rolling_speed;
+    pub fn set_move_speed(&mut self, move_speed: f32) {
+        self._move_speed = move_speed;
     }
 
     pub fn get_direction(&self) -> f32 {
@@ -116,6 +115,9 @@ impl CharacterController {
             self._move_direction
         };
         match move_direction {
+            MoveDirections::NONE => {
+                self._velocity.x = 0.0;
+            }
             MoveDirections::LEFT => {
                 self._velocity.x = -self._move_speed;
                 self._rotation.y = std::f32::consts::PI * 0.5
@@ -131,9 +133,6 @@ impl CharacterController {
             MoveDirections::DOWN => {
                 self._velocity.x = 0.0;
                 self._rotation.y = 0.0;
-            }
-            _ => {
-                self._velocity.x = 0.0;
             }
         }
         self._position.x += self._velocity.x * delta_time;
@@ -233,6 +232,5 @@ impl CharacterController {
 
         // reset
         self._is_jump_start = false;
-        self.set_move_direction(MoveDirections::NONE);
     }
 }

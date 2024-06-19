@@ -251,12 +251,22 @@ impl<'a> Character<'a> {
         move_state == self._move_animation_state
     }
 
-    pub fn set_move_none(&mut self) {
-        self.set_move_animation(MoveAnimationState::None);
+    pub fn set_move_idle(&mut self) {
+        self.set_run(false);
+        self._controller.set_move_speed(0.0);
+        self.set_move_animation(MoveAnimationState::Idle);
     }
 
-    pub fn set_move_idle(&mut self) {
-        self.set_move_animation(MoveAnimationState::Idle);
+    pub fn set_move_stop(&mut self) {
+        if !self.is_move_state(MoveAnimationState::Roll) {
+            self.set_run(false);
+            self._controller.set_move_speed(0.0);
+            self._controller.set_move_direction(MoveDirections::NONE);
+
+            if !self.is_move_state(MoveAnimationState::Idle) && self.is_on_ground() {
+                self.set_move_animation(MoveAnimationState::Idle);
+            }
+        }
     }
 
     pub fn set_run(&mut self, run: bool) {
@@ -282,9 +292,11 @@ impl<'a> Character<'a> {
                 } else {
                     (MoveAnimationState::Walk, character_data._walk_speed)
                 };
+
+            self._controller.set_move_speed(move_speed);
             self._controller.set_move_direction(move_direction);
+
             if false == self.is_move_state(move_animation) && self._controller._is_ground {
-                self._controller.set_move_speed(move_speed);
                 self.set_move_animation(move_animation);
             }
         }
@@ -292,14 +304,12 @@ impl<'a> Character<'a> {
 
     pub fn set_jump(&mut self) {
         if self.is_available_jump() {
-            let character_data = self.get_character_data();
-            let (move_anim, move_speed) = if self._controller._is_running {
-                (MoveAnimationState::RunningJump, character_data._run_speed)
+            let move_anim = if self._controller._is_running {
+                MoveAnimationState::RunningJump
             } else {
-                (MoveAnimationState::Jump, character_data._walk_speed)
+                MoveAnimationState::Jump
             };
             self._controller.set_jump_start();
-            self._controller.set_move_speed(move_speed);
             self.set_move_animation(move_anim);
         }
     }
@@ -314,6 +324,10 @@ impl<'a> Character<'a> {
             }
             self.set_move_animation(MoveAnimationState::Roll);
         }
+    }
+
+    pub fn is_on_ground(&self) -> bool {
+        self._controller.is_on_ground()
     }
 
     pub fn is_action(&self, action: ActionAnimationState) -> bool {
@@ -337,12 +351,11 @@ impl<'a> Character<'a> {
     }
 
     pub fn set_action_hit(&mut self) {
-        self.set_move_idle();
         self.set_action_animation(ActionAnimationState::Hit);
     }
 
     pub fn set_action_dead(&mut self) {
-        self.set_move_idle();
+        self.set_move_stop();
         self.set_action_animation(ActionAnimationState::Dead);
     }
 
@@ -442,11 +455,6 @@ impl<'a> Character<'a> {
         }
 
         self.update_move_animation_loop_event();
-
-        // set idle animation
-        if self.is_available_move_idle() {
-            self.set_move_idle();
-        }
     }
 
     pub fn update_action_animation_begin_event(&mut self) {
@@ -646,7 +654,7 @@ impl<'a> Character<'a> {
         render_object.clear_animation_layers(AnimationLayer::ActionLayer);
 
         // set additive animation layer
-        if self.is_action(ActionAnimationState::Attack) || self.is_action(ActionAnimationState::PowerAttack) {
+        if self.is_action(ActionAnimationState::Attack) || self.is_action(ActionAnimationState::PowerAttack) || self.is_action(ActionAnimationState::Hit) {
             if !self.is_move_state(MoveAnimationState::Idle) && !self.is_move_state(MoveAnimationState::None) {
                 render_object.set_animation_layers(
                     self._upper_animation_layer.as_ptr(),
@@ -668,15 +676,7 @@ impl<'a> Character<'a> {
     }
 
     pub fn is_available_move(&self) -> bool {
-        !self.is_move_state(MoveAnimationState::Roll) &&
-        !self.is_action(ActionAnimationState::Dead) &&
-        !self.is_action(ActionAnimationState::Hit)
-    }
-
-    pub fn is_available_move_idle(&self) -> bool {
-        !self.is_move_state(MoveAnimationState::Idle) &&
-        self._controller.is_move_stopped() &&
-        self.is_available_move()
+        self._is_alive && !self.is_move_state(MoveAnimationState::Roll)
     }
 
     pub fn is_available_jump(&self) -> bool {

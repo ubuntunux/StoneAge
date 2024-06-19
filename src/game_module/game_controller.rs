@@ -87,12 +87,12 @@ impl<'a> GameController<'a> {
             keyboard_input_data.get_key_hold(KeyCode::KeyD) ||
             joystick_input_data._btn_right == ButtonState::Hold||
             0 < joystick_input_data._stick_left_direction.x;
-        let is_down =
+        let _is_down =
             keyboard_input_data.get_key_hold(KeyCode::ArrowDown) ||
             keyboard_input_data.get_key_hold(KeyCode::KeyS) ||
             joystick_input_data._btn_down  == ButtonState::Hold ||
             0 < joystick_input_data._stick_left_direction.y;
-        let is_up =
+        let _is_up =
             keyboard_input_data.get_key_hold(KeyCode::ArrowUp) ||
             keyboard_input_data.get_key_hold(KeyCode::KeyW) ||
             joystick_input_data._btn_up  == ButtonState::Hold ||
@@ -112,14 +112,18 @@ impl<'a> GameController<'a> {
         let mut player_mut = player.borrow_mut();
         if is_left {
             player_mut.set_move(MoveDirections::LEFT);
-        } else if is_right {
+        }
+        else if is_right {
             player_mut.set_move(MoveDirections::RIGHT);
-        } else if is_up {
-            player_mut.set_move(MoveDirections::UP);
-        } else if is_down {
-            player_mut.set_move(MoveDirections::DOWN);
-        } else {
-            player_mut.set_run(false);
+        }
+        // else if is_up {
+        //     player_mut.set_move(MoveDirections::UP);
+        // }
+        // else if is_down {
+        //     player_mut.set_move(MoveDirections::DOWN);
+        // }
+        else {
+            player_mut.set_move_stop();
         }
 
         if is_run {
