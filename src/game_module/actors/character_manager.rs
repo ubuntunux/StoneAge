@@ -108,7 +108,7 @@ impl<'a> CharacterManager<'a> {
         let roll_animation = game_resources.get_engine_resources().get_mesh_data(&character_data_ref._roll_animation_mesh);
         let run_animation = game_resources.get_engine_resources().get_mesh_data(&character_data_ref._run_animation_mesh);
         let running_jump_animation = game_resources.get_engine_resources().get_mesh_data(&character_data_ref._running_jump_animation_mesh);
-        let upper_animation_layer= game_resources.get_engine_resources().get_animation_layer_data(&character_data_ref._upper_animation_layer);
+        let upper_animation_layer = game_resources.get_engine_resources().get_animation_layer_data(&character_data_ref._upper_animation_layer);
         let walk_animation = game_resources.get_engine_resources().get_mesh_data(&character_data_ref._walk_animation_mesh);
         let id = self.generate_id();
         let character = newRcRefCell(Character::create_character_instance(
@@ -206,8 +206,8 @@ impl<'a> CharacterManager<'a> {
         }
 
         // remove characters
-        for character in dead_characters.iter() {
-            self.remove_character(character);
-        }
+        // for character in dead_characters.iter() {
+        //     self.remove_character(character);
+        // }
     }
 }

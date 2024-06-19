@@ -142,6 +142,8 @@ impl<'a> Character<'a> {
         self._character_property.initialize_property(&self._character_data.borrow());
         self._controller.initialize_controller(position, rotation, scale);
 
+        self.set_move_idle();
+        self.set_action_none();
         self.update_transform();
         self.update_render_object();
     }
@@ -220,7 +222,7 @@ impl<'a> Character<'a> {
         let mut render_object = self._render_object.borrow_mut();
         match action_animation_state {
             ActionAnimationState::None => {
-                // nothing
+                render_object.set_animation_none(AnimationLayer::ActionLayer);
             },
             ActionAnimationState::Attack => {
                 animation_info._animation_speed = character_data._attack_animation_speed;
@@ -228,6 +230,7 @@ impl<'a> Character<'a> {
             }
             ActionAnimationState::Dead => {
                 animation_info._animation_speed = character_data._dead_animation_speed;
+                animation_info._animation_fade_out_time = 0.0; // keep end of animation
                 render_object.set_animation(&self._dead_animation, &animation_info, AnimationLayer::ActionLayer);
             }
             ActionAnimationState::Hit => {
@@ -272,11 +275,12 @@ impl<'a> Character<'a> {
                 self.set_run(false);
             }
 
+            let character_data = self.get_character_data();
             let (move_animation, move_speed) =
                 if self._controller._is_running {
-                    (MoveAnimationState::Run, PLAYER_RUN_SPEED)
+                    (MoveAnimationState::Run, character_data._run_speed)
                 } else {
-                    (MoveAnimationState::Walk, PLAYER_WALK_SPEED)
+                    (MoveAnimationState::Walk, character_data._walk_speed)
                 };
             self._controller.set_move_direction(move_direction);
             if false == self.is_move_state(move_animation) && self._controller._is_ground {
@@ -288,10 +292,11 @@ impl<'a> Character<'a> {
 
     pub fn set_jump(&mut self) {
         if self.is_available_jump() {
-            let (move_anim, move_speed) = if self.is_move_state(MoveAnimationState::Run) {
-                (MoveAnimationState::RunningJump, PLAYER_RUN_SPEED)
+            let character_data = self.get_character_data();
+            let (move_anim, move_speed) = if self._controller._is_running {
+                (MoveAnimationState::RunningJump, character_data._run_speed)
             } else {
-                (MoveAnimationState::Jump, PLAYER_WALK_SPEED)
+                (MoveAnimationState::Jump, character_data._walk_speed)
             };
             self._controller.set_jump_start();
             self._controller.set_move_speed(move_speed);
@@ -301,10 +306,11 @@ impl<'a> Character<'a> {
 
     pub fn set_roll(&mut self) {
         if self.is_available_roll() {
+            let character_data = self.get_character_data();
             if self.is_move_state(MoveAnimationState::Run) {
-                self._controller.set_move_speed(PLAYER_RUN_SPEED);
+                self._controller.set_move_speed(character_data._run_speed);
             } else {
-                self._controller.set_move_speed(PLAYER_ROLL_SPEED);
+                self._controller.set_move_speed(character_data._roll_speed);
             }
             self.set_move_animation(MoveAnimationState::Roll);
         }
@@ -374,8 +380,7 @@ impl<'a> Character<'a> {
     pub fn update_move_animation_loop_event(&mut self) {
         let move_animation = self._move_animation_state;
         let render_object = ptr_as_mut(self._render_object.as_ptr());
-        let animation_play_info =
-            render_object.get_animation_play_info(AnimationLayer::BaseLayer);
+        let animation_play_info = render_object.get_animation_play_info(AnimationLayer::BaseLayer);
         match move_animation {
             MoveAnimationState::None => {
                 // nothing
@@ -468,8 +473,7 @@ impl<'a> Character<'a> {
         let character_data = self.get_character_data();
         let action_animation = self._action_animation_state;
         let render_object = ptr_as_mut(self._render_object.as_ptr());
-        let animation_play_info =
-            render_object.get_animation_play_info(AnimationLayer::ActionLayer);
+        let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
         match action_animation {
             ActionAnimationState::None => {
                 // nothing
@@ -485,7 +489,7 @@ impl<'a> Character<'a> {
                 }
             },
             ActionAnimationState::Dead => {
-                if animation_play_info._is_animation_end {
+                if self._is_player && animation_play_info._is_animation_end {
                     self.initialize_character(
                         &self._controller._position.clone(),
                         &self._controller._rotation.clone(),
@@ -552,7 +556,6 @@ impl<'a> Character<'a> {
             _ => panic!("check_attack_range not implemented: {:?}", attack_event)
         };
         let attack_thickness: f32 = character_data._attack_thickness;
-
         let bounding_box = self.get_bounding_box();
         let box_min: Vector3<f32>;
         let box_max: Vector3<f32>;
@@ -563,13 +566,13 @@ impl<'a> Character<'a> {
                 bounding_box._min.z
             );
             box_max = Vector3::new(
-                bounding_box._center.x,
+                bounding_box._max.x,
                 bounding_box._center.y + attack_thickness,
                 bounding_box._max.z
             );
         } else {
             box_min = Vector3::new(
-                bounding_box._center.x,
+                bounding_box._min.x,
                 bounding_box._center.y - attack_thickness,
                 bounding_box._min.z
             );
@@ -690,13 +693,14 @@ impl<'a> Character<'a> {
     }
 
     pub fn update_character(&mut self, game_scene_manager: &GameSceneManager, delta_time: f32, player: &Character<'a>) {
-        if false == self._is_player {
+        if false == self._is_player && self._is_alive {
             self._behavior.update_behavior(ptr_as_mut(self), player, delta_time);
         }
 
         self._controller.update_character_controller(
             game_scene_manager,
-            self.is_move_state(MoveAnimationState::Roll),
+            ptr_as_ref(self._character_data.as_ptr()),
+            self._move_animation_state,
             &self._render_object.borrow()._bound_box,
             delta_time,
         );

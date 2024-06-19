@@ -84,6 +84,11 @@ pub struct CharacterData {
     pub _power_attack_damage: i32,
     pub _power_attack_event_time: f32,
     pub _power_attack_range: f32,
+    pub _jump_speed: f32,
+    pub _roll_speed: f32,
+    pub _run_speed: f32,
+    pub _walk_speed: f32,
+
 }
 
 impl Default for CharacterData {
@@ -120,6 +125,10 @@ impl Default for CharacterData {
             _power_attack_damage: 100,
             _power_attack_event_time: 1.0,
             _power_attack_range: 1.0,
+            _jump_speed: 13.0,
+            _roll_speed: 4.5,
+            _run_speed: 5.4,
+            _walk_speed: 3.0,
         }
     }
 }

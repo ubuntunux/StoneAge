@@ -1,3 +1,4 @@
+use nalgebra::Vector3;
 use rand;
 use rust_engine_3d::utilities::math::lerp;
 
@@ -20,7 +21,7 @@ impl Default for RoamerBehavior {
         Self {
             _roamer_move_time: 0.0,
             _roamer_move_direction: MoveDirections::NONE,
-            _roamer_attack_time: generate_attack_time()
+            _roamer_attack_time: generate_attack_time(),
         }
     }
 }
@@ -58,22 +59,40 @@ impl BehaviorBase for RoamerBehavior {
             }
         }
 
-        // update roaming
+        // update roaming & tracking
         if !owner.is_action(ActionAnimationState::Attack) && owner.is_available_move() {
             let is_blocked = owner._controller._is_blocked;
             let is_cliff = owner._controller._is_cliff;
-            self._roamer_move_time -= delta_time;
-            if self._roamer_move_time <= 0.0 || is_blocked || is_cliff {
-                self._roamer_move_direction =
-                    if MoveDirections::LEFT == self._roamer_move_direction {
+
+            let mut is_roamer_running: bool = false;
+
+            let to_player: Vector3<f32> = player.get_position() - owner.get_position();
+            if to_player.x.abs() < 5.0 && to_player.y.abs() < 1.0 {
+                // tracking
+                if 1.0 < to_player.x.abs() {
+                    is_roamer_running = true;
+                    self._roamer_move_direction = if 0.0 < to_player.x {
                         MoveDirections::RIGHT
                     } else {
                         MoveDirections::LEFT
-                    };
-                self._roamer_move_time = NPC_ROAMING_TERM;
+                    }
+                }
+            } else {
+                // roaming
+                self._roamer_move_time -= delta_time;
+                if self._roamer_move_time <= 0.0 || is_blocked || is_cliff {
+                    self._roamer_move_direction =
+                        if MoveDirections::LEFT == self._roamer_move_direction {
+                            MoveDirections::RIGHT
+                        } else {
+                            MoveDirections::LEFT
+                        };
+                    self._roamer_move_time = NPC_ROAMING_TERM;
+                }
             }
 
             owner.set_move(self._roamer_move_direction);
+            owner.set_run(is_roamer_running);
         }
     }
 }

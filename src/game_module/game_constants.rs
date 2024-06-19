@@ -14,10 +14,6 @@ pub const CAMERA_DISTANCE_MAX: f32 = 10.0;
 pub const CAMERA_ZOOM_SPEED: f32 = 4.0;
 
 // player
-pub const PLAYER_WALK_SPEED: f32 = 3.0;
-pub const PLAYER_RUN_SPEED: f32 = PLAYER_WALK_SPEED * 1.8;
-pub const PLAYER_ROLL_SPEED: f32 = PLAYER_WALK_SPEED * 1.5;
-pub const PLAYER_JUMP_SPEED: f32 = 13.0;
 pub const GRAVITY: f32 = 30.0;
 pub const GROUND_HEIGHT: f32 = 9.0;
 pub const CONTINUOUS_ATTACK_TIME: f32 = 0.2;

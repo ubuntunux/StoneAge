@@ -2,8 +2,8 @@ use nalgebra::Vector3;
 use rust_engine_3d::utilities::bounding_box::BoundingBox;
 use rust_engine_3d::utilities::system::ptr_as_ref;
 
-use crate::game_module::actors::character_data::MoveDirections;
-use crate::game_module::game_constants::{BLOCK_TOLERANCE, GRAVITY, GROUND_HEIGHT, MOVE_LIMIT, PLAYER_JUMP_SPEED, PLAYER_WALK_SPEED};
+use crate::game_module::actors::character_data::{MoveDirections, CharacterData, MoveAnimationState};
+use crate::game_module::game_constants::{BLOCK_TOLERANCE, GRAVITY, GROUND_HEIGHT, MOVE_LIMIT};
 use crate::game_module::game_scene_manager::GameSceneManager;
 
 pub struct CharacterController {
@@ -29,7 +29,7 @@ impl CharacterController {
             _scale: Vector3::new(1.0, 1.0, 1.0),
             _velocity: Vector3::zeros(),
             _is_jump_start: false,
-            _move_speed: PLAYER_WALK_SPEED,
+            _move_speed: 0.0,
             _is_running: false,
             _is_ground: false,
             _is_blocked: false,
@@ -50,7 +50,7 @@ impl CharacterController {
         self._scale = scale.clone();
         self._velocity = Vector3::zeros();
         self._is_jump_start = false;
-        self._move_speed = PLAYER_WALK_SPEED;
+        self._move_speed = 0.0;
         self._is_running = false;
         self._is_ground = false;
         self._is_blocked = false;
@@ -102,14 +102,19 @@ impl CharacterController {
     pub fn update_character_controller(
         &mut self,
         game_scene_manager: &GameSceneManager,
-        is_rolling: bool,
+        character_data: &CharacterData,
+        move_animation: MoveAnimationState,
         actor_bound_box: &BoundingBox,
         delta_time: f32,
     ) {
         let prev_position = self._position.clone_owned();
 
         // move on ground
-        let move_direction = if is_rolling { self._face_direction } else { self._move_direction };
+        let move_direction = if MoveAnimationState::Roll == move_animation {
+            self._face_direction
+        } else {
+            self._move_direction
+        };
         match move_direction {
             MoveDirections::LEFT => {
                 self._velocity.x = -self._move_speed;
@@ -135,7 +140,7 @@ impl CharacterController {
 
         // jump
         if self._is_jump_start {
-            self._velocity.y = PLAYER_JUMP_SPEED;
+            self._velocity.y = character_data._jump_speed;
             self._is_ground = false;
         }
 
