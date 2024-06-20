@@ -31,6 +31,7 @@ resources/externals/textures/props/meat_d.png
 resources/externals/textures/characters/jack/jack_d.png
 resources/externals/textures/characters/triceratops/triceratops_d.png
 resources/externals/textures/characters/trex/trex_d.png
+resources/externals/textures/characters/wolf/wolf_d.png
 resources/externals/textures/environments/cliff_grass_d.png
 resources/externals/textures/environments/snow_moutain.png
 resources/externals/textures/environments/desert_moutain.png
@@ -40,6 +41,7 @@ resources/externals/blender_assets.cats.txt~
 resources/externals/animation_layers/jack/upper_animation_layer.blend
 resources/externals/animation_layers/triceratops/upper_animation_layer.blend
 resources/externals/animation_layers/trex/upper_animation_layer.blend
+resources/externals/animation_layers/wolf/upper_animation_layer.blend
 resources/externals/meshes/props/meat.blend
 resources/externals/meshes/props/meat.bin
 resources/externals/meshes/props/meat.gltf
@@ -118,6 +120,15 @@ resources/externals/meshes/characters/trex/trex_run.gltf
 resources/externals/meshes/characters/trex/trex_walk.blend
 resources/externals/meshes/characters/trex/trex_walk.gltf
 resources/externals/meshes/characters/trex/trex_idle.bin
+resources/externals/meshes/characters/wolf/wolf.gltf
+resources/externals/meshes/characters/wolf/wolf_attack.blend
+resources/externals/meshes/characters/wolf/wolf_walk.bin
+resources/externals/meshes/characters/wolf/wolf_walk.blend
+resources/externals/meshes/characters/wolf/wolf_attack.bin
+resources/externals/meshes/characters/wolf/wolf.blend
+resources/externals/meshes/characters/wolf/wolf.bin
+resources/externals/meshes/characters/wolf/wolf_attack.gltf
+resources/externals/meshes/characters/wolf/wolf_walk.gltf
 resources/externals/meshes/environments/ocean.bin
 resources/externals/meshes/environments/desert_ground.blend
 resources/externals/meshes/environments/rock.gltf
@@ -156,6 +167,7 @@ resources/externals/meshes/environments/cloud_00.bin
 resources/externals/meshes/environments/landscape_00.blend
 resources/externals/scenes/stage_forest.blend
 resources/externals/game_data/characters/trex.blend
+resources/externals/game_data/characters/wolf.blend
 resources/externals/game_data/characters/jack.blend
 resources/externals/game_data/characters/triceratops.blend
 resources/externals/game_data/blocks/cliff_grass.blend
@@ -165,6 +177,7 @@ resources/externals/game_data/properties/properties.blend
 resources/externals/game_data/game_scenes/intro_stage.blend
 resources/externals/models/props/meat.blend
 resources/externals/models/characters/trex.blend
+resources/externals/models/characters/wolf.blend
 resources/externals/models/characters/jack.blend
 resources/externals/models/characters/triceratops.blend
 resources/externals/models/environments/desert_ground.blend
@@ -551,6 +564,7 @@ resources/engine_resources/materials/precomputed_atmosphere/precomputed_atmosphe
 resources/animation_layers/jack/upper_animation_layer.layer
 resources/animation_layers/triceratops/upper_animation_layer.layer
 resources/animation_layers/trex/upper_animation_layer.layer
+resources/animation_layers/wolf/upper_animation_layer.layer
 resources/sound_banks/pain_short.meta
 resources/sound_banks/pain_short.bank
 resources/sound_banks/dead.bank
@@ -569,6 +583,7 @@ resources/material_instances/props/meat.matinst
 resources/material_instances/characters/jack/jack.matinst
 resources/material_instances/characters/triceratops/triceratops.matinst
 resources/material_instances/characters/trex/trex.matinst
+resources/material_instances/characters/wolf/wolf.matinst
 resources/material_instances/environments/desert_ground.matinst
 resources/material_instances/environments/ocean.matinst
 resources/material_instances/environments/cliff_grass.matinst
@@ -579,6 +594,7 @@ resources/material_instances/render_test.matinst
 resources/shaders/render_test.frag
 resources/shaders/render_test.vert
 resources/scenes/stage_forest.scene
+resources/game_data/characters/wolf.data
 resources/game_data/characters/triceratops.data
 resources/game_data/characters/jack.data
 resources/game_data/characters/trex.data
@@ -589,6 +605,7 @@ resources/game_data/game_scenes/intro_stage.data
 resources/models/props/meat.model
 resources/models/characters/jack.model
 resources/models/characters/trex.model
+resources/models/characters/wolf.model
 resources/models/characters/triceratops.model
 resources/models/environments/cactus.model
 resources/models/environments/grass.model

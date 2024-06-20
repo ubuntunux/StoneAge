@@ -1,0 +1,6 @@
+{
+    "material_instances": [
+        "characters/wolf/wolf"
+    ],
+    "mesh": "characters/wolf/wolf"
+}
