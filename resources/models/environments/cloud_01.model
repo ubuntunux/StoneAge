@@ -1,6 +1,6 @@
 {
-    "material_instances": [
+    "_material_instances": [
         "environments/cloud"
     ],
-    "mesh": "environments/cloud_01"
+    "_mesh": "environments/cloud_01"
 }

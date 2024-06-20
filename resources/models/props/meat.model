@@ -1,6 +1,6 @@
 {
-    "material_instances": [
+    "_material_instances": [
         "props/meat"
     ],
-    "mesh": "props/meat"
+    "_mesh": "props/meat"
 }

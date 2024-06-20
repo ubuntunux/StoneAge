@@ -1,6 +1,6 @@
 {
-    "material_instances": [
+    "_material_instances": [
         "environments/desert_ground"
     ],
-    "mesh": "environments/grass_darken"
+    "_mesh": "environments/grass_darken"
 }

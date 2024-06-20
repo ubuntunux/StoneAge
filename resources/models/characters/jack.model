@@ -1,7 +1,7 @@
 {
-    "material_instances": [
+    "_material_instances": [
         "characters/jack/jack",
         "characters/jack/jack"
     ],
-    "mesh": "characters/jack/jack"
+    "_mesh": "characters/jack/jack"
 }

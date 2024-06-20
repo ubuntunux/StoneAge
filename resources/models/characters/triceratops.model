@@ -1,6 +1,6 @@
 {
-    "material_instances": [
+    "_material_instances": [
         "characters/triceratops/triceratops"
     ],
-    "mesh": "characters/triceratops/triceratops"
+    "_mesh": "characters/triceratops/triceratops"
 }

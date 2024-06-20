@@ -1,6 +1,6 @@
 {
-    "material_instances": [
+    "_material_instances": [
         "environments/ocean"
     ],
-    "mesh": "environments/ocean"
+    "_mesh": "environments/ocean"
 }

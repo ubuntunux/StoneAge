@@ -1,6 +1,6 @@
 {
-    "material_instances": [
+    "_material_instances": [
         "environments/cliff_grass"
     ],
-    "mesh": "environments/cliff_grass"
+    "_mesh": "environments/cliff_grass"
 }
