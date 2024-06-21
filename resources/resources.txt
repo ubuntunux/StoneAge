@@ -27,10 +27,6 @@ resources/textures/effects/fire.png
 resources/textures/effects/smoke.png
 resources/textures/props/meat_d.png
 resources/textures/characters/jack/jack_d.png
-resources/textures/characters/sabre/sabrecat_d.jpg
-resources/textures/characters/sabre/sabrecat_n.jpg
-resources/textures/characters/mammoth/mammoth_d.jpg
-resources/textures/characters/mammoth/mammoth_n.jpg
 resources/textures/characters/triceratops/triceratops_d.png
 resources/textures/characters/trex/trex_d.png
 resources/textures/characters/wolf/wolf_d.png
@@ -62,10 +58,6 @@ resources/externals/textures/effects/fire.png
 resources/externals/textures/effects/smoke.png
 resources/externals/textures/props/meat_d.png
 resources/externals/textures/characters/jack/jack_d.png
-resources/externals/textures/characters/sabre/sabrecat_d.jpg
-resources/externals/textures/characters/sabre/sabrecat_n.jpg
-resources/externals/textures/characters/mammoth/mammoth_d.jpg
-resources/externals/textures/characters/mammoth/mammoth_n.jpg
 resources/externals/textures/characters/triceratops/triceratops_d.png
 resources/externals/textures/characters/trex/trex_d.png
 resources/externals/textures/characters/wolf/wolf_d.png
@@ -74,7 +66,6 @@ resources/externals/textures/environments/snow_moutain.png
 resources/externals/textures/environments/desert_moutain.png
 resources/externals/textures/environments/desert_ground.png
 resources/externals/blender_assets.cats.txt
-resources/externals/blender_assets.cats.txt~
 resources/externals/animation_layers/jack/upper_animation_layer.blend
 resources/externals/animation_layers/triceratops/upper_animation_layer.blend
 resources/externals/animation_layers/trex/upper_animation_layer.blend
@@ -91,8 +82,6 @@ resources/externals/meshes/characters/jack/jack_roll.blend
 resources/externals/meshes/characters/jack/jack_idle.blend
 resources/externals/meshes/characters/jack/jack_dead.blend
 resources/externals/meshes/characters/jack/jack_jump.blend
-resources/externals/meshes/characters/sabre/sabre.blend
-resources/externals/meshes/characters/mammoth/mammoth.blend
 resources/externals/meshes/characters/triceratops/triceratops_dead.blend
 resources/externals/meshes/characters/triceratops/triceratops_walk.blend
 resources/externals/meshes/characters/triceratops/triceratops_idle.blend
@@ -298,13 +287,6 @@ resources/engine_resources/textures/common/flat_none.png
 resources/engine_resources/textures/common/water_caustic_00.png
 resources/engine_resources/textures/common/flat_yellow.png
 resources/engine_resources/textures/common/water_caustic_01.png
-resources/engine_resources/textures/fonts/NanumBarunGothicBold_Basic_Latin.png
-resources/engine_resources/textures/fonts/NanumMyeongjo_Basic_Latin.png
-resources/engine_resources/textures/fonts/NanumGothic_Coding_Basic_Latin.png
-resources/engine_resources/textures/fonts/NanumGothicBold_Basic_Latin.png
-resources/engine_resources/textures/fonts/NanumBarunGothic_Basic_Latin.png
-resources/engine_resources/textures/fonts/NanumGothic_Basic_Latin.png
-resources/engine_resources/textures/fonts/NanumMyeongjoBold_Basic_Latin.png
 resources/engine_resources/textures/mutant/mutant_normal.png
 resources/engine_resources/textures/mutant/mutant_diffuse.png
 resources/engine_resources/textures/precomputed_atmosphere/cloud_3d.texture
@@ -314,7 +296,6 @@ resources/engine_resources/textures/precomputed_atmosphere/irradiance.texture
 resources/engine_resources/textures/precomputed_atmosphere/transmittance.texture
 resources/engine_resources/effects/default.effect
 resources/engine_resources/externals/blender_assets.cats.txt
-resources/engine_resources/externals/blender_assets.cats.txt~
 resources/engine_resources/externals/fonts/NanumMyeongjoBold.ttf
 resources/engine_resources/externals/fonts/NanumBarunGothic.ttf
 resources/engine_resources/externals/fonts/NanumBarunGothicBold.ttf
