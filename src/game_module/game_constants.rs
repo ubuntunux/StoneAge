@@ -16,7 +16,6 @@ pub const CAMERA_ZOOM_SPEED: f32 = 4.0;
 // player
 pub const GRAVITY: f32 = 30.0;
 pub const GROUND_HEIGHT: f32 = 9.0;
-pub const CONTINUOUS_ATTACK_TIME: f32 = 0.3;
 pub const ATTACK_TIME: f32 = 0.15;
 pub const MOVE_LIMIT: f32 = 2.0;
 pub const BLOCK_TOLERANCE: f32 = 0.5;

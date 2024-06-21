@@ -679,7 +679,8 @@ impl<'a> Character<'a> {
         if self.is_available_move() {
             let action_animation_play_info = self.get_animation_play_info(AnimationLayer::ActionLayer);
             if self.is_action(ActionAnimationState::None) ||
-                self.is_action(ActionAnimationState::Attack) && CONTINUOUS_ATTACK_TIME < action_animation_play_info._animation_play_time {
+                self.is_action(ActionAnimationState::Attack) &&
+                self.get_character_data()._attack_event_time < action_animation_play_info._animation_play_time {
                 return true;
             }
         }

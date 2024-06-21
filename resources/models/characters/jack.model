@@ -3,5 +3,20 @@
         "characters/jack/jack",
         "characters/jack/jack"
     ],
-    "_mesh": "characters/jack/jack"
+    "_mesh": "characters/jack/jack",
+    "_position": [
+        0.0,
+        0.0,
+        0.0
+    ],
+    "_rotation": [
+        0.0,
+        0.0,
+        0.0
+    ],
+    "_scale": [
+        1.0,
+        1.0,
+        1.0
+    ]
 }
