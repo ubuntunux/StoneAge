@@ -14,12 +14,14 @@ use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use crate::application::application::Application;
 use crate::game_module::game_client::GameClient;
 use crate::game_module::widgets::hud::{Crosshair, PlayerHud, SelectionArea, TargetHud};
+use crate::game_module::widgets::image_widget::ImageLayout;
 
 pub struct GameUIManager<'a> {
     pub _ui_manager: *const UIManager<'a>,
     pub _game_client: *const GameClient<'a>,
     pub _root_widget: *const WidgetDefault<'a>,
     pub _game_ui_layout: *const WidgetDefault<'a>,
+    pub _intro_image: Option<Box<ImageLayout<'a>>>,
     pub _ui_switch: Option<Box<UISwitch<'a>>>,
     pub _crosshair: Option<Box<Crosshair<'a>>>,
     pub _target_hud: Option<Box<TargetHud<'a>>>,
@@ -41,6 +43,7 @@ impl<'a> GameUIManager<'a> {
             _game_client: std::ptr::null(),
             _root_widget: std::ptr::null(),
             _game_ui_layout: std::ptr::null(),
+            _intro_image: None,
             _ui_switch: None,
             _crosshair: None,
             _target_hud: None,
