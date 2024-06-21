@@ -92,8 +92,8 @@ impl<'a> GameClient<'a> {
         self.get_game_scene_manager_mut().open_game_scene_data("intro_stage");
     }
 
-    pub fn set_game_mode(&mut self, _is_game_mode: bool) {
-        //self.get_game_ui_manager_mut().show_ui(is_game_mode);
+    pub fn set_game_mode(&mut self, is_game_mode: bool) {
+        self.get_game_ui_manager_mut().show_ui(is_game_mode);
     }
 
     pub fn update_game_mode(&mut self, _delta_time: f64) {

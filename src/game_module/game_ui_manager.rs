@@ -79,7 +79,6 @@ impl<'a> UISwitch<'a> {
         ui_component.set_round(10.0);
         ui_component.set_border(2.0);
         ui_component.set_touchable(true);
-        //ui_component.set_material_instance(&engine_resources.get_material_instance_data("ui/render_ui_test"));
 
         ui_component.set_callback_touch_down(
             Some(Box::new(
@@ -137,6 +136,8 @@ impl<'a> GameUIManager<'a> {
         let game_client = ptr_as_ref(self._game_client);
         let game_resources = game_client.get_game_resources();
         let engine_resources = game_resources.get_engine_resources();
+        let root_widget_mut = ptr_as_mut(self._root_widget);
+        let window_center = Vector2::<f32>::new(window_size.x as f32 * 0.5, window_size.y as f32 * 0.5);
 
         // create layout
         let game_ui_layout = UIManager::create_widget("game ui layout", UIWidgetTypes::Default);
@@ -145,14 +146,15 @@ impl<'a> GameUIManager<'a> {
         ui_component.set_size_hint_x(Some(1.0));
         ui_component.set_size_hint_y(Some(1.0));
         ui_component.set_renderable(false);
-
-        let root_widget_mut = ptr_as_mut(self._root_widget);
         root_widget_mut.add_widget(&game_ui_layout);
         self._game_ui_layout = game_ui_layout.as_ref();
 
-        let window_center =
-            Vector2::<f32>::new(window_size.x as f32 * 0.5, window_size.y as f32 * 0.5);
-
+        //
+        self._intro_image = Some(ImageLayout::create_image_layout(
+            game_resources,
+            root_widget_mut,
+            "ui/intro_image"
+        ));
         self._ui_switch = Some(Box::new(UISwitch::create_ui_switch(
             engine_resources,
             root_widget_mut,

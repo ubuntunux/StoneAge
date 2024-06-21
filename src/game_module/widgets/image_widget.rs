@@ -13,17 +13,18 @@ impl<'a> ImageLayout<'a> {
     pub fn create_image_layout(
         game_resources: &GameResources<'a>,
         root_widget: &mut WidgetDefault<'a>,
-    ) -> ImageLayout<'a> {
-        let image_widget = UIManager::create_widget("image_widget", UIWidgetTypes::Default);
+        material_instance_name: &str
+    ) -> Box<ImageLayout<'a>> {
+        let image_widget = UIManager::create_widget(material_instance_name, UIWidgetTypes::Default);
         let ui_component = ptr_as_mut(image_widget.as_ref()).get_ui_component_mut();
-        ui_component.set_size_hint_x(Some(1.0));
-        ui_component.set_size_hint_y(Some(1.0));
-        ui_component.set_material_instance(&game_resources.get_engine_resources().get_material_instance_data("ui/intro_image"));
+        ui_component.set_material_instance(&game_resources.get_engine_resources().get_material_instance_data(material_instance_name));
+        ui_component.set_size_hint_x(Some(0.5));
+        ui_component.set_size_hint_y(Some(0.5));
         root_widget.add_widget(&image_widget);
 
-        ImageLayout {
+        Box::new(ImageLayout {
             _image_layout: image_widget.clone(),
             _opacity: 1.0
-        }
+        })
     }
 }
