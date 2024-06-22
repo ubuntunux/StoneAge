@@ -21,7 +21,7 @@ pub struct GameUIManager<'a> {
     pub _game_client: *const GameClient<'a>,
     pub _root_widget: *const WidgetDefault<'a>,
     pub _game_ui_layout: *const WidgetDefault<'a>,
-    pub _intro_image: Option<Box<ImageLayout<'a>>>,
+    pub _game_image: Option<Box<ImageLayout<'a>>>,
     pub _ui_switch: Option<Box<UISwitch<'a>>>,
     pub _crosshair: Option<Box<Crosshair<'a>>>,
     pub _target_hud: Option<Box<TargetHud<'a>>>,
@@ -35,7 +35,6 @@ pub struct UISwitch<'a> {
 
 
 // Implementations
-
 impl<'a> GameUIManager<'a> {
     pub fn create_game_ui_manager() -> Box<GameUIManager<'a>> {
         Box::new(GameUIManager {
@@ -43,7 +42,7 @@ impl<'a> GameUIManager<'a> {
             _game_client: std::ptr::null(),
             _root_widget: std::ptr::null(),
             _game_ui_layout: std::ptr::null(),
-            _intro_image: None,
+            _game_image: None,
             _ui_switch: None,
             _crosshair: None,
             _target_hud: None,
@@ -79,7 +78,6 @@ impl<'a> UISwitch<'a> {
         ui_component.set_round(10.0);
         ui_component.set_border(2.0);
         ui_component.set_touchable(true);
-
         ui_component.set_callback_touch_down(
             Some(Box::new(
                 |ui_component: &UIComponentInstance<'a>,
@@ -131,13 +129,31 @@ impl<'a> GameUIManager<'a> {
     pub fn get_root_widget_mut(&self) -> &mut WidgetDefault<'a> {
         ptr_as_mut(self._root_widget)
     }
+    // Image Layout
+    pub fn is_visible_game_image(&self) -> bool {
+        self._game_image.as_ref().unwrap().is_visible()
+    }
+    pub fn start_game_image_fadeout(&mut self, start_fadeout: bool) {
+        self._game_image.as_mut().unwrap().start_fadeout(start_fadeout);
+    }
+    pub fn set_game_image_material_instance(&mut self, material_instance: &str, fadeout_time: f32) {
+        let game_client = ptr_as_ref(self._game_client);
+        let game_resources = game_client.get_game_resources();
+        let window_size = game_client.get_engine_core()._window_size;
+        self._game_image.as_mut().unwrap().set_material_instance(
+            game_resources,
+            &window_size,
+            material_instance,
+            fadeout_time
+        );
+    }
     pub fn build_game_ui(&mut self, window_size: &Vector2<i32>) {
         log::info!("build_game_ui");
         let game_client = ptr_as_ref(self._game_client);
         let game_resources = game_client.get_game_resources();
-        let engine_resources = game_resources.get_engine_resources();
+        let _engine_resources = game_resources.get_engine_resources();
         let root_widget_mut = ptr_as_mut(self._root_widget);
-        let window_center = Vector2::<f32>::new(window_size.x as f32 * 0.5, window_size.y as f32 * 0.5);
+        let _window_center = Vector2::<f32>::new(window_size.x as f32 * 0.5, window_size.y as f32 * 0.5);
 
         // create layout
         let game_ui_layout = UIManager::create_widget("game ui layout", UIWidgetTypes::Default);
@@ -150,33 +166,30 @@ impl<'a> GameUIManager<'a> {
         self._game_ui_layout = game_ui_layout.as_ref();
 
         //
-        self._intro_image = Some(ImageLayout::create_image_layout(
-            game_resources,
-            root_widget_mut,
-            "ui/intro_image"
-        ));
-        self._ui_switch = Some(Box::new(UISwitch::create_ui_switch(
-            engine_resources,
-            root_widget_mut,
-            game_ui_layout_mut,
-        )));
-        self._crosshair = Some(Box::new(Crosshair::create_crosshair(
-            game_resources,
-            game_ui_layout_mut,
-            &window_center,
-        )));
-        self._target_hud = Some(Box::new(TargetHud::create_target_hud(
-            game_ui_layout_mut,
-            &window_center,
-        )));
-        self._player_hud = Some(Box::new(PlayerHud::create_player_hud(
-            game_ui_layout_mut,
-            &Vector2::new(window_size.x as f32 - 200.0, window_center.y),
-        )));
-        self._selection_area = Some(SelectionArea::create_selection_area(
-            game_ui_layout_mut,
-            window_size,
-        ));
+        self._game_image = Some(ImageLayout::create_image_layout(root_widget_mut, "ui/intro_image"));
+
+        // self._ui_switch = Some(Box::new(UISwitch::create_ui_switch(
+        //     engine_resources,
+        //     root_widget_mut,
+        //     game_ui_layout_mut,
+        // )));
+        // self._crosshair = Some(Box::new(Crosshair::create_crosshair(
+        //     game_resources,
+        //     game_ui_layout_mut,
+        //     &window_center,
+        // )));
+        // self._target_hud = Some(Box::new(TargetHud::create_target_hud(
+        //     game_ui_layout_mut,
+        //     &window_center,
+        // )));
+        // self._player_hud = Some(Box::new(PlayerHud::create_player_hud(
+        //     game_ui_layout_mut,
+        //     &Vector2::new(window_size.x as f32 - 200.0, window_center.y),
+        // )));
+        // self._selection_area = Some(SelectionArea::create_selection_area(
+        //     game_ui_layout_mut,
+        //     window_size,
+        // ));
     }
 
     pub fn get_crosshair_widget_mut(&mut self) -> &mut WidgetDefault<'a> {
@@ -210,26 +223,27 @@ impl<'a> GameUIManager<'a> {
         self._crosshair.as_mut().unwrap()._tracking_mouse = tracking;
     }
 
-    pub fn set_crosshair_pos(&mut self, pos: &Vector2<i32>) {
-        if self._crosshair.is_some() {
-            self._crosshair.as_mut().unwrap()._pos.clone_from(pos);
-        }
-    }
-
-    pub fn update_game_ui(&mut self, _delta_time: f64) {
+    pub fn update_game_ui(&mut self, delta_time: f64, mouse_pos: &Vector2<i32>) {
         let game_client = ptr_as_ref(self._game_client);
         let window_size = &game_client
             .get_application()
             .get_engine_core()
             ._window_size;
 
+        // intro image
+        if let Some(game_image) = self._game_image.as_mut() {
+            game_image.update_image_layout(delta_time);
+        }
+
         // Cross Hair
         if self._crosshair.is_some() {
-            let crosshair = self._crosshair.as_ref().unwrap();
+            let crosshair = self._crosshair.as_mut().unwrap();
             let crosshair_widget = ptr_as_mut(crosshair._widget);
             if crosshair_widget.get_ui_component().get_visible() {
                 let crosshair_pos_x: i32;
                 let crosshair_pos_y: i32;
+
+                crosshair._pos.clone_from(mouse_pos);
 
                 if crosshair._tracking_mouse {
                     crosshair_pos_x = crosshair._pos.x;

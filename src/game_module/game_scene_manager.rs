@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use nalgebra::{Vector2, Vector3};
+use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop, AudioManager};
 use rust_engine_3d::core::engine_core::EngineCore;
 use rust_engine_3d::effect::effect_manager::EffectManager;
 use rust_engine_3d::scene::render_object::RenderObjectCreateInfo;
@@ -29,6 +30,7 @@ pub struct GameSceneDataCreateInfo {
 }
 
 pub struct GameSceneManager<'a> {
+    pub _audio_manager: *const AudioManager<'a>,
     pub _effect_manager: *const EffectManager<'a>,
     pub _scene_manager: *const SceneManager<'a>,
     pub _game_resources: *const GameResources<'a>,
@@ -36,7 +38,8 @@ pub struct GameSceneManager<'a> {
     pub _food_manager: *const FoodManager<'a>,
     pub _game_scene_name: String,
     pub _blocks: HashMap<u64, RcRefCell<Block<'a>>>,
-    pub _block_id_generator: u64
+    pub _block_id_generator: u64,
+    pub _game_music: Option<RcRefCell<AudioInstance>>
 }
 
 impl<'a> GameSceneManager<'a> {
@@ -50,6 +53,7 @@ impl<'a> GameSceneManager<'a> {
 
     pub fn create_game_scene_manager() -> Box<GameSceneManager<'a>> {
         Box::new(GameSceneManager {
+            _audio_manager: std::ptr::null(),
             _effect_manager: std::ptr::null(),
             _scene_manager: std::ptr::null(),
             _game_resources: std::ptr::null(),
@@ -57,7 +61,8 @@ impl<'a> GameSceneManager<'a> {
             _food_manager: std::ptr::null(),
             _game_scene_name: String::new(),
             _blocks: HashMap::new(),
-            _block_id_generator: 0
+            _block_id_generator: 0,
+            _game_music: None
         })
     }
 
@@ -68,6 +73,7 @@ impl<'a> GameSceneManager<'a> {
         window_size: &Vector2<i32>,
     ) {
         log::info!("initialize_game_scene_manager");
+        self._audio_manager = engine_core.get_audio_manager();
         self._scene_manager = engine_core.get_scene_manager();
         self._effect_manager = engine_core.get_effect_manager();
         self._character_manager = application.get_character_manager();
@@ -79,6 +85,10 @@ impl<'a> GameSceneManager<'a> {
             engine_core.get_engine_resources(),
             window_size,
         )
+    }
+
+    pub fn play_music(&mut self, audio_name: &str) {
+        self._game_music = ptr_as_mut(self._audio_manager).create_audio_instance_from_bank(audio_name, AudioLoop::LOOP, Some(255));
     }
 
     pub fn get_blocks(&self) -> &HashMap<u64, RcRefCell<Block<'a>>> {
@@ -140,7 +150,7 @@ impl<'a> GameSceneManager<'a> {
         ))
     }
 
-    pub fn open_game_scene_data(&'a mut self, game_scene_data_name: &str) {
+    pub fn open_game_scene_data(&mut self, game_scene_data_name: &str) {
         log::info!("open_game_scene_data: {:?}", game_scene_data_name);
         self._game_scene_name = String::from(game_scene_data_name);
         let game_resources = ptr_as_ref(self._game_resources);
@@ -152,8 +162,7 @@ impl<'a> GameSceneManager<'a> {
         // load scene
         let game_scene_data = game_resources.get_game_scene_data(game_scene_data_name).borrow();
         let scene_data_name = &game_scene_data._scene_data_name;
-        self.get_scene_manager_mut()
-            .open_scene_data(scene_data_name);
+        self.get_scene_manager_mut().open_scene_data(scene_data_name);
 
         // create blocks
         for (block_name, block_create_info) in game_scene_data._blocks.iter() {
@@ -161,17 +170,15 @@ impl<'a> GameSceneManager<'a> {
             self.register_block(block);
         }
 
-        //log::info!("min: {:?}, max: {:?}, size: {:?}, nums: {:?}", self._map_min_pos, self._map_max_pos, self._map_size, self._block_nums);
-
         // create player
         let character_manager = ptr_as_mut(self._character_manager.clone());
         for (character_name, character_create_info) in game_scene_data._player.iter() {
-            let _character = character_manager.create_character(character_name, character_create_info, true);
+            character_manager.create_character(character_name, character_create_info, true);
         }
 
         // create npc
         for (character_name, character_create_info) in game_scene_data._characters.iter() {
-            let _character = character_manager.create_character(character_name, character_create_info, false);
+            character_manager.create_character(character_name, character_create_info, false);
         }
 
         // first update

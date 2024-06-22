@@ -1,6 +1,8 @@
 use nalgebra::Vector2;
 use rust_engine_3d::core::engine_core::EngineCore;
+use rust_engine_3d::core::input::ButtonState;
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
+use winit::keyboard::KeyCode;
 
 use crate::application::application::Application;
 use crate::game_module::actors::character_manager::CharacterManager;
@@ -8,6 +10,12 @@ use crate::game_module::game_controller::GameController;
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::game_ui_manager::GameUIManager;
+
+pub enum GamePhase {
+    None,
+    Intro,
+    GamePlay
+}
 
 pub struct GameClient<'a> {
     pub _engine_core: *const EngineCore<'a>,
@@ -17,6 +25,7 @@ pub struct GameClient<'a> {
     pub _game_resources: *const GameResources<'a>,
     pub _game_controller: *const GameController<'a>,
     pub _game_ui_manager: *const GameUIManager<'a>,
+    pub _game_phase: GamePhase,
 }
 
 impl<'a> GameClient<'a> {
@@ -29,6 +38,7 @@ impl<'a> GameClient<'a> {
             _game_resources: std::ptr::null(),
             _game_controller: std::ptr::null(),
             _game_ui_manager: std::ptr::null(),
+            _game_phase: GamePhase::None,
         })
     }
 
@@ -87,16 +97,10 @@ impl<'a> GameClient<'a> {
     pub fn get_game_ui_manager_mut(&self) -> &mut GameUIManager<'a> {
         ptr_as_mut(self._game_ui_manager)
     }
-    pub fn start_game(&'a mut self) {
-        log::info!("start_game");
-        self.get_game_scene_manager_mut().open_game_scene_data("intro_stage");
-    }
-
     pub fn set_game_mode(&mut self, is_game_mode: bool) {
         self.get_game_ui_manager_mut().show_ui(is_game_mode);
     }
-
-    pub fn update_game_mode(&mut self, _delta_time: f64) {
+    pub fn update_game_mode(&mut self, delta_time: f64) {
         let engine_core = self.get_engine_core();
         let game_scene_manager = self.get_game_scene_manager();
         let scene_manager = game_scene_manager.get_scene_manager();
@@ -110,20 +114,44 @@ impl<'a> GameClient<'a> {
             mouse_move_data._mouse_pos_delta.x as f32 / mouse_speed_ratio,
             mouse_move_data._mouse_pos_delta.y as f32 / mouse_speed_ratio,
         );
-        let player = self.get_character_manager().get_player();
-        let main_camera = scene_manager.get_main_camera_mut();
-        if false == self._game_controller.is_null() {
-            let game_controller = ptr_as_mut(self._game_controller);
-            game_controller.update_game_controller(
-                time_data,
-                &joystick_input_data,
-                &keyboard_input_data,
-                &mouse_move_data,
-                &mouse_input_data,
-                &mouse_delta,
-                main_camera,
-                player,
-            );
+
+        match self._game_phase {
+            GamePhase::None => {
+                self._game_phase = GamePhase::Intro;
+                self.get_game_ui_manager_mut().set_game_image_material_instance("ui/intro_image", 1.0);
+                ptr_as_mut(self._game_scene_manager).play_music("game_music");
+            }
+            GamePhase::Intro => {
+                if self.get_game_ui_manager().is_visible_game_image() {
+                    if mouse_input_data._btn_l_pressed ||
+                        joystick_input_data._btn_x == ButtonState::Pressed ||
+                        keyboard_input_data.get_key_pressed(KeyCode::Space) ||
+                        keyboard_input_data.get_key_pressed(KeyCode::Escape) {
+                        self.get_game_ui_manager_mut().start_game_image_fadeout(true);
+                    }
+                } else {
+                    self.get_game_scene_manager_mut().open_game_scene_data("intro_stage");
+                    self._game_phase = GamePhase::GamePlay;
+                }
+            }
+            GamePhase::GamePlay => {
+                let player = self.get_character_manager().get_player();
+                let main_camera = scene_manager.get_main_camera_mut();
+                if false == self._game_controller.is_null() {
+                    let game_controller = ptr_as_mut(self._game_controller);
+                    game_controller.update_game_controller(
+                        time_data,
+                        &joystick_input_data,
+                        &keyboard_input_data,
+                        &mouse_move_data,
+                        &mouse_input_data,
+                        &mouse_delta,
+                        main_camera,
+                        player,
+                    );
+                }
+                ptr_as_mut(self._game_scene_manager).update_game_scene_manager(delta_time);
+            }
         }
     }
 }

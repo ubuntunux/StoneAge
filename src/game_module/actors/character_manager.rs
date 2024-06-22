@@ -84,7 +84,7 @@ impl<'a> CharacterManager<'a> {
     pub fn get_character(&self, character_id: u64) -> Option<&RcRefCell<Character<'a>>> {
         self._characters.get(&character_id)
     }
-    pub fn create_character(&mut self, character_name: &str, character_create_info: &CharacterCreateInfo, is_player: bool) -> RcRefCell<Character<'a>> {
+    pub fn create_character(&mut self, character_name: &str, character_create_info: &CharacterCreateInfo, is_player: bool) {
         let game_resources = ptr_as_ref(self._game_resources);
         let character_data = game_resources.get_character_data(character_create_info._character_data_name.as_str());
         let character_data_ref = character_data.borrow();
@@ -139,7 +139,6 @@ impl<'a> CharacterManager<'a> {
         }
 
         self._characters.insert(id, character.clone());
-        character
     }
     pub fn remove_character(&mut self, character: &RcRefCell<Character>) {
         self._characters.remove(&character.borrow().get_character_id());
@@ -150,7 +149,7 @@ impl<'a> CharacterManager<'a> {
     }
 
     pub fn play_audio(&self, audio_name_bank: &str) {
-        self.get_audio_manager_mut().create_audio_instance_from_bank(audio_name_bank, AudioLoop::ONCE);
+        self.get_audio_manager_mut().create_audio_instance_from_bank(audio_name_bank, AudioLoop::ONCE, None);
     }
 
     pub fn play_effect(&self, effect_name: &str, effect_create_info: &EffectCreateInfo) {

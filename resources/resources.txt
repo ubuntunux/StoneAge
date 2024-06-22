@@ -117,6 +117,7 @@ resources/sounds/Voc_Pain_Short_03.meta
 resources/sounds/Default_Swoosh.meta
 resources/sounds/Voc_Death_05.wav
 resources/sounds/Char_jump_start.meta
+resources/sounds/489035__michael-db__game-music-01.meta
 resources/sounds/Voc_Pain_Short_05.meta
 resources/sounds/crunch.meta
 resources/sounds/finish_01.meta
@@ -131,6 +132,7 @@ resources/sounds/Voc_Pain_Short_03.wav
 resources/sounds/Voc_Pain_Short_02.wav
 resources/sounds/Voc_Pain_Short_02.meta
 resources/sounds/crunch.wav
+resources/sounds/489035__michael-db__game-music-01.mp3
 resources/sounds/Voc_Death_04.meta
 resources/sounds/finish_02.meta
 resources/sounds/Voc_Pain_Short_01.meta
@@ -487,6 +489,8 @@ resources/sound_banks/pain_short.meta
 resources/sound_banks/pain_short.bank
 resources/sound_banks/dead.bank
 resources/sound_banks/crunch.meta
+resources/sound_banks/game_music.bank
+resources/sound_banks/game_music.meta
 resources/sound_banks/hit.bank
 resources/sound_banks/dead.meta
 resources/sound_banks/swoosh.bank

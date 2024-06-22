@@ -63,9 +63,7 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
 
         // start game
         self.get_game_ui_manager_mut().build_game_ui(window_size);
-        self.get_game_ui_manager_mut().show_ui(false);
         self.set_game_mode(true);
-        self.get_game_client_mut().start_game();
     }
 
     fn terminate_application(&mut self) {
@@ -216,10 +214,8 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
         // update managers
         if self._is_game_mode {
             self._game_client.update_game_mode(delta_time);
-            self._game_scene_manager.update_game_scene_manager(delta_time);
-            self.get_game_ui_manager_mut().set_crosshair_pos(&engine_core._mouse_move_data._mouse_pos);
+            self.get_game_ui_manager_mut().update_game_ui(delta_time, &engine_core._mouse_move_data._mouse_pos);
         }
-        self.get_game_ui_manager_mut().update_game_ui(delta_time);
     }
 }
 

@@ -210,7 +210,7 @@ impl<'a> FoodManager<'a> {
     }
 
     pub fn play_audio(&self, audio_name_bank: &str) {
-        self.get_audio_manager_mut().create_audio_instance_from_bank(audio_name_bank, AudioLoop::ONCE);
+        self.get_audio_manager_mut().create_audio_instance_from_bank(audio_name_bank, AudioLoop::ONCE, None);
     }
 
     pub fn play_effect(&self, effect_name: &str, effect_create_info: &EffectCreateInfo) {
