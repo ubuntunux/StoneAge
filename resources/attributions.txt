@@ -1,3 +1,4 @@
 3D Model,SABRE,seth the yutyrannus,CC Attribution,https://sketchfab.com/3d-models/sabre-2610092060b24576a85e6cfaa558dd39
 3D Model,MAMMOTH,seth the yutyrannus,CC Attribution,https://sketchfab.com/3d-models/mammoth-5e0a1d6bb8a74c0f906bafa34cffa0c5
 Sound,Game-Music-01,Michael-DB,CC BY 4.0,https://freesound.org/people/Michael-DB/sounds/489035
+Sound,Footsteps on big gravels (loop).wav,arnaud coutancier,CC BY-NC 3.0,https://freesound.org/people/arnaud%20coutancier/sounds/275082

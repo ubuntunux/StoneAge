@@ -54,10 +54,10 @@ pub fn create_character_behavior(character_type: CharacterDataType) -> Box<dyn B
 impl BehaviorBase for RoamerBehavior {
     fn update_behavior<'a>(&mut self, owner: &mut Character, player: &Character<'a>, delta_time: f32) {
         // update attack
-        if 0.0 < self._roamer_attack_time {
-            self._roamer_attack_time -= delta_time;
-        } else {
-            if owner.check_attack_range(ActionAnimationState::Attack, player.get_bounding_box()) {
+        if player._is_alive {
+            if 0.0 < self._roamer_attack_time {
+                self._roamer_attack_time -= delta_time;
+            } else if owner.check_attack_range(ActionAnimationState::Attack, player.get_bounding_box()) {
                 let to_player_direction =
                     if owner.get_position().x <= player.get_position().x {
                         MoveDirections::RIGHT
@@ -78,7 +78,9 @@ impl BehaviorBase for RoamerBehavior {
             let is_blocked = owner._controller._is_blocked;
             let is_cliff = owner._controller._is_cliff;
             let to_player: Vector3<f32> = player.get_position() - owner.get_position();
-            if to_player.x.abs() < NPC_TRACKING_RANGE_X && to_player.y.abs() < NPC_TRACKING_RANGE_Y {
+
+            if player._is_alive && (to_player.x.abs() < NPC_TRACKING_RANGE_X && to_player.y.abs() < NPC_TRACKING_RANGE_Y) {
+                // tracking
                 let move_direction = if 0.0 < to_player.x {
                     MoveDirections::RIGHT
                 } else {
@@ -95,7 +97,7 @@ impl BehaviorBase for RoamerBehavior {
                     owner.set_move_direction(move_direction);
                 }
             } else {
-                // idle
+                // update idle time
                 self._roamer_idle_time -= delta_time;
                 if self._roamer_idle_time <= 0.0 {
                     owner.set_move_stop();

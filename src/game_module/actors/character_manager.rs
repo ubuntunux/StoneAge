@@ -152,6 +152,10 @@ impl<'a> CharacterManager<'a> {
         self.get_audio_manager_mut().create_audio_instance_from_bank(audio_name_bank, AudioLoop::ONCE, None);
     }
 
+    pub fn play_audio_options(&self, audio_name_bank: &str, audio_loop: AudioLoop, volume: Option<f32>) {
+        self.get_audio_manager_mut().create_audio_instance_from_bank(audio_name_bank, audio_loop, volume);
+    }
+
     pub fn play_effect(&self, effect_name: &str, effect_create_info: &EffectCreateInfo) {
         self.get_scene_manager_mut().add_effect(effect_name, effect_create_info);
     }

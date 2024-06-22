@@ -1,4 +1,5 @@
 use nalgebra::Vector3;
+use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::effect::effect_data::EffectCreateInfo;
 use rust_engine_3d::scene::animation::{AnimationLayerData, AnimationPlayArgs, AnimationPlayInfo};
 use rust_engine_3d::scene::mesh::MeshData;
@@ -381,48 +382,17 @@ impl<'a> Character<'a> {
                 // nothing
             },
             MoveAnimationState::Jump => {
-                self.get_character_manager().play_audio(AUDIO_ATTACK);
+                self.get_character_manager().play_audio(AUDIO_JUMP);
             },
             MoveAnimationState::Roll => {
                 self.set_invincibility(true);
-                self.get_character_manager().play_audio(AUDIO_ATTACK);
+                self.get_character_manager().play_audio(AUDIO_ROLL);
             },
             MoveAnimationState::Run => {
                 // nothing
             },
             MoveAnimationState::RunningJump => {
-                self.get_character_manager().play_audio(AUDIO_ATTACK);
-            },
-            MoveAnimationState::Walk => {
-                // nothing
-            }
-        }
-    }
-
-    pub fn update_move_animation_loop_event(&mut self) {
-        let move_animation = self._move_animation_state;
-        let render_object = ptr_as_mut(self._render_object.as_ptr());
-        let animation_play_info = render_object.get_animation_play_info(AnimationLayer::BaseLayer);
-        match move_animation {
-            MoveAnimationState::None => {
-                // nothing
-            },
-            MoveAnimationState::Idle => {
-                // nothing
-            },
-            MoveAnimationState::Jump => {
-                // nothing
-            },
-            MoveAnimationState::Roll => {
-                if animation_play_info._is_animation_end {
-                    self.set_move_idle();
-                }
-            },
-            MoveAnimationState::Run => {
-                // nothing
-            },
-            MoveAnimationState::RunningJump => {
-                // nothing
+                self.get_character_manager().play_audio(AUDIO_JUMP);
             },
             MoveAnimationState::Walk => {
                 // nothing
@@ -456,6 +426,41 @@ impl<'a> Character<'a> {
         }
     }
 
+    pub fn update_move_animation_loop_event(&mut self) {
+        let move_animation = self._move_animation_state;
+        let render_object = ptr_as_mut(self._render_object.as_ptr());
+        let animation_play_info = render_object.get_animation_play_info(AnimationLayer::BaseLayer);
+        match move_animation {
+            MoveAnimationState::None => {
+                // nothing
+            },
+            MoveAnimationState::Idle => {
+                // nothing
+            },
+            MoveAnimationState::Jump => {
+                // nothing
+            },
+            MoveAnimationState::Roll => {
+                if animation_play_info._is_animation_end {
+                    self.set_move_idle();
+                }
+            },
+            MoveAnimationState::Run => {
+                if self._is_player && (animation_play_info.check_animation_event_time(0.1) || animation_play_info.check_animation_event_time(0.5)) {
+                    self.get_character_manager().play_audio_options(AUDIO_FOOTSTEP, AudioLoop::ONCE, Some(0.5));
+                }
+            },
+            MoveAnimationState::RunningJump => {
+                // nothing
+            },
+            MoveAnimationState::Walk => {
+                if self._is_player && (animation_play_info.check_animation_event_time(0.2) || animation_play_info.check_animation_event_time(0.9)) {
+                    self.get_character_manager().play_audio_options(AUDIO_FOOTSTEP, AudioLoop::ONCE, Some(0.5));
+                }
+            }
+        }
+    }
+
     pub fn update_move_keyframe_event(&mut self) {
         if self._prev_move_animation_state != self._move_animation_state {
             self.update_move_animation_end_event();
@@ -472,7 +477,7 @@ impl<'a> Character<'a> {
                 // nothing
             },
             ActionAnimationState::Attack => {
-                self.get_character_manager().play_audio(AUDIO_ATTACK);
+                // nothing
             },
             ActionAnimationState::Dead => {
                 self.get_character_manager().play_audio(AUDIO_DEAD);
@@ -496,7 +501,10 @@ impl<'a> Character<'a> {
                 // nothing
             },
             ActionAnimationState::Attack => {
-                if animation_play_info.check_animation_event_time(character_data._attack_event_time) {
+                if animation_play_info.check_animation_event_time(0.0) {
+                    self.get_character_manager().play_audio(AUDIO_ATTACK);
+                }
+                else if animation_play_info.check_animation_event_time(character_data._attack_event_time) {
                     self._attack_event = ActionAnimationState::Attack;
                 }
 
@@ -705,6 +713,8 @@ impl<'a> Character<'a> {
     }
 
     pub fn update_character(&mut self, game_scene_manager: &GameSceneManager, delta_time: f32, player: &Character<'a>) {
+        let was_on_ground = self.is_on_ground();
+
         if false == self._is_player && self._is_alive {
             self._behavior.update_behavior(ptr_as_mut(self), player, delta_time);
         }
@@ -717,5 +727,10 @@ impl<'a> Character<'a> {
             delta_time,
         );
         self.update_transform();
+
+        // sound
+        if !was_on_ground && self.is_on_ground() && self._is_player {
+            self.get_character_manager().play_audio(AUDIO_JUMP_END);
+        }
     }
 }

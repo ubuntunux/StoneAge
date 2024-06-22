@@ -6,6 +6,7 @@ use winit::keyboard::KeyCode;
 
 use crate::application::application::Application;
 use crate::game_module::actors::character_manager::CharacterManager;
+use crate::game_module::game_constants::{AMBIENT_SOUND, GAME_MUSIC, GAME_SCENE_INTRO, MATERIAL_INTRO_IMAGE};
 use crate::game_module::game_controller::GameController;
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
@@ -118,8 +119,9 @@ impl<'a> GameClient<'a> {
         match self._game_phase {
             GamePhase::None => {
                 self._game_phase = GamePhase::Intro;
-                self.get_game_ui_manager_mut().set_game_image_material_instance("ui/intro_image", 1.0);
-                ptr_as_mut(self._game_scene_manager).play_music("game_music");
+                self.get_game_ui_manager_mut().set_game_image_material_instance(MATERIAL_INTRO_IMAGE, 1.0);
+                ptr_as_mut(self._game_scene_manager).play_music(GAME_MUSIC);
+                ptr_as_mut(self._game_scene_manager).play_music(AMBIENT_SOUND);
             }
             GamePhase::Intro => {
                 if self.get_game_ui_manager().is_visible_game_image() {
@@ -130,7 +132,7 @@ impl<'a> GameClient<'a> {
                         self.get_game_ui_manager_mut().start_game_image_fadeout(true);
                     }
                 } else {
-                    self.get_game_scene_manager_mut().open_game_scene_data("intro_stage");
+                    self.get_game_scene_manager_mut().open_game_scene_data(GAME_SCENE_INTRO);
                     self._game_phase = GamePhase::GamePlay;
                 }
             }
