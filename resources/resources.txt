@@ -37,6 +37,7 @@ resources/externals/textures/environments/snow_moutain.png
 resources/externals/textures/environments/desert_moutain.png
 resources/externals/textures/environments/desert_ground.png
 resources/externals/blender_assets.cats.txt
+resources/externals/blender_assets.cats.txt~
 resources/externals/animation_layers/jack/upper_animation_layer.blend
 resources/externals/animation_layers/triceratops/upper_animation_layer.blend
 resources/externals/animation_layers/trex/upper_animation_layer.blend
