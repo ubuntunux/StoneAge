@@ -118,13 +118,14 @@ resources/sounds/finish_03.wav
 resources/sounds/Voc_Pain_Short_03.meta
 resources/sounds/Default_Swoosh.meta
 resources/sounds/Voc_Death_05.wav
-resources/sounds/Char_guard_off.wav
 resources/sounds/489035__michael-db__game-music-01.meta
+resources/sounds/Char_roll_end.meta
 resources/sounds/Voc_Pain_Short_05.meta
 resources/sounds/crunch.meta
 resources/sounds/footstep_03.meta
 resources/sounds/finish_01.meta
 resources/sounds/finish_02.wav
+resources/sounds/Char_roll_end.wav
 resources/sounds/finish_01.wav
 resources/sounds/Voc_Pain_Short_04.meta
 resources/sounds/Voc_Pain_Short_05.wav
@@ -140,9 +141,7 @@ resources/sounds/Voc_Death_04.meta
 resources/sounds/footstep_01.meta
 resources/sounds/finish_02.meta
 resources/sounds/footstep_02.meta
-resources/sounds/jump_end.meta
 resources/sounds/Voc_Pain_Short_01.meta
-resources/sounds/jump_end.wav
 resources/sounds/footstep_00.meta
 resources/sounds/Default_Swoosh.wav
 resources/sounds/footstep_02.mp3
@@ -152,7 +151,6 @@ resources/sounds/Voc_Pain_Short_01.wav
 resources/sounds/footstep_00.mp3
 resources/sounds/footstep_01.mp3
 resources/sounds/Voc_Death_04.wav
-resources/sounds/Char_guard_off.meta
 resources/sounds/river-mojave-desert-california.meta
 resources/engine_resources/shader_caches/common/render_object_RenderMode2_RenderObjectType1.vert.spirv
 resources/engine_resources/shader_caches/common/render_bloom_highlight.frag.spirv
@@ -513,12 +511,10 @@ resources/sound_banks/ambient_sound.bank
 resources/sound_banks/hit.bank
 resources/sound_banks/ambient_sound.meta
 resources/sound_banks/dead.meta
-resources/sound_banks/jump_end.meta
 resources/sound_banks/swoosh.bank
 resources/sound_banks/hit.meta
 resources/sound_banks/footstep.meta
 resources/sound_banks/swoosh.meta
-resources/sound_banks/jump_end.bank
 resources/sound_banks/crunch.bank
 resources/material_instances/ui/render_ui_test.matinst
 resources/material_instances/ui/crosshair.matinst

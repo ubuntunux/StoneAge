@@ -386,7 +386,6 @@ impl<'a> Character<'a> {
             },
             MoveAnimationState::Roll => {
                 self.set_invincibility(true);
-                self.get_character_manager().play_audio(AUDIO_ROLL);
             },
             MoveAnimationState::Run => {
                 // nothing
@@ -441,7 +440,10 @@ impl<'a> Character<'a> {
                 // nothing
             },
             MoveAnimationState::Roll => {
-                if animation_play_info._is_animation_end {
+                if self._is_player && animation_play_info.check_animation_event_time(0.2) {
+                    self.get_character_manager().play_audio(AUDIO_ROLL);
+                }
+                else if animation_play_info._is_animation_end {
                     self.set_move_idle();
                 }
             },
@@ -730,7 +732,7 @@ impl<'a> Character<'a> {
 
         // sound
         if !was_on_ground && self.is_on_ground() && self._is_player {
-            self.get_character_manager().play_audio(AUDIO_JUMP_END);
+            self.get_character_manager().play_audio(AUDIO_FOOTSTEP);
         }
     }
 }

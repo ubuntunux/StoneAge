@@ -42,7 +42,6 @@ pub const AUDIO_CRUNCH: &str = "crunch";
 pub const AUDIO_FOOTSTEP: &str = "footstep";
 pub const AUDIO_ROLL: &str = "roll";
 pub const AUDIO_JUMP: &str = "jump";
-pub const AUDIO_JUMP_END: &str = "jump_end";
 pub const AMBIENT_SOUND: &str = "ambient_sound";
 pub const GAME_MUSIC: &str = "game_music";
 
