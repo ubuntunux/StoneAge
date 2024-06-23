@@ -120,8 +120,8 @@ impl<'a> GameClient<'a> {
             GamePhase::None => {
                 self._game_phase = GamePhase::Intro;
                 self.get_game_ui_manager_mut().set_game_image_material_instance(MATERIAL_INTRO_IMAGE, 1.0);
-                ptr_as_mut(self._game_scene_manager).play_music(GAME_MUSIC);
-                ptr_as_mut(self._game_scene_manager).play_music(AMBIENT_SOUND);
+                ptr_as_mut(self._game_scene_manager).play_music(GAME_MUSIC, Some(0.5));
+                ptr_as_mut(self._game_scene_manager).play_music(AMBIENT_SOUND, None);
             }
             GamePhase::Intro => {
                 if self.get_game_ui_manager().is_visible_game_image() {
