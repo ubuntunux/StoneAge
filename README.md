@@ -1,5 +1,5 @@
 # StoneAge
-    - StoneAge is developed using the RustEngine3D that is vulkan-powered 3D open source engine written in the Rust programming language.
+    - StoneAge is an indie game developed using RustEngine3D, my own game engine written in the Rust programming language.
 ![](doc/Screenshot from 2024-06-23 17-49-22.png)
 
 * Devlog
