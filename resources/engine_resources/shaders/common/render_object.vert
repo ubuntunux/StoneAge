@@ -55,7 +55,7 @@ void main() {
     }
 #else
     // RenderObjectType_Static
-    const uint local_matrix_prev_offset = pushConstant._transform_matrix_offset;
+    const uint local_matrix_prev_offset = pushConstant._transform_matrix_offset; // static mesh can't move
     const uint local_matrix_offset = pushConstant._transform_matrix_offset;
     position = vec4(inPosition, 1.0);
     prev_position = vec4(inPosition, 1.0);
