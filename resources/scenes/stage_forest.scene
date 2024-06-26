@@ -3,8 +3,8 @@
         "Camera": {
             "position": [
                 2.0,
-                10.866233825683594,
-                -10.0
+                19.20817756652832,
+                -4.320312976837158
             ],
             "rotation": [
                 0.19894059101608796,
@@ -37,6 +37,60 @@
     "_effects": {},
     "_skeletal_objects": {},
     "_static_objects": {
+        "birch_tree_00": {
+            "_model_data_name": "environments/birch_tree_00",
+            "_position": [
+                -24.96188735961914,
+                8.34194278717041,
+                -2.702620029449463
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "birch_tree_01": {
+            "_model_data_name": "environments/birch_tree_01",
+            "_position": [
+                -20.968154907226562,
+                8.34194278717041,
+                -2.8927979469299316
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "daffodil": {
+            "_model_data_name": "environments/daffodil",
+            "_position": [
+                -7.182960033416748,
+                8.148539543151855,
+                -2.8637208938598633
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                4.647838115692139,
+                4.647838115692139,
+                4.647838115692139
+            ]
+        },
         "desert_ground": {
             "_model_data_name": "environments/desert_ground",
             "_position": [
@@ -55,6 +109,96 @@
                 0.34625133872032166
             ]
         },
+        "forest_mountain_00": {
+            "_model_data_name": "environments/forest_mountain_00",
+            "_position": [
+                -14.692296981811523,
+                8.34194278717041,
+                -3.463329792022705
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                0.15469248592853546,
+                0.15469248592853546,
+                0.15469248592853546
+            ]
+        },
+        "forest_mountain_01": {
+            "_model_data_name": "environments/forest_mountain_01",
+            "_position": [
+                -9.890314102172852,
+                8.34194278717041,
+                -2.8927979469299316
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                0.10192976146936417,
+                0.10192976146936417,
+                0.10192976146936417
+            ]
+        },
+        "grass_00": {
+            "_model_data_name": "environments/grass_00",
+            "_position": [
+                -5.421141624450684,
+                8.34194278717041,
+                -3.035430431365967
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                3.0,
+                3.0,
+                3.0
+            ]
+        },
+        "grass_01": {
+            "_model_data_name": "environments/grass_01",
+            "_position": [
+                -4.042352676391602,
+                8.34194278717041,
+                -2.940342426300049
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                3.0,
+                3.0,
+                3.0
+            ]
+        },
+        "hyacinth": {
+            "_model_data_name": "environments/hyacinth",
+            "_position": [
+                -2.663567543029785,
+                8.34194278717041,
+                -2.8452534675598145
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                3.0,
+                3.0,
+                3.0
+            ]
+        },
         "landscape_00": {
             "_model_data_name": "environments/landscape_00",
             "_position": [
@@ -71,6 +215,204 @@
                 2.0,
                 2.0,
                 2.0
+            ]
+        },
+        "mushroom_orange_00": {
+            "_model_data_name": "environments/mushroom_orange_00",
+            "_position": [
+                -1.5225014686584473,
+                8.34194278717041,
+                -2.940342426300049
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                3.0,
+                3.0,
+                3.0
+            ]
+        },
+        "mushroom_orange_01": {
+            "_model_data_name": "environments/mushroom_orange_01",
+            "_position": [
+                -0.4289785325527191,
+                8.34194278717041,
+                -2.7977089881896973
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                3.0,
+                3.0,
+                3.0
+            ]
+        },
+        "mushroom_purple_00": {
+            "_model_data_name": "environments/mushroom_purple_00",
+            "_position": [
+                0.6645399332046509,
+                8.34194278717041,
+                -2.7977089881896973
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                3.0,
+                3.0,
+                3.0
+            ]
+        },
+        "mushroom_purple_01": {
+            "_model_data_name": "environments/mushroom_purple_01",
+            "_position": [
+                1.6629714965820312,
+                8.34194278717041,
+                -2.75016450881958
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                3.0,
+                3.0,
+                3.0
+            ]
+        },
+        "rock_forest_grown_00": {
+            "_model_data_name": "environments/rock_forest_grown_00",
+            "_position": [
+                3.945103168487549,
+                8.34194278717041,
+                -2.8452534675598145
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "rock_forest_grown_01": {
+            "_model_data_name": "environments/rock_forest_grown_01",
+            "_position": [
+                7.035489082336426,
+                8.34194278717041,
+                -2.8927979469299316
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "rock_forest_moss_00": {
+            "_model_data_name": "environments/rock_forest_moss_00",
+            "_position": [
+                11.50466251373291,
+                8.34194278717041,
+                -3.748596668243408
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "rock_forest_moss_01": {
+            "_model_data_name": "environments/rock_forest_moss_01",
+            "_position": [
+                15.688570976257324,
+                8.34194278717041,
+                -3.130519390106201
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "sunflower": {
+            "_model_data_name": "environments/sunflower",
+            "_position": [
+                -6.324484348297119,
+                8.34194278717041,
+                -2.845252513885498
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                3.0,
+                3.0,
+                3.0
+            ]
+        },
+        "tree_00": {
+            "_model_data_name": "environments/tree_00",
+            "_position": [
+                -28.337535858154297,
+                8.34194278717041,
+                -2.227175712585449
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "tree_01": {
+            "_model_data_name": "environments/tree_01",
+            "_position": [
+                -31.427921295166016,
+                8.34194278717041,
+                -2.322265148162842
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
             ]
         }
     }

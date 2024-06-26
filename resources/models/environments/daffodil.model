@@ -1,0 +1,21 @@
+{
+    "_material_instances": [
+        "environments/color_palette"
+    ],
+    "_mesh": "environments/daffodil",
+    "_position": [
+        0.0,
+        0.0,
+        0.0
+    ],
+    "_rotation": [
+        0.0,
+        0.0,
+        0.0
+    ],
+    "_scale": [
+        1.0,
+        1.0,
+        1.0
+    ]
+}
