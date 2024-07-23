@@ -12,6 +12,7 @@ pub const CAMERA_PITCH: f32 = 0.0;
 pub const CAMERA_DISTANCE_MIN: f32 = 4.0;
 pub const CAMERA_DISTANCE_MAX: f32 = 10.0;
 pub const CAMERA_ZOOM_SPEED: f32 = 4.0;
+pub const RENDER_BLOCK: bool = false;
 
 // player
 pub const GRAVITY: f32 = 30.0;

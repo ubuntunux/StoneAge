@@ -14,6 +14,7 @@ use crate::game_module::actors::block::{Block, BlockCreateInfo};
 use crate::game_module::actors::character::CharacterCreateInfo;
 use crate::game_module::actors::character_manager::CharacterManager;
 use crate::game_module::actors::foods::FoodManager;
+use crate::game_module::game_constants::RENDER_BLOCK;
 use crate::game_module::game_resource::GameResources;
 
 type BlockCreateInfoMap = HashMap<String, BlockCreateInfo>;
@@ -137,6 +138,10 @@ impl<'a> GameSceneManager<'a> {
             block_name,
             &render_object_create_info
         );
+
+        if !RENDER_BLOCK {
+            render_object_data.borrow_mut().set_render(false);
+        }
 
         let block_id = self.generate_block_id();
         newRcRefCell(Block::create_block(

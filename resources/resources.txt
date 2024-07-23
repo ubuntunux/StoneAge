@@ -104,6 +104,7 @@ resources/externals/meshes/environments/cloud_00.blend
 resources/externals/meshes/environments/tree_01.blend
 resources/externals/meshes/environments/landscape_00.blend
 resources/externals/scenes/stage_forest.blend
+resources/externals/scenes/stage_forest.blend1
 resources/externals/game_data/characters/trex.blend
 resources/externals/game_data/characters/wolf.blend
 resources/externals/game_data/characters/jack.blend
@@ -112,6 +113,7 @@ resources/externals/game_data/blocks/cliff_grass.blend
 resources/externals/game_data/blocks/rock.blend
 resources/externals/game_data/foods/meat.blend
 resources/externals/game_data/properties/properties.blend
+resources/externals/game_data/game_scenes/intro_stage.blend1
 resources/externals/game_data/game_scenes/intro_stage.blend
 resources/externals/models/props/meat.blend
 resources/externals/models/characters/trex.blend
@@ -739,5 +741,4 @@ resources/models/environments/mushroom_purple_01.model
 resources/models/environments/mushroom_orange_00.model
 resources/models/environments/forest_mountain_00.model
 resources/models/environments/mushroom_purple_00.model
-resources/materials/common/render_static_object.matinst
 resources/materials/render_test.mat

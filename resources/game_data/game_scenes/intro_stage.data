@@ -1,117 +1,9 @@
 {
     "_blocks": {
-        "cliff_grass": {
-            "_block_data_name": "cliff_grass",
-            "_position": [
-                -16.0,
-                10.0,
-                0.0
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "cliff_grass.001": {
-            "_block_data_name": "cliff_grass",
-            "_position": [
-                -14.0,
-                10.0,
-                0.0
-            ],
-            "_rotation": [
-                0.0,
-                1.1989812850952148,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "cliff_grass.002": {
-            "_block_data_name": "cliff_grass",
-            "_position": [
-                -12.0,
-                10.0,
-                0.0
-            ],
-            "_rotation": [
-                0.0,
-                4.085937976837158,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "cliff_grass.003": {
-            "_block_data_name": "cliff_grass",
-            "_position": [
-                -12.0,
-                10.0,
-                0.0
-            ],
-            "_rotation": [
-                0.0,
-                4.085937976837158,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "cliff_grass.004": {
-            "_block_data_name": "cliff_grass",
-            "_position": [
-                -8.0,
-                10.0,
-                0.0
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "cliff_grass.007": {
-            "_block_data_name": "cliff_grass",
-            "_position": [
-                -10.0,
-                10.0,
-                0.0
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
         "rock": {
             "_block_data_name": "rock",
             "_position": [
-                3.0,
+                -13.0,
                 10.0,
                 0.0
             ],
@@ -121,7 +13,7 @@
                 0.0
             ],
             "_scale": [
-                3.0,
+                24.0,
                 1.0,
                 1.0
             ]
