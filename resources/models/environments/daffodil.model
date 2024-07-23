@@ -1,6 +1,6 @@
 {
     "_material_instances": [
-        "environments/color_palette"
+        "environments/render_grass"
     ],
     "_mesh": "environments/daffodil",
     "_position": [
