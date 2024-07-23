@@ -76,17 +76,19 @@ void main() {
     localMatrix[3].xyz -= view_constants.CAMERA_POSITION;
     localMatrixPrev[3].xyz -= view_constants.CAMERA_POSITION_PREV;
 
-    vec3 relative_pos = (localMatrix * position).xyz;
-    vec3 relative_pos_prev = (localMatrixPrev * prev_position).xyz;
+    // wind
+    vec3 wind = vec3(pow(position.y, 2.0) * sin(scene_constants.TIME + gl_InstanceIndex * 13.1423), 0.0, 0.0);
+    vec3 relative_pos = (localMatrix * position).xyz + wind;
+    vec3 relative_pos_prev = (localMatrixPrev * prev_position).xyz + wind;
 
-#if (RenderMode_GBuffer == RenderMode || RenderMode_Forward == RenderMode)
+    #if (RenderMode_DepthPrepass == RenderMode || RenderMode_GBuffer == RenderMode || RenderMode_Forward == RenderMode)
     vs_output.projection_pos_prev = view_constants.VIEW_ORIGIN_PROJECTION_PREV_JITTER * vec4(relative_pos_prev, 1.0);
     vs_output.projection_pos = view_constants.VIEW_ORIGIN_PROJECTION_JITTER * vec4(relative_pos, 1.0);
-#elif (RenderMode_Shadow == RenderMode)
+    #elif (RenderMode_Shadow == RenderMode)
     vs_output.projection_pos = light_constants.SHADOW_VIEW_PROJECTION * vec4(relative_pos + view_constants.CAMERA_POSITION, 1.0);
-#elif (RenderMode_CaptureHeightMap == RenderMode)
+    #elif (RenderMode_CaptureHeightMap == RenderMode)
     vs_output.projection_pos = view_constants.CAPTURE_HEIGHT_MAP_VIEW_PROJECTION * vec4(relative_pos + view_constants.CAMERA_POSITION, 1.0);
-#endif
+    #endif
     gl_Position = vs_output.projection_pos;
 
     vs_output.relative_position = relative_pos;

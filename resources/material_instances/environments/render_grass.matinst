@@ -1,0 +1,8 @@
+{
+    "material_name": "render_grass",
+    "material_parameters": {
+        "textureBase": "environments/PP_Color_Palette",
+        "textureMaterial": "common/default_m",
+        "textureNormal": "common/default_n"
+    }
+}

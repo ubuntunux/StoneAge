@@ -11,8 +11,8 @@ pub fn get_render_pass_data_create_info(
     render_pass_data_create_info_map: &mut RenderPassDataCreateInfoMap,
 ) {
     let render_pass_name = match render_object_type {
-        RenderObjectType::Static => String::from("render_pass_static_gbuffer"),
-        RenderObjectType::Skeletal => String::from("render_pass_skeletal_gbuffer"),
+        RenderObjectType::Static => String::from("depth_prepass_static"),
+        RenderObjectType::Skeletal => String::from("depth_prepass_skeletal"),
     };
     let render_pass_data_create_info = render_pass_data_create_info_map
         .get_mut(&*render_pass_name)

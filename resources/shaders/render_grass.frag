@@ -10,18 +10,18 @@
 #endif
 
 #if (RenderMode_Forward == RenderMode)
-layout(binding = 5) uniform sampler2D textureShadow;
-layout(binding = 6) uniform sampler2D textureHeightMap;
-layout(binding = 7) uniform samplerCube texture_probe;
-layout(binding = 8) uniform sampler2D transmittance_texture;
-layout(binding = 9) uniform sampler2D irradiance_texture;
-layout(binding = 10) uniform sampler3D scattering_texture;
-layout(binding = 11) uniform sampler3D single_mie_scattering_texture;
+layout(binding = 6) uniform sampler2D textureShadow;
+layout(binding = 7) uniform sampler2D textureHeightMap;
+layout(binding = 8) uniform samplerCube texture_probe;
+layout(binding = 9) uniform sampler2D transmittance_texture;
+layout(binding = 10) uniform sampler2D irradiance_texture;
+layout(binding = 11) uniform sampler3D scattering_texture;
+layout(binding = 12) uniform sampler3D single_mie_scattering_texture;
 #endif
-layout(binding = 12) uniform sampler2D textureBase;
+layout(binding = 13) uniform sampler2D textureBase;
 #if (RenderMode_GBuffer == RenderMode || RenderMode_Forward == RenderMode)
-layout(binding = 13) uniform sampler2D textureMaterial;
-layout(binding = 14) uniform sampler2D textureNormal;
+layout(binding = 14) uniform sampler2D textureMaterial;
+layout(binding = 15) uniform sampler2D textureNormal;
 #endif
 
 layout(location = 0) in VERTEX_OUTPUT vs_output;
@@ -33,7 +33,7 @@ layout(location = 2) out vec4 outNormal;
 layout(location = 3) out vec2 outVelocity;
 #elif (RenderMode_Forward == RenderMode)
 layout(location = 0) out vec4 outColor;
-#elif (RenderMode_Shadow == RenderMode || RenderMode_CaptureHeightMap == RenderMode)
+#elif (RenderMode_DepthPrepass == RenderMode || RenderMode_Shadow == RenderMode || RenderMode_CaptureHeightMap == RenderMode)
 layout(location = 0) out float outDepth;
 #endif
 
@@ -46,14 +46,14 @@ void main() {
         discard;
     }
 
-#if (RenderMode_GBuffer == RenderMode || RenderMode_Forward == RenderMode)
+    #if (RenderMode_GBuffer == RenderMode || RenderMode_Forward == RenderMode)
     // x: roughness, y: metalicness, z: emissive intensity
     vec4 material = texture(textureMaterial, vs_output.texCoord);
     vec3 normal = normalize(vs_output.tangent_to_world * (texture(textureNormal, vs_output.texCoord).xyz * 2.0 - 1.0));
     vec3 vertex_normal = normalize(vs_output.tangent_to_world[2]);
-#endif
+    #endif
 
-#if (RenderMode_GBuffer == RenderMode)
+    #if (RenderMode_GBuffer == RenderMode)
     // xyz: albedo, w: emissive_intensity
     outAlbedo.xyz = base_color.xyz * pushConstant._color.xyz;
     outAlbedo.w = material.z;
@@ -64,7 +64,7 @@ void main() {
     outNormal.w = vertex_normal.z * 0.5 + 0.5;
     outVelocity = ((vs_output.projection_pos.xy / vs_output.projection_pos.w) - (vs_output.projection_pos_prev.xy / vs_output.projection_pos_prev.w)) * 0.5;
     outVelocity -= view_constants.JITTER_DELTA;
-#elif (RenderMode_Forward == RenderMode)
+    #elif (RenderMode_Forward == RenderMode)
     vec2 screen_texcoord = (vs_output.projection_pos.xy / vs_output.projection_pos.w) * 0.5 + 0.5;
     float depth = gl_FragCoord.z;
     vec3 world_position = vs_output.relative_position.xyz + view_constants.CAMERA_POSITION;
@@ -107,7 +107,7 @@ void main() {
     );
     outColor.xyz += emissive_color;
     outColor.w = 1.0;
-#elif (RenderMode_Shadow == RenderMode || RenderMode_CaptureHeightMap == RenderMode)
+    #elif (RenderMode_DepthPrepass == RenderMode || RenderMode_Shadow == RenderMode || RenderMode_CaptureHeightMap == RenderMode)
     outDepth = gl_FragCoord.z;
-#endif
+    #endif
 }
