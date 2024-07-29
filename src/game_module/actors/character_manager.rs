@@ -1,9 +1,11 @@
 use std::collections::HashMap;
 
 use nalgebra::Vector3;
-use rust_engine_3d::audio::audio_manager::{AudioLoop, AudioManager};
+use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop, AudioManager};
 use rust_engine_3d::core::engine_core::EngineCore;
 use rust_engine_3d::effect::effect_data::EffectCreateInfo;
+use rust_engine_3d::resource::resource::ResourceData;
+use rust_engine_3d::resource::resource::ResourceData::{Audio, AudioBank};
 use rust_engine_3d::scene::render_object::RenderObjectCreateInfo;
 use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
@@ -99,17 +101,7 @@ impl<'a> CharacterManager<'a> {
             character_name,
             &render_object_create_info,
         );
-        let attack_animation = game_resources.get_engine_resources().get_mesh_data(&character_data_ref._attack_animation_mesh);
-        let dead_animation = game_resources.get_engine_resources().get_mesh_data(&character_data_ref._dead_animation_mesh);
-        let hit_animation = game_resources.get_engine_resources().get_mesh_data(&character_data_ref._hit_animation_mesh);
-        let idle_animation = game_resources.get_engine_resources().get_mesh_data(&character_data_ref._idle_animation_mesh);
-        let jump_animation = game_resources.get_engine_resources().get_mesh_data(&character_data_ref._jump_animation_mesh);
-        let power_attack_animation = game_resources.get_engine_resources().get_mesh_data(&character_data_ref._power_attack_animation_mesh);
-        let roll_animation = game_resources.get_engine_resources().get_mesh_data(&character_data_ref._roll_animation_mesh);
-        let run_animation = game_resources.get_engine_resources().get_mesh_data(&character_data_ref._run_animation_mesh);
-        let running_jump_animation = game_resources.get_engine_resources().get_mesh_data(&character_data_ref._running_jump_animation_mesh);
-        let upper_animation_layer = game_resources.get_engine_resources().get_animation_layer_data(&character_data_ref._upper_animation_layer);
-        let walk_animation = game_resources.get_engine_resources().get_mesh_data(&character_data_ref._walk_animation_mesh);
+
         let id = self.generate_id();
         let character = newRcRefCell(Character::create_character_instance(
             self,
@@ -118,17 +110,6 @@ impl<'a> CharacterManager<'a> {
             character_name,
             character_data,
             &render_object_data,
-            attack_animation,
-            dead_animation,
-            hit_animation,
-            idle_animation,
-            jump_animation,
-            power_attack_animation,
-            roll_animation,
-            run_animation,
-            running_jump_animation,
-            walk_animation,
-            upper_animation_layer,
             &character_create_info._position,
             &character_create_info._rotation,
             &character_create_info._scale,
@@ -148,12 +129,20 @@ impl<'a> CharacterManager<'a> {
         self._player.as_ref().unwrap()
     }
 
-    pub fn play_audio(&self, audio_name_bank: &str) {
-        self.get_audio_manager_mut().create_audio_instance_from_bank(audio_name_bank, AudioLoop::ONCE, None);
+    pub fn play_audio_bank(&self, audio_name_bank: &str) {
+        self.get_audio_manager_mut().create_audio_instance_from_audio_bank(audio_name_bank, AudioLoop::ONCE, None);
+    }
+
+    pub fn play_audio(&self, audio_resource: &ResourceData) -> Option<RcRefCell<AudioInstance>> {
+        match audio_resource {
+            Audio(audio_data) => self.get_audio_manager_mut().create_audio_instance_from_audio_data(&audio_data, AudioLoop::ONCE, None),
+            AudioBank(audio_bank_data) => self.get_audio_manager_mut().create_audio_instance_from_audio_bank_data(&audio_bank_data, AudioLoop::ONCE, None),
+            _ => None,
+        }
     }
 
     pub fn play_audio_options(&self, audio_name_bank: &str, audio_loop: AudioLoop, volume: Option<f32>) {
-        self.get_audio_manager_mut().create_audio_instance_from_bank(audio_name_bank, audio_loop, volume);
+        self.get_audio_manager_mut().create_audio_instance_from_audio_bank(audio_name_bank, audio_loop, volume);
     }
 
     pub fn play_effect(&self, effect_name: &str, effect_create_info: &EffectCreateInfo) {

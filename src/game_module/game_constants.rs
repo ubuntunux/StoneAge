@@ -17,7 +17,6 @@ pub const RENDER_BLOCK: bool = false;
 // player
 pub const GRAVITY: f32 = 30.0;
 pub const GROUND_HEIGHT: f32 = 9.0;
-pub const ATTACK_TIME: f32 = 0.15;
 pub const MOVE_LIMIT: f32 = 2.0;
 pub const BLOCK_TOLERANCE: f32 = 0.5;
 pub const EAT_FOOD_DISTANCE: f32 = 1.0;
@@ -37,7 +36,6 @@ pub const NPC_AVAILABLE_MOVING_ATTACK: bool = true;
 
 // AUDIO DATA
 pub const AUDIO_ATTACK: &str = "swoosh";
-pub const AUDIO_DEAD: &str = "pain_short";
 pub const AUDIO_HIT: &str = "hit";
 pub const AUDIO_CRUNCH: &str = "crunch";
 pub const AUDIO_FOOTSTEP: &str = "footstep";

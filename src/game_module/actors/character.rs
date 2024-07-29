@@ -1,6 +1,7 @@
 use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::effect::effect_data::EffectCreateInfo;
+use rust_engine_3d::resource::resource::ResourceData;
 use rust_engine_3d::scene::animation::{AnimationLayerData, AnimationPlayArgs, AnimationPlayInfo};
 use rust_engine_3d::scene::mesh::MeshData;
 use rust_engine_3d::scene::render_object::{AnimationLayer, RenderObjectData};
@@ -56,6 +57,9 @@ pub struct Character<'a> {
     pub _running_jump_animation: RcRefCell<MeshData>,
     pub _walk_animation: RcRefCell<MeshData>,
     pub _upper_animation_layer: RcRefCell<AnimationLayerData>,
+    pub _audio_dead: ResourceData,
+    pub _audio_growl: ResourceData,
+    pub _audio_pain: ResourceData,
 }
 
 impl CharacterProperty {
@@ -81,21 +85,28 @@ impl<'a> Character<'a> {
         character_name: &str,
         character_data: &RcRefCell<CharacterData>,
         render_object: &RcRefCell<RenderObjectData<'a>>,
-        attack_animation: &RcRefCell<MeshData>,
-        dead_animation: &RcRefCell<MeshData>,
-        hit_animation: &RcRefCell<MeshData>,
-        idle_animation: &RcRefCell<MeshData>,
-        jump_animation: &RcRefCell<MeshData>,
-        power_attack_animation: &RcRefCell<MeshData>,
-        roll_animation: &RcRefCell<MeshData>,
-        run_animation: &RcRefCell<MeshData>,
-        running_jump_animation: &RcRefCell<MeshData>,
-        walk_animation: &RcRefCell<MeshData>,
-        upper_animation_layer: &RcRefCell<AnimationLayerData>,
         position: &Vector3<f32>,
         rotation: &Vector3<f32>,
         scale: &Vector3<f32>,
     ) -> Character<'a> {
+        let game_resources = ptr_as_ref(character_manager._game_resources);
+        let engine_resources = game_resources.get_engine_resources_mut();
+        let character_data_borrow = character_data.borrow();
+        let attack_animation = engine_resources.get_mesh_data(&character_data_borrow._attack_animation_mesh).clone();
+        let dead_animation = engine_resources.get_mesh_data(&character_data_borrow._dead_animation_mesh).clone();
+        let hit_animation = engine_resources.get_mesh_data(&character_data_borrow._hit_animation_mesh).clone();
+        let idle_animation = engine_resources.get_mesh_data(&character_data_borrow._idle_animation_mesh).clone();
+        let jump_animation = engine_resources.get_mesh_data(&character_data_borrow._jump_animation_mesh).clone();
+        let power_attack_animation = engine_resources.get_mesh_data(&character_data_borrow._power_attack_animation_mesh).clone();
+        let roll_animation = engine_resources.get_mesh_data(&character_data_borrow._roll_animation_mesh).clone();
+        let run_animation = engine_resources.get_mesh_data(&character_data_borrow._run_animation_mesh).clone();
+        let running_jump_animation = engine_resources.get_mesh_data(&character_data_borrow._running_jump_animation_mesh).clone();
+        let upper_animation_layer = engine_resources.get_animation_layer_data(&character_data_borrow._upper_animation_layer).clone();
+        let walk_animation = engine_resources.get_mesh_data(&character_data_borrow._walk_animation_mesh).clone();
+        let audio_dead = engine_resources.get_audio_bank_data(&character_data_borrow._audio_dead).clone();
+        let audio_growl = engine_resources.get_audio_bank_data(&character_data_borrow._audio_growl).clone();
+        let audio_pain = engine_resources.get_audio_bank_data(&character_data_borrow._audio_pain).clone();
+
         let mut character = Character {
             _character_manager: character_manager,
             _character_id: character_id,
@@ -112,17 +123,20 @@ impl<'a> Character<'a> {
             _prev_move_animation_state: MoveAnimationState::None,
             _action_animation_state: ActionAnimationState::None,
             _prev_action_animation_state: ActionAnimationState::None,
-            _attack_animation: attack_animation.clone(),
-            _dead_animation: dead_animation.clone(),
-            _hit_animation: hit_animation.clone(),
-            _idle_animation: idle_animation.clone(),
-            _jump_animation: jump_animation.clone(),
-            _power_attack_animation: power_attack_animation.clone(),
-            _roll_animation: roll_animation.clone(),
-            _run_animation: run_animation.clone(),
-            _running_jump_animation: running_jump_animation.clone(),
-            _walk_animation: walk_animation.clone(),
-            _upper_animation_layer: upper_animation_layer.clone(),
+            _attack_animation: attack_animation,
+            _dead_animation: dead_animation,
+            _hit_animation: hit_animation,
+            _idle_animation: idle_animation,
+            _jump_animation: jump_animation,
+            _power_attack_animation: power_attack_animation,
+            _roll_animation: roll_animation,
+            _run_animation: run_animation,
+            _running_jump_animation: running_jump_animation,
+            _walk_animation: walk_animation,
+            _upper_animation_layer: upper_animation_layer,
+            _audio_dead: audio_dead,
+            _audio_growl: audio_growl,
+            _audio_pain: audio_pain,
         };
 
         character.initialize_character(position, rotation, scale);
@@ -382,7 +396,7 @@ impl<'a> Character<'a> {
                 // nothing
             },
             MoveAnimationState::Jump => {
-                self.get_character_manager().play_audio(AUDIO_JUMP);
+                self.get_character_manager().play_audio_bank(AUDIO_JUMP);
             },
             MoveAnimationState::Roll => {
                 self.set_invincibility(true);
@@ -391,7 +405,7 @@ impl<'a> Character<'a> {
                 // nothing
             },
             MoveAnimationState::RunningJump => {
-                self.get_character_manager().play_audio(AUDIO_JUMP);
+                self.get_character_manager().play_audio_bank(AUDIO_JUMP);
             },
             MoveAnimationState::Walk => {
                 // nothing
@@ -441,7 +455,7 @@ impl<'a> Character<'a> {
             },
             MoveAnimationState::Roll => {
                 if self._is_player && animation_play_info.check_animation_event_time(0.2) {
-                    self.get_character_manager().play_audio(AUDIO_ROLL);
+                    self.get_character_manager().play_audio_bank(AUDIO_ROLL);
                 }
                 else if animation_play_info._is_animation_end {
                     self.set_move_idle();
@@ -482,7 +496,7 @@ impl<'a> Character<'a> {
                 // nothing
             },
             ActionAnimationState::Dead => {
-                self.get_character_manager().play_audio(AUDIO_DEAD);
+                // nothing
             },
             ActionAnimationState::Hit => {
                 // nothing
@@ -504,7 +518,7 @@ impl<'a> Character<'a> {
             },
             ActionAnimationState::Attack => {
                 if animation_play_info.check_animation_event_time(0.0) {
-                    self.get_character_manager().play_audio(AUDIO_ATTACK);
+                    self.get_character_manager().play_audio_bank(AUDIO_ATTACK);
                 }
                 else if animation_play_info.check_animation_event_time(character_data._attack_event_time) {
                     self._attack_event = ActionAnimationState::Attack;
@@ -530,7 +544,7 @@ impl<'a> Character<'a> {
             },
             ActionAnimationState::PowerAttack => {
                 if animation_play_info.check_animation_event_time(character_data._power_attack_event_time) {
-                    self.get_character_manager().play_audio(AUDIO_ATTACK);
+                    self.get_character_manager().play_audio_bank(AUDIO_ATTACK);
                     self._attack_event = ActionAnimationState::PowerAttack;
                 }
 
@@ -629,9 +643,11 @@ impl<'a> Character<'a> {
     pub fn set_damage(&mut self, attack_point: Vector3<f32>, damage: i32) {
         self._character_property._hp -= damage;
         if self._character_property._hp <= 0 {
+            self.get_character_manager().play_audio(&self._audio_dead);
             self.set_dead();
         } else {
-            self.set_action_hit();
+            self.get_character_manager().play_audio(&self._audio_pain);
+            //self.set_action_hit();
         }
 
         let effect_create_info = EffectCreateInfo {
@@ -640,7 +656,7 @@ impl<'a> Character<'a> {
             ..Default::default()
         };
         self.get_character_manager().play_effect(EFFECT_HIT, &effect_create_info);
-        self.get_character_manager().play_audio(AUDIO_HIT);
+        self.get_character_manager().play_audio_bank(AUDIO_HIT);
     }
 
     pub fn set_invincibility(&mut self, invincibility: bool) {
@@ -732,7 +748,7 @@ impl<'a> Character<'a> {
 
         // sound
         if !was_on_ground && self.is_on_ground() && self._is_player {
-            self.get_character_manager().play_audio(AUDIO_FOOTSTEP);
+            self.get_character_manager().play_audio_bank(AUDIO_FOOTSTEP);
         }
     }
 }

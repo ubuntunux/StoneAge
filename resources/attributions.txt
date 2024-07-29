@@ -3,3 +3,6 @@
 Sound,Game-Music-01,Michael-DB,CC BY 4.0,https://freesound.org/people/Michael-DB/sounds/489035
 Sound,Footsteps on big gravels (loop).wav,arnaud coutancier,CC BY-NC 3.0,https://freesound.org/people/arnaud%20coutancier/sounds/275082
 3D Model,Spider animated character,TheGameAssets,CC Attribution,https://sketchfab.com/3d-models/spider-animated-character-746f5c5173ce4f47ad0970b62ee4106e
+Sound,dragon growl breathy 2.aiff by bevibeldesign -- https://freesound.org/s/315766/ -- License: Creative Commons 0
+Sound,Mutant Bird 1 by RICHERlandTV -- https://freesound.org/s/236957/ -- License: Attribution 4.0
+Sound,painb.wav by Michel88 -- https://freesound.org/s/76965/ -- License: Sampling+

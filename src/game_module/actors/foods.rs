@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use nalgebra::Vector3;
-use rust_engine_3d::audio::audio_manager::{AudioLoop, AudioManager};
+use rust_engine_3d::audio::audio_manager::{AudioBankData, AudioLoop, AudioManager};
 use rust_engine_3d::core::engine_core::EngineCore;
 use rust_engine_3d::effect::effect_data::EffectCreateInfo;
 use rust_engine_3d::scene::render_object::{RenderObjectCreateInfo, RenderObjectData};
@@ -209,8 +209,12 @@ impl<'a> FoodManager<'a> {
         self.get_scene_manager_mut().remove_static_render_object(food.borrow()._render_object.borrow()._object_id);
     }
 
-    pub fn play_audio(&self, audio_name_bank: &str) {
-        self.get_audio_manager_mut().create_audio_instance_from_bank(audio_name_bank, AudioLoop::ONCE, None);
+    pub fn play_audio_bank(&self, audio_name_bank: &str) {
+        self.get_audio_manager_mut().create_audio_instance_from_audio_bank(audio_name_bank, AudioLoop::ONCE, None);
+    }
+
+    pub fn play_audio_bank_data(&self, audio_bank_data: &RcRefCell<AudioBankData>) {
+        self.get_audio_manager_mut().create_audio_instance_from_audio_bank_data(audio_bank_data, AudioLoop::ONCE, None);
     }
 
     pub fn play_effect(&self, effect_name: &str, effect_create_info: &EffectCreateInfo) {
@@ -238,7 +242,7 @@ impl<'a> FoodManager<'a> {
         }
 
         for food in eaten_foods.iter() {
-            self.get_character_manager().play_audio(AUDIO_CRUNCH);
+            self.get_character_manager().play_audio_bank(AUDIO_CRUNCH);
             log::info!("Remove food");
             self.remove_food(food);
         }

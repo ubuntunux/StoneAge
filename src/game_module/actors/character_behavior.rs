@@ -103,6 +103,10 @@ impl BehaviorBase for RoamerBehavior {
                     owner.set_move_stop();
                     self._roamer_idle_play_time = generate_idle_play_time();
                     self._roamer_idle_time = self._roamer_idle_play_time + generate_idle_time();
+                    // growl
+                    if to_player.x.abs() < NPC_TRACKING_RANGE_X * 2.0 {
+                        owner.get_character_manager().play_audio(&owner._audio_growl);
+                    }
                 }
 
                 if self._roamer_idle_play_time < 0.0 {

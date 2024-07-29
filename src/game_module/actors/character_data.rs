@@ -88,6 +88,9 @@ pub struct CharacterData {
     pub _roll_speed: f32,
     pub _run_speed: f32,
     pub _walk_speed: f32,
+    pub _audio_dead: String,
+    pub _audio_growl: String,
+    pub _audio_pain: String,
 
 }
 
@@ -129,6 +132,9 @@ impl Default for CharacterData {
             _roll_speed: 4.5,
             _run_speed: 5.4,
             _walk_speed: 3.0,
+            _audio_dead: String::default(),
+            _audio_growl: String::default(),
+            _audio_pain: String::default(),
         }
     }
 }

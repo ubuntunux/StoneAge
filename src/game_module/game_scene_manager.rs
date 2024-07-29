@@ -89,7 +89,7 @@ impl<'a> GameSceneManager<'a> {
     }
 
     pub fn play_music(&mut self, audio_name: &str, volume: Option<f32>) {
-        self._game_music = ptr_as_mut(self._audio_manager).create_audio_instance_from_bank(audio_name, AudioLoop::LOOP, volume);
+        self._game_music = ptr_as_mut(self._audio_manager).create_audio_instance_from_audio_bank(audio_name, AudioLoop::LOOP, volume);
     }
 
     pub fn get_blocks(&self) -> &HashMap<u64, RcRefCell<Block<'a>>> {
