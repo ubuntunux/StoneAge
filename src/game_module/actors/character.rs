@@ -647,7 +647,9 @@ impl<'a> Character<'a> {
             self.set_dead();
         } else {
             self.get_character_manager().play_audio(&self._audio_pain);
-            //self.set_action_hit();
+            if self._is_player {
+                self.set_action_hit();
+            }
         }
 
         let effect_create_info = EffectCreateInfo {

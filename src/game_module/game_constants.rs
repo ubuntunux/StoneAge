@@ -32,7 +32,7 @@ pub const NPC_ATTACK_DISTANCE: f32 = 1.0;
 pub const NPC_TRACKING_RANGE_X: f32 = 5.0;
 pub const NPC_TRACKING_RANGE_Y: f32 = 1.0;
 pub const NPC_ROAMING_TERM: f32 = 5.0;
-pub const NPC_AVAILABLE_MOVING_ATTACK: bool = true;
+pub const NPC_AVAILABLE_MOVING_ATTACK: bool = false;
 
 // AUDIO DATA
 pub const AUDIO_ATTACK: &str = "swoosh";
