@@ -125,7 +125,8 @@ impl<'a> PlayerHud<'a> {
         let player_widget = UIManager::create_widget("player_widget", UIWidgetTypes::Default);
         let ui_component = ptr_as_mut(player_widget.as_ref()).get_ui_component_mut();
         ui_component.set_size(hud_layer_width, hud_layer_height);
-        ui_component.set_pos(pos.x, pos.y);
+        ui_component.set_pos_hint_x(Some(pos.x));
+        ui_component.set_pos_hint_y(Some(pos.y));
         ui_component.set_layout_type(UILayoutType::BoxLayout);
         ui_component.set_layout_orientation(Orientation::VERTICAL);
         ui_component.set_halign(HorizontalAlign::CENTER);

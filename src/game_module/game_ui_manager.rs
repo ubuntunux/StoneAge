@@ -27,6 +27,7 @@ pub struct GameUIManager<'a> {
     pub _target_hud: Option<Box<TargetHud<'a>>>,
     pub _player_hud: Option<Box<PlayerHud<'a>>>,
     pub _selection_area: Option<Box<SelectionArea<'a>>>,
+    pub _window_size: Vector2<i32>,
 }
 
 pub struct UISwitch<'a> {
@@ -48,6 +49,7 @@ impl<'a> GameUIManager<'a> {
             _target_hud: None,
             _player_hud: None,
             _selection_area: None,
+            _window_size: Vector2::new(1024,768)
         })
     }
 
@@ -139,21 +141,21 @@ impl<'a> GameUIManager<'a> {
     pub fn set_game_image_material_instance(&mut self, material_instance: &str, fadeout_time: f32) {
         let game_client = ptr_as_ref(self._game_client);
         let game_resources = game_client.get_game_resources();
-        let window_size = game_client.get_engine_core()._window_size;
         self._game_image.as_mut().unwrap().set_material_instance(
             game_resources,
-            &window_size,
+            &self._window_size,
             material_instance,
             fadeout_time
         );
     }
     pub fn build_game_ui(&mut self, window_size: &Vector2<i32>) {
         log::info!("build_game_ui");
+        self._window_size = window_size.clone();
         let game_client = ptr_as_ref(self._game_client);
         let game_resources = game_client.get_game_resources();
         let _engine_resources = game_resources.get_engine_resources();
         let root_widget_mut = ptr_as_mut(self._root_widget);
-        let _window_center = Vector2::<f32>::new(window_size.x as f32 * 0.5, window_size.y as f32 * 0.5);
+        let window_center = Vector2::<f32>::new(window_size.x as f32 * 0.5, window_size.y as f32 * 0.5);
 
         // create layout
         let game_ui_layout = UIManager::create_widget("game ui layout", UIWidgetTypes::Default);
@@ -173,7 +175,7 @@ impl<'a> GameUIManager<'a> {
         //     root_widget_mut,
         //     game_ui_layout_mut,
         // )));
-        // self._crosshair = Some(Box::new(Crosshair::create_crosshair(
+        // self._crosshair = Some(Box::new(Crosshair:`:create_crosshair(
         //     game_resources,
         //     game_ui_layout_mut,
         //     &window_center,
@@ -182,10 +184,10 @@ impl<'a> GameUIManager<'a> {
         //     game_ui_layout_mut,
         //     &window_center,
         // )));
-        // self._player_hud = Some(Box::new(PlayerHud::create_player_hud(
-        //     game_ui_layout_mut,
-        //     &Vector2::new(window_size.x as f32 - 200.0, window_center.y),
-        // )));
+        self._player_hud = Some(Box::new(PlayerHud::create_player_hud(
+            game_ui_layout_mut,
+            &Vector2::new((window_size.x as f32 - 200.0) / window_size.x as f32, window_center.y / window_size.y as f32),
+        )));
         // self._selection_area = Some(SelectionArea::create_selection_area(
         //     game_ui_layout_mut,
         //     window_size,
@@ -223,12 +225,23 @@ impl<'a> GameUIManager<'a> {
         self._crosshair.as_mut().unwrap()._tracking_mouse = tracking;
     }
 
+    pub fn changed_window_size(&mut self) {
+        log::info!("GameUIManager::changed_window_size: {:?}", self._window_size);
+    }
+
     pub fn update_game_ui(&mut self, delta_time: f64, mouse_pos: &Vector2<i32>) {
         let game_client = ptr_as_ref(self._game_client);
         let window_size = &game_client
             .get_application()
             .get_engine_core()
             ._window_size;
+
+        // changed window size
+        if self._window_size != *window_size {
+            self._window_size = window_size.clone();
+            self.changed_window_size();
+        }
+
 
         // intro image
         if let Some(game_image) = self._game_image.as_mut() {

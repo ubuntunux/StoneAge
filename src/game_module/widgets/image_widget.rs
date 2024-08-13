@@ -102,6 +102,7 @@ impl<'a> ImageLayout<'a> {
 
             if opacity <= 0.0 {
                 ui_component.set_visible(false);
+                self._start_fadeout = false;
             }
 
             self._fadeout_time -= delta_time as f32;
