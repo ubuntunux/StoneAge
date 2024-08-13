@@ -1,8 +1,8 @@
 {
     "_attack_animation_mesh": "characters/trex/trex_attack",
-    "_attack_animation_speed": 1.5,
+    "_attack_animation_speed": 1.0,
     "_attack_damage": 50,
-    "_attack_event_time": 0.30000001192092896,
+    "_attack_event_time": 0.5,
     "_attack_range": 0.6000000238418579,
     "_attack_thickness": 0.25,
     "_audio_dead": "dino/dead",

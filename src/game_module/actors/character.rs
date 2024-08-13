@@ -517,11 +517,9 @@ impl<'a> Character<'a> {
                 // nothing
             },
             ActionAnimationState::Attack => {
-                if animation_play_info.check_animation_event_time(0.0) {
-                    self.get_character_manager().play_audio_bank(AUDIO_ATTACK);
-                }
-                else if animation_play_info.check_animation_event_time(character_data._attack_event_time) {
+                if animation_play_info.check_animation_event_time(character_data._attack_event_time) {
                     self._attack_event = ActionAnimationState::Attack;
+                    self.get_character_manager().play_audio_bank(AUDIO_ATTACK);
                 }
 
                 if animation_play_info._is_animation_end {

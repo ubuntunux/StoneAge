@@ -155,7 +155,6 @@ resources/externals/models/environments/cloud_00.blend
 resources/externals/models/environments/tree_01.blend
 resources/externals/materials/common/render_static_object.blend
 resources/externals/materials/common/render_skeletal_object.blend
-resources/externals/materials/render_test.blend
 resources/sounds/Char_backstep.wav
 resources/sounds/Char_backstep.meta
 resources/sounds/236957__richerlandtv__mutant-bird-1.meta
@@ -758,5 +757,4 @@ resources/models/environments/mushroom_purple_01.model
 resources/models/environments/mushroom_orange_00.model
 resources/models/environments/forest_mountain_00.model
 resources/models/environments/mushroom_purple_00.model
-resources/materials/common/render_static_object.matinst
 resources/materials/render_grass.mat
