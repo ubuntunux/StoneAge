@@ -603,13 +603,13 @@ impl<'a> Character<'a> {
                 bounding_box._min.z
             );
             box_max = Vector3::new(
-                bounding_box._max.x,
+                bounding_box._center.x,
                 bounding_box._center.y + attack_thickness,
                 bounding_box._max.z
             );
         } else {
             box_min = Vector3::new(
-                bounding_box._min.x,
+                bounding_box._center.x,
                 bounding_box._center.y - attack_thickness,
                 bounding_box._min.z
             );
