@@ -20,6 +20,7 @@ pub const GROUND_HEIGHT: f32 = 9.0;
 pub const MOVE_LIMIT: f32 = 2.0;
 pub const BLOCK_TOLERANCE: f32 = 0.5;
 pub const EAT_FOOD_DISTANCE: f32 = 1.0;
+pub const MAX_STAMINA: f32 = 100.0;
 
 // npc
 pub const NPC_IDLE_TERM_MIN: f32 = 3.0;

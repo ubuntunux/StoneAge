@@ -1,3 +1,3 @@
-pub mod hit_point_widgets;
+pub mod status_bar_widget;
 pub mod hud;
 pub mod image_widget;

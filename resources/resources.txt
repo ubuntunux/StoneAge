@@ -13,7 +13,7 @@ resources/engine_resources/externals/fonts/NanumGothicBold.ttf
 resources/engine_resources/externals/fonts/NanumGothic_Coding.ttf
 resources/engine_resources/externals/fonts/NanumMyeongjo.ttf
 resources/engine_resources/externals/fonts/NanumMyeongjoBold.ttf
-resources/engine_resources/externals/textures/common/flat_white.png
+resources/engine_resources/externals/textures/common/ibl_brdf_lut.png
 resources/engine_resources/externals/textures/common/default.png
 resources/engine_resources/externals/textures/common/default_cube.cube
 resources/engine_resources/externals/textures/common/default_cube_back.jpg
@@ -35,10 +35,10 @@ resources/engine_resources/externals/textures/common/flat_none.png
 resources/engine_resources/externals/textures/common/flat_normal.png
 resources/engine_resources/externals/textures/common/flat_normal_no_alpha.png
 resources/engine_resources/externals/textures/common/flat_red.png
+resources/engine_resources/externals/textures/common/flat_white.png
 resources/engine_resources/externals/textures/common/flat_white_no_alpha.png
 resources/engine_resources/externals/textures/common/flat_yellow.png
 resources/engine_resources/externals/textures/common/fresnel_lut.png
-resources/engine_resources/externals/textures/common/ibl_brdf_lut.png
 resources/engine_resources/externals/textures/common/mouse_cursor.png
 resources/engine_resources/externals/textures/common/noise.png
 resources/engine_resources/externals/textures/common/water_caustic.3d
@@ -147,7 +147,7 @@ resources/engine_resources/models/quad.model
 resources/engine_resources/models/sphere.model
 resources/engine_resources/models/suzan.model
 resources/engine_resources/scenes/example.scene
-resources/engine_resources/shaders/common/render_bloom_highlight.frag
+resources/engine_resources/shaders/common/render_bound_box.frag
 resources/engine_resources/shaders/common/blending.glsl
 resources/engine_resources/shaders/common/blend_cube_map.comp
 resources/engine_resources/shaders/common/bloom.frag
@@ -172,7 +172,7 @@ resources/engine_resources/shaders/common/light_shaft.frag
 resources/engine_resources/shaders/common/PCFKernels.glsl
 resources/engine_resources/shaders/common/random.glsl
 resources/engine_resources/shaders/common/render_bloom_downsampling.frag
-resources/engine_resources/shaders/common/render_bound_box.frag
+resources/engine_resources/shaders/common/render_bloom_highlight.frag
 resources/engine_resources/shaders/common/render_bound_box.vert
 resources/engine_resources/shaders/common/render_bound_box_common.glsl
 resources/engine_resources/shaders/common/render_color.frag
@@ -511,9 +511,7 @@ resources/material_instances/environments/landscape_00.matinst
 resources/material_instances/environments/ocean.matinst
 resources/material_instances/environments/render_grass.matinst
 resources/material_instances/props/meat.matinst
-resources/material_instances/ui/crosshair.matinst
 resources/material_instances/ui/intro_image.matinst
-resources/material_instances/ui/render_ui_test.matinst
 resources/meshes/characters/jack/jack.bin
 resources/meshes/characters/jack/jack.gltf
 resources/meshes/characters/jack/jack_attack.bin

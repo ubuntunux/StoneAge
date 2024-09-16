@@ -27,6 +27,7 @@ pub struct CharacterCreateInfo {
 
 pub struct CharacterProperty {
     pub _hp: i32,
+    pub _stamina: f32,
     pub _invincibility: bool,
 }
 
@@ -66,12 +67,14 @@ impl CharacterProperty {
     pub fn create_character_property() -> CharacterProperty {
         CharacterProperty {
             _hp: 100,
+            _stamina: MAX_STAMINA,
             _invincibility: false,
         }
     }
 
     pub fn initialize_property(&mut self, character_data: &CharacterData) {
         self._hp = character_data._max_hp;
+        self._stamina = 100.0;
         self._invincibility = false;
     }
 }
@@ -732,6 +735,19 @@ impl<'a> Character<'a> {
 
     pub fn update_character(&mut self, game_scene_manager: &GameSceneManager, delta_time: f32, player: &Character<'a>) {
         let was_on_ground = self.is_on_ground();
+
+        if self.is_move_state(MoveAnimationState::Run) {
+            self._character_property._stamina -= 100.0 * delta_time;
+            if self._character_property._stamina < 0.0 {
+                self._character_property._stamina = 0.0;
+                self.toggle_run();
+            }
+        } else {
+            self._character_property._stamina += 100.0 * delta_time;
+            if 100.0 < self._character_property._stamina {
+                self._character_property._stamina = 100.0;
+            }
+        }
 
         if false == self._is_player && self._is_alive {
             self._behavior.update_behavior(ptr_as_mut(self), player, delta_time);

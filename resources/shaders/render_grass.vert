@@ -2,6 +2,7 @@
 #extension GL_ARB_separate_shader_objects : enable
 #extension GL_GOOGLE_include_directive : enable
 
+#include "../engine_resources/shaders/common/random.glsl"
 #include "../engine_resources/shaders/common/scene_constants.glsl"
 #include "../engine_resources/shaders/common/render_object_common.glsl"
 
@@ -72,12 +73,13 @@ void main() {
 
     mat4 localMatrix = transform_matrices[local_matrix_offset];
     mat4 localMatrixPrev = transform_matrices[local_matrix_prev_offset];
+    vec3 world_position = localMatrix[3].xyz;
 
     localMatrix[3].xyz -= view_constants.CAMERA_POSITION;
     localMatrixPrev[3].xyz -= view_constants.CAMERA_POSITION_PREV;
 
     // wind
-    vec3 wind = vec3(pow(position.y, 2.0) * sin(scene_constants.TIME + gl_InstanceIndex * 13.1423), 0.0, 0.0);
+    vec3 wind = vec3(pow(position.y, 2.0) * sin(scene_constants.TIME + random(world_position) * 13.1423), 0.0, 0.0);
     vec3 relative_pos = (localMatrix * position).xyz + wind;
     vec3 relative_pos_prev = (localMatrixPrev * prev_position).xyz + wind;
 

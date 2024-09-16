@@ -214,7 +214,7 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
         // update managers
         if self._is_game_mode {
             self._game_client.update_game_mode(delta_time);
-            self.get_game_ui_manager_mut().update_game_ui(delta_time, &engine_core._mouse_move_data._mouse_pos);
+            self.get_game_ui_manager_mut().update_game_ui(delta_time);
         }
     }
 }

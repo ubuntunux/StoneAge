@@ -125,10 +125,12 @@ impl<'a> CharacterManager<'a> {
         self._characters.remove(&character.borrow().get_character_id());
         self.get_scene_manager_mut().remove_skeletal_render_object(character.borrow()._render_object.borrow()._object_id);
     }
+    pub fn is_valid_player(&self) -> bool {
+        self._player.is_some()
+    }
     pub fn get_player(&self) -> &RcRefCell<Character<'a>> {
         self._player.as_ref().unwrap()
     }
-
     pub fn play_audio_bank(&self, audio_name_bank: &str) {
         self.get_audio_manager_mut().create_audio_instance_from_audio_bank(audio_name_bank, AudioLoop::ONCE, None);
     }
