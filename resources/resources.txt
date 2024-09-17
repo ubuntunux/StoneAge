@@ -482,9 +482,6 @@ resources/externals/textures/environments/desert_moutain.png
 resources/externals/textures/environments/PP_Color_Palette.png
 resources/externals/textures/environments/snow_moutain.png
 resources/externals/textures/props/meat_d.png
-resources/externals/textures/ui/alert.png
-resources/externals/textures/ui/crosshair.png
-resources/externals/textures/ui/crosshair_box.png
 resources/externals/textures/ui/intro_image.jpeg
 resources/game_data/blocks/cliff_grass.data
 resources/game_data/blocks/rock.data

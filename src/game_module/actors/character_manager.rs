@@ -28,6 +28,7 @@ pub struct CharacterManager<'a> {
     pub _scene_manager: *const SceneManager<'a>,
     pub _id_generator: u64,
     pub _player: Option<RcRefCell<Character<'a>>>,
+    pub _target_character: Option<RcRefCell<Character<'a>>>,
     pub _characters: CharacterMap<'a>,
 }
 
@@ -41,6 +42,7 @@ impl<'a> CharacterManager<'a> {
             _scene_manager: std::ptr::null(),
             _id_generator: 0,
             _player: None,
+            _target_character: None,
             _characters: HashMap::new(),
         })
     }
@@ -88,7 +90,8 @@ impl<'a> CharacterManager<'a> {
     }
     pub fn create_character(&mut self, character_name: &str, character_create_info: &CharacterCreateInfo, is_player: bool) {
         let game_resources = ptr_as_ref(self._game_resources);
-        let character_data = game_resources.get_character_data(character_create_info._character_data_name.as_str());
+        let character_data_name = character_create_info._character_data_name.as_str();
+        let character_data = game_resources.get_character_data(character_data_name);
         let character_data_ref = character_data.borrow();
         let render_object_create_info = RenderObjectCreateInfo {
             _model_data_name: character_data_ref._model_data_name.clone(),
@@ -108,6 +111,7 @@ impl<'a> CharacterManager<'a> {
             id,
             is_player,
             character_name,
+            character_data_name,
             character_data,
             &render_object_data,
             &character_create_info._position,
@@ -130,6 +134,15 @@ impl<'a> CharacterManager<'a> {
     }
     pub fn get_player(&self) -> &RcRefCell<Character<'a>> {
         self._player.as_ref().unwrap()
+    }
+    pub fn is_valid_target_character(&self) -> bool {
+        self._target_character.is_some()
+    }
+    pub fn get_target_character(&self) -> &RcRefCell<Character<'a>> {
+        self._target_character.as_ref().unwrap()
+    }
+    pub fn set_target_character(&mut self, target_character: Option<RcRefCell<Character<'a>>>) {
+        self._target_character = target_character;
     }
     pub fn play_audio_bank(&self, audio_name_bank: &str) {
         self.get_audio_manager_mut().create_audio_instance_from_audio_bank(audio_name_bank, AudioLoop::ONCE, None);
@@ -154,6 +167,7 @@ impl<'a> CharacterManager<'a> {
     pub fn update_character_manager(&mut self, delta_time: f64) {
         let player = ptr_as_mut(self._player.as_ref().unwrap().as_ptr());
         let mut dead_characters: Vec<RcRefCell<Character>> = Vec::new();
+        let mut regist_target_character: Option<RcRefCell<Character<'a>>> = None;
         for character in self._characters.values() {
             let character_mut = ptr_as_mut(character.as_ptr());
 
@@ -174,6 +188,7 @@ impl<'a> CharacterManager<'a> {
                             target_character_mut._is_alive &&
                             false == target_character_mut._character_property._invincibility &&
                             character_mut.check_attack_range(character_mut._attack_event, target_character_mut.get_bounding_box()) {
+                            regist_target_character = Some(target_character.clone());
                             target_character_mut.set_damage(target_character_mut.get_position().clone(), character_mut.get_power(character_mut._attack_event));
                             if false == target_character_mut._is_alive {
                                 dead_characters.push(target_character.clone());
@@ -200,8 +215,12 @@ impl<'a> CharacterManager<'a> {
         }
 
         // remove characters
-        // for character in dead_characters.iter() {
-        //     self.remove_character(character);
-        // }
+        for character in dead_characters.iter() {
+            self.remove_character(character);
+        }
+
+        if regist_target_character.is_some() {
+            self._target_character = regist_target_character;
+        }
     }
 }

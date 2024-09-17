@@ -38,6 +38,7 @@ pub struct Character<'a> {
     pub _is_player: bool,
     pub _is_alive: bool,
     pub _attack_event: ActionAnimationState,
+    pub _character_data_name: String,
     pub _character_data: RcRefCell<CharacterData>,
     pub _render_object: RcRefCell<RenderObjectData<'a>>,
     pub _character_property: Box<CharacterProperty>,
@@ -86,6 +87,7 @@ impl<'a> Character<'a> {
         character_id: u64,
         is_player: bool,
         character_name: &str,
+        character_data_name: &str,
         character_data: &RcRefCell<CharacterData>,
         render_object: &RcRefCell<RenderObjectData<'a>>,
         position: &Vector3<f32>,
@@ -117,6 +119,7 @@ impl<'a> Character<'a> {
             _is_alive: true,
             _attack_event: ActionAnimationState::None,
             _character_name: String::from(character_name),
+            _character_data_name: String::from(character_data_name),
             _character_data: character_data.clone(),
             _render_object: render_object.clone(),
             _character_property: Box::new(CharacterProperty::create_character_property()),
@@ -336,6 +339,9 @@ impl<'a> Character<'a> {
             } else {
                 MoveAnimationState::Jump
             };
+            if self._is_player {
+                self._character_property._stamina -= STAMINA_JUMP;
+            }
             self._controller.set_jump_start();
             self.set_move_animation(move_anim);
         }
@@ -348,6 +354,9 @@ impl<'a> Character<'a> {
                 self.set_move_speed(character_data._run_speed);
             } else {
                 self.set_move_speed(character_data._roll_speed);
+            }
+            if self._is_player {
+                self._character_property._stamina -= STAMINA_ROLL;
             }
             self.set_move_animation(MoveAnimationState::Roll);
         }
@@ -367,12 +376,18 @@ impl<'a> Character<'a> {
 
     pub fn set_action_attack(&mut self) {
         if self.is_available_attack() {
+            if self._is_player {
+                self._character_property._stamina -= STAMINA_ATTACK;
+            }
             self.set_action_animation(ActionAnimationState::Attack);
         }
     }
 
     pub fn set_action_power_attack(&mut self) {
         if self.is_available_attack() {
+            if self._is_player {
+                self._character_property._stamina -= STAMINA_POWER_ATTACK;
+            }
             self.set_action_animation(ActionAnimationState::PowerAttack);
         }
     }
@@ -707,9 +722,11 @@ impl<'a> Character<'a> {
     pub fn is_available_attack(&self) -> bool {
         if self.is_available_move() {
             let action_animation_play_info = self.get_animation_play_info(AnimationLayer::ActionLayer);
+
             if self.is_action(ActionAnimationState::None) ||
                 self.is_action(ActionAnimationState::Attack) &&
-                self.get_character_data()._attack_event_time < action_animation_play_info._animation_play_time {
+                self.get_character_data()._attack_event_time < action_animation_play_info._animation_play_time &&
+                (!self._is_player || STAMINA_ATTACK <= self._character_property._stamina) {
                 return true;
             }
         }
@@ -721,10 +738,16 @@ impl<'a> Character<'a> {
     }
 
     pub fn is_available_jump(&self) -> bool {
+        if self._is_player && self._character_property._stamina < STAMINA_JUMP {
+            return false;
+        }
         self._controller._is_ground && self.is_available_move()
     }
 
     pub fn is_available_roll(&self) -> bool {
+        if self._is_player && self._character_property._stamina < STAMINA_ROLL {
+            return false;
+        }
         self._controller._is_ground && self.is_available_attack() && !self.is_move_state(MoveAnimationState::Roll)
     }
 
@@ -736,21 +759,28 @@ impl<'a> Character<'a> {
     pub fn update_character(&mut self, game_scene_manager: &GameSceneManager, delta_time: f32, player: &Character<'a>) {
         let was_on_ground = self.is_on_ground();
 
-        if self.is_move_state(MoveAnimationState::Run) {
-            self._character_property._stamina -= 100.0 * delta_time;
-            if self._character_property._stamina < 0.0 {
-                self._character_property._stamina = 0.0;
-                self.toggle_run();
-            }
-        } else {
-            self._character_property._stamina += 100.0 * delta_time;
-            if 100.0 < self._character_property._stamina {
-                self._character_property._stamina = 100.0;
-            }
-        }
-
         if false == self._is_player && self._is_alive {
             self._behavior.update_behavior(ptr_as_mut(self), player, delta_time);
+        }
+
+        // stamina
+        if self._is_player && self._is_alive {
+            if self.is_move_state(MoveAnimationState::Run) {
+                self._character_property._stamina -= STAMINA_RUN * delta_time;
+                if self._character_property._stamina < 0.0 {
+                    self._character_property._stamina = 0.0;
+                    self.toggle_run();
+                }
+            } else if self.is_action(ActionAnimationState::None) &&
+                (self.is_move_state(MoveAnimationState::None) || self.is_move_state(MoveAnimationState::Idle) || self.is_move_state(MoveAnimationState::Walk)) {
+                if self._character_property._stamina < 0.0 {
+                    self._character_property._stamina = 0.0;
+                }
+                self._character_property._stamina += STAMINA_RECOVERY * delta_time;
+                if MAX_STAMINA < self._character_property._stamina {
+                    self._character_property._stamina = MAX_STAMINA;
+                }
+            }
         }
 
         self._controller.update_character_controller(

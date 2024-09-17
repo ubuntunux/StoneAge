@@ -20,7 +20,15 @@ pub const GROUND_HEIGHT: f32 = 9.0;
 pub const MOVE_LIMIT: f32 = 2.0;
 pub const BLOCK_TOLERANCE: f32 = 0.5;
 pub const EAT_FOOD_DISTANCE: f32 = 1.0;
+
+// stamina
 pub const MAX_STAMINA: f32 = 100.0;
+pub const STAMINA_RECOVERY: f32 = 40.0;
+pub const STAMINA_ATTACK: f32 = 10.0;
+pub const STAMINA_POWER_ATTACK: f32 = 30.0;
+pub const STAMINA_RUN: f32 = 30.0;
+pub const STAMINA_JUMP: f32 = 15.0;
+pub const STAMINA_ROLL: f32 = 30.0;
 
 // npc
 pub const NPC_IDLE_TERM_MIN: f32 = 3.0;

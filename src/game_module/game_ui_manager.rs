@@ -7,9 +7,9 @@ use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
 
 use crate::application::application::Application;
 use crate::game_module::game_client::GameClient;
-use crate::game_module::game_constants::MAX_STAMINA;
 use crate::game_module::widgets::hud::PlayerHud;
 use crate::game_module::widgets::image_widget::ImageLayout;
+use crate::game_module::widgets::target_status_bar::TargetStatusWidget;
 
 pub struct GameUIManager<'a> {
     pub _ui_manager: *const UIManager<'a>,
@@ -18,6 +18,7 @@ pub struct GameUIManager<'a> {
     pub _game_ui_layout: *const WidgetDefault<'a>,
     pub _game_image: Option<Box<ImageLayout<'a>>>,
     pub _player_hud: Option<Box<PlayerHud<'a>>>,
+    pub _target_status_bar: Option<Box<TargetStatusWidget<'a>>>,
     pub _window_size: Vector2<i32>,
 }
 
@@ -35,6 +36,7 @@ impl<'a> GameUIManager<'a> {
             _root_widget: std::ptr::null(),
             _game_ui_layout: std::ptr::null(),
             _game_image: None,
+            _target_status_bar: None,
             _player_hud: None,
             _window_size: Vector2::new(1024,768)
         })
@@ -104,12 +106,9 @@ impl<'a> GameUIManager<'a> {
         ui_component.set_renderable(false);
         root_widget_mut.add_widget(&game_ui_layout);
         self._game_ui_layout = game_ui_layout.as_ref();
-
-        //
         self._game_image = Some(ImageLayout::create_image_layout(root_widget_mut, "ui/intro_image"));
-
         self._player_hud = Some(Box::new(PlayerHud::create_player_hud(game_ui_layout_mut)));
-
+        self._target_status_bar = Some(Box::new(TargetStatusWidget::create_target_status_widget(game_ui_layout_mut)));
         self.changed_window_size();
     }
     pub fn show_ui(&mut self, show: bool) {
@@ -121,6 +120,7 @@ impl<'a> GameUIManager<'a> {
     pub fn changed_window_size(&mut self) {
         log::info!("GameUIManager::changed_window_size: {:?}", self._window_size);
         self._player_hud.as_mut().unwrap().changed_window_size(&self._window_size);
+        self._target_status_bar.as_mut().unwrap().changed_window_size(&self._window_size);
     }
     pub fn update_game_ui(&mut self, delta_time: f64) {
         let game_client = ptr_as_ref(self._game_client);
@@ -140,16 +140,19 @@ impl<'a> GameUIManager<'a> {
             game_image.update_image_layout(delta_time);
         }
 
+        // player hud
         if let Some(player_hud) = self._player_hud.as_mut() {
             if game_client.get_character_manager().is_valid_player() {
-                let player = game_client.get_character_manager().get_player();
-                // hp
-                let hp = player.borrow()._character_property.as_ref()._hp;
-                let max_hp = player.borrow().get_character_data()._max_hp;
-                player_hud._hp_widget.update_status_widget(hp as f32, max_hp as f32);
-                // stamina
-                let stamina = player.borrow()._character_property.as_ref()._stamina;
-                player_hud._stamina_widget.update_status_widget(stamina, MAX_STAMINA);
+                let player = game_client.get_character_manager().get_player().borrow();
+                player_hud.update_status_widget(&player);
+            }
+        }
+
+        // target status
+        if let Some(target_status_bar) = self._target_status_bar.as_mut() {
+            if game_client.get_character_manager().is_valid_target_character() {
+                let target = game_client.get_character_manager().get_target_character().borrow();
+                target_status_bar.update_status_widget(&target);
             }
         }
     }

@@ -5,7 +5,8 @@ use rust_engine_3d::scene::ui::{
 };
 use rust_engine_3d::utilities::system::ptr_as_mut;
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
-
+use crate::game_module::actors::character::Character;
+use crate::game_module::game_constants::MAX_STAMINA;
 use crate::game_module::widgets::status_bar_widget::StatusBarWidget;
 
 pub struct PlayerHud<'a> {
@@ -43,6 +44,14 @@ impl<'a> PlayerHud<'a> {
     pub fn changed_window_size(&mut self, window_size: &Vector2<i32>) {
         let ui_component = ptr_as_mut(self._widget).get_ui_component_mut();
         ui_component.set_pos_x(10.0);
-        ui_component.set_pos_y(window_size.y as f32 - ui_component.get_size_y());
+        ui_component.set_pos_y(window_size.y as f32 - ui_component.get_size_y() - 50.0);
+    }
+    pub fn update_status_widget(&mut self, player: &Character<'a>) {
+        let hp = player._character_property.as_ref()._hp as f32;
+        let max_hp = player.get_character_data()._max_hp as f32;
+        let stamina = player._character_property.as_ref()._stamina;
+        let max_stamina = MAX_STAMINA;
+        self._hp_widget.update_status_widget(hp, max_hp);
+        self._stamina_widget.update_status_widget(stamina, max_stamina);
     }
 }
