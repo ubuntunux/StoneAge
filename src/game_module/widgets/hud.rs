@@ -18,8 +18,8 @@ pub struct PlayerHud<'a> {
 // PlayerHud
 impl<'a> PlayerHud<'a> {
     pub fn create_player_hud(root_widget: &mut WidgetDefault<'a>) -> PlayerHud<'a> {
-        let hud_layer_width: f32 = 300.0;
-        let hud_layer_height: f32 = 100.0;
+        let hud_layer_width: f32 = 400.0;
+        let hud_layer_height: f32 = 200.0;
         let hud_layer_padding: f32 = 10.0;
 
         let player_widget = UIManager::create_widget("player_widget", UIWidgetTypes::Default);

@@ -20,7 +20,7 @@ impl<'a> TargetStatusWidget<'a> {
         let target_status_widget = UIManager::create_widget("target_status_widget", UIWidgetTypes::Default);
         let target_status_widget_ptr = ptr_as_mut(target_status_widget.as_ref());
         let ui_component = ptr_as_mut(target_status_widget.as_ref()).get_ui_component_mut();
-        ui_component.set_size(300.0, 60.0);
+        ui_component.set_size(500.0, 100.0);
         ui_component.set_layout_type(UILayoutType::BoxLayout);
         ui_component.set_layout_orientation(Orientation::VERTICAL);
         ui_component.set_halign(HorizontalAlign::CENTER);

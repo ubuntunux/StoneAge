@@ -4,8 +4,8 @@ use rust_engine_3d::scene::ui::{
 use rust_engine_3d::utilities::system::ptr_as_mut;
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 
-const WIDGET_UI_WIDTH: f32 = 200.0;
-const WIDGET_UI_HEIGHT: f32 = 24.0;
+const WIDGET_UI_WIDTH: f32 = 300.0;
+const WIDGET_UI_HEIGHT: f32 = 40.0;
 const WIDGET_UI_MARGIN: f32 = 2.0;
 const WIDGET_UI_PADDING: f32 = 2.0;
 
