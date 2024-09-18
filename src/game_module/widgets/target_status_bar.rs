@@ -37,7 +37,7 @@ impl<'a> TargetStatusWidget<'a> {
         ui_component.set_valign(VerticalAlign::CENTER);
         ui_component.set_size_hint_x(Some(1.0));
         ui_component.set_size_y(20.0);
-        ui_component.set_font_size(30.0);
+        ui_component.set_font_size(35.0);
         ui_component.set_color(get_color32(255, 255, 255, 0));
         target_status_widget_ptr.add_widget(&target_name_widget);
 
