@@ -29,6 +29,7 @@ pub struct CharacterManager<'a> {
     pub _id_generator: u64,
     pub _player: Option<RcRefCell<Character<'a>>>,
     pub _target_character: Option<RcRefCell<Character<'a>>>,
+    pub _target_focus_time: f64,
     pub _characters: CharacterMap<'a>,
 }
 
@@ -43,6 +44,7 @@ impl<'a> CharacterManager<'a> {
             _id_generator: 0,
             _player: None,
             _target_character: None,
+            _target_focus_time: 0.0,
             _characters: HashMap::new(),
         })
     }
@@ -220,7 +222,16 @@ impl<'a> CharacterManager<'a> {
         }
 
         if regist_target_character.is_some() {
-            self._target_character = regist_target_character;
+            self.set_target_character(regist_target_character);
+            self._target_focus_time = 0.0;
+        } else {
+            const TARGET_FOCUS_TIME: f64 = 2.0;
+            if self._target_focus_time < TARGET_FOCUS_TIME {
+                self._target_focus_time += delta_time;
+                if TARGET_FOCUS_TIME <= self._target_focus_time {
+                    self.set_target_character(None);
+                }
+            }
         }
     }
 }

@@ -32,7 +32,7 @@ impl<'a> PlayerHud<'a> {
         ui_component.set_halign(HorizontalAlign::RIGHT);
         ui_component.set_valign(VerticalAlign::CENTER);
         ui_component.set_padding(hud_layer_padding);
-        ui_component.set_color(get_color32(255, 255, 255, 64));
+        ui_component.set_color(get_color32(255, 255, 255, 32));
         root_widget.add_widget(&player_widget);
 
         PlayerHud {

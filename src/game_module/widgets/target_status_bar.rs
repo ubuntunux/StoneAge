@@ -12,6 +12,8 @@ pub struct TargetStatusWidget<'a> {
     pub _widget: *const WidgetDefault<'a>,
     pub _target_name_widget: *const WidgetDefault<'a>,
     pub _hp_widget: StatusBarWidget<'a>,
+    pub _target: *const Character<'a>,
+    pub _fade_time: f64,
 }
 
 // TargetStatusWidget
@@ -27,6 +29,7 @@ impl<'a> TargetStatusWidget<'a> {
         ui_component.set_valign(VerticalAlign::CENTER);
         ui_component.set_padding(10.0);
         ui_component.set_color(get_color32(255, 255, 255, 12));
+        ui_component.set_visible(false);
         root_widget.add_widget(&target_status_widget);
 
         let target_name_widget = UIManager::create_widget("target_name_widget", UIWidgetTypes::Default);
@@ -47,18 +50,28 @@ impl<'a> TargetStatusWidget<'a> {
             _widget: target_status_widget_ptr,
             _target_name_widget: target_name_widget_ptr,
             _hp_widget: hp_widget,
+            _target: std::ptr::null(),
+            _fade_time: 0.0,
         }
     }
     pub fn changed_window_size(&mut self, window_size: &Vector2<i32>) {
         let ui_component = ptr_as_mut(self._widget).get_ui_component_mut();
         ui_component.set_center_x(window_size.x as f32 * 0.5);
-        ui_component.set_pos_y(50.0);
+        ui_component.set_pos_y(window_size.y as f32 - ui_component.get_size_y() - 50.0);
     }
     pub fn update_status_widget(&mut self, target: &Character<'a>) {
-        let name = target._character_data_name.as_str();
+        if self._target != target {
+            ptr_as_mut(self._widget).get_ui_component_mut().set_visible(true);
+            let name = target._character_data_name.clone().to_uppercase();
+            ptr_as_mut(self._target_name_widget).get_ui_component_mut().set_text(name.as_str());
+            self._target = target;
+        }
         let hp = target._character_property.as_ref()._hp as f32;
         let max_hp = target.get_character_data()._max_hp as f32;
-        ptr_as_mut(self._target_name_widget).get_ui_component_mut().set_text(name);
         self._hp_widget.update_status_widget(hp, max_hp);
+    }
+    pub fn fade_out_status_widget(&mut self) {
+        ptr_as_mut(self._widget).get_ui_component_mut().set_visible(false);
+        self._target = std::ptr::null();
     }
 }

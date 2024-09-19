@@ -7,7 +7,7 @@ use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
 
 use crate::application::application::Application;
 use crate::game_module::game_client::GameClient;
-use crate::game_module::widgets::hud::PlayerHud;
+use crate::game_module::widgets::player_hud::PlayerHud;
 use crate::game_module::widgets::image_widget::ImageLayout;
 use crate::game_module::widgets::target_status_bar::TargetStatusWidget;
 
@@ -153,6 +153,8 @@ impl<'a> GameUIManager<'a> {
             if game_client.get_character_manager().is_valid_target_character() {
                 let target = game_client.get_character_manager().get_target_character().borrow();
                 target_status_bar.update_status_widget(&target);
+            } else {
+                target_status_bar.fade_out_status_widget();
             }
         }
     }
