@@ -24,7 +24,7 @@ pub fn get_render_pass_data_create_info(
         .get_mut(&*render_pass_name)
         .unwrap();
     let mut pipeline_data_create_info =
-        render_pass_data_create_info.get_pipeline_data_create_info_clone("render_object");
+        render_pass_data_create_info.get_pipeline_data_create_info("render_object").clone();
     pipeline_data_create_info._pipeline_data_create_info_name = String::from("render_grass");
     pipeline_data_create_info._pipeline_vertex_shader_file = PathBuf::from("render_grass.vert");
     pipeline_data_create_info._pipeline_fragment_shader_file = PathBuf::from("render_grass.frag");
