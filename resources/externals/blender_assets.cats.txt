@@ -9,6 +9,7 @@ VERSION 1
 51076800-bec8-483d-ab24-d675b18c5ce9:StoneAge:StoneAge
 fa46e7b2-70fd-4bef-849a-1f00f8241032:StoneAge/animation_layers:StoneAge-animation_layers
 1bbc0027-d246-41b8-a2b9-b9a6c2fe4a29:StoneAge/animation_layers/jack:StoneAge-animation_layers-jack
+c2cca466-4617-4851-bad8-634633e9ab7e:StoneAge/animation_layers/spider:StoneAge-animation_layers-spider
 0ebbd3cf-ae0b-438a-a0f7-dc166046796a:StoneAge/animation_layers/trex:StoneAge-animation_layers-trex
 b58accda-263e-42a4-8dc7-73ec3248b39d:StoneAge/animation_layers/triceratops:StoneAge-animation_layers-triceratops
 d4ee0908-9040-4db9-bdf6-7b06b9a06512:StoneAge/animation_layers/wolf:StoneAge-animation_layers-wolf
@@ -31,9 +32,9 @@ e3ddd55b-bd11-4603-9e0e-d3917d6520a9:StoneAge/materials/common:StoneAge-material
 b4a6efe7-0f70-477b-b168-13bf22b4b568:StoneAge/meshes:StoneAge-meshes
 f16677b8-5725-4004-80f4-4129b0cd7dfe:StoneAge/meshes/characters:StoneAge-meshes-characters
 8773c78b-4d23-4740-bedb-820a9f3daf7f:StoneAge/meshes/characters/jack:StoneAge-meshes-characters-jack
+a88efbcd-1b2b-49fe-abea-b56f58b72f80:StoneAge/meshes/characters/spider:StoneAge-meshes-characters-spider
 f0a73abd-9da5-43a6-9635-6962ae3e963d:StoneAge/meshes/characters/trex:StoneAge-meshes-characters-trex
 d07da559-c89b-4bec-b90c-cfeabd95fd15:StoneAge/meshes/characters/triceratops:StoneAge-meshes-characters-triceratops
-6588f928-d293-4fc6-ab59-63e261ca0e68:StoneAge/meshes/characters/tyranno:StoneAge-meshes-characters-tyranno
 ace78cd3-b995-4d85-a371-a9c1abb0b0ef:StoneAge/meshes/characters/wolf:StoneAge-meshes-characters-wolf
 6fa9671c-4f94-4b42-807a-85314e85e643:StoneAge/meshes/environments:StoneAge-meshes-environments
 60773708-1fcd-4b9b-91f0-426c5d747502:StoneAge/meshes/props:StoneAge-meshes-props

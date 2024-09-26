@@ -1,0 +1,21 @@
+{
+    "_material_instances": [
+        "characters/wolf/wolf"
+    ],
+    "_mesh": "characters/spider/spider",
+    "_position": [
+        0.0,
+        0.0,
+        0.0
+    ],
+    "_rotation": [
+        0.0,
+        0.0,
+        0.0
+    ],
+    "_scale": [
+        1.0,
+        1.0,
+        1.0
+    ]
+}

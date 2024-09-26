@@ -20,6 +20,24 @@
         }
     },
     "_characters": {
+        "spider": {
+            "_character_data_name": "spider",
+            "_position": [
+                -10.0,
+                12.0,
+                0.0
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
         "trex": {
             "_character_data_name": "trex",
             "_position": [
@@ -204,7 +222,7 @@
             "_character_data_name": "wolf",
             "_position": [
                 -4.0,
-                10.0,
+                11.0,
                 0.0
             ],
             "_rotation": [
