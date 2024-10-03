@@ -11,7 +11,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::game_module::actors::character_behavior::{self, BehaviorBase};
 use crate::game_module::actors::character_controller::CharacterController;
-use crate::game_module::actors::character_data::{ActionAnimationState, CharacterData, MoveAnimationState, MoveDirections};
+use crate::game_module::actors::character_data::{ActionAnimationState, CharacterData, MoveAnimationState};
 use crate::game_module::actors::character_manager::CharacterManager;
 use crate::game_module::game_constants::*;
 use crate::game_module::game_scene_manager::GameSceneManager;
@@ -285,7 +285,7 @@ impl<'a> Character<'a> {
     pub fn set_move_idle(&mut self) {
         self.set_run(false);
         self.set_move_speed(0.0);
-        self.set_move_direction(MoveDirections::NONE);
+        self.set_move_direction(&Vector3::zeros());
         self.set_move_animation(MoveAnimationState::Idle);
     }
 
@@ -293,7 +293,7 @@ impl<'a> Character<'a> {
         if !self.is_move_state(MoveAnimationState::Roll) {
             self.set_run(false);
             self.set_move_speed(0.0);
-            self.set_move_direction(MoveDirections::NONE);
+            self.set_move_direction(&Vector3::zeros());
 
             if !self.is_move_state(MoveAnimationState::Idle) && self.is_on_ground() {
                 self.set_move_animation(MoveAnimationState::Idle);
@@ -305,13 +305,13 @@ impl<'a> Character<'a> {
         self._controller.set_move_speed(speed);
     }
 
-    pub fn set_move_direction(&mut self, move_direction: MoveDirections) {
+    pub fn set_move_direction(&mut self, move_direction: &Vector3<f32>) {
         self._controller.set_move_direction(move_direction);
     }
 
-    pub fn set_move(&mut self, move_direction: MoveDirections) {
+    pub fn set_move(&mut self, move_direction: &Vector3<f32>) {
         if self.is_available_move() {
-            if self._controller._face_direction != move_direction {
+            if self._controller._face_direction.dot(move_direction) < 0.0 {
                 self.set_run(false);
             }
 
@@ -605,39 +605,14 @@ impl<'a> Character<'a> {
 
     pub fn check_attack_range(&self, attack_event: ActionAnimationState, target_bounding_box: &BoundingBox) -> bool {
         let character_data = self.get_character_data();
-        let attack_range: f32 = match attack_event {
+        let _attack_range: f32 = match attack_event {
             ActionAnimationState::Attack => character_data._attack_range,
             ActionAnimationState::PowerAttack => character_data._power_attack_range,
             _ => panic!("check_attack_range not implemented: {:?}", attack_event)
         };
-        let attack_thickness: f32 = character_data._attack_thickness;
+        let _attack_thickness: f32 = character_data._attack_thickness;
         let bounding_box = self.get_bounding_box();
-        let box_min: Vector3<f32>;
-        let box_max: Vector3<f32>;
-        if self._controller._face_direction == MoveDirections::LEFT {
-            box_min = Vector3::new(
-                bounding_box._min.x - attack_range,
-                bounding_box._center.y - attack_thickness,
-                bounding_box._min.z
-            );
-            box_max = Vector3::new(
-                bounding_box._center.x,
-                bounding_box._center.y + attack_thickness,
-                bounding_box._max.z
-            );
-        } else {
-            box_min = Vector3::new(
-                bounding_box._center.x,
-                bounding_box._center.y - attack_thickness,
-                bounding_box._min.z
-            );
-            box_max = Vector3::new(
-                bounding_box._max.x + attack_range,
-                bounding_box._center.y + attack_thickness,
-                bounding_box._max.z
-            );
-        }
-        target_bounding_box.collide_bound_box_xy(&box_min, &box_max)
+        target_bounding_box.collide_bound_box(&bounding_box._min, &bounding_box._max)
     }
 
     pub fn get_position(&self) -> &Vector3<f32> {

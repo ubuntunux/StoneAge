@@ -3,8 +3,19 @@ use rand;
 use rust_engine_3d::utilities::math::lerp;
 
 use crate::game_module::actors::character::Character;
-use crate::game_module::actors::character_data::{ActionAnimationState, CharacterDataType, MoveDirections};
-use crate::game_module::game_constants::{NPC_ATTACK_TERM_MIN, NPC_ATTACK_TERM_MAX, NPC_ROAMING_TERM, NPC_TRACKING_RANGE_X, NPC_TRACKING_RANGE_Y, NPC_AVAILABLE_MOVING_ATTACK, NPC_IDLE_TERM_MAX, NPC_IDLE_TERM_MIN, NPC_IDLE_PLAY_MIN, NPC_IDLE_PLAY_MAX};
+use crate::game_module::actors::character_data::{ActionAnimationState, CharacterDataType};
+use crate::game_module::game_constants::{
+    NPC_ATTACK_TERM_MIN,
+    NPC_ATTACK_TERM_MAX,
+    NPC_ROAMING_TERM,
+    NPC_TRACKING_RANGE_X,
+    NPC_TRACKING_RANGE_Y,
+    NPC_AVAILABLE_MOVING_ATTACK,
+    NPC_IDLE_TERM_MAX,
+    NPC_IDLE_TERM_MIN,
+    NPC_IDLE_PLAY_MIN,
+    NPC_IDLE_PLAY_MAX
+};
 
 pub trait BehaviorBase {
     fn update_behavior<'a>(&mut self, character: &mut Character, player: &Character<'a>, delta_time: f32);
@@ -14,7 +25,7 @@ pub struct RoamerBehavior {
     pub _roamer_idle_time: f32,
     pub _roamer_idle_play_time: f32,
     pub _roamer_move_time: f32,
-    pub _roamer_move_direction: MoveDirections,
+    pub _roamer_move_direction: Vector3<f32>,
     pub _roamer_attack_time: f32,
 }
 
@@ -24,7 +35,7 @@ impl Default for RoamerBehavior {
             _roamer_idle_time: generate_idle_time(),
             _roamer_idle_play_time: 0.0,
             _roamer_move_time: 0.0,
-            _roamer_move_direction: MoveDirections::NONE,
+            _roamer_move_direction: Vector3::new(1.0, 0.0, 0.0),
             _roamer_attack_time: generate_attack_time(),
         }
     }
@@ -58,13 +69,8 @@ impl BehaviorBase for RoamerBehavior {
             if 0.0 < self._roamer_attack_time {
                 self._roamer_attack_time -= delta_time;
             } else if owner.check_attack_range(ActionAnimationState::Attack, player.get_bounding_box()) {
-                let to_player_direction =
-                    if owner.get_position().x <= player.get_position().x {
-                        MoveDirections::RIGHT
-                    } else {
-                        MoveDirections::LEFT
-                    };
-                owner.set_move_direction(to_player_direction);
+                let to_player_direction = (player.get_position() - owner.get_position()).normalize();
+                owner.set_move_direction(&to_player_direction);
                 if !NPC_AVAILABLE_MOVING_ATTACK {
                     owner.set_move_stop();
                 }
@@ -81,20 +87,14 @@ impl BehaviorBase for RoamerBehavior {
 
             if player._is_alive && (to_player.x.abs() < NPC_TRACKING_RANGE_X && to_player.y.abs() < NPC_TRACKING_RANGE_Y) {
                 // tracking
-                let move_direction = if 0.0 < to_player.x {
-                    MoveDirections::RIGHT
-                } else {
-                    MoveDirections::LEFT
-                };
-
                 if owner.get_bounding_box()._size.x * 0.5 < to_player.x.abs() {
                     // tracking player
-                    owner.set_move(move_direction);
+                    owner.set_move(&to_player);
                     owner.set_run(true);
                 } else {
                     // player in attack range
                     owner.set_move_idle();
-                    owner.set_move_direction(move_direction);
+                    owner.set_move_direction(&to_player);
                 }
             } else {
                 // update idle time
@@ -117,13 +117,8 @@ impl BehaviorBase for RoamerBehavior {
                     // roaming
                     self._roamer_move_time -= delta_time;
                     if self._roamer_move_time <= 0.0 || is_blocked || is_cliff {
-                        self._roamer_move_direction =
-                            if MoveDirections::LEFT == self._roamer_move_direction {
-                                MoveDirections::RIGHT
-                            } else {
-                                MoveDirections::LEFT
-                            };
-                        owner.set_move(self._roamer_move_direction);
+                        self._roamer_move_direction = -self._roamer_move_direction;
+                        owner.set_move(&self._roamer_move_direction);
                         owner.set_run(false);
                         self._roamer_move_time = NPC_ROAMING_TERM;
                     }

@@ -2,7 +2,7 @@ use nalgebra::Vector3;
 use rust_engine_3d::utilities::bounding_box::BoundingBox;
 use rust_engine_3d::utilities::system::ptr_as_ref;
 
-use crate::game_module::actors::character_data::{MoveDirections, CharacterData, MoveAnimationState};
+use crate::game_module::actors::character_data::{CharacterData, MoveAnimationState};
 use crate::game_module::game_constants::{BLOCK_TOLERANCE, GRAVITY, GROUND_HEIGHT, MOVE_LIMIT};
 use crate::game_module::game_scene_manager::GameSceneManager;
 
@@ -17,8 +17,8 @@ pub struct CharacterController {
     pub _is_cliff: bool,
     pub _move_speed: f32,
     pub _is_blocked: bool,
-    pub _face_direction: MoveDirections,
-    pub _move_direction: MoveDirections,
+    pub _face_direction: Vector3<f32>,
+    pub _move_direction: Vector3<f32>,
 }
 
 impl CharacterController {
@@ -34,8 +34,8 @@ impl CharacterController {
             _is_ground: false,
             _is_blocked: false,
             _is_cliff: false,
-            _face_direction: MoveDirections::RIGHT,
-            _move_direction: MoveDirections::NONE,
+            _face_direction: Vector3::zeros(),
+            _move_direction: Vector3::zeros(),
         }
     }
 
@@ -69,11 +69,9 @@ impl CharacterController {
         self._is_running = !self._is_running;
     }
 
-    pub fn set_move_direction(&mut self, move_direction: MoveDirections) {
-        self._move_direction = move_direction;
-        if MoveDirections::NONE != move_direction {
-            self._face_direction = move_direction;
-        }
+    pub fn set_move_direction(&mut self, move_direction: &Vector3<f32>) {
+        self._move_direction.clone_from(move_direction);
+        self._face_direction.clone_from(move_direction);
     }
 
     pub fn set_jump_start(&mut self) {
@@ -109,33 +107,23 @@ impl CharacterController {
         let prev_position = self._position.clone_owned();
 
         // move on ground
-        let move_direction = if MoveAnimationState::Roll == move_animation {
-            self._face_direction
+        let mut move_direction = if MoveAnimationState::Roll == move_animation {
+            self._face_direction.clone()
         } else {
-            self._move_direction
+            self._move_direction.clone()
         };
-        match move_direction {
-            MoveDirections::NONE => {
-                self._velocity.x = 0.0;
-            }
-            MoveDirections::LEFT => {
-                self._velocity.x = -self._move_speed;
-                self._rotation.y = std::f32::consts::PI * 0.5
-            }
-            MoveDirections::RIGHT => {
-                self._velocity.x = self._move_speed;
-                self._rotation.y = -std::f32::consts::PI * 0.5
-            }
-            MoveDirections::UP => {
-                self._velocity.x = 0.0;
-                self._rotation.y = std::f32::consts::PI;
-            }
-            MoveDirections::DOWN => {
-                self._velocity.x = 0.0;
-                self._rotation.y = 0.0;
-            }
+
+        if move_direction.x != 0.0 || move_direction.z != 0.0 {
+            move_direction.normalize_mut();
+            self._velocity.x = move_direction.x * self._move_speed;
+            self._velocity.z = move_direction.z * self._move_speed;
+            self._rotation.y = self._velocity.z.atan2(-self._velocity.x) + std::f32::consts::PI * 0.5;
+            self._position.x += self._velocity.x * delta_time;
+            self._position.z += self._velocity.z * delta_time;
+        } else {
+            self._velocity.x = 0.0;
+            self._velocity.z = 0.0;
         }
-        self._position.x += self._velocity.x * delta_time;
 
         // jump
         if self._is_jump_start {
@@ -159,6 +147,10 @@ impl CharacterController {
             if MOVE_LIMIT < delta.y.abs() {
                 self._position.y = prev_position.y + delta.y.signum() * MOVE_LIMIT;
             }
+
+            if MOVE_LIMIT < delta.z.abs() {
+                self._position.z = prev_position.z + delta.z.signum() * MOVE_LIMIT;
+            }
         }
 
         // check collide with block
@@ -170,7 +162,7 @@ impl CharacterController {
         let front_bottom_point: Vector3<f32> = Vector3::new(
             if 0.0 < move_delta.x { bound_box_max.x + 0.1 } else { bound_box_min.x - 0.1 },
             bound_box_min.y - 0.1,
-            self._position.z
+            if 0.0 < move_delta.z { bound_box_max.z + 0.1 } else { bound_box_min.z - 0.1 }
         );
 
         // reset flags
@@ -184,15 +176,10 @@ impl CharacterController {
             let block_render_object = ptr_as_ref(block._render_object.as_ptr());
             let block_bound_box = &block_render_object._bound_box;
 
-            // check collide with block
-            if block_bound_box.collide_bound_box_xy(&bound_box_min, &bound_box_max) {
-                let block_direction: MoveDirections =
-                    if actor_bound_box._center.x < block_bound_box._center.x {
-                        MoveDirections::RIGHT
-                    } else {
-                        MoveDirections::LEFT
-                    };
+            // TODO: collide_bound_cylinder !!!
 
+            // check collide with block
+            if block_bound_box.collide_bound_box(&bound_box_min, &bound_box_max) {
                 if 0.0 < self._velocity.y && actor_bound_box._center.y < block_bound_box._min.y {
                     // check top block
                     self._velocity.y = 0.0;
@@ -200,12 +187,12 @@ impl CharacterController {
                 } else if self._velocity.y <= 0.0 && (block_bound_box._max.y <= prev_position.y || (block_bound_box._max.y - BLOCK_TOLERANCE) <= self._position.y) {
                     // check ground block
                     self.set_on_ground(block_bound_box._max.y);
-                } else if block_direction == move_direction &&
-                    bound_box_min.y < (block_bound_box._max.y - BLOCK_TOLERANCE) &&
+                } else if bound_box_min.y < (block_bound_box._max.y - BLOCK_TOLERANCE) &&
                     (block_bound_box._min.y + BLOCK_TOLERANCE) < bound_box_max.y
                 {
                     // check side block
                     self._position.x = prev_position.x;
+                    self._position.z = prev_position.z;
                     self._is_blocked = true;
                 }
             }

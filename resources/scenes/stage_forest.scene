@@ -1704,7 +1704,7 @@
             "_model_data_name": "environments/desert_ground",
             "_position": [
                 59.25,
-                9.206374168395996,
+                9.0,
                 14.003606796264648
             ],
             "_rotation": [
@@ -1714,7 +1714,7 @@
             ],
             "_scale": [
                 0.34625133872032166,
-                0.34625133872032166,
+                0.0,
                 0.34625133872032166
             ]
         },
@@ -1722,7 +1722,7 @@
             "_model_data_name": "environments/desert_ground",
             "_position": [
                 -10.0,
-                9.206374168395996,
+                9.0,
                 14.003606796264648
             ],
             "_rotation": [
@@ -1732,80 +1732,8 @@
             ],
             "_scale": [
                 0.34625133872032166,
-                0.34625133872032166,
+                0.0,
                 0.34625133872032166
-            ]
-        },
-        "forest_mountain_00": {
-            "_model_data_name": "environments/forest_mountain_00",
-            "_position": [
-                -18.260799407958984,
-                7.532480239868164,
-                26.964481353759766
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "forest_mountain_00.001": {
-            "_model_data_name": "environments/forest_mountain_00",
-            "_position": [
-                46.739200592041016,
-                7.532480239868164,
-                26.964481353759766
-            ],
-            "_rotation": [
-                0.0,
-                2.32033634185791,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "forest_mountain_01": {
-            "_model_data_name": "environments/forest_mountain_01",
-            "_position": [
-                16.154783248901367,
-                7.677433013916016,
-                27.853939056396484
-            ],
-            "_rotation": [
-                0.0,
-                2.6408979892730713,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "forest_mountain_01.001": {
-            "_model_data_name": "environments/forest_mountain_01",
-            "_position": [
-                79.15478515625,
-                7.677433013916016,
-                27.853939056396484
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
             ]
         },
         "grass_00": {

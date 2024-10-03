@@ -329,7 +329,6 @@ resources/engine_resources/textures/precomputed_atmosphere/scattering.texture
 resources/engine_resources/textures/precomputed_atmosphere/transmittance.texture
 resources/externals/animation_layers/jack/upper_animation_layer.blend
 resources/externals/animation_layers/spider/upper_animation_layer.blend
-resources/externals/animation_layers/spider/upper_animation_layer.blend1
 resources/externals/animation_layers/trex/upper_animation_layer.blend
 resources/externals/animation_layers/triceratops/upper_animation_layer.blend
 resources/externals/animation_layers/wolf/upper_animation_layer.blend
@@ -339,7 +338,6 @@ resources/externals/game_data/blocks/cliff_grass.blend
 resources/externals/game_data/blocks/rock.blend
 resources/externals/game_data/characters/jack.blend
 resources/externals/game_data/characters/spider.blend
-resources/externals/game_data/characters/spider.blend1
 resources/externals/game_data/characters/trex.blend
 resources/externals/game_data/characters/triceratops.blend
 resources/externals/game_data/characters/wolf.blend

@@ -1,13 +1,13 @@
-use nalgebra::Vector2;
+use nalgebra::{Vector2, Vector3};
 use rust_engine_3d::core::engine_core::TimeData;
 use rust_engine_3d::core::input::{ButtonState, JoystickInputData, KeyboardInputData, MouseInputData, MouseMoveData};
 use rust_engine_3d::scene::camera::CameraObjectData;
+use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use winit::keyboard::KeyCode;
 
 use crate::application::application::Application;
 use crate::game_module::actors::character::Character;
-use crate::game_module::actors::character_data::MoveDirections;
 use crate::game_module::game_client::GameClient;
 use crate::game_module::game_constants::*;
 use crate::game_module::game_ui_manager::GameUIManager;
@@ -87,12 +87,12 @@ impl<'a> GameController<'a> {
             keyboard_input_data.get_key_hold(KeyCode::KeyD) ||
             joystick_input_data._btn_right == ButtonState::Hold||
             0 < joystick_input_data._stick_left_direction.x;
-        let _is_down =
+        let is_down =
             keyboard_input_data.get_key_hold(KeyCode::ArrowDown) ||
             keyboard_input_data.get_key_hold(KeyCode::KeyS) ||
             joystick_input_data._btn_down  == ButtonState::Hold ||
             0 < joystick_input_data._stick_left_direction.y;
-        let _is_up =
+        let is_up =
             keyboard_input_data.get_key_hold(KeyCode::ArrowUp) ||
             keyboard_input_data.get_key_hold(KeyCode::KeyW) ||
             joystick_input_data._btn_up  == ButtonState::Hold ||
@@ -110,20 +110,27 @@ impl<'a> GameController<'a> {
 
         // set action & move
         let mut player_mut = player.borrow_mut();
-        if is_left {
-            player_mut.set_move(MoveDirections::LEFT);
-        }
-        else if is_right {
-            player_mut.set_move(MoveDirections::RIGHT);
-        }
-        // else if is_up {
-        //     player_mut.set_move(MoveDirections::UP);
-        // }
-        // else if is_down {
-        //     player_mut.set_move(MoveDirections::DOWN);
-        // }
-        else {
-            player_mut.set_move_stop();
+        {
+            let mut move_direction: Vector3<f32> = Vector3::zeros();
+            if is_left {
+                move_direction.x = -1.0;
+            }
+            else if is_right {
+                move_direction.x = 1.0;
+            }
+
+            if is_up {
+                move_direction.z = 1.0;
+            }
+            else if is_down {
+                move_direction.z = -1.0;
+            }
+
+            if move_direction.x != 0.0 || move_direction.z != 0.0 {
+                player_mut.set_move(&move_direction);
+            } else {
+                player_mut.set_move_stop();
+            }
         }
 
         if is_run {
@@ -160,23 +167,13 @@ impl<'a> GameController<'a> {
         }
 
         let player_pos = player_mut.get_position();
-        let mut camera_pos_y = main_camera._transform_object.get_position().y;
         let mut camera_position = player_pos - main_camera._transform_object.get_front() * self._camera_distance;
-        let upper_camera_pos_y = camera_pos_y + UPPER_CAMERA_OFFSET_Y;
-        let bottom_camera_pos_y = camera_pos_y - BOTTOM_CAMERA_OFFSET_Y;
-        if upper_camera_pos_y < player_pos.y {
-            camera_pos_y = player_pos.y - UPPER_CAMERA_OFFSET_Y;
-        } else if player_pos.y < bottom_camera_pos_y {
-            camera_pos_y = player_pos.y + BOTTOM_CAMERA_OFFSET_Y;
-        }
-
-        if camera_pos_y < CAMERA_POSITION_Y_MIN {
-            camera_pos_y = CAMERA_POSITION_Y_MIN;
-        }
-        camera_position.y = camera_pos_y;
-
+        camera_position.y += CAMERA_OFFSET_Y;
         main_camera._transform_object.set_position(&camera_position);
-        main_camera._transform_object.set_pitch(CAMERA_PITCH);
+
+        let dist_ratio = (self._camera_distance - CAMERA_DISTANCE_MIN) / (CAMERA_DISTANCE_MAX - CAMERA_DISTANCE_MIN);
+        let pitch: f32 = math::degree_to_radian(math::lerp(CAMERA_PITCH_MIN, CAMERA_PITCH_MAX, dist_ratio));
+        main_camera._transform_object.set_pitch(pitch);
         main_camera._transform_object.set_yaw(0.0);
         main_camera._transform_object.set_roll(0.0);
     }

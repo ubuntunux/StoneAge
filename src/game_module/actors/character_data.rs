@@ -21,15 +21,6 @@ pub enum ActionAnimationState {
     PowerAttack,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub enum MoveDirections {
-    NONE,
-    LEFT,
-    RIGHT,
-    UP,
-    DOWN,
-}
-
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum SpawnPointType {
     None,
