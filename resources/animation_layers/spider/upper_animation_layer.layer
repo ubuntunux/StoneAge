@@ -1,0 +1,32 @@
+{
+    "_bone_blend_map": {
+        "Abdomen_15": 1.0,
+        "BackLeg.L_26": 1.0,
+        "BackLeg.R_11": 1.0,
+        "BackLeg2.L_25": 1.0,
+        "BackLeg2.R_10": 1.0,
+        "BackLeg3.L_24": 1.0,
+        "BackLeg3.R_9": 1.0,
+        "FrontLeg.L_20": 1.0,
+        "FrontLeg.R_5": 1.0,
+        "FrontLeg2.L_19": 1.0,
+        "FrontLeg2.R_4": 1.0,
+        "FrontLeg3.L_18": 1.0,
+        "FrontLeg3.R_3": 1.0,
+        "GLTF_created_0_rootJoint": 1.0,
+        "Head_16": 1.0,
+        "MidBackLeg.L_2": 1.0,
+        "MidBackLeg.R_14": 1.0,
+        "MidBackLeg2.L_1": 1.0,
+        "MidBackLeg2.R_13": 1.0,
+        "MidBackLeg3.L_0": 1.0,
+        "MidBackLeg3.R_12": 1.0,
+        "MidFrontLeg.L_23": 1.0,
+        "MidFrontLeg.R_8": 1.0,
+        "MidFrontLeg2.L_22": 1.0,
+        "MidFrontLeg2.R_7": 1.0,
+        "MidFrontLeg3.L_21": 1.0,
+        "MidFrontLeg3.R_6": 1.0,
+        "Thorax_17": 1.0
+    }
+}
