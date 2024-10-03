@@ -111,7 +111,7 @@ impl<'a> GameController<'a> {
         // set action & move
         let mut player_mut = player.borrow_mut();
         {
-            let mut move_direction: Vector3<f32> = Vector3::zeros();
+            let mut move_direction: Vector3<f32> = Vector3::new(joystick_input_data._stick_left_direction.x as f32, 0.0, joystick_input_data._stick_left_direction.y as f32);
             if is_left {
                 move_direction.x = -1.0;
             }
