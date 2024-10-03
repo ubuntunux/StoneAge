@@ -71,12 +71,10 @@ impl<'a> GameController<'a> {
     ) {
         let is_attack: bool =
             mouse_input_data._btn_l_pressed ||
-            joystick_input_data._btn_x == ButtonState::Pressed ||
-            joystick_input_data._btn_right_trigger == ButtonState::Pressed;
+            joystick_input_data._btn_x == ButtonState::Pressed;
         let is_power_attack: bool =
             mouse_input_data._btn_r_pressed ||
-            joystick_input_data._btn_y == ButtonState::Pressed ||
-            joystick_input_data._btn_left_trigger == ButtonState::Pressed;
+            joystick_input_data._btn_y == ButtonState::Pressed;
         let is_left =
             keyboard_input_data.get_key_hold(KeyCode::ArrowLeft) ||
             keyboard_input_data.get_key_hold(KeyCode::KeyA) ||
@@ -107,6 +105,9 @@ impl<'a> GameController<'a> {
             keyboard_input_data.get_key_pressed(KeyCode::AltLeft) ||
             joystick_input_data._btn_b == ButtonState::Pressed ||
             joystick_input_data._btn_right_shoulder == ButtonState::Pressed;
+
+        let is_zoom_in = joystick_input_data._btn_left_trigger == ButtonState::Pressed;
+        let is_zoom_out = joystick_input_data._btn_right_trigger == ButtonState::Pressed;
 
         // set action & move
         let mut player_mut = player.borrow_mut();
@@ -154,7 +155,13 @@ impl<'a> GameController<'a> {
         }
 
         // update camera
-        self._camera_goal_distance -= mouse_move_data._scroll_delta.y as f32;
+        let mut zoom = -mouse_move_data._scroll_delta.y as f32;
+        if is_zoom_in {
+            zoom = joystick_input_data._btn_left_trigger_value as f32;
+        } else if is_zoom_out {
+            zoom = -(joystick_input_data._btn_right_trigger_value as f32);
+        }
+        self._camera_goal_distance += zoom;
         self._camera_goal_distance = CAMERA_DISTANCE_MIN.max(CAMERA_DISTANCE_MAX.min(self._camera_goal_distance));
         if self._camera_goal_distance != self._camera_distance {
             let diff = (self._camera_goal_distance - self._camera_distance) * CAMERA_ZOOM_SPEED;
