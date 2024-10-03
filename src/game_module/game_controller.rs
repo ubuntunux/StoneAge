@@ -78,23 +78,19 @@ impl<'a> GameController<'a> {
         let is_left =
             keyboard_input_data.get_key_hold(KeyCode::ArrowLeft) ||
             keyboard_input_data.get_key_hold(KeyCode::KeyA) ||
-            joystick_input_data._btn_left == ButtonState::Hold ||
-            joystick_input_data._stick_left_direction.x < 0;
+            joystick_input_data._btn_left == ButtonState::Hold;
         let is_right =
             keyboard_input_data.get_key_hold(KeyCode::ArrowRight) ||
             keyboard_input_data.get_key_hold(KeyCode::KeyD) ||
-            joystick_input_data._btn_right == ButtonState::Hold||
-            0 < joystick_input_data._stick_left_direction.x;
+            joystick_input_data._btn_right == ButtonState::Hold;
         let is_down =
             keyboard_input_data.get_key_hold(KeyCode::ArrowDown) ||
             keyboard_input_data.get_key_hold(KeyCode::KeyS) ||
-            joystick_input_data._btn_down  == ButtonState::Hold ||
-            0 < joystick_input_data._stick_left_direction.y;
+            joystick_input_data._btn_down  == ButtonState::Hold;
         let is_up =
             keyboard_input_data.get_key_hold(KeyCode::ArrowUp) ||
             keyboard_input_data.get_key_hold(KeyCode::KeyW) ||
-            joystick_input_data._btn_up  == ButtonState::Hold ||
-            joystick_input_data._stick_left_direction.y < 0;
+            joystick_input_data._btn_up  == ButtonState::Hold;
         let is_jump =
             keyboard_input_data.get_key_pressed(KeyCode::Space) ||
             joystick_input_data._btn_a == ButtonState::Pressed;
@@ -106,13 +102,17 @@ impl<'a> GameController<'a> {
             joystick_input_data._btn_b == ButtonState::Pressed ||
             joystick_input_data._btn_right_shoulder == ButtonState::Pressed;
 
-        let is_zoom_in = joystick_input_data._btn_left_trigger == ButtonState::Pressed;
-        let is_zoom_out = joystick_input_data._btn_right_trigger == ButtonState::Pressed;
+        let is_zoom_in = joystick_input_data._btn_left_trigger == ButtonState::Hold;
+        let is_zoom_out = joystick_input_data._btn_right_trigger == ButtonState::Hold;
 
         // set action & move
         let mut player_mut = player.borrow_mut();
         {
-            let mut move_direction: Vector3<f32> = Vector3::new(joystick_input_data._stick_left_direction.x as f32, 0.0, joystick_input_data._stick_left_direction.y as f32);
+            let mut move_direction: Vector3<f32> = Vector3::new(
+                joystick_input_data._stick_left_direction.x as f32,
+                0.0,
+                -(joystick_input_data._stick_left_direction.y as f32)
+            );
             if is_left {
                 move_direction.x = -1.0;
             }
@@ -128,6 +128,16 @@ impl<'a> GameController<'a> {
             }
 
             if move_direction.x != 0.0 || move_direction.z != 0.0 {
+                let mut camera_front = main_camera._transform_object.get_front().clone();
+                let mut camera_right = main_camera._transform_object.get_right().clone();
+                camera_front.y = 0.0;
+                camera_right.y = 0.0;
+                camera_front.normalize_mut();
+                camera_right.normalize_mut();
+
+                move_direction = camera_right * move_direction.x + camera_front * move_direction.z;
+                move_direction.normalize_mut();
+
                 player_mut.set_move(&move_direction);
             } else {
                 player_mut.set_move_stop();
@@ -157,10 +167,11 @@ impl<'a> GameController<'a> {
         // update camera
         let mut zoom = -mouse_move_data._scroll_delta.y as f32;
         if is_zoom_in {
-            zoom = joystick_input_data._btn_left_trigger_value as f32;
+            zoom = -0.5;
         } else if is_zoom_out {
-            zoom = -(joystick_input_data._btn_right_trigger_value as f32);
+            zoom = 0.5;
         }
+
         self._camera_goal_distance += zoom;
         self._camera_goal_distance = CAMERA_DISTANCE_MIN.max(CAMERA_DISTANCE_MAX.min(self._camera_goal_distance));
         if self._camera_goal_distance != self._camera_distance {
@@ -173,15 +184,16 @@ impl<'a> GameController<'a> {
             }
         }
 
+        let dist_ratio = (self._camera_distance - CAMERA_DISTANCE_MIN) / (CAMERA_DISTANCE_MAX - CAMERA_DISTANCE_MIN);
+        let pitch: f32 = math::degree_to_radian(math::lerp(CAMERA_PITCH_MIN, CAMERA_PITCH_MAX, dist_ratio));
+        main_camera._transform_object.set_pitch(pitch);
+        main_camera._transform_object.set_yaw(main_camera._transform_object.get_yaw() + joystick_input_data._stick_right_direction.x as f32 / 327670.0);
+        main_camera._transform_object.set_roll(0.0);
+        main_camera._transform_object.update_transform_object();
+
         let player_pos = player_mut.get_position();
         let mut camera_position = player_pos - main_camera._transform_object.get_front() * self._camera_distance;
         camera_position.y += CAMERA_OFFSET_Y;
         main_camera._transform_object.set_position(&camera_position);
-
-        let dist_ratio = (self._camera_distance - CAMERA_DISTANCE_MIN) / (CAMERA_DISTANCE_MAX - CAMERA_DISTANCE_MIN);
-        let pitch: f32 = math::degree_to_radian(math::lerp(CAMERA_PITCH_MIN, CAMERA_PITCH_MAX, dist_ratio));
-        main_camera._transform_object.set_pitch(pitch);
-        main_camera._transform_object.set_yaw(0.0);
-        main_camera._transform_object.set_roll(0.0);
     }
 }
