@@ -75,6 +75,7 @@ impl<'a> GameController<'a> {
         let is_power_attack: bool =
             mouse_input_data._btn_r_pressed ||
             joystick_input_data._btn_y == ButtonState::Pressed;
+        let is_camera_yaw: bool = mouse_input_data._btn_m_hold;
         let is_left =
             keyboard_input_data.get_key_hold(KeyCode::ArrowLeft) ||
             keyboard_input_data.get_key_hold(KeyCode::KeyA) ||
@@ -164,7 +165,7 @@ impl<'a> GameController<'a> {
             player_mut.set_action_power_attack();
         }
 
-        // update camera
+        // update camera zoom
         let mut zoom = -mouse_move_data._scroll_delta.y as f32;
         if is_zoom_in {
             zoom = -0.5;
@@ -184,10 +185,17 @@ impl<'a> GameController<'a> {
             }
         }
 
+        // yaw
+        let mut camera_yaw: f32 = joystick_input_data._stick_right_direction.x as f32 / 327670.0;
+        if is_camera_yaw {
+            camera_yaw = mouse_move_data._mouse_pos_delta.x as f32 * 0.001;
+        }
+
+        // update camera transform
         let dist_ratio = (self._camera_distance - CAMERA_DISTANCE_MIN) / (CAMERA_DISTANCE_MAX - CAMERA_DISTANCE_MIN);
         let pitch: f32 = math::degree_to_radian(math::lerp(CAMERA_PITCH_MIN, CAMERA_PITCH_MAX, dist_ratio));
         main_camera._transform_object.set_pitch(pitch);
-        main_camera._transform_object.set_yaw(main_camera._transform_object.get_yaw() + joystick_input_data._stick_right_direction.x as f32 / 327670.0);
+        main_camera._transform_object.set_yaw(main_camera._transform_object.get_yaw() + camera_yaw);
         main_camera._transform_object.set_roll(0.0);
         main_camera._transform_object.update_transform_object();
 
