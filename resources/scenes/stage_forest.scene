@@ -1700,6 +1700,42 @@
                 1.0
             ]
         },
+        "cliff_grass.072": {
+            "_model_data_name": "environments/cliff_grass",
+            "_position": [
+                -6.0,
+                10.0,
+                15.0
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "cliff_grass.073": {
+            "_model_data_name": "environments/cliff_grass",
+            "_position": [
+                -4.0,
+                10.0,
+                15.0
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
         "desert_ground.001": {
             "_model_data_name": "environments/desert_ground",
             "_position": [
@@ -1732,8 +1768,8 @@
             ],
             "_scale": [
                 0.34625133872032166,
-                0.0,
-                0.34625133872032166
+                0.3462510108947754,
+                0.3462510108947754
             ]
         },
         "grass_00": {
