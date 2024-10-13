@@ -98,6 +98,7 @@ impl CharacterController {
 
     pub fn update_character_controller(
         &mut self,
+        is_player: bool,
         game_scene_manager: &GameSceneManager,
         character_data: &CharacterData,
         move_animation: MoveAnimationState,

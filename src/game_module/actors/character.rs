@@ -759,6 +759,7 @@ impl<'a> Character<'a> {
         }
 
         self._controller.update_character_controller(
+            self._is_player,
             game_scene_manager,
             ptr_as_ref(self._character_data.as_ptr()),
             self._move_animation_state,
