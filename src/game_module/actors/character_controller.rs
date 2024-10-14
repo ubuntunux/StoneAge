@@ -156,15 +156,11 @@ impl CharacterController {
 
         // check collide with block
         let move_delta = self._position - prev_position;
-        let prev_bound_box_min = &actor_bound_box._min;
-        let prev_bound_box_max = &actor_bound_box._max;
+        let radius = 1.0;//actor_bound_box._size.x.max(actor_bound_box._size.z) * 0.5;
+        let prev_bound_box_min = Vector3::new(prev_position.x - radius, actor_bound_box._min.y, prev_position.z - radius);
+        let prev_bound_box_max = Vector3::new(prev_position.x + radius, actor_bound_box._max.y, prev_position.z + radius);
         let bound_box_min = prev_bound_box_min + move_delta;
         let bound_box_max = prev_bound_box_max + move_delta;
-        let front_bottom_point: Vector3<f32> = Vector3::new(
-            if 0.0 < move_delta.x { bound_box_max.x + 0.1 } else { bound_box_min.x - 0.1 },
-            bound_box_min.y - 0.1,
-            if 0.0 < move_delta.z { bound_box_max.z + 0.1 } else { bound_box_min.z - 0.1 }
-        );
 
         // reset flags
         self._is_cliff = true;
@@ -177,39 +173,19 @@ impl CharacterController {
             let block_render_object = ptr_as_ref(block._render_object.as_ptr());
             let block_bound_box = &block_render_object._bound_box;
 
-            // TODO: collide_bound_cylinder !!!
-
             // check collide with block
             if block_bound_box.collide_bound_box(&bound_box_min, &bound_box_max) {
-                if 0.0 < self._velocity.y && actor_bound_box._center.y < block_bound_box._min.y {
-                    // check top block
-                    self._velocity.y = 0.0;
-                    self._position.y = prev_position.y;
-                } else if self._velocity.y <= 0.0 && (block_bound_box._max.y <= prev_position.y || (block_bound_box._max.y - BLOCK_TOLERANCE) <= self._position.y) {
-                    // check ground block
+                if self._velocity.y <= 0.0 && block_bound_box._max.y <= prev_position.y {
                     self.set_on_ground(block_bound_box._max.y);
-                } else if bound_box_min.y < (block_bound_box._max.y - BLOCK_TOLERANCE) &&
-                    (block_bound_box._min.y + BLOCK_TOLERANCE) < bound_box_max.y
-                {
-                    // check side block
-                    self._position.x = prev_position.x;
-                    self._position.z = prev_position.z;
-                    self._is_blocked = true;
+                } else {
+                    if block_bound_box._min.z <= prev_bound_box_max.z && prev_bound_box_min.z <= block_bound_box._max.z {
+                        self._position.x = prev_position.x;
+                        self._is_blocked = true;
+                    } else {
+                        self._position.z = prev_position.z;
+                        self._is_blocked = true;
+                    }
                 }
-            }
-        }
-
-        // check cliff
-        for (_key, block) in game_scene_manager.get_blocks().iter() {
-            let block = ptr_as_ref(block.as_ptr());
-            let block_render_object = ptr_as_ref(block._render_object.as_ptr());
-            let block_bound_box = &block_render_object._bound_box;
-            // check front bottom block
-            if false == self._is_ground ||
-                0.0 == move_delta.x ||
-                0.0 < move_delta.y ||
-                block_bound_box.collide_point_xy(&front_bottom_point) {
-                self._is_cliff = false;
             }
         }
 
