@@ -35,7 +35,7 @@ impl Default for RoamerBehavior {
             _roamer_idle_time: generate_idle_time(),
             _roamer_idle_play_time: 0.0,
             _roamer_move_time: 0.0,
-            _roamer_move_direction: Vector3::new(1.0, 0.0, 0.0),
+            _roamer_move_direction: Vector3::new(rand::random::<f32>() - 0.5, 0.0, rand::random::<f32>() - 0.5).normalize(),
             _roamer_attack_time: generate_attack_time(),
         }
     }
@@ -116,8 +116,8 @@ impl BehaviorBase for RoamerBehavior {
                 } else if owner.is_on_ground() {
                     // roaming
                     self._roamer_move_time -= delta_time;
-                    if self._roamer_move_time <= 0.0 || is_blocked || is_cliff {
-                        self._roamer_move_direction = -self._roamer_move_direction;
+                    if self._roamer_move_time <= 0.0 || is_blocked {
+                        self._roamer_move_direction = Vector3::new(rand::random::<f32>() - 0.5, 0.0, rand::random::<f32>() - 0.5).normalize();
                         owner.set_move(&self._roamer_move_direction);
                         owner.set_run(false);
                         self._roamer_move_time = NPC_ROAMING_TERM;
