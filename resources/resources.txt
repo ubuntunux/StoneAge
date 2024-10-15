@@ -327,6 +327,8 @@ resources/engine_resources/textures/precomputed_atmosphere/irradiance.texture
 resources/engine_resources/textures/precomputed_atmosphere/noise_3d.texture
 resources/engine_resources/textures/precomputed_atmosphere/scattering.texture
 resources/engine_resources/textures/precomputed_atmosphere/transmittance.texture
+resources/externals/.log/.fuse_hidden0000163f0000001d
+resources/externals/.log/.fuse_hidden0000167a0000001e
 resources/externals/animation_layers/jack/upper_animation_layer.blend
 resources/externals/animation_layers/spider/upper_animation_layer.blend
 resources/externals/animation_layers/trex/upper_animation_layer.blend
@@ -334,8 +336,6 @@ resources/externals/animation_layers/triceratops/upper_animation_layer.blend
 resources/externals/animation_layers/wolf/upper_animation_layer.blend
 resources/externals/blender_assets.cats.txt
 resources/externals/blender_assets.cats.txt~
-resources/externals/game_data/blocks/cliff_grass.blend
-resources/externals/game_data/blocks/rock.blend
 resources/externals/game_data/characters/jack.blend
 resources/externals/game_data/characters/spider.blend
 resources/externals/game_data/characters/trex.blend
@@ -474,8 +474,6 @@ resources/externals/textures/environments/desert_moutain.png
 resources/externals/textures/environments/snow_moutain.png
 resources/externals/textures/props/meat_d.png
 resources/externals/textures/ui/intro_image.jpeg
-resources/game_data/blocks/cliff_grass.data
-resources/game_data/blocks/rock.data
 resources/game_data/characters/jack.data
 resources/game_data/characters/spider.data
 resources/game_data/characters/trex.data

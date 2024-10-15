@@ -1,6 +1,6 @@
 {
 	"asset":{
-		"generator":"Khronos glTF Blender I/O v4.2.69",
+		"generator":"Khronos glTF Blender I/O v4.2.70",
 		"version":"2.0"
 	},
 	"scene":0,
@@ -45,7 +45,7 @@
 		{
 			"bufferView":0,
 			"componentType":5126,
-			"count":6072,
+			"count":6900,
 			"max":[
 				99.98526000976562,
 				0.00023412704467773438,
@@ -53,7 +53,7 @@
 			],
 			"min":[
 				-100.01475524902344,
-				0.00023412704467773438,
+				-9.999765396118164,
 				-51.44999313354492
 			],
 			"type":"VEC3"
@@ -61,76 +61,76 @@
 		{
 			"bufferView":1,
 			"componentType":5126,
-			"count":6072,
+			"count":6900,
 			"type":"VEC3"
 		},
 		{
 			"bufferView":2,
 			"componentType":5126,
-			"count":6072,
+			"count":6900,
 			"type":"VEC2"
 		},
 		{
 			"bufferView":3,
 			"componentType":5126,
-			"count":6072,
+			"count":6900,
 			"type":"VEC4"
 		},
 		{
 			"bufferView":4,
 			"componentType":5123,
-			"count":6072,
+			"count":6900,
 			"normalized":true,
 			"type":"VEC4"
 		},
 		{
 			"bufferView":5,
 			"componentType":5123,
-			"count":22104,
+			"count":23520,
 			"type":"SCALAR"
 		}
 	],
 	"bufferViews":[
 		{
 			"buffer":0,
-			"byteLength":72864,
+			"byteLength":82800,
 			"byteOffset":0,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":72864,
-			"byteOffset":72864,
+			"byteLength":82800,
+			"byteOffset":82800,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":48576,
-			"byteOffset":145728,
+			"byteLength":55200,
+			"byteOffset":165600,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":97152,
-			"byteOffset":194304,
+			"byteLength":110400,
+			"byteOffset":220800,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":48576,
-			"byteOffset":291456,
+			"byteLength":55200,
+			"byteOffset":331200,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":44208,
-			"byteOffset":340032,
+			"byteLength":47040,
+			"byteOffset":386400,
 			"target":34963
 		}
 	],
 	"buffers":[
 		{
-			"byteLength":384240,
+			"byteLength":433440,
 			"uri":"desert_ground.bin"
 		}
 	]

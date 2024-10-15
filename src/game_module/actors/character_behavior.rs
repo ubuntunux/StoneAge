@@ -116,7 +116,7 @@ impl BehaviorBase for RoamerBehavior {
                 } else if owner.is_on_ground() {
                     // roaming
                     self._roamer_move_time -= delta_time;
-                    if self._roamer_move_time <= 0.0 || is_blocked {
+                    if self._roamer_move_time <= 0.0 || is_blocked || is_cliff {
                         self._roamer_move_direction = Vector3::new(rand::random::<f32>() - 0.5, 0.0, rand::random::<f32>() - 0.5).normalize();
                         owner.set_move(&self._roamer_move_direction);
                         owner.set_run(false);

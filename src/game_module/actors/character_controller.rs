@@ -3,7 +3,7 @@ use rust_engine_3d::utilities::bounding_box::BoundingBox;
 use rust_engine_3d::utilities::system::ptr_as_ref;
 
 use crate::game_module::actors::character_data::{CharacterData, MoveAnimationState};
-use crate::game_module::game_constants::{BLOCK_TOLERANCE, GRAVITY, GROUND_HEIGHT, MOVE_LIMIT};
+use crate::game_module::game_constants::{GRAVITY, GROUND_HEIGHT, MOVE_LIMIT};
 use crate::game_module::game_scene_manager::GameSceneManager;
 
 pub struct CharacterController {
@@ -156,7 +156,7 @@ impl CharacterController {
 
         // check collide with block
         let move_delta = self._position - prev_position;
-        let radius = 1.0;//actor_bound_box._size.x.max(actor_bound_box._size.z) * 0.5;
+        let radius = 0.5;//actor_bound_box._size.x.max(actor_bound_box._size.z) * 0.5;
         let prev_bound_box_min = Vector3::new(prev_position.x - radius, actor_bound_box._min.y, prev_position.z - radius);
         let prev_bound_box_max = Vector3::new(prev_position.x + radius, actor_bound_box._max.y, prev_position.z + radius);
         let bound_box_min = prev_bound_box_min + move_delta;

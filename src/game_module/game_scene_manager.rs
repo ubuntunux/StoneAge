@@ -5,7 +5,7 @@ use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop, AudioManage
 use rust_engine_3d::core::engine_core::EngineCore;
 use rust_engine_3d::effect::effect_manager::EffectManager;
 use rust_engine_3d::scene::render_object::RenderObjectCreateInfo;
-use rust_engine_3d::scene::scene_manager::SceneManager;
+use rust_engine_3d::scene::scene_manager::{SceneDataCreateInfo, SceneManager};
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
 use serde::{Deserialize, Serialize};
 
@@ -14,7 +14,6 @@ use crate::game_module::actors::block::{Block, BlockCreateInfo};
 use crate::game_module::actors::character::CharacterCreateInfo;
 use crate::game_module::actors::character_manager::CharacterManager;
 use crate::game_module::actors::foods::FoodManager;
-use crate::game_module::game_constants::RENDER_BLOCK;
 use crate::game_module::game_resource::GameResources;
 
 type BlockCreateInfoMap = HashMap<String, BlockCreateInfo>;
@@ -23,7 +22,7 @@ type CharacterCreateInfoMap = HashMap<String, CharacterCreateInfo>;
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[serde(default)]
 pub struct GameSceneDataCreateInfo {
-    pub _scene_data_name: String,
+    pub _scene: SceneDataCreateInfo,
     pub _blocks: BlockCreateInfoMap,
     pub _player: CharacterCreateInfoMap,
     pub _characters: CharacterCreateInfoMap,
@@ -126,10 +125,8 @@ impl<'a> GameSceneManager<'a> {
     }
 
     pub fn create_block(&mut self, block_name: &str, block_create_info: &BlockCreateInfo) -> RcRefCell<Block<'a>> {
-        let game_resources = ptr_as_ref(self._game_resources);
-        let block_data = game_resources.get_block_data(block_create_info._block_data_name.as_str());
         let render_object_create_info = RenderObjectCreateInfo {
-            _model_data_name: block_data.borrow()._model_data_name.clone(),
+            _model_data_name: block_create_info._block_data_name.clone(),
             _position: block_create_info._position.clone(),
             _rotation: block_create_info._rotation.clone(),
             _scale: block_create_info._scale.clone()
@@ -139,15 +136,10 @@ impl<'a> GameSceneManager<'a> {
             &render_object_create_info
         );
 
-        if !RENDER_BLOCK {
-            render_object_data.borrow_mut().set_render(false);
-        }
-
         let block_id = self.generate_block_id();
         newRcRefCell(Block::create_block(
             block_id,
             block_name,
-            block_data,
             &render_object_data,
             &block_create_info._position,
             &block_create_info._rotation,
@@ -166,8 +158,7 @@ impl<'a> GameSceneManager<'a> {
 
         // load scene
         let game_scene_data = game_resources.get_game_scene_data(game_scene_data_name).borrow();
-        let scene_data_name = &game_scene_data._scene_data_name;
-        self.get_scene_manager_mut().open_scene_data(scene_data_name);
+        self.get_scene_manager_mut().create_scene_data(&game_scene_data._scene);
 
         // create blocks
         for (block_name, block_create_info) in game_scene_data._blocks.iter() {

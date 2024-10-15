@@ -75,7 +75,6 @@ impl<'a> GameController<'a> {
         let is_power_attack: bool =
             mouse_input_data._btn_r_pressed ||
             joystick_input_data._btn_y == ButtonState::Pressed;
-        let is_camera_yaw: bool = mouse_input_data._btn_m_hold;
         let is_left =
             keyboard_input_data.get_key_hold(KeyCode::ArrowLeft) ||
             keyboard_input_data.get_key_hold(KeyCode::KeyA) ||
@@ -186,9 +185,11 @@ impl<'a> GameController<'a> {
         }
 
         // yaw
-        let mut camera_yaw: f32 = joystick_input_data._stick_right_direction.x as f32 / 327670.0;
-        if is_camera_yaw {
+        let camera_yaw: f32;
+        if mouse_move_data._mouse_pos_delta.x != 0 {
             camera_yaw = mouse_move_data._mouse_pos_delta.x as f32 * 0.001;
+        } else {
+            camera_yaw = joystick_input_data._stick_right_direction.x as f32 / 327670.0;
         }
 
         // update camera transform

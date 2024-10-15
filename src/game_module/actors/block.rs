@@ -35,7 +35,6 @@ pub struct BlockProperties {
 pub struct Block<'a> {
     pub _block_name: String,
     pub _block_id: u64,
-    pub _block_data: RcRefCell<BlockData>,
     pub _render_object: RcRefCell<RenderObjectData<'a>>,
     pub _block_properties: Box<BlockProperties>,
 }
@@ -55,7 +54,6 @@ impl<'a> Block<'a> {
     pub fn create_block(
         block_id: u64,
         block_name: &str,
-        block_data: &RcRefCell<BlockData>,
         render_object: &RcRefCell<RenderObjectData<'a>>,
         position: &Vector3<f32>,
         rotation: &Vector3<f32>,
@@ -63,10 +61,9 @@ impl<'a> Block<'a> {
         let mut block = Block {
             _block_name: String::from(block_name),
             _block_id: block_id,
-            _block_data: block_data.clone(),
             _render_object: render_object.clone(),
             _block_properties: Box::from(BlockProperties {
-                _block_hp: block_data.borrow()._max_hp as f32,
+                _block_hp: 100.0,
                 _position: position.clone(),
                 _rotation: rotation.clone(),
                 _scale: scale.clone(),
