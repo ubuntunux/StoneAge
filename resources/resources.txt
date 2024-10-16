@@ -333,6 +333,7 @@ resources/externals/animation_layers/trex/upper_animation_layer.blend
 resources/externals/animation_layers/triceratops/upper_animation_layer.blend
 resources/externals/animation_layers/wolf/upper_animation_layer.blend
 resources/externals/blender_assets.cats.txt
+resources/externals/blender_assets.cats.txt~
 resources/externals/game_data/characters/jack.blend
 resources/externals/game_data/characters/spider.blend
 resources/externals/game_data/characters/trex.blend
