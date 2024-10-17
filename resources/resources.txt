@@ -344,6 +344,7 @@ resources/externals/game_data/game_scenes/intro_stage.blend
 resources/externals/game_data/properties/properties.blend
 resources/externals/materials/common/render_skeletal_object.blend
 resources/externals/materials/common/render_static_object.blend
+resources/externals/materials/render_grass.blend
 resources/externals/meshes/characters/jack/jack.blend
 resources/externals/meshes/characters/jack/jack_attack.blend
 resources/externals/meshes/characters/jack/jack_dead.blend
