@@ -189,7 +189,7 @@ impl<'a> GameController<'a> {
         }
 
         // yaw
-        static SMOOTH_YAW: bool = false;
+        static SMOOTH_YAW: bool = true;
         let yaw_control: f32 = if mouse_move_data._mouse_pos_delta.x != 0 {
             mouse_move_data._mouse_pos_delta.x as f32 * 0.001
         } else {
