@@ -2,5 +2,20 @@
     "_material_instances": [
         "environments/cliff_grass"
     ],
-    "_mesh": "environments/cliff_grass"
+    "_mesh": "environments/cliff_grass",
+    "_position": [
+        0.0,
+        0.0,
+        0.0
+    ],
+    "_rotation": [
+        0.0,
+        0.0,
+        0.0
+    ],
+    "_scale": [
+        1.0,
+        1.0,
+        1.0
+    ]
 }
