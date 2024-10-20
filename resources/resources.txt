@@ -472,6 +472,7 @@ resources/externals/textures/environments/desert_ground.png
 resources/externals/textures/environments/desert_moutain.png
 resources/externals/textures/environments/snow_moutain.png
 resources/externals/textures/props/meat_d.png
+resources/externals/textures/ui/cross_hair_box.png
 resources/externals/textures/ui/intro_image.jpeg
 resources/game_data/characters/jack.data
 resources/game_data/characters/spider.data
@@ -496,6 +497,7 @@ resources/material_instances/environments/landscape_00.matinst
 resources/material_instances/environments/ocean.matinst
 resources/material_instances/environments/render_grass.matinst
 resources/material_instances/props/meat.matinst
+resources/material_instances/ui/cross_hair_box.matinst
 resources/material_instances/ui/intro_image.matinst
 resources/materials/render_grass.mat
 resources/meshes/characters/jack/jacK_hit.bin

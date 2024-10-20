@@ -52,8 +52,9 @@ pub const AUDIO_JUMP: &str = "jump";
 pub const AMBIENT_SOUND: &str = "ambient_sound";
 pub const GAME_MUSIC: &str = "game_music";
 
-// Material Instance
+// UI
 pub const MATERIAL_INTRO_IMAGE: &str = "ui/intro_image";
+pub const MATERIAL_CROSS_HAIR: &str = "ui/cross_hair_box";
 
 // EFFECT DATA
 pub const EFFECT_HIT: &str = "hit_effect";

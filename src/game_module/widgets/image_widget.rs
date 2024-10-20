@@ -12,6 +12,7 @@ pub struct ImageLayout<'a> {
     pub _initial_fadeout_time: f32,
     pub _fadeout_time: f32,
     pub _image_aspect: f32,
+    pub _image_size_hint: f32
 }
 
 // Image layout
@@ -45,6 +46,7 @@ impl<'a> ImageLayout<'a> {
             _initial_fadeout_time: 0.0,
             _fadeout_time: 0.0,
             _image_aspect: 1.0,
+            _image_size_hint: 0.9
         })
     }
 
@@ -92,9 +94,8 @@ impl<'a> ImageLayout<'a> {
         let window_aspect: f32 = window_size.x as f32 / window_size.y as f32;
         let image_widget = ptr_as_mut(self._image_layout.as_ref());
         let ui_component = image_widget.get_ui_component_mut();
-        let image_size_hint = 0.9;
-        ui_component.set_size_hint_x(Some(self._image_aspect / window_aspect * image_size_hint));
-        ui_component.set_size_hint_y(Some(image_size_hint));
+        ui_component.set_size_hint_x(Some(self._image_aspect / window_aspect * self._image_size_hint));
+        ui_component.set_size_hint_y(Some(self._image_size_hint));
     }
 
     pub fn update_image_layout(&mut self, delta_time: f64) {
