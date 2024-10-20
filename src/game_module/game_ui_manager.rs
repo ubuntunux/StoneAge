@@ -119,6 +119,7 @@ impl<'a> GameUIManager<'a> {
     }
     pub fn changed_window_size(&mut self) {
         log::info!("GameUIManager::changed_window_size: {:?}", self._window_size);
+        self._game_image.as_mut().unwrap().changed_window_size(&self._window_size);
         self._player_hud.as_mut().unwrap().changed_window_size(&self._window_size);
         self._target_status_bar.as_mut().unwrap().changed_window_size(&self._window_size);
     }

@@ -10,7 +10,8 @@ pub struct ImageLayout<'a> {
     pub _image_layout: Rc<WidgetDefault<'a>>,
     pub _start_fadeout: bool,
     pub _initial_fadeout_time: f32,
-    pub _fadeout_time: f32
+    pub _fadeout_time: f32,
+    pub _image_aspect: f32,
 }
 
 // Image layout
@@ -43,6 +44,7 @@ impl<'a> ImageLayout<'a> {
             _start_fadeout: false,
             _initial_fadeout_time: 0.0,
             _fadeout_time: 0.0,
+            _image_aspect: 1.0,
         })
     }
 
@@ -58,16 +60,12 @@ impl<'a> ImageLayout<'a> {
         let material_instance_ref = material_instance.borrow();
         let texture_name = material_instance_ref._material_parameters.get("texture_color").unwrap().as_str().unwrap();
         let texture = game_resources.get_engine_resources().get_texture_data(texture_name);
-        let window_aspect: f32 = window_size.x as f32 / window_size.y as f32;
-        let image_aspect: f32 = texture.borrow()._image_width as f32 / texture.borrow()._image_height as f32;
+        self._image_aspect = texture.borrow()._image_width as f32 / texture.borrow()._image_height as f32;
 
         // image layout
         let image_widget = ptr_as_mut(self._image_layout.as_ref());
         let ui_component = image_widget.get_ui_component_mut();
         ui_component.set_material_instance(&material_instance);
-        let image_size_hint = 0.9;
-        ui_component.set_size_hint_x(Some(image_aspect / window_aspect * image_size_hint));
-        ui_component.set_size_hint_y(Some(image_size_hint));
 
         // background layout
         let background_layout = ptr_as_mut(self._background_layout.as_ref());
@@ -78,6 +76,8 @@ impl<'a> ImageLayout<'a> {
         self._initial_fadeout_time = fadeout_time;
         self._fadeout_time = fadeout_time;
         self._start_fadeout = false;
+
+        self.changed_window_size(window_size);
     }
 
     pub fn is_visible(&self) -> bool {
@@ -86,6 +86,15 @@ impl<'a> ImageLayout<'a> {
 
     pub fn start_fadeout(&mut self, start_fadeout: bool) {
         self._start_fadeout = start_fadeout;
+    }
+
+    pub fn changed_window_size(&mut self, window_size: &Vector2<i32>) {
+        let window_aspect: f32 = window_size.x as f32 / window_size.y as f32;
+        let image_widget = ptr_as_mut(self._image_layout.as_ref());
+        let ui_component = image_widget.get_ui_component_mut();
+        let image_size_hint = 0.9;
+        ui_component.set_size_hint_x(Some(self._image_aspect / window_aspect * image_size_hint));
+        ui_component.set_size_hint_y(Some(image_size_hint));
     }
 
     pub fn update_image_layout(&mut self, delta_time: f64) {

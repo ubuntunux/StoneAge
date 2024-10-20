@@ -41,11 +41,13 @@ impl<'a> PlayerHud<'a> {
             _stamina_widget: StatusBarWidget::create_status_widget(player_widget_ptr, get_color32(128, 128, 255, 128)),
         }
     }
+
     pub fn changed_window_size(&mut self, window_size: &Vector2<i32>) {
         let ui_component = ptr_as_mut(self._widget).get_ui_component_mut();
         ui_component.set_pos_x(10.0);
         ui_component.set_pos_y(window_size.y as f32 - ui_component.get_size_y() - 50.0);
     }
+
     pub fn update_status_widget(&mut self, player: &Character<'a>) {
         let hp = player._character_property.as_ref()._hp as f32;
         let max_hp = player.get_character_data()._max_hp as f32;

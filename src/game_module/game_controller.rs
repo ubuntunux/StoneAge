@@ -217,7 +217,7 @@ impl<'a> GameController<'a> {
         let dist_ratio = (self._camera_distance - CAMERA_DISTANCE_MIN) / (CAMERA_DISTANCE_MAX - CAMERA_DISTANCE_MIN);
         let pitch: f32 = math::degree_to_radian(math::lerp(CAMERA_PITCH_MIN, CAMERA_PITCH_MAX, dist_ratio));
         main_camera._transform_object.set_pitch(pitch);
-        main_camera._transform_object.set_yaw(self._camera_yaw);
+        //main_camera._transform_object.set_yaw(self._camera_yaw);
         main_camera._transform_object.set_roll(0.0);
         main_camera._transform_object.update_transform_object();
 
