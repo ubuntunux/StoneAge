@@ -161,6 +161,16 @@ impl<'a> GameController<'a> {
         }
 
         if is_attack {
+            // look at mouse pos
+            // let player_pos = player_mut.get_position();
+            // let camera_pos = main_camera.get_camera_position();
+            // let relative_pos = main_camera.convert_screen_to_relative_world(&mouse_move_data._mouse_pos);
+            // let world_pos = relative_pos / relative_pos.y * (player_pos.y - camera_pos.y) + camera_pos;
+            // let mut move_direction: Vector3<f32> = world_pos - player_pos;
+            // move_direction.y = 0.0;
+            // move_direction.normalize_mut();
+            // player_mut.set_move(&move_direction);
+
             player_mut.set_action_attack();
         }
 
@@ -221,8 +231,7 @@ impl<'a> GameController<'a> {
         main_camera._transform_object.set_roll(0.0);
         main_camera._transform_object.update_transform_object();
 
-        let player_pos = player_mut.get_position();
-        let mut camera_position = player_pos - main_camera._transform_object.get_front() * self._camera_distance;
+        let mut camera_position = player_mut.get_position() - main_camera._transform_object.get_front() * self._camera_distance;
         camera_position.y += CAMERA_OFFSET_Y;
         main_camera._transform_object.set_position(&camera_position);
     }
