@@ -71,7 +71,9 @@ impl CharacterController {
 
     pub fn set_move_direction(&mut self, move_direction: &Vector3<f32>) {
         self._move_direction.clone_from(move_direction);
-        self._face_direction.clone_from(move_direction);
+        if move_direction.x != 0.0 || move_direction.y != 0.0 || move_direction.z != 0.0 {
+            self._face_direction.clone_from(move_direction);
+        }
     }
 
     pub fn set_jump_start(&mut self) {

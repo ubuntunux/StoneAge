@@ -355,6 +355,8 @@ impl<'a> Character<'a> {
             } else {
                 self.set_move_speed(character_data._roll_speed);
             }
+            self.set_move_direction(&self._controller._face_direction.clone());
+
             if self._is_player {
                 self._character_property._stamina -= STAMINA_ROLL;
             }
