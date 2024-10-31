@@ -57,7 +57,7 @@ impl<'a> TargetStatusWidget<'a> {
     pub fn changed_window_size(&mut self, window_size: &Vector2<i32>) {
         let ui_component = ptr_as_mut(self._widget).get_ui_component_mut();
         ui_component.set_center_x(window_size.x as f32 * 0.5);
-        ui_component.set_pos_y(window_size.y as f32 - ui_component.get_size_y() - 50.0);
+        ui_component.set_pos_y(50.0);
     }
     pub fn update_status_widget(&mut self, target: &Character<'a>) {
         if self._target != target {

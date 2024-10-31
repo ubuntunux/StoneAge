@@ -2,5 +2,20 @@
     "_material_instances": [
         "environments/desert_ground"
     ],
-    "_mesh": "environments/rock"
+    "_mesh": "environments/rock",
+    "_position": [
+        0.0,
+        0.0,
+        0.0
+    ],
+    "_rotation": [
+        0.0,
+        0.0,
+        0.0
+    ],
+    "_scale": [
+        1.0,
+        1.0,
+        1.0
+    ]
 }

@@ -366,6 +366,7 @@ pub fn run_application() {
         constants::RENDER_OCEAN = true;
         constants::ENABLE_UPSCALE = true;
         constants::HALF_SIZE_SSAO = true;
+        constants::RENDER_BOUND_BOX = false;
     }
 
     // create project application & managers
