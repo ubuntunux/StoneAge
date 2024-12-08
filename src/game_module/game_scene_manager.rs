@@ -99,11 +99,11 @@ impl<'a> GameSceneManager<'a> {
         for (_key, block) in self._blocks.iter() {
             let block_ref = block.borrow();
             let render_object_ref = block_ref._render_object.borrow();
-            if render_object_ref._bound_box.collide_bound_box_xy(min, max) {
+            if render_object_ref._bounding_box.collide_bound_box_xy(min, max) {
                 return Some(Vector3::new(
-                    render_object_ref._bound_box._center.x,
-                    render_object_ref._bound_box._max.y,
-                    render_object_ref._bound_box._center.z
+                    render_object_ref._bounding_box._center.x,
+                    render_object_ref._bounding_box._max.y,
+                    render_object_ref._bounding_box._center.z
                 ));
             }
         }

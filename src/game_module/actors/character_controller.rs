@@ -1,5 +1,6 @@
 use nalgebra::Vector3;
-use rust_engine_3d::utilities::bounding_box::BoundingBox;
+use rust_engine_3d::scene::bounding_box::BoundingBox;
+use rust_engine_3d::scene::collision::CollisionType;
 use rust_engine_3d::utilities::system::ptr_as_ref;
 
 use crate::game_module::actors::character_data::{CharacterData, MoveAnimationState};
@@ -84,12 +85,8 @@ impl CharacterController {
         self._move_speed = move_speed;
     }
 
-    pub fn get_direction(&self) -> f32 {
-        if self._rotation.y.is_sign_positive() { -1.0 } else { 1.0 }
-    }
-
-    pub fn set_direction(&mut self, direction: f32) {
-        self._rotation.y = direction * std::f32::consts::PI * -0.5;
+    pub fn set_direction(&mut self, direction: &Vector3<f32>) {
+        self._rotation.y = direction.z.atan2(-direction.x) + std::f32::consts::PI * 0.5;
     }
 
     pub fn set_on_ground(&mut self, ground_height: f32) {
@@ -120,13 +117,14 @@ impl CharacterController {
             move_direction.normalize_mut();
             self._velocity.x = move_direction.x * self._move_speed;
             self._velocity.z = move_direction.z * self._move_speed;
-            self._rotation.y = self._velocity.z.atan2(-self._velocity.x) + std::f32::consts::PI * 0.5;
             self._position.x += self._velocity.x * delta_time;
             self._position.z += self._velocity.z * delta_time;
         } else {
             self._velocity.x = 0.0;
             self._velocity.z = 0.0;
         }
+
+        self.set_direction(&move_direction);
 
         // jump
         if self._is_jump_start {
@@ -173,7 +171,11 @@ impl CharacterController {
         for (_key, block) in game_scene_manager.get_blocks().iter() {
             let block = ptr_as_ref(block.as_ptr());
             let block_render_object = ptr_as_ref(block._render_object.as_ptr());
-            let block_bound_box = &block_render_object._bound_box;
+            let block_bound_box = if block_render_object._collision._collision_type != CollisionType::NONE {
+                &block_render_object._collision._bounding_box
+            } else {
+                &block_render_object._bounding_box
+            };
 
             // check collide with block
             if block_bound_box.collide_bound_box(&bound_box_min, &bound_box_max) {
@@ -200,7 +202,7 @@ impl CharacterController {
         for (_key, block) in game_scene_manager.get_blocks().iter() {
             let block = ptr_as_ref(block.as_ptr());
             let block_render_object = ptr_as_ref(block._render_object.as_ptr());
-            let block_bound_box = &block_render_object._bound_box;
+            let block_bound_box = &block_render_object._bounding_box;
             // check front bottom block
             if false == self._is_ground ||
                 0.0 == move_delta.x ||

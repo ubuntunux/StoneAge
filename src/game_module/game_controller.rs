@@ -144,21 +144,19 @@ impl<'a> GameController<'a> {
 
                 player_mut.set_move(&move_direction);
             } else {
+                if is_attack || is_power_attack || is_roll {
+                    let player_pos = player_mut.get_position();
+                    let camera_pos = main_camera.get_camera_position();
+                    let relative_pos = main_camera.convert_screen_to_relative_world(&mouse_move_data._mouse_pos);
+                    let world_pos = relative_pos / relative_pos.y * (player_pos.y - camera_pos.y) + camera_pos;
+                    let mut move_direction: Vector3<f32> = world_pos - player_pos;
+                    move_direction.y = 0.0;
+                    move_direction.normalize_mut();
+                    player_mut.set_move_direction(&move_direction);
+                }
                 player_mut.set_move_stop();
             }
         }
-
-        // look at mouse pos
-        // if is_attack || is_power_attack {
-        //     let player_pos = player_mut.get_position();
-        //     let camera_pos = main_camera.get_camera_position();
-        //     let relative_pos = main_camera.convert_screen_to_relative_world(&mouse_move_data._mouse_pos);
-        //     let world_pos = relative_pos / relative_pos.y * (player_pos.y - camera_pos.y) + camera_pos;
-        //     let mut move_direction: Vector3<f32> = world_pos - player_pos;
-        //     move_direction.y = 0.0;
-        //     move_direction.normalize_mut();
-        //     player_mut.set_move(&move_direction);
-        // }
 
         if is_run {
             player_mut.toggle_run();

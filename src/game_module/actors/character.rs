@@ -5,7 +5,7 @@ use rust_engine_3d::resource::resource::ResourceData;
 use rust_engine_3d::scene::animation::{AnimationLayerData, AnimationPlayArgs, AnimationPlayInfo};
 use rust_engine_3d::scene::mesh::MeshData;
 use rust_engine_3d::scene::render_object::{AnimationLayer, RenderObjectData};
-use rust_engine_3d::utilities::bounding_box::BoundingBox;
+use rust_engine_3d::scene::bounding_box::BoundingBox;
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use serde::{Deserialize, Serialize};
 
@@ -186,7 +186,7 @@ impl<'a> Character<'a> {
     }
 
     pub fn get_bounding_box(&self) -> &BoundingBox {
-        &ptr_as_ref(self._render_object.as_ptr())._bound_box
+        &ptr_as_ref(self._render_object.as_ptr())._bounding_box
     }
 
     pub fn set_move_animation(&mut self, move_animation_state: MoveAnimationState) {
@@ -285,7 +285,7 @@ impl<'a> Character<'a> {
     pub fn set_move_idle(&mut self) {
         self.set_run(false);
         self.set_move_speed(0.0);
-        self.set_move_direction(&Vector3::zeros());
+        //self.set_move_direction(&Vector3::zeros());
         self.set_move_animation(MoveAnimationState::Idle);
     }
 
@@ -293,7 +293,7 @@ impl<'a> Character<'a> {
         if !self.is_move_state(MoveAnimationState::Roll) {
             self.set_run(false);
             self.set_move_speed(0.0);
-            self.set_move_direction(&Vector3::zeros());
+            //self.set_move_direction(&Vector3::zeros());
 
             if !self.is_move_state(MoveAnimationState::Idle) && self.is_on_ground() {
                 self.set_move_animation(MoveAnimationState::Idle);
@@ -306,7 +306,9 @@ impl<'a> Character<'a> {
     }
 
     pub fn set_move_direction(&mut self, move_direction: &Vector3<f32>) {
-        self._controller.set_move_direction(move_direction);
+        if self.is_available_move() {
+            self._controller.set_move_direction(move_direction);
+        }
     }
 
     pub fn set_move(&mut self, move_direction: &Vector3<f32>) {
@@ -622,7 +624,7 @@ impl<'a> Character<'a> {
     }
 
     pub fn collide_point(&self, pos: &Vector3<f32>) -> bool {
-        self._render_object.borrow()._bound_box.collide_in_radius(pos)
+        self._render_object.borrow()._bounding_box.collide_in_radius(pos)
     }
 
     pub fn get_power(&self, attack_event: ActionAnimationState) -> i32 {
@@ -765,7 +767,7 @@ impl<'a> Character<'a> {
             game_scene_manager,
             ptr_as_ref(self._character_data.as_ptr()),
             self._move_animation_state,
-            &self._render_object.borrow()._bound_box,
+            &self._render_object.borrow()._bounding_box,
             delta_time,
         );
         self.update_transform();

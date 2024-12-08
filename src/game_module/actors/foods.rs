@@ -114,7 +114,7 @@ impl<'a> Food<'a> {
     }
 
     pub fn collide_point(&self, pos: &Vector3<f32>) -> bool {
-        self._render_object.borrow()._bound_box.collide_in_radius(pos)
+        self._render_object.borrow()._bounding_box.collide_in_radius(pos)
     }
 
     pub fn update_food(&mut self, _delta_time: f64) {
