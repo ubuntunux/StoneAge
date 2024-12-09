@@ -1,6 +1,6 @@
 use nalgebra::Vector3;
 use rust_engine_3d::scene::bounding_box::BoundingBox;
-use rust_engine_3d::scene::collision::CollisionType;
+use rust_engine_3d::scene::collision::{CollisionData, CollisionType};
 use rust_engine_3d::utilities::system::ptr_as_ref;
 
 use crate::game_module::actors::character_data::{CharacterData, MoveAnimationState};
@@ -102,6 +102,7 @@ impl CharacterController {
         character_data: &CharacterData,
         move_animation: MoveAnimationState,
         actor_bound_box: &BoundingBox,
+        collision: &CollisionData,
         delta_time: f32,
     ) {
         let prev_position = self._position.clone_owned();
@@ -156,9 +157,8 @@ impl CharacterController {
 
         // check collide with block
         let move_delta = self._position - prev_position;
-        let radius = 0.5;//actor_bound_box._size.x.max(actor_bound_box._size.z) * 0.5;
-        let prev_bound_box_min = Vector3::new(prev_position.x - radius, actor_bound_box._min.y, prev_position.z - radius);
-        let prev_bound_box_max = Vector3::new(prev_position.x + radius, actor_bound_box._max.y, prev_position.z + radius);
+        let prev_bound_box_min = collision._bounding_box._min.clone_owned();
+        let prev_bound_box_max = collision._bounding_box._max.clone_owned();
         let bound_box_min = prev_bound_box_min + move_delta;
         let bound_box_max = prev_bound_box_max + move_delta;
 
