@@ -1,6 +1,31 @@
 {
+    "_collision": {
+        "_collision_type": "CYLINDER",
+        "_height": 1.9022587537765503,
+        "_location": [
+            0.1351184844970703,
+            0.34977811574935913,
+            -0.41312456130981445
+        ],
+        "_radius": 4.9126081466674805
+    },
     "_material_instances": [
         "environments/cliff_grass"
     ],
-    "_mesh": "environments/ground_00"
+    "_mesh": "environments/ground_00",
+    "_position": [
+        0.0,
+        0.0,
+        0.0
+    ],
+    "_rotation": [
+        0.0,
+        0.0,
+        0.0
+    ],
+    "_scale": [
+        1.0,
+        1.0,
+        1.0
+    ]
 }

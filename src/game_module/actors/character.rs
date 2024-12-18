@@ -767,7 +767,6 @@ impl<'a> Character<'a> {
             game_scene_manager,
             ptr_as_ref(self._character_data.as_ptr()),
             self._move_animation_state,
-            &self._render_object.borrow()._bounding_box,
             &self._render_object.borrow()._collision,
             delta_time,
         );

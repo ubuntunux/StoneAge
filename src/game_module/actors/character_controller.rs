@@ -1,6 +1,8 @@
+use ash::util;
 use nalgebra::Vector3;
 use rust_engine_3d::scene::bounding_box::BoundingBox;
 use rust_engine_3d::scene::collision::{CollisionData, CollisionType};
+use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::ptr_as_ref;
 
 use crate::game_module::actors::character_data::{CharacterData, MoveAnimationState};
@@ -101,8 +103,7 @@ impl CharacterController {
         game_scene_manager: &GameSceneManager,
         character_data: &CharacterData,
         move_animation: MoveAnimationState,
-        actor_bound_box: &BoundingBox,
-        collision: &CollisionData,
+        actor_collision: &CollisionData,
         delta_time: f32,
     ) {
         let prev_position = self._position.clone_owned();
@@ -157,10 +158,13 @@ impl CharacterController {
 
         // check collide with block
         let move_delta = self._position - prev_position;
-        let prev_bound_box_min = collision._bounding_box._min.clone_owned();
-        let prev_bound_box_max = collision._bounding_box._max.clone_owned();
+        let prev_bound_box_min = actor_collision._bounding_box._min.clone_owned();
+        let prev_bound_box_max = actor_collision._bounding_box._max.clone_owned();
         let bound_box_min = prev_bound_box_min + move_delta;
         let bound_box_max = prev_bound_box_max + move_delta;
+        let actor_location = (bound_box_min + bound_box_max) * 0.5;
+        let actor_radius = (bound_box_max.x - bound_box_min.x) * 0.5;
+        let actor_height = bound_box_max.y - bound_box_min.y;
 
         // reset flags
         self._is_cliff = true;
@@ -171,29 +175,53 @@ impl CharacterController {
         for (_key, block) in game_scene_manager.get_blocks().iter() {
             let block = ptr_as_ref(block.as_ptr());
             let block_render_object = ptr_as_ref(block._render_object.as_ptr());
-            let block_bound_box = if block_render_object._collision._collision_type != CollisionType::NONE {
-                &block_render_object._collision._bounding_box
-            } else {
-                &block_render_object._bounding_box
-            };
+            let blocK_collision_type = block_render_object._collision._collision_type;
+            let block_bound_box = &block_render_object._collision._bounding_box;
+            let block_location = block_bound_box._center;
+            let block_radius = block_bound_box._size.x * 0.5;
+            let block_height = block_bound_box._size.y;
 
             // check collide with block
-            if block_bound_box.collide_bound_box(&bound_box_min, &bound_box_max) {
-                if self._velocity.y <= 0.0 && block_bound_box._max.y <= prev_position.y {
-                    self.set_on_ground(block_bound_box._max.y);
+            if blocK_collision_type == CollisionType::CYLINDER {
+                let collided = if actor_collision._collision_type == CollisionType::CYLINDER {
+                    math::collide_cylinder_with_cylinder(&actor_location, actor_radius, actor_height, &block_location, block_radius, block_height)
                 } else {
-                    if block_bound_box._min.z <= prev_bound_box_max.z && prev_bound_box_min.z <= block_bound_box._max.z {
-                        self._position.x = prev_position.x;
-                        self._is_blocked = true;
+                    math::collide_box_with_cylinder(&bound_box_min, &bound_box_max, &block_location, block_radius, block_height)
+                };
+
+                if collided {
+                    if self._velocity.y <= 0.0 && block_bound_box._max.y <= prev_position.y {
+                        self.set_on_ground(block_bound_box._max.y);
                     } else {
-                        self._position.z = prev_position.z;
+                        let block_to_player = Vector3::new(self._position.x - block_location.x, 0.0, self._position.z - block_location.z).normalize();
+                        if block_to_player.dot(&move_delta.normalize()) < 0.0 {
+                            let dist = Vector3::new(prev_position.x - block_location.x, 0.0, prev_position.z - block_location .z).norm();
+                            let new_pos = block_to_player * dist + block_location;
+                            self._position.x = new_pos.x;
+                            self._position.z = new_pos.z;
+                            self._is_blocked = true;
+                        }
+                    }
+                }
+            } else {
+                // collide with box, box
+                if block_bound_box.collide_bound_box(&bound_box_min, &bound_box_max) {
+                    if self._velocity.y <= 0.0 && block_bound_box._max.y <= prev_position.y {
+                        self.set_on_ground(block_bound_box._max.y);
+                    } else {
+                        if block_bound_box._min.z <= prev_bound_box_max.z && prev_bound_box_min.z <= block_bound_box._max.z {
+                            self._position.x = prev_position.x;
+                        } else {
+                            self._position.z = prev_position.z;
+                        }
                         self._is_blocked = true;
                     }
                 }
-            }
+            };
         }
 
         // check cliff
+        // TODO: check cylinder, box
         let front_bottom_point: Vector3<f32> = Vector3::new(
             if 0.0 < move_delta.x { bound_box_max.x + 0.1 } else { bound_box_min.x - 0.1 },
             bound_box_min.y - 0.1,
