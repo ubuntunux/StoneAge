@@ -1,8 +1,5 @@
-use ash::util;
 use nalgebra::Vector3;
-use rust_engine_3d::scene::bounding_box::BoundingBox;
-use rust_engine_3d::scene::collision::{CollisionData, CollisionType};
-use rust_engine_3d::utilities::math;
+use rust_engine_3d::scene::collision::{self, CollisionData, CollisionType};
 use rust_engine_3d::utilities::system::ptr_as_ref;
 
 use crate::game_module::actors::character_data::{CharacterData, MoveAnimationState};
@@ -175,18 +172,18 @@ impl CharacterController {
         for (_key, block) in game_scene_manager.get_blocks().iter() {
             let block = ptr_as_ref(block.as_ptr());
             let block_render_object = ptr_as_ref(block._render_object.as_ptr());
-            let blocK_collision_type = block_render_object._collision._collision_type;
+            let block_collision_type = block_render_object._collision._collision_type;
             let block_bound_box = &block_render_object._collision._bounding_box;
-            let block_location = block_bound_box._center;
+            let block_location = &block_bound_box._center;
             let block_radius = block_bound_box._size.x * 0.5;
             let block_height = block_bound_box._size.y;
 
             // check collide with block
-            if blocK_collision_type == CollisionType::CYLINDER {
+            if block_collision_type == CollisionType::CYLINDER {
                 let collided = if actor_collision._collision_type == CollisionType::CYLINDER {
-                    math::collide_cylinder_with_cylinder(&actor_location, actor_radius, actor_height, &block_location, block_radius, block_height)
+                    collision::collide_cylinder_with_cylinder(&actor_location, actor_radius, actor_height, &block_location, block_radius, block_height)
                 } else {
-                    math::collide_box_with_cylinder(&bound_box_min, &bound_box_max, &block_location, block_radius, block_height)
+                    collision::collide_box_with_cylinder(&bound_box_min, &bound_box_max, &block_location, block_radius, block_height)
                 };
 
                 if collided {
@@ -204,8 +201,13 @@ impl CharacterController {
                     }
                 }
             } else {
-                // collide with box, box
-                if block_bound_box.collide_bound_box(&bound_box_min, &bound_box_max) {
+                let collided = if actor_collision._collision_type == CollisionType::CYLINDER {
+                    collision::collide_box_with_cylinder(&block_bound_box._min, &block_bound_box._max, &actor_location, actor_radius, actor_height)
+                } else {
+                    collision::collide_box_with_box(&block_bound_box._min, &block_bound_box._max, &bound_box_min, &bound_box_max)
+                };
+
+                if collided {
                     if self._velocity.y <= 0.0 && block_bound_box._max.y <= prev_position.y {
                         self.set_on_ground(block_bound_box._max.y);
                     } else {
