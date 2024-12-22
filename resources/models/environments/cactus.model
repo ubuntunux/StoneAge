@@ -1,4 +1,14 @@
 {
+    "_collision": {
+        "_collision_type": "CYLINDER",
+        "_height": 6.165102958679199,
+        "_location": [
+            -0.12095534801483154,
+            3.073301315307617,
+            -0.0570141077041626
+        ],
+        "_radius": 1.0
+    },
     "_material_instances": [
         "environments/desert_ground"
     ],

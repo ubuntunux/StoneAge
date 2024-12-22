@@ -1,6 +1,31 @@
 {
+    "_collision": {
+        "_collision_type": "CYLINDER",
+        "_height": 9.432514190673828,
+        "_location": [
+            0.0,
+            4.622797966003418,
+            1.161195993423462
+        ],
+        "_radius": 8.0
+    },
     "_material_instances": [
         "characters/triceratops/triceratops"
     ],
-    "_mesh": "characters/triceratops/triceratops"
+    "_mesh": "characters/triceratops/triceratops",
+    "_position": [
+        0.0,
+        0.0,
+        0.0
+    ],
+    "_rotation": [
+        0.0,
+        0.0,
+        0.0
+    ],
+    "_scale": [
+        1.0,
+        1.0,
+        1.0
+    ]
 }

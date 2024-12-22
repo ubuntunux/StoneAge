@@ -1,4 +1,14 @@
 {
+    "_collision": {
+        "_collision_type": "CYLINDER",
+        "_height": 2.0999999046325684,
+        "_location": [
+            -0.08183002471923828,
+            0.9915668964385986,
+            0.06642603874206543
+        ],
+        "_radius": 1.5
+    },
     "_material_instances": [
         "environments/cliff_grass"
     ],

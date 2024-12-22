@@ -1,4 +1,14 @@
 {
+    "_collision": {
+        "_collision_type": "CYLINDER",
+        "_height": 3.8880834579467773,
+        "_location": [
+            -0.15066266059875488,
+            1.8071050643920898,
+            0.15435361862182617
+        ],
+        "_radius": 3.0
+    },
     "_material_instances": [
         "environments/color_palette"
     ],

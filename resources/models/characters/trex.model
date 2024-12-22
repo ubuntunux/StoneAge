@@ -1,4 +1,14 @@
 {
+    "_collision": {
+        "_collision_type": "CYLINDER",
+        "_height": 15.225000381469727,
+        "_location": [
+            0.0,
+            7.6086883544921875,
+            1.0869598388671875
+        ],
+        "_radius": 10.0
+    },
     "_material_instances": [
         "characters/trex/trex"
     ],

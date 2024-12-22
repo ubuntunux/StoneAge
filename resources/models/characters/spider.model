@@ -1,4 +1,14 @@
 {
+    "_collision": {
+        "_collision_type": "CYLINDER",
+        "_height": 1.313364028930664,
+        "_location": [
+            -0.06047403812408447,
+            0.3999277353286743,
+            -0.0003299713134765625
+        ],
+        "_radius": 1.2000000476837158
+    },
     "_material_instances": [
         "characters/wolf/wolf"
     ],

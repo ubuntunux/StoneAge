@@ -18,16 +18,88 @@
                 1.0
             ]
         },
-        "cliff_grass": {
-            "_block_data_name": "environments/cliff_grass",
+        "cactus": {
+            "_block_data_name": "environments/cactus",
             "_position": [
-                0.0,
+                -2.308974027633667,
                 8.0,
-                -5.0
+                1.5185976028442383
             ],
             "_rotation": [
                 0.0,
                 0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "cliff_grass": {
+            "_block_data_name": "environments/cliff_grass",
+            "_position": [
+                1.0,
+                8.0,
+                -7.0
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "cliff_grass.001": {
+            "_block_data_name": "environments/cliff_grass",
+            "_position": [
+                4.0,
+                8.0,
+                -7.0
+            ],
+            "_rotation": [
+                0.0,
+                2.1236376762390137,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "cliff_grass.002": {
+            "_block_data_name": "environments/cliff_grass",
+            "_position": [
+                6.0,
+                8.0,
+                -7.0
+            ],
+            "_rotation": [
+                0.0,
+                -1.7899315357208252,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "cliff_grass.003": {
+            "_block_data_name": "environments/cliff_grass",
+            "_position": [
+                8.0,
+                8.0,
+                -7.0
+            ],
+            "_rotation": [
+                0.0,
+                -2.237806797027588,
                 0.0
             ],
             "_scale": [
@@ -60,6 +132,42 @@
                 -12.390877723693848,
                 8.0,
                 -5.438798904418945
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "mushroom_orange_00.001": {
+            "_block_data_name": "environments/mushroom_orange_00",
+            "_position": [
+                -2.149279832839966,
+                8.0,
+                -3.3115787506103516
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "mushroom_purple_01.001": {
+            "_block_data_name": "environments/mushroom_purple_01",
+            "_position": [
+                -1.0214146375656128,
+                8.0,
+                -3.1192197799682617
             ],
             "_rotation": [
                 0.0,
@@ -114,7 +222,7 @@
             "_character_data_name": "spider",
             "_position": [
                 -10.0,
-                12.0,
+                9.0,
                 0.0
             ],
             "_rotation": [
@@ -132,7 +240,7 @@
             "_character_data_name": "trex",
             "_position": [
                 3.0,
-                11.0,
+                9.0,
                 0.0
             ],
             "_rotation": [
@@ -150,7 +258,7 @@
             "_character_data_name": "trex",
             "_position": [
                 36.0,
-                11.0,
+                9.0,
                 0.0
             ],
             "_rotation": [
@@ -168,7 +276,7 @@
             "_character_data_name": "trex",
             "_position": [
                 47.0,
-                11.0,
+                9.0,
                 0.0
             ],
             "_rotation": [
@@ -186,7 +294,7 @@
             "_character_data_name": "trex",
             "_position": [
                 24.0,
-                13.0,
+                9.0,
                 0.0
             ],
             "_rotation": [
@@ -204,7 +312,7 @@
             "_character_data_name": "trex",
             "_position": [
                 17.0,
-                13.0,
+                9.0,
                 0.0
             ],
             "_rotation": [
@@ -222,7 +330,7 @@
             "_character_data_name": "triceratops",
             "_position": [
                 1.0,
-                11.0,
+                9.0,
                 0.0
             ],
             "_rotation": [
@@ -240,7 +348,7 @@
             "_character_data_name": "triceratops",
             "_position": [
                 13.0,
-                13.0,
+                9.0,
                 0.0
             ],
             "_rotation": [
@@ -258,7 +366,7 @@
             "_character_data_name": "triceratops",
             "_position": [
                 41.0,
-                11.0,
+                9.0,
                 0.0
             ],
             "_rotation": [
@@ -276,7 +384,7 @@
             "_character_data_name": "triceratops",
             "_position": [
                 38.0,
-                11.0,
+                9.0,
                 0.0
             ],
             "_rotation": [
@@ -294,7 +402,7 @@
             "_character_data_name": "triceratops",
             "_position": [
                 20.0,
-                13.0,
+                9.0,
                 0.0
             ],
             "_rotation": [
@@ -312,7 +420,7 @@
             "_character_data_name": "wolf",
             "_position": [
                 -4.0,
-                11.0,
+                9.0,
                 0.0
             ],
             "_rotation": [
@@ -332,7 +440,7 @@
             "_character_data_name": "jack",
             "_position": [
                 -14.0,
-                11.0,
+                9.0,
                 0.0
             ],
             "_rotation": [
@@ -386,24 +494,6 @@
         "_effects": {},
         "_skeletal_objects": {},
         "_static_objects": {
-            "cactus": {
-                "_model_data_name": "environments/cactus",
-                "_position": [
-                    -2.308974027633667,
-                    8.0,
-                    1.5185976028442383
-                ],
-                "_rotation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "_scale": [
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            },
             "daffodil": {
                 "_model_data_name": "environments/daffodil",
                 "_position": [
@@ -584,24 +674,6 @@
                     1.0
                 ]
             },
-            "mushroom_orange_00.001": {
-                "_model_data_name": "environments/mushroom_orange_00",
-                "_position": [
-                    -2.149279832839966,
-                    8.0,
-                    0.6884212493896484
-                ],
-                "_rotation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "_scale": [
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            },
             "mushroom_orange_00.002": {
                 "_model_data_name": "environments/mushroom_orange_00",
                 "_position": [
@@ -680,24 +752,6 @@
                     5.649811744689941,
                     8.0,
                     0.9785594940185547
-                ],
-                "_rotation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "_scale": [
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            },
-            "mushroom_purple_01.001": {
-                "_model_data_name": "environments/mushroom_purple_01",
-                "_position": [
-                    -1.0214146375656128,
-                    8.0,
-                    0.8807802200317383
                 ],
                 "_rotation": [
                     0.0,
