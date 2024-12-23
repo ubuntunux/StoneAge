@@ -1,5 +1,5 @@
 use nalgebra::Vector3;
-use rust_engine_3d::scene::collision::{self, CollisionData, CollisionType};
+use rust_engine_3d::scene::collision::{CollisionCreateInfo, CollisionData, CollisionType};
 use rust_engine_3d::utilities::system::ptr_as_ref;
 
 use crate::game_module::actors::character_data::{CharacterData, MoveAnimationState};
@@ -157,11 +157,15 @@ impl CharacterController {
         let move_delta = self._position - prev_position;
         let prev_bound_box_min = actor_collision._bounding_box._min.clone_owned();
         let prev_bound_box_max = actor_collision._bounding_box._max.clone_owned();
-        let bound_box_min = prev_bound_box_min + move_delta;
-        let bound_box_max = prev_bound_box_max + move_delta;
-        let actor_location = (bound_box_min + bound_box_max) * 0.5;
-        let actor_radius = (bound_box_max.x - bound_box_min.x) * 0.5;
-        let actor_height = bound_box_max.y - bound_box_min.y;
+        let current_actor_collision_info = CollisionCreateInfo {
+            _collision_type: actor_collision._collision_type,
+            _location: (prev_bound_box_min + prev_bound_box_max) * 0.5 + move_delta,
+            _radius: (prev_bound_box_max.x - prev_bound_box_min.x) * 0.5,
+            _height: prev_bound_box_max.y - prev_bound_box_min.y
+        };
+        let current_actor_collision = CollisionData::create_collision(&current_actor_collision_info);
+        let bound_box_min = &current_actor_collision._bounding_box._min;
+        let bound_box_max = &current_actor_collision._bounding_box._max;
 
         // reset flags
         self._is_cliff = true;
@@ -175,21 +179,20 @@ impl CharacterController {
             let block_collision_type = block_render_object._collision._collision_type;
             let block_bound_box = &block_render_object._collision._bounding_box;
             let block_location = &block_bound_box._center;
-            let block_radius = block_bound_box._size.x * 0.5;
-            let block_height = block_bound_box._size.y;
 
             // check collide with block
-            if block_collision_type == CollisionType::CYLINDER {
-                let collided = if actor_collision._collision_type == CollisionType::CYLINDER {
-                    collision::collide_cylinder_with_cylinder(&actor_location, actor_radius, actor_height, &block_location, block_radius, block_height)
+            if current_actor_collision.collide_collision(&block_render_object._collision) {
+                if self._velocity.y <= 0.0 && block_bound_box._max.y <= prev_position.y {
+                    self.set_on_ground(block_bound_box._max.y);
                 } else {
-                    collision::collide_box_with_cylinder(&bound_box_min, &bound_box_max, &block_location, block_radius, block_height)
-                };
-
-                if collided {
-                    if self._velocity.y <= 0.0 && block_bound_box._max.y <= prev_position.y {
-                        self.set_on_ground(block_bound_box._max.y);
-                    } else {
+                    if block_collision_type == CollisionType::BOX {
+                        if block_bound_box._min.z <= prev_bound_box_max.z && prev_bound_box_min.z <= block_bound_box._max.z {
+                            self._position.x = prev_position.x;
+                        } else {
+                            self._position.z = prev_position.z;
+                        }
+                        self._is_blocked = true;
+                    } else if block_collision_type == CollisionType::CYLINDER {
                         let block_to_player = Vector3::new(self._position.x - block_location.x, 0.0, self._position.z - block_location.z).normalize();
                         if block_to_player.dot(&move_delta.normalize()) < 0.0 {
                             let dist = Vector3::new(prev_position.x - block_location.x, 0.0, prev_position.z - block_location .z).norm();
@@ -198,28 +201,11 @@ impl CharacterController {
                             self._position.z = new_pos.z;
                             self._is_blocked = true;
                         }
-                    }
-                }
-            } else {
-                let collided = if actor_collision._collision_type == CollisionType::CYLINDER {
-                    collision::collide_box_with_cylinder(&block_bound_box._min, &block_bound_box._max, &actor_location, actor_radius, actor_height)
-                } else {
-                    collision::collide_box_with_box(&block_bound_box._min, &block_bound_box._max, &bound_box_min, &bound_box_max)
-                };
-
-                if collided {
-                    if self._velocity.y <= 0.0 && block_bound_box._max.y <= prev_position.y {
-                        self.set_on_ground(block_bound_box._max.y);
                     } else {
-                        if block_bound_box._min.z <= prev_bound_box_max.z && prev_bound_box_min.z <= block_bound_box._max.z {
-                            self._position.x = prev_position.x;
-                        } else {
-                            self._position.z = prev_position.z;
-                        }
-                        self._is_blocked = true;
+                        panic!("not implemented");
                     }
                 }
-            };
+            }
         }
 
         // check cliff

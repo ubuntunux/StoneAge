@@ -144,7 +144,8 @@ impl<'a> GameController<'a> {
 
                 player_mut.set_move(&move_direction);
             } else {
-                if is_attack || is_power_attack || is_roll {
+                let look_at_target = true; // || is_attack || is_power_attack || is_roll;
+                if look_at_target && player_mut.is_available_move() {
                     let player_pos = player_mut.get_position();
                     let camera_pos = main_camera.get_camera_position();
                     let relative_pos = main_camera.convert_screen_to_relative_world(&mouse_move_data._mouse_pos);
