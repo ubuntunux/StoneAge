@@ -10,12 +10,14 @@ use serde_json::{self};
 use crate::game_module::actors::block::BlockData;
 use crate::game_module::actors::character_data::CharacterData;
 use crate::game_module::actors::items::ItemData;
+use crate::game_module::actors::props::PropData;
 use crate::game_module::game_scene_manager::GameSceneDataCreateInfo;
 
 pub const BLOCK_DATA_FILE_PATH: &str = "game_data/blocks";
 pub const CHARACTER_DATA_FILE_PATH: &str = "game_data/characters";
 pub const ITEM_DATA_FILE_PATH: &str = "game_data/items";
 pub const GAME_SCENE_FILE_PATH: &str = "game_data/game_scenes";
+pub const PROP_DATA_FILE_PATH: &str = "game_data/props";
 
 pub const EXT_GAME_DATA: &str = "data";
 
@@ -25,6 +27,7 @@ pub type BlockDataMap = ResourceDataMap<BlockData>;
 pub type CharacterDataMap = ResourceDataMap<CharacterData>;
 pub type ItemDataMap = ResourceDataMap<ItemData>;
 pub type GameSceneDataCreateInfoMap = ResourceDataMap<GameSceneDataCreateInfo>;
+pub type PropDataMap = ResourceDataMap<PropData>;
 
 #[derive(Clone)]
 pub struct GameResources<'a> {
@@ -33,6 +36,7 @@ pub struct GameResources<'a> {
     _character_data_map: CharacterDataMap,
     _item_data_map: ItemDataMap,
     _game_scene_data_create_infos_map: GameSceneDataCreateInfoMap,
+    _prop_data_map: PropDataMap,
 }
 
 impl<'a> GameResources<'a> {
@@ -43,6 +47,7 @@ impl<'a> GameResources<'a> {
             _block_data_map: BlockDataMap::new(),
             _item_data_map: ItemDataMap::new(),
             _character_data_map: CharacterDataMap::new(),
+            _prop_data_map: PropDataMap::new(),
         })
     }
     pub fn get_engine_resources(&self) -> &EngineResources<'a> {
@@ -108,9 +113,11 @@ impl<'a> GameResources<'a> {
         self.load_block_data();
         self.load_character_data();
         self.load_item_data();
+        self.load_prop_data();
     }
 
     fn unload_game_data(&mut self) {
+        self.unload_prop_data();
         self.unload_item_data();
         self.unload_character_data();
         self.unload_block_data();
@@ -140,6 +147,32 @@ impl<'a> GameResources<'a> {
 
     pub fn get_block_data(&self, resource_name: &str) -> &RcRefCell<BlockData> {
         self._block_data_map.get(resource_name).unwrap()
+    }
+
+    // prop data
+    fn load_prop_data(&mut self) {
+        let game_data_directory = PathBuf::from(PROP_DATA_FILE_PATH);
+
+        // load_prop_data
+        let game_data_files: Vec<PathBuf> = self.collect_resources(&game_data_directory, &[EXT_GAME_DATA]);
+        for game_data_file in game_data_files {
+            let prop_data_name = get_unique_resource_name(&self._prop_data_map, &game_data_directory, &game_data_file);
+            let loaded_contents = system::load(&game_data_file);
+            let prop_data: PropData = serde_json::from_reader(loaded_contents).expect("Failed to deserialize.");
+            self._prop_data_map.insert(prop_data_name.clone(), newRcRefCell(prop_data));
+        }
+    }
+
+    fn unload_prop_data(&mut self) {
+        self._prop_data_map.clear();
+    }
+
+    pub fn has_prop_data(&self, resource_name: &str) -> bool {
+        self._prop_data_map.get(resource_name).is_some()
+    }
+
+    pub fn get_prop_data(&self, resource_name: &str) -> &RcRefCell<PropData> {
+        self._prop_data_map.get(resource_name).unwrap()
     }
 
     // character data
