@@ -14,7 +14,7 @@ use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
 use winit::keyboard::KeyCode;
 
 use crate::game_module::actors::character_manager::CharacterManager;
-use crate::game_module::actors::foods::FoodManager;
+use crate::game_module::actors::items::ItemManager;
 use crate::game_module::game_client::GameClient;
 use crate::game_module::game_constants;
 use crate::game_module::game_controller::GameController;
@@ -29,7 +29,7 @@ pub struct Application<'a> {
     pub _effect_manager: *const EffectManager<'a>,
     pub _renderer_data: *const RendererData<'a>,
     pub _character_manager: Box<CharacterManager<'a>>,
-    pub _food_manager: Box<FoodManager<'a>>,
+    pub _item_manager: Box<ItemManager<'a>>,
     pub _game_resources: Box<GameResources<'a>>,
     pub _game_scene_manager: Box<GameSceneManager<'a>>,
     pub _game_ui_manager: Box<GameUIManager<'a>>,
@@ -59,7 +59,7 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
         self.get_game_ui_manager_mut().initialize_game_ui_manager(engine_core, application);
         self.get_game_scene_manager_mut().initialize_game_scene_manager(application, engine_core, window_size);
         self.get_character_manager_mut().initialize_character_manager(engine_core, application);
-        self.get_food_manager_mut().initialize_food_manager(engine_core, application);
+        self.get_item_manager_mut().initialize_item_manager(engine_core, application);
 
         // start game
         self.get_game_ui_manager_mut().build_game_ui(window_size);
@@ -244,11 +244,11 @@ impl<'a> Application<'a> {
     pub fn get_character_manager_mut(&mut self) -> &mut CharacterManager<'a> {
         self._character_manager.as_mut()
     }
-    pub fn get_food_manager(&self) -> &FoodManager<'a> {
-        self._food_manager.as_ref()
+    pub fn get_item_manager(&self) -> &ItemManager<'a> {
+        self._item_manager.as_ref()
     }
-    pub fn get_food_manager_mut(&mut self) -> &mut FoodManager<'a> {
-        self._food_manager.as_mut()
+    pub fn get_item_manager_mut(&mut self) -> &mut ItemManager<'a> {
+        self._item_manager.as_mut()
     }
     pub fn get_game_scene_manager(&self) -> &GameSceneManager<'a> {
         self._game_scene_manager.as_ref()
@@ -373,7 +373,7 @@ pub fn run_application() {
     let game_resources = GameResources::create_game_resources();
     let game_scene_manager = GameSceneManager::create_game_scene_manager();
     let character_manager = CharacterManager::create_character_manager();
-    let food_manager = FoodManager::create_food_manager();
+    let item_manager = ItemManager::create_item_manager();
     let game_ui_manager = GameUIManager::create_game_ui_manager();
     let game_controller = GameController::create_game_controller();
     let game_client = GameClient::create_game_client();
@@ -385,7 +385,7 @@ pub fn run_application() {
         _game_resources: game_resources,
         _game_scene_manager: game_scene_manager,
         _character_manager: character_manager,
-        _food_manager: food_manager,
+        _item_manager: item_manager,
         _game_ui_manager: game_ui_manager,
         _game_controller: game_controller,
         _game_client: game_client,

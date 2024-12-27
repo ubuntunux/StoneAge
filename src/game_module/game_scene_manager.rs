@@ -13,7 +13,7 @@ use crate::application::application::Application;
 use crate::game_module::actors::block::{Block, BlockCreateInfo};
 use crate::game_module::actors::character::CharacterCreateInfo;
 use crate::game_module::actors::character_manager::CharacterManager;
-use crate::game_module::actors::foods::FoodManager;
+use crate::game_module::actors::items::ItemManager;
 use crate::game_module::game_resource::GameResources;
 
 type BlockCreateInfoMap = HashMap<String, BlockCreateInfo>;
@@ -35,7 +35,7 @@ pub struct GameSceneManager<'a> {
     pub _scene_manager: *const SceneManager<'a>,
     pub _game_resources: *const GameResources<'a>,
     pub _character_manager: *const CharacterManager<'a>,
-    pub _food_manager: *const FoodManager<'a>,
+    pub _item_manager: *const ItemManager<'a>,
     pub _game_scene_name: String,
     pub _blocks: HashMap<u64, RcRefCell<Block<'a>>>,
     pub _block_id_generator: u64,
@@ -58,7 +58,7 @@ impl<'a> GameSceneManager<'a> {
             _scene_manager: std::ptr::null(),
             _game_resources: std::ptr::null(),
             _character_manager: std::ptr::null(),
-            _food_manager: std::ptr::null(),
+            _item_manager: std::ptr::null(),
             _game_scene_name: String::new(),
             _blocks: HashMap::new(),
             _block_id_generator: 0,
@@ -77,7 +77,7 @@ impl<'a> GameSceneManager<'a> {
         self._scene_manager = engine_core.get_scene_manager();
         self._effect_manager = engine_core.get_effect_manager();
         self._character_manager = application.get_character_manager();
-        self._food_manager = application.get_food_manager();
+        self._item_manager = application.get_item_manager();
         self._game_resources = application.get_game_resources();
         engine_core.get_scene_manager_mut().initialize_scene_manager(
             engine_core.get_renderer_context(),
@@ -191,7 +191,7 @@ impl<'a> GameSceneManager<'a> {
     }
 
     pub fn update_game_scene_manager(&mut self, delta_time: f64) {
-        ptr_as_mut(self._food_manager).update_food_manager(delta_time);
+        ptr_as_mut(self._item_manager).update_item_manager(delta_time);
         ptr_as_mut(self._character_manager).update_character_manager(delta_time);
     }
 }

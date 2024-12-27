@@ -342,9 +342,10 @@ resources/externals/game_data/characters/spider.blend
 resources/externals/game_data/characters/trex.blend
 resources/externals/game_data/characters/triceratops.blend
 resources/externals/game_data/characters/wolf.blend
-resources/externals/game_data/foods/meat.blend
 resources/externals/game_data/game_scenes/intro_stage.blend
+resources/externals/game_data/items/meat.blend
 resources/externals/game_data/properties/properties.blend
+resources/externals/game_data/props/cactus.blend
 resources/externals/materials/common/render_skeletal_object.blend
 resources/externals/materials/common/render_static_object.blend
 resources/externals/materials/render_grass.blend
@@ -482,8 +483,8 @@ resources/game_data/characters/spider.data
 resources/game_data/characters/trex.data
 resources/game_data/characters/triceratops.data
 resources/game_data/characters/wolf.data
-resources/game_data/foods/meat.data
 resources/game_data/game_scenes/intro_stage.data
+resources/game_data/items/meat.data
 resources/material_instances/characters/jack/jack.matinst
 resources/material_instances/characters/trex/trex.matinst
 resources/material_instances/characters/triceratops/triceratops.matinst

@@ -13,7 +13,7 @@ use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, Rc
 use crate::application::application::Application;
 use crate::game_module::actors::character::{Character, CharacterCreateInfo};
 use crate::game_module::actors::character_data::ActionAnimationState;
-use crate::game_module::actors::foods::FoodCreateInfo;
+use crate::game_module::actors::items::ItemCreateInfo;
 use crate::game_module::game_client::GameClient;
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
@@ -195,13 +195,13 @@ impl<'a> CharacterManager<'a> {
                             if false == target_character_mut._is_alive {
                                 dead_characters.push(target_character.clone());
 
-                                // TestCode: Food
-                                let food_create_info = FoodCreateInfo {
-                                    _food_data_name: String::from("meat"),
+                                // TestCode: Item
+                                let item_create_info = ItemCreateInfo {
+                                    _item_data_name: String::from("meat"),
                                     _position: target_character_mut.get_position().clone() + Vector3::new(0.0, 0.5, 0.0),
                                     ..Default::default()
                                 };
-                                ptr_as_mut(self.get_game_scene_manager()._food_manager.clone()).create_food("food", &food_create_info);
+                                ptr_as_mut(self.get_game_scene_manager()._item_manager.clone()).create_item("item", &item_create_info);
                             }
                         }
                     }

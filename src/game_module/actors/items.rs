@@ -12,21 +12,21 @@ use serde::{Deserialize, Serialize};
 use crate::application::application::Application;
 use crate::game_module::actors::character_manager::CharacterManager;
 use crate::game_module::game_client::GameClient;
-use crate::game_module::game_constants::{AUDIO_CRUNCH, EAT_FOOD_DISTANCE};
+use crate::game_module::game_constants::{AUDIO_CRUNCH, EAT_ITEM_DISTANCE};
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
 
-pub type FoodMap<'a> = HashMap<u64, RcRefCell<Food<'a>>>;
+pub type ItemMap<'a> = HashMap<u64, RcRefCell<Item<'a>>>;
 
 #[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq)]
-pub enum FoodDataType {
+pub enum ItemDataType {
     Meat,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(default)]
-pub struct FoodCreateInfo {
-    pub _food_data_name: String,
+pub struct ItemCreateInfo {
+    pub _item_data_name: String,
     pub _position: Vector3<f32>,
     pub _rotation: Vector3<f32>,
     pub _scale: Vector3<f32>,
@@ -34,26 +34,26 @@ pub struct FoodCreateInfo {
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(default)]
-pub struct FoodData {
-    pub _food_type: FoodDataType,
+pub struct ItemData {
+    pub _item_type: ItemDataType,
     pub _model_data_name: String,
 }
 
-pub struct FoodProperties {
+pub struct ItemProperties {
     pub _position: Vector3<f32>,
     pub _rotation: Vector3<f32>,
     pub _scale: Vector3<f32>,
 }
 
-pub struct Food<'a> {
-    pub _food_name: String,
-    pub _food_id: u64,
-    pub _food_data: RcRefCell<FoodData>,
+pub struct Item<'a> {
+    pub _item_name: String,
+    pub _item_id: u64,
+    pub _item_data: RcRefCell<ItemData>,
     pub _render_object: RcRefCell<RenderObjectData<'a>>,
-    pub _food_properties: Box<FoodProperties>,
+    pub _item_properties: Box<ItemProperties>,
 }
 
-pub struct FoodManager<'a> {
+pub struct ItemManager<'a> {
     pub _game_client: *const GameClient<'a>,
     pub _character_manager: *const CharacterManager<'a>,
     pub _game_scene_manager: *const GameSceneManager<'a>,
@@ -61,14 +61,14 @@ pub struct FoodManager<'a> {
     pub _audio_manager: *const AudioManager<'a>,
     pub _scene_manager: *const SceneManager<'a>,
     pub _id_generator: u64,
-    pub _foods: FoodMap<'a>,
+    pub _items: ItemMap<'a>,
 }
 
 // Implementations
-impl Default for FoodCreateInfo {
+impl Default for ItemCreateInfo {
     fn default() -> Self {
-        FoodCreateInfo {
-            _food_data_name: String::new(),
+        ItemCreateInfo {
+            _item_data_name: String::new(),
             _position: Vector3::zeros(),
             _rotation: Vector3::zeros(),
             _scale: Vector3::new(1.0, 1.0, 1.0),
@@ -76,62 +76,62 @@ impl Default for FoodCreateInfo {
     }
 }
 
-impl Default for FoodData {
+impl Default for ItemData {
     fn default() -> Self {
-        FoodData {
-            _food_type: FoodDataType::Meat,
+        ItemData {
+            _item_type: ItemDataType::Meat,
             _model_data_name: String::new(),
         }
     }
 }
 
-impl<'a> Food<'a> {
-    pub fn create_food(
-        food_id: u64,
-        food_name: &str,
-        food_data: &RcRefCell<FoodData>,
+impl<'a> Item<'a> {
+    pub fn create_item(
+        item_id: u64,
+        item_name: &str,
+        item_data: &RcRefCell<ItemData>,
         render_object: &RcRefCell<RenderObjectData<'a>>,
         position: &Vector3<f32>,
         rotation: &Vector3<f32>,
-        scale: &Vector3<f32>) -> Food<'a> {
-        let mut food = Food {
-            _food_name: String::from(food_name),
-            _food_id: food_id,
-            _food_data: food_data.clone(),
+        scale: &Vector3<f32>) -> Item<'a> {
+        let mut item = Item {
+            _item_name: String::from(item_name),
+            _item_id: item_id,
+            _item_data: item_data.clone(),
             _render_object: render_object.clone(),
-            _food_properties: Box::from(FoodProperties {
+            _item_properties: Box::from(ItemProperties {
                 _position: position.clone(),
                 _rotation: rotation.clone(),
                 _scale: scale.clone(),
             }),
         };
-        food.update_transform();
-        food
+        item.update_transform();
+        item
     }
 
-    pub fn get_food_id(&self) -> u64 {
-        self._food_id
+    pub fn get_item_id(&self) -> u64 {
+        self._item_id
     }
 
     pub fn collide_point(&self, pos: &Vector3<f32>) -> bool {
         self._render_object.borrow()._bounding_box.collide_in_radius(pos)
     }
 
-    pub fn update_food(&mut self, _delta_time: f64) {
+    pub fn update_item(&mut self, _delta_time: f64) {
         //self.update_transform();
     }
 
     pub fn update_transform(&mut self) {
         let mut render_object = self._render_object.borrow_mut();
-        render_object._transform_object.set_position(&self._food_properties._position);
-        render_object._transform_object.set_rotation(&self._food_properties._rotation);
-        render_object._transform_object.set_scale(&self._food_properties._scale);
+        render_object._transform_object.set_position(&self._item_properties._position);
+        render_object._transform_object.set_rotation(&self._item_properties._rotation);
+        render_object._transform_object.set_scale(&self._item_properties._scale);
     }
 }
 
-impl<'a> FoodManager<'a> {
-    pub fn create_food_manager() -> Box<FoodManager<'a>> {
-        Box::new(FoodManager {
+impl<'a> ItemManager<'a> {
+    pub fn create_item_manager() -> Box<ItemManager<'a>> {
+        Box::new(ItemManager {
             _game_client: std::ptr::null(),
             _character_manager: std::ptr::null(),
             _game_scene_manager: std::ptr::null(),
@@ -139,12 +139,12 @@ impl<'a> FoodManager<'a> {
             _audio_manager: std::ptr::null(),
             _scene_manager: std::ptr::null(),
             _id_generator: 0,
-            _foods: HashMap::new(),
+            _items: HashMap::new(),
         })
     }
 
-    pub fn initialize_food_manager(&mut self, engine_core: &EngineCore<'a>, application: &Application<'a>) {
-        log::info!("initialize_food_manager");
+    pub fn initialize_item_manager(&mut self, engine_core: &EngineCore<'a>, application: &Application<'a>) {
+        log::info!("initialize_item_manager");
         self._game_client = application.get_game_client();
         self._character_manager = application.get_character_manager();
         self._game_scene_manager = application.get_game_scene_manager();
@@ -152,7 +152,7 @@ impl<'a> FoodManager<'a> {
         self._audio_manager = application.get_audio_manager();
         self._scene_manager = engine_core.get_scene_manager();
     }
-    pub fn destroy_food_manager(&mut self) {}
+    pub fn destroy_item_manager(&mut self) {}
     pub fn get_game_resources(&self) -> &GameResources<'a> {
         ptr_as_ref(self._game_resources)
     }
@@ -176,37 +176,37 @@ impl<'a> FoodManager<'a> {
         self._id_generator += 1;
         id
     }
-    pub fn get_food(&self, food_id: u64) -> Option<&RcRefCell<Food<'a>>> {
-        self._foods.get(&food_id)
+    pub fn get_item(&self, item_id: u64) -> Option<&RcRefCell<Item<'a>>> {
+        self._items.get(&item_id)
     }
-    pub fn create_food(&mut self, food_name: &str, food_create_info: &FoodCreateInfo) -> RcRefCell<Food<'a>> {
+    pub fn create_item(&mut self, item_name: &str, item_create_info: &ItemCreateInfo) -> RcRefCell<Item<'a>> {
         let game_resources = ptr_as_ref(self._game_resources);
-        let food_data = game_resources.get_food_data(food_create_info._food_data_name.as_str());
+        let item_data = game_resources.get_item_data(item_create_info._item_data_name.as_str());
         let render_object_create_info = RenderObjectCreateInfo {
-            _model_data_name: food_data.borrow()._model_data_name.clone(),
+            _model_data_name: item_data.borrow()._model_data_name.clone(),
             ..Default::default()
         };
         let render_object_data = self.get_scene_manager_mut().add_static_render_object(
-            food_name,
+            item_name,
             &render_object_create_info,
         );
         let id = self.generate_id();
-        let food = newRcRefCell(Food::create_food(
+        let item = newRcRefCell(Item::create_item(
             id,
-            food_name,
-            food_data,
+            item_name,
+            item_data,
             &render_object_data,
-            &food_create_info._position,
-            &food_create_info._rotation,
-            &food_create_info._scale,
+            &item_create_info._position,
+            &item_create_info._rotation,
+            &item_create_info._scale,
         ));
-        self._foods.insert(id, food.clone());
-        food
+        self._items.insert(id, item.clone());
+        item
     }
 
-    pub fn remove_food(&mut self, food: &RcRefCell<Food>) {
-        self._foods.remove(&food.borrow().get_food_id());
-        self.get_scene_manager_mut().remove_static_render_object(food.borrow()._render_object.borrow()._object_id);
+    pub fn remove_item(&mut self, item: &RcRefCell<Item>) {
+        self._items.remove(&item.borrow().get_item_id());
+        self.get_scene_manager_mut().remove_static_render_object(item.borrow()._render_object.borrow()._object_id);
     }
 
     pub fn play_audio_bank(&self, audio_name_bank: &str) {
@@ -221,30 +221,30 @@ impl<'a> FoodManager<'a> {
         self.get_scene_manager_mut().add_effect(effect_name, effect_create_info);
     }
 
-    pub fn update_food_manager(&mut self, delta_time: f64) {
-        for food in self._foods.values() {
-            food.borrow_mut().update_food(delta_time);
+    pub fn update_item_manager(&mut self, delta_time: f64) {
+        for item in self._items.values() {
+            item.borrow_mut().update_item(delta_time);
         }
 
-        let mut eaten_foods: Vec<RcRefCell<Food>> = Vec::new();
+        let mut eaten_items: Vec<RcRefCell<Item>> = Vec::new();
         {
             let player = self.get_character_manager().get_player();
             let player_mut = player.borrow_mut();
             let player_position = player_mut.get_position();
-            for food in self._foods.values() {
-                let food_ref = food.borrow();
-                let dist = (food_ref._food_properties._position - player_position).norm();
-                if dist <= EAT_FOOD_DISTANCE {
-                    eaten_foods.push(food.clone());
-                    log::info!("add to eaten_foods");
+            for item in self._items.values() {
+                let item_ref = item.borrow();
+                let dist = (item_ref._item_properties._position - player_position).norm();
+                if dist <= EAT_ITEM_DISTANCE {
+                    eaten_items.push(item.clone());
+                    log::info!("add to eaten_items");
                 }
             }
         }
 
-        for food in eaten_foods.iter() {
+        for item in eaten_items.iter() {
             self.get_character_manager().play_audio_bank(AUDIO_CRUNCH);
-            log::info!("Remove food");
-            self.remove_food(food);
+            log::info!("Remove item");
+            self.remove_item(item);
         }
     }
 }
