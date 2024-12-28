@@ -485,6 +485,7 @@ resources/game_data/characters/triceratops.data
 resources/game_data/characters/wolf.data
 resources/game_data/game_scenes/intro_stage.data
 resources/game_data/items/meat.data
+resources/game_data/props/cactus.data
 resources/material_instances/characters/jack/jack.matinst
 resources/material_instances/characters/trex/trex.matinst
 resources/material_instances/characters/triceratops/triceratops.matinst

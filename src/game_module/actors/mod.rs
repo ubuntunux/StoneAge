@@ -6,3 +6,4 @@ pub mod character_data;
 pub mod character_manager;
 pub mod items;
 pub mod props;
+mod props_impl;

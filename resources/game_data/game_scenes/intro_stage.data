@@ -18,24 +18,6 @@
                 1.0
             ]
         },
-        "cactus": {
-            "_block_data_name": "environments/cactus",
-            "_position": [
-                -2.308974027633667,
-                8.0,
-                1.5185976028442383
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
         "cliff_grass": {
             "_block_data_name": "environments/cliff_grass",
             "_position": [
@@ -452,6 +434,26 @@
                 0.25,
                 0.25,
                 0.25
+            ]
+        }
+    },
+    "_props": {
+        "cactus": {
+            "_position": [
+                -2.0,
+                8.0,
+                0.0
+            ],
+            "_prop_data_name": "cactus",
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
             ]
         }
     },

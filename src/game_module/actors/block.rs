@@ -69,9 +69,16 @@ impl<'a> Block<'a> {
                 _scale: scale.clone(),
             }),
         };
-        block.update_transform();
-        block.update_render_object();
+        block.initialize_block();
         block
+    }
+
+    pub fn initialize_block(&mut self) {
+        self.update_transform();
+
+        // update for bounding box
+        let mut render_object = self._render_object.borrow_mut();
+        render_object.update_render_object_data(0.0);
     }
 
     pub fn get_block_id(&self) -> u64 {
@@ -79,14 +86,10 @@ impl<'a> Block<'a> {
     }
 
     pub fn update_transform(&mut self) {
-        let mut render_object = self._render_object.borrow_mut();
-        render_object._transform_object.set_position(&self._block_properties._position);
-        render_object._transform_object.set_rotation(&self._block_properties._rotation);
-        render_object._transform_object.set_scale(&self._block_properties._scale);
-    }
-
-    pub fn update_render_object(&mut self) {
-        let mut render_object = self._render_object.borrow_mut();
-        render_object.update_render_object_data(0.0);
+        self._render_object.borrow_mut()._transform_object.set_transform(
+            &self._block_properties._position,
+            &self._block_properties._rotation,
+            &self._block_properties._scale,
+        );
     }
 }

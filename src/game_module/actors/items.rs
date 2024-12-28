@@ -1,16 +1,14 @@
 use std::collections::HashMap;
 
 use nalgebra::Vector3;
-use rust_engine_3d::audio::audio_manager::{AudioBankData, AudioLoop, AudioManager};
+use rust_engine_3d::audio::audio_manager::{AudioLoop, AudioManager};
 use rust_engine_3d::core::engine_core::EngineCore;
-use rust_engine_3d::effect::effect_data::EffectCreateInfo;
 use rust_engine_3d::scene::render_object::{RenderObjectCreateInfo, RenderObjectData};
 use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
 use serde::{Deserialize, Serialize};
 
 use crate::application::application::Application;
-use crate::game_module::actors::character_manager::CharacterManager;
 use crate::game_module::game_client::GameClient;
 use crate::game_module::game_constants::{AUDIO_CRUNCH, EAT_ITEM_DISTANCE};
 use crate::game_module::game_resource::GameResources;
@@ -55,7 +53,6 @@ pub struct Item<'a> {
 
 pub struct ItemManager<'a> {
     pub _game_client: *const GameClient<'a>,
-    pub _character_manager: *const CharacterManager<'a>,
     pub _game_scene_manager: *const GameSceneManager<'a>,
     pub _game_resources: *const GameResources<'a>,
     pub _audio_manager: *const AudioManager<'a>,
@@ -105,8 +102,12 @@ impl<'a> Item<'a> {
                 _scale: scale.clone(),
             }),
         };
-        item.update_transform();
+        item.initialize_item();
         item
+    }
+
+    pub fn initialize_item(&mut self) {
+        self.update_transform();
     }
 
     pub fn get_item_id(&self) -> u64 {
@@ -117,15 +118,15 @@ impl<'a> Item<'a> {
         self._render_object.borrow()._bounding_box.collide_in_radius(pos)
     }
 
-    pub fn update_item(&mut self, _delta_time: f64) {
-        //self.update_transform();
+    pub fn update_transform(&mut self) {
+        self._render_object.borrow_mut()._transform_object.set_transform(
+            &self._item_properties._position,
+            &self._item_properties._rotation,
+            &self._item_properties._scale,
+        );
     }
 
-    pub fn update_transform(&mut self) {
-        let mut render_object = self._render_object.borrow_mut();
-        render_object._transform_object.set_position(&self._item_properties._position);
-        render_object._transform_object.set_rotation(&self._item_properties._rotation);
-        render_object._transform_object.set_scale(&self._item_properties._scale);
+    pub fn update_item(&mut self, _delta_time: f64) {
     }
 }
 
@@ -133,7 +134,6 @@ impl<'a> ItemManager<'a> {
     pub fn create_item_manager() -> Box<ItemManager<'a>> {
         Box::new(ItemManager {
             _game_client: std::ptr::null(),
-            _character_manager: std::ptr::null(),
             _game_scene_manager: std::ptr::null(),
             _game_resources: std::ptr::null(),
             _audio_manager: std::ptr::null(),
@@ -145,14 +145,14 @@ impl<'a> ItemManager<'a> {
 
     pub fn initialize_item_manager(&mut self, engine_core: &EngineCore<'a>, application: &Application<'a>) {
         log::info!("initialize_item_manager");
-        self._game_client = application.get_game_client();
-        self._character_manager = application.get_character_manager();
-        self._game_scene_manager = application.get_game_scene_manager();
-        self._game_resources = application.get_game_resources();
         self._audio_manager = application.get_audio_manager();
         self._scene_manager = engine_core.get_scene_manager();
+        self._game_resources = application.get_game_resources();
+        self._game_scene_manager = application.get_game_scene_manager();
+        self._game_client = application.get_game_client();
     }
-    pub fn destroy_item_manager(&mut self) {}
+    pub fn destroy_item_manager(&mut self) {
+    }
     pub fn get_game_resources(&self) -> &GameResources<'a> {
         ptr_as_ref(self._game_resources)
     }
@@ -161,9 +161,6 @@ impl<'a> ItemManager<'a> {
     }
     pub fn get_game_scene_manager(&self) -> &GameSceneManager<'a> {
         ptr_as_ref(self._game_scene_manager)
-    }
-    pub fn get_character_manager(&self) -> &CharacterManager<'a> {
-        ptr_as_ref(self._character_manager)
     }
     pub fn get_audio_manager_mut(&self) -> &mut AudioManager<'a> {
         ptr_as_mut(self._audio_manager)
@@ -179,7 +176,7 @@ impl<'a> ItemManager<'a> {
     pub fn get_item(&self, item_id: u64) -> Option<&RcRefCell<Item<'a>>> {
         self._items.get(&item_id)
     }
-    pub fn create_item(&mut self, item_name: &str, item_create_info: &ItemCreateInfo) -> RcRefCell<Item<'a>> {
+    pub fn create_item(&mut self, item_create_info: &ItemCreateInfo) -> RcRefCell<Item<'a>> {
         let game_resources = ptr_as_ref(self._game_resources);
         let item_data = game_resources.get_item_data(item_create_info._item_data_name.as_str());
         let render_object_create_info = RenderObjectCreateInfo {
@@ -187,13 +184,13 @@ impl<'a> ItemManager<'a> {
             ..Default::default()
         };
         let render_object_data = self.get_scene_manager_mut().add_static_render_object(
-            item_name,
+            item_create_info._item_data_name.as_str(),
             &render_object_create_info,
         );
         let id = self.generate_id();
         let item = newRcRefCell(Item::create_item(
             id,
-            item_name,
+            item_create_info._item_data_name.as_str(),
             item_data,
             &render_object_data,
             &item_create_info._position,
@@ -209,18 +206,6 @@ impl<'a> ItemManager<'a> {
         self.get_scene_manager_mut().remove_static_render_object(item.borrow()._render_object.borrow()._object_id);
     }
 
-    pub fn play_audio_bank(&self, audio_name_bank: &str) {
-        self.get_audio_manager_mut().create_audio_instance_from_audio_bank(audio_name_bank, AudioLoop::ONCE, None);
-    }
-
-    pub fn play_audio_bank_data(&self, audio_bank_data: &RcRefCell<AudioBankData>) {
-        self.get_audio_manager_mut().create_audio_instance_from_audio_bank_data(audio_bank_data, AudioLoop::ONCE, None);
-    }
-
-    pub fn play_effect(&self, effect_name: &str, effect_create_info: &EffectCreateInfo) {
-        self.get_scene_manager_mut().add_effect(effect_name, effect_create_info);
-    }
-
     pub fn update_item_manager(&mut self, delta_time: f64) {
         for item in self._items.values() {
             item.borrow_mut().update_item(delta_time);
@@ -228,7 +213,8 @@ impl<'a> ItemManager<'a> {
 
         let mut eaten_items: Vec<RcRefCell<Item>> = Vec::new();
         {
-            let player = self.get_character_manager().get_player();
+            let game_scene_manager = self.get_game_scene_manager();
+            let player = game_scene_manager.get_character_manager().get_player();
             let player_mut = player.borrow_mut();
             let player_position = player_mut.get_position();
             for item in self._items.values() {
@@ -242,7 +228,7 @@ impl<'a> ItemManager<'a> {
         }
 
         for item in eaten_items.iter() {
-            self.get_character_manager().play_audio_bank(AUDIO_CRUNCH);
+            self.get_audio_manager_mut().play_audio_bank(AUDIO_CRUNCH, AudioLoop::ONCE, None);
             log::info!("Remove item");
             self.remove_item(item);
         }

@@ -134,6 +134,7 @@ impl<'a> GameUIManager<'a> {
     }
     pub fn update_game_ui(&mut self, delta_time: f64) {
         let game_client = ptr_as_ref(self._game_client);
+        let game_scene_manager = game_client.get_game_scene_manager();
         let window_size = &game_client
             .get_application()
             .get_engine_core()
@@ -157,16 +158,16 @@ impl<'a> GameUIManager<'a> {
 
         // player hud
         if let Some(player_hud) = self._player_hud.as_mut() {
-            if game_client.get_character_manager().is_valid_player() {
-                let player = game_client.get_character_manager().get_player().borrow();
+            if game_scene_manager.get_character_manager().is_valid_player() {
+                let player = game_scene_manager.get_character_manager().get_player().borrow();
                 player_hud.update_status_widget(&player);
             }
         }
 
         // target status
         if let Some(target_status_bar) = self._target_status_bar.as_mut() {
-            if game_client.get_character_manager().is_valid_target_character() {
-                let target = game_client.get_character_manager().get_target_character().borrow();
+            if game_scene_manager.get_character_manager().is_valid_target_character() {
+                let target = game_scene_manager.get_character_manager().get_target_character().borrow();
                 target_status_bar.update_status_widget(&target);
             } else {
                 target_status_bar.fade_out_status_widget();

@@ -15,6 +15,7 @@ use crate::game_module::actors::character::{Character, CharacterCreateInfo};
 use crate::game_module::actors::character_data::ActionAnimationState;
 use crate::game_module::actors::items::ItemCreateInfo;
 use crate::game_module::game_client::GameClient;
+use crate::game_module::game_constants::ITEM_MEAT;
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
 
@@ -147,19 +148,19 @@ impl<'a> CharacterManager<'a> {
         self._target_character = target_character;
     }
     pub fn play_audio_bank(&self, audio_name_bank: &str) {
-        self.get_audio_manager_mut().create_audio_instance_from_audio_bank(audio_name_bank, AudioLoop::ONCE, None);
+        self.get_audio_manager_mut().play_audio_bank(audio_name_bank, AudioLoop::ONCE, None);
     }
 
     pub fn play_audio(&self, audio_resource: &ResourceData) -> Option<RcRefCell<AudioInstance>> {
         match audio_resource {
             Audio(audio_data) => self.get_audio_manager_mut().create_audio_instance_from_audio_data(&audio_data, AudioLoop::ONCE, None),
-            AudioBank(audio_bank_data) => self.get_audio_manager_mut().create_audio_instance_from_audio_bank_data(&audio_bank_data, AudioLoop::ONCE, None),
+            AudioBank(audio_bank_data) => self.get_audio_manager_mut().play_audio_bank_data(&audio_bank_data, AudioLoop::ONCE, None),
             _ => None,
         }
     }
 
     pub fn play_audio_options(&self, audio_name_bank: &str, audio_loop: AudioLoop, volume: Option<f32>) {
-        self.get_audio_manager_mut().create_audio_instance_from_audio_bank(audio_name_bank, audio_loop, volume);
+        self.get_audio_manager_mut().play_audio_bank(audio_name_bank, audio_loop, volume);
     }
 
     pub fn play_effect(&self, effect_name: &str, effect_create_info: &EffectCreateInfo) {
@@ -197,11 +198,11 @@ impl<'a> CharacterManager<'a> {
 
                                 // TestCode: Item
                                 let item_create_info = ItemCreateInfo {
-                                    _item_data_name: String::from("meat"),
+                                    _item_data_name: String::from(ITEM_MEAT),
                                     _position: target_character_mut.get_position().clone() + Vector3::new(0.0, 0.5, 0.0),
                                     ..Default::default()
                                 };
-                                ptr_as_mut(self.get_game_scene_manager()._item_manager.clone()).create_item("item", &item_create_info);
+                                self.get_game_scene_manager().get_item_manager_mut().create_item(&item_create_info);
                             }
                         }
                     }

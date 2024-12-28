@@ -48,7 +48,6 @@ impl<'a> GameClient<'a> {
         self._engine_core = engine_core;
         self._application = application;
         self._game_controller = application.get_game_controller();
-        self._character_manager = application.get_character_manager();
         self._game_scene_manager = application.get_game_scene_manager();
         self._game_resources = application.get_game_resources();
         self._game_ui_manager = application.get_game_ui_manager();
@@ -67,12 +66,6 @@ impl<'a> GameClient<'a> {
     }
     pub fn get_application_mut(&self) -> &mut Application<'a> {
         ptr_as_mut(self._application)
-    }
-    pub fn get_character_manager(&self) -> &CharacterManager<'a> {
-        ptr_as_ref(self._character_manager)
-    }
-    pub fn get_character_manager_mut(&self) -> &mut CharacterManager<'a> {
-        ptr_as_mut(self._character_manager)
     }
     pub fn get_game_scene_manager(&self) -> &GameSceneManager<'a> {
         ptr_as_ref(self._game_scene_manager)
@@ -137,7 +130,8 @@ impl<'a> GameClient<'a> {
                 }
             }
             GamePhase::GamePlay => {
-                let player = self.get_character_manager().get_player();
+                let game_scene_manager = self.get_game_scene_manager();
+                let player = game_scene_manager.get_character_manager().get_player();
                 let main_camera = scene_manager.get_main_camera_mut();
                 if false == self._game_controller.is_null() {
                     let game_controller = ptr_as_mut(self._game_controller);

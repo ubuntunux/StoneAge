@@ -8,16 +8,17 @@ use rust_engine_3d::scene::render_object::RenderObjectCreateInfo;
 use rust_engine_3d::scene::scene_manager::{SceneDataCreateInfo, SceneManager};
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
 use serde::{Deserialize, Serialize};
-
 use crate::application::application::Application;
 use crate::game_module::actors::block::{Block, BlockCreateInfo};
 use crate::game_module::actors::character::CharacterCreateInfo;
 use crate::game_module::actors::character_manager::CharacterManager;
 use crate::game_module::actors::items::ItemManager;
+use crate::game_module::actors::props::{PropCreateInfo, PropManager};
 use crate::game_module::game_resource::GameResources;
 
 type BlockCreateInfoMap = HashMap<String, BlockCreateInfo>;
 type CharacterCreateInfoMap = HashMap<String, CharacterCreateInfo>;
+type PropCreateInfoMap = HashMap<String, PropCreateInfo>;
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[serde(default)]
@@ -25,6 +26,7 @@ pub struct GameSceneDataCreateInfo {
     pub _scene: SceneDataCreateInfo,
     pub _blocks: BlockCreateInfoMap,
     pub _player: CharacterCreateInfoMap,
+    pub _props: PropCreateInfoMap,
     pub _characters: CharacterCreateInfoMap,
     pub _start_point: Vector3<f32>,
 }
@@ -34,8 +36,9 @@ pub struct GameSceneManager<'a> {
     pub _effect_manager: *const EffectManager<'a>,
     pub _scene_manager: *const SceneManager<'a>,
     pub _game_resources: *const GameResources<'a>,
-    pub _character_manager: *const CharacterManager<'a>,
-    pub _item_manager: *const ItemManager<'a>,
+    pub _character_manager: Box<CharacterManager<'a>>,
+    pub _item_manager: Box<ItemManager<'a>>,
+    pub _prop_manager: Box<PropManager<'a>>,
     pub _game_scene_name: String,
     pub _blocks: HashMap<u64, RcRefCell<Block<'a>>>,
     pub _block_id_generator: u64,
@@ -51,17 +54,34 @@ impl<'a> GameSceneManager<'a> {
         ptr_as_mut(self._scene_manager)
     }
 
+    pub fn get_character_manager(&self) -> &CharacterManager<'a> {
+        self._character_manager.as_ref()
+    }
+
+    pub fn get_character_manager_mut(&self) -> &mut CharacterManager<'a> {
+        ptr_as_mut(self._character_manager.as_ref())
+    }
+
+    pub fn get_item_manager(&self) -> &ItemManager<'a> {
+        self._item_manager.as_ref()
+    }
+
+    pub fn get_item_manager_mut(&self) -> &mut ItemManager<'a> {
+        ptr_as_mut(self._item_manager.as_ref())
+    }
+
     pub fn create_game_scene_manager() -> Box<GameSceneManager<'a>> {
         Box::new(GameSceneManager {
             _audio_manager: std::ptr::null(),
             _effect_manager: std::ptr::null(),
             _scene_manager: std::ptr::null(),
             _game_resources: std::ptr::null(),
-            _character_manager: std::ptr::null(),
-            _item_manager: std::ptr::null(),
             _game_scene_name: String::new(),
             _blocks: HashMap::new(),
             _block_id_generator: 0,
+            _character_manager: CharacterManager::create_character_manager(),
+            _item_manager: ItemManager::create_item_manager(),
+            _prop_manager: PropManager::create_prop_manager(),
             _game_music: None
         })
     }
@@ -76,19 +96,21 @@ impl<'a> GameSceneManager<'a> {
         self._audio_manager = engine_core.get_audio_manager();
         self._scene_manager = engine_core.get_scene_manager();
         self._effect_manager = engine_core.get_effect_manager();
-        self._character_manager = application.get_character_manager();
-        self._item_manager = application.get_item_manager();
-        self._game_resources = application.get_game_resources();
         engine_core.get_scene_manager_mut().initialize_scene_manager(
             engine_core.get_renderer_context(),
             engine_core.get_effect_manager(),
             engine_core.get_engine_resources(),
             window_size,
-        )
+        );
+
+        self._game_resources = application.get_game_resources();
+        self._character_manager.initialize_character_manager(engine_core, application);
+        self._item_manager.initialize_item_manager(engine_core, application);
+        self._prop_manager.initialize_prop_manager(engine_core, application);
     }
 
     pub fn play_music(&mut self, audio_name: &str, volume: Option<f32>) {
-        self._game_music = ptr_as_mut(self._audio_manager).create_audio_instance_from_audio_bank(audio_name, AudioLoop::LOOP, volume);
+        self._game_music = ptr_as_mut(self._audio_manager).play_audio_bank(audio_name, AudioLoop::LOOP, volume);
     }
 
     pub fn get_blocks(&self) -> &HashMap<u64, RcRefCell<Block<'a>>> {
@@ -166,15 +188,19 @@ impl<'a> GameSceneManager<'a> {
             self.register_block(block);
         }
 
+        // create props
+        for (prop_name, prop_create_info) in game_scene_data._props.iter() {
+            self._prop_manager.create_prop(prop_name, prop_create_info);
+        }
+
         // create player
-        let character_manager = ptr_as_mut(self._character_manager.clone());
         for (character_name, character_create_info) in game_scene_data._player.iter() {
-            character_manager.create_character(character_name, character_create_info, true);
+            self._character_manager.create_character(character_name, character_create_info, true);
         }
 
         // create npc
         for (character_name, character_create_info) in game_scene_data._characters.iter() {
-            character_manager.create_character(character_name, character_create_info, false);
+            self._character_manager.create_character(character_name, character_create_info, false);
         }
 
         // first update
@@ -191,7 +217,8 @@ impl<'a> GameSceneManager<'a> {
     }
 
     pub fn update_game_scene_manager(&mut self, delta_time: f64) {
-        ptr_as_mut(self._item_manager).update_item_manager(delta_time);
-        ptr_as_mut(self._character_manager).update_character_manager(delta_time);
+        self._prop_manager.update_prop_manager(delta_time);
+        self._item_manager.update_item_manager(delta_time);
+        self._character_manager.update_character_manager(delta_time);
     }
 }
