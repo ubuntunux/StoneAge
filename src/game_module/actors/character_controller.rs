@@ -185,20 +185,32 @@ impl CharacterController {
                 if self._velocity.y <= 0.0 && block_bound_box._max.y <= prev_position.y {
                     self.set_on_ground(block_bound_box._max.y);
                 } else {
+                    const SMOOTH_COLLIDE: bool = false;
                     if block_collision_type == CollisionType::BOX {
-                        if block_bound_box._min.z <= prev_bound_box_max.z && prev_bound_box_min.z <= block_bound_box._max.z {
-                            self._position.x = prev_position.x;
+                        if SMOOTH_COLLIDE {
+                            if block_bound_box._min.z <= prev_bound_box_max.z && prev_bound_box_min.z <= block_bound_box._max.z {
+                                self._position.x = prev_position.x;
+                            } else {
+                                self._position.z = prev_position.z;
+                            }
                         } else {
+                            self._position.x = prev_position.x;
                             self._position.z = prev_position.z;
                         }
+
                         self._is_blocked = true;
                     } else if block_collision_type == CollisionType::CYLINDER {
                         let block_to_player = Vector3::new(self._position.x - block_location.x, 0.0, self._position.z - block_location.z).normalize();
                         if block_to_player.dot(&move_delta.normalize()) < 0.0 {
-                            let dist = Vector3::new(prev_position.x - block_location.x, 0.0, prev_position.z - block_location .z).norm();
-                            let new_pos = block_to_player * dist + block_location;
-                            self._position.x = new_pos.x;
-                            self._position.z = new_pos.z;
+                            if SMOOTH_COLLIDE {
+                                let dist = Vector3::new(prev_position.x - block_location.x, 0.0, prev_position.z - block_location.z).norm();
+                                let new_pos = block_to_player * dist + block_location;
+                                self._position.x = new_pos.x;
+                                self._position.z = new_pos.z;
+                            } else {
+                                self._position.x = prev_position.x;
+                                self._position.z = prev_position.z;
+                            }
                             self._is_blocked = true;
                         }
                     } else {
