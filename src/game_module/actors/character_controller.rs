@@ -1,7 +1,7 @@
 use nalgebra::Vector3;
 use rust_engine_3d::scene::collision::{CollisionCreateInfo, CollisionData, CollisionType};
 use rust_engine_3d::utilities::system::ptr_as_ref;
-
+use crate::game_module::actors::block::Block;
 use crate::game_module::actors::character_data::{CharacterData, MoveAnimationState};
 use crate::game_module::game_constants::{GRAVITY, GROUND_HEIGHT, MOVE_LIMIT};
 use crate::game_module::game_scene_manager::GameSceneManager;
@@ -154,18 +154,18 @@ impl CharacterController {
         }
 
         // check collide with block
-        let move_delta = self._position - prev_position;
+        let mut move_delta = self._position - prev_position;
         let prev_bound_box_min = actor_collision._bounding_box._min.clone_owned();
         let prev_bound_box_max = actor_collision._bounding_box._max.clone_owned();
-        let current_actor_collision_info = CollisionCreateInfo {
+        let mut current_actor_collision_info = CollisionCreateInfo {
             _collision_type: actor_collision._collision_type,
             _location: (prev_bound_box_min + prev_bound_box_max) * 0.5 + move_delta,
             _radius: (prev_bound_box_max.x - prev_bound_box_min.x) * 0.5,
             _height: prev_bound_box_max.y - prev_bound_box_min.y
         };
-        let current_actor_collision = CollisionData::create_collision(&current_actor_collision_info);
-        let bound_box_min = &current_actor_collision._bounding_box._min;
-        let bound_box_max = &current_actor_collision._bounding_box._max;
+        let mut current_actor_collision = CollisionData::create_collision(&current_actor_collision_info);
+        let mut bound_box_min = &current_actor_collision._bounding_box._min;
+        let mut bound_box_max = &current_actor_collision._bounding_box._max;
 
         // reset flags
         self._is_cliff = true;
@@ -179,42 +179,63 @@ impl CharacterController {
             let block_collision_type = block_render_object._collision._collision_type;
             let block_bound_box = &block_render_object._collision._bounding_box;
             let block_location = &block_bound_box._center;
+            let mut collided_block: *const Block = std::ptr::null();
 
             // check collide with block
             if current_actor_collision.collide_collision(&block_render_object._collision) {
                 if self._velocity.y <= 0.0 && block_bound_box._max.y <= prev_position.y {
                     self.set_on_ground(block_bound_box._max.y);
                 } else {
-                    const SMOOTH_COLLIDE: bool = false;
                     if block_collision_type == CollisionType::BOX {
-                        if SMOOTH_COLLIDE {
-                            if block_bound_box._min.z <= prev_bound_box_max.z && prev_bound_box_min.z <= block_bound_box._max.z {
-                                self._position.x = prev_position.x;
-                            } else {
-                                self._position.z = prev_position.z;
-                            }
-                        } else {
+                        if block_bound_box._min.z <= prev_bound_box_max.z && prev_bound_box_min.z <= block_bound_box._max.z {
                             self._position.x = prev_position.x;
+                        } else {
                             self._position.z = prev_position.z;
                         }
 
                         self._is_blocked = true;
+                        collided_block = block;
                     } else if block_collision_type == CollisionType::CYLINDER {
                         let block_to_player = Vector3::new(self._position.x - block_location.x, 0.0, self._position.z - block_location.z).normalize();
                         if block_to_player.dot(&move_delta.normalize()) < 0.0 {
-                            if SMOOTH_COLLIDE {
-                                let dist = Vector3::new(prev_position.x - block_location.x, 0.0, prev_position.z - block_location.z).norm();
-                                let new_pos = block_to_player * dist + block_location;
-                                self._position.x = new_pos.x;
-                                self._position.z = new_pos.z;
-                            } else {
-                                self._position.x = prev_position.x;
-                                self._position.z = prev_position.z;
-                            }
+                            let dist = Vector3::new(prev_position.x - block_location.x, 0.0, prev_position.z - block_location.z).norm();
+                            let new_pos = block_to_player * dist + block_location;
+                            self._position.x = new_pos.x;
+                            self._position.z = new_pos.z;
                             self._is_blocked = true;
+                            collided_block = block;
                         }
                     } else {
                         panic!("not implemented");
+                    }
+                }
+            }
+
+            // Recheck whether the adjusted position due to a collision with a block collides with another blocks.
+            if collided_block != std::ptr::null() {
+                // update delta & bound_box
+                move_delta = self._position - prev_position;
+                current_actor_collision_info._location = (prev_bound_box_min + prev_bound_box_max) * 0.5 + move_delta;
+                current_actor_collision = CollisionData::create_collision(&current_actor_collision_info);
+                bound_box_min = &current_actor_collision._bounding_box._min;
+                bound_box_max = &current_actor_collision._bounding_box._max;
+
+                // Recheck collide with another blocks
+                for (_key, recheck_block) in game_scene_manager.get_blocks().iter() {
+                    let recheck_block = ptr_as_ref(recheck_block.as_ptr());
+                    if collided_block != recheck_block {
+                        let recheck_block_render_object = ptr_as_ref(recheck_block._render_object.as_ptr());
+                        let recheck_block_bound_box = &recheck_block_render_object._collision._bounding_box;
+                        // check collide with block
+                        if current_actor_collision.collide_collision(&recheck_block_render_object._collision) {
+                            if self._velocity.y <= 0.0 && recheck_block_bound_box._max.y <= prev_position.y {
+                                self.set_on_ground(recheck_block_bound_box._max.y);
+                            } else {
+                                // move back
+                                self._position.x = prev_position.x;
+                                self._position.z = prev_position.z;
+                            }
+                        }
                     }
                 }
             }
