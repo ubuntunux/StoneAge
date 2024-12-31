@@ -69,7 +69,7 @@ resources/engine_resources/material_instances/common/clear_render_target.matinst
 resources/engine_resources/material_instances/common/composite_gbuffer.matinst
 resources/engine_resources/material_instances/common/copy_cube_map.matinst
 resources/engine_resources/material_instances/common/downsampling.matinst
-resources/engine_resources/material_instances/common/generate_max_z.matinst
+resources/engine_resources/material_instances/common/generate_min_z.matinst
 resources/engine_resources/material_instances/common/render_bloom.matinst
 resources/engine_resources/material_instances/common/render_bound_box.matinst
 resources/engine_resources/material_instances/common/render_color.matinst
@@ -100,7 +100,7 @@ resources/engine_resources/materials/common/clear_render_target.mat
 resources/engine_resources/materials/common/composite_gbuffer.mat
 resources/engine_resources/materials/common/copy_cube_map.mat
 resources/engine_resources/materials/common/downsampling.mat
-resources/engine_resources/materials/common/generate_max_z.mat
+resources/engine_resources/materials/common/generate_min_z.mat
 resources/engine_resources/materials/common/render_bloom.mat
 resources/engine_resources/materials/common/render_bound_box.mat
 resources/engine_resources/materials/common/render_color.mat
@@ -141,6 +141,7 @@ resources/engine_resources/shader_caches/common/composite_gbuffer.frag.spirv
 resources/engine_resources/shader_caches/common/copy_cube_map.comp.spirv
 resources/engine_resources/shader_caches/common/downsampling.comp.spirv
 resources/engine_resources/shader_caches/common/generate_max_z.comp.spirv
+resources/engine_resources/shader_caches/common/generate_min_z.comp.spirv
 resources/engine_resources/shader_caches/common/render_bloom_downsampling.frag.spirv
 resources/engine_resources/shader_caches/common/render_bloom_highlight.frag.spirv
 resources/engine_resources/shader_caches/common/render_bound_box.frag.spirv
@@ -228,7 +229,7 @@ resources/engine_resources/shaders/common/default.frag
 resources/engine_resources/shaders/common/default.vert
 resources/engine_resources/shaders/common/depth_of_field.frag
 resources/engine_resources/shaders/common/downsampling.comp
-resources/engine_resources/shaders/common/generate_max_z.comp
+resources/engine_resources/shaders/common/generate_min_z.comp
 resources/engine_resources/shaders/common/light_scatter.frag
 resources/engine_resources/shaders/common/light_shaft.frag
 resources/engine_resources/shaders/common/random.glsl
