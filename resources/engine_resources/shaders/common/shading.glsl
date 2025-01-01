@@ -250,7 +250,7 @@ vec4 surface_shading(
     const in sampler3D single_mie_scattering_texture,
     const in SCENE_CONSTANTS scene_constants,
     const in VIEW_CONSTANTS view_constants,
-    const in LIGHT_CONSTANTS light_constants,
+    const in LIGHT_DATA light_data,
     //const in POINT_LIGHTS point_lights,
     vec3 base_color,
     float opacity,
@@ -271,8 +271,8 @@ vec4 surface_shading(
     const in bool IS_COMBINED_SHADOW
 )
 {
-    const vec3 L = normalize(-light_constants.LIGHT_DIRECTION);
-    vec3 light_color = light_constants.LIGHT_COLOR.xyz;
+    const vec3 L = normalize(-light_data.LIGHT_DIRECTION);
+    vec3 light_color = light_data.LIGHT_COLOR.xyz;
 
     // under water
     float sea_diff = world_position.y - scene_constants.SEA_HEIGHT;
@@ -331,8 +331,8 @@ vec4 surface_shading(
             scene_constants.TIME,
             ivec2(screen_texcoord * scene_constants.SCREEN_SIZE),
             world_position,
-            light_constants.SHADOW_VIEW_PROJECTION,
-            light_constants.SHADOW_SAMPLES,
+            light_data.SHADOW_VIEW_PROJECTION,
+            light_data.SHADOW_SAMPLES,
             0.0,
             texture_shadow
         );
@@ -391,11 +391,6 @@ vec4 surface_shading(
     // Point Lights
 //    for(int i = 0; i < MAX_POINT_LIGHTS; ++i)
 //    {
-//        if(1.0 != point_lights.data[i].render)
-//        {
-//            break;
-//        }
-//
 //        const float point_light_radius = point_lights.data[i].radius;
 //        vec3 point_light_dir = point_lights.data[i].pos.xyz - world_position;
 //        const float point_light_dist = length(point_light_dir);

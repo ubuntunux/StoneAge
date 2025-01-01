@@ -1122,7 +1122,7 @@
         },
         "_directional_lights": {
             "Light": {
-                "_light_constants": {
+                "_light_data": {
                     "_light_color": [
                         5.0,
                         5.0,
@@ -1142,6 +1142,16 @@
             }
         },
         "_effects": {},
+        "_point_lights": {
+            "Point": {
+                "_light_color": [
+                    10.0,
+                    10.0,
+                    10.0
+                ],
+                "_radius": 5.0
+            }
+        },
         "_skeletal_objects": {},
         "_static_objects": {
             "daffodil": {
