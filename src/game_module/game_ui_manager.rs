@@ -147,8 +147,13 @@ impl<'a> GameUIManager<'a> {
         }
 
         if let Some(cross_hair) = self._cross_hair.as_mut() {
-            let engine_core = game_client.get_engine_core();
-            cross_hair.update_cross_hair(&engine_core._mouse_move_data._mouse_pos);
+            // TEST: hide cross hair
+            cross_hair.update_cross_hair_visible(false);
+
+            if cross_hair.get_cross_hair_visible() {
+                let engine_core = game_client.get_engine_core();
+                cross_hair.update_cross_hair(&engine_core._mouse_move_data._mouse_pos);
+            }
         }
 
         // intro image

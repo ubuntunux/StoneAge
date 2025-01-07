@@ -206,6 +206,12 @@ impl<'a> GameController<'a> {
             joystick_input_data._stick_right_direction.x as f32 / 327670.0
         };
 
+        let pitch_control: f32 = if mouse_move_data._mouse_pos_delta.x != 0 {
+            mouse_move_data._mouse_pos_delta.y as f32 * 0.001
+        } else {
+            joystick_input_data._stick_right_direction.y as f32 / 327670.0
+        };
+
         if SMOOTH_YAW {
             self._camera_goal_yaw += yaw_control;
             let diff_yaw = (self._camera_goal_yaw - self._camera_yaw).abs();

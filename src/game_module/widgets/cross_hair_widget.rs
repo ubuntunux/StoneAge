@@ -1,7 +1,7 @@
 use nalgebra::Vector2;
 use rust_engine_3d::scene::material_instance::MaterialInstanceData;
 use rust_engine_3d::scene::ui::{UIManager, UIWidgetTypes, WidgetDefault};
-use rust_engine_3d::utilities::system::{ptr_as_mut, RcRefCell};
+use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 
 pub struct CrossHairWidget<'a> {
     pub _widget: *const WidgetDefault<'a>,
@@ -23,6 +23,10 @@ impl<'a> CrossHairWidget<'a> {
 
     pub fn update_cross_hair_visible(&mut self, visible: bool) {
         ptr_as_mut(self._widget).get_ui_component_mut().set_visible(visible);
+    }
+
+    pub fn get_cross_hair_visible(&self) -> bool{
+        ptr_as_ref(self._widget).get_ui_component().get_visible()
     }
 
     pub fn update_cross_hair(&mut self, pos: &Vector2<i32>) {
