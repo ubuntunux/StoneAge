@@ -1,6 +1,7 @@
 use nalgebra::Vector2;
 use rust_engine_3d::core::engine_core::EngineCore;
-use rust_engine_3d::core::input::ButtonState;
+use rust_engine_3d::core::input;
+use rust_engine_3d::core::input::{ButtonState, JoystickInputData, KeyboardInputData, MouseInputData, MouseMoveData};
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
 use winit::keyboard::KeyCode;
 
@@ -118,10 +119,9 @@ impl<'a> GameClient<'a> {
             }
             GamePhase::Intro => {
                 if self.get_game_ui_manager().is_visible_game_image() {
-                    if mouse_input_data._btn_l_pressed ||
-                        joystick_input_data._btn_x == ButtonState::Pressed ||
-                        keyboard_input_data.get_key_pressed(KeyCode::Space) ||
-                        keyboard_input_data.get_key_pressed(KeyCode::Escape) {
+                    if joystick_input_data.is_any_button_pressed() ||
+                        mouse_input_data.is_any_button_pressed() ||
+                        keyboard_input_data.is_any_key_pressed() {
                         self.get_game_ui_manager_mut().start_game_image_fadeout(true);
                     }
                 } else {

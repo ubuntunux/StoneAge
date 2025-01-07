@@ -142,17 +142,16 @@ impl<'a> GameController<'a> {
                 player_mut.set_move(&move_direction);
             } else {
                 // look_at_target
-                let look_at_target = true; // || is_attack || is_power_attack || is_roll;
-                if look_at_target && player_mut.is_available_move() && mouse_move_data._mouse_pos_delta.x != 0 || mouse_move_data._mouse_pos_delta.y != 0 {
-                    let player_pos = player_mut.get_position();
-                    let camera_pos = main_camera.get_camera_position();
-                    let relative_pos = main_camera.convert_screen_to_relative_world(&mouse_move_data._mouse_pos);
-                    let world_pos = relative_pos / relative_pos.y * (player_pos.y - camera_pos.y) + camera_pos;
-                    let mut move_direction: Vector3<f32> = world_pos - player_pos;
-                    move_direction.y = 0.0;
-                    move_direction.normalize_mut();
-                    player_mut.set_move_direction(&move_direction);
-                }
+                // if player_mut.is_available_move() && mouse_move_data._mouse_pos_delta.x != 0 || mouse_move_data._mouse_pos_delta.y != 0 {
+                //     let player_pos = player_mut.get_position();
+                //     let camera_pos = main_camera.get_camera_position();
+                //     let relative_pos = main_camera.convert_screen_to_relative_world(&mouse_move_data._mouse_pos);
+                //     let world_pos = relative_pos / relative_pos.y * (player_pos.y - camera_pos.y) + camera_pos;
+                //     let mut move_direction: Vector3<f32> = world_pos - player_pos;
+                //     move_direction.y = 0.0;
+                //     move_direction.normalize_mut();
+                //     player_mut.set_move_direction(&move_direction);
+                // }
 
                 // stop
                 player_mut.set_move_stop();
