@@ -106,9 +106,6 @@ impl<'a> GameController<'a> {
             joystick_input_data._btn_b == ButtonState::Pressed ||
             joystick_input_data._btn_right_shoulder == ButtonState::Pressed;
 
-        let is_zoom_in = joystick_input_data._btn_left_trigger == ButtonState::Hold;
-        let is_zoom_out = joystick_input_data._btn_right_trigger == ButtonState::Hold;
-
         // set action & move
         let mut player_mut = player.borrow_mut();
         {
@@ -183,11 +180,11 @@ impl<'a> GameController<'a> {
         }
 
         // update camera zoom
-        let mut zoom = -mouse_move_data._scroll_delta.y as f32;
-        if is_zoom_in {
-            zoom = -0.5;
-        } else if is_zoom_out {
-            zoom = 0.5;
+        let mut zoom: f32 = 0.0;
+        if 0 != mouse_move_data._scroll_delta.y {
+            zoom = -mouse_move_data._scroll_delta.y as f32;
+        } else if 0 != joystick_input_data._stick_right_direction.y {
+            zoom = joystick_input_data._stick_right_direction.y as f32 * 0.1;
         }
 
         self._camera_goal_distance += zoom;
