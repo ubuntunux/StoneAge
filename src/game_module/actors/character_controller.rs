@@ -3,7 +3,7 @@ use rust_engine_3d::scene::collision::{CollisionCreateInfo, CollisionData, Colli
 use rust_engine_3d::utilities::system::ptr_as_ref;
 use crate::game_module::actors::block::Block;
 use crate::game_module::actors::character_data::{CharacterData, MoveAnimationState};
-use crate::game_module::game_constants::{GRAVITY, GROUND_HEIGHT, MOVE_LIMIT};
+use crate::game_module::game_constants::{CHARACTER_ROTATION_SPEED, GRAVITY, GROUND_HEIGHT, MOVE_LIMIT};
 use crate::game_module::game_scene_manager::GameSceneManager;
 
 pub struct CharacterController {
@@ -88,6 +88,22 @@ impl CharacterController {
         self._rotation.y = direction.z.atan2(-direction.x) + std::f32::consts::PI * 0.5;
     }
 
+    pub fn rotate_to_direction(&mut self, direction: &Vector3<f32>, delta_time: f32) {
+        let yaw: f32 = direction.z.atan2(-direction.x) + std::f32::consts::PI * 0.5;
+        let mut diff: f32 = yaw - self._rotation.y;
+        if diff < -std::f32::consts::PI {
+            diff += std::f32::consts::PI * 2.0;
+        } else if std::f32::consts::PI < diff {
+            diff -= std::f32::consts::PI * 2.0;
+        }
+
+        if diff.abs() < 0.01 {
+            self._rotation.y = yaw;
+        } else {
+            self._rotation.y += diff.abs().min(CHARACTER_ROTATION_SPEED * delta_time) * diff.signum();
+        }
+    }
+
     pub fn set_on_ground(&mut self, ground_height: f32) {
         self._position.y = ground_height;
         self._is_ground = true;
@@ -123,7 +139,8 @@ impl CharacterController {
             self._velocity.z = 0.0;
         }
 
-        self.set_direction(&move_direction);
+        // update rotation
+        self.rotate_to_direction(&move_direction, delta_time);
 
         // jump
         if self._is_jump_start {

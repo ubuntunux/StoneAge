@@ -1,9 +1,6 @@
 use nalgebra::Vector2;
 use rust_engine_3d::core::engine_core::EngineCore;
-use rust_engine_3d::core::input;
-use rust_engine_3d::core::input::{ButtonState, JoystickInputData, KeyboardInputData, MouseInputData, MouseMoveData};
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
-use winit::keyboard::KeyCode;
 
 use crate::application::application::Application;
 use crate::game_module::actors::character_manager::CharacterManager;

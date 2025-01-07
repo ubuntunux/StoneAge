@@ -19,6 +19,7 @@ pub const GROUND_HEIGHT: f32 = 0.0;
 pub const MOVE_LIMIT: f32 = 2.0;
 pub const BLOCK_TOLERANCE: f32 = 0.5;
 pub const EAT_ITEM_DISTANCE: f32 = 1.0;
+pub const CHARACTER_ROTATION_SPEED: f32 = 20.0;
 
 // stamina
 pub const MAX_STAMINA: f32 = 100.0;
