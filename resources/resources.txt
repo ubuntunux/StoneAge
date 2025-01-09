@@ -349,7 +349,6 @@ resources/externals/game_data/properties/properties.blend
 resources/externals/game_data/props/cactus.blend
 resources/externals/materials/common/render_skeletal_object.blend
 resources/externals/materials/common/render_static_object.blend
-resources/externals/materials/render_grass.blend
 resources/externals/meshes/characters/jack/jack.blend
 resources/externals/meshes/characters/jack/jack_attack.blend
 resources/externals/meshes/characters/jack/jack_dead.blend
@@ -407,6 +406,7 @@ resources/externals/meshes/environments/rock_forest_grown_00.blend
 resources/externals/meshes/environments/rock_forest_grown_01.blend
 resources/externals/meshes/environments/rock_forest_moss_00.blend
 resources/externals/meshes/environments/rock_forest_moss_01.blend
+resources/externals/meshes/environments/styleized_tree_00.blend
 resources/externals/meshes/environments/sunflower.blend
 resources/externals/meshes/environments/tree_00.blend
 resources/externals/meshes/environments/tree_01.blend
@@ -444,6 +444,7 @@ resources/externals/models/environments/rock_forest_grown_00.blend
 resources/externals/models/environments/rock_forest_grown_01.blend
 resources/externals/models/environments/rock_forest_moss_00.blend
 resources/externals/models/environments/rock_forest_moss_01.blend
+resources/externals/models/environments/stylized_tree_00.blend
 resources/externals/models/environments/sunflower.blend
 resources/externals/models/environments/tree_00.blend
 resources/externals/models/environments/tree_01.blend
@@ -472,6 +473,8 @@ resources/externals/textures/common/flat_yellow.png
 resources/externals/textures/effects/fire.png
 resources/externals/textures/effects/smoke.png
 resources/externals/textures/environments/PP_Color_Palette.png
+resources/externals/textures/environments/Tree_01_lp_Leaves_BaseMap.png
+resources/externals/textures/environments/Tree_01_lp_Tree_BaseMap.png
 resources/externals/textures/environments/cliff_grass_d.png
 resources/externals/textures/environments/desert_ground.png
 resources/externals/textures/environments/desert_moutain.png
@@ -502,6 +505,8 @@ resources/material_instances/environments/desert_ground.matinst
 resources/material_instances/environments/landscape_00.matinst
 resources/material_instances/environments/ocean.matinst
 resources/material_instances/environments/render_grass.matinst
+resources/material_instances/environments/stylized_tree_00_leaves.matinst
+resources/material_instances/environments/stylized_tree_00_trunk.matinst
 resources/material_instances/props/meat.matinst
 resources/material_instances/ui/cross_hair_box.matinst
 resources/material_instances/ui/intro_image.matinst
@@ -620,6 +625,8 @@ resources/meshes/environments/rock_forest_moss_00.bin
 resources/meshes/environments/rock_forest_moss_00.gltf
 resources/meshes/environments/rock_forest_moss_01.bin
 resources/meshes/environments/rock_forest_moss_01.gltf
+resources/meshes/environments/stylized_tree_00.bin
+resources/meshes/environments/stylized_tree_00.gltf
 resources/meshes/environments/sunflower.bin
 resources/meshes/environments/sunflower.gltf
 resources/meshes/environments/tree_00.bin
@@ -661,6 +668,7 @@ resources/models/environments/rock_forest_grown_00.model
 resources/models/environments/rock_forest_grown_01.model
 resources/models/environments/rock_forest_moss_00.model
 resources/models/environments/rock_forest_moss_01.model
+resources/models/environments/stylized_tree_00.model
 resources/models/environments/sunflower.model
 resources/models/environments/tree_00.model
 resources/models/environments/tree_01.model

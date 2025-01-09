@@ -828,6 +828,24 @@
                 1.0
             ]
         },
+        "stylized_tree_00": {
+            "_block_data_name": "environments/stylized_tree_00",
+            "_position": [
+                -5.0,
+                8.0,
+                0.0
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
         "tree_00": {
             "_block_data_name": "environments/tree_00",
             "_position": [
