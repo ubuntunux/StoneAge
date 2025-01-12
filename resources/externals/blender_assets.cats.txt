@@ -22,6 +22,7 @@ c4dbb2e9-22a0-4f27-9442-937178e6882b:StoneAge/game_data/props:StoneAge-game_data
 c021cad1-00f6-4a65-94ea-13204785bff0:StoneAge/material_instances:StoneAge-material_instances
 f4fd25bb-393b-4e39-a128-4e29cc75e5f6:StoneAge/material_instances/characters:StoneAge-material_instances-characters
 2b9f06e8-2737-4c50-ac60-be32d945c36e:StoneAge/material_instances/characters/jack:StoneAge-material_instances-characters-jack
+de954b09-327b-4fa8-a50b-8351235d4c83:StoneAge/material_instances/characters/spider:StoneAge-material_instances-characters-spider
 633151fe-8294-4427-af8b-d56e081a3cec:StoneAge/material_instances/characters/trex:StoneAge-material_instances-characters-trex
 a4a838e3-288d-4f09-af58-30031525de5e:StoneAge/material_instances/characters/triceratops:StoneAge-material_instances-characters-triceratops
 398b748a-9015-468e-98d5-71fda5944320:StoneAge/material_instances/characters/wolf:StoneAge-material_instances-characters-wolf

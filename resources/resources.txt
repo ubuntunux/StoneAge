@@ -361,6 +361,12 @@ resources/externals/meshes/characters/jack/jack_run.blend
 resources/externals/meshes/characters/jack/jack_running_jump.blend
 resources/externals/meshes/characters/jack/jack_walk.blend
 resources/externals/meshes/characters/spider/spider.blend
+resources/externals/meshes/characters/spider/spider_attack.blend
+resources/externals/meshes/characters/spider/spider_dead.blend
+resources/externals/meshes/characters/spider/spider_hit.blend
+resources/externals/meshes/characters/spider/spider_idle.blend
+resources/externals/meshes/characters/spider/spider_power_attack.blend
+resources/externals/meshes/characters/spider/spider_walk.blend
 resources/externals/meshes/characters/trex/trex.blend
 resources/externals/meshes/characters/trex/trex_attack.blend
 resources/externals/meshes/characters/trex/trex_dead.blend
@@ -451,6 +457,7 @@ resources/externals/models/environments/tree_01.blend
 resources/externals/models/props/meat.blend
 resources/externals/scenes/stage_forest.blend
 resources/externals/textures/characters/jack/jack_d.png
+resources/externals/textures/characters/spider/spider.png
 resources/externals/textures/characters/trex/trex_d.png
 resources/externals/textures/characters/triceratops/triceratops_d.png
 resources/externals/textures/characters/wolf/wolf_d.png
@@ -491,6 +498,7 @@ resources/game_data/game_scenes/intro_stage.data
 resources/game_data/items/meat.data
 resources/game_data/props/cactus.data
 resources/material_instances/characters/jack/jack.matinst
+resources/material_instances/characters/spider/spider.matinst
 resources/material_instances/characters/trex/trex.matinst
 resources/material_instances/characters/triceratops/triceratops.matinst
 resources/material_instances/characters/wolf/wolf.matinst
@@ -535,6 +543,18 @@ resources/meshes/characters/jack/jack_walk.bin
 resources/meshes/characters/jack/jack_walk.gltf
 resources/meshes/characters/spider/spider.bin
 resources/meshes/characters/spider/spider.gltf
+resources/meshes/characters/spider/spider_attack.bin
+resources/meshes/characters/spider/spider_attack.gltf
+resources/meshes/characters/spider/spider_dead.bin
+resources/meshes/characters/spider/spider_dead.gltf
+resources/meshes/characters/spider/spider_hit.bin
+resources/meshes/characters/spider/spider_hit.gltf
+resources/meshes/characters/spider/spider_idle.bin
+resources/meshes/characters/spider/spider_idle.gltf
+resources/meshes/characters/spider/spider_power_attack.bin
+resources/meshes/characters/spider/spider_power_attack.gltf
+resources/meshes/characters/spider/spider_walk.bin
+resources/meshes/characters/spider/spider_walk.gltf
 resources/meshes/characters/trex/trex.bin
 resources/meshes/characters/trex/trex.gltf
 resources/meshes/characters/trex/trex_attack.bin

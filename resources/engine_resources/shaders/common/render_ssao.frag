@@ -56,7 +56,7 @@ void main() {
     vec2 inv_depth_tex_size = 1.0 / textureSize(textureSceneDepth, 0);
     float device_depth = texture(textureSceneDepth, texCoord).x;
     int offset_index = 0;
-    const int loop_count = 8;
+    const int loop_count = 4;
     for(int i=0; i<loop_count; ++i)
     {
         float neighborDepth = texture(textureSceneDepth, texCoord + offsets[i] * inv_depth_tex_size).x;
