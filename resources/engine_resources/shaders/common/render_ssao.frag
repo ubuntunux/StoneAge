@@ -104,9 +104,9 @@ void main() {
         world_position,
         light_data.SHADOW_VIEW_PROJECTION,
         light_data.SHADOW_SAMPLES,
-        -0.000025,
+        SHADOW_BIAS,
         texture_shadow
     );
 
-    outColor = saturate( shadow_factor);
+    outColor = saturate(exp(-occlusion * ssao_contrast) * shadow_factor);
 }
