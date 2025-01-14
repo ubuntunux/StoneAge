@@ -12,7 +12,7 @@ use serde_json;
 #[allow(non_camel_case_types)]
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(default)]
-pub struct PushConstant_RenderShip {
+pub struct PushConstant_RenderGrass {
     pub _transform_offset_index: u32,
     pub _bone_count: u32,
     pub _reserved0: u32,
@@ -20,9 +20,9 @@ pub struct PushConstant_RenderShip {
     pub _color: Vector4<f32>,
 }
 
-impl Default for PushConstant_RenderShip {
-    fn default() -> PushConstant_RenderShip {
-        PushConstant_RenderShip {
+impl Default for PushConstant_RenderGrass {
+    fn default() -> PushConstant_RenderGrass {
+        PushConstant_RenderGrass {
             _transform_offset_index: 0,
             _bone_count: 0,
             _reserved0: 0,
@@ -32,17 +32,17 @@ impl Default for PushConstant_RenderShip {
     }
 }
 
-impl PushConstantName for PushConstant_RenderShip {
+impl PushConstantName for PushConstant_RenderGrass {
     fn get_push_constant_name(&self) -> &str {
-        "PushConstant_RenderShip"
+        "PushConstant_RenderGrass"
     }
 }
 
-impl PushConstant for PushConstant_RenderShip {
+impl PushConstant for PushConstant_RenderGrass {
     fn set_push_constant_parameter(&mut self, key: &str, value: &PushConstantParameter) {
         if "_transform_offset_index" == key {
-            if let PushConstantParameter::Int(transform_matrix_offset) = value {
-                self._transform_offset_index = *transform_matrix_offset as u32;
+            if let PushConstantParameter::Int(transform_offset_index) = value {
+                self._transform_offset_index = *transform_offset_index as u32;
             }
         } else if "_bone_count" == key {
             if let PushConstantParameter::Int(bone_count) = value {

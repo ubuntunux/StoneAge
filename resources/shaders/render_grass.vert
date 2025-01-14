@@ -4,7 +4,7 @@
 
 #include "../engine_resources/shaders/common/random.glsl"
 #include "../engine_resources/shaders/common/scene_constants.glsl"
-#include "../engine_resources/shaders/common/render_object_common.glsl"
+#include "render_grass_common.glsl"
 
 layout(location = 0) in vec3 inPosition;
 layout(location = 1) in vec3 inNormal;

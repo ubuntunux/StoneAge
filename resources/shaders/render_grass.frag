@@ -3,11 +3,11 @@
 #extension GL_GOOGLE_include_directive : enable
 
 #include "../engine_resources/shaders/common/scene_constants.glsl"
-#include "../engine_resources/shaders/common/render_object_common.glsl"
 #include "../engine_resources/shaders/common/utility.glsl"
 #if (RenderMode_Forward == RenderMode)
 #include "../engine_resources/shaders/common/shading.glsl"
 #endif
+#include "render_grass_common.glsl"
 
 #if (RenderMode_Forward == RenderMode)
 layout(binding = 7) uniform sampler2D textureShadow;

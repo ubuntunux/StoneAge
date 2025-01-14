@@ -203,6 +203,9 @@ resources/engine_resources/shader_caches/precomputed_atmosphere/render_atmospher
 resources/engine_resources/shader_caches/precomputed_atmosphere/render_atmosphere_COMBINED_SCATTERING_TEXTURES1.vert.spirv
 resources/engine_resources/shader_caches/precomputed_atmosphere/render_atmosphere_USE_LUMINANCE0_COMBINED_SCATTERING_TEXTURES1.frag.spirv
 resources/engine_resources/shader_caches/precomputed_atmosphere/render_atmosphere_USE_LUMINANCE0_COMBINED_SCATTERING_TEXTURES1.vert.spirv
+resources/engine_resources/shader_caches/ray_tracing/triangle.rchit.spirv
+resources/engine_resources/shader_caches/ray_tracing/triangle.rgen.spirv
+resources/engine_resources/shader_caches/ray_tracing/triangle.rmiss.spirv
 resources/engine_resources/shader_caches/ui/render_font_USE_DISTANCE_FIELD.frag.spirv
 resources/engine_resources/shader_caches/ui/render_font_USE_DISTANCE_FIELD.vert.spirv
 resources/engine_resources/shader_caches/ui/render_ui.frag.spirv
@@ -334,6 +337,7 @@ resources/externals/animation_layers/trex/upper_animation_layer.blend
 resources/externals/animation_layers/triceratops/upper_animation_layer.blend
 resources/externals/animation_layers/wolf/upper_animation_layer.blend
 resources/externals/blender_assets.cats.txt
+resources/externals/blender_assets.cats.txt~
 resources/externals/game_data/characters/jack.blend
 resources/externals/game_data/characters/spider.blend
 resources/externals/game_data/characters/trex.blend
@@ -342,6 +346,7 @@ resources/externals/game_data/characters/wolf.blend
 resources/externals/game_data/game_scenes/intro_stage.blend
 resources/externals/game_data/items/meat.blend
 resources/externals/game_data/properties/properties.blend
+resources/externals/game_data/props/cactus.blend
 resources/externals/materials/common/render_skeletal_object.blend
 resources/externals/materials/common/render_static_object.blend
 resources/externals/meshes/characters/jack/jack.blend
@@ -701,6 +706,7 @@ resources/shader_caches/render_grass_RenderMode4_RenderObjectType0.frag.spirv
 resources/shader_caches/render_grass_RenderMode4_RenderObjectType0.vert.spirv
 resources/shaders/render_grass.frag
 resources/shaders/render_grass.vert
+resources/shaders/render_grass_common.glsl
 resources/sound_banks/ambient_sound.bank
 resources/sound_banks/ambient_sound.meta
 resources/sound_banks/crunch.bank
