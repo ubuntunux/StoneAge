@@ -17,8 +17,10 @@ pub struct GameController<'a> {
     pub _game_ui_manager: *const GameUIManager<'a>,
     pub _camera_distance: f32,
     pub _camera_goal_distance: f32,
+    pub _camera_goal_pitch: f32,
     pub _camera_goal_yaw: f32,
-    pub _camera_yaw: f32
+    pub _camera_pitch: f32,
+    pub _camera_yaw: f32,
 }
 
 impl<'a> GameController<'a> {
@@ -28,8 +30,12 @@ impl<'a> GameController<'a> {
             _game_ui_manager: std::ptr::null(),
             _camera_goal_distance: CAMERA_DISTANCE_MAX,
             _camera_distance: 0.0,
+            _camera_goal_pitch: 0.0,
             _camera_goal_yaw: 0.0,
-            _camera_yaw: 0.0
+            _camera_pitch: 0.0,
+            _camera_yaw: 0.0,
+
+
         })
     }
 
@@ -62,6 +68,62 @@ impl<'a> GameController<'a> {
             .get_scene_manager()
             .get_main_camera_mut()
     }
+
+    pub fn update_camera_smooth_rotation(&self, mut goal_value: f32, mut target_value: f32,value: f32, delta_time: f32) -> (f32, f32) {
+        goal_value += value;
+        let diff_value = (goal_value - target_value).abs();
+        let t: f32 = 0f32.max(1f32.min(diff_value / std::f32::consts::PI));
+        let value_speed: f32 = math::lerp(CAMERA_ROTATION_SPEED_MIN, CAMERA_ROTATION_SPEED_MAX, t);
+        let value_delta = value_speed * delta_time;
+        target_value = if diff_value < value_delta {
+            goal_value
+        } else if goal_value < target_value {
+            target_value - value_delta
+        } else {
+            target_value + value_delta
+        };
+        (goal_value, target_value)
+    }
+
+    pub fn update_camera_rotation(&mut self, pitch_control: f32, yaw_control: f32, delta_time: f32) {
+        (self._camera_goal_pitch, self._camera_pitch) = self.update_camera_smooth_rotation(
+            self._camera_goal_pitch, self._camera_pitch, pitch_control, delta_time
+        );
+
+        const PITCH_MIN: f32 = 15.0 / 180.0 * std::f32::consts::PI;
+        const PITCH_MAX: f32 = 55.0 / 180.0 * std::f32::consts::PI;
+        self._camera_goal_pitch = self._camera_goal_pitch.min(PITCH_MAX).max(PITCH_MIN);
+        self._camera_pitch = self._camera_pitch.min(PITCH_MAX).max(PITCH_MIN);
+
+        (self._camera_goal_yaw, self._camera_yaw) = self.update_camera_smooth_rotation(
+            self._camera_goal_yaw, self._camera_yaw, yaw_control, delta_time
+        );
+
+        const YAW_MIN: f32 = -45.0 / 180.0 * std::f32::consts::PI;
+        const YAW_MAX: f32 = 45.0 / 180.0 * std::f32::consts::PI;
+        self._camera_goal_yaw = self._camera_goal_yaw.min(YAW_MAX).max(YAW_MIN);
+        self._camera_yaw = self._camera_yaw.min(YAW_MAX).max(YAW_MIN);
+    }
+
+    pub fn update_camera_pitch_by_distance(&mut self) {
+        let dist_ratio = (self._camera_distance - CAMERA_DISTANCE_MIN) / (CAMERA_DISTANCE_MAX - CAMERA_DISTANCE_MIN);
+        self._camera_pitch = math::degree_to_radian(math::lerp(CAMERA_PITCH_MIN, CAMERA_PITCH_MAX, dist_ratio));
+    }
+
+    pub fn update_camera_distance(&mut self, zoom_control: f32, delta_time: f32) {
+        self._camera_goal_distance += zoom_control;
+        self._camera_goal_distance = CAMERA_DISTANCE_MIN.max(CAMERA_DISTANCE_MAX.min(self._camera_goal_distance));
+        if self._camera_goal_distance != self._camera_distance {
+            let diff = (self._camera_goal_distance - self._camera_distance) * CAMERA_ZOOM_SPEED;
+            let sign = diff.signum();
+            let delta =  diff * delta_time;
+            self._camera_distance += delta;
+            if sign != (self._camera_goal_distance - self._camera_distance).signum() {
+                self._camera_distance = self._camera_goal_distance;
+            }
+        }
+    }
+
     pub fn update_game_controller(
         &mut self,
         time_data: &TimeData,
@@ -73,6 +135,7 @@ impl<'a> GameController<'a> {
         main_camera: &mut CameraObjectData,
         player: &RcRefCell<Character>
     ) {
+        let delta_time: f32 = time_data._delta_time as f32;
         let is_attack: bool =
             mouse_input_data._btn_l_pressed ||
             joystick_input_data._btn_x == ButtonState::Pressed;
@@ -105,6 +168,26 @@ impl<'a> GameController<'a> {
             keyboard_input_data.get_key_pressed(KeyCode::AltLeft) ||
             joystick_input_data._btn_b == ButtonState::Pressed ||
             joystick_input_data._btn_right_shoulder == ButtonState::Pressed;
+
+        let _pitch_control: f32 = if mouse_move_data._mouse_pos_delta.x != 0 {
+            mouse_move_data._mouse_pos_delta.y as f32 * 0.001
+        } else {
+            joystick_input_data._stick_right_direction.y as f32 / 327670.0
+        };
+
+        let _yaw_control: f32 = if mouse_move_data._mouse_pos_delta.x != 0 {
+            mouse_move_data._mouse_pos_delta.x as f32 * 0.001
+        } else {
+            joystick_input_data._stick_right_direction.x as f32 / 327670.0
+        };
+
+        let zoom_control: f32 = if 0 != mouse_move_data._scroll_delta.y {
+            -mouse_move_data._scroll_delta.y as f32
+        } else if 0 != joystick_input_data._stick_right_direction.y {
+            joystick_input_data._stick_right_direction.y as f32 * 0.01
+        } else {
+            0.0
+        };
 
         // set action & move
         let mut player_mut = player.borrow_mut();
@@ -178,62 +261,14 @@ impl<'a> GameController<'a> {
             player_mut.set_action_power_attack();
         }
 
-        // update camera zoom
-        let mut zoom: f32 = 0.0;
-        if 0 != mouse_move_data._scroll_delta.y {
-            zoom = -mouse_move_data._scroll_delta.y as f32;
-        } else if 0 != joystick_input_data._stick_right_direction.y {
-            zoom = joystick_input_data._stick_right_direction.y as f32 * 0.1;
-        }
-
-        self._camera_goal_distance += zoom;
-        self._camera_goal_distance = CAMERA_DISTANCE_MIN.max(CAMERA_DISTANCE_MAX.min(self._camera_goal_distance));
-        if self._camera_goal_distance != self._camera_distance {
-            let diff = (self._camera_goal_distance - self._camera_distance) * CAMERA_ZOOM_SPEED;
-            let sign = diff.signum();
-            let delta =  diff * time_data._delta_time as f32;
-            self._camera_distance += delta;
-            if sign != (self._camera_goal_distance - self._camera_distance).signum() {
-                self._camera_distance = self._camera_goal_distance;
-            }
-        }
-
-        // yaw
-        static SMOOTH_YAW: bool = true;
-        let yaw_control: f32 = if mouse_move_data._mouse_pos_delta.x != 0 {
-            mouse_move_data._mouse_pos_delta.x as f32 * 0.001
-        } else {
-            joystick_input_data._stick_right_direction.x as f32 / 327670.0
-        };
-
-        let _pitch_control: f32 = if mouse_move_data._mouse_pos_delta.x != 0 {
-            mouse_move_data._mouse_pos_delta.y as f32 * 0.001
-        } else {
-            joystick_input_data._stick_right_direction.y as f32 / 327670.0
-        };
-
-        if SMOOTH_YAW {
-            self._camera_goal_yaw += yaw_control;
-            let diff_yaw = (self._camera_goal_yaw - self._camera_yaw).abs();
-            let t: f32 = 0f32.max(1f32.min(diff_yaw / std::f32::consts::PI));
-            let yaw_speed: f32 = math::lerp(CAMERA_YAW_SPEED_MIN, CAMERA_YAW_SPEED_MAX, t);
-            let yaw_delta = yaw_speed * time_data._delta_time as f32;
-            if diff_yaw < yaw_delta {
-                self._camera_yaw = self._camera_goal_yaw;
-            } else if self._camera_goal_yaw < self._camera_yaw {
-                self._camera_yaw -= yaw_delta;
-            } else {
-                self._camera_yaw += yaw_delta;
-            }
-        } else {
-            self._camera_yaw = main_camera._transform_object.get_yaw() + yaw_control;
-        }
+        // update camera
+       self.update_camera_distance(zoom_control, delta_time);
+        // self.update_camera_rotation(pitch_control, yaw_control, delta_time);
+        self.update_camera_pitch_by_distance();
 
         // update camera transform
-        let dist_ratio = (self._camera_distance - CAMERA_DISTANCE_MIN) / (CAMERA_DISTANCE_MAX - CAMERA_DISTANCE_MIN);
-        let pitch: f32 = math::degree_to_radian(math::lerp(CAMERA_PITCH_MIN, CAMERA_PITCH_MAX, dist_ratio));
-        main_camera._transform_object.set_pitch(pitch);
-        //main_camera._transform_object.set_yaw(self._camera_yaw);
+        main_camera._transform_object.set_pitch(self._camera_pitch);
+        main_camera._transform_object.set_yaw(self._camera_yaw);
         main_camera._transform_object.set_roll(0.0);
         main_camera._transform_object.update_transform_object();
 
