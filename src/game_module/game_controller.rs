@@ -184,7 +184,7 @@ impl<'a> GameController<'a> {
         let zoom_control: f32 = if 0 != mouse_move_data._scroll_delta.y {
             -mouse_move_data._scroll_delta.y as f32
         } else if 0 != joystick_input_data._stick_right_direction.y {
-            joystick_input_data._stick_right_direction.y as f32 * 0.01
+            joystick_input_data._stick_right_direction.y as f32 / 65535.0
         } else {
             0.0
         };
