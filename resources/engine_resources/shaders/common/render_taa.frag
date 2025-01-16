@@ -111,16 +111,12 @@ vec3 Reproject(vec2 texCoord)
     }
     else if(DilationMode == DilationModes_DilateNearestDepth)
     {
-        const vec2 offsets[9] = {
+        const int sample_count = 4;
+        const vec2 offsets[4] = {
             vec2(0.0, 0.0),
             vec2(1.0, 0.0),
-            vec2(2.0, 0.0),
             vec2(0.0, 1.0),
-            vec2(1.0, 1.0),
-            vec2(2.0, 1.0),
-            vec2(0.0, 2.0),
-            vec2(1.0, 2.0),
-            vec2(2.0, 2.0)
+            vec2(1.0, 1.0)
         };
 
         int frame_index = int(scene_constants.ELAPSED_FRAME) % 4;
@@ -128,7 +124,6 @@ vec3 Reproject(vec2 texCoord)
 
         vec2 inv_depth_size = 1.0 / textureSize(texture_scene_depth, 0).xy;
         float average_depth = 0.0;
-        const int sample_count = 9;
         float depths[sample_count];
         for(int i=0; i<sample_count; ++i)
         {
