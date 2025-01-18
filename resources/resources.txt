@@ -79,8 +79,7 @@ resources/engine_resources/material_instances/common/render_debug_line.matinst
 resources/engine_resources/material_instances/common/render_final.matinst
 resources/engine_resources/material_instances/common/render_gaussian_blur.matinst
 resources/engine_resources/material_instances/common/render_motion_blur.matinst
-resources/engine_resources/material_instances/common/render_ssao.matinst
-resources/engine_resources/material_instances/common/render_ssao_blur.matinst
+resources/engine_resources/material_instances/common/render_shadow_ao.matinst
 resources/engine_resources/material_instances/common/render_ssr.matinst
 resources/engine_resources/material_instances/common/render_taa.matinst
 resources/engine_resources/material_instances/common/render_taa_simple.matinst
@@ -110,9 +109,8 @@ resources/engine_resources/materials/common/render_debug_line.mat
 resources/engine_resources/materials/common/render_final.mat
 resources/engine_resources/materials/common/render_gaussian_blur.mat
 resources/engine_resources/materials/common/render_motion_blur.mat
+resources/engine_resources/materials/common/render_shadow_ao.mat
 resources/engine_resources/materials/common/render_skeletal_object.mat
-resources/engine_resources/materials/common/render_ssao.mat
-resources/engine_resources/materials/common/render_ssao_blur.mat
 resources/engine_resources/materials/common/render_ssr.mat
 resources/engine_resources/materials/common/render_static_object.mat
 resources/engine_resources/materials/common/render_taa.mat
@@ -140,7 +138,6 @@ resources/engine_resources/shader_caches/common/clear_color_ColorAttachmentCount
 resources/engine_resources/shader_caches/common/composite_gbuffer.frag.spirv
 resources/engine_resources/shader_caches/common/copy_cube_map.comp.spirv
 resources/engine_resources/shader_caches/common/downsampling.comp.spirv
-resources/engine_resources/shader_caches/common/generate_max_z.comp.spirv
 resources/engine_resources/shader_caches/common/generate_min_z.comp.spirv
 resources/engine_resources/shader_caches/common/render_bloom_downsampling.frag.spirv
 resources/engine_resources/shader_caches/common/render_bloom_highlight.frag.spirv
@@ -177,6 +174,7 @@ resources/engine_resources/shader_caches/common/render_quad_ColorAttachmentCount
 resources/engine_resources/shader_caches/common/render_quad_ColorAttachmentCount1.vert.spirv
 resources/engine_resources/shader_caches/common/render_quad_ColorAttachmentCount4.vert.spirv
 resources/engine_resources/shader_caches/common/render_quad_RENDER_FFT_X.vert.spirv
+resources/engine_resources/shader_caches/common/render_shadow_ao.frag.spirv
 resources/engine_resources/shader_caches/common/render_ssao.frag.spirv
 resources/engine_resources/shader_caches/common/render_ssr.frag.spirv
 resources/engine_resources/shader_caches/common/render_taa.frag.spirv
@@ -203,9 +201,6 @@ resources/engine_resources/shader_caches/precomputed_atmosphere/render_atmospher
 resources/engine_resources/shader_caches/precomputed_atmosphere/render_atmosphere_COMBINED_SCATTERING_TEXTURES1.vert.spirv
 resources/engine_resources/shader_caches/precomputed_atmosphere/render_atmosphere_USE_LUMINANCE0_COMBINED_SCATTERING_TEXTURES1.frag.spirv
 resources/engine_resources/shader_caches/precomputed_atmosphere/render_atmosphere_USE_LUMINANCE0_COMBINED_SCATTERING_TEXTURES1.vert.spirv
-resources/engine_resources/shader_caches/ray_tracing/triangle.rchit.spirv
-resources/engine_resources/shader_caches/ray_tracing/triangle.rgen.spirv
-resources/engine_resources/shader_caches/ray_tracing/triangle.rmiss.spirv
 resources/engine_resources/shader_caches/ui/render_font_USE_DISTANCE_FIELD.frag.spirv
 resources/engine_resources/shader_caches/ui/render_font_USE_DISTANCE_FIELD.vert.spirv
 resources/engine_resources/shader_caches/ui/render_ui.frag.spirv
@@ -215,7 +210,6 @@ resources/engine_resources/shaders/common/blend_cube_map.comp
 resources/engine_resources/shaders/common/blending.glsl
 resources/engine_resources/shaders/common/bloom.frag
 resources/engine_resources/shaders/common/blur.frag
-resources/engine_resources/shaders/common/blur_simple.frag
 resources/engine_resources/shaders/common/circle_blur.frag
 resources/engine_resources/shaders/common/clear_color.frag
 resources/engine_resources/shaders/common/composite_gbuffer.frag
@@ -256,7 +250,7 @@ resources/engine_resources/shaders/common/render_object_id.frag
 resources/engine_resources/shaders/common/render_quad.frag
 resources/engine_resources/shaders/common/render_quad.vert
 resources/engine_resources/shaders/common/render_quad_common.glsl
-resources/engine_resources/shaders/common/render_ssao.frag
+resources/engine_resources/shaders/common/render_shadow_ao.frag
 resources/engine_resources/shaders/common/render_ssr.frag
 resources/engine_resources/shaders/common/render_taa.frag
 resources/engine_resources/shaders/common/render_taa_simple.frag
@@ -337,7 +331,6 @@ resources/externals/animation_layers/trex/upper_animation_layer.blend
 resources/externals/animation_layers/triceratops/upper_animation_layer.blend
 resources/externals/animation_layers/wolf/upper_animation_layer.blend
 resources/externals/blender_assets.cats.txt
-resources/externals/blender_assets.cats.txt~
 resources/externals/game_data/characters/jack.blend
 resources/externals/game_data/characters/spider.blend
 resources/externals/game_data/characters/trex.blend
@@ -346,7 +339,6 @@ resources/externals/game_data/characters/wolf.blend
 resources/externals/game_data/game_scenes/intro_stage.blend
 resources/externals/game_data/items/meat.blend
 resources/externals/game_data/properties/properties.blend
-resources/externals/game_data/props/cactus.blend
 resources/externals/materials/common/render_skeletal_object.blend
 resources/externals/materials/common/render_static_object.blend
 resources/externals/meshes/characters/jack/jack.blend
