@@ -9,7 +9,7 @@ use rust_engine_3d::scene::bounding_box::BoundingBox;
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use serde::{Deserialize, Serialize};
 
-use crate::game_module::actors::character_behavior::{self, BehaviorBase};
+use crate::game_module::behavior::behavior_base::{create_character_behavior, BehaviorBase};
 use crate::game_module::actors::character_controller::CharacterController;
 use crate::game_module::actors::character_data::{ActionAnimationState, CharacterData, MoveAnimationState};
 use crate::game_module::actors::character_manager::CharacterManager;
@@ -124,7 +124,7 @@ impl<'a> Character<'a> {
             _render_object: render_object.clone(),
             _character_property: Box::new(CharacterProperty::create_character_property()),
             _controller: Box::new(CharacterController::create_character_controller()),
-            _behavior: character_behavior::create_character_behavior(character_data.borrow()._character_type),
+            _behavior: create_character_behavior(character_data.borrow()._character_type),
             _move_animation_state: MoveAnimationState::None,
             _prev_move_animation_state: MoveAnimationState::None,
             _action_animation_state: ActionAnimationState::None,
@@ -162,6 +162,7 @@ impl<'a> Character<'a> {
         self._prev_action_animation_state = ActionAnimationState::None;
         self._character_property.initialize_property(&self._character_data.borrow());
         self._controller.initialize_controller(position, rotation, scale);
+        self._behavior.initialize_behavior(ptr_as_mut(self), position);
 
         self.set_move_idle();
         self.set_action_none();

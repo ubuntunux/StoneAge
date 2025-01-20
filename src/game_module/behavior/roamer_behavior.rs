@@ -1,68 +1,28 @@
 use nalgebra::Vector3;
-use rand;
-use rust_engine_3d::utilities::math::lerp;
-
 use crate::game_module::actors::character::Character;
-use crate::game_module::actors::character_data::{ActionAnimationState, CharacterDataType};
-use crate::game_module::game_constants::{
-    NPC_ATTACK_TERM_MIN,
-    NPC_ATTACK_TERM_MAX,
-    NPC_ROAMING_TERM,
-    NPC_TRACKING_RANGE_X,
-    NPC_TRACKING_RANGE_Y,
-    NPC_AVAILABLE_MOVING_ATTACK,
-    NPC_IDLE_TERM_MAX,
-    NPC_IDLE_TERM_MIN,
-    NPC_IDLE_PLAY_MIN,
-    NPC_IDLE_PLAY_MAX
-};
+use crate::game_module::actors::character_data::ActionAnimationState;
+use crate::game_module::behavior::behavior_base::BehaviorBase;
+use crate::game_module::game_constants::{NPC_AVAILABLE_MOVING_ATTACK, NPC_ROAMING_TERM, NPC_TRACKING_RANGE_X, NPC_TRACKING_RANGE_Y};
 
-pub trait BehaviorBase {
-    fn update_behavior<'a>(&mut self, character: &mut Character, player: &Character<'a>, delta_time: f32);
-}
-
+#[derive(Default)]
 pub struct RoamerBehavior {
     pub _roamer_idle_time: f32,
     pub _roamer_idle_play_time: f32,
     pub _roamer_move_time: f32,
     pub _roamer_move_direction: Vector3<f32>,
+    pub _roamer_spawn_point: Vector3<f32>,
+    pub _roamer_target_point: Vector3<f32>,
     pub _roamer_attack_time: f32,
 }
 
-impl Default for RoamerBehavior {
-    fn default() -> Self {
-        Self {
-            _roamer_idle_time: generate_idle_time(),
-            _roamer_idle_play_time: 0.0,
-            _roamer_move_time: 0.0,
-            _roamer_move_direction: Vector3::new(rand::random::<f32>() - 0.5, 0.0, rand::random::<f32>() - 0.5).normalize(),
-            _roamer_attack_time: generate_attack_time(),
-        }
-    }
-}
-
-// implements
-fn generate_idle_time() -> f32 {
-    lerp(NPC_IDLE_TERM_MIN, NPC_IDLE_TERM_MAX, rand::random::<f32>())
-}
-
-fn generate_idle_play_time() -> f32 {
-    lerp(NPC_IDLE_PLAY_MIN, NPC_IDLE_PLAY_MAX, rand::random::<f32>())
-}
-
-fn generate_attack_time() -> f32 {
-    lerp(NPC_ATTACK_TERM_MIN, NPC_ATTACK_TERM_MAX, rand::random::<f32>())
-}
-
-pub fn create_character_behavior(character_type: CharacterDataType) -> Box<dyn BehaviorBase> {
-    match character_type {
-        CharacterDataType::Roamer => Box::new(RoamerBehavior {
-            ..Default::default()
-        }),
-    }
-}
-
 impl BehaviorBase for RoamerBehavior {
+    fn initialize_behavior<'a>(&mut self, _character: &mut Character, position: &Vector3<f32>) {
+        self._roamer_idle_time = self.generate_idle_time();
+        self._roamer_attack_time = self.generate_attack_time();
+        self._roamer_spawn_point = position.clone();
+        self._roamer_move_direction = Vector3::new(rand::random::<f32>() - 0.5, 0.0, rand::random::<f32>() - 0.5).normalize();
+    }
+
     fn update_behavior<'a>(&mut self, owner: &mut Character, player: &Character<'a>, delta_time: f32) {
         // update attack
         if player._is_alive {
@@ -75,7 +35,7 @@ impl BehaviorBase for RoamerBehavior {
                     owner.set_move_stop();
                 }
                 owner.set_action_attack();
-                self._roamer_attack_time = generate_attack_time();
+                self._roamer_attack_time = self.generate_attack_time();
             }
         }
 
@@ -101,8 +61,8 @@ impl BehaviorBase for RoamerBehavior {
                 self._roamer_idle_time -= delta_time;
                 if self._roamer_idle_time <= 0.0 {
                     owner.set_move_stop();
-                    self._roamer_idle_play_time = generate_idle_play_time();
-                    self._roamer_idle_time = self._roamer_idle_play_time + generate_idle_time();
+                    self._roamer_idle_play_time = self.generate_idle_play_time();
+                    self._roamer_idle_time = self._roamer_idle_play_time + self.generate_idle_time();
                     // growl
                     if to_player.x.abs() < NPC_TRACKING_RANGE_X * 2.0 {
                         owner.get_character_manager().play_audio(&owner._audio_growl);
