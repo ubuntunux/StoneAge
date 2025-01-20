@@ -19,6 +19,7 @@ use crate::game_module::game_resource::GameResources;
 type BlockCreateInfoMap = HashMap<String, BlockCreateInfo>;
 type CharacterCreateInfoMap = HashMap<String, CharacterCreateInfo>;
 type PropCreateInfoMap = HashMap<String, PropCreateInfo>;
+type BlockMap<'a> = HashMap<u64, RcRefCell<Block<'a>>>;
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[serde(default)]
@@ -40,7 +41,7 @@ pub struct GameSceneManager<'a> {
     pub _item_manager: Box<ItemManager<'a>>,
     pub _prop_manager: Box<PropManager<'a>>,
     pub _game_scene_name: String,
-    pub _blocks: HashMap<u64, RcRefCell<Block<'a>>>,
+    pub _blocks: BlockMap<'a>,
     pub _block_id_generator: u64,
     pub _game_music: Option<RcRefCell<AudioInstance>>
 }
@@ -113,7 +114,7 @@ impl<'a> GameSceneManager<'a> {
         self._game_music = ptr_as_mut(self._audio_manager).play_audio_bank(audio_name, AudioLoop::LOOP, volume);
     }
 
-    pub fn get_blocks(&self) -> &HashMap<u64, RcRefCell<Block<'a>>> {
+    pub fn get_blocks(&self) -> &BlockMap<'a> {
         &self._blocks
     }
 

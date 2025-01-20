@@ -259,23 +259,21 @@ impl CharacterController {
         }
 
         // check cliff
-        // TODO: check cylinder, box
-        let front_bottom_point: Vector3<f32> = Vector3::new(
-            if 0.0 < move_delta.x { bound_box_max.x + 0.1 } else { bound_box_min.x - 0.1 },
-            bound_box_min.y - 0.1,
-            if 0.0 < move_delta.z { bound_box_max.z + 0.1 } else { bound_box_min.z - 0.1 }
-        );
-        for (_key, block) in game_scene_manager.get_blocks().iter() {
-            let block = ptr_as_ref(block.as_ptr());
-            let block_render_object = ptr_as_ref(block._render_object.as_ptr());
-            let block_bound_box = &block_render_object._bounding_box;
-            // check front bottom block
-            if false == self._is_ground ||
-                0.0 == move_delta.x ||
-                0.0 == move_delta.z ||
-                0.0 < move_delta.y ||
-                block_bound_box.collide_point(&front_bottom_point) {
-                self._is_cliff = false;
+        if self._is_ground && (move_delta.x != 0.0 || move_delta.z != 0.0) {
+            let point: Vector3<f32> = Vector3::new(
+                if 0.0 < move_delta.x { bound_box_max.x + 0.1 } else { bound_box_min.x - 0.1 },
+                bound_box_min.y - 0.1,
+                if 0.0 < move_delta.z { bound_box_max.z + 0.1 } else { bound_box_min.z - 0.1 }
+            );
+
+            for (_key, block) in game_scene_manager.get_blocks().iter() {
+                let block = ptr_as_ref(block.as_ptr());
+                let block_render_object = ptr_as_ref(block._render_object.as_ptr());
+                let block_bound_box = &block_render_object._bounding_box;
+                if block_bound_box.collide_point(&point) {
+                    self._is_cliff = false;
+                    break;
+                }
             }
         }
 
