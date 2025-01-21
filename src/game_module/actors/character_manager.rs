@@ -218,9 +218,9 @@ impl<'a> CharacterManager<'a> {
         }
 
         // remove characters
-        for character in dead_characters.iter() {
-            self.remove_character(character);
-        }
+        // for character in dead_characters.iter() {
+        //     self.remove_character(character);
+        // }
 
         if regist_target_character.is_some() {
             self.set_target_character(regist_target_character);

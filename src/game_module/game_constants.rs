@@ -31,16 +31,15 @@ pub const STAMINA_JUMP: f32 = 15.0;
 pub const STAMINA_ROLL: f32 = 30.0;
 
 // npc
-pub const NPC_IDLE_TERM_MIN: f32 = 3.0;
-pub const NPC_IDLE_TERM_MAX: f32 = 10.0;
-pub const NPC_IDLE_PLAY_MIN: f32 = 1.0;
-pub const NPC_IDLE_PLAY_MAX: f32 = 2.0;
+pub const NPC_IDLE_TERM_MIN: f32 = 1.0;
+pub const NPC_IDLE_TERM_MAX: f32 = 3.0;
 pub const NPC_ATTACK_TERM_MIN: f32 = 1.0;
 pub const NPC_ATTACK_TERM_MAX: f32 = 2.0;
 pub const NPC_ATTACK_DISTANCE: f32 = 1.0;
 pub const NPC_TRACKING_RANGE_X: f32 = 5.0;
 pub const NPC_TRACKING_RANGE_Y: f32 = 1.0;
-pub const NPC_ROAMING_TERM: f32 = 5.0;
+pub const NPC_ROAMING_RADIUS: f32 = 5.0;
+pub const NPC_ROAMING_TIME: f32 = 5.0;
 pub const NPC_AVAILABLE_MOVING_ATTACK: bool = false;
 
 // AUDIO DATA
