@@ -174,6 +174,10 @@ impl<'a> CharacterManager<'a> {
         for character in self._characters.values() {
             let character_mut = ptr_as_mut(character.as_ptr());
 
+            if character_mut._is_alive == false {
+                continue;
+            }
+
             // update animation key frames
             character_mut.update_move_keyframe_event();
             character_mut.update_action_keyframe_event();
