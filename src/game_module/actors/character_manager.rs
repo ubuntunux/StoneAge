@@ -153,7 +153,7 @@ impl<'a> CharacterManager<'a> {
 
     pub fn play_audio(&self, audio_resource: &ResourceData) -> Option<RcRefCell<AudioInstance>> {
         match audio_resource {
-            Audio(audio_data) => self.get_audio_manager_mut().create_audio_instance_from_audio_data(&audio_data, AudioLoop::ONCE, None),
+            Audio(audio_data) => self.get_audio_manager_mut().play_audio_data(&audio_data, AudioLoop::ONCE, None),
             AudioBank(audio_bank_data) => self.get_audio_manager_mut().play_audio_bank_data(&audio_bank_data, AudioLoop::ONCE, None),
             _ => None,
         }
@@ -174,16 +174,16 @@ impl<'a> CharacterManager<'a> {
         for character in self._characters.values() {
             let character_mut = ptr_as_mut(character.as_ptr());
 
-            if character_mut._is_alive == false {
-                continue;
-            }
-
             // update animation key frames
             character_mut.update_move_keyframe_event();
             character_mut.update_action_keyframe_event();
 
             // update character
             character_mut.update_character(self.get_game_scene_manager(), delta_time as f32, player);
+
+            if character_mut._is_alive == false {
+                continue;
+            }
 
             // check attack
             if character_mut._attack_event != ActionAnimationState::None {
@@ -195,19 +195,19 @@ impl<'a> CharacterManager<'a> {
                             target_character_mut._is_alive &&
                             false == target_character_mut._character_property._invincibility &&
                             character_mut.check_attack_range(character_mut._attack_event, target_character_mut.get_bounding_box()) {
-                            regist_target_character = Some(target_character.clone());
-                            target_character_mut.set_damage(target_character_mut.get_position().clone(), character_mut.get_power(character_mut._attack_event));
-                            if false == target_character_mut._is_alive {
-                                dead_characters.push(target_character.clone());
+                                regist_target_character = Some(target_character.clone());
+                                target_character_mut.set_damage(target_character_mut.get_position().clone(), character_mut.get_power(character_mut._attack_event));
+                                if false == target_character_mut._is_alive {
+                                    dead_characters.push(target_character.clone());
 
-                                // TestCode: Item
-                                let item_create_info = ItemCreateInfo {
-                                    _item_data_name: String::from(ITEM_MEAT),
-                                    _position: target_character_mut.get_position().clone() + Vector3::new(0.0, 0.5, 0.0),
-                                    ..Default::default()
-                                };
-                                self.get_game_scene_manager().get_item_manager_mut().create_item(&item_create_info);
-                            }
+                                    // TestCode: Item
+                                    let item_create_info = ItemCreateInfo {
+                                        _item_data_name: String::from(ITEM_MEAT),
+                                        _position: target_character_mut.get_position().clone() + Vector3::new(0.0, 0.5, 0.0),
+                                        ..Default::default()
+                                    };
+                                    self.get_game_scene_manager().get_item_manager_mut().create_item(&item_create_info);
+                                }
                         }
                     }
                 } else {
@@ -226,6 +226,7 @@ impl<'a> CharacterManager<'a> {
         //     self.remove_character(character);
         // }
 
+        // target character for ui
         if regist_target_character.is_some() {
             self.set_target_character(regist_target_character);
             self._target_focus_time = 0.0;

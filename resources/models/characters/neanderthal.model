@@ -1,0 +1,32 @@
+{
+    "_collision": {
+        "_collision_type": "CYLINDER",
+        "_height": 9.962899684906006,
+        "_location": [
+            -0.05019187927246094,
+            4.94210147857666,
+            -0.2844104766845703
+        ],
+        "_radius": 6.0
+    },
+    "_material_instances": [
+        "characters/neanderthalensis/neanderthal",
+        "characters/weapon/wood_stick"
+    ],
+    "_mesh": "characters/neanderthalensis/neanderthal",
+    "_position": [
+        0.0,
+        0.0,
+        0.0
+    ],
+    "_rotation": [
+        0.0,
+        0.0,
+        0.0
+    ],
+    "_scale": [
+        1.0,
+        1.0,
+        1.0
+    ]
+}

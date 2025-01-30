@@ -3,7 +3,17 @@ use rust_engine_3d::utilities::math::lerp;
 use crate::game_module::actors::character::Character;
 use crate::game_module::actors::character_data::ActionAnimationState;
 use crate::game_module::behavior::behavior_base::{BehaviorBase, BehaviorState};
-use crate::game_module::game_constants::{NPC_ATTACK_TERM_MAX, NPC_ATTACK_TERM_MIN, NPC_AVAILABLE_MOVING_ATTACK, NPC_IDLE_TERM_MAX, NPC_IDLE_TERM_MIN, NPC_ROAMING_RADIUS, NPC_ROAMING_TIME, NPC_TRACKING_RANGE_XZ, NPC_TRACKING_RANGE_Y};
+use crate::game_module::game_constants::{
+    NPC_ATTACK_TERM_MAX,
+    NPC_ATTACK_TERM_MIN,
+    NPC_AVAILABLE_MOVING_ATTACK,
+    NPC_IDLE_TERM_MAX,
+    NPC_IDLE_TERM_MIN,
+    NPC_ROAMING_RADIUS,
+    NPC_ROAMING_TIME,
+    NPC_TRACKING_RANGE_XZ,
+    NPC_TRACKING_RANGE_Y
+};
 
 #[derive(Default)]
 pub struct RoamerBehavior {
@@ -89,11 +99,12 @@ impl BehaviorBase for RoamerBehavior {
                 }
             },
             BehaviorState::Attack => {
-                // if (NPC_AVAILABLE_MOVING_ATTACK || !owner.is_attack_animation()) && owner.is_available_move() {
-                // }
-
                 if player._is_alive && 0.0 < self._roamer_attack_time {
-                    if !owner.is_attack_animation() {
+                    if owner.is_attack_animation() {
+                        if !owner.is_available_move() || (NPC_AVAILABLE_MOVING_ATTACK || !owner.is_attack_animation()) {
+                            owner.set_move_stop();
+                        }
+                    } else {
                         owner.set_move_stop();
                         self._roamer_attack_time -= delta_time;
                     }
@@ -126,7 +137,7 @@ impl BehaviorBase for RoamerBehavior {
                 },
                 BehaviorState::Chase => {
                     // growl
-                    owner.get_character_manager().play_audio(&owner._audio_growl);
+                    //owner.get_character_manager().play_audio(&owner._audio_growl);
                 },
                 BehaviorState::Attack => {
                     let to_player_direction = (player.get_position() - owner.get_position()).normalize();

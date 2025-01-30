@@ -43,7 +43,7 @@ pub struct GameSceneManager<'a> {
     pub _game_scene_name: String,
     pub _blocks: BlockMap<'a>,
     pub _block_id_generator: u64,
-    pub _game_music: Option<RcRefCell<AudioInstance>>
+    pub _ambient_sound: Option<RcRefCell<AudioInstance>>
 }
 
 impl<'a> GameSceneManager<'a> {
@@ -83,7 +83,7 @@ impl<'a> GameSceneManager<'a> {
             _character_manager: CharacterManager::create_character_manager(),
             _item_manager: ItemManager::create_item_manager(),
             _prop_manager: PropManager::create_prop_manager(),
-            _game_music: None
+            _ambient_sound: None
         })
     }
 
@@ -110,8 +110,23 @@ impl<'a> GameSceneManager<'a> {
         self._prop_manager.initialize_prop_manager(engine_core, application);
     }
 
-    pub fn play_music(&mut self, audio_name: &str, volume: Option<f32>) {
-        self._game_music = ptr_as_mut(self._audio_manager).play_audio_bank(audio_name, AudioLoop::LOOP, volume);
+    pub fn play_bgm(&mut self, audio_name: &str, volume: Option<f32>) {
+        ptr_as_mut(self._audio_manager).play_bgm(audio_name, volume);
+    }
+
+    pub fn play_ambient_sound(&mut self, audio_name: &str, volume: Option<f32>) {
+        self._ambient_sound = ptr_as_mut(self._audio_manager).play_audio_bank(audio_name, AudioLoop::LOOP, volume);
+    }
+
+    pub fn stop_bgm(&self) {
+        ptr_as_mut(self._audio_manager).stop_bgm();
+    }
+
+    pub fn stop_ambient_sound(&mut self) {
+        if let Some(audio_instance_refcell) = self._ambient_sound.as_ref() {
+            ptr_as_mut(self._audio_manager).stop_audio_instance(audio_instance_refcell);
+        }
+        self._ambient_sound = None;
     }
 
     pub fn get_blocks(&self) -> &BlockMap<'a> {

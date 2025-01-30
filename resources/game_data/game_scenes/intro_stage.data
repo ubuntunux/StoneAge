@@ -506,6 +506,24 @@
         }
     },
     "_characters": {
+        "neanderthal": {
+            "_character_data_name": "neanderthal",
+            "_position": [
+                30.0,
+                9.0,
+                -7.0
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                0.25,
+                0.25,
+                0.25
+            ]
+        },
         "spider": {
             "_character_data_name": "spider",
             "_position": [

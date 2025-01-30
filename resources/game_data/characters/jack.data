@@ -11,7 +11,7 @@
     "_character_type": "Roamer",
     "_dead_animation_mesh": "characters/jack/jack_dead",
     "_dead_animation_speed": 1.5,
-    "_hit_animation_mesh": "characters/jack/jacK_hit",
+    "_hit_animation_mesh": "characters/jack/jack_hit",
     "_hit_animation_speed": 2.0,
     "_idle_animation_mesh": "characters/jack/jack_idle",
     "_idle_animation_speed": 1.0,

@@ -232,6 +232,10 @@ impl<'a> Character<'a> {
     }
 
     pub fn set_action_animation(&mut self, action_animation_state: ActionAnimationState) {
+        if self._is_player {
+            log::info!("action_animation: {:?}", action_animation_state);
+        }
+
         // set action animation
         let mut animation_info = AnimationPlayArgs {
             _animation_loop: false,
@@ -622,10 +626,6 @@ impl<'a> Character<'a> {
 
     pub fn get_position(&self) -> &Vector3<f32> {
         &self._controller._position
-    }
-
-    pub fn collide_point(&self, pos: &Vector3<f32>) -> bool {
-        self._render_object.borrow()._bounding_box.collide_in_radius(pos)
     }
 
     pub fn get_power(&self, attack_event: ActionAnimationState) -> i32 {
