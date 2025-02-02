@@ -33,7 +33,7 @@ impl BehaviorBase for RoamerBehavior {
     }
 
     fn is_enemy_in_range(&self, owner: &Character, player: &Character) -> bool {
-        if player._is_alive {
+        if player._character_stats._is_alive {
             let to_player: Vector3<f32> = player.get_position() - owner.get_position();
             let dist: f32 = (to_player.x * to_player.x + to_player.z * to_player.z).sqrt();
             if dist < NPC_TRACKING_RANGE_XZ && to_player.y.abs() < NPC_TRACKING_RANGE_Y {
@@ -80,7 +80,7 @@ impl BehaviorBase for RoamerBehavior {
                 self._roamer_move_time -= delta_time;
             },
             BehaviorState::Chase => {
-                if player._is_alive {
+                if player._character_stats._is_alive {
                     let to_player: Vector3<f32> = player.get_position() - owner.get_position();
                     let dist: f32 = (to_player.x * to_player.x + to_player.z * to_player.z).sqrt();
                     if dist < NPC_TRACKING_RANGE_XZ * 2.0 && to_player.y.abs() < NPC_TRACKING_RANGE_Y {
@@ -99,7 +99,7 @@ impl BehaviorBase for RoamerBehavior {
                 }
             },
             BehaviorState::Attack => {
-                if player._is_alive && 0.0 < self._roamer_attack_time {
+                if player._character_stats._is_alive && 0.0 < self._roamer_attack_time {
                     if owner.is_attack_animation() {
                         if !owner.is_available_move() || (NPC_AVAILABLE_MOVING_ATTACK || !owner.is_attack_animation()) {
                             owner.set_move_stop();
@@ -149,7 +149,7 @@ impl BehaviorBase for RoamerBehavior {
                     self._roamer_attack_time = lerp(NPC_ATTACK_TERM_MIN, NPC_ATTACK_TERM_MAX, rand::random::<f32>());
 
                     // growl
-                    owner.get_character_manager().play_audio(&owner._audio_growl);
+                    owner.get_character_manager().play_audio(&owner._character_data.borrow()._audio_data._audio_growl);
                 }
             }
         }

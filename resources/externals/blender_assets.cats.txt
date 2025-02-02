@@ -15,9 +15,9 @@ b58accda-263e-42a4-8dc7-73ec3248b39d:StoneAge/animation_layers/triceratops:Stone
 d4ee0908-9040-4db9-bdf6-7b06b9a06512:StoneAge/animation_layers/wolf:StoneAge-animation_layers-wolf
 7bfecec5-f078-4f7b-969a-4feaec100529:StoneAge/game_data:StoneAge-game_data
 e5381335-2e00-4db8-9a85-1d38959ec30b:StoneAge/game_data/characters:StoneAge-game_data-characters
+8a3855e5-fe95-4387-8ca5-c9f74e6aaeff:StoneAge/game_data/data:StoneAge-game_data-data
 1d1d872f-1889-4192-9f61-f1590f14bebc:StoneAge/game_data/game_scenes:StoneAge-game_data-game_scenes
 753519f1-f1bf-4734-8400-6aedd70b373a:StoneAge/game_data/items:StoneAge-game_data-items
-8a3855e5-fe95-4387-8ca5-c9f74e6aaeff:StoneAge/game_data/properties:StoneAge-game_data-properties
 c4dbb2e9-22a0-4f27-9442-937178e6882b:StoneAge/game_data/props:StoneAge-game_data-props
 c021cad1-00f6-4a65-94ea-13204785bff0:StoneAge/material_instances:StoneAge-material_instances
 f4fd25bb-393b-4e39-a128-4e29cc75e5f6:StoneAge/material_instances/characters:StoneAge-material_instances-characters

@@ -9,6 +9,11 @@ resources/engine_resources/effects/default.effect
 resources/engine_resources/externals/blender_assets.cats.txt
 resources/engine_resources/externals/fonts/UbuntuSansMono-Bold.ttf
 resources/engine_resources/externals/fonts/UbuntuSansMono-Regular.ttf
+resources/engine_resources/externals/miscellaneous/rust_engine_3d_exporter/__init__.py
+resources/engine_resources/externals/miscellaneous/rust_engine_3d_exporter/animation_layer.py
+resources/engine_resources/externals/miscellaneous/rust_engine_3d_exporter/create_collision.py
+resources/engine_resources/externals/miscellaneous/rust_engine_3d_exporter/export_assets.blend
+resources/engine_resources/externals/miscellaneous/rust_engine_3d_exporter/export_game_data.py
 resources/engine_resources/externals/sounds/default.wav
 resources/engine_resources/externals/textures/common/default.png
 resources/engine_resources/externals/textures/common/default_cube.cube
@@ -342,9 +347,9 @@ resources/externals/game_data/characters/spider.blend
 resources/externals/game_data/characters/trex.blend
 resources/externals/game_data/characters/triceratops.blend
 resources/externals/game_data/characters/wolf.blend
+resources/externals/game_data/data/data.blend
 resources/externals/game_data/game_scenes/intro_stage.blend
 resources/externals/game_data/items/meat.blend
-resources/externals/game_data/properties/properties.blend
 resources/externals/game_data/props/cactus.blend
 resources/externals/materials/common/render_skeletal_object.blend
 resources/externals/materials/common/render_static_object.blend

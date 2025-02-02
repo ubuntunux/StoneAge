@@ -144,7 +144,7 @@ impl CharacterController {
 
         // jump
         if self._is_jump_start {
-            self._velocity.y = character_data._jump_speed;
+            self._velocity.y = character_data._stat_data._jump_speed;
             self._is_ground = false;
         }
 

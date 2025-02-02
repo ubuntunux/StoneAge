@@ -66,8 +66,8 @@ impl<'a> TargetStatusWidget<'a> {
             ptr_as_mut(self._target_name_widget).get_ui_component_mut().set_text(name.as_str());
             self._target = target;
         }
-        let hp = target._character_property.as_ref()._hp as f32;
-        let max_hp = target.get_character_data()._max_hp as f32;
+        let hp = target._character_stats._hp as f32;
+        let max_hp = target.get_character_data()._stat_data._max_hp as f32;
         self._hp_widget.update_status_widget(hp, max_hp);
     }
     pub fn fade_out_status_widget(&mut self) {

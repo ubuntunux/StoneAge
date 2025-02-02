@@ -8,7 +8,7 @@ use rust_engine_3d::utilities::system::{self, newRcRefCell, ptr_as_mut, ptr_as_r
 use serde_json::{self};
 
 use crate::game_module::actors::block::BlockData;
-use crate::game_module::actors::character_data::CharacterData;
+use crate::game_module::actors::character_data::{CharacterData, CharacterDataCreateInfo};
 use crate::game_module::actors::items::ItemData;
 use crate::game_module::actors::props::PropData;
 use crate::game_module::game_scene_manager::GameSceneDataCreateInfo;
@@ -184,7 +184,11 @@ impl<'a> GameResources<'a> {
         for game_data_file in game_data_files {
             let character_data_name = get_unique_resource_name(&self._character_data_map, &game_data_directory, &game_data_file);
             let loaded_contents = system::load(&game_data_file);
-            let character_data: CharacterData = serde_json::from_reader(loaded_contents).expect("Failed to deserialize.");
+            let character_data_create_info: CharacterDataCreateInfo = serde_json::from_reader(loaded_contents).expect("Failed to deserialize.");
+
+            log::info!("character_data_create_info: {:?}. {:?}", game_data_file, character_data_create_info);
+
+            let character_data = CharacterData::create_character_data(&character_data_create_info, self);
             self._character_data_map.insert(character_data_name.clone(), newRcRefCell(character_data));
         }
     }

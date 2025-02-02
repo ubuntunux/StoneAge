@@ -181,23 +181,23 @@ impl<'a> CharacterManager<'a> {
             // update character
             character_mut.update_character(self.get_game_scene_manager(), delta_time as f32, player);
 
-            if character_mut._is_alive == false {
+            if character_mut._character_stats._is_alive == false {
                 continue;
             }
 
             // check attack
-            if character_mut._attack_event != ActionAnimationState::None {
+            if character_mut._animation_state._attack_event != ActionAnimationState::None {
                 if character_mut._is_player {
                     // player attack to npc
                     for target_character in self._characters.values() {
                         let target_character_mut = ptr_as_mut(target_character.as_ptr());
                         if false == target_character_mut._is_player &&
-                            target_character_mut._is_alive &&
-                            false == target_character_mut._character_property._invincibility &&
-                            character_mut.check_attack_range(character_mut._attack_event, target_character_mut.get_bounding_box()) {
+                            target_character_mut._character_stats._is_alive &&
+                            false == target_character_mut._character_stats._invincibility &&
+                            character_mut.check_attack_range(character_mut._animation_state._attack_event, target_character_mut.get_bounding_box()) {
                                 regist_target_character = Some(target_character.clone());
-                                target_character_mut.set_damage(target_character_mut.get_position().clone(), character_mut.get_power(character_mut._attack_event));
-                                if false == target_character_mut._is_alive {
+                                target_character_mut.set_damage(target_character_mut.get_position().clone(), character_mut.get_power(character_mut._animation_state._attack_event));
+                                if false == target_character_mut._character_stats._is_alive {
                                     dead_characters.push(target_character.clone());
 
                                     // TestCode: Item
@@ -212,10 +212,10 @@ impl<'a> CharacterManager<'a> {
                     }
                 } else {
                     // npc attack to player
-                    if player._is_alive &&
-                        false == player._character_property._invincibility &&
-                        character_mut.check_attack_range(character_mut._attack_event, &player.get_bounding_box()) {
-                        player.set_damage(player.get_position().clone(), character_mut.get_power(character_mut._attack_event));
+                    if player._character_stats._is_alive &&
+                        false == player._character_stats._invincibility &&
+                        character_mut.check_attack_range(character_mut._animation_state._attack_event, &player.get_bounding_box()) {
+                        player.set_damage(player.get_position().clone(), character_mut.get_power(character_mut._animation_state._attack_event));
                     }
                 }
             }

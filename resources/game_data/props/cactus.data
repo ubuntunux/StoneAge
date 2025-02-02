@@ -1,4 +1,5 @@
 {
+    "_enable_collision": true,
     "_item_data_name": "items/meat",
     "_max_hp": 100,
     "_model_data_name": "environments/cactus",
