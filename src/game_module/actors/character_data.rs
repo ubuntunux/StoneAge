@@ -136,7 +136,6 @@ pub struct CharacterStatData {
     pub _max_hp: i32,
     pub _attack_damage: i32,
     pub _attack_range: f32,
-    pub _attack_thickness: f32,
     pub _power_attack_damage: i32,
     pub _power_attack_range: f32,
     pub _jump_speed: f32,

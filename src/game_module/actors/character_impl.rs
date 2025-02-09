@@ -3,7 +3,11 @@ use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::effect::effect_data::EffectCreateInfo;
 use rust_engine_3d::scene::animation::{AnimationPlayArgs, AnimationPlayInfo};
 use rust_engine_3d::scene::bounding_box::BoundingBox;
+use rust_engine_3d::scene::collision::{CollisionCreateInfo, CollisionData};
 use rust_engine_3d::scene::render_object::{AnimationLayer, RenderObjectData};
+use rust_engine_3d::scene::transform_object::TransformObjectData;
+use rust_engine_3d::utilities::math;
+use rust_engine_3d::utilities::math::{get_norm_xz, make_normalize_xz};
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use crate::game_module::actors::character::{Character, CharacterAnimationState, CharacterStats};
 use crate::game_module::actors::character_controller::CharacterController;
@@ -110,6 +114,14 @@ impl<'a> Character<'a> {
 
     pub fn get_bounding_box(&self) -> &BoundingBox {
         &ptr_as_ref(self._render_object.as_ptr())._bounding_box
+    }
+
+    pub fn get_transform(&self) -> &TransformObjectData {
+        &ptr_as_ref(self._render_object.as_ptr())._transform_object
+    }
+
+    pub fn get_collision(&self) -> &CollisionData {
+        &ptr_as_ref(self._render_object.as_ptr())._collision
     }
 
     pub fn set_move_animation(&mut self, move_animation_state: MoveAnimationState) {
@@ -536,16 +548,28 @@ impl<'a> Character<'a> {
         self.update_action_animation_loop_event();
     }
 
-    pub fn check_attack_range(&self, attack_event: ActionAnimationState, target_bounding_box: &BoundingBox) -> bool {
-        let character_data = self.get_character_data();
-        let _attack_range: f32 = match attack_event {
-            ActionAnimationState::Attack => character_data._stat_data._attack_range,
-            ActionAnimationState::PowerAttack => character_data._stat_data._power_attack_range,
+    pub fn get_attack_range(&self, attack_event: ActionAnimationState) -> f32 {
+        match attack_event {
+            ActionAnimationState::Attack => self.get_character_data()._stat_data._attack_range,
+            ActionAnimationState::PowerAttack => self.get_character_data()._stat_data._power_attack_range,
             _ => panic!("check_attack_range not implemented: {:?}", attack_event)
-        };
-        let _attack_thickness: f32 = character_data._stat_data._attack_thickness;
-        let bounding_box = self.get_bounding_box();
-        target_bounding_box.collide_bound_box(&bounding_box._min, &bounding_box._max)
+        }
+    }
+
+    pub fn check_attack_range(&self, target: &Character, attack_range: f32) -> bool {
+        let collision = self.get_collision();
+        let target_collision = target.get_collision();
+        let attack_range = attack_range + (collision._bounding_box._size.x + target_collision._bounding_box._size.x) * 0.4;
+        let to_target = target.get_position() - self.get_position();
+        let (to_target_dir, to_target_dist) = math::make_normalize_xz_with_norm(&to_target);
+        let half_height = collision._bounding_box._size.y * 0.5;
+        if self.get_transform().get_front().dot(&to_target_dir) < 0.0 &&
+            -half_height <= to_target.y &&
+            to_target.y <= half_height &&
+            to_target_dist <= attack_range {
+            return true;
+        }
+        false
     }
 
     pub fn get_position(&self) -> &Vector3<f32> {

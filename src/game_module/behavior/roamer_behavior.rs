@@ -1,7 +1,6 @@
 use nalgebra::Vector3;
 use rust_engine_3d::utilities::math::lerp;
 use crate::game_module::actors::character::Character;
-use crate::game_module::actors::character_data::ActionAnimationState;
 use crate::game_module::behavior::behavior_base::{BehaviorBase, BehaviorState};
 use crate::game_module::game_constants::{
     NPC_ATTACK_TERM_MAX,
@@ -84,7 +83,7 @@ impl BehaviorBase for RoamerBehavior {
                     let to_player: Vector3<f32> = player.get_position() - owner.get_position();
                     let dist: f32 = (to_player.x * to_player.x + to_player.z * to_player.z).sqrt();
                     if dist < NPC_TRACKING_RANGE_XZ * 2.0 && to_player.y.abs() < NPC_TRACKING_RANGE_Y {
-                        if owner.check_attack_range(ActionAnimationState::Attack, player.get_bounding_box()) {
+                        if owner.check_attack_range(player, 0.0) {
                             self.set_behavior(BehaviorState::Attack, owner, player, false);
                         } else {
                             // chase

@@ -108,7 +108,6 @@ impl Default for CharacterStatData {
             _max_hp: 100,
             _attack_damage: 50,
             _attack_range: 0.5,
-            _attack_thickness: 0.5,
             _power_attack_damage: 100,
             _power_attack_range: 1.0,
             _jump_speed: 13.0,
