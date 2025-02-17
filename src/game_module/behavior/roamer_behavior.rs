@@ -2,17 +2,7 @@ use nalgebra::Vector3;
 use rust_engine_3d::utilities::math::lerp;
 use crate::game_module::actors::character::Character;
 use crate::game_module::behavior::behavior_base::{BehaviorBase, BehaviorState};
-use crate::game_module::game_constants::{
-    NPC_ATTACK_TERM_MAX,
-    NPC_ATTACK_TERM_MIN,
-    NPC_AVAILABLE_MOVING_ATTACK,
-    NPC_IDLE_TERM_MAX,
-    NPC_IDLE_TERM_MIN,
-    NPC_ROAMING_RADIUS,
-    NPC_ROAMING_TIME,
-    NPC_TRACKING_RANGE_XZ,
-    NPC_TRACKING_RANGE_Y
-};
+use crate::game_module::game_constants::{NPC_ATTACK_HIT_RANGE, NPC_ATTACK_RANGE, NPC_ATTACK_TERM_MAX, NPC_ATTACK_TERM_MIN, NPC_AVAILABLE_MOVING_ATTACK, NPC_IDLE_TERM_MAX, NPC_IDLE_TERM_MIN, NPC_ROAMING_RADIUS, NPC_ROAMING_TIME, NPC_TRACKING_RANGE};
 
 #[derive(Default)]
 pub struct RoamerBehavior {
@@ -33,11 +23,7 @@ impl BehaviorBase for RoamerBehavior {
 
     fn is_enemy_in_range(&self, owner: &Character, player: &Character) -> bool {
         if player._character_stats._is_alive {
-            let to_player: Vector3<f32> = player.get_position() - owner.get_position();
-            let dist: f32 = (to_player.x * to_player.x + to_player.z * to_player.z).sqrt();
-            if dist < NPC_TRACKING_RANGE_XZ && to_player.y.abs() < NPC_TRACKING_RANGE_Y {
-                return true;
-            }
+            return owner.check_in_range(player, NPC_TRACKING_RANGE);
         }
         false
     }
@@ -80,13 +66,12 @@ impl BehaviorBase for RoamerBehavior {
             },
             BehaviorState::Chase => {
                 if player._character_stats._is_alive {
-                    let to_player: Vector3<f32> = player.get_position() - owner.get_position();
-                    let dist: f32 = (to_player.x * to_player.x + to_player.z * to_player.z).sqrt();
-                    if dist < NPC_TRACKING_RANGE_XZ * 2.0 && to_player.y.abs() < NPC_TRACKING_RANGE_Y {
-                        if owner.check_attack_range(player, 0.0) {
+                    if owner.check_in_range(player, NPC_TRACKING_RANGE) {
+                        if owner.check_in_range(player, NPC_ATTACK_RANGE) {
                             self.set_behavior(BehaviorState::Attack, owner, player, false);
                         } else {
                             // chase
+                            let to_player: Vector3<f32> = player.get_position() - owner.get_position();
                             owner.set_move(&to_player);
                             owner.set_run(true);
                         }

@@ -15,7 +15,7 @@ use crate::game_module::actors::character::{Character, CharacterCreateInfo};
 use crate::game_module::actors::character_data::ActionAnimationState;
 use crate::game_module::actors::items::ItemCreateInfo;
 use crate::game_module::game_client::GameClient;
-use crate::game_module::game_constants::ITEM_MEAT;
+use crate::game_module::game_constants::{ITEM_MEAT, NPC_ATTACK_HIT_RANGE};
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
 
@@ -191,11 +191,10 @@ impl<'a> CharacterManager<'a> {
                     // player attack to npc
                     for target_character in self._characters.values() {
                         let target_character_mut = ptr_as_mut(target_character.as_ptr());
-                        let attack_range = character_mut.get_attack_range(character_mut._animation_state._attack_event);
                         if false == target_character_mut._is_player &&
                             target_character_mut._character_stats._is_alive &&
                             false == target_character_mut._character_stats._invincibility &&
-                            character_mut.check_attack_range(target_character_mut, attack_range) {
+                            character_mut.check_in_range(target_character_mut, NPC_ATTACK_HIT_RANGE) {
                                 regist_target_character = Some(target_character.clone());
                                 target_character_mut.set_damage(target_character_mut.get_position().clone(), character_mut.get_power(character_mut._animation_state._attack_event));
                                 if false == target_character_mut._character_stats._is_alive {
@@ -213,10 +212,9 @@ impl<'a> CharacterManager<'a> {
                     }
                 } else {
                     // npc attack to player
-                    let attack_range = character_mut.get_attack_range(character_mut._animation_state._attack_event);
                     if player._character_stats._is_alive &&
                         false == player._character_stats._invincibility &&
-                        character_mut.check_attack_range(player, attack_range) {
+                        character_mut.check_in_range(player, NPC_ATTACK_HIT_RANGE) {
                         player.set_damage(player.get_position().clone(), character_mut.get_power(character_mut._animation_state._attack_event));
                     }
                 }

@@ -3,31 +3,17 @@ use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::effect::effect_data::EffectCreateInfo;
 use rust_engine_3d::scene::animation::{AnimationPlayArgs, AnimationPlayInfo};
 use rust_engine_3d::scene::bounding_box::BoundingBox;
-use rust_engine_3d::scene::collision::{CollisionCreateInfo, CollisionData};
+use rust_engine_3d::scene::collision::CollisionData;
 use rust_engine_3d::scene::render_object::{AnimationLayer, RenderObjectData};
 use rust_engine_3d::scene::transform_object::TransformObjectData;
 use rust_engine_3d::utilities::math;
-use rust_engine_3d::utilities::math::{get_norm_xz, make_normalize_xz};
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use crate::game_module::actors::character::{Character, CharacterAnimationState, CharacterStats};
 use crate::game_module::actors::character_controller::CharacterController;
 use crate::game_module::actors::character_data::{ActionAnimationState, CharacterData, MoveAnimationState};
 use crate::game_module::actors::character_manager::CharacterManager;
 use crate::game_module::behavior::behavior_base::create_character_behavior;
-use crate::game_module::game_constants::{
-    AUDIO_ATTACK,
-    AUDIO_FOOTSTEP,
-    AUDIO_HIT,
-    AUDIO_JUMP,
-    AUDIO_ROLL,
-    EFFECT_HIT,
-    MAX_STAMINA,
-    STAMINA_ATTACK,
-    STAMINA_JUMP,
-    STAMINA_POWER_ATTACK,
-    STAMINA_RECOVERY,
-    STAMINA_ROLL, STAMINA_RUN
-};
+use crate::game_module::game_constants::{AUDIO_ATTACK, AUDIO_FOOTSTEP, AUDIO_HIT, AUDIO_JUMP, AUDIO_ROLL, EFFECT_HIT, MAX_STAMINA, STAMINA_ATTACK, STAMINA_JUMP, STAMINA_POWER_ATTACK, STAMINA_RECOVERY, STAMINA_ROLL, STAMINA_RUN};
 use crate::game_module::game_scene_manager::GameSceneManager;
 
 impl CharacterStats {
@@ -556,7 +542,7 @@ impl<'a> Character<'a> {
         }
     }
 
-    pub fn check_attack_range(&self, target: &Character, attack_range: f32) -> bool {
+    pub fn check_in_range(&self, target: &Character, attack_range: f32) -> bool {
         let collision = self.get_collision();
         let target_collision = target.get_collision();
         let attack_range = attack_range + (collision._bounding_box._size.x + target_collision._bounding_box._size.x) * 0.4;
