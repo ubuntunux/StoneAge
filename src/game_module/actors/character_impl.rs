@@ -542,17 +542,17 @@ impl<'a> Character<'a> {
         }
     }
 
-    pub fn check_in_range(&self, target: &Character, attack_range: f32) -> bool {
+    pub fn check_in_range(&self, target: &Character, check_range: f32, check_direction: bool) -> bool {
         let collision = self.get_collision();
         let target_collision = target.get_collision();
-        let attack_range = attack_range + (collision._bounding_box._size.x + target_collision._bounding_box._size.x) * 0.4;
+        let check_range = check_range + (collision._bounding_box._size.x + target_collision._bounding_box._size.x) * 0.4;
         let to_target = target.get_position() - self.get_position();
         let (to_target_dir, to_target_dist) = math::make_normalize_xz_with_norm(&to_target);
         let half_height = collision._bounding_box._size.y * 0.5;
-        if self.get_transform().get_front().dot(&to_target_dir) < 0.0 &&
+        if (self.get_transform().get_front().dot(&to_target_dir) < 0.0 || !check_direction) &&
             -half_height <= to_target.y &&
             to_target.y <= half_height &&
-            to_target_dist <= attack_range {
+            to_target_dist <= check_range {
             return true;
         }
         false

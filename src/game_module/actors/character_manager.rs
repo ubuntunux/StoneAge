@@ -194,7 +194,7 @@ impl<'a> CharacterManager<'a> {
                         if false == target_character_mut._is_player &&
                             target_character_mut._character_stats._is_alive &&
                             false == target_character_mut._character_stats._invincibility &&
-                            character_mut.check_in_range(target_character_mut, NPC_ATTACK_HIT_RANGE) {
+                            character_mut.check_in_range(target_character_mut, NPC_ATTACK_HIT_RANGE, true) {
                                 regist_target_character = Some(target_character.clone());
                                 target_character_mut.set_damage(target_character_mut.get_position().clone(), character_mut.get_power(character_mut._animation_state._attack_event));
                                 if false == target_character_mut._character_stats._is_alive {
@@ -214,7 +214,7 @@ impl<'a> CharacterManager<'a> {
                     // npc attack to player
                     if player._character_stats._is_alive &&
                         false == player._character_stats._invincibility &&
-                        character_mut.check_in_range(player, NPC_ATTACK_HIT_RANGE) {
+                        character_mut.check_in_range(player, NPC_ATTACK_HIT_RANGE, true) {
                         player.set_damage(player.get_position().clone(), character_mut.get_power(character_mut._animation_state._attack_event));
                     }
                 }

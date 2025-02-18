@@ -23,7 +23,7 @@ impl BehaviorBase for RoamerBehavior {
 
     fn is_enemy_in_range(&self, owner: &Character, player: &Character) -> bool {
         if player._character_stats._is_alive {
-            return owner.check_in_range(player, NPC_TRACKING_RANGE);
+            return owner.check_in_range(player, NPC_TRACKING_RANGE, false);
         }
         false
     }
@@ -66,11 +66,10 @@ impl BehaviorBase for RoamerBehavior {
             },
             BehaviorState::Chase => {
                 if player._character_stats._is_alive {
-                    if owner.check_in_range(player, NPC_TRACKING_RANGE) {
-                        if owner.check_in_range(player, NPC_ATTACK_RANGE) {
+                    if owner.check_in_range(player, NPC_TRACKING_RANGE, false) {
+                        if owner.check_in_range(player, NPC_ATTACK_RANGE, false) {
                             self.set_behavior(BehaviorState::Attack, owner, player, false);
                         } else {
-                            // chase
                             let to_player: Vector3<f32> = player.get_position() - owner.get_position();
                             owner.set_move(&to_player);
                             owner.set_run(true);
