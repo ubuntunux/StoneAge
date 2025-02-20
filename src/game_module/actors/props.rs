@@ -35,7 +35,8 @@ pub struct PropData {
     pub _item_data_name: String,
 }
 
-pub struct PropProperties {
+pub struct PropStats {
+    pub _is_alive: bool,
     pub _prop_hp: i32,
     pub _position: Vector3<f32>,
     pub _rotation: Vector3<f32>,
@@ -45,9 +46,10 @@ pub struct PropProperties {
 pub struct Prop<'a> {
     pub _prop_name: String,
     pub _prop_id: u64,
+    pub _prop_manager: *const PropManager<'a>,
     pub _render_object: RcRefCell<RenderObjectData<'a>>,
     pub _prop_data: RcRefCell<PropData>,
-    pub _prop_properties: Box<PropProperties>,
+    pub _prop_stats: Box<PropStats>,
 }
 
 pub struct PropManager<'a> {

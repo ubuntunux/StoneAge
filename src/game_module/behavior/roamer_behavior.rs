@@ -2,7 +2,7 @@ use nalgebra::Vector3;
 use rust_engine_3d::utilities::math::lerp;
 use crate::game_module::actors::character::Character;
 use crate::game_module::behavior::behavior_base::{BehaviorBase, BehaviorState};
-use crate::game_module::game_constants::{NPC_ATTACK_HIT_RANGE, NPC_ATTACK_RANGE, NPC_ATTACK_TERM_MAX, NPC_ATTACK_TERM_MIN, NPC_AVAILABLE_MOVING_ATTACK, NPC_IDLE_TERM_MAX, NPC_IDLE_TERM_MIN, NPC_ROAMING_RADIUS, NPC_ROAMING_TIME, NPC_TRACKING_RANGE};
+use crate::game_module::game_constants::{NPC_ATTACK_RANGE, NPC_ATTACK_TERM_MAX, NPC_ATTACK_TERM_MIN, NPC_AVAILABLE_MOVING_ATTACK, NPC_IDLE_TERM_MAX, NPC_IDLE_TERM_MIN, NPC_ROAMING_RADIUS, NPC_ROAMING_TIME, NPC_TRACKING_RANGE};
 
 #[derive(Default)]
 pub struct RoamerBehavior {
@@ -23,7 +23,7 @@ impl BehaviorBase for RoamerBehavior {
 
     fn is_enemy_in_range(&self, owner: &Character, player: &Character) -> bool {
         if player._character_stats._is_alive {
-            return owner.check_in_range(player, NPC_TRACKING_RANGE, false);
+            return owner.check_in_range(player.get_collision(), NPC_TRACKING_RANGE, false);
         }
         false
     }
@@ -66,8 +66,8 @@ impl BehaviorBase for RoamerBehavior {
             },
             BehaviorState::Chase => {
                 if player._character_stats._is_alive {
-                    if owner.check_in_range(player, NPC_TRACKING_RANGE, false) {
-                        if owner.check_in_range(player, NPC_ATTACK_RANGE, false) {
+                    if owner.check_in_range(player.get_collision(), NPC_TRACKING_RANGE, false) {
+                        if owner.check_in_range(player.get_collision(), NPC_ATTACK_RANGE, false) {
                             self.set_behavior(BehaviorState::Attack, owner, player, false);
                         } else {
                             let to_player: Vector3<f32> = player.get_position() - owner.get_position();
@@ -120,7 +120,7 @@ impl BehaviorBase for RoamerBehavior {
                 },
                 BehaviorState::Chase => {
                     // growl
-                    //owner.get_character_manager().play_audio(&owner._audio_growl);
+                    //owner.get_character_manager().get_scene_manager().play_audio(&owner._audio_growl);
                 },
                 BehaviorState::Attack => {
                     let to_player_direction = (player.get_position() - owner.get_position()).normalize();
@@ -132,7 +132,7 @@ impl BehaviorBase for RoamerBehavior {
                     self._roamer_attack_time = lerp(NPC_ATTACK_TERM_MIN, NPC_ATTACK_TERM_MAX, rand::random::<f32>());
 
                     // growl
-                    owner.get_character_manager().play_audio(&owner._character_data.borrow()._audio_data._audio_growl);
+                    owner.get_character_manager().get_scene_manager().play_audio(&owner._character_data.borrow()._audio_data._audio_growl);
                 }
             }
         }

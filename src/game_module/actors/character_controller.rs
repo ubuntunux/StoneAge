@@ -1,9 +1,10 @@
 use nalgebra::Vector3;
 use rust_engine_3d::scene::collision::{CollisionCreateInfo, CollisionData, CollisionType};
+use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::system::ptr_as_ref;
 use crate::game_module::actors::block::Block;
 use crate::game_module::actors::character_data::{CharacterData, MoveAnimationState};
-use crate::game_module::game_constants::{CHARACTER_ROTATION_SPEED, GRAVITY, GROUND_HEIGHT, MOVE_LIMIT};
+use crate::game_module::game_constants::{AUDIO_FOOTSTEP, CHARACTER_ROTATION_SPEED, GRAVITY, GROUND_HEIGHT, MOVE_LIMIT};
 use crate::game_module::game_scene_manager::GameSceneManager;
 
 pub struct CharacterController {
@@ -110,16 +111,22 @@ impl CharacterController {
         self._velocity.y = 0.0;
     }
 
-    pub fn update_character_controller(
+    pub fn update_character_controller<'a>(
         &mut self,
-        _is_player: bool,
+        scene_manager: &SceneManager<'a>,
         game_scene_manager: &GameSceneManager,
+        is_player: bool,
         character_data: &CharacterData,
         move_animation: MoveAnimationState,
         actor_collision: &CollisionData,
         delta_time: f32,
     ) {
         let prev_position = self._position.clone_owned();
+        let was_on_ground = self.is_on_ground();
+
+        if !was_on_ground && self.is_on_ground() && is_player {
+            scene_manager.play_audio_bank(AUDIO_FOOTSTEP);
+        }
 
         // move on ground
         let mut move_direction = if MoveAnimationState::Roll == move_animation {

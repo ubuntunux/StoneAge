@@ -22,7 +22,7 @@ pub struct CharacterStats {
     pub _is_alive: bool,
     pub _hp: i32,
     pub _stamina: f32,
-    pub _invincibility: bool,
+    pub _invincibility: bool
 }
 
 #[derive(Default)]

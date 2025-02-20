@@ -5,6 +5,7 @@ use rust_engine_3d::scene::animation::{AnimationPlayArgs, AnimationPlayInfo};
 use rust_engine_3d::scene::bounding_box::BoundingBox;
 use rust_engine_3d::scene::collision::CollisionData;
 use rust_engine_3d::scene::render_object::{AnimationLayer, RenderObjectData};
+use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::scene::transform_object::TransformObjectData;
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
@@ -31,6 +32,28 @@ impl CharacterStats {
         self._hp = character_data._stat_data._max_hp;
         self._stamina = MAX_STAMINA;
         self._invincibility = false;
+    }
+}
+
+impl CharacterStats {
+    pub fn update_stamina<'a>(&mut self, owner: &Character<'a>, delta_time: f32) {
+        if owner._is_player && self._is_alive {
+            if owner.is_move_state(MoveAnimationState::Run) {
+                self._stamina -= STAMINA_RUN * delta_time;
+                if self._stamina < 0.0 {
+                    self._stamina = 0.0;
+                }
+            } else if owner.is_action(ActionAnimationState::None) &&
+                (owner.is_move_state(MoveAnimationState::None) || owner.is_move_state(MoveAnimationState::Idle) || owner.is_move_state(MoveAnimationState::Walk)) {
+                if self._stamina < 0.0 {
+                    self._stamina = 0.0;
+                }
+                self._stamina += STAMINA_RECOVERY * delta_time;
+                if MAX_STAMINA < self._stamina {
+                    self._stamina = MAX_STAMINA;
+                }
+            }
+        }
     }
 }
 
@@ -337,6 +360,7 @@ impl<'a> Character<'a> {
     }
 
     pub fn update_move_animation_begin_event(&mut self) {
+        let character_manager = self.get_character_manager();
         match self._animation_state._move_animation_state {
             MoveAnimationState::None => {
                 // nothing
@@ -345,7 +369,7 @@ impl<'a> Character<'a> {
                 // nothing
             },
             MoveAnimationState::Jump => {
-                self.get_character_manager().play_audio_bank(AUDIO_JUMP);
+                character_manager.get_scene_manager().play_audio_bank(AUDIO_JUMP);
             },
             MoveAnimationState::Roll => {
                 self.set_invincibility(true);
@@ -354,7 +378,7 @@ impl<'a> Character<'a> {
                 // nothing
             },
             MoveAnimationState::RunningJump => {
-                self.get_character_manager().play_audio_bank(AUDIO_JUMP);
+                character_manager.get_scene_manager().play_audio_bank(AUDIO_JUMP);
             },
             MoveAnimationState::Walk => {
                 // nothing
@@ -389,6 +413,7 @@ impl<'a> Character<'a> {
     }
 
     pub fn update_move_animation_loop_event(&mut self) {
+        let character_manager = self.get_character_manager();
         let move_animation = self._animation_state._move_animation_state;
         let render_object = ptr_as_mut(self._render_object.as_ptr());
         let animation_play_info = render_object.get_animation_play_info(AnimationLayer::BaseLayer);
@@ -404,7 +429,7 @@ impl<'a> Character<'a> {
             },
             MoveAnimationState::Roll => {
                 if self._is_player && animation_play_info.check_animation_event_time(0.2) {
-                    self.get_character_manager().play_audio_bank(AUDIO_ROLL);
+                    character_manager.get_scene_manager().play_audio_bank(AUDIO_ROLL);
                 }
                 else if animation_play_info._is_animation_end {
                     self.set_move_idle();
@@ -412,7 +437,7 @@ impl<'a> Character<'a> {
             },
             MoveAnimationState::Run => {
                 if self._is_player && (animation_play_info.check_animation_event_time(0.1) || animation_play_info.check_animation_event_time(0.5)) {
-                    self.get_character_manager().play_audio_options(AUDIO_FOOTSTEP, AudioLoop::ONCE, Some(0.5));
+                    character_manager.get_scene_manager().play_audio_options(AUDIO_FOOTSTEP, AudioLoop::ONCE, Some(0.5));
                 }
             },
             MoveAnimationState::RunningJump => {
@@ -420,7 +445,7 @@ impl<'a> Character<'a> {
             },
             MoveAnimationState::Walk => {
                 if self._is_player && (animation_play_info.check_animation_event_time(0.2) || animation_play_info.check_animation_event_time(0.9)) {
-                    self.get_character_manager().play_audio_options(AUDIO_FOOTSTEP, AudioLoop::ONCE, Some(0.5));
+                    character_manager.get_scene_manager().play_audio_options(AUDIO_FOOTSTEP, AudioLoop::ONCE, Some(0.5));
                 }
             }
         }
@@ -468,7 +493,7 @@ impl<'a> Character<'a> {
             ActionAnimationState::Attack => {
                 if animation_play_info.check_animation_event_time(character_data._animation_data._attack_event_time) {
                     self._animation_state._attack_event = ActionAnimationState::Attack;
-                    self.get_character_manager().play_audio_bank(AUDIO_ATTACK);
+                    self.get_character_manager().get_scene_manager().play_audio_bank(AUDIO_ATTACK);
                 }
 
                 if animation_play_info._is_animation_end {
@@ -491,7 +516,7 @@ impl<'a> Character<'a> {
             },
             ActionAnimationState::PowerAttack => {
                 if animation_play_info.check_animation_event_time(character_data._animation_data._power_attack_event_time) {
-                    self.get_character_manager().play_audio_bank(AUDIO_ATTACK);
+                    self.get_character_manager().get_scene_manager().play_audio_bank(AUDIO_ATTACK);
                     self._animation_state._attack_event = ActionAnimationState::PowerAttack;
                 }
 
@@ -542,11 +567,10 @@ impl<'a> Character<'a> {
         }
     }
 
-    pub fn check_in_range(&self, target: &Character, check_range: f32, check_direction: bool) -> bool {
+    pub fn check_in_range(&self, target_collision: &CollisionData, check_range: f32, check_direction: bool) -> bool {
         let collision = self.get_collision();
-        let target_collision = target.get_collision();
         let check_range = check_range + (collision._bounding_box._size.x + target_collision._bounding_box._size.x) * 0.4;
-        let to_target = target.get_position() - self.get_position();
+        let to_target = target_collision._bounding_box._center - collision._bounding_box._center;
         let (to_target_dir, to_target_dist) = math::make_normalize_xz_with_norm(&to_target);
         let half_height = collision._bounding_box._size.y * 0.5;
         if (self.get_transform().get_front().dot(&to_target_dir) < 0.0 || !check_direction) &&
@@ -570,25 +594,26 @@ impl<'a> Character<'a> {
         }
     }
 
-    pub fn set_damage(&mut self, attack_point: Vector3<f32>, damage: i32) {
+    pub fn set_damage(&mut self, attack_point: &Vector3<f32>, damage: i32) {
+        let character_manager = ptr_as_ref(self._character_manager);
         self._character_stats._hp -= damage;
         if self._character_stats._hp <= 0 {
-            self.get_character_manager().play_audio(&self._character_data.borrow()._audio_data._audio_dead);
+            character_manager.get_scene_manager().play_audio(&self._character_data.borrow()._audio_data._audio_dead);
             self.set_dead();
         } else {
-            self.get_character_manager().play_audio(&self._character_data.borrow()._audio_data._audio_pain);
+            character_manager.get_scene_manager().play_audio(&self._character_data.borrow()._audio_data._audio_pain);
             if self._is_player {
                 self.set_action_hit();
             }
         }
 
         let effect_create_info = EffectCreateInfo {
-            _effect_position: attack_point,
+            _effect_position: attack_point.clone(),
             _effect_data_name: String::from("effect_test"),
             ..Default::default()
         };
-        self.get_character_manager().play_effect(EFFECT_HIT, &effect_create_info);
-        self.get_character_manager().play_audio_bank(AUDIO_HIT);
+        character_manager.get_scene_manager_mut().add_effect(EFFECT_HIT, &effect_create_info);
+        character_manager.get_scene_manager().play_audio_bank(AUDIO_HIT);
     }
 
     pub fn set_invincibility(&mut self, invincibility: bool) {
@@ -666,50 +691,43 @@ impl<'a> Character<'a> {
     }
 
     pub fn is_speed_running(&self) -> bool {
-        self.is_move_state(MoveAnimationState::Run) ||
-            self.is_move_state(MoveAnimationState::RunningJump)
+        self.is_move_state(MoveAnimationState::Run) || self.is_move_state(MoveAnimationState::RunningJump)
     }
 
-    pub fn update_character(&mut self, game_scene_manager: &GameSceneManager, delta_time: f32, player: &Character<'a>) {
-        let was_on_ground = self.is_on_ground();
-
+    pub fn update_character(
+        &mut self,
+        scene_manager: &SceneManager<'a>,
+        game_scene_manager: &GameSceneManager,
+        player: &Character<'a>,
+        delta_time: f32
+    ) {
+        // behavior
         if false == self._is_player && self._character_stats._is_alive {
             self._behavior.update_behavior(ptr_as_mut(self), player, delta_time);
         }
 
-        // stamina
-        if self._is_player && self._character_stats._is_alive {
-            if self.is_move_state(MoveAnimationState::Run) {
-                self._character_stats._stamina -= STAMINA_RUN * delta_time;
-                if self._character_stats._stamina < 0.0 {
-                    self._character_stats._stamina = 0.0;
-                    self.toggle_run();
-                }
-            } else if self.is_action(ActionAnimationState::None) &&
-                (self.is_move_state(MoveAnimationState::None) || self.is_move_state(MoveAnimationState::Idle) || self.is_move_state(MoveAnimationState::Walk)) {
-                if self._character_stats._stamina < 0.0 {
-                    self._character_stats._stamina = 0.0;
-                }
-                self._character_stats._stamina += STAMINA_RECOVERY * delta_time;
-                if MAX_STAMINA < self._character_stats._stamina {
-                    self._character_stats._stamina = MAX_STAMINA;
-                }
+        // update stats - stamina
+        let owner = ptr_as_ref(self);
+        self._character_stats.update_stamina(owner, delta_time);
+        if owner.is_move_state(MoveAnimationState::Run) {
+            if self._character_stats._stamina == 0.0 {
+                self.set_run(false);
             }
         }
 
+        // controller
+        let character_data = ptr_as_ref(self._character_data.as_ptr());
         self._controller.update_character_controller(
-            self._is_player,
+            scene_manager,
             game_scene_manager,
-            ptr_as_ref(self._character_data.as_ptr()),
+            self._is_player,
+            character_data,
             self._animation_state._move_animation_state,
             &self._render_object.borrow()._collision,
-            delta_time,
+            delta_time
         );
-        self.update_transform();
 
-        // sound
-        if !was_on_ground && self.is_on_ground() && self._is_player {
-            self.get_character_manager().play_audio_bank(AUDIO_FOOTSTEP);
-        }
+        // transform
+        self.update_transform();
     }
 }

@@ -1,11 +1,8 @@
 use std::collections::HashMap;
 
 use nalgebra::Vector3;
-use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop, AudioManager};
+use rust_engine_3d::audio::audio_manager::AudioManager;
 use rust_engine_3d::core::engine_core::EngineCore;
-use rust_engine_3d::effect::effect_data::EffectCreateInfo;
-use rust_engine_3d::resource::resource::ResourceData;
-use rust_engine_3d::resource::resource::ResourceData::{Audio, AudioBank};
 use rust_engine_3d::scene::render_object::RenderObjectCreateInfo;
 use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
@@ -147,26 +144,6 @@ impl<'a> CharacterManager<'a> {
     pub fn set_target_character(&mut self, target_character: Option<RcRefCell<Character<'a>>>) {
         self._target_character = target_character;
     }
-    pub fn play_audio_bank(&self, audio_name_bank: &str) {
-        self.get_audio_manager_mut().play_audio_bank(audio_name_bank, AudioLoop::ONCE, None);
-    }
-
-    pub fn play_audio(&self, audio_resource: &ResourceData) -> Option<RcRefCell<AudioInstance>> {
-        match audio_resource {
-            Audio(audio_data) => self.get_audio_manager_mut().play_audio_data(&audio_data, AudioLoop::ONCE, None),
-            AudioBank(audio_bank_data) => self.get_audio_manager_mut().play_audio_bank_data(&audio_bank_data, AudioLoop::ONCE, None),
-            _ => None,
-        }
-    }
-
-    pub fn play_audio_options(&self, audio_name_bank: &str, audio_loop: AudioLoop, volume: Option<f32>) {
-        self.get_audio_manager_mut().play_audio_bank(audio_name_bank, audio_loop, volume);
-    }
-
-    pub fn play_effect(&self, effect_name: &str, effect_create_info: &EffectCreateInfo) {
-        self.get_scene_manager_mut().add_effect(effect_name, effect_create_info);
-    }
-
     pub fn update_character_manager(&mut self, delta_time: f64) {
         let player = ptr_as_mut(self._player.as_ref().unwrap().as_ptr());
         let mut dead_characters: Vec<RcRefCell<Character>> = Vec::new();
@@ -179,7 +156,12 @@ impl<'a> CharacterManager<'a> {
             character_mut.update_action_keyframe_event();
 
             // update character
-            character_mut.update_character(self.get_game_scene_manager(), delta_time as f32, player);
+            character_mut.update_character(
+                self.get_scene_manager(),
+                self.get_game_scene_manager(),
+                player,
+                delta_time as f32
+            );
 
             if character_mut._character_stats._is_alive == false {
                 continue;
@@ -194,16 +176,17 @@ impl<'a> CharacterManager<'a> {
                         if false == target_character_mut._is_player &&
                             target_character_mut._character_stats._is_alive &&
                             false == target_character_mut._character_stats._invincibility &&
-                            character_mut.check_in_range(target_character_mut, NPC_ATTACK_HIT_RANGE, true) {
+                            character_mut.check_in_range(target_character_mut.get_collision(), NPC_ATTACK_HIT_RANGE, true) {
                                 regist_target_character = Some(target_character.clone());
-                                target_character_mut.set_damage(target_character_mut.get_position().clone(), character_mut.get_power(character_mut._animation_state._attack_event));
+                                let target_position = ptr_as_ref(target_character_mut.get_position());
+                                target_character_mut.set_damage(target_position, character_mut.get_power(character_mut._animation_state._attack_event));
                                 if false == target_character_mut._character_stats._is_alive {
                                     dead_characters.push(target_character.clone());
 
                                     // TestCode: Item
                                     let item_create_info = ItemCreateInfo {
                                         _item_data_name: String::from(ITEM_MEAT),
-                                        _position: target_character_mut.get_position().clone() + Vector3::new(0.0, 0.5, 0.0),
+                                        _position: target_position + Vector3::new(0.0, 0.5, 0.0),
                                         ..Default::default()
                                     };
                                     self.get_game_scene_manager().get_item_manager_mut().create_item(&item_create_info);
@@ -214,8 +197,9 @@ impl<'a> CharacterManager<'a> {
                     // npc attack to player
                     if player._character_stats._is_alive &&
                         false == player._character_stats._invincibility &&
-                        character_mut.check_in_range(player, NPC_ATTACK_HIT_RANGE, true) {
-                        player.set_damage(player.get_position().clone(), character_mut.get_power(character_mut._animation_state._attack_event));
+                        character_mut.check_in_range(player.get_collision(), NPC_ATTACK_HIT_RANGE, true) {
+                        let position = ptr_as_ref(player.get_position());
+                        player.set_damage(position, character_mut.get_power(character_mut._animation_state._attack_event));
                     }
                 }
             }

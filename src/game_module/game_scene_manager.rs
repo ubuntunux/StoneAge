@@ -99,6 +99,7 @@ impl<'a> GameSceneManager<'a> {
         self._effect_manager = engine_core.get_effect_manager();
         engine_core.get_scene_manager_mut().initialize_scene_manager(
             engine_core.get_renderer_context(),
+            engine_core.get_audio_manager(),
             engine_core.get_effect_manager(),
             engine_core.get_engine_resources(),
             window_size,

@@ -1,13 +1,18 @@
 use std::collections::HashMap;
+use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::{AudioLoop, AudioManager};
 use rust_engine_3d::core::engine_core::EngineCore;
+use rust_engine_3d::effect::effect_data::EffectCreateInfo;
+use rust_engine_3d::scene::collision::CollisionData;
 use rust_engine_3d::scene::render_object::{RenderObjectCreateInfo, RenderObjectData};
 use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
 use crate::application::application::Application;
-use crate::game_module::actors::props::{Prop, PropCreateInfo, PropData, PropDataType, PropProperties, PropManager};
+use crate::game_module::actors::character_data::ActionAnimationState;
+use crate::game_module::actors::items::ItemCreateInfo;
+use crate::game_module::actors::props::{Prop, PropCreateInfo, PropData, PropDataType, PropManager, PropStats};
 use crate::game_module::game_client::GameClient;
-use crate::game_module::game_constants::{AUDIO_CRUNCH, EAT_ITEM_DISTANCE};
+use crate::game_module::game_constants::{AUDIO_CRUNCH, AUDIO_HIT, EFFECT_HIT, ITEM_MEAT, NPC_ATTACK_HIT_RANGE};
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
 
@@ -22,8 +27,10 @@ impl Default for PropData {
     }
 }
 
+// Prop
 impl<'a> Prop<'a> {
     pub fn create_prop(
+        prop_manager: *const PropManager<'a>,
         prop_id: u64,
         prop_name: &str,
         prop_data: &RcRefCell<PropData>,
@@ -33,9 +40,11 @@ impl<'a> Prop<'a> {
         let mut prop = Prop {
             _prop_name: String::from(prop_name),
             _prop_id: prop_id,
+            _prop_manager: prop_manager,
             _render_object: render_object.clone(),
             _prop_data: prop_data.clone(),
-            _prop_properties: Box::from(PropProperties {
+            _prop_stats: Box::from(PropStats {
+                _is_alive: false,
                 _prop_hp: prop_data.borrow()._max_hp,
                 _position: prop_create_info._position.clone(),
                 _rotation: prop_create_info._rotation.clone(),
@@ -47,6 +56,7 @@ impl<'a> Prop<'a> {
     }
 
     pub fn initialize_prop(&mut self) {
+        self._prop_stats._is_alive = true;
         self.update_transform();
     }
 
@@ -54,11 +64,47 @@ impl<'a> Prop<'a> {
         self._prop_id
     }
 
+    pub fn get_prop_manager(&self) -> &PropManager<'a> {
+        ptr_as_ref(self._prop_manager)
+    }
+
+    pub fn get_position(&self) -> &Vector3<f32> {
+        &ptr_as_ref(self._render_object.as_ptr())._transform_object._position
+    }
+
+    pub fn get_collision(&self) -> &CollisionData {
+        &ptr_as_ref(self._render_object.as_ptr())._collision
+    }
+
+    pub fn set_dead(&mut self) {
+        if self._prop_stats._is_alive {
+            self.get_prop_manager().get_audio_manager_mut().play_audio_bank(AUDIO_CRUNCH, AudioLoop::ONCE, None);
+            self._prop_stats._is_alive = false;
+        }
+    }
+
+    pub fn set_damage(&mut self, attack_point: &Vector3<f32>, damage: i32) {
+        self._prop_stats._prop_hp -= damage;
+        if self._prop_stats._prop_hp <= 0 {
+            self.set_dead();
+        }
+
+        let effect_create_info = EffectCreateInfo {
+            _effect_position: attack_point.clone(),
+            _effect_data_name: String::from("effect_test"),
+            ..Default::default()
+        };
+
+        let prop_manager = self.get_prop_manager();
+        prop_manager.get_scene_manager_mut().add_effect(EFFECT_HIT, &effect_create_info);
+        prop_manager.get_audio_manager_mut().play_audio_bank(AUDIO_HIT, AudioLoop::ONCE, None);
+    }
+
     pub fn update_transform(&mut self) {
         self._render_object.borrow_mut()._transform_object.set_transform(
-            &self._prop_properties._position,
-            &self._prop_properties._rotation,
-            &self._prop_properties._scale,
+            &self._prop_stats._position,
+            &self._prop_stats._rotation,
+            &self._prop_stats._scale,
         );
     }
 
@@ -70,6 +116,7 @@ impl<'a> Prop<'a> {
     }
 }
 
+// PropManager
 impl<'a> PropManager<'a> {
     pub fn create_prop_manager() -> Box<PropManager<'a>> {
         Box::new(PropManager {
@@ -129,6 +176,7 @@ impl<'a> PropManager<'a> {
         );
         let id = self.generate_id();
         let prop = newRcRefCell(Prop::create_prop(
+            self,
             id,
             prop_name,
             prop_data,
@@ -149,26 +197,38 @@ impl<'a> PropManager<'a> {
             prop.borrow_mut().update_prop(delta_time);
         }
 
-        let mut eaten_props: Vec<RcRefCell<Prop>> = Vec::new();
+        let mut dead_props: Vec<RcRefCell<Prop>> = Vec::new();
         {
             let game_scene_manager = self.get_game_scene_manager();
-            let player = game_scene_manager.get_character_manager().get_player();
-            let player_mut = player.borrow_mut();
-            let player_position = player_mut.get_position();
-            for prop in self._props.values() {
-                let prop_ref = prop.borrow();
-                let dist = (prop_ref._prop_properties._position - player_position).norm();
-                if dist <= EAT_ITEM_DISTANCE {
-                    eaten_props.push(prop.clone());
-                    log::info!("add to eaten_props");
+            let player_refcell = game_scene_manager.get_character_manager().get_player();
+            let player = player_refcell.borrow_mut();
+            if player._character_stats._is_alive {
+                if player._animation_state._attack_event != ActionAnimationState::None {
+                    for prop_refcell in self._props.values() {
+                        let mut prop = prop_refcell.borrow_mut();
+                        if player.check_in_range(prop.get_collision(), NPC_ATTACK_HIT_RANGE, true) {
+                            let prop_position = ptr_as_ref(prop.get_position());
+                            prop.set_damage(prop_position, player.get_power(player._animation_state._attack_event));
+
+                            if false == prop._prop_stats._is_alive {
+                                dead_props.push(prop_refcell.clone());
+
+                                // TestCode: Item
+                                let item_create_info = ItemCreateInfo {
+                                    _item_data_name: String::from(ITEM_MEAT),
+                                    _position: prop_position + Vector3::new(0.0, 0.5, 0.0),
+                                    ..Default::default()
+                                };
+                                self.get_game_scene_manager().get_item_manager_mut().create_item(&item_create_info);
+                            }
+                        }
+                    }
                 }
             }
         }
 
-        for prop in eaten_props.iter() {
-            self.get_audio_manager_mut().play_audio_bank(AUDIO_CRUNCH, AudioLoop::ONCE, None);
-            log::info!("Remove prop");
-            self.remove_prop(prop);
+        for prop_refcell in dead_props.iter() {
+            self.remove_prop(prop_refcell);
         }
     }
 }
