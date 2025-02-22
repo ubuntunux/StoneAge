@@ -569,8 +569,10 @@ impl<'a> Character<'a> {
 
     pub fn check_in_range(&self, target_collision: &CollisionData, check_range: f32, check_direction: bool) -> bool {
         let collision = self.get_collision();
+        let position = Vector3::new(collision._bounding_box._center.x, collision._bounding_box._min.y, collision._bounding_box._center.z);
+        let target_position = Vector3::new(target_collision._bounding_box._center.x, target_collision._bounding_box._min.y, target_collision._bounding_box._center.z);
         let check_range = check_range + (collision._bounding_box._size.x + target_collision._bounding_box._size.x) * 0.4;
-        let to_target = target_collision._bounding_box._center - collision._bounding_box._center;
+        let to_target = target_position - position;
         let (to_target_dir, to_target_dist) = math::make_normalize_xz_with_norm(&to_target);
         let half_height = collision._bounding_box._size.y * 0.5;
         if (self.get_transform().get_front().dot(&to_target_dir) < 0.0 || !check_direction) &&

@@ -113,6 +113,7 @@ impl<'a> Prop<'a> {
     }
 
     pub fn update_prop(&mut self, _delta_time: f64) {
+        self.update_transform();
     }
 }
 
