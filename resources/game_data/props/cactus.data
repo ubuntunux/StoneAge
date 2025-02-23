@@ -1,7 +1,7 @@
 {
     "_enable_collision": true,
-    "_item_data_name": "items/meat",
+    "_item_data_name": "items/wood",
     "_max_hp": 100,
     "_model_data_name": "environments/cactus",
-    "_prop_type": "Rock"
+    "_prop_type": "Tree"
 }

@@ -60,7 +60,7 @@ pub const MATERIAL_CROSS_HAIR: &str = "ui/cross_hair_box";
 pub const EFFECT_HIT: &str = "hit_effect";
 
 // Items
-pub const ITEM_MEAT: &str = "meat";
+pub const ITEM_MEAT: &str = "items/meat";
 
 // Game Scene
-pub const GAME_SCENE_INTRO: &str = "intro_stage";
+pub const GAME_SCENE_INTRO: &str = "game_scenes/intro_stage";

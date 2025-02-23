@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::AudioManager;
 use rust_engine_3d::core::engine_core::EngineCore;
-use rust_engine_3d::scene::render_object::RenderObjectCreateInfo;
+use rust_engine_3d::scene::render_object::{RenderObjectCreateInfo, RenderObjectData};
 use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
 
@@ -12,7 +12,7 @@ use crate::game_module::actors::character::{Character, CharacterCreateInfo};
 use crate::game_module::actors::character_data::ActionAnimationState;
 use crate::game_module::actors::items::ItemCreateInfo;
 use crate::game_module::game_client::GameClient;
-use crate::game_module::game_constants::{ITEM_MEAT, NPC_ATTACK_HIT_RANGE};
+use crate::game_module::game_constants::{AUDIO_FOOTSTEP, ITEM_MEAT, NPC_ATTACK_HIT_RANGE};
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
 
@@ -145,23 +145,34 @@ impl<'a> CharacterManager<'a> {
         self._target_character = target_character;
     }
     pub fn update_character_manager(&mut self, delta_time: f64) {
+        // gather collision objects
+        let mut collision_objects: Vec<*const RenderObjectData<'a>> = Vec::new();
+        for (_key, block) in self.get_game_scene_manager().get_blocks().iter() {
+            collision_objects.push(block.borrow()._render_object.as_ptr())
+        }
+
+        for (_key, prop) in self.get_game_scene_manager().get_prop_manager().get_props().iter() {
+            collision_objects.push(prop.borrow()._render_object.as_ptr())
+        }
+
+        // process character
         let player = ptr_as_mut(self._player.as_ref().unwrap().as_ptr());
         let mut dead_characters: Vec<RcRefCell<Character>> = Vec::new();
         let mut regist_target_character: Option<RcRefCell<Character<'a>>> = None;
         for character in self._characters.values() {
             let character_mut = ptr_as_mut(character.as_ptr());
 
-            // update animation key frames
-            character_mut.update_move_keyframe_event();
-            character_mut.update_action_keyframe_event();
-
             // update character
+            let was_on_ground = character_mut.is_on_ground();
             character_mut.update_character(
-                self.get_scene_manager(),
-                self.get_game_scene_manager(),
+                &collision_objects,
                 player,
                 delta_time as f32
             );
+
+            if !was_on_ground && character_mut.is_on_ground() && character_mut._is_player {
+                self.get_scene_manager().play_audio_bank(AUDIO_FOOTSTEP);
+            }
 
             if character_mut._character_stats._is_alive == false {
                 continue;

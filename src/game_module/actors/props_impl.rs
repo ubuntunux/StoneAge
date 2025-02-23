@@ -10,9 +10,9 @@ use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, Rc
 use crate::application::application::Application;
 use crate::game_module::actors::character_data::ActionAnimationState;
 use crate::game_module::actors::items::ItemCreateInfo;
-use crate::game_module::actors::props::{Prop, PropCreateInfo, PropData, PropDataType, PropManager, PropStats};
+use crate::game_module::actors::props::{Prop, PropCreateInfo, PropData, PropDataType, PropManager, PropMap, PropStats};
 use crate::game_module::game_client::GameClient;
-use crate::game_module::game_constants::{AUDIO_CRUNCH, AUDIO_HIT, EFFECT_HIT, ITEM_MEAT, NPC_ATTACK_HIT_RANGE};
+use crate::game_module::game_constants::{AUDIO_CRUNCH, AUDIO_HIT, EFFECT_HIT, NPC_ATTACK_HIT_RANGE};
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
 
@@ -164,6 +164,9 @@ impl<'a> PropManager<'a> {
     pub fn get_prop(&self, prop_id: u64) -> Option<&RcRefCell<Prop<'a>>> {
         self._props.get(&prop_id)
     }
+    pub fn get_props(&self) -> &PropMap<'a> {
+        &self._props
+    }
     pub fn create_prop(&mut self, prop_name: &str, prop_create_info: &PropCreateInfo) -> RcRefCell<Prop<'a>> {
         let game_resources = ptr_as_ref(self._game_resources);
         let prop_data = game_resources.get_prop_data(prop_create_info._prop_data_name.as_str());
@@ -216,7 +219,7 @@ impl<'a> PropManager<'a> {
 
                                 // TestCode: Item
                                 let item_create_info = ItemCreateInfo {
-                                    _item_data_name: String::from(ITEM_MEAT),
+                                    _item_data_name: prop._prop_data.borrow()._item_data_name.clone(),
                                     _position: prop_position + Vector3::new(0.0, 0.5, 0.0),
                                     ..Default::default()
                                 };

@@ -5,7 +5,6 @@ use rust_engine_3d::scene::animation::{AnimationPlayArgs, AnimationPlayInfo};
 use rust_engine_3d::scene::bounding_box::BoundingBox;
 use rust_engine_3d::scene::collision::CollisionData;
 use rust_engine_3d::scene::render_object::{AnimationLayer, RenderObjectData};
-use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::scene::transform_object::TransformObjectData;
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
@@ -15,7 +14,6 @@ use crate::game_module::actors::character_data::{ActionAnimationState, Character
 use crate::game_module::actors::character_manager::CharacterManager;
 use crate::game_module::behavior::behavior_base::create_character_behavior;
 use crate::game_module::game_constants::{AUDIO_ATTACK, AUDIO_FOOTSTEP, AUDIO_HIT, AUDIO_JUMP, AUDIO_ROLL, EFFECT_HIT, MAX_STAMINA, STAMINA_ATTACK, STAMINA_JUMP, STAMINA_POWER_ATTACK, STAMINA_RECOVERY, STAMINA_ROLL, STAMINA_RUN};
-use crate::game_module::game_scene_manager::GameSceneManager;
 
 impl CharacterStats {
     pub fn create_character_stats() -> CharacterStats {
@@ -698,11 +696,14 @@ impl<'a> Character<'a> {
 
     pub fn update_character(
         &mut self,
-        scene_manager: &SceneManager<'a>,
-        game_scene_manager: &GameSceneManager,
+        collision_objects: &Vec<*const RenderObjectData<'a>>,
         player: &Character<'a>,
         delta_time: f32
     ) {
+        // update animation key frames
+        self.update_move_keyframe_event();
+        self.update_action_keyframe_event();
+
         // behavior
         if false == self._is_player && self._character_stats._is_alive {
             self._behavior.update_behavior(ptr_as_mut(self), player, delta_time);
@@ -720,9 +721,7 @@ impl<'a> Character<'a> {
         // controller
         let character_data = ptr_as_ref(self._character_data.as_ptr());
         self._controller.update_character_controller(
-            scene_manager,
-            game_scene_manager,
-            self._is_player,
+            collision_objects,
             character_data,
             self._animation_state._move_animation_state,
             &self._render_object.borrow()._collision,

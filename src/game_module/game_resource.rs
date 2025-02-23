@@ -13,6 +13,7 @@ use crate::game_module::actors::items::ItemData;
 use crate::game_module::actors::props::PropData;
 use crate::game_module::game_scene_manager::GameSceneDataCreateInfo;
 
+pub const GAME_DATA_DIRECTORY: &str = "game_data";
 pub const BLOCK_DATA_FILE_PATH: &str = "game_data/blocks";
 pub const CHARACTER_DATA_FILE_PATH: &str = "game_data/characters";
 pub const ITEM_DATA_FILE_PATH: &str = "game_data/items";
@@ -72,10 +73,11 @@ impl<'a> GameResources<'a> {
     }
     pub fn load_game_scene_data(&mut self, _renderer_context: &RendererContext) {
         log::info!("    load_game_scene_data");
+        let game_data_directory = PathBuf::from(GAME_DATA_DIRECTORY);
         let game_scene_directory = PathBuf::from(GAME_SCENE_FILE_PATH);
         let game_scene_data_files: Vec<PathBuf> = self.collect_resources(&game_scene_directory, &[EXT_GAME_DATA]);
         for game_scene_data_file in game_scene_data_files {
-            let game_scene_data_name = get_unique_resource_name(&self._game_scene_data_create_infos_map, &game_scene_directory, &game_scene_data_file);
+            let game_scene_data_name = get_unique_resource_name(&self._game_scene_data_create_infos_map, &game_data_directory, &game_scene_data_file);
             let loaded_contents = system::load(&game_scene_data_file);
             let game_scene_data_create_info: GameSceneDataCreateInfo = serde_json::from_reader(loaded_contents).expect("Failed to deserialize.");
             self._game_scene_data_create_infos_map.insert(game_scene_data_name.clone(), newRcRefCell(game_scene_data_create_info));
@@ -125,10 +127,11 @@ impl<'a> GameResources<'a> {
 
     // block data
     fn load_block_data(&mut self) {
-        let game_data_directory = PathBuf::from(BLOCK_DATA_FILE_PATH);
+        let game_data_directory = PathBuf::from(GAME_DATA_DIRECTORY);
+        let block_data_directory = PathBuf::from(BLOCK_DATA_FILE_PATH);
 
         // load_block_data
-        let game_data_files: Vec<PathBuf> = self.collect_resources(&game_data_directory, &[EXT_GAME_DATA]);
+        let game_data_files: Vec<PathBuf> = self.collect_resources(&block_data_directory, &[EXT_GAME_DATA]);
         for game_data_file in game_data_files {
             let block_data_name = get_unique_resource_name(&self._block_data_map, &game_data_directory, &game_data_file);
             let loaded_contents = system::load(&game_data_file);
@@ -151,10 +154,11 @@ impl<'a> GameResources<'a> {
 
     // prop data
     fn load_prop_data(&mut self) {
-        let game_data_directory = PathBuf::from(PROP_DATA_FILE_PATH);
+        let game_data_directory = PathBuf::from(GAME_DATA_DIRECTORY);
+        let prop_data_directory = PathBuf::from(PROP_DATA_FILE_PATH);
 
         // load_prop_data
-        let game_data_files: Vec<PathBuf> = self.collect_resources(&game_data_directory, &[EXT_GAME_DATA]);
+        let game_data_files: Vec<PathBuf> = self.collect_resources(&prop_data_directory, &[EXT_GAME_DATA]);
         for game_data_file in game_data_files {
             let prop_data_name = get_unique_resource_name(&self._prop_data_map, &game_data_directory, &game_data_file);
             let loaded_contents = system::load(&game_data_file);
@@ -177,10 +181,11 @@ impl<'a> GameResources<'a> {
 
     // character data
     fn load_character_data(&mut self) {
-        let game_data_directory = PathBuf::from(CHARACTER_DATA_FILE_PATH);
+        let game_data_directory = PathBuf::from(GAME_DATA_DIRECTORY);
+        let character_data_directory = PathBuf::from(CHARACTER_DATA_FILE_PATH);
 
         // load_character_data
-        let game_data_files: Vec<PathBuf> = self.collect_resources(&game_data_directory, &[EXT_GAME_DATA]);
+        let game_data_files: Vec<PathBuf> = self.collect_resources(&character_data_directory, &[EXT_GAME_DATA]);
         for game_data_file in game_data_files {
             let character_data_name = get_unique_resource_name(&self._character_data_map, &game_data_directory, &game_data_file);
             let loaded_contents = system::load(&game_data_file);
@@ -207,10 +212,11 @@ impl<'a> GameResources<'a> {
 
     // item data
     fn load_item_data(&mut self) {
-        let game_data_directory = PathBuf::from(ITEM_DATA_FILE_PATH);
+        let game_data_directory = PathBuf::from(GAME_DATA_DIRECTORY);
+        let item_data_directory = PathBuf::from(ITEM_DATA_FILE_PATH);
 
         // load_item_data
-        let game_data_files: Vec<PathBuf> = self.collect_resources(&game_data_directory, &[EXT_GAME_DATA]);
+        let game_data_files: Vec<PathBuf> = self.collect_resources(&item_data_directory, &[EXT_GAME_DATA]);
         for game_data_file in game_data_files {
             let item_data_name = get_unique_resource_name(&self._item_data_map, &game_data_directory, &game_data_file);
             let loaded_contents = system::load(&game_data_file);

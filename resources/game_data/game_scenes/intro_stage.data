@@ -597,7 +597,7 @@
     },
     "_characters": {
         "neanderthal": {
-            "_character_data_name": "neanderthal",
+            "_character_data_name": "characters/neanderthal",
             "_position": [
                 30.0,
                 9.0,
@@ -615,7 +615,7 @@
             ]
         },
         "spider": {
-            "_character_data_name": "spider",
+            "_character_data_name": "characters/spider",
             "_position": [
                 87.0,
                 9.0,
@@ -633,7 +633,7 @@
             ]
         },
         "trex": {
-            "_character_data_name": "trex",
+            "_character_data_name": "characters/trex",
             "_position": [
                 102.0,
                 9.0,
@@ -651,7 +651,7 @@
             ]
         },
         "trex.003": {
-            "_character_data_name": "trex",
+            "_character_data_name": "characters/trex",
             "_position": [
                 35.0,
                 9.0,
@@ -669,7 +669,7 @@
             ]
         },
         "trex.005": {
-            "_character_data_name": "trex",
+            "_character_data_name": "characters/trex",
             "_position": [
                 35.0,
                 9.0,
@@ -687,7 +687,7 @@
             ]
         },
         "trex.007": {
-            "_character_data_name": "trex",
+            "_character_data_name": "characters/trex",
             "_position": [
                 98.0,
                 9.0,
@@ -705,7 +705,7 @@
             ]
         },
         "trex.008": {
-            "_character_data_name": "trex",
+            "_character_data_name": "characters/trex",
             "_position": [
                 66.0,
                 9.0,
@@ -723,7 +723,7 @@
             ]
         },
         "triceratops.001": {
-            "_character_data_name": "triceratops",
+            "_character_data_name": "characters/triceratops",
             "_position": [
                 58.0,
                 9.0,
@@ -741,7 +741,7 @@
             ]
         },
         "triceratops.002": {
-            "_character_data_name": "triceratops",
+            "_character_data_name": "characters/triceratops",
             "_position": [
                 96.0,
                 9.0,
@@ -759,7 +759,7 @@
             ]
         },
         "triceratops.003": {
-            "_character_data_name": "triceratops",
+            "_character_data_name": "characters/triceratops",
             "_position": [
                 41.0,
                 9.0,
@@ -777,7 +777,7 @@
             ]
         },
         "triceratops.004": {
-            "_character_data_name": "triceratops",
+            "_character_data_name": "characters/triceratops",
             "_position": [
                 27.0,
                 9.0,
@@ -795,7 +795,7 @@
             ]
         },
         "triceratops.005": {
-            "_character_data_name": "triceratops",
+            "_character_data_name": "characters/triceratops",
             "_position": [
                 103.0,
                 9.0,
@@ -813,7 +813,7 @@
             ]
         },
         "wolf": {
-            "_character_data_name": "wolf",
+            "_character_data_name": "characters/wolf",
             "_position": [
                 61.0,
                 9.0,
@@ -833,7 +833,7 @@
     },
     "_player": {
         "player": {
-            "_character_data_name": "jack",
+            "_character_data_name": "characters/jack",
             "_position": [
                 1.0,
                 9.0,
@@ -854,20 +854,38 @@
     "_props": {
         "cactus": {
             "_position": [
-                15.0,
+                2.0,
                 8.0,
-                4.0
+                10.0
             ],
-            "_prop_data_name": "cactus",
+            "_prop_data_name": "props/cactus",
             "_rotation": [
                 0.0,
                 0.0,
                 0.0
             ],
             "_scale": [
-                1.0,
-                1.0,
-                1.0
+                0.5,
+                0.5,
+                0.5
+            ]
+        },
+        "rock.007": {
+            "_position": [
+                6.0,
+                8.0,
+                10.0
+            ],
+            "_prop_data_name": "props/rock",
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                0.5,
+                0.5,
+                0.5
             ]
         }
     },

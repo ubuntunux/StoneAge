@@ -1,11 +1,9 @@
 use nalgebra::Vector3;
 use rust_engine_3d::scene::collision::{CollisionCreateInfo, CollisionData, CollisionType};
-use rust_engine_3d::scene::scene_manager::SceneManager;
+use rust_engine_3d::scene::render_object::RenderObjectData;
 use rust_engine_3d::utilities::system::ptr_as_ref;
-use crate::game_module::actors::block::Block;
 use crate::game_module::actors::character_data::{CharacterData, MoveAnimationState};
-use crate::game_module::game_constants::{AUDIO_FOOTSTEP, CHARACTER_ROTATION_SPEED, GRAVITY, GROUND_HEIGHT, MOVE_LIMIT};
-use crate::game_module::game_scene_manager::GameSceneManager;
+use crate::game_module::game_constants::{CHARACTER_ROTATION_SPEED, GRAVITY, GROUND_HEIGHT, MOVE_LIMIT};
 
 pub struct CharacterController {
     pub _position: Vector3<f32>,
@@ -113,20 +111,13 @@ impl CharacterController {
 
     pub fn update_character_controller<'a>(
         &mut self,
-        scene_manager: &SceneManager<'a>,
-        game_scene_manager: &GameSceneManager,
-        is_player: bool,
+        collision_objects: &Vec<*const RenderObjectData<'a>>,
         character_data: &CharacterData,
         move_animation: MoveAnimationState,
         actor_collision: &CollisionData,
         delta_time: f32,
     ) {
         let prev_position = self._position.clone_owned();
-        let was_on_ground = self.is_on_ground();
-
-        if !was_on_ground && self.is_on_ground() && is_player {
-            scene_manager.play_audio_bank(AUDIO_FOOTSTEP);
-        }
 
         // move on ground
         let mut move_direction = if MoveAnimationState::Roll == move_animation {
@@ -197,13 +188,12 @@ impl CharacterController {
         self._is_ground = false;
 
         // check ground and side
-        for (_key, block) in game_scene_manager.get_blocks().iter() {
-            let block = ptr_as_ref(block.as_ptr());
-            let block_render_object = ptr_as_ref(block._render_object.as_ptr());
+        for collision_object in collision_objects.iter() {
+            let block_render_object = ptr_as_ref(*collision_object);
             let block_collision_type = block_render_object._collision._collision_type;
             let block_bound_box = &block_render_object._collision._bounding_box;
             let block_location = &block_bound_box._center;
-            let mut collided_block: *const Block = std::ptr::null();
+            let mut collided_block: *const RenderObjectData<'a> = std::ptr::null();
 
             // check collide with block
             if current_actor_collision.collide_collision(&block_render_object._collision) {
@@ -218,7 +208,7 @@ impl CharacterController {
                         }
 
                         self._is_blocked = true;
-                        collided_block = block;
+                        collided_block = *collision_object;
                     } else if block_collision_type == CollisionType::CYLINDER {
                         let block_to_player = Vector3::new(self._position.x - block_location.x, 0.0, self._position.z - block_location.z).normalize();
                         if block_to_player.dot(&move_delta.normalize()) < 0.0 {
@@ -227,7 +217,7 @@ impl CharacterController {
                             self._position.x = new_pos.x;
                             self._position.z = new_pos.z;
                             self._is_blocked = true;
-                            collided_block = block;
+                            collided_block = *collision_object;
                         }
                     } else {
                         panic!("not implemented");
@@ -245,13 +235,12 @@ impl CharacterController {
                 bound_box_max = &current_actor_collision._bounding_box._max;
 
                 // Recheck collide with another blocks
-                for (_key, recheck_block) in game_scene_manager.get_blocks().iter() {
-                    let recheck_block = ptr_as_ref(recheck_block.as_ptr());
+                for collision_object in collision_objects.iter() {
+                    let recheck_block = ptr_as_ref(*collision_object);
                     if collided_block != recheck_block {
-                        let recheck_block_render_object = ptr_as_ref(recheck_block._render_object.as_ptr());
-                        let recheck_block_bound_box = &recheck_block_render_object._collision._bounding_box;
+                        let recheck_block_bound_box = &recheck_block._collision._bounding_box;
                         // check collide with block
-                        if current_actor_collision.collide_collision(&recheck_block_render_object._collision) {
+                        if current_actor_collision.collide_collision(&recheck_block._collision) {
                             if self._velocity.y <= 0.0 && recheck_block_bound_box._max.y <= prev_position.y {
                                 self.set_on_ground(recheck_block_bound_box._max.y);
                             } else {
@@ -273,9 +262,8 @@ impl CharacterController {
                 if 0.0 < move_delta.z { bound_box_max.z + 0.1 } else { bound_box_min.z - 0.1 }
             );
 
-            for (_key, block) in game_scene_manager.get_blocks().iter() {
-                let block = ptr_as_ref(block.as_ptr());
-                let block_render_object = ptr_as_ref(block._render_object.as_ptr());
+            for collision_object in collision_objects.iter() {
+                let block_render_object = ptr_as_ref(*collision_object);
                 let block_bound_box = &block_render_object._bounding_box;
                 if block_bound_box.collide_point(&point) {
                     self._is_cliff = false;

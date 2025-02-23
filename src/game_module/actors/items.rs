@@ -19,6 +19,8 @@ pub type ItemMap<'a> = HashMap<u64, RcRefCell<Item<'a>>>;
 #[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq)]
 pub enum ItemDataType {
     Meat,
+    Rock,
+    Wood
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]

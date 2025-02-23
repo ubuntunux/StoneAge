@@ -63,6 +63,14 @@ impl<'a> GameSceneManager<'a> {
         ptr_as_mut(self._character_manager.as_ref())
     }
 
+    pub fn get_prop_manager(&self) -> &PropManager<'a> {
+        self._prop_manager.as_ref()
+    }
+
+    pub fn get_prop_manager_mut(&self) -> &mut PropManager<'a> {
+        ptr_as_mut(self._prop_manager.as_ref())
+    }
+
     pub fn get_item_manager(&self) -> &ItemManager<'a> {
         self._item_manager.as_ref()
     }
