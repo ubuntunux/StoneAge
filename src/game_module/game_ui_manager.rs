@@ -4,13 +4,13 @@ use nalgebra::Vector2;
 use rust_engine_3d::core::engine_core::EngineCore;
 use rust_engine_3d::scene::ui::{UIComponentInstance, UIManager, UIWidgetTypes, WidgetDefault};
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
-
 use crate::application::application::Application;
 use crate::game_module::game_client::GameClient;
-use crate::game_module::game_constants::MATERIAL_CROSS_HAIR;
+use crate::game_module::game_constants::{MATERIAL_CROSS_HAIR, MATERIAL_ITEM_MEAT, MATERIAL_ITEM_ROCK, MATERIAL_ITEM_WOOD};
 use crate::game_module::widgets::cross_hair_widget::CrossHairWidget;
-use crate::game_module::widgets::player_hud::PlayerHud;
 use crate::game_module::widgets::image_widget::ImageLayout;
+use crate::game_module::widgets::item_bar_widget::ItemBarWidget;
+use crate::game_module::widgets::player_hud::PlayerHud;
 use crate::game_module::widgets::target_status_bar::TargetStatusWidget;
 
 pub struct GameUIManager<'a> {
@@ -22,6 +22,7 @@ pub struct GameUIManager<'a> {
     pub _cross_hair: Option<Box<CrossHairWidget<'a>>>,
     pub _player_hud: Option<Box<PlayerHud<'a>>>,
     pub _target_status_bar: Option<Box<TargetStatusWidget<'a>>>,
+    pub _item_bar_widget: Option<Box<ItemBarWidget<'a>>>,
     pub _window_size: Vector2<i32>,
 }
 
@@ -41,6 +42,7 @@ impl<'a> GameUIManager<'a> {
             _game_image: None,
             _cross_hair: None,
             _target_status_bar: None,
+            _item_bar_widget: None,
             _player_hud: None,
             _window_size: Vector2::new(1024,768)
         })
@@ -118,6 +120,13 @@ impl<'a> GameUIManager<'a> {
 
         self._player_hud = Some(Box::new(PlayerHud::create_player_hud(game_ui_layout_mut)));
         self._target_status_bar = Some(Box::new(TargetStatusWidget::create_target_status_widget(game_ui_layout_mut)));
+
+        let item_bar_materials = vec![
+            game_resources.get_engine_resources().get_material_instance_data(MATERIAL_ITEM_MEAT),
+            game_resources.get_engine_resources().get_material_instance_data(MATERIAL_ITEM_ROCK),
+            game_resources.get_engine_resources().get_material_instance_data(MATERIAL_ITEM_WOOD)
+        ];
+        self._item_bar_widget = Some(Box::new(ItemBarWidget::create_item_bar_widget(game_ui_layout_mut, &item_bar_materials)));
         self.changed_window_size();
     }
     pub fn show_ui(&mut self, show: bool) {
@@ -131,6 +140,7 @@ impl<'a> GameUIManager<'a> {
         self._game_image.as_mut().unwrap().changed_window_size(&self._window_size);
         self._player_hud.as_mut().unwrap().changed_window_size(&self._window_size);
         self._target_status_bar.as_mut().unwrap().changed_window_size(&self._window_size);
+        self._item_bar_widget.as_mut().unwrap().changed_window_size(&self._window_size);
     }
     pub fn update_game_ui(&mut self, delta_time: f64) {
         let game_client = ptr_as_ref(self._game_client);

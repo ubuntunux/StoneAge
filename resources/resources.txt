@@ -547,6 +547,9 @@ resources/externals/textures/environments/snow_moutain.png
 resources/externals/textures/props/meat_d.png
 resources/externals/textures/ui/cross_hair_box.png
 resources/externals/textures/ui/intro_image.jpeg
+resources/externals/textures/ui/items/item_meat.png
+resources/externals/textures/ui/items/item_rock.png
+resources/externals/textures/ui/items/item_wood.png
 resources/externals/textures/weapon/wood_stick_d.png
 resources/game_data/characters/jack.data
 resources/game_data/characters/neanderthal.data
@@ -583,6 +586,9 @@ resources/material_instances/environments/stylized_tree_00_trunk.matinst
 resources/material_instances/props/meat.matinst
 resources/material_instances/ui/cross_hair_box.matinst
 resources/material_instances/ui/intro_image.matinst
+resources/material_instances/ui/items/item_meat.matinst
+resources/material_instances/ui/items/item_rock.matinst
+resources/material_instances/ui/items/item_wood.matinst
 resources/materials/render_grass.mat
 resources/meshes/characters/jack/jack.bin
 resources/meshes/characters/jack/jack.gltf
