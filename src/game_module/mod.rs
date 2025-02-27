@@ -6,4 +6,5 @@ pub mod game_controller;
 pub mod game_scene_manager;
 pub mod widgets;
 pub mod game_ui_manager;
+pub mod game_ui_manager_impl;
 pub mod game_resource;

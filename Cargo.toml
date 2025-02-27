@@ -12,12 +12,14 @@ edition = "2021"
 rust_engine_3d = { path = "RustEngine3D" }
 ash = { version = "0.38", default-features = false, features = ["linked", "debug", "std"] }
 log = "0.4"
-nalgebra = {version = "0.33.1", features = ["serde-serialize"]}
+nalgebra = {version = "0.33", features = ["serde-serialize"]}
 nalgebra-glm = "0.19.0"
+rand = "0.9"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+strum = "0.27"
+strum_macros = "0.27"
 winit = "0.29"
-rand = "0.8"
 
 [[bin]]
 name = "stone_age"
