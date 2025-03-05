@@ -32,7 +32,6 @@
     "_character_stat_data": {
         "_attack_damage": 50,
         "_attack_range": 0.6000000238418579,
-        "_attack_thickness": 0.25,
         "_character_type": "Roamer",
         "_jump_speed": 13.0,
         "_max_hp": 100,
