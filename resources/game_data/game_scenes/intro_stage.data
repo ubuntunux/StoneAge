@@ -852,6 +852,24 @@
         }
     },
     "_props": {
+        "birch_tree_00": {
+            "_position": [
+                13.0,
+                8.0,
+                4.0
+            ],
+            "_prop_data_name": "props/birch_tree_00",
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                0.5,
+                0.5,
+                0.5
+            ]
+        },
         "cactus": {
             "_position": [
                 2.0,
@@ -868,6 +886,24 @@
                 0.5,
                 0.5,
                 0.5
+            ]
+        },
+        "mushroom_orange_00.004": {
+            "_position": [
+                8.0,
+                8.0,
+                3.0
+            ],
+            "_prop_data_name": "props/mushroom_orange_00",
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
             ]
         },
         "rock.007": {
