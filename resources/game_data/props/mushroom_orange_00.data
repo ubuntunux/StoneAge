@@ -1,5 +1,5 @@
 {
-    "_enable_collision": true,
+    "_enable_collision": false,
     "_item_data_name": "items/wood",
     "_max_hp": 100,
     "_model_data_name": "environments/mushroom_orange_00",

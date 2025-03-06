@@ -152,7 +152,9 @@ impl<'a> CharacterManager<'a> {
         }
 
         for (_key, prop) in self.get_game_scene_manager().get_prop_manager().get_props().iter() {
-            collision_objects.push(prop.borrow()._render_object.as_ptr())
+            if prop.borrow()._prop_data.borrow()._enable_collision {
+                collision_objects.push(prop.borrow()._render_object.as_ptr())
+            }
         }
 
         // process character

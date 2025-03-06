@@ -23,6 +23,7 @@ impl Default for PropData {
             _model_data_name: String::new(),
             _max_hp: 0,
             _item_data_name: String::new(),
+            _enable_collision: true,
         }
     }
 }

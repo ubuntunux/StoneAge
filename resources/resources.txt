@@ -335,6 +335,15 @@ resources/engine_resources/textures/precomputed_atmosphere/irradiance.texture
 resources/engine_resources/textures/precomputed_atmosphere/noise_3d.texture
 resources/engine_resources/textures/precomputed_atmosphere/scattering.texture
 resources/engine_resources/textures/precomputed_atmosphere/transmittance.texture
+resources/externals/.log/.fuse_hidden000025e900000027
+resources/externals/.log/.fuse_hidden0000262000000028
+resources/externals/.log/.fuse_hidden0000262500000029
+resources/externals/.log/.fuse_hidden000026260000002a
+resources/externals/.log/.fuse_hidden00002b1b00000024
+resources/externals/.log/.fuse_hidden00002b1e00000025
+resources/externals/.log/.fuse_hidden00002c3800000026
+resources/externals/.log/.fuse_hidden00002c8b0000002b
+resources/externals/.log/.fuse_hidden00002c990000002c
 resources/externals/animation_layers/jack/upper_animation_layer.blend
 resources/externals/animation_layers/spider/upper_animation_layer.blend
 resources/externals/animation_layers/trex/upper_animation_layer.blend
