@@ -1,6 +1,31 @@
 {
+    "_collision": {
+        "_collision_type": "NONE",
+        "_height": 0,
+        "_location": [
+            0,
+            0,
+            0
+        ],
+        "_radius": 0
+    },
     "_material_instances": [
         "environments/cloud"
     ],
-    "_mesh": "environments/cloud_01"
+    "_mesh": "environments/cloud_01",
+    "_position": [
+        0.0,
+        0.0,
+        0.0
+    ],
+    "_rotation": [
+        0.0,
+        0.0,
+        0.0
+    ],
+    "_scale": [
+        1.0,
+        1.0,
+        1.0
+    ]
 }

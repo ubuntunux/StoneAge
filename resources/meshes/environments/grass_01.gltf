@@ -1,6 +1,6 @@
 {
 	"asset":{
-		"generator":"Khronos glTF Blender I/O v4.1.63",
+		"generator":"Khronos glTF Blender I/O v4.3.47",
 		"version":"2.0"
 	},
 	"scene":0,
@@ -21,7 +21,7 @@
 			"children":[
 				0
 			],
-			"name":"grass_01"
+			"name":"grass_01.001"
 		}
 	],
 	"meshes":[

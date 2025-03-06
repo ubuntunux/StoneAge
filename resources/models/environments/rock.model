@@ -1,4 +1,14 @@
 {
+    "_collision": {
+        "_collision_type": "BOX",
+        "_height": 2.0,
+        "_location": [
+            0.0,
+            1.0,
+            0.0
+        ],
+        "_radius": 1.0
+    },
     "_material_instances": [
         "environments/desert_ground"
     ],
