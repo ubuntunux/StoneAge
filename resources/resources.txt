@@ -335,15 +335,6 @@ resources/engine_resources/textures/precomputed_atmosphere/irradiance.texture
 resources/engine_resources/textures/precomputed_atmosphere/noise_3d.texture
 resources/engine_resources/textures/precomputed_atmosphere/scattering.texture
 resources/engine_resources/textures/precomputed_atmosphere/transmittance.texture
-resources/externals/.log/.fuse_hidden000025e900000027
-resources/externals/.log/.fuse_hidden0000262000000028
-resources/externals/.log/.fuse_hidden0000262500000029
-resources/externals/.log/.fuse_hidden000026260000002a
-resources/externals/.log/.fuse_hidden00002b1b00000024
-resources/externals/.log/.fuse_hidden00002b1e00000025
-resources/externals/.log/.fuse_hidden00002c3800000026
-resources/externals/.log/.fuse_hidden00002c8b0000002b
-resources/externals/.log/.fuse_hidden00002c990000002c
 resources/externals/animation_layers/jack/upper_animation_layer.blend
 resources/externals/animation_layers/spider/upper_animation_layer.blend
 resources/externals/animation_layers/trex/upper_animation_layer.blend
@@ -484,6 +475,10 @@ resources/externals/sounds/315766__bevibeldesign__dragon-growl-breathy-2.meta
 resources/externals/sounds/315766__bevibeldesign__dragon-growl-breathy-2.wav
 resources/externals/sounds/489035__michael-db__game-music-01.meta
 resources/externals/sounds/489035__michael-db__game-music-01.mp3
+resources/externals/sounds/571629__ugila__item-pickup.meta
+resources/externals/sounds/571629__ugila__item-pickup.wav
+resources/externals/sounds/665182__el_boss__item-or-material-pickup-pop-2-of-3.meta
+resources/externals/sounds/665182__el_boss__item-or-material-pickup-pop-2-of-3.wav
 resources/externals/sounds/671069__cridop__percussion-83bpm.meta
 resources/externals/sounds/671069__cridop__percussion-83bpm.mp3
 resources/externals/sounds/76965__michel88__painb.meta
@@ -820,6 +815,8 @@ resources/sound_banks/jump.bank
 resources/sound_banks/jump.meta
 resources/sound_banks/pain_short.bank
 resources/sound_banks/pain_short.meta
+resources/sound_banks/pickup_item.bank
+resources/sound_banks/pickup_item.meta
 resources/sound_banks/roll.bank
 resources/sound_banks/roll.meta
 resources/sound_banks/swoosh.bank

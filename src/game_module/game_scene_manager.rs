@@ -12,23 +12,25 @@ use crate::application::application::Application;
 use crate::game_module::actors::block::{Block, BlockCreateInfo};
 use crate::game_module::actors::character::CharacterCreateInfo;
 use crate::game_module::actors::character_manager::CharacterManager;
-use crate::game_module::actors::items::ItemManager;
+use crate::game_module::actors::items::{ItemCreateInfo, ItemManager};
 use crate::game_module::actors::props::{PropCreateInfo, PropManager};
 use crate::game_module::game_resource::GameResources;
 
 type BlockCreateInfoMap = HashMap<String, BlockCreateInfo>;
 type CharacterCreateInfoMap = HashMap<String, CharacterCreateInfo>;
 type PropCreateInfoMap = HashMap<String, PropCreateInfo>;
+type ItemCreateInfoMap = HashMap<String, ItemCreateInfo>;
 type BlockMap<'a> = HashMap<u64, RcRefCell<Block<'a>>>;
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[serde(default)]
 pub struct GameSceneDataCreateInfo {
-    pub _scene: SceneDataCreateInfo,
     pub _blocks: BlockCreateInfoMap,
+    pub _characters: CharacterCreateInfoMap,
+    pub _items: ItemCreateInfoMap,
     pub _player: CharacterCreateInfoMap,
     pub _props: PropCreateInfoMap,
-    pub _characters: CharacterCreateInfoMap,
+    pub _scene: SceneDataCreateInfo,
     pub _start_point: Vector3<f32>,
 }
 
@@ -211,6 +213,11 @@ impl<'a> GameSceneManager<'a> {
         for (block_name, block_create_info) in game_scene_data._blocks.iter() {
             let block = self.create_block(block_name, block_create_info);
             self.register_block(block);
+        }
+
+        // create items
+        for (_item_data_name, item_create_info) in game_scene_data._items.iter() {
+            self._item_manager.create_item(item_create_info);
         }
 
         // create props

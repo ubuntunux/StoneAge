@@ -88,7 +88,7 @@ impl<'a> ItemBarWidget<'a> {
 
     pub fn update_layer(&mut self) {
         let ui_component = ptr_as_mut(self._layer).get_ui_component_mut();
-        ui_component.set_size_x(ui_component.get_size_x() + ITEM_UI_SIZE);
+        ui_component.set_size_x(self._item_widgets.len() as f32 * ITEM_UI_SIZE);
         ui_component.set_size_y(ITEM_UI_SIZE);
     }
 
@@ -107,7 +107,7 @@ impl<'a> ItemBarWidget<'a> {
 
     pub fn changed_window_size(&mut self, window_size: &Vector2<i32>) {
         let ui_component = ptr_as_mut(self._layer).get_ui_component_mut();
-        ui_component.set_pos_x(window_size.x as f32 * 0.5 - ui_component.get_size_x() * 0.5);
+        ui_component.set_center_hint_x(Some(0.5));
         ui_component.set_pos_y(window_size.y as f32 - ui_component.get_size_y() - 50.0);
     }
 }

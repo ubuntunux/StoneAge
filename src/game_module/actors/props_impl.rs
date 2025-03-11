@@ -12,7 +12,7 @@ use crate::game_module::actors::character_data::ActionAnimationState;
 use crate::game_module::actors::items::ItemCreateInfo;
 use crate::game_module::actors::props::{Prop, PropCreateInfo, PropData, PropDataType, PropManager, PropMap, PropStats};
 use crate::game_module::game_client::GameClient;
-use crate::game_module::game_constants::{AUDIO_CRUNCH, AUDIO_HIT, EFFECT_HIT, NPC_ATTACK_HIT_RANGE};
+use crate::game_module::game_constants::{AUDIO_HIT, EFFECT_HIT, NPC_ATTACK_HIT_RANGE};
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
 
@@ -79,7 +79,7 @@ impl<'a> Prop<'a> {
 
     pub fn set_dead(&mut self) {
         if self._prop_stats._is_alive {
-            self.get_prop_manager().get_audio_manager_mut().play_audio_bank(AUDIO_CRUNCH, AudioLoop::ONCE, None);
+            //self.get_prop_manager().get_audio_manager_mut().play_audio_bank(AUDIO_CRUNCH, AudioLoop::ONCE, None);
             self._prop_stats._is_alive = false;
         }
     }

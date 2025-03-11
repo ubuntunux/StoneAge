@@ -8,7 +8,7 @@ use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, Rc
 use crate::application::application::Application;
 use crate::game_module::actors::items::{Item, ItemCreateInfo, ItemData, ItemDataType, ItemManager, ItemProperties};
 use crate::game_module::game_client::GameClient;
-use crate::game_module::game_constants::{AUDIO_CRUNCH, EAT_ITEM_DISTANCE};
+use crate::game_module::game_constants::{EAT_ITEM_DISTANCE, PICKUP_ITEM};
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
 
@@ -189,7 +189,7 @@ impl<'a> ItemManager<'a> {
                 if dist <= EAT_ITEM_DISTANCE {
                     // pick item
                     self.pick_item(&item.borrow()._item_data.borrow()._item_type, 1);
-                    self.get_audio_manager_mut().play_audio_bank(AUDIO_CRUNCH, AudioLoop::ONCE, None);
+                    self.get_audio_manager_mut().play_audio_bank(PICKUP_ITEM, AudioLoop::ONCE, None);
                     pick_items.push(item.clone());
                 }
             }

@@ -51,6 +51,7 @@ pub const AUDIO_ROLL: &str = "roll";
 pub const AUDIO_JUMP: &str = "jump";
 pub const AMBIENT_SOUND: &str = "ambient_sound";
 pub const GAME_MUSIC: &str = "game_music";
+pub const PICKUP_ITEM: &str = "pickup_item";
 
 // UI
 pub const MATERIAL_INTRO_IMAGE: &str = "ui/intro_image";
