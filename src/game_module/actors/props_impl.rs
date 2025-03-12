@@ -92,13 +92,11 @@ impl<'a> Prop<'a> {
 
         let effect_create_info = EffectCreateInfo {
             _effect_position: attack_point.clone(),
-            _effect_data_name: String::from("effect_test"),
+            _effect_data_name: String::from(EFFECT_HIT),
             ..Default::default()
         };
-
-        let prop_manager = self.get_prop_manager();
-        prop_manager.get_scene_manager_mut().add_effect(EFFECT_HIT, &effect_create_info);
-        prop_manager.get_audio_manager_mut().play_audio_bank(AUDIO_HIT, AudioLoop::ONCE, None);
+        self.get_prop_manager().get_scene_manager_mut().add_effect(EFFECT_HIT, &effect_create_info);
+        self.get_prop_manager().get_audio_manager_mut().play_audio_bank(AUDIO_HIT, AudioLoop::ONCE, None);
     }
 
     pub fn update_transform(&mut self) {

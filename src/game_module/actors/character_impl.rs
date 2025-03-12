@@ -609,7 +609,7 @@ impl<'a> Character<'a> {
 
         let effect_create_info = EffectCreateInfo {
             _effect_position: attack_point.clone(),
-            _effect_data_name: String::from("effect_test"),
+            _effect_data_name: String::from(EFFECT_HIT),
             ..Default::default()
         };
         character_manager.get_scene_manager_mut().add_effect(EFFECT_HIT, &effect_create_info);

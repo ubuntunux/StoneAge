@@ -58,7 +58,7 @@ pub const MATERIAL_INTRO_IMAGE: &str = "ui/intro_image";
 pub const MATERIAL_CROSS_HAIR: &str = "ui/cross_hair_box";
 
 // EFFECT DATA
-pub const EFFECT_HIT: &str = "hit_effect";
+pub const EFFECT_HIT: &str = "effect_test";
 
 // Items
 pub const ITEM_MEAT: &str = "items/meat";
