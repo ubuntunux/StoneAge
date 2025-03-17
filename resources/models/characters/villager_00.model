@@ -1,0 +1,31 @@
+{
+    "_collision": {
+        "_collision_type": "CYLINDER",
+        "_height": 2.1066789627075195,
+        "_location": [
+            -0.0006740093231201172,
+            1.0435028076171875,
+            -0.06596624851226807
+        ],
+        "_radius": 1.5
+    },
+    "_material_instances": [
+        "characters/neanderthalensis/neanderthal"
+    ],
+    "_mesh": "characters/villager/villager_00",
+    "_position": [
+        0.0,
+        0.0,
+        0.0
+    ],
+    "_rotation": [
+        0.0,
+        0.0,
+        0.0
+    ],
+    "_scale": [
+        0.25,
+        0.25,
+        0.25
+    ]
+}

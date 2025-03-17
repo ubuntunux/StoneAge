@@ -335,6 +335,8 @@ resources/engine_resources/textures/precomputed_atmosphere/irradiance.texture
 resources/engine_resources/textures/precomputed_atmosphere/noise_3d.texture
 resources/engine_resources/textures/precomputed_atmosphere/scattering.texture
 resources/engine_resources/textures/precomputed_atmosphere/transmittance.texture
+resources/externals/.log/.fuse_hidden00002de80000000d
+resources/externals/.log/.fuse_hidden00002e9500000004
 resources/externals/animation_layers/jack/upper_animation_layer.blend
 resources/externals/animation_layers/spider/upper_animation_layer.blend
 resources/externals/animation_layers/trex/upper_animation_layer.blend
@@ -347,6 +349,7 @@ resources/externals/game_data/characters/neanderthal.blend
 resources/externals/game_data/characters/spider.blend
 resources/externals/game_data/characters/trex.blend
 resources/externals/game_data/characters/triceratops.blend
+resources/externals/game_data/characters/villager_00.blend
 resources/externals/game_data/characters/wolf.blend
 resources/externals/game_data/data/data.blend
 resources/externals/game_data/game_scenes/intro_stage.blend
@@ -393,6 +396,7 @@ resources/externals/meshes/characters/triceratops/triceratops_idle.blend
 resources/externals/meshes/characters/triceratops/triceratops_jump.blend
 resources/externals/meshes/characters/triceratops/triceratops_run.blend
 resources/externals/meshes/characters/triceratops/triceratops_walk.blend
+resources/externals/meshes/characters/villager/villager_00.blend
 resources/externals/meshes/characters/wolf/wolf.blend
 resources/externals/meshes/characters/wolf/wolf_attack.blend
 resources/externals/meshes/characters/wolf/wolf_walk.blend
@@ -434,6 +438,7 @@ resources/externals/models/characters/neanderthal.blend
 resources/externals/models/characters/spider.blend
 resources/externals/models/characters/trex.blend
 resources/externals/models/characters/triceratops.blend
+resources/externals/models/characters/villager_00.blend
 resources/externals/models/characters/wolf.blend
 resources/externals/models/environments/birch_tree_00.blend
 resources/externals/models/environments/birch_tree_01.blend
@@ -564,6 +569,7 @@ resources/game_data/characters/neanderthal.data
 resources/game_data/characters/spider.data
 resources/game_data/characters/trex.data
 resources/game_data/characters/triceratops.data
+resources/game_data/characters/villager_00.data
 resources/game_data/characters/wolf.data
 resources/game_data/game_scenes/intro_stage.data
 resources/game_data/items/meat.data
@@ -666,6 +672,8 @@ resources/meshes/characters/triceratops/triceratops_run.bin
 resources/meshes/characters/triceratops/triceratops_run.gltf
 resources/meshes/characters/triceratops/triceratops_walk.bin
 resources/meshes/characters/triceratops/triceratops_walk.gltf
+resources/meshes/characters/villager/villager_00.bin
+resources/meshes/characters/villager/villager_00.gltf
 resources/meshes/characters/wolf/wolf.bin
 resources/meshes/characters/wolf/wolf.gltf
 resources/meshes/characters/wolf/wolf_attack.bin
@@ -743,6 +751,7 @@ resources/models/characters/neanderthal.model
 resources/models/characters/spider.model
 resources/models/characters/trex.model
 resources/models/characters/triceratops.model
+resources/models/characters/villager_00.model
 resources/models/characters/wolf.model
 resources/models/environments/birch_tree_00.model
 resources/models/environments/birch_tree_01.model

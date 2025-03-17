@@ -26,6 +26,7 @@ d4ba15ae-5882-444b-a0ac-7cf25e8afb06:StoneAge/material_instances/characters/nean
 de954b09-327b-4fa8-a50b-8351235d4c83:StoneAge/material_instances/characters/spider:StoneAge-material_instances-characters-spider
 633151fe-8294-4427-af8b-d56e081a3cec:StoneAge/material_instances/characters/trex:StoneAge-material_instances-characters-trex
 a4a838e3-288d-4f09-af58-30031525de5e:StoneAge/material_instances/characters/triceratops:StoneAge-material_instances-characters-triceratops
+01745adc-d1db-43e3-98e6-92033b0389b1:StoneAge/material_instances/characters/villager:StoneAge-material_instances-characters-villager
 5bc64311-a045-4981-b962-14b640d6f7f3:StoneAge/material_instances/characters/weapon:StoneAge-material_instances-characters-weapon
 398b748a-9015-468e-98d5-71fda5944320:StoneAge/material_instances/characters/wolf:StoneAge-material_instances-characters-wolf
 63ecc6f3-e09c-4c2c-a25b-54c7c43a6602:StoneAge/material_instances/environments:StoneAge-material_instances-environments
@@ -39,6 +40,7 @@ f16677b8-5725-4004-80f4-4129b0cd7dfe:StoneAge/meshes/characters:StoneAge-meshes-
 a88efbcd-1b2b-49fe-abea-b56f58b72f80:StoneAge/meshes/characters/spider:StoneAge-meshes-characters-spider
 f0a73abd-9da5-43a6-9635-6962ae3e963d:StoneAge/meshes/characters/trex:StoneAge-meshes-characters-trex
 d07da559-c89b-4bec-b90c-cfeabd95fd15:StoneAge/meshes/characters/triceratops:StoneAge-meshes-characters-triceratops
+ef906e5f-59e3-43cd-bcd3-d14ccfd7bfa2:StoneAge/meshes/characters/villager:StoneAge-meshes-characters-villager
 ace78cd3-b995-4d85-a371-a9c1abb0b0ef:StoneAge/meshes/characters/wolf:StoneAge-meshes-characters-wolf
 6fa9671c-4f94-4b42-807a-85314e85e643:StoneAge/meshes/environments:StoneAge-meshes-environments
 60773708-1fcd-4b9b-91f0-426c5d747502:StoneAge/meshes/props:StoneAge-meshes-props

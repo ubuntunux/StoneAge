@@ -80,7 +80,7 @@ impl<'a> Character<'a> {
             _character_stats: Box::new(CharacterStats::default()),
             _animation_state: Box::new(CharacterAnimationState::default()),
             _controller: Box::new(CharacterController::create_character_controller()),
-            _behavior: create_character_behavior(character_data_borrow._stat_data._character_type),
+            _behavior: create_character_behavior(character_data_borrow._character_type),
         };
 
         character.initialize_character(position, rotation, scale);

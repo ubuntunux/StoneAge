@@ -2,7 +2,8 @@ use nalgebra::Vector3;
 
 use crate::game_module::actors::character::Character;
 use crate::game_module::actors::character_data::CharacterDataType;
-use crate::game_module::behavior::roamer_behavior::RoamerBehavior;
+use crate::game_module::behavior::behavior_default::BehaviorDefault;
+use crate::game_module::behavior::behavior_roamer::BehaviorRoamer;
 
 #[derive(Clone, PartialEq, Eq, Hash, Debug, Copy, Default)]
 pub enum BehaviorState {
@@ -16,7 +17,10 @@ pub enum BehaviorState {
 
 pub fn create_character_behavior(character_type: CharacterDataType) -> Box<dyn BehaviorBase> {
     match character_type {
-        CharacterDataType::Roamer => Box::new(RoamerBehavior {
+        CharacterDataType::None => Box::new(BehaviorDefault {
+            ..Default::default()
+        }),
+        CharacterDataType::Roamer => Box::new(BehaviorRoamer {
             ..Default::default()
         }),
     }

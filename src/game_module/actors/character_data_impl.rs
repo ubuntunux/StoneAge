@@ -14,6 +14,12 @@ impl Default for MoveAnimationState {
     }
 }
 
+impl Default for CharacterDataType {
+    fn default() -> Self {
+        CharacterDataType::None
+    }
+}
+
 impl Default for CharacterAnimationDataCreateInfo {
     fn default() -> CharacterAnimationDataCreateInfo {
         CharacterAnimationDataCreateInfo {
@@ -47,6 +53,7 @@ impl Default for CharacterAnimationDataCreateInfo {
 impl CharacterData {
     pub fn create_character_data(character_data_create_info: &CharacterDataCreateInfo, game_resources: &GameResources) -> CharacterData {
         CharacterData {
+            _character_type: character_data_create_info._character_type,
             _model_data_name: character_data_create_info._model_data_name.clone(),
             _animation_data: CharacterAnimationData::create_character_animation_data(
                 &character_data_create_info._character_animation_data,
@@ -104,7 +111,6 @@ impl CharacterAnimationData {
 impl Default for CharacterStatData {
     fn default() -> CharacterStatData {
         CharacterStatData {
-            _character_type: CharacterDataType::Roamer,
             _max_hp: 100,
             _attack_damage: 50,
             _attack_range: 0.5,

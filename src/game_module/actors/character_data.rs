@@ -34,6 +34,7 @@ pub enum SpawnPointType {
 
 #[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq)]
 pub enum CharacterDataType {
+    None,
     Roamer
 }
 
@@ -48,6 +49,7 @@ pub struct SpawnPointData {
 #[derive(Serialize, Deserialize, Default, Debug, Clone, PartialEq)]
 #[serde(default)]
 pub struct CharacterDataCreateInfo {
+    pub _character_type: CharacterDataType,
     pub _model_data_name: String,
     pub _character_animation_data: CharacterAnimationDataCreateInfo,
     pub _character_audio_data: CharacterAudioDataCreateInfo,
@@ -91,6 +93,7 @@ pub struct CharacterAnimationDataCreateInfo {
 }
 
 pub struct CharacterData {
+    pub _character_type: CharacterDataType,
     pub _model_data_name: String,
     pub _audio_data: CharacterAudioData,
     pub _animation_data: CharacterAnimationData,
@@ -132,7 +135,6 @@ pub struct CharacterAnimationData {
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(default)]
 pub struct CharacterStatData {
-    pub _character_type: CharacterDataType,
     pub _max_hp: i32,
     pub _attack_damage: i32,
     pub _attack_range: f32,

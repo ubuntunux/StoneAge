@@ -29,10 +29,10 @@
         "_audio_growl": "dino/growl",
         "_audio_pain": "dino/pain_short"
     },
+    "_character_name": "TRICERATOPS",
     "_character_stat_data": {
         "_attack_damage": 50,
         "_attack_range": 0.5,
-        "_character_type": "Roamer",
         "_jump_speed": 13.0,
         "_max_hp": 100,
         "_power_attack_damage": 100,
@@ -41,5 +41,6 @@
         "_run_speed": 2.0,
         "_walk_speed": 0.5
     },
+    "_character_type": "Roamer",
     "_model_data_name": "characters/triceratops"
 }

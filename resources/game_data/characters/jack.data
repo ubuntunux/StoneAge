@@ -29,10 +29,10 @@
         "_audio_growl": "growl",
         "_audio_pain": "pain_short"
     },
+    "_character_name": "JACK",
     "_character_stat_data": {
         "_attack_damage": 50,
         "_attack_range": 0.5,
-        "_character_type": "Roamer",
         "_jump_speed": 13.0,
         "_max_hp": 100,
         "_power_attack_damage": 100,
@@ -41,5 +41,6 @@
         "_run_speed": 5.400000095367432,
         "_walk_speed": 3.0
     },
+    "_character_type": "Roamer",
     "_model_data_name": "characters/jack"
 }
