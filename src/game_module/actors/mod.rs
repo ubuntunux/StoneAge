@@ -9,3 +9,5 @@ pub mod items;
 pub mod items_impl;
 pub mod props;
 pub mod props_impl;
+pub mod weapons;
+pub mod weapons_impl;

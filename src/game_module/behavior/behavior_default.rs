@@ -6,18 +6,17 @@ use crate::game_module::game_constants::{NPC_ATTACK_RANGE, NPC_ATTACK_TERM_MAX, 
 
 #[derive(Default)]
 pub struct BehaviorDefault {
-    pub _roamer_idle_time: f32,
-    pub _roamer_move_direction: Vector3<f32>,
-    pub _roamer_spawn_point: Vector3<f32>,
-    pub _roamer_target_point: Vector3<f32>,
-    pub _roamer_move_time: f32,
-    pub _roamer_attack_time: f32,
+    pub _idle_time: f32,
+    pub _move_direction: Vector3<f32>,
+    pub _spawn_point: Vector3<f32>,
+    pub _target_point: Vector3<f32>,
+    pub _move_time: f32,
     pub _behavior_state: BehaviorState,
 }
 
 impl BehaviorBase for BehaviorDefault {
     fn initialize_behavior(&mut self, _owner: &mut Character, position: &Vector3<f32>) {
-        self._roamer_spawn_point = position.clone();
+        self._spawn_point = position.clone();
         self._behavior_state = BehaviorState::None;
     }
 
@@ -34,66 +33,33 @@ impl BehaviorBase for BehaviorDefault {
                 self.set_behavior(BehaviorState::Idle, owner, player, false);
             },
             BehaviorState::Idle => {
-                if self.is_enemy_in_range(owner, player) {
-                    self.set_behavior(BehaviorState::Chase, owner, player, false);
-                } else if self._roamer_idle_time < 0.0 {
+                if self._idle_time < 0.0 {
                     self.set_behavior(BehaviorState::Move, owner, player, false);
                 }
-                self._roamer_idle_time -= delta_time;
+                self._idle_time -= delta_time;
             },
             BehaviorState::Move => {
-                if self.is_enemy_in_range(owner, player) {
-                    self.set_behavior(BehaviorState::Chase, owner, player, false);
-                } else {
-                    let mut do_idle: bool = false;
-                    if 0.0 < self._roamer_move_time {
-                        let offset = self._roamer_target_point - owner.get_position();
-                        let dist = offset.x * offset.x + offset.z * offset.z;
-                        if dist < 1.0 {
-                            do_idle = true;
-                        } else if owner.is_on_ground() && (owner._controller._is_blocked || owner._controller._is_cliff) {
-                            do_idle = true;
-                        }
-                    } else {
+                let mut do_idle: bool = false;
+                if 0.0 < self._move_time {
+                    let offset = self._target_point - owner.get_position();
+                    let dist = offset.x * offset.x + offset.z * offset.z;
+                    if dist < 1.0 {
+                        do_idle = true;
+                    } else if owner.is_on_ground() && (owner._controller._is_blocked || owner._controller._is_cliff) {
                         do_idle = true;
                     }
-
-                    if do_idle {
-                        self.set_behavior(BehaviorState::Idle, owner, player, false);
-                    }
+                } else {
+                    do_idle = true;
                 }
-                self._roamer_move_time -= delta_time;
+
+                if do_idle {
+                    self.set_behavior(BehaviorState::Idle, owner, player, false);
+                }
+                self._move_time -= delta_time;
             },
             BehaviorState::Chase => {
-                if player._character_stats._is_alive {
-                    if owner.check_in_range(player.get_collision(), NPC_TRACKING_RANGE, false) {
-                        if owner.check_in_range(player.get_collision(), NPC_ATTACK_RANGE, false) {
-                            self.set_behavior(BehaviorState::Attack, owner, player, false);
-                        } else {
-                            let to_player: Vector3<f32> = player.get_position() - owner.get_position();
-                            owner.set_move(&to_player);
-                            owner.set_run(true);
-                        }
-                    } else {
-                        self.set_behavior(BehaviorState::Idle, owner, player, false);
-                    }
-                } else {
-                    self.set_behavior(BehaviorState::Idle, owner, player, false);
-                }
             },
             BehaviorState::Attack => {
-                if player._character_stats._is_alive && 0.0 < self._roamer_attack_time {
-                    if owner.is_attack_animation() {
-                        if !owner.is_available_move() || (NPC_AVAILABLE_MOVING_ATTACK || !owner.is_attack_animation()) {
-                            owner.set_move_stop();
-                        }
-                    } else {
-                        owner.set_move_stop();
-                        self._roamer_attack_time -= delta_time;
-                    }
-                } else {
-                    self.set_behavior(BehaviorState::Idle, owner, player, false);
-                }
             }
         }
     }
@@ -108,31 +74,19 @@ impl BehaviorBase for BehaviorDefault {
                 },
                 BehaviorState::Idle => {
                     owner.set_move_stop();
-                    self._roamer_idle_time = lerp(NPC_IDLE_TERM_MIN, NPC_IDLE_TERM_MAX, rand::random::<f32>());
+                    self._idle_time = lerp(NPC_IDLE_TERM_MIN, NPC_IDLE_TERM_MAX, rand::random::<f32>());
                 },
                 BehaviorState::Move => {
                     let move_area = Vector3::new(rand::random::<f32>() - 0.5, 0.0, rand::random::<f32>() - 0.5).normalize() * NPC_ROAMING_RADIUS;
-                    self._roamer_target_point = self._roamer_spawn_point + move_area;
-                    self._roamer_move_direction = (self._roamer_target_point - owner.get_position()).normalize();
-                    self._roamer_move_time = NPC_ROAMING_TIME;
-                    owner.set_move(&self._roamer_move_direction);
+                    self._target_point = self._spawn_point + move_area;
+                    self._move_direction = (self._target_point - owner.get_position()).normalize();
+                    self._move_time = NPC_ROAMING_TIME;
+                    owner.set_move(&self._move_direction);
                     owner.set_run(false);
                 },
                 BehaviorState::Chase => {
-                    // growl
-                    //owner.get_character_manager().get_scene_manager().play_audio(&owner._audio_growl);
                 },
                 BehaviorState::Attack => {
-                    let to_player_direction = (player.get_position() - owner.get_position()).normalize();
-                    owner.set_move_direction(&to_player_direction);
-                    if !NPC_AVAILABLE_MOVING_ATTACK {
-                        owner.set_move_stop();
-                    }
-                    owner.set_action_attack();
-                    self._roamer_attack_time = lerp(NPC_ATTACK_TERM_MIN, NPC_ATTACK_TERM_MAX, rand::random::<f32>());
-
-                    // growl
-                    owner.get_character_manager().get_scene_manager().play_audio(&owner._character_data.borrow()._audio_data._audio_growl);
                 }
             }
         }

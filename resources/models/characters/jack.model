@@ -1,16 +1,15 @@
 {
     "_collision": {
         "_collision_type": "CYLINDER",
-        "_height": 2.4907243251800537,
+        "_height": 2.0390145778656006,
         "_location": [
-            -0.012547969818115234,
-            1.2355254888534546,
+            -0.0006740093231201172,
+            1.009670615196228,
             -0.07110261917114258
         ],
         "_radius": 1.5
     },
     "_material_instances": [
-        "characters/jack/jack",
         "characters/jack/jack"
     ],
     "_mesh": "characters/jack/jack",

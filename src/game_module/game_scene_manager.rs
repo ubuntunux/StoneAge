@@ -16,11 +16,11 @@ use crate::game_module::actors::items::{ItemCreateInfo, ItemManager};
 use crate::game_module::actors::props::{PropCreateInfo, PropManager};
 use crate::game_module::game_resource::GameResources;
 
+type BlockMap<'a> = HashMap<u64, RcRefCell<Block<'a>>>;
 type BlockCreateInfoMap = HashMap<String, BlockCreateInfo>;
 type CharacterCreateInfoMap = HashMap<String, CharacterCreateInfo>;
-type PropCreateInfoMap = HashMap<String, PropCreateInfo>;
 type ItemCreateInfoMap = HashMap<String, ItemCreateInfo>;
-type BlockMap<'a> = HashMap<u64, RcRefCell<Block<'a>>>;
+type PropCreateInfoMap = HashMap<String, PropCreateInfo>;
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[serde(default)]

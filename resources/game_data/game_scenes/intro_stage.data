@@ -830,6 +830,42 @@
                 1.0
             ]
         },
+        "villager_00.001": {
+            "_character_data_name": "characters/villager_00",
+            "_position": [
+                0.0,
+                9.0,
+                8.0
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "villager_00.002": {
+            "_character_data_name": "characters/villager_00",
+            "_position": [
+                3.0,
+                9.0,
+                6.0
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
         "wolf": {
             "_character_data_name": "characters/wolf",
             "_position": [

@@ -19,6 +19,7 @@ e5381335-2e00-4db8-9a85-1d38959ec30b:StoneAge/game_data/characters:StoneAge-game
 1d1d872f-1889-4192-9f61-f1590f14bebc:StoneAge/game_data/game_scenes:StoneAge-game_data-game_scenes
 753519f1-f1bf-4734-8400-6aedd70b373a:StoneAge/game_data/items:StoneAge-game_data-items
 c4dbb2e9-22a0-4f27-9442-937178e6882b:StoneAge/game_data/props:StoneAge-game_data-props
+4dc140f0-e920-4260-b72e-f22d73dce4d2:StoneAge/game_data/weapons:StoneAge-game_data-weapons
 c021cad1-00f6-4a65-94ea-13204785bff0:StoneAge/material_instances:StoneAge-material_instances
 f4fd25bb-393b-4e39-a128-4e29cc75e5f6:StoneAge/material_instances/characters:StoneAge-material_instances-characters
 2b9f06e8-2737-4c50-ac60-be32d945c36e:StoneAge/material_instances/characters/jack:StoneAge-material_instances-characters-jack
@@ -27,10 +28,10 @@ de954b09-327b-4fa8-a50b-8351235d4c83:StoneAge/material_instances/characters/spid
 633151fe-8294-4427-af8b-d56e081a3cec:StoneAge/material_instances/characters/trex:StoneAge-material_instances-characters-trex
 a4a838e3-288d-4f09-af58-30031525de5e:StoneAge/material_instances/characters/triceratops:StoneAge-material_instances-characters-triceratops
 01745adc-d1db-43e3-98e6-92033b0389b1:StoneAge/material_instances/characters/villager:StoneAge-material_instances-characters-villager
-5bc64311-a045-4981-b962-14b640d6f7f3:StoneAge/material_instances/characters/weapon:StoneAge-material_instances-characters-weapon
 398b748a-9015-468e-98d5-71fda5944320:StoneAge/material_instances/characters/wolf:StoneAge-material_instances-characters-wolf
 63ecc6f3-e09c-4c2c-a25b-54c7c43a6602:StoneAge/material_instances/environments:StoneAge-material_instances-environments
 c8879821-1e32-41e3-ae8c-fa6212cea24b:StoneAge/material_instances/props:StoneAge-material_instances-props
+0e8b9e18-ddae-4837-98ac-a6a73d5d9d9c:StoneAge/material_instances/weapons:StoneAge-material_instances-weapons
 c0d03080-1ee0-4f98-9217-4e8f80e916fa:StoneAge/materials:StoneAge-materials
 e3ddd55b-bd11-4603-9e0e-d3917d6520a9:StoneAge/materials/common:StoneAge-materials-common
 b4a6efe7-0f70-477b-b168-13bf22b4b568:StoneAge/meshes:StoneAge-meshes
@@ -44,8 +45,10 @@ ef906e5f-59e3-43cd-bcd3-d14ccfd7bfa2:StoneAge/meshes/characters/villager:StoneAg
 ace78cd3-b995-4d85-a371-a9c1abb0b0ef:StoneAge/meshes/characters/wolf:StoneAge-meshes-characters-wolf
 6fa9671c-4f94-4b42-807a-85314e85e643:StoneAge/meshes/environments:StoneAge-meshes-environments
 60773708-1fcd-4b9b-91f0-426c5d747502:StoneAge/meshes/props:StoneAge-meshes-props
+39c5f465-43d3-4906-bf14-0a233db9eb9f:StoneAge/meshes/weapons:StoneAge-meshes-weapons
 93a67db6-5233-43e8-a026-ecf93c4beb74:StoneAge/models:StoneAge-models
 32cad476-de75-4b5f-a048-8e7957ee42cd:StoneAge/models/characters:StoneAge-models-characters
 ad7441dc-7c37-4239-89b0-fcedbebd09fd:StoneAge/models/environments:StoneAge-models-environments
 be506ef6-d8eb-4dc9-adce-6b00e097fac4:StoneAge/models/props:StoneAge-models-props
+fa2b571c-410a-4ef5-a374-70737d794528:StoneAge/models/weapons:StoneAge-models-weapons
 67209d7d-f80e-450a-9ab4-d5ba60070a43:StoneAge/scenes:StoneAge-scenes

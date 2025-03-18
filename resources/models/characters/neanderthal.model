@@ -10,8 +10,7 @@
         "_radius": 1.5
     },
     "_material_instances": [
-        "characters/neanderthalensis/neanderthal",
-        "characters/weapon/wood_stick"
+        "characters/neanderthalensis/neanderthal"
     ],
     "_mesh": "characters/neanderthalensis/neanderthal",
     "_position": [

@@ -1,0 +1,31 @@
+{
+    "_collision": {
+        "_collision_type": "NONE",
+        "_height": 0,
+        "_location": [
+            0,
+            0,
+            0
+        ],
+        "_radius": 0
+    },
+    "_material_instances": [
+        "weapons/wooden_club"
+    ],
+    "_mesh": "weapons/wooden_club",
+    "_position": [
+        0.0,
+        0.0,
+        0.0
+    ],
+    "_rotation": [
+        0.0,
+        0.0,
+        0.0
+    ],
+    "_scale": [
+        1.0,
+        1.0,
+        1.0
+    ]
+}

@@ -335,8 +335,6 @@ resources/engine_resources/textures/precomputed_atmosphere/irradiance.texture
 resources/engine_resources/textures/precomputed_atmosphere/noise_3d.texture
 resources/engine_resources/textures/precomputed_atmosphere/scattering.texture
 resources/engine_resources/textures/precomputed_atmosphere/transmittance.texture
-resources/externals/.log/.fuse_hidden00002de80000000d
-resources/externals/.log/.fuse_hidden00002e9500000004
 resources/externals/animation_layers/jack/upper_animation_layer.blend
 resources/externals/animation_layers/spider/upper_animation_layer.blend
 resources/externals/animation_layers/trex/upper_animation_layer.blend
@@ -360,6 +358,7 @@ resources/externals/game_data/props/birch_tree_00.blend
 resources/externals/game_data/props/cactus.blend
 resources/externals/game_data/props/mushroom_orange_00.blend
 resources/externals/game_data/props/rock.blend
+resources/externals/game_data/weapons/wooden_club.blend
 resources/externals/materials/common/render_skeletal_object.blend
 resources/externals/materials/common/render_static_object.blend
 resources/externals/materials/render_grass.blend
@@ -433,6 +432,7 @@ resources/externals/meshes/environments/sunflower.blend
 resources/externals/meshes/environments/tree_00.blend
 resources/externals/meshes/environments/tree_01.blend
 resources/externals/meshes/props/meat.blend
+resources/externals/meshes/weapons/wooden_club.blend
 resources/externals/models/characters/jack.blend
 resources/externals/models/characters/neanderthal.blend
 resources/externals/models/characters/spider.blend
@@ -473,6 +473,7 @@ resources/externals/models/environments/sunflower.blend
 resources/externals/models/environments/tree_00.blend
 resources/externals/models/environments/tree_01.blend
 resources/externals/models/props/meat.blend
+resources/externals/models/weapons/wooden_club.blend
 resources/externals/scenes/stage_forest.blend
 resources/externals/sounds/236957__richerlandtv__mutant-bird-1.meta
 resources/externals/sounds/236957__richerlandtv__mutant-bird-1.wav
@@ -579,12 +580,12 @@ resources/game_data/props/birch_tree_00.data
 resources/game_data/props/cactus.data
 resources/game_data/props/mushroom_orange_00.data
 resources/game_data/props/rock.data
+resources/game_data/weapons/wooden_club.data
 resources/material_instances/characters/jack/jack.matinst
 resources/material_instances/characters/neanderthalensis/neanderthal.matinst
 resources/material_instances/characters/spider/spider.matinst
 resources/material_instances/characters/trex/trex.matinst
 resources/material_instances/characters/triceratops/triceratops.matinst
-resources/material_instances/characters/weapon/wood_stick.matinst
 resources/material_instances/characters/wolf/wolf.matinst
 resources/material_instances/color_white.matinst
 resources/material_instances/effects/default.matinst
@@ -605,6 +606,7 @@ resources/material_instances/ui/intro_image.matinst
 resources/material_instances/ui/items/item_meat.matinst
 resources/material_instances/ui/items/item_rock.matinst
 resources/material_instances/ui/items/item_wood.matinst
+resources/material_instances/weapons/wooden_club.matinst
 resources/materials/render_grass.mat
 resources/meshes/characters/jack/jack.bin
 resources/meshes/characters/jack/jack.gltf
@@ -746,6 +748,8 @@ resources/meshes/environments/tree_01.bin
 resources/meshes/environments/tree_01.gltf
 resources/meshes/props/meat.bin
 resources/meshes/props/meat.gltf
+resources/meshes/weapons/wooden_club.bin
+resources/meshes/weapons/wooden_club.gltf
 resources/models/characters/jack.model
 resources/models/characters/neanderthal.model
 resources/models/characters/spider.model
@@ -786,6 +790,7 @@ resources/models/environments/sunflower.model
 resources/models/environments/tree_00.model
 resources/models/environments/tree_01.model
 resources/models/props/meat.model
+resources/models/weapons/wooden_club.model
 resources/scenes/stage_forest.scene
 resources/shader_caches/render_grass_RenderMode0_RenderObjectType0.frag.spirv
 resources/shader_caches/render_grass_RenderMode0_RenderObjectType0.vert.spirv
