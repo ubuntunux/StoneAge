@@ -42,5 +42,23 @@
         "_walk_speed": 3.0
     },
     "_character_type": "Roamer",
-    "_model_data_name": "characters/jack"
+    "_model_data_name": "characters/jack",
+    "_weapon": {
+        "_position": [
+            0.0,
+            0.22999998927116394,
+            0.0
+        ],
+        "_rotation": [
+            0.0,
+            0.0,
+            -1.5707963705062866
+        ],
+        "_scale": [
+            4.0,
+            4.0,
+            4.0
+        ],
+        "_weapon_data_name": "weapons/wooden_club"
+    }
 }

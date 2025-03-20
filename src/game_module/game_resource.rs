@@ -224,9 +224,6 @@ impl<'a> GameResources<'a> {
             let character_data_name = get_unique_resource_name(&self._character_data_map, &game_data_directory, &game_data_file);
             let loaded_contents = system::load(&game_data_file);
             let character_data_create_info: CharacterDataCreateInfo = serde_json::from_reader(loaded_contents).expect("Failed to deserialize.");
-
-            log::info!("character_data_create_info: {:?}. {:?}", game_data_file, character_data_create_info);
-
             let character_data = CharacterData::create_character_data(&character_data_create_info, self);
             self._character_data_map.insert(character_data_name.clone(), newRcRefCell(character_data));
         }

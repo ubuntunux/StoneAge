@@ -2,11 +2,11 @@ use nalgebra::Vector3;
 use rust_engine_3d::scene::render_object::RenderObjectData;
 use rust_engine_3d::utilities::system::RcRefCell;
 use serde::{Deserialize, Serialize};
-
 use crate::game_module::behavior::behavior_base::BehaviorBase;
 use crate::game_module::actors::character_controller::CharacterController;
 use crate::game_module::actors::character_data::{ActionAnimationState, CharacterData, MoveAnimationState};
 use crate::game_module::actors::character_manager::CharacterManager;
+use crate::game_module::actors::weapons::Weapon;
 
 #[derive(Serialize, Deserialize, Default, Debug, Clone, PartialEq)]
 #[serde(default)]
@@ -46,4 +46,5 @@ pub struct Character<'a> {
     pub _controller: Box<CharacterController>,
     pub _behavior: Box<dyn BehaviorBase>,
     pub _animation_state: Box<CharacterAnimationState>,
+    pub _weapon: Option<Box<Weapon<'a>>>
 }

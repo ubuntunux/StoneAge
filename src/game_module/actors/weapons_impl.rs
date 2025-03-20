@@ -7,6 +7,7 @@ impl WeaponDataType {
     pub fn get_weapon_material_instance_name(weapon_data_type: &WeaponDataType) -> &str {
         match weapon_data_type {
             WeaponDataType::WoodenClub => "ui/weapons/wooden_club",
+            _ => ""
         }
     }
 }
@@ -25,7 +26,8 @@ impl Default for WeaponCreateInfo {
 impl Default for WeaponData {
     fn default() -> Self {
         WeaponData {
-            _weapon_type: WeaponDataType::WoodenClub,
+            _damage: 10.0,
+            _weapon_type: WeaponDataType::None,
             _model_data_name: String::new(),
         }
     }

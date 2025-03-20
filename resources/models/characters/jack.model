@@ -27,5 +27,25 @@
         0.25,
         0.25,
         0.25
-    ]
+    ],
+    "_sockets": {
+        "SOCKET_WEAPON": {
+            "_parent_bone": "mixamorig:RightHand",
+            "_position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        }
+    }
 }

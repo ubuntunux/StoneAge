@@ -1,4 +1,5 @@
 {
     "_damage": 10,
-    "_model_data_name": "weapons/wooden_club"
+    "_model_data_name": "weapons/wooden_club",
+    "_weapon_data_type": "WoodenClub"
 }
