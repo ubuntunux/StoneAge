@@ -43,7 +43,7 @@
     },
     "_character_type": "Roamer",
     "_model_data_name": "characters/jack",
-    "_weapon": {
+    "_weapon_data": {
         "_position": [
             0.0,
             0.22999998927116394,

@@ -4,7 +4,7 @@ use rust_engine_3d::scene::animation::AnimationLayerData;
 use rust_engine_3d::scene::mesh::MeshData;
 use rust_engine_3d::utilities::system::RcRefCell;
 use serde::{Deserialize, Serialize};
-use crate::game_module::actors::weapons::WeaponCreateInfo;
+use crate::game_module::actors::weapons::WeaponDataCreateInfo;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum ActionAnimationState {
@@ -55,7 +55,7 @@ pub struct CharacterDataCreateInfo {
     pub _character_animation_data: CharacterAnimationDataCreateInfo,
     pub _character_audio_data: CharacterAudioDataCreateInfo,
     pub _character_stat_data: CharacterStatData,
-    pub _weapon: WeaponCreateInfo
+    pub _weapon_data: WeaponDataCreateInfo
 }
 
 #[derive(Serialize, Deserialize, Default, Debug, Clone, PartialEq)]

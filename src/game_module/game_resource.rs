@@ -6,7 +6,7 @@ use rust_engine_3d::renderer::renderer_context::RendererContext;
 use rust_engine_3d::resource::resource::{APPLICATION_RESOURCE_PATH, EngineResources, get_unique_resource_name, ResourceDataMap};
 use rust_engine_3d::utilities::system::{self, newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
 use serde_json::{self};
-
+use crate::game_module::actors::weapons::WeaponDataCreateInfo;
 use crate::game_module::actors::block::BlockData;
 use crate::game_module::actors::character_data::{CharacterData, CharacterDataCreateInfo};
 use crate::game_module::actors::items::ItemData;
@@ -31,7 +31,7 @@ pub type CharacterDataMap = ResourceDataMap<CharacterData>;
 pub type ItemDataMap = ResourceDataMap<ItemData>;
 pub type GameSceneDataCreateInfoMap = ResourceDataMap<GameSceneDataCreateInfo>;
 pub type PropDataMap = ResourceDataMap<PropData>;
-pub type WeaponDataMap = ResourceDataMap<WeaponData>;
+pub type WeaponDataMap<'a> = ResourceDataMap<WeaponData<'a>>;
 
 #[derive(Clone)]
 pub struct GameResources<'a> {
@@ -41,7 +41,7 @@ pub struct GameResources<'a> {
     _item_data_map: ItemDataMap,
     _game_scene_data_create_infos_map: GameSceneDataCreateInfoMap,
     _prop_data_map: PropDataMap,
-    _weapon_data_map: WeaponDataMap,
+    _weapon_data_map: WeaponDataMap<'a>,
 }
 
 impl<'a> GameResources<'a> {
@@ -196,7 +196,9 @@ impl<'a> GameResources<'a> {
         for game_data_file in game_data_files {
             let weapon_data_name = get_unique_resource_name(&self._weapon_data_map, &game_data_directory, &game_data_file);
             let loaded_contents = system::load(&game_data_file);
-            let weapon_data: WeaponData = serde_json::from_reader(loaded_contents).expect("Failed to deserialize.");
+            let weapon_data_create_info: WeaponDataCreateInfo = serde_json::from_reader(loaded_contents).expect("Failed to deserialize.");
+            let weapon_model_data = self.get_engine_resources().get_model_data(&weapon_data_create_info._model_data_name);
+            let weapon_data = WeaponData::create_weapon_data(&weapon_data_create_info, weapon_model_data);
             self._weapon_data_map.insert(weapon_data_name.clone(), newRcRefCell(weapon_data));
         }
     }
@@ -209,7 +211,7 @@ impl<'a> GameResources<'a> {
         self._weapon_data_map.get(resource_name).is_some()
     }
 
-    pub fn get_weapon_data(&self, resource_name: &str) -> &RcRefCell<WeaponData> {
+    pub fn get_weapon_data(&self, resource_name: &str) -> &RcRefCell<WeaponData<'a>> {
         self._weapon_data_map.get(resource_name).unwrap()
     }
 
