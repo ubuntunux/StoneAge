@@ -1,4 +1,4 @@
-use nalgebra::{Matrix4, Vector3};
+use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::effect::effect_data::EffectCreateInfo;
 use rust_engine_3d::scene::animation::{AnimationPlayArgs, AnimationPlayInfo};
@@ -748,7 +748,7 @@ impl<'a> Character<'a> {
         // update weapon
         if self._weapon.is_some() {
             let weapon = self._weapon.as_mut().unwrap();
-            let weapon_socket_transform = Matrix4::identity();
+            let weapon_socket_transform = weapon._weapon_socket.borrow()._transform.clone();
             weapon.update_weapon(&weapon_socket_transform, delta_time);
         }
     }
