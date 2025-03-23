@@ -1,4 +1,4 @@
-use nalgebra::Vector3;
+use nalgebra::{Matrix4, Vector3};
 use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::effect::effect_data::EffectCreateInfo;
 use rust_engine_3d::scene::animation::{AnimationPlayArgs, AnimationPlayInfo};
@@ -12,6 +12,7 @@ use crate::game_module::actors::character::{Character, CharacterAnimationState, 
 use crate::game_module::actors::character_controller::CharacterController;
 use crate::game_module::actors::character_data::{ActionAnimationState, CharacterData, MoveAnimationState};
 use crate::game_module::actors::character_manager::CharacterManager;
+use crate::game_module::actors::weapons::Weapon;
 use crate::game_module::behavior::behavior_base::create_character_behavior;
 use crate::game_module::game_constants::{AUDIO_ATTACK, AUDIO_FOOTSTEP, AUDIO_HIT, AUDIO_JUMP, AUDIO_ROLL, EFFECT_HIT, MAX_STAMINA, STAMINA_ATTACK, STAMINA_JUMP, STAMINA_POWER_ATTACK, STAMINA_RECOVERY, STAMINA_ROLL, STAMINA_RUN};
 
@@ -66,7 +67,7 @@ impl<'a> Character<'a> {
         render_object: &RcRefCell<RenderObjectData<'a>>,
         position: &Vector3<f32>,
         rotation: &Vector3<f32>,
-        scale: &Vector3<f32>,
+        scale: &Vector3<f32>
     ) -> Character<'a> {
         let character_data_borrow = character_data.borrow();
         let mut character = Character {
@@ -81,7 +82,7 @@ impl<'a> Character<'a> {
             _animation_state: Box::new(CharacterAnimationState::default()),
             _controller: Box::new(CharacterController::create_character_controller()),
             _behavior: create_character_behavior(character_data_borrow._character_type),
-            _weapon: None,
+            _weapon: None
         };
 
         character.initialize_character(position, rotation, scale);
@@ -102,6 +103,22 @@ impl<'a> Character<'a> {
         self.set_action_none();
         self.update_transform();
         self.update_render_object();
+    }
+
+    pub fn add_weapon(&mut self, weapon: Box<Weapon<'a>>) {
+        if self._weapon.is_some() {
+            panic!("already has weapon!")
+        } else {
+            self._weapon = Some(weapon);
+        }
+    }
+
+    pub fn get_weapon(&self) -> &Option<Box<Weapon<'a>>> {
+        &self._weapon
+    }
+
+    pub fn remove_weapon(&mut self) {
+        self._weapon = None;
     }
 
     pub fn get_character_manager(&self) -> &CharacterManager<'a> {
@@ -130,6 +147,162 @@ impl<'a> Character<'a> {
 
     pub fn get_collision(&self) -> &CollisionData {
         &ptr_as_ref(self._render_object.as_ptr())._collision
+    }
+
+    pub fn is_move_state(&self, move_state: MoveAnimationState) -> bool {
+        move_state == self._animation_state._move_animation_state
+    }
+
+    pub fn is_on_ground(&self) -> bool {
+        self._controller.is_on_ground()
+    }
+
+    pub fn is_action(&self, action: ActionAnimationState) -> bool {
+        action == self._animation_state._action_animation_state
+    }
+
+
+    pub fn is_attack_animation(&self) -> bool {
+        self.is_action(ActionAnimationState::Attack) || self.is_action(ActionAnimationState::PowerAttack)
+    }
+
+    pub fn is_available_attack(&self) -> bool {
+        if self.is_available_move() {
+            let action_animation_play_info = self.get_animation_play_info(AnimationLayer::ActionLayer);
+
+            if self.is_action(ActionAnimationState::None) ||
+                self.is_action(ActionAnimationState::Attack) &&
+                    self.get_character_data()._animation_data._attack_event_time < action_animation_play_info._animation_play_time &&
+                    (!self._is_player || STAMINA_ATTACK <= self._character_stats._stamina) {
+                return true;
+            }
+        }
+        false
+    }
+
+    pub fn is_available_move(&self) -> bool {
+        self._character_stats._is_alive && !self.is_move_state(MoveAnimationState::Roll)
+    }
+
+    pub fn is_available_jump(&self) -> bool {
+        if self._is_player && self._character_stats._stamina < STAMINA_JUMP {
+            return false;
+        }
+        self._controller._is_ground && self.is_available_move()
+    }
+
+    pub fn is_available_roll(&self) -> bool {
+        if self._is_player && self._character_stats._stamina < STAMINA_ROLL {
+            return false;
+        }
+        self._controller._is_ground && self.is_available_attack() && !self.is_move_state(MoveAnimationState::Roll)
+    }
+
+    pub fn is_speed_running(&self) -> bool {
+        self.is_move_state(MoveAnimationState::Run) || self.is_move_state(MoveAnimationState::RunningJump)
+    }
+
+    pub fn get_animation_play_info(&self, layer: AnimationLayer) -> &AnimationPlayInfo {
+        &ptr_as_ref(self._render_object.as_ptr())._animation_play_infos[layer as usize]
+    }
+
+    pub fn get_attack_range(&self, attack_event: ActionAnimationState) -> f32 {
+        match attack_event {
+            ActionAnimationState::Attack => self.get_character_data()._stat_data._attack_range,
+            ActionAnimationState::PowerAttack => self.get_character_data()._stat_data._power_attack_range,
+            _ => panic!("check_attack_range not implemented: {:?}", attack_event)
+        }
+    }
+
+    pub fn check_in_range(&self, target_collision: &CollisionData, check_range: f32, check_direction: bool) -> bool {
+        let collision = self.get_collision();
+        let position = Vector3::new(collision._bounding_box._center.x, collision._bounding_box._min.y, collision._bounding_box._center.z);
+        let target_position = Vector3::new(target_collision._bounding_box._center.x, target_collision._bounding_box._min.y, target_collision._bounding_box._center.z);
+        let check_range = check_range + (collision._bounding_box._size.x + target_collision._bounding_box._size.x) * 0.4;
+        let to_target = target_position - position;
+        let (to_target_dir, to_target_dist) = math::make_normalize_xz_with_norm(&to_target);
+        let half_height = collision._bounding_box._size.y * 0.5;
+        if (self.get_transform().get_front().dot(&to_target_dir) < 0.0 || !check_direction) &&
+            -half_height <= to_target.y &&
+            to_target.y <= half_height &&
+            to_target_dist <= check_range {
+            return true;
+        }
+        false
+    }
+
+    pub fn get_position(&self) -> &Vector3<f32> {
+        &self._controller._position
+    }
+
+    pub fn get_power(&self, attack_event: ActionAnimationState) -> i32 {
+        match attack_event {
+            ActionAnimationState::Attack => self.get_character_data()._stat_data._attack_damage,
+            ActionAnimationState::PowerAttack => self.get_character_data()._stat_data._power_attack_damage,
+            _ => panic!("get_power not implemented: {:?}", attack_event)
+        }
+    }
+
+    pub fn set_damage(&mut self, attack_point: &Vector3<f32>, damage: i32) {
+        let character_manager = ptr_as_ref(self._character_manager);
+        self._character_stats._hp -= damage;
+        if self._character_stats._hp <= 0 {
+            character_manager.get_scene_manager().play_audio(&self._character_data.borrow()._audio_data._audio_dead);
+            self.set_dead();
+        } else {
+            character_manager.get_scene_manager().play_audio(&self._character_data.borrow()._audio_data._audio_pain);
+            if self._is_player {
+                self.set_action_hit();
+            }
+        }
+
+        let effect_create_info = EffectCreateInfo {
+            _effect_position: attack_point.clone(),
+            _effect_data_name: String::from(EFFECT_HIT),
+            ..Default::default()
+        };
+        character_manager.get_scene_manager_mut().add_effect(EFFECT_HIT, &effect_create_info);
+        character_manager.get_scene_manager().play_audio_bank(AUDIO_HIT);
+    }
+
+    pub fn set_invincibility(&mut self, invincibility: bool) {
+        self._character_stats._invincibility = invincibility;
+    }
+
+    pub fn set_dead(&mut self) {
+        self._character_stats._is_alive = false;
+        self.set_action_dead();
+    }
+
+    pub fn set_action_none(&mut self) {
+        self.set_action_animation(ActionAnimationState::None);
+    }
+
+    pub fn set_action_attack(&mut self) {
+        if self.is_available_attack() {
+            if self._is_player {
+                self._character_stats._stamina -= STAMINA_ATTACK;
+            }
+            self.set_action_animation(ActionAnimationState::Attack);
+        }
+    }
+
+    pub fn set_action_power_attack(&mut self) {
+        if self.is_available_attack() {
+            if self._is_player {
+                self._character_stats._stamina -= STAMINA_POWER_ATTACK;
+            }
+            self.set_action_animation(ActionAnimationState::PowerAttack);
+        }
+    }
+
+    pub fn set_action_hit(&mut self) {
+        self.set_action_animation(ActionAnimationState::Hit);
+    }
+
+    pub fn set_action_dead(&mut self) {
+        self.set_move_stop();
+        self.set_action_animation(ActionAnimationState::Dead);
     }
 
     pub fn set_move_animation(&mut self, move_animation_state: MoveAnimationState) {
@@ -175,11 +348,6 @@ impl<'a> Character<'a> {
     }
 
     pub fn set_action_animation(&mut self, action_animation_state: ActionAnimationState) {
-        if self._is_player {
-            log::info!("action_animation: {:?}", action_animation_state);
-        }
-
-        // set action animation
         let mut animation_info = AnimationPlayArgs {
             _animation_loop: false,
             _force_animation_setting: true,
@@ -215,10 +383,6 @@ impl<'a> Character<'a> {
 
         self._animation_state._action_animation_state = action_animation_state;
         self.update_animation_layers();
-    }
-
-    pub fn is_move_state(&self, move_state: MoveAnimationState) -> bool {
-        move_state == self._animation_state._move_animation_state
     }
 
     pub fn set_run(&mut self, run: bool) {
@@ -313,49 +477,6 @@ impl<'a> Character<'a> {
             }
             self.set_move_animation(MoveAnimationState::Roll);
         }
-    }
-
-    pub fn is_on_ground(&self) -> bool {
-        self._controller.is_on_ground()
-    }
-
-    pub fn is_action(&self, action: ActionAnimationState) -> bool {
-        action == self._animation_state._action_animation_state
-    }
-
-    pub fn set_action_none(&mut self) {
-        self.set_action_animation(ActionAnimationState::None);
-    }
-
-    pub fn set_action_attack(&mut self) {
-        if self.is_available_attack() {
-            if self._is_player {
-                self._character_stats._stamina -= STAMINA_ATTACK;
-            }
-            self.set_action_animation(ActionAnimationState::Attack);
-        }
-    }
-
-    pub fn set_action_power_attack(&mut self) {
-        if self.is_available_attack() {
-            if self._is_player {
-                self._character_stats._stamina -= STAMINA_POWER_ATTACK;
-            }
-            self.set_action_animation(ActionAnimationState::PowerAttack);
-        }
-    }
-
-    pub fn set_action_hit(&mut self) {
-        self.set_action_animation(ActionAnimationState::Hit);
-    }
-
-    pub fn set_action_dead(&mut self) {
-        self.set_move_stop();
-        self.set_action_animation(ActionAnimationState::Dead);
-    }
-
-    pub fn get_animation_play_info(&self, layer: AnimationLayer) -> &AnimationPlayInfo {
-        &ptr_as_ref(self._render_object.as_ptr())._animation_play_infos[layer as usize]
     }
 
     pub fn update_move_animation_begin_event(&mut self) {
@@ -558,74 +679,6 @@ impl<'a> Character<'a> {
         self.update_action_animation_loop_event();
     }
 
-    pub fn get_attack_range(&self, attack_event: ActionAnimationState) -> f32 {
-        match attack_event {
-            ActionAnimationState::Attack => self.get_character_data()._stat_data._attack_range,
-            ActionAnimationState::PowerAttack => self.get_character_data()._stat_data._power_attack_range,
-            _ => panic!("check_attack_range not implemented: {:?}", attack_event)
-        }
-    }
-
-    pub fn check_in_range(&self, target_collision: &CollisionData, check_range: f32, check_direction: bool) -> bool {
-        let collision = self.get_collision();
-        let position = Vector3::new(collision._bounding_box._center.x, collision._bounding_box._min.y, collision._bounding_box._center.z);
-        let target_position = Vector3::new(target_collision._bounding_box._center.x, target_collision._bounding_box._min.y, target_collision._bounding_box._center.z);
-        let check_range = check_range + (collision._bounding_box._size.x + target_collision._bounding_box._size.x) * 0.4;
-        let to_target = target_position - position;
-        let (to_target_dir, to_target_dist) = math::make_normalize_xz_with_norm(&to_target);
-        let half_height = collision._bounding_box._size.y * 0.5;
-        if (self.get_transform().get_front().dot(&to_target_dir) < 0.0 || !check_direction) &&
-            -half_height <= to_target.y &&
-            to_target.y <= half_height &&
-            to_target_dist <= check_range {
-            return true;
-        }
-        false
-    }
-
-    pub fn get_position(&self) -> &Vector3<f32> {
-        &self._controller._position
-    }
-
-    pub fn get_power(&self, attack_event: ActionAnimationState) -> i32 {
-        match attack_event {
-            ActionAnimationState::Attack => self.get_character_data()._stat_data._attack_damage,
-            ActionAnimationState::PowerAttack => self.get_character_data()._stat_data._power_attack_damage,
-            _ => panic!("get_power not implemented: {:?}", attack_event)
-        }
-    }
-
-    pub fn set_damage(&mut self, attack_point: &Vector3<f32>, damage: i32) {
-        let character_manager = ptr_as_ref(self._character_manager);
-        self._character_stats._hp -= damage;
-        if self._character_stats._hp <= 0 {
-            character_manager.get_scene_manager().play_audio(&self._character_data.borrow()._audio_data._audio_dead);
-            self.set_dead();
-        } else {
-            character_manager.get_scene_manager().play_audio(&self._character_data.borrow()._audio_data._audio_pain);
-            if self._is_player {
-                self.set_action_hit();
-            }
-        }
-
-        let effect_create_info = EffectCreateInfo {
-            _effect_position: attack_point.clone(),
-            _effect_data_name: String::from(EFFECT_HIT),
-            ..Default::default()
-        };
-        character_manager.get_scene_manager_mut().add_effect(EFFECT_HIT, &effect_create_info);
-        character_manager.get_scene_manager().play_audio_bank(AUDIO_HIT);
-    }
-
-    pub fn set_invincibility(&mut self, invincibility: bool) {
-        self._character_stats._invincibility = invincibility;
-    }
-
-    pub fn set_dead(&mut self) {
-        self._character_stats._is_alive = false;
-        self.set_action_dead();
-    }
-
     pub fn update_transform(&mut self) {
         let mut render_object = self._render_object.borrow_mut();
         render_object._transform_object.set_position(&self._controller._position);
@@ -653,46 +706,6 @@ impl<'a> Character<'a> {
                 );
             }
         }
-    }
-
-    pub fn is_attack_animation(&self) -> bool {
-        self.is_action(ActionAnimationState::Attack) || self.is_action(ActionAnimationState::PowerAttack)
-    }
-
-    pub fn is_available_attack(&self) -> bool {
-        if self.is_available_move() {
-            let action_animation_play_info = self.get_animation_play_info(AnimationLayer::ActionLayer);
-
-            if self.is_action(ActionAnimationState::None) ||
-                self.is_action(ActionAnimationState::Attack) &&
-                    self.get_character_data()._animation_data._attack_event_time < action_animation_play_info._animation_play_time &&
-                    (!self._is_player || STAMINA_ATTACK <= self._character_stats._stamina) {
-                return true;
-            }
-        }
-        false
-    }
-
-    pub fn is_available_move(&self) -> bool {
-        self._character_stats._is_alive && !self.is_move_state(MoveAnimationState::Roll)
-    }
-
-    pub fn is_available_jump(&self) -> bool {
-        if self._is_player && self._character_stats._stamina < STAMINA_JUMP {
-            return false;
-        }
-        self._controller._is_ground && self.is_available_move()
-    }
-
-    pub fn is_available_roll(&self) -> bool {
-        if self._is_player && self._character_stats._stamina < STAMINA_ROLL {
-            return false;
-        }
-        self._controller._is_ground && self.is_available_attack() && !self.is_move_state(MoveAnimationState::Roll)
-    }
-
-    pub fn is_speed_running(&self) -> bool {
-        self.is_move_state(MoveAnimationState::Run) || self.is_move_state(MoveAnimationState::RunningJump)
     }
 
     pub fn update_character(
@@ -731,5 +744,12 @@ impl<'a> Character<'a> {
 
         // transform
         self.update_transform();
+
+        // update weapon
+        if self._weapon.is_some() {
+            let weapon = self._weapon.as_mut().unwrap();
+            let weapon_socket_transform = Matrix4::identity();
+            weapon.update_weapon(&weapon_socket_transform, delta_time);
+        }
     }
 }

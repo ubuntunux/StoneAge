@@ -1,6 +1,7 @@
-use nalgebra::Vector3;
+use nalgebra::{Matrix4, Vector3};
 use rust_engine_3d::scene::model::ModelData;
 use rust_engine_3d::scene::render_object::RenderObjectData;
+use rust_engine_3d::scene::socket::Socket;
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::RcRefCell;
 use crate::game_module::actors::weapons::{Weapon, WeaponCreateInfo, WeaponData, WeaponDataCreateInfo, WeaponDataType};
@@ -43,6 +44,7 @@ impl<'a> WeaponData<'a> {
 impl Default for WeaponCreateInfo {
     fn default() -> Self {
         WeaponCreateInfo {
+            _weapon_socket_name: String::new(),
             _weapon_data_name: String::new(),
             _position: Vector3::zeros(),
             _rotation: Vector3::zeros(),
@@ -53,11 +55,14 @@ impl Default for WeaponCreateInfo {
 
 impl<'a> Weapon<'a> {
     pub fn create_weapon(
+        weapon_socket: &RcRefCell<Socket>,
         weapon_create_info: &WeaponCreateInfo,
         weapon_data: &RcRefCell<WeaponData<'a>>,
         render_object: &RcRefCell<RenderObjectData<'a>>
     ) -> Weapon<'a> {
-        let mut weapon = Weapon {
+        log::info!("create_weapon: {:?}, socket: {:?}", weapon_data.borrow()._model_data.borrow()._model_data_name, weapon_socket.borrow()._socket_data.borrow()._socket_name);
+        Weapon {
+            _weapon_socket: weapon_socket.clone(),
             _weapon_data: weapon_data.clone(),
             _render_object: render_object.clone(),
             _transform: math::make_srt_transform(
@@ -65,27 +70,15 @@ impl<'a> Weapon<'a> {
                 &weapon_create_info._rotation,
                 &weapon_create_info._scale
             )
-        };
-        weapon.initialize_weapon();
-        weapon
-    }
-
-    pub fn initialize_weapon(&mut self) {
-        self.update_transform();
+        }
     }
 
     pub fn collide_point(&self, pos: &Vector3<f32>) -> bool {
         self._render_object.borrow()._bounding_box.collide_in_radius(pos)
     }
 
-    pub fn update_transform(&mut self) {
-        // self._render_object.borrow_mut()._transform_object.set_transform(
-        //     &self._weapon_properties._position,
-        //     &self._weapon_properties._rotation,
-        //     &self._weapon_properties._scale,
-        // );
-    }
-
-    pub fn update_weapon(&mut self, _delta_time: f64) {
+    pub fn update_weapon(&mut self, parent_transform: &Matrix4<f32>, _delta_time: f32) {
+        let final_transform = parent_transform * self._transform;
+        self._render_object.borrow_mut()._transform_object.set_transform(&final_transform);
     }
 }

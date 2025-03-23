@@ -64,6 +64,7 @@ impl CharacterData {
                 game_resources.get_engine_resources_mut(),
             ),
             _stat_data: character_data_create_info._character_stat_data.clone(),
+            _weapon_create_info: character_data_create_info._weapon_create_info.clone(),
         }
     }
 }

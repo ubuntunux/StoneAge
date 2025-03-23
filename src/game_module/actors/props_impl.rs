@@ -100,7 +100,7 @@ impl<'a> Prop<'a> {
     }
 
     pub fn update_transform(&mut self) {
-        self._render_object.borrow_mut()._transform_object.set_transform(
+        self._render_object.borrow_mut()._transform_object.set_position_rotation_scale(
             &self._prop_stats._position,
             &self._prop_stats._rotation,
             &self._prop_stats._scale,

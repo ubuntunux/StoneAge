@@ -86,7 +86,7 @@ impl<'a> Block<'a> {
     }
 
     pub fn update_transform(&mut self) {
-        self._render_object.borrow_mut()._transform_object.set_transform(
+        self._render_object.borrow_mut()._transform_object.set_position_rotation_scale(
             &self._block_properties._position,
             &self._block_properties._rotation,
             &self._block_properties._scale,

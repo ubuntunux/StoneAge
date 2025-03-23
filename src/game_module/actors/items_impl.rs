@@ -79,7 +79,7 @@ impl<'a> Item<'a> {
     }
 
     pub fn update_transform(&mut self) {
-        self._render_object.borrow_mut()._transform_object.set_transform(
+        self._render_object.borrow_mut()._transform_object.set_position_rotation_scale(
             &self._item_properties._position,
             &self._item_properties._rotation,
             &self._item_properties._scale,
