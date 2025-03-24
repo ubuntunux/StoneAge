@@ -4,14 +4,15 @@ pub const EDITOR_CAMERA_PAN_SPEED: f32 = 0.05;
 pub const EDITOR_CAMERA_ROTATION_SPEED: f32 = 0.005;
 
 // game constant
-pub const CAMERA_PITCH_MIN: f32 = 15.0;
-pub const CAMERA_PITCH_MAX: f32 = 30.0;
+pub const CAMERA_PITCH_MIN: f32 = 5.0;
+pub const CAMERA_PITCH_MAX: f32 = 20.0;
 pub const CAMERA_DISTANCE_MIN: f32 = 5.0;
 pub const CAMERA_DISTANCE_MAX: f32 = 10.0;
 pub const CAMERA_OFFSET_Y: f32 = 1.5;
 pub const CAMERA_ZOOM_SPEED: f32 = 4.0;
 pub const CAMERA_ROTATION_SPEED_MIN: f32 = 0.5;
 pub const CAMERA_ROTATION_SPEED_MAX: f32 = 20.0;
+pub const ARRIVAL_DISTANCE_THRESHOLD: f32 = 1.0;
 
 // player
 pub const GRAVITY: f32 = 30.0;

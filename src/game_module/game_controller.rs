@@ -262,7 +262,7 @@ impl<'a> GameController<'a> {
         }
 
         // update camera
-       self.update_camera_distance(zoom_control, delta_time);
+        self.update_camera_distance(zoom_control, delta_time);
         // self.update_camera_rotation(pitch_control, yaw_control, delta_time);
         self.update_camera_pitch_by_distance();
 

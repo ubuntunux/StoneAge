@@ -2,7 +2,7 @@ use nalgebra::Vector3;
 use rust_engine_3d::utilities::math::lerp;
 use crate::game_module::actors::character::Character;
 use crate::game_module::behavior::behavior_base::{BehaviorBase, BehaviorState};
-use crate::game_module::game_constants::{NPC_IDLE_TERM_MAX, NPC_IDLE_TERM_MIN, NPC_ROAMING_RADIUS, NPC_ROAMING_TIME, NPC_TRACKING_RANGE};
+use crate::game_module::game_constants::{ARRIVAL_DISTANCE_THRESHOLD, NPC_IDLE_TERM_MAX, NPC_IDLE_TERM_MIN, NPC_ROAMING_RADIUS, NPC_ROAMING_TIME, NPC_TRACKING_RANGE};
 
 #[derive(Default)]
 pub struct BehaviorDefault {
@@ -43,7 +43,7 @@ impl BehaviorBase for BehaviorDefault {
                 if 0.0 < self._move_time {
                     let offset = self._target_point - owner.get_position();
                     let dist = offset.x * offset.x + offset.z * offset.z;
-                    if dist < 1.0 {
+                    if dist < ARRIVAL_DISTANCE_THRESHOLD {
                         do_idle = true;
                     } else if owner.is_on_ground() && (owner._controller._is_blocked || owner._controller._is_cliff) {
                         do_idle = true;

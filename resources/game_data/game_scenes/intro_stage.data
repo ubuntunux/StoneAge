@@ -5,7 +5,7 @@
             "_position": [
                 33.562435150146484,
                 8.0,
-                8.394707679748535
+                6.0
             ],
             "_rotation": [
                 0.0,
@@ -23,7 +23,7 @@
             "_position": [
                 29.562435150146484,
                 8.0,
-                8.394707679748535
+                6.0
             ],
             "_rotation": [
                 0.0,
@@ -41,7 +41,7 @@
             "_position": [
                 55.562435150146484,
                 8.0,
-                9.394706726074219
+                6.0
             ],
             "_rotation": [
                 0.0,
@@ -54,16 +54,16 @@
                 1.0
             ]
         },
-        "cliff_grass": {
-            "_block_data_name": "environments/cliff_grass",
+        "birch_tree_01.003": {
+            "_block_data_name": "environments/birch_tree_01",
             "_position": [
-                -1.0,
+                8.562435150146484,
                 8.0,
-                -5.0
+                6.0
             ],
             "_rotation": [
                 0.0,
-                0.0,
+                0.7347071170806885,
                 0.0
             ],
             "_scale": [
@@ -72,34 +72,16 @@
                 1.0
             ]
         },
-        "cliff_grass.001": {
-            "_block_data_name": "environments/cliff_grass",
+        "birch_tree_01.004": {
+            "_block_data_name": "environments/birch_tree_01",
             "_position": [
-                1.0,
+                2.5624351501464844,
                 8.0,
-                -5.0
+                6.0
             ],
             "_rotation": [
                 0.0,
-                2.1236376762390137,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "cliff_grass.002": {
-            "_block_data_name": "environments/cliff_grass",
-            "_position": [
-                4.0,
-                8.0,
-                -5.0
-            ],
-            "_rotation": [
-                0.0,
-                -1.7899315357208252,
+                0.5093454122543335,
                 0.0
             ],
             "_scale": [
@@ -113,7 +95,7 @@
             "_position": [
                 34.0,
                 8.0,
-                -1.0
+                0.0
             ],
             "_rotation": [
                 0.0,
@@ -129,9 +111,9 @@
         "cliff_grass.004": {
             "_block_data_name": "environments/cliff_grass",
             "_position": [
-                58.0,
+                54.0,
                 8.0,
-                1.0
+                0.0
             ],
             "_rotation": [
                 0.0,
@@ -165,9 +147,9 @@
         "ground_00": {
             "_block_data_name": "environments/ground_00",
             "_position": [
-                -5.390877723693848,
+                -12.390877723693848,
                 8.0,
-                -0.4387989044189453
+                5.561201095581055
             ],
             "_rotation": [
                 0.0,
@@ -183,9 +165,9 @@
         "ground_00.001": {
             "_block_data_name": "environments/ground_00",
             "_position": [
-                97.60912322998047,
+                46.60912322998047,
                 8.0,
-                16.561201095581055
+                6.0
             ],
             "_rotation": [
                 0.0,
@@ -201,9 +183,9 @@
         "ground_00.002": {
             "_block_data_name": "environments/ground_00",
             "_position": [
-                58.60912322998047,
+                51.60912322998047,
                 8.0,
-                -5.438798904418945
+                6.0
             ],
             "_rotation": [
                 0.0,
@@ -255,81 +237,9 @@
         "rock": {
             "_block_data_name": "environments/rock",
             "_position": [
-                0.0,
-                6.0,
-                4.0
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                10.0,
-                1.0,
-                10.0
-            ]
-        },
-        "rock.001": {
-            "_block_data_name": "environments/rock",
-            "_position": [
-                16.0,
-                6.0,
-                4.0
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                6.0,
-                1.0,
-                2.0
-            ]
-        },
-        "rock.002": {
-            "_block_data_name": "environments/rock",
-            "_position": [
-                32.0,
-                6.0,
-                0.0
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                10.0,
-                1.0,
-                10.0
-            ]
-        },
-        "rock.003": {
-            "_block_data_name": "environments/rock",
-            "_position": [
-                64.0,
-                6.0,
-                0.0
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                10.0,
-                1.0,
-                10.0
-            ]
-        },
-        "rock.004": {
-            "_block_data_name": "environments/rock",
-            "_position": [
                 48.0,
                 6.0,
-                -8.0
+                4.0
             ],
             "_rotation": [
                 0.0,
@@ -337,43 +247,7 @@
                 0.0
             ],
             "_scale": [
-                6.0,
-                1.0,
-                2.0
-            ]
-        },
-        "rock.005": {
-            "_block_data_name": "environments/rock",
-            "_position": [
-                80.0,
-                6.0,
-                8.0
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                6.0,
-                1.0,
-                2.0
-            ]
-        },
-        "rock.006": {
-            "_block_data_name": "environments/rock",
-            "_position": [
-                96.0,
-                6.0,
-                16.0
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                10.0,
+                100.0,
                 1.0,
                 10.0
             ]
@@ -381,9 +255,9 @@
         "rock_forest_grown_00": {
             "_block_data_name": "environments/rock_forest_grown_00",
             "_position": [
-                102.41915130615234,
+                87.41915130615234,
                 8.0,
-                24.669456481933594
+                6.0
             ],
             "_rotation": [
                 0.0,
@@ -399,9 +273,9 @@
         "rock_forest_grown_01": {
             "_block_data_name": "environments/rock_forest_grown_01",
             "_position": [
-                98.32342529296875,
+                83.32342529296875,
                 8.0,
-                25.559833526611328
+                6.0
             ],
             "_rotation": [
                 0.0,
@@ -417,9 +291,9 @@
         "rock_forest_moss_00": {
             "_block_data_name": "environments/rock_forest_moss_00",
             "_position": [
-                94.04962921142578,
+                79.04962921142578,
                 8.0,
-                24.372665405273438
+                6.0
             ],
             "_rotation": [
                 0.0,
@@ -435,9 +309,9 @@
         "rock_forest_moss_01": {
             "_block_data_name": "environments/rock_forest_moss_01",
             "_position": [
-                24.611400604248047,
+                21.611400604248047,
                 8.0,
-                7.400876045227051
+                6.0
             ],
             "_rotation": [
                 0.0,
@@ -453,9 +327,9 @@
         "rock_forest_moss_01.001": {
             "_block_data_name": "environments/rock_forest_moss_01",
             "_position": [
-                89.71646118164062,
+                74.71646118164062,
                 8.0,
-                23.422931671142578
+                6.0
             ],
             "_rotation": [
                 0.0,
@@ -473,7 +347,7 @@
             "_position": [
                 -6.0,
                 8.0,
-                11.0
+                6.0
             ],
             "_rotation": [
                 0.0,
@@ -491,7 +365,7 @@
             "_position": [
                 41.0,
                 8.0,
-                8.0
+                6.0
             ],
             "_rotation": [
                 0.0,
@@ -507,9 +381,9 @@
         "stylized_tree_00.002": {
             "_block_data_name": "environments/stylized_tree_00",
             "_position": [
-                105.0,
+                93.0,
                 8.0,
-                24.0
+                6.0
             ],
             "_rotation": [
                 0.0,
@@ -527,7 +401,7 @@
             "_position": [
                 69.0,
                 8.0,
-                9.0
+                6.0
             ],
             "_rotation": [
                 0.0,
@@ -545,7 +419,7 @@
             "_position": [
                 -1.9569120407104492,
                 8.0,
-                12.662676811218262
+                6.0
             ],
             "_rotation": [
                 0.0,
@@ -563,7 +437,7 @@
             "_position": [
                 37.043087005615234,
                 8.0,
-                7.662676811218262
+                6.0
             ],
             "_rotation": [
                 0.0,
@@ -581,7 +455,7 @@
             "_position": [
                 62.933685302734375,
                 8.0,
-                7.953315734863281
+                6.0
             ],
             "_rotation": [
                 0.0,
@@ -599,9 +473,9 @@
         "neanderthal": {
             "_character_data_name": "characters/neanderthal",
             "_position": [
-                30.0,
-                9.0,
-                -7.0
+                37.0,
+                8.0,
+                0.0
             ],
             "_rotation": [
                 0.0,
@@ -619,7 +493,7 @@
             "_position": [
                 87.0,
                 9.0,
-                16.0
+                0.0
             ],
             "_rotation": [
                 0.0,
@@ -637,7 +511,7 @@
             "_position": [
                 102.0,
                 9.0,
-                19.0
+                0.0
             ],
             "_rotation": [
                 0.0,
@@ -653,9 +527,9 @@
         "trex.003": {
             "_character_data_name": "characters/trex",
             "_position": [
-                35.0,
-                9.0,
-                3.0
+                31.0,
+                8.0,
+                0.0
             ],
             "_rotation": [
                 0.0,
@@ -671,9 +545,9 @@
         "trex.005": {
             "_character_data_name": "characters/trex",
             "_position": [
-                35.0,
-                9.0,
-                -8.0
+                47.0,
+                8.0,
+                0.0
             ],
             "_rotation": [
                 0.0,
@@ -691,7 +565,7 @@
             "_position": [
                 98.0,
                 9.0,
-                22.0
+                0.0
             ],
             "_rotation": [
                 0.0,
@@ -709,7 +583,7 @@
             "_position": [
                 66.0,
                 9.0,
-                -7.0
+                0.0
             ],
             "_rotation": [
                 0.0,
@@ -727,7 +601,7 @@
             "_position": [
                 58.0,
                 9.0,
-                5.0
+                0.0
             ],
             "_rotation": [
                 0.0,
@@ -745,7 +619,7 @@
             "_position": [
                 96.0,
                 9.0,
-                8.0
+                0.0
             ],
             "_rotation": [
                 0.0,
@@ -761,7 +635,7 @@
         "triceratops.003": {
             "_character_data_name": "characters/triceratops",
             "_position": [
-                41.0,
+                21.0,
                 9.0,
                 0.0
             ],
@@ -780,8 +654,8 @@
             "_character_data_name": "characters/triceratops",
             "_position": [
                 27.0,
-                9.0,
-                -7.0
+                8.0,
+                0.0
             ],
             "_rotation": [
                 0.0,
@@ -797,9 +671,9 @@
         "triceratops.005": {
             "_character_data_name": "characters/triceratops",
             "_position": [
-                103.0,
+                82.0,
                 9.0,
-                10.0
+                0.0
             ],
             "_rotation": [
                 0.0,
@@ -817,7 +691,7 @@
             "_position": [
                 -5.0,
                 9.0,
-                7.0
+                0.0
             ],
             "_rotation": [
                 0.0,
@@ -835,7 +709,7 @@
             "_position": [
                 0.0,
                 9.0,
-                8.0
+                0.0
             ],
             "_rotation": [
                 0.0,
@@ -853,7 +727,7 @@
             "_position": [
                 3.0,
                 9.0,
-                6.0
+                0.0
             ],
             "_rotation": [
                 0.0,
@@ -871,7 +745,7 @@
             "_position": [
                 61.0,
                 9.0,
-                -1.0
+                0.0
             ],
             "_rotation": [
                 0.0,
@@ -891,7 +765,7 @@
             "_position": [
                 16.376733779907227,
                 8.031335830688477,
-                4.028294563293457
+                1.028294563293457
             ],
             "_rotation": [
                 0.0,
@@ -943,9 +817,9 @@
         "meat.003": {
             "_item_data_name": "items/meat",
             "_position": [
-                53.376731872558594,
+                25.376731872558594,
                 8.031335830688477,
-                -7.971705436706543
+                0.02829456329345703
             ],
             "_rotation": [
                 0.0,
@@ -979,9 +853,9 @@
         "meat.005": {
             "_item_data_name": "items/meat",
             "_position": [
-                68.3767318725586,
+                64.3767318725586,
                 8.031335830688477,
-                -1.971705436706543
+                1.028294563293457
             ],
             "_rotation": [
                 0.0,
@@ -1015,9 +889,9 @@
         "meat.007": {
             "_item_data_name": "items/meat",
             "_position": [
-                78.3767318725586,
+                76.3767318725586,
                 8.031335830688477,
-                8.028294563293457
+                1.028294563293457
             ],
             "_rotation": [
                 0.0,
@@ -1033,9 +907,27 @@
         "meat.008": {
             "_item_data_name": "items/meat",
             "_position": [
-                92.3767318725586,
+                91.3767318725586,
                 8.031335830688477,
-                13.028294563293457
+                1.028294563293457
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "meat.009": {
+            "_item_data_name": "items/meat",
+            "_position": [
+                10.376731872558594,
+                8.031335830688477,
+                0.02829456329345703
             ],
             "_rotation": [
                 0.0,
@@ -1052,8 +944,8 @@
             "_item_data_name": "items/wood",
             "_position": [
                 12.023232460021973,
-                10.20930004119873,
-                3.945855140686035
+                8.20930004119873,
+                0.9458551406860352
             ],
             "_rotation": [
                 0.0,
@@ -1070,8 +962,8 @@
             "_item_data_name": "items/wood",
             "_position": [
                 10.023232460021973,
-                10.20930004119873,
-                3.945855140686035
+                8.20930004119873,
+                0.9458551406860352
             ],
             "_rotation": [
                 0.0,
@@ -1108,9 +1000,9 @@
     "_props": {
         "birch_tree_00": {
             "_position": [
-                13.0,
+                14.0,
                 8.0,
-                4.0
+                1.0
             ],
             "_prop_data_name": "props/birch_tree_00",
             "_rotation": [
@@ -1128,7 +1020,7 @@
             "_position": [
                 2.0,
                 8.0,
-                10.0
+                6.0
             ],
             "_prop_data_name": "props/cactus",
             "_rotation": [
@@ -1160,11 +1052,83 @@
                 1.0
             ]
         },
+        "mushroom_orange_00.005": {
+            "_position": [
+                15.0,
+                8.0,
+                0.0
+            ],
+            "_prop_data_name": "props/mushroom_orange_00",
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "mushroom_orange_00.006": {
+            "_position": [
+                13.0,
+                8.0,
+                0.0
+            ],
+            "_prop_data_name": "props/mushroom_orange_00",
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
         "rock.007": {
             "_position": [
-                6.0,
                 8.0,
-                10.0
+                8.0,
+                1.0
+            ],
+            "_prop_data_name": "props/rock",
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                0.5,
+                0.5,
+                0.5
+            ]
+        },
+        "rock.008": {
+            "_position": [
+                44.0,
+                8.0,
+                1.0
+            ],
+            "_prop_data_name": "props/rock",
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                0.5,
+                0.5,
+                0.5
+            ]
+        },
+        "rock.009": {
+            "_position": [
+                42.0,
+                8.0,
+                1.0
             ],
             "_prop_data_name": "props/rock",
             "_rotation": [
@@ -1276,9 +1240,9 @@
             "grass_01": {
                 "_model_data_name": "environments/grass_01",
                 "_position": [
-                    -6.026224136352539,
+                    -8.026224136352539,
                     8.0,
-                    -3.660604476928711
+                    0.33939552307128906
                 ],
                 "_rotation": [
                     0.0,
@@ -1330,9 +1294,9 @@
             "grass_darken.001": {
                 "_model_data_name": "environments/grass_darken",
                 "_position": [
-                    8.881264686584473,
+                    -4.118735313415527,
                     8.0,
-                    7.073666572570801
+                    1.0736665725708008
                 ],
                 "_rotation": [
                     0.0,
@@ -1366,9 +1330,9 @@
             "mushroom_orange_00": {
                 "_model_data_name": "environments/mushroom_orange_00",
                 "_position": [
-                    5.34173583984375,
+                    51.34173583984375,
                     8.0,
-                    6.36044979095459
+                    1.3604497909545898
                 ],
                 "_rotation": [
                     0.0,
@@ -1402,9 +1366,9 @@
             "mushroom_orange_01": {
                 "_model_data_name": "environments/mushroom_orange_01",
                 "_position": [
-                    3.0337772369384766,
+                    49.033775329589844,
                     8.0,
-                    6.252613067626953
+                    1.2526130676269531
                 ],
                 "_rotation": [
                     0.0,
@@ -1420,9 +1384,9 @@
             "mushroom_purple_00": {
                 "_model_data_name": "environments/mushroom_purple_00",
                 "_position": [
-                    -0.40307044982910156,
+                    45.59693145751953,
                     8.0,
-                    6.094621658325195
+                    1.0946216583251953
                 ],
                 "_rotation": [
                     0.0,
@@ -1438,9 +1402,9 @@
             "mushroom_purple_00.001": {
                 "_model_data_name": "environments/mushroom_purple_00",
                 "_position": [
-                    3.441896438598633,
+                    49.44189453125,
                     8.0,
-                    6.5630598068237305
+                    1.5630598068237305
                 ],
                 "_rotation": [
                     0.0,
@@ -1456,9 +1420,9 @@
             "mushroom_purple_01": {
                 "_model_data_name": "environments/mushroom_purple_01",
                 "_position": [
-                    0.6498117446899414,
+                    46.649810791015625,
                     8.0,
-                    5.978559494018555
+                    0.9785594940185547
                 ],
                 "_rotation": [
                     0.0,
@@ -1474,9 +1438,9 @@
             "sunflower": {
                 "_model_data_name": "environments/sunflower",
                 "_position": [
-                    3.1362547874450684,
+                    49.136253356933594,
                     8.0,
-                    4.735987663269043
+                    -0.26401233673095703
                 ],
                 "_rotation": [
                     0.0,
