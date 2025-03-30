@@ -68,7 +68,6 @@ resources/engine_resources/externals/textures/mutant/mutant_diffuse.png
 resources/engine_resources/externals/textures/mutant/mutant_normal.png
 resources/engine_resources/fonts/UbuntuSansMono-Bold_Basic_Latin.font
 resources/engine_resources/fonts/UbuntuSansMono-Regular_Basic_Latin.font
-resources/engine_resources/height_map.png
 resources/engine_resources/material_instances/color_blue.matinst
 resources/engine_resources/material_instances/color_green.matinst
 resources/engine_resources/material_instances/color_red.matinst

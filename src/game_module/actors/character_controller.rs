@@ -1,6 +1,7 @@
 use nalgebra::Vector3;
 use rust_engine_3d::scene::collision::{CollisionCreateInfo, CollisionData, CollisionType};
 use rust_engine_3d::scene::render_object::RenderObjectData;
+use rust_engine_3d::utilities::math::HALF_PI;
 use rust_engine_3d::utilities::system::ptr_as_ref;
 use crate::game_module::actors::character_data::{CharacterData, MoveAnimationState};
 use crate::game_module::game_constants::{CHARACTER_ROTATION_SPEED, GRAVITY, GROUND_HEIGHT, MOVE_LIMIT};
@@ -84,11 +85,11 @@ impl CharacterController {
     }
 
     pub fn set_direction(&mut self, direction: &Vector3<f32>) {
-        self._rotation.y = direction.z.atan2(-direction.x) + std::f32::consts::PI * 0.5;
+        self._rotation.y = direction.z.atan2(-direction.x) + HALF_PI;
     }
 
     pub fn rotate_to_direction(&mut self, direction: &Vector3<f32>, delta_time: f32) {
-        let yaw: f32 = direction.z.atan2(-direction.x) + std::f32::consts::PI * 0.5;
+        let yaw: f32 = direction.z.atan2(-direction.x) + HALF_PI;
         let mut diff: f32 = yaw - self._rotation.y;
         if diff < -std::f32::consts::PI {
             diff += std::f32::consts::PI * 2.0;

@@ -252,6 +252,7 @@ impl<'a> Character<'a> {
         } else {
             character_manager.get_scene_manager().play_audio(&self._character_data.borrow()._audio_data._audio_pain);
             if self._is_player {
+                // TODO: additive animation
                 self.set_action_hit();
             }
         }
