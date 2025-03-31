@@ -5,7 +5,7 @@ use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop, AudioManage
 use rust_engine_3d::core::engine_core::EngineCore;
 use rust_engine_3d::effect::effect_manager::EffectManager;
 use rust_engine_3d::scene::render_object::RenderObjectCreateInfo;
-use rust_engine_3d::scene::scene_manager::{SceneDataCreateInfo, SceneManager};
+use rust_engine_3d::scene::scene_manager::{RenderObjectCreateInfoMap, SceneDataCreateInfo, SceneManager};
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
 use serde::{Deserialize, Serialize};
 use crate::application::application::Application;
@@ -31,6 +31,7 @@ pub struct GameSceneDataCreateInfo {
     pub _player: CharacterCreateInfoMap,
     pub _props: PropCreateInfoMap,
     pub _scene: SceneDataCreateInfo,
+    pub _terrain: RenderObjectCreateInfoMap,
     pub _start_point: Vector3<f32>,
 }
 
@@ -209,6 +210,12 @@ impl<'a> GameSceneManager<'a> {
         let game_scene_data = game_resources.get_game_scene_data(game_scene_data_name).borrow();
         self.get_scene_manager_mut().create_scene_data(&game_scene_data._scene);
 
+        // terrain
+        for (object_name, render_object_create_info) in game_scene_data._terrain.iter() {
+            let terrain_object = self.get_scene_manager_mut().add_static_render_object(object_name, render_object_create_info);
+            terrain_object.borrow_mut().set_render_height_map(true);
+        }
+
         // create blocks
         for (block_name, block_create_info) in game_scene_data._blocks.iter() {
             let block = self.create_block(block_name, block_create_info);
@@ -237,6 +244,7 @@ impl<'a> GameSceneManager<'a> {
 
         // first update
         self.update_game_scene_manager(0.0);
+        self.get_scene_manager_mut().set_start_capture_height_map(true);
         self.get_scene_manager_mut().update_scene_manager(0.0);
     }
 

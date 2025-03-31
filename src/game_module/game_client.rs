@@ -94,8 +94,8 @@ impl<'a> GameClient<'a> {
     }
     pub fn update_game_mode(&mut self, delta_time: f64) {
         let engine_core = self.get_engine_core();
-        let game_scene_manager = self.get_game_scene_manager();
-        let scene_manager = game_scene_manager.get_scene_manager();
+        let game_scene_manager = ptr_as_mut(self._game_scene_manager);
+        let scene_manager = ptr_as_mut(game_scene_manager._scene_manager);
         let time_data = &engine_core._time_data;
         let mouse_move_data = &engine_core._mouse_move_data;
         let mouse_input_data = &engine_core._mouse_input_data;
@@ -111,8 +111,8 @@ impl<'a> GameClient<'a> {
             GamePhase::None => {
                 self._game_phase = GamePhase::Intro;
                 self.get_game_ui_manager_mut().set_game_image_material_instance(MATERIAL_INTRO_IMAGE, 1.0);
-                ptr_as_mut(self._game_scene_manager).play_bgm(GAME_MUSIC, Some(0.5));
-                ptr_as_mut(self._game_scene_manager).play_ambient_sound(AMBIENT_SOUND, None);
+                game_scene_manager.play_bgm(GAME_MUSIC, Some(0.5));
+                game_scene_manager.play_ambient_sound(AMBIENT_SOUND, None);
             }
             GamePhase::Intro => {
                 if self.get_game_ui_manager().is_visible_game_image() {
@@ -127,23 +127,24 @@ impl<'a> GameClient<'a> {
                 }
             }
             GamePhase::GamePlay => {
-                let game_scene_manager = self.get_game_scene_manager();
-                let player = game_scene_manager.get_character_manager().get_player();
-                let main_camera = scene_manager.get_main_camera_mut();
-                if false == self._game_controller.is_null() {
-                    let game_controller = ptr_as_mut(self._game_controller);
-                    game_controller.update_game_controller(
-                        time_data,
-                        &joystick_input_data,
-                        &keyboard_input_data,
-                        &mouse_move_data,
-                        &mouse_input_data,
-                        &mouse_delta,
-                        main_camera,
-                        player,
-                    );
+                if scene_manager.is_capture_height_map_completed() {
+                    let player = game_scene_manager.get_character_manager().get_player();
+                    let main_camera = scene_manager.get_main_camera_mut();
+                    if false == self._game_controller.is_null() {
+                        let game_controller = ptr_as_mut(self._game_controller);
+                        game_controller.update_game_controller(
+                            time_data,
+                            &joystick_input_data,
+                            &keyboard_input_data,
+                            &mouse_move_data,
+                            &mouse_input_data,
+                            &mouse_delta,
+                            main_camera,
+                            player,
+                        );
+                    }
+                    game_scene_manager.update_game_scene_manager(delta_time);
                 }
-                ptr_as_mut(self._game_scene_manager).update_game_scene_manager(delta_time);
             }
         }
     }
