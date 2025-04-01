@@ -338,9 +338,6 @@ pub fn run_application() {
         constants::SHADOW_DISTANCE = 100.0;
         constants::SHADOW_DEPTH = 10000.0;
         constants::SHADOW_DEPTH_SLOPE_BIAS = 2.5;
-        // capture height map
-        constants::CAPTURE_HEIGHT_MAP_DISTANCE = 1000.0;
-        constants::CAPTURE_HEIGHT_MAP_DEPTH = 2000.0;
         // effect
         constants::MAX_EMITTER_COUNT = 1024;
         constants::MAX_PARTICLE_COUNT = 262144;
