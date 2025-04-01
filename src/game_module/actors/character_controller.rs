@@ -1,5 +1,6 @@
 use nalgebra::Vector3;
 use rust_engine_3d::scene::collision::{CollisionCreateInfo, CollisionData, CollisionType};
+use rust_engine_3d::scene::height_map::HeightMapData;
 use rust_engine_3d::scene::render_object::RenderObjectData;
 use rust_engine_3d::utilities::math::HALF_PI;
 use rust_engine_3d::utilities::system::ptr_as_ref;
@@ -112,6 +113,8 @@ impl CharacterController {
 
     pub fn update_character_controller<'a>(
         &mut self,
+        _is_player: bool,
+        height_map_data: &HeightMapData,
         collision_objects: &Vec<*const RenderObjectData<'a>>,
         character_data: &CharacterData,
         move_animation: MoveAnimationState,
@@ -274,8 +277,9 @@ impl CharacterController {
         }
 
         // check ground
-        if self._position.y <= GROUND_HEIGHT {
-            self.set_on_ground(GROUND_HEIGHT);
+        let ground_height = GROUND_HEIGHT.max(height_map_data.get_height_bilinear(&self._position, 0));
+        if self._position.y <= ground_height {
+            self.set_on_ground(ground_height);
         }
 
         // reset

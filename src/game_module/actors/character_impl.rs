@@ -4,6 +4,7 @@ use rust_engine_3d::effect::effect_data::EffectCreateInfo;
 use rust_engine_3d::scene::animation::{AnimationPlayArgs, AnimationPlayInfo};
 use rust_engine_3d::scene::bounding_box::BoundingBox;
 use rust_engine_3d::scene::collision::CollisionData;
+use rust_engine_3d::scene::height_map::HeightMapData;
 use rust_engine_3d::scene::render_object::{AnimationLayer, RenderObjectData};
 use rust_engine_3d::scene::transform_object::TransformObjectData;
 use rust_engine_3d::utilities::math;
@@ -711,6 +712,7 @@ impl<'a> Character<'a> {
 
     pub fn update_character(
         &mut self,
+        height_map_data: &HeightMapData,
         collision_objects: &Vec<*const RenderObjectData<'a>>,
         player: &Character<'a>,
         delta_time: f32
@@ -736,6 +738,8 @@ impl<'a> Character<'a> {
         // controller
         let character_data = ptr_as_ref(self._character_data.as_ptr());
         self._controller.update_character_controller(
+            self._is_player,
+            height_map_data,
             collision_objects,
             character_data,
             self._animation_state._move_animation_state,

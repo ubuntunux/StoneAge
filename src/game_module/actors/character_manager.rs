@@ -190,6 +190,7 @@ impl<'a> CharacterManager<'a> {
         self._target_character = target_character;
     }
     pub fn update_character_manager(&mut self, delta_time: f64) {
+        // TODO: optimize
         // gather collision objects
         let mut collision_objects: Vec<*const RenderObjectData<'a>> = Vec::new();
         for (_key, block) in self.get_game_scene_manager().get_blocks().iter() {
@@ -202,6 +203,8 @@ impl<'a> CharacterManager<'a> {
             }
         }
 
+        let height_map_data = ptr_as_ref(self._scene_manager).get_height_map_data();
+
         // process character
         let player = ptr_as_mut(self._player.as_ref().unwrap().as_ptr());
         let mut dead_characters: Vec<RcRefCell<Character>> = Vec::new();
@@ -212,13 +215,14 @@ impl<'a> CharacterManager<'a> {
             // update character
             let was_on_ground = character_mut.is_on_ground();
             character_mut.update_character(
+                height_map_data,
                 &collision_objects,
                 player,
                 delta_time as f32
             );
 
             if !was_on_ground && character_mut.is_on_ground() && character_mut._is_player {
-                self.get_scene_manager().play_audio_bank(AUDIO_FOOTSTEP);
+                //self.get_scene_manager().play_audio_bank(AUDIO_FOOTSTEP);
             }
 
             if character_mut._character_stats._is_alive == false {
