@@ -5,7 +5,7 @@ use rust_engine_3d::scene::render_object::RenderObjectData;
 use rust_engine_3d::utilities::math::HALF_PI;
 use rust_engine_3d::utilities::system::ptr_as_ref;
 use crate::game_module::actors::character_data::{CharacterData, MoveAnimationState};
-use crate::game_module::game_constants::{CHARACTER_ROTATION_SPEED, FALLING_TIME, GRAVITY, GROUND_HEIGHT, MOVE_LIMIT};
+use crate::game_module::game_constants::{CHARACTER_ROTATION_SPEED, CLIFF_HEIGHT, FALLING_TIME, GRAVITY, GROUND_HEIGHT, MOVE_LIMIT};
 
 pub struct CharacterController {
     pub _position: Vector3<f32>,
@@ -289,7 +289,7 @@ impl CharacterController {
         }
 
         // check cliff
-        if self._is_ground && (move_delta.x != 0.0 || move_delta.z != 0.0) {
+        if !self._is_falling && (move_delta.x != 0.0 || move_delta.z != 0.0) {
             let point: Vector3<f32> = Vector3::new(
                 if 0.0 < move_delta.x { bound_box_max.x + 0.1 } else { bound_box_min.x - 0.1 },
                 bound_box_min.y - 0.1,
@@ -304,7 +304,13 @@ impl CharacterController {
                     break;
                 }
             }
+
+            if self._is_cliff && height_map_data.get_height_bilinear(&point, 0) < (self._position.y - CLIFF_HEIGHT) {
+                self._is_cliff = false;
+            }
         }
+
+        self._is_cliff = false;
 
         // check ground
         let ground_height = GROUND_HEIGHT.max(height_map_data.get_height_bilinear(&self._position, 0));

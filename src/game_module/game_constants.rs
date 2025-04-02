@@ -23,6 +23,7 @@ pub const EAT_ITEM_DISTANCE: f32 = 1.0;
 pub const CHARACTER_ROTATION_SPEED: f32 = 20.0;
 pub const FALLING_TIME: f32 = 0.3;
 pub const FALLING_HEIGHT: f32 = 2.0;
+pub const CLIFF_HEIGHT: f32 = 0.2;
 
 // stamina
 pub const MAX_STAMINA: f32 = 100.0;
