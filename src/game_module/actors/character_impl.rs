@@ -4,8 +4,8 @@ use rust_engine_3d::effect::effect_data::EffectCreateInfo;
 use rust_engine_3d::scene::animation::{AnimationPlayArgs, AnimationPlayInfo};
 use rust_engine_3d::scene::bounding_box::BoundingBox;
 use rust_engine_3d::scene::collision::CollisionData;
-use rust_engine_3d::scene::height_map::HeightMapData;
 use rust_engine_3d::scene::render_object::{AnimationLayer, RenderObjectData};
+use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::scene::transform_object::TransformObjectData;
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
@@ -15,7 +15,7 @@ use crate::game_module::actors::character_data::{ActionAnimationState, Character
 use crate::game_module::actors::character_manager::CharacterManager;
 use crate::game_module::actors::weapons::Weapon;
 use crate::game_module::behavior::behavior_base::create_character_behavior;
-use crate::game_module::game_constants::{AUDIO_ATTACK, AUDIO_FOOTSTEP, AUDIO_HIT, AUDIO_JUMP, AUDIO_ROLL, EFFECT_HIT, MAX_STAMINA, STAMINA_ATTACK, STAMINA_JUMP, STAMINA_POWER_ATTACK, STAMINA_RECOVERY, STAMINA_ROLL, STAMINA_RUN};
+use crate::game_module::game_constants::{AUDIO_ATTACK, AUDIO_FOOTSTEP, AUDIO_HIT, AUDIO_JUMP, AUDIO_ROLL, EFFECT_HIT, FALLING_HEIGHT, MAX_STAMINA, STAMINA_ATTACK, STAMINA_JUMP, STAMINA_POWER_ATTACK, STAMINA_RECOVERY, STAMINA_ROLL, STAMINA_RUN};
 
 impl CharacterStats {
     pub fn create_character_stats() -> CharacterStats {
@@ -158,10 +158,13 @@ impl<'a> Character<'a> {
         self._controller.is_on_ground()
     }
 
+    pub fn is_falling(&self) -> bool {
+        self._controller.is_falling()
+    }
+
     pub fn is_action(&self, action: ActionAnimationState) -> bool {
         action == self._animation_state._action_animation_state
     }
-
 
     pub fn is_attack_animation(&self) -> bool {
         self.is_action(ActionAnimationState::Attack) || self.is_action(ActionAnimationState::PowerAttack)
@@ -189,14 +192,14 @@ impl<'a> Character<'a> {
         if self._is_player && self._character_stats._stamina < STAMINA_JUMP {
             return false;
         }
-        self._controller._is_ground && self.is_available_move()
+        !self.is_falling() && self.is_available_move()
     }
 
     pub fn is_available_roll(&self) -> bool {
         if self._is_player && self._character_stats._stamina < STAMINA_ROLL {
             return false;
         }
-        self._controller._is_ground && self.is_available_attack() && !self.is_move_state(MoveAnimationState::Roll)
+        !self.is_falling() && self.is_available_attack() && !self.is_move_state(MoveAnimationState::Roll)
     }
 
     pub fn is_speed_running(&self) -> bool {
@@ -408,9 +411,7 @@ impl<'a> Character<'a> {
         if !self.is_move_state(MoveAnimationState::Roll) {
             self.set_run(false);
             self.set_move_speed(0.0);
-            //self.set_move_direction(&Vector3::zeros());
-
-            if !self.is_move_state(MoveAnimationState::Idle) && self.is_on_ground() {
+            if !self.is_move_state(MoveAnimationState::Idle) && !self.is_falling() {
                 self.set_move_animation(MoveAnimationState::Idle);
             }
         }
@@ -712,11 +713,14 @@ impl<'a> Character<'a> {
 
     pub fn update_character(
         &mut self,
-        height_map_data: &HeightMapData,
+        scene_manager: &SceneManager,
         collision_objects: &Vec<*const RenderObjectData<'a>>,
         player: &Character<'a>,
         delta_time: f32
     ) {
+        let was_on_ground = self.is_on_ground();
+        let last_ground_height = self._controller.get_last_ground_position().y;
+
         // update animation key frames
         self.update_move_keyframe_event();
         self.update_action_keyframe_event();
@@ -736,16 +740,22 @@ impl<'a> Character<'a> {
         }
 
         // controller
-        let character_data = ptr_as_ref(self._character_data.as_ptr());
         self._controller.update_character_controller(
             self._is_player,
-            height_map_data,
+            scene_manager.get_height_map_data(),
             collision_objects,
-            character_data,
+            &self._character_data.borrow(),
             self._animation_state._move_animation_state,
             &self._render_object.borrow()._collision,
             delta_time
         );
+
+        // falling
+        if self._is_player && !was_on_ground && self.is_on_ground() {
+            if FALLING_HEIGHT < (last_ground_height- self.get_position().y) {
+                scene_manager.play_audio_bank(AUDIO_HIT);
+            }
+        }
 
         // transform
         self.update_transform();

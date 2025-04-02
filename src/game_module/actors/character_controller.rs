@@ -5,21 +5,24 @@ use rust_engine_3d::scene::render_object::RenderObjectData;
 use rust_engine_3d::utilities::math::HALF_PI;
 use rust_engine_3d::utilities::system::ptr_as_ref;
 use crate::game_module::actors::character_data::{CharacterData, MoveAnimationState};
-use crate::game_module::game_constants::{CHARACTER_ROTATION_SPEED, GRAVITY, GROUND_HEIGHT, MOVE_LIMIT};
+use crate::game_module::game_constants::{CHARACTER_ROTATION_SPEED, FALLING_TIME, GRAVITY, GROUND_HEIGHT, MOVE_LIMIT};
 
 pub struct CharacterController {
     pub _position: Vector3<f32>,
     pub _rotation: Vector3<f32>,
     pub _scale: Vector3<f32>,
+    pub _last_ground_position: Vector3<f32>,
+    pub _face_direction: Vector3<f32>,
+    pub _move_direction: Vector3<f32>,
     pub _velocity: Vector3<f32>,
+    pub _move_speed: f32,
+    pub _fall_time: f32,
+    pub _is_falling: bool,
     pub _is_ground: bool,
     pub _is_running: bool,
     pub _is_jump_start: bool,
     pub _is_cliff: bool,
-    pub _move_speed: f32,
-    pub _is_blocked: bool,
-    pub _face_direction: Vector3<f32>,
-    pub _move_direction: Vector3<f32>,
+    pub _is_blocked: bool
 }
 
 impl CharacterController {
@@ -28,15 +31,18 @@ impl CharacterController {
             _position: Vector3::zeros(),
             _rotation: Vector3::zeros(),
             _scale: Vector3::new(1.0, 1.0, 1.0),
-            _velocity: Vector3::zeros(),
-            _is_jump_start: false,
-            _move_speed: 0.0,
-            _is_running: false,
-            _is_ground: false,
-            _is_blocked: false,
-            _is_cliff: false,
+            _last_ground_position: Vector3::zeros(),
             _face_direction: Vector3::zeros(),
             _move_direction: Vector3::zeros(),
+            _velocity: Vector3::zeros(),
+            _move_speed: 0.0,
+            _fall_time: 0.0,
+            _is_falling: false,
+            _is_ground: false,
+            _is_running: false,
+            _is_jump_start: false,
+            _is_cliff: false,
+            _is_blocked: false
         }
     }
 
@@ -49,17 +55,30 @@ impl CharacterController {
         self._position = position.clone();
         self._rotation = rotation.clone();
         self._scale = scale.clone();
+        self._face_direction = Vector3::zeros();
+        self._move_direction = Vector3::zeros();
+        self._last_ground_position = position.clone();
         self._velocity = Vector3::zeros();
-        self._is_jump_start = false;
         self._move_speed = 0.0;
+        self._fall_time = 0.0;
+        self._is_falling = false;
+        self._is_jump_start = false;
         self._is_running = false;
         self._is_ground = false;
         self._is_blocked = false;
         self._is_cliff = false;
     }
 
+    pub fn is_falling(&self) -> bool {
+        self._is_falling
+    }
+
     pub fn is_on_ground(&self) -> bool {
         self._is_ground && !self._is_jump_start
+    }
+
+    pub fn get_last_ground_position(&self) -> &Vector3<f32> {
+        &self._last_ground_position
     }
 
     pub fn set_run(&mut self, is_running: bool) {
@@ -122,6 +141,17 @@ impl CharacterController {
         delta_time: f32,
     ) {
         let prev_position = self._position.clone_owned();
+
+        // update fall time
+        if self._is_ground {
+            self._fall_time = 0.0;
+            self._is_falling = false;
+        } else {
+            self._fall_time += delta_time;
+            if FALLING_TIME < self._fall_time {
+                self._is_falling = true;
+            }
+        }
 
         // move on ground
         let mut move_direction = if MoveAnimationState::Roll == move_animation {
@@ -280,6 +310,11 @@ impl CharacterController {
         let ground_height = GROUND_HEIGHT.max(height_map_data.get_height_bilinear(&self._position, 0));
         if self._position.y <= ground_height {
             self.set_on_ground(ground_height);
+        }
+
+        // update last ground position
+        if self.is_on_ground() {
+            self._last_ground_position = self._position;
         }
 
         // reset

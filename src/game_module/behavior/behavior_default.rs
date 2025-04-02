@@ -45,7 +45,7 @@ impl BehaviorBase for BehaviorDefault {
                     let dist = offset.x * offset.x + offset.z * offset.z;
                     if dist < ARRIVAL_DISTANCE_THRESHOLD {
                         do_idle = true;
-                    } else if owner.is_on_ground() && (owner._controller._is_blocked || owner._controller._is_cliff) {
+                    } else if (owner._controller._is_blocked || owner._controller._is_cliff) && !owner.is_falling() {
                         do_idle = true;
                     }
                 } else {

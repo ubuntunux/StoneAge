@@ -13,7 +13,7 @@ use crate::game_module::actors::character_data::ActionAnimationState;
 use crate::game_module::actors::items::ItemCreateInfo;
 use crate::game_module::actors::weapons::{Weapon, WeaponCreateInfo};
 use crate::game_module::game_client::GameClient;
-use crate::game_module::game_constants::{AUDIO_FOOTSTEP, ITEM_MEAT, NPC_ATTACK_HIT_RANGE};
+use crate::game_module::game_constants::{ITEM_MEAT, NPC_ATTACK_HIT_RANGE};
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
 
@@ -203,8 +203,6 @@ impl<'a> CharacterManager<'a> {
             }
         }
 
-        let height_map_data = ptr_as_ref(self._scene_manager).get_height_map_data();
-
         // process character
         let player = ptr_as_mut(self._player.as_ref().unwrap().as_ptr());
         let mut dead_characters: Vec<RcRefCell<Character>> = Vec::new();
@@ -213,17 +211,12 @@ impl<'a> CharacterManager<'a> {
             let character_mut = ptr_as_mut(character.as_ptr());
 
             // update character
-            let was_on_ground = character_mut.is_on_ground();
             character_mut.update_character(
-                height_map_data,
+                self.get_scene_manager(),
                 &collision_objects,
                 player,
                 delta_time as f32
             );
-
-            if !was_on_ground && character_mut.is_on_ground() && character_mut._is_player {
-                //self.get_scene_manager().play_audio_bank(AUDIO_FOOTSTEP);
-            }
 
             if character_mut._character_stats._is_alive == false {
                 continue;
