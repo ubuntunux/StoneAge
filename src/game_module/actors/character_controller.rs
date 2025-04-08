@@ -2,8 +2,10 @@ use nalgebra::Vector3;
 use rust_engine_3d::scene::collision::{CollisionCreateInfo, CollisionData, CollisionType};
 use rust_engine_3d::scene::height_map::HeightMapData;
 use rust_engine_3d::scene::render_object::RenderObjectData;
+use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::math::HALF_PI;
 use rust_engine_3d::utilities::system::ptr_as_ref;
+use crate::game_module::actors::character::Character;
 use crate::game_module::actors::character_data::{CharacterData, MoveAnimationState};
 use crate::game_module::game_constants::{CHARACTER_ROTATION_SPEED, CLIFF_HEIGHT, FALLING_TIME, GRAVITY, GROUND_HEIGHT, MOVE_LIMIT};
 
@@ -21,6 +23,7 @@ pub struct CharacterController {
     pub _is_ground: bool,
     pub _is_running: bool,
     pub _is_jump_start: bool,
+    pub _is_jump: bool,
     pub _is_cliff: bool,
     pub _is_blocked: bool
 }
@@ -41,6 +44,7 @@ impl CharacterController {
             _is_ground: false,
             _is_running: false,
             _is_jump_start: false,
+            _is_jump: false,
             _is_cliff: false,
             _is_blocked: false
         }
@@ -63,6 +67,7 @@ impl CharacterController {
         self._fall_time = 0.0;
         self._is_falling = false;
         self._is_jump_start = false;
+        self._is_jump = false;
         self._is_running = false;
         self._is_ground = false;
         self._is_blocked = false;
@@ -100,6 +105,10 @@ impl CharacterController {
         self._is_jump_start = true;
     }
 
+    pub fn is_jump(&self) -> bool {
+        self._is_jump
+    }
+
     pub fn set_move_speed(&mut self, move_speed: f32) {
         self._move_speed = move_speed;
     }
@@ -127,12 +136,14 @@ impl CharacterController {
     pub fn set_on_ground(&mut self, ground_height: f32) {
         self._position.y = ground_height;
         self._is_ground = true;
+        self._is_falling = false;
+        self._is_jump = false;
         self._velocity.y = 0.0;
     }
 
     pub fn update_character_controller<'a>(
         &mut self,
-        _is_player: bool,
+        owner: &Character,
         height_map_data: &HeightMapData,
         collision_objects: &Vec<*const RenderObjectData<'a>>,
         character_data: &CharacterData,
@@ -141,6 +152,7 @@ impl CharacterController {
         delta_time: f32,
     ) {
         let prev_position = self._position.clone_owned();
+        let was_on_ground = self._is_ground;
 
         // update fall time
         if self._is_ground {
@@ -178,6 +190,7 @@ impl CharacterController {
         if self._is_jump_start {
             self._velocity.y = character_data._stat_data._jump_speed;
             self._is_ground = false;
+            self._is_jump = true;
         }
 
         // fall
@@ -310,12 +323,26 @@ impl CharacterController {
             }
         }
 
-        self._is_cliff = false;
-
         // check ground
         let ground_height = GROUND_HEIGHT.max(height_map_data.get_height_bilinear(&self._position, 0));
         if self._position.y <= ground_height {
-            self.set_on_ground(ground_height);
+            if self._velocity.y <= 0.0 {
+                let mut move_delta = Vector3::new(self._position.x, ground_height, self._position.z) - prev_position;
+                let (mut move_direction, mut move_distance) = math::safe_normalize_with_norm(&(self._position - prev_position));
+                let distance_xz = math::get_norm_xz(&move_delta);
+                if distance_xz < move_delta.y {
+                    let ground_height = GROUND_HEIGHT.max(height_map_data.get_height_bilinear(&prev_position, 0));
+                    self._position = prev_position;
+                    if self._position.y <= ground_height {
+                        self.set_on_ground(ground_height);
+                    }
+                } else {
+                    self.set_on_ground(ground_height);
+                }
+            } else {
+                self._position.x = prev_position.x;
+                self._position.z = prev_position.z;
+            }
         }
 
         // update last ground position

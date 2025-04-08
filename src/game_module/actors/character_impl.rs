@@ -162,6 +162,10 @@ impl<'a> Character<'a> {
         self._controller.is_falling()
     }
 
+    pub fn is_jump(&self) -> bool {
+        self._controller.is_jump()
+    }
+
     pub fn is_action(&self, action: ActionAnimationState) -> bool {
         action == self._animation_state._action_animation_state
     }
@@ -192,7 +196,7 @@ impl<'a> Character<'a> {
         if self._is_player && self._character_stats._stamina < STAMINA_JUMP {
             return false;
         }
-        !self.is_falling() && self.is_available_move()
+        !self.is_jump() && !self.is_falling() && self.is_available_move()
     }
 
     pub fn is_available_roll(&self) -> bool {
@@ -411,7 +415,7 @@ impl<'a> Character<'a> {
         if !self.is_move_state(MoveAnimationState::Roll) {
             self.set_run(false);
             self.set_move_speed(0.0);
-            if !self.is_move_state(MoveAnimationState::Idle) && !self.is_falling() {
+            if !self.is_move_state(MoveAnimationState::Idle) && self.is_on_ground() {
                 self.set_move_animation(MoveAnimationState::Idle);
             }
         }
@@ -741,7 +745,7 @@ impl<'a> Character<'a> {
 
         // controller
         self._controller.update_character_controller(
-            self._is_player,
+            owner,
             scene_manager.get_height_map_data(),
             collision_objects,
             &self._character_data.borrow(),

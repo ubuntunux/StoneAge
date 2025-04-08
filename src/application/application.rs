@@ -206,7 +206,7 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
         font_manager.clear_logs();
 
         // update managers
-        if self._is_game_mode {
+        if true /*|| self._is_game_mode*/ {
             // delta time threshold: 0.1s
             let game_delta_time = 0.1_f64.min(delta_time);
             self._game_client.update_game_mode(game_delta_time);
