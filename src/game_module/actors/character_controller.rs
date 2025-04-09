@@ -150,7 +150,7 @@ impl CharacterController {
         actor_collision: &CollisionData,
         delta_time: f32,
     ) {
-        let prev_position = self._position.clone_owned();
+        let prev_position = self._position.clone();
         let was_on_ground = self._is_ground;
 
         // update fall time
@@ -323,16 +323,19 @@ impl CharacterController {
         }
 
         // check ground
-        let ground_height = GROUND_HEIGHT.max(height_map_data.get_height_bilinear(&self._position, 0));
-        if self._position.y <= ground_height {
-            if self._velocity.y <= 0.0 {
-                self.set_on_ground(ground_height);
-            } else {
+        {
+            let prev_ground_height = GROUND_HEIGHT.max(height_map_data.get_height_bilinear(&self._position, 0));
+            let ground_height = GROUND_HEIGHT.max(height_map_data.get_height_bilinear(&self._position, 0));
+            if self._position.y <= ground_height {
                 let normal = height_map_data.get_normal_point(&self._position);
-                if normal.y.abs() < 0.9_32 {
+                if normal.y.abs() < 0.8_32 || 0.1 < (ground_height - prev_position.y) {
                     self._position.x = prev_position.x;
                     self._position.z = prev_position.z;
                 }
+            }
+
+            if self._position.y <= prev_ground_height && self._velocity.y <= 0.0 {
+                self.set_on_ground(prev_ground_height);
             }
         }
 
