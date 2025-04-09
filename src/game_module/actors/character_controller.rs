@@ -2,7 +2,6 @@ use nalgebra::Vector3;
 use rust_engine_3d::scene::collision::{CollisionCreateInfo, CollisionData, CollisionType};
 use rust_engine_3d::scene::height_map::HeightMapData;
 use rust_engine_3d::scene::render_object::RenderObjectData;
-use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::math::HALF_PI;
 use rust_engine_3d::utilities::system::ptr_as_ref;
 use crate::game_module::actors::character::Character;
@@ -327,21 +326,13 @@ impl CharacterController {
         let ground_height = GROUND_HEIGHT.max(height_map_data.get_height_bilinear(&self._position, 0));
         if self._position.y <= ground_height {
             if self._velocity.y <= 0.0 {
-                let mut move_delta = Vector3::new(self._position.x, ground_height, self._position.z) - prev_position;
-                let (mut move_direction, mut move_distance) = math::safe_normalize_with_norm(&(self._position - prev_position));
-                let distance_xz = math::get_norm_xz(&move_delta);
-                if distance_xz < move_delta.y {
-                    let ground_height = GROUND_HEIGHT.max(height_map_data.get_height_bilinear(&prev_position, 0));
-                    self._position = prev_position;
-                    if self._position.y <= ground_height {
-                        self.set_on_ground(ground_height);
-                    }
-                } else {
-                    self.set_on_ground(ground_height);
-                }
+                self.set_on_ground(ground_height);
             } else {
-                self._position.x = prev_position.x;
-                self._position.z = prev_position.z;
+                let normal = height_map_data.get_normal_point(&self._position);
+                if normal.y.abs() < 0.9_32 {
+                    self._position.x = prev_position.x;
+                    self._position.z = prev_position.z;
+                }
             }
         }
 
