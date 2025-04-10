@@ -13,6 +13,7 @@ use crate::game_module::game_ui_manager::GameUIManager;
 pub enum GamePhase {
     None,
     Intro,
+    Loading,
     GamePlay
 }
 
@@ -115,36 +116,36 @@ impl<'a> GameClient<'a> {
                 game_scene_manager.play_ambient_sound(AMBIENT_SOUND, None);
             }
             GamePhase::Intro => {
-                if self.get_game_ui_manager().is_visible_game_image() {
-                    if joystick_input_data.is_any_button_pressed() ||
-                        mouse_input_data.is_any_button_pressed() ||
-                        keyboard_input_data.is_any_key_pressed() {
-                        self.get_game_ui_manager_mut().start_game_image_fadeout(true);
-                    }
-                } else {
+                if joystick_input_data.is_any_button_pressed() ||
+                    mouse_input_data.is_any_button_pressed() ||
+                    keyboard_input_data.is_any_key_pressed() {
                     self.get_game_scene_manager_mut().open_game_scene_data(GAME_SCENE_INTRO);
+                    self._game_phase = GamePhase::Loading;
+                }
+            }
+            GamePhase::Loading => {
+                if scene_manager.is_load_complete() {
+                    self.get_game_ui_manager_mut().start_game_image_fadeout(true);
                     self._game_phase = GamePhase::GamePlay;
                 }
             }
             GamePhase::GamePlay => {
-                if scene_manager.is_capture_height_map_completed() {
-                    let player = game_scene_manager.get_character_manager().get_player();
-                    let main_camera = scene_manager.get_main_camera_mut();
-                    if false == self._game_controller.is_null() {
-                        let game_controller = ptr_as_mut(self._game_controller);
-                        game_controller.update_game_controller(
-                            time_data,
-                            &joystick_input_data,
-                            &keyboard_input_data,
-                            &mouse_move_data,
-                            &mouse_input_data,
-                            &mouse_delta,
-                            main_camera,
-                            player,
-                        );
-                    }
-                    game_scene_manager.update_game_scene_manager(delta_time);
+                let player = game_scene_manager.get_character_manager().get_player();
+                let main_camera = scene_manager.get_main_camera_mut();
+                if false == self._game_controller.is_null() {
+                    let game_controller = ptr_as_mut(self._game_controller);
+                    game_controller.update_game_controller(
+                        time_data,
+                        &joystick_input_data,
+                        &keyboard_input_data,
+                        &mouse_move_data,
+                        &mouse_input_data,
+                        &mouse_delta,
+                        main_camera,
+                        player,
+                    );
                 }
+                game_scene_manager.update_game_scene_manager(delta_time);
             }
         }
     }
