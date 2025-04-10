@@ -2,6 +2,8 @@ use nalgebra::Vector3;
 use rust_engine_3d::scene::collision::{CollisionCreateInfo, CollisionData, CollisionType};
 use rust_engine_3d::scene::height_map::HeightMapData;
 use rust_engine_3d::scene::render_object::RenderObjectData;
+use rust_engine_3d::begin_block;
+use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::math::HALF_PI;
 use rust_engine_3d::utilities::system::ptr_as_ref;
 use crate::game_module::actors::character::Character;
@@ -322,20 +324,13 @@ impl CharacterController {
             }
         }
 
-        // check ground
-        {
-            let prev_ground_height = GROUND_HEIGHT.max(height_map_data.get_height_bilinear(&prev_position, 0));
+        begin_block!("Check Ground"); {
             let ground_height = GROUND_HEIGHT.max(height_map_data.get_height_bilinear(&self._position, 0));
             if self._position.y <= ground_height {
-                let normal = height_map_data.get_normal_point(&self._position);
-                if normal.y.abs() < 0.8_32 || 0.1 < (ground_height - prev_position.y) {
-                    self._position.x = prev_position.x;
-                    self._position.z = prev_position.z;
-                }
-            }
-
-            if self._position.y <= prev_ground_height && self._velocity.y <= 0.0 {
-                self.set_on_ground(prev_ground_height);
+                let (_move_dir, move_delta) = math::make_normalize_with_norm(&(self._position - prev_position));
+                let new_move_dir = math::safe_normalize(&(Vector3::new(self._position.x, ground_height, self._position.z) - prev_position));
+                self._position = new_move_dir * move_delta + prev_position;
+                self.set_on_ground(self._position.y);
             }
         }
 
