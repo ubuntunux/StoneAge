@@ -324,7 +324,7 @@ impl CharacterController {
 
         // check ground
         {
-            let prev_ground_height = GROUND_HEIGHT.max(height_map_data.get_height_bilinear(&self._position, 0));
+            let prev_ground_height = GROUND_HEIGHT.max(height_map_data.get_height_bilinear(&prev_position, 0));
             let ground_height = GROUND_HEIGHT.max(height_map_data.get_height_bilinear(&self._position, 0));
             if self._position.y <= ground_height {
                 let normal = height_map_data.get_normal_point(&self._position);
