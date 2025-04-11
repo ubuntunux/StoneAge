@@ -235,6 +235,16 @@ impl CharacterController {
         self._is_blocked = false;
         self._is_ground = false;
 
+        begin_block!("Check Ground"); {
+            let ground_height = GROUND_HEIGHT.max(height_map_data.get_height_bilinear(&self._position, 0));
+            if self._position.y <= ground_height {
+                let (_move_dir, move_delta) = math::make_normalize_with_norm(&(self._position - prev_position));
+                let new_move_dir = math::safe_normalize(&(Vector3::new(self._position.x, ground_height, self._position.z) - prev_position));
+                self._position = new_move_dir * move_delta + prev_position;
+                self.set_on_ground(self._position.y);
+            }
+        }
+
         // check ground and side
         for collision_object in collision_objects.iter() {
             let block_render_object = ptr_as_ref(*collision_object);
@@ -321,16 +331,6 @@ impl CharacterController {
 
             if self._is_cliff && height_map_data.get_height_bilinear(&point, 0) < (self._position.y - CLIFF_HEIGHT) {
                 self._is_cliff = false;
-            }
-        }
-
-        begin_block!("Check Ground"); {
-            let ground_height = GROUND_HEIGHT.max(height_map_data.get_height_bilinear(&self._position, 0));
-            if self._position.y <= ground_height {
-                let (_move_dir, move_delta) = math::make_normalize_with_norm(&(self._position - prev_position));
-                let new_move_dir = math::safe_normalize(&(Vector3::new(self._position.x, ground_height, self._position.z) - prev_position));
-                self._position = new_move_dir * move_delta + prev_position;
-                self.set_on_ground(self._position.y);
             }
         }
 
