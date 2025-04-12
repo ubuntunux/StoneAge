@@ -18,3 +18,5 @@ Cargo.lock
 
 # meta files
 *.meta
+
+resources.txt
