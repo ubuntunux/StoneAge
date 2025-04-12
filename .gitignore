@@ -19,4 +19,5 @@ Cargo.lock
 # meta files
 *.meta
 
+shader_caches/
 resources.txt
