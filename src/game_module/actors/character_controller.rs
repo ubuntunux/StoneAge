@@ -136,11 +136,13 @@ impl CharacterController {
     }
 
     pub fn set_on_ground(&mut self, ground_height: f32) {
-        self._position.y = ground_height;
-        self._is_ground = true;
-        self._is_falling = false;
-        self._is_jump = false;
-        self._velocity.y = 0.0;
+        if self._is_ground == false || self._position.y < ground_height {
+            self._position.y = ground_height;
+            self._is_ground = true;
+            self._is_falling = false;
+            self._is_jump = false;
+            self._velocity.y = 0.0;
+        }
     }
 
     pub fn update_character_controller<'a>(
