@@ -9,6 +9,7 @@ use rust_engine_3d::utilities::system::ptr_as_ref;
 use crate::game_module::actors::character::Character;
 use crate::game_module::actors::character_data::{CharacterData, MoveAnimationState};
 use crate::game_module::game_constants::{CHARACTER_ROTATION_SPEED, CLIFF_HEIGHT, FALLING_TIME, GRAVITY, GROUND_HEIGHT, MOVE_LIMIT};
+use crate::game_module::game_scene_manager::BlockArray;
 
 pub struct CharacterController {
     pub _position: Vector3<f32>,
@@ -146,7 +147,7 @@ impl CharacterController {
         &mut self,
         owner: &Character,
         height_map_data: &HeightMapData,
-        collision_objects: &Vec<*const RenderObjectData<'a>>,
+        collision_objects: &BlockArray<'a>,
         character_data: &CharacterData,
         move_animation: MoveAnimationState,
         actor_collision: &CollisionData,
@@ -247,7 +248,7 @@ impl CharacterController {
 
         // check ground and side
         for collision_object in collision_objects.iter() {
-            let block_render_object = ptr_as_ref(*collision_object);
+            let block_render_object = ptr_as_ref(collision_object.as_ptr());
             let block_collision_type = block_render_object._collision._collision_type;
             let block_bound_box = &block_render_object._collision._bounding_box;
             let block_location = &block_bound_box._center;
@@ -266,7 +267,7 @@ impl CharacterController {
                         }
 
                         self._is_blocked = true;
-                        collided_block = *collision_object;
+                        collided_block = collision_object.as_ptr();
                     } else if block_collision_type == CollisionType::CYLINDER {
                         let block_to_player = Vector3::new(self._position.x - block_location.x, 0.0, self._position.z - block_location.z).normalize();
                         if block_to_player.dot(&move_delta.normalize()) < 0.0 {
@@ -275,7 +276,7 @@ impl CharacterController {
                             self._position.x = new_pos.x;
                             self._position.z = new_pos.z;
                             self._is_blocked = true;
-                            collided_block = *collision_object;
+                            collided_block = collision_object.as_ptr()
                         }
                     } else {
                         panic!("not implemented");
@@ -294,7 +295,7 @@ impl CharacterController {
 
                 // Recheck collide with another blocks
                 for collision_object in collision_objects.iter() {
-                    let recheck_block = ptr_as_ref(*collision_object);
+                    let recheck_block = ptr_as_ref(collision_object.as_ptr());
                     if collided_block != recheck_block {
                         let recheck_block_bound_box = &recheck_block._collision._bounding_box;
                         // check collide with block
@@ -321,7 +322,7 @@ impl CharacterController {
             );
 
             for collision_object in collision_objects.iter() {
-                let block_render_object = ptr_as_ref(*collision_object);
+                let block_render_object = ptr_as_ref(collision_object.as_ptr());
                 let block_bound_box = &block_render_object._bounding_box;
                 if block_bound_box.collide_point(&point) {
                     self._is_cliff = false;

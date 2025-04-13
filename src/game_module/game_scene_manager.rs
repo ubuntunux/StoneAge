@@ -4,20 +4,19 @@ use nalgebra::{Vector2, Vector3};
 use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop, AudioManager};
 use rust_engine_3d::core::engine_core::EngineCore;
 use rust_engine_3d::effect::effect_manager::EffectManager;
-use rust_engine_3d::scene::render_object::RenderObjectCreateInfo;
+use rust_engine_3d::scene::collision::CollisionType;
+use rust_engine_3d::scene::render_object::RenderObjectData;
 use rust_engine_3d::scene::scene_manager::{RenderObjectCreateInfoMap, SceneDataCreateInfo, SceneManager};
-use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
+use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use serde::{Deserialize, Serialize};
 use crate::application::application::Application;
-use crate::game_module::actors::block::{Block, BlockCreateInfo};
 use crate::game_module::actors::character::CharacterCreateInfo;
 use crate::game_module::actors::character_manager::CharacterManager;
 use crate::game_module::actors::items::{ItemCreateInfo, ItemManager};
 use crate::game_module::actors::props::{PropCreateInfo, PropManager};
 use crate::game_module::game_resource::GameResources;
 
-type BlockMap<'a> = HashMap<u64, RcRefCell<Block<'a>>>;
-type BlockCreateInfoMap = HashMap<String, BlockCreateInfo>;
+pub type BlockArray<'a> = Vec<RcRefCell<RenderObjectData<'a>>>;
 type CharacterCreateInfoMap = HashMap<String, CharacterCreateInfo>;
 type ItemCreateInfoMap = HashMap<String, ItemCreateInfo>;
 type PropCreateInfoMap = HashMap<String, PropCreateInfo>;
@@ -25,7 +24,6 @@ type PropCreateInfoMap = HashMap<String, PropCreateInfo>;
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[serde(default)]
 pub struct GameSceneDataCreateInfo {
-    pub _blocks: BlockCreateInfoMap,
     pub _characters: CharacterCreateInfoMap,
     pub _items: ItemCreateInfoMap,
     pub _player: CharacterCreateInfoMap,
@@ -44,8 +42,7 @@ pub struct GameSceneManager<'a> {
     pub _item_manager: Box<ItemManager<'a>>,
     pub _prop_manager: Box<PropManager<'a>>,
     pub _game_scene_name: String,
-    pub _blocks: BlockMap<'a>,
-    pub _block_id_generator: u64,
+    pub _blocks: BlockArray<'a>,
     pub _ambient_sound: Option<RcRefCell<AudioInstance>>
 }
 
@@ -89,8 +86,7 @@ impl<'a> GameSceneManager<'a> {
             _scene_manager: std::ptr::null(),
             _game_resources: std::ptr::null(),
             _game_scene_name: String::new(),
-            _blocks: HashMap::new(),
-            _block_id_generator: 0,
+            _blocks: Vec::new(),
             _character_manager: CharacterManager::create_character_manager(),
             _item_manager: ItemManager::create_item_manager(),
             _prop_manager: PropManager::create_prop_manager(),
@@ -141,60 +137,8 @@ impl<'a> GameSceneManager<'a> {
         self._ambient_sound = None;
     }
 
-    pub fn get_blocks(&self) -> &BlockMap<'a> {
+    pub fn get_blocks(&self) -> &BlockArray<'a> {
         &self._blocks
-    }
-
-    pub fn check_is_on_block(&self, min: &Vector3<f32>, max: &Vector3<f32>) -> Option<Vector3<f32>> {
-        for (_key, block) in self._blocks.iter() {
-            let block_ref = block.borrow();
-            let render_object_ref = block_ref._render_object.borrow();
-            if render_object_ref._bounding_box.collide_bound_box_xy(min, max) {
-                return Some(Vector3::new(
-                    render_object_ref._bounding_box._center.x,
-                    render_object_ref._bounding_box._max.y,
-                    render_object_ref._bounding_box._center.z
-                ));
-            }
-        }
-        None
-    }
-
-    pub fn generate_block_id(&mut self) -> u64 {
-        let id = self._block_id_generator;
-        self._block_id_generator += 1;
-        id
-    }
-
-    pub fn register_block(&mut self, block: RcRefCell<Block<'a>>) {
-        self._blocks.insert(block.borrow().get_block_id(), block.clone());
-    }
-
-    pub fn unregister_block(&mut self, block: &RcRefCell<Block<'a>>) {
-        self._blocks.remove(&block.borrow().get_block_id());
-    }
-
-    pub fn create_block(&mut self, block_name: &str, block_create_info: &BlockCreateInfo) -> RcRefCell<Block<'a>> {
-        let render_object_create_info = RenderObjectCreateInfo {
-            _model_data_name: block_create_info._block_data_name.clone(),
-            _position: block_create_info._position.clone(),
-            _rotation: block_create_info._rotation.clone(),
-            _scale: block_create_info._scale.clone()
-        };
-        let render_object_data = self.get_scene_manager_mut().add_static_render_object(
-            block_name,
-            &render_object_create_info
-        );
-
-        let block_id = self.generate_block_id();
-        newRcRefCell(Block::create_block(
-            block_id,
-            block_name,
-            &render_object_data,
-            &block_create_info._position,
-            &block_create_info._rotation,
-            &block_create_info._scale
-        ))
     }
 
     pub fn open_game_scene_data(&mut self, game_scene_data_name: &str) {
@@ -214,12 +158,6 @@ impl<'a> GameSceneManager<'a> {
         for (object_name, render_object_create_info) in game_scene_data._terrain.iter() {
             let terrain_object = self.get_scene_manager_mut().add_static_render_object(object_name, render_object_create_info);
             terrain_object.borrow_mut().set_render_height_map(true);
-        }
-
-        // create blocks
-        for (block_name, block_create_info) in game_scene_data._blocks.iter() {
-            let block = self.create_block(block_name, block_create_info);
-            self.register_block(block);
         }
 
         // create items
@@ -259,6 +197,16 @@ impl<'a> GameSceneManager<'a> {
     pub fn update_game_scene_manager(&mut self, delta_time: f64) {
         self._prop_manager.update_prop_manager(delta_time);
         self._item_manager.update_item_manager(delta_time);
+
+        // gather collision objects
+        let mut blocks = BlockArray::new();
+        for (_key, object) in self.get_scene_manager().get_static_render_object_map().iter() {
+            if object.borrow()._collision._collision_type != CollisionType::NONE {
+                blocks.push(object.clone());
+            }
+        }
+        self._blocks = blocks;
+
         self._character_manager.update_character_manager(delta_time);
     }
 }

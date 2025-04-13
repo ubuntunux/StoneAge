@@ -7,7 +7,6 @@ use rust_engine_3d::resource::resource::{APPLICATION_RESOURCE_PATH, EngineResour
 use rust_engine_3d::utilities::system::{self, newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
 use serde_json::{self};
 use crate::game_module::actors::weapons::WeaponDataCreateInfo;
-use crate::game_module::actors::block::BlockData;
 use crate::game_module::actors::character_data::{CharacterData, CharacterDataCreateInfo};
 use crate::game_module::actors::items::ItemData;
 use crate::game_module::actors::props::PropData;
@@ -15,7 +14,6 @@ use crate::game_module::actors::weapons::WeaponData;
 use crate::game_module::game_scene_manager::GameSceneDataCreateInfo;
 
 pub const GAME_DATA_DIRECTORY: &str = "game_data";
-pub const BLOCK_DATA_FILE_PATH: &str = "game_data/blocks";
 pub const CHARACTER_DATA_FILE_PATH: &str = "game_data/characters";
 pub const ITEM_DATA_FILE_PATH: &str = "game_data/items";
 pub const GAME_SCENE_FILE_PATH: &str = "game_data/game_scenes";
@@ -26,7 +24,6 @@ pub const EXT_GAME_DATA: &str = "data";
 
 pub const DEFAULT_GAME_DATA_NAME: &str = "default";
 
-pub type BlockDataMap = ResourceDataMap<BlockData>;
 pub type CharacterDataMap = ResourceDataMap<CharacterData>;
 pub type ItemDataMap = ResourceDataMap<ItemData>;
 pub type GameSceneDataCreateInfoMap = ResourceDataMap<GameSceneDataCreateInfo>;
@@ -36,7 +33,6 @@ pub type WeaponDataMap<'a> = ResourceDataMap<WeaponData<'a>>;
 #[derive(Clone)]
 pub struct GameResources<'a> {
     _engine_resources: *const EngineResources<'a>,
-    _block_data_map: BlockDataMap,
     _character_data_map: CharacterDataMap,
     _item_data_map: ItemDataMap,
     _game_scene_data_create_infos_map: GameSceneDataCreateInfoMap,
@@ -49,7 +45,6 @@ impl<'a> GameResources<'a> {
         Box::new(GameResources {
             _engine_resources: std::ptr::null(),
             _game_scene_data_create_infos_map: GameSceneDataCreateInfoMap::new(),
-            _block_data_map: BlockDataMap::new(),
             _character_data_map: CharacterDataMap::new(),
             _item_data_map: ItemDataMap::new(),
             _prop_data_map: PropDataMap::new(),
@@ -117,7 +112,6 @@ impl<'a> GameResources<'a> {
     // Game Data
     fn load_game_data(&mut self) {
         log::info!("    load_game_data");
-        self.load_block_data();
         self.load_character_data();
         self.load_item_data();
         self.load_prop_data();
@@ -129,34 +123,6 @@ impl<'a> GameResources<'a> {
         self.unload_prop_data();
         self.unload_item_data();
         self.unload_character_data();
-        self.unload_block_data();
-    }
-
-    // block data
-    fn load_block_data(&mut self) {
-        let game_data_directory = PathBuf::from(GAME_DATA_DIRECTORY);
-        let block_data_directory = PathBuf::from(BLOCK_DATA_FILE_PATH);
-
-        // load_block_data
-        let game_data_files: Vec<PathBuf> = self.collect_resources(&block_data_directory, &[EXT_GAME_DATA]);
-        for game_data_file in game_data_files {
-            let block_data_name = get_unique_resource_name(&self._block_data_map, &game_data_directory, &game_data_file);
-            let loaded_contents = system::load(&game_data_file);
-            let block_data: BlockData = serde_json::from_reader(loaded_contents).expect("Failed to deserialize.");
-            self._block_data_map.insert(block_data_name.clone(), newRcRefCell(block_data));
-        }
-    }
-
-    fn unload_block_data(&mut self) {
-        self._block_data_map.clear();
-    }
-
-    pub fn has_block_data(&self, resource_name: &str) -> bool {
-        self._block_data_map.get(resource_name).is_some()
-    }
-
-    pub fn get_block_data(&self, resource_name: &str) -> &RcRefCell<BlockData> {
-        self._block_data_map.get(resource_name).unwrap()
     }
 
     // prop data

@@ -16,6 +16,7 @@ use crate::game_module::actors::character_manager::CharacterManager;
 use crate::game_module::actors::weapons::Weapon;
 use crate::game_module::behavior::behavior_base::create_character_behavior;
 use crate::game_module::game_constants::{AUDIO_ATTACK, AUDIO_FOOTSTEP, AUDIO_HIT, AUDIO_JUMP, AUDIO_ROLL, EFFECT_HIT, FALLING_HEIGHT, MAX_STAMINA, STAMINA_ATTACK, STAMINA_JUMP, STAMINA_POWER_ATTACK, STAMINA_RECOVERY, STAMINA_ROLL, STAMINA_RUN};
+use crate::game_module::game_scene_manager::BlockArray;
 
 impl CharacterStats {
     pub fn create_character_stats() -> CharacterStats {
@@ -718,7 +719,7 @@ impl<'a> Character<'a> {
     pub fn update_character(
         &mut self,
         scene_manager: &SceneManager,
-        collision_objects: &Vec<*const RenderObjectData<'a>>,
+        collision_objects: &BlockArray<'a>,
         player: &Character<'a>,
         delta_time: f32
     ) {

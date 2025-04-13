@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::AudioManager;
 use rust_engine_3d::core::engine_core::EngineCore;
-use rust_engine_3d::scene::render_object::{RenderObjectCreateInfo, RenderObjectData};
+use rust_engine_3d::scene::render_object::RenderObjectCreateInfo;
 use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
 
@@ -190,21 +190,8 @@ impl<'a> CharacterManager<'a> {
         self._target_character = target_character;
     }
     pub fn update_character_manager(&mut self, delta_time: f64) {
-        // TODO: optimize
-        // gather collision objects
-        let mut collision_objects: Vec<*const RenderObjectData<'a>> = Vec::new();
-        for (_key, block) in self.get_game_scene_manager().get_blocks().iter() {
-            collision_objects.push(block.borrow()._render_object.as_ptr())
-        }
-
-        for (_key, prop) in self.get_game_scene_manager().get_prop_manager().get_props().iter() {
-            if prop.borrow()._prop_data.borrow()._enable_collision {
-                collision_objects.push(prop.borrow()._render_object.as_ptr())
-            }
-        }
-
-        // process character
         let player = ptr_as_mut(self._player.as_ref().unwrap().as_ptr());
+        let collision_objects = self.get_game_scene_manager().get_blocks();
         let mut dead_characters: Vec<RcRefCell<Character>> = Vec::new();
         let mut regist_target_character: Option<RcRefCell<Character<'a>>> = None;
         for character in self._characters.values() {

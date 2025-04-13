@@ -1,258 +1,4 @@
 {
-    "_blocks": {
-        "birch_tree_01": {
-            "_block_data_name": "environments/birch_tree_01",
-            "_position": [
-                33.562435150146484,
-                8.0,
-                6.0
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "birch_tree_01.001": {
-            "_block_data_name": "environments/birch_tree_01",
-            "_position": [
-                29.562435150146484,
-                8.0,
-                6.0
-            ],
-            "_rotation": [
-                0.0,
-                2.1495425701141357,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "birch_tree_01.002": {
-            "_block_data_name": "environments/birch_tree_01",
-            "_position": [
-                55.562435150146484,
-                8.0,
-                6.0
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "birch_tree_01.003": {
-            "_block_data_name": "environments/birch_tree_01",
-            "_position": [
-                8.562435150146484,
-                8.0,
-                6.0
-            ],
-            "_rotation": [
-                0.0,
-                0.7347071170806885,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "birch_tree_01.004": {
-            "_block_data_name": "environments/birch_tree_01",
-            "_position": [
-                2.5624351501464844,
-                8.0,
-                6.0
-            ],
-            "_rotation": [
-                0.0,
-                0.5093454122543335,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "mushroom_orange_00.001": {
-            "_block_data_name": "environments/mushroom_orange_00",
-            "_position": [
-                -2.149279832839966,
-                8.0,
-                0.6884212493896484
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "mushroom_purple_01.001": {
-            "_block_data_name": "environments/mushroom_purple_01",
-            "_position": [
-                -1.0214146375656128,
-                8.0,
-                0.8807802200317383
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "stylized_tree_00": {
-            "_block_data_name": "environments/stylized_tree_00",
-            "_position": [
-                -6.0,
-                8.0,
-                6.0
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "stylized_tree_00.001": {
-            "_block_data_name": "environments/stylized_tree_00",
-            "_position": [
-                41.0,
-                8.0,
-                6.0
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "stylized_tree_00.002": {
-            "_block_data_name": "environments/stylized_tree_00",
-            "_position": [
-                93.0,
-                8.0,
-                6.0
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "stylized_tree_00.003": {
-            "_block_data_name": "environments/stylized_tree_00",
-            "_position": [
-                69.0,
-                8.0,
-                6.0
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "tree_00": {
-            "_block_data_name": "environments/tree_00",
-            "_position": [
-                -1.9569120407104492,
-                8.0,
-                6.0
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "tree_00.001": {
-            "_block_data_name": "environments/tree_00",
-            "_position": [
-                37.043087005615234,
-                8.0,
-                6.0
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "tree_00.002": {
-            "_block_data_name": "environments/tree_00",
-            "_position": [
-                62.933685302734375,
-                8.0,
-                6.0
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        }
-    },
     "_characters": {
         "neanderthal": {
             "_character_data_name": "characters/neanderthal",
@@ -967,6 +713,150 @@
         "_point_lights": {},
         "_skeletal_objects": {},
         "_static_objects": {
+            "birch_tree_01": {
+                "_model_data_name": "environments/birch_tree_01",
+                "_position": [
+                    33.562435150146484,
+                    8.0,
+                    6.0
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "birch_tree_01.001": {
+                "_model_data_name": "environments/birch_tree_01",
+                "_position": [
+                    29.562435150146484,
+                    8.0,
+                    6.0
+                ],
+                "_rotation": [
+                    0.0,
+                    2.1495425701141357,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "birch_tree_01.002": {
+                "_model_data_name": "environments/birch_tree_01",
+                "_position": [
+                    55.562435150146484,
+                    8.0,
+                    6.0
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "birch_tree_01.003": {
+                "_model_data_name": "environments/birch_tree_01",
+                "_position": [
+                    8.562435150146484,
+                    8.0,
+                    6.0
+                ],
+                "_rotation": [
+                    0.0,
+                    0.7347071170806885,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "birch_tree_01.004": {
+                "_model_data_name": "environments/birch_tree_01",
+                "_position": [
+                    2.5624351501464844,
+                    8.0,
+                    6.0
+                ],
+                "_rotation": [
+                    0.0,
+                    0.5093454122543335,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "cliff_grass.003": {
+                "_model_data_name": "environments/cliff_grass",
+                "_position": [
+                    34.0,
+                    8.0,
+                    0.0
+                ],
+                "_rotation": [
+                    0.0,
+                    -2.237806797027588,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "cliff_grass.004": {
+                "_model_data_name": "environments/cliff_grass",
+                "_position": [
+                    54.0,
+                    8.0,
+                    0.0
+                ],
+                "_rotation": [
+                    0.0,
+                    -2.237806797027588,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "cliff_grass.005": {
+                "_model_data_name": "environments/cliff_grass",
+                "_position": [
+                    71.0,
+                    8.0,
+                    0.0
+                ],
+                "_rotation": [
+                    0.0,
+                    -2.237806797027588,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
             "daffodil": {
                 "_model_data_name": "environments/daffodil",
                 "_position": [
@@ -1057,6 +947,42 @@
                     1.0
                 ]
             },
+            "grass_darken": {
+                "_model_data_name": "environments/grass_darken",
+                "_position": [
+                    5.18781852722168,
+                    8.0,
+                    -1.363978385925293
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "grass_darken.001": {
+                "_model_data_name": "environments/grass_darken",
+                "_position": [
+                    -4.118735313415527,
+                    8.0,
+                    1.0736665725708008
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
             "hyacinth": {
                 "_model_data_name": "environments/hyacinth",
                 "_position": [
@@ -1081,6 +1007,24 @@
                     51.34173583984375,
                     8.0,
                     1.3604497909545898
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "mushroom_orange_00.001": {
+                "_model_data_name": "environments/mushroom_orange_00",
+                "_position": [
+                    -2.149279832839966,
+                    8.0,
+                    0.6884212493896484
                 ],
                 "_rotation": [
                     0.0,
@@ -1183,12 +1127,228 @@
                     1.0
                 ]
             },
+            "mushroom_purple_01.001": {
+                "_model_data_name": "environments/mushroom_purple_01",
+                "_position": [
+                    -1.0214146375656128,
+                    8.0,
+                    0.8807802200317383
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "rock_forest_grown_00.001": {
+                "_model_data_name": "environments/rock_forest_grown_00",
+                "_position": [
+                    75.90607452392578,
+                    8.0,
+                    4.534963607788086
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "rock_forest_grown_01": {
+                "_model_data_name": "environments/rock_forest_grown_01",
+                "_position": [
+                    80.73710632324219,
+                    8.0,
+                    5.192771911621094
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "rock_forest_moss_00": {
+                "_model_data_name": "environments/rock_forest_moss_00",
+                "_position": [
+                    12.550053596496582,
+                    8.0,
+                    6.592357635498047
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "rock_forest_moss_01": {
+                "_model_data_name": "environments/rock_forest_moss_01",
+                "_position": [
+                    21.611400604248047,
+                    8.0,
+                    6.0
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "rock_forest_moss_01.001": {
+                "_model_data_name": "environments/rock_forest_moss_01",
+                "_position": [
+                    15.283182144165039,
+                    8.0,
+                    5.96711540222168
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "stylized_tree_00": {
+                "_model_data_name": "environments/stylized_tree_00",
+                "_position": [
+                    -6.0,
+                    8.0,
+                    6.0
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "stylized_tree_00.001": {
+                "_model_data_name": "environments/stylized_tree_00",
+                "_position": [
+                    41.0,
+                    8.0,
+                    6.0
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "stylized_tree_00.002": {
+                "_model_data_name": "environments/stylized_tree_00",
+                "_position": [
+                    93.0,
+                    8.0,
+                    6.0
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "stylized_tree_00.003": {
+                "_model_data_name": "environments/stylized_tree_00",
+                "_position": [
+                    69.0,
+                    8.0,
+                    6.0
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
             "sunflower": {
                 "_model_data_name": "environments/sunflower",
                 "_position": [
                     49.136253356933594,
                     8.0,
                     -0.26401233673095703
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "tree_00": {
+                "_model_data_name": "environments/tree_00",
+                "_position": [
+                    -1.9569120407104492,
+                    8.0,
+                    6.0
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "tree_00.001": {
+                "_model_data_name": "environments/tree_00",
+                "_position": [
+                    37.043087005615234,
+                    8.0,
+                    6.0
                 ],
                 "_rotation": [
                     0.0,
@@ -1209,150 +1369,6 @@
         0.0
     ],
     "_terrain": {
-        "cliff_grass.003": {
-            "_model_data_name": "environments/cliff_grass",
-            "_position": [
-                34.0,
-                8.0,
-                0.0
-            ],
-            "_rotation": [
-                0.0,
-                -2.237806797027588,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "cliff_grass.004": {
-            "_model_data_name": "environments/cliff_grass",
-            "_position": [
-                54.0,
-                8.0,
-                0.0
-            ],
-            "_rotation": [
-                0.0,
-                -2.237806797027588,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "cliff_grass.005": {
-            "_model_data_name": "environments/cliff_grass",
-            "_position": [
-                71.0,
-                8.0,
-                0.0
-            ],
-            "_rotation": [
-                0.0,
-                -2.237806797027588,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "grass_darken": {
-            "_model_data_name": "environments/grass_darken",
-            "_position": [
-                5.18781852722168,
-                8.0,
-                -1.363978385925293
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "grass_darken.001": {
-            "_model_data_name": "environments/grass_darken",
-            "_position": [
-                -4.118735313415527,
-                8.0,
-                1.0736665725708008
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "grass_darken.002": {
-            "_model_data_name": "environments/grass_darken",
-            "_position": [
-                94.67528533935547,
-                8.0,
-                1.2587528228759766
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "grass_darken.003": {
-            "_model_data_name": "environments/grass_darken",
-            "_position": [
-                89.37849426269531,
-                8.0,
-                1.76141357421875
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "grass_darken.005": {
-            "_model_data_name": "environments/grass_darken",
-            "_position": [
-                78.37849426269531,
-                8.0,
-                0.76141357421875
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
         "ground_00": {
             "_model_data_name": "environments/ground_00",
             "_position": [
@@ -1423,96 +1439,6 @@
                 100.0,
                 1.0,
                 10.0
-            ]
-        },
-        "rock_forest_grown_00": {
-            "_model_data_name": "environments/rock_forest_grown_00",
-            "_position": [
-                87.41915130615234,
-                8.0,
-                6.0
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "rock_forest_grown_01": {
-            "_model_data_name": "environments/rock_forest_grown_01",
-            "_position": [
-                83.32342529296875,
-                8.0,
-                6.0
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "rock_forest_moss_00": {
-            "_model_data_name": "environments/rock_forest_moss_00",
-            "_position": [
-                79.04962921142578,
-                8.0,
-                6.0
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "rock_forest_moss_01": {
-            "_model_data_name": "environments/rock_forest_moss_01",
-            "_position": [
-                21.611400604248047,
-                8.0,
-                6.0
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "rock_forest_moss_01.001": {
-            "_model_data_name": "environments/rock_forest_moss_01",
-            "_position": [
-                74.71646118164062,
-                8.0,
-                6.0
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
             ]
         }
     }
