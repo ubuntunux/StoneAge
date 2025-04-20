@@ -8,6 +8,7 @@ use crate::game_module::widgets::image_widget::ImageLayout;
 use crate::game_module::widgets::item_bar_widget::ItemBarWidget;
 use crate::game_module::widgets::player_hud::PlayerHud;
 use crate::game_module::widgets::target_status_bar::TargetStatusWidget;
+use crate::game_module::widgets::time_of_day::TimeOfDayWidget;
 
 pub struct GameUIManager<'a> {
     pub _ui_manager: *const UIManager<'a>,
@@ -18,6 +19,7 @@ pub struct GameUIManager<'a> {
     pub _cross_hair: Option<Box<CrossHairWidget<'a>>>,
     pub _player_hud: Option<Box<PlayerHud<'a>>>,
     pub _target_status_bar: Option<Box<TargetStatusWidget<'a>>>,
+    pub _time_of_day: Option<Box<TimeOfDayWidget<'a>>>,
     pub _item_bar_widget: Option<Box<ItemBarWidget<'a>>>,
     pub _window_size: Vector2<i32>,
 }

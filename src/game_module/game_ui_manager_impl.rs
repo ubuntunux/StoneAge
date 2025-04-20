@@ -12,6 +12,7 @@ use crate::game_module::widgets::image_widget::ImageLayout;
 use crate::game_module::widgets::item_bar_widget::ItemBarWidget;
 use crate::game_module::widgets::player_hud::PlayerHud;
 use crate::game_module::widgets::target_status_bar::TargetStatusWidget;
+use crate::game_module::widgets::time_of_day::TimeOfDayWidget;
 
 impl<'a> GameUIManager<'a> {
     pub fn create_game_ui_manager() -> Box<GameUIManager<'a>> {
@@ -23,6 +24,7 @@ impl<'a> GameUIManager<'a> {
             _game_image: None,
             _cross_hair: None,
             _target_status_bar: None,
+            _time_of_day: None,
             _item_bar_widget: None,
             _player_hud: None,
             _window_size: Vector2::new(1024,768)
@@ -109,10 +111,9 @@ impl<'a> GameUIManager<'a> {
 
         let cross_hair_material_instance = game_resources.get_engine_resources().get_material_instance_data(MATERIAL_CROSS_HAIR);
         self._cross_hair = Some(Box::new(CrossHairWidget::create_cross_hair(game_ui_layout_mut, cross_hair_material_instance)));
-
         self._player_hud = Some(Box::new(PlayerHud::create_player_hud(game_ui_layout_mut)));
         self._target_status_bar = Some(Box::new(TargetStatusWidget::create_target_status_widget(game_ui_layout_mut)));
-
+        self._time_of_day = Some(Box::new(TimeOfDayWidget::create_time_of_day_widget(game_ui_layout_mut)));
         self._item_bar_widget = Some(Box::new(ItemBarWidget::create_item_bar_widget(engine_resources, game_ui_layout_mut)));
         self.changed_window_size();
     }
@@ -129,6 +130,7 @@ impl<'a> GameUIManager<'a> {
         self._game_image.as_mut().unwrap().changed_window_size(&self._window_size);
         self._player_hud.as_mut().unwrap().changed_window_size(&self._window_size);
         self._target_status_bar.as_mut().unwrap().changed_window_size(&self._window_size);
+        self._time_of_day.as_mut().unwrap().changed_window_size(&self._window_size);
         self._item_bar_widget.as_mut().unwrap().changed_window_size(&self._window_size);
     }
 
@@ -181,6 +183,11 @@ impl<'a> GameUIManager<'a> {
             } else {
                 target_status_bar.fade_out_status_widget();
             }
+        }
+
+        // time of day
+        if let Some(time_of_day) = self._time_of_day.as_mut() {
+            // nothing
         }
     }
 }
