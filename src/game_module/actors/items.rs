@@ -34,6 +34,7 @@ pub struct ItemCreateInfo {
 pub struct ItemData {
     pub _item_type: ItemDataType,
     pub _model_data_name: String,
+    pub _name: String,
 }
 
 pub struct ItemProperties {

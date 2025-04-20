@@ -62,7 +62,7 @@ impl<'a> TargetStatusWidget<'a> {
     pub fn update_status_widget(&mut self, target: &Character<'a>) {
         if self._target != target {
             ptr_as_mut(self._widget).get_ui_component_mut().set_visible(true);
-            let name = target._character_data_name.clone().to_uppercase();
+            let name = target._character_data.borrow()._name.clone();
             ptr_as_mut(self._target_name_widget).get_ui_component_mut().set_text(name.as_str());
             self._target = target;
         }

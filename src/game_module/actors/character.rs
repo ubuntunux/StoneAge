@@ -36,7 +36,6 @@ pub struct CharacterAnimationState {
 
 pub struct Character<'a> {
     pub _character_manager: *const CharacterManager<'a>,
-    pub _character_name: String,
     pub _character_id: u64,
     pub _is_player: bool,
     pub _character_data_name: String,

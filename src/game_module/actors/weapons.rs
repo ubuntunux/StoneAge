@@ -21,6 +21,7 @@ pub enum WeaponDataType {
 pub struct WeaponDataCreateInfo {
     pub _damage: f32,
     pub _model_data_name: String,
+    pub _name: String,
     pub _weapon_data_type: WeaponDataType
 }
 

@@ -3,5 +3,6 @@
     "_item_data_name": "items/rock",
     "_max_hp": 100,
     "_model_data_name": "environments/cliff_grass",
+    "_name": "ROCK",
     "_prop_type": "Rock"
 }

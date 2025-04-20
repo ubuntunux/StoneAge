@@ -41,5 +41,6 @@
         "_walk_speed": 3.0
     },
     "_character_type": "Roamer",
-    "_model_data_name": "characters/spider"
+    "_model_data_name": "characters/spider",
+    "_name": "SPIDER"
 }

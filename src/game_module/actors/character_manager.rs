@@ -147,7 +147,6 @@ impl<'a> CharacterManager<'a> {
             self,
             id,
             is_player,
-            character_name,
             character_data_name,
             character_data,
             &render_object_data,

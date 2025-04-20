@@ -21,6 +21,7 @@ impl Default for PropData {
         PropData {
             _prop_type: PropDataType::Rock,
             _model_data_name: String::new(),
+            _name: String::new(),
             _max_hp: 0,
             _item_data_name: String::new(),
             _enable_collision: true,

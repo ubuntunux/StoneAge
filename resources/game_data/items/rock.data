@@ -1,4 +1,5 @@
 {
     "_item_type": "Rock",
-    "_model_data_name": "environments/grass"
+    "_model_data_name": "environments/grass",
+    "_name": "ROCK"
 }

@@ -3,5 +3,6 @@
     "_item_data_name": "items/wood",
     "_max_hp": 100,
     "_model_data_name": "environments/birch_tree_00",
+    "_name": "BIRCH TREE",
     "_prop_type": "Tree"
 }

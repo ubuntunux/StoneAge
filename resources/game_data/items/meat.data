@@ -1,4 +1,5 @@
 {
     "_item_type": "Meat",
-    "_model_data_name": "props/meat"
+    "_model_data_name": "props/meat",
+    "_name": "MEAT"
 }

@@ -42,5 +42,6 @@
         "_walk_speed": 3.0
     },
     "_character_type": "Roamer",
-    "_model_data_name": "characters/wolf"
+    "_model_data_name": "characters/wolf",
+    "_name": "WOLF"
 }

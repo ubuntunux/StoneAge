@@ -52,6 +52,7 @@ pub struct SpawnPointData {
 pub struct CharacterDataCreateInfo {
     pub _character_type: CharacterDataType,
     pub _model_data_name: String,
+    pub _name: String,
     pub _character_animation_data: CharacterAnimationDataCreateInfo,
     pub _character_audio_data: CharacterAudioDataCreateInfo,
     pub _character_stat_data: CharacterStatData,
@@ -97,6 +98,7 @@ pub struct CharacterAnimationDataCreateInfo {
 pub struct CharacterData {
     pub _character_type: CharacterDataType,
     pub _model_data_name: String,
+    pub _name: String,
     pub _audio_data: CharacterAudioData,
     pub _animation_data: CharacterAnimationData,
     pub _stat_data: CharacterStatData,

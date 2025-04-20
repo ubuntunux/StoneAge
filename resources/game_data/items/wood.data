@@ -1,4 +1,5 @@
 {
     "_item_type": "Wood",
-    "_model_data_name": "environments/grass_darken"
+    "_model_data_name": "environments/grass_darken",
+    "_name": "WOOD"
 }

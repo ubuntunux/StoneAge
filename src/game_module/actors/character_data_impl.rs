@@ -55,6 +55,7 @@ impl CharacterData {
         CharacterData {
             _character_type: character_data_create_info._character_type,
             _model_data_name: character_data_create_info._model_data_name.clone(),
+            _name: character_data_create_info._name.clone(),
             _animation_data: CharacterAnimationData::create_character_animation_data(
                 &character_data_create_info._character_animation_data,
                 game_resources.get_engine_resources(),

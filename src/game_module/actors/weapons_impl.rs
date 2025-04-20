@@ -26,6 +26,7 @@ impl Default for WeaponDataCreateInfo {
         WeaponDataCreateInfo {
             _damage: 10.0,
             _model_data_name: String::new(),
+            _name: String::new(),
             _weapon_data_type: WeaponDataType::None
         }
     }

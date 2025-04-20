@@ -43,6 +43,7 @@
     },
     "_character_type": "Roamer",
     "_model_data_name": "characters/jack",
+    "_name": "UBUNTU",
     "_weapon_create_info": {
         "_position": [
             0.0,

@@ -42,5 +42,6 @@
         "_walk_speed": 2.0
     },
     "_character_type": "Roamer",
-    "_model_data_name": "characters/trex"
+    "_model_data_name": "characters/trex",
+    "_name": "TREX"
 }

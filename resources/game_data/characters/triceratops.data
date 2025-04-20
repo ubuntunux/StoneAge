@@ -42,5 +42,6 @@
         "_walk_speed": 0.5
     },
     "_character_type": "Roamer",
-    "_model_data_name": "characters/triceratops"
+    "_model_data_name": "characters/triceratops",
+    "_name": "TRICERATOPS"
 }

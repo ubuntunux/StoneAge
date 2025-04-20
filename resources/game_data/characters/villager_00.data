@@ -42,5 +42,6 @@
         "_walk_speed": 3.0
     },
     "_character_type": "None",
-    "_model_data_name": "characters/villager_00"
+    "_model_data_name": "characters/villager_00",
+    "_name": "VILLAGER"
 }

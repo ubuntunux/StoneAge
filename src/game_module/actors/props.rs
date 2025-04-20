@@ -31,6 +31,7 @@ pub struct PropCreateInfo {
 pub struct PropData {
     pub _prop_type: PropDataType,
     pub _model_data_name: String,
+    pub _name: String,
     pub _max_hp: i32,
     pub _item_data_name: String,
     pub _enable_collision: bool

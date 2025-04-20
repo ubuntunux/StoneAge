@@ -38,6 +38,7 @@ impl Default for ItemData {
         ItemData {
             _item_type: ItemDataType::Meat,
             _model_data_name: String::new(),
+            _name: String::new(),
         }
     }
 }
