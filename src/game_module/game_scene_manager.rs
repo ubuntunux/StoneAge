@@ -2,11 +2,13 @@ use std::collections::HashMap;
 
 use nalgebra::{Vector2, Vector3};
 use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop, AudioManager};
+use rust_engine_3d::begin_block;
 use rust_engine_3d::core::engine_core::EngineCore;
 use rust_engine_3d::effect::effect_manager::EffectManager;
 use rust_engine_3d::scene::collision::CollisionType;
 use rust_engine_3d::scene::render_object::RenderObjectData;
 use rust_engine_3d::scene::scene_manager::{RenderObjectCreateInfoMap, SceneDataCreateInfo, SceneManager};
+use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use serde::{Deserialize, Serialize};
 use crate::application::application::Application;
@@ -43,7 +45,10 @@ pub struct GameSceneManager<'a> {
     pub _prop_manager: Box<PropManager<'a>>,
     pub _game_scene_name: String,
     pub _blocks: BlockArray<'a>,
-    pub _ambient_sound: Option<RcRefCell<AudioInstance>>
+    pub _ambient_sound: Option<RcRefCell<AudioInstance>>,
+    pub _time_of_day: f32,
+    pub _temperature: f32,
+    pub _date: u32
 }
 
 impl<'a> GameSceneManager<'a> {
@@ -90,7 +95,10 @@ impl<'a> GameSceneManager<'a> {
             _character_manager: CharacterManager::create_character_manager(),
             _item_manager: ItemManager::create_item_manager(),
             _prop_manager: PropManager::create_prop_manager(),
-            _ambient_sound: None
+            _ambient_sound: None,
+            _time_of_day: 10.0,
+            _temperature: 30.0,
+            _date: 1
         })
     }
 
@@ -139,6 +147,18 @@ impl<'a> GameSceneManager<'a> {
 
     pub fn get_blocks(&self) -> &BlockArray<'a> {
         &self._blocks
+    }
+
+    pub fn get_time_of_day(&self) -> f32 {
+        self._time_of_day
+    }
+
+    pub fn get_temperature(&self) -> f32 {
+        self._temperature
+    }
+
+    pub fn get_date(&self) -> u32 {
+        self._date
     }
 
     pub fn open_game_scene_data(&mut self, game_scene_data_name: &str) {
@@ -195,6 +215,21 @@ impl<'a> GameSceneManager<'a> {
     }
 
     pub fn update_game_scene_manager(&mut self, delta_time: f64) {
+        // update time of day
+        let time_of_day_speed = 100.0 / 3600.0;
+        self._time_of_day += delta_time as f32 * time_of_day_speed;
+        if 24.0 <= self._time_of_day {
+            self._time_of_day = self._time_of_day % 24.0;
+            self._date += 1;
+        }
+        let temperature_ratio = 1.0 - (self._time_of_day - 12.0) / 12.0;
+        self._temperature = math::lerp(12.0, 32.0, temperature_ratio);
+        begin_block!("MainLight"); {
+            let mut main_light = self.get_scene_manager().get_main_light().borrow_mut();
+            let pitch_ratio = (self._time_of_day - 12.0) / 12.0;
+            main_light._transform_object.set_pitch(math::lerp(std::f32::consts::PI * 0.5, -std::f32::consts::PI * 0.5, pitch_ratio));
+        }
+
         self._prop_manager.update_prop_manager(delta_time);
         self._item_manager.update_item_manager(delta_time);
 

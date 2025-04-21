@@ -141,10 +141,7 @@ impl<'a> GameUIManager<'a> {
     pub fn update_game_ui(&mut self, delta_time: f64) {
         let game_client = ptr_as_ref(self._game_client);
         let game_scene_manager = game_client.get_game_scene_manager();
-        let window_size = &game_client
-            .get_application()
-            .get_engine_core()
-            ._window_size;
+        let window_size = &game_client.get_application().get_engine_core()._window_size;
 
         // changed window size
         if self._window_size != *window_size {
@@ -187,7 +184,7 @@ impl<'a> GameUIManager<'a> {
 
         // time of day
         if let Some(time_of_day) = self._time_of_day.as_mut() {
-            // nothing
+            time_of_day.update_time_of_day_widget(game_scene_manager);
         }
     }
 }
