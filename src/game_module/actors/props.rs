@@ -13,8 +13,7 @@ pub type PropMap<'a> = HashMap<u64, RcRefCell<Prop<'a>>>;
 
 #[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq)]
 pub enum PropDataType {
-    Rock,
-    Tree
+    None
 }
 
 #[derive(Serialize, Deserialize, Default, Debug, Clone, PartialEq)]
@@ -34,12 +33,18 @@ pub struct PropData {
     pub _name: String,
     pub _max_hp: i32,
     pub _item_data_name: String,
+    pub _item_drop_count_max: i32,
+    pub _item_drop_count_min: i32,
+    pub _item_regenerate_count: i32,
+    pub _item_regenerate_time: f32,
     pub _enable_collision: bool
 }
 
 pub struct PropStats {
     pub _is_alive: bool,
     pub _prop_hp: i32,
+    pub _item_regenerate_count: i32,
+    pub _item_regenerate_time: f32,
     pub _position: Vector3<f32>,
     pub _rotation: Vector3<f32>,
     pub _scale: Vector3<f32>,
@@ -48,10 +53,11 @@ pub struct PropStats {
 pub struct Prop<'a> {
     pub _prop_name: String,
     pub _prop_id: u64,
+    pub _prop_radius: f32,
     pub _prop_manager: *const PropManager<'a>,
     pub _render_object: RcRefCell<RenderObjectData<'a>>,
     pub _prop_data: RcRefCell<PropData>,
-    pub _prop_stats: Box<PropStats>,
+    pub _prop_stats: Box<PropStats>
 }
 
 pub struct PropManager<'a> {
@@ -61,5 +67,5 @@ pub struct PropManager<'a> {
     pub _audio_manager: *const AudioManager<'a>,
     pub _scene_manager: *const SceneManager<'a>,
     pub _id_generator: u64,
-    pub _props: PropMap<'a>,
+    pub _props: PropMap<'a>
 }

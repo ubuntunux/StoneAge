@@ -1,8 +1,12 @@
 {
     "_enable_collision": true,
     "_item_data_name": "items/wood",
+    "_item_drop_count_max": 1,
+    "_item_drop_count_min": 1,
+    "_item_regenerate_count": 1,
+    "_item_regenerate_time": 300.0,
     "_max_hp": 100,
     "_model_data_name": "environments/cactus",
     "_name": "CACTUS",
-    "_prop_type": "Tree"
+    "_prop_type": "None"
 }

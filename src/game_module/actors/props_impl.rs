@@ -1,11 +1,13 @@
 use std::collections::HashMap;
 use nalgebra::Vector3;
+use rand;
 use rust_engine_3d::audio::audio_manager::{AudioLoop, AudioManager};
 use rust_engine_3d::core::engine_core::EngineCore;
 use rust_engine_3d::effect::effect_data::EffectCreateInfo;
 use rust_engine_3d::scene::collision::CollisionData;
 use rust_engine_3d::scene::render_object::{RenderObjectCreateInfo, RenderObjectData};
 use rust_engine_3d::scene::scene_manager::SceneManager;
+use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
 use crate::application::application::Application;
 use crate::game_module::actors::character_data::ActionAnimationState;
@@ -19,17 +21,20 @@ use crate::game_module::game_scene_manager::GameSceneManager;
 impl Default for PropData {
     fn default() -> Self {
         PropData {
-            _prop_type: PropDataType::Rock,
+            _prop_type: PropDataType::None,
             _model_data_name: String::new(),
             _name: String::new(),
             _max_hp: 0,
             _item_data_name: String::new(),
+            _item_drop_count_max: 1,
+            _item_drop_count_min: 1,
+            _item_regenerate_count: 1,
+            _item_regenerate_time: 0.0,
             _enable_collision: true,
         }
     }
 }
 
-// Prop
 impl<'a> Prop<'a> {
     pub fn create_prop(
         prop_manager: *const PropManager<'a>,
@@ -39,15 +44,19 @@ impl<'a> Prop<'a> {
         render_object: &RcRefCell<RenderObjectData<'a>>,
         prop_create_info: &PropCreateInfo,
     ) -> Prop<'a> {
+        let prop_data_ref = prop_data.borrow();
         let mut prop = Prop {
             _prop_name: String::from(prop_name),
             _prop_id: prop_id,
+            _prop_radius: render_object.borrow()._collision._bounding_box.get_mag_xz(),
             _prop_manager: prop_manager,
             _render_object: render_object.clone(),
             _prop_data: prop_data.clone(),
             _prop_stats: Box::from(PropStats {
                 _is_alive: false,
-                _prop_hp: prop_data.borrow()._max_hp,
+                _prop_hp: prop_data_ref._max_hp,
+                _item_regenerate_count: prop_data_ref._item_regenerate_count,
+                _item_regenerate_time: 0.0,
                 _position: prop_create_info._position.clone(),
                 _rotation: prop_create_info._rotation.clone(),
                 _scale: prop_create_info._scale.clone(),
@@ -56,35 +65,45 @@ impl<'a> Prop<'a> {
         prop.initialize_prop();
         prop
     }
-
     pub fn initialize_prop(&mut self) {
         self._prop_stats._is_alive = true;
+        self._prop_stats._item_regenerate_time = 0.0;
         self.update_transform();
     }
-
+    pub fn refresh_prop_state(&mut self) {
+        let prop_data_ref = self._prop_data.borrow();
+        self._prop_stats._is_alive = true;
+        self._prop_stats._prop_hp = prop_data_ref._max_hp;
+        self._prop_stats._item_regenerate_time = prop_data_ref._item_regenerate_time;
+    }
     pub fn get_prop_id(&self) -> u64 {
         self._prop_id
     }
-
     pub fn get_prop_manager(&self) -> &PropManager<'a> {
         ptr_as_ref(self._prop_manager)
     }
-
+    pub fn get_item_regenerate_count(&self) -> i32 {
+        self._prop_stats._item_regenerate_count
+    }
+    pub fn can_drop_item(&self) -> bool {
+        self._prop_stats._item_regenerate_time <= 0.0 && 0 < self._prop_stats._item_regenerate_count
+    }
+    pub fn get_item_drop_count(&self) -> i32 {
+        let prop_data = self._prop_data.borrow();
+        rand::random_range(prop_data._item_drop_count_min..=prop_data._item_drop_count_max)
+    }
     pub fn get_position(&self) -> &Vector3<f32> {
         &ptr_as_ref(self._render_object.as_ptr())._transform_object._position
     }
-
     pub fn get_collision(&self) -> &CollisionData {
         &ptr_as_ref(self._render_object.as_ptr())._collision
     }
-
-    pub fn set_dead(&mut self) {
-        if self._prop_stats._is_alive {
-            //self.get_prop_manager().get_audio_manager_mut().play_audio_bank(AUDIO_CRUNCH, AudioLoop::ONCE, None);
-            self._prop_stats._is_alive = false;
-        }
+    pub fn is_alive(&self) -> bool {
+        self._prop_stats._is_alive
     }
-
+    pub fn set_dead(&mut self) {
+        self._prop_stats._is_alive = false;
+    }
     pub fn set_damage(&mut self, attack_point: &Vector3<f32>, damage: i32) {
         self._prop_stats._prop_hp -= damage;
         if self._prop_stats._prop_hp <= 0 {
@@ -99,7 +118,27 @@ impl<'a> Prop<'a> {
         self.get_prop_manager().get_scene_manager_mut().add_effect(EFFECT_HIT, &effect_create_info);
         self.get_prop_manager().get_audio_manager_mut().play_audio_bank(AUDIO_HIT, AudioLoop::ONCE, None);
     }
+    pub fn drop_items(&mut self) -> Vec<ItemCreateInfo> {
+        let mut item_create_infos: Vec<ItemCreateInfo> = vec![];
+        if self.can_drop_item() {
+            self._prop_stats._item_regenerate_count -= 1;
 
+            for _ in 0..self.get_item_drop_count() {
+                let mut offset = Vector3::new(rand::random::<f32>(), 0.0, rand::random::<f32>());
+                if offset.x == 0.0 && offset.y == 0.0 {
+                    offset.x = 1.0;
+                }
+                offset = offset.normalize() * self._prop_radius;
+
+                item_create_infos.push(ItemCreateInfo {
+                    _item_data_name: self._prop_data.borrow()._item_data_name.clone(),
+                    _position: self.get_position() + offset,
+                    ..Default::default()
+                });
+            }
+        }
+        item_create_infos
+    }
     pub fn update_transform(&mut self) {
         self._render_object.borrow_mut()._transform_object.set_position_rotation_scale(
             &self._prop_stats._position,
@@ -107,13 +146,15 @@ impl<'a> Prop<'a> {
             &self._prop_stats._scale,
         );
     }
-
     pub fn update_render_object(&mut self) {
         self._render_object.borrow_mut().update_render_object_data(0.0);
     }
-
-    pub fn update_prop(&mut self, _delta_time: f64) {
+    pub fn update_prop(&mut self, delta_time: f64) {
         self.update_transform();
+
+        if 0.0 < self._prop_stats._item_regenerate_time {
+            self._prop_stats._item_regenerate_time -= delta_time as f32;
+        }
     }
 }
 
@@ -212,18 +253,20 @@ impl<'a> PropManager<'a> {
                         let mut prop = prop_refcell.borrow_mut();
                         if player.check_in_range(prop.get_collision(), NPC_ATTACK_HIT_RANGE, true) {
                             let prop_position = ptr_as_ref(prop.get_position());
-                            prop.set_damage(prop_position, player.get_power(player._animation_state._attack_event));
+                            if prop.can_drop_item() {
+                                prop.set_damage(prop_position, player.get_power(player._animation_state._attack_event));
+                                if false == prop.is_alive() {
+                                    let item_create_infos = prop.drop_items();
+                                    for item_create_info in item_create_infos.iter() {
+                                        self.get_game_scene_manager().get_item_manager_mut().create_item(&item_create_info);
+                                    }
 
-                            if false == prop._prop_stats._is_alive {
-                                dead_props.push(prop_refcell.clone());
-
-                                // TestCode: Item
-                                let item_create_info = ItemCreateInfo {
-                                    _item_data_name: prop._prop_data.borrow()._item_data_name.clone(),
-                                    _position: prop_position + Vector3::new(0.0, 0.5, 0.0),
-                                    ..Default::default()
-                                };
-                                self.get_game_scene_manager().get_item_manager_mut().create_item(&item_create_info);
+                                    if 0 < prop.get_item_regenerate_count() {
+                                        prop.refresh_prop_state();
+                                    } else {
+                                        dead_props.push(prop_refcell.clone());
+                                    }
+                                }
                             }
                         }
                     }
