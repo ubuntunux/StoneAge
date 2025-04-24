@@ -1,20 +1,20 @@
 {
     "_collision": {
         "_collision_type": "CYLINDER",
-        "_height": 8.252349853515625,
+        "_height": 13.071160316467285,
         "_location": [
-            0.006828129291534424,
-            4.126177787780762,
-            0.015758395195007324
+            -0.01661992073059082,
+            6.5238566398620605,
+            0.08532285690307617
         ],
-        "_radius": 0.699999988079071
+        "_radius": 1.0
     },
     "_is_render_camera": true,
     "_is_render_shadow": true,
     "_material_instances": [
-        "environments/color_palette"
+        "environments/pine_tree"
     ],
-    "_mesh": "environments/birch_tree_00",
+    "_mesh": "environments/pine_tree_00",
     "_position": [
         0.0,
         0.0,

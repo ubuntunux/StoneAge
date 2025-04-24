@@ -1,0 +1,8 @@
+{
+    "material_name": "render_grass",
+    "material_parameters": {
+        "textureBase": "environments/Tree_1_1_texture",
+        "textureMaterial": "common/default_m",
+        "textureNormal": "environments/Tree_1_normal"
+    }
+}

@@ -1001,6 +1001,24 @@
                     1.0
                 ]
             },
+            "mine": {
+                "_model_data_name": "props/mine",
+                "_position": [
+                    -7.8447980880737305,
+                    7.151910781860352,
+                    7.798095703125
+                ],
+                "_rotation": [
+                    0.0,
+                    -3.1415929794311523,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
             "mushroom_orange_00": {
                 "_model_data_name": "environments/mushroom_orange_00",
                 "_position": [
@@ -1235,24 +1253,6 @@
                     1.0
                 ]
             },
-            "stylized_tree_00": {
-                "_model_data_name": "environments/stylized_tree_00",
-                "_position": [
-                    -6.0,
-                    8.0,
-                    6.0
-                ],
-                "_rotation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "_scale": [
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            },
             "stylized_tree_00.001": {
                 "_model_data_name": "environments/stylized_tree_00",
                 "_position": [
@@ -1328,9 +1328,9 @@
             "tree_00": {
                 "_model_data_name": "environments/tree_00",
                 "_position": [
-                    -1.9569120407104492,
+                    6.043087959289551,
                     8.0,
-                    6.0
+                    5.0
                 ],
                 "_rotation": [
                     0.0,
@@ -1372,9 +1372,9 @@
         "ground_00": {
             "_model_data_name": "environments/ground_00",
             "_position": [
-                -12.390877723693848,
+                -21.39087677001953,
                 8.0,
-                5.561201095581055
+                6.561201095581055
             ],
             "_rotation": [
                 0.0,
