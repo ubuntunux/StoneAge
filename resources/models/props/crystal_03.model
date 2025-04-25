@@ -1,13 +1,13 @@
 {
     "_collision": {
-        "_collision_type": "NONE",
-        "_height": 0,
+        "_collision_type": "CYLINDER",
+        "_height": 1.9681469202041626,
         "_location": [
-            0,
-            0,
-            0
+            0.0,
+            0.9840734601020813,
+            0.0035301148891448975
         ],
-        "_radius": 0
+        "_radius": 0.4376802444458008
     },
     "_is_render_camera": true,
     "_is_render_shadow": true,
