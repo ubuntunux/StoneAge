@@ -1,0 +1,8 @@
+{
+    "material_name": "common/render_static_object",
+    "material_parameters": {
+        "textureBase": "environments/Rocks_1_2_texture",
+        "textureMaterial": "common/default_m",
+        "textureNormal": "environments/Rocks_1_2_normal"
+    }
+}

@@ -81,7 +81,7 @@ void main() {
     localMatrixPrev[3].xyz -= view_constants.CAMERA_POSITION_PREV;
 
     // wind
-    vec3 wind = vec3(pow(position.y, 2.0) * sin(scene_constants.TIME + random(world_position) * 13.1423), 0.0, 0.0);
+    vec3 wind = vec3(0);//vec3(pow(position.y, 2.0) * sin(scene_constants.TIME + random(world_position) * 13.1423), 0.0, 0.0);
     vec3 relative_pos = (localMatrix * position).xyz + wind;
     vec3 relative_pos_prev = (localMatrixPrev * prev_position).xyz + wind;
 

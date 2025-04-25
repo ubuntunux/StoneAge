@@ -1,0 +1,8 @@
+{
+    "material_name": "common/render_static_object",
+    "material_parameters": {
+        "textureBase": "props/Log_stump_mushrooms_texture",
+        "textureMaterial": "common/default_m",
+        "textureNormal": "props/Log_stump_mushrooms_normal"
+    }
+}

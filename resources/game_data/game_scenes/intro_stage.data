@@ -469,42 +469,6 @@
                 1.0,
                 1.0
             ]
-        },
-        "wood": {
-            "_item_data_name": "items/wood",
-            "_position": [
-                12.023232460021973,
-                8.20930004119873,
-                0.9458551406860352
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                0.27680784463882446,
-                0.27680784463882446,
-                0.27680784463882446
-            ]
-        },
-        "wood.001": {
-            "_item_data_name": "items/wood",
-            "_position": [
-                10.023232460021973,
-                8.20930004119873,
-                0.9458551406860352
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                0.27680784463882446,
-                0.27680784463882446,
-                0.27680784463882446
-            ]
         }
     },
     "_player": {
@@ -548,9 +512,9 @@
         },
         "cactus": {
             "_position": [
-                2.0,
+                -0.41051483154296875,
                 8.0,
-                6.0
+                5.869629859924316
             ],
             "_prop_data_name": "props/cactus",
             "_rotation": [
@@ -803,6 +767,60 @@
                     1.0
                 ]
             },
+            "bush_01": {
+                "_model_data_name": "environments/bush_01",
+                "_position": [
+                    2.1999053955078125,
+                    7.999999046325684,
+                    -3.291632652282715
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "bush_01.001": {
+                "_model_data_name": "environments/bush_01",
+                "_position": [
+                    -14.344615936279297,
+                    8.000000953674316,
+                    1.5252318382263184
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "bush_02": {
+                "_model_data_name": "environments/bush_02",
+                "_position": [
+                    2.2006702423095703,
+                    7.999999046325684,
+                    -1.127558708190918
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
             "cliff_grass.003": {
                 "_model_data_name": "environments/cliff_grass",
                 "_position": [
@@ -857,6 +875,96 @@
                     1.0
                 ]
             },
+            "crystal_01": {
+                "_model_data_name": "props/crystal_01",
+                "_position": [
+                    -50.72930145263672,
+                    7.999998092651367,
+                    -4.430173873901367
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "crystal_02": {
+                "_model_data_name": "props/crystal_02",
+                "_position": [
+                    -50.651344299316406,
+                    7.999998092651367,
+                    11.625031471252441
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "crystal_03": {
+                "_model_data_name": "props/crystal_03",
+                "_position": [
+                    -50.181549072265625,
+                    7.999998092651367,
+                    2.1889963150024414
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "crystal_04": {
+                "_model_data_name": "props/crystal_04",
+                "_position": [
+                    -43.564109802246094,
+                    8.0,
+                    -4.776001930236816
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "crystal_05": {
+                "_model_data_name": "props/crystal_05",
+                "_position": [
+                    -43.75079345703125,
+                    8.0,
+                    1.6788783073425293
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
             "daffodil": {
                 "_model_data_name": "environments/daffodil",
                 "_position": [
@@ -867,6 +975,168 @@
                 "_rotation": [
                     0.0,
                     0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "daffodil.002": {
+                "_model_data_name": "environments/daffodil",
+                "_position": [
+                    -21.560213088989258,
+                    8.807733535766602,
+                    3.46343994140625
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "fern.002": {
+                "_model_data_name": "environments/fern",
+                "_position": [
+                    -11.917594909667969,
+                    8.000000953674316,
+                    3.25024151802063
+                ],
+                "_rotation": [
+                    0.0,
+                    0.8696732521057129,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "fern.003": {
+                "_model_data_name": "environments/fern",
+                "_position": [
+                    -21.397584915161133,
+                    9.130992889404297,
+                    6.427303314208984
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "flower_00": {
+                "_model_data_name": "environments/flower_00",
+                "_position": [
+                    -17.243865966796875,
+                    8.0,
+                    -1.2945637702941895
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "flower_00.001": {
+                "_model_data_name": "environments/flower_00",
+                "_position": [
+                    -15.980388641357422,
+                    8.0,
+                    -1.3219079971313477
+                ],
+                "_rotation": [
+                    0.0,
+                    0.8523975014686584,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "flower_01": {
+                "_model_data_name": "environments/flower_01",
+                "_position": [
+                    -15.502166748046875,
+                    8.0,
+                    0.11356139183044434
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "flower_01.001": {
+                "_model_data_name": "environments/flower_01",
+                "_position": [
+                    -0.21728515625,
+                    7.999999046325684,
+                    -2.6096458435058594
+                ],
+                "_rotation": [
+                    -3.1415927410125732,
+                    1.945196509361267,
+                    -3.1415927410125732
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "flower_02": {
+                "_model_data_name": "environments/flower_02",
+                "_position": [
+                    -14.206886291503906,
+                    7.999999046325684,
+                    -1.5472874641418457
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "flower_02.001": {
+                "_model_data_name": "environments/flower_02",
+                "_position": [
+                    -2.340564727783203,
+                    7.999999046325684,
+                    -1.7844948768615723
+                ],
+                "_rotation": [
+                    0.0,
+                    2.2655129432678223,
                     0.0
                 ],
                 "_scale": [
@@ -899,6 +1169,60 @@
                     5.153877258300781,
                     8.0,
                     2.489203453063965
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "grass_00.018": {
+                "_model_data_name": "environments/grass_00",
+                "_position": [
+                    4.0318603515625,
+                    8.0,
+                    -2.450577735900879
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "grass_00.019": {
+                "_model_data_name": "environments/grass_00",
+                "_position": [
+                    -22.2039852142334,
+                    9.042972564697266,
+                    5.045957565307617
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "grass_00.020": {
+                "_model_data_name": "environments/grass_00",
+                "_position": [
+                    -19.0635986328125,
+                    8.664739608764648,
+                    3.7277050018310547
                 ],
                 "_rotation": [
                     0.0,
@@ -947,12 +1271,12 @@
                     1.0
                 ]
             },
-            "grass_darken": {
-                "_model_data_name": "environments/grass_darken",
+            "grass_01.002": {
+                "_model_data_name": "environments/grass_01",
                 "_position": [
-                    5.18781852722168,
-                    8.0,
-                    -1.363978385925293
+                    3.5887985229492188,
+                    7.999998092651367,
+                    -1.1718940734863281
                 ],
                 "_rotation": [
                     0.0,
@@ -965,12 +1289,30 @@
                     1.0
                 ]
             },
-            "grass_darken.001": {
-                "_model_data_name": "environments/grass_darken",
+            "grass_01.003": {
+                "_model_data_name": "environments/grass_01",
                 "_position": [
-                    -4.118735313415527,
-                    8.0,
-                    1.0736665725708008
+                    -20.486770629882812,
+                    9.076650619506836,
+                    5.189558029174805
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "grass_01.004": {
+                "_model_data_name": "environments/grass_01",
+                "_position": [
+                    -23.13211441040039,
+                    9.092849731445312,
+                    6.529558181762695
                 ],
                 "_rotation": [
                     0.0,
@@ -1001,6 +1343,168 @@
                     1.0
                 ]
             },
+            "hyacinth.002": {
+                "_model_data_name": "environments/hyacinth",
+                "_position": [
+                    6.05810546875,
+                    7.999998092651367,
+                    -2.2713537216186523
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "hyacinth.003": {
+                "_model_data_name": "environments/hyacinth",
+                "_position": [
+                    -12.297035217285156,
+                    8.0,
+                    -1.2045798301696777
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "leaves_00": {
+                "_model_data_name": "environments/leaves_00",
+                "_position": [
+                    12.34355354309082,
+                    10.447720527648926,
+                    5.100167274475098
+                ],
+                "_rotation": [
+                    0.2845442593097687,
+                    0.4430410861968994,
+                    0.09170772135257721
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "leaves_01": {
+                "_model_data_name": "environments/leaves_01",
+                "_position": [
+                    11.639728546142578,
+                    9.698076248168945,
+                    4.813328742980957
+                ],
+                "_rotation": [
+                    -0.08235526084899902,
+                    0.6400870084762573,
+                    -0.1491169035434723
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "leaves_02": {
+                "_model_data_name": "environments/leaves_02",
+                "_position": [
+                    11.456247329711914,
+                    9.587639808654785,
+                    5.588815689086914
+                ],
+                "_rotation": [
+                    -0.06236466392874718,
+                    0.5028417706489563,
+                    0.09520906955003738
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "log_00": {
+                "_model_data_name": "props/log_00",
+                "_position": [
+                    -44.61097717285156,
+                    8.0,
+                    11.736980438232422
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "log_01": {
+                "_model_data_name": "props/log_01",
+                "_position": [
+                    -36.186241149902344,
+                    7.999996185302734,
+                    11.708370208740234
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "log_02": {
+                "_model_data_name": "props/log_02",
+                "_position": [
+                    -36.186798095703125,
+                    8.0,
+                    3.841146469116211
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "log_03": {
+                "_model_data_name": "props/log_03",
+                "_position": [
+                    -35.920135498046875,
+                    8.0,
+                    -4.636457443237305
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
             "mine": {
                 "_model_data_name": "props/mine",
                 "_position": [
@@ -1011,6 +1515,78 @@
                 "_rotation": [
                     0.0,
                     -3.1415929794311523,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "mushroom_00": {
+                "_model_data_name": "environments/mushroom_00",
+                "_position": [
+                    8.055023193359375,
+                    8.0,
+                    -3.796830177307129
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "mushroom_01": {
+                "_model_data_name": "environments/mushroom_01",
+                "_position": [
+                    12.222282409667969,
+                    8.0,
+                    -3.62359619140625
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "mushroom_02": {
+                "_model_data_name": "environments/mushroom_02",
+                "_position": [
+                    10.865436553955078,
+                    8.0,
+                    -4.166889190673828
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "mushroom_03": {
+                "_model_data_name": "environments/mushroom_03",
+                "_position": [
+                    13.570161819458008,
+                    8.130342483520508,
+                    -4.133142471313477
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
                     0.0
                 ],
                 "_scale": [
@@ -1073,12 +1649,48 @@
                     1.0
                 ]
             },
+            "mushroom_orange_00.007": {
+                "_model_data_name": "environments/mushroom_orange_00",
+                "_position": [
+                    9.130449295043945,
+                    8.0,
+                    -2.437577724456787
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
             "mushroom_orange_01": {
                 "_model_data_name": "environments/mushroom_orange_01",
                 "_position": [
                     49.033775329589844,
                     8.0,
                     1.2526130676269531
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "mushroom_orange_01.002": {
+                "_model_data_name": "environments/mushroom_orange_01",
+                "_position": [
+                    9.81698989868164,
+                    8.0,
+                    -2.2792234420776367
                 ],
                 "_rotation": [
                     0.0,
@@ -1127,6 +1739,24 @@
                     1.0
                 ]
             },
+            "mushroom_purple_00.003": {
+                "_model_data_name": "environments/mushroom_purple_00",
+                "_position": [
+                    8.619614601135254,
+                    8.0,
+                    -2.182739734649658
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
             "mushroom_purple_01": {
                 "_model_data_name": "environments/mushroom_purple_01",
                 "_position": [
@@ -1151,6 +1781,132 @@
                     -1.0214146375656128,
                     8.0,
                     0.8807802200317383
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "pine_tree_00": {
+                "_model_data_name": "environments/pine_tree_00",
+                "_position": [
+                    -15.047653198242188,
+                    8.0,
+                    6.799750328063965
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "pine_tree_01": {
+                "_model_data_name": "environments/pine_tree_01",
+                "_position": [
+                    -26.894020080566406,
+                    8.0,
+                    7.301131725311279
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "plant_00": {
+                "_model_data_name": "environments/plant_00",
+                "_position": [
+                    -12.780586242675781,
+                    8.0,
+                    0.127089262008667
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "rock_00": {
+                "_model_data_name": "environments/rock_00",
+                "_position": [
+                    5.478252410888672,
+                    8.0,
+                    2.383615016937256
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "rock_01": {
+                "_model_data_name": "environments/rock_01",
+                "_position": [
+                    -2.5017471313476562,
+                    8.000000953674316,
+                    9.633695602416992
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "rock_02": {
+                "_model_data_name": "environments/rock_02",
+                "_position": [
+                    26.206480026245117,
+                    8.0,
+                    6.391384124755859
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "rock_03": {
+                "_model_data_name": "environments/rock_03",
+                "_position": [
+                    18.36501693725586,
+                    8.000000953674316,
+                    -3.6480674743652344
                 ],
                 "_rotation": [
                     0.0,
@@ -1253,6 +2009,24 @@
                     1.0
                 ]
             },
+            "stump_00": {
+                "_model_data_name": "props/stump_00",
+                "_position": [
+                    -28.524993896484375,
+                    7.999998092651367,
+                    -0.627685546875
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
             "stylized_tree_00.001": {
                 "_model_data_name": "environments/stylized_tree_00",
                 "_position": [
@@ -1325,6 +2099,42 @@
                     1.0
                 ]
             },
+            "sunflower.001": {
+                "_model_data_name": "environments/sunflower",
+                "_position": [
+                    5.175758361816406,
+                    8.000000953674316,
+                    -1.9573354721069336
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "sunflower.002": {
+                "_model_data_name": "environments/sunflower",
+                "_position": [
+                    6.021156311035156,
+                    8.000000953674316,
+                    -1.5424346923828125
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
             "tree_00": {
                 "_model_data_name": "environments/tree_00",
                 "_position": [
@@ -1349,6 +2159,78 @@
                     37.043087005615234,
                     8.0,
                     6.0
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "tree_02": {
+                "_model_data_name": "environments/tree_02",
+                "_position": [
+                    -26.30864715576172,
+                    7.999999046325684,
+                    12.202475547790527
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "tree_03": {
+                "_model_data_name": "environments/tree_03",
+                "_position": [
+                    -23.026145935058594,
+                    8.000000953674316,
+                    11.82143783569336
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "tree_04": {
+                "_model_data_name": "environments/tree_04",
+                "_position": [
+                    -19.88805389404297,
+                    8.0,
+                    11.896360397338867
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "tree_05": {
+                "_model_data_name": "environments/tree_05",
+                "_position": [
+                    3.3258438110351562,
+                    7.999999046325684,
+                    10.283546447753906
                 ],
                 "_rotation": [
                     0.0,

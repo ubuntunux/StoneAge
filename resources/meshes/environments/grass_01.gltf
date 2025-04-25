@@ -1,6 +1,6 @@
 {
 	"asset":{
-		"generator":"Khronos glTF Blender I/O v4.3.47",
+		"generator":"Khronos glTF Blender I/O v4.4.56",
 		"version":"2.0"
 	},
 	"scene":0,
@@ -21,7 +21,7 @@
 			"children":[
 				0
 			],
-			"name":"grass_01.001"
+			"name":"grass_01"
 		}
 	],
 	"meshes":[
@@ -44,7 +44,7 @@
 		{
 			"bufferView":0,
 			"componentType":5126,
-			"count":1126,
+			"count":488,
 			"max":[
 				0.19382424652576447,
 				0.40160486102104187,
@@ -60,19 +60,19 @@
 		{
 			"bufferView":1,
 			"componentType":5126,
-			"count":1126,
+			"count":488,
 			"type":"VEC3"
 		},
 		{
 			"bufferView":2,
 			"componentType":5126,
-			"count":1126,
+			"count":488,
 			"type":"VEC2"
 		},
 		{
 			"bufferView":3,
 			"componentType":5126,
-			"count":1126,
+			"count":488,
 			"type":"VEC4"
 		},
 		{
@@ -85,38 +85,38 @@
 	"bufferViews":[
 		{
 			"buffer":0,
-			"byteLength":13512,
+			"byteLength":5856,
 			"byteOffset":0,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":13512,
-			"byteOffset":13512,
+			"byteLength":5856,
+			"byteOffset":5856,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":9008,
-			"byteOffset":27024,
+			"byteLength":3904,
+			"byteOffset":11712,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":18016,
-			"byteOffset":36032,
+			"byteLength":7808,
+			"byteOffset":15616,
 			"target":34962
 		},
 		{
 			"buffer":0,
 			"byteLength":3204,
-			"byteOffset":54048,
+			"byteOffset":23424,
 			"target":34963
 		}
 	],
 	"buffers":[
 		{
-			"byteLength":57252,
+			"byteLength":26628,
 			"uri":"grass_01.bin"
 		}
 	]
