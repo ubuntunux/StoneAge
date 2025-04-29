@@ -225,10 +225,10 @@ impl<'a> Character<'a> {
         let collision = self.get_collision();
         let position = Vector3::new(collision._bounding_box._center.x, collision._bounding_box._min.y, collision._bounding_box._center.z);
         let target_position = Vector3::new(target_collision._bounding_box._center.x, target_collision._bounding_box._min.y, target_collision._bounding_box._center.z);
-        let check_range = check_range + (collision._bounding_box._size.x + target_collision._bounding_box._size.x) * 0.4;
+        let check_range = check_range + (collision._bounding_box._mag_xz + target_collision._bounding_box._mag_xz);
         let to_target = target_position - position;
         let (to_target_dir, to_target_dist) = math::make_normalize_xz_with_norm(&to_target);
-        let half_height = collision._bounding_box._size.y * 0.5;
+        let half_height = collision._bounding_box._extents.y;
         if (self.get_transform().get_front().dot(&to_target_dir) < 0.0 || !check_direction) &&
             -half_height <= to_target.y &&
             to_target.y <= half_height &&

@@ -128,7 +128,7 @@ impl<'a> Prop<'a> {
                 if offset.x == 0.0 && offset.y == 0.0 {
                     offset.x = 1.0;
                 }
-                offset = offset.normalize() * self._prop_radius;
+                offset = offset.normalize() * self._prop_radius * 2.0;
 
                 item_create_infos.push(ItemCreateInfo {
                     _item_data_name: self._prop_data.borrow()._item_data_name.clone(),
