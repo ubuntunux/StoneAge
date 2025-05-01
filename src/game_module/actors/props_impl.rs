@@ -7,7 +7,6 @@ use rust_engine_3d::effect::effect_data::EffectCreateInfo;
 use rust_engine_3d::scene::collision::CollisionData;
 use rust_engine_3d::scene::render_object::{RenderObjectCreateInfo, RenderObjectData};
 use rust_engine_3d::scene::scene_manager::SceneManager;
-use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
 use crate::application::application::Application;
 use crate::game_module::actors::character_data::ActionAnimationState;

@@ -147,7 +147,7 @@ impl CharacterController {
 
     pub fn update_character_controller<'a>(
         &mut self,
-        owner: &Character,
+        _owner: &Character,
         height_map_data: &HeightMapData,
         collision_objects: &BlockArray<'a>,
         character_data: &CharacterData,
@@ -156,7 +156,6 @@ impl CharacterController {
         delta_time: f32,
     ) {
         let prev_position = self._position.clone();
-        let was_on_ground = self._is_ground;
 
         // update fall time
         if self._is_ground {
@@ -241,11 +240,15 @@ impl CharacterController {
         begin_block!("Check Ground"); {
             let ground_height = GROUND_HEIGHT.max(height_map_data.get_height_bilinear(&self._position, 0));
             if self._position.y <= ground_height {
-                let (mut move_dir, move_delta) = math::make_normalize_with_norm(&(self._position - prev_position));
+                let (_move_dir, move_delta) = math::make_normalize_with_norm(&(self._position - prev_position));
                 let new_move_dir = math::safe_normalize(&(Vector3::new(self._position.x, ground_height, self._position.z) - prev_position));
                 self._position = new_move_dir * move_delta + prev_position;
                 self.set_on_ground(self._position.y);
             }
+        }
+
+        if !_owner._is_player {
+            return;
         }
 
         // check ground and side
@@ -261,27 +264,26 @@ impl CharacterController {
                 if self._velocity.y <= 0.0 && block_bound_box._max.y <= prev_position.y {
                     self.set_on_ground(block_bound_box._max.y);
                 } else {
-                    if block_collision_type == CollisionType::BOX {
-                        if block_bound_box._min.z <= prev_bound_box_max.z && prev_bound_box_min.z <= block_bound_box._max.z {
-                            self._position.x = prev_position.x;
-                        } else {
-                            self._position.z = prev_position.z;
-                        }
-
-                        self._is_blocked = true;
-                        collided_block = collision_object.as_ptr();
-                    } else if block_collision_type == CollisionType::CYLINDER {
-                        let block_to_player = Vector3::new(self._position.x - block_location.x, 0.0, self._position.z - block_location.z).normalize();
-                        if block_to_player.dot(&move_delta.normalize()) < 0.0 {
+                    let block_to_player = Vector3::new(self._position.x - block_location.x, 0.0, self._position.z - block_location.z).normalize();
+                    if block_to_player.dot(&move_delta.normalize()) < 0.0 {
+                        if block_collision_type == CollisionType::CYLINDER {
                             let dist = Vector3::new(prev_position.x - block_location.x, 0.0, prev_position.z - block_location.z).norm();
                             let new_pos = block_to_player * dist + block_location;
                             self._position.x = new_pos.x;
                             self._position.z = new_pos.z;
                             self._is_blocked = true;
-                            collided_block = collision_object.as_ptr()
+                            collided_block = collision_object.as_ptr();
+                        } else if block_collision_type == CollisionType::BOX {
+                            if block_bound_box._min.z <= prev_bound_box_max.z && prev_bound_box_min.z <= block_bound_box._max.z {
+                                self._position.x = prev_position.x;
+                            } else {
+                                self._position.z = prev_position.z;
+                            }
+                            self._is_blocked = true;
+                            collided_block = collision_object.as_ptr();
+                        } else {
+                            panic!("not implemented");
                         }
-                    } else {
-                        panic!("not implemented");
                     }
                 }
             }
