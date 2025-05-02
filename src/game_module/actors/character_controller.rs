@@ -220,13 +220,10 @@ impl CharacterController {
 
         // check collide with block
         let mut move_delta = self._position - prev_position;
-        let prev_bound_box_min = actor_collision._bounding_box._min.clone_owned();
-        let prev_bound_box_max = actor_collision._bounding_box._max.clone_owned();
         let mut current_actor_collision_info = CollisionCreateInfo {
             _collision_type: actor_collision._collision_type,
-            _location: (prev_bound_box_min + prev_bound_box_max) * 0.5 + move_delta,
-            _radius: (prev_bound_box_max.x - prev_bound_box_min.x) * 0.5,
-            _height: prev_bound_box_max.y - prev_bound_box_min.y
+            _location: actor_collision._bounding_box._center + move_delta,
+            _extents: actor_collision._bounding_box._extents.clone(),
         };
         let mut current_actor_collision = CollisionData::create_collision(&current_actor_collision_info);
         let mut bound_box_min = &current_actor_collision._bounding_box._min;
@@ -247,10 +244,6 @@ impl CharacterController {
             }
         }
 
-        if !_owner._is_player {
-            return;
-        }
-
         // check ground and side
         for collision_object in collision_objects.iter() {
             let block_render_object = ptr_as_ref(collision_object.as_ptr());
@@ -266,24 +259,12 @@ impl CharacterController {
                 } else {
                     let block_to_player = Vector3::new(self._position.x - block_location.x, 0.0, self._position.z - block_location.z).normalize();
                     if block_to_player.dot(&move_delta.normalize()) < 0.0 {
-                        if block_collision_type == CollisionType::CYLINDER {
-                            let dist = Vector3::new(prev_position.x - block_location.x, 0.0, prev_position.z - block_location.z).norm();
-                            let new_pos = block_to_player * dist + block_location;
-                            self._position.x = new_pos.x;
-                            self._position.z = new_pos.z;
-                            self._is_blocked = true;
-                            collided_block = collision_object.as_ptr();
-                        } else if block_collision_type == CollisionType::BOX {
-                            if block_bound_box._min.z <= prev_bound_box_max.z && prev_bound_box_min.z <= block_bound_box._max.z {
-                                self._position.x = prev_position.x;
-                            } else {
-                                self._position.z = prev_position.z;
-                            }
-                            self._is_blocked = true;
-                            collided_block = collision_object.as_ptr();
-                        } else {
-                            panic!("not implemented");
-                        }
+                        let dist = Vector3::new(prev_position.x - block_location.x, 0.0, prev_position.z - block_location.z).norm();
+                        let new_pos = block_to_player * dist + block_location;
+                        self._position.x = new_pos.x;
+                        self._position.z = new_pos.z;
+                        self._is_blocked = true;
+                        collided_block = collision_object.as_ptr();
                     }
                 }
             }
@@ -292,7 +273,6 @@ impl CharacterController {
             if collided_block != std::ptr::null() {
                 // update delta & bound_box
                 move_delta = self._position - prev_position;
-                current_actor_collision_info._location = (prev_bound_box_min + prev_bound_box_max) * 0.5 + move_delta;
                 current_actor_collision = CollisionData::create_collision(&current_actor_collision_info);
                 bound_box_min = &current_actor_collision._bounding_box._min;
                 bound_box_max = &current_actor_collision._bounding_box._max;

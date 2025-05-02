@@ -1,17 +1,22 @@
 {
     "_collision": {
         "_collision_type": "CYLINDER",
-        "_height": 11.766280174255371,
+        "_extents": [
+            0.5,
+            5.8831400871276855,
+            0.5
+        ],
         "_location": [
             -0.07043856382369995,
             5.83982515335083,
             -0.09879612922668457
-        ],
-        "_radius": 0.5
+        ]
     },
+    "_is_render_camera": true,
+    "_is_render_shadow": true,
     "_material_instances": [
-        "environments/stylized_tree_00_trunk",
-        "environments/stylized_tree_00_leaves"
+        "environments/stylized_tree_00_leaves",
+        "environments/stylized_tree_00_trunk"
     ],
     "_mesh": "environments/stylized_tree_00",
     "_position": [
@@ -28,5 +33,6 @@
         1.0,
         1.0,
         1.0
-    ]
+    ],
+    "_sockets": {}
 }

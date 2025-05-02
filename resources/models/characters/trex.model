@@ -1,14 +1,19 @@
 {
     "_collision": {
         "_collision_type": "CYLINDER",
-        "_height": 1.5225000381469727,
+        "_extents": [
+            1.0,
+            0.7612500190734863,
+            1.0
+        ],
         "_location": [
             0.0,
             0.7612500190734863,
             0.0
-        ],
-        "_radius": 1.0
+        ]
     },
+    "_is_render_camera": true,
+    "_is_render_shadow": true,
     "_material_instances": [
         "characters/trex/trex"
     ],
@@ -27,5 +32,6 @@
         0.10000000149011612,
         0.10000000149011612,
         0.10000000149011612
-    ]
+    ],
+    "_sockets": {}
 }
