@@ -76,7 +76,7 @@ impl<'a> Item<'a> {
     }
 
     pub fn collide_point(&self, pos: &Vector3<f32>) -> bool {
-        self._render_object.borrow()._bounding_box.collide_in_radius(pos)
+        self._render_object.borrow()._collision.collide_point(pos)
     }
 
     pub fn update_transform(&mut self) {

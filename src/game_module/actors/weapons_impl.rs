@@ -75,7 +75,7 @@ impl<'a> Weapon<'a> {
     }
 
     pub fn collide_point(&self, pos: &Vector3<f32>) -> bool {
-        self._render_object.borrow()._bounding_box.collide_in_radius(pos)
+        self._render_object.borrow()._collision.collide_point(pos)
     }
 
     pub fn update_weapon(&mut self, parent_transform: &Matrix4<f32>, _delta_time: f32) {

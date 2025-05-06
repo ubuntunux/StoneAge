@@ -301,14 +301,13 @@ impl CharacterController {
 
             for collision_object in collision_objects.iter() {
                 let block_render_object = ptr_as_ref(collision_object.as_ptr());
-                let block_bound_box = &block_render_object._bounding_box;
-                if block_bound_box.collide_point(&point) {
+                if block_render_object._collision.collide_point(&point) {
                     self._is_cliff = false;
                     break;
                 }
             }
 
-            if self._is_cliff && point.y <= height_map_data.get_height_bilinear(&point, 0) {
+            if self._is_cliff && (point.y - CLIFF_HEIGHT) <= height_map_data.get_height_point(&point, 0) {
                 self._is_cliff = false;
             }
         }
