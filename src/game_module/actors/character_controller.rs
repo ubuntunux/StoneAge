@@ -313,10 +313,6 @@ impl CharacterController {
             }
         }
 
-        if self._is_cliff == false {
-            log::info!("self._is_cliff: {:?}", self._is_cliff);
-        }
-
         // update last ground position
         if self.is_on_ground() {
             self._last_ground_position = self._position;
