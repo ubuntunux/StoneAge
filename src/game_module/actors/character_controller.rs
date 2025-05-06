@@ -1,5 +1,5 @@
 use nalgebra::Vector3;
-use rust_engine_3d::scene::collision::{CollisionCreateInfo, CollisionData, CollisionType};
+use rust_engine_3d::scene::collision::CollisionData;
 use rust_engine_3d::scene::height_map::HeightMapData;
 use rust_engine_3d::scene::render_object::RenderObjectData;
 use rust_engine_3d::begin_block;
@@ -220,14 +220,10 @@ impl CharacterController {
 
         // check collide with block
         let mut move_delta = self._position - prev_position;
-        let mut current_actor_collision_info = CollisionCreateInfo {
-            _collision_type: actor_collision._collision_type,
-            _location: actor_collision._bounding_box._center + move_delta,
-            _extents: actor_collision._bounding_box._extents.clone(),
-        };
-        let mut current_actor_collision = CollisionData::create_collision(&current_actor_collision_info);
-        let mut bound_box_min = &current_actor_collision._bounding_box._min;
-        let mut bound_box_max = &current_actor_collision._bounding_box._max;
+        let mut current_actor_collision = actor_collision.clone();
+        current_actor_collision._bounding_box._center += move_delta;
+        current_actor_collision._bounding_box._min += move_delta;
+        current_actor_collision._bounding_box._max += move_delta;
 
         // reset flags
         self._is_cliff = true;
@@ -247,7 +243,6 @@ impl CharacterController {
         // check ground and side
         for collision_object in collision_objects.iter() {
             let block_render_object = ptr_as_ref(collision_object.as_ptr());
-            let block_collision_type = block_render_object._collision._collision_type;
             let block_bound_box = &block_render_object._collision._bounding_box;
             let block_location = &block_bound_box._center;
             let mut collided_block: *const RenderObjectData<'a> = std::ptr::null();
@@ -273,16 +268,15 @@ impl CharacterController {
             if collided_block != std::ptr::null() {
                 // update delta & bound_box
                 move_delta = self._position - prev_position;
-                current_actor_collision = CollisionData::create_collision(&current_actor_collision_info);
-                bound_box_min = &current_actor_collision._bounding_box._min;
-                bound_box_max = &current_actor_collision._bounding_box._max;
+                current_actor_collision._bounding_box._center = actor_collision._bounding_box._center + move_delta;
+                current_actor_collision._bounding_box._min = actor_collision._bounding_box._min + move_delta;
+                current_actor_collision._bounding_box._max = actor_collision._bounding_box._max + move_delta;
 
                 // Recheck collide with another blocks
                 for collision_object in collision_objects.iter() {
                     let recheck_block = ptr_as_ref(collision_object.as_ptr());
                     if collided_block != recheck_block {
                         let recheck_block_bound_box = &recheck_block._collision._bounding_box;
-                        // check collide with block
                         if current_actor_collision.collide_collision(&recheck_block._collision) {
                             if self._velocity.y <= 0.0 && recheck_block_bound_box._max.y <= prev_position.y {
                                 self.set_on_ground(recheck_block_bound_box._max.y);
@@ -300,9 +294,9 @@ impl CharacterController {
         // check cliff
         if !self._is_falling && (move_delta.x != 0.0 || move_delta.z != 0.0) {
             let point: Vector3<f32> = Vector3::new(
-                if 0.0 < move_delta.x { bound_box_max.x + 0.1 } else { bound_box_min.x - 0.1 },
-                bound_box_min.y - 0.1,
-                if 0.0 < move_delta.z { bound_box_max.z + 0.1 } else { bound_box_min.z - 0.1 }
+                if 0.0 < move_delta.x { current_actor_collision._bounding_box._max.x + 0.1 } else { current_actor_collision._bounding_box._min.x - 0.1 },
+                current_actor_collision._bounding_box._min.y - 0.1,
+                if 0.0 < move_delta.z { current_actor_collision._bounding_box._max.z + 0.1 } else { current_actor_collision._bounding_box._min.z - 0.1 }
             );
 
             for collision_object in collision_objects.iter() {
@@ -314,9 +308,13 @@ impl CharacterController {
                 }
             }
 
-            if self._is_cliff && height_map_data.get_height_bilinear(&point, 0) < (self._position.y - CLIFF_HEIGHT) {
+            if self._is_cliff && point.y <= height_map_data.get_height_bilinear(&point, 0) {
                 self._is_cliff = false;
             }
+        }
+
+        if self._is_cliff == false {
+            log::info!("self._is_cliff: {:?}", self._is_cliff);
         }
 
         // update last ground position
