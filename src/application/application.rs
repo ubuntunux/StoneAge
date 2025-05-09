@@ -3,6 +3,7 @@ use log::LevelFilter;
 use nalgebra::Vector2;
 use rust_engine_3d::audio::audio_manager::AudioManager;
 use rust_engine_3d::constants;
+use rust_engine_3d::constants::IS_SHIPPING_BUILD;
 use rust_engine_3d::core::engine_core::{
     self, ApplicationBase, EngineCore, WindowMode,
 };
@@ -289,11 +290,15 @@ pub fn run_application() {
     let initial_window_size: Option<Vector2<u32>> = None;// Some(Vector2::new(1024, 768));
     let window_mode = WindowMode::WindowMode;//FullScreenBorderlessMode;
 
+    unsafe {
+        IS_SHIPPING_BUILD = false;
+    }
+
     // vulkan setting
     let vulkan_api_version: u32;
     let enable_immediate_mode: bool;
     let is_concurrent_mode: bool;
-    let enable_validation_layer = true;
+    let enable_validation_layer = unsafe { IS_SHIPPING_BUILD == false };
 
     #[cfg(target_os = "android")]
     {
@@ -312,8 +317,10 @@ pub fn run_application() {
         constants::VULKAN_API_VERSION = vulkan_api_version;
         constants::DEBUG_MESSAGE_LEVEL = vk::DebugUtilsMessageSeverityFlagsEXT::WARNING;
         if enable_validation_layer {
-            constants::REQUIRED_INSTANCE_LAYERS = vec!["VK_LAYER_KHRONOS_validation".to_string()];
-            //constants::REQUIRED_INSTANCE_LAYERS = vec!["VK_LAYER_LUNARG_standard_validation".to_string()];
+            constants::REQUIRED_INSTANCE_LAYERS = vec![
+                "VK_LAYER_KHRONOS_validation".to_string(),
+                "VK_LAYER_LUNARG_standard_validation".to_string()
+            ];
         }
         constants::REQUIRED_DEVICE_EXTENSIONS = vec![
             "VK_KHR_swapchain".to_string(),
