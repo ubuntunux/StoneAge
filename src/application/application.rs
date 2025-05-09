@@ -290,15 +290,11 @@ pub fn run_application() {
     let initial_window_size: Option<Vector2<u32>> = None;// Some(Vector2::new(1024, 768));
     let window_mode = WindowMode::WindowMode;//FullScreenBorderlessMode;
 
-    unsafe {
-        IS_SHIPPING_BUILD = false;
-    }
-
     // vulkan setting
     let vulkan_api_version: u32;
     let enable_immediate_mode: bool;
     let is_concurrent_mode: bool;
-    let enable_validation_layer = unsafe { IS_SHIPPING_BUILD == false };
+    let enable_validation_layer = !IS_SHIPPING_BUILD;
 
     #[cfg(target_os = "android")]
     {
