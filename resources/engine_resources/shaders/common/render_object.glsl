@@ -1,5 +1,7 @@
+// shader predefined
 #include "render_object_common.glsl"
 
+// begin: user defined shader
 layout( push_constant ) uniform PushConstant_RenderObject
 {
     PushConstant_RenderObjectBase _push_constant_base;
@@ -35,3 +37,11 @@ vec3 get_world_offset(in const vec3 vertex_position, in const mat4 local_latrix)
 {
     return vec3(0.0);
 }
+// end: user defined shader
+
+// shader entry point
+#if SHADER_STAGE_FLAG == VERTEX
+#include "render_object_common.vert"
+#elif SHADER_STAGE_FLAG == FRAGMENT
+#include "render_object_common.frag"
+#endif

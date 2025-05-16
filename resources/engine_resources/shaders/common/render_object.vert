@@ -4,6 +4,3 @@
 
 // user defined shader
 #include "render_object.glsl"
-
-// shader entry point
-#include "render_object_common.vert"
