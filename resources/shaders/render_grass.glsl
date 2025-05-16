@@ -1,0 +1,47 @@
+// shader predefined
+#include "../engine_resources/shaders/common/render_object_common.glsl"
+
+// begin: user defined shader
+layout( push_constant ) uniform PushConstant_RenderGrass
+{
+    PushConstant_RenderObjectBase _push_constant_base;
+} pushConstant;
+
+// bindings
+layout(binding = USER_BINDING_INDEX0) uniform sampler2D textureBase;
+layout(binding = USER_BINDING_INDEX1) uniform sampler2D textureMaterial;
+layout(binding = USER_BINDING_INDEX2) uniform sampler2D textureNormal;
+
+// material functions
+PushConstant_RenderObjectBase get_push_constant_base()
+{
+    return pushConstant._push_constant_base;
+}
+
+vec4 get_base_color(in const vec2 texcoord)
+{
+  return texture(textureBase, texcoord);
+}
+
+vec4 get_material(in const vec2 texcoord)
+{
+    return texture(textureMaterial, texcoord);
+}
+
+vec3 get_tangent_normal(in const vec2 texcoord)
+{
+    return (texture(textureNormal, texcoord).xyz * 2.0 - 1.0);
+}
+
+vec3 get_world_offset(in const vec3 vertex_position, in const mat4 local_latrix)
+{
+    return vec3(0.0); // vec3(pow(position.y, 2.0) * sin(scene_constants.TIME + random(local_latrix[3].xyz) * 13.1423), 0.0, 0.0);
+}
+// end: user defined shader
+
+// shader entry point
+#if SHADER_STAGE_FLAG == VERTEX
+#include "../engine_resources/shaders/common/render_object_common.vert"
+#elif SHADER_STAGE_FLAG == FRAGMENT
+#include "../engine_resources/shaders/common/render_object_common.frag"
+#endif
