@@ -4,7 +4,7 @@ use ash::vk;
 use rust_engine_3d::renderer::renderer_data::RenderObjectType;
 use rust_engine_3d::resource::resource::RenderPassDataCreateInfoMap;
 use rust_engine_3d::vulkan_context::render_pass::PipelinePushConstantData;
-use rust_engine_3d::render_pass::common::render_shadow;
+use rust_engine_3d::render_pass::render_object::render_shadow;
 use crate::render_pass::render_grass::push_constants::PushConstant_RenderGrass;
 
 pub fn get_render_pass_data_create_info(

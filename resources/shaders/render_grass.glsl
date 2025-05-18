@@ -1,7 +1,3 @@
-// shader predefined
-#include "../engine_resources/shaders/common/render_object_common.glsl"
-
-// begin: user defined shader
 layout( push_constant ) uniform PushConstant_RenderGrass
 {
     PushConstant_RenderObjectBase _push_constant_base;
@@ -37,11 +33,3 @@ vec3 get_world_offset(in const vec3 vertex_position, in const mat4 local_latrix)
 {
     return vec3(0.0); // vec3(pow(position.y, 2.0) * sin(scene_constants.TIME + random(local_latrix[3].xyz) * 13.1423), 0.0, 0.0);
 }
-// end: user defined shader
-
-// shader entry point
-#if SHADER_STAGE_FLAG == VERTEX
-#include "../engine_resources/shaders/common/render_object_common.vert"
-#elif SHADER_STAGE_FLAG == FRAGMENT
-#include "../engine_resources/shaders/common/render_object_common.frag"
-#endif
