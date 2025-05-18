@@ -22,7 +22,6 @@ pub fn get_render_pass_data_create_info(
         _offset: 0,
         _push_constant: Box::new(PushConstant_RenderGrass::default()),
     }];
-    render_pass_data_create_info
-        ._pipeline_data_create_infos
-        .push(pipeline_data_create_info);
+    
+    render_pass_data_create_info._pipeline_data_create_infos.push(pipeline_data_create_info);
 }
