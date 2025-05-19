@@ -1,3 +1,5 @@
+#include "../engine_resources/shaders/common/random.glsl"
+
 layout( push_constant ) uniform PushConstant_RenderGrass
 {
     PushConstant_RenderObjectBase _push_constant_base;
@@ -31,5 +33,5 @@ vec3 get_tangent_normal(in const vec2 texcoord)
 
 vec3 get_world_offset(in const vec3 vertex_position, in const mat4 local_latrix)
 {
-    return vec3(0.0); // vec3(pow(position.y, 2.0) * sin(scene_constants.TIME + random(local_latrix[3].xyz) * 13.1423), 0.0, 0.0);
+    return vec3(0.0); // vec3(pow(vertex_position.y, 2.0) * sin(scene_constants.TIME + random(local_latrix[3].xyz) * 13.1423), 0.0, 0.0);
 }
