@@ -33,9 +33,7 @@ impl<'a> GameController<'a> {
             _camera_goal_pitch: 0.0,
             _camera_goal_yaw: 0.0,
             _camera_pitch: 0.0,
-            _camera_yaw: 0.0,
-
-
+            _camera_yaw: 0.0
         })
     }
 
