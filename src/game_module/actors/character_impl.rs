@@ -223,17 +223,21 @@ impl<'a> Character<'a> {
 
     pub fn check_in_range(&self, target_collision: &CollisionData, check_range: f32, check_direction: bool) -> bool {
         let collision = self.get_collision();
-        let position = Vector3::new(collision._bounding_box._center.x, collision._bounding_box._min.y, collision._bounding_box._center.z);
-        let target_position = Vector3::new(target_collision._bounding_box._center.x, target_collision._bounding_box._min.y, target_collision._bounding_box._center.z);
-        let check_range = check_range + (collision._bounding_box._mag_xz + target_collision._bounding_box._mag_xz) * 0.6;
+        let height_diff = (target_collision._bounding_box._min.y - collision._bounding_box._min.y).abs();
+        if collision._bounding_box._extents.y < height_diff {
+            return false;
+        }
+        let position = Vector3::new(collision._bounding_box._center.x, 0.0, collision._bounding_box._center.z);
+        let target_position = Vector3::new(target_collision._bounding_box._center.x, 0.0, target_collision._bounding_box._center.z);
         let to_target = target_position - position;
         let (to_target_dir, to_target_dist) = math::make_normalize_xz_with_norm(&to_target);
-        let half_height = collision._bounding_box._extents.y;
-        if (self.get_transform().get_front().dot(&to_target_dir) < 0.0 || !check_direction) &&
-            -half_height <= to_target.y &&
-            to_target.y <= half_height &&
-            to_target_dist <= check_range {
-            return true;
+        let d0 = collision._bounding_box._orientation.column(0).dot(&to_target_dir).abs();
+        let r0 = math::lerp(collision._bounding_box._extents.x, collision._bounding_box._extents.z, d0);
+        let d1 = target_collision._bounding_box._orientation.column(0).dot(&to_target_dir).abs();
+        let r1 = math::lerp(target_collision._bounding_box._extents.x, target_collision._bounding_box._extents.z, d1);
+        let distance = to_target_dist - (r0 + r1);
+        if self.get_transform().get_front().dot(&to_target_dir) < 0.0 || !check_direction {
+            return distance <= check_range;
         }
         false
     }

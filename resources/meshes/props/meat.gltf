@@ -1,6 +1,6 @@
 {
 	"asset":{
-		"generator":"Khronos glTF Blender I/O v4.1.63",
+		"generator":"Khronos glTF Blender I/O v4.4.56",
 		"version":"2.0"
 	},
 	"scene":0,
@@ -15,13 +15,18 @@
 	"nodes":[
 		{
 			"mesh":0,
-			"name":"meat_mesh"
+			"name":"meat_mesh",
+			"scale":[
+				3,
+				3,
+				3
+			]
 		},
 		{
 			"children":[
 				0
 			],
-			"name":"meat"
+			"name":"meat.001"
 		}
 	],
 	"meshes":[
