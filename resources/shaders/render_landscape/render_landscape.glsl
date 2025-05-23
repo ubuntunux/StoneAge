@@ -31,8 +31,10 @@ IMPL_GET_PUSH_CONSTANT_BASE()
 
 IMPL_GET_BASE_COLOR()
 {
-    vec4 base_color = mix(texture(layer0_textureBase, texcoord), texture(layer1_textureBase, texcoord), texture(textureLayerMask, texcoord).x);
+    vec2 base_texcoord = texcoord * vec2(200.0, 10.0);
+    vec4 base_color = mix(texture(layer0_textureBase, base_texcoord), texture(layer1_textureBase, base_texcoord), texture(textureLayerMask, texcoord).x);
     base_color.xyz = pow(base_color.xyz, vec3(2.2));
+    base_color.w = 1.0;
     return base_color;
 }
 
