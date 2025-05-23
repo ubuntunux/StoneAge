@@ -1,0 +1,31 @@
+{ "pipelines": [ {"render_pass": "render_pass_static_gbuffer", "pipeline": "render_landscape"}
+               , {"render_pass": "render_pass_static_forward", "pipeline": "render_landscape"}
+               , {"render_pass": "render_pass_static_forward_light_probe_0", "pipeline": "render_landscape"}
+               , {"render_pass": "render_pass_static_forward_light_probe_1", "pipeline": "render_landscape"}
+               , {"render_pass": "render_pass_static_forward_light_probe_2", "pipeline": "render_landscape"}
+               , {"render_pass": "render_pass_static_forward_light_probe_3", "pipeline": "render_landscape"}
+               , {"render_pass": "render_pass_static_forward_light_probe_4", "pipeline": "render_landscape"}
+               , {"render_pass": "render_pass_static_forward_light_probe_5", "pipeline": "render_landscape"}
+               , {"render_pass": "render_pass_static_shadow", "pipeline": "render_landscape"}
+               , {"render_pass": "capture_static_height_map", "pipeline": "render_landscape"}
+               , {"render_pass": "depth_prepass_static", "pipeline": "render_landscape"}
+               ]
+, "material_parameters": { "layer0_textureBase": "common/flat_white",
+                           "layer0_textureMaterial": "common/default_m",
+                           "layer0_textureNormal": "common/default_n",
+                           "layer1_textureBase": "common/flat_white",
+                           "layer1_textureMaterial": "common/default_m",
+                           "layer1_textureNormal": "common/default_n",
+                           "layer2_textureBase": "common/flat_white",
+                           "layer2_textureMaterial": "common/default_m",
+                           "layer2_textureNormal": "common/default_n",
+                           "layer3_textureBase": "common/flat_white",
+                           "layer3_textureMaterial": "common/default_m",
+                           "layer3_textureNormal": "common/default_n",
+                           "layer4_textureBase": "common/flat_white",
+                           "layer4_textureMaterial": "common/default_m",
+                           "layer4_textureNormal": "common/default_n",
+                           "textureLayerMask": "common/flat_white"
+                         }
+}
+

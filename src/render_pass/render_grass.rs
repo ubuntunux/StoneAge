@@ -72,9 +72,9 @@ pub fn get_descriptor_data_create_infos() -> Vec<DescriptorDataCreateInfo> {
 pub fn get_render_pass_data_create_infos(renderer_data: &RendererData) -> Vec<RenderPassDataCreateInfo> {
     common::get_render_pass_data_create_infos(
         renderer_data,
-        "render_grass",
-        "render_grass.vert",
-        "render_grass.frag",
+        "render_grass/render_grass",
+        "render_grass/render_grass.vert",
+        "render_grass/render_grass.frag",
         &get_push_constant_data(),
         &get_descriptor_data_create_infos()
     )

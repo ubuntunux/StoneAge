@@ -1,0 +1,21 @@
+{
+    "material_name": "render_landscape",
+    "material_parameters": {
+        "layer0_textureBase": "environments/Rocks_1_2_texture",
+        "layer0_textureMaterial": "common/default_m",
+        "layer0_textureNormal": "common/default_n",
+        "layer1_textureBase": "environments/Tree_2_1_texture",
+        "layer1_textureMaterial": "common/default_m",
+        "layer1_textureNormal": "common/default_n",
+        "layer2_textureBase": "common/flat_white",
+        "layer2_textureMaterial": "common/default_m",
+        "layer2_textureNormal": "common/default_n",
+        "layer3_textureBase": "common/flat_white",
+        "layer3_textureMaterial": "common/default_m",
+        "layer3_textureNormal": "common/default_n",
+        "layer4_textureBase": "common/flat_white",
+        "layer4_textureMaterial": "common/default_m",
+        "layer4_textureNormal": "common/default_n",
+        "textureLayerMask": "layer_masks/layer_mask_00"
+    }
+}
