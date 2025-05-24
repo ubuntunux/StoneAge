@@ -2305,12 +2305,12 @@
                 0.771903932094574
             ]
         },
-        "rock": {
-            "_model_data_name": "environments/rock",
+        "landscape_00": {
+            "_model_data_name": "landscapes/landscape_00",
             "_position": [
-                48.0,
-                6.0,
-                4.0
+                40.0,
+                8.0,
+                0.0
             ],
             "_rotation": [
                 0.0,
@@ -2318,9 +2318,9 @@
                 0.0
             ],
             "_scale": [
-                100.0,
                 1.0,
-                10.0
+                1.0,
+                1.0
             ]
         }
     }

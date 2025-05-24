@@ -3,10 +3,10 @@
 #extension GL_GOOGLE_include_directive : enable
 
 // shader predefined
-#include "../../engine_resources/shaders/render_object/render_object_common.glsl"
+#include "../../engine_resources/shaders/common/render_object_common.glsl"
 
 // user defined shader
 #include "render_grass.glsl"
 
 // shader entry point
-#include "../../engine_resources/shaders/render_object/render_object_common.vert"
+#include "../../engine_resources/shaders/common/render_object_common.vert"
