@@ -11,13 +11,33 @@ use rust_engine_3d::vulkan_context::render_pass::RenderPassDataCreateInfo;
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(default)]
 pub struct PushConstant_RenderLandscape {
-    pub _push_constant_base: PushConstant_RenderObjectBase
+    pub push_constant_base: PushConstant_RenderObjectBase,
+    pub tiling: f32,
+    pub layer0_tiling: f32,
+    pub layer1_alpha: f32,
+    pub layer1_tiling: f32,
+    pub layer2_alpha: f32,
+    pub layer2_tiling: f32,
+    pub layer3_alpha: f32,
+    pub layer3_tiling: f32,
+    pub layer4_alpha: f32,
+    pub layer4_tiling: f32,
 }
 
 impl Default for PushConstant_RenderLandscape {
     fn default() -> PushConstant_RenderLandscape {
         PushConstant_RenderLandscape {
-            _push_constant_base: PushConstant_RenderObjectBase::default()
+            push_constant_base: PushConstant_RenderObjectBase::default(),
+            tiling: 1.0,
+            layer0_tiling: 1.0,
+            layer1_alpha: 0.0,
+            layer1_tiling: 1.0,
+            layer2_alpha: 0.0,
+            layer2_tiling: 1.0,
+            layer3_alpha: 0.0,
+            layer3_tiling: 1.0,
+            layer4_alpha: 0.0,
+            layer4_tiling: 1.0,
         }
     }
 }
@@ -30,11 +50,11 @@ impl PushConstantName for PushConstant_RenderLandscape {
 
 impl PushConstant for PushConstant_RenderLandscape {
     fn set_push_constant_parameter(&mut self, key: &str, value: &PushConstantParameter) -> bool {
-        self._push_constant_base.set_push_constant_parameter(key, value)
+        self.push_constant_base.set_push_constant_parameter(key, value)
     }
 
     fn update_material_parameters(&mut self, material_parameters: &serde_json::Map<String, serde_json::Value>) -> bool {
-        self._push_constant_base.update_material_parameters(material_parameters)
+        self.push_constant_base.update_material_parameters(material_parameters)
     }
 }
 

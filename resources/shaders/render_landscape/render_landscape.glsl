@@ -2,7 +2,17 @@
 
 layout( push_constant ) uniform PushConstant_RenderLandscape
 {
-    PushConstant_RenderObjectBase _push_constant_base;
+    PushConstant_RenderObjectBase push_constant_base;
+    float tiling;
+    float layer0_tiling;
+    float layer1_alpha;
+    float layer1_tiling;
+    float layer2_alpha;
+    float layer2_tiling;
+    float layer3_alpha;
+    float layer3_tiling;
+    float layer4_alpha;
+    float layer4_tiling;
 } pushConstant;
 
 // bindings
@@ -26,13 +36,17 @@ layout(binding = USER_BINDING_INDEX15) uniform sampler2D layer4_textureNormal;
 // material functions
 IMPL_GET_PUSH_CONSTANT_BASE()
 {
-    return pushConstant._push_constant_base;
+    return pushConstant.push_constant_base;
+}
+
+IMPL_GET_TEXCOORD()
+{
+    return texcoord * vec2(200.0, 10.0);
 }
 
 IMPL_GET_BASE_COLOR()
 {
-    vec2 base_texcoord = texcoord * vec2(200.0, 10.0);
-    vec4 base_color = mix(texture(layer0_textureBase, base_texcoord), texture(layer1_textureBase, base_texcoord), texture(textureLayerMask, texcoord).x);
+    vec4 base_color = mix(texture(layer0_textureBase, texcoord), texture(layer1_textureBase, texcoord), texture(textureLayerMask, texcoord).x);
     base_color.xyz = pow(base_color.xyz, vec3(2.2));
     base_color.w = 1.0;
     return base_color;

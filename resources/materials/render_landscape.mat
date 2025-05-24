@@ -11,22 +11,32 @@
                , {"render_pass": "depth_prepass_static", "pipeline": "render_landscape"}
                ]
 , "material_parameters": {
-        "layer0_textureBase": "landscapes/Grass_1",
-        "layer0_textureMaterial": "common/default_m",
-        "layer0_textureNormal": "landscapes/Grass_1_normal",
-        "layer1_textureBase": "landscapes/Ground_1",
-        "layer1_textureMaterial": "common/default_m",
-        "layer1_textureNormal": "landscapes/Ground_1_normal",
-        "layer2_textureBase": "landscapes/Ground_2",
-        "layer2_textureMaterial": "common/default_m",
-        "layer2_textureNormal": "landscapes/Ground_2_normal",
-        "layer3_textureBase": "landscapes/Ground_3_texture",
-        "layer3_textureMaterial": "common/default_m",
-        "layer3_textureNormal": "landscapes/Ground_3_normal",
-        "layer4_textureBase": "landscapes/Stone_floor_texture",
-        "layer4_textureMaterial": "common/default_m",
-        "layer4_textureNormal": "landscapes/Stone_floor_normal",
-        "textureLayerMask": "common/flat_white"
+        "layer0_texture_base": "landscapes/Grass_1",
+        "layer0_texture_material": "common/default_m",
+        "layer0_texture_normal": "landscapes/Grass_1_normal",
+        "layer0_tiling": 1.0,
+        "layer1_alpha": 0.0,
+        "layer1_texture_base": "landscapes/Ground_1",
+        "layer1_texture_material": "common/default_m",
+        "layer1_texture_normal": "landscapes/Ground_1_normal",
+        "layer1_tiling": 1.0,
+        "layer2_alpha": 0.0,
+        "layer2_texture_base": "landscapes/Ground_2",
+        "layer2_texture_material": "common/default_m",
+        "layer2_texture_normal": "landscapes/Ground_2_normal",
+        "layer2_tiling": 1.0,
+        "layer3_alpha": 0.0,
+        "layer3_texture_base": "landscapes/Ground_3_texture",
+        "layer3_texture_material": "common/default_m",
+        "layer3_texture_normal": "landscapes/Ground_3_normal",
+        "layer3_tiling": 1.0,
+        "layer4_alpha": 0.0,
+        "layer4_texture_base": "landscapes/Stone_floor_texture",
+        "layer4_texture_material": "common/default_m",
+        "layer4_texture_normal": "landscapes/Stone_floor_normal",
+        "layer4_tiling": 1.0,
+        "texture_layer_mask": "common/flat_white",
+        "tiling": 1.0
     }
 }
 

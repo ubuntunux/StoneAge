@@ -2,7 +2,7 @@
 
 layout( push_constant ) uniform PushConstant_RenderGrass
 {
-    PushConstant_RenderObjectBase _push_constant_base;
+    PushConstant_RenderObjectBase push_constant_base;
 } pushConstant;
 
 // bindings
@@ -13,7 +13,12 @@ layout(binding = USER_BINDING_INDEX2) uniform sampler2D textureNormal;
 // material functions
 IMPL_GET_PUSH_CONSTANT_BASE()
 {
-    return pushConstant._push_constant_base;
+    return pushConstant.push_constant_base;
+}
+
+IMPL_GET_TEXCOORD()
+{
+    return texcoord;
 }
 
 IMPL_GET_BASE_COLOR()
