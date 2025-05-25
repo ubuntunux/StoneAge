@@ -41,7 +41,8 @@ IMPL_GET_PUSH_CONSTANT_BASE()
 
 IMPL_GET_TEXCOORD()
 {
-    return texcoord * vec2(200.0, 10.0);
+    const vec3 world_position = vs_output.relative_position.xyz + view_constants.CAMERA_POSITION;
+    return world_position.xz * pushConstant.tiling;
 }
 
 IMPL_GET_BASE_COLOR()

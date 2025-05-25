@@ -50,11 +50,59 @@ impl PushConstantName for PushConstant_RenderLandscape {
 
 impl PushConstant for PushConstant_RenderLandscape {
     fn set_push_constant_parameter(&mut self, key: &str, value: &PushConstantParameter) -> bool {
-        self.push_constant_base.set_push_constant_parameter(key, value)
-    }
+        if "tiling" == key {
+            if let PushConstantParameter::Float(value) = value {
+                self.tiling = *value;
+                return true;
+            }
+        } else if "layer0_tiling" == key {
+            if let PushConstantParameter::Float(value) = value {
+                self.layer0_tiling = *value;
+                return true;
+            }
+        } else if "layer1_tiling" == key {
+            if let PushConstantParameter::Float(value) = value {
+                self.layer1_tiling = *value;
+                return true;
+            }
+        } else if "layer1_alpha" == key {
+            if let PushConstantParameter::Float(value) = value {
+                self.layer1_alpha = *value;
+                return true;
+            }
+        } else if "layer2_tiling" == key {
+            if let PushConstantParameter::Float(value) = value {
+                self.layer2_tiling = *value;
+                return true;
+            }
+        } else if "layer2_alpha" == key {
+            if let PushConstantParameter::Float(value) = value {
+                self.layer2_alpha = *value;
+                return true;
+            }
+        } else if "layer3_tiling" == key {
+            if let PushConstantParameter::Float(value) = value {
+                self.layer3_tiling = *value;
+                return true;
+            }
+        } else if "layer3_alpha" == key {
+            if let PushConstantParameter::Float(value) = value {
+                self.layer3_alpha = *value;
+                return true;
+            }
+        } else if "layer4_tiling" == key {
+            if let PushConstantParameter::Float(value) = value {
+                self.layer4_tiling = *value;
+                return true;
+            }
+        } else if "layer4_alpha" == key {
+            if let PushConstantParameter::Float(value) = value {
+                self.layer4_alpha = *value;
+                return true;
+            }
+        }
 
-    fn update_material_parameters(&mut self, material_parameters: &serde_json::Map<String, serde_json::Value>) -> bool {
-        self.push_constant_base.update_material_parameters(material_parameters)
+        self.push_constant_base.set_push_constant_parameter(key, value)
     }
 }
 
