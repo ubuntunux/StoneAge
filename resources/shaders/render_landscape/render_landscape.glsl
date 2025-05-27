@@ -47,7 +47,7 @@ IMPL_GET_TEXCOORD()
 
 IMPL_GET_BASE_COLOR()
 {
-    vec4 base_color = mix(texture(layer0_textureBase, texcoord), texture(layer1_textureBase, texcoord), texture(textureLayerMask, texcoord).x);
+    vec4 base_color = mix(texture(layer0_textureBase, texcoord), texture(layer1_textureBase, texcoord), vs_output.color.x);
     base_color.xyz = pow(base_color.xyz, vec3(2.2));
     base_color.w = 1.0;
     return base_color;
@@ -55,12 +55,12 @@ IMPL_GET_BASE_COLOR()
 
 IMPL_GET_MATERIAL()
 {
-    return mix(texture(layer0_textureMaterial, texcoord), texture(layer1_textureMaterial, texcoord), texture(textureLayerMask, texcoord).x);
+    return mix(texture(layer0_textureMaterial, texcoord), texture(layer1_textureMaterial, texcoord), vs_output.color.x);
 }
 
 IMPL_GET_TANGENT_NORMAL()
 {
-    vec3 tangent_normal = mix(texture(layer0_textureNormal, texcoord), texture(layer1_textureNormal, texcoord), texture(textureLayerMask, texcoord).x).xyz;
+    vec3 tangent_normal = mix(texture(layer0_textureNormal, texcoord), texture(layer1_textureNormal, texcoord), vs_output.color.x).xyz;
     return (tangent_normal * 2.0 - 1.0);
 }
 

@@ -16,6 +16,11 @@
 		{
 			"mesh":0,
 			"name":"Cube",
+			"scale":[
+				10,
+				1,
+				10
+			],
 			"translation":[
 				0,
 				-1,
@@ -26,7 +31,7 @@
 			"children":[
 				0
 			],
-			"name":"landscape_plane"
+			"name":"landscape_tile_00"
 		}
 	],
 	"meshes":[
@@ -38,9 +43,10 @@
 						"POSITION":0,
 						"NORMAL":1,
 						"TEXCOORD_0":2,
-						"TANGENT":3
+						"TANGENT":3,
+						"COLOR_0":4
 					},
-					"indices":4
+					"indices":5
 				}
 			]
 		}
@@ -49,80 +55,93 @@
 		{
 			"bufferView":0,
 			"componentType":5126,
-			"count":24,
+			"count":1089,
 			"max":[
-				1,
-				1,
-				1
+				1.0098841190338135,
+				1.3895199298858643,
+				1.0022457838058472
 			],
 			"min":[
-				-1,
-				-1,
-				-1
+				-1.031886100769043,
+				0.05221864581108093,
+				-1.0080602169036865
 			],
 			"type":"VEC3"
 		},
 		{
 			"bufferView":1,
 			"componentType":5126,
-			"count":24,
+			"count":1089,
 			"type":"VEC3"
 		},
 		{
 			"bufferView":2,
 			"componentType":5126,
-			"count":24,
+			"count":1089,
 			"type":"VEC2"
 		},
 		{
 			"bufferView":3,
 			"componentType":5126,
-			"count":24,
+			"count":1089,
 			"type":"VEC4"
 		},
 		{
 			"bufferView":4,
 			"componentType":5123,
-			"count":36,
+			"count":1089,
+			"normalized":true,
+			"type":"VEC4"
+		},
+		{
+			"bufferView":5,
+			"componentType":5123,
+			"count":6144,
 			"type":"SCALAR"
 		}
 	],
 	"bufferViews":[
 		{
 			"buffer":0,
-			"byteLength":288,
+			"byteLength":13068,
 			"byteOffset":0,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":288,
-			"byteOffset":288,
+			"byteLength":13068,
+			"byteOffset":13068,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":192,
-			"byteOffset":576,
+			"byteLength":8712,
+			"byteOffset":26136,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":384,
-			"byteOffset":768,
+			"byteLength":17424,
+			"byteOffset":34848,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":72,
-			"byteOffset":1152,
+			"byteLength":8712,
+			"byteOffset":52272,
+			"target":34962
+		},
+		{
+			"buffer":0,
+			"byteLength":12288,
+			"byteOffset":60984,
 			"target":34963
 		}
 	],
 	"buffers":[
 		{
-			"byteLength":1224,
-			"uri":"landscape_plane.bin"
+			"byteLength":73272,
+			"uri":"landscape_tile_00.bin"
 		}
 	]
 }
