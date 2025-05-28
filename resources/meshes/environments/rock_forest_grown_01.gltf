@@ -1,6 +1,6 @@
 {
 	"asset":{
-		"generator":"Khronos glTF Blender I/O v4.1.63",
+		"generator":"Khronos glTF Blender I/O v4.4.56",
 		"version":"2.0"
 	},
 	"scene":0,
@@ -44,7 +44,7 @@
 		{
 			"bufferView":0,
 			"componentType":5126,
-			"count":920,
+			"count":389,
 			"max":[
 				2.258746862411499,
 				2.352015256881714,
@@ -60,19 +60,19 @@
 		{
 			"bufferView":1,
 			"componentType":5126,
-			"count":920,
+			"count":389,
 			"type":"VEC3"
 		},
 		{
 			"bufferView":2,
 			"componentType":5126,
-			"count":920,
+			"count":389,
 			"type":"VEC2"
 		},
 		{
 			"bufferView":3,
 			"componentType":5126,
-			"count":920,
+			"count":389,
 			"type":"VEC4"
 		},
 		{
@@ -85,38 +85,38 @@
 	"bufferViews":[
 		{
 			"buffer":0,
-			"byteLength":11040,
+			"byteLength":4668,
 			"byteOffset":0,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":11040,
-			"byteOffset":11040,
+			"byteLength":4668,
+			"byteOffset":4668,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":7360,
-			"byteOffset":22080,
+			"byteLength":3112,
+			"byteOffset":9336,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":14720,
-			"byteOffset":29440,
+			"byteLength":6224,
+			"byteOffset":12448,
 			"target":34962
 		},
 		{
 			"buffer":0,
 			"byteLength":2256,
-			"byteOffset":44160,
+			"byteOffset":18672,
 			"target":34963
 		}
 	],
 	"buffers":[
 		{
-			"byteLength":46416,
+			"byteLength":20928,
 			"uri":"rock_forest_grown_01.bin"
 		}
 	]

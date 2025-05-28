@@ -32,7 +32,18 @@ layout(binding = USER_BINDING_INDEX12) uniform sampler2D layer4_textureBase;
 layout(binding = USER_BINDING_INDEX13) uniform sampler2D layer4_textureMaterial;
 layout(binding = USER_BINDING_INDEX14) uniform sampler2D layer4_textureNormal;
 
-// material functions
+IMPL_GET_PUSH_CONSTANT_BASE()
+{
+    return pushConstant.push_constant_base;
+}
+
+#if SHADER_STAGE_FLAG == VERTEX
+IMPL_GET_WORLD_OFFSET()
+{
+    return vec3(0.0);
+}
+
+#elif SHADER_STAGE_FLAG == FRAGMENT
 struct UserData
 {
     vec2 layer0_texcoord;
@@ -53,11 +64,6 @@ IMPL_INITALIZE_USER_DATA()
     user_data.layer3_texcoord = texcoord * pushConstant.layer3_tiling;
     user_data.layer4_texcoord = texcoord * pushConstant.layer4_tiling;
     user_data.layer_masks = vs_output.color * vec4(pushConstant.layer1_alpha, pushConstant.layer2_alpha, pushConstant.layer3_alpha, pushConstant.layer4_alpha);
-}
-
-IMPL_GET_PUSH_CONSTANT_BASE()
-{
-    return pushConstant.push_constant_base;
 }
 
 IMPL_GET_BASE_COLOR()
@@ -90,8 +96,4 @@ IMPL_GET_TANGENT_NORMAL()
     tangent_normal = mix(tangent_normal, texture(layer4_textureNormal, user_data.layer4_texcoord).xyz * 2.0 - 1.0, user_data.layer_masks.w);
     return safe_normalize(tangent_normal);
 }
-
-IMPL_GET_WORLD_OFFSET()
-{
-    return vec3(0.0);
-}
+#endif

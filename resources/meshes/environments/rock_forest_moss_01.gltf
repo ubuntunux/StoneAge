@@ -1,6 +1,6 @@
 {
 	"asset":{
-		"generator":"Khronos glTF Blender I/O v4.1.63",
+		"generator":"Khronos glTF Blender I/O v4.4.56",
 		"version":"2.0"
 	},
 	"scene":0,
@@ -44,7 +44,7 @@
 		{
 			"bufferView":0,
 			"componentType":5126,
-			"count":1192,
+			"count":464,
 			"max":[
 				2.3791663646698,
 				3.7511467933654785,
@@ -60,19 +60,19 @@
 		{
 			"bufferView":1,
 			"componentType":5126,
-			"count":1192,
+			"count":464,
 			"type":"VEC3"
 		},
 		{
 			"bufferView":2,
 			"componentType":5126,
-			"count":1192,
+			"count":464,
 			"type":"VEC2"
 		},
 		{
 			"bufferView":3,
 			"componentType":5126,
-			"count":1192,
+			"count":464,
 			"type":"VEC4"
 		},
 		{
@@ -85,38 +85,38 @@
 	"bufferViews":[
 		{
 			"buffer":0,
-			"byteLength":14304,
+			"byteLength":5568,
 			"byteOffset":0,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":14304,
-			"byteOffset":14304,
+			"byteLength":5568,
+			"byteOffset":5568,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":9536,
-			"byteOffset":28608,
+			"byteLength":3712,
+			"byteOffset":11136,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":19072,
-			"byteOffset":38144,
+			"byteLength":7424,
+			"byteOffset":14848,
 			"target":34962
 		},
 		{
 			"buffer":0,
 			"byteLength":3168,
-			"byteOffset":57216,
+			"byteOffset":22272,
 			"target":34963
 		}
 	],
 	"buffers":[
 		{
-			"byteLength":60384,
+			"byteLength":25440,
 			"uri":"rock_forest_moss_01.bin"
 		}
 	]
