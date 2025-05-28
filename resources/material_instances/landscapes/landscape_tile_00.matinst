@@ -20,12 +20,11 @@
         "layer3_textureMaterial": "common/default_m",
         "layer3_textureNormal": "landscapes/Ground_3_normal",
         "layer3_tiling": 1.0,
-        "layer4_alpha": 1.0,
+        "layer4_alpha": 0.0,
         "layer4_textureBase": "landscapes/Stone_floor_texture",
         "layer4_textureMaterial": "common/default_m",
         "layer4_textureNormal": "landscapes/Stone_floor_normal",
         "layer4_tiling": 1.0,
-        "texture_layer_mask": "common/flat_white",
         "tiling": 1.0
     }
 }

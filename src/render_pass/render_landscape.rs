@@ -114,111 +114,104 @@ pub fn get_descriptor_data_create_infos() -> Vec<DescriptorDataCreateInfo> {
     vec![
         DescriptorDataCreateInfo {
             _descriptor_binding_index: common::USER_BINDING_INDEX0,
-            _descriptor_name: String::from("textureLayerMask"),
-            _descriptor_resource_type: DescriptorResourceType::Texture,
-            _descriptor_shader_stage: vk::ShaderStageFlags::FRAGMENT,
-            ..Default::default()
-        },
-        DescriptorDataCreateInfo {
-            _descriptor_binding_index: common::USER_BINDING_INDEX1,
             _descriptor_name: String::from("layer0_textureBase"),
             _descriptor_resource_type: DescriptorResourceType::Texture,
             _descriptor_shader_stage: vk::ShaderStageFlags::FRAGMENT,
             ..Default::default()
         },
         DescriptorDataCreateInfo {
-            _descriptor_binding_index: common::USER_BINDING_INDEX2,
+            _descriptor_binding_index: common::USER_BINDING_INDEX1,
             _descriptor_name: String::from("layer0_textureMaterial"),
             _descriptor_resource_type: DescriptorResourceType::Texture,
             _descriptor_shader_stage: vk::ShaderStageFlags::FRAGMENT,
             ..Default::default()
         },
         DescriptorDataCreateInfo {
-            _descriptor_binding_index: common::USER_BINDING_INDEX3,
+            _descriptor_binding_index: common::USER_BINDING_INDEX2,
             _descriptor_name: String::from("layer0_textureNormal"),
             _descriptor_resource_type: DescriptorResourceType::Texture,
             _descriptor_shader_stage: vk::ShaderStageFlags::FRAGMENT,
             ..Default::default()
         },
         DescriptorDataCreateInfo {
-            _descriptor_binding_index: common::USER_BINDING_INDEX4,
+            _descriptor_binding_index: common::USER_BINDING_INDEX3,
             _descriptor_name: String::from("layer1_textureBase"),
             _descriptor_resource_type: DescriptorResourceType::Texture,
             _descriptor_shader_stage: vk::ShaderStageFlags::FRAGMENT,
             ..Default::default()
         },
         DescriptorDataCreateInfo {
-            _descriptor_binding_index: common::USER_BINDING_INDEX5,
+            _descriptor_binding_index: common::USER_BINDING_INDEX4,
             _descriptor_name: String::from("layer1_textureMaterial"),
             _descriptor_resource_type: DescriptorResourceType::Texture,
             _descriptor_shader_stage: vk::ShaderStageFlags::FRAGMENT,
             ..Default::default()
         },
         DescriptorDataCreateInfo {
-            _descriptor_binding_index: common::USER_BINDING_INDEX6,
+            _descriptor_binding_index: common::USER_BINDING_INDEX5,
             _descriptor_name: String::from("layer1_textureNormal"),
             _descriptor_resource_type: DescriptorResourceType::Texture,
             _descriptor_shader_stage: vk::ShaderStageFlags::FRAGMENT,
             ..Default::default()
         },
         DescriptorDataCreateInfo {
-            _descriptor_binding_index: common::USER_BINDING_INDEX7,
+            _descriptor_binding_index: common::USER_BINDING_INDEX6,
             _descriptor_name: String::from("layer2_textureBase"),
             _descriptor_resource_type: DescriptorResourceType::Texture,
             _descriptor_shader_stage: vk::ShaderStageFlags::FRAGMENT,
             ..Default::default()
         },
         DescriptorDataCreateInfo {
-            _descriptor_binding_index: common::USER_BINDING_INDEX8,
+            _descriptor_binding_index: common::USER_BINDING_INDEX7,
             _descriptor_name: String::from("layer2_textureMaterial"),
             _descriptor_resource_type: DescriptorResourceType::Texture,
             _descriptor_shader_stage: vk::ShaderStageFlags::FRAGMENT,
             ..Default::default()
         },
         DescriptorDataCreateInfo {
-            _descriptor_binding_index: common::USER_BINDING_INDEX9,
+            _descriptor_binding_index: common::USER_BINDING_INDEX8,
             _descriptor_name: String::from("layer2_textureNormal"),
             _descriptor_resource_type: DescriptorResourceType::Texture,
             _descriptor_shader_stage: vk::ShaderStageFlags::FRAGMENT,
             ..Default::default()
         },
         DescriptorDataCreateInfo {
-            _descriptor_binding_index: common::USER_BINDING_INDEX10,
+            _descriptor_binding_index: common::USER_BINDING_INDEX9,
             _descriptor_name: String::from("layer3_textureBase"),
             _descriptor_resource_type: DescriptorResourceType::Texture,
             _descriptor_shader_stage: vk::ShaderStageFlags::FRAGMENT,
             ..Default::default()
         },
         DescriptorDataCreateInfo {
-            _descriptor_binding_index: common::USER_BINDING_INDEX11,
+            _descriptor_binding_index: common::USER_BINDING_INDEX10,
             _descriptor_name: String::from("layer3_textureMaterial"),
             _descriptor_resource_type: DescriptorResourceType::Texture,
             _descriptor_shader_stage: vk::ShaderStageFlags::FRAGMENT,
             ..Default::default()
         },
         DescriptorDataCreateInfo {
-            _descriptor_binding_index: common::USER_BINDING_INDEX12,
+            _descriptor_binding_index: common::USER_BINDING_INDEX11,
             _descriptor_name: String::from("layer3_textureNormal"),
             _descriptor_resource_type: DescriptorResourceType::Texture,
             _descriptor_shader_stage: vk::ShaderStageFlags::FRAGMENT,
             ..Default::default()
         },
         DescriptorDataCreateInfo {
-            _descriptor_binding_index: common::USER_BINDING_INDEX13,
+            _descriptor_binding_index: common::USER_BINDING_INDEX12,
             _descriptor_name: String::from("layer4_textureBase"),
             _descriptor_resource_type: DescriptorResourceType::Texture,
             _descriptor_shader_stage: vk::ShaderStageFlags::FRAGMENT,
             ..Default::default()
         },
         DescriptorDataCreateInfo {
-            _descriptor_binding_index: common::USER_BINDING_INDEX14,
+            _descriptor_binding_index: common::USER_BINDING_INDEX13,
             _descriptor_name: String::from("layer4_textureMaterial"),
             _descriptor_resource_type: DescriptorResourceType::Texture,
             _descriptor_shader_stage: vk::ShaderStageFlags::FRAGMENT,
             ..Default::default()
         },
         DescriptorDataCreateInfo {
-            _descriptor_binding_index: common::USER_BINDING_INDEX15,
+            _descriptor_binding_index: common::USER_BINDING_INDEX14,
             _descriptor_name: String::from("layer4_textureNormal"),
             _descriptor_resource_type: DescriptorResourceType::Texture,
             _descriptor_shader_stage: vk::ShaderStageFlags::FRAGMENT,
