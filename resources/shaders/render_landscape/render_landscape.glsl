@@ -1,20 +1,5 @@
 #include "../../engine_resources/shaders/common/random.glsl"
 
-layout( push_constant ) uniform PushConstant_RenderLandscape
-{
-    PushConstant_RenderObjectBase push_constant_base;
-    float tiling;
-    float layer0_tiling;
-    float layer1_alpha;
-    float layer1_tiling;
-    float layer2_alpha;
-    float layer2_tiling;
-    float layer3_alpha;
-    float layer3_tiling;
-    float layer4_alpha;
-    float layer4_tiling;
-} pushConstant;
-
 // bindings
 layout(binding = USER_BINDING_INDEX0) uniform sampler2D layer0_textureBase;
 layout(binding = USER_BINDING_INDEX1) uniform sampler2D layer0_textureMaterial;
@@ -32,68 +17,53 @@ layout(binding = USER_BINDING_INDEX12) uniform sampler2D layer4_textureBase;
 layout(binding = USER_BINDING_INDEX13) uniform sampler2D layer4_textureMaterial;
 layout(binding = USER_BINDING_INDEX14) uniform sampler2D layer4_textureNormal;
 
-IMPL_GET_PUSH_CONSTANT_BASE()
-{
-    return pushConstant.push_constant_base;
-}
+// push constant
+BEGIN_PUSH_CONSTANT(PushConstant_RenderLandscape)
+    float tiling;
+    float layer0_tiling;
+    float layer1_alpha;
+    float layer1_tiling;
+    float layer2_alpha;
+    float layer2_tiling;
+    float layer3_alpha;
+    float layer3_tiling;
+    float layer4_alpha;
+    float layer4_tiling;
+END_PUSH_CONSTANT()
 
 #if SHADER_STAGE_FLAG == VERTEX
-IMPL_GET_WORLD_OFFSET()
+VERTEX_SHADER_MAIN()
 {
-    return vec3(0.0);
 }
 
 #elif SHADER_STAGE_FLAG == FRAGMENT
-struct UserData
+FRAGMENT_SHADER_MAIN()
 {
-    vec2 layer0_texcoord;
-    vec2 layer1_texcoord;
-    vec2 layer2_texcoord;
-    vec2 layer3_texcoord;
-    vec2 layer4_texcoord;
-    vec4 layer_masks;
-} user_data;
+    const vec3 world_position = in_vertex_output.relative_position.xyz + view_constants.CAMERA_POSITION;
+    const vec2 texcoord = world_position.xz * GET_PUSH_CONSTANT().tiling;
+    const vec2 layer0_texcoord = texcoord * GET_PUSH_CONSTANT().layer0_tiling;
+    const vec2 layer1_texcoord = texcoord * GET_PUSH_CONSTANT().layer1_tiling;
+    const vec2 layer2_texcoord = texcoord * GET_PUSH_CONSTANT().layer2_tiling;
+    const vec2 layer3_texcoord = texcoord * GET_PUSH_CONSTANT().layer3_tiling;
+    const vec2 layer4_texcoord = texcoord * GET_PUSH_CONSTANT().layer4_tiling;
+    const vec4 layer_masks = in_vertex_output.color * vec4(GET_PUSH_CONSTANT().layer1_alpha, GET_PUSH_CONSTANT().layer2_alpha, GET_PUSH_CONSTANT().layer3_alpha, GET_PUSH_CONSTANT().layer4_alpha);
 
-IMPL_INITALIZE_USER_DATA()
-{
-    const vec3 world_position = vs_output.relative_position.xyz + view_constants.CAMERA_POSITION;
-    vec2 texcoord = world_position.xz * pushConstant.tiling;
-    user_data.layer0_texcoord = texcoord * pushConstant.layer0_tiling;
-    user_data.layer1_texcoord = texcoord * pushConstant.layer1_tiling;
-    user_data.layer2_texcoord = texcoord * pushConstant.layer2_tiling;
-    user_data.layer3_texcoord = texcoord * pushConstant.layer3_tiling;
-    user_data.layer4_texcoord = texcoord * pushConstant.layer4_tiling;
-    user_data.layer_masks = vs_output.color * vec4(pushConstant.layer1_alpha, pushConstant.layer2_alpha, pushConstant.layer3_alpha, pushConstant.layer4_alpha);
-}
+    out_base_color = mix(texture(layer0_textureBase, layer0_texcoord), texture(layer1_textureBase, layer1_texcoord), layer_masks.x);
+    out_base_color = mix(out_base_color, texture(layer2_textureBase, layer2_texcoord), layer_masks.y);
+    out_base_color = mix(out_base_color, texture(layer3_textureBase, layer3_texcoord), layer_masks.z);
+    out_base_color = mix(out_base_color, texture(layer4_textureBase, layer4_texcoord), layer_masks.w);
+    out_base_color.xyz = pow(out_base_color.xyz, vec3(2.2));
+    out_base_color.w = 1.0;
 
-IMPL_GET_BASE_COLOR()
-{
-    vec4 base_color = mix(texture(layer0_textureBase, user_data.layer0_texcoord), texture(layer1_textureBase, user_data.layer1_texcoord), user_data.layer_masks.x);
-    base_color = mix(base_color, texture(layer2_textureBase, user_data.layer2_texcoord), user_data.layer_masks.y);
-    base_color = mix(base_color, texture(layer3_textureBase, user_data.layer3_texcoord), user_data.layer_masks.z);
-    base_color = mix(base_color, texture(layer4_textureBase, user_data.layer4_texcoord), user_data.layer_masks.w);
+    out_material = mix(texture(layer0_textureMaterial, layer0_texcoord), texture(layer1_textureMaterial, layer1_texcoord), layer_masks.x);
+    out_material = mix(out_material, texture(layer2_textureMaterial, layer2_texcoord), layer_masks.y);
+    out_material = mix(out_material, texture(layer3_textureMaterial, layer3_texcoord), layer_masks.z);
+    out_material = mix(out_material, texture(layer4_textureMaterial, layer4_texcoord), layer_masks.w);
 
-    base_color.xyz = pow(base_color.xyz, vec3(2.2));
-    base_color.w = 1.0;
-    return base_color;
-}
-
-IMPL_GET_MATERIAL()
-{
-    vec4 material = mix(texture(layer0_textureMaterial, user_data.layer0_texcoord), texture(layer1_textureMaterial, user_data.layer1_texcoord), user_data.layer_masks.x);
-    material = mix(material, texture(layer2_textureMaterial, user_data.layer2_texcoord), user_data.layer_masks.y);
-    material = mix(material, texture(layer3_textureMaterial, user_data.layer3_texcoord), user_data.layer_masks.z);
-    material = mix(material, texture(layer4_textureMaterial, user_data.layer4_texcoord), user_data.layer_masks.w);
-
-    return material;
-}
-
-IMPL_GET_TANGENT_NORMAL()
-{
-    vec3 tangent_normal = mix(texture(layer0_textureNormal, user_data.layer0_texcoord).xyz * 2.0 - 1.0, texture(layer1_textureNormal, user_data.layer1_texcoord).xyz * 2.0 - 1.0, user_data.layer_masks.x);
-    tangent_normal = mix(tangent_normal, texture(layer2_textureNormal, user_data.layer2_texcoord).xyz * 2.0 - 1.0, user_data.layer_masks.y);
-    tangent_normal = mix(tangent_normal, texture(layer3_textureNormal, user_data.layer3_texcoord).xyz * 2.0 - 1.0, user_data.layer_masks.z);
-    tangent_normal = mix(tangent_normal, texture(layer4_textureNormal, user_data.layer4_texcoord).xyz * 2.0 - 1.0, user_data.layer_masks.w);
-    return safe_normalize(tangent_normal);
+    out_tangent_normal = mix(texture(layer0_textureNormal, layer0_texcoord).xyz * 2.0 - 1.0, texture(layer1_textureNormal, layer1_texcoord).xyz * 2.0 - 1.0, layer_masks.x);
+    out_tangent_normal = mix(out_tangent_normal, texture(layer2_textureNormal, layer2_texcoord).xyz * 2.0 - 1.0, layer_masks.y);
+    out_tangent_normal = mix(out_tangent_normal, texture(layer3_textureNormal, layer3_texcoord).xyz * 2.0 - 1.0, layer_masks.z);
+    out_tangent_normal = mix(out_tangent_normal, texture(layer4_textureNormal, layer4_texcoord).xyz * 2.0 - 1.0, layer_masks.w);
+    out_tangent_normal = safe_normalize(out_tangent_normal);
 }
 #endif
