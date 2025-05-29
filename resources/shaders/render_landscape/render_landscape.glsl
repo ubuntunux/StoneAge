@@ -39,14 +39,14 @@ VERTEX_SHADER_MAIN()
 #elif SHADER_STAGE_FLAG == FRAGMENT
 FRAGMENT_SHADER_MAIN()
 {
-    const vec3 world_position = in_vertex_output.relative_position.xyz + view_constants.CAMERA_POSITION;
+    const vec3 world_position = in_vertex_output._relative_position.xyz + view_constants.CAMERA_POSITION;
     const vec2 texcoord = world_position.xz * GET_PUSH_CONSTANT().tiling;
     const vec2 layer0_texcoord = texcoord * GET_PUSH_CONSTANT().layer0_tiling;
     const vec2 layer1_texcoord = texcoord * GET_PUSH_CONSTANT().layer1_tiling;
     const vec2 layer2_texcoord = texcoord * GET_PUSH_CONSTANT().layer2_tiling;
     const vec2 layer3_texcoord = texcoord * GET_PUSH_CONSTANT().layer3_tiling;
     const vec2 layer4_texcoord = texcoord * GET_PUSH_CONSTANT().layer4_tiling;
-    const vec4 layer_masks = in_vertex_output.color * vec4(GET_PUSH_CONSTANT().layer1_alpha, GET_PUSH_CONSTANT().layer2_alpha, GET_PUSH_CONSTANT().layer3_alpha, GET_PUSH_CONSTANT().layer4_alpha);
+    const vec4 layer_masks = in_vertex_output._color * vec4(GET_PUSH_CONSTANT().layer1_alpha, GET_PUSH_CONSTANT().layer2_alpha, GET_PUSH_CONSTANT().layer3_alpha, GET_PUSH_CONSTANT().layer4_alpha);
 
     out_base_color = mix(texture(layer0_textureBase, layer0_texcoord), texture(layer1_textureBase, layer1_texcoord), layer_masks.x);
     out_base_color = mix(out_base_color, texture(layer2_textureBase, layer2_texcoord), layer_masks.y);
