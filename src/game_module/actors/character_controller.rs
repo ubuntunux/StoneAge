@@ -1,5 +1,4 @@
 use nalgebra::Vector3;
-use nalgebra_glm::length;
 use rust_engine_3d::scene::collision::CollisionData;
 use rust_engine_3d::scene::height_map::HeightMapData;
 use rust_engine_3d::scene::render_object::RenderObjectData;
@@ -219,27 +218,41 @@ impl CharacterController {
             }
         }
 
+        // reset flags
+        self._is_cliff = true;
+        self._is_blocked = false;
+        self._is_ground = false;
+
+        // if _owner._is_player {
+        //     let ground_normal = height_map_data.get_normal_bilinear(&self._position);
+        //     let ground_height = height_map_data.get_height_bilinear(&self._position, 0);
+        //     if self._position.y <= ground_height {
+        //         let (move_dir, move_distance) = math::make_normalize_with_norm(&(self._position - prev_position));
+        //         if move_dir.dot(&ground_normal) < 0.0 {
+        //             let mut new_move_dir = math::make_reflect(&move_dir, &ground_normal).normalize();
+        //             new_move_dir.y = new_move_dir.y.max(0.0_f32);
+        //             self._position = new_move_dir * move_distance + prev_position;
+        //         }
+        //         log::info!("ground_normal: {:?}", ground_normal.dot(&move_dir));
+        //     }
+        // }
+
+        begin_block!("Check Ground"); {
+            let ground_height = height_map_data.get_height_bilinear(&self._position, 0);
+            if self._position.y <= ground_height {
+                let (_move_dir, move_distance) = math::make_normalize_with_norm(&(self._position - prev_position));
+                let new_move_dir = math::safe_normalize(&(Vector3::new(self._position.x, ground_height, self._position.z) - prev_position));
+                self._position = new_move_dir * move_distance + prev_position;
+                self.set_on_ground(self._position.y);
+            }
+        }
+
         // check collide with block
         let mut move_delta = self._position - prev_position;
         let mut current_actor_collision = actor_collision.clone();
         current_actor_collision._bounding_box._center += move_delta;
         current_actor_collision._bounding_box._min += move_delta;
         current_actor_collision._bounding_box._max += move_delta;
-
-        // reset flags
-        self._is_cliff = true;
-        self._is_blocked = false;
-        self._is_ground = false;
-
-        begin_block!("Check Ground"); {
-            let ground_height = height_map_data.get_height_bilinear(&self._position, 0);
-            if self._position.y <= ground_height {
-                let (_move_dir, move_delta) = math::make_normalize_with_norm(&(self._position - prev_position));
-                let new_move_dir = math::safe_normalize(&(Vector3::new(self._position.x, ground_height, self._position.z) - prev_position));
-                self._position = new_move_dir * move_delta + prev_position;
-                self.set_on_ground(self._position.y);
-            }
-        }
 
         // check ground and side
         for collision_object in collision_objects.iter() {
