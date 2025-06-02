@@ -255,9 +255,9 @@
         "villager_00.002": {
             "_character_data_name": "characters/villager_00",
             "_position": [
-                3.0,
+                9.688627243041992,
                 9.0,
-                0.0
+                0.4259166121482849
             ],
             "_rotation": [
                 0.0,
@@ -770,9 +770,9 @@
             "bush_01": {
                 "_model_data_name": "environments/bush_01",
                 "_position": [
-                    2.1999053955078125,
-                    7.999999046325684,
-                    -3.291632652282715
+                    -3.4774742126464844,
+                    7.999999523162842,
+                    1.656588077545166
                 ],
                 "_rotation": [
                     0.0,
@@ -806,9 +806,9 @@
             "bush_02": {
                 "_model_data_name": "environments/bush_02",
                 "_position": [
-                    2.2006702423095703,
+                    7.877527236938477,
                     7.999999046325684,
-                    -1.127558708190918
+                    -1.4546117782592773
                 ],
                 "_rotation": [
                     0.0,
@@ -1451,24 +1451,6 @@
                     1.0
                 ]
             },
-            "log_01": {
-                "_model_data_name": "props/log_01",
-                "_position": [
-                    -3.1684532165527344,
-                    8.0,
-                    -4.360107421875
-                ],
-                "_rotation": [
-                    0.0,
-                    1.8336403369903564,
-                    0.0
-                ],
-                "_scale": [
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            },
             "log_02": {
                 "_model_data_name": "props/log_02",
                 "_position": [
@@ -1497,24 +1479,6 @@
                 "_rotation": [
                     0.0,
                     0.5612955093383789,
-                    0.0
-                ],
-                "_scale": [
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            },
-            "mine": {
-                "_model_data_name": "props/mine",
-                "_position": [
-                    -7.8447980880737305,
-                    7.151910781860352,
-                    7.798095703125
-                ],
-                "_rotation": [
-                    0.0,
-                    -3.1415929794311523,
                     0.0
                 ],
                 "_scale": [
@@ -1865,42 +1829,6 @@
                     1.0
                 ]
             },
-            "rock_01": {
-                "_model_data_name": "environments/rock_01",
-                "_position": [
-                    -2.5017471313476562,
-                    8.000000953674316,
-                    9.633695602416992
-                ],
-                "_rotation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "_scale": [
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            },
-            "rock_02": {
-                "_model_data_name": "environments/rock_02",
-                "_position": [
-                    26.206480026245117,
-                    8.0,
-                    6.391384124755859
-                ],
-                "_rotation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "_scale": [
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            },
             "rock_03": {
                 "_model_data_name": "environments/rock_03",
                 "_position": [
@@ -1943,60 +1871,6 @@
                     80.73710632324219,
                     8.0,
                     5.192771911621094
-                ],
-                "_rotation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "_scale": [
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            },
-            "rock_forest_moss_00": {
-                "_model_data_name": "environments/rock_forest_moss_00",
-                "_position": [
-                    12.550053596496582,
-                    8.0,
-                    6.592357635498047
-                ],
-                "_rotation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "_scale": [
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            },
-            "rock_forest_moss_01": {
-                "_model_data_name": "environments/rock_forest_moss_01",
-                "_position": [
-                    21.611400604248047,
-                    8.0,
-                    6.0
-                ],
-                "_rotation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "_scale": [
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            },
-            "rock_forest_moss_01.001": {
-                "_model_data_name": "environments/rock_forest_moss_01",
-                "_position": [
-                    15.283182144165039,
-                    8.0,
-                    5.96711540222168
                 ],
                 "_rotation": [
                     0.0,
@@ -2308,7 +2182,7 @@
         "landscape_tile_00": {
             "_model_data_name": "landscapes/landscape_tile_00",
             "_position": [
-                -4.655588150024414,
+                -8.922435760498047,
                 8.0,
                 0.0
             ],
@@ -2344,7 +2218,7 @@
         "landscape_tile_00.002": {
             "_model_data_name": "landscapes/landscape_tile_00",
             "_position": [
-                11.809392929077148,
+                13.384393692016602,
                 8.0,
                 0.0
             ],
@@ -2441,6 +2315,150 @@
             "_rotation": [
                 0.0,
                 -1.5707963705062866,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "log_01": {
+            "_model_data_name": "props/log_01",
+            "_position": [
+                -0.28779423236846924,
+                7.796144485473633,
+                -4.014674663543701
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.9255732297897339,
+                1.9255732297897339,
+                1.9255732297897339
+            ]
+        },
+        "log_01.001": {
+            "_model_data_name": "props/log_01",
+            "_position": [
+                4.3749165534973145,
+                7.796144485473633,
+                -4.014674663543701
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.9255732297897339,
+                1.9255732297897339,
+                1.9255732297897339
+            ]
+        },
+        "mine": {
+            "_model_data_name": "props/mine",
+            "_position": [
+                -7.8447980880737305,
+                7.151910781860352,
+                7.798095703125
+            ],
+            "_rotation": [
+                0.0,
+                -3.1415929794311523,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "rock_01": {
+            "_model_data_name": "environments/rock_01",
+            "_position": [
+                -2.5017471313476562,
+                8.000000953674316,
+                9.633695602416992
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "rock_02": {
+            "_model_data_name": "environments/rock_02",
+            "_position": [
+                26.206480026245117,
+                8.0,
+                6.391384124755859
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "rock_forest_moss_00": {
+            "_model_data_name": "environments/rock_forest_moss_00",
+            "_position": [
+                12.550053596496582,
+                8.0,
+                6.592357635498047
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "rock_forest_moss_01": {
+            "_model_data_name": "environments/rock_forest_moss_01",
+            "_position": [
+                21.611400604248047,
+                8.0,
+                6.0
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "rock_forest_moss_01.001": {
+            "_model_data_name": "environments/rock_forest_moss_01",
+            "_position": [
+                15.283182144165039,
+                8.0,
+                5.96711540222168
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
                 0.0
             ],
             "_scale": [

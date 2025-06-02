@@ -16,7 +16,6 @@ pub const ARRIVAL_DISTANCE_THRESHOLD: f32 = 1.0;
 
 // player
 pub const GRAVITY: f32 = 30.0;
-pub const GROUND_HEIGHT: f32 = 0.0;
 pub const MOVE_LIMIT: f32 = 2.0;
 pub const BLOCK_TOLERANCE: f32 = 0.5;
 pub const EAT_ITEM_DISTANCE: f32 = 1.0;

@@ -177,6 +177,7 @@ impl<'a> GameSceneManager<'a> {
         // terrain
         for (object_name, render_object_create_info) in game_scene_data._terrain.iter() {
             let terrain_object = self.get_scene_manager_mut().add_static_render_object(object_name, render_object_create_info);
+            terrain_object.borrow_mut().set_collision_type(CollisionType::NONE);
             terrain_object.borrow_mut().set_render_height_map(true);
         }
 
@@ -214,14 +215,14 @@ impl<'a> GameSceneManager<'a> {
         self.get_scene_manager_mut().destroy_scene_manager();
     }
 
-    pub fn update_game_scene_manager(&mut self, delta_time: f64) {
-        // update time of day
+    pub fn update_time_of_day(&mut self, delta_time: f64) {
         let time_of_day_speed = 100.0 / 3600.0;
         self._time_of_day += delta_time as f32 * time_of_day_speed;
         if 24.0 <= self._time_of_day {
             self._time_of_day = self._time_of_day % 24.0;
             self._date += 1;
         }
+        
         let temperature_ratio = 1.0 - (self._time_of_day - 12.0) / 12.0;
         self._temperature = math::lerp(12.0, 32.0, temperature_ratio);
         begin_block!("MainLight"); {
@@ -229,6 +230,10 @@ impl<'a> GameSceneManager<'a> {
             let pitch_ratio = (self._time_of_day - 12.0) / 12.0;
             main_light._transform_object.set_pitch(math::lerp(std::f32::consts::PI * 0.5, -std::f32::consts::PI * 0.5, pitch_ratio));
         }
+    }
+
+    pub fn update_game_scene_manager(&mut self, delta_time: f64) {
+        self.update_time_of_day(delta_time);
 
         self._prop_manager.update_prop_manager(delta_time);
         self._item_manager.update_item_manager(delta_time);
@@ -236,7 +241,7 @@ impl<'a> GameSceneManager<'a> {
         // gather collision objects
         let mut blocks = BlockArray::new();
         for (_key, object) in self.get_scene_manager().get_static_render_object_map().iter() {
-            if object.borrow()._collision._collision_type != CollisionType::NONE {
+            if object.borrow().get_collision_type() != CollisionType::NONE {
                 blocks.push(object.clone());
             }
         }

@@ -1,4 +1,5 @@
 use nalgebra::Vector3;
+use nalgebra_glm::length;
 use rust_engine_3d::scene::collision::CollisionData;
 use rust_engine_3d::scene::height_map::HeightMapData;
 use rust_engine_3d::scene::render_object::RenderObjectData;
@@ -8,7 +9,7 @@ use rust_engine_3d::utilities::math::HALF_PI;
 use rust_engine_3d::utilities::system::ptr_as_ref;
 use crate::game_module::actors::character::Character;
 use crate::game_module::actors::character_data::{CharacterData, MoveAnimationState};
-use crate::game_module::game_constants::{CHARACTER_ROTATION_SPEED, CLIFF_HEIGHT, FALLING_TIME, GRAVITY, GROUND_HEIGHT, MOVE_LIMIT};
+use crate::game_module::game_constants::{CHARACTER_ROTATION_SPEED, CLIFF_HEIGHT, FALLING_TIME, GRAVITY, MOVE_LIMIT};
 use crate::game_module::game_scene_manager::BlockArray;
 
 pub struct CharacterController {
@@ -231,7 +232,7 @@ impl CharacterController {
         self._is_ground = false;
 
         begin_block!("Check Ground"); {
-            let ground_height = GROUND_HEIGHT.max(height_map_data.get_height_bilinear(&self._position, 0));
+            let ground_height = height_map_data.get_height_bilinear(&self._position, 0);
             if self._position.y <= ground_height {
                 let (_move_dir, move_delta) = math::make_normalize_with_norm(&(self._position - prev_position));
                 let new_move_dir = math::safe_normalize(&(Vector3::new(self._position.x, ground_height, self._position.z) - prev_position));
