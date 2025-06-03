@@ -475,9 +475,9 @@
         "player": {
             "_character_data_name": "characters/jack",
             "_position": [
-                1.0,
-                9.0,
-                1.0
+                -6.742209434509277,
+                8.038426399230957,
+                -3.8515148162841797
             ],
             "_rotation": [
                 0.0,
@@ -813,24 +813,6 @@
                 "_rotation": [
                     0.0,
                     0.0,
-                    0.0
-                ],
-                "_scale": [
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            },
-            "cliff_grass.003": {
-                "_model_data_name": "environments/cliff_grass",
-                "_position": [
-                    34.0,
-                    8.0,
-                    0.0
-                ],
-                "_rotation": [
-                    0.0,
-                    -2.237806797027588,
                     0.0
                 ],
                 "_scale": [
@@ -1811,42 +1793,6 @@
                     1.0
                 ]
             },
-            "rock_00": {
-                "_model_data_name": "environments/rock_00",
-                "_position": [
-                    5.478252410888672,
-                    8.0,
-                    2.383615016937256
-                ],
-                "_rotation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "_scale": [
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            },
-            "rock_03": {
-                "_model_data_name": "environments/rock_03",
-                "_position": [
-                    18.36501693725586,
-                    8.000000953674316,
-                    -3.6480674743652344
-                ],
-                "_rotation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "_scale": [
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            },
             "rock_forest_grown_00.001": {
                 "_model_data_name": "environments/rock_forest_grown_00",
                 "_position": [
@@ -2125,6 +2071,24 @@
         0.0
     ],
     "_terrain": {
+        "cliff_grass.003": {
+            "_model_data_name": "environments/cliff_grass",
+            "_position": [
+                34.0,
+                8.0,
+                0.0
+            ],
+            "_rotation": [
+                0.0,
+                -2.237806797027588,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
         "ground_00": {
             "_model_data_name": "environments/ground_00",
             "_position": [
@@ -2377,6 +2341,24 @@
                 1.0
             ]
         },
+        "rock_00": {
+            "_model_data_name": "environments/rock_00",
+            "_position": [
+                5.478252410888672,
+                8.0,
+                2.383615016937256
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
         "rock_01": {
             "_model_data_name": "environments/rock_01",
             "_position": [
@@ -2401,6 +2383,24 @@
                 26.206480026245117,
                 8.0,
                 6.391384124755859
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "rock_03": {
+            "_model_data_name": "environments/rock_03",
+            "_position": [
+                18.36501693725586,
+                8.000000953674316,
+                -3.6480674743652344
             ],
             "_rotation": [
                 0.0,

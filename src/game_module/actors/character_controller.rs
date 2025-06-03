@@ -8,7 +8,7 @@ use rust_engine_3d::utilities::math::HALF_PI;
 use rust_engine_3d::utilities::system::ptr_as_ref;
 use crate::game_module::actors::character::Character;
 use crate::game_module::actors::character_data::{CharacterData, MoveAnimationState};
-use crate::game_module::game_constants::{CHARACTER_ROTATION_SPEED, CLIFF_HEIGHT, FALLING_TIME, GRAVITY, MOVE_LIMIT};
+use crate::game_module::game_constants::{CHARACTER_ROTATION_SPEED, CLIFF_HEIGHT, FALLING_TIME, GRAVITY, MOVE_LIMIT, SLOPE_ANGLE, SLOPE_SPEED};
 use crate::game_module::game_scene_manager::BlockArray;
 
 pub struct CharacterController {
@@ -219,28 +219,25 @@ impl CharacterController {
         }
 
         // reset flags
+        let was_on_ground = self._is_ground;
         self._is_cliff = true;
         self._is_blocked = false;
         self._is_ground = false;
 
-        // if _owner._is_player {
-        //     let ground_normal = height_map_data.get_normal_bilinear(&self._position);
-        //     let ground_height = height_map_data.get_height_bilinear(&self._position, 0);
-        //     if self._position.y <= ground_height {
-        //         let (move_dir, move_distance) = math::make_normalize_with_norm(&(self._position - prev_position));
-        //         if move_dir.dot(&ground_normal) < 0.0 {
-        //             let mut new_move_dir = math::make_reflect(&move_dir, &ground_normal).normalize();
-        //             new_move_dir.y = new_move_dir.y.max(0.0_f32);
-        //             self._position = new_move_dir * move_distance + prev_position;
-        //         }
-        //         log::info!("ground_normal: {:?}", ground_normal.dot(&move_dir));
-        //     }
-        // }
-
         begin_block!("Check Ground"); {
-            let ground_height = height_map_data.get_height_bilinear(&self._position, 0);
+            // check slope
+            let ground_normal = height_map_data.get_normal_bilinear(&self._position);
+            let mut ground_height = height_map_data.get_height_bilinear(&self._position, 0);
+            if ground_normal.y < SLOPE_ANGLE && (self._position.y <= ground_height || was_on_ground) {
+                let new_move_dir = Vector3::new(ground_normal.x, 0.0, ground_normal.z);
+                self._position = prev_position + new_move_dir * SLOPE_SPEED * delta_time;
+                ground_height = height_map_data.get_height_bilinear(&self._position, 0);
+            }
+
+            // check ground
             if self._position.y <= ground_height {
-                let (_move_dir, move_distance) = math::make_normalize_with_norm(&(self._position - prev_position));
+                let move_delta = self._position - prev_position;
+                let (_move_dir, move_distance) = math::make_normalize_with_norm(&move_delta);
                 let new_move_dir = math::safe_normalize(&(Vector3::new(self._position.x, ground_height, self._position.z) - prev_position));
                 self._position = new_move_dir * move_distance + prev_position;
                 self.set_on_ground(self._position.y);
@@ -321,7 +318,7 @@ impl CharacterController {
                 }
             }
 
-            if self._is_cliff && (point.y - CLIFF_HEIGHT) <= height_map_data.get_height_point(&point, 0) {
+            if self._is_cliff && (point.y - CLIFF_HEIGHT) <= height_map_data.get_height_bilinear(&point, 0) {
                 self._is_cliff = false;
             }
         }
