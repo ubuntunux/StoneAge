@@ -195,7 +195,7 @@ impl<'a> Character<'a> {
         if self._is_player && self._character_stats._stamina < STAMINA_JUMP {
             return false;
         }
-        !self.is_jump() && !self.is_falling() && self.is_available_move()
+        !self.is_jump() && !self.is_falling() && self.is_available_move() && !self._controller.is_slope_ground_normal()
     }
 
     pub fn is_available_roll(&self) -> bool {
@@ -422,6 +422,10 @@ impl<'a> Character<'a> {
                 self.set_move_animation(MoveAnimationState::Idle);
             }
         }
+    }
+
+    pub fn set_position(&mut self, position: &Vector3<f32>) {
+        self._controller.set_position(position);
     }
 
     pub fn set_move_speed(&mut self, speed: f32) {

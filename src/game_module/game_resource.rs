@@ -3,7 +3,7 @@ use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 
 use rust_engine_3d::renderer::renderer_context::RendererContext;
-use rust_engine_3d::resource::resource::{APPLICATION_RESOURCE_PATH, EngineResources, get_unique_resource_name, ResourceDataMap};
+use rust_engine_3d::resource::resource::{APPLICATION_RESOURCE_PATH, EngineResources, get_unique_resource_name, ResourceDataMap, get_resource_data_must};
 use rust_engine_3d::utilities::system::{self, newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
 use serde_json::{self};
 use crate::game_module::actors::weapons::WeaponDataCreateInfo;
@@ -106,7 +106,7 @@ impl<'a> GameResources<'a> {
     }
 
     pub fn get_game_scene_data(&self, resource_name: &str) -> &RcRefCell<GameSceneDataCreateInfo> {
-        self._game_scene_data_create_infos_map.get(resource_name).unwrap()
+        get_resource_data_must(&self._game_scene_data_create_infos_map, resource_name)
     }
 
     // Game Data
@@ -149,7 +149,7 @@ impl<'a> GameResources<'a> {
     }
 
     pub fn get_prop_data(&self, resource_name: &str) -> &RcRefCell<PropData> {
-        self._prop_data_map.get(resource_name).unwrap()
+        get_resource_data_must(&self._prop_data_map, resource_name)
     }
 
     // weapon data
@@ -178,7 +178,7 @@ impl<'a> GameResources<'a> {
     }
 
     pub fn get_weapon_data(&self, resource_name: &str) -> &RcRefCell<WeaponData<'a>> {
-        self._weapon_data_map.get(resource_name).unwrap()
+        get_resource_data_must(&self._weapon_data_map, resource_name)
     }
 
     // character data
@@ -206,7 +206,7 @@ impl<'a> GameResources<'a> {
     }
 
     pub fn get_character_data(&self, resource_name: &str) -> &RcRefCell<CharacterData> {
-        self._character_data_map.get(resource_name).unwrap()
+        get_resource_data_must(&self._character_data_map, resource_name)
     }
 
     // item data
@@ -233,6 +233,6 @@ impl<'a> GameResources<'a> {
     }
 
     pub fn get_item_data(&self, resource_name: &str) -> &RcRefCell<ItemData> {
-        self._item_data_map.get(resource_name).unwrap()
+        get_resource_data_must(&self._item_data_map, resource_name)
     }
 }

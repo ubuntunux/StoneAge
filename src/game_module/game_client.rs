@@ -4,7 +4,7 @@ use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
 
 use crate::application::application::Application;
 use crate::game_module::actors::character_manager::CharacterManager;
-use crate::game_module::game_constants::{AMBIENT_SOUND, GAME_MUSIC, GAME_SCENE_INTRO, MATERIAL_INTRO_IMAGE};
+use crate::game_module::game_constants::{AMBIENT_SOUND, CAMERA_DISTANCE_MAX, GAME_MUSIC, GAME_SCENE_INTRO, MATERIAL_INTRO_IMAGE};
 use crate::game_module::game_controller::GameController;
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
@@ -92,6 +92,13 @@ impl<'a> GameClient<'a> {
     }
     pub fn set_game_mode(&mut self, is_game_mode: bool) {
         self.get_game_ui_manager_mut().show_ui(is_game_mode);
+        if is_game_mode {
+            if self.get_game_scene_manager().get_character_manager().is_valid_player() {
+                let main_camera = self.get_game_controller().get_main_camera();
+                let player = self.get_game_scene_manager().get_character_manager().get_player();
+                player.borrow_mut().set_position(&(main_camera.get_camera_position() + CAMERA_DISTANCE_MAX * main_camera.get_camera_front()));
+            }
+        }
     }
     pub fn update_game_mode(&mut self, delta_time: f64) {
         let engine_core = self.get_engine_core();

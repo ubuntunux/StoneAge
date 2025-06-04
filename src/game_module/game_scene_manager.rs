@@ -166,10 +166,6 @@ impl<'a> GameSceneManager<'a> {
         self._game_scene_name = String::from(game_scene_data_name);
         let game_resources = ptr_as_ref(self._game_resources);
 
-        if false == game_resources.has_game_scene_data(game_scene_data_name) {
-            // TODO
-        }
-
         // load scene
         let game_scene_data = game_resources.get_game_scene_data(game_scene_data_name).borrow();
         self.get_scene_manager_mut().create_scene_data(&game_scene_data._scene);

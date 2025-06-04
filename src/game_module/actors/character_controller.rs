@@ -16,6 +16,7 @@ pub struct CharacterController {
     pub _rotation: Vector3<f32>,
     pub _scale: Vector3<f32>,
     pub _last_ground_position: Vector3<f32>,
+    pub _last_ground_normal: Vector3<f32>,
     pub _face_direction: Vector3<f32>,
     pub _move_direction: Vector3<f32>,
     pub _velocity: Vector3<f32>,
@@ -37,6 +38,7 @@ impl CharacterController {
             _rotation: Vector3::zeros(),
             _scale: Vector3::new(1.0, 1.0, 1.0),
             _last_ground_position: Vector3::zeros(),
+            _last_ground_normal: Vector3::new(0.0, 1.0, 0.0),
             _face_direction: Vector3::zeros(),
             _move_direction: Vector3::zeros(),
             _velocity: Vector3::zeros(),
@@ -64,6 +66,7 @@ impl CharacterController {
         self._face_direction = Vector3::zeros();
         self._move_direction = Vector3::zeros();
         self._last_ground_position = position.clone();
+        self._last_ground_normal = Vector3::new(0.0, 1.0, 0.0);
         self._velocity = Vector3::zeros();
         self._move_speed = 0.0;
         self._fall_time = 0.0;
@@ -79,46 +82,45 @@ impl CharacterController {
     pub fn is_falling(&self) -> bool {
         self._is_falling
     }
-
     pub fn is_on_ground(&self) -> bool {
         self._is_ground && !self._is_jump_start
     }
-
     pub fn get_last_ground_position(&self) -> &Vector3<f32> {
         &self._last_ground_position
     }
-
+    pub fn get_last_ground_normal(&self) -> &Vector3<f32> {
+        &self._last_ground_normal
+    }
+    pub fn is_slope_ground_normal(&self) -> bool {
+        self._last_ground_normal.y < SLOPE_ANGLE
+    }
     pub fn set_run(&mut self, is_running: bool) {
         self._is_running = is_running;
     }
-
     pub fn toggle_run(&mut self) {
         self._is_running = !self._is_running;
     }
-
     pub fn set_move_direction(&mut self, move_direction: &Vector3<f32>) {
         self._move_direction.clone_from(move_direction);
         if move_direction.x != 0.0 || move_direction.y != 0.0 || move_direction.z != 0.0 {
             self._face_direction.clone_from(move_direction);
         }
     }
-
     pub fn set_jump_start(&mut self) {
         self._is_jump_start = true;
     }
-
     pub fn is_jump(&self) -> bool {
         self._is_jump
     }
-
+    pub fn set_position(&mut self, position: &Vector3<f32>) {
+        self._position = position.clone();
+    }
     pub fn set_move_speed(&mut self, move_speed: f32) {
         self._move_speed = move_speed;
     }
-
     pub fn set_direction(&mut self, direction: &Vector3<f32>) {
         self._rotation.y = direction.z.atan2(-direction.x) + HALF_PI;
     }
-
     pub fn rotate_to_direction(&mut self, direction: &Vector3<f32>, delta_time: f32) {
         let yaw: f32 = direction.z.atan2(-direction.x) + HALF_PI;
         let mut diff: f32 = yaw - self._rotation.y;
@@ -202,8 +204,7 @@ impl CharacterController {
         }
         self._position.y += self._velocity.y * delta_time;
 
-        // check delta limited - prevent pass block
-        {
+        begin_block!("check delta limited - prevent pass block"); {
             let delta = self._position - prev_position;
             if MOVE_LIMIT < delta.x.abs() {
                 self._position.x = prev_position.x + delta.x.signum() * MOVE_LIMIT;
@@ -224,9 +225,10 @@ impl CharacterController {
         self._is_blocked = false;
         self._is_ground = false;
 
-        begin_block!("Check Ground"); {
+        let ground_normal = height_map_data.get_normal_bilinear(&self._position);
+
+        begin_block!("Check Ground & Slope"); {
             // check slope
-            let ground_normal = height_map_data.get_normal_bilinear(&self._position);
             let mut ground_height = height_map_data.get_height_bilinear(&self._position, 0);
             if ground_normal.y < SLOPE_ANGLE && (self._position.y <= ground_height || was_on_ground) {
                 let new_move_dir = Vector3::new(ground_normal.x, 0.0, ground_normal.z);
@@ -326,6 +328,7 @@ impl CharacterController {
         // update last ground position
         if self.is_on_ground() {
             self._last_ground_position = self._position;
+            self._last_ground_normal = ground_normal;
         }
 
         // reset

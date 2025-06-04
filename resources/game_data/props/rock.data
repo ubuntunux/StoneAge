@@ -1,12 +1,11 @@
 {
-    "_enable_collision": true,
     "_item_data_name": "items/rock",
     "_item_drop_count_max": 1,
     "_item_drop_count_min": 1,
     "_item_regenerate_count": 1,
     "_item_regenerate_time": 300.0,
     "_max_hp": 100,
-    "_model_data_name": "environments/cliff_grass",
+    "_model_data_name": "environments/rock_02",
     "_name": "ROCK",
     "_prop_type": "None"
 }

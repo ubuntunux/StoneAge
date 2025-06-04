@@ -28,8 +28,7 @@ impl Default for PropData {
             _item_drop_count_max: 1,
             _item_drop_count_min: 1,
             _item_regenerate_count: 1,
-            _item_regenerate_time: 0.0,
-            _enable_collision: true,
+            _item_regenerate_time: 0.0
         }
     }
 }

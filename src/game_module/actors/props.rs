@@ -36,8 +36,7 @@ pub struct PropData {
     pub _item_drop_count_max: i32,
     pub _item_drop_count_min: i32,
     pub _item_regenerate_count: i32,
-    pub _item_regenerate_time: f32,
-    pub _enable_collision: bool
+    pub _item_regenerate_time: f32
 }
 
 pub struct PropStats {

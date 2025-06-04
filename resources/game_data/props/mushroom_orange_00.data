@@ -1,5 +1,4 @@
 {
-    "_enable_collision": false,
     "_item_data_name": "items/wood",
     "_item_drop_count_max": 1,
     "_item_drop_count_min": 1,
