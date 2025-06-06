@@ -1,9 +1,10 @@
+use std::env;
 use ash::vk;
 use log::LevelFilter;
 use nalgebra::Vector2;
 use rust_engine_3d::audio::audio_manager::AudioManager;
 use rust_engine_3d::constants;
-use rust_engine_3d::constants::IS_SHIPPING_BUILD;
+use rust_engine_3d::constants::PACKAGED;
 use rust_engine_3d::core::engine_core::{
     self, ApplicationBase, EngineCore, WindowMode,
 };
@@ -283,6 +284,13 @@ impl<'a> Application<'a> {
 }
 
 pub fn run_application() {
+    // environment variables
+    unsafe {
+        // ex) PACKAGED=1 cargo run --release
+        let is_packaged = env::var("PACKAGED");
+        PACKAGED = is_packaged.is_ok() && is_packaged.unwrap() != "0";
+    }
+
     // application setting
     logger::initialize_logger(LevelFilter::Info);
     let app_name: String = "Stone Age".to_string();
@@ -294,7 +302,7 @@ pub fn run_application() {
     let vulkan_api_version: u32;
     let enable_immediate_mode: bool;
     let is_concurrent_mode: bool;
-    let enable_validation_layer = !IS_SHIPPING_BUILD;
+    let enable_validation_layer = unsafe { !PACKAGED };
 
     #[cfg(target_os = "android")]
     {
