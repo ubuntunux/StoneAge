@@ -1,4 +1,3 @@
-use std::env;
 use ash::vk;
 use log::LevelFilter;
 use nalgebra::Vector2;
@@ -284,12 +283,9 @@ impl<'a> Application<'a> {
 }
 
 pub fn run_application() {
-    // environment variables
-    unsafe {
-        // ex) PACKAGED=1 cargo run --release
-        let is_packaged = env::var("PACKAGED");
-        PACKAGED = is_packaged.is_ok() && is_packaged.unwrap() != "0";
-    }
+    // cargo build --release --features packaged_build
+    #[cfg(feature = "packaged_build")]
+    unsafe { PACKAGED = true; }
 
     // application setting
     logger::initialize_logger(LevelFilter::Info);
