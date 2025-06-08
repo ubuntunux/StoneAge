@@ -46,6 +46,7 @@ pub struct GameSceneManager<'a> {
     pub _game_scene_name: String,
     pub _blocks: BlockArray<'a>,
     pub _ambient_sound: Option<RcRefCell<AudioInstance>>,
+    pub _spawn_point: Vector3<f32>,
     pub _time_of_day: f32,
     pub _temperature: f32,
     pub _date: u32
@@ -96,6 +97,7 @@ impl<'a> GameSceneManager<'a> {
             _item_manager: ItemManager::create_item_manager(),
             _prop_manager: PropManager::create_prop_manager(),
             _ambient_sound: None,
+            _spawn_point: Vector3::new(0.0, 0.0, 0.0),
             _time_of_day: 10.0,
             _temperature: 30.0,
             _date: 1
@@ -149,6 +151,10 @@ impl<'a> GameSceneManager<'a> {
         &self._blocks
     }
 
+    pub fn get_spawn_point(&self) -> &Vector3<f32> {
+        &self._spawn_point
+    }
+
     pub fn get_time_of_day(&self) -> f32 {
         self._time_of_day
     }
@@ -190,6 +196,7 @@ impl<'a> GameSceneManager<'a> {
         // create player
         for (character_name, character_create_info) in game_scene_data._player.iter() {
             self._character_manager.create_character(character_name, character_create_info, true);
+            self._spawn_point = character_create_info._position;
         }
 
         // create npc

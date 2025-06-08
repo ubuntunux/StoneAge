@@ -272,6 +272,10 @@ impl<'a> GameController<'a> {
 
         let mut camera_position = player_mut.get_position() - main_camera._transform_object.get_front() * self._camera_distance;
         camera_position.y += CAMERA_OFFSET_Y;
+        let camera_min_height = self.get_game_client().get_game_scene_manager().get_scene_manager().get_sea_height() + CAMERA_SEA_HEIGHT_OFFSET;
+        if camera_position.y < camera_min_height {
+            camera_position.y = camera_min_height;
+        }
         main_camera._transform_object.set_position(&camera_position);
     }
 }

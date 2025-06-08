@@ -9,6 +9,7 @@ pub const CAMERA_PITCH_MAX: f32 = 20.0;
 pub const CAMERA_DISTANCE_MIN: f32 = 5.0;
 pub const CAMERA_DISTANCE_MAX: f32 = 10.0;
 pub const CAMERA_OFFSET_Y: f32 = 1.5;
+pub const CAMERA_SEA_HEIGHT_OFFSET: f32 = 3.0;
 pub const CAMERA_ZOOM_SPEED: f32 = 4.0;
 pub const CAMERA_ROTATION_SPEED_MIN: f32 = 0.5;
 pub const CAMERA_ROTATION_SPEED_MAX: f32 = 20.0;
@@ -22,6 +23,7 @@ pub const EAT_ITEM_DISTANCE: f32 = 1.0;
 pub const CHARACTER_ROTATION_SPEED: f32 = 20.0;
 pub const FALLING_TIME: f32 = 0.3;
 pub const FALLING_HEIGHT: f32 = 2.0;
+pub const FALLING_DAMAGE_RATIO: i32 = 10;
 pub const CLIFF_HEIGHT: f32 = 1.0;
 pub const SLOPE_SPEED: f32 = 3.0;
 pub const SLOPE_ANGLE: f32 = 0.707;
@@ -55,6 +57,7 @@ pub const AUDIO_CRUNCH: &str = "crunch";
 pub const AUDIO_FOOTSTEP: &str = "footstep";
 pub const AUDIO_ROLL: &str = "roll";
 pub const AUDIO_JUMP: &str = "jump";
+pub const AUDIO_FALLING_WATER: &str = "falling_water";
 pub const AMBIENT_SOUND: &str = "ambient_sound";
 pub const GAME_MUSIC: &str = "game_music";
 pub const PICKUP_ITEM: &str = "pickup_item";
@@ -65,6 +68,7 @@ pub const MATERIAL_CROSS_HAIR: &str = "ui/cross_hair_box";
 
 // EFFECT DATA
 pub const EFFECT_HIT: &str = "effect_test";
+pub const EFFECT_FALLING_WATER: &str = "effect_falling_water";
 
 // Items
 pub const ITEM_MEAT: &str = "items/meat";

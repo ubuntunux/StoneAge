@@ -15,7 +15,7 @@ use crate::game_module::actors::character_data::{ActionAnimationState, Character
 use crate::game_module::actors::character_manager::CharacterManager;
 use crate::game_module::actors::weapons::Weapon;
 use crate::game_module::behavior::behavior_base::create_character_behavior;
-use crate::game_module::game_constants::{AUDIO_ATTACK, AUDIO_FOOTSTEP, AUDIO_HIT, AUDIO_JUMP, AUDIO_ROLL, EFFECT_HIT, FALLING_HEIGHT, MAX_STAMINA, STAMINA_ATTACK, STAMINA_JUMP, STAMINA_POWER_ATTACK, STAMINA_RECOVERY, STAMINA_ROLL, STAMINA_RUN};
+use crate::game_module::game_constants::{AUDIO_ATTACK, AUDIO_FALLING_WATER, AUDIO_FOOTSTEP, AUDIO_HIT, AUDIO_JUMP, AUDIO_ROLL, EFFECT_FALLING_WATER, EFFECT_HIT, FALLING_DAMAGE_RATIO, FALLING_HEIGHT, MAX_STAMINA, STAMINA_ATTACK, STAMINA_JUMP, STAMINA_POWER_ATTACK, STAMINA_RECOVERY, STAMINA_ROLL, STAMINA_RUN};
 use crate::game_module::game_scene_manager::BlockArray;
 
 impl CharacterStats {
@@ -254,27 +254,67 @@ impl<'a> Character<'a> {
         }
     }
 
-    pub fn set_damage(&mut self, attack_point: &Vector3<f32>, damage: i32) {
-        let character_manager = ptr_as_ref(self._character_manager);
-        self._character_stats._hp -= damage;
-        if self._character_stats._hp <= 0 {
-            character_manager.get_scene_manager().play_audio(&self._character_data.borrow()._audio_data._audio_dead);
-            self.set_dead();
-        } else {
-            character_manager.get_scene_manager().play_audio(&self._character_data.borrow()._audio_data._audio_pain);
-            if self._is_player {
-                // TODO: additive animation
-                self.set_action_hit();
+    pub fn set_damage(&mut self, damage: i32) {
+        if 0 < damage && self._character_stats._is_alive {
+            let character_manager = ptr_as_ref(self._character_manager);
+            self._character_stats._hp -= damage;
+            if self._character_stats._hp <= 0 {
+                character_manager.get_scene_manager().play_audio(&self._character_data.borrow()._audio_data._audio_dead);
+                self.set_dead();
+            } else {
+                character_manager.get_scene_manager().play_audio(&self._character_data.borrow()._audio_data._audio_pain);
+                if self._is_player {
+                    // TODO: additive animation
+                    self.set_action_hit();
+                }
             }
         }
+    }
 
-        let effect_create_info = EffectCreateInfo {
-            _effect_position: attack_point.clone(),
-            _effect_data_name: String::from(EFFECT_HIT),
-            ..Default::default()
-        };
-        character_manager.get_scene_manager_mut().add_effect(EFFECT_HIT, &effect_create_info);
-        character_manager.get_scene_manager().play_audio_bank(AUDIO_HIT);
+    pub fn check_falling_in_water_damage(&mut self) -> bool {
+        let sea_height = self.get_character_manager().get_scene_manager().get_sea_height();
+        if self.get_position().y <= sea_height {
+            self.set_damage(self._character_stats._hp);
+
+            let effect_create_info = EffectCreateInfo {
+                _effect_position: Vector3::new(self.get_position().x, sea_height, self.get_position().z),
+                _effect_data_name: String::from(EFFECT_FALLING_WATER),
+                ..Default::default()
+            };
+            let character_manager = ptr_as_ref(self._character_manager);
+            character_manager.get_scene_manager_mut().add_effect(EFFECT_FALLING_WATER, &effect_create_info);
+            character_manager.get_scene_manager().play_audio_bank(AUDIO_FALLING_WATER);
+            return true;
+        }
+        false
+    }
+
+    pub fn check_falling_on_ground_damage(&mut self, last_ground_height: f32) {
+        let falling_height = last_ground_height - self.get_position().y;
+        if self._is_player {
+            log::info!("Falling on ground_damage: {}", falling_height);
+        }
+
+        if 0.0 < falling_height {
+            let falling_damage: i32 = (falling_height - FALLING_HEIGHT).ceil() as i32 * FALLING_DAMAGE_RATIO;
+            self.set_hit_damage( falling_damage, &self.get_position().clone() );
+        }
+    }
+
+    pub fn set_hit_damage(&mut self, damage: i32, attack_point: &Vector3<f32>) {
+        if 0 < damage {
+            self.set_damage(damage);
+
+            let effect_create_info = EffectCreateInfo {
+                _effect_position: attack_point.clone(),
+                _effect_data_name: String::from(EFFECT_HIT),
+                ..Default::default()
+            };
+
+            let character_manager = ptr_as_ref(self._character_manager);
+            character_manager.get_scene_manager_mut().add_effect(EFFECT_HIT, &effect_create_info);
+            character_manager.get_scene_manager().play_audio_bank(AUDIO_HIT);
+        }
     }
 
     pub fn set_invincibility(&mut self, invincibility: bool) {
@@ -636,8 +676,9 @@ impl<'a> Character<'a> {
             },
             ActionAnimationState::Dead => {
                 if self._is_player && animation_play_info._is_animation_end {
+                    // resurrection
                     self.initialize_character(
-                        &self._controller._position.clone(),
+                        &self.get_character_manager().get_game_scene_manager().get_spawn_point().clone(),
                         &self._controller._rotation.clone(),
                         &self._controller._scale.clone(),
                     );
@@ -761,13 +802,14 @@ impl<'a> Character<'a> {
             delta_time
         );
 
-        // falling
-        if self._is_player && !was_on_ground && self.is_on_ground() {
-            if FALLING_HEIGHT < (last_ground_height- self.get_position().y) {
-                scene_manager.play_audio_bank(AUDIO_HIT);
+        // falling water or falling on ground
+        if self._character_stats._is_alive {
+            if self.check_falling_in_water_damage() {
+                // falling in water
+            } else if !was_on_ground && self.is_on_ground() {
+                self.check_falling_on_ground_damage(last_ground_height);
             }
         }
-
         // transform
         self.update_transform();
 
