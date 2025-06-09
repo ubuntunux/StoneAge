@@ -26,6 +26,7 @@ pub struct GameClient<'a> {
     pub _game_controller: *const GameController<'a>,
     pub _game_ui_manager: *const GameUIManager<'a>,
     pub _game_phase: GamePhase,
+    pub _story_board_phase: u32,
 }
 
 impl<'a> GameClient<'a> {
@@ -39,6 +40,7 @@ impl<'a> GameClient<'a> {
             _game_controller: std::ptr::null(),
             _game_ui_manager: std::ptr::null(),
             _game_phase: GamePhase::None,
+            _story_board_phase: 0,
         })
     }
 
@@ -114,26 +116,35 @@ impl<'a> GameClient<'a> {
             mouse_move_data._mouse_pos_delta.x as f32 / mouse_speed_ratio,
             mouse_move_data._mouse_pos_delta.y as f32 / mouse_speed_ratio,
         );
+        let any_key_pressed = joystick_input_data.is_any_button_pressed() ||
+            mouse_input_data.is_any_button_pressed() ||
+            keyboard_input_data.is_any_key_pressed();
 
         match self._game_phase {
             GamePhase::None => {
-                self._game_phase = GamePhase::Intro;
                 self.get_game_ui_manager_mut().set_game_image_material_instance(MATERIAL_INTRO_IMAGE, 1.0);
                 game_scene_manager.play_bgm(GAME_MUSIC, Some(0.5));
                 game_scene_manager.play_ambient_sound(AMBIENT_SOUND, None);
+                self._game_phase = GamePhase::Intro;
             }
             GamePhase::Intro => {
-                if joystick_input_data.is_any_button_pressed() ||
-                    mouse_input_data.is_any_button_pressed() ||
-                    keyboard_input_data.is_any_key_pressed() {
+                if any_key_pressed {
                     self.get_game_scene_manager_mut().open_game_scene_data(GAME_SCENE_INTRO);
                     self._game_phase = GamePhase::Loading;
                 }
             }
             GamePhase::Loading => {
                 if scene_manager.is_load_complete() {
-                    self.get_game_ui_manager_mut().start_game_image_fadeout(true);
-                    self._game_phase = GamePhase::GamePlay;
+                    if any_key_pressed || self._story_board_phase == 0 {
+                        if 2 < self._story_board_phase {
+                            self.get_game_ui_manager_mut().start_game_image_fadeout(true);
+                            self._game_phase = GamePhase::GamePlay;
+                        } else {
+                            let story_board_string = format!("ui/story_board/story_board_{:02}_{:02}", 0, self._story_board_phase);
+                            self.get_game_ui_manager_mut().set_game_image_material_instance(&story_board_string, 1.0);
+                            self._story_board_phase += 1;
+                        }
+                    }
                 }
             }
             GamePhase::GamePlay => {
