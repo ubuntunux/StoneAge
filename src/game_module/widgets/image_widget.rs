@@ -1,24 +1,34 @@
 use std::rc::Rc;
 use nalgebra::Vector2;
+use rust_engine_3d::scene::material_instance::MaterialInstanceData;
 use rust_engine_3d::scene::ui::{HorizontalAlign, Orientation, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault};
-use rust_engine_3d::utilities::system::{ptr_as_mut};
+use rust_engine_3d::utilities::math;
+use rust_engine_3d::utilities::system::{ptr_as_mut, RcRefCell};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use crate::game_module::game_resource::GameResources;
 
 pub struct ImageLayout<'a> {
     pub _background_layout: Rc<WidgetDefault<'a>>,
     pub _image_layout: Rc<WidgetDefault<'a>>,
-    pub _start_fadeout: bool,
-    pub _initial_fadeout_time: f32,
-    pub _fadeout_time: f32,
+    pub _material_instance: Option<RcRefCell<MaterialInstanceData<'a>>>,
+    pub _next_material_instance: Option<RcRefCell<MaterialInstanceData<'a>>>,
+    pub _initial_fade_time: f32,
+    pub _fade_time: f32,
+    pub _opacity: f32,
+    pub _prev_opacity: f32,
+    pub _goal_opacity: f32,
+    pub _next_goal_opacity: f32,
     pub _image_aspect: f32,
-    pub _image_size_hint: f32
+    pub _next_image_aspect: f32,
+    pub _image_size_hint: f32,
+    pub _window_size: Vector2<i32>,
 }
 
 // Image layout
 impl<'a> ImageLayout<'a> {
     pub fn create_image_layout(
         root_widget: &mut WidgetDefault<'a>,
+        window_size: &Vector2<i32>,
         material_instance_name: &str
     ) -> Box<ImageLayout<'a>> {
         // background layout
@@ -42,52 +52,79 @@ impl<'a> ImageLayout<'a> {
         Box::new(ImageLayout {
             _background_layout: background_layout.clone(),
             _image_layout: image_widget.clone(),
-            _start_fadeout: false,
-            _initial_fadeout_time: 0.0,
-            _fadeout_time: 0.0,
+            _material_instance: None,
+            _next_material_instance: None,
+            _initial_fade_time: 0.0,
+            _fade_time: 0.0,
+            _opacity: 0.0,
+            _prev_opacity: 0.0,
+            _goal_opacity: 0.0,
+            _next_goal_opacity: 0.0,
             _image_aspect: 1.0,
-            _image_size_hint: 0.9
+            _next_image_aspect: 1.0,
+            _image_size_hint: 0.9,
+            _window_size: window_size.clone(),
         })
     }
 
-    pub fn set_material_instance(
+    pub fn set_game_image(
         &mut self,
         game_resources: &GameResources<'a>,
-        window_size: &Vector2<i32>,
-        material_instance_name: &str,
-        fadeout_time: f32,
+        material_instance: Option<RcRefCell<MaterialInstanceData<'a>>>,
+        fade_time: f32,
     ) {
-        // texture aspect
-        let material_instance = game_resources.get_engine_resources().get_material_instance_data(material_instance_name);
-        let material_instance_ref = material_instance.borrow();
-        let texture_name = material_instance_ref._material_parameters.get("texture_color").unwrap().as_str().unwrap();
-        let texture = game_resources.get_engine_resources().get_texture_data(texture_name);
-        self._image_aspect = texture.borrow()._image_width as f32 / texture.borrow()._image_height as f32;
+        if self._material_instance.is_none() && material_instance.is_none() {
+            return;
+        }
 
-        // image layout
+        if material_instance.is_some() {
+            let material_instance_refcell = material_instance.as_ref().unwrap();
+            let material_instance_ref = material_instance_refcell.borrow();
+            let texture_parameter = material_instance_ref._material_parameters.get("texture_color").unwrap();
+            let texture_name = texture_parameter.as_str().unwrap();
+            let texture = game_resources.get_engine_resources().get_texture_data(texture_name);
+            self._next_image_aspect = texture.borrow()._image_width as f32 / texture.borrow()._image_height as f32;
+            self._next_goal_opacity = 1.0;
+        } else {
+            self._next_image_aspect = 1.0;
+            self._next_goal_opacity = 0.0;
+        }
+        self._next_material_instance = material_instance;
+
+        let progress = self.get_progress();
+        self._initial_fade_time = fade_time;
+        self._fade_time = (1.0 - progress) * fade_time;
+
+        self.changed_window_size(&self._window_size.clone());
+
+        //log::info!("set_game_image: progress {:?}, material: {:?}", self.get_progress(), if self._next_material_instance.is_some() { self._next_material_instance.as_ref().unwrap().borrow()._material_instance_data_name.clone() } else { String::from("None") });
+    }
+
+    pub fn change_game_image(&mut self) {
         let image_widget = ptr_as_mut(self._image_layout.as_ref());
         let ui_component = image_widget.get_ui_component_mut();
-        ui_component.set_material_instance(&material_instance);
+        ui_component.set_material_instance(self._next_material_instance.clone());
+        self._material_instance = self._next_material_instance.clone();
+        self._next_material_instance = None;
+        self._image_aspect = self._next_image_aspect;
+        self._prev_opacity = self._opacity;
+        self._goal_opacity = self._next_goal_opacity;
 
-        // background layout
-        let background_layout = ptr_as_mut(self._background_layout.as_ref());
-        let ui_component = background_layout.get_ui_component_mut();
-        ui_component.set_visible(true);
-        ui_component.set_opacity(1.0);
+        self.changed_window_size(&self._window_size.clone());
 
-        self._initial_fadeout_time = fadeout_time;
-        self._fadeout_time = fadeout_time;
-        self._start_fadeout = false;
+        //log::info!("change_game_image: progress {:?}, material: {:?}", self.get_progress(), if self._material_instance.is_some() { self._material_instance.as_ref().unwrap().borrow()._material_instance_data_name.clone() } else { String::from("None") });
+    }
 
-        self.changed_window_size(window_size);
+    pub fn is_done_game_image_progress(&self) -> bool {
+        self.get_progress() == 1.0
+    }
+
+    pub fn get_progress(&self) -> f32 {
+        1.0_f32.min(self._fade_time / self._initial_fade_time)
     }
 
     pub fn is_visible(&self) -> bool {
         self._background_layout.as_ref().get_ui_component()._visible
-    }
-
-    pub fn start_fadeout(&mut self, start_fadeout: bool) {
-        self._start_fadeout = start_fadeout;
     }
 
     pub fn changed_window_size(&mut self, window_size: &Vector2<i32>) {
@@ -98,24 +135,40 @@ impl<'a> ImageLayout<'a> {
         ui_component.set_size_hint_y(Some(self._image_size_hint));
     }
 
-    pub fn update_image_layout(&mut self, delta_time: f64) {
-        if self._start_fadeout {
-            let opacity = if 0.0 < self._initial_fadeout_time {
-                0f32.max(self._fadeout_time / self._initial_fadeout_time)
-            } else {
-                0.0
-            };
+    pub fn update_game_image(&mut self, delta_time: f64) {
+        if delta_time == 0.0 {
+            return;
+        }
 
-            let background_layout = ptr_as_mut(self._background_layout.as_ref());
-            let ui_component = background_layout.get_ui_component_mut();
-            ui_component.set_opacity(opacity);
-
-            if opacity <= 0.0 {
-                ui_component.set_visible(false);
-                self._start_fadeout = false;
+        let prev_progress = self.get_progress();
+        if prev_progress < 1.0 {
+            // progress
+            self._fade_time += delta_time as f32;
+            let progress = self.get_progress();
+            if prev_progress <= 0.5 && 0.5 < progress {
+                self.change_game_image();
             }
 
-            self._fadeout_time -= delta_time as f32;
+            // calc opacity
+            if progress == 1.0 {
+                self._opacity = self._goal_opacity;
+            } else if progress <= 0.5 {
+                self._opacity = math::lerp(self._opacity, self._next_goal_opacity, progress * 2.0);
+            } else {
+                self._opacity = math::lerp(self._opacity, self._goal_opacity, (progress - 0.5) * 2.0);
+            }
+
+            // set opacity
+            let background_layout = ptr_as_mut(self._background_layout.as_ref());
+            let ui_component = background_layout.get_ui_component_mut();
+            ui_component.set_opacity(self._opacity);
+            ui_component.set_visible(0.0 < self._opacity);
+
+            // let image_widget = ptr_as_mut(self._image_layout.as_ref());
+            // let ui_component = image_widget.get_ui_component_mut();
+            // ui_component.set_opacity(((progress - 0.5) * 2.0).abs() );
+
+            //log::info!("update_image_layout: progress {:?}, opacity: {:?}, material: {:?}", self.get_progress(), self._opacity, if self._material_instance.is_some() { self._material_instance.as_ref().unwrap().borrow()._material_instance_data_name.clone() } else { String::from("None") });
         }
     }
 }

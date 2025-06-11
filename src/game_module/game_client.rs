@@ -4,7 +4,7 @@ use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
 
 use crate::application::application::Application;
 use crate::game_module::actors::character_manager::CharacterManager;
-use crate::game_module::game_constants::{AMBIENT_SOUND, CAMERA_DISTANCE_MAX, GAME_MUSIC, GAME_SCENE_INTRO, MATERIAL_INTRO_IMAGE};
+use crate::game_module::game_constants::{AMBIENT_SOUND, CAMERA_DISTANCE_MAX, GAME_MUSIC, GAME_SCENE_INTRO, MATERIAL_INTRO_IMAGE, STORY_BOARDS, STORY_BOARD_FADE_TIME};
 use crate::game_module::game_controller::GameController;
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
@@ -26,7 +26,7 @@ pub struct GameClient<'a> {
     pub _game_controller: *const GameController<'a>,
     pub _game_ui_manager: *const GameUIManager<'a>,
     pub _game_phase: GamePhase,
-    pub _story_board_phase: u32,
+    pub _story_board_phase: usize,
 }
 
 impl<'a> GameClient<'a> {
@@ -102,6 +102,19 @@ impl<'a> GameClient<'a> {
             }
         }
     }
+
+    pub fn get_story_board_phase(&self) -> usize {
+        self._story_board_phase
+    }
+
+    pub fn clear_story_board_phase(&mut self) {
+        self._story_board_phase = 0;
+    }
+
+    pub fn next_story_board_phase(&mut self) {
+        self._story_board_phase += 1;
+    }
+
     pub fn update_game_mode(&mut self, delta_time: f64) {
         let engine_core = self.get_engine_core();
         let game_scene_manager = ptr_as_mut(self._game_scene_manager);
@@ -122,7 +135,7 @@ impl<'a> GameClient<'a> {
 
         match self._game_phase {
             GamePhase::None => {
-                self.get_game_ui_manager_mut().set_game_image_material_instance(MATERIAL_INTRO_IMAGE, 1.0);
+                self.get_game_ui_manager_mut().set_game_image(MATERIAL_INTRO_IMAGE, STORY_BOARD_FADE_TIME);
                 game_scene_manager.play_bgm(GAME_MUSIC, Some(0.5));
                 game_scene_manager.play_ambient_sound(AMBIENT_SOUND, None);
                 self._game_phase = GamePhase::Intro;
@@ -130,19 +143,20 @@ impl<'a> GameClient<'a> {
             GamePhase::Intro => {
                 if any_key_pressed {
                     self.get_game_scene_manager_mut().open_game_scene_data(GAME_SCENE_INTRO);
+                    self.clear_story_board_phase();
                     self._game_phase = GamePhase::Loading;
                 }
             }
             GamePhase::Loading => {
                 if scene_manager.is_load_complete() {
-                    if any_key_pressed || self._story_board_phase == 0 {
-                        if 2 < self._story_board_phase {
-                            self.get_game_ui_manager_mut().start_game_image_fadeout(true);
+                    let story_board_phase = self.get_story_board_phase();
+                    if any_key_pressed || story_board_phase == 0 {
+                        if STORY_BOARDS.len() <= story_board_phase {
+                            self.get_game_ui_manager_mut().set_game_image("", STORY_BOARD_FADE_TIME);
                             self._game_phase = GamePhase::GamePlay;
                         } else {
-                            let story_board_string = format!("ui/story_board/story_board_{:02}_{:02}", 0, self._story_board_phase);
-                            self.get_game_ui_manager_mut().set_game_image_material_instance(&story_board_string, 1.0);
-                            self._story_board_phase += 1;
+                            self.get_game_ui_manager_mut().set_game_image(&STORY_BOARDS[story_board_phase], STORY_BOARD_FADE_TIME);
+                            self.next_story_board_phase();
                         }
                     }
                 }

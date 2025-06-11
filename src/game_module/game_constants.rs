@@ -63,8 +63,15 @@ pub const GAME_MUSIC: &str = "game_music";
 pub const PICKUP_ITEM: &str = "pickup_item";
 
 // UI
-pub const MATERIAL_INTRO_IMAGE: &str = "ui/intro_image";
 pub const MATERIAL_CROSS_HAIR: &str = "ui/cross_hair_box";
+pub const MATERIAL_INTRO_IMAGE: &str = "ui/intro_image";
+pub const STORY_IMAGE_NONE: &str = "";
+pub const STORY_BOARD_FADE_TIME: f32 = 2.0;
+pub const STORY_BOARDS: [&str; 3] = [
+    "ui/story_board/story_board_00_00",
+    "ui/story_board/story_board_00_01",
+    "ui/story_board/story_board_00_02"
+];
 
 // EFFECT DATA
 pub const EFFECT_HIT: &str = "effect_test";

@@ -39,7 +39,7 @@ impl<'a> ItemWidget<'a> {
         ui_component.set_margin(WIDGET_UI_MARGIN);
         ui_component.set_font_color(get_color32(255, 255, 255, 255));
         ui_component.set_font_size(30.0);
-        ui_component.set_material_instance(&material_instance);
+        ui_component.set_material_instance(Some(material_instance.clone()));
         parent_widget.add_widget(&item_widget);
 
         let mut item_widget = ItemWidget {

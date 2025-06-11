@@ -5,7 +5,7 @@ use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
 use crate::application::application::Application;
 use crate::game_module::actors::items::ItemDataType;
 use crate::game_module::game_client::GameClient;
-use crate::game_module::game_constants::MATERIAL_CROSS_HAIR;
+use crate::game_module::game_constants::{MATERIAL_CROSS_HAIR, MATERIAL_INTRO_IMAGE};
 use crate::game_module::game_ui_manager::GameUIManager;
 use crate::game_module::widgets::cross_hair_widget::CrossHairWidget;
 use crate::game_module::widgets::image_widget::ImageLayout;
@@ -71,23 +71,20 @@ impl<'a> GameUIManager<'a> {
         ptr_as_mut(self._root_widget)
     }
 
-    pub fn is_visible_game_image(&self) -> bool {
-        self._game_image.as_ref().unwrap().is_visible()
+    pub fn is_done_game_image_progress(&self) -> bool {
+        self._game_image.as_ref().unwrap().is_done_game_image_progress()
     }
 
-    pub fn start_game_image_fadeout(&mut self, start_fadeout: bool) {
-        self._game_image.as_mut().unwrap().start_fadeout(start_fadeout);
-    }
-
-    pub fn set_game_image_material_instance(&mut self, material_instance: &str, fadeout_time: f32) {
+    pub fn set_game_image(&mut self, material_instance_name: &str, fadeout_time: f32) {
         let game_client = ptr_as_ref(self._game_client);
         let game_resources = game_client.get_game_resources();
-        self._game_image.as_mut().unwrap().set_material_instance(
-            game_resources,
-            &self._window_size,
-            material_instance,
-            fadeout_time
-        );
+        let material_instance = if game_resources.get_engine_resources().has_material_instance_data(material_instance_name) {
+            Some(game_resources.get_engine_resources().get_material_instance_data(material_instance_name).clone())
+        } else {
+            None
+        };
+
+        self._game_image.as_mut().unwrap().set_game_image(&game_resources, material_instance, fadeout_time);
     }
 
     pub fn build_game_ui(&mut self, window_size: &Vector2<i32>) {
@@ -107,7 +104,7 @@ impl<'a> GameUIManager<'a> {
         ui_component.set_renderable(false);
         root_widget_mut.add_widget(&game_ui_layout);
         self._game_ui_layout = game_ui_layout.as_ref();
-        self._game_image = Some(ImageLayout::create_image_layout(root_widget_mut, "ui/intro_image"));
+        self._game_image = Some(ImageLayout::create_image_layout(root_widget_mut, &self._window_size, MATERIAL_INTRO_IMAGE));
 
         let cross_hair_material_instance = game_resources.get_engine_resources().get_material_instance_data(MATERIAL_CROSS_HAIR);
         self._cross_hair = Some(Box::new(CrossHairWidget::create_cross_hair(game_ui_layout_mut, cross_hair_material_instance)));
@@ -159,9 +156,9 @@ impl<'a> GameUIManager<'a> {
             }
         }
 
-        // intro image
+        // game image
         if let Some(game_image) = self._game_image.as_mut() {
-            game_image.update_image_layout(delta_time);
+            game_image.update_game_image(delta_time);
         }
 
         // player hud
