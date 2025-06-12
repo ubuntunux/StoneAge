@@ -16,6 +16,7 @@ use crate::game_module::actors::character::CharacterCreateInfo;
 use crate::game_module::actors::character_manager::CharacterManager;
 use crate::game_module::actors::items::{ItemCreateInfo, ItemManager};
 use crate::game_module::actors::props::{PropCreateInfo, PropManager};
+use crate::game_module::game_constants::{TEMPERATURE_MAX, TEMPERATURE_MIN, TIME_OF_DAY_SPEED};
 use crate::game_module::game_resource::GameResources;
 
 pub type BlockArray<'a> = Vec<RcRefCell<RenderObjectData<'a>>>;
@@ -219,15 +220,14 @@ impl<'a> GameSceneManager<'a> {
     }
 
     pub fn update_time_of_day(&mut self, delta_time: f64) {
-        let time_of_day_speed = 100.0 / 3600.0;
-        self._time_of_day += delta_time as f32 * time_of_day_speed;
+        self._time_of_day += delta_time as f32 * TIME_OF_DAY_SPEED;
         if 24.0 <= self._time_of_day {
             self._time_of_day = self._time_of_day % 24.0;
             self._date += 1;
         }
         
         let temperature_ratio = 1.0 - (self._time_of_day - 12.0) / 12.0;
-        self._temperature = math::lerp(12.0, 32.0, temperature_ratio);
+        self._temperature = math::lerp(TEMPERATURE_MIN, TEMPERATURE_MAX, temperature_ratio);
         begin_block!("MainLight"); {
             let mut main_light = self.get_scene_manager().get_main_light().borrow_mut();
             let pitch_ratio = (self._time_of_day - 12.0) / 12.0;
@@ -249,7 +249,6 @@ impl<'a> GameSceneManager<'a> {
             }
         }
         self._blocks = blocks;
-
         self._character_manager.update_character_manager(delta_time);
     }
 }

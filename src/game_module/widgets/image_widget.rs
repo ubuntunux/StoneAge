@@ -16,8 +16,12 @@ pub struct ImageLayout<'a> {
     pub _fade_time: f32,
     pub _opacity: f32,
     pub _prev_opacity: f32,
-    pub _goal_opacity: f32,
-    pub _next_goal_opacity: f32,
+    pub _fadein_opacity: f32,
+    pub _fadeout_opacity: f32,
+    pub _image_brightness: f32,
+    pub _prev_image_brightness: f32,
+    pub _fadein_image_brightness: f32,
+    pub _fadeout_image_brightness: f32,
     pub _image_aspect: f32,
     pub _next_image_aspect: f32,
     pub _image_size_hint: f32,
@@ -47,6 +51,9 @@ impl<'a> ImageLayout<'a> {
 
         // image layout
         let image_widget = UIManager::create_widget(material_instance_name, UIWidgetTypes::Default);
+        let ui_component = ptr_as_mut(image_widget.as_ref()).get_ui_component_mut();
+        ui_component.set_color(get_color32(0, 0, 0, 255));
+        ui_component.set_visible(false);
         background_layout_mut.add_widget(&image_widget);
 
         Box::new(ImageLayout {
@@ -58,8 +65,12 @@ impl<'a> ImageLayout<'a> {
             _fade_time: 0.0,
             _opacity: 0.0,
             _prev_opacity: 0.0,
-            _goal_opacity: 0.0,
-            _next_goal_opacity: 0.0,
+            _fadein_opacity: 0.0,
+            _fadeout_opacity: 0.0,
+            _image_brightness: 0.0,
+            _prev_image_brightness: 0.0,
+            _fadein_image_brightness: 1.0,
+            _fadeout_image_brightness: 0.0,
             _image_aspect: 1.0,
             _next_image_aspect: 1.0,
             _image_size_hint: 0.9,
@@ -84,35 +95,45 @@ impl<'a> ImageLayout<'a> {
             let texture_name = texture_parameter.as_str().unwrap();
             let texture = game_resources.get_engine_resources().get_texture_data(texture_name);
             self._next_image_aspect = texture.borrow()._image_width as f32 / texture.borrow()._image_height as f32;
-            self._next_goal_opacity = 1.0;
+            self._fadeout_opacity = 1.0;
+            self._fadeout_image_brightness = 0.0;
+            self._fadein_opacity = 1.0;
+            self._fadein_image_brightness = 1.0;
         } else {
             self._next_image_aspect = 1.0;
-            self._next_goal_opacity = 0.0;
+            self._fadeout_opacity = 1.0;
+            self._fadeout_image_brightness = 0.0;
+            self._fadein_opacity = 0.0;
+            self._fadein_image_brightness = 0.0;
         }
         self._next_material_instance = material_instance;
 
         let progress = self.get_progress();
         self._initial_fade_time = fade_time;
-        self._fade_time = (1.0 - progress) * fade_time;
+        self._fade_time = fade_time * if progress <= 0.5 { progress } else { 1.0 - progress };
+
+        self._prev_opacity = self._opacity;
+        self._prev_image_brightness = self._image_brightness;
 
         self.changed_window_size(&self._window_size.clone());
 
-        //log::info!("set_game_image: progress {:?}, material: {:?}", self.get_progress(), if self._next_material_instance.is_some() { self._next_material_instance.as_ref().unwrap().borrow()._material_instance_data_name.clone() } else { String::from("None") });
+        if fade_time == 0.0 {
+            self.update_game_image(0.0, true);
+        }
     }
 
     pub fn change_game_image(&mut self) {
         let image_widget = ptr_as_mut(self._image_layout.as_ref());
         let ui_component = image_widget.get_ui_component_mut();
         ui_component.set_material_instance(self._next_material_instance.clone());
+        ui_component.set_visible(self._next_material_instance.is_some());
         self._material_instance = self._next_material_instance.clone();
         self._next_material_instance = None;
         self._image_aspect = self._next_image_aspect;
         self._prev_opacity = self._opacity;
-        self._goal_opacity = self._next_goal_opacity;
+        self._prev_image_brightness = self._image_brightness;
 
         self.changed_window_size(&self._window_size.clone());
-
-        //log::info!("change_game_image: progress {:?}, material: {:?}", self.get_progress(), if self._material_instance.is_some() { self._material_instance.as_ref().unwrap().borrow()._material_instance_data_name.clone() } else { String::from("None") });
     }
 
     pub fn is_done_game_image_progress(&self) -> bool {
@@ -120,7 +141,11 @@ impl<'a> ImageLayout<'a> {
     }
 
     pub fn get_progress(&self) -> f32 {
-        1.0_f32.min(self._fade_time / self._initial_fade_time)
+        if 0.0 != self._initial_fade_time {
+            1.0_f32.min(self._fade_time / self._initial_fade_time)
+        } else {
+            1.0
+        }
     }
 
     pub fn is_visible(&self) -> bool {
@@ -135,27 +160,26 @@ impl<'a> ImageLayout<'a> {
         ui_component.set_size_hint_y(Some(self._image_size_hint));
     }
 
-    pub fn update_game_image(&mut self, delta_time: f64) {
-        if delta_time == 0.0 {
-            return;
-        }
-
+    pub fn update_game_image(&mut self, delta_time: f64, force: bool) {
         let prev_progress = self.get_progress();
-        if prev_progress < 1.0 {
+        if prev_progress < 1.0 || force {
             // progress
             self._fade_time += delta_time as f32;
             let progress = self.get_progress();
-            if prev_progress <= 0.5 && 0.5 < progress {
+            if prev_progress <= 0.5 && 0.5 < progress || force {
                 self.change_game_image();
             }
 
             // calc opacity
             if progress == 1.0 {
-                self._opacity = self._goal_opacity;
+                self._opacity = self._fadein_opacity;
+                self._image_brightness = self._fadein_image_brightness;
             } else if progress <= 0.5 {
-                self._opacity = math::lerp(self._opacity, self._next_goal_opacity, progress * 2.0);
+                self._opacity = math::lerp(self._prev_opacity, self._fadeout_opacity, progress * 2.0);
+                self._image_brightness = math::lerp(self._prev_image_brightness, self._fadeout_image_brightness, progress * 2.0);
             } else {
-                self._opacity = math::lerp(self._opacity, self._goal_opacity, (progress - 0.5) * 2.0);
+                self._opacity = math::lerp(self._prev_opacity, self._fadein_opacity, (progress - 0.5) * 2.0);
+                self._image_brightness = math::lerp(self._prev_image_brightness, self._fadein_image_brightness, (progress - 0.5) * 2.0);
             }
 
             // set opacity
@@ -164,11 +188,10 @@ impl<'a> ImageLayout<'a> {
             ui_component.set_opacity(self._opacity);
             ui_component.set_visible(0.0 < self._opacity);
 
-            // let image_widget = ptr_as_mut(self._image_layout.as_ref());
-            // let ui_component = image_widget.get_ui_component_mut();
-            // ui_component.set_opacity(((progress - 0.5) * 2.0).abs() );
-
-            //log::info!("update_image_layout: progress {:?}, opacity: {:?}, material: {:?}", self.get_progress(), self._opacity, if self._material_instance.is_some() { self._material_instance.as_ref().unwrap().borrow()._material_instance_data_name.clone() } else { String::from("None") });
+            let image_widget = ptr_as_mut(self._image_layout.as_ref());
+            let ui_component = image_widget.get_ui_component_mut();
+            let r = (self._image_brightness * 255.0) as u32;
+            ui_component.set_color(get_color32(r, r, r, 255));
         }
     }
 }

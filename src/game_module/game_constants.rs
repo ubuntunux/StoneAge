@@ -14,6 +14,9 @@ pub const CAMERA_ZOOM_SPEED: f32 = 4.0;
 pub const CAMERA_ROTATION_SPEED_MIN: f32 = 0.5;
 pub const CAMERA_ROTATION_SPEED_MAX: f32 = 20.0;
 pub const ARRIVAL_DISTANCE_THRESHOLD: f32 = 1.0;
+pub const TIME_OF_DAY_SPEED: f32 = 1.0 / 36.0;
+pub const TEMPERATURE_MIN: f32 = 12.0;
+pub const TEMPERATURE_MAX: f32 = 32.0;
 
 // player
 pub const GRAVITY: f32 = 30.0;

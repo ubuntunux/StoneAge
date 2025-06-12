@@ -291,10 +291,6 @@ impl<'a> Character<'a> {
 
     pub fn check_falling_on_ground_damage(&mut self, last_ground_height: f32) {
         let falling_height = last_ground_height - self.get_position().y;
-        if self._is_player {
-            log::info!("Falling on ground_damage: {}", falling_height);
-        }
-
         if 0.0 < falling_height {
             let falling_damage: i32 = (falling_height - FALLING_HEIGHT).ceil() as i32 * FALLING_DAMAGE_RATIO;
             self.set_hit_damage( falling_damage, &self.get_position().clone() );

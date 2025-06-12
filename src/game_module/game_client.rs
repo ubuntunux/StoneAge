@@ -135,7 +135,7 @@ impl<'a> GameClient<'a> {
 
         match self._game_phase {
             GamePhase::None => {
-                self.get_game_ui_manager_mut().set_game_image(MATERIAL_INTRO_IMAGE, STORY_BOARD_FADE_TIME);
+                self.get_game_ui_manager_mut().set_game_image(MATERIAL_INTRO_IMAGE, 0.0);
                 game_scene_manager.play_bgm(GAME_MUSIC, Some(0.5));
                 game_scene_manager.play_ambient_sound(AMBIENT_SOUND, None);
                 self._game_phase = GamePhase::Intro;
@@ -150,7 +150,7 @@ impl<'a> GameClient<'a> {
             GamePhase::Loading => {
                 if scene_manager.is_load_complete() {
                     let story_board_phase = self.get_story_board_phase();
-                    if any_key_pressed || story_board_phase == 0 {
+                    if  (any_key_pressed || story_board_phase == 0) {
                         if STORY_BOARDS.len() <= story_board_phase {
                             self.get_game_ui_manager_mut().set_game_image("", STORY_BOARD_FADE_TIME);
                             self._game_phase = GamePhase::GamePlay;

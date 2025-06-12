@@ -158,7 +158,7 @@ impl<'a> GameUIManager<'a> {
 
         // game image
         if let Some(game_image) = self._game_image.as_mut() {
-            game_image.update_game_image(delta_time);
+            game_image.update_game_image(delta_time, false);
         }
 
         // player hud
