@@ -1,0 +1,1 @@
+cargo build --release --features packaged_build
