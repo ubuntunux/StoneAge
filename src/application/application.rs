@@ -352,7 +352,7 @@ pub fn run_application() {
         constants::MAX_PARTICLE_COUNT = 262144;
         // render option
         constants::RENDER_OCEAN = true;
-        constants::ENABLE_UPSCALE = true;
+        constants::ENABLE_UPSCALE = false;
         constants::RENDER_BOUND_BOX = false;
     }
 

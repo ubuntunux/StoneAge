@@ -674,7 +674,7 @@ impl<'a> Character<'a> {
                 if self._is_player && animation_play_info._is_animation_end {
                     // resurrection
                     self.initialize_character(
-                        &self.get_character_manager().get_game_scene_manager().get_spawn_point().clone(),
+                        &self._controller._position.clone(), //self.get_character_manager().get_game_scene_manager().get_spawn_point().clone(),
                         &self._controller._rotation.clone(),
                         &self._controller._scale.clone(),
                     );

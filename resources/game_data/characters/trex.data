@@ -25,7 +25,7 @@
         "_walk_animation_speed": 1.5
     },
     "_character_audio_data": {
-        "_audio_dead": "dino/dead",
+        "_audio_dead": "dino/dead_raptor",
         "_audio_growl": "dino/growl",
         "_audio_pain": "dino/pain_short"
     },
