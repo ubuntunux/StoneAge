@@ -3,7 +3,7 @@ use log::LevelFilter;
 use nalgebra::Vector2;
 use rust_engine_3d::audio::audio_manager::AudioManager;
 use rust_engine_3d::constants;
-use rust_engine_3d::constants::PACKAGED;
+use rust_engine_3d::constants::DEVELOPMENT;
 use rust_engine_3d::core::engine_core::{
     self, ApplicationBase, EngineCore, WindowMode,
 };
@@ -73,6 +73,10 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
         &CALLBACK
     }
 
+    fn focused(&mut self, focused: bool) {
+        self.set_game_mode(focused);
+    }
+
     fn update_event(&mut self) {
         let engine_core = ptr_as_ref(self._engine_core);
         let time_data = &engine_core._time_data;
@@ -80,8 +84,10 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
         let mouse_input_data = &engine_core._mouse_input_data;
         let keyboard_input_data = &engine_core._keyboard_input_data;
 
-        if engine_core._keyboard_input_data.get_key_pressed(KeyCode::Tab) {
-            self.toggle_game_mode();
+        if unsafe { DEVELOPMENT } {
+            if engine_core._keyboard_input_data.get_key_pressed(KeyCode::Tab) {
+                self.toggle_game_mode();
+            }
         }
 
         if false == self._is_game_mode {
@@ -197,10 +203,6 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
         }
     }
 
-    fn focused(&mut self, focused: bool) {
-        self.set_game_mode(focused);
-    }
-
     fn update_application(&mut self, delta_time: f64) {
         let engine_core = ptr_as_ref(self._engine_core.clone());
         let font_manager = engine_core.get_font_manager_mut();
@@ -283,50 +285,42 @@ impl<'a> Application<'a> {
 }
 
 pub fn run_application() {
-    // cargo build --release --features packaged_build
-    #[cfg(feature = "packaged_build")]
-    unsafe { PACKAGED = true; }
-
-    // application setting
-    logger::initialize_logger(LevelFilter::Info);
     let app_name: String = "Stone Age".to_string();
     let app_version: u32 = 1;
-    let initial_window_size: Option<Vector2<u32>> = None;// Some(Vector2::new(1024, 768));
+    let initial_window_size: Option<Vector2<u32>> = None; // Some(Vector2::new(1024, 768));
     let window_mode = WindowMode::FullScreenBorderlessMode;
 
-    // vulkan setting
-    let vulkan_api_version: u32;
-    let enable_immediate_mode: bool;
-    let is_concurrent_mode: bool;
-    let enable_validation_layer = unsafe { !PACKAGED };
-
-    #[cfg(target_os = "android")]
-    {
-        vulkan_api_version = vk::make_version(1, 0, 0);
-        enable_immediate_mode = false;
-        is_concurrent_mode = false;
-    }
-    #[cfg(not(target_os = "android"))]
-    {
-        vulkan_api_version = vk::make_api_version(0, 1, 2, 126);
-        enable_immediate_mode = true;
-        is_concurrent_mode = true;
-    }
-
+    // Graphics Settings
     unsafe {
-        constants::VULKAN_API_VERSION = vulkan_api_version;
-        constants::DEBUG_MESSAGE_LEVEL = vk::DebugUtilsMessageSeverityFlagsEXT::WARNING;
-        if enable_validation_layer {
+        #[cfg(target_os = "android")]
+        {
+            constants::VULKAN_API_VERSION = vk::make_api_version(0, 1, 2, 0);
+            constants::ENABLE_IMMEDIATE_MODE = false;
+            constants::IS_CONCURRENT_MODE = false;
+        }
+        #[cfg(not(target_os = "android"))]
+        {
+            constants::VULKAN_API_VERSION = vk::make_api_version(0, 1, 3, 0);
+            constants::ENABLE_IMMEDIATE_MODE = true;
+            constants::IS_CONCURRENT_MODE = true;
+        }
+
+        if DEVELOPMENT {
+            constants::DEBUG_MESSAGE_LEVEL = vk::DebugUtilsMessageSeverityFlagsEXT::WARNING;
             constants::REQUIRED_INSTANCE_LAYERS = vec![
                 "VK_LAYER_KHRONOS_validation".to_string(),
                 "VK_LAYER_LUNARG_standard_validation".to_string()
             ];
+        } else {
+            constants::DEBUG_MESSAGE_LEVEL = vk::DebugUtilsMessageSeverityFlagsEXT::ERROR;
         }
+
         constants::REQUIRED_DEVICE_EXTENSIONS = vec![
             "VK_KHR_swapchain".to_string(),
             "VK_KHR_buffer_device_address".to_string(),
             "VK_KHR_deferred_host_operations".to_string(),
         ];
+
         // ray tracing
         constants::USE_RAY_TRACING = false;
         constants::REQUIRED_RAY_TRACING_EXTENSIONS = vec![
@@ -335,26 +329,14 @@ pub fn run_application() {
             "VK_KHR_ray_tracing_pipeline".to_string(),
             "VK_KHR_acceleration_structure".to_string(),
         ];
-        constants::ENABLE_IMMEDIATE_MODE = enable_immediate_mode;
-        constants::IS_CONCURRENT_MODE = is_concurrent_mode;
-        constants::METER_PER_UNIT = 1.0;
-        constants::NEAR = 0.1;
-        constants::FAR = 200000.0;
-        constants::FOV = 60.0;
-        // shadow
-        constants::SHADOW_MAP_SIZE = 2048;
-        constants::SHADOW_SAMPLES = 12;
-        constants::SHADOW_DISTANCE = 100.0;
-        constants::SHADOW_DEPTH = 10000.0;
-        constants::SHADOW_DEPTH_SLOPE_BIAS = 2.5;
-        // effect
-        constants::MAX_EMITTER_COUNT = 1024;
-        constants::MAX_PARTICLE_COUNT = 262144;
-        // render option
-        constants::RENDER_OCEAN = true;
-        constants::ENABLE_UPSCALE = true;
-        constants::RENDER_BOUND_BOX = false;
+
+        constants::ENABLE_UPSCALE = false;
     }
+
+    // logger
+    logger::initialize_logger(
+        if unsafe { DEVELOPMENT } { LevelFilter::Info } else { LevelFilter::Error }
+    );
 
     // create project application & managers
     let game_resources = GameResources::create_game_resources();
