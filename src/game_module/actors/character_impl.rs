@@ -362,7 +362,7 @@ impl<'a> Character<'a> {
         let animation_data = &character_data._animation_data;
         let mut render_object = self._render_object.borrow_mut();
         match move_animation_state {
-            MoveAnimationState::Idle | MoveAnimationState::None => {
+            MoveAnimationState::None | MoveAnimationState::Idle => {
                 animation_info._animation_speed = animation_data._idle_animation_speed;
                 render_object.set_animation(&animation_data._idle_animation, &animation_info, AnimationLayer::BaseLayer);
             }
