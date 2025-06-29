@@ -1,6 +1,6 @@
 {
 	"asset":{
-		"generator":"Khronos glTF Blender I/O v4.4.55",
+		"generator":"Khronos glTF Blender I/O v4.4.56",
 		"version":"2.0"
 	},
 	"scene":0,
@@ -1337,7 +1337,7 @@
 			"children":[
 				66
 			],
-			"name":"jack.001"
+			"name":"jack"
 		}
 	],
 	"animations":[
