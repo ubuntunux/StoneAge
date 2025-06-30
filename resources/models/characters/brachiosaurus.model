@@ -1,6 +1,6 @@
 {
     "_collision": {
-        "_collision_type": "NONE",
+        "_collision_type": "BOX",
         "_extents": [
             0.5,
             0.5,

@@ -1,0 +1,47 @@
+{
+    "_character_animation_data": {
+        "_attack_animation": "characters/brachiosaurus/brachiosaurus",
+        "_attack_animation_speed": 1.0,
+        "_attack_event_time": 0.0,
+        "_dead_animation": "characters/brachiosaurus/brachiosaurus",
+        "_dead_animation_speed": 1.0,
+        "_hit_animation": "characters/brachiosaurus/brachiosaurus",
+        "_hit_animation_speed": 1.0,
+        "_idle_animation": "characters/brachiosaurus/brachiosaurus",
+        "_idle_animation_speed": 1.0,
+        "_jump_animation": "characters/brachiosaurus/brachiosaurus",
+        "_jump_animation_speed": 1.0,
+        "_power_attack_animation": "characters/brachiosaurus/brachiosaurus",
+        "_power_attack_animation_speed": 1.0,
+        "_power_attack_event_time": 0.5,
+        "_roll_animation": "characters/brachiosaurus/brachiosaurus",
+        "_roll_animation_speed": 1.0,
+        "_run_animation": "characters/brachiosaurus/brachiosaurus",
+        "_run_animation_speed": 1.0,
+        "_running_jump_animation": "characters/brachiosaurus/brachiosaurus",
+        "_running_jump_animation_speed": 1.0,
+        "_upper_animation_layer": "brachiosaurus/upper_animation_layer",
+        "_walk_animation": "characters/brachiosaurus/brachiosaurus",
+        "_walk_animation_speed": 1.0
+    },
+    "_character_audio_data": {
+        "_audio_dead": "dead",
+        "_audio_growl": "growl",
+        "_audio_pain": "pain_short"
+    },
+    "_character_name": "BRACHIOSAURUS",
+    "_character_stat_data": {
+        "_attack_damage": 50,
+        "_attack_range": 0.5,
+        "_jump_speed": 13.0,
+        "_max_hp": 100,
+        "_power_attack_damage": 100,
+        "_power_attack_range": 1.0,
+        "_roll_speed": 4.5,
+        "_run_speed": 5.400000095367432,
+        "_walk_speed": 3.0
+    },
+    "_character_type": "Roamer",
+    "_model_data_name": "characters/brachiosaurus",
+    "_name": "BRACHIOSAURUS"
+}

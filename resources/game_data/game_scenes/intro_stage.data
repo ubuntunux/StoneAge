@@ -1,5 +1,23 @@
 {
     "_characters": {
+        "brachiosaurus": {
+            "_character_data_name": "characters/brachiosaurus",
+            "_position": [
+                -2.028684616088867,
+                8.93577766418457,
+                -5.8371076583862305
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
         "neanderthal": {
             "_character_data_name": "characters/neanderthal",
             "_position": [
