@@ -150,13 +150,17 @@ impl<'a> GameClient<'a> {
             GamePhase::Loading => {
                 if scene_manager.is_load_complete() {
                     let story_board_phase = self.get_story_board_phase();
-                    if /*self.get_game_ui_manager().is_done_game_image_progress() && */ (any_key_pressed || story_board_phase == 0) {
-                        if STORY_BOARDS.len() <= story_board_phase {
-                            self.get_game_ui_manager_mut().set_game_image("", STORY_BOARD_FADE_TIME);
-                            self._game_phase = GamePhase::GamePlay;
+                    if any_key_pressed || story_board_phase == 0 {
+                        if self.get_game_ui_manager().is_done_game_image_progress() {
+                            if STORY_BOARDS.len() <= story_board_phase {
+                                self.get_game_ui_manager_mut().set_game_image("", STORY_BOARD_FADE_TIME);
+                                self._game_phase = GamePhase::GamePlay;
+                            } else {
+                                self.get_game_ui_manager_mut().set_game_image(&STORY_BOARDS[story_board_phase], STORY_BOARD_FADE_TIME);
+                                self.next_story_board_phase();
+                            }
                         } else {
-                            self.get_game_ui_manager_mut().set_game_image(&STORY_BOARDS[story_board_phase], STORY_BOARD_FADE_TIME);
-                            self.next_story_board_phase();
+                            self.get_game_ui_manager_mut().set_game_image_fade_speed(10.0);
                         }
                     }
                 }

@@ -14,6 +14,7 @@ pub struct ImageLayout<'a> {
     pub _next_material_instance: Option<RcRefCell<MaterialInstanceData<'a>>>,
     pub _initial_fade_time: f32,
     pub _fade_time: f32,
+    pub _fade_speed: f32,
     pub _opacity: f32,
     pub _prev_opacity: f32,
     pub _fadein_opacity: f32,
@@ -63,6 +64,7 @@ impl<'a> ImageLayout<'a> {
             _next_material_instance: None,
             _initial_fade_time: 0.0,
             _fade_time: 0.0,
+            _fade_speed: 1.0,
             _opacity: 0.0,
             _prev_opacity: 0.0,
             _fadein_opacity: 0.0,
@@ -76,6 +78,10 @@ impl<'a> ImageLayout<'a> {
             _image_size_hint: 0.9,
             _window_size: window_size.clone(),
         })
+    }
+
+    pub fn set_game_image_fade_speed(&mut self, fade_speed: f32) {
+        self._fade_speed = fade_speed;
     }
 
     pub fn set_game_image(
@@ -164,7 +170,7 @@ impl<'a> ImageLayout<'a> {
         let prev_progress = self.get_progress();
         if prev_progress < 1.0 || force {
             // progress
-            self._fade_time += delta_time as f32;
+            self._fade_time += self._fade_speed * delta_time as f32;
             let progress = self.get_progress();
             if prev_progress <= 0.5 && 0.5 < progress || force {
                 self.change_game_image();
@@ -172,6 +178,7 @@ impl<'a> ImageLayout<'a> {
 
             // calc opacity
             if progress == 1.0 {
+                self._fade_speed = 1.0;
                 self._opacity = self._fadein_opacity;
                 self._image_brightness = self._fadein_image_brightness;
             } else if progress <= 0.5 {

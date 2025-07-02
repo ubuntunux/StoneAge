@@ -87,6 +87,10 @@ impl<'a> GameUIManager<'a> {
         self._game_image.as_mut().unwrap().set_game_image(&game_resources, material_instance, fadeout_time);
     }
 
+    pub fn set_game_image_fade_speed(&mut self, fade_speed: f32) {
+        self._game_image.as_mut().unwrap().set_game_image_fade_speed(fade_speed);
+    }
+
     pub fn build_game_ui(&mut self, window_size: &Vector2<i32>) {
         log::info!("build_game_ui");
         self._window_size = window_size.clone();
