@@ -52,6 +52,7 @@
         "joint5_M": 1.0,
         "joint6_M": 1.0,
         "joint7_M": 1.0,
-        "joint8_M": 1.0
+        "joint8_M": 1.0,
+        "root": 1.0
     }
 }

@@ -1,15 +1,15 @@
 {
     "_collision": {
-        "_collision_type": "BOX",
+        "_collision_type": "CYLINDER",
         "_extents": [
-            0.5,
-            0.5,
-            0.5
+            3.0,
+            6.341640472412109,
+            3.0
         ],
         "_location": [
-            0,
-            0,
-            0
+            -0.36792802810668945,
+            6.316612243652344,
+            -0.4582381248474121
         ]
     },
     "_is_render_camera": true,

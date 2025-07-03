@@ -132,6 +132,13 @@ impl<'a> GameClient<'a> {
         let any_key_pressed = joystick_input_data.is_any_button_pressed() ||
             mouse_input_data.is_any_button_pressed() ||
             keyboard_input_data.is_any_key_pressed();
+        let any_key_hold = joystick_input_data.is_any_button_pressed() ||
+            mouse_input_data.is_any_button_pressed() ||
+            keyboard_input_data.is_any_key_pressed();
+
+        if any_key_pressed && self.get_game_ui_manager().is_done_game_image_progress() == false {
+            self.get_game_ui_manager_mut().set_game_image_fade_speed(10.0);
+        }
 
         match self._game_phase {
             GamePhase::None => {
@@ -159,8 +166,6 @@ impl<'a> GameClient<'a> {
                                 self.get_game_ui_manager_mut().set_game_image(&STORY_BOARDS[story_board_phase], STORY_BOARD_FADE_TIME);
                                 self.next_story_board_phase();
                             }
-                        } else {
-                            self.get_game_ui_manager_mut().set_game_image_fade_speed(10.0);
                         }
                     }
                 }
