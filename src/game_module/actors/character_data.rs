@@ -72,7 +72,6 @@ pub struct CharacterAudioDataCreateInfo {
 pub struct CharacterAnimationDataCreateInfo {
     pub _attack_animation: String,
     pub _attack_animation_speed: f32,
-    pub _attack_event_time: f32,
     pub _dead_animation: String,
     pub _dead_animation_speed: f32,
     pub _idle_animation: String,
@@ -83,7 +82,6 @@ pub struct CharacterAnimationDataCreateInfo {
     pub _jump_animation_speed: f32,
     pub _power_attack_animation: String,
     pub _power_attack_animation_speed: f32,
-    pub _power_attack_event_time: f32,
     pub _roll_animation: String,
     pub _roll_animation_speed: f32,
     pub _run_animation: String,
@@ -114,7 +112,6 @@ pub struct CharacterAudioData {
 pub struct CharacterAnimationData {
     pub _attack_animation: RcRefCell<MeshData>,
     pub _attack_animation_speed: f32,
-    pub _attack_event_time: f32,
     pub _dead_animation: RcRefCell<MeshData>,
     pub _dead_animation_speed: f32,
     pub _hit_animation: RcRefCell<MeshData>,
@@ -125,7 +122,6 @@ pub struct CharacterAnimationData {
     pub _jump_animation_speed: f32,
     pub _power_attack_animation: RcRefCell<MeshData>,
     pub _power_attack_animation_speed: f32,
-    pub _power_attack_event_time: f32,
     pub _roll_animation: RcRefCell<MeshData>,
     pub _roll_animation_speed: f32,
     pub _run_animation: RcRefCell<MeshData>,
@@ -142,8 +138,10 @@ pub struct CharacterAnimationData {
 pub struct CharacterStatData {
     pub _max_hp: i32,
     pub _attack_damage: i32,
+    pub _attack_event_time: f32,
     pub _attack_range: f32,
     pub _power_attack_damage: i32,
+    pub _power_attack_event_time: f32,
     pub _power_attack_range: f32,
     pub _jump_speed: f32,
     pub _roll_speed: f32,

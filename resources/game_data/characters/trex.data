@@ -2,7 +2,6 @@
     "_character_animation_data": {
         "_attack_animation": "characters/trex/trex_attack",
         "_attack_animation_speed": 1.0,
-        "_attack_event_time": 0.5,
         "_dead_animation": "characters/trex/trex_dead",
         "_dead_animation_speed": 1.5,
         "_hit_animation": "characters/trex/trex_attack",
@@ -13,7 +12,6 @@
         "_jump_animation_speed": 1.0,
         "_power_attack_animation": "characters/trex/trex_attack",
         "_power_attack_animation_speed": 1.5,
-        "_power_attack_event_time": 0.5,
         "_roll_animation": "characters/trex/trex_idle",
         "_roll_animation_speed": 1.0,
         "_run_animation": "characters/trex/trex_run",
@@ -25,17 +23,19 @@
         "_walk_animation_speed": 1.5
     },
     "_character_audio_data": {
-        "_audio_dead": "dino/dead_raptor",
+        "_audio_dead": "dino/roar_raptor",
         "_audio_growl": "dino/growl",
         "_audio_pain": "dino/pain_short"
     },
     "_character_name": "TREX",
     "_character_stat_data": {
         "_attack_damage": 50,
+        "_attack_event_time": 0.5,
         "_attack_range": 0.6000000238418579,
         "_jump_speed": 13.0,
         "_max_hp": 100,
         "_power_attack_damage": 100,
+        "_power_attack_event_time": 1.0,
         "_power_attack_range": 1.0,
         "_roll_speed": 4.5,
         "_run_speed": 3.5,

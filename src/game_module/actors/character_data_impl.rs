@@ -25,7 +25,6 @@ impl Default for CharacterAnimationDataCreateInfo {
         CharacterAnimationDataCreateInfo {
             _attack_animation: String::default(),
             _attack_animation_speed: 1.0,
-            _attack_event_time: 0.15,
             _dead_animation: String::default(),
             _dead_animation_speed: 1.0,
             _hit_animation: String::default(),
@@ -36,7 +35,6 @@ impl Default for CharacterAnimationDataCreateInfo {
             _jump_animation_speed: 1.0,
             _power_attack_animation: String::default(),
             _power_attack_animation_speed: 1.0,
-            _power_attack_event_time: 1.0,
             _roll_animation: String::default(),
             _roll_animation_speed: 1.0,
             _run_animation: String::default(),
@@ -85,7 +83,6 @@ impl CharacterAnimationData {
         CharacterAnimationData {
             _attack_animation: engine_resources.get_mesh_data(&animation_data_create_info._attack_animation).clone(),
             _attack_animation_speed: animation_data_create_info._attack_animation_speed,
-            _attack_event_time: animation_data_create_info._attack_event_time,
             _dead_animation: engine_resources.get_mesh_data(&animation_data_create_info._dead_animation).clone(),
             _dead_animation_speed: animation_data_create_info._dead_animation_speed,
             _hit_animation: engine_resources.get_mesh_data(&animation_data_create_info._hit_animation).clone(),
@@ -96,7 +93,6 @@ impl CharacterAnimationData {
             _jump_animation_speed: animation_data_create_info._jump_animation_speed,
             _power_attack_animation: engine_resources.get_mesh_data(&animation_data_create_info._power_attack_animation).clone(),
             _power_attack_animation_speed: animation_data_create_info._power_attack_animation_speed,
-            _power_attack_event_time: animation_data_create_info._power_attack_event_time,
             _roll_animation: engine_resources.get_mesh_data(&animation_data_create_info._roll_animation).clone(),
             _roll_animation_speed: animation_data_create_info._roll_animation_speed,
             _run_animation: engine_resources.get_mesh_data(&animation_data_create_info._run_animation).clone(),
@@ -115,8 +111,10 @@ impl Default for CharacterStatData {
         CharacterStatData {
             _max_hp: 100,
             _attack_damage: 50,
+            _attack_event_time: 0.5,
             _attack_range: 0.5,
             _power_attack_damage: 100,
+            _power_attack_event_time: 1.0,
             _power_attack_range: 1.0,
             _jump_speed: 13.0,
             _roll_speed: 4.5,

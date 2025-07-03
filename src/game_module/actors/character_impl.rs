@@ -179,7 +179,7 @@ impl<'a> Character<'a> {
 
             if self.is_action(ActionAnimationState::None) ||
                 self.is_action(ActionAnimationState::Attack) &&
-                    self.get_character_data()._animation_data._attack_event_time < action_animation_play_info._animation_play_time &&
+                    self.get_character_data()._stat_data._attack_event_time < action_animation_play_info._animation_play_time &&
                     (!self._is_player || STAMINA_ATTACK <= self._character_stats._stamina) {
                 return true;
             }
@@ -661,7 +661,7 @@ impl<'a> Character<'a> {
                 // nothing
             },
             ActionAnimationState::Attack => {
-                if animation_play_info.check_animation_event_time(character_data._animation_data._attack_event_time) {
+                if animation_play_info.check_animation_event_time(character_data._stat_data._attack_event_time) {
                     self._animation_state._attack_event = ActionAnimationState::Attack;
                     self.get_character_manager().get_scene_manager().play_audio_bank(AUDIO_ATTACK);
                 }
@@ -686,7 +686,7 @@ impl<'a> Character<'a> {
                 }
             },
             ActionAnimationState::PowerAttack => {
-                if animation_play_info.check_animation_event_time(character_data._animation_data._power_attack_event_time) {
+                if animation_play_info.check_animation_event_time(character_data._stat_data._power_attack_event_time) {
                     self.get_character_manager().get_scene_manager().play_audio_bank(AUDIO_ATTACK);
                     self._animation_state._attack_event = ActionAnimationState::PowerAttack;
                 }
