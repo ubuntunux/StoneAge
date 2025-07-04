@@ -144,6 +144,24 @@
                 1.0
             ]
         },
+        "trex_01": {
+            "_character_data_name": "characters/trex_01",
+            "_position": [
+                -22.83576202392578,
+                8.147485733032227,
+                -5.647836685180664
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
         "triceratops.001": {
             "_character_data_name": "characters/triceratops",
             "_position": [
