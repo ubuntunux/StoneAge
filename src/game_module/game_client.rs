@@ -132,12 +132,12 @@ impl<'a> GameClient<'a> {
         let any_key_pressed = joystick_input_data.is_any_button_pressed() ||
             mouse_input_data.is_any_button_pressed() ||
             keyboard_input_data.is_any_key_pressed();
-        let any_key_hold = joystick_input_data.is_any_button_pressed() ||
-            mouse_input_data.is_any_button_pressed() ||
-            keyboard_input_data.is_any_key_pressed();
+        let any_key_hold = joystick_input_data.is_any_button_hold() ||
+            mouse_input_data.is_any_button_hold() ||
+            keyboard_input_data.is_any_key_hold();
 
-        if any_key_pressed && self.get_game_ui_manager().is_done_game_image_progress() == false {
-            self.get_game_ui_manager_mut().set_game_image_fade_speed(10.0);
+        if self.get_game_ui_manager().is_done_game_image_progress() == false {
+            self.get_game_ui_manager_mut().set_game_image_fade_speed(if any_key_hold { 5.0 } else { 1.0 });
         }
 
         match self._game_phase {
