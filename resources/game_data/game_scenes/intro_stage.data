@@ -3,9 +3,9 @@
         "brachiosaurus": {
             "_character_data_name": "characters/brachiosaurus",
             "_position": [
-                -2.028684616088867,
+                12.65867805480957,
                 8.93577766418457,
-                -5.8371076583862305
+                -1.6560096740722656
             ],
             "_rotation": [
                 0.0,
@@ -57,9 +57,9 @@
         "pachycephalosaurus": {
             "_character_data_name": "characters/pachycephalosaurus",
             "_position": [
-                -13.011797904968262,
+                13.994982719421387,
                 8.356822967529297,
-                -3.00244140625
+                -5.306562423706055
             ],
             "_rotation": [
                 0.0,
@@ -78,6 +78,24 @@
                 -15.940256118774414,
                 8.154281616210938,
                 0.9977740049362183
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "parasaurolophus": {
+            "_character_data_name": "characters/parasaurolophus",
+            "_position": [
+                -13.441036224365234,
+                8.576136589050293,
+                -2.8631839752197266
             ],
             "_rotation": [
                 0.0,
