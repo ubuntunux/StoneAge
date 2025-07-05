@@ -54,6 +54,24 @@
                 1.0
             ]
         },
+        "pachycephalosaurus": {
+            "_character_data_name": "characters/pachycephalosaurus",
+            "_position": [
+                -13.011797904968262,
+                8.356822967529297,
+                -3.00244140625
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
         "spider": {
             "_character_data_name": "characters/spider",
             "_position": [
