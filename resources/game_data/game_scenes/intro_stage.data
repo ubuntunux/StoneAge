@@ -18,6 +18,24 @@
                 0.30000001192092896
             ]
         },
+        "iguanodon": {
+            "_character_data_name": "characters/iguanodon",
+            "_position": [
+                -15.789082527160645,
+                8.448822021484375,
+                -5.435676574707031
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
         "neanderthal": {
             "_character_data_name": "characters/neanderthal",
             "_position": [

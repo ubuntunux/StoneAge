@@ -1,0 +1,37 @@
+{
+    "_collision": {
+        "_collision_type": "CYLINDER",
+        "_extents": [
+            0.7909172773361206,
+            1.0,
+            0.7909172773361206
+        ],
+        "_location": [
+            0.018924713134765625,
+            1.0080749988555908,
+            -0.49517783522605896
+        ]
+    },
+    "_is_render_camera": true,
+    "_is_render_shadow": true,
+    "_material_instances": [
+        "characters/iguanodon"
+    ],
+    "_mesh": "characters/iguanodon/base",
+    "_position": [
+        0.0,
+        0.0,
+        0.0
+    ],
+    "_rotation": [
+        0.0,
+        0.0,
+        0.0
+    ],
+    "_scale": [
+        0.5,
+        0.5,
+        0.5
+    ],
+    "_sockets": {}
+}
