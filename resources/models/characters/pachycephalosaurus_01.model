@@ -1,0 +1,37 @@
+{
+    "_collision": {
+        "_collision_type": "CYLINDER",
+        "_extents": [
+            1.0,
+            1.3337513208389282,
+            1.0
+        ],
+        "_location": [
+            0.0,
+            1.331435203552246,
+            0.08494770526885986
+        ]
+    },
+    "_is_render_camera": true,
+    "_is_render_shadow": true,
+    "_material_instances": [
+        "characters/pachycephalosaurus_01"
+    ],
+    "_mesh": "characters/pachycephalosaurus_01/base",
+    "_position": [
+        0.0,
+        0.0,
+        0.0
+    ],
+    "_rotation": [
+        0.0,
+        0.0,
+        0.0
+    ],
+    "_scale": [
+        1.0,
+        1.0,
+        1.0
+    ],
+    "_sockets": {}
+}
