@@ -27,10 +27,9 @@
         "_audio_growl": "growl",
         "_audio_pain": "pain_short"
     },
-    "_character_name": "JACK",
     "_character_stat_data": {
         "_attack_damage": 50,
-        "_attack_event_time": 0.5,
+        "_attack_event_time": 0.20000000298023224,
         "_attack_range": 0.5,
         "_jump_speed": 13.0,
         "_max_hp": 100,
