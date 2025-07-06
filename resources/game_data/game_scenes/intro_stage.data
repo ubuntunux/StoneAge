@@ -144,48 +144,30 @@
                 1.0
             ]
         },
-        "stegosaurus_green": {
-            "_character_data_name": "characters/stegosaurus_green",
-            "_position": [
-                -10.03237247467041,
-                7.608874320983887,
-                -8.23615550994873
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "stegosaurus_red": {
-            "_character_data_name": "characters/stegosaurus_red",
-            "_position": [
-                -4.239480018615723,
-                8.372522354125977,
-                -7.735411167144775
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
         "trex": {
             "_character_data_name": "characters/trex",
             "_position": [
                 102.0,
                 9.0,
                 0.0
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "trex.001": {
+            "_character_data_name": "characters/trex",
+            "_position": [
+                -12.359577178955078,
+                8.19531536102295,
+                -2.2402238845825195
             ],
             "_rotation": [
                 0.0,
@@ -273,9 +255,27 @@
         "trex_01": {
             "_character_data_name": "characters/trex_01",
             "_position": [
-                -22.83576202392578,
+                -15.63474178314209,
                 8.147485733032227,
-                -5.647836685180664
+                -4.910686016082764
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "trex_02": {
+            "_character_data_name": "characters/trex_02",
+            "_position": [
+                -10.257941246032715,
+                7.9961957931518555,
+                -8.111428260803223
             ],
             "_rotation": [
                 0.0,
