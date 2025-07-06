@@ -41,6 +41,7 @@ b95aefe5-b059-4470-a559-ffdd51ba0ee0:StoneAge/meshes/characters/pachycephalosaur
 1bd6de73-ad21-4aa8-b004-1115bd4d05fd:StoneAge/meshes/characters/parasaurolophus:StoneAge-meshes-characters-parasaurolophus
 5e7fd0c8-023f-4b43-aa05-905254941cce:StoneAge/meshes/characters/pteranodon:StoneAge-meshes-characters-pteranodon
 a88efbcd-1b2b-49fe-abea-b56f58b72f80:StoneAge/meshes/characters/spider:StoneAge-meshes-characters-spider
+968a303f-6488-4848-b894-f23e853e2e34:StoneAge/meshes/characters/stegosaurus:StoneAge-meshes-characters-stegosaurus
 f0a73abd-9da5-43a6-9635-6962ae3e963d:StoneAge/meshes/characters/trex:StoneAge-meshes-characters-trex
 9e760377-7555-43cd-b1ab-18edd2417d97:StoneAge/meshes/characters/trex_01:StoneAge-meshes-characters-trex_01
 d07da559-c89b-4bec-b90c-cfeabd95fd15:StoneAge/meshes/characters/triceratops:StoneAge-meshes-characters-triceratops

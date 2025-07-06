@@ -21,9 +21,9 @@
         "iguanodon": {
             "_character_data_name": "characters/iguanodon",
             "_position": [
-                -15.789082527160645,
+                -24.644859313964844,
                 8.448822021484375,
-                -5.435676574707031
+                2.2957253456115723
             ],
             "_rotation": [
                 0.0,
@@ -75,9 +75,9 @@
         "pachycephalosaurus_01": {
             "_character_data_name": "characters/pachycephalosaurus_01",
             "_position": [
-                -15.940256118774414,
+                -28.534677505493164,
                 8.154281616210938,
-                0.9977740049362183
+                -7.619117736816406
             ],
             "_rotation": [
                 0.0,
@@ -93,9 +93,9 @@
         "parasaurolophus": {
             "_character_data_name": "characters/parasaurolophus",
             "_position": [
-                -13.441036224365234,
+                -27.37621307373047,
                 8.576136589050293,
-                -2.8631839752197266
+                3.7781004905700684
             ],
             "_rotation": [
                 0.0,
@@ -111,9 +111,9 @@
         "pteranodon": {
             "_character_data_name": "characters/pteranodon",
             "_position": [
-                -7.604593276977539,
+                -27.41822624206543,
                 8.600025177001953,
-                -7.4283952713012695
+                -0.9721546173095703
             ],
             "_rotation": [
                 0.0,
@@ -132,6 +132,42 @@
                 87.0,
                 9.0,
                 0.0
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "stegosaurus_green": {
+            "_character_data_name": "characters/stegosaurus_green",
+            "_position": [
+                -10.03237247467041,
+                7.608874320983887,
+                -8.23615550994873
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "stegosaurus_red": {
+            "_character_data_name": "characters/stegosaurus_red",
+            "_position": [
+                -4.239480018615723,
+                8.372522354125977,
+                -7.735411167144775
             ],
             "_rotation": [
                 0.0,
