@@ -252,24 +252,6 @@
                 1.0
             ]
         },
-        "trex_01": {
-            "_character_data_name": "characters/trex_01",
-            "_position": [
-                -15.63474178314209,
-                8.147485733032227,
-                -4.910686016082764
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
         "trex_02": {
             "_character_data_name": "characters/trex_02",
             "_position": [
