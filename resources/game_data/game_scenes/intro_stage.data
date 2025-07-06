@@ -108,6 +108,24 @@
                 1.0
             ]
         },
+        "pteranodon": {
+            "_character_data_name": "characters/pteranodon",
+            "_position": [
+                -7.604593276977539,
+                8.600025177001953,
+                -7.4283952713012695
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
         "spider": {
             "_character_data_name": "characters/spider",
             "_position": [
