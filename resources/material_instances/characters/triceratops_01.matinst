@@ -1,0 +1,8 @@
+{
+    "material_name": "common/render_skeletal_object",
+    "material_parameters": {
+        "textureBase": "polyperfect/Dinos/Triceratops_COL_2k",
+        "textureMaterial": "common/default_m",
+        "textureNormal": "common/default_n"
+    }
+}

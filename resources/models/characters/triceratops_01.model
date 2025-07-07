@@ -1,0 +1,37 @@
+{
+    "_collision": {
+        "_collision_type": "CYLINDER",
+        "_extents": [
+            1.3499999046325684,
+            1.1888432502746582,
+            1.3499999046325684
+        ],
+        "_location": [
+            0.0,
+            1.1739287376403809,
+            -0.2007606029510498
+        ]
+    },
+    "_is_render_camera": true,
+    "_is_render_shadow": true,
+    "_material_instances": [
+        "characters/triceratops_01"
+    ],
+    "_mesh": "characters/triceratops_01/base",
+    "_position": [
+        0.0,
+        0.0,
+        0.0
+    ],
+    "_rotation": [
+        0.0,
+        0.0,
+        0.0
+    ],
+    "_scale": [
+        0.75,
+        0.75,
+        0.7499999767169112
+    ],
+    "_sockets": {}
+}
