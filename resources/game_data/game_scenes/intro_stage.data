@@ -270,24 +270,6 @@
                 1.0
             ]
         },
-        "triceratops": {
-            "_character_data_name": "characters/triceratops",
-            "_position": [
-                -12.750831604003906,
-                9.267187118530273,
-                -3.717731475830078
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
         "triceratops.001": {
             "_character_data_name": "characters/triceratops",
             "_position": [
@@ -378,12 +360,30 @@
                 1.0
             ]
         },
-        "triceratops_01": {
-            "_character_data_name": "characters/triceratops_01",
+        "velociraptor": {
+            "_character_data_name": "characters/velociraptor",
             "_position": [
-                -9.241575241088867,
-                8.115872383117676,
-                -7.110910892486572
+                -12.17002010345459,
+                8.310977935791016,
+                -3.167316436767578
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "velociraptor_01.001": {
+            "_character_data_name": "characters/velociraptor_01.001",
+            "_position": [
+                -9.528280258178711,
+                7.730311870574951,
+                -6.9044189453125
             ],
             "_rotation": [
                 0.0,
