@@ -2,7 +2,7 @@
     "_character_animation_data": {
         "_attack_animation": "characters/pteranodon/flap",
         "_attack_animation_speed": 1.0,
-        "_dead_animation": "characters/pteranodon/look_left",
+        "_dead_animation": "characters/iguanodon/death",
         "_dead_animation_speed": 1.5,
         "_hit_animation": "characters/pteranodon/look_left",
         "_hit_animation_speed": 2.0,
@@ -18,7 +18,7 @@
         "_run_animation_speed": 1.5,
         "_running_jump_animation": "characters/pteranodon/look_left",
         "_running_jump_animation_speed": 1.0,
-        "_walk_animation": "characters/pteranodon/walk",
+        "_walk_animation": "characters/pteranodon/flap",
         "_walk_animation_speed": 1.5
     },
     "_character_audio_data": {

@@ -2,7 +2,7 @@
     "_character_animation_data": {
         "_attack_animation": "characters/parasaurolophus/attack",
         "_attack_animation_speed": 1.0,
-        "_dead_animation": "characters/parasaurolophus/roar",
+        "_dead_animation": "characters/iguanodon/death",
         "_dead_animation_speed": 1.5,
         "_hit_animation": "characters/parasaurolophus/idle",
         "_hit_animation_speed": 2.0,

@@ -1,7 +1,7 @@
 {
     "_character_animation_data": {
         "_attack_animation": "characters/velociraptor/attack",
-        "_attack_animation_speed": 1.0,
+        "_attack_animation_speed": 2.0,
         "_dead_animation": "characters/velociraptor/death",
         "_dead_animation_speed": 1.0,
         "_hit_animation_speed": 1.0,
@@ -9,7 +9,7 @@
         "_idle_animation_speed": 1.0,
         "_jump_animation_speed": 1.0,
         "_power_attack_animation": "characters/velociraptor/attack",
-        "_power_attack_animation_speed": 1.0,
+        "_power_attack_animation_speed": 2.0,
         "_roll_animation_speed": 1.0,
         "_run_animation": "characters/velociraptor/run",
         "_run_animation_speed": 1.0,
