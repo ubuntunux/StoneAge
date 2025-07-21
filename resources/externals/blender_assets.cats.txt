@@ -58,6 +58,7 @@ ace78cd3-b995-4d85-a371-a9c1abb0b0ef:StoneAge/meshes/characters/wolf:StoneAge-me
 60773708-1fcd-4b9b-91f0-426c5d747502:StoneAge/meshes/props:StoneAge-meshes-props
 39c5f465-43d3-4906-bf14-0a233db9eb9f:StoneAge/meshes/weapons:StoneAge-meshes-weapons
 93a67db6-5233-43e8-a026-ecf93c4beb74:StoneAge/models:StoneAge-models
+d3b1f5d2-c38c-4192-a499-ef2067a5714f:StoneAge/models/PolygonNatureBiomes:StoneAge-models-PolygonNatureBiomes
 32cad476-de75-4b5f-a048-8e7957ee42cd:StoneAge/models/characters:StoneAge-models-characters
 ad7441dc-7c37-4239-89b0-fcedbebd09fd:StoneAge/models/environments:StoneAge-models-environments
 06f323c9-79db-40a8-90b7-8c4c7a4827e0:StoneAge/models/landscapes:StoneAge-models-landscapes
