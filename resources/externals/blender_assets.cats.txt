@@ -30,6 +30,7 @@ f4fd25bb-393b-4e39-a128-4e29cc75e5f6:StoneAge/material_instances/characters:Ston
 c8879821-1e32-41e3-ae8c-fa6212cea24b:StoneAge/material_instances/props:StoneAge-material_instances-props
 0e8b9e18-ddae-4837-98ac-a6a73d5d9d9c:StoneAge/material_instances/weapons:StoneAge-material_instances-weapons
 c0d03080-1ee0-4f98-9217-4e8f80e916fa:StoneAge/materials:StoneAge-materials
+57ab71c6-a1dc-4c47-82da-eb4933d99cec:StoneAge/materials/PolygonNatureBiomes:StoneAge-materials-PolygonNatureBiomes
 e3ddd55b-bd11-4603-9e0e-d3917d6520a9:StoneAge/materials/common:StoneAge-materials-common
 b4a6efe7-0f70-477b-b168-13bf22b4b568:StoneAge/meshes:StoneAge-meshes
 a2176b85-d63c-4d9a-9a5a-dcd634a9e03f:StoneAge/meshes/PolygonNatureBiomes:StoneAge-meshes-PolygonNatureBiomes
@@ -59,6 +60,7 @@ ace78cd3-b995-4d85-a371-a9c1abb0b0ef:StoneAge/meshes/characters/wolf:StoneAge-me
 39c5f465-43d3-4906-bf14-0a233db9eb9f:StoneAge/meshes/weapons:StoneAge-meshes-weapons
 93a67db6-5233-43e8-a026-ecf93c4beb74:StoneAge/models:StoneAge-models
 d3b1f5d2-c38c-4192-a499-ef2067a5714f:StoneAge/models/PolygonNatureBiomes:StoneAge-models-PolygonNatureBiomes
+dc168168-6e58-481c-b0b9-a56c9658e710:StoneAge/models/PolygonNatureBiomes/Props:StoneAge-models-PolygonNatureBiomes-Props
 32cad476-de75-4b5f-a048-8e7957ee42cd:StoneAge/models/characters:StoneAge-models-characters
 ad7441dc-7c37-4239-89b0-fcedbebd09fd:StoneAge/models/environments:StoneAge-models-environments
 06f323c9-79db-40a8-90b7-8c4c7a4827e0:StoneAge/models/landscapes:StoneAge-models-landscapes
