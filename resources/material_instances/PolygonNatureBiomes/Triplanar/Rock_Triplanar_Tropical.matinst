@@ -1,0 +1,17 @@
+{
+    "material_name": "PolygonNatureBiomes/TriplanarBasic",
+    "material_parameters": {
+        "_Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "_Glossiness": 0.5,
+        "_Metallic": 0.0,
+        "_Sides": "PolygonNatureBiomes/Terrain/RockWall_Texture_01",
+        "_SidesNormal": "PolygonNatureBiomes/Terrain/RockWall_Normals_01",
+        "_Top": "PolygonNatureBiomes/Terrain/RockWall_Texture_01",
+        "_TopNormal": "PolygonNatureBiomes/Terrain/RockWall_Normals_01"
+    }
+}

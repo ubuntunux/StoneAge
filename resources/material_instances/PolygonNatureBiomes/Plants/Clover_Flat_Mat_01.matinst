@@ -1,0 +1,16 @@
+{
+    "material_name": "PolygonNatureBiomes/Standard",
+    "material_parameters": {
+        "_BumpMap": "PolygonNatureBiomes/Normals/cloverMat_01_Normals",
+        "_Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "_EmissionMap": "common/flat_black",
+        "_Glossiness": 0.20000000298023224,
+        "_MainTex": "PolygonNatureBiomes/Plants/cloverMat_01",
+        "_Metallic": 0.0
+    }
+}

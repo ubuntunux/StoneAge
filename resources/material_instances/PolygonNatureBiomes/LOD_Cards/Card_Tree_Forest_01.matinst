@@ -1,0 +1,33 @@
+{
+    "material_name": "PolygonNatureBiomes/VegetationShader",
+    "material_parameters": {
+        "_BaseColour": [
+            0.0784313827753067,
+            0.020159680396318436,
+            0.0,
+            0.0
+        ],
+        "_EmissiveColour": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+        ],
+        "_EmissiveMask": "common/flat_white",
+        "_GustFreq": 0.2240000069141388,
+        "_GustLargeFreq": 0.289000004529953,
+        "_GustNoiseMap": "common/flat_white",
+        "_LeafNormalMap": "PolygonNatureBiomes/LOD_Cards/treeForest_01_Normals",
+        "_LeafSmoothness": 0.0,
+        "_LeafTex": "PolygonNatureBiomes/LOD_Cards/treeForest_01",
+        "_TrunkBaseColour": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+        ],
+        "_TrunkNormalMap": "PolygonNatureBiomes/LOD_Cards/treeForest_01_Normals",
+        "_TrunkSmoothness": 0.0,
+        "_TunkTex": "PolygonNatureBiomes/LOD_Cards/treeForest_01"
+    }
+}

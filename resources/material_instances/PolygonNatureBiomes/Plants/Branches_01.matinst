@@ -1,0 +1,33 @@
+{
+    "material_name": "PolygonNatureBiomes/VegetationShader",
+    "material_parameters": {
+        "_BaseColour": [
+            0.0784313827753067,
+            0.020159680396318436,
+            0.0,
+            0.0
+        ],
+        "_EmissiveColour": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+        ],
+        "_EmissiveMask": "common/flat_white",
+        "_GustFreq": 0.2240000069141388,
+        "_GustLargeFreq": 0.10700000077486038,
+        "_GustNoiseMap": "common/flat_white",
+        "_LeafNormalMap": "common/flat_white",
+        "_LeafSmoothness": 0.48399999737739563,
+        "_LeafTex": "PolygonNatureBiomes/Plants/Branches_01",
+        "_TrunkBaseColour": [
+            0.0784313827753067,
+            0.020159680396318436,
+            0.0,
+            0.0
+        ],
+        "_TrunkNormalMap": "common/flat_white",
+        "_TrunkSmoothness": 0.20000000298023224,
+        "_TunkTex": "PolygonNatureBiomes/Plants/Branches_01"
+    }
+}

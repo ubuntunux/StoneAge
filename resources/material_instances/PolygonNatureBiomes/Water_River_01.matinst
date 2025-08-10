@@ -1,0 +1,15 @@
+{
+    "material_name": "PolygonNatureBiomes/WaterShader",
+    "material_parameters": {
+        "_DistortionMap": "PolygonNatureBiomes/Normals/Water_Refraction_Map 1",
+        "_FoamMask": "common/flat_white",
+        "_Glossiness": 0.5,
+        "_Metallic": 0.0,
+        "_Opacity": 1.0,
+        "_Refraction": "common/flat_white",
+        "_Tiling": 0.36000001430511475,
+        "_WaterNormal": "common/flat_white",
+        "_WaveMask": "common/flat_white",
+        "_waveTime": 1.0
+    }
+}
