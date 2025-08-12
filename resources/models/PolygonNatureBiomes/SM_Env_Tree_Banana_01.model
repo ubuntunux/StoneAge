@@ -16,7 +16,7 @@
     "_is_render_shadow": true,
     "_material_instances": [
         "PolygonNatureBiomes/LOD_Cards/Card_Tree_Banana_01",
-        "PolygonNatureBiomes/LOD_Cards/Card_Tree_Banana_01"
+        "PolygonNatureBiomes/Plants/Palm_Mat_07"
     ],
     "_mesh": "PolygonNatureBiomes/SM_Env_Tree_Banana_01",
     "_position": [
