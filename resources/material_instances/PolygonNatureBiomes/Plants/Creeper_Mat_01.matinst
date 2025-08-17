@@ -2,6 +2,8 @@
     "material_name": "PolygonNatureBiomes/Standard",
     "material_parameters": {
         "_BumpMap": "PolygonNatureBiomes/Normals/Creeper_01_Normals",
+        "_BumpMapScaleX": 1.0,
+        "_BumpMapScaleY": 1.0,
         "_Color": [
             1.0,
             1.0,
@@ -9,8 +11,12 @@
             1.0
         ],
         "_EmissionMap": "common/flat_black",
+        "_EmissionMapScaleX": 1.0,
+        "_EmissionMapScaleY": 1.0,
         "_Glossiness": 0.12999999523162842,
         "_MainTex": "PolygonNatureBiomes/Plants/Creeper_01",
+        "_MainTexScaleX": 1.0,
+        "_MainTexScaleY": 1.0,
         "_Metallic": 0.23800000548362732
     }
 }

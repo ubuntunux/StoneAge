@@ -14,12 +14,18 @@
             0.0
         ],
         "_EmissiveMask": "common/flat_white",
+        "_EmissiveMaskScaleX": 1.0,
+        "_EmissiveMaskScaleY": 1.0,
         "_GustFreq": 0.2240000069141388,
         "_GustLargeFreq": 0.289000004529953,
         "_GustNoiseMap": "common/flat_white",
         "_LeafNormalMap": "PolygonNatureBiomes/LOD_Cards/treeForest_01_Normals",
+        "_LeafNormalMapScaleX": 1.0,
+        "_LeafNormalMapScaleY": 1.0,
         "_LeafSmoothness": 0.0,
         "_LeafTex": "PolygonNatureBiomes/LOD_Cards/treeForest_01",
+        "_LeafTexScaleX": 1.0,
+        "_LeafTexScaleY": 1.0,
         "_TrunkBaseColour": [
             0.0,
             0.0,
@@ -27,7 +33,11 @@
             0.0
         ],
         "_TrunkNormalMap": "PolygonNatureBiomes/LOD_Cards/treeForest_01_Normals",
+        "_TrunkNormalMapScaleX": 1.0,
+        "_TrunkNormalMapScaleY": 1.0,
         "_TrunkSmoothness": 0.0,
-        "_TunkTex": "PolygonNatureBiomes/LOD_Cards/treeForest_01"
+        "_TunkTex": "PolygonNatureBiomes/LOD_Cards/treeForest_01",
+        "_TunkTexScaleX": 1.0,
+        "_TunkTexScaleY": 1.0
     }
 }

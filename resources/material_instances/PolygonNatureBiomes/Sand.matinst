@@ -2,6 +2,8 @@
     "material_name": "PolygonNatureBiomes/Standard",
     "material_parameters": {
         "_BumpMap": "PolygonNatureBiomes/Terrain/Sand_Normals_02",
+        "_BumpMapScaleX": 1.0,
+        "_BumpMapScaleY": 1.0,
         "_Color": [
             1.0,
             1.0,
@@ -9,8 +11,12 @@
             1.0
         ],
         "_EmissionMap": "common/flat_black",
+        "_EmissionMapScaleX": 1.0,
+        "_EmissionMapScaleY": 1.0,
         "_Glossiness": 0.0,
         "_MainTex": "PolygonNatureBiomes/Terrain/Sand_Texture_02",
+        "_MainTexScaleX": 1.0,
+        "_MainTexScaleY": 1.0,
         "_Metallic": 0.0
     }
 }

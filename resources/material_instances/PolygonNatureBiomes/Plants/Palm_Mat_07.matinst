@@ -14,12 +14,18 @@
             0.0
         ],
         "_EmissiveMask": "common/flat_white",
+        "_EmissiveMaskScaleX": 1.0,
+        "_EmissiveMaskScaleY": 1.0,
         "_GustFreq": 0.2240000069141388,
         "_GustLargeFreq": 0.08100000023841858,
         "_GustNoiseMap": "common/flat_white",
         "_LeafNormalMap": "PolygonNatureBiomes/Normals/Leaf_Palm_01_Normals",
+        "_LeafNormalMapScaleX": 1.0,
+        "_LeafNormalMapScaleY": 1.0,
         "_LeafSmoothness": 0.49000000953674316,
         "_LeafTex": "PolygonNatureBiomes/Plants/Leaf_Palm_01",
+        "_LeafTexScaleX": 1.0,
+        "_LeafTexScaleY": 1.0,
         "_TrunkBaseColour": [
             0.0784313827753067,
             0.020159680396318436,
@@ -27,7 +33,11 @@
             0.0
         ],
         "_TrunkNormalMap": "PolygonNatureBiomes/Normals/Palm_Bark_02_Normals",
+        "_TrunkNormalMapScaleX": 1.0,
+        "_TrunkNormalMapScaleY": 1.0,
         "_TrunkSmoothness": 0.20000000298023224,
-        "_TunkTex": "PolygonNatureBiomes/Plants/Palm_Bark_02"
+        "_TunkTex": "PolygonNatureBiomes/Plants/Palm_Bark_02",
+        "_TunkTexScaleX": 1.0,
+        "_TunkTexScaleY": 1.0
     }
 }

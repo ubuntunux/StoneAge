@@ -2,66 +2,75 @@
 
 layout(binding = USER_BINDING_INDEX0) uniform sampler2D _Top;
 layout(binding = USER_BINDING_INDEX1) uniform sampler2D _TopNormal;
-layout(binding = USER_BINDING_INDEX2) uniform sampler2D _Slides;
-layout(binding = USER_BINDING_INDEX3) uniform sampler2D _SlidesNormal;
+layout(binding = USER_BINDING_INDEX2) uniform sampler2D _Sides;
+layout(binding = USER_BINDING_INDEX3) uniform sampler2D _SidesNormal;
 
 BEGIN_PUSH_CONSTANT(PushConstant_TriplanarBasic)
     vec4 _Color;
-    vec2 _Tiling;
+    float _Glossiness;
+    float _Metallic;
+    float _Tiling;
+    float _TopScaleX;
+    float _TopScaleY;
+    float _TopNormalScaleX;
+    float _TopNormalScaleY;
+    float _SidesScaleX;
+    float _SidesScaleY;
+    float _SidesNormalScaleX;
+    float _SidesNormalScaleY;
+    float _reserved0;
 END_PUSH_CONSTANT()
 
 #if SHADER_STAGE_FLAG == VERTEX
 VERTEX_SHADER_MAIN()
 {
-    // out_world_offset = vec3(pow(in_relative_position.y - in_local_latrix[3].y, 2.0) * sin(scene_constants.TIME + random(in_local_latrix[3].xyz) * 13.1423), 0.0, 0.0);
 }
 
 #elif SHADER_STAGE_FLAG == FRAGMENT
 
-inline float4 TriplanarSampling8( sampler2D topTexMap, sampler2D midTexMap, sampler2D botTexMap, float3 worldPos, float3 worldNormal, float falloff, float2 tiling, float3 normalScale, float3 index )
+
+vec3 TriplanarSamplingNormal( sampler2D topTexMap, sampler2D midTexMap, sampler2D botTexMap, vec3 worldPos, vec3 worldNormal, float falloff, vec2 tiling )
 {
-    float3 projNormal = ( pow( abs( worldNormal ), falloff ) );
-    projNormal /= ( projNormal.x + projNormal.y + projNormal.z ) + 0.00001;
-    float3 nsign = sign( worldNormal );
+    vec3 projNormal = safe_normalize( pow( abs( worldNormal ), vec3(falloff) ) );
+    vec3 nsign = sign( worldNormal );
     float negProjNormalY = max( 0, projNormal.y * -nsign.y );
     projNormal.y = max( 0, projNormal.y * nsign.y );
-    half4 xNorm; half4 yNorm; half4 yNormN; half4 zNorm;
-    xNorm  = tex2D( midTexMap, tiling * worldPos.zy * float2(  nsign.x, 1.0 ) );
-    yNorm  = tex2D( topTexMap, tiling * worldPos.xz * float2(  nsign.y, 1.0 ) );
-    yNormN = tex2D( botTexMap, tiling * worldPos.xz * float2(  nsign.y, 1.0 ) );
-    zNorm  = tex2D( midTexMap, tiling * worldPos.xy * float2( -nsign.z, 1.0 ) );
-    return xNorm * projNormal.x + yNorm * projNormal.y + yNormN * negProjNormalY + zNorm * projNormal.z;
+    vec3 xNorm, yNorm, yNormN, zNorm;
+    xNorm  = texture( midTexMap, tiling * worldPos.zy * vec2(  nsign.x, 1.0 ) ).xyz * 2.0 - 1.0;
+    yNorm  = texture( topTexMap, tiling * worldPos.xz * vec2(  nsign.y, 1.0 ) ).xyz * 2.0 - 1.0;
+    yNormN = texture( botTexMap, tiling * worldPos.xz * vec2(  nsign.y, 1.0 ) ).xyz * 2.0 - 1.0;
+    zNorm  = texture( midTexMap, tiling * worldPos.xy * vec2( -nsign.z, 1.0 ) ).xyz * 2.0 - 1.0;
+    return safe_normalize(xNorm * projNormal.x + yNorm * projNormal.y + yNormN * negProjNormalY + zNorm * projNormal.z);
 }
 
-
-inline float4 TriplanarSampling5( sampler2D topTexMap, sampler2D midTexMap, sampler2D botTexMap, float3 worldPos, float3 worldNormal, float falloff, float2 tiling, float3 normalScale, float3 index )
+vec4 TriplanarSampling( sampler2D topTexMap, sampler2D midTexMap, sampler2D botTexMap, vec3 worldPos, vec3 worldNormal, float falloff, vec2 tiling )
 {
-    float3 projNormal = ( pow( abs( worldNormal ), falloff ) );
-    projNormal /= ( projNormal.x + projNormal.y + projNormal.z ) + 0.00001;
-    float3 nsign = sign( worldNormal );
+    vec3 projNormal = safe_normalize( pow( abs( worldNormal ), vec3(falloff) ) );
+    vec3 nsign = sign( worldNormal );
     float negProjNormalY = max( 0, projNormal.y * -nsign.y );
     projNormal.y = max( 0, projNormal.y * nsign.y );
-    half4 xNorm; half4 yNorm; half4 yNormN; half4 zNorm;
-    xNorm  = tex2D( midTexMap, tiling * worldPos.zy * float2(  nsign.x, 1.0 ) );
-    yNorm  = tex2D( topTexMap, tiling * worldPos.xz * float2(  nsign.y, 1.0 ) );
-    yNormN = tex2D( botTexMap, tiling * worldPos.xz * float2(  nsign.y, 1.0 ) );
-    zNorm  = tex2D( midTexMap, tiling * worldPos.xy * float2( -nsign.z, 1.0 ) );
+    vec4 xNorm, yNorm, yNormN, zNorm;
+    xNorm  = texture( midTexMap, tiling * worldPos.zy * vec2(  nsign.x, 1.0 ) );
+    yNorm  = texture( topTexMap, tiling * worldPos.xz * vec2(  nsign.y, 1.0 ) );
+    yNormN = texture( botTexMap, tiling * worldPos.xz * vec2(  nsign.y, 1.0 ) );
+    zNorm  = texture( midTexMap, tiling * worldPos.xy * vec2( -nsign.z, 1.0 ) );
     return xNorm * projNormal.x + yNorm * projNormal.y + yNormN * negProjNormalY + zNorm * projNormal.z;
 }
 
 FRAGMENT_SHADER_MAIN()
 {
-    float3 ase_worldPos = i.worldPos;
-    float3 ase_worldNormal = WorldNormalVector( i, float3( 0, 0, 1 ) );
-    float4 triplanar8 = TriplanarSampling8( _TopNormal, _SidesNormal, _SidesNormal, ase_worldPos, ase_worldNormal, _FallOff, _Tiling, float3( 1,1,1 ), float3(0,0,0) );
-    o.Normal = UnpackNormal( triplanar8 );
-    float4 triplanar5 = TriplanarSampling5( _Top, _Sides, _Sides, ase_worldPos, ase_worldNormal, _FallOff, _Tiling, float3( 1,1,1 ), float3(0,0,0) );
-    o.Albedo = triplanar5.xyz;
-    o.Alpha = 1;
+    vec3 ase_worldPos = in_vertex_output._relative_position.xyz + view_constants.CAMERA_POSITION;
+    vec3 ase_worldNormal = vec3(0,1,0);//normalize(in_vertex_output._tangent_to_world[2]);
+    float _FallOff = 10.0;
 
-    out_base_color = texture(_LeafTex, in_vertex_output._texCoord);
-    out_base_color.xyz = pow(out_base_color.xyz, vec3(2.2));
-    out_material = texture(textureMaterial, in_vertex_output._texCoord);
-    out_tangent_normal = texture(_LeafNormalMap, in_vertex_output._texCoord).xyz * 2.0 - 1.0;
+    vec4 baseColor = TriplanarSampling(_Top, _Sides, _Sides, ase_worldPos, ase_worldNormal, _FallOff, vec2(push_constant._Tiling));
+    out_base_color.xyz = pow(baseColor.xyz, vec3(2.2));
+    out_base_color.w = 1.0;
+
+    // x: roughness, y: metallic, z: emissive intensity
+    const float emissive_intensity = 0.0;
+    out_material = vec4(1.0 - push_constant._Glossiness, push_constant._Metallic, emissive_intensity, 1.0);
+
+    out_tangent_normal = TriplanarSamplingNormal(_TopNormal, _SidesNormal, _SidesNormal, ase_worldPos, ase_worldNormal, _FallOff, vec2(push_constant._Tiling));
 }
 #endif

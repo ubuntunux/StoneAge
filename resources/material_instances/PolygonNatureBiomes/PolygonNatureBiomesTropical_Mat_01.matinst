@@ -2,6 +2,8 @@
     "material_name": "PolygonNatureBiomes/Standard",
     "material_parameters": {
         "_BumpMap": "common/flat_white",
+        "_BumpMapScaleX": 1.0,
+        "_BumpMapScaleY": 1.0,
         "_Color": [
             1.0,
             1.0,
@@ -9,8 +11,12 @@
             1.0
         ],
         "_EmissionMap": "PolygonNatureBiomes/PolygonNatureBiomes_Tropical_Emissive_01",
+        "_EmissionMapScaleX": 1.0,
+        "_EmissionMapScaleY": 1.0,
         "_Glossiness": 0.20000000298023224,
         "_MainTex": "PolygonNatureBiomes/PolygonNatureBiomes_Tropical_Texture_01",
+        "_MainTexScaleX": 1.0,
+        "_MainTexScaleY": 1.0,
         "_Metallic": 0.0
     }
 }

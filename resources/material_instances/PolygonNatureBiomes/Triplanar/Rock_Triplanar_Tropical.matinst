@@ -11,7 +11,16 @@
         "_Metallic": 0.0,
         "_Sides": "PolygonNatureBiomes/Terrain/RockWall_Texture_01",
         "_SidesNormal": "PolygonNatureBiomes/Terrain/RockWall_Normals_01",
+        "_SidesNormalScaleX": 1.0,
+        "_SidesNormalScaleY": 1.0,
+        "_SidesScaleX": 1.0,
+        "_SidesScaleY": 1.0,
+        "_Tiling": 0.20000000298023224,
         "_Top": "PolygonNatureBiomes/Terrain/RockWall_Texture_01",
-        "_TopNormal": "PolygonNatureBiomes/Terrain/RockWall_Normals_01"
+        "_TopNormal": "PolygonNatureBiomes/Terrain/RockWall_Normals_01",
+        "_TopNormalScaleX": 1.0,
+        "_TopNormalScaleY": 1.0,
+        "_TopScaleX": 1.0,
+        "_TopScaleY": 1.0
     }
 }

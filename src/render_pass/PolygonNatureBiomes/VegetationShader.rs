@@ -20,7 +20,19 @@ pub struct PushConstant_VegetationShader {
     pub _GustFreq: f32,
     pub _GustLargeFreq: f32,
     pub _LeafSmoothness: f32,
-    pub _TrunkSmoothness: f32
+    pub _TrunkSmoothness: f32,
+    pub _EmissiveMaskScaleX: f32,
+    pub _EmissiveMaskScaleY: f32,
+    pub _GustNoiseMapScaleX: f32,
+    pub _GustNoiseMapScaleY: f32,
+    pub _LeafNormalMapScaleX: f32,
+    pub _LeafNormalMapScaleY: f32,
+    pub _LeafTexScaleX: f32,
+    pub _LeafTexScaleY: f32,
+    pub _TrunkNormalMapScaleX: f32,
+    pub _TrunkNormalMapScaleY: f32,
+    pub _TunkTexScaleX: f32,
+    pub _TunkTexScaleY: f32
 }
 
 impl Default for PushConstant_VegetationShader {
@@ -33,7 +45,19 @@ impl Default for PushConstant_VegetationShader {
             _GustFreq: 0.0,
             _GustLargeFreq: 0.0,
             _LeafSmoothness: 0.0,
-            _TrunkSmoothness: 0.0
+            _TrunkSmoothness: 0.0,
+            _EmissiveMaskScaleX: 1.0,
+            _EmissiveMaskScaleY: 1.0,
+            _GustNoiseMapScaleX: 1.0,
+            _GustNoiseMapScaleY: 1.0,
+            _LeafNormalMapScaleX: 1.0,
+            _LeafNormalMapScaleY: 1.0,
+            _LeafTexScaleX: 1.0,
+            _LeafTexScaleY: 1.0,
+            _TrunkNormalMapScaleX: 1.0,
+            _TrunkNormalMapScaleY: 1.0,
+            _TunkTexScaleX: 1.0,
+            _TunkTexScaleY: 1.0,
         }
     }
 }
@@ -73,6 +97,54 @@ impl PushConstant for PushConstant_VegetationShader {
         } else if "_TrunkSmoothness" == key {
             if let PushConstantParameter::Float(value) = value {
                 self._TrunkSmoothness = *value;
+            }
+        } else if "_EmissiveMaskScaleX" == key {
+            if let PushConstantParameter::Float(value) = value {
+                self._EmissiveMaskScaleX = *value;
+            }
+        } else if "_EmissiveMaskScaleY" == key {
+            if let PushConstantParameter::Float(value) = value {
+                self._EmissiveMaskScaleY = *value;
+            }
+        } else if "_GustNoiseMapScaleX" == key {
+            if let PushConstantParameter::Float(value) = value {
+                self._GustNoiseMapScaleX = *value;
+            }
+        } else if "_GustNoiseMapScaleY" == key {
+            if let PushConstantParameter::Float(value) = value {
+                self._GustNoiseMapScaleY = *value;
+            }
+        } else if "_LeafNormalMapScaleX" == key {
+            if let PushConstantParameter::Float(value) = value {
+                self._LeafNormalMapScaleX = *value;
+            }
+        } else if "_LeafNormalMapScaleY" == key {
+            if let PushConstantParameter::Float(value) = value {
+                self._LeafNormalMapScaleY = *value;
+            }
+        } else if "_LeafTexScaleX" == key {
+            if let PushConstantParameter::Float(value) = value {
+                self._LeafTexScaleX = *value;
+            }
+        } else if "_LeafTexScaleY" == key {
+            if let PushConstantParameter::Float(value) = value {
+                self._LeafTexScaleY = *value;
+            }
+        } else if "_TrunkNormalMapScaleX" == key {
+            if let PushConstantParameter::Float(value) = value {
+                self._TrunkNormalMapScaleX = *value;
+            }
+        } else if "_TrunkNormalMapScaleY" == key {
+            if let PushConstantParameter::Float(value) = value {
+                self._TrunkNormalMapScaleY = *value;
+            }
+        } else if "_TunkTexScaleX" == key {
+            if let PushConstantParameter::Float(value) = value {
+                self._TunkTexScaleX = *value;
+            }
+        } else if "_TunkTexScaleY" == key {
+            if let PushConstantParameter::Float(value) = value {
+                self._TunkTexScaleY = *value;
             }
         } else {
             return self._push_constant_base.set_push_constant_parameter(key, value);

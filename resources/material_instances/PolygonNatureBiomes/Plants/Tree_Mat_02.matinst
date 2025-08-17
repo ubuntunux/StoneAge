@@ -14,12 +14,18 @@
             0.0
         ],
         "_EmissiveMask": "common/flat_white",
+        "_EmissiveMaskScaleX": 1.0,
+        "_EmissiveMaskScaleY": 1.0,
         "_GustFreq": 0.2240000069141388,
         "_GustLargeFreq": 0.10700000077486038,
         "_GustNoiseMap": "common/flat_white",
         "_LeafNormalMap": "common/flat_white",
+        "_LeafNormalMapScaleX": 1.0,
+        "_LeafNormalMapScaleY": 1.0,
         "_LeafSmoothness": 0.20000000298023224,
         "_LeafTex": "PolygonNatureBiomes/Plants/leafPatch_02",
+        "_LeafTexScaleX": 1.0,
+        "_LeafTexScaleY": 1.0,
         "_TrunkBaseColour": [
             0.0784313827753067,
             0.020159680396318436,
@@ -27,7 +33,11 @@
             0.0
         ],
         "_TrunkNormalMap": "common/flat_white",
+        "_TrunkNormalMapScaleX": 1.0,
+        "_TrunkNormalMapScaleY": 1.0,
         "_TrunkSmoothness": 0.20000000298023224,
-        "_TunkTex": "PolygonNatureBiomes/PolygonNatureBiomes_Tropical_Texture_01"
+        "_TunkTex": "PolygonNatureBiomes/PolygonNatureBiomes_Tropical_Texture_01",
+        "_TunkTexScaleX": 1.0,
+        "_TunkTexScaleY": 1.0
     }
 }
