@@ -1,0 +1,26 @@
+{
+    "material_name": "PolygonNatureBiomes/TriplanarBasic",
+    "material_parameters": {
+        "_Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "_Glossiness": 0.0,
+        "_Metallic": 0.0,
+        "_Sides": "PolygonNatureBiomes/Terrain/RockWall_Texture_01",
+        "_SidesNormal": "PolygonNatureBiomes/Terrain/Rock_Normals_01",
+        "_SidesNormalScaleX": 1.0,
+        "_SidesNormalScaleY": 1.0,
+        "_SidesScaleX": 1.0,
+        "_SidesScaleY": 1.0,
+        "_Tiling": 1.0,
+        "_Top": "PolygonNatureBiomes/Terrain/Grass_Texture_01",
+        "_TopNormal": "PolygonNatureBiomes/Terrain/Ground_Normals_01",
+        "_TopNormalScaleX": 1.0,
+        "_TopNormalScaleY": 1.0,
+        "_TopScaleX": 1.0,
+        "_TopScaleY": 1.0
+    }
+}

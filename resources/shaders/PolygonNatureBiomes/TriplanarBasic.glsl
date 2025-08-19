@@ -60,7 +60,7 @@ vec4 TriplanarSampling( sampler2D topTexMap, sampler2D midTexMap, sampler2D botT
 FRAGMENT_SHADER_MAIN()
 {
     vec3 ase_worldPos = in_vertex_output._relative_position.xyz + view_constants.CAMERA_POSITION;
-    vec3 ase_worldNormal = vec3(0,1,0);//normalize(in_vertex_output._tangent_to_world[2]);
+    vec3 ase_worldNormal = normalize(in_vertex_output._tangent_to_world[2]);
     float _FallOff = 10.0;
 
     vec4 baseColor = TriplanarSampling(_Top, _Sides, _Sides, ase_worldPos, ase_worldNormal, _FallOff, vec2(push_constant._Tiling));
