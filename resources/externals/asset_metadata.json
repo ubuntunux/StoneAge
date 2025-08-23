@@ -453,7 +453,7 @@
             "asset_path": "PolygonNatureBiomes/SkyBoxUnlit",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/materials/PolygonNatureBiomes/materials.blend",
             "guid": "",
-            "mtime": 1755966385.3629417,
+            "mtime": 1755969159.8678422,
             "data": {}
         },
         {
@@ -461,7 +461,7 @@
             "asset_path": "PolygonNatureBiomes/Standard",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/materials/PolygonNatureBiomes/materials.blend",
             "guid": "",
-            "mtime": 1755966385.3629417,
+            "mtime": 1755969159.8678422,
             "data": {}
         },
         {
@@ -469,7 +469,7 @@
             "asset_path": "PolygonNatureBiomes/TriplanarBasic",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/materials/PolygonNatureBiomes/materials.blend",
             "guid": "",
-            "mtime": 1755966385.3629417,
+            "mtime": 1755969159.8678422,
             "data": {}
         },
         {
@@ -477,7 +477,7 @@
             "asset_path": "PolygonNatureBiomes/VegetationShader",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/materials/PolygonNatureBiomes/materials.blend",
             "guid": "",
-            "mtime": 1755966385.3629417,
+            "mtime": 1755969159.8678422,
             "data": {}
         },
         {
@@ -485,7 +485,7 @@
             "asset_path": "PolygonNatureBiomes/WaterShader",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/materials/PolygonNatureBiomes/materials.blend",
             "guid": "",
-            "mtime": 1755966385.3629417,
+            "mtime": 1755969159.8678422,
             "data": {}
         }
     ],
@@ -4363,7 +4363,7 @@
             "asset_path": "PolygonNatureBiomes/PolygonNatureBiomesTropical_Mat_01",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Bld_Giant_Column_01.blend",
             "guid": "",
-            "mtime": 1755966863.2746909,
+            "mtime": 1755969192.8472958,
             "data": {}
         },
         {
@@ -4371,7 +4371,7 @@
             "asset_path": "PolygonNatureBiomes/SM_Bld_Giant_Column_01",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Bld_Giant_Column_01.blend",
             "guid": "",
-            "mtime": 1755966863.2746909,
+            "mtime": 1755969192.8472958,
             "data": {}
         }
     ],
@@ -4381,7 +4381,7 @@
             "asset_path": "PolygonNatureBiomes/BASEMat_01",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Bld_RopeBridge_01.blend",
             "guid": "",
-            "mtime": 1755966863.4842577,
+            "mtime": 1755969193.0746198,
             "data": {}
         },
         {
@@ -4389,7 +4389,7 @@
             "asset_path": "PolygonNatureBiomes/SM_Bld_RopeBridge_01",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Bld_RopeBridge_01.blend",
             "guid": "",
-            "mtime": 1755966863.4842577,
+            "mtime": 1755969193.0746198,
             "data": {}
         }
     ],
@@ -4399,7 +4399,7 @@
             "asset_path": "PolygonNatureBiomes/Plants/Tree_Mat_01",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Bush_01.blend",
             "guid": "",
-            "mtime": 1755966865.073809,
+            "mtime": 1755969194.824036,
             "data": {}
         },
         {
@@ -4407,7 +4407,7 @@
             "asset_path": "PolygonNatureBiomes/SM_Env_Bush_01",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Bush_01.blend",
             "guid": "",
-            "mtime": 1755966865.073809,
+            "mtime": 1755969194.824036,
             "data": {}
         }
     ],
@@ -4417,7 +4417,7 @@
             "asset_path": "PolygonNatureBiomes/Plants/Tree_Mat_02_Small",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Bush_02.blend",
             "guid": "",
-            "mtime": 1755966865.117876,
+            "mtime": 1755969194.866338,
             "data": {}
         },
         {
@@ -4425,7 +4425,7 @@
             "asset_path": "PolygonNatureBiomes/SM_Env_Bush_02",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Bush_02.blend",
             "guid": "",
-            "mtime": 1755966865.117876,
+            "mtime": 1755969194.866338,
             "data": {}
         }
     ],
@@ -4435,7 +4435,7 @@
             "asset_path": "PolygonNatureBiomes/LOD_Cards/Card_Bush_Palm_01",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Bush_Palm_01.blend",
             "guid": "",
-            "mtime": 1755966865.1416535,
+            "mtime": 1755969194.8980439,
             "data": {}
         },
         {
@@ -4443,187 +4443,7 @@
             "asset_path": "PolygonNatureBiomes/SM_Env_Bush_Palm_01",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Bush_Palm_01.blend",
             "guid": "",
-            "mtime": 1755966865.1416535,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Bush_Palm_01_Flowers_01.blend": [
-        {
-            "asset_type": "MATERIAL_INSTANCE",
-            "asset_path": "PolygonNatureBiomes/Plants/Flowers_Plant_Mat_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Bush_Palm_01_Flowers_01.blend",
-            "guid": "",
-            "mtime": 1755966866.4496553,
-            "data": {}
-        },
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Bush_Palm_01_Flowers_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Bush_Palm_01_Flowers_01.blend",
-            "guid": "",
-            "mtime": 1755966866.4496553,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Bush_Palm_03.blend": [
-        {
-            "asset_type": "MATERIAL_INSTANCE",
-            "asset_path": "PolygonNatureBiomes/Plants/Palm_Red_Mat_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Bush_Palm_03.blend",
-            "guid": "",
-            "mtime": 1755966865.1846154,
-            "data": {}
-        },
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Bush_Palm_03",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Bush_Palm_03.blend",
-            "guid": "",
-            "mtime": 1755966865.1846154,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Bush_Palm_04.blend": [
-        {
-            "asset_type": "MATERIAL_INSTANCE",
-            "asset_path": "PolygonNatureBiomes/Plants/Palm_Mat_06",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Bush_Palm_04.blend",
-            "guid": "",
-            "mtime": 1755966865.2121603,
-            "data": {}
-        },
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Bush_Palm_04",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Bush_Palm_04.blend",
-            "guid": "",
-            "mtime": 1755966865.2121603,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Bush_Tropical_01.blend": [
-        {
-            "asset_type": "MATERIAL_INSTANCE",
-            "asset_path": "PolygonNatureBiomes/Plants/Tree_Mat_03",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Bush_Tropical_01.blend",
-            "guid": "",
-            "mtime": 1755966865.233035,
-            "data": {}
-        },
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Bush_Tropical_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Bush_Tropical_01.blend",
-            "guid": "",
-            "mtime": 1755966865.233035,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Bush_Tropical_04.blend": [
-        {
-            "asset_type": "MATERIAL_INSTANCE",
-            "asset_path": "PolygonNatureBiomes/Plants/Branches_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Bush_Tropical_04.blend",
-            "guid": "",
-            "mtime": 1755966866.4921598,
-            "data": {}
-        },
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Bush_Tropical_04",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Bush_Tropical_04.blend",
-            "guid": "",
-            "mtime": 1755966866.4921598,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Creeper_Clump_01.blend": [
-        {
-            "asset_type": "MATERIAL_INSTANCE",
-            "asset_path": "PolygonNatureBiomes/Plants/Creeper_Mat_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Creeper_Clump_01.blend",
-            "guid": "",
-            "mtime": 1755966865.313032,
-            "data": {}
-        },
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Creeper_Clump_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Creeper_Clump_01.blend",
-            "guid": "",
-            "mtime": 1755966865.313032,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Fern_04.blend": [
-        {
-            "asset_type": "MATERIAL_INSTANCE",
-            "asset_path": "PolygonNatureBiomes/Plants/Palm_Mat_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Fern_04.blend",
-            "guid": "",
-            "mtime": 1755966866.5210097,
-            "data": {}
-        },
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Fern_04",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Fern_04.blend",
-            "guid": "",
-            "mtime": 1755966866.5210097,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Flowers_Flat_01.blend": [
-        {
-            "asset_type": "MATERIAL_INSTANCE",
-            "asset_path": "PolygonNatureBiomes/Plants/Flowers_Flat_Mat_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Flowers_Flat_01.blend",
-            "guid": "",
-            "mtime": 1755966868.497899,
-            "data": {}
-        },
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Flowers_Flat_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Flowers_Flat_01.blend",
-            "guid": "",
-            "mtime": 1755966868.497899,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Grass_Bush_01.blend": [
-        {
-            "asset_type": "MATERIAL_INSTANCE",
-            "asset_path": "PolygonNatureBiomes/Plants/Grass_Tall_Mat_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Grass_Bush_01.blend",
-            "guid": "",
-            "mtime": 1755966868.7217731,
-            "data": {}
-        },
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Grass_Bush_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Grass_Bush_01.blend",
-            "guid": "",
-            "mtime": 1755966868.7217731,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Grass_Med_Clump_01.blend": [
-        {
-            "asset_type": "MATERIAL_INSTANCE",
-            "asset_path": "PolygonNatureBiomes/Plants/Grass_Med_Mat_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Grass_Med_Clump_01.blend",
-            "guid": "",
-            "mtime": 1755966868.7437556,
-            "data": {}
-        },
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Grass_Med_Clump_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Grass_Med_Clump_01.blend",
-            "guid": "",
-            "mtime": 1755966868.7437556,
+            "mtime": 1755969194.8980439,
             "data": {}
         }
     ],
@@ -4633,7 +4453,7 @@
             "asset_path": "PolygonNatureBiomes/Plants/Palm_Mat_02",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Bush_Palm_02.blend",
             "guid": "",
-            "mtime": 1755966865.1624343,
+            "mtime": 1755969194.924695,
             "data": {}
         },
         {
@@ -4641,97 +4461,133 @@
             "asset_path": "PolygonNatureBiomes/SM_Env_Bush_Palm_02",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Bush_Palm_02.blend",
             "guid": "",
-            "mtime": 1755966865.1624343,
+            "mtime": 1755969194.924695,
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Grass_Short_Clump_01.blend": [
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Bush_Palm_03.blend": [
         {
             "asset_type": "MATERIAL_INSTANCE",
-            "asset_path": "PolygonNatureBiomes/Plants/Grass_Short_Mat_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Grass_Short_Clump_01.blend",
+            "asset_path": "PolygonNatureBiomes/Plants/Palm_Red_Mat_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Bush_Palm_03.blend",
             "guid": "",
-            "mtime": 1755966868.8575432,
+            "mtime": 1755969194.9514287,
             "data": {}
         },
         {
             "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Grass_Short_Clump_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Grass_Short_Clump_01.blend",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Bush_Palm_03",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Bush_Palm_03.blend",
             "guid": "",
-            "mtime": 1755966868.8575432,
+            "mtime": 1755969194.9514287,
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Tree_Palm_03.blend": [
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Bush_Palm_04.blend": [
         {
             "asset_type": "MATERIAL_INSTANCE",
-            "asset_path": "PolygonNatureBiomes/LOD_Cards/Card_Tree_Palm_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Tree_Palm_03.blend",
+            "asset_path": "PolygonNatureBiomes/Plants/Palm_Mat_06",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Bush_Palm_04.blend",
             "guid": "",
-            "mtime": 1755966872.104078,
+            "mtime": 1755969194.9837565,
             "data": {}
         },
         {
             "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Tree_Palm_03",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Tree_Palm_03.blend",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Bush_Palm_04",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Bush_Palm_04.blend",
             "guid": "",
-            "mtime": 1755966872.104078,
+            "mtime": 1755969194.9837565,
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Ground_Cover_01.blend": [
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Bush_Tropical_01.blend": [
         {
             "asset_type": "MATERIAL_INSTANCE",
-            "asset_path": "PolygonNatureBiomes/Plants/Ground_Cover_Mat_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Ground_Cover_01.blend",
+            "asset_path": "PolygonNatureBiomes/Plants/Tree_Mat_03",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Bush_Tropical_01.blend",
             "guid": "",
-            "mtime": 1755966869.0744655,
+            "mtime": 1755969195.010329,
             "data": {}
         },
         {
             "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Ground_Cover_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Ground_Cover_01.blend",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Bush_Tropical_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Bush_Tropical_01.blend",
             "guid": "",
-            "mtime": 1755966869.0744655,
+            "mtime": 1755969195.010329,
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Growth_Plane_01.blend": [
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Creeper_Clump_01.blend": [
         {
             "asset_type": "MATERIAL_INSTANCE",
-            "asset_path": "PolygonNatureBiomes/Plants/Clover_Flat_Mat_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Growth_Plane_01.blend",
+            "asset_path": "PolygonNatureBiomes/Plants/Creeper_Mat_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Creeper_Clump_01.blend",
             "guid": "",
-            "mtime": 1755966869.1552033,
+            "mtime": 1755969195.108723,
             "data": {}
         },
         {
             "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Growth_Plane_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Growth_Plane_01.blend",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Creeper_Clump_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Creeper_Clump_01.blend",
             "guid": "",
-            "mtime": 1755966869.1552033,
+            "mtime": 1755969195.108723,
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Pile_01.blend": [
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Bush_Palm_01_Flowers_01.blend": [
         {
             "asset_type": "MATERIAL_INSTANCE",
-            "asset_path": "PolygonNatureBiomes/Sand",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Pile_01.blend",
+            "asset_path": "PolygonNatureBiomes/Plants/Flowers_Plant_Mat_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Bush_Palm_01_Flowers_01.blend",
             "guid": "",
-            "mtime": 1755966869.4148908,
+            "mtime": 1755969196.2421682,
             "data": {}
         },
         {
             "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Pile_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Pile_01.blend",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Bush_Palm_01_Flowers_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Bush_Palm_01_Flowers_01.blend",
             "guid": "",
-            "mtime": 1755966869.4148908,
+            "mtime": 1755969196.2421682,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Bush_Tropical_04.blend": [
+        {
+            "asset_type": "MATERIAL_INSTANCE",
+            "asset_path": "PolygonNatureBiomes/Plants/Branches_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Bush_Tropical_04.blend",
+            "guid": "",
+            "mtime": 1755969196.2752125,
+            "data": {}
+        },
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Bush_Tropical_04",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Bush_Tropical_04.blend",
+            "guid": "",
+            "mtime": 1755969196.2752125,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Fern_04.blend": [
+        {
+            "asset_type": "MATERIAL_INSTANCE",
+            "asset_path": "PolygonNatureBiomes/Plants/Palm_Mat_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Fern_04.blend",
+            "guid": "",
+            "mtime": 1755969196.3180933,
+            "data": {}
+        },
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Fern_04",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Fern_04.blend",
+            "guid": "",
+            "mtime": 1755969196.3180933,
             "data": {}
         }
     ],
@@ -4741,7 +4597,7 @@
             "asset_path": "PolygonNatureBiomes/Triplanar/Rock_Triplanar_Tropical",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Flat_02.blend",
             "guid": "",
-            "mtime": 1755966866.7414052,
+            "mtime": 1755969196.5485232,
             "data": {}
         },
         {
@@ -4749,7 +4605,133 @@
             "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Flat_02",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Flat_02.blend",
             "guid": "",
-            "mtime": 1755966866.7414052,
+            "mtime": 1755969196.5485232,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Flowers_Flat_01.blend": [
+        {
+            "asset_type": "MATERIAL_INSTANCE",
+            "asset_path": "PolygonNatureBiomes/Plants/Flowers_Flat_Mat_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Flowers_Flat_01.blend",
+            "guid": "",
+            "mtime": 1755969199.400642,
+            "data": {}
+        },
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Flowers_Flat_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Flowers_Flat_01.blend",
+            "guid": "",
+            "mtime": 1755969199.400642,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Grass_Bush_01.blend": [
+        {
+            "asset_type": "MATERIAL_INSTANCE",
+            "asset_path": "PolygonNatureBiomes/Plants/Grass_Tall_Mat_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Grass_Bush_01.blend",
+            "guid": "",
+            "mtime": 1755969200.0174906,
+            "data": {}
+        },
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Grass_Bush_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Grass_Bush_01.blend",
+            "guid": "",
+            "mtime": 1755969200.0174906,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Grass_Med_Clump_01.blend": [
+        {
+            "asset_type": "MATERIAL_INSTANCE",
+            "asset_path": "PolygonNatureBiomes/Plants/Grass_Med_Mat_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Grass_Med_Clump_01.blend",
+            "guid": "",
+            "mtime": 1755969200.0579553,
+            "data": {}
+        },
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Grass_Med_Clump_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Grass_Med_Clump_01.blend",
+            "guid": "",
+            "mtime": 1755969200.0579553,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Grass_Short_Clump_01.blend": [
+        {
+            "asset_type": "MATERIAL_INSTANCE",
+            "asset_path": "PolygonNatureBiomes/Plants/Grass_Short_Mat_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Grass_Short_Clump_01.blend",
+            "guid": "",
+            "mtime": 1755969200.170178,
+            "data": {}
+        },
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Grass_Short_Clump_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Grass_Short_Clump_01.blend",
+            "guid": "",
+            "mtime": 1755969200.170178,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Ground_Cover_01.blend": [
+        {
+            "asset_type": "MATERIAL_INSTANCE",
+            "asset_path": "PolygonNatureBiomes/Plants/Ground_Cover_Mat_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Ground_Cover_01.blend",
+            "guid": "",
+            "mtime": 1755969200.4101481,
+            "data": {}
+        },
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Ground_Cover_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Ground_Cover_01.blend",
+            "guid": "",
+            "mtime": 1755969200.4101481,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Growth_Plane_01.blend": [
+        {
+            "asset_type": "MATERIAL_INSTANCE",
+            "asset_path": "PolygonNatureBiomes/Plants/Clover_Flat_Mat_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Growth_Plane_01.blend",
+            "guid": "",
+            "mtime": 1755969200.4954424,
+            "data": {}
+        },
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Growth_Plane_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Growth_Plane_01.blend",
+            "guid": "",
+            "mtime": 1755969200.4954424,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Pile_01.blend": [
+        {
+            "asset_type": "MATERIAL_INSTANCE",
+            "asset_path": "PolygonNatureBiomes/Sand",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Pile_01.blend",
+            "guid": "",
+            "mtime": 1755969200.7157643,
+            "data": {}
+        },
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Pile_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Pile_01.blend",
+            "guid": "",
+            "mtime": 1755969200.7157643,
             "data": {}
         }
     ],
@@ -4759,7 +4741,7 @@
             "asset_path": "PolygonNatureBiomes/Plants/Seaweed_Mat_01",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Seaweed_01.blend",
             "guid": "",
-            "mtime": 1755966871.743334,
+            "mtime": 1755969203.0678358,
             "data": {}
         },
         {
@@ -4767,7 +4749,7 @@
             "asset_path": "PolygonNatureBiomes/SM_Env_Seaweed_01",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Seaweed_01.blend",
             "guid": "",
-            "mtime": 1755966871.743334,
+            "mtime": 1755969203.0678358,
             "data": {}
         }
     ],
@@ -4777,7 +4759,7 @@
             "asset_path": "PolygonNatureBiomes/LOD_Cards/Card_Tree_Banana_01",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Tree_Banana_01.blend",
             "guid": "",
-            "mtime": 1755966871.825521,
+            "mtime": 1755969203.1521394,
             "data": {}
         },
         {
@@ -4785,7 +4767,7 @@
             "asset_path": "PolygonNatureBiomes/Plants/Palm_Mat_07",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Tree_Banana_01.blend",
             "guid": "",
-            "mtime": 1755966871.825521,
+            "mtime": 1755969203.1521394,
             "data": {}
         },
         {
@@ -4793,7 +4775,7 @@
             "asset_path": "PolygonNatureBiomes/SM_Env_Tree_Banana_01",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Tree_Banana_01.blend",
             "guid": "",
-            "mtime": 1755966871.825521,
+            "mtime": 1755969203.1521394,
             "data": {}
         }
     ],
@@ -4803,7 +4785,7 @@
             "asset_path": "PolygonNatureBiomes/LOD_Cards/Card_Tree_Forest_01",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Tree_Forest_01.blend",
             "guid": "",
-            "mtime": 1755966871.9150176,
+            "mtime": 1755969203.246851,
             "data": {}
         },
         {
@@ -4811,7 +4793,7 @@
             "asset_path": "PolygonNatureBiomes/Plants/Tree_Mat_02",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Tree_Forest_01.blend",
             "guid": "",
-            "mtime": 1755966871.9150176,
+            "mtime": 1755969203.246851,
             "data": {}
         },
         {
@@ -4819,7 +4801,7 @@
             "asset_path": "PolygonNatureBiomes/SM_Env_Tree_Forest_01",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Tree_Forest_01.blend",
             "guid": "",
-            "mtime": 1755966871.9150176,
+            "mtime": 1755969203.246851,
             "data": {}
         }
     ],
@@ -4829,7 +4811,7 @@
             "asset_path": "PolygonNatureBiomes/LOD_Cards/Card_Tree_Palm_02",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Tree_Palm_02.blend",
             "guid": "",
-            "mtime": 1755966872.0803306,
+            "mtime": 1755969203.6132054,
             "data": {}
         },
         {
@@ -4837,7 +4819,25 @@
             "asset_path": "PolygonNatureBiomes/SM_Env_Tree_Palm_02",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Tree_Palm_02.blend",
             "guid": "",
-            "mtime": 1755966872.0803306,
+            "mtime": 1755969203.6132054,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Tree_Palm_03.blend": [
+        {
+            "asset_type": "MATERIAL_INSTANCE",
+            "asset_path": "PolygonNatureBiomes/LOD_Cards/Card_Tree_Palm_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Tree_Palm_03.blend",
+            "guid": "",
+            "mtime": 1755969203.650231,
+            "data": {}
+        },
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Tree_Palm_03",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Tree_Palm_03.blend",
+            "guid": "",
+            "mtime": 1755969203.650231,
             "data": {}
         }
     ],
@@ -4847,7 +4847,7 @@
             "asset_path": "PolygonNatureBiomes/Plants/Pohutukawa_Mat_01",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Tree_Pohutukawa_01.blend",
             "guid": "",
-            "mtime": 1755966872.1674075,
+            "mtime": 1755969203.705383,
             "data": {}
         },
         {
@@ -4855,7 +4855,7 @@
             "asset_path": "PolygonNatureBiomes/SM_Env_Tree_Pohutukawa_01",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Tree_Pohutukawa_01.blend",
             "guid": "",
-            "mtime": 1755966872.1674075,
+            "mtime": 1755969203.705383,
             "data": {}
         }
     ],
@@ -4865,7 +4865,7 @@
             "asset_path": "PolygonNatureBiomes/LOD_Cards/Card_Tree_Pohutukawa_02",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Tree_Pohutukawa_02.blend",
             "guid": "",
-            "mtime": 1755966872.2107632,
+            "mtime": 1755969203.752025,
             "data": {}
         },
         {
@@ -4873,7 +4873,7 @@
             "asset_path": "PolygonNatureBiomes/SM_Env_Tree_Pohutukawa_02",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Tree_Pohutukawa_02.blend",
             "guid": "",
-            "mtime": 1755966872.2107632,
+            "mtime": 1755969203.752025,
             "data": {}
         }
     ],
@@ -4883,7 +4883,7 @@
             "asset_path": "PolygonNatureBiomes/LOD_Cards/Card_Tree_Pohutukawa_03",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Tree_Pohutukawa_03.blend",
             "guid": "",
-            "mtime": 1755966872.2364378,
+            "mtime": 1755969203.7970607,
             "data": {}
         },
         {
@@ -4891,7 +4891,7 @@
             "asset_path": "PolygonNatureBiomes/SM_Env_Tree_Pohutukawa_03",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Tree_Pohutukawa_03.blend",
             "guid": "",
-            "mtime": 1755966872.2364378,
+            "mtime": 1755969203.7970607,
             "data": {}
         }
     ],
@@ -4901,7 +4901,7 @@
             "asset_path": "PolygonNatureBiomes/LOD_Cards/Card_Tree_Pohutukawa_04",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Tree_Pohutukawa_04.blend",
             "guid": "",
-            "mtime": 1755966872.2609198,
+            "mtime": 1755969203.823805,
             "data": {}
         },
         {
@@ -4909,7 +4909,7 @@
             "asset_path": "PolygonNatureBiomes/SM_Env_Tree_Pohutukawa_04",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Tree_Pohutukawa_04.blend",
             "guid": "",
-            "mtime": 1755966872.2609198,
+            "mtime": 1755969203.823805,
             "data": {}
         }
     ],
@@ -4919,7 +4919,7 @@
             "asset_path": "PolygonNatureBiomes/Water_River_01",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Waterfall_Mesh_01.blend",
             "guid": "",
-            "mtime": 1755966875.8785136,
+            "mtime": 1755969208.391125,
             "data": {}
         },
         {
@@ -4927,7 +4927,7 @@
             "asset_path": "PolygonNatureBiomes/SM_Waterfall_Mesh_01",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Waterfall_Mesh_01.blend",
             "guid": "",
-            "mtime": 1755966875.8785136,
+            "mtime": 1755969208.391125,
             "data": {}
         }
     ],
@@ -4937,7 +4937,7 @@
             "asset_path": "PolygonNatureBiomes/Glass_MAT",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Message_Bottle_01.blend",
             "guid": "",
-            "mtime": 1755966877.2283733,
+            "mtime": 1755969209.7463787,
             "data": {}
         },
         {
@@ -4945,25 +4945,7 @@
             "asset_path": "PolygonNatureBiomes/Props/SM_Prop_Message_Bottle_01",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Message_Bottle_01.blend",
             "guid": "",
-            "mtime": 1755966877.2283733,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Grass_01.blend": [
-        {
-            "asset_type": "MATERIAL_INSTANCE",
-            "asset_path": "PolygonNatureBiomes/Triplanar/Rock_Grass_Triplanar_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Grass_01.blend",
-            "guid": "",
-            "mtime": 1755967219.3064587,
-            "data": {}
-        },
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Grass_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Grass_01.blend",
-            "guid": "",
-            "mtime": 1755967219.3064587,
+            "mtime": 1755969209.7463787,
             "data": {}
         }
     ],
@@ -5723,7 +5705,7 @@
             "asset_path": "PolygonNatureBiomes/SM_Bld_Ruins_Archway_01",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Bld_Ruins_Archway_01.blend",
             "guid": "",
-            "mtime": 1755966863.5236692,
+            "mtime": 1755969193.3033147,
             "data": {}
         }
     ],
@@ -5733,7 +5715,7 @@
             "asset_path": "PolygonNatureBiomes/SM_Bld_Ruins_Archway_02",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Bld_Ruins_Archway_02.blend",
             "guid": "",
-            "mtime": 1755966863.7520278,
+            "mtime": 1755969193.520417,
             "data": {}
         }
     ],
@@ -5743,7 +5725,7 @@
             "asset_path": "PolygonNatureBiomes/SM_Bld_Ruins_Column_01",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Bld_Ruins_Column_01.blend",
             "guid": "",
-            "mtime": 1755966863.9720824,
+            "mtime": 1755969193.7323456,
             "data": {}
         }
     ],
@@ -5753,17 +5735,7 @@
             "asset_path": "PolygonNatureBiomes/SM_Bld_Ruins_Column_02",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Bld_Ruins_Column_02.blend",
             "guid": "",
-            "mtime": 1755966864.2220254,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Bld_Ruins_Column_03.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Bld_Ruins_Column_03",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Bld_Ruins_Column_03.blend",
-            "guid": "",
-            "mtime": 1755966866.2223551,
+            "mtime": 1755969193.9396274,
             "data": {}
         }
     ],
@@ -5773,7 +5745,7 @@
             "asset_path": "PolygonNatureBiomes/SM_Bld_Ruins_Wall_01",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Bld_Ruins_Wall_01.blend",
             "guid": "",
-            "mtime": 1755966864.456215,
+            "mtime": 1755969194.147802,
             "data": {}
         }
     ],
@@ -5783,7 +5755,7 @@
             "asset_path": "PolygonNatureBiomes/SM_Bld_Ruins_Wall_02",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Bld_Ruins_Wall_02.blend",
             "guid": "",
-            "mtime": 1755966864.6630125,
+            "mtime": 1755969194.3672776,
             "data": {}
         }
     ],
@@ -5793,7 +5765,7 @@
             "asset_path": "PolygonNatureBiomes/SM_Bld_Shack_Pirate_01",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Bld_Shack_Pirate_01.blend",
             "guid": "",
-            "mtime": 1755966864.8667626,
+            "mtime": 1755969194.602094,
             "data": {}
         }
     ],
@@ -5803,7 +5775,7 @@
             "asset_path": "PolygonNatureBiomes/SM_Env_Bush_Tropical_02",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Bush_Tropical_02.blend",
             "guid": "",
-            "mtime": 1755966865.2580397,
+            "mtime": 1755969195.0393002,
             "data": {}
         }
     ],
@@ -5813,7 +5785,7 @@
             "asset_path": "PolygonNatureBiomes/SM_Env_Bush_Tropical_03",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Bush_Tropical_03.blend",
             "guid": "",
-            "mtime": 1755966865.2870862,
+            "mtime": 1755969195.0760305,
             "data": {}
         }
     ],
@@ -5823,7 +5795,7 @@
             "asset_path": "PolygonNatureBiomes/SM_Env_Creeper_Vine_01",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Creeper_Vine_01.blend",
             "guid": "",
-            "mtime": 1755966865.3357651,
+            "mtime": 1755969195.1287508,
             "data": {}
         }
     ],
@@ -5833,7 +5805,7 @@
             "asset_path": "PolygonNatureBiomes/SM_Env_Creeper_Vine_02",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Creeper_Vine_02.blend",
             "guid": "",
-            "mtime": 1755966865.3638196,
+            "mtime": 1755969195.1539795,
             "data": {}
         }
     ],
@@ -5843,7 +5815,7 @@
             "asset_path": "PolygonNatureBiomes/SM_Env_Dock_01",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Dock_01.blend",
             "guid": "",
-            "mtime": 1755966865.3915315,
+            "mtime": 1755969195.1903055,
             "data": {}
         }
     ],
@@ -5853,7 +5825,7 @@
             "asset_path": "PolygonNatureBiomes/SM_Env_Dock_02",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Dock_02.blend",
             "guid": "",
-            "mtime": 1755966865.590711,
+            "mtime": 1755969195.3964195,
             "data": {}
         }
     ],
@@ -5863,7 +5835,7 @@
             "asset_path": "PolygonNatureBiomes/SM_Env_Dock_Stairs_01",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Dock_Stairs_01.blend",
             "guid": "",
-            "mtime": 1755966865.798404,
+            "mtime": 1755969195.6078792,
             "data": {}
         }
     ],
@@ -5873,397 +5845,17 @@
             "asset_path": "PolygonNatureBiomes/SM_Env_DriftWood_01",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_DriftWood_01.blend",
             "guid": "",
-            "mtime": 1755966866.0200062,
+            "mtime": 1755969195.8192947,
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_DriftWood_02.blend": [
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Bld_Ruins_Column_03.blend": [
         {
             "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_DriftWood_02",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_DriftWood_02.blend",
+            "asset_path": "PolygonNatureBiomes/SM_Bld_Ruins_Column_03",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Bld_Ruins_Column_03.blend",
             "guid": "",
-            "mtime": 1755966867.3476906,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_DriftWood_04.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_DriftWood_04",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_DriftWood_04.blend",
-            "guid": "",
-            "mtime": 1755966867.7557895,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_DriftWood_05.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_DriftWood_05",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_DriftWood_05.blend",
-            "guid": "",
-            "mtime": 1755966867.9558733,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Fern_01.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Fern_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Fern_01.blend",
-            "guid": "",
-            "mtime": 1755966868.1663487,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Fern_02.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Fern_02",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Fern_02.blend",
-            "guid": "",
-            "mtime": 1755966868.2031648,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Fern_03.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Fern_03",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Fern_03.blend",
-            "guid": "",
-            "mtime": 1755966868.2275465,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Fern_Part_01.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Fern_Part_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Fern_Part_01.blend",
-            "guid": "",
-            "mtime": 1755966868.2516253,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Fern_Part_02.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Fern_Part_02",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Fern_Part_02.blend",
-            "guid": "",
-            "mtime": 1755966868.2776372,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Fern_Part_03.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Fern_Part_03",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Fern_Part_03.blend",
-            "guid": "",
-            "mtime": 1755966868.3041925,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Fern_Part_04.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Fern_Part_04",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Fern_Part_04.blend",
-            "guid": "",
-            "mtime": 1755966868.330223,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Flowers_01.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Flowers_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Flowers_01.blend",
-            "guid": "",
-            "mtime": 1755966868.3595245,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Flowers_02.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Flowers_02",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Flowers_02.blend",
-            "guid": "",
-            "mtime": 1755966868.3858657,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Flowers_03.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Flowers_03",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Flowers_03.blend",
-            "guid": "",
-            "mtime": 1755966868.412309,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Flowers_04.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Flowers_04",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Flowers_04.blend",
-            "guid": "",
-            "mtime": 1755966868.4388037,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Flowers_Flat_02.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Flowers_Flat_02",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Flowers_Flat_02.blend",
-            "guid": "",
-            "mtime": 1755966868.523137,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Flowers_Flat_03.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Flowers_Flat_03",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Flowers_Flat_03.blend",
-            "guid": "",
-            "mtime": 1755966868.547935,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Flower_01.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Flower_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Flower_01.blend",
-            "guid": "",
-            "mtime": 1755966868.5753007,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Flower_02.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Flower_02",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Flower_02.blend",
-            "guid": "",
-            "mtime": 1755966868.6083388,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Flower_03.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Flower_03",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Flower_03.blend",
-            "guid": "",
-            "mtime": 1755966868.6340885,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Flower_Pitcher_01.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Flower_Pitcher_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Flower_Pitcher_01.blend",
-            "guid": "",
-            "mtime": 1755966868.6618645,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Flower_Pitcher_02.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Flower_Pitcher_02",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Flower_Pitcher_02.blend",
-            "guid": "",
-            "mtime": 1755966868.6965094,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Grass_Med_Clump_02.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Grass_Med_Clump_02",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Grass_Med_Clump_02.blend",
-            "guid": "",
-            "mtime": 1755966868.772938,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Grass_Med_Clump_03.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Grass_Med_Clump_03",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Grass_Med_Clump_03.blend",
-            "guid": "",
-            "mtime": 1755966868.8070834,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Grass_Med_Plane_01.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Grass_Med_Plane_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Grass_Med_Plane_01.blend",
-            "guid": "",
-            "mtime": 1755966868.8319688,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_DriftWood_03.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_DriftWood_03",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_DriftWood_03.blend",
-            "guid": "",
-            "mtime": 1755966867.5551803,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Flowers_05.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Flowers_05",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Flowers_05.blend",
-            "guid": "",
-            "mtime": 1755966868.4656668,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Pile_02.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Pile_02",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Pile_02.blend",
-            "guid": "",
-            "mtime": 1755966869.4493897,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Ground_02.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Ground_02",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Ground_02.blend",
-            "guid": "",
-            "mtime": 1755966870.4651914,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Spike_01.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Spike_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Spike_01.blend",
-            "guid": "",
-            "mtime": 1755966871.5990484,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Grass_Short_Clump_02.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Grass_Short_Clump_02",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Grass_Short_Clump_02.blend",
-            "guid": "",
-            "mtime": 1755966868.8828092,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Grass_Short_Clump_03.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Grass_Short_Clump_03",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Grass_Short_Clump_03.blend",
-            "guid": "",
-            "mtime": 1755966868.9103458,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Grass_Short_Plane_01.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Grass_Short_Plane_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Grass_Short_Plane_01.blend",
-            "guid": "",
-            "mtime": 1755966868.9378836,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Grass_Tall_Clump_01.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Grass_Tall_Clump_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Grass_Tall_Clump_01.blend",
-            "guid": "",
-            "mtime": 1755966868.965242,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Grass_Tall_Clump_02.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Grass_Tall_Clump_02",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Grass_Tall_Clump_02.blend",
-            "guid": "",
-            "mtime": 1755966868.9982457,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Grass_Tall_Clump_03.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Grass_Tall_Clump_03",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Grass_Tall_Clump_03.blend",
-            "guid": "",
-            "mtime": 1755966869.0244198,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Grass_Tall_Plane_01.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Grass_Tall_Plane_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Grass_Tall_Plane_01.blend",
-            "guid": "",
-            "mtime": 1755966869.0495446,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Ground_Cover_02.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Ground_Cover_02",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Ground_Cover_02.blend",
-            "guid": "",
-            "mtime": 1755966869.1048734,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Ground_Cover_03.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Ground_Cover_03",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Ground_Cover_03.blend",
-            "guid": "",
-            "mtime": 1755966869.1314406,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Monolith_01.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Monolith_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Monolith_01.blend",
-            "guid": "",
-            "mtime": 1755966869.181364,
+            "mtime": 1755969196.0289438,
             "data": {}
         }
     ],
@@ -6273,257 +5865,7 @@
             "asset_path": "PolygonNatureBiomes/SM_Env_Monolith_02",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Monolith_02.blend",
             "guid": "",
-            "mtime": 1755966866.546041,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_01.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_01.blend",
-            "guid": "",
-            "mtime": 1755966869.476626,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_02.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_02",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_02.blend",
-            "guid": "",
-            "mtime": 1755966869.5473402,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_03.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_03",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_03.blend",
-            "guid": "",
-            "mtime": 1755966869.623574,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_04.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_04",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_04.blend",
-            "guid": "",
-            "mtime": 1755966869.6993423,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_05.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_05",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_05.blend",
-            "guid": "",
-            "mtime": 1755966869.777156,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_06.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_06",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_06.blend",
-            "guid": "",
-            "mtime": 1755966869.850015,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Arch_01.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Arch_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Arch_01.blend",
-            "guid": "",
-            "mtime": 1755966869.932692,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Cave_01.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Cave_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Cave_01.blend",
-            "guid": "",
-            "mtime": 1755966870.0021915,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Cliff_01.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Cliff_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Cliff_01.blend",
-            "guid": "",
-            "mtime": 1755966870.0902073,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Cliff_02.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Cliff_02",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Cliff_02.blend",
-            "guid": "",
-            "mtime": 1755966870.160422,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Cliff_03.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Cliff_03",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Cliff_03.blend",
-            "guid": "",
-            "mtime": 1755966870.2361507,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Flat_01.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Flat_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Flat_01.blend",
-            "guid": "",
-            "mtime": 1755966870.3080919,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Ground_01.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Ground_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Ground_01.blend",
-            "guid": "",
-            "mtime": 1755966870.3943312,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Pile_01.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Pile_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Pile_01.blend",
-            "guid": "",
-            "mtime": 1755966870.545618,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Pile_02.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Pile_02",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Pile_02.blend",
-            "guid": "",
-            "mtime": 1755966870.6168983,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Pile_03.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Pile_03",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Pile_03.blend",
-            "guid": "",
-            "mtime": 1755966870.69898,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Pile_04.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Pile_04",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Pile_04.blend",
-            "guid": "",
-            "mtime": 1755966870.7731137,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Pile_05.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Pile_05",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Pile_05.blend",
-            "guid": "",
-            "mtime": 1755966870.8538854,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Pile_06.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Pile_06",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Pile_06.blend",
-            "guid": "",
-            "mtime": 1755966870.9162877,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Pile_07.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Pile_07",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Pile_07.blend",
-            "guid": "",
-            "mtime": 1755966870.995005,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Ramp_01.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Ramp_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Ramp_01.blend",
-            "guid": "",
-            "mtime": 1755966871.0826023,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Ramp_02.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Ramp_02",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Ramp_02.blend",
-            "guid": "",
-            "mtime": 1755966871.1535535,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Ramp_03.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Ramp_03",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Ramp_03.blend",
-            "guid": "",
-            "mtime": 1755966871.2314863,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Round_01.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Round_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Round_01.blend",
-            "guid": "",
-            "mtime": 1755966871.3029938,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Small_01.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Small_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Small_01.blend",
-            "guid": "",
-            "mtime": 1755966871.4058578,
+            "mtime": 1755969196.3456266,
             "data": {}
         }
     ],
@@ -6533,47 +5875,7 @@
             "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Spikes_01",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Spikes_01.blend",
             "guid": "",
-            "mtime": 1755966866.816446,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Spikes_02.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Spikes_02",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Spikes_02.blend",
-            "guid": "",
-            "mtime": 1755966871.4962654,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Spike_02.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Spike_02",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Spike_02.blend",
-            "guid": "",
-            "mtime": 1755966871.6700354,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Seaweed_02.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Seaweed_02",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Seaweed_02.blend",
-            "guid": "",
-            "mtime": 1755966871.768524,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Seaweed_03.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Seaweed_03",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Seaweed_03.blend",
-            "guid": "",
-            "mtime": 1755966871.7961977,
+            "mtime": 1755969196.6210096,
             "data": {}
         }
     ],
@@ -6583,47 +5885,7 @@
             "asset_path": "PolygonNatureBiomes/SM_Env_Seaweed_Beach_01",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Seaweed_Beach_01.blend",
             "guid": "",
-            "mtime": 1755966866.897839,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Tree_Banana_02.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Tree_Banana_02",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Tree_Banana_02.blend",
-            "guid": "",
-            "mtime": 1755966871.8491647,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Tree_Banana_03.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Tree_Banana_03",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Tree_Banana_03.blend",
-            "guid": "",
-            "mtime": 1755966871.8818715,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Tree_Forest_02.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Tree_Forest_02",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Tree_Forest_02.blend",
-            "guid": "",
-            "mtime": 1755966871.9625213,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Tree_Forest_03.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Tree_Forest_03",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Tree_Forest_03.blend",
-            "guid": "",
-            "mtime": 1755966872.011268,
+            "mtime": 1755969196.699672,
             "data": {}
         }
     ],
@@ -6633,787 +5895,7 @@
             "asset_path": "PolygonNatureBiomes/SM_Env_Tree_Palm_01",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Tree_Palm_01.blend",
             "guid": "",
-            "mtime": 1755966867.1182196,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Tree_Palm_01_Coconuts_01.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Tree_Palm_01_Coconuts_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Tree_Palm_01_Coconuts_01.blend",
-            "guid": "",
-            "mtime": 1755966872.0475075,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Tree_Palm_04.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Tree_Palm_04",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Tree_Palm_04.blend",
-            "guid": "",
-            "mtime": 1755966872.1307652,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Tubes_01.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Tubes_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Tubes_01.blend",
-            "guid": "",
-            "mtime": 1755966872.2904835,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Vines_01.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Vines_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Vines_01.blend",
-            "guid": "",
-            "mtime": 1755966872.5193412,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Vines_02.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Vines_02",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Vines_02.blend",
-            "guid": "",
-            "mtime": 1755966872.555684,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Vines_03.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Vines_03",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Vines_03.blend",
-            "guid": "",
-            "mtime": 1755966872.582755,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Vines_04.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Vines_04",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Vines_04.blend",
-            "guid": "",
-            "mtime": 1755966872.608456,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Vines_05.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Vines_05",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Vines_05.blend",
-            "guid": "",
-            "mtime": 1755966872.6354725,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_Coral_01.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Prop_Coral_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_Coral_01.blend",
-            "guid": "",
-            "mtime": 1755966872.6609623,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_Coral_02.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Prop_Coral_02",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_Coral_02.blend",
-            "guid": "",
-            "mtime": 1755966872.8547559,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_Coral_03.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Prop_Coral_03",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_Coral_03.blend",
-            "guid": "",
-            "mtime": 1755966873.0629234,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_Coral_04.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Prop_Coral_04",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_Coral_04.blend",
-            "guid": "",
-            "mtime": 1755966873.2705643,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_Coral_05.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Prop_Coral_05",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_Coral_05.blend",
-            "guid": "",
-            "mtime": 1755966873.4880784,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_Coral_06.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Prop_Coral_06",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_Coral_06.blend",
-            "guid": "",
-            "mtime": 1755966873.696018,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_Coral_07.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Prop_Coral_07",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_Coral_07.blend",
-            "guid": "",
-            "mtime": 1755966873.9019623,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_Coral_08.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Prop_Coral_08",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_Coral_08.blend",
-            "guid": "",
-            "mtime": 1755966874.1126778,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_Coral_09.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Prop_Coral_09",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_Coral_09.blend",
-            "guid": "",
-            "mtime": 1755966874.3871467,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_Coral_10.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Prop_Coral_10",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_Coral_10.blend",
-            "guid": "",
-            "mtime": 1755966874.6135,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_Coral_11.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Prop_Coral_11",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_Coral_11.blend",
-            "guid": "",
-            "mtime": 1755966874.8230283,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_GiantClam_01.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Prop_GiantClam_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_GiantClam_01.blend",
-            "guid": "",
-            "mtime": 1755966875.0417283,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_Starfish_01.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Prop_Starfish_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_Starfish_01.blend",
-            "guid": "",
-            "mtime": 1755966875.249085,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_Starfish_02.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Prop_Starfish_02",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_Starfish_02.blend",
-            "guid": "",
-            "mtime": 1755966875.453913,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_Starfish_03.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Prop_Starfish_03",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_Starfish_03.blend",
-            "guid": "",
-            "mtime": 1755966875.6671576,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_ShipWreck_01.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/Props/SM_Prop_ShipWreck_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_ShipWreck_01.blend",
-            "guid": "",
-            "mtime": 1755966878.8955677,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Barrel_01.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/Props/SM_Prop_Barrel_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Barrel_01.blend",
-            "guid": "",
-            "mtime": 1755966875.9098263,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Barrel_Broken_01.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/Props/SM_Prop_Barrel_Broken_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Barrel_Broken_01.blend",
-            "guid": "",
-            "mtime": 1755966876.1070607,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Barrel_Broken_02.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/Props/SM_Prop_Barrel_Broken_02",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Barrel_Broken_02.blend",
-            "guid": "",
-            "mtime": 1755966876.3125942,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Coconut_01.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/Props/SM_Prop_Coconut_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Coconut_01.blend",
-            "guid": "",
-            "mtime": 1755966876.5366263,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Coconut_02.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/Props/SM_Prop_Coconut_02",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Coconut_02.blend",
-            "guid": "",
-            "mtime": 1755966876.7665021,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Coconut_Half_01.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/Props/SM_Prop_Coconut_Half_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Coconut_Half_01.blend",
-            "guid": "",
-            "mtime": 1755966877.0007515,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_PirateFlag_01.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/Props/SM_Prop_PirateFlag_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_PirateFlag_01.blend",
-            "guid": "",
-            "mtime": 1755966882.2825775,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Plank_01.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/Props/SM_Prop_Plank_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Plank_01.blend",
-            "guid": "",
-            "mtime": 1755966877.4364042,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Plank_02.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/Props/SM_Prop_Plank_02",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Plank_02.blend",
-            "guid": "",
-            "mtime": 1755966877.6469662,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Plank_03.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/Props/SM_Prop_Plank_03",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Plank_03.blend",
-            "guid": "",
-            "mtime": 1755966877.8567371,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Plank_04.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/Props/SM_Prop_Plank_04",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Plank_04.blend",
-            "guid": "",
-            "mtime": 1755966878.0731416,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Raft_01.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/Props/SM_Prop_Raft_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Raft_01.blend",
-            "guid": "",
-            "mtime": 1755966878.281435,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Raft_Oar_01.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/Props/SM_Prop_Raft_Oar_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Raft_Oar_01.blend",
-            "guid": "",
-            "mtime": 1755966878.4879978,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Rum_Bottle_01.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/Props/SM_Prop_Rum_Bottle_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Rum_Bottle_01.blend",
-            "guid": "",
-            "mtime": 1755966878.6888113,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_ShipWreck_02.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/Props/SM_Prop_ShipWreck_02",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_ShipWreck_02.blend",
-            "guid": "",
-            "mtime": 1755966879.1050942,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Tiki_Torch_01.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/Props/SM_Prop_Tiki_Torch_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Tiki_Torch_01.blend",
-            "guid": "",
-            "mtime": 1755966879.3296733,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Tiki_Torch_02.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/Props/SM_Prop_Tiki_Torch_02",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Tiki_Torch_02.blend",
-            "guid": "",
-            "mtime": 1755966879.5695403,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Tiki_Torch_03.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/Props/SM_Prop_Tiki_Torch_03",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Tiki_Torch_03.blend",
-            "guid": "",
-            "mtime": 1755966879.7996876,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Whale_Skeleton_01.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/Props/SM_Prop_Whale_Skeleton_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Whale_Skeleton_01.blend",
-            "guid": "",
-            "mtime": 1755966880.0371795,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Whale_Skeleton_Ribcage_01.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/Props/SM_Prop_Whale_Skeleton_Ribcage_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Whale_Skeleton_Ribcage_01.blend",
-            "guid": "",
-            "mtime": 1755966882.3190439,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Whale_Skeleton_Ribcage_02.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/Props/SM_Prop_Whale_Skeleton_Ribcage_02",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Whale_Skeleton_Ribcage_02.blend",
-            "guid": "",
-            "mtime": 1755966880.2823627,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Whale_Skeleton_Rib_01.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/Props/SM_Prop_Whale_Skeleton_Rib_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Whale_Skeleton_Rib_01.blend",
-            "guid": "",
-            "mtime": 1755966880.506987,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Whale_Skeleton_Rib_02.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/Props/SM_Prop_Whale_Skeleton_Rib_02",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Whale_Skeleton_Rib_02.blend",
-            "guid": "",
-            "mtime": 1755966880.725329,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Whale_Skeleton_Shoulder_01.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/Props/SM_Prop_Whale_Skeleton_Shoulder_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Whale_Skeleton_Shoulder_01.blend",
-            "guid": "",
-            "mtime": 1755966880.9565642,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Whale_Skeleton_Skull_01.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/Props/SM_Prop_Whale_Skeleton_Skull_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Whale_Skeleton_Skull_01.blend",
-            "guid": "",
-            "mtime": 1755966881.1917977,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Whale_Skeleton_Tail_01.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/Props/SM_Prop_Whale_Skeleton_Tail_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Whale_Skeleton_Tail_01.blend",
-            "guid": "",
-            "mtime": 1755966881.4159758,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Whale_Skeleton_Vertebra_01.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/Props/SM_Prop_Whale_Skeleton_Vertebra_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Whale_Skeleton_Vertebra_01.blend",
-            "guid": "",
-            "mtime": 1755966881.6265156,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Veh_Canoe_Animated.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/Props/SM_Veh_Canoe_Animated",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Veh_Canoe_Animated.blend",
-            "guid": "",
-            "mtime": 1755966881.8584793,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Veh_Outrigger_Canoe_01.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/Props/SM_Veh_Outrigger_Canoe_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Veh_Outrigger_Canoe_01.blend",
-            "guid": "",
-            "mtime": 1755966882.073143,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Arch_Grass_01.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Arch_Grass_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Arch_Grass_01.blend",
-            "guid": "",
-            "mtime": 1755967219.2691956,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Cave_Grass_01.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Cave_Grass_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Cave_Grass_01.blend",
-            "guid": "",
-            "mtime": 1755967219.272918,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Cliff_Grass_01.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Cliff_Grass_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Cliff_Grass_01.blend",
-            "guid": "",
-            "mtime": 1755967219.2783885,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Cliff_Grass_02.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Cliff_Grass_02",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Cliff_Grass_02.blend",
-            "guid": "",
-            "mtime": 1755967219.2845237,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Cliff_Grass_03.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Cliff_Grass_03",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Cliff_Grass_03.blend",
-            "guid": "",
-            "mtime": 1755967219.2900796,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Flat_Grass_01.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Flat_Grass_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Flat_Grass_01.blend",
-            "guid": "",
-            "mtime": 1755967219.295652,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Grass_02.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Grass_02",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Grass_02.blend",
-            "guid": "",
-            "mtime": 1755967219.3097618,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Grass_03.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Grass_03",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Grass_03.blend",
-            "guid": "",
-            "mtime": 1755967219.3133955,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Grass_04.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Grass_04",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Grass_04.blend",
-            "guid": "",
-            "mtime": 1755967219.316922,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Grass_05.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Grass_05",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Grass_05.blend",
-            "guid": "",
-            "mtime": 1755967219.3202357,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Grass_06.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Grass_06",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Grass_06.blend",
-            "guid": "",
-            "mtime": 1755967219.3237438,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Pile_Grass_01.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Pile_Grass_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Pile_Grass_01.blend",
-            "guid": "",
-            "mtime": 1755967219.3287826,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Pile_Grass_02.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Pile_Grass_02",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Pile_Grass_02.blend",
-            "guid": "",
-            "mtime": 1755967219.333818,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Pile_Grass_03.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Pile_Grass_03",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Pile_Grass_03.blend",
-            "guid": "",
-            "mtime": 1755967219.3385253,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Pile_Grass_04.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Pile_Grass_04",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Pile_Grass_04.blend",
-            "guid": "",
-            "mtime": 1755967219.3433852,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Pile_Grass_05.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Pile_Grass_05",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Pile_Grass_05.blend",
-            "guid": "",
-            "mtime": 1755967219.3484974,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Pile_Grass_06.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Pile_Grass_06",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Pile_Grass_06.blend",
-            "guid": "",
-            "mtime": 1755967219.353297,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Pile_Grass_07.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Pile_Grass_07",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Pile_Grass_07.blend",
-            "guid": "",
-            "mtime": 1755967219.3581705,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Ramp_Grass_01.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Ramp_Grass_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Ramp_Grass_01.blend",
-            "guid": "",
-            "mtime": 1755967219.3633435,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Ramp_Grass_02.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Ramp_Grass_02",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Ramp_Grass_02.blend",
-            "guid": "",
-            "mtime": 1755967219.3683188,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Ramp_Grass_03.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Ramp_Grass_03",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Ramp_Grass_03.blend",
-            "guid": "",
-            "mtime": 1755967219.3731568,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Round_Grass_01.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Round_Grass_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Round_Grass_01.blend",
-            "guid": "",
-            "mtime": 1755967219.3779726,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Spikes_Grass_01.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Spikes_Grass_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Spikes_Grass_01.blend",
-            "guid": "",
-            "mtime": 1755967219.3917089,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Spike_Grass_01.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Spike_Grass_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Spike_Grass_01.blend",
-            "guid": "",
-            "mtime": 1755967219.3831422,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Spike_Grass_02.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Spike_Grass_02",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Spike_Grass_02.blend",
-            "guid": "",
-            "mtime": 1755967219.3868048,
+            "mtime": 1755969196.9102373,
             "data": {}
         }
     ],
@@ -7423,7 +5905,1257 @@
             "asset_path": "PolygonNatureBiomes/SM_Env_Volcano_01",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Volcano_01.blend",
             "guid": "",
-            "mtime": 1755967682.804901,
+            "mtime": 1755969196.949573,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_DriftWood_02.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_DriftWood_02",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_DriftWood_02.blend",
+            "guid": "",
+            "mtime": 1755969197.1539707,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_DriftWood_03.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_DriftWood_03",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_DriftWood_03.blend",
+            "guid": "",
+            "mtime": 1755969197.3706322,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_DriftWood_04.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_DriftWood_04",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_DriftWood_04.blend",
+            "guid": "",
+            "mtime": 1755969197.5886807,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_DriftWood_05.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_DriftWood_05",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_DriftWood_05.blend",
+            "guid": "",
+            "mtime": 1755969197.8034897,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Fern_01.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Fern_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Fern_01.blend",
+            "guid": "",
+            "mtime": 1755969198.0211117,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Fern_02.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Fern_02",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Fern_02.blend",
+            "guid": "",
+            "mtime": 1755969198.0679271,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Fern_03.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Fern_03",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Fern_03.blend",
+            "guid": "",
+            "mtime": 1755969198.0988693,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Fern_Part_01.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Fern_Part_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Fern_Part_01.blend",
+            "guid": "",
+            "mtime": 1755969198.1291997,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Fern_Part_02.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Fern_Part_02",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Fern_Part_02.blend",
+            "guid": "",
+            "mtime": 1755969198.1637778,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Fern_Part_03.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Fern_Part_03",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Fern_Part_03.blend",
+            "guid": "",
+            "mtime": 1755969198.1953304,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Fern_Part_04.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Fern_Part_04",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Fern_Part_04.blend",
+            "guid": "",
+            "mtime": 1755969198.2242708,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Flowers_01.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Flowers_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Flowers_01.blend",
+            "guid": "",
+            "mtime": 1755969198.2558086,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Flowers_02.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Flowers_02",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Flowers_02.blend",
+            "guid": "",
+            "mtime": 1755969198.485815,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Flowers_03.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Flowers_03",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Flowers_03.blend",
+            "guid": "",
+            "mtime": 1755969198.7085986,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Flowers_04.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Flowers_04",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Flowers_04.blend",
+            "guid": "",
+            "mtime": 1755969198.934664,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Flowers_05.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Flowers_05",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Flowers_05.blend",
+            "guid": "",
+            "mtime": 1755969199.1688037,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Flowers_Flat_02.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Flowers_Flat_02",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Flowers_Flat_02.blend",
+            "guid": "",
+            "mtime": 1755969199.4371502,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Flowers_Flat_03.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Flowers_Flat_03",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Flowers_Flat_03.blend",
+            "guid": "",
+            "mtime": 1755969199.4668832,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Flower_01.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Flower_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Flower_01.blend",
+            "guid": "",
+            "mtime": 1755969199.494268,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Flower_02.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Flower_02",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Flower_02.blend",
+            "guid": "",
+            "mtime": 1755969199.5192692,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Flower_03.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Flower_03",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Flower_03.blend",
+            "guid": "",
+            "mtime": 1755969199.5452528,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Flower_Pitcher_01.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Flower_Pitcher_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Flower_Pitcher_01.blend",
+            "guid": "",
+            "mtime": 1755969199.5714066,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Flower_Pitcher_02.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Flower_Pitcher_02",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Flower_Pitcher_02.blend",
+            "guid": "",
+            "mtime": 1755969199.7902727,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Grass_Med_Clump_02.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Grass_Med_Clump_02",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Grass_Med_Clump_02.blend",
+            "guid": "",
+            "mtime": 1755969200.083364,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Grass_Med_Clump_03.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Grass_Med_Clump_03",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Grass_Med_Clump_03.blend",
+            "guid": "",
+            "mtime": 1755969200.111421,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Grass_Med_Plane_01.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Grass_Med_Plane_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Grass_Med_Plane_01.blend",
+            "guid": "",
+            "mtime": 1755969200.1399956,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Grass_Short_Clump_02.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Grass_Short_Clump_02",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Grass_Short_Clump_02.blend",
+            "guid": "",
+            "mtime": 1755969200.1950965,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Grass_Short_Clump_03.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Grass_Short_Clump_03",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Grass_Short_Clump_03.blend",
+            "guid": "",
+            "mtime": 1755969200.2235818,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Grass_Short_Plane_01.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Grass_Short_Plane_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Grass_Short_Plane_01.blend",
+            "guid": "",
+            "mtime": 1755969200.2580879,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Grass_Tall_Clump_01.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Grass_Tall_Clump_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Grass_Tall_Clump_01.blend",
+            "guid": "",
+            "mtime": 1755969200.2868526,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Grass_Tall_Clump_02.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Grass_Tall_Clump_02",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Grass_Tall_Clump_02.blend",
+            "guid": "",
+            "mtime": 1755969200.315617,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Grass_Tall_Clump_03.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Grass_Tall_Clump_03",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Grass_Tall_Clump_03.blend",
+            "guid": "",
+            "mtime": 1755969200.3491554,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Grass_Tall_Plane_01.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Grass_Tall_Plane_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Grass_Tall_Plane_01.blend",
+            "guid": "",
+            "mtime": 1755969200.379166,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Ground_Cover_02.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Ground_Cover_02",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Ground_Cover_02.blend",
+            "guid": "",
+            "mtime": 1755969200.4343884,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Ground_Cover_03.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Ground_Cover_03",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Ground_Cover_03.blend",
+            "guid": "",
+            "mtime": 1755969200.4672792,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Monolith_01.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Monolith_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Monolith_01.blend",
+            "guid": "",
+            "mtime": 1755969200.5154216,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Pile_02.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Pile_02",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Pile_02.blend",
+            "guid": "",
+            "mtime": 1755969200.75035,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_01.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_01.blend",
+            "guid": "",
+            "mtime": 1755969200.7748938,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_02.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_02",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_02.blend",
+            "guid": "",
+            "mtime": 1755969200.8364775,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_03.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_03",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_03.blend",
+            "guid": "",
+            "mtime": 1755969200.916493,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_04.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_04",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_04.blend",
+            "guid": "",
+            "mtime": 1755969200.9876258,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_05.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_05",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_05.blend",
+            "guid": "",
+            "mtime": 1755969201.0694792,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_06.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_06",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_06.blend",
+            "guid": "",
+            "mtime": 1755969201.1407988,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Arch_01.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Arch_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Arch_01.blend",
+            "guid": "",
+            "mtime": 1755969201.228525,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Cave_01.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Cave_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Cave_01.blend",
+            "guid": "",
+            "mtime": 1755969201.3007524,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Cliff_01.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Cliff_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Cliff_01.blend",
+            "guid": "",
+            "mtime": 1755969201.3834915,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Cliff_02.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Cliff_02",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Cliff_02.blend",
+            "guid": "",
+            "mtime": 1755969201.4648905,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Cliff_03.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Cliff_03",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Cliff_03.blend",
+            "guid": "",
+            "mtime": 1755969201.5561028,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Flat_01.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Flat_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Flat_01.blend",
+            "guid": "",
+            "mtime": 1755969201.6331103,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Ground_01.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Ground_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Ground_01.blend",
+            "guid": "",
+            "mtime": 1755969201.7410493,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Ground_02.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Ground_02",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Ground_02.blend",
+            "guid": "",
+            "mtime": 1755969201.8257468,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Pile_01.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Pile_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Pile_01.blend",
+            "guid": "",
+            "mtime": 1755969201.9110203,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Pile_02.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Pile_02",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Pile_02.blend",
+            "guid": "",
+            "mtime": 1755969201.984065,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Pile_03.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Pile_03",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Pile_03.blend",
+            "guid": "",
+            "mtime": 1755969202.0663335,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Pile_04.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Pile_04",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Pile_04.blend",
+            "guid": "",
+            "mtime": 1755969202.1459315,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Pile_05.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Pile_05",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Pile_05.blend",
+            "guid": "",
+            "mtime": 1755969202.2231636,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Pile_06.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Pile_06",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Pile_06.blend",
+            "guid": "",
+            "mtime": 1755969202.296465,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Pile_07.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Pile_07",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Pile_07.blend",
+            "guid": "",
+            "mtime": 1755969202.3746495,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Ramp_01.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Ramp_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Ramp_01.blend",
+            "guid": "",
+            "mtime": 1755969202.4508963,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Ramp_02.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Ramp_02",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Ramp_02.blend",
+            "guid": "",
+            "mtime": 1755969202.5334392,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Ramp_03.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Ramp_03",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Ramp_03.blend",
+            "guid": "",
+            "mtime": 1755969202.603732,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Round_01.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Round_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Round_01.blend",
+            "guid": "",
+            "mtime": 1755969202.6824334,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Small_01.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Small_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Small_01.blend",
+            "guid": "",
+            "mtime": 1755969202.75759,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Spikes_02.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Spikes_02",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Spikes_02.blend",
+            "guid": "",
+            "mtime": 1755969202.837838,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Spike_01.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Spike_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Spike_01.blend",
+            "guid": "",
+            "mtime": 1755969202.913571,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Spike_02.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Spike_02",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Spike_02.blend",
+            "guid": "",
+            "mtime": 1755969202.997157,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Seaweed_02.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Seaweed_02",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Seaweed_02.blend",
+            "guid": "",
+            "mtime": 1755969203.0914528,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Seaweed_03.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Seaweed_03",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Seaweed_03.blend",
+            "guid": "",
+            "mtime": 1755969203.121758,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Tree_Banana_02.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Tree_Banana_02",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Tree_Banana_02.blend",
+            "guid": "",
+            "mtime": 1755969203.1856105,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Tree_Banana_03.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Tree_Banana_03",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Tree_Banana_03.blend",
+            "guid": "",
+            "mtime": 1755969203.214782,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Tree_Forest_02.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Tree_Forest_02",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Tree_Forest_02.blend",
+            "guid": "",
+            "mtime": 1755969203.2890642,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Tree_Forest_03.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Tree_Forest_03",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Tree_Forest_03.blend",
+            "guid": "",
+            "mtime": 1755969203.3454218,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Tree_Palm_01_Coconuts_01.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Tree_Palm_01_Coconuts_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Tree_Palm_01_Coconuts_01.blend",
+            "guid": "",
+            "mtime": 1755969203.395897,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Tree_Palm_04.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Tree_Palm_04",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Tree_Palm_04.blend",
+            "guid": "",
+            "mtime": 1755969203.677703,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Tubes_01.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Tubes_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Tubes_01.blend",
+            "guid": "",
+            "mtime": 1755969203.8514013,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Vines_01.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Vines_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Vines_01.blend",
+            "guid": "",
+            "mtime": 1755969204.0582013,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Vines_02.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Vines_02",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Vines_02.blend",
+            "guid": "",
+            "mtime": 1755969204.2807906,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Vines_03.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Vines_03",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Vines_03.blend",
+            "guid": "",
+            "mtime": 1755969204.50833,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Vines_04.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Vines_04",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Vines_04.blend",
+            "guid": "",
+            "mtime": 1755969204.7344253,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Vines_05.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Vines_05",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Vines_05.blend",
+            "guid": "",
+            "mtime": 1755969204.966342,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_Coral_01.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Prop_Coral_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_Coral_01.blend",
+            "guid": "",
+            "mtime": 1755969205.1906416,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_Coral_02.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Prop_Coral_02",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_Coral_02.blend",
+            "guid": "",
+            "mtime": 1755969205.3965218,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_Coral_03.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Prop_Coral_03",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_Coral_03.blend",
+            "guid": "",
+            "mtime": 1755969205.6060731,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_Coral_04.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Prop_Coral_04",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_Coral_04.blend",
+            "guid": "",
+            "mtime": 1755969205.8194523,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_Coral_05.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Prop_Coral_05",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_Coral_05.blend",
+            "guid": "",
+            "mtime": 1755969206.0404482,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_Coral_06.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Prop_Coral_06",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_Coral_06.blend",
+            "guid": "",
+            "mtime": 1755969206.256518,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_Coral_07.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Prop_Coral_07",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_Coral_07.blend",
+            "guid": "",
+            "mtime": 1755969206.4686353,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_Coral_08.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Prop_Coral_08",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_Coral_08.blend",
+            "guid": "",
+            "mtime": 1755969206.6754227,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_Coral_09.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Prop_Coral_09",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_Coral_09.blend",
+            "guid": "",
+            "mtime": 1755969206.885559,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_Coral_10.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Prop_Coral_10",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_Coral_10.blend",
+            "guid": "",
+            "mtime": 1755969207.0933235,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_Coral_11.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Prop_Coral_11",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_Coral_11.blend",
+            "guid": "",
+            "mtime": 1755969207.3056118,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_GiantClam_01.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Prop_GiantClam_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_GiantClam_01.blend",
+            "guid": "",
+            "mtime": 1755969207.524114,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_Starfish_01.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Prop_Starfish_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_Starfish_01.blend",
+            "guid": "",
+            "mtime": 1755969207.7540972,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_Starfish_02.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Prop_Starfish_02",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_Starfish_02.blend",
+            "guid": "",
+            "mtime": 1755969207.9645176,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_Starfish_03.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Prop_Starfish_03",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Prop_Starfish_03.blend",
+            "guid": "",
+            "mtime": 1755969208.1791513,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Barrel_01.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/Props/SM_Prop_Barrel_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Barrel_01.blend",
+            "guid": "",
+            "mtime": 1755969208.4315214,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Barrel_Broken_01.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/Props/SM_Prop_Barrel_Broken_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Barrel_Broken_01.blend",
+            "guid": "",
+            "mtime": 1755969208.6523685,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Barrel_Broken_02.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/Props/SM_Prop_Barrel_Broken_02",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Barrel_Broken_02.blend",
+            "guid": "",
+            "mtime": 1755969208.8699405,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Coconut_01.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/Props/SM_Prop_Coconut_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Coconut_01.blend",
+            "guid": "",
+            "mtime": 1755969209.084016,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Coconut_02.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/Props/SM_Prop_Coconut_02",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Coconut_02.blend",
+            "guid": "",
+            "mtime": 1755969209.3059845,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Coconut_Half_01.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/Props/SM_Prop_Coconut_Half_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Coconut_Half_01.blend",
+            "guid": "",
+            "mtime": 1755969209.5229497,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Plank_01.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/Props/SM_Prop_Plank_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Plank_01.blend",
+            "guid": "",
+            "mtime": 1755969209.9608936,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Plank_02.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/Props/SM_Prop_Plank_02",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Plank_02.blend",
+            "guid": "",
+            "mtime": 1755969210.173235,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Plank_03.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/Props/SM_Prop_Plank_03",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Plank_03.blend",
+            "guid": "",
+            "mtime": 1755969210.3870502,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Plank_04.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/Props/SM_Prop_Plank_04",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Plank_04.blend",
+            "guid": "",
+            "mtime": 1755969210.5972354,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Raft_01.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/Props/SM_Prop_Raft_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Raft_01.blend",
+            "guid": "",
+            "mtime": 1755969210.837934,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Raft_Oar_01.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/Props/SM_Prop_Raft_Oar_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Raft_Oar_01.blend",
+            "guid": "",
+            "mtime": 1755969211.0514505,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Rum_Bottle_01.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/Props/SM_Prop_Rum_Bottle_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Rum_Bottle_01.blend",
+            "guid": "",
+            "mtime": 1755969211.2649443,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_ShipWreck_01.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/Props/SM_Prop_ShipWreck_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_ShipWreck_01.blend",
+            "guid": "",
+            "mtime": 1755969211.4748764,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_ShipWreck_02.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/Props/SM_Prop_ShipWreck_02",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_ShipWreck_02.blend",
+            "guid": "",
+            "mtime": 1755969211.688218,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Tiki_Torch_01.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/Props/SM_Prop_Tiki_Torch_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Tiki_Torch_01.blend",
+            "guid": "",
+            "mtime": 1755969211.9009144,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Tiki_Torch_02.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/Props/SM_Prop_Tiki_Torch_02",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Tiki_Torch_02.blend",
+            "guid": "",
+            "mtime": 1755969212.124279,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Tiki_Torch_03.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/Props/SM_Prop_Tiki_Torch_03",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Tiki_Torch_03.blend",
+            "guid": "",
+            "mtime": 1755969212.3379195,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Whale_Skeleton_01.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/Props/SM_Prop_Whale_Skeleton_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Whale_Skeleton_01.blend",
+            "guid": "",
+            "mtime": 1755969212.5493228,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Whale_Skeleton_Ribcage_02.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/Props/SM_Prop_Whale_Skeleton_Ribcage_02",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Whale_Skeleton_Ribcage_02.blend",
+            "guid": "",
+            "mtime": 1755969212.7760715,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Whale_Skeleton_Rib_01.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/Props/SM_Prop_Whale_Skeleton_Rib_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Whale_Skeleton_Rib_01.blend",
+            "guid": "",
+            "mtime": 1755969212.98501,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Whale_Skeleton_Rib_02.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/Props/SM_Prop_Whale_Skeleton_Rib_02",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Whale_Skeleton_Rib_02.blend",
+            "guid": "",
+            "mtime": 1755969213.1919005,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Whale_Skeleton_Shoulder_01.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/Props/SM_Prop_Whale_Skeleton_Shoulder_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Whale_Skeleton_Shoulder_01.blend",
+            "guid": "",
+            "mtime": 1755969213.4501324,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Whale_Skeleton_Skull_01.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/Props/SM_Prop_Whale_Skeleton_Skull_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Whale_Skeleton_Skull_01.blend",
+            "guid": "",
+            "mtime": 1755969213.659278,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Whale_Skeleton_Tail_01.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/Props/SM_Prop_Whale_Skeleton_Tail_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Whale_Skeleton_Tail_01.blend",
+            "guid": "",
+            "mtime": 1755969213.87655,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Whale_Skeleton_Vertebra_01.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/Props/SM_Prop_Whale_Skeleton_Vertebra_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Whale_Skeleton_Vertebra_01.blend",
+            "guid": "",
+            "mtime": 1755969214.086297,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Veh_Canoe_Animated.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/Props/SM_Veh_Canoe_Animated",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Veh_Canoe_Animated.blend",
+            "guid": "",
+            "mtime": 1755969214.2933736,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Veh_Outrigger_Canoe_01.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/Props/SM_Veh_Outrigger_Canoe_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Veh_Outrigger_Canoe_01.blend",
+            "guid": "",
+            "mtime": 1755969214.5258603,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_PirateFlag_01.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/Props/SM_Prop_PirateFlag_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_PirateFlag_01.blend",
+            "guid": "",
+            "mtime": 1755969214.7453995,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Whale_Skeleton_Ribcage_01.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/Props/SM_Prop_Whale_Skeleton_Ribcage_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/Props/SM_Prop_Whale_Skeleton_Ribcage_01.blend",
+            "guid": "",
+            "mtime": 1755969214.9713645,
             "data": {}
         }
     ],
