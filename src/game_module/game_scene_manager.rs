@@ -32,8 +32,7 @@ pub struct GameSceneDataCreateInfo {
     pub _player: CharacterCreateInfoMap,
     pub _props: PropCreateInfoMap,
     pub _scene: SceneDataCreateInfo,
-    pub _terrain: RenderObjectCreateInfoMap,
-    pub _start_point: Vector3<f32>,
+    pub _terrain: RenderObjectCreateInfoMap
 }
 
 pub struct GameSceneManager<'a> {

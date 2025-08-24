@@ -1,6 +1,6 @@
 {
 	"asset":{
-		"generator":"Khronos glTF Blender I/O v4.4.55",
+		"generator":"Khronos glTF Blender I/O v4.5.47",
 		"version":"2.0"
 	},
 	"scene":0,
@@ -33,51 +33,6 @@
 				2
 			],
 			"name":"wooden_club"
-		}
-	],
-	"animations":[
-		{
-			"channels":[
-				{
-					"sampler":0,
-					"target":{
-						"node":0,
-						"path":"translation"
-					}
-				},
-				{
-					"sampler":1,
-					"target":{
-						"node":0,
-						"path":"rotation"
-					}
-				},
-				{
-					"sampler":2,
-					"target":{
-						"node":0,
-						"path":"scale"
-					}
-				}
-			],
-			"name":"Armature",
-			"samplers":[
-				{
-					"input":9,
-					"interpolation":"LINEAR",
-					"output":10
-				},
-				{
-					"input":9,
-					"interpolation":"LINEAR",
-					"output":11
-				},
-				{
-					"input":9,
-					"interpolation":"LINEAR",
-					"output":12
-				}
-			]
 		}
 	],
 	"meshes":[
@@ -173,36 +128,6 @@
 			"componentType":5126,
 			"count":1,
 			"type":"MAT4"
-		},
-		{
-			"bufferView":9,
-			"componentType":5126,
-			"count":250,
-			"max":[
-				10.416666666666666
-			],
-			"min":[
-				0.041666666666666664
-			],
-			"type":"SCALAR"
-		},
-		{
-			"bufferView":10,
-			"componentType":5126,
-			"count":250,
-			"type":"VEC3"
-		},
-		{
-			"bufferView":11,
-			"componentType":5126,
-			"count":250,
-			"type":"VEC4"
-		},
-		{
-			"bufferView":12,
-			"componentType":5126,
-			"count":250,
-			"type":"VEC3"
 		}
 	],
 	"bufferViews":[
@@ -258,31 +183,11 @@
 			"buffer":0,
 			"byteLength":64,
 			"byteOffset":48244
-		},
-		{
-			"buffer":0,
-			"byteLength":1000,
-			"byteOffset":48308
-		},
-		{
-			"buffer":0,
-			"byteLength":3000,
-			"byteOffset":49308
-		},
-		{
-			"buffer":0,
-			"byteLength":4000,
-			"byteOffset":52308
-		},
-		{
-			"buffer":0,
-			"byteLength":3000,
-			"byteOffset":56308
 		}
 	],
 	"buffers":[
 		{
-			"byteLength":59308,
+			"byteLength":48308,
 			"uri":"wooden_club.bin"
 		}
 	]

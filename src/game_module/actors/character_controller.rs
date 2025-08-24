@@ -228,13 +228,14 @@ impl CharacterController {
         let ground_normal = height_map_data.get_normal_bilinear(&self._position);
 
         begin_block!("Check Ground & Slope"); {
-            // check slope
             let mut ground_height = height_map_data.get_height_bilinear(&self._position, 0);
-            if ground_normal.y < SLOPE_ANGLE && (self._position.y <= ground_height || was_on_ground) {
-                let new_move_dir = Vector3::new(ground_normal.x, 0.0, ground_normal.z);
-                self._position = prev_position + new_move_dir * SLOPE_SPEED * delta_time;
-                ground_height = height_map_data.get_height_bilinear(&self._position, 0);
-            }
+
+            // check slope
+            // if ground_normal.y < SLOPE_ANGLE && (self._position.y <= ground_height || was_on_ground) {
+            //     let new_move_dir = Vector3::new(ground_normal.x, 0.0, ground_normal.z);
+            //     self._position = prev_position + new_move_dir * SLOPE_SPEED * delta_time;
+            //     ground_height = height_map_data.get_height_bilinear(&self._position, 0);
+            // }
 
             // check ground
             if self._position.y <= ground_height {
