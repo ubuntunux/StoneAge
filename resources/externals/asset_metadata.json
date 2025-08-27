@@ -4133,6 +4133,16 @@
             "data": {}
         }
     ],
+    "/mnt/Workspace/StoneAge/resources/externals/meshes/environments/mountain_00.blend": [
+        {
+            "asset_type": "MESH",
+            "asset_path": "environments/mountain_00",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/environments/mountain_00.blend",
+            "guid": "",
+            "mtime": 1756224745.8942914,
+            "data": {}
+        }
+    ],
     "/mnt/Workspace/StoneAge/resources/externals/models/characters/spider.blend": [
         {
             "asset_type": "MATERIAL_INSTANCE",
@@ -7103,6 +7113,16 @@
             "data": {}
         }
     ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/environments/mountain_00.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "environments/mountain_00",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/environments/mountain_00.blend",
+            "guid": "",
+            "mtime": 1756224847.5333824,
+            "data": {}
+        }
+    ],
     "/mnt/Workspace/StoneAge/resources/externals/scenes/stage_forest.blend": [
         {
             "asset_type": "SCENE",
@@ -8269,7 +8289,7 @@
             "asset_path": "intro_stage",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/intro_stage.blend",
             "guid": "",
-            "mtime": 1756144372.6617763,
+            "mtime": 1756302185.6794121,
             "data": {}
         }
     ]

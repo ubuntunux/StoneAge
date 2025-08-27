@@ -195,7 +195,7 @@ impl<'a> Character<'a> {
         if self._is_player && self._character_stats._stamina < STAMINA_JUMP {
             return false;
         }
-        !self.is_jump() && !self.is_falling() && self.is_available_move() && !self._controller.is_slope_ground_normal()
+        !self.is_jump() && !self.is_falling() && self.is_available_move()
     }
 
     pub fn is_available_roll(&self) -> bool {

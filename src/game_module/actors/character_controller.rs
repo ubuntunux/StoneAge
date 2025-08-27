@@ -8,7 +8,7 @@ use rust_engine_3d::utilities::math::HALF_PI;
 use rust_engine_3d::utilities::system::ptr_as_ref;
 use crate::game_module::actors::character::Character;
 use crate::game_module::actors::character_data::{CharacterData, MoveAnimationState};
-use crate::game_module::game_constants::{CHARACTER_ROTATION_SPEED, CLIFF_HEIGHT, FALLING_TIME, GRAVITY, MOVE_LIMIT, SLOPE_ANGLE, SLOPE_SPEED};
+use crate::game_module::game_constants::{CHARACTER_ROTATION_SPEED, CLIFF_HEIGHT, FALLING_TIME, GRAVITY, MOVE_LIMIT, SLOPE_ANGLE, SLOPE_SPEED, SLOPE_VELOCITY_DECAY};
 use crate::game_module::game_scene_manager::BlockArray;
 
 pub struct CharacterController {
@@ -20,6 +20,7 @@ pub struct CharacterController {
     pub _face_direction: Vector3<f32>,
     pub _move_direction: Vector3<f32>,
     pub _velocity: Vector3<f32>,
+    pub _slop_velocity: Vector3<f32>,
     pub _move_speed: f32,
     pub _fall_time: f32,
     pub _is_falling: bool,
@@ -42,6 +43,7 @@ impl CharacterController {
             _face_direction: Vector3::zeros(),
             _move_direction: Vector3::zeros(),
             _velocity: Vector3::zeros(),
+            _slop_velocity: Vector3::zeros(),
             _move_speed: 0.0,
             _fall_time: 0.0,
             _is_falling: false,
@@ -68,6 +70,7 @@ impl CharacterController {
         self._last_ground_position = position.clone();
         self._last_ground_normal = Vector3::new(0.0, 1.0, 0.0);
         self._velocity = Vector3::zeros();
+        self._slop_velocity = Vector3::zeros();
         self._move_speed = 0.0;
         self._fall_time = 0.0;
         self._is_falling = false;
@@ -137,13 +140,15 @@ impl CharacterController {
         }
     }
 
-    pub fn set_on_ground(&mut self, ground_height: f32) {
+    pub fn set_on_ground(&mut self, ground_height: f32, ground_normal: &Vector3<f32>) {
         if self._is_ground == false || self._position.y < ground_height {
             self._position.y = ground_height;
             self._is_ground = true;
             self._is_falling = false;
             self._is_jump = false;
             self._velocity.y = 0.0;
+            self._last_ground_position = self._position;
+            self._last_ground_normal.clone_from(ground_normal);
         }
     }
 
@@ -204,6 +209,9 @@ impl CharacterController {
         }
         self._position.y += self._velocity.y * delta_time;
 
+        // slop velocity
+        self._position += self._slop_velocity * delta_time;
+
         begin_block!("check delta limited - prevent pass block"); {
             let delta = self._position - prev_position;
             if MOVE_LIMIT < delta.x.abs() {
@@ -225,25 +233,24 @@ impl CharacterController {
         self._is_blocked = false;
         self._is_ground = false;
 
-        let ground_normal = height_map_data.get_normal_bilinear(&self._position);
-
         begin_block!("Check Ground & Slope"); {
-            let mut ground_height = height_map_data.get_height_bilinear(&self._position, 0);
+            let ground_height = height_map_data.get_height_bilinear(&self._position, 0);
+            if self._position.y <= ground_height && self._velocity.y <= 0.0 {
+                let ground_normal = height_map_data.get_normal_bilinear(&self._position);
 
-            // check slope
-            if ground_normal.y < SLOPE_ANGLE && self._position.y <= ground_height {
-                let new_move_dir = Vector3::new(ground_normal.x, 0.0, ground_normal.z);
-                self._position = prev_position + new_move_dir * SLOPE_SPEED * delta_time;
-                ground_height = height_map_data.get_height_bilinear(&self._position, 0);
-            }
-
-            // check ground
-            if self._position.y <= ground_height {
                 let move_delta = self._position - prev_position;
                 let (_move_dir, move_distance) = math::make_normalize_with_norm(&move_delta);
                 let new_move_dir = math::safe_normalize(&(Vector3::new(self._position.x, ground_height, self._position.z) - prev_position));
-                self._position = new_move_dir * move_distance + prev_position;
-                self.set_on_ground(self._position.y);
+                self._position = prev_position + new_move_dir * move_distance;
+                self.set_on_ground(self._position.y, &ground_normal);
+
+                if ground_normal.y < SLOPE_ANGLE {
+                    let slop_velocity_scale = (1.0 - (SLOPE_ANGLE - ground_normal.y) / SLOPE_ANGLE).clamp(0.0, 1.0);
+                    self._slop_velocity += math::make_normalize_xz(&ground_normal) * SLOPE_SPEED * slop_velocity_scale;
+
+                    let (move_dir, move_distance) = math::make_normalize_with_norm(&self._slop_velocity);
+                    self._slop_velocity = move_dir * move_distance.min(SLOPE_SPEED);
+                }
             }
         }
 
@@ -264,7 +271,7 @@ impl CharacterController {
             // check collide with block
             if current_actor_collision.collide_collision(&block_render_object._collision) {
                 if self._velocity.y <= 0.0 && block_bound_box._max.y <= prev_position.y {
-                    self.set_on_ground(block_bound_box._max.y);
+                    self.set_on_ground(block_bound_box._max.y, &Vector3::new(0.0, 1.0, 0.0));
                 } else {
                     let block_to_player = Vector3::new(self._position.x - block_location.x, 0.0, self._position.z - block_location.z).normalize();
                     if block_to_player.dot(&move_delta.normalize()) < 0.0 {
@@ -293,7 +300,7 @@ impl CharacterController {
                         let recheck_block_bound_box = &recheck_block._collision._bounding_box;
                         if current_actor_collision.collide_collision(&recheck_block._collision) {
                             if self._velocity.y <= 0.0 && recheck_block_bound_box._max.y <= prev_position.y {
-                                self.set_on_ground(recheck_block_bound_box._max.y);
+                                self.set_on_ground(recheck_block_bound_box._max.y, &Vector3::new(0.0, 1.0, 0.0));
                             } else {
                                 // move back
                                 self._position.x = prev_position.x;
@@ -328,8 +335,9 @@ impl CharacterController {
 
         // update last ground position
         if self.is_on_ground() {
-            self._last_ground_position = self._position;
-            self._last_ground_normal = ground_normal;
+            let (move_dir, mut move_distance) = math::make_normalize_with_norm(&self._slop_velocity);
+            move_distance = (move_distance - SLOPE_VELOCITY_DECAY * delta_time).max(0.0);
+            self._slop_velocity = move_dir * move_distance;
         }
 
         // reset
