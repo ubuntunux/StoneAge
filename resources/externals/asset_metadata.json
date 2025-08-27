@@ -4133,13 +4133,13 @@
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/meshes/environments/mountain_00.blend": [
+    "/mnt/Workspace/StoneAge/resources/externals/meshes/landscapes/mountain_00.blend": [
         {
             "asset_type": "MESH",
-            "asset_path": "environments/mountain_00",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/environments/mountain_00.blend",
+            "asset_path": "landscapes/mountain_00",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/landscapes/mountain_00.blend",
             "guid": "",
-            "mtime": 1756224745.8942914,
+            "mtime": 1756307935.2916164,
             "data": {}
         }
     ],
@@ -7113,13 +7113,13 @@
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/environments/mountain_00.blend": [
+    "/mnt/Workspace/StoneAge/resources/externals/models/landscapes/mountain_00.blend": [
         {
             "asset_type": "MODEL",
-            "asset_path": "environments/mountain_00",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/environments/mountain_00.blend",
+            "asset_path": "landscapes/mountain_00",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/landscapes/mountain_00.blend",
             "guid": "",
-            "mtime": 1756224847.5333824,
+            "mtime": 1756308098.0662403,
             "data": {}
         }
     ],
@@ -8289,7 +8289,7 @@
             "asset_path": "intro_stage",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/intro_stage.blend",
             "guid": "",
-            "mtime": 1756302185.6794121,
+            "mtime": 1756308218.572886,
             "data": {}
         }
     ]
