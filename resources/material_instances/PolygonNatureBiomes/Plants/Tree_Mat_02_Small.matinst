@@ -36,7 +36,7 @@
         "_TrunkNormalMapScaleX": 1.0,
         "_TrunkNormalMapScaleY": 1.0,
         "_TrunkSmoothness": 0.20000000298023224,
-        "_TunkTex": "common/flat_white",
+        "_TunkTex": "common/flat_none",
         "_TunkTexScaleX": 1.0,
         "_TunkTexScaleY": 1.0
     }
