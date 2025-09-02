@@ -1904,6 +1904,42 @@
                 1.4308571815490723
             ]
         },
+        "SM_Env_Rock_Ground_01.006": {
+            "_model_data_name": "PolygonNatureBiomes/SM_Env_Rock_Ground_01",
+            "_position": [
+                -9.732962608337402,
+                0.35875678062438965,
+                -8.078163146972656
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "SM_Env_Rock_Ground_01.007": {
+            "_model_data_name": "PolygonNatureBiomes/SM_Env_Rock_Ground_01",
+            "_position": [
+                -10.254969596862793,
+                -2.2856199741363525,
+                -16.970115661621094
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
         "SM_Env_Rock_Ground_02": {
             "_model_data_name": "PolygonNatureBiomes/SM_Env_Rock_Ground_02",
             "_position": [

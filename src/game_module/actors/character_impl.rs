@@ -272,12 +272,12 @@ impl<'a> Character<'a> {
     }
 
     pub fn check_falling_in_water_damage(&mut self) -> bool {
-        let sea_height = self.get_character_manager().get_scene_manager().get_sea_height();
-        if self.get_position().y <= sea_height {
+        let dead_zone_height = self.get_character_manager().get_scene_manager().get_dead_zone_height();
+        if self.get_position().y <= dead_zone_height {
             self.set_damage(self._character_stats._hp);
 
             let effect_create_info = EffectCreateInfo {
-                _effect_position: Vector3::new(self.get_position().x, sea_height, self.get_position().z),
+                _effect_position: Vector3::new(self.get_position().x, dead_zone_height, self.get_position().z),
                 _effect_data_name: String::from(EFFECT_FALLING_WATER),
                 ..Default::default()
             };

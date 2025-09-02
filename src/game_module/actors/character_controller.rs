@@ -245,11 +245,13 @@ impl CharacterController {
                 self.set_on_ground(self._position.y, &ground_normal);
 
                 if ground_normal.y < SLOPE_ANGLE {
-                    let slop_velocity_scale = (1.0 - (SLOPE_ANGLE - ground_normal.y) / SLOPE_ANGLE).clamp(0.0, 1.0);
+                    let slop_velocity_scale = 1.0;//(1.0 - (SLOPE_ANGLE - ground_normal.y) / SLOPE_ANGLE).clamp(0.0, 1.0);
                     self._slop_velocity += math::make_normalize_xz(&ground_normal) * SLOPE_SPEED * slop_velocity_scale;
 
                     let (move_dir, move_distance) = math::make_normalize_with_norm(&self._slop_velocity);
                     self._slop_velocity = move_dir * move_distance.min(SLOPE_SPEED);
+
+                    self._is_blocked = true;
                 }
             }
         }
