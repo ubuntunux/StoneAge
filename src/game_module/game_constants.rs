@@ -28,9 +28,9 @@ pub const FALLING_TIME: f32 = 0.3;
 pub const FALLING_HEIGHT: f32 = 2.0;
 pub const FALLING_DAMAGE_RATIO: i32 = 10;
 pub const CLIFF_HEIGHT: f32 = 1.0;
-pub const SLOPE_SPEED: f32 = 3.0;
+pub const SLOPE_SPEED: f32 = 4.0;
 pub const SLOPE_ANGLE: f32 = 0.707;
-pub const SLOPE_VELOCITY_DECAY: f32 = 200.0;
+pub const SLOPE_VELOCITY_DECAY: f32 = 100.0;
 
 
 // stamina

@@ -731,6 +731,24 @@
                     1.0
                 ]
             },
+            "SM_Env_DriftWood_01": {
+                "_model_data_name": "PolygonNatureBiomes/SM_Env_DriftWood_01",
+                "_position": [
+                    0.6574764251708984,
+                    2.8485794067382812,
+                    -1.5602092742919922
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
             "SM_Env_DriftWood_02": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_DriftWood_02",
                 "_position": [
@@ -749,12 +767,66 @@
                     1.0
                 ]
             },
+            "SM_Env_DriftWood_02.001": {
+                "_model_data_name": "PolygonNatureBiomes/SM_Env_DriftWood_02",
+                "_position": [
+                    -1.181370735168457,
+                    2.360689163208008,
+                    -3.0893516540527344
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "SM_Env_DriftWood_03": {
+                "_model_data_name": "PolygonNatureBiomes/SM_Env_DriftWood_03",
+                "_position": [
+                    -2.786440849304199,
+                    2.613750457763672,
+                    -3.881418228149414
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
             "SM_Env_DriftWood_04": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_DriftWood_04",
                 "_position": [
                     18.352588653564453,
                     0.9938561916351318,
                     -7.390806198120117
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "SM_Env_DriftWood_04.001": {
+                "_model_data_name": "PolygonNatureBiomes/SM_Env_DriftWood_04",
+                "_position": [
+                    3.7223901748657227,
+                    1.7212905883789062,
+                    -1.3549728393554688
                 ],
                 "_rotation": [
                     0.0,
@@ -1379,6 +1451,42 @@
                     1.0
                 ]
             },
+            "SM_Env_Monolith_01": {
+                "_model_data_name": "PolygonNatureBiomes/SM_Env_Monolith_01",
+                "_position": [
+                    -16.722400665283203,
+                    3.549837112426758,
+                    -3.887362480163574
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    0.41061627864837646,
+                    0.41061627864837646,
+                    0.41061627864837646
+                ]
+            },
+            "SM_Env_Monolith_02": {
+                "_model_data_name": "PolygonNatureBiomes/SM_Env_Monolith_02",
+                "_position": [
+                    -11.945229530334473,
+                    2.7477073669433594,
+                    -7.840652942657471
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    0.2604858875274658,
+                    0.2604858875274658,
+                    0.2604858875274658
+                ]
+            },
             "SM_Env_Tree_Banana_01": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Tree_Banana_01",
                 "_position": [
@@ -1727,6 +1835,132 @@
                     -20.35808753967285,
                     1.664931058883667,
                     31.868167877197266
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "SM_Prop_Coconut_01": {
+                "_model_data_name": "PolygonNatureBiomes/Props/SM_Prop_Coconut_01",
+                "_position": [
+                    -9.041017532348633,
+                    2.6275501251220703,
+                    -8.470819473266602
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "SM_Prop_Coconut_02.001": {
+                "_model_data_name": "PolygonNatureBiomes/Props/SM_Prop_Coconut_02",
+                "_position": [
+                    -5.544241905212402,
+                    3.29897403717041,
+                    -5.684078216552734
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "SM_Prop_GiantClam_01": {
+                "_model_data_name": "PolygonNatureBiomes/SM_Prop_GiantClam_01",
+                "_position": [
+                    -6.955248832702637,
+                    3.1835756301879883,
+                    -7.4903564453125
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "SM_Prop_Message_Bottle_01": {
+                "_model_data_name": "PolygonNatureBiomes/Props/SM_Prop_Message_Bottle_01",
+                "_position": [
+                    -3.5693092346191406,
+                    2.6669673919677734,
+                    -6.259860992431641
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "SM_Prop_Starfish_01": {
+                "_model_data_name": "PolygonNatureBiomes/SM_Prop_Starfish_01",
+                "_position": [
+                    -4.429388046264648,
+                    3.1269264221191406,
+                    -6.238225936889648
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "SM_Prop_Starfish_02": {
+                "_model_data_name": "PolygonNatureBiomes/SM_Prop_Starfish_02",
+                "_position": [
+                    -14.748862266540527,
+                    3.3068838119506836,
+                    -4.121072769165039
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "SM_Prop_Starfish_03": {
+                "_model_data_name": "PolygonNatureBiomes/SM_Prop_Starfish_03",
+                "_position": [
+                    -14.334938049316406,
+                    3.5403690338134766,
+                    -2.6578731536865234
                 ],
                 "_rotation": [
                     0.0,

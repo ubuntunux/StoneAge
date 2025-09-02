@@ -186,12 +186,35 @@ impl CharacterController {
             move_direction.normalize_mut();
             self._velocity.x = move_direction.x * self._move_speed;
             self._velocity.z = move_direction.z * self._move_speed;
-            self._position.x += self._velocity.x * delta_time;
-            self._position.z += self._velocity.z * delta_time;
         } else {
             self._velocity.x = 0.0;
             self._velocity.z = 0.0;
         }
+
+        begin_block!("apply slop velocity"); {
+            self._position += self._slop_velocity * delta_time;
+            if self.is_on_ground() {
+                let ground_normal_y = self._last_ground_normal.y.abs();
+                let (slope_move_dir, mut slope_move_distance) = math::make_normalize_with_norm(&self._slop_velocity);
+                if SLOPE_ANGLE <= ground_normal_y {
+                    let slope_decay = SLOPE_VELOCITY_DECAY * (ground_normal_y - SLOPE_VELOCITY_DECAY) / (1.0 - SLOPE_VELOCITY_DECAY);
+                    slope_move_distance = (slope_move_distance - slope_decay * delta_time).max(0.0);
+                    self._slop_velocity = slope_move_dir * slope_move_distance;
+                }
+
+                if 0.0 < slope_move_distance {
+                    let (move_dir, move_distance) = math::make_normalize_with_norm(&self._velocity);
+                    let move_decay = move_dir.dot(&slope_move_dir) * (1.0 - ground_normal_y);
+                    if move_decay <= 0.0 {
+                        self._velocity = move_dir * move_distance * (1.0 + move_decay);
+                    }
+                }
+            }
+        }
+
+        // move
+        self._position.x += self._velocity.x * delta_time;
+        self._position.z += self._velocity.z * delta_time;
 
         // update rotation
         self.rotate_to_direction(&move_direction, delta_time);
@@ -208,9 +231,6 @@ impl CharacterController {
             self._velocity.y -= GRAVITY * delta_time;
         }
         self._position.y += self._velocity.y * delta_time;
-
-        // slop velocity
-        self._position += self._slop_velocity * delta_time;
 
         begin_block!("check delta limited - prevent pass block"); {
             let delta = self._position - prev_position;
@@ -239,17 +259,17 @@ impl CharacterController {
                 let ground_normal = height_map_data.get_normal_bilinear(&self._position);
 
                 let move_delta = self._position - prev_position;
-                let (_move_dir, move_distance) = math::make_normalize_with_norm(&move_delta);
+                let (move_dir, move_distance) = math::make_normalize_with_norm(&move_delta);
                 let new_move_dir = math::safe_normalize(&(Vector3::new(self._position.x, ground_height, self._position.z) - prev_position));
                 self._position = prev_position + new_move_dir * move_distance;
                 self.set_on_ground(self._position.y, &ground_normal);
 
-                if ground_normal.y < SLOPE_ANGLE {
+                if ground_normal.y < SLOPE_ANGLE && ground_normal.dot(&move_dir) < 0.0 {
                     let slop_velocity_scale = 1.0;//(1.0 - (SLOPE_ANGLE - ground_normal.y) / SLOPE_ANGLE).clamp(0.0, 1.0);
                     self._slop_velocity += math::make_normalize_xz(&ground_normal) * SLOPE_SPEED * slop_velocity_scale;
 
-                    let (move_dir, move_distance) = math::make_normalize_with_norm(&self._slop_velocity);
-                    self._slop_velocity = move_dir * move_distance.min(SLOPE_SPEED);
+                    let (slope_move_dir, slope_move_distance) = math::make_normalize_with_norm(&self._slop_velocity);
+                    self._slop_velocity = slope_move_dir * slope_move_distance.min(SLOPE_SPEED);
 
                     self._is_blocked = true;
                 }
@@ -333,13 +353,6 @@ impl CharacterController {
             if self._is_cliff && (point.y - CLIFF_HEIGHT) <= height_map_data.get_height_bilinear(&point, 0) {
                 self._is_cliff = false;
             }
-        }
-
-        // update last ground position
-        if self.is_on_ground() {
-            let (move_dir, mut move_distance) = math::make_normalize_with_norm(&self._slop_velocity);
-            move_distance = (move_distance - SLOPE_VELOCITY_DECAY * delta_time).max(0.0);
-            self._slop_velocity = move_dir * move_distance;
         }
 
         // reset
