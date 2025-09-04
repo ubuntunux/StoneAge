@@ -122,15 +122,9 @@ impl<'a> Prop<'a> {
             self._prop_stats._item_regenerate_count -= 1;
 
             for _ in 0..self.get_item_drop_count() {
-                let mut offset = Vector3::new(rand::random::<f32>(), 0.0, rand::random::<f32>());
-                if offset.x == 0.0 && offset.y == 0.0 {
-                    offset.x = 1.0;
-                }
-                offset = offset.normalize() * self._prop_radius * 2.0;
-
                 item_create_infos.push(ItemCreateInfo {
                     _item_data_name: self._prop_data.borrow()._item_data_name.clone(),
-                    _position: self.get_position() + offset,
+                    _position: self.get_position().clone(),
                     ..Default::default()
                 });
             }

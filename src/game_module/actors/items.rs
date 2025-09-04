@@ -41,6 +41,8 @@ pub struct ItemProperties {
     pub _position: Vector3<f32>,
     pub _rotation: Vector3<f32>,
     pub _scale: Vector3<f32>,
+    pub _velocity: Vector3<f32>,
+    pub _is_on_ground: bool,
 }
 
 pub struct Item<'a> {

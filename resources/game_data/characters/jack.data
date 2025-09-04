@@ -28,12 +28,12 @@
         "_audio_pain": "pain_short"
     },
     "_character_stat_data": {
-        "_attack_damage": 50,
+        "_attack_damage": 20,
         "_attack_event_time": 0.20000000298023224,
         "_attack_range": 0.5,
         "_jump_speed": 13.0,
         "_max_hp": 100,
-        "_power_attack_damage": 100,
+        "_power_attack_damage": 50,
         "_power_attack_event_time": 1.0,
         "_power_attack_range": 1.0,
         "_roll_speed": 4.5,

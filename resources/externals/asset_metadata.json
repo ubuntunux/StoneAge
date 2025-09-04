@@ -79,16 +79,6 @@
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/jack.blend": [
-        {
-            "asset_type": "GAME_CHARACTER",
-            "asset_path": "jack",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/jack.blend",
-            "guid": "",
-            "mtime": 1753288134.0370924,
-            "data": {}
-        }
-    ],
     "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/neanderthal.blend": [
         {
             "asset_type": "GAME_CHARACTER",
@@ -236,6 +226,16 @@
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/villager_00.blend",
             "guid": "",
             "mtime": 1753288134.305715,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/jack.blend": [
+        {
+            "asset_type": "GAME_CHARACTER",
+            "asset_path": "jack",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/jack.blend",
+            "guid": "",
+            "mtime": 1757003634.1960292,
             "data": {}
         }
     ],
@@ -8289,7 +8289,7 @@
             "asset_path": "intro_stage",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/intro_stage.blend",
             "guid": "",
-            "mtime": 1756836483.4136105,
+            "mtime": 1757001492.2010834,
             "data": {}
         }
     ]

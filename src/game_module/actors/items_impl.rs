@@ -2,13 +2,15 @@ use std::collections::HashMap;
 use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::{AudioLoop, AudioManager};
 use rust_engine_3d::core::engine_core::EngineCore;
+use rust_engine_3d::scene::height_map::HeightMapData;
 use rust_engine_3d::scene::render_object::{RenderObjectCreateInfo, RenderObjectData};
 use rust_engine_3d::scene::scene_manager::SceneManager;
+use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
 use crate::application::application::Application;
 use crate::game_module::actors::items::{Item, ItemCreateInfo, ItemData, ItemDataType, ItemManager, ItemProperties};
 use crate::game_module::game_client::GameClient;
-use crate::game_module::game_constants::{EAT_ITEM_DISTANCE, PICKUP_ITEM};
+use crate::game_module::game_constants::{EAT_ITEM_DISTANCE, GRAVITY, PICKUP_ITEM};
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
 
@@ -61,6 +63,8 @@ impl<'a> Item<'a> {
                 _position: position.clone(),
                 _rotation: rotation.clone(),
                 _scale: scale.clone(),
+                _velocity: Vector3::new(rand::random::<f32>() * 5.0, 10.0, rand::random::<f32>() * 5.0),
+                _is_on_ground: false,
             }),
         };
         item.initialize_item();
@@ -87,7 +91,19 @@ impl<'a> Item<'a> {
         );
     }
 
-    pub fn update_item(&mut self, _delta_time: f64) {
+    pub fn update_item(&mut self, height_map_data: &HeightMapData, delta_time: f64) {
+        if self._item_properties._is_on_ground == false {
+            let item_height = self._render_object.borrow_mut()._bounding_box._extents.y;
+            self._item_properties._position += self._item_properties._velocity * delta_time as f32;
+            let ground_height = height_map_data.get_height_bilinear(&self._item_properties._position, 0);
+            if (self._item_properties._position.y - item_height) <= ground_height && self._item_properties._velocity.y <= 0.0 {
+                self._item_properties._position.y = ground_height + item_height;
+                self._item_properties._is_on_ground = true;
+            }
+            self._item_properties._velocity.y -= GRAVITY * delta_time as f32;
+
+            self.update_transform();
+        }
     }
 }
 
@@ -175,21 +191,28 @@ impl<'a> ItemManager<'a> {
     }
 
     pub fn update_item_manager(&mut self, delta_time: f64) {
+        let game_scene_manager = ptr_as_ref(self._game_scene_manager);
+        let scene_manager = ptr_as_ref(self._scene_manager);
+
         for item in self._items.values() {
-            item.borrow_mut().update_item(delta_time);
+            item.borrow_mut().update_item(scene_manager.get_height_map_data(), delta_time);
         }
 
         let mut pick_items: Vec<RcRefCell<Item>> = Vec::new();
         {
-            let game_scene_manager = ptr_as_ref(self._game_scene_manager);
             let player = game_scene_manager.get_character_manager().get_player();
             let player_mut = player.borrow_mut();
             let player_position = player_mut.get_position();
+            let player_bound_box = player_mut.get_bounding_box();
             for (_key, item) in self._items.iter() {
-                let dist = (item.borrow()._item_properties._position - player_position).norm();
-                if dist <= EAT_ITEM_DISTANCE {
+                let item_ref = item.borrow();
+                let diff = item_ref._item_properties._position - player_position;
+                let check_height =
+                    item_ref._render_object.borrow()._bounding_box._min.y <= player_bound_box._max.y &&
+                    player_bound_box._min.y <= item_ref._render_object.borrow()._bounding_box._max.y;
+                if math::get_norm_xz(&diff) <= EAT_ITEM_DISTANCE && check_height {
                     // pick item
-                    self.pick_item(&item.borrow()._item_data.borrow()._item_type, 1);
+                    self.pick_item(&item_ref._item_data.borrow()._item_type, 1);
                     self.get_audio_manager_mut().play_audio_bank(PICKUP_ITEM, AudioLoop::ONCE, None);
                     pick_items.push(item.clone());
                 }
