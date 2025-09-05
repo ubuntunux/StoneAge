@@ -24,7 +24,6 @@ c4dbb2e9-22a0-4f27-9442-937178e6882b:StoneAge/game_data/props:StoneAge-game_data
 4dc140f0-e920-4260-b72e-f22d73dce4d2:StoneAge/game_data/weapons:StoneAge-game_data-weapons
 c021cad1-00f6-4a65-94ea-13204785bff0:StoneAge/material_instances:StoneAge-material_instances
 73f356ab-9053-4bb5-9c2d-2de527867f64:StoneAge/material_instances/PolygonNatureBiomes:StoneAge-material_instances-PolygonNatureBiomes
-eea8a6c0-9dba-4bae-83a3-da7e132bc662:StoneAge/material_instances/PolygonNatureBiomes/LOD_Cards:StoneAge-material_instances-PolygonNatureBiomes-LOD_Cards
 446d5c2f-6e17-42e9-9ead-77ba21c36ecf:StoneAge/material_instances/PolygonNatureBiomes/Plants:StoneAge-material_instances-PolygonNatureBiomes-Plants
 03368e73-d274-44dd-9b51-998685b56264:StoneAge/material_instances/PolygonNatureBiomes/Triplanar:StoneAge-material_instances-PolygonNatureBiomes-Triplanar
 f4fd25bb-393b-4e39-a128-4e29cc75e5f6:StoneAge/material_instances/characters:StoneAge-material_instances-characters

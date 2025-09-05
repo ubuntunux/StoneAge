@@ -44,7 +44,7 @@
 		{
 			"bufferView":0,
 			"componentType":5126,
-			"count":1369,
+			"count":1152,
 			"max":[
 				11.054227828979492,
 				1.163199543952942,
@@ -60,19 +60,19 @@
 		{
 			"bufferView":1,
 			"componentType":5126,
-			"count":1369,
+			"count":1152,
 			"type":"VEC3"
 		},
 		{
 			"bufferView":2,
 			"componentType":5126,
-			"count":1369,
+			"count":1152,
 			"type":"VEC2"
 		},
 		{
 			"bufferView":3,
 			"componentType":5126,
-			"count":1369,
+			"count":1152,
 			"type":"VEC4"
 		},
 		{
@@ -85,38 +85,38 @@
 	"bufferViews":[
 		{
 			"buffer":0,
-			"byteLength":16428,
+			"byteLength":13824,
 			"byteOffset":0,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":16428,
-			"byteOffset":16428,
+			"byteLength":13824,
+			"byteOffset":13824,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":10952,
-			"byteOffset":32856,
+			"byteLength":9216,
+			"byteOffset":27648,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":21904,
-			"byteOffset":43808,
+			"byteLength":18432,
+			"byteOffset":36864,
 			"target":34962
 		},
 		{
 			"buffer":0,
 			"byteLength":13314,
-			"byteOffset":65712,
+			"byteOffset":55296,
 			"target":34963
 		}
 	],
 	"buffers":[
 		{
-			"byteLength":79028,
+			"byteLength":68612,
 			"uri":"SM_Env_Rock_Ground_01.bin"
 		}
 	]

@@ -21,13 +21,13 @@ layout(binding = USER_BINDING_INDEX14) uniform sampler2D layer4_textureNormal;
 BEGIN_PUSH_CONSTANT(PushConstant_RenderLandscape)
     float tiling;
     float layer0_tiling;
-    float layer1_alpha;
+    float layer0_alpha;
     float layer1_tiling;
-    float layer2_alpha;
+    float layer1_alpha;
     float layer2_tiling;
-    float layer3_alpha;
+    float layer2_alpha;
     float layer3_tiling;
-    float layer4_alpha;
+    float layer3_alpha;
     float layer4_tiling;
 END_PUSH_CONSTANT()
 
@@ -46,24 +46,32 @@ FRAGMENT_SHADER_MAIN()
     const vec2 layer2_texcoord = texcoord * GET_PUSH_CONSTANT().layer2_tiling;
     const vec2 layer3_texcoord = texcoord * GET_PUSH_CONSTANT().layer3_tiling;
     const vec2 layer4_texcoord = texcoord * GET_PUSH_CONSTANT().layer4_tiling;
-    const vec4 layer_masks = in_vertex_output._color * vec4(GET_PUSH_CONSTANT().layer1_alpha, GET_PUSH_CONSTANT().layer2_alpha, GET_PUSH_CONSTANT().layer3_alpha, GET_PUSH_CONSTANT().layer4_alpha);
+    const vec4 layer_masks = in_vertex_output._color * vec4(
+        GET_PUSH_CONSTANT().layer0_alpha,
+        GET_PUSH_CONSTANT().layer1_alpha,
+        GET_PUSH_CONSTANT().layer2_alpha,
+        GET_PUSH_CONSTANT().layer3_alpha
+    );
 
-    out_base_color = mix(texture(layer0_textureBase, layer0_texcoord), texture(layer1_textureBase, layer1_texcoord), layer_masks.x);
-    out_base_color = mix(out_base_color, texture(layer2_textureBase, layer2_texcoord), layer_masks.y);
-    out_base_color = mix(out_base_color, texture(layer3_textureBase, layer3_texcoord), layer_masks.z);
-    out_base_color = mix(out_base_color, texture(layer4_textureBase, layer4_texcoord), layer_masks.w);
+    out_base_color = texture(layer4_textureBase, layer4_texcoord);
+    out_base_color = mix(out_base_color, texture(layer3_textureBase, layer3_texcoord), layer_masks[3]);
+    out_base_color = mix(out_base_color, texture(layer2_textureBase, layer2_texcoord), layer_masks[2]);
+    out_base_color = mix(out_base_color, texture(layer1_textureBase, layer1_texcoord), layer_masks[1]);
+    out_base_color = mix(out_base_color, texture(layer0_textureBase, layer0_texcoord), layer_masks[0]);
     out_base_color.xyz = pow(out_base_color.xyz, vec3(2.2));
     out_base_color.w = 1.0;
 
-    out_material = mix(texture(layer0_textureMaterial, layer0_texcoord), texture(layer1_textureMaterial, layer1_texcoord), layer_masks.x);
-    out_material = mix(out_material, texture(layer2_textureMaterial, layer2_texcoord), layer_masks.y);
-    out_material = mix(out_material, texture(layer3_textureMaterial, layer3_texcoord), layer_masks.z);
-    out_material = mix(out_material, texture(layer4_textureMaterial, layer4_texcoord), layer_masks.w);
+    out_material = texture(layer4_textureMaterial, layer4_texcoord);
+    out_material = mix(out_material, texture(layer3_textureMaterial, layer3_texcoord), layer_masks[3]);
+    out_material = mix(out_material, texture(layer2_textureMaterial, layer2_texcoord), layer_masks[2]);
+    out_material = mix(out_material, texture(layer1_textureMaterial, layer1_texcoord), layer_masks[1]);
+    out_material = mix(out_material, texture(layer0_textureMaterial, layer0_texcoord), layer_masks[0]);
 
-    out_tangent_normal = mix(texture(layer0_textureNormal, layer0_texcoord).xyz * 2.0 - 1.0, texture(layer1_textureNormal, layer1_texcoord).xyz * 2.0 - 1.0, layer_masks.x);
-    out_tangent_normal = mix(out_tangent_normal, texture(layer2_textureNormal, layer2_texcoord).xyz * 2.0 - 1.0, layer_masks.y);
-    out_tangent_normal = mix(out_tangent_normal, texture(layer3_textureNormal, layer3_texcoord).xyz * 2.0 - 1.0, layer_masks.z);
-    out_tangent_normal = mix(out_tangent_normal, texture(layer4_textureNormal, layer4_texcoord).xyz * 2.0 - 1.0, layer_masks.w);
+    out_tangent_normal = texture(layer4_textureNormal, layer4_texcoord).xyz * 2.0 - 1.0;
+    out_tangent_normal = mix(out_tangent_normal, texture(layer3_textureNormal, layer3_texcoord).xyz * 2.0 - 1.0, layer_masks[3]);
+    out_tangent_normal = mix(out_tangent_normal, texture(layer2_textureNormal, layer2_texcoord).xyz * 2.0 - 1.0, layer_masks[2]);
+    out_tangent_normal = mix(out_tangent_normal, texture(layer1_textureNormal, layer1_texcoord).xyz * 2.0 - 1.0, layer_masks[1]);
+    out_tangent_normal = mix(out_tangent_normal, texture(layer0_textureNormal, layer0_texcoord).xyz * 2.0 - 1.0, layer_masks[0]);
     out_tangent_normal = safe_normalize(out_tangent_normal);
 }
 #endif
