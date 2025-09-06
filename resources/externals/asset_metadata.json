@@ -235,7 +235,7 @@
             "asset_path": "jack",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/jack.blend",
             "guid": "",
-            "mtime": 1757003634.1960292,
+            "mtime": 1757187317.9640653,
             "data": {}
         }
     ],
@@ -4115,23 +4115,13 @@
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/meshes/PolygonNatureBiomes/SM_Env_Rock_Ground_02.blend": [
-        {
-            "asset_type": "MESH",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Ground_02",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/PolygonNatureBiomes/SM_Env_Rock_Ground_02.blend",
-            "guid": "",
-            "mtime": 1757090694.3983276,
-            "data": {}
-        }
-    ],
     "/mnt/Workspace/StoneAge/resources/externals/meshes/PolygonNatureBiomes/SM_Env_Rock_Ground_01.blend": [
         {
             "asset_type": "MESH",
             "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Ground_01",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/PolygonNatureBiomes/SM_Env_Rock_Ground_01.blend",
             "guid": "",
-            "mtime": 1757098023.9453194,
+            "mtime": 1757160431.9867542,
             "data": {}
         },
         {
@@ -4139,7 +4129,17 @@
             "asset_path": "PolygonNatureBiomes/rock_ground_01",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/PolygonNatureBiomes/SM_Env_Rock_Ground_01.blend",
             "guid": "",
-            "mtime": 1757098023.9453194,
+            "mtime": 1757160431.9867542,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/meshes/PolygonNatureBiomes/SM_Env_Rock_Ground_02.blend": [
+        {
+            "asset_type": "MESH",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Ground_02",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/PolygonNatureBiomes/SM_Env_Rock_Ground_02.blend",
+            "guid": "",
+            "mtime": 1757160157.688094,
             "data": {}
         }
     ],

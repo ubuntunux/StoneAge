@@ -33,9 +33,10 @@
 						"POSITION":0,
 						"NORMAL":1,
 						"TEXCOORD_0":2,
-						"TANGENT":3
+						"TANGENT":3,
+						"COLOR_0":4
 					},
-					"indices":4
+					"indices":5
 				}
 			]
 		}
@@ -78,6 +79,13 @@
 		{
 			"bufferView":4,
 			"componentType":5123,
+			"count":252,
+			"normalized":true,
+			"type":"VEC4"
+		},
+		{
+			"bufferView":5,
+			"componentType":5123,
 			"count":1176,
 			"type":"SCALAR"
 		}
@@ -109,14 +117,20 @@
 		},
 		{
 			"buffer":0,
-			"byteLength":2352,
+			"byteLength":2016,
 			"byteOffset":12096,
+			"target":34962
+		},
+		{
+			"buffer":0,
+			"byteLength":2352,
+			"byteOffset":14112,
 			"target":34963
 		}
 	],
 	"buffers":[
 		{
-			"byteLength":14448,
+			"byteLength":16464,
 			"uri":"SM_Env_Rock_Ground_02.bin"
 		}
 	]

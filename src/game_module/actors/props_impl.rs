@@ -102,14 +102,14 @@ impl<'a> Prop<'a> {
     pub fn set_dead(&mut self) {
         self._prop_stats._is_alive = false;
     }
-    pub fn set_hit_damage(&mut self, damage: i32, attack_point: &Vector3<f32>) {
+    pub fn set_hit_damage(&mut self, damage: i32) {
         self._prop_stats._prop_hp -= damage;
         if self._prop_stats._prop_hp <= 0 {
             self.set_dead();
         }
 
         let effect_create_info = EffectCreateInfo {
-            _effect_position: attack_point.clone(),
+            _effect_position: self.get_position().clone(),
             _effect_data_name: String::from(EFFECT_HIT),
             ..Default::default()
         };
@@ -244,9 +244,8 @@ impl<'a> PropManager<'a> {
                     for prop_refcell in self._props.values() {
                         let mut prop = prop_refcell.borrow_mut();
                         if player.check_in_range(prop.get_collision(), NPC_ATTACK_HIT_RANGE, true) {
-                            let prop_position = ptr_as_ref(prop.get_position());
                             if prop.can_drop_item() {
-                                prop.set_hit_damage(player.get_power(player._animation_state._attack_event), prop_position);
+                                prop.set_hit_damage(player.get_power(player._animation_state._attack_event));
                                 if false == prop.is_alive() {
                                     let item_create_infos = prop.drop_items();
                                     for item_create_info in item_create_infos.iter() {

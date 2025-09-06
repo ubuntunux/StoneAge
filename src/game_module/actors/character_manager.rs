@@ -220,7 +220,10 @@ impl<'a> CharacterManager<'a> {
                             character_mut.check_in_range(target_character_mut.get_collision(), NPC_ATTACK_HIT_RANGE, true) {
                                 regist_target_character = Some(target_character.clone());
                                 let target_position = ptr_as_ref(target_character_mut.get_position());
-                                target_character_mut.set_hit_damage(character_mut.get_power(character_mut._animation_state._attack_event), target_position);
+                                target_character_mut.set_hit_damage(
+                                    character_mut.get_power(character_mut._animation_state._attack_event),
+                                    Some(character_mut.get_front())
+                                );
                                 if false == target_character_mut._character_stats._is_alive {
                                     dead_characters.push(target_character.clone());
 
@@ -239,8 +242,10 @@ impl<'a> CharacterManager<'a> {
                     if player._character_stats._is_alive &&
                         false == player._character_stats._invincibility &&
                         character_mut.check_in_range(player.get_collision(), NPC_ATTACK_HIT_RANGE, true) {
-                        let position = ptr_as_ref(player.get_position());
-                        player.set_hit_damage(character_mut.get_power(character_mut._animation_state._attack_event), position);
+                        player.set_hit_damage(
+                            character_mut.get_power(character_mut._animation_state._attack_event),
+                            Some(character_mut.get_front())
+                        );
                     }
                 }
             }

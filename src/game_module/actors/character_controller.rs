@@ -8,7 +8,7 @@ use rust_engine_3d::utilities::math::HALF_PI;
 use rust_engine_3d::utilities::system::ptr_as_ref;
 use crate::game_module::actors::character::Character;
 use crate::game_module::actors::character_data::{CharacterData, MoveAnimationState};
-use crate::game_module::game_constants::{CHARACTER_ROTATION_SPEED, CLIFF_HEIGHT, FALLING_TIME, GRAVITY, MOVE_LIMIT, SLOPE_ANGLE, SLOPE_SPEED, SLOPE_VELOCITY_DECAY};
+use crate::game_module::game_constants::{CHARACTER_ROTATION_SPEED, CLIFF_HEIGHT, FALLING_TIME, GRAVITY, HIT_VELOCITY_DECAY, HIT_VELOCITY_SPEED, MOVE_LIMIT, SLOPE_ANGLE, SLOPE_SPEED, SLOPE_VELOCITY_DECAY};
 use crate::game_module::game_scene_manager::BlockArray;
 
 pub struct CharacterController {
@@ -21,6 +21,7 @@ pub struct CharacterController {
     pub _move_direction: Vector3<f32>,
     pub _velocity: Vector3<f32>,
     pub _slop_velocity: Vector3<f32>,
+    pub _hit_velocity: Vector3<f32>,
     pub _move_speed: f32,
     pub _fall_time: f32,
     pub _is_falling: bool,
@@ -44,6 +45,7 @@ impl CharacterController {
             _move_direction: Vector3::zeros(),
             _velocity: Vector3::zeros(),
             _slop_velocity: Vector3::zeros(),
+            _hit_velocity: Vector3::zeros(),
             _move_speed: 0.0,
             _fall_time: 0.0,
             _is_falling: false,
@@ -71,6 +73,7 @@ impl CharacterController {
         self._last_ground_normal = Vector3::new(0.0, 1.0, 0.0);
         self._velocity = Vector3::zeros();
         self._slop_velocity = Vector3::zeros();
+        self._hit_velocity = Vector3::zeros();
         self._move_speed = 0.0;
         self._fall_time = 0.0;
         self._is_falling = false;
@@ -140,6 +143,10 @@ impl CharacterController {
         }
     }
 
+    pub fn set_hit_direction(&mut self, direction: &Vector3<f32>) {
+        self._hit_velocity = direction.clone() * HIT_VELOCITY_SPEED;
+    }
+
     pub fn set_on_ground(&mut self, ground_height: f32, ground_normal: &Vector3<f32>) {
         if self._is_ground == false || self._position.y < ground_height {
             self._position.y = ground_height;
@@ -189,6 +196,14 @@ impl CharacterController {
         } else {
             self._velocity.x = 0.0;
             self._velocity.z = 0.0;
+        }
+
+        begin_block!("apply hit velocity"); {
+            if self._hit_velocity.x != 0.0 || self._hit_velocity.z != 0.0 {
+                self._position += self._hit_velocity * delta_time;
+                let (hit_move_dir, hit_move_distance) = math::make_normalize_with_norm(&self._hit_velocity);
+                self._hit_velocity = hit_move_dir * (hit_move_distance - HIT_VELOCITY_DECAY * delta_time).max(0.0);
+            }
         }
 
         begin_block!("apply slop velocity"); {
@@ -265,11 +280,11 @@ impl CharacterController {
                 self.set_on_ground(self._position.y, &ground_normal);
 
                 if ground_normal.y < SLOPE_ANGLE && ground_normal.dot(&move_dir) < 0.0 {
-                    let slop_velocity_scale = 1.0;//(1.0 - (SLOPE_ANGLE - ground_normal.y) / SLOPE_ANGLE).clamp(0.0, 1.0);
-                    self._slop_velocity += math::make_normalize_xz(&ground_normal) * SLOPE_SPEED * slop_velocity_scale;
+                    let slop_speed = SLOPE_SPEED.max(self._move_speed);
+                    self._slop_velocity += math::make_normalize_xz(&ground_normal) * slop_speed;
 
                     let (slope_move_dir, slope_move_distance) = math::make_normalize_with_norm(&self._slop_velocity);
-                    self._slop_velocity = slope_move_dir * slope_move_distance.min(SLOPE_SPEED);
+                    self._slop_velocity = slope_move_dir * slope_move_distance.min(slop_speed);
 
                     self._is_blocked = true;
                 }

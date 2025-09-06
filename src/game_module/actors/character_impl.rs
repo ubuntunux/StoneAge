@@ -15,7 +15,7 @@ use crate::game_module::actors::character_data::{ActionAnimationState, Character
 use crate::game_module::actors::character_manager::CharacterManager;
 use crate::game_module::actors::weapons::Weapon;
 use crate::game_module::behavior::behavior_base::create_character_behavior;
-use crate::game_module::game_constants::{AUDIO_ATTACK, AUDIO_FALLING_WATER, AUDIO_FOOTSTEP, AUDIO_HIT, AUDIO_JUMP, AUDIO_ROLL, EFFECT_FALLING_WATER, EFFECT_HIT, FALLING_DAMAGE_RATIO, FALLING_HEIGHT, MAX_STAMINA, STAMINA_ATTACK, STAMINA_JUMP, STAMINA_POWER_ATTACK, STAMINA_RECOVERY, STAMINA_ROLL, STAMINA_RUN};
+use crate::game_module::game_constants::{ATTACK_DELAY, AUDIO_ATTACK, AUDIO_FALLING_WATER, AUDIO_FOOTSTEP, AUDIO_HIT, AUDIO_JUMP, AUDIO_ROLL, EFFECT_FALLING_WATER, EFFECT_HIT, FALLING_DAMAGE_RATIO, FALLING_HEIGHT, MAX_STAMINA, STAMINA_ATTACK, STAMINA_JUMP, STAMINA_POWER_ATTACK, STAMINA_RECOVERY, STAMINA_ROLL, STAMINA_RUN};
 use crate::game_module::game_scene_manager::BlockArray;
 
 impl CharacterStats {
@@ -177,11 +177,12 @@ impl<'a> Character<'a> {
         if self.is_available_move() {
             let action_animation_play_info = self.get_animation_play_info(AnimationLayer::ActionLayer);
 
-            if self.is_action(ActionAnimationState::None) ||
-                self.is_action(ActionAnimationState::Attack) &&
-                    self.get_character_data()._stat_data._attack_event_time < action_animation_play_info._animation_play_time &&
-                    (!self._is_player || STAMINA_ATTACK <= self._character_stats._stamina) {
+            if self.is_action(ActionAnimationState::None) || self.is_action(ActionAnimationState::Hit) {
                 return true;
+            }
+            else if self.is_action(ActionAnimationState::Attack) {
+                let attackable_time = self.get_character_data()._stat_data._attack_event_time + ATTACK_DELAY;
+                return attackable_time < action_animation_play_info._animation_play_time && (self._is_player == false || STAMINA_ATTACK <= self._character_stats._stamina) ;
             }
         }
         false
@@ -227,19 +228,18 @@ impl<'a> Character<'a> {
         if collision._bounding_box._extents.y < height_diff {
             return false;
         }
-        let position = Vector3::new(collision._bounding_box._center.x, 0.0, collision._bounding_box._center.z);
-        let target_position = Vector3::new(target_collision._bounding_box._center.x, 0.0, target_collision._bounding_box._center.z);
-        let to_target = target_position - position;
-        let (to_target_dir, to_target_dist) = math::make_normalize_xz_with_norm(&to_target);
+
+        let to_target = target_collision._bounding_box._center - collision._bounding_box._center;
+        let (to_target_dir, distance) = math::make_normalize_xz_with_norm(&to_target);
         let d0 = collision._bounding_box._orientation.column(0).dot(&to_target_dir).abs();
-        let r0 = math::lerp(collision._bounding_box._extents.x, collision._bounding_box._extents.z, d0);
+        let r0 = math::lerp(collision._bounding_box._extents.z, collision._bounding_box._extents.x, d0);
         let d1 = target_collision._bounding_box._orientation.column(0).dot(&to_target_dir).abs();
-        let r1 = math::lerp(target_collision._bounding_box._extents.x, target_collision._bounding_box._extents.z, d1);
-        let distance = to_target_dist - (r0 + r1);
-        if self.get_transform().get_front().dot(&to_target_dir) < 0.0 || !check_direction {
-            return distance <= check_range;
-        }
-        false
+        let r1 = math::lerp(target_collision._bounding_box._extents.z, target_collision._bounding_box._extents.x, d1);
+        distance <= (r0 + check_range + r1) && (check_direction == false || self.get_transform().get_front().dot(&to_target_dir) < 0.0)
+    }
+
+    pub fn get_front(&self) -> &Vector3<f32> {
+        &self._controller._face_direction
     }
 
     pub fn get_position(&self) -> &Vector3<f32> {
@@ -293,16 +293,20 @@ impl<'a> Character<'a> {
         let falling_height = last_ground_height - self.get_position().y;
         if 0.0 < falling_height {
             let falling_damage: i32 = (falling_height - FALLING_HEIGHT).ceil() as i32 * FALLING_DAMAGE_RATIO;
-            self.set_hit_damage( falling_damage, &self.get_position().clone() );
+            self.set_hit_damage( falling_damage, None );
         }
     }
 
-    pub fn set_hit_damage(&mut self, damage: i32, attack_point: &Vector3<f32>) {
+    pub fn set_hit_damage(&mut self, damage: i32, attack_dir: Option<&Vector3<f32>>) {
         if 0 < damage {
             self.set_damage(damage);
 
+            if let Some(attack_dir) = attack_dir {
+                self._controller.set_hit_direction(&attack_dir);
+            }
+
             let effect_create_info = EffectCreateInfo {
-                _effect_position: attack_point.clone(),
+                _effect_position: self.get_position().clone(),
                 _effect_data_name: String::from(EFFECT_HIT),
                 ..Default::default()
             };
