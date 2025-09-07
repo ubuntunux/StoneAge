@@ -13,7 +13,7 @@ use crate::game_module::actors::character_data::ActionAnimationState;
 use crate::game_module::actors::items::ItemCreateInfo;
 use crate::game_module::actors::weapons::{Weapon, WeaponCreateInfo};
 use crate::game_module::game_client::GameClient;
-use crate::game_module::game_constants::{ITEM_MEAT, NPC_ATTACK_HIT_RANGE};
+use crate::game_module::game_constants::{ITEM_SPIRIT_BALL, NPC_ATTACK_HIT_RANGE};
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
 
@@ -229,7 +229,7 @@ impl<'a> CharacterManager<'a> {
 
                                     // TestCode: Item
                                     let item_create_info = ItemCreateInfo {
-                                        _item_data_name: String::from(ITEM_MEAT),
+                                        _item_data_name: String::from(ITEM_SPIRIT_BALL),
                                         _position: target_position + Vector3::new(0.0, 0.5, 0.0),
                                         ..Default::default()
                                     };

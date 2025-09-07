@@ -7,6 +7,7 @@ use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::system::RcRefCell;
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumIter};
+use crate::game_module::actors::item_updater::ItemUpdaterBase;
 use crate::game_module::game_client::GameClient;
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
@@ -17,7 +18,8 @@ pub type ItemMap<'a> = HashMap<u64, RcRefCell<Item<'a>>>;
 pub enum ItemDataType {
     Meat,
     Rock,
-    Wood
+    Wood,
+    SpiritBall
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
@@ -51,6 +53,7 @@ pub struct Item<'a> {
     pub _item_data: RcRefCell<ItemData>,
     pub _render_object: RcRefCell<RenderObjectData<'a>>,
     pub _item_properties: Box<ItemProperties>,
+    pub _item_updater: Box<dyn ItemUpdaterBase>,
 }
 
 pub struct ItemManager<'a> {

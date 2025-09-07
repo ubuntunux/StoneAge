@@ -8,9 +8,10 @@ use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
 use crate::application::application::Application;
+use crate::game_module::actors::item_updater::create_item_updater;
 use crate::game_module::actors::items::{Item, ItemCreateInfo, ItemData, ItemDataType, ItemManager, ItemProperties};
 use crate::game_module::game_client::GameClient;
-use crate::game_module::game_constants::{EAT_ITEM_DISTANCE, GRAVITY, PICKUP_ITEM};
+use crate::game_module::game_constants::{EAT_ITEM_DISTANCE, PICKUP_ITEM};
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
 
@@ -19,7 +20,8 @@ impl ItemDataType {
         match item_data_type {
             ItemDataType::Meat => "ui/items/item_meat",
             ItemDataType::Rock => "ui/items/item_rock",
-            ItemDataType::Wood => "ui/items/item_wood"
+            ItemDataType::Wood => "ui/items/item_wood",
+            ItemDataType::SpiritBall => "ui/items/item_spirit_ball"
         }
     }
 }
@@ -59,13 +61,14 @@ impl<'a> Item<'a> {
             _item_id: item_id,
             _item_data: item_data.clone(),
             _render_object: render_object.clone(),
-            _item_properties: Box::from(ItemProperties {
+            _item_properties: Box::new(ItemProperties {
                 _position: position.clone(),
                 _rotation: rotation.clone(),
                 _scale: scale.clone(),
                 _velocity: Vector3::new(rand::random::<f32>() * 5.0, 10.0, rand::random::<f32>() * 5.0),
                 _is_on_ground: false,
             }),
+            _item_updater: create_item_updater(item_data.borrow()._item_type)
         };
         item.initialize_item();
         item
@@ -92,18 +95,8 @@ impl<'a> Item<'a> {
     }
 
     pub fn update_item(&mut self, height_map_data: &HeightMapData, delta_time: f64) {
-        if self._item_properties._is_on_ground == false {
-            let item_height = self._render_object.borrow_mut()._bounding_box._extents.y;
-            self._item_properties._position += self._item_properties._velocity * delta_time as f32;
-            let ground_height = height_map_data.get_height_bilinear(&self._item_properties._position, 0);
-            if (self._item_properties._position.y - item_height) <= ground_height && self._item_properties._velocity.y <= 0.0 {
-                self._item_properties._position.y = ground_height + item_height;
-                self._item_properties._is_on_ground = true;
-            }
-            self._item_properties._velocity.y -= GRAVITY * delta_time as f32;
-
-            self.update_transform();
-        }
+        let owner = ptr_as_mut(self);
+        self._item_updater.update_item_updater(owner, height_map_data, delta_time);
     }
 }
 

@@ -235,7 +235,7 @@
             "asset_path": "jack",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/jack.blend",
             "guid": "",
-            "mtime": 1757187317.9640653,
+            "mtime": 1757187381.0095315,
             "data": {}
         }
     ],
@@ -324,6 +324,16 @@
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/items/wood.blend",
             "guid": "",
             "mtime": 1753288134.334103,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/props/spirit_ball.blend": [
+        {
+            "asset_type": "GAME_ITEM",
+            "asset_path": "spirit_ball",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/props/spirit_ball.blend",
+            "guid": "",
+            "mtime": 1757251095.198306,
             "data": {}
         }
     ],
@@ -4143,6 +4153,24 @@
             "data": {}
         }
     ],
+    "/mnt/Workspace/StoneAge/resources/externals/meshes/props/spirit_ball.blend": [
+        {
+            "asset_type": "MESH",
+            "asset_path": "props/spirit_ball",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/props/spirit_ball.blend",
+            "guid": "",
+            "mtime": 1757251258.5685337,
+            "data": {}
+        },
+        {
+            "asset_type": "MATERIAL_INSTANCE",
+            "asset_path": "props/spirit_ball",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/props/spirit_ball.blend",
+            "guid": "",
+            "mtime": 1757251258.5685337,
+            "data": {}
+        }
+    ],
     "/mnt/Workspace/StoneAge/resources/externals/models/characters/spider.blend": [
         {
             "asset_type": "MATERIAL_INSTANCE",
@@ -7123,6 +7151,16 @@
             "data": {}
         }
     ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/props/spirit_ball.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "props/spirit_ball",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/props/spirit_ball.blend",
+            "guid": "",
+            "mtime": 1757250192.3191755,
+            "data": {}
+        }
+    ],
     "/mnt/Workspace/StoneAge/resources/externals/scenes/stage_forest.blend": [
         {
             "asset_type": "SCENE",
@@ -8289,7 +8327,7 @@
             "asset_path": "intro_stage",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/intro_stage.blend",
             "guid": "",
-            "mtime": 1757001492.2010834,
+            "mtime": 1757251282.801445,
             "data": {}
         }
     ]

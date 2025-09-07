@@ -434,6 +434,24 @@
                 1.0
             ]
         },
+        "spirit_ball": {
+            "_item_data_name": "items/spirit_ball",
+            "_position": [
+                -9.761162757873535,
+                3.523911476135254,
+                -4.822037696838379
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
         "wood": {
             "_item_data_name": "items/wood",
             "_position": [
@@ -492,42 +510,6 @@
         }
     },
     "_props": {
-        "birch_tree_00": {
-            "_position": [
-                -3.67531681060791,
-                2.798717498779297,
-                -5.320137023925781
-            ],
-            "_prop_data_name": "props/birch_tree_00",
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "cactus": {
-            "_position": [
-                -1.6191940307617188,
-                2.623188018798828,
-                -2.7498340606689453
-            ],
-            "_prop_data_name": "props/cactus",
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
         "crystal": {
             "_position": [
                 24.261171340942383,
@@ -571,24 +553,6 @@
                 -0.1608877182006836
             ],
             "_prop_data_name": "props/mushroom_orange_00",
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "rock.001": {
-            "_position": [
-                3.229001045227051,
-                2.1485424041748047,
-                -0.23353958129882812
-            ],
-            "_prop_data_name": "props/rock",
             "_rotation": [
                 0.0,
                 0.0,

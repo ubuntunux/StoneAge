@@ -263,7 +263,7 @@ impl CharacterController {
         }
 
         // reset flags
-        let was_on_ground = self._is_ground;
+        let _was_on_ground = self._is_ground;
         self._is_cliff = true;
         self._is_blocked = false;
         self._is_ground = false;
