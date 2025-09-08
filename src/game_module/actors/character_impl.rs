@@ -44,12 +44,13 @@ impl CharacterStats {
                 if self._stamina < 0.0 {
                     self._stamina = 0.0;
                 }
-            } else if owner.is_action(ActionAnimationState::None) &&
-                (owner.is_move_state(MoveAnimationState::None) || owner.is_move_state(MoveAnimationState::Idle) || owner.is_move_state(MoveAnimationState::Walk)) {
+            } else if owner.is_action(ActionAnimationState::None) && (owner.is_move_state(MoveAnimationState::None) || owner.is_move_state(MoveAnimationState::Idle) || owner.is_move_state(MoveAnimationState::Walk)) {
                 if self._stamina < 0.0 {
                     self._stamina = 0.0;
                 }
-                self._stamina += STAMINA_RECOVERY * delta_time;
+
+                let stamina_scale = if owner.is_move_state(MoveAnimationState::Walk) { 0.5 } else { 1.0 };
+                self._stamina += STAMINA_RECOVERY * stamina_scale * delta_time;
                 if MAX_STAMINA < self._stamina {
                     self._stamina = MAX_STAMINA;
                 }
@@ -176,13 +177,12 @@ impl<'a> Character<'a> {
     pub fn is_available_attack(&self) -> bool {
         if self.is_available_move() {
             let action_animation_play_info = self.get_animation_play_info(AnimationLayer::ActionLayer);
-
             if self.is_action(ActionAnimationState::None) || self.is_action(ActionAnimationState::Hit) {
                 return true;
             }
             else if self.is_action(ActionAnimationState::Attack) {
                 let attackable_time = self.get_character_data()._stat_data._attack_event_time + ATTACK_DELAY;
-                return attackable_time < action_animation_play_info._animation_play_time && (self._is_player == false || STAMINA_ATTACK <= self._character_stats._stamina) ;
+                return attackable_time < action_animation_play_info._animation_play_time;
             }
         }
         false
@@ -327,34 +327,44 @@ impl<'a> Character<'a> {
     }
 
     pub fn set_action_none(&mut self) {
-        self.set_action_animation(ActionAnimationState::None);
+        self.set_action_animation(ActionAnimationState::None, 1.0);
     }
 
     pub fn set_action_attack(&mut self) {
         if self.is_available_attack() {
+            let mut animation_speed: f32 = 1.0;
             if self._is_player {
                 self._character_stats._stamina -= STAMINA_ATTACK;
+                if self._character_stats._stamina < 0.0 {
+                    self._character_stats._stamina = 0.0;
+                    animation_speed = 0.5;
+                }
             }
-            self.set_action_animation(ActionAnimationState::Attack);
+            self.set_action_animation(ActionAnimationState::Attack, animation_speed);
         }
     }
 
     pub fn set_action_power_attack(&mut self) {
         if self.is_available_attack() {
+            let mut animation_speed: f32 = 1.0;
             if self._is_player {
                 self._character_stats._stamina -= STAMINA_POWER_ATTACK;
+                if self._character_stats._stamina < 0.0 {
+                    self._character_stats._stamina = 0.0;
+                    animation_speed = 0.5;
+                }
             }
-            self.set_action_animation(ActionAnimationState::PowerAttack);
+            self.set_action_animation(ActionAnimationState::PowerAttack, animation_speed);
         }
     }
 
     pub fn set_action_hit(&mut self) {
-        self.set_action_animation(ActionAnimationState::Hit);
+        self.set_action_animation(ActionAnimationState::Hit, 1.0);
     }
 
     pub fn set_action_dead(&mut self) {
         self.set_move_stop();
-        self.set_action_animation(ActionAnimationState::Dead);
+        self.set_action_animation(ActionAnimationState::Dead, 1.0);
     }
 
     pub fn set_move_animation(&mut self, move_animation_state: MoveAnimationState) {
@@ -399,7 +409,7 @@ impl<'a> Character<'a> {
         self.update_animation_layers();
     }
 
-    pub fn set_action_animation(&mut self, action_animation_state: ActionAnimationState) {
+    pub fn set_action_animation(&mut self, action_animation_state: ActionAnimationState, animation_speed: f32) {
         let mut animation_info = AnimationPlayArgs {
             _animation_loop: false,
             _force_animation_setting: true,
@@ -415,20 +425,20 @@ impl<'a> Character<'a> {
                 render_object.set_animation_none(AnimationLayer::ActionLayer);
             },
             ActionAnimationState::Attack => {
-                animation_info._animation_speed = animation_data._attack_animation_speed;
+                animation_info._animation_speed = animation_data._attack_animation_speed * animation_speed;
                 render_object.set_animation(&animation_data._attack_animation, &animation_info, AnimationLayer::ActionLayer);
             }
             ActionAnimationState::Dead => {
-                animation_info._animation_speed = animation_data._dead_animation_speed;
+                animation_info._animation_speed = animation_data._dead_animation_speed * animation_speed;
                 animation_info._animation_fade_out_time = 0.0; // keep end of animation
                 render_object.set_animation(&animation_data._dead_animation, &animation_info, AnimationLayer::ActionLayer);
             }
             ActionAnimationState::Hit => {
-                animation_info._animation_speed = animation_data._hit_animation_speed;
+                animation_info._animation_speed = animation_data._hit_animation_speed * animation_speed;
                 render_object.set_animation(&animation_data._hit_animation, &animation_info, AnimationLayer::ActionLayer);
             }
             ActionAnimationState::PowerAttack => {
-                animation_info._animation_speed = animation_data._power_attack_animation_speed;
+                animation_info._animation_speed = animation_data._power_attack_animation_speed * animation_speed;
                 render_object.set_animation(&animation_data._power_attack_animation, &animation_info, AnimationLayer::ActionLayer);
             }
         }

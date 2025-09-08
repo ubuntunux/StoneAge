@@ -290,6 +290,168 @@
         }
     },
     "_items": {
+        "SM_Env_DriftWood_01": {
+            "_item_data_name": "items/woods/SM_Env_DriftWood_01",
+            "_position": [
+                -7.1233134269714355,
+                2.830988883972168,
+                -8.166923522949219
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "SM_Env_DriftWood_01.001": {
+            "_item_data_name": "items/woods/SM_Env_DriftWood_01",
+            "_position": [
+                -2.5886127948760986,
+                2.6169023513793945,
+                -3.4175209999084473
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "SM_Env_DriftWood_01.002": {
+            "_item_data_name": "items/woods/SM_Env_DriftWood_01",
+            "_position": [
+                23.21767234802246,
+                2.348538398742676,
+                2.0684261322021484
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "SM_Env_DriftWood_02": {
+            "_item_data_name": "items/woods/SM_Env_DriftWood_02",
+            "_position": [
+                -12.402046203613281,
+                3.434316635131836,
+                -3.584263801574707
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "SM_Env_DriftWood_02.001": {
+            "_item_data_name": "items/woods/SM_Env_DriftWood_02",
+            "_position": [
+                19.009201049804688,
+                2.300020217895508,
+                -1.8407163619995117
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "SM_Env_DriftWood_03": {
+            "_item_data_name": "items/woods/SM_Env_DriftWood_03",
+            "_position": [
+                -2.966801404953003,
+                3.748889923095703,
+                1.4970121383666992
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "SM_Env_DriftWood_03.001": {
+            "_item_data_name": "items/woods/SM_Env_DriftWood_03",
+            "_position": [
+                15.851861000061035,
+                1.6180706024169922,
+                -2.5108604431152344
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "SM_Env_DriftWood_04": {
+            "_item_data_name": "items/woods/SM_Env_DriftWood_04",
+            "_position": [
+                17.713912963867188,
+                0.9799079895019531,
+                -7.774842262268066
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "SM_Env_DriftWood_04.001": {
+            "_item_data_name": "items/woods/SM_Env_DriftWood_04",
+            "_position": [
+                13.571248054504395,
+                1.578714370727539,
+                -4.443269729614258
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
         "meat": {
             "_item_data_name": "items/meat",
             "_position": [
@@ -440,42 +602,6 @@
                 -9.761162757873535,
                 3.523911476135254,
                 -4.822037696838379
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "wood": {
-            "_item_data_name": "items/wood",
-            "_position": [
-                -6.779117584228516,
-                0.8684298992156982,
-                29.51095962524414
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "wood.001": {
-            "_item_data_name": "items/wood",
-            "_position": [
-                6.33234977722168,
-                2.2009570598602295,
-                39.0101432800293
             ],
             "_rotation": [
                 0.0,
@@ -773,114 +899,6 @@
                     -6.530008316040039,
                     2.883777618408203,
                     -3.4243907928466797
-                ],
-                "_rotation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "_scale": [
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            },
-            "SM_Env_DriftWood_01": {
-                "_model_data_name": "PolygonNatureBiomes/SM_Env_DriftWood_01",
-                "_position": [
-                    0.6574764251708984,
-                    2.8485794067382812,
-                    -1.5602092742919922
-                ],
-                "_rotation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "_scale": [
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            },
-            "SM_Env_DriftWood_02": {
-                "_model_data_name": "PolygonNatureBiomes/SM_Env_DriftWood_02",
-                "_position": [
-                    13.71595287322998,
-                    1.8514411449432373,
-                    -4.133654594421387
-                ],
-                "_rotation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "_scale": [
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            },
-            "SM_Env_DriftWood_02.001": {
-                "_model_data_name": "PolygonNatureBiomes/SM_Env_DriftWood_02",
-                "_position": [
-                    -1.181370735168457,
-                    2.360689163208008,
-                    -3.0893516540527344
-                ],
-                "_rotation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "_scale": [
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            },
-            "SM_Env_DriftWood_03": {
-                "_model_data_name": "PolygonNatureBiomes/SM_Env_DriftWood_03",
-                "_position": [
-                    -2.786440849304199,
-                    2.613750457763672,
-                    -3.881418228149414
-                ],
-                "_rotation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "_scale": [
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            },
-            "SM_Env_DriftWood_04": {
-                "_model_data_name": "PolygonNatureBiomes/SM_Env_DriftWood_04",
-                "_position": [
-                    18.352588653564453,
-                    0.9938561916351318,
-                    -7.390806198120117
-                ],
-                "_rotation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "_scale": [
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            },
-            "SM_Env_DriftWood_04.001": {
-                "_model_data_name": "PolygonNatureBiomes/SM_Env_DriftWood_04",
-                "_position": [
-                    3.7223901748657227,
-                    1.7212905883789062,
-                    -1.3549728393554688
                 ],
                 "_rotation": [
                     0.0,

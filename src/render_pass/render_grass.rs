@@ -68,6 +68,7 @@ pub fn get_descriptor_data_create_infos() -> Vec<DescriptorDataCreateInfo> {
 pub fn get_render_pass_data_create_infos(renderer_data: &RendererData) -> Vec<RenderPassDataCreateInfo> {
     common::get_render_pass_data_create_infos(
         renderer_data,
+        vk::CullModeFlags::NONE,
         "render_grass",
         "render_grass/render_grass.vert",
         "render_grass/render_grass.frag",

@@ -126,6 +126,7 @@ pub fn get_descriptor_data_create_infos() -> Vec<DescriptorDataCreateInfo> {
 pub fn get_render_pass_data_create_infos(renderer_data: &RendererData) -> Vec<RenderPassDataCreateInfo> {
     common::get_render_pass_data_create_infos(
         renderer_data,
+        vk::CullModeFlags::BACK,
         "PolygonNatureBiomes_Standard",
         "PolygonNatureBiomes/Standard.vert",
         "PolygonNatureBiomes/Standard.frag",

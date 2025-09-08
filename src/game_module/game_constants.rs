@@ -39,7 +39,7 @@ pub const ATTACK_DELAY: f32 = 0.3;
 // stamina
 pub const MAX_STAMINA: f32 = 100.0;
 pub const STAMINA_RECOVERY: f32 = 40.0;
-pub const STAMINA_ATTACK: f32 = 10.0;
+pub const STAMINA_ATTACK: f32 = 20.0;
 pub const STAMINA_POWER_ATTACK: f32 = 30.0;
 pub const STAMINA_RUN: f32 = 30.0;
 pub const STAMINA_JUMP: f32 = 15.0;

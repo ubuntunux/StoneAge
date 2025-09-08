@@ -1,13 +1,19 @@
+use nalgebra::Vector3;
 use rust_engine_3d::scene::height_map::HeightMapData;
 use crate::game_module::actors::items::{Item, ItemDataType};
 use crate::game_module::game_constants::GRAVITY;
 
 pub fn create_item_updater(item_type: ItemDataType) -> Box<dyn ItemUpdaterBase> {
-    Box::new(ItemDefaultUpdater { })
+    match item_type {
+        ItemDataType::SpiritBall => Box::new(ItemSpiritBallUpdater {
+            _spawn_point: Vector3::zeros()
+        }),
+        _ => Box::new(ItemDefaultUpdater {})
+    }
 }
 
 pub trait ItemUpdaterBase {
-    fn update_item_updater(&mut self, owner: &mut Item, height_map_data: &HeightMapData, delta_time: f64) {
+    fn update_item_transform(&mut self, owner: &mut Item, height_map_data: &HeightMapData, delta_time: f64) {
         if owner._item_properties._is_on_ground == false {
             let item_height = owner._render_object.borrow_mut()._bounding_box._extents.y;
             owner._item_properties._position += owner._item_properties._velocity * delta_time as f32;
@@ -21,13 +27,24 @@ pub trait ItemUpdaterBase {
             owner.update_transform();
         }
     }
+    fn update_item_updater(&mut self, owner: &mut Item, height_map_data: &HeightMapData, delta_time: f64);
 }
 
 pub struct ItemDefaultUpdater {
 }
 
 impl ItemUpdaterBase for ItemDefaultUpdater {
+    fn update_item_updater(&mut self, owner: &mut Item, height_map_data: &HeightMapData, delta_time: f64) {
+        self.update_item_transform(owner, height_map_data, delta_time);
+    }
 }
 
 pub struct ItemSpiritBallUpdater {
+    pub _spawn_point: Vector3<f32>,
+}
+
+impl ItemUpdaterBase for ItemSpiritBallUpdater {
+    fn update_item_updater(&mut self, owner: &mut Item, height_map_data: &HeightMapData, delta_time: f64) {
+        self.update_item_transform(owner, height_map_data, delta_time);
+    }
 }

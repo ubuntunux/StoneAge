@@ -337,6 +337,46 @@
             "data": {}
         }
     ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/items/woods/SM_Env_DriftWood_01.blend": [
+        {
+            "asset_type": "GAME_ITEM",
+            "asset_path": "woods/SM_Env_DriftWood_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/items/woods/SM_Env_DriftWood_01.blend",
+            "guid": "",
+            "mtime": 1757340246.253291,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/items/woods/SM_Env_DriftWood_02.blend": [
+        {
+            "asset_type": "GAME_ITEM",
+            "asset_path": "woods/SM_Env_DriftWood_02",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/items/woods/SM_Env_DriftWood_02.blend",
+            "guid": "",
+            "mtime": 1757340342.038329,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/items/woods/SM_Env_DriftWood_03.blend": [
+        {
+            "asset_type": "GAME_ITEM",
+            "asset_path": "woods/SM_Env_DriftWood_03",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/items/woods/SM_Env_DriftWood_03.blend",
+            "guid": "",
+            "mtime": 1757340014.0576382,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/items/woods/SM_Env_DriftWood_04.blend": [
+        {
+            "asset_type": "GAME_ITEM",
+            "asset_path": "woods/SM_Env_DriftWood_04",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/items/woods/SM_Env_DriftWood_04.blend",
+            "guid": "",
+            "mtime": 1757340431.561159,
+            "data": {}
+        }
+    ],
     "/mnt/Workspace/StoneAge/resources/externals/game_data/props/birch_tree_00.blend": [
         {
             "asset_type": "GAME_PROP",
@@ -2172,24 +2212,6 @@
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/environments/tree_05.blend",
             "guid": "",
             "mtime": 1755971208.0241098,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/meshes/props/crystal_01.blend": [
-        {
-            "asset_type": "MESH",
-            "asset_path": "props/crystal_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/props/crystal_01.blend",
-            "guid": "",
-            "mtime": 1755971208.0301816,
-            "data": {}
-        },
-        {
-            "asset_type": "MATERIAL_INSTANCE",
-            "asset_path": "props/crystals",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/props/crystal_01.blend",
-            "guid": "",
-            "mtime": 1755971208.0301816,
             "data": {}
         }
     ],
@@ -4153,13 +4175,31 @@
             "data": {}
         }
     ],
+    "/mnt/Workspace/StoneAge/resources/externals/meshes/props/crystal_01.blend": [
+        {
+            "asset_type": "MESH",
+            "asset_path": "props/crystal_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/props/crystal_01.blend",
+            "guid": "",
+            "mtime": 1757342947.4256759,
+            "data": {}
+        },
+        {
+            "asset_type": "MATERIAL_INSTANCE",
+            "asset_path": "props/crystals",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/props/crystal_01.blend",
+            "guid": "",
+            "mtime": 1757342947.4256759,
+            "data": {}
+        }
+    ],
     "/mnt/Workspace/StoneAge/resources/externals/meshes/props/spirit_ball.blend": [
         {
             "asset_type": "MESH",
             "asset_path": "props/spirit_ball",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/props/spirit_ball.blend",
             "guid": "",
-            "mtime": 1757251258.5685337,
+            "mtime": 1757342997.112079,
             "data": {}
         },
         {
@@ -4167,7 +4207,7 @@
             "asset_path": "props/spirit_ball",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/props/spirit_ball.blend",
             "guid": "",
-            "mtime": 1757251258.5685337,
+            "mtime": 1757342997.112079,
             "data": {}
         }
     ],
@@ -4737,24 +4777,6 @@
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Flat_02.blend": [
-        {
-            "asset_type": "MATERIAL_INSTANCE",
-            "asset_path": "PolygonNatureBiomes/Triplanar/Rock_Triplanar_Tropical",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Flat_02.blend",
-            "guid": "",
-            "mtime": 1756480729.1500533,
-            "data": {}
-        },
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Flat_02",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Flat_02.blend",
-            "guid": "",
-            "mtime": 1756480729.1500533,
-            "data": {}
-        }
-    ],
     "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Seaweed_01.blend": [
         {
             "asset_type": "MATERIAL_INSTANCE",
@@ -4827,24 +4849,6 @@
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Tree_Pohutukawa_01.blend": [
-        {
-            "asset_type": "MATERIAL_INSTANCE",
-            "asset_path": "PolygonNatureBiomes/Plants/Pohutukawa_Mat_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Tree_Pohutukawa_01.blend",
-            "guid": "",
-            "mtime": 1756569750.4368844,
-            "data": {}
-        },
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Tree_Pohutukawa_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Tree_Pohutukawa_01.blend",
-            "guid": "",
-            "mtime": 1756569750.4368844,
-            "data": {}
-        }
-    ],
     "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Tree_Forest_01.blend": [
         {
             "asset_type": "MATERIAL_INSTANCE",
@@ -4878,6 +4882,42 @@
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Bush_Palm_01_Flowers_01.blend",
             "guid": "",
             "mtime": 1756740039.3012958,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Flat_02.blend": [
+        {
+            "asset_type": "MATERIAL_INSTANCE",
+            "asset_path": "PolygonNatureBiomes/Triplanar/Rock_Triplanar_Tropical",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Flat_02.blend",
+            "guid": "",
+            "mtime": 1757346469.8784075,
+            "data": {}
+        },
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Rock_Flat_02",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Rock_Flat_02.blend",
+            "guid": "",
+            "mtime": 1757346469.8784075,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Tree_Pohutukawa_01.blend": [
+        {
+            "asset_type": "MATERIAL_INSTANCE",
+            "asset_path": "PolygonNatureBiomes/Plants/Pohutukawa_Mat_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Tree_Pohutukawa_01.blend",
+            "guid": "",
+            "mtime": 1757346609.4447844,
+            "data": {}
+        },
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Tree_Pohutukawa_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Tree_Pohutukawa_01.blend",
+            "guid": "",
+            "mtime": 1757346609.4447844,
             "data": {}
         }
     ],
@@ -8327,7 +8367,7 @@
             "asset_path": "intro_stage",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/intro_stage.blend",
             "guid": "",
-            "mtime": 1757251282.801445,
+            "mtime": 1757346196.592566,
             "data": {}
         }
     ]

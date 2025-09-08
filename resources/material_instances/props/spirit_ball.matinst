@@ -2,7 +2,7 @@
     "material_name": "common/render_static_object",
     "material_parameters": {
         "textureBase": "environments/PP_Color_Palette",
-        "textureMaterial": "common/default_m",
+        "textureMaterial": "common/flat_black",
         "textureNormal": "common/default_n"
     }
 }

@@ -208,6 +208,8 @@ impl<'a> ItemManager<'a> {
                     self.pick_item(&item_ref._item_data.borrow()._item_type, 1);
                     self.get_audio_manager_mut().play_audio_bank(PICKUP_ITEM, AudioLoop::ONCE, None);
                     pick_items.push(item.clone());
+                } else if item_ref._item_properties._position.y < scene_manager.get_dead_zone_height() {
+                    pick_items.push(item.clone());
                 }
             }
         }

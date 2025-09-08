@@ -214,6 +214,7 @@ pub fn get_descriptor_data_create_infos() -> Vec<DescriptorDataCreateInfo> {
 pub fn get_render_pass_data_create_infos(renderer_data: &RendererData) -> Vec<RenderPassDataCreateInfo> {
     common::get_render_pass_data_create_infos(
         renderer_data,
+        vk::CullModeFlags::BACK,
         "render_landscape",
         "render_landscape/render_landscape.vert",
         "render_landscape/render_landscape.frag",
