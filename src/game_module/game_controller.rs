@@ -88,19 +88,9 @@ impl<'a> GameController<'a> {
             self._camera_goal_pitch, self._camera_pitch, pitch_control, delta_time
         );
 
-        const PITCH_MIN: f32 = 15.0 / 180.0 * std::f32::consts::PI;
-        const PITCH_MAX: f32 = 55.0 / 180.0 * std::f32::consts::PI;
-        self._camera_goal_pitch = self._camera_goal_pitch.min(PITCH_MAX).max(PITCH_MIN);
-        self._camera_pitch = self._camera_pitch.min(PITCH_MAX).max(PITCH_MIN);
-
         (self._camera_goal_yaw, self._camera_yaw) = self.update_camera_smooth_rotation(
             self._camera_goal_yaw, self._camera_yaw, yaw_control, delta_time
         );
-
-        const YAW_MIN: f32 = -45.0 / 180.0 * std::f32::consts::PI;
-        const YAW_MAX: f32 = 45.0 / 180.0 * std::f32::consts::PI;
-        self._camera_goal_yaw = self._camera_goal_yaw.min(YAW_MAX).max(YAW_MIN);
-        self._camera_yaw = self._camera_yaw.min(YAW_MAX).max(YAW_MIN);
     }
 
     pub fn update_camera_pitch_by_distance(&mut self) {
@@ -261,8 +251,13 @@ impl<'a> GameController<'a> {
 
         // update camera
         self.update_camera_distance(zoom_control, delta_time);
-        // self.update_camera_rotation(pitch_control, yaw_control, delta_time);
-        self.update_camera_pitch_by_distance();
+
+        let lock_camera_rotation: bool = false;
+        if lock_camera_rotation {
+            self.update_camera_pitch_by_distance();
+        } else {
+            self.update_camera_rotation(_pitch_control, _yaw_control, delta_time);
+        }
 
         // update camera transform
         main_camera._transform_object.set_pitch(self._camera_pitch);
