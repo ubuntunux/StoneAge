@@ -9,7 +9,7 @@ use rust_engine_3d::vulkan_context::descriptor::{DescriptorDataCreateInfo, Descr
 use rust_engine_3d::vulkan_context::render_pass::RenderPassDataCreateInfo;
 
 #[repr(C)]
-#[allow(non_camel_case_types)]
+#[allow(non_camel_case_types, non_snake_case)]
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(default)]
 pub struct PushConstant_Standard {

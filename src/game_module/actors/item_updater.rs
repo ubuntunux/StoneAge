@@ -5,10 +5,8 @@ use crate::game_module::game_constants::GRAVITY;
 
 pub fn create_item_updater(item_type: ItemDataType) -> Box<dyn ItemUpdaterBase> {
     match item_type {
-        ItemDataType::SpiritBall => Box::new(ItemSpiritBallUpdater {
-            _spawn_point: Vector3::zeros()
-        }),
-        _ => Box::new(ItemDefaultUpdater {})
+        ItemDataType::SpiritBall => Box::new(ItemSpiritBallUpdater::default()),
+        _ => Box::new(ItemDefaultUpdater::default())
     }
 }
 
@@ -30,6 +28,7 @@ pub trait ItemUpdaterBase {
     fn update_item_updater(&mut self, owner: &mut Item, height_map_data: &HeightMapData, delta_time: f64);
 }
 
+#[derive(Default)]
 pub struct ItemDefaultUpdater {
 }
 
@@ -39,12 +38,34 @@ impl ItemUpdaterBase for ItemDefaultUpdater {
     }
 }
 
+#[derive(Default)]
 pub struct ItemSpiritBallUpdater {
     pub _spawn_point: Vector3<f32>,
+    pub _floating: bool,
+    pub _floating_timer: f32,
 }
 
 impl ItemUpdaterBase for ItemSpiritBallUpdater {
     fn update_item_updater(&mut self, owner: &mut Item, height_map_data: &HeightMapData, delta_time: f64) {
-        self.update_item_transform(owner, height_map_data, delta_time);
+        if self._floating {
+            let floating_speed = self._floating_timer * 0.5;
+            let floating_radius = 0.5;
+            let floating_offset = Vector3::new(
+                floating_speed.cos() * floating_radius,
+                floating_speed.sin() * floating_radius,
+                floating_speed.sin() * floating_radius
+            );
+            owner._item_properties._position = self._spawn_point + floating_offset;
+            owner.update_transform();
+            self._floating_timer += delta_time as f32;
+        } else {
+            let was_on_ground = owner._item_properties._is_on_ground;
+            self.update_item_transform(owner, height_map_data, delta_time);
+            if was_on_ground == false && owner._item_properties._is_on_ground {
+                self._spawn_point = owner._item_properties._position;
+                self._floating_timer = 0.0;
+                self._floating = true;
+            }
+        }
     }
 }

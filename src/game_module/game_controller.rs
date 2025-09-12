@@ -123,6 +123,7 @@ impl<'a> GameController<'a> {
         main_camera: &mut CameraObjectData,
         player: &RcRefCell<Character>
     ) {
+        let lock_camera_rotation: bool = false;
         let delta_time: f32 = time_data._delta_time as f32;
         let is_attack: bool =
             mouse_input_data._btn_l_pressed ||
@@ -156,6 +157,8 @@ impl<'a> GameController<'a> {
             keyboard_input_data.get_key_pressed(KeyCode::AltLeft) ||
             joystick_input_data._btn_b == ButtonState::Pressed ||
             joystick_input_data._btn_right_shoulder == ButtonState::Pressed;
+        let is_zoom_in = joystick_input_data._btn_left_trigger == ButtonState::Hold;
+        let is_zoom_out = joystick_input_data._btn_right_trigger == ButtonState::Hold;
 
         let _pitch_control: f32 = if mouse_move_data._mouse_pos_delta.x != 0 {
             mouse_move_data._mouse_pos_delta.y as f32 * 0.001
@@ -171,8 +174,10 @@ impl<'a> GameController<'a> {
 
         let zoom_control: f32 = if 0 != mouse_move_data._scroll_delta.y {
             -mouse_move_data._scroll_delta.y as f32
-        } else if 0 != joystick_input_data._stick_right_direction.y {
+        } else if lock_camera_rotation && 0 != joystick_input_data._stick_right_direction.y {
             joystick_input_data._stick_right_direction.y as f32 / 65535.0
+        } else if lock_camera_rotation == false && (is_zoom_in || is_zoom_out) {
+            if is_zoom_in { -0.5 } else { 0.5 }
         } else {
             0.0
         };
@@ -252,7 +257,6 @@ impl<'a> GameController<'a> {
         // update camera
         self.update_camera_distance(zoom_control, delta_time);
 
-        let lock_camera_rotation: bool = false;
         if lock_camera_rotation {
             self.update_camera_pitch_by_distance();
         } else {

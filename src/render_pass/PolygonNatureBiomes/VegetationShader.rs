@@ -9,7 +9,7 @@ use rust_engine_3d::vulkan_context::descriptor::{DescriptorDataCreateInfo, Descr
 use rust_engine_3d::vulkan_context::render_pass::RenderPassDataCreateInfo;
 
 #[repr(C)]
-#[allow(non_camel_case_types)]
+#[allow(non_camel_case_types, non_snake_case)]
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(default)]
 pub struct PushConstant_VegetationShader {
@@ -207,7 +207,7 @@ pub fn get_descriptor_data_create_infos() -> Vec<DescriptorDataCreateInfo> {
 pub fn get_render_pass_data_create_infos(renderer_data: &RendererData) -> Vec<RenderPassDataCreateInfo> {
     common::get_render_pass_data_create_infos(
         renderer_data,
-        vk::CullModeFlags::BACK,
+        vk::CullModeFlags::NONE,
         "PolygonNatureBiomes_VegetationShader",
         "PolygonNatureBiomes/VegetationShader.vert",
         "PolygonNatureBiomes/VegetationShader.frag",
