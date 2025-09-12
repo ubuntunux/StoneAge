@@ -1,6 +1,6 @@
 {
 	"asset":{
-		"generator":"Khronos glTF Blender I/O v4.5.47",
+		"generator":"Khronos glTF Blender I/O v4.5.48",
 		"version":"2.0"
 	},
 	"scene":0,
@@ -43,7 +43,7 @@
 		{
 			"bufferView":0,
 			"componentType":5126,
-			"count":717,
+			"count":277,
 			"max":[
 				0.09580974280834198,
 				0.4193902611732483,
@@ -59,13 +59,13 @@
 		{
 			"bufferView":1,
 			"componentType":5126,
-			"count":717,
+			"count":277,
 			"type":"VEC3"
 		},
 		{
 			"bufferView":2,
 			"componentType":5126,
-			"count":717,
+			"count":277,
 			"type":"VEC2"
 		},
 		{
@@ -78,32 +78,32 @@
 	"bufferViews":[
 		{
 			"buffer":0,
-			"byteLength":8604,
+			"byteLength":3324,
 			"byteOffset":0,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":8604,
-			"byteOffset":8604,
+			"byteLength":3324,
+			"byteOffset":3324,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":5736,
-			"byteOffset":17208,
+			"byteLength":2216,
+			"byteOffset":6648,
 			"target":34962
 		},
 		{
 			"buffer":0,
 			"byteLength":2376,
-			"byteOffset":22944,
+			"byteOffset":8864,
 			"target":34963
 		}
 	],
 	"buffers":[
 		{
-			"byteLength":25320,
+			"byteLength":11240,
 			"uri":"SM_Prop_Rum_Bottle_01.bin"
 		}
 	]

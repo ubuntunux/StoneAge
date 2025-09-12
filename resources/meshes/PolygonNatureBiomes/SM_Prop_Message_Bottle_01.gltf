@@ -1,6 +1,6 @@
 {
 	"asset":{
-		"generator":"Khronos glTF Blender I/O v4.5.47",
+		"generator":"Khronos glTF Blender I/O v4.5.48",
 		"version":"2.0"
 	},
 	"scene":0,
@@ -43,7 +43,7 @@
 		{
 			"bufferView":0,
 			"componentType":5126,
-			"count":748,
+			"count":225,
 			"max":[
 				0.06121459975838661,
 				0.4702235162258148,
@@ -59,13 +59,13 @@
 		{
 			"bufferView":1,
 			"componentType":5126,
-			"count":748,
+			"count":225,
 			"type":"VEC3"
 		},
 		{
 			"bufferView":2,
 			"componentType":5126,
-			"count":748,
+			"count":225,
 			"type":"VEC2"
 		},
 		{
@@ -78,32 +78,32 @@
 	"bufferViews":[
 		{
 			"buffer":0,
-			"byteLength":8976,
+			"byteLength":2700,
 			"byteOffset":0,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":8976,
-			"byteOffset":8976,
+			"byteLength":2700,
+			"byteOffset":2700,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":5984,
-			"byteOffset":17952,
+			"byteLength":1800,
+			"byteOffset":5400,
 			"target":34962
 		},
 		{
 			"buffer":0,
 			"byteLength":2244,
-			"byteOffset":23936,
+			"byteOffset":7200,
 			"target":34963
 		}
 	],
 	"buffers":[
 		{
-			"byteLength":26180,
+			"byteLength":9444,
 			"uri":"SM_Prop_Message_Bottle_01.bin"
 		}
 	]

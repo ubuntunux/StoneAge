@@ -1,6 +1,6 @@
 {
 	"asset":{
-		"generator":"Khronos glTF Blender I/O v4.5.47",
+		"generator":"Khronos glTF Blender I/O v4.5.48",
 		"version":"2.0"
 	},
 	"scene":0,
@@ -106,7 +106,7 @@
 		{
 			"bufferView":0,
 			"componentType":5126,
-			"count":1230,
+			"count":474,
 			"max":[
 				42.94443130493164,
 				37.50050735473633,
@@ -122,19 +122,19 @@
 		{
 			"bufferView":1,
 			"componentType":5126,
-			"count":1230,
+			"count":474,
 			"type":"VEC3"
 		},
 		{
 			"bufferView":2,
 			"componentType":5126,
-			"count":1230,
+			"count":474,
 			"type":"VEC2"
 		},
 		{
 			"bufferView":3,
 			"componentType":5126,
-			"count":1230,
+			"count":474,
 			"type":"VEC4"
 		},
 		{
@@ -186,7 +186,7 @@
 		{
 			"bufferView":10,
 			"componentType":5126,
-			"count":1670,
+			"count":677,
 			"max":[
 				0.43360456824302673,
 				0.3201195001602173,
@@ -202,19 +202,19 @@
 		{
 			"bufferView":11,
 			"componentType":5126,
-			"count":1670,
+			"count":677,
 			"type":"VEC3"
 		},
 		{
 			"bufferView":12,
 			"componentType":5126,
-			"count":1670,
+			"count":677,
 			"type":"VEC2"
 		},
 		{
 			"bufferView":13,
 			"componentType":5126,
-			"count":1670,
+			"count":677,
 			"type":"VEC4"
 		},
 		{
@@ -227,98 +227,98 @@
 	"bufferViews":[
 		{
 			"buffer":0,
-			"byteLength":14760,
+			"byteLength":5688,
 			"byteOffset":0,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":14760,
-			"byteOffset":14760,
+			"byteLength":5688,
+			"byteOffset":5688,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":9840,
-			"byteOffset":29520,
+			"byteLength":3792,
+			"byteOffset":11376,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":19680,
-			"byteOffset":39360,
+			"byteLength":7584,
+			"byteOffset":15168,
 			"target":34962
 		},
 		{
 			"buffer":0,
 			"byteLength":3384,
-			"byteOffset":59040,
+			"byteOffset":22752,
 			"target":34963
 		},
 		{
 			"buffer":0,
 			"byteLength":2556,
-			"byteOffset":62424,
+			"byteOffset":26136,
 			"target":34962
 		},
 		{
 			"buffer":0,
 			"byteLength":2556,
-			"byteOffset":64980,
+			"byteOffset":28692,
 			"target":34962
 		},
 		{
 			"buffer":0,
 			"byteLength":1704,
-			"byteOffset":67536,
+			"byteOffset":31248,
 			"target":34962
 		},
 		{
 			"buffer":0,
 			"byteLength":3408,
-			"byteOffset":69240,
+			"byteOffset":32952,
 			"target":34962
 		},
 		{
 			"buffer":0,
 			"byteLength":648,
-			"byteOffset":72648,
+			"byteOffset":36360,
 			"target":34963
 		},
 		{
 			"buffer":0,
-			"byteLength":20040,
-			"byteOffset":73296,
+			"byteLength":8124,
+			"byteOffset":37008,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":20040,
-			"byteOffset":93336,
+			"byteLength":8124,
+			"byteOffset":45132,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":13360,
-			"byteOffset":113376,
+			"byteLength":5416,
+			"byteOffset":53256,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":26720,
-			"byteOffset":126736,
+			"byteLength":10832,
+			"byteOffset":58672,
 			"target":34962
 		},
 		{
 			"buffer":0,
 			"byteLength":4728,
-			"byteOffset":153456,
+			"byteOffset":69504,
 			"target":34963
 		}
 	],
 	"buffers":[
 		{
-			"byteLength":158184,
+			"byteLength":74232,
 			"uri":"SM_Prop_GiantClam_01.bin"
 		}
 	]

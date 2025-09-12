@@ -1,6 +1,6 @@
 {
 	"asset":{
-		"generator":"Khronos glTF Blender I/O v4.5.47",
+		"generator":"Khronos glTF Blender I/O v4.5.48",
 		"version":"2.0"
 	},
 	"scene":0,
@@ -44,7 +44,7 @@
 		{
 			"bufferView":0,
 			"componentType":5126,
-			"count":8119,
+			"count":6753,
 			"max":[
 				2.3781192302703857,
 				3.4701831340789795,
@@ -60,19 +60,19 @@
 		{
 			"bufferView":1,
 			"componentType":5126,
-			"count":8119,
+			"count":6753,
 			"type":"VEC3"
 		},
 		{
 			"bufferView":2,
 			"componentType":5126,
-			"count":8119,
+			"count":6753,
 			"type":"VEC2"
 		},
 		{
 			"bufferView":3,
 			"componentType":5123,
-			"count":8119,
+			"count":6753,
 			"normalized":true,
 			"type":"VEC4"
 		},
@@ -86,38 +86,38 @@
 	"bufferViews":[
 		{
 			"buffer":0,
-			"byteLength":97428,
+			"byteLength":81036,
 			"byteOffset":0,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":97428,
-			"byteOffset":97428,
+			"byteLength":81036,
+			"byteOffset":81036,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":64952,
-			"byteOffset":194856,
+			"byteLength":54024,
+			"byteOffset":162072,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":64952,
-			"byteOffset":259808,
+			"byteLength":54024,
+			"byteOffset":216096,
 			"target":34962
 		},
 		{
 			"buffer":0,
 			"byteLength":24204,
-			"byteOffset":324760,
+			"byteOffset":270120,
 			"target":34963
 		}
 	],
 	"buffers":[
 		{
-			"byteLength":348964,
+			"byteLength":294324,
 			"uri":"SM_Env_Tree_Pohutukawa_04.bin"
 		}
 	]

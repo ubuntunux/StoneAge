@@ -1,6 +1,6 @@
 {
 	"asset":{
-		"generator":"Khronos glTF Blender I/O v4.5.47",
+		"generator":"Khronos glTF Blender I/O v4.5.48",
 		"version":"2.0"
 	},
 	"scene":0,
@@ -45,7 +45,7 @@
 		{
 			"bufferView":0,
 			"componentType":5126,
-			"count":1315,
+			"count":904,
 			"max":[
 				2.5597360134124756,
 				3.648474931716919,
@@ -61,25 +61,25 @@
 		{
 			"bufferView":1,
 			"componentType":5126,
-			"count":1315,
+			"count":904,
 			"type":"VEC3"
 		},
 		{
 			"bufferView":2,
 			"componentType":5126,
-			"count":1315,
+			"count":904,
 			"type":"VEC2"
 		},
 		{
 			"bufferView":3,
 			"componentType":5126,
-			"count":1315,
+			"count":904,
 			"type":"VEC4"
 		},
 		{
 			"bufferView":4,
 			"componentType":5123,
-			"count":1315,
+			"count":904,
 			"normalized":true,
 			"type":"VEC4"
 		},
@@ -93,44 +93,44 @@
 	"bufferViews":[
 		{
 			"buffer":0,
-			"byteLength":15780,
+			"byteLength":10848,
 			"byteOffset":0,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":15780,
-			"byteOffset":15780,
+			"byteLength":10848,
+			"byteOffset":10848,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":10520,
-			"byteOffset":31560,
+			"byteLength":7232,
+			"byteOffset":21696,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":21040,
-			"byteOffset":42080,
+			"byteLength":14464,
+			"byteOffset":28928,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":10520,
-			"byteOffset":63120,
+			"byteLength":7232,
+			"byteOffset":43392,
 			"target":34962
 		},
 		{
 			"buffer":0,
 			"byteLength":3756,
-			"byteOffset":73640,
+			"byteOffset":50624,
 			"target":34963
 		}
 	],
 	"buffers":[
 		{
-			"byteLength":77396,
+			"byteLength":54380,
 			"uri":"SM_Env_Tree_Palm_02.bin"
 		}
 	]

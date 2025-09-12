@@ -1,6 +1,6 @@
 {
 	"asset":{
-		"generator":"Khronos glTF Blender I/O v4.3.47",
+		"generator":"Khronos glTF Blender I/O v4.5.48",
 		"version":"2.0"
 	},
 	"scene":0,
@@ -44,7 +44,7 @@
 		{
 			"bufferView":0,
 			"componentType":5126,
-			"count":398,
+			"count":852,
 			"max":[
 				1.1681699752807617,
 				2.041566848754883,
@@ -60,19 +60,19 @@
 		{
 			"bufferView":1,
 			"componentType":5126,
-			"count":398,
+			"count":852,
 			"type":"VEC3"
 		},
 		{
 			"bufferView":2,
 			"componentType":5126,
-			"count":398,
+			"count":852,
 			"type":"VEC2"
 		},
 		{
 			"bufferView":3,
 			"componentType":5126,
-			"count":398,
+			"count":852,
 			"type":"VEC4"
 		},
 		{
@@ -85,38 +85,38 @@
 	"bufferViews":[
 		{
 			"buffer":0,
-			"byteLength":4776,
+			"byteLength":10224,
 			"byteOffset":0,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":4776,
-			"byteOffset":4776,
+			"byteLength":10224,
+			"byteOffset":10224,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":3184,
-			"byteOffset":9552,
+			"byteLength":6816,
+			"byteOffset":20448,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":6368,
-			"byteOffset":12736,
+			"byteLength":13632,
+			"byteOffset":27264,
 			"target":34962
 		},
 		{
 			"buffer":0,
 			"byteLength":1704,
-			"byteOffset":19104,
+			"byteOffset":40896,
 			"target":34963
 		}
 	],
 	"buffers":[
 		{
-			"byteLength":20808,
+			"byteLength":42600,
 			"uri":"cliff_grass.bin"
 		}
 	]

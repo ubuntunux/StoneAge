@@ -1,6 +1,6 @@
 {
 	"asset":{
-		"generator":"Khronos glTF Blender I/O v4.5.47",
+		"generator":"Khronos glTF Blender I/O v4.5.48",
 		"version":"2.0"
 	},
 	"scene":0,
@@ -45,7 +45,7 @@
 		{
 			"bufferView":0,
 			"componentType":5126,
-			"count":1112,
+			"count":472,
 			"max":[
 				0.4127592444419861,
 				3.8547651767730713,
@@ -61,25 +61,25 @@
 		{
 			"bufferView":1,
 			"componentType":5126,
-			"count":1112,
+			"count":472,
 			"type":"VEC3"
 		},
 		{
 			"bufferView":2,
 			"componentType":5126,
-			"count":1112,
+			"count":472,
 			"type":"VEC2"
 		},
 		{
 			"bufferView":3,
 			"componentType":5126,
-			"count":1112,
+			"count":472,
 			"type":"VEC4"
 		},
 		{
 			"bufferView":4,
 			"componentType":5123,
-			"count":1112,
+			"count":472,
 			"normalized":true,
 			"type":"VEC4"
 		},
@@ -93,44 +93,44 @@
 	"bufferViews":[
 		{
 			"buffer":0,
-			"byteLength":13344,
+			"byteLength":5664,
 			"byteOffset":0,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":13344,
-			"byteOffset":13344,
+			"byteLength":5664,
+			"byteOffset":5664,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":8896,
-			"byteOffset":26688,
+			"byteLength":3776,
+			"byteOffset":11328,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":17792,
-			"byteOffset":35584,
+			"byteLength":7552,
+			"byteOffset":15104,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":8896,
-			"byteOffset":53376,
+			"byteLength":3776,
+			"byteOffset":22656,
 			"target":34962
 		},
 		{
 			"buffer":0,
 			"byteLength":2928,
-			"byteOffset":62272,
+			"byteOffset":26432,
 			"target":34963
 		}
 	],
 	"buffers":[
 		{
-			"byteLength":65200,
+			"byteLength":29360,
 			"uri":"SM_Env_Bush_Palm_01_Flowers_01.bin"
 		}
 	]
