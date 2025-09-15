@@ -161,7 +161,7 @@ impl CharacterController {
 
     pub fn update_character_controller<'a>(
         &mut self,
-        _owner: &Character,
+        owner: &Character,
         height_map_data: &HeightMapData,
         collision_objects: &BlockArray<'a>,
         character_data: &CharacterData,
@@ -236,7 +236,8 @@ impl CharacterController {
 
         // jump
         if self._is_jump_start {
-            self._velocity.y = character_data._stat_data._jump_speed;
+            let not_enough_stamina = owner._character_stats._stamina < 0.0;
+            self._velocity.y = character_data._stat_data._jump_speed * if not_enough_stamina { 0.5 } else { 1.0 };
             self._is_ground = false;
             self._is_jump = true;
         }

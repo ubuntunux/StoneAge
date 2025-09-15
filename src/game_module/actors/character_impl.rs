@@ -193,9 +193,9 @@ impl<'a> Character<'a> {
     }
 
     pub fn is_available_jump(&self) -> bool {
-        if self._is_player && self._character_stats._stamina < STAMINA_JUMP {
-            return false;
-        }
+        // if self._is_player && self._character_stats._stamina < STAMINA_JUMP {
+        //     return false;
+        // }
         !self.is_jump() && !self.is_falling() && self.is_available_move()
     }
 
@@ -334,9 +334,14 @@ impl<'a> Character<'a> {
         if self.is_available_attack() {
             let mut animation_speed: f32 = 1.0;
             if self._is_player {
+                let render_object = self._render_object.borrow();
+                let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
+                if self._character_stats._stamina < STAMINA_ATTACK && animation_play_info._is_animation_end == false {
+                    return;
+                }
+
                 self._character_stats._stamina -= STAMINA_ATTACK;
                 if self._character_stats._stamina < 0.0 {
-                    self._character_stats._stamina = 0.0;
                     animation_speed = 0.5;
                 }
             }
@@ -348,9 +353,14 @@ impl<'a> Character<'a> {
         if self.is_available_attack() {
             let mut animation_speed: f32 = 1.0;
             if self._is_player {
+                let render_object = self._render_object.borrow();
+                let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
+                if self._character_stats._stamina < STAMINA_ATTACK && animation_play_info._is_animation_end == false {
+                    return;
+                }
+
                 self._character_stats._stamina -= STAMINA_POWER_ATTACK;
                 if self._character_stats._stamina < 0.0 {
-                    self._character_stats._stamina = 0.0;
                     animation_speed = 0.5;
                 }
             }
@@ -437,6 +447,10 @@ impl<'a> Character<'a> {
                 animation_info._animation_speed = animation_data._hit_animation_speed * animation_speed;
                 render_object.set_animation(&animation_data._hit_animation, &animation_info, AnimationLayer::ActionLayer);
             }
+            ActionAnimationState::Pickup => {
+                animation_info._animation_speed = animation_speed;
+                render_object.set_animation(&animation_data._pickup_animation, &animation_info, AnimationLayer::ActionLayer);
+            }
             ActionAnimationState::PowerAttack => {
                 animation_info._animation_speed = animation_data._power_attack_animation_speed * animation_speed;
                 render_object.set_animation(&animation_data._power_attack_animation, &animation_info, AnimationLayer::ActionLayer);
@@ -513,14 +527,17 @@ impl<'a> Character<'a> {
 
     pub fn set_jump(&mut self) {
         if self.is_available_jump() {
-            let move_anim = if self._controller._is_running {
+            let mut not_enought_stamina = false;
+            if self._is_player {
+                self._character_stats._stamina -= STAMINA_JUMP;
+                not_enought_stamina = self._character_stats._stamina < 0.0;
+            }
+
+            let move_anim = if self._controller._is_running && not_enought_stamina == false {
                 MoveAnimationState::RunningJump
             } else {
                 MoveAnimationState::Jump
             };
-            if self._is_player {
-                self._character_stats._stamina -= STAMINA_JUMP;
-            }
             self._controller.set_jump_start();
             self.set_move_animation(move_anim);
         }
@@ -528,6 +545,10 @@ impl<'a> Character<'a> {
 
     pub fn set_roll(&mut self) {
         if self.is_available_roll() {
+            if self._is_player {
+                self._character_stats._stamina -= STAMINA_ROLL;
+            }
+
             let character_data = self.get_character_data();
             if self.is_move_state(MoveAnimationState::Run) {
                 self.set_move_speed(character_data._stat_data._run_speed);
@@ -535,10 +556,6 @@ impl<'a> Character<'a> {
                 self.set_move_speed(character_data._stat_data._roll_speed);
             }
             self.set_move_direction(&self._controller._face_direction.clone());
-
-            if self._is_player {
-                self._character_stats._stamina -= STAMINA_ROLL;
-            }
             self.set_move_animation(MoveAnimationState::Roll);
         }
     }
@@ -659,6 +676,9 @@ impl<'a> Character<'a> {
             ActionAnimationState::Hit => {
                 // nothing
             },
+            ActionAnimationState::Pickup => {
+                // nothing
+            },
             ActionAnimationState::PowerAttack => {
                 // nothing
             }
@@ -699,6 +719,11 @@ impl<'a> Character<'a> {
                     self.set_action_none();
                 }
             },
+            ActionAnimationState::Pickup => {
+                if animation_play_info._is_animation_end {
+                    self.set_action_none();
+                }
+            },
             ActionAnimationState::PowerAttack => {
                 if animation_play_info.check_animation_event_time(character_data._stat_data._power_attack_event_time) {
                     self.get_character_manager().get_scene_manager().play_audio_bank(AUDIO_ATTACK);
@@ -724,6 +749,9 @@ impl<'a> Character<'a> {
                 // nothing
             },
             ActionAnimationState::Hit => {
+                // nothing
+            },
+            ActionAnimationState::Pickup => {
                 // nothing
             },
             ActionAnimationState::PowerAttack => {

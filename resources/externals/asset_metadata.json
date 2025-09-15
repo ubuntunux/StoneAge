@@ -235,65 +235,7 @@
             "asset_path": "jack",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/jack.blend",
             "guid": "",
-            "mtime": 1757187381.0095315,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/game_data/data/data.blend": [
-        {
-            "asset_type": "GAME_DATA",
-            "asset_path": "character_animation_data",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/data/data.blend",
-            "guid": "",
-            "mtime": 1753288134.3102436,
-            "data": {}
-        },
-        {
-            "asset_type": "GAME_DATA",
-            "asset_path": "character_audio_data",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/data/data.blend",
-            "guid": "",
-            "mtime": 1753288134.3102436,
-            "data": {}
-        },
-        {
-            "asset_type": "GAME_DATA",
-            "asset_path": "character_data",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/data/data.blend",
-            "guid": "",
-            "mtime": 1753288134.3102436,
-            "data": {}
-        },
-        {
-            "asset_type": "GAME_DATA",
-            "asset_path": "character_stat_data",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/data/data.blend",
-            "guid": "",
-            "mtime": 1753288134.3102436,
-            "data": {}
-        },
-        {
-            "asset_type": "GAME_DATA",
-            "asset_path": "item_data",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/data/data.blend",
-            "guid": "",
-            "mtime": 1753288134.3102436,
-            "data": {}
-        },
-        {
-            "asset_type": "GAME_DATA",
-            "asset_path": "prop_data",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/data/data.blend",
-            "guid": "",
-            "mtime": 1753288134.3102436,
-            "data": {}
-        },
-        {
-            "asset_type": "GAME_DATA",
-            "asset_path": "weapon_data",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/data/data.blend",
-            "guid": "",
-            "mtime": 1753288134.3102436,
+            "mtime": 1757867191.0657454,
             "data": {}
         }
     ],
@@ -313,7 +255,7 @@
             "asset_path": "rock",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/items/rock.blend",
             "guid": "",
-            "mtime": 1753288134.3295724,
+            "mtime": 1757953988.0167406,
             "data": {}
         }
     ],
@@ -323,7 +265,7 @@
             "asset_path": "wood",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/items/wood.blend",
             "guid": "",
-            "mtime": 1753288134.334103,
+            "mtime": 1757953930.0608647,
             "data": {}
         }
     ],
@@ -333,117 +275,7 @@
             "asset_path": "spirit_ball",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/props/spirit_ball.blend",
             "guid": "",
-            "mtime": 1757251095.198306,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/game_data/items/woods/SM_Env_DriftWood_02.blend": [
-        {
-            "asset_type": "GAME_ITEM",
-            "asset_path": "woods/SM_Env_DriftWood_02",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/items/woods/SM_Env_DriftWood_02.blend",
-            "guid": "",
-            "mtime": 1757340342.038329,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/game_data/items/woods/SM_Env_DriftWood_03.blend": [
-        {
-            "asset_type": "GAME_ITEM",
-            "asset_path": "woods/SM_Env_DriftWood_03",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/items/woods/SM_Env_DriftWood_03.blend",
-            "guid": "",
-            "mtime": 1757340014.0576382,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/game_data/items/woods/SM_Env_DriftWood_04.blend": [
-        {
-            "asset_type": "GAME_ITEM",
-            "asset_path": "woods/SM_Env_DriftWood_04",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/items/woods/SM_Env_DriftWood_04.blend",
-            "guid": "",
-            "mtime": 1757340431.561159,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/game_data/items/woods/SM_Env_DriftWood_01.blend": [
-        {
-            "asset_type": "GAME_ITEM",
-            "asset_path": "woods/SM_Env_DriftWood_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/items/woods/SM_Env_DriftWood_01.blend",
-            "guid": "",
-            "mtime": 1757512708.3576362,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/game_data/props/birch_tree_00.blend": [
-        {
-            "asset_type": "GAME_PROP",
-            "asset_path": "birch_tree_00",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/props/birch_tree_00.blend",
-            "guid": "",
-            "mtime": 1753288134.337278,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/game_data/props/cactus.blend": [
-        {
-            "asset_type": "GAME_PROP",
-            "asset_path": "cactus",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/props/cactus.blend",
-            "guid": "",
-            "mtime": 1753288134.3411176,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/game_data/props/crystal.blend": [
-        {
-            "asset_type": "GAME_PROP",
-            "asset_path": "crystal",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/props/crystal.blend",
-            "guid": "",
-            "mtime": 1753288134.343776,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/game_data/props/log.blend": [
-        {
-            "asset_type": "GAME_PROP",
-            "asset_path": "log",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/props/log.blend",
-            "guid": "",
-            "mtime": 1753288134.3467047,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/game_data/props/mushroom_orange_00.blend": [
-        {
-            "asset_type": "GAME_PROP",
-            "asset_path": "mushroom_orange_00",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/props/mushroom_orange_00.blend",
-            "guid": "",
-            "mtime": 1753288134.349373,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/game_data/props/rock.blend": [
-        {
-            "asset_type": "GAME_PROP",
-            "asset_path": "rock",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/props/rock.blend",
-            "guid": "",
-            "mtime": 1753288134.3534138,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/game_data/props/stump.blend": [
-        {
-            "asset_type": "GAME_PROP",
-            "asset_path": "stump",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/props/stump.blend",
-            "guid": "",
-            "mtime": 1753288134.355947,
+            "mtime": 1757953424.2046022,
             "data": {}
         }
     ],
@@ -4208,6 +4040,16 @@
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/PolygonNatureBiomes/SM_Env_Tree_Banana_04.blend",
             "guid": "",
             "mtime": 1757706619.4242437,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/jack/jack_pickup.blend": [
+        {
+            "asset_type": "MESH",
+            "asset_path": "characters/jack/jack_pickup",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/jack/jack_pickup.blend",
+            "guid": "",
+            "mtime": 1757870690.5981047,
             "data": {}
         }
     ],
@@ -8361,13 +8203,151 @@
             "data": {}
         }
     ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/data/data.blend": [
+        {
+            "asset_type": "GAME_DATA",
+            "asset_path": "character_animation_data",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/data/data.blend",
+            "guid": "",
+            "mtime": 1757866879.9393704,
+            "data": {}
+        },
+        {
+            "asset_type": "GAME_DATA",
+            "asset_path": "character_audio_data",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/data/data.blend",
+            "guid": "",
+            "mtime": 1757866879.9393704,
+            "data": {}
+        },
+        {
+            "asset_type": "GAME_DATA",
+            "asset_path": "character_data",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/data/data.blend",
+            "guid": "",
+            "mtime": 1757866879.9393704,
+            "data": {}
+        },
+        {
+            "asset_type": "GAME_DATA",
+            "asset_path": "character_stat_data",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/data/data.blend",
+            "guid": "",
+            "mtime": 1757866879.9393704,
+            "data": {}
+        },
+        {
+            "asset_type": "GAME_DATA",
+            "asset_path": "item_data",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/data/data.blend",
+            "guid": "",
+            "mtime": 1757866879.9393704,
+            "data": {}
+        },
+        {
+            "asset_type": "GAME_DATA",
+            "asset_path": "prop_data",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/data/data.blend",
+            "guid": "",
+            "mtime": 1757866879.9393704,
+            "data": {}
+        },
+        {
+            "asset_type": "GAME_DATA",
+            "asset_path": "weapon_data",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/data/data.blend",
+            "guid": "",
+            "mtime": 1757866879.9393704,
+            "data": {}
+        }
+    ],
     "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/intro_stage.blend": [
         {
             "asset_type": "GAME_SCENE",
             "asset_path": "intro_stage",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/intro_stage.blend",
             "guid": "",
-            "mtime": 1757514548.3536618,
+            "mtime": 1757955102.5642686,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/props/birch_tree_00.blend": [
+        {
+            "asset_type": "GAME_PROP",
+            "asset_path": "birch_tree_00",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/props/birch_tree_00.blend",
+            "guid": "",
+            "mtime": 1757954670.0667567,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/props/cactus.blend": [
+        {
+            "asset_type": "GAME_PROP",
+            "asset_path": "cactus",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/props/cactus.blend",
+            "guid": "",
+            "mtime": 1757954623.4798796,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/props/crystal.blend": [
+        {
+            "asset_type": "GAME_PROP",
+            "asset_path": "crystal",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/props/crystal.blend",
+            "guid": "",
+            "mtime": 1757954653.4913678,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/props/log.blend": [
+        {
+            "asset_type": "GAME_PROP",
+            "asset_path": "log",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/props/log.blend",
+            "guid": "",
+            "mtime": 1757954648.3592849,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/props/mushroom_orange_00.blend": [
+        {
+            "asset_type": "GAME_PROP",
+            "asset_path": "mushroom_orange_00",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/props/mushroom_orange_00.blend",
+            "guid": "",
+            "mtime": 1757954639.5886989,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/props/rock.blend": [
+        {
+            "asset_type": "GAME_PROP",
+            "asset_path": "rock",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/props/rock.blend",
+            "guid": "",
+            "mtime": 1757954629.256056,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/props/stump.blend": [
+        {
+            "asset_type": "GAME_PROP",
+            "asset_path": "stump",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/props/stump.blend",
+            "guid": "",
+            "mtime": 1757954687.4042113,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/props/twigs.blend": [
+        {
+            "asset_type": "GAME_PROP",
+            "asset_path": "twigs",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/props/twigs.blend",
+            "guid": "",
+            "mtime": 1757954661.103121,
             "data": {}
         }
     ]

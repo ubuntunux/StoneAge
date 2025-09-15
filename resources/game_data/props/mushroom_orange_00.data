@@ -7,5 +7,5 @@
     "_max_hp": 100,
     "_model_data_name": "environments/mushroom_orange_00",
     "_name": "MUSHROOM",
-    "_prop_type": "None"
+    "_prop_type": "Pickup"
 }

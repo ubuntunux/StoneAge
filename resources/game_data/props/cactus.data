@@ -7,5 +7,5 @@
     "_max_hp": 100,
     "_model_data_name": "environments/cactus",
     "_name": "CACTUS",
-    "_prop_type": "None"
+    "_prop_type": "Destruction"
 }

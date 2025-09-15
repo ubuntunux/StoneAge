@@ -20,7 +20,6 @@ e5381335-2e00-4db8-9a85-1d38959ec30b:StoneAge/game_data/characters:StoneAge-game
 8a3855e5-fe95-4387-8ca5-c9f74e6aaeff:StoneAge/game_data/data:StoneAge-game_data-data
 1d1d872f-1889-4192-9f61-f1590f14bebc:StoneAge/game_data/game_scenes:StoneAge-game_data-game_scenes
 753519f1-f1bf-4734-8400-6aedd70b373a:StoneAge/game_data/items:StoneAge-game_data-items
-e84f1a13-75ac-47a1-8c03-3db30ef9a4f6:StoneAge/game_data/items/woods:StoneAge-game_data-items-woods
 c4dbb2e9-22a0-4f27-9442-937178e6882b:StoneAge/game_data/props:StoneAge-game_data-props
 4dc140f0-e920-4260-b72e-f22d73dce4d2:StoneAge/game_data/weapons:StoneAge-game_data-weapons
 c021cad1-00f6-4a65-94ea-13204785bff0:StoneAge/material_instances:StoneAge-material_instances

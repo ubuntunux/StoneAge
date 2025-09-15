@@ -7,5 +7,5 @@
     "_max_hp": 100,
     "_model_data_name": "environments/birch_tree_00",
     "_name": "BIRCH TREE",
-    "_prop_type": "None"
+    "_prop_type": "Harvestable"
 }

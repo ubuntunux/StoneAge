@@ -10,6 +10,7 @@
         "_idle_animation_speed": 1.0,
         "_jump_animation": "characters/jack/jack_jump",
         "_jump_animation_speed": 1.0,
+        "_pickup_animation": "characters/jack/jack_pickup",
         "_power_attack_animation": "characters/jack/jack_power_attack",
         "_power_attack_animation_speed": 1.5,
         "_roll_animation": "characters/jack/jack_roll",
@@ -42,24 +43,5 @@
     },
     "_character_type": "Roamer",
     "_model_data_name": "characters/jack",
-    "_name": "UBUNTU",
-    "_weapon_create_info": {
-        "_position": [
-            0.0,
-            0.0,
-            0.0
-        ],
-        "_rotation": [
-            0.0,
-            0.0,
-            0.0
-        ],
-        "_scale": [
-            1.0,
-            1.0,
-            1.0
-        ],
-        "_weapon_data_name": "weapons/wooden_club",
-        "_weapon_socket_name": "SOCKET_WEAPON"
-    }
+    "_name": "UBUNTU"
 }

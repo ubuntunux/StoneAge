@@ -247,7 +247,10 @@ impl<'a> GameSceneManager<'a> {
                 blocks.push(object.clone());
             }
         }
+
+        // todo: make block array on loading
         self._blocks = blocks;
+
         self._character_manager.update_character_manager(delta_time);
     }
 }

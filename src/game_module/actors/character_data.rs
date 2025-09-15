@@ -12,6 +12,7 @@ pub enum ActionAnimationState {
     Attack,
     Dead,
     Hit,
+    Pickup,
     PowerAttack,
 }
 
@@ -80,6 +81,7 @@ pub struct CharacterAnimationDataCreateInfo {
     pub _hit_animation_speed: f32,
     pub _jump_animation: String,
     pub _jump_animation_speed: f32,
+    pub _pickup_animation: String,
     pub _power_attack_animation: String,
     pub _power_attack_animation_speed: f32,
     pub _roll_animation: String,
@@ -120,6 +122,7 @@ pub struct CharacterAnimationData {
     pub _idle_animation_speed: f32,
     pub _jump_animation: RcRefCell<MeshData>,
     pub _jump_animation_speed: f32,
+    pub _pickup_animation: RcRefCell<MeshData>,
     pub _power_attack_animation: RcRefCell<MeshData>,
     pub _power_attack_animation_speed: f32,
     pub _roll_animation: RcRefCell<MeshData>,
