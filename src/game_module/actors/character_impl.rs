@@ -15,8 +15,23 @@ use crate::game_module::actors::character_data::{ActionAnimationState, Character
 use crate::game_module::actors::character_manager::CharacterManager;
 use crate::game_module::actors::weapons::Weapon;
 use crate::game_module::behavior::behavior_base::create_character_behavior;
-use crate::game_module::game_constants::{ATTACK_DELAY, AUDIO_ATTACK, AUDIO_FALLING_WATER, AUDIO_FOOTSTEP, AUDIO_HIT, AUDIO_JUMP, AUDIO_ROLL, EFFECT_FALLING_WATER, EFFECT_HIT, FALLING_DAMAGE_RATIO, FALLING_HEIGHT, MAX_STAMINA, STAMINA_ATTACK, STAMINA_JUMP, STAMINA_POWER_ATTACK, STAMINA_RECOVERY, STAMINA_ROLL, STAMINA_RUN};
+use crate::game_module::game_constants::{ATTACK_DELAY, AUDIO_ATTACK, AUDIO_FALLING_WATER, AUDIO_FOOTSTEP, AUDIO_HIT, AUDIO_JUMP, AUDIO_ROLL, EFFECT_FALLING_WATER, EFFECT_HIT, FALLING_DAMAGE_RATIO, FALLING_HEIGHT, MAX_STAMINA, PICKUP_EVENT_TIME, STAMINA_ATTACK, STAMINA_JUMP, STAMINA_POWER_ATTACK, STAMINA_RECOVERY, STAMINA_ROLL, STAMINA_RUN};
 use crate::game_module::game_scene_manager::BlocksMap;
+
+impl CharacterAnimationState {
+    pub fn is_pickup_event(&self) -> bool {
+        self._action_event == ActionAnimationState::Pickup
+    }
+    pub fn is_attack_event(&self) -> bool {
+        self._action_event == ActionAnimationState::Attack || self._action_event == ActionAnimationState::PowerAttack
+    }
+    pub fn get_action_event(&self) -> ActionAnimationState {
+        self._action_event
+    }
+    pub fn set_action_event(&mut self, action_event: ActionAnimationState) {
+        self._action_event = action_event;
+    }
+}
 
 impl CharacterStats {
     pub fn create_character_stats() -> CharacterStats {
@@ -150,6 +165,10 @@ impl<'a> Character<'a> {
         &ptr_as_ref(self._render_object.as_ptr())._collision
     }
 
+    pub fn is_player(&self) -> bool {
+        self._is_player
+    }
+
     pub fn is_move_state(&self, move_state: MoveAnimationState) -> bool {
         move_state == self._animation_state._move_animation_state
     }
@@ -164,6 +183,19 @@ impl<'a> Character<'a> {
 
     pub fn is_jump(&self) -> bool {
         self._controller.is_jump()
+    }
+
+    pub fn is_in_pickup_prop_range(&self) -> bool {
+        self._controller.is_in_pickup_prop_range()
+    }
+
+    pub fn is_additive_animation_for_action(&self) -> bool {
+        if self.is_action(ActionAnimationState::Attack) || self.is_action(ActionAnimationState::PowerAttack) || self.is_action(ActionAnimationState::Hit) || self.is_action(ActionAnimationState::Pickup) {
+            if !self.is_move_state(MoveAnimationState::Idle) && !self.is_move_state(MoveAnimationState::None) {
+                return true;
+            }
+        }
+        false
     }
 
     pub fn is_action(&self, action: ActionAnimationState) -> bool {
@@ -193,9 +225,6 @@ impl<'a> Character<'a> {
     }
 
     pub fn is_available_jump(&self) -> bool {
-        // if self._is_player && self._character_stats._stamina < STAMINA_JUMP {
-        //     return false;
-        // }
         !self.is_jump() && !self.is_falling() && self.is_available_move()
     }
 
@@ -264,7 +293,6 @@ impl<'a> Character<'a> {
             } else {
                 character_manager.get_scene_manager().play_audio(&self._character_data.borrow()._audio_data._audio_pain);
                 if self._is_player {
-                    // TODO: additive animation
                     self.set_action_hit();
                 }
             }
@@ -330,6 +358,15 @@ impl<'a> Character<'a> {
         self.set_action_animation(ActionAnimationState::None, 1.0);
     }
 
+    pub fn set_action_pickup(&mut self) {
+        if self.is_available_attack() {
+            if self._render_object.borrow().get_animation_play_info(AnimationLayer::ActionLayer)._is_animation_end {
+                self.set_action_animation(ActionAnimationState::Pickup, 2.0);
+                return;
+            }
+        }
+    }
+
     pub fn set_action_attack(&mut self) {
         if self.is_available_attack() {
             let mut animation_speed: f32 = 1.0;
@@ -355,7 +392,7 @@ impl<'a> Character<'a> {
             if self._is_player {
                 let render_object = self._render_object.borrow();
                 let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
-                if self._character_stats._stamina < STAMINA_ATTACK && animation_play_info._is_animation_end == false {
+                if self._character_stats._stamina < STAMINA_POWER_ATTACK && animation_play_info._is_animation_end == false {
                     return;
                 }
 
@@ -696,7 +733,7 @@ impl<'a> Character<'a> {
             },
             ActionAnimationState::Attack => {
                 if animation_play_info.check_animation_event_time(character_data._stat_data._attack_event_time) {
-                    self._animation_state._attack_event = ActionAnimationState::Attack;
+                    self._animation_state.set_action_event( ActionAnimationState::Attack );
                     self.get_character_manager().get_scene_manager().play_audio_bank(AUDIO_ATTACK);
                 }
 
@@ -720,6 +757,11 @@ impl<'a> Character<'a> {
                 }
             },
             ActionAnimationState::Pickup => {
+                if animation_play_info.check_animation_event_time(PICKUP_EVENT_TIME) {
+                    self.get_character_manager().get_scene_manager().play_audio_bank(AUDIO_ATTACK);
+                    self._animation_state.set_action_event( ActionAnimationState::Pickup );
+                }
+
                 if animation_play_info._is_animation_end {
                     self.set_action_none();
                 }
@@ -727,7 +769,7 @@ impl<'a> Character<'a> {
             ActionAnimationState::PowerAttack => {
                 if animation_play_info.check_animation_event_time(character_data._stat_data._power_attack_event_time) {
                     self.get_character_manager().get_scene_manager().play_audio_bank(AUDIO_ATTACK);
-                    self._animation_state._attack_event = ActionAnimationState::PowerAttack;
+                    self._animation_state.set_action_event( ActionAnimationState::PowerAttack );
                 }
 
                 if animation_play_info._is_animation_end {
@@ -761,7 +803,7 @@ impl<'a> Character<'a> {
     }
 
     pub fn update_action_keyframe_event(&mut self) {
-        self._animation_state._attack_event = ActionAnimationState::None;
+        self._animation_state.set_action_event( ActionAnimationState::None );
 
         if self._animation_state._action_animation_state_prev != self._animation_state._action_animation_state {
             self.update_action_animation_end_event();
@@ -791,13 +833,11 @@ impl<'a> Character<'a> {
         render_object.clear_animation_layers(AnimationLayer::ActionLayer);
 
         // set additive animation layer
-        if self.is_action(ActionAnimationState::Attack) || self.is_action(ActionAnimationState::PowerAttack) || self.is_action(ActionAnimationState::Hit) {
-            if !self.is_move_state(MoveAnimationState::Idle) && !self.is_move_state(MoveAnimationState::None) {
-                render_object.set_animation_layers(
-                    self._character_data.borrow()._animation_data._upper_animation_layer.as_ptr(),
-                    AnimationLayer::ActionLayer
-                );
-            }
+        if self.is_additive_animation_for_action() {
+            render_object.set_animation_layers(
+                self._character_data.borrow()._animation_data._upper_animation_layer.as_ptr(),
+                AnimationLayer::ActionLayer
+            );
         }
     }
 

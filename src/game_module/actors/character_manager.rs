@@ -9,7 +9,6 @@ use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, Rc
 
 use crate::application::application::Application;
 use crate::game_module::actors::character::{Character, CharacterCreateInfo};
-use crate::game_module::actors::character_data::ActionAnimationState;
 use crate::game_module::actors::items::ItemCreateInfo;
 use crate::game_module::actors::weapons::{Weapon, WeaponCreateInfo};
 use crate::game_module::game_client::GameClient;
@@ -209,7 +208,8 @@ impl<'a> CharacterManager<'a> {
             }
 
             // check attack
-            if character_mut._animation_state._attack_event != ActionAnimationState::None {
+            let check_direction = true;
+            if character_mut._animation_state.is_attack_event() {
                 if character_mut._is_player {
                     // player attack to npc
                     for target_character in self._characters.values() {
@@ -217,11 +217,11 @@ impl<'a> CharacterManager<'a> {
                         if false == target_character_mut._is_player &&
                             target_character_mut._character_stats._is_alive &&
                             false == target_character_mut._character_stats._invincibility &&
-                            character_mut.check_in_range(target_character_mut.get_collision(), NPC_ATTACK_HIT_RANGE, true) {
+                            character_mut.check_in_range(target_character_mut.get_collision(), NPC_ATTACK_HIT_RANGE, check_direction) {
                                 regist_target_character = Some(target_character.clone());
                                 let target_position = ptr_as_ref(target_character_mut.get_position());
                                 target_character_mut.set_hit_damage(
-                                    character_mut.get_power(character_mut._animation_state._attack_event),
+                                    character_mut.get_power(character_mut._animation_state.get_action_event()),
                                     Some(character_mut.get_front())
                                 );
                                 if false == target_character_mut._character_stats._is_alive {
@@ -241,9 +241,9 @@ impl<'a> CharacterManager<'a> {
                     // npc attack to player
                     if player._character_stats._is_alive &&
                         false == player._character_stats._invincibility &&
-                        character_mut.check_in_range(player.get_collision(), NPC_ATTACK_HIT_RANGE, true) {
+                        character_mut.check_in_range(player.get_collision(), NPC_ATTACK_HIT_RANGE, check_direction) {
                         player.set_hit_damage(
-                            character_mut.get_power(character_mut._animation_state._attack_event),
+                            character_mut.get_power(character_mut._animation_state.get_action_event()),
                             Some(character_mut.get_front())
                         );
                     }

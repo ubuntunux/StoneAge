@@ -4,12 +4,12 @@ use rand;
 use rust_engine_3d::audio::audio_manager::{AudioLoop, AudioManager};
 use rust_engine_3d::core::engine_core::EngineCore;
 use rust_engine_3d::effect::effect_data::EffectCreateInfo;
+use rust_engine_3d::scene::bounding_box::BoundingBox;
 use rust_engine_3d::scene::collision::CollisionData;
 use rust_engine_3d::scene::render_object::{RenderObjectCreateInfo, RenderObjectData};
 use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
 use crate::application::application::Application;
-use crate::game_module::actors::character_data::ActionAnimationState;
 use crate::game_module::actors::items::ItemCreateInfo;
 use crate::game_module::actors::props::{Prop, PropCreateInfo, PropData, PropDataType, PropManager, PropMap, PropStats};
 use crate::game_module::game_client::GameClient;
@@ -92,6 +92,9 @@ impl<'a> Prop<'a> {
     }
     pub fn get_position(&self) -> &Vector3<f32> {
         &ptr_as_ref(self._render_object.as_ptr())._transform_object._position
+    }
+    pub fn get_bounding_box(&self) -> &BoundingBox {
+        &ptr_as_ref(self._render_object.as_ptr())._bounding_box
     }
     pub fn get_collision(&self) -> &CollisionData {
         &ptr_as_ref(self._render_object.as_ptr())._collision
@@ -241,22 +244,35 @@ impl<'a> PropManager<'a> {
         let mut dead_props: Vec<RcRefCell<Prop>> = Vec::new();
         {
             let game_scene_manager = self.get_game_scene_manager();
+            let check_direction = true;
             let player_refcell = game_scene_manager.get_character_manager().get_player();
-            let player = player_refcell.borrow_mut();
+            let mut player = player_refcell.borrow_mut();
             if player._character_stats._is_alive {
-                if player._animation_state._attack_event != ActionAnimationState::None {
-                    for prop_refcell in self._props.values() {
-                        let mut prop = prop_refcell.borrow_mut();
-                        if player.check_in_range(prop.get_collision(), NPC_ATTACK_HIT_RANGE, true) {
-                            if prop.can_drop_item() {
-                                prop.set_hit_damage(player.get_power(player._animation_state._attack_event));
+                player._controller.set_in_pickup_prop_range(false);
+                for prop_refcell in self._props.values() {
+                    let mut prop = prop_refcell.borrow_mut();
+                        let prop_type = prop._prop_data.borrow()._prop_type;
+                        if prop_type == PropDataType::Pickup {
+                            let bounding_box = prop.get_bounding_box();
+                            if player.get_bounding_box().collide_bound_box(&bounding_box._min, &bounding_box._max) {
+                                player._controller.set_in_pickup_prop_range(true);
+                                if player._animation_state.is_pickup_event() {
+                                    for item_create_info in prop.drop_items().iter() {
+                                        self.get_game_scene_manager().get_item_manager_mut().instance_pickup_item(&item_create_info);
+                                    }
+                                    dead_props.push(prop_refcell.clone());
+                                }
+                            }
+                        } else if prop_type == PropDataType::Destruction || (prop_type == PropDataType::Harvestable && prop.can_drop_item()) {
+                            if player._animation_state.is_attack_event() && player.check_in_range(prop.get_collision(), NPC_ATTACK_HIT_RANGE, check_direction) {
+                                prop.set_hit_damage(player.get_power(player._animation_state.get_action_event()));
                                 if false == prop.is_alive() {
-                                    let item_create_infos = prop.drop_items();
-                                    for item_create_info in item_create_infos.iter() {
+                                    for item_create_info in prop.drop_items().iter() {
+                                        // drop items
                                         self.get_game_scene_manager().get_item_manager_mut().create_item(&item_create_info);
                                     }
 
-                                    if 0 < prop.get_item_regenerate_count() {
+                                    if prop_type == PropDataType::Harvestable && 0 < prop.get_item_regenerate_count() {
                                         prop.refresh_prop_state();
                                     } else {
                                         dead_props.push(prop_refcell.clone());
@@ -264,7 +280,6 @@ impl<'a> PropManager<'a> {
                                 }
                             }
                         }
-                    }
                 }
             }
         }

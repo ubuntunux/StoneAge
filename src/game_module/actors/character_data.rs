@@ -6,7 +6,7 @@ use rust_engine_3d::utilities::system::RcRefCell;
 use serde::{Deserialize, Serialize};
 use crate::game_module::actors::weapons::WeaponCreateInfo;
 
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ActionAnimationState {
     None,
     Attack,

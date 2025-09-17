@@ -247,7 +247,11 @@ impl<'a> GameController<'a> {
         }
 
         if is_attack {
-            player_mut.set_action_attack();
+            if player_mut.is_in_pickup_prop_range() {
+                player_mut.set_action_pickup();
+            } else {
+                player_mut.set_action_attack();
+            }
         }
 
         if is_power_attack {

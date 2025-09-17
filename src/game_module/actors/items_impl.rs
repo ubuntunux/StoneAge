@@ -174,6 +174,14 @@ impl<'a> ItemManager<'a> {
         item
     }
 
+    pub fn instance_pickup_item(&mut self, item_create_info: &ItemCreateInfo) {
+        let game_resources = ptr_as_ref(self._game_resources);
+        let item_data = game_resources.get_item_data(item_create_info._item_data_name.as_str());
+        let item_count = 1;
+        self.pick_item(&item_data.borrow()._item_type, item_count);
+        self.get_audio_manager_mut().play_audio_bank(PICKUP_ITEM, AudioLoop::ONCE, None);
+    }
+
     pub fn remove_item(&mut self, item: &RcRefCell<Item>) {
         self._items.remove(&item.borrow().get_item_id());
         self.get_scene_manager_mut().remove_static_render_object(item.borrow()._render_object.borrow()._object_id);
@@ -205,7 +213,8 @@ impl<'a> ItemManager<'a> {
                     player_bound_box._min.y <= item_ref._render_object.borrow()._bounding_box._max.y;
                 if math::get_norm_xz(&diff) <= EAT_ITEM_DISTANCE && check_height {
                     // pick item
-                    self.pick_item(&item_ref._item_data.borrow()._item_type, 1);
+                    let item_count = 1;
+                    self.pick_item(&item_ref._item_data.borrow()._item_type, item_count);
                     self.get_audio_manager_mut().play_audio_bank(PICKUP_ITEM, AudioLoop::ONCE, None);
                     pick_items.push(item.clone());
                 } else if item_ref._item_properties._position.y < scene_manager.get_dead_zone_height() {

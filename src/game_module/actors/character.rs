@@ -29,7 +29,7 @@ pub struct CharacterStats {
 pub struct CharacterAnimationState {
     pub _move_animation_state: MoveAnimationState,
     pub _move_animation_state_prev: MoveAnimationState,
-    pub _attack_event: ActionAnimationState,
+    pub _action_event: ActionAnimationState,
     pub _action_animation_state: ActionAnimationState,
     pub _action_animation_state_prev: ActionAnimationState
 }
