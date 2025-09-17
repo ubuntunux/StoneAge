@@ -183,6 +183,9 @@ impl<'a> PropManager<'a> {
     pub fn get_game_scene_manager(&self) -> &GameSceneManager<'a> {
         ptr_as_ref(self._game_scene_manager)
     }
+    pub fn get_game_scene_manager_mut(&self) -> &mut GameSceneManager<'a> {
+        ptr_as_mut(self._game_scene_manager)
+    }
     pub fn get_audio_manager_mut(&self) -> &mut AudioManager<'a> {
         ptr_as_mut(self._audio_manager)
     }
@@ -224,8 +227,9 @@ impl<'a> PropManager<'a> {
         prop
     }
 
-    pub fn remove_prop(&mut self, prop: &RcRefCell<Prop>) {
+    pub fn remove_prop(&mut self, prop: &RcRefCell<Prop<'a>>) {
         self._props.remove(&prop.borrow().get_prop_id());
+        self.get_game_scene_manager_mut().unregister_block(&prop.borrow()._render_object);
         self.get_scene_manager_mut().remove_static_render_object(prop.borrow()._render_object.borrow()._object_id);
     }
 

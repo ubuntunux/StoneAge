@@ -7,7 +7,7 @@ use rust_engine_3d::core::engine_core::EngineCore;
 use rust_engine_3d::effect::effect_manager::EffectManager;
 use rust_engine_3d::scene::collision::CollisionType;
 use rust_engine_3d::scene::render_object::RenderObjectData;
-use rust_engine_3d::scene::scene_manager::{RenderObjectCreateInfoMap, SceneDataCreateInfo, SceneManager};
+use rust_engine_3d::scene::scene_manager::{RenderObjectCreateInfoMap, SceneObjectID, SceneDataCreateInfo, SceneManager};
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use serde::{Deserialize, Serialize};
@@ -19,7 +19,7 @@ use crate::game_module::actors::props::{PropCreateInfo, PropManager};
 use crate::game_module::game_constants::{TEMPERATURE_MAX, TEMPERATURE_MIN, TIME_OF_DAY_SPEED};
 use crate::game_module::game_resource::GameResources;
 
-pub type BlocksMap<'a> = HashMap<*const RenderObjectData<'a>, RcRefCell<RenderObjectData<'a>>>;
+pub type BlocksMap<'a> = HashMap<SceneObjectID, RcRefCell<RenderObjectData<'a>>>;
 type CharacterCreateInfoMap = HashMap<String, CharacterCreateInfo>;
 type ItemCreateInfoMap = HashMap<String, ItemCreateInfo>;
 type PropCreateInfoMap = HashMap<String, PropCreateInfo>;
@@ -161,12 +161,12 @@ impl<'a> GameSceneManager<'a> {
 
     pub fn register_block(&mut self, object: &RcRefCell<RenderObjectData<'a>>) {
         if object.borrow().get_collision_type() != CollisionType::NONE {
-            self._blocks.insert(object.as_ptr(), object.clone());
+            self._blocks.insert(object.borrow().get_object_id(), object.clone());
         }
     }
 
     pub fn unregister_block(&mut self, object: &RcRefCell<RenderObjectData<'a>>) {
-        self._blocks.remove(&(object.as_ptr() as *const RenderObjectData<'a>));
+        self._blocks.remove(&object.borrow().get_object_id());
     }
 
     pub fn get_spawn_point(&self) -> &Vector3<f32> {
