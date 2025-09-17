@@ -19,7 +19,7 @@ use crate::game_module::actors::props::{PropCreateInfo, PropManager};
 use crate::game_module::game_constants::{TEMPERATURE_MAX, TEMPERATURE_MIN, TIME_OF_DAY_SPEED};
 use crate::game_module::game_resource::GameResources;
 
-pub type BlockArray<'a> = Vec<RcRefCell<RenderObjectData<'a>>>;
+pub type BlocksMap<'a> = HashMap<*const RenderObjectData<'a>, RcRefCell<RenderObjectData<'a>>>;
 type CharacterCreateInfoMap = HashMap<String, CharacterCreateInfo>;
 type ItemCreateInfoMap = HashMap<String, ItemCreateInfo>;
 type PropCreateInfoMap = HashMap<String, PropCreateInfo>;
@@ -44,7 +44,7 @@ pub struct GameSceneManager<'a> {
     pub _item_manager: Box<ItemManager<'a>>,
     pub _prop_manager: Box<PropManager<'a>>,
     pub _game_scene_name: String,
-    pub _blocks: BlockArray<'a>,
+    pub _blocks: BlocksMap<'a>,
     pub _ambient_sound: Option<RcRefCell<AudioInstance>>,
     pub _spawn_point: Vector3<f32>,
     pub _time_of_day: f32,
@@ -53,6 +53,14 @@ pub struct GameSceneManager<'a> {
 }
 
 impl<'a> GameSceneManager<'a> {
+    pub fn get_game_resources(&self) -> &GameResources<'a> {
+        ptr_as_ref(self._game_resources)
+    }
+
+    pub fn get_game_resources_mut(&self) -> &mut GameResources<'a> {
+        ptr_as_mut(self._game_resources)
+    }
+
     pub fn get_scene_manager(&self) -> &SceneManager<'a> {
         ptr_as_ref(self._scene_manager)
     }
@@ -92,7 +100,7 @@ impl<'a> GameSceneManager<'a> {
             _scene_manager: std::ptr::null(),
             _game_resources: std::ptr::null(),
             _game_scene_name: String::new(),
-            _blocks: Vec::new(),
+            _blocks: HashMap::new(),
             _character_manager: CharacterManager::create_character_manager(),
             _item_manager: ItemManager::create_item_manager(),
             _prop_manager: PropManager::create_prop_manager(),
@@ -147,8 +155,18 @@ impl<'a> GameSceneManager<'a> {
         self._ambient_sound = None;
     }
 
-    pub fn get_blocks(&self) -> &BlockArray<'a> {
+    pub fn get_blocks(&self) -> &BlocksMap<'a> {
         &self._blocks
+    }
+
+    pub fn register_block(&mut self, object: &RcRefCell<RenderObjectData<'a>>) {
+        if object.borrow().get_collision_type() != CollisionType::NONE {
+            self._blocks.insert(object.as_ptr(), object.clone());
+        }
+    }
+
+    pub fn unregister_block(&mut self, object: &RcRefCell<RenderObjectData<'a>>) {
+        self._blocks.remove(&(object.as_ptr() as *const RenderObjectData<'a>));
     }
 
     pub fn get_spawn_point(&self) -> &Vector3<f32> {
@@ -170,11 +188,15 @@ impl<'a> GameSceneManager<'a> {
     pub fn open_game_scene_data(&mut self, game_scene_data_name: &str) {
         log::info!("open_game_scene_data: {:?}", game_scene_data_name);
         self._game_scene_name = String::from(game_scene_data_name);
-        let game_resources = ptr_as_ref(self._game_resources);
+        let game_resources = ptr_as_mut(self._game_resources);
+        let scene_manager = ptr_as_mut(self._scene_manager);
 
         // load scene
         let game_scene_data = game_resources.get_game_scene_data(game_scene_data_name).borrow();
-        self.get_scene_manager_mut().create_scene_data(&game_scene_data._scene);
+        scene_manager.create_scene_data(&game_scene_data._scene);
+        for (_key, object) in scene_manager.get_static_render_object_map().iter() {
+            self.register_block(object);
+        }
 
         // terrain
         for (object_name, render_object_create_info) in game_scene_data._terrain.iter() {
@@ -185,12 +207,14 @@ impl<'a> GameSceneManager<'a> {
 
         // create items
         for (_item_data_name, item_create_info) in game_scene_data._items.iter() {
-            self._item_manager.create_item(item_create_info);
+            let item = self._item_manager.create_item(item_create_info);
+            item.borrow()._render_object.borrow_mut().set_collision_type(CollisionType::NONE);
         }
 
         // create props
         for (prop_name, prop_create_info) in game_scene_data._props.iter() {
-            self._prop_manager.create_prop(prop_name, prop_create_info);
+            let prop = self._prop_manager.create_prop(prop_name, prop_create_info);
+            self.register_block(&prop.borrow()._render_object);
         }
 
         // create player
@@ -212,6 +236,7 @@ impl<'a> GameSceneManager<'a> {
 
     pub fn close_game_scene_data(&mut self) {
         self.get_scene_manager_mut().close_scene_data();
+        self._blocks.clear();
     }
 
     pub fn destroy_game_scene_manager(&mut self) {
@@ -236,21 +261,8 @@ impl<'a> GameSceneManager<'a> {
 
     pub fn update_game_scene_manager(&mut self, delta_time: f64) {
         self.update_time_of_day(delta_time);
-
         self._prop_manager.update_prop_manager(delta_time);
         self._item_manager.update_item_manager(delta_time);
-
-        // gather collision objects
-        let mut blocks = BlockArray::new();
-        for (_key, object) in self.get_scene_manager().get_static_render_object_map().iter() {
-            if object.borrow().get_collision_type() != CollisionType::NONE {
-                blocks.push(object.clone());
-            }
-        }
-
-        // todo: make block array on loading
-        self._blocks = blocks;
-
         self._character_manager.update_character_manager(delta_time);
     }
 }
