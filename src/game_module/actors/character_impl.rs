@@ -15,7 +15,7 @@ use crate::game_module::actors::character_data::{ActionAnimationState, Character
 use crate::game_module::actors::character_manager::CharacterManager;
 use crate::game_module::actors::weapons::Weapon;
 use crate::game_module::behavior::behavior_base::create_character_behavior;
-use crate::game_module::game_constants::{ATTACK_DELAY, AUDIO_ATTACK, AUDIO_FALLING_WATER, AUDIO_FOOTSTEP, AUDIO_HIT, AUDIO_JUMP, AUDIO_ROLL, EFFECT_FALLING_WATER, EFFECT_HIT, FALLING_DAMAGE_RATIO, FALLING_HEIGHT, MAX_STAMINA, PICKUP_EVENT_TIME, STAMINA_ATTACK, STAMINA_JUMP, STAMINA_POWER_ATTACK, STAMINA_RECOVERY, STAMINA_ROLL, STAMINA_RUN};
+use crate::game_module::game_constants::{ATTACK_DELAY, AUDIO_ATTACK, AUDIO_FALLING_WATER, AUDIO_FOOTSTEP, AUDIO_HIT, AUDIO_JUMP, AUDIO_ROLL, EFFECT_FALLING_WATER, EFFECT_HIT, FALLING_DAMAGE_RATIO, FALLING_HEIGHT, MAX_STAMINA, PICKUP_EVENT_TIME, STAMINA_ATTACK, STAMINA_JUMP, STAMINA_POWER_ATTACK, STAMINA_RECOVERY, STAMINA_RECOVERY_DELAY_TIME, STAMINA_ROLL, STAMINA_RUN};
 use crate::game_module::game_scene_manager::BlocksMap;
 
 impl CharacterAnimationState {
@@ -38,6 +38,8 @@ impl CharacterStats {
         CharacterStats {
             _is_alive: true,
             _hp: 100,
+            _stamina_recovery_delay_time: 0.0,
+            _prev_stamina: MAX_STAMINA,
             _stamina: MAX_STAMINA,
             _invincibility: false,
         }
@@ -46,6 +48,8 @@ impl CharacterStats {
     pub fn initialize_character_stats(&mut self, character_data: &CharacterData) {
         self._is_alive = true;
         self._hp = character_data._stat_data._max_hp;
+        self._stamina_recovery_delay_time = 0.0;
+        self._prev_stamina = MAX_STAMINA;
         self._stamina = MAX_STAMINA;
         self._invincibility = false;
     }
@@ -54,6 +58,13 @@ impl CharacterStats {
 impl CharacterStats {
     pub fn update_stamina<'a>(&mut self, owner: &Character<'a>, delta_time: f32) {
         if owner._is_player && self._is_alive {
+            if self._prev_stamina != self._stamina {
+                if self._stamina < self._prev_stamina {
+                    self._stamina_recovery_delay_time = STAMINA_RECOVERY_DELAY_TIME;
+                }
+                self._prev_stamina = self._stamina;
+            }
+
             if owner.is_move_state(MoveAnimationState::Run) {
                 self._stamina -= STAMINA_RUN * delta_time;
                 if self._stamina < 0.0 {
@@ -64,10 +75,13 @@ impl CharacterStats {
                     self._stamina = 0.0;
                 }
 
-                let stamina_scale = if owner.is_move_state(MoveAnimationState::Walk) { 0.5 } else { 1.0 };
-                self._stamina += STAMINA_RECOVERY * stamina_scale * delta_time;
-                if MAX_STAMINA < self._stamina {
-                    self._stamina = MAX_STAMINA;
+                if self._stamina_recovery_delay_time <= 0.0 {
+                    self._stamina += STAMINA_RECOVERY * delta_time;
+                    if MAX_STAMINA < self._stamina {
+                        self._stamina = MAX_STAMINA;
+                    }
+                } else {
+                    self._stamina_recovery_delay_time -= delta_time;
                 }
             }
         }
@@ -359,11 +373,8 @@ impl<'a> Character<'a> {
     }
 
     pub fn set_action_pickup(&mut self) {
-        if self.is_available_attack() {
-            if self._render_object.borrow().get_animation_play_info(AnimationLayer::ActionLayer)._is_animation_end {
-                self.set_action_animation(ActionAnimationState::Pickup, 2.0);
-                return;
-            }
+        if self._controller._is_ground && self.is_available_move() && self.is_action(ActionAnimationState::None) {
+            self.set_action_animation(ActionAnimationState::Pickup, 2.0);
         }
     }
 

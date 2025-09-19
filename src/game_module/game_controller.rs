@@ -127,26 +127,26 @@ impl<'a> GameController<'a> {
         let delta_time: f32 = time_data._delta_time as f32;
         let is_attack: bool =
             mouse_input_data._btn_l_pressed ||
-            joystick_input_data._btn_x == ButtonState::Pressed;
+            joystick_input_data._btn_right_shoulder == ButtonState::Pressed;
         let is_power_attack: bool =
             mouse_input_data._btn_r_pressed ||
-            joystick_input_data._btn_y == ButtonState::Pressed;
+            joystick_input_data._btn_right_trigger == ButtonState::Pressed;
         let is_left =
             keyboard_input_data.get_key_hold(KeyCode::ArrowLeft) ||
             keyboard_input_data.get_key_hold(KeyCode::KeyA) ||
-            joystick_input_data._btn_left == ButtonState::Hold;
+            joystick_input_data._stick_left_direction.x < 0;
         let is_right =
             keyboard_input_data.get_key_hold(KeyCode::ArrowRight) ||
             keyboard_input_data.get_key_hold(KeyCode::KeyD) ||
-            joystick_input_data._btn_right == ButtonState::Hold;
+            0 < joystick_input_data._stick_left_direction.x;
         let is_down =
             keyboard_input_data.get_key_hold(KeyCode::ArrowDown) ||
             keyboard_input_data.get_key_hold(KeyCode::KeyS) ||
-            joystick_input_data._btn_down  == ButtonState::Hold;
+            joystick_input_data._stick_left_direction.y < 0;
         let is_up =
             keyboard_input_data.get_key_hold(KeyCode::ArrowUp) ||
             keyboard_input_data.get_key_hold(KeyCode::KeyW) ||
-            joystick_input_data._btn_up  == ButtonState::Hold;
+            0 < joystick_input_data._stick_left_direction.y;
         let is_jump =
             keyboard_input_data.get_key_pressed(KeyCode::Space) ||
             joystick_input_data._btn_a == ButtonState::Pressed;
@@ -155,29 +155,35 @@ impl<'a> GameController<'a> {
             joystick_input_data._btn_left_shoulder == ButtonState::Pressed;
         let is_roll =
             keyboard_input_data.get_key_pressed(KeyCode::AltLeft) ||
-            joystick_input_data._btn_b == ButtonState::Pressed ||
-            joystick_input_data._btn_right_shoulder == ButtonState::Pressed;
-        let is_zoom_in = joystick_input_data._btn_left_trigger == ButtonState::Hold;
-        let is_zoom_out = joystick_input_data._btn_right_trigger == ButtonState::Hold;
+            joystick_input_data._btn_b == ButtonState::Pressed;
+        let is_interaction =
+            keyboard_input_data.get_key_pressed(KeyCode::KeyE) ||
+            joystick_input_data._btn_x == ButtonState::Pressed;
+        let is_zoom_in =
+            0 < mouse_move_data._scroll_delta.y ||
+            joystick_input_data._btn_up == ButtonState::Hold;
+        let is_zoom_out =
+            mouse_move_data._scroll_delta.y < 0 ||
+            joystick_input_data._btn_down == ButtonState::Hold;
 
-        let _pitch_control: f32 = if mouse_move_data._mouse_pos_delta.x != 0 {
+        let pitch_control: f32 = if mouse_move_data._mouse_pos_delta.x != 0 {
             mouse_move_data._mouse_pos_delta.y as f32 * 0.001
         } else {
             joystick_input_data._stick_right_direction.y as f32 / 327670.0
         };
 
-        let _yaw_control: f32 = if mouse_move_data._mouse_pos_delta.x != 0 {
+        let yaw_control: f32 = if mouse_move_data._mouse_pos_delta.x != 0 {
             mouse_move_data._mouse_pos_delta.x as f32 * 0.001
         } else {
             joystick_input_data._stick_right_direction.x as f32 / 327670.0
         };
 
-        let zoom_control: f32 = if 0 != mouse_move_data._scroll_delta.y {
-            -mouse_move_data._scroll_delta.y as f32
-        } else if lock_camera_rotation && 0 != joystick_input_data._stick_right_direction.y {
-            joystick_input_data._stick_right_direction.y as f32 / 65535.0
-        } else if lock_camera_rotation == false && (is_zoom_in || is_zoom_out) {
-            if is_zoom_in { -0.5 } else { 0.5 }
+        let zoom_control: f32 = if is_zoom_in || is_zoom_out {
+            if 0 != mouse_move_data._scroll_delta.y {
+                -mouse_move_data._scroll_delta.y as f32
+            } else {
+                if is_zoom_in { -0.5 } else { 0.5 }
+            }
         } else {
             0.0
         };
@@ -185,23 +191,22 @@ impl<'a> GameController<'a> {
         // set action & move
         let mut player_mut = player.borrow_mut();
         {
-            let mut move_direction: Vector3<f32> = Vector3::new(
-                joystick_input_data._stick_left_direction.x as f32,
-                0.0,
-                -(joystick_input_data._stick_left_direction.y as f32)
-            );
-            if is_left {
-                move_direction.x = -1.0;
-            }
-            else if is_right {
-                move_direction.x = 1.0;
+            let mut move_direction: Vector3<f32> = Vector3::zeros();
+
+            if is_left || is_right {
+                move_direction.x = if joystick_input_data._stick_left_direction.x != 0 {
+                     joystick_input_data._stick_left_direction.x as f32
+                } else {
+                    if is_left { -1.0 } else { 1.0 }
+                };
             }
 
-            if is_up {
-                move_direction.z = 1.0;
-            }
-            else if is_down {
-                move_direction.z = -1.0;
+            if is_up || is_down {
+                move_direction.z = if joystick_input_data._stick_left_direction.y != 0 {
+                    -joystick_input_data._stick_left_direction.y as f32
+                } else {
+                    if is_down { -1.0 } else { 1.0 }
+                };
             }
 
             if move_direction.x != 0.0 || move_direction.z != 0.0 {
@@ -247,24 +252,23 @@ impl<'a> GameController<'a> {
         }
 
         if is_attack {
-            if player_mut.is_in_pickup_prop_range() {
-                player_mut.set_action_pickup();
-            } else {
-                player_mut.set_action_attack();
-            }
+            player_mut.set_action_attack();
+        }
+
+        if is_interaction && player_mut.is_in_pickup_prop_range() {
+            player_mut.set_action_pickup();
         }
 
         if is_power_attack {
             player_mut.set_action_power_attack();
         }
 
-        // update camera
         self.update_camera_distance(zoom_control, delta_time);
 
         if lock_camera_rotation {
             self.update_camera_pitch_by_distance();
         } else {
-            self.update_camera_rotation(_pitch_control, _yaw_control, delta_time);
+            self.update_camera_rotation(pitch_control, yaw_control, delta_time);
         }
 
         // update camera transform

@@ -35,10 +35,11 @@ pub const SLOPE_VELOCITY_DECAY: f32 = 100.0;
 pub const HIT_VELOCITY_SPEED: f32 = 20.0;
 pub const HIT_VELOCITY_DECAY: f32 = 200.0;
 pub const ATTACK_DELAY: f32 = 0.0;
-pub const PICKUP_EVENT_TIME: f32 = 0.0;
+pub const PICKUP_EVENT_TIME: f32 = 0.1;
 
 // stamina
 pub const MAX_STAMINA: f32 = 100.0;
+pub const STAMINA_RECOVERY_DELAY_TIME: f32 = 1.0;
 pub const STAMINA_RECOVERY: f32 = 40.0;
 pub const STAMINA_ATTACK: f32 = 10.0;
 pub const STAMINA_POWER_ATTACK: f32 = 20.0;
