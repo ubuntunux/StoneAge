@@ -170,7 +170,7 @@ impl<'a> GameController<'a> {
         let mouse_pos_delta = Vector2::<f32>::new(mouse_move_data._mouse_pos_delta.x as f32, mouse_move_data._mouse_pos_delta.y as f32) * mouse_sensitivity;
         let mouse_scroll_delta = Vector2::<f32>::new(mouse_move_data._scroll_delta.x as f32, mouse_move_data._scroll_delta.y as f32);
 
-        let joystick_sensitivity: f32 = 0.01 / 32767.0;
+        let joystick_sensitivity: f32 = 0.1 / 32767.0;
         let stick_left_direction = Vector2::<f32>::new(joystick_input_data._stick_left_direction.x as f32, joystick_input_data._stick_left_direction.y as f32) * joystick_sensitivity;
         let stick_right_direction = Vector2::<f32>::new(joystick_input_data._stick_right_direction.x as f32, joystick_input_data._stick_right_direction.y as f32) * joystick_sensitivity;
 
