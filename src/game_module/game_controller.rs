@@ -166,21 +166,29 @@ impl<'a> GameController<'a> {
             mouse_move_data._scroll_delta.y < 0 ||
             joystick_input_data._btn_down == ButtonState::Hold;
 
-        let pitch_control: f32 = if mouse_move_data._mouse_pos_delta.x != 0 {
-            mouse_move_data._mouse_pos_delta.y as f32 * 0.001
+        let mouse_sensitivity: f32 = 0.001;
+        let mouse_pos_delta = Vector2::<f32>::new(mouse_move_data._mouse_pos_delta.x as f32, mouse_move_data._mouse_pos_delta.y as f32) * mouse_sensitivity;
+        let mouse_scroll_delta = Vector2::<f32>::new(mouse_move_data._scroll_delta.x as f32, mouse_move_data._scroll_delta.y as f32);
+
+        let joystick_sensitivity: f32 = 0.01 / 32767.0;
+        let stick_left_direction = Vector2::<f32>::new(joystick_input_data._stick_left_direction.x as f32, joystick_input_data._stick_left_direction.y as f32) * joystick_sensitivity;
+        let stick_right_direction = Vector2::<f32>::new(joystick_input_data._stick_right_direction.x as f32, joystick_input_data._stick_right_direction.y as f32) * joystick_sensitivity;
+
+        let pitch_control: f32 = if mouse_pos_delta.y != 0.0 {
+            mouse_pos_delta.y
         } else {
-            joystick_input_data._stick_right_direction.y as f32 / 327670.0
+            stick_right_direction.y
         };
 
-        let yaw_control: f32 = if mouse_move_data._mouse_pos_delta.x != 0 {
-            mouse_move_data._mouse_pos_delta.x as f32 * 0.001
+        let yaw_control: f32 = if mouse_pos_delta.x != 0.0 {
+            mouse_pos_delta.x
         } else {
-            joystick_input_data._stick_right_direction.x as f32 / 327670.0
+            stick_right_direction.x
         };
 
         let zoom_control: f32 = if is_zoom_in || is_zoom_out {
-            if 0 != mouse_move_data._scroll_delta.y {
-                -mouse_move_data._scroll_delta.y as f32
+            if mouse_scroll_delta.y != 0.0 {
+                -mouse_scroll_delta.y
             } else {
                 if is_zoom_in { -0.5 } else { 0.5 }
             }
@@ -194,16 +202,16 @@ impl<'a> GameController<'a> {
             let mut move_direction: Vector3<f32> = Vector3::zeros();
 
             if is_left || is_right {
-                move_direction.x = if joystick_input_data._stick_left_direction.x != 0 {
-                     joystick_input_data._stick_left_direction.x as f32
+                move_direction.x = if stick_left_direction.x != 0.0 {
+                     stick_left_direction.x
                 } else {
                     if is_left { -1.0 } else { 1.0 }
                 };
             }
 
             if is_up || is_down {
-                move_direction.z = if joystick_input_data._stick_left_direction.y != 0 {
-                    -joystick_input_data._stick_left_direction.y as f32
+                move_direction.z = if stick_left_direction.y != 0.0 {
+                    -stick_left_direction.y
                 } else {
                     if is_down { -1.0 } else { 1.0 }
                 };
