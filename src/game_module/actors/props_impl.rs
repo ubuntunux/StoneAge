@@ -257,10 +257,14 @@ impl<'a> PropManager<'a> {
                             if player.get_bounding_box().collide_bound_box(&bounding_box._min, &bounding_box._max) {
                                 player._controller.set_in_pickup_prop_range(true);
                                 if player._animation_state.is_pickup_event() {
+                                    let mut pickup_items: bool = false;
                                     for item_create_info in prop.drop_items().iter() {
-                                        self.get_game_scene_manager().get_item_manager_mut().instance_pickup_item(&item_create_info);
+                                        pickup_items = pickup_items || self.get_game_scene_manager().get_item_manager_mut().instance_pickup_item(&item_create_info);
                                     }
-                                    dead_props.push(prop_refcell.clone());
+
+                                    if pickup_items {
+                                        dead_props.push(prop_refcell.clone());
+                                    }
                                 }
                             }
                         } else if prop_type == PropDataType::Destruction || (prop_type == PropDataType::Harvestable && prop.can_drop_item()) {

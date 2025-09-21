@@ -157,7 +157,7 @@ impl<'a> GameController<'a> {
             keyboard_input_data.get_key_pressed(KeyCode::AltLeft) ||
             joystick_input_data._btn_b == ButtonState::Pressed;
         let is_interaction =
-            keyboard_input_data.get_key_pressed(KeyCode::KeyE) ||
+            keyboard_input_data.get_key_pressed(KeyCode::KeyF) ||
             joystick_input_data._btn_x == ButtonState::Pressed;
         let is_zoom_in =
             0 < mouse_move_data._scroll_delta.y ||
@@ -165,6 +165,15 @@ impl<'a> GameController<'a> {
         let is_zoom_out =
             mouse_move_data._scroll_delta.y < 0 ||
             joystick_input_data._btn_down == ButtonState::Hold;
+        let use_item =
+            keyboard_input_data.get_key_pressed(KeyCode::KeyC) ||
+            joystick_input_data._btn_y == ButtonState::Pressed;
+        let is_previous_item =
+            keyboard_input_data.get_key_pressed(KeyCode::KeyQ) ||
+            joystick_input_data._btn_left == ButtonState::Pressed;
+        let is_next_item =
+            keyboard_input_data.get_key_pressed(KeyCode::KeyE) ||
+            joystick_input_data._btn_right == ButtonState::Pressed;
 
         let mouse_sensitivity: f32 = 0.001;
         let mouse_pos_delta = Vector2::<f32>::new(mouse_move_data._mouse_pos_delta.x as f32, mouse_move_data._mouse_pos_delta.y as f32) * mouse_sensitivity;
@@ -174,6 +183,28 @@ impl<'a> GameController<'a> {
         let stick_left_direction = Vector2::<f32>::new(joystick_input_data._stick_left_direction.x as f32, joystick_input_data._stick_left_direction.y as f32) * joystick_sensitivity;
         let stick_right_direction = Vector2::<f32>::new(joystick_input_data._stick_right_direction.x as f32, joystick_input_data._stick_right_direction.y as f32) * joystick_sensitivity;
 
+        // item control
+        let item_manager = self.get_game_client().get_game_scene_manager().get_item_manager();
+        if is_previous_item {
+            item_manager.select_previous_item();
+        } else if is_next_item {
+            item_manager.select_next_item();
+        } else if keyboard_input_data.is_any_key_pressed() {
+            const NUMPAD_KEY_MAP: [KeyCode; 10] = [KeyCode::Digit1, KeyCode::Digit2, KeyCode::Digit3, KeyCode::Digit4, KeyCode::Digit5, KeyCode::Digit6, KeyCode::Digit7, KeyCode::Digit8, KeyCode::Digit9, KeyCode::Digit0];
+            for (item_index, numpad_key) in NUMPAD_KEY_MAP.iter().enumerate() {
+                if keyboard_input_data.get_key_pressed(*numpad_key) {
+                    item_manager.select_item_by_index(item_index);
+                    break;
+                }
+            }
+        }
+
+        if use_item {
+            let item_data_type = item_manager.get_selected_inventory_item_data_type();
+            item_manager.use_inventory_item(&item_data_type, 1);
+        }
+
+        // character control
         let pitch_control: f32 = if mouse_pos_delta.y != 0.0 {
             mouse_pos_delta.y
         } else {

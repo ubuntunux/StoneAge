@@ -21,7 +21,8 @@ impl ItemDataType {
             ItemDataType::Meat => "ui/items/item_meat",
             ItemDataType::Rock => "ui/items/item_rock",
             ItemDataType::Wood => "ui/items/item_wood",
-            ItemDataType::SpiritBall => "ui/items/item_spirit_ball"
+            ItemDataType::SpiritBall => "ui/items/item_spirit_ball",
+            &ItemDataType::None => "ui/items/item_none"
         }
     }
 }
@@ -174,12 +175,11 @@ impl<'a> ItemManager<'a> {
         item
     }
 
-    pub fn instance_pickup_item(&mut self, item_create_info: &ItemCreateInfo) {
+    pub fn instance_pickup_item(&mut self, item_create_info: &ItemCreateInfo) -> bool {
         let game_resources = ptr_as_ref(self._game_resources);
         let item_data = game_resources.get_item_data(item_create_info._item_data_name.as_str());
         let item_count = 1;
-        self.pick_item(&item_data.borrow()._item_type, item_count);
-        self.get_audio_manager_mut().play_audio_bank(PICKUP_ITEM, AudioLoop::ONCE, None);
+        self.pick_item(&item_data.borrow()._item_type, item_count)
     }
 
     pub fn remove_item(&mut self, item: &RcRefCell<Item>) {
@@ -187,8 +187,44 @@ impl<'a> ItemManager<'a> {
         self.get_scene_manager_mut().remove_static_render_object(item.borrow()._render_object.borrow()._object_id);
     }
 
-    pub fn pick_item(&self, item_data_type: &ItemDataType, item_count: i32) {
-        self.get_game_client().get_game_ui_manager_mut().add_item(item_data_type, item_count)
+    pub fn pick_item(&self, item_data_type: &ItemDataType, item_count: usize) -> bool {
+        let success = self.get_game_client().get_game_ui_manager_mut().add_item(item_data_type, item_count);
+        if success {
+            self.get_audio_manager_mut().play_audio_bank(PICKUP_ITEM, AudioLoop::ONCE, None);
+        }
+        success
+    }
+
+    pub fn use_inventory_item(&self, item_data_type: &ItemDataType, item_count: usize) -> bool {
+        let item_bar = self.get_game_client().get_game_ui_manager_mut()._item_bar_widget.as_mut().unwrap();
+        let success = item_bar.remove_item(item_data_type, item_count);
+        if success {
+            self.get_audio_manager_mut().play_audio_bank(PICKUP_ITEM, AudioLoop::ONCE, None);
+        }
+        success
+    }
+
+    pub fn get_selected_inventory_item_data_type(&self) -> ItemDataType {
+        let item_bar = self.get_game_client().get_game_ui_manager()._item_bar_widget.as_ref().unwrap();
+        item_bar.get_selected_item_type()
+    }
+
+    pub fn select_next_item(&self) {
+        let item_bar = self.get_game_client().get_game_ui_manager_mut()._item_bar_widget.as_mut().unwrap();
+        item_bar.select_next_item();
+        self.get_audio_manager_mut().play_audio_bank(PICKUP_ITEM, AudioLoop::ONCE, None);
+    }
+
+    pub fn select_previous_item(&self) {
+        let item_bar = self.get_game_client().get_game_ui_manager_mut()._item_bar_widget.as_mut().unwrap();
+        item_bar.select_previous_item();
+        self.get_audio_manager_mut().play_audio_bank(PICKUP_ITEM, AudioLoop::ONCE, None);
+    }
+
+    pub fn select_item_by_index(&self, item_index: usize) {
+        let item_bar = self.get_game_client().get_game_ui_manager_mut()._item_bar_widget.as_mut().unwrap();
+        item_bar.select_item_by_index(item_index);
+        self.get_audio_manager_mut().play_audio_bank(PICKUP_ITEM, AudioLoop::ONCE, None);
     }
 
     pub fn update_item_manager(&mut self, delta_time: f64) {
@@ -214,9 +250,10 @@ impl<'a> ItemManager<'a> {
                 if math::get_norm_xz(&diff) <= EAT_ITEM_DISTANCE && check_height {
                     // pick item
                     let item_count = 1;
-                    self.pick_item(&item_ref._item_data.borrow()._item_type, item_count);
-                    self.get_audio_manager_mut().play_audio_bank(PICKUP_ITEM, AudioLoop::ONCE, None);
-                    pick_items.push(item.clone());
+                    let success = self.pick_item(&item_ref._item_data.borrow()._item_type, item_count);
+                    if success {
+                        pick_items.push(item.clone());
+                    }
                 } else if item_ref._item_properties._position.y < scene_manager.get_dead_zone_height() {
                     pick_items.push(item.clone());
                 }

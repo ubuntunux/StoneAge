@@ -135,8 +135,8 @@ impl<'a> GameUIManager<'a> {
         self._item_bar_widget.as_mut().unwrap().changed_window_size(&self._window_size);
     }
 
-    pub fn add_item(&mut self, item_data_type: &ItemDataType, item_count: i32) {
-        self._item_bar_widget.as_mut().unwrap().add_item(item_data_type, item_count);
+    pub fn add_item(&mut self, item_data_type: &ItemDataType, item_count: usize) -> bool {
+        self._item_bar_widget.as_mut().unwrap().add_item(item_data_type, item_count)
     }
 
     pub fn update_game_ui(&mut self, delta_time: f64) {
