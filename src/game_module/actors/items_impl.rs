@@ -11,7 +11,7 @@ use crate::application::application::Application;
 use crate::game_module::actors::item_updater::create_item_updater;
 use crate::game_module::actors::items::{Item, ItemCreateInfo, ItemData, ItemDataType, ItemManager, ItemProperties};
 use crate::game_module::game_client::GameClient;
-use crate::game_module::game_constants::{EAT_ITEM_DISTANCE, PICKUP_ITEM};
+use crate::game_module::game_constants::{EAT_ITEM_DISTANCE, AUDIO_PICKUP_ITEM, AUDIO_ITEM_INVENTORY};
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
 
@@ -190,7 +190,7 @@ impl<'a> ItemManager<'a> {
     pub fn pick_item(&self, item_data_type: &ItemDataType, item_count: usize) -> bool {
         let success = self.get_game_client().get_game_ui_manager_mut().add_item(item_data_type, item_count);
         if success {
-            self.get_audio_manager_mut().play_audio_bank(PICKUP_ITEM, AudioLoop::ONCE, None);
+            self.get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
         }
         success
     }
@@ -199,7 +199,7 @@ impl<'a> ItemManager<'a> {
         let item_bar = self.get_game_client().get_game_ui_manager_mut()._item_bar_widget.as_mut().unwrap();
         let success = item_bar.remove_item(item_data_type, item_count);
         if success {
-            self.get_audio_manager_mut().play_audio_bank(PICKUP_ITEM, AudioLoop::ONCE, None);
+            self.get_audio_manager_mut().play_audio_bank(AUDIO_ITEM_INVENTORY, AudioLoop::ONCE, None);
         }
         success
     }
@@ -212,19 +212,16 @@ impl<'a> ItemManager<'a> {
     pub fn select_next_item(&self) {
         let item_bar = self.get_game_client().get_game_ui_manager_mut()._item_bar_widget.as_mut().unwrap();
         item_bar.select_next_item();
-        self.get_audio_manager_mut().play_audio_bank(PICKUP_ITEM, AudioLoop::ONCE, None);
     }
 
     pub fn select_previous_item(&self) {
         let item_bar = self.get_game_client().get_game_ui_manager_mut()._item_bar_widget.as_mut().unwrap();
         item_bar.select_previous_item();
-        self.get_audio_manager_mut().play_audio_bank(PICKUP_ITEM, AudioLoop::ONCE, None);
     }
 
     pub fn select_item_by_index(&self, item_index: usize) {
         let item_bar = self.get_game_client().get_game_ui_manager_mut()._item_bar_widget.as_mut().unwrap();
         item_bar.select_item_by_index(item_index);
-        self.get_audio_manager_mut().play_audio_bank(PICKUP_ITEM, AudioLoop::ONCE, None);
     }
 
     pub fn update_item_manager(&mut self, delta_time: f64) {

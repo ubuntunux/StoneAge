@@ -4053,6 +4053,16 @@
             "data": {}
         }
     ],
+    "/mnt/Workspace/StoneAge/resources/externals/meshes/landscapes/landscape_00.blend": [
+        {
+            "asset_type": "MESH",
+            "asset_path": "landscapes/landscape_00",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/landscapes/landscape_00.blend",
+            "guid": "",
+            "mtime": 1758559534.8857477,
+            "data": {}
+        }
+    ],
     "/mnt/Workspace/StoneAge/resources/externals/models/characters/spider.blend": [
         {
             "asset_type": "MATERIAL_INSTANCE",
@@ -4760,6 +4770,24 @@
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Tree_Pohutukawa_01.blend",
             "guid": "",
             "mtime": 1757346609.4447844,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/landscapes/landscape_00.blend": [
+        {
+            "asset_type": "MATERIAL_INSTANCE",
+            "asset_path": "landscapes/landscape_00",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/landscapes/landscape_00.blend",
+            "guid": "",
+            "mtime": 1758560562.805391,
+            "data": {}
+        },
+        {
+            "asset_type": "MODEL",
+            "asset_path": "landscapes/landscape_00",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/landscapes/landscape_00.blend",
+            "guid": "",
+            "mtime": 1758560562.805391,
             "data": {}
         }
     ],
@@ -8261,13 +8289,23 @@
             "data": {}
         }
     ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/stage_01.blend": [
+        {
+            "asset_type": "GAME_SCENE",
+            "asset_path": "stage_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/stage_01.blend",
+            "guid": "",
+            "mtime": 1758552396.7467265,
+            "data": {}
+        }
+    ],
     "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/intro_stage.blend": [
         {
             "asset_type": "GAME_SCENE",
             "asset_path": "intro_stage",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/intro_stage.blend",
             "guid": "",
-            "mtime": 1757955102.5642686,
+            "mtime": 1758560556.181314,
             "data": {}
         }
     ],
