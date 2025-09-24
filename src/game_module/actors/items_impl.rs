@@ -204,6 +204,13 @@ impl<'a> ItemManager<'a> {
         success
     }
 
+    pub fn use_inventory_item_by_index(&self, item_index: usize) {
+        self.select_item_by_index(item_index);
+        let item_data_type = self.get_selected_inventory_item_data_type();
+        let item_count = 1;
+        self.use_inventory_item(&item_data_type, item_count);
+    }
+
     pub fn get_selected_inventory_item_data_type(&self) -> ItemDataType {
         let item_bar = self.get_game_client().get_game_ui_manager()._item_bar_widget.as_ref().unwrap();
         item_bar.get_selected_item_type()

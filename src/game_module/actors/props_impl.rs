@@ -112,7 +112,7 @@ impl<'a> Prop<'a> {
         }
 
         let effect_create_info = EffectCreateInfo {
-            _effect_position: self.get_position().clone(),
+            _effect_position: self.get_bounding_box().get_center().clone(),
             _effect_data_name: String::from(EFFECT_HIT),
             ..Default::default()
         };
@@ -127,7 +127,7 @@ impl<'a> Prop<'a> {
             for _ in 0..self.get_item_drop_count() {
                 item_create_infos.push(ItemCreateInfo {
                     _item_data_name: self._prop_data.borrow()._item_data_name.clone(),
-                    _position: self.get_position().clone(),
+                    _position: self.get_bounding_box().get_center().clone(),
                     ..Default::default()
                 });
             }

@@ -4,10 +4,12 @@ pub const EDITOR_CAMERA_PAN_SPEED: f32 = 0.05;
 pub const EDITOR_CAMERA_ROTATION_SPEED: f32 = 0.005;
 
 // game constant
-pub const CAMERA_PITCH_MIN: f32 = 5.0;
-pub const CAMERA_PITCH_MAX: f32 = 20.0;
+pub const CAMERA_PITCH_MIN_BY_DISTANCE: f32 = 5.0;
+pub const CAMERA_PITCH_MAX_BY_DISTANCE: f32 = 20.0;
 pub const CAMERA_DISTANCE_MIN: f32 = 5.0;
 pub const CAMERA_DISTANCE_MAX: f32 = 10.0;
+pub const CAMERA_PITCH_MIN: f32 = -std::f32::consts::FRAC_PI_2;
+pub const CAMERA_PITCH_MAX: f32 = std::f32::consts::FRAC_PI_2;
 pub const CAMERA_OFFSET_Y: f32 = 1.5;
 pub const CAMERA_SEA_HEIGHT_OFFSET: f32 = 3.0;
 pub const CAMERA_ZOOM_SPEED: f32 = 4.0;

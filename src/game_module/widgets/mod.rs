@@ -1,3 +1,4 @@
+pub mod controller_help;
 pub mod cross_hair_widget;
 pub mod image_widget;
 pub mod item_bar_widget;

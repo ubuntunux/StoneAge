@@ -18,8 +18,8 @@ pub struct PlayerHud<'a> {
 // PlayerHud
 impl<'a> PlayerHud<'a> {
     pub fn create_player_hud(root_widget: &mut WidgetDefault<'a>) -> PlayerHud<'a> {
-        let hud_layer_width: f32 = 400.0;
-        let hud_layer_height: f32 = 200.0;
+        let hud_layer_width: f32 = 360.0;
+        let hud_layer_height: f32 = 100.0;
         let hud_layer_padding: f32 = 10.0;
 
         let player_widget = UIManager::create_widget("player_widget", UIWidgetTypes::Default);
@@ -29,10 +29,11 @@ impl<'a> PlayerHud<'a> {
         ui_component.set_size(hud_layer_width, hud_layer_height);
         ui_component.set_layout_type(UILayoutType::BoxLayout);
         ui_component.set_layout_orientation(Orientation::VERTICAL);
-        ui_component.set_halign(HorizontalAlign::RIGHT);
+        ui_component.set_halign(HorizontalAlign::CENTER);
         ui_component.set_valign(VerticalAlign::CENTER);
+        ui_component.set_round(10.0);
         ui_component.set_padding(hud_layer_padding);
-        ui_component.set_color(get_color32(255, 255, 255, 32));
+        ui_component.set_color(get_color32(0, 0, 0, 128));
         root_widget.add_widget(&player_widget);
 
         PlayerHud {

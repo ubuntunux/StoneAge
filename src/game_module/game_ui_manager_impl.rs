@@ -7,6 +7,7 @@ use crate::game_module::actors::items::ItemDataType;
 use crate::game_module::game_client::GameClient;
 use crate::game_module::game_constants::{MATERIAL_CROSS_HAIR, MATERIAL_INTRO_IMAGE};
 use crate::game_module::game_ui_manager::GameUIManager;
+use crate::game_module::widgets::controller_help::ControllerHelpWidget;
 use crate::game_module::widgets::cross_hair_widget::CrossHairWidget;
 use crate::game_module::widgets::image_widget::ImageLayout;
 use crate::game_module::widgets::item_bar_widget::ItemBarWidget;
@@ -27,6 +28,7 @@ impl<'a> GameUIManager<'a> {
             _time_of_day: None,
             _item_bar_widget: None,
             _player_hud: None,
+            _controller_help_widget: None,
             _window_size: Vector2::new(1024,768)
         })
     }
@@ -113,6 +115,7 @@ impl<'a> GameUIManager<'a> {
         let cross_hair_material_instance = game_resources.get_engine_resources().get_material_instance_data(MATERIAL_CROSS_HAIR);
         self._cross_hair = Some(Box::new(CrossHairWidget::create_cross_hair(game_ui_layout_mut, cross_hair_material_instance)));
         self._player_hud = Some(Box::new(PlayerHud::create_player_hud(game_ui_layout_mut)));
+        self._controller_help_widget = Some(Box::new(ControllerHelpWidget::create_controller_help_widget(game_ui_layout_mut)));
         self._target_status_bar = Some(Box::new(TargetStatusWidget::create_target_status_widget(game_ui_layout_mut)));
         self._time_of_day = Some(Box::new(TimeOfDayWidget::create_time_of_day_widget(game_ui_layout_mut)));
         self._item_bar_widget = Some(Box::new(ItemBarWidget::create_item_bar_widget(engine_resources, game_ui_layout_mut)));
@@ -130,6 +133,7 @@ impl<'a> GameUIManager<'a> {
         log::info!("GameUIManager::changed_window_size: {:?}", self._window_size);
         self._game_image.as_mut().unwrap().changed_window_size(&self._window_size);
         self._player_hud.as_mut().unwrap().changed_window_size(&self._window_size);
+        self._controller_help_widget.as_mut().unwrap().changed_window_size(&self._window_size);
         self._target_status_bar.as_mut().unwrap().changed_window_size(&self._window_size);
         self._time_of_day.as_mut().unwrap().changed_window_size(&self._window_size);
         self._item_bar_widget.as_mut().unwrap().changed_window_size(&self._window_size);
@@ -181,6 +185,11 @@ impl<'a> GameUIManager<'a> {
             } else {
                 target_status_bar.fade_out_status_widget();
             }
+        }
+
+        // controller_help_widget
+        if let Some(controller_help_widget) = self._controller_help_widget.as_mut() {
+            controller_help_widget.update_controller_help_widget(game_scene_manager);
         }
 
         // time of day

@@ -87,6 +87,8 @@ impl<'a> GameController<'a> {
         (self._camera_goal_pitch, self._camera_pitch) = self.update_camera_smooth_rotation(
             self._camera_goal_pitch, self._camera_pitch, pitch_control, delta_time
         );
+        self._camera_goal_pitch = CAMERA_PITCH_MIN.max(CAMERA_PITCH_MAX.min(self._camera_goal_pitch));
+        self._camera_pitch = CAMERA_PITCH_MIN.max(CAMERA_PITCH_MAX.min(self._camera_pitch));
 
         (self._camera_goal_yaw, self._camera_yaw) = self.update_camera_smooth_rotation(
             self._camera_goal_yaw, self._camera_yaw, yaw_control, delta_time
@@ -95,7 +97,7 @@ impl<'a> GameController<'a> {
 
     pub fn update_camera_pitch_by_distance(&mut self) {
         let dist_ratio = (self._camera_distance - CAMERA_DISTANCE_MIN) / (CAMERA_DISTANCE_MAX - CAMERA_DISTANCE_MIN);
-        self._camera_pitch = math::degree_to_radian(math::lerp(CAMERA_PITCH_MIN, CAMERA_PITCH_MAX, dist_ratio));
+        self._camera_pitch = math::degree_to_radian(math::lerp(CAMERA_PITCH_MIN_BY_DISTANCE, CAMERA_PITCH_MAX_BY_DISTANCE, dist_ratio));
     }
 
     pub fn update_camera_distance(&mut self, zoom_control: f32, delta_time: f32) {
@@ -193,7 +195,7 @@ impl<'a> GameController<'a> {
             const NUMPAD_KEY_MAP: [KeyCode; 10] = [KeyCode::Digit1, KeyCode::Digit2, KeyCode::Digit3, KeyCode::Digit4, KeyCode::Digit5, KeyCode::Digit6, KeyCode::Digit7, KeyCode::Digit8, KeyCode::Digit9, KeyCode::Digit0];
             for (item_index, numpad_key) in NUMPAD_KEY_MAP.iter().enumerate() {
                 if keyboard_input_data.get_key_pressed(*numpad_key) {
-                    item_manager.select_item_by_index(item_index);
+                    item_manager.use_inventory_item_by_index(item_index);
                     break;
                 }
             }

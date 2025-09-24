@@ -3,6 +3,7 @@ use std::rc::Rc;
 use nalgebra::Vector2;
 use rust_engine_3d::scene::ui::{UIManager, WidgetDefault};
 use crate::game_module::game_client::GameClient;
+use crate::game_module::widgets::controller_help::ControllerHelpWidget;
 use crate::game_module::widgets::cross_hair_widget::CrossHairWidget;
 use crate::game_module::widgets::image_widget::ImageLayout;
 use crate::game_module::widgets::item_bar_widget::ItemBarWidget;
@@ -18,6 +19,7 @@ pub struct GameUIManager<'a> {
     pub _game_image: Option<Box<ImageLayout<'a>>>,
     pub _cross_hair: Option<Box<CrossHairWidget<'a>>>,
     pub _player_hud: Option<Box<PlayerHud<'a>>>,
+    pub _controller_help_widget: Option<Box<ControllerHelpWidget<'a>>>,
     pub _target_status_bar: Option<Box<TargetStatusWidget<'a>>>,
     pub _time_of_day: Option<Box<TimeOfDayWidget<'a>>>,
     pub _item_bar_widget: Option<Box<ItemBarWidget<'a>>>,
