@@ -66,6 +66,19 @@ impl<'a> GameController<'a> {
             .get_scene_manager()
             .get_main_camera_mut()
     }
+    pub fn update_on_open_game_scene(&mut self) {
+        let pitch: f32;
+        let yaw: f32;
+        {
+            let main_camera = self.get_game_client().get_game_scene_manager().get_scene_manager().get_main_camera();
+            pitch = main_camera._transform_object.get_pitch();
+            yaw = main_camera._transform_object.get_yaw();
+        }
+        self._camera_goal_pitch = pitch;
+        self._camera_pitch = self._camera_goal_pitch;
+        self._camera_goal_yaw = yaw;
+        self._camera_yaw = self._camera_goal_yaw;
+    }
 
     pub fn update_camera_smooth_rotation(&self, mut goal_value: f32, mut target_value: f32,value: f32, delta_time: f32) -> (f32, f32) {
         goal_value += value;

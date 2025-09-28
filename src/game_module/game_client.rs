@@ -150,6 +150,10 @@ impl<'a> GameClient<'a> {
             GamePhase::Intro => {
                 if any_key_pressed {
                     self.get_game_scene_manager_mut().open_game_scene_data(GAME_SCENE_INTRO);
+                    if false == self._game_controller.is_null() {
+                        let game_controller = ptr_as_mut(self._game_controller);
+                        game_controller.update_on_open_game_scene();
+                    }
                     self.clear_story_board_phase();
                     self._game_phase = GamePhase::Loading;
                 }
