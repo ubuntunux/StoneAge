@@ -333,7 +333,10 @@ impl<'a> GameController<'a> {
 
         let mut camera_position = player_mut.get_position() - main_camera._transform_object.get_front() * self._camera_distance;
         camera_position.y += CAMERA_OFFSET_Y;
-        let camera_min_height = self.get_game_client().get_game_scene_manager().get_scene_manager().get_sea_height() + CAMERA_SEA_HEIGHT_OFFSET;
+
+        let scene_manager = self.get_game_client().get_game_scene_manager().get_scene_manager();
+        let ground_height = scene_manager.get_height_map_data().get_height_bilinear(&camera_position, 0) + 0.1;
+        let camera_min_height = ground_height.max(scene_manager.get_sea_height() + CAMERA_SEA_HEIGHT_OFFSET);
         if camera_position.y < camera_min_height {
             camera_position.y = camera_min_height;
         }

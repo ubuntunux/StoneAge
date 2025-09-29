@@ -1,0 +1,450 @@
+{
+    "_characters": {
+        "villager_00": {
+            "_character_data_name": "characters/villager_00",
+            "_position": [
+                -5.725876808166504,
+                10.041871070861816,
+                6.032477855682373
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "villager_00.001": {
+            "_character_data_name": "characters/villager_00",
+            "_position": [
+                0.022935867309570312,
+                9.999998092651367,
+                7.876008987426758
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        }
+    },
+    "_items": {
+        "meat": {
+            "_item_data_name": "items/meat",
+            "_position": [
+                -10.94856071472168,
+                10.099724769592285,
+                6.252405166625977
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "meat.001": {
+            "_item_data_name": "items/meat",
+            "_position": [
+                -9.749908447265625,
+                10.499942779541016,
+                -1.387454628944397
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "meat.002": {
+            "_item_data_name": "items/meat",
+            "_position": [
+                -4.672776699066162,
+                10.087531089782715,
+                1.5641231536865234
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "meat.003": {
+            "_item_data_name": "items/meat",
+            "_position": [
+                -6.700571537017822,
+                10.125298500061035,
+                9.377596855163574
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        }
+    },
+    "_player": {
+        "player": {
+            "_character_data_name": "characters/jack",
+            "_position": [
+                -1.1697618961334229,
+                9.999998092651367,
+                1.7774693965911865
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        }
+    },
+    "_props": {
+        "mushroom_orange_00": {
+            "_position": [
+                -11.007474899291992,
+                10.400404930114746,
+                0.5824562907218933
+            ],
+            "_prop_data_name": "props/mushroom_orange_00",
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "mushroom_orange_00.001": {
+            "_position": [
+                -10.67321491241455,
+                10.086372375488281,
+                3.405980110168457
+            ],
+            "_prop_data_name": "props/mushroom_orange_00",
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "mushroom_orange_00.002": {
+            "_position": [
+                -8.411628723144531,
+                10.13916015625,
+                6.660440444946289
+            ],
+            "_prop_data_name": "props/mushroom_orange_00",
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "mushroom_orange_00.003": {
+            "_position": [
+                0.007279152981936932,
+                9.961335182189941,
+                -4.329826831817627
+            ],
+            "_prop_data_name": "props/mushroom_orange_00",
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        }
+    },
+    "_scene": {
+        "_cameras": {
+            "Camera": {
+                "position": [
+                    -7.551358699798584,
+                    5.443441390991211,
+                    0.0
+                ],
+                "rotation": [
+                    0.7225393811848502,
+                    0.0,
+                    0.0
+                ]
+            }
+        },
+        "_directional_lights": {
+            "Light": {
+                "_light_data": {
+                    "_light_color": [
+                        5.0,
+                        5.0,
+                        5.0
+                    ],
+                    "_light_direction": [
+                        1.4835298220303397,
+                        0.0,
+                        -0.3490658402442932
+                    ]
+                },
+                "_rotation": [
+                    1.4835298220303397,
+                    0.0,
+                    -0.3490658402442932
+                ]
+            }
+        },
+        "_effects": {},
+        "_point_lights": {},
+        "_skeletal_objects": {},
+        "_static_objects": {
+            "SM_Env_Rock_01": {
+                "_model_data_name": "PolygonNatureBiomes/SM_Env_Rock_01",
+                "_position": [
+                    -18.35045623779297,
+                    10.0,
+                    -6.25
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "landscape_cave_ceil": {
+                "_model_data_name": "landscapes/landscape_cave_ceil",
+                "_position": [
+                    0.0,
+                    27.312170028686523,
+                    0.0
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "rock_00": {
+                "_model_data_name": "environments/rock_00",
+                "_position": [
+                    4.654036045074463,
+                    11.674930572509766,
+                    20.622575759887695
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "rock_00.001": {
+                "_model_data_name": "environments/rock_00",
+                "_position": [
+                    1.5536695718765259,
+                    11.473052978515625,
+                    20.382633209228516
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "rock_02": {
+                "_model_data_name": "environments/rock_02",
+                "_position": [
+                    9.963335037231445,
+                    10.163714408874512,
+                    -1.5590670108795166
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "rock_03": {
+                "_model_data_name": "environments/rock_03",
+                "_position": [
+                    9.357651710510254,
+                    10.119603157043457,
+                    -5.663291931152344
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "rock_03.001": {
+                "_model_data_name": "environments/rock_03",
+                "_position": [
+                    0.014104303903877735,
+                    11.05013656616211,
+                    -17.852746963500977
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "rock_03.002": {
+                "_model_data_name": "environments/rock_03",
+                "_position": [
+                    -18.747142791748047,
+                    10.04515266418457,
+                    0.7795146107673645
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
+        }
+    },
+    "_terrain": {
+        "SM_Env_Rock_Pile_01": {
+            "_model_data_name": "PolygonNatureBiomes/SM_Env_Rock_Pile_01",
+            "_position": [
+                -15.640746116638184,
+                9.965405464172363,
+                -9.390430450439453
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "SM_Env_Rock_Pile_02": {
+            "_model_data_name": "PolygonNatureBiomes/SM_Env_Rock_Pile_02",
+            "_position": [
+                -10.937262535095215,
+                10.010711669921875,
+                16.624313354492188
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "landscape_cave": {
+            "_model_data_name": "landscapes/landscape_cave",
+            "_position": [
+                0.0,
+                10.0,
+                0.0
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        }
+    }
+}
