@@ -147,19 +147,15 @@ impl<'a> GameController<'a> {
             mouse_input_data._btn_r_pressed ||
             joystick_input_data._btn_right_trigger == ButtonState::Pressed;
         let is_left =
-            keyboard_input_data.get_key_hold(KeyCode::ArrowLeft) ||
             keyboard_input_data.get_key_hold(KeyCode::KeyA) ||
             joystick_input_data._stick_left_direction.x < 0;
         let is_right =
-            keyboard_input_data.get_key_hold(KeyCode::ArrowRight) ||
             keyboard_input_data.get_key_hold(KeyCode::KeyD) ||
             0 < joystick_input_data._stick_left_direction.x;
         let is_down =
-            keyboard_input_data.get_key_hold(KeyCode::ArrowDown) ||
             keyboard_input_data.get_key_hold(KeyCode::KeyS) ||
             joystick_input_data._stick_left_direction.y < 0;
         let is_up =
-            keyboard_input_data.get_key_hold(KeyCode::ArrowUp) ||
             keyboard_input_data.get_key_hold(KeyCode::KeyW) ||
             0 < joystick_input_data._stick_left_direction.y;
         let is_jump =
