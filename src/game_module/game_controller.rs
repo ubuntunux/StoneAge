@@ -328,20 +328,21 @@ impl<'a> GameController<'a> {
         main_camera._transform_object.update_transform_object();
 
         let player_center = &player_mut.get_bounding_box()._center;
-        let mut camera_position = player_center - main_camera._transform_object.get_front() * self._camera_distance;
-        let (camera_dir, distance) = math::make_normalize_with_norm(&(camera_position - player_center));
+        let camera_dir = -main_camera._transform_object.get_front();
+        let camera_distance = self._camera_distance;
+        let mut camera_position = player_center + camera_dir * camera_distance;
         let mut collision_point: Vector3<f32> = Vector3::zeros();
         let scene_manager = self.get_game_client().get_game_scene_manager().get_scene_manager();
-        if scene_manager.get_height_map_data().get_collision_point(&player_center, &camera_dir, distance, &mut collision_point) {
+        if scene_manager.get_height_map_data().get_collision_point(&player_center, &camera_dir, camera_distance, &mut collision_point) {
             const CAMERA_COLLIDE_PADDING: f32 = 0.1;
             let collide_distance = (collision_point - player_center).norm();
             camera_position = player_center + camera_dir * CAMERA_COLLIDE_PADDING.max(collide_distance - CAMERA_COLLIDE_PADDING);
         }
 
-        let camera_min_height = scene_manager.get_sea_height() + CAMERA_SEA_HEIGHT_OFFSET;
-        if camera_position.y < camera_min_height {
-            camera_position.y = camera_min_height;
-        }
+        // let camera_min_height = scene_manager.get_sea_height() + CAMERA_SEA_HEIGHT_OFFSET;
+        // if camera_position.y < camera_min_height {
+        //     camera_position.y = camera_min_height;
+        // }
         main_camera._transform_object.set_position(&camera_position);
     }
 }
