@@ -334,7 +334,7 @@ impl<'a> GameController<'a> {
         let mut collision_point: Vector3<f32> = Vector3::zeros();
         let scene_manager = self.get_game_client().get_game_scene_manager().get_scene_manager();
         if scene_manager.get_height_map_data().get_collision_point(&player_center, &camera_dir, camera_distance, &mut collision_point) {
-            const CAMERA_COLLIDE_PADDING: f32 = 0.1;
+            const CAMERA_COLLIDE_PADDING: f32 = 0.2;
             let collide_distance = (collision_point - player_center).norm();
             camera_position = player_center + camera_dir * CAMERA_COLLIDE_PADDING.max(collide_distance - CAMERA_COLLIDE_PADDING);
         }
