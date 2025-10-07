@@ -5,7 +5,7 @@ use rust_engine_3d::scene::camera::CameraObjectData;
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use winit::keyboard::KeyCode;
-
+use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use crate::application::application::Application;
 use crate::game_module::actors::character::Character;
 use crate::game_module::game_client::GameClient;
@@ -171,18 +171,22 @@ impl<'a> GameController<'a> {
             keyboard_input_data.get_key_pressed(KeyCode::KeyF) ||
             joystick_input_data._btn_x == ButtonState::Pressed;
         let is_zoom_in =
+            keyboard_input_data.get_key_hold(KeyCode::ArrowUp) ||
             0 < mouse_move_data._scroll_delta.y ||
             joystick_input_data._btn_up == ButtonState::Hold;
         let is_zoom_out =
+            keyboard_input_data.get_key_hold(KeyCode::ArrowDown) ||
             mouse_move_data._scroll_delta.y < 0 ||
             joystick_input_data._btn_down == ButtonState::Hold;
         let use_item =
             keyboard_input_data.get_key_pressed(KeyCode::KeyC) ||
             joystick_input_data._btn_y == ButtonState::Pressed;
         let is_previous_item =
+            keyboard_input_data.get_key_pressed(KeyCode::ArrowLeft) ||
             keyboard_input_data.get_key_pressed(KeyCode::KeyQ) ||
             joystick_input_data._btn_left == ButtonState::Pressed;
         let is_next_item =
+            keyboard_input_data.get_key_pressed(KeyCode::ArrowRight) ||
             keyboard_input_data.get_key_pressed(KeyCode::KeyE) ||
             joystick_input_data._btn_right == ButtonState::Pressed;
 
@@ -335,8 +339,8 @@ impl<'a> GameController<'a> {
         let scene_manager = self.get_game_client().get_game_scene_manager().get_scene_manager();
         if scene_manager.get_height_map_data().get_collision_point(&player_center, &camera_dir, camera_distance, &mut collision_point) {
             const CAMERA_COLLIDE_PADDING: f32 = 0.2;
-            let collide_distance = (collision_point - player_center).norm();
-            camera_position = player_center + camera_dir * CAMERA_COLLIDE_PADDING.max(collide_distance - CAMERA_COLLIDE_PADDING);
+            let collide_distance = CAMERA_COLLIDE_PADDING.max(camera_distance.min((collision_point - player_center).norm() - CAMERA_COLLIDE_PADDING));
+            camera_position = player_center + camera_dir * collide_distance;
         }
 
         // let camera_min_height = scene_manager.get_sea_height() + CAMERA_SEA_HEIGHT_OFFSET;
