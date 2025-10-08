@@ -331,9 +331,9 @@ impl<'a> Character<'a> {
         false
     }
 
-    pub fn check_falling_on_ground_damage(&mut self, last_ground_height: f32) {
-        let falling_height = last_ground_height - self.get_position().y;
-        if 0.0 < falling_height {
+    pub fn check_falling_on_ground_damage(&mut self, falling_height: f32) {
+        let falling_height = falling_height - self.get_position().y;
+        if FALLING_HEIGHT < falling_height {
             let falling_damage: i32 = (falling_height - FALLING_HEIGHT).ceil() as i32 * FALLING_DAMAGE_RATIO;
             self.set_hit_damage( falling_damage, None );
         }
@@ -860,7 +860,7 @@ impl<'a> Character<'a> {
         delta_time: f32
     ) {
         let was_on_ground = self.is_on_ground();
-        let last_ground_height = self._controller.get_last_ground_position().y;
+        let falling_height = self._controller.get_falling_height();
 
         // update animation key frames
         self.update_move_keyframe_event();
@@ -896,7 +896,7 @@ impl<'a> Character<'a> {
             if self.check_falling_in_water_damage() {
                 // falling in water
             } else if !was_on_ground && self.is_on_ground() {
-                self.check_falling_on_ground_damage(last_ground_height);
+                self.check_falling_on_ground_damage(falling_height);
             }
         }
         // transform

@@ -15,7 +15,7 @@ pub struct CharacterController {
     pub _position: Vector3<f32>,
     pub _rotation: Vector3<f32>,
     pub _scale: Vector3<f32>,
-    pub _last_ground_position: Vector3<f32>,
+    pub _falling_height: f32,
     pub _last_ground_normal: Vector3<f32>,
     pub _face_direction: Vector3<f32>,
     pub _move_direction: Vector3<f32>,
@@ -40,7 +40,7 @@ impl CharacterController {
             _position: Vector3::zeros(),
             _rotation: Vector3::zeros(),
             _scale: Vector3::new(1.0, 1.0, 1.0),
-            _last_ground_position: Vector3::zeros(),
+            _falling_height: 0.0,
             _last_ground_normal: Vector3::new(0.0, 1.0, 0.0),
             _face_direction: Vector3::zeros(),
             _move_direction: Vector3::zeros(),
@@ -71,7 +71,7 @@ impl CharacterController {
         self._scale = scale.clone();
         self._face_direction = Vector3::zeros();
         self._move_direction = Vector3::zeros();
-        self._last_ground_position = position.clone();
+        self._falling_height = position.y;
         self._last_ground_normal = Vector3::new(0.0, 1.0, 0.0);
         self._velocity = Vector3::zeros();
         self._slop_velocity = Vector3::zeros();
@@ -92,8 +92,8 @@ impl CharacterController {
     pub fn is_on_ground(&self) -> bool {
         self._is_ground && !self._is_jump_start
     }
-    pub fn get_last_ground_position(&self) -> &Vector3<f32> {
-        &self._last_ground_position
+    pub fn get_falling_height(&self) -> f32 {
+        self._falling_height
     }
     pub fn get_last_ground_normal(&self) -> &Vector3<f32> {
         &self._last_ground_normal
@@ -166,8 +166,7 @@ impl CharacterController {
             self._is_ground = true;
             self._is_falling = false;
             self._is_jump = false;
-            self._velocity.y = 0.0;
-            self._last_ground_position = self._position;
+            self._velocity = Vector3::zeros();
             self._last_ground_normal.clone_from(ground_normal);
         }
     }
@@ -250,16 +249,31 @@ impl CharacterController {
         // jump
         if self._is_jump_start {
             let not_enough_stamina = owner._character_stats._stamina < 0.0;
-            self._velocity.y = character_data._stat_data._jump_speed * if not_enough_stamina { 0.5 } else { 1.0 };
+            let jump_speed = character_data._stat_data._jump_speed * if not_enough_stamina { 0.5 } else { 1.0 };
+            self._velocity.y = jump_speed;
+
+            // let ground_normal = math::safe_normalize(&Vector3::new(self._last_ground_normal.x, self._last_ground_normal.y.abs(), self._last_ground_normal.z));
+            // let slop_speed = SLOPE_SPEED.max(self._move_speed);
+            // self._slop_velocity += Vector3::new(ground_normal.x, 0.0, ground_normal.z) * jump_speed * (1.0 - ground_normal.y);
+            // let (slope_move_dir, slope_move_distance) = math::make_normalize_with_norm(&self._slop_velocity);
+            // self._slop_velocity = slope_move_dir * slope_move_distance.min(slop_speed);
+
             self._is_ground = false;
             self._is_jump = true;
         }
 
         // fall
         if false == self._is_ground {
+            let velocity_prev_y = self._velocity.y;
             self._velocity.y -= GRAVITY * delta_time;
+            if 0.0 <= velocity_prev_y && self._velocity.y < 0.0 {
+                self._falling_height = self._position.y;
+            }
+        } else {
+            self._falling_height = self._position.y;
         }
         self._position.y += self._velocity.y * delta_time;
+
 
         begin_block!("check delta limited - prevent pass block"); {
             let delta = self._position - prev_position;
@@ -285,23 +299,24 @@ impl CharacterController {
         begin_block!("Check Ground & Slope"); {
             let ground_height = height_map_data.get_height_bilinear(&self._position, 0);
             if self._position.y <= ground_height && self._velocity.y <= 0.0 {
-                let ground_normal = height_map_data.get_normal_bilinear(&self._position);
+                let ground_normal = height_map_data.get_normal_bilinear(&prev_position);
 
                 let move_delta = self._position - prev_position;
                 let (move_dir, move_distance) = math::make_normalize_with_norm(&move_delta);
                 let new_move_dir = math::safe_normalize(&(Vector3::new(self._position.x, ground_height, self._position.z) - prev_position));
-                self._position = prev_position + new_move_dir * move_distance;
-                self.set_on_ground(self._position.y, &ground_normal);
+                self._position = prev_position + new_move_dir * move_distance + Vector3::new(ground_normal.x, 0.0, ground_normal.z) * move_distance;
 
-                if ground_normal.y < SLOPE_ANGLE && ground_normal.dot(&move_dir) < 0.0 {
+                if 0.0 < move_distance && SLOPE_ANGLE <= new_move_dir.y || ground_normal.y < SLOPE_ANGLE && ground_normal.dot(&move_dir) < 0.0 {
                     let slop_speed = SLOPE_SPEED.max(self._move_speed);
                     self._slop_velocity += math::make_normalize_xz(&ground_normal) * slop_speed;
 
                     let (slope_move_dir, slope_move_distance) = math::make_normalize_with_norm(&self._slop_velocity);
                     self._slop_velocity = slope_move_dir * slope_move_distance.min(slop_speed);
+                    self._position += self._slop_velocity * delta_time;
 
                     self._is_blocked = true;
                 }
+                self.set_on_ground(self._position.y, &ground_normal);
             }
         }
 
@@ -323,6 +338,9 @@ impl CharacterController {
             if current_actor_collision.collide_collision(&block_render_object._collision) {
                 if self._velocity.y <= 0.0 && block_bound_box._max.y <= prev_position.y {
                     self.set_on_ground(block_bound_box._max.y, &Vector3::new(0.0, 1.0, 0.0));
+                } else if 0.0 < self._velocity.y && actor_collision._bounding_box._max.y < block_bound_box._min.y {
+                    self._velocity.y = 0.0;
+                    self._position.y = prev_position.y;
                 } else {
                     let block_to_player = Vector3::new(self._position.x - block_location.x, 0.0, self._position.z - block_location.z).normalize();
                     if block_to_player.dot(&move_delta.normalize()) < 0.0 {

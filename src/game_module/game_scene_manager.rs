@@ -228,10 +228,7 @@ impl<'a> GameSceneManager<'a> {
             self._character_manager.create_character(character_name, character_create_info, false);
         }
 
-        // first update
-        self.update_game_scene_manager(0.0);
         self.get_scene_manager_mut().set_start_capture_height_map(true);
-        self.get_scene_manager_mut().update_scene_manager(0.0);
     }
 
     pub fn close_game_scene_data(&mut self) {
@@ -260,9 +257,11 @@ impl<'a> GameSceneManager<'a> {
     }
 
     pub fn update_game_scene_manager(&mut self, delta_time: f64) {
-        self.update_time_of_day(delta_time);
-        self._prop_manager.update_prop_manager(delta_time);
-        self._item_manager.update_item_manager(delta_time);
-        self._character_manager.update_character_manager(delta_time);
+        if self.get_scene_manager().is_load_complete() {
+            self.update_time_of_day(delta_time);
+            self._prop_manager.update_prop_manager(delta_time);
+            self._item_manager.update_item_manager(delta_time);
+            self._character_manager.update_character_manager(delta_time);
+        }
     }
 }

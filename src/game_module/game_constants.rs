@@ -4,6 +4,7 @@ pub const EDITOR_CAMERA_PAN_SPEED: f32 = 0.05;
 pub const EDITOR_CAMERA_ROTATION_SPEED: f32 = 0.005;
 
 // game constant
+pub const CAMERA_COLLIDE_PADDING: f32 = 0.2;
 pub const CAMERA_PITCH_MIN_BY_DISTANCE: f32 = 5.0;
 pub const CAMERA_PITCH_MAX_BY_DISTANCE: f32 = 20.0;
 pub const CAMERA_DISTANCE_MIN: f32 = 5.0;
@@ -28,7 +29,7 @@ pub const BLOCK_TOLERANCE: f32 = 0.5;
 pub const EAT_ITEM_DISTANCE: f32 = 1.0;
 pub const CHARACTER_ROTATION_SPEED: f32 = 20.0;
 pub const FALLING_TIME: f32 = 0.3;
-pub const FALLING_HEIGHT: f32 = 2.0;
+pub const FALLING_HEIGHT: f32 = 4.0;
 pub const FALLING_DAMAGE_RATIO: i32 = 10;
 pub const CLIFF_HEIGHT: f32 = 1.0;
 pub const SLOPE_SPEED: f32 = 1.0;
@@ -94,4 +95,4 @@ pub const ITEM_MEAT: &str = "items/meat";
 pub const ITEM_SPIRIT_BALL: &str = "items/spirit_ball";
 
 // Game Scene
-pub const GAME_SCENE_INTRO: &str = "game_scenes/intro_stage";
+pub const GAME_SCENE_INTRO: &str = "game_scenes/stage_cave";
