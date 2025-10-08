@@ -5,7 +5,6 @@ use rust_engine_3d::scene::camera::CameraObjectData;
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use winit::keyboard::KeyCode;
-use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use crate::application::application::Application;
 use crate::game_module::actors::character::Character;
 use crate::game_module::game_client::GameClient;
