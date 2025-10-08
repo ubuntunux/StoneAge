@@ -219,7 +219,10 @@ impl CharacterController {
         }
 
         begin_block!("apply slop velocity"); {
-            self._position += self._slop_velocity * delta_time;
+            if (self._slop_velocity.x * self._velocity.x + self._slop_velocity.z * self._velocity.z) <= 0.0 {
+                self._position += self._slop_velocity * delta_time;
+            }
+
             if self.is_on_ground() {
                 let ground_normal_y = self._last_ground_normal.y.abs();
                 let (slope_move_dir, mut slope_move_distance) = math::make_normalize_with_norm(&self._slop_velocity);
