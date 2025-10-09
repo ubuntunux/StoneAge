@@ -86,13 +86,13 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
         let joystick_input_data = &engine_core._joystick_input_data;
 
         if unsafe { DEVELOPMENT } {
-            let is_togle_game_mode_by_joystick =
+            let is_toggle_game_mode_by_joystick =
                 joystick_input_data._btn_left_trigger == ButtonState::Hold &&
                 joystick_input_data._btn_right_trigger == ButtonState::Hold &&
                 joystick_input_data._btn_left_trigger == ButtonState::Hold &&
                 joystick_input_data._btn_right_trigger == ButtonState::Hold;
 
-            if engine_core._keyboard_input_data.get_key_pressed(KeyCode::Tab) || is_togle_game_mode_by_joystick {
+            if engine_core._keyboard_input_data.get_key_pressed(KeyCode::Tab) || is_toggle_game_mode_by_joystick {
                 self.toggle_game_mode();
             }
         }
