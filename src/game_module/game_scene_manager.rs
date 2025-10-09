@@ -5,8 +5,6 @@ use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop, AudioManage
 use rust_engine_3d::begin_block;
 use rust_engine_3d::core::engine_core::EngineCore;
 use rust_engine_3d::effect::effect_manager::EffectManager;
-use rust_engine_3d::scene::collision::CollisionType;
-use rust_engine_3d::scene::render_object::RenderObjectData;
 use rust_engine_3d::scene::scene_manager::{RenderObjectCreateInfoMap, SceneObjectID, SceneDataCreateInfo, SceneManager};
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
@@ -19,7 +17,6 @@ use crate::game_module::actors::props::{PropCreateInfo, PropManager};
 use crate::game_module::game_constants::{TEMPERATURE_MAX, TEMPERATURE_MIN, TIME_OF_DAY_SPEED};
 use crate::game_module::game_resource::GameResources;
 
-pub type BlocksMap<'a> = HashMap<SceneObjectID, RcRefCell<RenderObjectData<'a>>>;
 type CharacterCreateInfoMap = HashMap<String, CharacterCreateInfo>;
 type ItemCreateInfoMap = HashMap<String, ItemCreateInfo>;
 type PropCreateInfoMap = HashMap<String, PropCreateInfo>;
@@ -44,7 +41,6 @@ pub struct GameSceneManager<'a> {
     pub _item_manager: Box<ItemManager<'a>>,
     pub _prop_manager: Box<PropManager<'a>>,
     pub _game_scene_name: String,
-    pub _blocks: BlocksMap<'a>,
     pub _ambient_sound: Option<RcRefCell<AudioInstance>>,
     pub _spawn_point: Vector3<f32>,
     pub _time_of_day: f32,
@@ -100,7 +96,6 @@ impl<'a> GameSceneManager<'a> {
             _scene_manager: std::ptr::null(),
             _game_resources: std::ptr::null(),
             _game_scene_name: String::new(),
-            _blocks: HashMap::new(),
             _character_manager: CharacterManager::create_character_manager(),
             _item_manager: ItemManager::create_item_manager(),
             _prop_manager: PropManager::create_prop_manager(),
@@ -155,20 +150,6 @@ impl<'a> GameSceneManager<'a> {
         self._ambient_sound = None;
     }
 
-    pub fn get_blocks(&self) -> &BlocksMap<'a> {
-        &self._blocks
-    }
-
-    pub fn register_block(&mut self, object: &RcRefCell<RenderObjectData<'a>>) {
-        if object.borrow().get_collision_type() != CollisionType::NONE {
-            self._blocks.insert(object.borrow().get_object_id(), object.clone());
-        }
-    }
-
-    pub fn unregister_block(&mut self, object: &RcRefCell<RenderObjectData<'a>>) {
-        self._blocks.remove(&object.borrow().get_object_id());
-    }
-
     pub fn get_spawn_point(&self) -> &Vector3<f32> {
         &self._spawn_point
     }
@@ -194,27 +175,20 @@ impl<'a> GameSceneManager<'a> {
         // load scene
         let game_scene_data = game_resources.get_game_scene_data(game_scene_data_name).borrow();
         scene_manager.create_scene_data(&game_scene_data._scene);
-        for (_key, object) in scene_manager.get_static_render_object_map().iter() {
-            self.register_block(object);
-        }
 
         // terrain
         for (object_name, render_object_create_info) in game_scene_data._terrain.iter() {
-            let terrain_object = self.get_scene_manager_mut().add_static_render_object(object_name, render_object_create_info);
-            terrain_object.borrow_mut().set_collision_type(CollisionType::NONE);
-            terrain_object.borrow_mut().set_render_height_map(true);
+            self.get_scene_manager_mut().add_terrain_render_object(object_name, render_object_create_info);
         }
 
         // create items
         for (_item_data_name, item_create_info) in game_scene_data._items.iter() {
-            let item = self._item_manager.create_item(item_create_info);
-            item.borrow()._render_object.borrow_mut().set_collision_type(CollisionType::NONE);
+            self._item_manager.create_item(item_create_info);
         }
 
         // create props
         for (prop_name, prop_create_info) in game_scene_data._props.iter() {
-            let prop = self._prop_manager.create_prop(prop_name, prop_create_info);
-            self.register_block(&prop.borrow()._render_object);
+            self._prop_manager.create_prop(prop_name, prop_create_info);
         }
 
         // create player
@@ -233,7 +207,6 @@ impl<'a> GameSceneManager<'a> {
 
     pub fn close_game_scene_data(&mut self) {
         self.get_scene_manager_mut().close_scene_data();
-        self._blocks.clear();
     }
 
     pub fn destroy_game_scene_manager(&mut self) {

@@ -189,9 +189,9 @@ impl<'a> CharacterManager<'a> {
     }
     pub fn update_character_manager(&mut self, delta_time: f64) {
         let player = ptr_as_mut(self._player.as_ref().unwrap().as_ptr());
-        let collision_objects = self.get_game_scene_manager().get_blocks();
+        let collision_objects = self.get_scene_manager().get_collision_objects();
         let mut dead_characters: Vec<RcRefCell<Character>> = Vec::new();
-        let mut regist_target_character: Option<RcRefCell<Character<'a>>> = None;
+        let mut register_target_character: Option<RcRefCell<Character<'a>>> = None;
         for character in self._characters.values() {
             let character_mut = ptr_as_mut(character.as_ptr());
 
@@ -218,7 +218,7 @@ impl<'a> CharacterManager<'a> {
                             target_character_mut._character_stats._is_alive &&
                             false == target_character_mut._character_stats._invincibility &&
                             character_mut.check_in_range(target_character_mut.get_collision(), NPC_ATTACK_HIT_RANGE, check_direction) {
-                                regist_target_character = Some(target_character.clone());
+                                register_target_character = Some(target_character.clone());
                                 let target_position = ptr_as_ref(target_character_mut.get_position());
                                 target_character_mut.set_hit_damage(
                                     character_mut.get_power(character_mut._animation_state.get_action_event()),
@@ -257,8 +257,8 @@ impl<'a> CharacterManager<'a> {
         // }
 
         // target character for ui
-        if regist_target_character.is_some() {
-            self.set_target_character(regist_target_character);
+        if register_target_character.is_some() {
+            self.set_target_character(register_target_character);
             self._target_focus_time = 0.0;
         } else {
             const TARGET_FOCUS_TIME: f64 = 2.0;

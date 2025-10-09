@@ -213,10 +213,7 @@ impl<'a> PropManager<'a> {
             _model_data_name: prop_data.borrow()._model_data_name.clone(),
             ..Default::default()
         };
-        let render_object_data = self.get_scene_manager_mut().add_static_render_object(
-            prop_name,
-            &render_object_create_info,
-        );
+        let render_object_data = self.get_scene_manager_mut().add_dynamic_render_object(prop_name, &render_object_create_info, None);
         let id = self.generate_id();
         let prop = newRcRefCell(Prop::create_prop(
             self,
@@ -232,7 +229,6 @@ impl<'a> PropManager<'a> {
 
     pub fn remove_prop(&mut self, prop: &RcRefCell<Prop<'a>>) {
         self._props.remove(&prop.borrow().get_prop_id());
-        self.get_game_scene_manager_mut().unregister_block(&prop.borrow()._render_object);
         self.get_scene_manager_mut().remove_static_render_object(prop.borrow()._render_object.borrow()._object_id);
     }
 

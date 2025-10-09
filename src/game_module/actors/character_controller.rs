@@ -3,13 +3,13 @@ use rust_engine_3d::scene::collision::CollisionData;
 use rust_engine_3d::scene::height_map::HeightMapData;
 use rust_engine_3d::scene::render_object::RenderObjectData;
 use rust_engine_3d::begin_block;
+use rust_engine_3d::scene::scene_manager::RenderObjectMap;
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::math::HALF_PI;
 use rust_engine_3d::utilities::system::ptr_as_ref;
 use crate::game_module::actors::character::Character;
 use crate::game_module::actors::character_data::{CharacterData, MoveAnimationState};
-use crate::game_module::game_constants::{CHARACTER_ROTATION_SPEED, CLIFF_HEIGHT, FALLING_TIME, GRAVITY, HIT_VELOCITY_DECAY, HIT_VELOCITY_SPEED, MOVE_LIMIT, SLOPE_ANGLE, SLOPE_SPEED, SLOPE_VELOCITY_DECAY};
-use crate::game_module::game_scene_manager::BlocksMap;
+use crate::game_module::game_constants::*;
 
 pub struct CharacterController {
     pub _position: Vector3<f32>,
@@ -175,7 +175,7 @@ impl CharacterController {
         &mut self,
         owner: &Character,
         height_map_data: &HeightMapData,
-        blocks_map: &BlocksMap<'a>,
+        collision_objects: &RenderObjectMap<'a>,
         character_data: &CharacterData,
         move_animation: MoveAnimationState,
         actor_collision: &CollisionData,
@@ -331,7 +331,7 @@ impl CharacterController {
         current_actor_collision._bounding_box._max += move_delta;
 
         // check ground and side
-        for collision_object in blocks_map.values() {
+        for collision_object in collision_objects.values() {
             let block_render_object = ptr_as_ref(collision_object.as_ptr());
             let block_bound_box = &block_render_object._collision._bounding_box;
             let block_location = &block_bound_box._center;
@@ -366,7 +366,7 @@ impl CharacterController {
                 current_actor_collision._bounding_box._max = actor_collision._bounding_box._max + move_delta;
 
                 // Recheck collide with another blocks
-                for collision_object in blocks_map.values() {
+                for collision_object in collision_objects.values() {
                     let recheck_block = ptr_as_ref(collision_object.as_ptr());
                     if collided_block != recheck_block {
                         let recheck_block_bound_box = &recheck_block._collision._bounding_box;
@@ -392,7 +392,7 @@ impl CharacterController {
                 if 0.0 < move_delta.z { current_actor_collision._bounding_box._max.z + 0.1 } else { current_actor_collision._bounding_box._min.z - 0.1 }
             );
 
-            for collision_object in blocks_map.values() {
+            for collision_object in collision_objects.values() {
                 let block_render_object = ptr_as_ref(collision_object.as_ptr());
                 if block_render_object._collision.collide_point(&point) {
                     self._is_cliff = false;

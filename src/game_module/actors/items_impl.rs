@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::{AudioLoop, AudioManager};
 use rust_engine_3d::core::engine_core::EngineCore;
+use rust_engine_3d::scene::collision::CollisionType;
 use rust_engine_3d::scene::height_map::HeightMapData;
 use rust_engine_3d::scene::render_object::{RenderObjectCreateInfo, RenderObjectData};
 use rust_engine_3d::scene::scene_manager::SceneManager;
@@ -157,10 +158,7 @@ impl<'a> ItemManager<'a> {
             _model_data_name: item_data.borrow()._model_data_name.clone(),
             ..Default::default()
         };
-        let render_object_data = self.get_scene_manager_mut().add_static_render_object(
-            item_create_info._item_data_name.as_str(),
-            &render_object_create_info,
-        );
+        let render_object_data = self.get_scene_manager_mut().add_dynamic_render_object(item_create_info._item_data_name.as_str(), &render_object_create_info, Some(CollisionType::NONE));
         let id = self.generate_id();
         let item = newRcRefCell(Item::create_item(
             id,
