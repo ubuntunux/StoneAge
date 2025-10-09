@@ -13,7 +13,7 @@ use rust_engine_3d::resource::resource::CallbackLoadRenderPassCreateInfo;
 use rust_engine_3d::utilities::logger;
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
 use winit::keyboard::KeyCode;
-
+use rust_engine_3d::core::input::ButtonState;
 use crate::game_module::game_client::GameClient;
 use crate::game_module::game_constants;
 use crate::game_module::game_controller::GameController;
@@ -83,9 +83,16 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
         let mouse_move_data = &engine_core._mouse_move_data;
         let mouse_input_data = &engine_core._mouse_input_data;
         let keyboard_input_data = &engine_core._keyboard_input_data;
+        let joystick_input_data = &engine_core._joystick_input_data;
 
         if unsafe { DEVELOPMENT } {
-            if engine_core._keyboard_input_data.get_key_pressed(KeyCode::Tab) {
+            let is_togle_game_mode_by_joystick =
+                joystick_input_data._btn_left_trigger == ButtonState::Hold &&
+                joystick_input_data._btn_right_trigger == ButtonState::Hold &&
+                joystick_input_data._btn_left_trigger == ButtonState::Hold &&
+                joystick_input_data._btn_right_trigger == ButtonState::Hold;
+
+            if engine_core._keyboard_input_data.get_key_pressed(KeyCode::Tab) || is_togle_game_mode_by_joystick {
                 self.toggle_game_mode();
             }
         }
