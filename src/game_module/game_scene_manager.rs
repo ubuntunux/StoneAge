@@ -5,7 +5,7 @@ use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop, AudioManage
 use rust_engine_3d::begin_block;
 use rust_engine_3d::core::engine_core::EngineCore;
 use rust_engine_3d::effect::effect_manager::EffectManager;
-use rust_engine_3d::scene::scene_manager::{RenderObjectCreateInfoMap, SceneObjectID, SceneDataCreateInfo, SceneManager};
+use rust_engine_3d::scene::scene_manager::{RenderObjectCreateInfoMap, SceneDataCreateInfo, SceneManager};
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use serde::{Deserialize, Serialize};
