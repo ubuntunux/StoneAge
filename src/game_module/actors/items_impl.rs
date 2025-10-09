@@ -182,7 +182,14 @@ impl<'a> ItemManager<'a> {
 
     pub fn remove_item(&mut self, item: &RcRefCell<Item>) {
         self._items.remove(&item.borrow().get_item_id());
-        self.get_scene_manager_mut().remove_static_render_object(item.borrow()._render_object.borrow()._object_id);
+        self.get_scene_manager_mut().remove_static_render_object(item.borrow()._render_object.borrow().get_object_id());
+    }
+
+    pub fn clear_items(&mut self) {
+        let items = self._items.values().cloned().collect::<Vec<RcRefCell<Item>>>();
+        for item in items {
+            self.remove_item(&item);
+        }
     }
 
     pub fn pick_item(&self, item_data_type: &ItemDataType, item_count: usize) -> bool {

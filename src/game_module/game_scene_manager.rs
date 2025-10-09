@@ -40,7 +40,7 @@ pub struct GameSceneManager<'a> {
     pub _character_manager: Box<CharacterManager<'a>>,
     pub _item_manager: Box<ItemManager<'a>>,
     pub _prop_manager: Box<PropManager<'a>>,
-    pub _game_scene_name: String,
+    pub _current_game_scene_data: Option<RcRefCell<GameSceneDataCreateInfo>>,
     pub _ambient_sound: Option<RcRefCell<AudioInstance>>,
     pub _spawn_point: Vector3<f32>,
     pub _time_of_day: f32,
@@ -95,7 +95,7 @@ impl<'a> GameSceneManager<'a> {
             _effect_manager: std::ptr::null(),
             _scene_manager: std::ptr::null(),
             _game_resources: std::ptr::null(),
-            _game_scene_name: String::new(),
+            _current_game_scene_data: None,
             _character_manager: CharacterManager::create_character_manager(),
             _item_manager: ItemManager::create_item_manager(),
             _prop_manager: PropManager::create_prop_manager(),
@@ -167,46 +167,73 @@ impl<'a> GameSceneManager<'a> {
     }
 
     pub fn open_game_scene_data(&mut self, game_scene_data_name: &str) {
+        self.close_game_scene_data();
+
         log::info!("open_game_scene_data: {:?}", game_scene_data_name);
-        self._game_scene_name = String::from(game_scene_data_name);
         let game_resources = ptr_as_mut(self._game_resources);
-        let scene_manager = ptr_as_mut(self._scene_manager);
+        let game_scene_data = game_resources.get_game_scene_data(game_scene_data_name);
+        self._current_game_scene_data = Some(game_scene_data.clone());
 
-        // load scene
-        let game_scene_data = game_resources.get_game_scene_data(game_scene_data_name).borrow();
-        scene_manager.create_scene_data(&game_scene_data._scene);
+        self.open_current_game_scene_data();
+    }
 
-        // terrain
-        for (object_name, render_object_create_info) in game_scene_data._terrain.iter() {
-            self.get_scene_manager_mut().add_terrain_render_object(object_name, render_object_create_info);
+    pub fn open_current_game_scene_data(&mut self) {
+        self.close_game_scene_data();
+
+        if let Some(game_scene_data) = self._current_game_scene_data.as_ref() {
+            let scene_manager = ptr_as_mut(self._scene_manager);
+            let game_scene_data_ref = game_scene_data.borrow();
+
+            // load scene
+            scene_manager.create_scene_data(&game_scene_data_ref._scene);
+
+            // terrain
+            for (object_name, render_object_create_info) in game_scene_data_ref._terrain.iter() {
+                scene_manager.add_terrain_render_object(object_name, render_object_create_info);
+            }
+
+            scene_manager.set_start_capture_height_map(true);
         }
-
-        // create items
-        for (_item_data_name, item_create_info) in game_scene_data._items.iter() {
-            self._item_manager.create_item(item_create_info);
-        }
-
-        // create props
-        for (prop_name, prop_create_info) in game_scene_data._props.iter() {
-            self._prop_manager.create_prop(prop_name, prop_create_info);
-        }
-
-        // create player
-        for (character_name, character_create_info) in game_scene_data._player.iter() {
-            self._character_manager.create_character(character_name, character_create_info, true);
-            self._spawn_point = character_create_info._position;
-        }
-
-        // create npc
-        for (character_name, character_create_info) in game_scene_data._characters.iter() {
-            self._character_manager.create_character(character_name, character_create_info, false);
-        }
-
-        self.get_scene_manager_mut().set_start_capture_height_map(true);
     }
 
     pub fn close_game_scene_data(&mut self) {
+        self.clear_game_object_data();
         self.get_scene_manager_mut().close_scene_data();
+    }
+
+    pub fn spawn_game_object_data(&mut self) {
+        assert!(self.get_scene_manager().is_load_complete());
+
+        if let Some(game_scene_data) = self._current_game_scene_data.as_ref() {
+            let game_scene_data_ref = game_scene_data.borrow();
+
+            // create items
+            for (_item_data_name, item_create_info) in game_scene_data_ref._items.iter() {
+                self._item_manager.create_item(item_create_info);
+            }
+
+            // create props
+            for (prop_name, prop_create_info) in game_scene_data_ref._props.iter() {
+                self._prop_manager.create_prop(prop_name, prop_create_info);
+            }
+
+            // create player
+            for (character_name, character_create_info) in game_scene_data_ref._player.iter() {
+                self._character_manager.create_character(character_name, character_create_info, true);
+                self._spawn_point = character_create_info._position;
+            }
+
+            // create npc
+            for (character_name, character_create_info) in game_scene_data_ref._characters.iter() {
+                self._character_manager.create_character(character_name, character_create_info, false);
+            }
+        }
+    }
+
+    pub fn clear_game_object_data(&mut self) {
+        self._item_manager.clear_items();
+        self._prop_manager.clear_props();
+        self._character_manager.clear_characters(true);
     }
 
     pub fn destroy_game_scene_manager(&mut self) {

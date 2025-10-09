@@ -1,4 +1,5 @@
 use nalgebra::Vector2;
+use winit::keyboard::KeyCode;
 use rust_engine_3d::core::engine_core::EngineCore;
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
 
@@ -165,6 +166,7 @@ impl<'a> GameClient<'a> {
                         if self.get_game_ui_manager().is_done_game_image_progress() {
                             if STORY_BOARDS.len() <= story_board_phase {
                                 self.get_game_ui_manager_mut().set_game_image("", STORY_BOARD_FADE_TIME);
+                                self.get_game_scene_manager_mut().spawn_game_object_data();
                                 self._game_phase = GamePhase::GamePlay;
                             } else {
                                 self.get_game_ui_manager_mut().set_game_image(&STORY_BOARDS[story_board_phase], STORY_BOARD_FADE_TIME);
@@ -175,22 +177,29 @@ impl<'a> GameClient<'a> {
                 }
             }
             GamePhase::GamePlay => {
-                let player = game_scene_manager.get_character_manager().get_player();
-                let main_camera = scene_manager.get_main_camera_mut();
-                if false == self._game_controller.is_null() {
-                    let game_controller = ptr_as_mut(self._game_controller);
-                    game_controller.update_game_controller(
-                        time_data,
-                        &joystick_input_data,
-                        &keyboard_input_data,
-                        &mouse_move_data,
-                        &mouse_input_data,
-                        &mouse_delta,
-                        main_camera,
-                        player,
-                    );
+                if keyboard_input_data.get_key_pressed(KeyCode::Enter) {
+                    self.get_game_scene_manager_mut().clear_game_object_data();
+                    self.get_game_scene_manager_mut().spawn_game_object_data();
                 }
-                game_scene_manager.update_game_scene_manager(delta_time);
+
+                if scene_manager.is_load_complete() {
+                    let player = game_scene_manager.get_character_manager().get_player();
+                    let main_camera = scene_manager.get_main_camera_mut();
+                    if false == self._game_controller.is_null() {
+                        let game_controller = ptr_as_mut(self._game_controller);
+                        game_controller.update_game_controller(
+                            time_data,
+                            &joystick_input_data,
+                            &keyboard_input_data,
+                            &mouse_move_data,
+                            &mouse_input_data,
+                            &mouse_delta,
+                            main_camera,
+                            player,
+                        );
+                    }
+                    game_scene_manager.update_game_scene_manager(delta_time);
+                }
             }
         }
     }

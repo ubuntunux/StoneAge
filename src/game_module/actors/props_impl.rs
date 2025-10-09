@@ -232,6 +232,13 @@ impl<'a> PropManager<'a> {
         self.get_scene_manager_mut().remove_static_render_object(prop.borrow()._render_object.borrow()._object_id);
     }
 
+    pub fn clear_props(&mut self) {
+        let props: Vec<RcRefCell<Prop<'a>>> = self._props.values().cloned().collect();
+        for prop in props {
+            self.remove_prop(&prop);
+        }
+    }
+
     pub fn update_prop_manager(&mut self, delta_time: f64) {
         for prop in self._props.values() {
             prop.borrow_mut().update_prop(delta_time);

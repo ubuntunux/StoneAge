@@ -172,6 +172,18 @@ impl<'a> CharacterManager<'a> {
         self._characters.remove(&character.borrow().get_character_id());
         self.get_scene_manager_mut().remove_skeletal_render_object(character.borrow()._render_object.borrow()._object_id);
     }
+    pub fn clear_characters(&mut self, clear_player: bool) {
+        let characters = self._characters.values().cloned().collect::<Vec<RcRefCell<Character>>>();
+        for character in characters.iter() {
+            if clear_player || character.borrow().is_player() == false {
+                self.remove_character(character);
+            }
+        }
+
+        if clear_player {
+            self._player = None;
+        }
+    }
     pub fn is_valid_player(&self) -> bool {
         self._player.is_some()
     }
