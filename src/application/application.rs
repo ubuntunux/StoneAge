@@ -89,8 +89,8 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
             let is_toggle_game_mode_by_joystick =
                 joystick_input_data._btn_left_trigger == ButtonState::Hold &&
                 joystick_input_data._btn_right_trigger == ButtonState::Hold &&
-                joystick_input_data._btn_left_trigger == ButtonState::Hold &&
-                joystick_input_data._btn_right_trigger == ButtonState::Hold;
+                joystick_input_data._btn_left_shoulder == ButtonState::Hold &&
+                joystick_input_data._btn_right_shoulder == ButtonState::Hold;
 
             if engine_core._keyboard_input_data.get_key_pressed(KeyCode::Tab) || is_toggle_game_mode_by_joystick {
                 self.toggle_game_mode();
