@@ -332,9 +332,6 @@ impl CharacterController {
         let collision_pos_min = math::get_min(&actor_collision._bounding_box._min, &current_actor_collision._bounding_box._min);
         let collision_pos_max = math::get_max(&actor_collision._bounding_box._max, &current_actor_collision._bounding_box._max);
         let collision_objects = scene_manager.collect_collision_objects(&collision_pos_min, &collision_pos_max);
-        if owner._is_player {
-            log::info!("collision_objects.len() = {}", collision_objects.len());
-        }
 
         // check ground and side
         for collision_object in collision_objects.values() {
