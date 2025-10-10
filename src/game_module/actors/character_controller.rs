@@ -1,9 +1,8 @@
 use nalgebra::Vector3;
 use rust_engine_3d::scene::collision::CollisionData;
-use rust_engine_3d::scene::height_map::HeightMapData;
 use rust_engine_3d::scene::render_object::RenderObjectData;
 use rust_engine_3d::begin_block;
-use rust_engine_3d::scene::scene_manager::RenderObjectMap;
+use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::math::HALF_PI;
 use rust_engine_3d::utilities::system::ptr_as_ref;
@@ -174,8 +173,7 @@ impl CharacterController {
     pub fn update_character_controller<'a>(
         &mut self,
         owner: &Character,
-        height_map_data: &HeightMapData,
-        collision_objects: &RenderObjectMap<'a>,
+        scene_manager: &SceneManager<'a>,
         character_data: &CharacterData,
         move_animation: MoveAnimationState,
         actor_collision: &CollisionData,
@@ -299,6 +297,7 @@ impl CharacterController {
         self._is_blocked = false;
         self._is_ground = false;
 
+        let height_map_data = scene_manager.get_height_map_data();
         begin_block!("Check Ground & Slope"); {
             let ground_height = height_map_data.get_height_bilinear(&self._position, 0);
             if self._position.y <= ground_height && self._velocity.y <= 0.0 {
@@ -329,6 +328,13 @@ impl CharacterController {
         current_actor_collision._bounding_box._center += move_delta;
         current_actor_collision._bounding_box._min += move_delta;
         current_actor_collision._bounding_box._max += move_delta;
+
+        let collision_pos_min = math::get_min(&actor_collision._bounding_box._min, &current_actor_collision._bounding_box._min);
+        let collision_pos_max = math::get_max(&actor_collision._bounding_box._max, &current_actor_collision._bounding_box._max);
+        let collision_objects = scene_manager.collect_collision_objects(&collision_pos_min, &collision_pos_max);
+        if owner._is_player {
+            log::info!("collision_objects.len() = {}", collision_objects.len());
+        }
 
         // check ground and side
         for collision_object in collision_objects.values() {
@@ -366,8 +372,8 @@ impl CharacterController {
                 current_actor_collision._bounding_box._max = actor_collision._bounding_box._max + move_delta;
 
                 // Recheck collide with another blocks
-                for collision_object in collision_objects.values() {
-                    let recheck_block = ptr_as_ref(collision_object.as_ptr());
+                for recheck_collision_object in collision_objects.values() {
+                    let recheck_block = ptr_as_ref(recheck_collision_object.as_ptr());
                     if collided_block != recheck_block {
                         let recheck_block_bound_box = &recheck_block._collision._bounding_box;
                         if current_actor_collision.collide_collision(&recheck_block._collision) {

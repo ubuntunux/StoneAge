@@ -5,7 +5,7 @@ use rust_engine_3d::scene::animation::{AnimationPlayArgs, AnimationPlayInfo};
 use rust_engine_3d::scene::bounding_box::BoundingBox;
 use rust_engine_3d::scene::collision::CollisionData;
 use rust_engine_3d::scene::render_object::{AnimationLayer, RenderObjectData};
-use rust_engine_3d::scene::scene_manager::{RenderObjectMap, SceneManager};
+use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::scene::transform_object::TransformObjectData;
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
@@ -854,7 +854,6 @@ impl<'a> Character<'a> {
     pub fn update_character(
         &mut self,
         scene_manager: &SceneManager,
-        collision_objects: &RenderObjectMap<'a>,
         player: &Character<'a>,
         delta_time: f32
     ) {
@@ -882,8 +881,7 @@ impl<'a> Character<'a> {
         // controller
         self._controller.update_character_controller(
             owner,
-            scene_manager.get_height_map_data(),
-            collision_objects,
+            scene_manager,
             &self._character_data.borrow(),
             self._animation_state._move_animation_state,
             &self._render_object.borrow()._collision,
