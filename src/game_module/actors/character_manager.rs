@@ -126,12 +126,15 @@ impl<'a> CharacterManager<'a> {
     }
     pub fn create_character(&mut self, character_name: &str, character_create_info: &CharacterCreateInfo, is_player: bool) {
         let game_resources = ptr_as_ref(self._game_resources);
+        let mut spawn_point = character_create_info._position.clone();
+        spawn_point.y = spawn_point.y.max(self.get_scene_manager().get_height_map_data().get_height_bilinear(&spawn_point, 0));
+
         let character_data_name = character_create_info._character_data_name.as_str();
         let character_data = game_resources.get_character_data(character_data_name);
         let character_data_ref = character_data.borrow();
         let render_object_create_info = RenderObjectCreateInfo {
             _model_data_name: character_data_ref._model_data_name.clone(),
-            _position: character_create_info._position.clone(),
+            _position: spawn_point.clone(),
             _rotation: character_create_info._rotation.clone(),
             _scale: character_create_info._scale.clone(),
         };
@@ -149,7 +152,7 @@ impl<'a> CharacterManager<'a> {
             character_data_name,
             character_data,
             &render_object_data,
-            &character_create_info._position,
+            &spawn_point,
             &character_create_info._rotation,
             &character_create_info._scale
         ));
@@ -243,7 +246,7 @@ impl<'a> CharacterManager<'a> {
                                         _position: target_position + Vector3::new(0.0, 0.5, 0.0),
                                         ..Default::default()
                                     };
-                                    self.get_game_scene_manager().get_item_manager_mut().create_item(&item_create_info);
+                                    self.get_game_scene_manager().get_item_manager_mut().create_item(&item_create_info, true);
                                 }
                         }
                     }

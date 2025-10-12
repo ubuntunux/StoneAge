@@ -21,6 +21,13 @@ type CharacterCreateInfoMap = HashMap<String, CharacterCreateInfo>;
 type ItemCreateInfoMap = HashMap<String, ItemCreateInfo>;
 type PropCreateInfoMap = HashMap<String, PropCreateInfo>;
 
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+pub enum GameSceneState {
+    None,
+    Loading,
+    Playing
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[serde(default)]
 pub struct GameSceneDataCreateInfo {
@@ -45,7 +52,10 @@ pub struct GameSceneManager<'a> {
     pub _spawn_point: Vector3<f32>,
     pub _time_of_day: f32,
     pub _temperature: f32,
-    pub _date: u32
+    pub _date: u32,
+    pub _teleport_stage: Option<String>,
+    pub _teleport_gate: Option<String>,
+    pub _game_scene_state: GameSceneState
 }
 
 impl<'a> GameSceneManager<'a> {
@@ -103,7 +113,10 @@ impl<'a> GameSceneManager<'a> {
             _spawn_point: Vector3::new(0.0, 0.0, 0.0),
             _time_of_day: 10.0,
             _temperature: 30.0,
-            _date: 1
+            _date: 1,
+            _teleport_stage: None,
+            _teleport_gate: None,
+            _game_scene_state: GameSceneState::None,
         })
     }
 
@@ -166,6 +179,23 @@ impl<'a> GameSceneManager<'a> {
         self._date
     }
 
+    pub fn get_game_scene_state(&self) -> GameSceneState {
+        self._game_scene_state
+    }
+
+    pub fn set_game_scene_state(&mut self, state: GameSceneState) {
+        self._game_scene_state = state;
+    }
+
+    pub fn is_game_scene_state(&self, state: GameSceneState) -> bool {
+        self._game_scene_state == state
+    }
+
+    pub fn teleport_stage(&mut self, teleport_stage: &str, teleport_gate: &str) {
+        self._teleport_stage = Some(String::from(teleport_stage));
+        self._teleport_gate = Some(String::from(teleport_gate));
+    }
+
     pub fn open_game_scene_data(&mut self, game_scene_data_name: &str) {
         self.close_game_scene_data();
 
@@ -173,12 +203,6 @@ impl<'a> GameSceneManager<'a> {
         let game_resources = ptr_as_mut(self._game_resources);
         let game_scene_data = game_resources.get_game_scene_data(game_scene_data_name);
         self._current_game_scene_data = Some(game_scene_data.clone());
-
-        self.open_current_game_scene_data();
-    }
-
-    pub fn open_current_game_scene_data(&mut self) {
-        self.close_game_scene_data();
 
         if let Some(game_scene_data) = self._current_game_scene_data.as_ref() {
             let scene_manager = ptr_as_mut(self._scene_manager);
@@ -194,11 +218,14 @@ impl<'a> GameSceneManager<'a> {
 
             scene_manager.set_start_capture_height_map(true);
         }
+
+        self.set_game_scene_state(GameSceneState::Loading);
     }
 
     pub fn close_game_scene_data(&mut self) {
         self.clear_game_object_data();
         self.get_scene_manager_mut().close_scene_data();
+        self.set_game_scene_state(GameSceneState::None);
     }
 
     pub fn spawn_game_object_data(&mut self) {
@@ -209,7 +236,7 @@ impl<'a> GameSceneManager<'a> {
 
             // create items
             for (_item_data_name, item_create_info) in game_scene_data_ref._items.iter() {
-                self._item_manager.create_item(item_create_info);
+                self._item_manager.create_item(item_create_info, false);
             }
 
             // create props
@@ -257,11 +284,40 @@ impl<'a> GameSceneManager<'a> {
     }
 
     pub fn update_game_scene_manager(&mut self, delta_time: f64) {
-        if self.get_scene_manager().is_load_complete() {
-            self.update_time_of_day(delta_time);
-            self._prop_manager.update_prop_manager(delta_time);
-            self._item_manager.update_item_manager(delta_time);
-            self._character_manager.update_character_manager(delta_time);
+        match self._game_scene_state {
+            GameSceneState::None => {
+
+            },
+            GameSceneState::Loading => {
+                if self.get_scene_manager().is_load_complete() {
+                    self.spawn_game_object_data();
+                    self.set_game_scene_state(GameSceneState::Playing);
+                }
+            },
+            GameSceneState::Playing => {
+                if self._teleport_stage.is_some() {
+                    self.close_game_scene_data();
+
+                    let stage_name = self._teleport_stage.as_ref().unwrap().clone();
+                    self.open_game_scene_data(stage_name.as_str());
+                    self._teleport_stage = None;
+                    return;
+                }
+
+                if self._teleport_gate.is_some() {
+                    let teleport_point = self._prop_manager.get_teleport_point(self._teleport_gate.as_ref().unwrap().as_str());
+                    if teleport_point.is_some() && self._character_manager.is_valid_player() {
+                        let player = self._character_manager.get_player();
+                        player.borrow_mut().set_position(teleport_point.as_ref().unwrap());
+                    }
+                    self._teleport_gate = None;
+                }
+
+                self.update_time_of_day(delta_time);
+                self._prop_manager.update_prop_manager(delta_time);
+                self._item_manager.update_item_manager(delta_time);
+                self._character_manager.update_character_manager(delta_time);
+            },
         }
     }
 }

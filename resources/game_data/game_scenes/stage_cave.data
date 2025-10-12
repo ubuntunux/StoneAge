@@ -153,7 +153,7 @@
         "gate": {
             "_instance_parameters": {
                 "_linked_gate": "gate",
-                "_linked_stage": "intro_stage"
+                "_linked_stage": "game_scenes/intro_stage"
             },
             "_position": [
                 34.69944763183594,
@@ -163,7 +163,7 @@
             "_prop_data_name": "props/gate",
             "_rotation": [
                 0.0,
-                0.0,
+                -1.5707963705062866,
                 0.0
             ],
             "_scale": [

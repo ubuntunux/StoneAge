@@ -8,7 +8,7 @@ use crate::game_module::actors::character_manager::CharacterManager;
 use crate::game_module::game_constants::{AMBIENT_SOUND, CAMERA_DISTANCE_MAX, GAME_MUSIC, GAME_SCENE_INTRO, MATERIAL_INTRO_IMAGE, STORY_BOARDS, STORY_BOARD_FADE_TIME};
 use crate::game_module::game_controller::GameController;
 use crate::game_module::game_resource::GameResources;
-use crate::game_module::game_scene_manager::GameSceneManager;
+use crate::game_module::game_scene_manager::{GameSceneManager, GameSceneState};
 use crate::game_module::game_ui_manager::GameUIManager;
 
 pub enum GamePhase {
@@ -150,7 +150,7 @@ impl<'a> GameClient<'a> {
             }
             GamePhase::Intro => {
                 if any_key_pressed {
-                    self.get_game_scene_manager_mut().open_game_scene_data(GAME_SCENE_INTRO);
+                    game_scene_manager.open_game_scene_data(GAME_SCENE_INTRO);
                     if false == self._game_controller.is_null() {
                         let game_controller = ptr_as_mut(self._game_controller);
                         game_controller.update_on_open_game_scene();
@@ -160,13 +160,12 @@ impl<'a> GameClient<'a> {
                 }
             }
             GamePhase::Loading => {
-                if scene_manager.is_load_complete() {
+                if game_scene_manager.is_game_scene_state(GameSceneState::Playing) {
                     let story_board_phase = self.get_story_board_phase();
                     if any_key_pressed || story_board_phase == 0 {
                         if self.get_game_ui_manager().is_done_game_image_progress() {
                             if STORY_BOARDS.len() <= story_board_phase {
                                 self.get_game_ui_manager_mut().set_game_image("", STORY_BOARD_FADE_TIME);
-                                self.get_game_scene_manager_mut().spawn_game_object_data();
                                 self._game_phase = GamePhase::GamePlay;
                             } else {
                                 self.get_game_ui_manager_mut().set_game_image(&STORY_BOARDS[story_board_phase], STORY_BOARD_FADE_TIME);
@@ -178,11 +177,11 @@ impl<'a> GameClient<'a> {
             }
             GamePhase::GamePlay => {
                 if keyboard_input_data.get_key_pressed(KeyCode::Enter) {
-                    self.get_game_scene_manager_mut().clear_game_object_data();
-                    self.get_game_scene_manager_mut().spawn_game_object_data();
+                    game_scene_manager.clear_game_object_data();
+                    game_scene_manager.spawn_game_object_data();
                 }
 
-                if scene_manager.is_load_complete() {
+                if game_scene_manager.is_game_scene_state(GameSceneState::Playing) && game_scene_manager.get_character_manager().is_valid_player() {
                     let player = game_scene_manager.get_character_manager().get_player();
                     let main_camera = scene_manager.get_main_camera_mut();
                     if false == self._game_controller.is_null() {
@@ -198,9 +197,10 @@ impl<'a> GameClient<'a> {
                             player,
                         );
                     }
-                    game_scene_manager.update_game_scene_manager(delta_time);
                 }
             }
         }
+
+        game_scene_manager.update_game_scene_manager(delta_time);
     }
 }

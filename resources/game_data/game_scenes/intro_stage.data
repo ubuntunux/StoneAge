@@ -801,17 +801,17 @@
         "gate": {
             "_instance_parameters": {
                 "_linked_gate": "gate",
-                "_linked_stage": "stage_cave"
+                "_linked_stage": "game_scenes/stage_cave"
             },
             "_position": [
-                -19.004119873046875,
+                -19.298847198486328,
                 -0.7408239841461182,
-                8.784213066101074
+                9.298608779907227
             ],
             "_prop_data_name": "props/gate",
             "_rotation": [
                 0.0,
-                -0.23372459411621094,
+                1.2148985862731934,
                 0.0
             ],
             "_scale": [

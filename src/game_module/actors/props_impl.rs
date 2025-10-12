@@ -5,7 +5,7 @@ use rust_engine_3d::audio::audio_manager::{AudioLoop, AudioManager};
 use rust_engine_3d::core::engine_core::EngineCore;
 use rust_engine_3d::effect::effect_data::EffectCreateInfo;
 use rust_engine_3d::scene::bounding_box::BoundingBox;
-use rust_engine_3d::scene::collision::CollisionData;
+use rust_engine_3d::scene::collision::{CollisionData, CollisionType};
 use rust_engine_3d::scene::render_object::{RenderObjectCreateInfo, RenderObjectData};
 use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
@@ -62,7 +62,10 @@ impl<'a> Prop<'a> {
             _instance_parameters: prop_create_info._instance_parameters.clone(),
         };
 
-        log::info!("create_prop: {:?}", prop._instance_parameters);
+        if prop_data_ref._prop_type == PropDataType::Ceiling || prop_data_ref._prop_type == PropDataType::Gate {
+            render_object.borrow_mut().set_collision_type(CollisionType::NONE);
+        }
+
         prop.initialize_prop();
         prop
     }
@@ -206,6 +209,14 @@ impl<'a> PropManager<'a> {
     pub fn get_prop(&self, prop_id: u64) -> Option<&RcRefCell<Prop<'a>>> {
         self._props.get(&prop_id)
     }
+    pub fn get_prop_by_name(&self, prop_name: &str) -> Option<&RcRefCell<Prop<'a>>> {
+        for prop in self._props.values() {
+            if prop.borrow()._prop_name == prop_name {
+                return Some(prop);
+            }
+        }
+        None
+    }
     pub fn get_props(&self) -> &PropMap<'a> {
         &self._props
     }
@@ -242,6 +253,18 @@ impl<'a> PropManager<'a> {
         }
     }
 
+    pub fn get_teleport_point(&self, gate_prop_name: &str) -> Option<Vector3<f32>> {
+        let gate = self.get_prop_by_name(gate_prop_name);
+        if gate.is_some() {
+            let prop = gate.unwrap().borrow();
+            let prop_bounding_box = prop.get_bounding_box();
+            let mut teleport_point = prop.get_position() + prop_bounding_box.get_orientation().column(2) * (prop_bounding_box._mag_xz + 1.0);
+            teleport_point.y = teleport_point.y.max(self.get_game_scene_manager().get_scene_manager().get_height_map_data().get_height_bilinear(&teleport_point, 0));
+            return Some(teleport_point);
+        }
+        None
+    }
+
     pub fn update_prop_manager(&mut self, delta_time: f64) {
         for prop in self._props.values() {
             prop.borrow_mut().update_prop(delta_time);
@@ -257,9 +280,10 @@ impl<'a> PropManager<'a> {
                 player._controller.set_in_pickup_prop_range(false);
                 for prop_refcell in self._props.values() {
                     let mut prop = prop_refcell.borrow_mut();
-                        let prop_type = prop._prop_data.borrow()._prop_type;
-                        if prop_type == PropDataType::Pickup {
-                            let bounding_box = prop.get_bounding_box();
+                    let prop_type = prop._prop_data.borrow()._prop_type;
+                    let bounding_box = prop.get_bounding_box();
+                    match prop_type {
+                        PropDataType::Pickup => {
                             if player.get_bounding_box().collide_bound_box(&bounding_box._min, &bounding_box._max) {
                                 player._controller.set_in_pickup_prop_range(true);
                                 if player._animation_state.is_pickup_event() {
@@ -273,23 +297,43 @@ impl<'a> PropManager<'a> {
                                     }
                                 }
                             }
-                        } else if prop_type == PropDataType::Destruction || (prop_type == PropDataType::Harvestable && prop.can_drop_item()) {
-                            if player._animation_state.is_attack_event() && player.check_in_range(prop.get_collision(), NPC_ATTACK_HIT_RANGE, check_direction) {
-                                prop.set_hit_damage(player.get_power(player._animation_state.get_action_event()));
-                                if false == prop.is_alive() {
-                                    for item_create_info in prop.drop_items().iter() {
-                                        // drop items
-                                        self.get_game_scene_manager().get_item_manager_mut().create_item(&item_create_info);
-                                    }
+                        },
+                        PropDataType::Destruction | PropDataType::Harvestable => {
+                            if prop_type == PropDataType::Destruction || prop_type == PropDataType::Harvestable && prop.can_drop_item() {
+                                if player._animation_state.is_attack_event() & & player.check_in_range(prop.get_collision(), NPC_ATTACK_HIT_RANGE, check_direction) {
+                                    prop.set_hit_damage(player.get_power(player._animation_state.get_action_event()));
+                                    if false == prop.is_alive() {
+                                        for item_create_info in prop.drop_items().iter() {
+                                            // drop items
+                                            self.get_game_scene_manager().get_item_manager_mut().create_item(&item_create_info, false);
+                                        }
 
-                                    if prop_type == PropDataType::Harvestable && 0 < prop.get_item_regenerate_count() {
-                                        prop.refresh_prop_state();
-                                    } else {
-                                        dead_props.push(prop_refcell.clone());
+                                        if prop_type == PropDataType::Harvestable && 0 < prop.get_item_regenerate_count() {
+                                            prop.refresh_prop_state();
+                                        } else {
+                                            dead_props.push(prop_refcell.clone());
+                                        }
                                     }
                                 }
                             }
-                        }
+                        },
+                        PropDataType::Ceiling => {
+                            prop._render_object.borrow_mut().set_render_camera(!bounding_box.collide_point(&player.get_position()));
+                        },
+                        PropDataType::Gate => {
+                            if bounding_box.collide_point(&player.get_position()) {
+                                let linked_gate = prop._instance_parameters.get("_linked_gate");
+                                let linked_stage = prop._instance_parameters.get("_linked_stage");
+                                if linked_stage.is_some() && linked_gate.is_some() {
+                                    self.get_game_scene_manager_mut().teleport_stage(
+                                        linked_stage.unwrap().as_str().unwrap(),
+                                        linked_gate.unwrap().as_str().unwrap()
+                                    );
+                                }
+                            }
+                        },
+                        _ => ()
+                    }
                 }
             }
         }
