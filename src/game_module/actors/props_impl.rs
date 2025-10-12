@@ -59,7 +59,10 @@ impl<'a> Prop<'a> {
                 _rotation: prop_create_info._rotation.clone(),
                 _scale: prop_create_info._scale.clone(),
             }),
+            _instance_parameters: prop_create_info._instance_parameters.clone(),
         };
+
+        log::info!("create_prop: {:?}", prop._instance_parameters);
         prop.initialize_prop();
         prop
     }

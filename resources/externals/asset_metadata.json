@@ -4083,6 +4083,26 @@
             "data": {}
         }
     ],
+    "/mnt/Workspace/StoneAge/resources/externals/meshes/environments/gate.blend": [
+        {
+            "asset_type": "MESH",
+            "asset_path": "environments/gate",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/environments/gate.blend",
+            "guid": "",
+            "mtime": 1760263378.2432685,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/meshes/props/gate.blend": [
+        {
+            "asset_type": "MESH",
+            "asset_path": "props/gate",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/props/gate.blend",
+            "guid": "",
+            "mtime": 1760263564.0949638,
+            "data": {}
+        }
+    ],
     "/mnt/Workspace/StoneAge/resources/externals/models/characters/spider.blend": [
         {
             "asset_type": "MATERIAL_INSTANCE",
@@ -7111,6 +7131,16 @@
             "data": {}
         }
     ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/props/gate.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "props/gate",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/props/gate.blend",
+            "guid": "",
+            "mtime": 1760272221.6176233,
+            "data": {}
+        }
+    ],
     "/mnt/Workspace/StoneAge/resources/externals/scenes/stage_forest.blend": [
         {
             "asset_type": "SCENE",
@@ -8271,64 +8301,6 @@
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/game_data/data/data.blend": [
-        {
-            "asset_type": "GAME_DATA",
-            "asset_path": "character_animation_data",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/data/data.blend",
-            "guid": "",
-            "mtime": 1757866879.9393704,
-            "data": {}
-        },
-        {
-            "asset_type": "GAME_DATA",
-            "asset_path": "character_audio_data",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/data/data.blend",
-            "guid": "",
-            "mtime": 1757866879.9393704,
-            "data": {}
-        },
-        {
-            "asset_type": "GAME_DATA",
-            "asset_path": "character_data",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/data/data.blend",
-            "guid": "",
-            "mtime": 1757866879.9393704,
-            "data": {}
-        },
-        {
-            "asset_type": "GAME_DATA",
-            "asset_path": "character_stat_data",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/data/data.blend",
-            "guid": "",
-            "mtime": 1757866879.9393704,
-            "data": {}
-        },
-        {
-            "asset_type": "GAME_DATA",
-            "asset_path": "item_data",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/data/data.blend",
-            "guid": "",
-            "mtime": 1757866879.9393704,
-            "data": {}
-        },
-        {
-            "asset_type": "GAME_DATA",
-            "asset_path": "prop_data",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/data/data.blend",
-            "guid": "",
-            "mtime": 1757866879.9393704,
-            "data": {}
-        },
-        {
-            "asset_type": "GAME_DATA",
-            "asset_path": "weapon_data",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/data/data.blend",
-            "guid": "",
-            "mtime": 1757866879.9393704,
-            "data": {}
-        }
-    ],
     "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/stage_01.blend": [
         {
             "asset_type": "GAME_SCENE",
@@ -8345,7 +8317,7 @@
             "asset_path": "stage_cave",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/stage_cave.blend",
             "guid": "",
-            "mtime": 1759993422.600785,
+            "mtime": 1760269311.458546,
             "data": {}
         }
     ],
@@ -8355,7 +8327,7 @@
             "asset_path": "intro_stage",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/intro_stage.blend",
             "guid": "",
-            "mtime": 1760021084.5820265,
+            "mtime": 1760272588.3271804,
             "data": {}
         }
     ],
@@ -8436,6 +8408,84 @@
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/props/twigs.blend",
             "guid": "",
             "mtime": 1757954661.103121,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/props/cave_ceiling.blend": [
+        {
+            "asset_type": "GAME_PROP",
+            "asset_path": "cave_ceil",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/props/cave_ceiling.blend",
+            "guid": "",
+            "mtime": 1760262134.3170455,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/props/gate.blend": [
+        {
+            "asset_type": "GAME_PROP",
+            "asset_path": "gate",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/props/gate.blend",
+            "guid": "",
+            "mtime": 1760263849.5690968,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/data/data.blend": [
+        {
+            "asset_type": "GAME_DATA",
+            "asset_path": "character_animation_data",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/data/data.blend",
+            "guid": "",
+            "mtime": 1760272553.1251254,
+            "data": {}
+        },
+        {
+            "asset_type": "GAME_DATA",
+            "asset_path": "character_audio_data",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/data/data.blend",
+            "guid": "",
+            "mtime": 1760272553.1251254,
+            "data": {}
+        },
+        {
+            "asset_type": "GAME_DATA",
+            "asset_path": "character_data",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/data/data.blend",
+            "guid": "",
+            "mtime": 1760272553.1251254,
+            "data": {}
+        },
+        {
+            "asset_type": "GAME_DATA",
+            "asset_path": "character_stat_data",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/data/data.blend",
+            "guid": "",
+            "mtime": 1760272553.1251254,
+            "data": {}
+        },
+        {
+            "asset_type": "GAME_DATA",
+            "asset_path": "item_data",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/data/data.blend",
+            "guid": "",
+            "mtime": 1760272553.1251254,
+            "data": {}
+        },
+        {
+            "asset_type": "GAME_DATA",
+            "asset_path": "prop_data",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/data/data.blend",
+            "guid": "",
+            "mtime": 1760272553.1251254,
+            "data": {}
+        },
+        {
+            "asset_type": "GAME_DATA",
+            "asset_path": "weapon_data",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/data/data.blend",
+            "guid": "",
+            "mtime": 1760272553.1251254,
             "data": {}
         }
     ]

@@ -132,6 +132,46 @@
         }
     },
     "_props": {
+        "cave_ceil": {
+            "_position": [
+                0.0,
+                27.31220054626465,
+                0.0
+            ],
+            "_prop_data_name": "props/cave_ceil",
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "gate": {
+            "_instance_parameters": {
+                "_linked_gate": "gate",
+                "_linked_stage": "intro_stage"
+            },
+            "_position": [
+                34.69944763183594,
+                9.930437088012695,
+                5.583801746368408
+            ],
+            "_prop_data_name": "props/gate",
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                2.7417385578155518,
+                2.7417385578155518,
+                2.7417385578155518
+            ]
+        },
         "mushroom_orange_00": {
             "_position": [
                 -11.007474899291992,
@@ -263,24 +303,6 @@
                     1.0
                 ]
             },
-            "landscape_cave_ceil": {
-                "_model_data_name": "landscapes/landscape_cave_ceil",
-                "_position": [
-                    0.0,
-                    27.312170028686523,
-                    0.0
-                ],
-                "_rotation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "_scale": [
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            },
             "rock_00": {
                 "_model_data_name": "environments/rock_00",
                 "_position": [
@@ -333,24 +355,6 @@
                     1.0,
                     1.0,
                     1.0
-                ]
-            },
-            "rock_03": {
-                "_model_data_name": "environments/rock_03",
-                "_position": [
-                    5.310402870178223,
-                    15.381919860839844,
-                    -5.618217468261719
-                ],
-                "_rotation": [
-                    -3.1415929794311523,
-                    0.0,
-                    0.0
-                ],
-                "_scale": [
-                    2.382080554962158,
-                    1.0,
-                    2.382080554962158
                 ]
             },
             "rock_03.001": {

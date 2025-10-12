@@ -16,7 +16,9 @@ pub enum PropDataType {
     None,
     Destruction,
     Pickup,
-    Harvestable
+    Harvestable,
+    Ceiling,
+    Gate
 }
 
 #[derive(Serialize, Deserialize, Default, Debug, Clone, PartialEq)]
@@ -26,6 +28,7 @@ pub struct PropCreateInfo {
     pub _position: Vector3<f32>,
     pub _rotation: Vector3<f32>,
     pub _scale: Vector3<f32>,
+    pub _instance_parameters: serde_json::Map<String, serde_json::Value>
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
@@ -59,7 +62,8 @@ pub struct Prop<'a> {
     pub _prop_manager: *const PropManager<'a>,
     pub _render_object: RcRefCell<RenderObjectData<'a>>,
     pub _prop_data: RcRefCell<PropData>,
-    pub _prop_stats: Box<PropStats>
+    pub _prop_stats: Box<PropStats>,
+    pub _instance_parameters: serde_json::Map<String, serde_json::Value>
 }
 
 pub struct PropManager<'a> {
