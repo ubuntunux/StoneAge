@@ -85,6 +85,7 @@ pub const STORY_BOARDS: [&str; 3] = [
     "ui/story_board/story_board_00_01",
     "ui/story_board/story_board_00_02"
 ];
+pub const MATERIAL_FADE_TO_BLACK: &str = "ui/fade_to_black";
 
 // EFFECT DATA
 pub const EFFECT_HIT: &str = "effect_test";

@@ -2,10 +2,9 @@ use nalgebra::Vector2;
 use winit::keyboard::KeyCode;
 use rust_engine_3d::core::engine_core::EngineCore;
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
-
 use crate::application::application::Application;
 use crate::game_module::actors::character_manager::CharacterManager;
-use crate::game_module::game_constants::{AMBIENT_SOUND, CAMERA_DISTANCE_MAX, GAME_MUSIC, GAME_SCENE_INTRO, MATERIAL_INTRO_IMAGE, STORY_BOARDS, STORY_BOARD_FADE_TIME};
+use crate::game_module::game_constants::{AMBIENT_SOUND, CAMERA_DISTANCE_MAX, GAME_MUSIC, GAME_SCENE_INTRO, MATERIAL_INTRO_IMAGE, STORY_BOARDS, STORY_BOARD_FADE_TIME, MATERIAL_FADE_TO_BLACK};
 use crate::game_module::game_controller::GameController;
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::{GameSceneManager, GameSceneState};
@@ -143,35 +142,37 @@ impl<'a> GameClient<'a> {
 
         match self._game_phase {
             GamePhase::None => {
-                self.get_game_ui_manager_mut().set_game_image(MATERIAL_INTRO_IMAGE, 0.0);
+                self.get_game_ui_manager_mut().set_game_image(MATERIAL_INTRO_IMAGE, 0.0, true);
                 game_scene_manager.play_bgm(GAME_MUSIC, Some(0.5));
                 game_scene_manager.play_ambient_sound(AMBIENT_SOUND, None);
+                self.clear_story_board_phase();
                 self._game_phase = GamePhase::Intro;
             }
             GamePhase::Intro => {
                 if any_key_pressed {
-                    game_scene_manager.open_game_scene_data(GAME_SCENE_INTRO);
-                    if false == self._game_controller.is_null() {
-                        let game_controller = ptr_as_mut(self._game_controller);
-                        game_controller.update_on_open_game_scene();
+                    let story_board_phase = self.get_story_board_phase();
+                    if self.get_game_ui_manager().is_done_game_image_progress() {
+                        if STORY_BOARDS.len() <= story_board_phase {
+                            self.get_game_ui_manager_mut().set_game_image("", STORY_BOARD_FADE_TIME, false);
+                            self._game_phase = GamePhase::Loading;
+                        } else {
+                            self.get_game_ui_manager_mut().set_game_image(&STORY_BOARDS[story_board_phase], STORY_BOARD_FADE_TIME, true);
+                            self.next_story_board_phase();
+                        }
                     }
-                    self.clear_story_board_phase();
-                    self._game_phase = GamePhase::Loading;
                 }
             }
             GamePhase::Loading => {
-                if game_scene_manager.is_game_scene_state(GameSceneState::Playing) {
-                    let story_board_phase = self.get_story_board_phase();
-                    if any_key_pressed || story_board_phase == 0 {
-                        if self.get_game_ui_manager().is_done_game_image_progress() {
-                            if STORY_BOARDS.len() <= story_board_phase {
-                                self.get_game_ui_manager_mut().set_game_image("", STORY_BOARD_FADE_TIME);
-                                self._game_phase = GamePhase::GamePlay;
-                            } else {
-                                self.get_game_ui_manager_mut().set_game_image(&STORY_BOARDS[story_board_phase], STORY_BOARD_FADE_TIME);
-                                self.next_story_board_phase();
-                            }
+                if self.get_game_ui_manager().is_done_game_image_progress() {
+                    if game_scene_manager.is_game_scene_state(GameSceneState::None) {
+                        game_scene_manager.open_game_scene_data(GAME_SCENE_INTRO);
+                    } else if game_scene_manager.is_game_scene_state(GameSceneState::LoadComplete) {
+                        if false == self._game_controller.is_null() {
+                            let game_controller = ptr_as_mut(self._game_controller);
+                            game_controller.update_on_open_game_scene();
                         }
+                        self.get_game_ui_manager_mut().set_auto_fade_inout(true);
+                        self._game_phase = GamePhase::GamePlay;
                     }
                 }
             }
@@ -181,7 +182,7 @@ impl<'a> GameClient<'a> {
                     game_scene_manager.spawn_game_object_data();
                 }
 
-                if game_scene_manager.is_game_scene_state(GameSceneState::Playing) && game_scene_manager.get_character_manager().is_valid_player() {
+                if game_scene_manager.is_game_scene_state(GameSceneState::LoadComplete) && game_scene_manager.get_character_manager().is_valid_player() {
                     let player = game_scene_manager.get_character_manager().get_player();
                     let main_camera = scene_manager.get_main_camera_mut();
                     if false == self._game_controller.is_null() {

@@ -81,7 +81,7 @@ impl CharacterController {
         self._is_jump_start = false;
         self._is_jump = false;
         self._is_running = false;
-        self._is_ground = false;
+        self._is_ground = true;
         self._is_blocked = false;
         self._is_cliff = false;
     }

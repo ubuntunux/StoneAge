@@ -13,6 +13,8 @@ pub struct ImageLayout<'a> {
     pub _material_instance: Option<RcRefCell<MaterialInstanceData<'a>>>,
     pub _next_material_instance: Option<RcRefCell<MaterialInstanceData<'a>>>,
     pub _initial_fade_time: f32,
+    pub _auto_fade_inout: bool,
+    pub _done_manual_fade_out: bool,
     pub _fade_time: f32,
     pub _fade_speed: f32,
     pub _opacity: f32,
@@ -63,6 +65,8 @@ impl<'a> ImageLayout<'a> {
             _material_instance: None,
             _next_material_instance: None,
             _initial_fade_time: 0.0,
+            _auto_fade_inout: false,
+            _done_manual_fade_out: false,
             _fade_time: 0.0,
             _fade_speed: 1.0,
             _opacity: 0.0,
@@ -89,11 +93,8 @@ impl<'a> ImageLayout<'a> {
         game_resources: &GameResources<'a>,
         material_instance: Option<RcRefCell<MaterialInstanceData<'a>>>,
         fade_time: f32,
+        auto_fade_inout: bool
     ) {
-        if self._material_instance.is_none() && material_instance.is_none() {
-            return;
-        }
-
         if material_instance.is_some() {
             let material_instance_refcell = material_instance.as_ref().unwrap();
             let material_instance_ref = material_instance_refcell.borrow();
@@ -114,8 +115,9 @@ impl<'a> ImageLayout<'a> {
         }
         self._next_material_instance = material_instance;
 
-        let progress = self.get_progress();
+        let progress = self.get_progress(self._fade_time);
         self._initial_fade_time = fade_time;
+        self._auto_fade_inout = auto_fade_inout;
         self._fade_time = fade_time * if progress <= 0.5 { progress } else { 1.0 - progress };
 
         self._prev_opacity = self._opacity;
@@ -143,12 +145,16 @@ impl<'a> ImageLayout<'a> {
     }
 
     pub fn is_done_game_image_progress(&self) -> bool {
-        self.get_progress() == 1.0
+        self.get_progress(self._fade_time) == 1.0 || self._done_manual_fade_out
     }
 
-    pub fn get_progress(&self) -> f32 {
+    pub fn set_auto_fade_inout(&mut self, auto_fade_inout: bool) {
+        self._auto_fade_inout = auto_fade_inout
+    }
+
+    pub fn get_progress(&self, fade_time: f32) -> f32 {
         if 0.0 != self._initial_fade_time {
-            1.0_f32.min(self._fade_time / self._initial_fade_time)
+            1.0_f32.min(fade_time / self._initial_fade_time)
         } else {
             1.0
         }
@@ -167,14 +173,22 @@ impl<'a> ImageLayout<'a> {
     }
 
     pub fn update_game_image(&mut self, delta_time: f64, force: bool) {
-        let prev_progress = self.get_progress();
+        let prev_progress = self.get_progress(self._fade_time);
         if prev_progress < 1.0 || force {
             // progress
-            self._fade_time += self._fade_speed * delta_time as f32;
-            let progress = self.get_progress();
+            self._done_manual_fade_out = false;
+            let mut next_fade_time = self._fade_time + self._fade_speed * delta_time as f32;
+            let mut progress = self.get_progress(next_fade_time);
             if prev_progress <= 0.5 && 0.5 < progress || force {
-                self.change_game_image();
+                if self._auto_fade_inout {
+                    self.change_game_image();
+                } else {
+                    progress = 0.5;
+                    next_fade_time = self._initial_fade_time * 0.5;
+                    self._done_manual_fade_out = true;
+                }
             }
+            self._fade_time = next_fade_time;
 
             // calc opacity
             if progress == 1.0 {

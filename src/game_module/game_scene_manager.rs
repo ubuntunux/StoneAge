@@ -25,7 +25,7 @@ type PropCreateInfoMap = HashMap<String, PropCreateInfo>;
 pub enum GameSceneState {
     None,
     Loading,
-    Playing
+    LoadComplete,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
@@ -291,10 +291,10 @@ impl<'a> GameSceneManager<'a> {
             GameSceneState::Loading => {
                 if self.get_scene_manager().is_load_complete() {
                     self.spawn_game_object_data();
-                    self.set_game_scene_state(GameSceneState::Playing);
+                    self.set_game_scene_state(GameSceneState::LoadComplete);
                 }
             },
-            GameSceneState::Playing => {
+            GameSceneState::LoadComplete => {
                 if self._teleport_stage.is_some() {
                     self.close_game_scene_data();
 
