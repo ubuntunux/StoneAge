@@ -225,6 +225,9 @@ impl<'a> PropManager<'a> {
         let prop_data = game_resources.get_prop_data(prop_create_info._prop_data_name.as_str());
         let render_object_create_info = RenderObjectCreateInfo {
             _model_data_name: prop_data.borrow()._model_data_name.clone(),
+            _position: prop_create_info._position.clone(),
+            _rotation: prop_create_info._rotation.clone(),
+            _scale: prop_create_info._scale.clone(),
             ..Default::default()
         };
         let render_object_data = self.get_scene_manager_mut().add_dynamic_render_object(prop_name, &render_object_create_info, None);
@@ -300,7 +303,7 @@ impl<'a> PropManager<'a> {
                         },
                         PropDataType::Destruction | PropDataType::Harvestable => {
                             if prop_type == PropDataType::Destruction || prop_type == PropDataType::Harvestable && prop.can_drop_item() {
-                                if player._animation_state.is_attack_event() & & player.check_in_range(prop.get_collision(), NPC_ATTACK_HIT_RANGE, check_direction) {
+                                if player._animation_state.is_attack_event() && player.check_in_range(prop.get_collision(), NPC_ATTACK_HIT_RANGE, check_direction) {
                                     prop.set_hit_damage(player.get_power(player._animation_state.get_action_event()));
                                     if false == prop.is_alive() {
                                         for item_create_info in prop.drop_items().iter() {
