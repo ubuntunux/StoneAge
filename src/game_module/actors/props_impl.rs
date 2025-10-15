@@ -189,6 +189,9 @@ impl<'a> PropManager<'a> {
     pub fn get_game_client(&self) -> &GameClient<'a> {
         ptr_as_ref(self._game_client)
     }
+    pub fn get_game_client_mut(&self) -> &mut GameClient<'a> {
+        ptr_as_mut(self._game_client)
+    }
     pub fn get_game_scene_manager(&self) -> &GameSceneManager<'a> {
         ptr_as_ref(self._game_scene_manager)
     }
@@ -308,7 +311,7 @@ impl<'a> PropManager<'a> {
                                     if false == prop.is_alive() {
                                         for item_create_info in prop.drop_items().iter() {
                                             // drop items
-                                            self.get_game_scene_manager().get_item_manager_mut().create_item(&item_create_info, false);
+                                            self.get_game_scene_manager().get_item_manager_mut().create_item(&item_create_info, true);
                                         }
 
                                         if prop_type == PropDataType::Harvestable && 0 < prop.get_item_regenerate_count() {
@@ -328,7 +331,7 @@ impl<'a> PropManager<'a> {
                                 let linked_gate = prop._instance_parameters.get("_linked_gate");
                                 let linked_stage = prop._instance_parameters.get("_linked_stage");
                                 if linked_stage.is_some() && linked_gate.is_some() {
-                                    self.get_game_scene_manager_mut().teleport_stage(
+                                    self.get_game_client_mut().teleport_stage(
                                         linked_stage.unwrap().as_str().unwrap(),
                                         linked_gate.unwrap().as_str().unwrap()
                                     );

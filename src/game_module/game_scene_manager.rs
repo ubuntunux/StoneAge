@@ -53,8 +53,6 @@ pub struct GameSceneManager<'a> {
     pub _time_of_day: f32,
     pub _temperature: f32,
     pub _date: u32,
-    pub _teleport_stage: Option<String>,
-    pub _teleport_gate: Option<String>,
     pub _game_scene_state: GameSceneState
 }
 
@@ -114,8 +112,6 @@ impl<'a> GameSceneManager<'a> {
             _time_of_day: 10.0,
             _temperature: 30.0,
             _date: 1,
-            _teleport_stage: None,
-            _teleport_gate: None,
             _game_scene_state: GameSceneState::None,
         })
     }
@@ -189,11 +185,6 @@ impl<'a> GameSceneManager<'a> {
 
     pub fn is_game_scene_state(&self, state: GameSceneState) -> bool {
         self._game_scene_state == state
-    }
-
-    pub fn teleport_stage(&mut self, teleport_stage: &str, teleport_gate: &str) {
-        self._teleport_stage = Some(String::from(teleport_stage));
-        self._teleport_gate = Some(String::from(teleport_gate));
     }
 
     pub fn open_game_scene_data(&mut self, game_scene_data_name: &str) {
@@ -295,24 +286,6 @@ impl<'a> GameSceneManager<'a> {
                 }
             },
             GameSceneState::LoadComplete => {
-                if self._teleport_stage.is_some() {
-                    self.close_game_scene_data();
-
-                    let stage_name = self._teleport_stage.as_ref().unwrap().clone();
-                    self.open_game_scene_data(stage_name.as_str());
-                    self._teleport_stage = None;
-                    return;
-                }
-
-                if self._teleport_gate.is_some() {
-                    let teleport_point = self._prop_manager.get_teleport_point(self._teleport_gate.as_ref().unwrap().as_str());
-                    if teleport_point.is_some() && self._character_manager.is_valid_player() {
-                        let player = self._character_manager.get_player();
-                        player.borrow_mut().set_position(teleport_point.as_ref().unwrap());
-                    }
-                    self._teleport_gate = None;
-                }
-
                 self.update_time_of_day(delta_time);
                 self._prop_manager.update_prop_manager(delta_time);
                 self._item_manager.update_item_manager(delta_time);

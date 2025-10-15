@@ -27,6 +27,8 @@ pub struct GameClient<'a> {
     pub _game_ui_manager: *const GameUIManager<'a>,
     pub _game_phase: GamePhase,
     pub _story_board_phase: usize,
+    pub _teleport_stage: Option<String>,
+    pub _teleport_gate: Option<String>,
 }
 
 impl<'a> GameClient<'a> {
@@ -41,6 +43,8 @@ impl<'a> GameClient<'a> {
             _game_ui_manager: std::ptr::null(),
             _game_phase: GamePhase::None,
             _story_board_phase: 0,
+            _teleport_stage: None,
+            _teleport_gate: None,
         })
     }
 
@@ -115,10 +119,19 @@ impl<'a> GameClient<'a> {
         self._story_board_phase += 1;
     }
 
+    pub fn teleport_stage(&mut self, teleport_stage: &str, teleport_gate: &str) {
+        self._teleport_stage = Some(String::from(teleport_stage));
+        self._teleport_gate = Some(String::from(teleport_gate));
+    }
+
     pub fn update_game_mode(&mut self, delta_time: f64) {
-        let engine_core = self.get_engine_core();
+        let engine_core = ptr_as_ref(self._engine_core);
         let game_scene_manager = ptr_as_mut(self._game_scene_manager);
         let scene_manager = ptr_as_mut(game_scene_manager._scene_manager);
+        let character_manager = ptr_as_mut(game_scene_manager._character_manager.as_ref());
+        let game_ui_manager = ptr_as_mut(self._game_ui_manager);
+        let game_controller = ptr_as_mut(self._game_controller);
+
         let time_data = &engine_core._time_data;
         let mouse_move_data = &engine_core._mouse_move_data;
         let mouse_input_data = &engine_core._mouse_input_data;
@@ -136,13 +149,13 @@ impl<'a> GameClient<'a> {
             mouse_input_data.is_any_button_hold() ||
             keyboard_input_data.is_any_key_hold();
 
-        if self.get_game_ui_manager().is_done_game_image_progress() == false {
-            self.get_game_ui_manager_mut().set_game_image_fade_speed(if any_key_hold { 5.0 } else { 1.0 });
+        if game_ui_manager.is_done_game_image_progress() == false {
+            game_ui_manager.set_game_image_fade_speed(if any_key_hold { 5.0 } else { 1.0 });
         }
 
         match self._game_phase {
             GamePhase::None => {
-                self.get_game_ui_manager_mut().set_game_image(MATERIAL_INTRO_IMAGE, 0.0, true);
+                game_ui_manager.set_game_image(MATERIAL_INTRO_IMAGE, 0.0, true);
                 game_scene_manager.play_bgm(GAME_MUSIC, Some(0.5));
                 game_scene_manager.play_ambient_sound(AMBIENT_SOUND, None);
                 self.clear_story_board_phase();
@@ -151,19 +164,19 @@ impl<'a> GameClient<'a> {
             GamePhase::Intro => {
                 if any_key_pressed {
                     let story_board_phase = self.get_story_board_phase();
-                    if self.get_game_ui_manager().is_done_game_image_progress() {
+                    if game_ui_manager.is_done_game_image_progress() {
                         if STORY_BOARDS.len() <= story_board_phase {
-                            self.get_game_ui_manager_mut().set_game_image("", STORY_BOARD_FADE_TIME, false);
+                            game_ui_manager.set_game_image("", STORY_BOARD_FADE_TIME, false);
                             self._game_phase = GamePhase::Loading;
                         } else {
-                            self.get_game_ui_manager_mut().set_game_image(&STORY_BOARDS[story_board_phase], STORY_BOARD_FADE_TIME, true);
+                            game_ui_manager.set_game_image(&STORY_BOARDS[story_board_phase], STORY_BOARD_FADE_TIME, true);
                             self.next_story_board_phase();
                         }
                     }
                 }
             }
             GamePhase::Loading => {
-                if self.get_game_ui_manager().is_done_game_image_progress() {
+                if game_ui_manager.is_done_game_image_progress() {
                     if game_scene_manager.is_game_scene_state(GameSceneState::None) {
                         game_scene_manager.open_game_scene_data(GAME_SCENE_INTRO);
                     } else if game_scene_manager.is_game_scene_state(GameSceneState::LoadComplete) {
@@ -171,7 +184,7 @@ impl<'a> GameClient<'a> {
                             let game_controller = ptr_as_mut(self._game_controller);
                             game_controller.update_on_open_game_scene();
                         }
-                        self.get_game_ui_manager_mut().set_auto_fade_inout(true);
+                        game_ui_manager.set_auto_fade_inout(true);
                         self._game_phase = GamePhase::GamePlay;
                     }
                 }
@@ -182,11 +195,24 @@ impl<'a> GameClient<'a> {
                     game_scene_manager.spawn_game_object_data();
                 }
 
-                if game_scene_manager.is_game_scene_state(GameSceneState::LoadComplete) && game_scene_manager.get_character_manager().is_valid_player() {
-                    let player = game_scene_manager.get_character_manager().get_player();
-                    let main_camera = scene_manager.get_main_camera_mut();
-                    if false == self._game_controller.is_null() {
-                        let game_controller = ptr_as_mut(self._game_controller);
+                if game_scene_manager.is_game_scene_state(GameSceneState::LoadComplete) {
+                    if self._teleport_stage.is_some() && character_manager.is_valid_player() {
+                        game_scene_manager.close_game_scene_data();
+
+                        let stage_name = self._teleport_stage.as_ref().unwrap().clone();
+                        game_scene_manager.open_game_scene_data(stage_name.as_str());
+                        self._teleport_stage = None;
+                    }
+
+                    if self._teleport_gate.is_some() && character_manager.is_valid_player() {
+                        let teleport_point = game_scene_manager.get_prop_manager().get_teleport_point(self._teleport_gate.as_ref().unwrap().as_str());
+                        if teleport_point.is_some() {
+                            character_manager.get_player().borrow_mut().set_position(teleport_point.as_ref().unwrap());
+                        }
+                        self._teleport_gate = None;
+                    }
+
+                    if false == self._game_controller.is_null() && character_manager.is_valid_player() {
                         game_controller.update_game_controller(
                             time_data,
                             &joystick_input_data,
@@ -194,8 +220,8 @@ impl<'a> GameClient<'a> {
                             &mouse_move_data,
                             &mouse_input_data,
                             &mouse_delta,
-                            main_camera,
-                            player,
+                            scene_manager.get_main_camera_mut(),
+                            character_manager.get_player(),
                         );
                     }
                 }
