@@ -306,7 +306,7 @@ impl CharacterController {
                 let move_delta = self._position - prev_position;
                 let (move_dir, move_distance) = math::make_normalize_with_norm(&move_delta);
                 let new_move_dir = math::safe_normalize(&(Vector3::new(self._position.x, ground_height, self._position.z) - prev_position));
-                self._position = prev_position + new_move_dir * move_distance + Vector3::new(ground_normal.x, 0.0, ground_normal.z) * move_distance;
+                self._position = prev_position + new_move_dir * move_distance;// + Vector3::new(ground_normal.x, 0.0, ground_normal.z) * move_distance;
 
                 if 0.0 < move_distance && SLOPE_ANGLE <= new_move_dir.y || ground_normal.y < SLOPE_ANGLE && ground_normal.dot(&move_dir) < 0.0 {
                     let slop_speed = SLOPE_SPEED.max(self._move_speed);
