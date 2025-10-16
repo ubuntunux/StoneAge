@@ -216,7 +216,7 @@ impl<'a> CharacterManager<'a> {
                 delta_time as f32
             );
 
-            if character_mut._character_stats._is_alive == false {
+            if character_mut.is_alive() == false {
                 continue;
             }
 
@@ -228,7 +228,7 @@ impl<'a> CharacterManager<'a> {
                     for target_character in self._characters.values() {
                         let target_character_mut = ptr_as_mut(target_character.as_ptr());
                         if false == target_character_mut._is_player &&
-                            target_character_mut._character_stats._is_alive &&
+                            target_character_mut.is_alive() &&
                             false == target_character_mut._character_stats._invincibility &&
                             character_mut.check_in_range(target_character_mut.get_collision(), NPC_ATTACK_HIT_RANGE, check_direction) {
                                 register_target_character = Some(target_character.clone());
@@ -237,7 +237,7 @@ impl<'a> CharacterManager<'a> {
                                     character_mut.get_power(character_mut._animation_state.get_action_event()),
                                     Some(character_mut.get_front())
                                 );
-                                if false == target_character_mut._character_stats._is_alive {
+                                if false == target_character_mut.is_alive() {
                                     dead_characters.push(target_character.clone());
 
                                     // TestCode: Item
@@ -252,7 +252,7 @@ impl<'a> CharacterManager<'a> {
                     }
                 } else {
                     // npc attack to player
-                    if player._character_stats._is_alive &&
+                    if player.is_alive() &&
                         false == player._character_stats._invincibility &&
                         character_mut.check_in_range(player.get_collision(), NPC_ATTACK_HIT_RANGE, check_direction) {
                         player.set_hit_damage(

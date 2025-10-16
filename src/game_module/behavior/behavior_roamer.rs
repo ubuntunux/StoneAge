@@ -22,7 +22,7 @@ impl BehaviorBase for BehaviorRoamer {
     }
 
     fn is_enemy_in_range(&self, owner: &Character, player: &Character) -> bool {
-        if player._character_stats._is_alive {
+        if player.is_alive() {
             return owner.check_in_range(player.get_collision(), NPC_TRACKING_RANGE, false);
         }
         false
@@ -65,7 +65,7 @@ impl BehaviorBase for BehaviorRoamer {
                 self._move_time -= delta_time;
             },
             BehaviorState::Chase => {
-                if player._character_stats._is_alive {
+                if player.is_alive() {
                     if owner.check_in_range(player.get_collision(), NPC_TRACKING_RANGE, false) {
                         if owner.check_in_range(player.get_collision(), NPC_ATTACK_RANGE, false) {
                             self.set_behavior(BehaviorState::Attack, owner, player, false);
@@ -82,7 +82,7 @@ impl BehaviorBase for BehaviorRoamer {
                 }
             },
             BehaviorState::Attack => {
-                if player._character_stats._is_alive && 0.0 < self._attack_time {
+                if player.is_alive() && 0.0 < self._attack_time {
                     if owner.is_attack_animation() {
                         if !owner.is_available_move() || (NPC_AVAILABLE_MOVING_ATTACK || !owner.is_attack_animation()) {
                             owner.set_move_stop();

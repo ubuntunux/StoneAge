@@ -282,27 +282,18 @@ impl<'a> PropManager<'a> {
             let check_direction = true;
             let player_refcell = game_scene_manager.get_character_manager().get_player();
             let mut player = player_refcell.borrow_mut();
-            if player._character_stats._is_alive {
-                player._controller.set_in_pickup_prop_range(false);
+            if player.is_alive() {
+                player._controller.set_in_interaction_range(false);
                 for prop_refcell in self._props.values() {
                     let mut prop = prop_refcell.borrow_mut();
                     let prop_type = prop._prop_data.borrow()._prop_type;
                     let bounding_box = prop.get_bounding_box();
                     match prop_type {
-                        PropDataType::Pickup => {
-                            if player.get_bounding_box().collide_bound_box(&bounding_box._min, &bounding_box._max) {
-                                player._controller.set_in_pickup_prop_range(true);
-                                if player._animation_state.is_pickup_event() {
-                                    let mut pickup_items: bool = false;
-                                    for item_create_info in prop.drop_items().iter() {
-                                        pickup_items = pickup_items || self.get_game_scene_manager().get_item_manager_mut().instance_pickup_item(&item_create_info);
-                                    }
-
-                                    if pickup_items {
-                                        dead_props.push(prop_refcell.clone());
-                                    }
-                                }
-                            }
+                        PropDataType::Bed => {
+                            prop._render_object.borrow_mut().set_render_camera(!bounding_box.collide_point(&player.get_position()));
+                        },
+                        PropDataType::Ceiling => {
+                            prop._render_object.borrow_mut().set_render_camera(!bounding_box.collide_point(&player.get_position()));
                         },
                         PropDataType::Destruction | PropDataType::Harvestable => {
                             if prop_type == PropDataType::Destruction || prop_type == PropDataType::Harvestable && prop.can_drop_item() {
@@ -323,9 +314,6 @@ impl<'a> PropManager<'a> {
                                 }
                             }
                         },
-                        PropDataType::Ceiling => {
-                            prop._render_object.borrow_mut().set_render_camera(!bounding_box.collide_point(&player.get_position()));
-                        },
                         PropDataType::Gate => {
                             if bounding_box.collide_point(&player.get_position()) {
                                 let linked_gate = prop._instance_parameters.get("_linked_gate");
@@ -335,6 +323,21 @@ impl<'a> PropManager<'a> {
                                         linked_stage.unwrap().as_str().unwrap(),
                                         linked_gate.unwrap().as_str().unwrap()
                                     );
+                                }
+                            }
+                        },
+                        PropDataType::Pickup => {
+                            if player.get_bounding_box().collide_bound_box(&bounding_box._min, &bounding_box._max) {
+                                player._controller.set_in_interaction_range(true);
+                                if player._animation_state.is_pickup_event() {
+                                    let mut pickup_items: bool = false;
+                                    for item_create_info in prop.drop_items().iter() {
+                                        pickup_items = pickup_items || self.get_game_scene_manager().get_item_manager_mut().instance_pickup_item(&item_create_info);
+                                    }
+
+                                    if pickup_items {
+                                        dead_props.push(prop_refcell.clone());
+                                    }
                                 }
                             }
                         },

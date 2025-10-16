@@ -186,6 +186,10 @@ impl<'a> Character<'a> {
         move_state == self._animation_state._move_animation_state
     }
 
+    pub fn is_alive(&self) -> bool {
+        self._character_stats._is_alive
+    }
+
     pub fn is_on_ground(&self) -> bool {
         self._controller.is_on_ground()
     }
@@ -198,8 +202,8 @@ impl<'a> Character<'a> {
         self._controller.is_jump()
     }
 
-    pub fn is_in_pickup_prop_range(&self) -> bool {
-        self._controller.is_in_pickup_prop_range()
+    pub fn is_in_interaction_range(&self) -> bool {
+        self._controller.is_in_interaction_range()
     }
 
     pub fn is_additive_animation_for_action(&self) -> bool {
@@ -234,7 +238,7 @@ impl<'a> Character<'a> {
     }
 
     pub fn is_available_move(&self) -> bool {
-        self._character_stats._is_alive && !self.is_move_state(MoveAnimationState::Roll)
+        self.is_alive() && !self.is_move_state(MoveAnimationState::Roll)
     }
 
     pub fn is_available_jump(&self) -> bool {
@@ -297,7 +301,7 @@ impl<'a> Character<'a> {
     }
 
     pub fn set_damage(&mut self, damage: i32) {
-        if 0 < damage && self._character_stats._is_alive {
+        if 0 < damage && self.is_alive() {
             let character_manager = ptr_as_ref(self._character_manager);
             self._character_stats._hp -= damage;
             if self._character_stats._hp <= 0 {
@@ -371,9 +375,9 @@ impl<'a> Character<'a> {
         self.set_action_animation(ActionAnimationState::None, 1.0);
     }
 
-    pub fn set_action_pickup(&mut self) {
+    pub fn set_action_interaction(&mut self) {
         if self._controller._is_ground && self.is_available_move() && self.is_action(ActionAnimationState::None) {
-            self.set_action_animation(ActionAnimationState::Pickup, 2.0);
+            self.set_action_animation(ActionAnimationState::Pickup, 1.0);
         }
     }
 
@@ -494,6 +498,12 @@ impl<'a> Character<'a> {
                 animation_info._animation_speed = animation_data._hit_animation_speed * animation_speed;
                 render_object.set_animation(&animation_data._hit_animation, &animation_info, AnimationLayer::ActionLayer);
             }
+            ActionAnimationState::Kick => {
+                render_object.set_animation(&animation_data._kick_animation, &animation_info, AnimationLayer::ActionLayer);
+            }
+            ActionAnimationState::LayingDown => {
+                render_object.set_animation(&animation_data._laying_down_animation, &animation_info, AnimationLayer::ActionLayer);
+            }
             ActionAnimationState::Pickup => {
                 animation_info._animation_speed = animation_speed;
                 render_object.set_animation(&animation_data._pickup_animation, &animation_info, AnimationLayer::ActionLayer);
@@ -501,6 +511,12 @@ impl<'a> Character<'a> {
             ActionAnimationState::PowerAttack => {
                 animation_info._animation_speed = animation_data._power_attack_animation_speed * animation_speed;
                 render_object.set_animation(&animation_data._power_attack_animation, &animation_info, AnimationLayer::ActionLayer);
+            }
+            ActionAnimationState::Sleep => {
+                render_object.set_animation(&animation_data._sleep_animation, &animation_info, AnimationLayer::ActionLayer);
+            }
+            ActionAnimationState::StandUp => {
+                render_object.set_animation(&animation_data._stand_up_animation, &animation_info, AnimationLayer::ActionLayer);
             }
         }
 
@@ -711,24 +727,7 @@ impl<'a> Character<'a> {
 
     pub fn update_action_animation_begin_event(&mut self) {
         match self._animation_state._action_animation_state {
-            ActionAnimationState::None => {
-                // nothing
-            },
-            ActionAnimationState::Attack => {
-                // nothing
-            },
-            ActionAnimationState::Dead => {
-                // nothing
-            },
-            ActionAnimationState::Hit => {
-                // nothing
-            },
-            ActionAnimationState::Pickup => {
-                // nothing
-            },
-            ActionAnimationState::PowerAttack => {
-                // nothing
-            }
+            _ => ()
         }
     }
 
@@ -738,9 +737,6 @@ impl<'a> Character<'a> {
         let render_object = ptr_as_mut(self._render_object.as_ptr());
         let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
         match action_animation {
-            ActionAnimationState::None => {
-                // nothing
-            },
             ActionAnimationState::Attack => {
                 if animation_play_info.check_animation_event_time(character_data._stat_data._attack_event_time) {
                     self._animation_state.set_action_event( ActionAnimationState::Attack );
@@ -785,30 +781,14 @@ impl<'a> Character<'a> {
                 if animation_play_info._is_animation_end {
                     self.set_action_none();
                 }
-            }
+            },
+            _ => ()
         }
     }
 
     pub fn update_action_animation_end_event(&mut self) {
         match self._animation_state._action_animation_state_prev {
-            ActionAnimationState::None => {
-                // nothing
-            },
-            ActionAnimationState::Attack => {
-                // nothing
-            },
-            ActionAnimationState::Dead => {
-                // nothing
-            },
-            ActionAnimationState::Hit => {
-                // nothing
-            },
-            ActionAnimationState::Pickup => {
-                // nothing
-            },
-            ActionAnimationState::PowerAttack => {
-                // nothing
-            }
+            _ => ()
         }
     }
 
@@ -865,7 +845,7 @@ impl<'a> Character<'a> {
         self.update_action_keyframe_event();
 
         // behavior
-        if false == self._is_player && self._character_stats._is_alive {
+        if false == self._is_player && self.is_alive() {
             self._behavior.update_behavior(ptr_as_mut(self), player, delta_time);
         }
 
@@ -889,7 +869,7 @@ impl<'a> Character<'a> {
         );
 
         // falling water or falling on ground
-        if self._character_stats._is_alive {
+        if self.is_alive() {
             if self.check_falling_in_water_damage() {
                 // falling in water
             } else if !was_on_ground && self.is_on_ground() {

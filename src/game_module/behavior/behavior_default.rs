@@ -21,7 +21,7 @@ impl BehaviorBase for BehaviorDefault {
     }
 
     fn is_enemy_in_range(&self, owner: &Character, player: &Character) -> bool {
-        if player._character_stats._is_alive {
+        if player.is_alive() {
             return owner.check_in_range(player.get_collision(), NPC_TRACKING_RANGE, false);
         }
         false

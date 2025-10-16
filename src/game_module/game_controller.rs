@@ -304,8 +304,8 @@ impl<'a> GameController<'a> {
             player_mut.set_action_attack();
         }
 
-        if is_interaction && player_mut.is_in_pickup_prop_range() {
-            player_mut.set_action_pickup();
+        if is_interaction && player_mut.is_in_interaction_range() {
+            player_mut.set_action_interaction();
         }
 
         if is_power_attack {

@@ -6,7 +6,14 @@ use crate::game_module::behavior::behavior_base::BehaviorBase;
 use crate::game_module::actors::character_controller::CharacterController;
 use crate::game_module::actors::character_data::{ActionAnimationState, CharacterData, MoveAnimationState};
 use crate::game_module::actors::character_manager::CharacterManager;
+use crate::game_module::actors::props::Prop;
 use crate::game_module::actors::weapons::Weapon;
+
+pub enum InteractionObject<'a> {
+    None,
+    PropBed(RcRefCell<Prop<'a>>),
+    PropPickup(RcRefCell<Prop<'a>>),
+}
 
 #[derive(Serialize, Deserialize, Default, Debug, Clone, PartialEq)]
 #[serde(default)]

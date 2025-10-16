@@ -235,7 +235,7 @@
             "asset_path": "jack",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/jack.blend",
             "guid": "",
-            "mtime": 1757867191.0657454,
+            "mtime": 1760635185.0896711,
             "data": {}
         }
     ],
@@ -4100,6 +4100,46 @@
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/props/gate.blend",
             "guid": "",
             "mtime": 1760263564.0949638,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/jack/jack_kick.blend": [
+        {
+            "asset_type": "MESH",
+            "asset_path": "characters/jack/jack_kick",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/jack/jack_kick.blend",
+            "guid": "",
+            "mtime": 1760634907.128014,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/jack/jack_sleep.blend": [
+        {
+            "asset_type": "MESH",
+            "asset_path": "characters/jack/jack_sleep",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/jack/jack_sleep.blend",
+            "guid": "",
+            "mtime": 1760634792.325929,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/jack/jack_laying_down.blend": [
+        {
+            "asset_type": "MESH",
+            "asset_path": "characters/jack/jack_laying_down",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/jack/jack_laying_down.blend",
+            "guid": "",
+            "mtime": 1760635377.959554,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/jack/jack_stand_up.blend": [
+        {
+            "asset_type": "MESH",
+            "asset_path": "characters/jack/jack_stand_up",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/jack/jack_stand_up.blend",
+            "guid": "",
+            "mtime": 1760635334.098242,
             "data": {}
         }
     ],
@@ -8311,16 +8351,6 @@
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/stage_cave.blend": [
-        {
-            "asset_type": "GAME_SCENE",
-            "asset_path": "stage_cave",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/stage_cave.blend",
-            "guid": "",
-            "mtime": 1760286428.2862532,
-            "data": {}
-        }
-    ],
     "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/intro_stage.blend": [
         {
             "asset_type": "GAME_SCENE",
@@ -8328,6 +8358,16 @@
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/intro_stage.blend",
             "guid": "",
             "mtime": 1760286574.2435727,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/stage_cave.blend": [
+        {
+            "asset_type": "GAME_SCENE",
+            "asset_path": "stage_cave",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/stage_cave.blend",
+            "guid": "",
+            "mtime": 1760632410.3307023,
             "data": {}
         }
     ],
@@ -8431,13 +8471,23 @@
             "data": {}
         }
     ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/props/bed.blend": [
+        {
+            "asset_type": "GAME_PROP",
+            "asset_path": "bed",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/props/bed.blend",
+            "guid": "",
+            "mtime": 1760632552.0530326,
+            "data": {}
+        }
+    ],
     "/mnt/Workspace/StoneAge/resources/externals/game_data/data/data.blend": [
         {
             "asset_type": "GAME_DATA",
             "asset_path": "character_animation_data",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/data/data.blend",
             "guid": "",
-            "mtime": 1760272553.1251254,
+            "mtime": 1760635142.0478718,
             "data": {}
         },
         {
@@ -8445,7 +8495,7 @@
             "asset_path": "character_audio_data",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/data/data.blend",
             "guid": "",
-            "mtime": 1760272553.1251254,
+            "mtime": 1760635142.0478718,
             "data": {}
         },
         {
@@ -8453,7 +8503,7 @@
             "asset_path": "character_data",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/data/data.blend",
             "guid": "",
-            "mtime": 1760272553.1251254,
+            "mtime": 1760635142.0478718,
             "data": {}
         },
         {
@@ -8461,7 +8511,7 @@
             "asset_path": "character_stat_data",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/data/data.blend",
             "guid": "",
-            "mtime": 1760272553.1251254,
+            "mtime": 1760635142.0478718,
             "data": {}
         },
         {
@@ -8469,7 +8519,7 @@
             "asset_path": "item_data",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/data/data.blend",
             "guid": "",
-            "mtime": 1760272553.1251254,
+            "mtime": 1760635142.0478718,
             "data": {}
         },
         {
@@ -8477,7 +8527,7 @@
             "asset_path": "prop_data",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/data/data.blend",
             "guid": "",
-            "mtime": 1760272553.1251254,
+            "mtime": 1760635142.0478718,
             "data": {}
         },
         {
@@ -8485,7 +8535,7 @@
             "asset_path": "weapon_data",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/data/data.blend",
             "guid": "",
-            "mtime": 1760272553.1251254,
+            "mtime": 1760635142.0478718,
             "data": {}
         }
     ]

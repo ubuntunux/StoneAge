@@ -14,11 +14,12 @@ pub type PropMap<'a> = HashMap<u64, RcRefCell<Prop<'a>>>;
 #[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq)]
 pub enum PropDataType {
     None,
-    Destruction,
-    Pickup,
-    Harvestable,
+    Bed,
     Ceiling,
-    Gate
+    Destruction,
+    Gate,
+    Harvestable,
+    Pickup
 }
 
 #[derive(Serialize, Deserialize, Default, Debug, Clone, PartialEq)]

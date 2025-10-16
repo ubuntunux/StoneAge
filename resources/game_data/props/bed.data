@@ -1,0 +1,10 @@
+{
+    "_item_drop_count_max": 1,
+    "_item_drop_count_min": 1,
+    "_item_regenerate_count": 1,
+    "_item_regenerate_time": 300.0,
+    "_max_hp": 100,
+    "_model_data_name": "environments/bush_01",
+    "_name": "Bed",
+    "_prop_type": "Bed"
+}

@@ -30,7 +30,7 @@ pub struct CharacterController {
     pub _is_jump: bool,
     pub _is_cliff: bool,
     pub _is_blocked: bool,
-    pub _is_in_pickup_prop_range: bool
+    pub _is_in_interaction_range: bool
 }
 
 impl CharacterController {
@@ -55,7 +55,7 @@ impl CharacterController {
             _is_jump: false,
             _is_cliff: false,
             _is_blocked: false,
-            _is_in_pickup_prop_range: false
+            _is_in_interaction_range: false
         }
     }
 
@@ -124,11 +124,11 @@ impl CharacterController {
     pub fn is_blocked(&self) -> bool {
         self._is_blocked
     }
-    pub fn is_in_pickup_prop_range(&self) -> bool {
-        self._is_in_pickup_prop_range
+    pub fn is_in_interaction_range(&self) -> bool {
+        self._is_in_interaction_range
     }
-    pub fn set_in_pickup_prop_range(&mut self, is_in_pickup_prop_range: bool) {
-        self._is_in_pickup_prop_range = is_in_pickup_prop_range;
+    pub fn set_in_interaction_range(&mut self, is_in_interaction_range: bool) {
+        self._is_in_interaction_range = is_in_interaction_range;
     }
     pub fn set_position(&mut self, position: &Vector3<f32>) {
         self._position = position.clone();
