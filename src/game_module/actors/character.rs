@@ -5,14 +5,15 @@ use serde::{Deserialize, Serialize};
 use crate::game_module::behavior::behavior_base::BehaviorBase;
 use crate::game_module::actors::character_controller::CharacterController;
 use crate::game_module::actors::character_data::{ActionAnimationState, CharacterData, MoveAnimationState};
-use crate::game_module::actors::character_manager::CharacterManager;
-use crate::game_module::actors::props::Prop;
+use crate::game_module::actors::character_manager::{CharacterID, CharacterManager};
+use crate::game_module::actors::props::PropID;
 use crate::game_module::actors::weapons::Weapon;
 
-pub enum InteractionObject<'a> {
+#[derive(Clone, PartialEq)]
+pub enum InteractionObject {
     None,
-    PropBed(RcRefCell<Prop<'a>>),
-    PropPickup(RcRefCell<Prop<'a>>),
+    PropBed(PropID),
+    PropPickup(PropID),
 }
 
 #[derive(Serialize, Deserialize, Default, Debug, Clone, PartialEq)]
@@ -45,7 +46,7 @@ pub struct CharacterAnimationState {
 
 pub struct Character<'a> {
     pub _character_manager: *const CharacterManager<'a>,
-    pub _character_id: u64,
+    pub _character_id: CharacterID,
     pub _is_player: bool,
     pub _character_data_name: String,
     pub _character_data: RcRefCell<CharacterData>,

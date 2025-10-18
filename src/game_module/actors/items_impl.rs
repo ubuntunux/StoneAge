@@ -10,7 +10,7 @@ use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
 use crate::application::application::Application;
 use crate::game_module::actors::item_updater::create_item_updater;
-use crate::game_module::actors::items::{Item, ItemCreateInfo, ItemData, ItemDataType, ItemManager, ItemProperties};
+use crate::game_module::actors::items::{Item, ItemCreateInfo, ItemData, ItemDataType, ItemID, ItemManager, ItemProperties};
 use crate::game_module::game_client::GameClient;
 use crate::game_module::game_constants::{EAT_ITEM_DISTANCE, AUDIO_PICKUP_ITEM, AUDIO_ITEM_INVENTORY};
 use crate::game_module::game_resource::GameResources;
@@ -51,7 +51,7 @@ impl Default for ItemData {
 
 impl<'a> Item<'a> {
     pub fn create_item(
-        item_id: u64,
+        item_id: ItemID,
         item_name: &str,
         item_data: &RcRefCell<ItemData>,
         render_object: &RcRefCell<RenderObjectData<'a>>,
@@ -82,7 +82,7 @@ impl<'a> Item<'a> {
         self.update_transform();
     }
 
-    pub fn get_item_id(&self) -> u64 {
+    pub fn get_item_id(&self) -> ItemID {
         self._item_id
     }
 
@@ -112,7 +112,7 @@ impl<'a> ItemManager<'a> {
             _game_resources: std::ptr::null(),
             _audio_manager: std::ptr::null(),
             _scene_manager: std::ptr::null(),
-            _id_generator: 0,
+            _id_generator: ItemID(0),
             _items: HashMap::new(),
         })
     }
@@ -148,12 +148,12 @@ impl<'a> ItemManager<'a> {
     pub fn get_scene_manager_mut(&self) -> &mut SceneManager<'a> {
         ptr_as_mut(self._scene_manager)
     }
-    pub fn generate_id(&mut self) -> u64 {
-        let id = self._id_generator;
-        self._id_generator += 1;
+    pub fn generate_id(&mut self) -> ItemID {
+        let id = self._id_generator.clone();
+        self._id_generator = ItemID(self._id_generator.0 + 1);
         id
     }
-    pub fn get_item(&self, item_id: u64) -> Option<&RcRefCell<Item<'a>>> {
+    pub fn get_item(&self, item_id: ItemID) -> Option<&RcRefCell<Item<'a>>> {
         self._items.get(&item_id)
     }
     pub fn create_item(&mut self, item_create_info: &ItemCreateInfo, pop: bool) -> RcRefCell<Item<'a>> {

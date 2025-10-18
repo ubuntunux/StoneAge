@@ -12,7 +12,10 @@ use crate::game_module::game_client::GameClient;
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
 
-pub type ItemMap<'a> = HashMap<u64, RcRefCell<Item<'a>>>;
+#[derive(Copy, Clone, Debug, Default, Hash, Eq, PartialEq)]
+pub struct ItemID(pub u64);
+
+pub type ItemMap<'a> = HashMap<ItemID, RcRefCell<Item<'a>>>;
 
 #[derive(Serialize, Deserialize, Hash, Eq, Clone, Copy, Debug, EnumIter, Display, PartialEq)]
 pub enum ItemDataType {
@@ -50,7 +53,7 @@ pub struct ItemProperties {
 
 pub struct Item<'a> {
     pub _item_name: String,
-    pub _item_id: u64,
+    pub _item_id: ItemID,
     pub _item_data: RcRefCell<ItemData>,
     pub _render_object: RcRefCell<RenderObjectData<'a>>,
     pub _item_properties: Box<ItemProperties>,
@@ -63,6 +66,6 @@ pub struct ItemManager<'a> {
     pub _game_resources: *const GameResources<'a>,
     pub _audio_manager: *const AudioManager<'a>,
     pub _scene_manager: *const SceneManager<'a>,
-    pub _id_generator: u64,
+    pub _id_generator: ItemID,
     pub _items: ItemMap<'a>,
 }

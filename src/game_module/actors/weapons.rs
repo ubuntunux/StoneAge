@@ -8,7 +8,10 @@ use rust_engine_3d::utilities::system::RcRefCell;
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumIter};
 
-pub type WeaponMap<'a> = HashMap<u64, RcRefCell<Weapon<'a>>>;
+#[derive(Copy, Clone, Debug, Default, Hash, Eq, PartialEq)]
+pub struct WeaponID(u64);
+
+pub type WeaponMap<'a> = HashMap<WeaponID, RcRefCell<Weapon<'a>>>;
 
 #[derive(Serialize, Deserialize, Hash, Eq, Clone, Copy, Debug, EnumIter, Display, PartialEq)]
 pub enum WeaponDataType {

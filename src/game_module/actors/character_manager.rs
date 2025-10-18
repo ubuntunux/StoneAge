@@ -4,7 +4,7 @@ use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::AudioManager;
 use rust_engine_3d::core::engine_core::EngineCore;
 use rust_engine_3d::scene::render_object::RenderObjectCreateInfo;
-use rust_engine_3d::scene::scene_manager::SceneManager;
+use rust_engine_3d::scene::scene_manager::{SceneManager};
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
 
 use crate::application::application::Application;
@@ -16,7 +16,10 @@ use crate::game_module::game_constants::{ITEM_SPIRIT_BALL, NPC_ATTACK_HIT_RANGE}
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
 
-pub type CharacterMap<'a> = HashMap<u64, RcRefCell<Character<'a>>>;
+#[derive(Copy, Clone, Debug, Default, Hash, Eq, PartialEq)]
+pub struct CharacterID(u64);
+
+pub type CharacterMap<'a> = HashMap<CharacterID, RcRefCell<Character<'a>>>;
 
 pub struct CharacterManager<'a> {
     pub _game_client: *const GameClient<'a>,
@@ -24,7 +27,7 @@ pub struct CharacterManager<'a> {
     pub _game_resources: *const GameResources<'a>,
     pub _audio_manager: *const AudioManager<'a>,
     pub _scene_manager: *const SceneManager<'a>,
-    pub _id_generator: u64,
+    pub _id_generator: CharacterID,
     pub _player: Option<RcRefCell<Character<'a>>>,
     pub _target_character: Option<RcRefCell<Character<'a>>>,
     pub _target_focus_time: f64,
@@ -39,7 +42,7 @@ impl<'a> CharacterManager<'a> {
             _game_resources: std::ptr::null(),
             _audio_manager: std::ptr::null(),
             _scene_manager: std::ptr::null(),
-            _id_generator: 0,
+            _id_generator: CharacterID(0),
             _player: None,
             _target_character: None,
             _target_focus_time: 0.0,
@@ -80,12 +83,12 @@ impl<'a> CharacterManager<'a> {
     pub fn get_scene_manager_mut(&self) -> &mut SceneManager<'a> {
         ptr_as_mut(self._scene_manager)
     }
-    pub fn generate_id(&mut self) -> u64 {
-        let id = self._id_generator;
-        self._id_generator += 1;
+    pub fn generate_id(&mut self) -> CharacterID {
+        let id = self._id_generator.clone();
+        self._id_generator = CharacterID(self._id_generator.0 + 1);
         id
     }
-    pub fn get_character(&self, character_id: u64) -> Option<&RcRefCell<Character<'a>>> {
+    pub fn get_character(&self, character_id: CharacterID) -> Option<&RcRefCell<Character<'a>>> {
         self._characters.get(&character_id)
     }
     pub fn add_character_weapon(&self, character: &mut Character<'a>, weapon_create_info: &WeaponCreateInfo) {

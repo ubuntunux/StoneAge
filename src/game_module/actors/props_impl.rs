@@ -10,8 +10,9 @@ use rust_engine_3d::scene::render_object::{RenderObjectCreateInfo, RenderObjectD
 use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
 use crate::application::application::Application;
-use crate::game_module::actors::items::ItemCreateInfo;
-use crate::game_module::actors::props::{Prop, PropCreateInfo, PropData, PropDataType, PropManager, PropMap, PropStats};
+use crate::game_module::actors::character::InteractionObject;
+use crate::game_module::actors::items::{ItemCreateInfo};
+use crate::game_module::actors::props::{Prop, PropCreateInfo, PropData, PropDataType, PropID, PropManager, PropMap, PropStats};
 use crate::game_module::game_client::GameClient;
 use crate::game_module::game_constants::{AUDIO_HIT, EFFECT_HIT, NPC_ATTACK_HIT_RANGE};
 use crate::game_module::game_resource::GameResources;
@@ -36,7 +37,7 @@ impl Default for PropData {
 impl<'a> Prop<'a> {
     pub fn create_prop(
         prop_manager: *const PropManager<'a>,
-        prop_id: u64,
+        prop_id: PropID,
         prop_name: &str,
         prop_data: &RcRefCell<PropData>,
         render_object: &RcRefCell<RenderObjectData<'a>>,
@@ -80,7 +81,7 @@ impl<'a> Prop<'a> {
         self._prop_stats._prop_hp = prop_data_ref._max_hp;
         self._prop_stats._item_regenerate_time = prop_data_ref._item_regenerate_time;
     }
-    pub fn get_prop_id(&self) -> u64 {
+    pub fn get_prop_id(&self) -> PropID {
         self._prop_id
     }
     pub fn get_prop_manager(&self) -> &PropManager<'a> {
@@ -168,7 +169,7 @@ impl<'a> PropManager<'a> {
             _game_resources: std::ptr::null(),
             _audio_manager: std::ptr::null(),
             _scene_manager: std::ptr::null(),
-            _id_generator: 0,
+            _id_generator: PropID(0),
             _props: HashMap::new(),
         })
     }
@@ -204,12 +205,12 @@ impl<'a> PropManager<'a> {
     pub fn get_scene_manager_mut(&self) -> &mut SceneManager<'a> {
         ptr_as_mut(self._scene_manager)
     }
-    pub fn generate_id(&mut self) -> u64 {
-        let id = self._id_generator;
-        self._id_generator += 1;
+    pub fn generate_id(&mut self) -> PropID {
+        let id = self._id_generator.clone();
+        self._id_generator = PropID(self._id_generator.0 + 1);
         id
     }
-    pub fn get_prop(&self, prop_id: u64) -> Option<&RcRefCell<Prop<'a>>> {
+    pub fn get_prop(&self, prop_id: PropID) -> Option<&RcRefCell<Prop<'a>>> {
         self._props.get(&prop_id)
     }
     pub fn get_prop_by_name(&self, prop_name: &str) -> Option<&RcRefCell<Prop<'a>>> {
@@ -283,7 +284,6 @@ impl<'a> PropManager<'a> {
             let player_refcell = game_scene_manager.get_character_manager().get_player();
             let mut player = player_refcell.borrow_mut();
             if player.is_alive() {
-                player._controller.set_in_interaction_range(false);
                 for prop_refcell in self._props.values() {
                     let mut prop = prop_refcell.borrow_mut();
                     let prop_type = prop._prop_data.borrow()._prop_type;
@@ -328,7 +328,7 @@ impl<'a> PropManager<'a> {
                         },
                         PropDataType::Pickup => {
                             if player.get_bounding_box().collide_bound_box(&bounding_box._min, &bounding_box._max) {
-                                player._controller.set_in_interaction_range(true);
+                                player._controller.set_in_interaction_range(InteractionObject::PropPickup(prop.get_prop_id()));
                                 if player._animation_state.is_pickup_event() {
                                     let mut pickup_items: bool = false;
                                     for item_create_info in prop.drop_items().iter() {

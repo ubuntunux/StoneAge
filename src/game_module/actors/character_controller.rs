@@ -1,4 +1,4 @@
-use nalgebra::Vector3;
+use nalgebra::{Vector3};
 use rust_engine_3d::scene::collision::CollisionData;
 use rust_engine_3d::scene::render_object::RenderObjectData;
 use rust_engine_3d::begin_block;
@@ -6,7 +6,7 @@ use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::math::HALF_PI;
 use rust_engine_3d::utilities::system::ptr_as_ref;
-use crate::game_module::actors::character::Character;
+use crate::game_module::actors::character::{Character, InteractionObject};
 use crate::game_module::actors::character_data::{CharacterData, MoveAnimationState};
 use crate::game_module::game_constants::*;
 
@@ -30,7 +30,7 @@ pub struct CharacterController {
     pub _is_jump: bool,
     pub _is_cliff: bool,
     pub _is_blocked: bool,
-    pub _is_in_interaction_range: bool
+    pub _interaction_objects: Vec<InteractionObject>
 }
 
 impl CharacterController {
@@ -55,7 +55,7 @@ impl CharacterController {
             _is_jump: false,
             _is_cliff: false,
             _is_blocked: false,
-            _is_in_interaction_range: false
+            _interaction_objects: Vec::new()
         }
     }
 
@@ -84,6 +84,7 @@ impl CharacterController {
         self._is_ground = true;
         self._is_blocked = false;
         self._is_cliff = false;
+        self._interaction_objects.clear();
     }
     pub fn is_falling(&self) -> bool {
         self._is_falling
@@ -125,10 +126,12 @@ impl CharacterController {
         self._is_blocked
     }
     pub fn is_in_interaction_range(&self) -> bool {
-        self._is_in_interaction_range
+        self._interaction_objects.is_empty() == false
     }
-    pub fn set_in_interaction_range(&mut self, is_in_interaction_range: bool) {
-        self._is_in_interaction_range = is_in_interaction_range;
+    pub fn set_in_interaction_range(&mut self, object: InteractionObject) {
+        if self._interaction_objects.contains(&object) == false {
+            self._interaction_objects.push(object);
+        }
     }
     pub fn set_position(&mut self, position: &Vector3<f32>) {
         self._position = position.clone();

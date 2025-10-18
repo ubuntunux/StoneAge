@@ -9,7 +9,10 @@ use crate::game_module::game_client::GameClient;
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
 
-pub type PropMap<'a> = HashMap<u64, RcRefCell<Prop<'a>>>;
+#[derive(Copy, Clone, Debug, Default, Hash, Eq, PartialEq)]
+pub struct PropID(pub u64);
+
+pub type PropMap<'a> = HashMap<PropID, RcRefCell<Prop<'a>>>;
 
 #[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq)]
 pub enum PropDataType {
@@ -58,7 +61,7 @@ pub struct PropStats {
 
 pub struct Prop<'a> {
     pub _prop_name: String,
-    pub _prop_id: u64,
+    pub _prop_id: PropID,
     pub _prop_radius: f32,
     pub _prop_manager: *const PropManager<'a>,
     pub _render_object: RcRefCell<RenderObjectData<'a>>,
@@ -73,6 +76,6 @@ pub struct PropManager<'a> {
     pub _game_resources: *const GameResources<'a>,
     pub _audio_manager: *const AudioManager<'a>,
     pub _scene_manager: *const SceneManager<'a>,
-    pub _id_generator: u64,
+    pub _id_generator: PropID,
     pub _props: PropMap<'a>
 }

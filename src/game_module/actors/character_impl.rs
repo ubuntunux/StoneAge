@@ -9,10 +9,10 @@ use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::scene::transform_object::TransformObjectData;
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
-use crate::game_module::actors::character::{Character, CharacterAnimationState, CharacterStats};
+use crate::game_module::actors::character::{Character, CharacterAnimationState, CharacterStats, InteractionObject};
 use crate::game_module::actors::character_controller::CharacterController;
 use crate::game_module::actors::character_data::{ActionAnimationState, CharacterData, MoveAnimationState};
-use crate::game_module::actors::character_manager::CharacterManager;
+use crate::game_module::actors::character_manager::{CharacterID, CharacterManager};
 use crate::game_module::actors::weapons::Weapon;
 use crate::game_module::behavior::behavior_base::create_character_behavior;
 use crate::game_module::game_constants::*;
@@ -90,7 +90,7 @@ impl CharacterStats {
 impl<'a> Character<'a> {
     pub fn create_character_instance(
         character_manager: &CharacterManager<'a>,
-        character_id: u64,
+        character_id: CharacterID,
         is_player: bool,
         character_data_name: &str,
         character_data: &RcRefCell<CharacterData>,
@@ -158,7 +158,7 @@ impl<'a> Character<'a> {
         ptr_as_mut(self._character_manager)
     }
 
-    pub fn get_character_id(&self) -> u64 {
+    pub fn get_character_id(&self) -> CharacterID {
         self._character_id
     }
 
@@ -204,6 +204,10 @@ impl<'a> Character<'a> {
 
     pub fn is_in_interaction_range(&self) -> bool {
         self._controller.is_in_interaction_range()
+    }
+
+    pub fn set_in_interaction_range(&mut self, object: InteractionObject) {
+        self._controller.set_in_interaction_range(object);
     }
 
     pub fn is_additive_animation_for_action(&self) -> bool {
