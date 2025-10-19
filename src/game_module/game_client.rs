@@ -10,13 +10,15 @@ use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::{GameSceneManager, GameSceneState};
 use crate::game_module::game_ui_manager::GameUIManager;
 
+#[derive(Clone, Copy, Hash, PartialEq)]
 pub enum GamePhase {
     None,
     Intro,
     Loading,
     TeleportStart,
     TeleportEnd,
-    GamePlay
+    GamePlay,
+    Sleep,
 }
 
 pub struct GameClient<'a> {
@@ -125,7 +127,29 @@ impl<'a> GameClient<'a> {
         self._teleport_stage = Some(String::from(teleport_stage));
         self._teleport_gate = Some(String::from(teleport_gate));
         self.get_game_ui_manager_mut().set_game_image("", STORY_BOARD_FADE_TIME, false);
-        self._game_phase = GamePhase::TeleportStart;
+        self.set_game_phase(GamePhase::TeleportStart);
+    }
+
+    pub fn set_game_phase(&mut self, game_phase: GamePhase) {
+        if self._game_phase != game_phase {
+            self.update_game_mode_end(self._game_phase);
+
+            self._game_phase = game_phase;
+            self.update_game_mode_start(game_phase);
+        }
+    }
+
+    pub fn update_game_mode_start(&mut self, game_phase: GamePhase) {
+        match game_phase {
+            _ => ()
+        }
+    }
+
+    pub fn update_game_mode_end(&mut self, game_phase: GamePhase) {
+        match game_phase {
+
+            _ => ()
+        }
     }
 
     pub fn update_game_mode(&mut self, delta_time: f64) {
@@ -163,7 +187,7 @@ impl<'a> GameClient<'a> {
                 game_scene_manager.play_bgm(GAME_MUSIC, Some(0.5));
                 game_scene_manager.play_ambient_sound(AMBIENT_SOUND, None);
                 self.clear_story_board_phase();
-                self._game_phase = GamePhase::Intro;
+                self.set_game_phase(GamePhase::Intro);
             }
             GamePhase::Intro => {
                 if any_key_pressed {
@@ -171,7 +195,7 @@ impl<'a> GameClient<'a> {
                     if game_ui_manager.is_done_game_image_progress() {
                         if STORY_BOARDS.len() <= story_board_phase {
                             game_ui_manager.set_game_image("", STORY_BOARD_FADE_TIME, false);
-                            self._game_phase = GamePhase::Loading;
+                            self.set_game_phase(GamePhase::Loading);
                         } else {
                             game_ui_manager.set_game_image(&STORY_BOARDS[story_board_phase], STORY_BOARD_FADE_TIME, true);
                             self.next_story_board_phase();
@@ -189,7 +213,7 @@ impl<'a> GameClient<'a> {
                             game_controller.update_on_open_game_scene();
                         }
                         game_ui_manager.set_auto_fade_inout(true);
-                        self._game_phase = GamePhase::GamePlay;
+                        self.set_game_phase(GamePhase::GamePlay);
                     }
                 }
             }
@@ -201,7 +225,7 @@ impl<'a> GameClient<'a> {
                 if self._teleport_stage.is_some() && game_ui_manager.is_done_game_image_progress() {
                     game_scene_manager.close_game_scene_data();
                     game_scene_manager.open_game_scene_data(self._teleport_stage.as_ref().unwrap().as_str());
-                    self._game_phase = GamePhase::TeleportEnd;
+                    self.set_game_phase(GamePhase::TeleportEnd);
                     self._teleport_stage = None;
                 }
             }
@@ -212,7 +236,7 @@ impl<'a> GameClient<'a> {
                         character_manager.get_player().borrow_mut().set_position(teleport_point.as_ref().unwrap());
                     }
                     game_ui_manager.set_auto_fade_inout(true);
-                    self._game_phase = GamePhase::GamePlay;
+                    self.set_game_phase(GamePhase::GamePlay);
                     self._teleport_gate = None;
                 }
             }
@@ -236,6 +260,9 @@ impl<'a> GameClient<'a> {
                         );
                     }
                 }
+            },
+            GamePhase::Sleep => {
+
             }
         }
 
