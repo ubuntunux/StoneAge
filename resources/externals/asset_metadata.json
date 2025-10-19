@@ -4113,16 +4113,6 @@
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/jack/jack_sleep.blend": [
-        {
-            "asset_type": "MESH",
-            "asset_path": "characters/jack/jack_sleep",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/jack/jack_sleep.blend",
-            "guid": "",
-            "mtime": 1760634792.325929,
-            "data": {}
-        }
-    ],
     "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/jack/jack_laying_down.blend": [
         {
             "asset_type": "MESH",
@@ -4140,6 +4130,16 @@
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/jack/jack_stand_up.blend",
             "guid": "",
             "mtime": 1760635334.098242,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/jack/jack_sleep.blend": [
+        {
+            "asset_type": "MESH",
+            "asset_path": "characters/jack/jack_sleep",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/jack/jack_sleep.blend",
+            "guid": "",
+            "mtime": 1760882793.2014685,
             "data": {}
         }
     ],

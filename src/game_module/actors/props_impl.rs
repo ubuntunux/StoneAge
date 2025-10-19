@@ -59,6 +59,7 @@ impl<'a> Prop<'a> {
                 _position: prop_create_info._position.clone(),
                 _rotation: prop_create_info._rotation.clone(),
                 _scale: prop_create_info._scale.clone(),
+                _is_in_player_range: false,
             }),
             _instance_parameters: prop_create_info._instance_parameters.clone(),
         };
@@ -277,20 +278,29 @@ impl<'a> PropManager<'a> {
             prop.borrow_mut().update_prop(delta_time);
         }
 
+        let player_refcell = self.get_game_scene_manager().get_character_manager().get_player().clone();
+        let mut player = player_refcell.borrow_mut();
+
         let mut dead_props: Vec<RcRefCell<Prop>> = Vec::new();
         {
-            let game_scene_manager = self.get_game_scene_manager();
             let check_direction = true;
-            let player_refcell = game_scene_manager.get_character_manager().get_player();
-            let mut player = player_refcell.borrow_mut();
             if player.is_alive() {
                 for prop_refcell in self._props.values() {
                     let mut prop = prop_refcell.borrow_mut();
                     let prop_type = prop._prop_data.borrow()._prop_type;
                     let bounding_box = prop.get_bounding_box();
+
                     match prop_type {
                         PropDataType::Bed => {
-                            prop._render_object.borrow_mut().set_render_camera(!bounding_box.collide_point(&player.get_position()));
+                            let was_in_range = prop._prop_stats._is_in_player_range;
+                            prop._prop_stats._is_in_player_range = player.get_bounding_box().collide_bound_box(&bounding_box._min, &bounding_box._max);
+                            if prop._prop_stats._is_in_player_range {
+                                player._controller.add_interaction_object(InteractionObject::PropBed(prop.get_prop_id()));
+                            }
+
+                            if was_in_range && prop._prop_stats._is_in_player_range == false {
+                                player._controller.remove_interaction_object(InteractionObject::PropPickup(prop.get_prop_id()));
+                            }
                         },
                         PropDataType::Ceiling => {
                             prop._render_object.borrow_mut().set_render_camera(!bounding_box.collide_point(&player.get_position()));
@@ -327,8 +337,10 @@ impl<'a> PropManager<'a> {
                             }
                         },
                         PropDataType::Pickup => {
-                            if player.get_bounding_box().collide_bound_box(&bounding_box._min, &bounding_box._max) {
-                                player._controller.set_in_interaction_range(InteractionObject::PropPickup(prop.get_prop_id()));
+                            let was_in_range = prop._prop_stats._is_in_player_range;
+                            prop._prop_stats._is_in_player_range = player.get_bounding_box().collide_bound_box(&bounding_box._min, &bounding_box._max);
+                            if prop._prop_stats._is_in_player_range {
+                                player._controller.add_interaction_object(InteractionObject::PropPickup(prop.get_prop_id()));
                                 if player._animation_state.is_pickup_event() {
                                     let mut pickup_items: bool = false;
                                     for item_create_info in prop.drop_items().iter() {
@@ -336,9 +348,14 @@ impl<'a> PropManager<'a> {
                                     }
 
                                     if pickup_items {
+                                        prop._prop_stats._is_in_player_range = false;
                                         dead_props.push(prop_refcell.clone());
                                     }
                                 }
+                            }
+
+                            if was_in_range && prop._prop_stats._is_in_player_range == false {
+                                player._controller.remove_interaction_object(InteractionObject::PropPickup(prop.get_prop_id()));
                             }
                         },
                         _ => ()

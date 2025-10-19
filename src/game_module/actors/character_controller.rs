@@ -125,13 +125,25 @@ impl CharacterController {
     pub fn is_blocked(&self) -> bool {
         self._is_blocked
     }
+    pub fn get_interaction_object(&self) -> InteractionObject {
+        if self._interaction_objects.is_empty() {
+            return InteractionObject::None;
+        }
+        self._interaction_objects[0].clone()
+    }
     pub fn is_in_interaction_range(&self) -> bool {
         self._interaction_objects.is_empty() == false
     }
-    pub fn set_in_interaction_range(&mut self, object: InteractionObject) {
+    pub fn add_interaction_object(&mut self, object: InteractionObject) {
         if self._interaction_objects.contains(&object) == false {
             self._interaction_objects.push(object);
         }
+    }
+    pub fn get_interaction_objects(&self) -> &Vec<InteractionObject> {
+        &self._interaction_objects
+    }
+    pub fn remove_interaction_object(&mut self, object: InteractionObject) {
+        self._interaction_objects.retain(|&x| x != object);
     }
     pub fn set_position(&mut self, position: &Vector3<f32>) {
         self._position = position.clone();

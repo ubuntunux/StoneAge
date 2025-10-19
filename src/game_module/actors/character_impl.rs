@@ -206,13 +206,13 @@ impl<'a> Character<'a> {
         self._controller.is_in_interaction_range()
     }
 
-    pub fn set_in_interaction_range(&mut self, object: InteractionObject) {
-        self._controller.set_in_interaction_range(object);
+    pub fn add_interaction_object(&mut self, object: InteractionObject) {
+        self._controller.add_interaction_object(object);
     }
 
     pub fn is_additive_animation_for_action(&self) -> bool {
         if self.is_action(ActionAnimationState::Attack) || self.is_action(ActionAnimationState::PowerAttack) || self.is_action(ActionAnimationState::Hit) || self.is_action(ActionAnimationState::Pickup) {
-            if !self.is_move_state(MoveAnimationState::Idle) && !self.is_move_state(MoveAnimationState::None) {
+            if self.is_move_state(MoveAnimationState::Idle) == false && self.is_move_state(MoveAnimationState::None) == false {
                 return true;
             }
         }
@@ -242,7 +242,11 @@ impl<'a> Character<'a> {
     }
 
     pub fn is_available_move(&self) -> bool {
-        self.is_alive() && !self.is_move_state(MoveAnimationState::Roll)
+        self.is_alive() &&
+        self.is_move_state(MoveAnimationState::Roll) == false &&
+        self.is_action(ActionAnimationState::LayingDown) == false &&
+        self.is_action(ActionAnimationState::Sleep) == false &&
+        self.is_action(ActionAnimationState::StandUp) == false
     }
 
     pub fn is_available_jump(&self) -> bool {
@@ -380,8 +384,19 @@ impl<'a> Character<'a> {
     }
 
     pub fn set_action_interaction(&mut self) {
-        if self._controller._is_ground && self.is_available_move() && self.is_action(ActionAnimationState::None) {
-            self.set_action_animation(ActionAnimationState::Pickup, 1.0);
+        if self._controller.is_on_ground() && self.is_available_move() && self.is_action(ActionAnimationState::None) {
+            self.set_move_stop();
+
+            match self._controller.get_interaction_object() {
+                InteractionObject::None => {}
+                InteractionObject::PropBed(_) => {
+                    self.set_move_animation(MoveAnimationState::None);
+                    self.set_action_animation(ActionAnimationState::LayingDown, 2.0);
+                }
+                InteractionObject::PropPickup(_) => {
+                    self.set_action_animation(ActionAnimationState::Pickup, 1.0);
+                }
+            }
         }
     }
 
@@ -479,6 +494,7 @@ impl<'a> Character<'a> {
             _animation_loop: false,
             _force_animation_setting: true,
             _animation_fade_out_time: 0.1,
+            _animation_speed: animation_speed,
             ..Default::default()
         };
 
@@ -490,33 +506,35 @@ impl<'a> Character<'a> {
                 render_object.set_animation_none(AnimationLayer::ActionLayer);
             },
             ActionAnimationState::Attack => {
-                animation_info._animation_speed = animation_data._attack_animation_speed * animation_speed;
+                animation_info._animation_speed *= animation_data._attack_animation_speed;
                 render_object.set_animation(&animation_data._attack_animation, &animation_info, AnimationLayer::ActionLayer);
             }
             ActionAnimationState::Dead => {
-                animation_info._animation_speed = animation_data._dead_animation_speed * animation_speed;
+                animation_info._animation_speed *= animation_data._dead_animation_speed;
                 animation_info._animation_fade_out_time = 0.0; // keep end of animation
                 render_object.set_animation(&animation_data._dead_animation, &animation_info, AnimationLayer::ActionLayer);
             }
             ActionAnimationState::Hit => {
-                animation_info._animation_speed = animation_data._hit_animation_speed * animation_speed;
+                animation_info._animation_speed *= animation_data._hit_animation_speed;
                 render_object.set_animation(&animation_data._hit_animation, &animation_info, AnimationLayer::ActionLayer);
             }
             ActionAnimationState::Kick => {
                 render_object.set_animation(&animation_data._kick_animation, &animation_info, AnimationLayer::ActionLayer);
             }
             ActionAnimationState::LayingDown => {
+                animation_info._animation_fade_out_time = 0.0; // keep end of animation
                 render_object.set_animation(&animation_data._laying_down_animation, &animation_info, AnimationLayer::ActionLayer);
             }
             ActionAnimationState::Pickup => {
-                animation_info._animation_speed = animation_speed;
                 render_object.set_animation(&animation_data._pickup_animation, &animation_info, AnimationLayer::ActionLayer);
             }
             ActionAnimationState::PowerAttack => {
-                animation_info._animation_speed = animation_data._power_attack_animation_speed * animation_speed;
+                animation_info._animation_speed *= animation_data._power_attack_animation_speed;
                 render_object.set_animation(&animation_data._power_attack_animation, &animation_info, AnimationLayer::ActionLayer);
             }
             ActionAnimationState::Sleep => {
+                //animation_info._animation_loop = true;
+                animation_info._animation_fade_out_time = 0.0; // keep end of animation
                 render_object.set_animation(&animation_data._sleep_animation, &animation_info, AnimationLayer::ActionLayer);
             }
             ActionAnimationState::StandUp => {
@@ -630,53 +648,25 @@ impl<'a> Character<'a> {
     pub fn update_move_animation_begin_event(&mut self) {
         let character_manager = self.get_character_manager();
         match self._animation_state._move_animation_state {
-            MoveAnimationState::None => {
-                // nothing
-            },
-            MoveAnimationState::Idle => {
-                // nothing
-            },
             MoveAnimationState::Jump => {
                 character_manager.get_scene_manager().play_audio_bank(AUDIO_JUMP);
             },
             MoveAnimationState::Roll => {
                 self.set_invincibility(true);
             },
-            MoveAnimationState::Run => {
-                // nothing
-            },
             MoveAnimationState::RunningJump => {
                 character_manager.get_scene_manager().play_audio_bank(AUDIO_JUMP);
             },
-            MoveAnimationState::Walk => {
-                // nothing
-            }
+            _ => ()
         }
     }
 
     pub fn update_move_animation_end_event(&mut self) {
         match self._animation_state._move_animation_state_prev {
-            MoveAnimationState::None => {
-                // nothing
-            },
-            MoveAnimationState::Idle => {
-                // nothing
-            },
-            MoveAnimationState::Jump => {
-                // nothing
-            },
             MoveAnimationState::Roll => {
                 self.set_invincibility(false);
             },
-            MoveAnimationState::Run => {
-                // nothing
-            },
-            MoveAnimationState::RunningJump => {
-                // nothing
-            },
-            MoveAnimationState::Walk => {
-                // nothing
-            }
+            _ => ()
         }
     }
 
@@ -686,15 +676,6 @@ impl<'a> Character<'a> {
         let render_object = ptr_as_mut(self._render_object.as_ptr());
         let animation_play_info = render_object.get_animation_play_info(AnimationLayer::BaseLayer);
         match move_animation {
-            MoveAnimationState::None => {
-                // nothing
-            },
-            MoveAnimationState::Idle => {
-                // nothing
-            },
-            MoveAnimationState::Jump => {
-                // nothing
-            },
             MoveAnimationState::Roll => {
                 if self._is_player && animation_play_info.check_animation_event_time(0.2) {
                     character_manager.get_scene_manager().play_audio_bank(AUDIO_ROLL);
@@ -708,14 +689,12 @@ impl<'a> Character<'a> {
                     character_manager.get_scene_manager().play_audio_options(AUDIO_FOOTSTEP, AudioLoop::ONCE, Some(0.5));
                 }
             },
-            MoveAnimationState::RunningJump => {
-                // nothing
-            },
             MoveAnimationState::Walk => {
                 if self._is_player && (animation_play_info.check_animation_event_time(0.2) || animation_play_info.check_animation_event_time(0.9)) {
                     character_manager.get_scene_manager().play_audio_options(AUDIO_FOOTSTEP, AudioLoop::ONCE, Some(0.5));
                 }
-            }
+            },
+            _ => ()
         }
     }
 
@@ -766,6 +745,12 @@ impl<'a> Character<'a> {
                     self.set_action_none();
                 }
             },
+            ActionAnimationState::LayingDown => {
+                if animation_play_info._is_animation_end {
+                    self.set_move_stop();
+                    self.set_action_animation(ActionAnimationState::Sleep, 1.0);
+                }
+            },
             ActionAnimationState::Pickup => {
                 if animation_play_info.check_animation_event_time(PICKUP_EVENT_TIME) {
                     self.get_character_manager().get_scene_manager().play_audio_bank(AUDIO_ATTACK);
@@ -782,6 +767,17 @@ impl<'a> Character<'a> {
                     self._animation_state.set_action_event( ActionAnimationState::PowerAttack );
                 }
 
+                if animation_play_info._is_animation_end {
+                    self.set_action_none();
+                }
+            },
+            ActionAnimationState::Sleep => {
+                if animation_play_info._is_animation_end {
+                    self.set_move_stop();
+                    self.set_action_animation(ActionAnimationState::StandUp, 1.0);
+                }
+            },
+            ActionAnimationState::StandUp => {
                 if animation_play_info._is_animation_end {
                     self.set_action_none();
                 }

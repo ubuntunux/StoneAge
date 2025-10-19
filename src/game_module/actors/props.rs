@@ -57,6 +57,7 @@ pub struct PropStats {
     pub _position: Vector3<f32>,
     pub _rotation: Vector3<f32>,
     pub _scale: Vector3<f32>,
+    pub _is_in_player_range: bool,
 }
 
 pub struct Prop<'a> {

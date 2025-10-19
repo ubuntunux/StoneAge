@@ -96,4 +96,4 @@ pub const ITEM_MEAT: &str = "items/meat";
 pub const ITEM_SPIRIT_BALL: &str = "items/spirit_ball";
 
 // Game Scene
-pub const GAME_SCENE_INTRO: &str = "game_scenes/intro_stage";
+pub const GAME_SCENE_INTRO: &str = "game_scenes/stage_cave";
