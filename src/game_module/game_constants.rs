@@ -18,7 +18,8 @@ pub const CAMERA_ROTATION_SPEED_MIN: f32 = 0.05;
 pub const CAMERA_ROTATION_SPEED_MAX: f32 = 30.0;
 pub const ARRIVAL_DISTANCE_THRESHOLD: f32 = 1.0;
 // Minute 14 per day
-pub const TIME_OF_DAY_SPEED: f32 = 14.0 / (24.0 * 60.0);
+pub const TIME_OF_MORNING: f32 = 10.0;
+pub const TIME_OF_DAY_SPEED: f32 = 540.0 / (24.0 * 60.0);
 pub const TEMPERATURE_MIN: f32 = 12.0;
 pub const TEMPERATURE_MAX: f32 = 32.0;
 

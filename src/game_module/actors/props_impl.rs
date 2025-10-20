@@ -294,12 +294,11 @@ impl<'a> PropManager<'a> {
                         PropDataType::Bed => {
                             let was_in_range = prop._prop_stats._is_in_player_range;
                             prop._prop_stats._is_in_player_range = player.get_bounding_box().collide_bound_box(&bounding_box._min, &bounding_box._max);
-                            if prop._prop_stats._is_in_player_range {
-                                player._controller.add_interaction_object(InteractionObject::PropBed(prop.get_prop_id()));
-                            }
 
-                            if was_in_range && prop._prop_stats._is_in_player_range == false {
-                                player._controller.remove_interaction_object(InteractionObject::PropPickup(prop.get_prop_id()));
+                            if was_in_range == false && prop._prop_stats._is_in_player_range {
+                                player._controller.add_interaction_object(InteractionObject::PropBed(prop.get_prop_id()));
+                            } else if was_in_range && prop._prop_stats._is_in_player_range == false {
+                                player._controller.remove_interaction_object(InteractionObject::PropBed(prop.get_prop_id()));
                             }
                         },
                         PropDataType::Ceiling => {
@@ -340,11 +339,10 @@ impl<'a> PropManager<'a> {
                             let was_in_range = prop._prop_stats._is_in_player_range;
                             prop._prop_stats._is_in_player_range = player.get_bounding_box().collide_bound_box(&bounding_box._min, &bounding_box._max);
                             if prop._prop_stats._is_in_player_range {
-                                player._controller.add_interaction_object(InteractionObject::PropPickup(prop.get_prop_id()));
                                 if player._animation_state.is_pickup_event() {
                                     let mut pickup_items: bool = false;
                                     for item_create_info in prop.drop_items().iter() {
-                                        pickup_items = pickup_items || self.get_game_scene_manager().get_item_manager_mut().instance_pickup_item(&item_create_info);
+                                        pickup_items |= self.get_game_scene_manager().get_item_manager_mut().instance_pickup_item(&item_create_info);
                                     }
 
                                     if pickup_items {
@@ -354,7 +352,9 @@ impl<'a> PropManager<'a> {
                                 }
                             }
 
-                            if was_in_range && prop._prop_stats._is_in_player_range == false {
+                            if was_in_range == false && prop._prop_stats._is_in_player_range {
+                                player._controller.add_interaction_object(InteractionObject::PropPickup(prop.get_prop_id()));
+                            } else if was_in_range && prop._prop_stats._is_in_player_range == false {
                                 player._controller.remove_interaction_object(InteractionObject::PropPickup(prop.get_prop_id()));
                             }
                         },

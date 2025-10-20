@@ -9,7 +9,7 @@ use crate::game_module::actors::character_manager::{CharacterID, CharacterManage
 use crate::game_module::actors::props::PropID;
 use crate::game_module::actors::weapons::Weapon;
 
-#[derive(Clone, Copy, Hash, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum InteractionObject {
     None,
     PropBed(PropID),

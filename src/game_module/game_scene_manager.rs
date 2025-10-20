@@ -14,7 +14,7 @@ use crate::game_module::actors::character::CharacterCreateInfo;
 use crate::game_module::actors::character_manager::CharacterManager;
 use crate::game_module::actors::items::{ItemCreateInfo, ItemManager};
 use crate::game_module::actors::props::{PropCreateInfo, PropManager};
-use crate::game_module::game_constants::{TEMPERATURE_MAX, TEMPERATURE_MIN, TIME_OF_DAY_SPEED};
+use crate::game_module::game_constants::{TEMPERATURE_MAX, TEMPERATURE_MIN, TIME_OF_DAY_SPEED, TIME_OF_MORNING};
 use crate::game_module::game_resource::GameResources;
 
 type CharacterCreateInfoMap = HashMap<String, CharacterCreateInfo>;
@@ -109,7 +109,7 @@ impl<'a> GameSceneManager<'a> {
             _prop_manager: PropManager::create_prop_manager(),
             _ambient_sound: None,
             _spawn_point: Vector3::new(0.0, 0.0, 0.0),
-            _time_of_day: 10.0,
+            _time_of_day: TIME_OF_MORNING,
             _temperature: 30.0,
             _date: 1,
             _game_scene_state: GameSceneState::None,
@@ -256,6 +256,11 @@ impl<'a> GameSceneManager<'a> {
 
     pub fn destroy_game_scene_manager(&mut self) {
         self.get_scene_manager_mut().destroy_scene_manager();
+    }
+
+    pub fn set_next_time_of_day(&mut self) {
+        self._time_of_day = TIME_OF_MORNING;
+        self._date += 1;
     }
 
     pub fn update_time_of_day(&mut self, delta_time: f64) {

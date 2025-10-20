@@ -1,3 +1,4 @@
+use indexmap::IndexSet;
 use nalgebra::{Vector3};
 use rust_engine_3d::scene::collision::CollisionData;
 use rust_engine_3d::scene::render_object::RenderObjectData;
@@ -30,7 +31,7 @@ pub struct CharacterController {
     pub _is_jump: bool,
     pub _is_cliff: bool,
     pub _is_blocked: bool,
-    pub _interaction_objects: Vec<InteractionObject>
+    pub _interaction_objects: IndexSet<InteractionObject>
 }
 
 impl CharacterController {
@@ -55,7 +56,7 @@ impl CharacterController {
             _is_jump: false,
             _is_cliff: false,
             _is_blocked: false,
-            _interaction_objects: Vec::new()
+            _interaction_objects: IndexSet::new()
         }
     }
 
@@ -129,17 +130,15 @@ impl CharacterController {
         if self._interaction_objects.is_empty() {
             return InteractionObject::None;
         }
-        self._interaction_objects[0].clone()
+        self._interaction_objects.last().unwrap().clone()
     }
     pub fn is_in_interaction_range(&self) -> bool {
         self._interaction_objects.is_empty() == false
     }
     pub fn add_interaction_object(&mut self, object: InteractionObject) {
-        if self._interaction_objects.contains(&object) == false {
-            self._interaction_objects.push(object);
-        }
+        self._interaction_objects.insert(object);
     }
-    pub fn get_interaction_objects(&self) -> &Vec<InteractionObject> {
+    pub fn get_interaction_objects(&self) -> &IndexSet<InteractionObject> {
         &self._interaction_objects
     }
     pub fn remove_interaction_object(&mut self, object: InteractionObject) {

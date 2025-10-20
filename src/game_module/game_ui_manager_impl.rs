@@ -73,6 +73,10 @@ impl<'a> GameUIManager<'a> {
         ptr_as_mut(self._root_widget)
     }
 
+    pub fn is_done_manual_fade_out(&self) -> bool {
+        self._game_image.as_ref().unwrap().is_done_manual_fade_out()
+    }
+
     pub fn is_done_game_image_progress(&self) -> bool {
         self._game_image.as_ref().unwrap().is_done_game_image_progress()
     }

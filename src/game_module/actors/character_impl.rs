@@ -383,6 +383,9 @@ impl<'a> Character<'a> {
         self.set_action_animation(ActionAnimationState::None, 1.0);
     }
 
+    pub fn set_action_stand_up(&mut self) {
+        self.set_action_animation(ActionAnimationState::StandUp, 1.0);
+    }
     pub fn set_action_interaction(&mut self) {
         if self._controller.is_on_ground() && self.is_available_move() && self.is_action(ActionAnimationState::None) {
             self.set_move_stop();
@@ -390,7 +393,6 @@ impl<'a> Character<'a> {
             match self._controller.get_interaction_object() {
                 InteractionObject::None => {}
                 InteractionObject::PropBed(_) => {
-                    self.set_move_animation(MoveAnimationState::None);
                     self.set_action_animation(ActionAnimationState::LayingDown, 2.0);
                 }
                 InteractionObject::PropPickup(_) => {
@@ -533,7 +535,7 @@ impl<'a> Character<'a> {
                 render_object.set_animation(&animation_data._power_attack_animation, &animation_info, AnimationLayer::ActionLayer);
             }
             ActionAnimationState::Sleep => {
-                //animation_info._animation_loop = true;
+                animation_info._animation_loop = true;
                 animation_info._animation_fade_out_time = 0.0; // keep end of animation
                 render_object.set_animation(&animation_data._sleep_animation, &animation_info, AnimationLayer::ActionLayer);
             }
@@ -769,12 +771,6 @@ impl<'a> Character<'a> {
 
                 if animation_play_info._is_animation_end {
                     self.set_action_none();
-                }
-            },
-            ActionAnimationState::Sleep => {
-                if animation_play_info._is_animation_end {
-                    self.set_move_stop();
-                    self.set_action_animation(ActionAnimationState::StandUp, 1.0);
                 }
             },
             ActionAnimationState::StandUp => {

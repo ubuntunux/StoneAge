@@ -144,8 +144,12 @@ impl<'a> ImageLayout<'a> {
         self.changed_window_size(&self._window_size.clone());
     }
 
+    pub fn is_done_manual_fade_out(&self) -> bool {
+        self._done_manual_fade_out
+    }
+
     pub fn is_done_game_image_progress(&self) -> bool {
-        self.get_progress(self._fade_time) == 1.0 || self._done_manual_fade_out
+        self.get_progress(self._fade_time) == 1.0
     }
 
     pub fn set_auto_fade_inout(&mut self, auto_fade_inout: bool) {
