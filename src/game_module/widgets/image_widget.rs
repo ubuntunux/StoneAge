@@ -200,11 +200,13 @@ impl<'a> ImageLayout<'a> {
                 self._opacity = self._fadein_opacity;
                 self._image_brightness = self._fadein_image_brightness;
             } else if progress <= 0.5 {
-                self._opacity = math::lerp(self._prev_opacity, self._fadeout_opacity, progress * 2.0);
+                let curved_progress = 0f32.max(1f32.min((progress * 2.0).powf(0.5)));
+                self._opacity = math::lerp(self._prev_opacity, self._fadeout_opacity, curved_progress);
                 self._image_brightness = math::lerp(self._prev_image_brightness, self._fadeout_image_brightness, progress * 2.0);
             } else {
-                self._opacity = math::lerp(self._prev_opacity, self._fadein_opacity, (progress - 0.5) * 2.0);
-                self._image_brightness = math::lerp(self._prev_image_brightness, self._fadein_image_brightness, (progress - 0.5) * 2.0);
+                let curved_progress = 0f32.max(1f32.min(((progress - 0.5) * 2.0).powf(2.0)));
+                self._opacity = math::lerp(self._prev_opacity, self._fadein_opacity, curved_progress);
+                self._image_brightness = math::lerp(self._prev_image_brightness, self._fadein_image_brightness, curved_progress);
             }
 
             // set opacity

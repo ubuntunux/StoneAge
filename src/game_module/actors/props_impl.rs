@@ -324,7 +324,10 @@ impl<'a> PropManager<'a> {
                             }
                         },
                         PropDataType::Gate => {
-                            if bounding_box.collide_point(&player.get_position()) {
+                            let was_in_range = prop._prop_stats._is_in_player_range;
+                            prop._prop_stats._is_in_player_range = bounding_box.collide_point(player.get_center());
+
+                            if was_in_range == false && prop._prop_stats._is_in_player_range {
                                 let linked_gate = prop._instance_parameters.get("_linked_gate");
                                 let linked_stage = prop._instance_parameters.get("_linked_stage");
                                 if linked_stage.is_some() && linked_gate.is_some() {

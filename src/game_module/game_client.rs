@@ -201,10 +201,6 @@ impl<'a> GameClient<'a> {
             mouse_input_data.is_any_button_hold() ||
             keyboard_input_data.is_any_key_hold();
 
-        if game_ui_manager.is_done_game_image_progress() == false {
-            game_ui_manager.set_game_image_fade_speed(if any_key_hold { 5.0 } else { 1.0 });
-        }
-
         match self._game_phase {
             GamePhase::None => {
                 game_ui_manager.set_image_auto_fade_inout(MATERIAL_INTRO_IMAGE, 0.0);
@@ -214,6 +210,8 @@ impl<'a> GameClient<'a> {
                 self.set_game_phase(GamePhase::Intro);
             }
             GamePhase::Intro => {
+                game_ui_manager.set_game_image_fade_speed(if any_key_hold { 5.0 } else { 1.0 });
+                
                 if any_key_pressed {
                     let story_board_phase = self.get_story_board_phase();
                     if game_ui_manager.is_done_game_image_progress() {

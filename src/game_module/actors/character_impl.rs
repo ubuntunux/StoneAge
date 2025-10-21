@@ -300,6 +300,10 @@ impl<'a> Character<'a> {
         &self._controller._position
     }
 
+    pub fn get_center(&self) -> &Vector3<f32> {
+        &self.get_bounding_box().get_center()
+    }
+
     pub fn get_power(&self, attack_event: ActionAnimationState) -> i32 {
         match attack_event {
             ActionAnimationState::Attack => self.get_character_data()._stat_data._attack_damage,
