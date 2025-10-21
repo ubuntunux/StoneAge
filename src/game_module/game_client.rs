@@ -16,8 +16,7 @@ pub enum GamePhase {
     None,
     Intro,
     Loading,
-    TeleportStart,
-    TeleportEnd,
+    Teleport,
     GamePlay,
     Sleep,
     WakeUp
@@ -153,7 +152,7 @@ impl<'a> GameClient<'a> {
         let character_manager = ptr_as_mut(game_scene_manager._character_manager.as_ref());
         let game_ui_manager = ptr_as_mut(self._game_ui_manager);
         match game_phase {
-            GamePhase::TeleportStart => {
+            GamePhase::Teleport => {
                 if character_manager.is_valid_player() {
                     character_manager.get_player().borrow_mut().set_move_stop();
                 }
@@ -247,16 +246,14 @@ impl<'a> GameClient<'a> {
                     }
                 }
             }
-            GamePhase::TeleportStart => {
+            GamePhase::Teleport => {
                 if self._teleport_stage.is_some() && game_ui_manager.is_done_manual_fade_out() {
                     game_scene_manager.close_game_scene_data();
                     game_scene_manager.open_game_scene_data(self._teleport_stage.as_ref().unwrap().as_str());
-                    self.set_game_phase(GamePhase::TeleportEnd);
                     self._teleport_stage = None;
                 }
-            }
-            GamePhase::TeleportEnd => {
-                if self._teleport_gate.is_some() && game_scene_manager.is_game_scene_state(GameSceneState::LoadComplete) {
+
+                if self._teleport_stage.is_none() && self._teleport_gate.is_some() && game_scene_manager.is_game_scene_state(GameSceneState::LoadComplete) {
                     let teleport_point = game_scene_manager.get_prop_manager().get_teleport_point(self._teleport_gate.as_ref().unwrap().as_str());
                     if teleport_point.is_some() && character_manager.is_valid_player() {
                         character_manager.get_player().borrow_mut().set_position(teleport_point.as_ref().unwrap());
@@ -275,7 +272,7 @@ impl<'a> GameClient<'a> {
                 if game_scene_manager.is_game_scene_state(GameSceneState::LoadComplete) {
                     if false == self._game_controller.is_null() && character_manager.is_valid_player() {
                         if self._teleport_stage.is_some() {
-                            self.set_game_phase(GamePhase::TeleportStart);
+                            self.set_game_phase(GamePhase::Teleport);
                         } else if character_manager.get_player().borrow().is_action(ActionAnimationState::Sleep) {
                             self.set_game_phase(GamePhase::Sleep);
                         } else {
