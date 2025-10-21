@@ -85,7 +85,15 @@ impl<'a> GameUIManager<'a> {
         self._game_image.as_mut().unwrap().set_auto_fade_inout(auto_fade_inout);
     }
 
-    pub fn set_game_image(&mut self, material_instance_name: &str, fadeout_time: f32, auto_fade_inout: bool) {
+    pub fn set_image_manual_fade_inout(&mut self, material_instance_name: &str, fadeout_time: f32) {
+        self.set_game_image(material_instance_name, fadeout_time, false)
+    }
+
+    pub fn set_image_auto_fade_inout(&mut self, material_instance_name: &str, fadeout_time: f32) {
+        self.set_game_image(material_instance_name, fadeout_time, true)
+    }
+
+    fn set_game_image(&mut self, material_instance_name: &str, fadeout_time: f32, auto_fade_inout: bool) {
         let game_client = ptr_as_ref(self._game_client);
         let game_resources = game_client.get_game_resources();
         let material_instance = if game_resources.get_engine_resources().has_material_instance_data(material_instance_name) {

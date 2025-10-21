@@ -396,7 +396,7 @@ impl<'a> Character<'a> {
                     self.set_action_animation(ActionAnimationState::LayingDown, 2.0);
                 }
                 InteractionObject::PropPickup(_) => {
-                    self.set_action_animation(ActionAnimationState::Pickup, 1.0);
+                    self.set_action_animation(ActionAnimationState::Pickup, 2.0);
                 }
             }
         }
