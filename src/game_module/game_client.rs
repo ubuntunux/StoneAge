@@ -284,7 +284,7 @@ impl<'a> GameClient<'a> {
                         }
                     }
                 }
-            },
+            }
             GamePhase::Sleep => {
                 if game_ui_manager.is_done_manual_fade_out() && self._sleep_timer < SLEEP_TIMER {
                     self._sleep_timer += delta_time as f32;
