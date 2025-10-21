@@ -3,7 +3,7 @@ pub const EDITOR_CAMERA_MOVE_SPEED: f32 = 20.0;
 pub const EDITOR_CAMERA_PAN_SPEED: f32 = 0.05;
 pub const EDITOR_CAMERA_ROTATION_SPEED: f32 = 0.005;
 
-// game constant
+// camera
 pub const CAMERA_COLLIDE_PADDING: f32 = 0.2;
 pub const CAMERA_PITCH_MIN_BY_DISTANCE: f32 = 5.0;
 pub const CAMERA_PITCH_MAX_BY_DISTANCE: f32 = 20.0;
@@ -17,11 +17,13 @@ pub const CAMERA_ZOOM_SPEED: f32 = 4.0;
 pub const CAMERA_ROTATION_SPEED_MIN: f32 = 0.05;
 pub const CAMERA_ROTATION_SPEED_MAX: f32 = 30.0;
 pub const ARRIVAL_DISTANCE_THRESHOLD: f32 = 1.0;
-// Minute 14 per day
+
+// time
 pub const TIME_OF_MORNING: f32 = 10.0;
-pub const TIME_OF_DAY_SPEED: f32 = 14.0 / (24.0 * 60.0);
+pub const TIME_OF_DAY_SPEED: f32 = 14.0 / (24.0 * 60.0); // Minute 14 per day
 pub const TEMPERATURE_MIN: f32 = 12.0;
 pub const TEMPERATURE_MAX: f32 = 32.0;
+pub const SLEEP_TIMER: f32 = 3.0;
 
 // player
 pub const GRAVITY: f32 = 30.0;

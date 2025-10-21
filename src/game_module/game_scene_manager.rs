@@ -259,8 +259,10 @@ impl<'a> GameSceneManager<'a> {
     }
 
     pub fn set_next_time_of_day(&mut self) {
+        if TIME_OF_MORNING <= self._time_of_day {
+            self._date += 1;
+        }
         self._time_of_day = TIME_OF_MORNING;
-        self._date += 1;
     }
 
     pub fn update_time_of_day(&mut self, delta_time: f64) {

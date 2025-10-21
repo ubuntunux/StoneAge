@@ -5,7 +5,7 @@ use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
 use crate::application::application::Application;
 use crate::game_module::actors::character_data::ActionAnimationState;
 use crate::game_module::actors::character_manager::CharacterManager;
-use crate::game_module::game_constants::{AMBIENT_SOUND, CAMERA_DISTANCE_MAX, GAME_MUSIC, GAME_SCENE_INTRO, MATERIAL_INTRO_IMAGE, STORY_BOARDS, STORY_BOARD_FADE_TIME, STORY_IMAGE_NONE};
+use crate::game_module::game_constants::{AMBIENT_SOUND, CAMERA_DISTANCE_MAX, GAME_MUSIC, GAME_SCENE_INTRO, MATERIAL_INTRO_IMAGE, SLEEP_TIMER, STORY_BOARDS, STORY_BOARD_FADE_TIME, STORY_IMAGE_NONE};
 use crate::game_module::game_controller::GameController;
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::{GameSceneManager, GameSceneState};
@@ -18,8 +18,7 @@ pub enum GamePhase {
     Loading,
     Teleport,
     GamePlay,
-    Sleep,
-    WakeUp
+    Sleep
 }
 
 pub struct GameClient<'a> {
@@ -157,14 +156,10 @@ impl<'a> GameClient<'a> {
                     character_manager.get_player().borrow_mut().set_move_stop();
                 }
                 self.get_game_ui_manager_mut().set_image_manual_fade_inout(STORY_IMAGE_NONE, STORY_BOARD_FADE_TIME);
-            },
+            }
             GamePhase::Sleep => {
                 self.reset_sleep_timer();
                 game_ui_manager.set_image_manual_fade_inout(STORY_IMAGE_NONE, STORY_BOARD_FADE_TIME);
-            },
-            GamePhase::WakeUp => {
-                game_ui_manager.set_auto_fade_inout(true);
-                game_scene_manager.set_next_time_of_day();
             }
             _ => ()
         }
@@ -174,7 +169,7 @@ impl<'a> GameClient<'a> {
         let game_scene_manager = ptr_as_mut(self._game_scene_manager);
         let character_manager = ptr_as_mut(game_scene_manager._character_manager.as_ref());
         match game_phase {
-            GamePhase::WakeUp => {
+            GamePhase::Sleep => {
                 character_manager.get_player().borrow_mut().set_action_stand_up();
             }
             _ => ()
@@ -291,16 +286,13 @@ impl<'a> GameClient<'a> {
                 }
             },
             GamePhase::Sleep => {
-                if game_ui_manager.is_done_manual_fade_out() {
-                    const SLEEP_TIMER: f32 = 3.0;
-                    if SLEEP_TIMER <= self._sleep_timer {
-                        self.set_game_phase(GamePhase::WakeUp);
-                    }
+                if game_ui_manager.is_done_manual_fade_out() && self._sleep_timer < SLEEP_TIMER {
                     self._sleep_timer += delta_time as f32;
-                }
-            },
-            GamePhase::WakeUp => {
-                if game_ui_manager.is_done_game_image_progress() {
+                    if SLEEP_TIMER <= self._sleep_timer {
+                        game_ui_manager.set_auto_fade_inout(true);
+                        game_scene_manager.set_next_time_of_day();
+                    }
+                } else if game_ui_manager.is_done_game_image_progress() {
                     self.set_game_phase(GamePhase::GamePlay);
                 }
             }
