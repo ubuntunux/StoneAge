@@ -243,8 +243,10 @@ impl<'a> GameClient<'a> {
             }
             GamePhase::Teleport => {
                 if self._teleport_stage.is_some() && game_ui_manager.is_done_manual_fade_out() {
-                    game_scene_manager.close_game_scene_data();
-                    game_scene_manager.open_game_scene_data(self._teleport_stage.as_ref().unwrap().as_str());
+                    if game_scene_manager.get_current_game_scene_data_name().eq(self._teleport_stage.as_ref().unwrap().as_str()) == false {
+                        game_scene_manager.close_game_scene_data();
+                        game_scene_manager.open_game_scene_data(self._teleport_stage.as_ref().unwrap().as_str());
+                    }
                     self._teleport_stage = None;
                 }
 

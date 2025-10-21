@@ -47,6 +47,7 @@ pub struct GameSceneManager<'a> {
     pub _character_manager: Box<CharacterManager<'a>>,
     pub _item_manager: Box<ItemManager<'a>>,
     pub _prop_manager: Box<PropManager<'a>>,
+    pub _current_game_scene_data_name: String,
     pub _current_game_scene_data: Option<RcRefCell<GameSceneDataCreateInfo>>,
     pub _ambient_sound: Option<RcRefCell<AudioInstance>>,
     pub _spawn_point: Vector3<f32>,
@@ -103,6 +104,7 @@ impl<'a> GameSceneManager<'a> {
             _effect_manager: std::ptr::null(),
             _scene_manager: std::ptr::null(),
             _game_resources: std::ptr::null(),
+            _current_game_scene_data_name: String::new(),
             _current_game_scene_data: None,
             _character_manager: CharacterManager::create_character_manager(),
             _item_manager: ItemManager::create_item_manager(),
@@ -187,6 +189,10 @@ impl<'a> GameSceneManager<'a> {
         self._game_scene_state == state
     }
 
+    pub fn get_current_game_scene_data_name(&self) -> &String {
+        &self._current_game_scene_data_name
+    }
+
     pub fn open_game_scene_data(&mut self, game_scene_data_name: &str) {
         self.close_game_scene_data();
 
@@ -194,6 +200,7 @@ impl<'a> GameSceneManager<'a> {
         let game_resources = ptr_as_mut(self._game_resources);
         let game_scene_data = game_resources.get_game_scene_data(game_scene_data_name);
         self._current_game_scene_data = Some(game_scene_data.clone());
+        self._current_game_scene_data_name = String::from(game_scene_data_name);
 
         if let Some(game_scene_data) = self._current_game_scene_data.as_ref() {
             let scene_manager = ptr_as_mut(self._scene_manager);
@@ -217,6 +224,7 @@ impl<'a> GameSceneManager<'a> {
         self.clear_game_object_data();
         self.get_scene_manager_mut().close_scene_data();
         self.set_game_scene_state(GameSceneState::None);
+        self._current_game_scene_data_name = String::new();
     }
 
     pub fn spawn_game_object_data(&mut self) {

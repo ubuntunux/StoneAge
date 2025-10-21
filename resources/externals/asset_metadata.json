@@ -8351,16 +8351,6 @@
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/intro_stage.blend": [
-        {
-            "asset_type": "GAME_SCENE",
-            "asset_path": "intro_stage",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/intro_stage.blend",
-            "guid": "",
-            "mtime": 1760286574.2435727,
-            "data": {}
-        }
-    ],
     "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/stage_cave.blend": [
         {
             "asset_type": "GAME_SCENE",
@@ -8368,6 +8358,16 @@
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/stage_cave.blend",
             "guid": "",
             "mtime": 1760632410.3307023,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/intro_stage.blend": [
+        {
+            "asset_type": "GAME_SCENE",
+            "asset_path": "intro_stage",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/intro_stage.blend",
+            "guid": "",
+            "mtime": 1761064599.2666378,
             "data": {}
         }
     ],
