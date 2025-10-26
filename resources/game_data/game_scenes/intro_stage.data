@@ -111,9 +111,9 @@
         "villager_00.006": {
             "_character_data_name": "characters/villager_00",
             "_position": [
-                30.395221710205078,
-                -0.9474793672561646,
-                19.687149047851562
+                37.66320037841797,
+                -1.0,
+                20.013572692871094
             ],
             "_rotation": [
                 0.0,
@@ -417,9 +417,9 @@
         "villager_00.023": {
             "_character_data_name": "characters/villager_00",
             "_position": [
-                7.373543739318848,
-                1.2245335578918457,
-                30.946758270263672
+                13.314949989318848,
+                5.4428791999816895,
+                28.19842529296875
             ],
             "_rotation": [
                 0.0,
@@ -635,9 +635,9 @@
         "rock": {
             "_item_data_name": "items/rock",
             "_position": [
-                7.4885430335998535,
-                5.769571304321289,
-                25.831851959228516
+                8.44776725769043,
+                5.660943984985352,
+                25.82115936279297
             ],
             "_rotation": [
                 0.0,
@@ -744,11 +744,83 @@
         }
     },
     "_props": {
+        "bed": {
+            "_position": [
+                12.175853729248047,
+                5.691138744354248,
+                14.70783519744873
+            ],
+            "_prop_data_name": "props/bed",
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "bed.001": {
+            "_position": [
+                14.339637756347656,
+                5.886356830596924,
+                19.927913665771484
+            ],
+            "_prop_data_name": "props/bed",
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "bed.002": {
+            "_position": [
+                17.74772071838379,
+                5.680929660797119,
+                16.625120162963867
+            ],
+            "_prop_data_name": "props/bed",
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
         "birch_tree_00": {
             "_position": [
                 -15.404129028320312,
                 1.312122106552124,
                 -5.305456161499023
+            ],
+            "_prop_data_name": "props/birch_tree_00",
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "birch_tree_00.001": {
+            "_position": [
+                10.159308433532715,
+                5.914844989776611,
+                19.081018447875977
             ],
             "_prop_data_name": "props/birch_tree_00",
             "_rotation": [
@@ -822,7 +894,7 @@
         },
         "gate.001": {
             "_instance_parameters": {
-                "_linked_gate": "gate.002",
+                "_linked_gate": "gate.001",
                 "_linked_stage": "game_scenes/intro_stage"
             },
             "_position": [
@@ -956,9 +1028,9 @@
         },
         "mushroom_orange_00.003": {
             "_position": [
-                21.099830627441406,
-                1.2786529064178467,
-                9.379380226135254
+                21.321821212768555,
+                3.6400279998779297,
+                8.120051383972168
             ],
             "_prop_data_name": "props/mushroom_orange_00",
             "_rotation": [
@@ -975,7 +1047,7 @@
         "mushroom_orange_00.004": {
             "_position": [
                 22.594619750976562,
-                1.309335470199585,
+                5.701108932495117,
                 24.330917358398438
             ],
             "_prop_data_name": "props/mushroom_orange_00",
@@ -1119,7 +1191,7 @@
         "stump.003": {
             "_position": [
                 22.638946533203125,
-                1.0860755443572998,
+                5.311382293701172,
                 15.96666145324707
             ],
             "_prop_data_name": "props/stump",
@@ -1322,9 +1394,9 @@
             "SM_Env_Bush_Palm_04": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Bush_Palm_04",
                 "_position": [
-                    18.68689727783203,
-                    0.8835314512252808,
-                    4.799225807189941
+                    14.529705047607422,
+                    1.2317261695861816,
+                    3.9850969314575195
                 ],
                 "_rotation": [
                     0.0,
@@ -1502,9 +1574,9 @@
             "SM_Env_Fern_01.002": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Fern_01",
                 "_position": [
-                    1.1451711654663086,
-                    5.124406814575195,
-                    23.39039421081543
+                    6.96890115737915,
+                    5.847689151763916,
+                    21.05850601196289
                 ],
                 "_rotation": [
                     0.0,
@@ -1790,9 +1862,9 @@
             "SM_Env_Flowers_04.004": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Flowers_04",
                 "_position": [
-                    17.902713775634766,
-                    1.2327196598052979,
-                    7.924836158752441
+                    18.330760955810547,
+                    2.8029425144195557,
+                    7.106781959533691
                 ],
                 "_rotation": [
                     0.0,
@@ -1863,7 +1935,7 @@
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Flowers_05",
                 "_position": [
                     21.25581169128418,
-                    1.2844023704528809,
+                    5.456092834472656,
                     15.406074523925781
                 ],
                 "_rotation": [
@@ -1881,7 +1953,7 @@
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Flowers_05",
                 "_position": [
                     22.976573944091797,
-                    1.3116977214813232,
+                    5.563007354736328,
                     27.511940002441406
                 ],
                 "_rotation": [
@@ -1971,7 +2043,7 @@
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Flowers_Flat_02",
                 "_position": [
                     22.31372833251953,
-                    1.2255423069000244,
+                    5.434078216552734,
                     19.453052520751953
                 ],
                 "_rotation": [
@@ -1989,7 +2061,7 @@
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Flowers_Flat_03",
                 "_position": [
                     25.793209075927734,
-                    1.0541667938232422,
+                    5.243461608886719,
                     26.125381469726562
                 ],
                 "_rotation": [
@@ -2097,7 +2169,7 @@
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Grass_Bush_01",
                 "_position": [
                     23.225711822509766,
-                    1.118988037109375,
+                    5.3939361572265625,
                     13.036820411682129
                 ],
                 "_rotation": [
@@ -2115,7 +2187,7 @@
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Grass_Bush_01",
                 "_position": [
                     19.240022659301758,
-                    1.3057565689086914,
+                    5.372198104858398,
                     11.03001594543457
                 ],
                 "_rotation": [
@@ -2151,7 +2223,7 @@
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Grass_Bush_01",
                 "_position": [
                     11.751033782958984,
-                    0.855097770690918,
+                    4.3745341300964355,
                     31.466577529907227
                 ],
                 "_rotation": [
@@ -2186,9 +2258,9 @@
             "SM_Env_Grass_Bush_01.010": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Grass_Bush_01",
                 "_position": [
-                    5.5762224197387695,
-                    5.75098991394043,
-                    26.093917846679688
+                    5.794127464294434,
+                    5.684146404266357,
+                    23.01187515258789
                 ],
                 "_rotation": [
                     0.0,
@@ -2205,7 +2277,7 @@
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Grass_Bush_01",
                 "_position": [
                     8.992989540100098,
-                    1.1556849479675293,
+                    0.7603180408477783,
                     31.044919967651367
                 ],
                 "_rotation": [
@@ -2241,7 +2313,7 @@
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Grass_Bush_01",
                 "_position": [
                     16.783674240112305,
-                    1.1785495281219482,
+                    5.23668098449707,
                     29.27035903930664
                 ],
                 "_rotation": [
@@ -2421,7 +2493,7 @@
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Grass_Bush_01",
                 "_position": [
                     27.601119995117188,
-                    0.36631810665130615,
+                    4.688563823699951,
                     24.6803035736084
                 ],
                 "_rotation": [
@@ -2475,7 +2547,7 @@
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Grass_Med_Clump_01",
                 "_position": [
                     25.793209075927734,
-                    1.2765722274780273,
+                    5.3589887619018555,
                     28.29299545288086
                 ],
                 "_rotation": [
@@ -2852,9 +2924,9 @@
             "SM_Env_Grass_Tall_Clump_03.003": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Grass_Tall_Clump_03",
                 "_position": [
-                    14.748725891113281,
-                    5.766409873962402,
-                    25.015884399414062
+                    15.72767448425293,
+                    5.750629901885986,
+                    26.157371520996094
                 ],
                 "_rotation": [
                     0.0,
@@ -2870,9 +2942,9 @@
             "SM_Env_Grass_Tall_Clump_03.004": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Grass_Tall_Clump_03",
                 "_position": [
-                    12.693253517150879,
-                    5.769306182861328,
-                    24.789390563964844
+                    12.374963760375977,
+                    5.894503116607666,
+                    24.3326473236084
                 ],
                 "_rotation": [
                     0.0,
@@ -2943,7 +3015,7 @@
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Grass_Tall_Plane_01",
                 "_position": [
                     16.644811630249023,
-                    1.168527603149414,
+                    4.880758762359619,
                     31.005285263061523
                 ],
                 "_rotation": [
@@ -2961,7 +3033,7 @@
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Grass_Tall_Plane_01",
                 "_position": [
                     19.26085662841797,
-                    1.272188663482666,
+                    5.433872222900391,
                     28.356943130493164
                 ],
                 "_rotation": [
@@ -3015,7 +3087,7 @@
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Ground_Cover_01",
                 "_position": [
                     18.19304847717285,
-                    0.6591404676437378,
+                    4.8581109046936035,
                     31.306156158447266
                 ],
                 "_rotation": [
@@ -3140,9 +3212,9 @@
             "SM_Env_Ground_Cover_03.003": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Ground_Cover_03",
                 "_position": [
-                    23.790550231933594,
-                    1.2917754650115967,
-                    9.154870986938477
+                    24.714313507080078,
+                    1.1613943576812744,
+                    9.544649124145508
                 ],
                 "_rotation": [
                     0.0,
@@ -3266,9 +3338,9 @@
             "SM_Env_Ground_Cover_03.010": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Ground_Cover_03",
                 "_position": [
-                    10.635854721069336,
-                    5.769649505615234,
-                    25.605133056640625
+                    10.985416412353516,
+                    5.643370151519775,
+                    26.778898239135742
                 ],
                 "_rotation": [
                     0.0,
@@ -3285,7 +3357,7 @@
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Ground_Cover_03",
                 "_position": [
                     26.06905746459961,
-                    1.282426118850708,
+                    4.634071350097656,
                     30.495792388916016
                 ],
                 "_rotation": [
@@ -3389,30 +3461,12 @@
                     1.0
                 ]
             },
-            "SM_Env_Growth_Plane_01.001": {
-                "_model_data_name": "PolygonNatureBiomes/SM_Env_Growth_Plane_01",
-                "_position": [
-                    22.311382293701172,
-                    1.2326796054840088,
-                    29.25326156616211
-                ],
-                "_rotation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "_scale": [
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            },
             "SM_Env_Monolith_01": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Monolith_01",
                 "_position": [
-                    8.2474365234375,
-                    5.769655227661133,
-                    19.116567611694336
+                    9.471549987792969,
+                    5.717057228088379,
+                    15.401617050170898
                 ],
                 "_rotation": [
                     0.0,
@@ -4130,9 +4184,9 @@
             "SM_Env_Tree_Forest_03": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Tree_Forest_03",
                 "_position": [
-                    17.343494415283203,
-                    1.3121249675750732,
-                    13.255733489990234
+                    18.112518310546875,
+                    -0.9999971389770508,
+                    46.73878479003906
                 ],
                 "_rotation": [
                     0.0,
@@ -4166,9 +4220,9 @@
             "SM_Env_Tree_Forest_03.002": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Tree_Forest_03",
                 "_position": [
-                    4.713139533996582,
-                    5.7318501472473145,
-                    23.963062286376953
+                    -9.865422248840332,
+                    1.1399989128112793,
+                    -11.725273132324219
                 ],
                 "_rotation": [
                     0.0,
@@ -4202,9 +4256,9 @@
             "SM_Env_Tree_Palm_01_Coconuts_01.001": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Tree_Palm_01_Coconuts_01",
                 "_position": [
-                    20.7032413482666,
-                    1.04496431350708,
-                    5.831462860107422
+                    21.146936416625977,
+                    1.5181996822357178,
+                    5.687073707580566
                 ],
                 "_rotation": [
                     0.0,
@@ -4220,9 +4274,9 @@
             "SM_Env_Tree_Palm_02": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Tree_Palm_02",
                 "_position": [
-                    25.92108917236328,
-                    -0.30371594429016113,
-                    23.551307678222656
+                    34.084503173828125,
+                    -0.826716423034668,
+                    26.52186393737793
                 ],
                 "_rotation": [
                     0.0,
@@ -4274,9 +4328,9 @@
             "SM_Env_Tree_Pohutukawa_01": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Tree_Pohutukawa_01",
                 "_position": [
-                    12.383723258972168,
-                    1.3083267211914062,
-                    6.153316497802734
+                    6.478806018829346,
+                    -0.8833301067352295,
+                    47.9744758605957
                 ],
                 "_rotation": [
                     0.0,
@@ -4310,9 +4364,9 @@
             "SM_Env_Tree_Pohutukawa_01.002": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Tree_Pohutukawa_01",
                 "_position": [
-                    14.602270126342773,
-                    1.312122106552124,
-                    10.104660034179688
+                    44.304466247558594,
+                    -0.9236569404602051,
+                    18.439882278442383
                 ],
                 "_rotation": [
                     0.0,
@@ -4328,9 +4382,9 @@
             "SM_Env_Tree_Pohutukawa_01.003": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Tree_Pohutukawa_01",
                 "_position": [
-                    8.01000690460205,
-                    1.312119483947754,
-                    13.015562057495117
+                    -10.340014457702637,
+                    -0.08345687389373779,
+                    11.211194038391113
                 ],
                 "_rotation": [
                     0.0,
@@ -4346,9 +4400,9 @@
             "SM_Env_Tree_Pohutukawa_01.004": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Tree_Pohutukawa_01",
                 "_position": [
-                    8.964960098266602,
-                    5.769659996032715,
-                    24.495094299316406
+                    -8.077044486999512,
+                    -0.5252887010574341,
+                    42.782470703125
                 ],
                 "_rotation": [
                     0.0,
@@ -5088,7 +5142,7 @@
             "_model_data_name": "PolygonNatureBiomes/SM_Env_Pile_02",
             "_position": [
                 14.565632820129395,
-                1.0408258438110352,
+                5.0662360191345215,
                 30.23876953125
             ],
             "_rotation": [
@@ -5210,24 +5264,6 @@
                 1.0
             ]
         },
-        "rock_03": {
-            "_model_data_name": "environments/rock_03",
-            "_position": [
-                2.854886054992676,
-                5.517279148101807,
-                23.34943962097168
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
         "rock_03.001": {
             "_model_data_name": "environments/rock_03",
             "_position": [
@@ -5238,24 +5274,6 @@
             "_rotation": [
                 0.0,
                 0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "rock_03.002": {
-            "_model_data_name": "environments/rock_03",
-            "_position": [
-                10.7286376953125,
-                -0.6260888576507568,
-                34.87137985229492
-            ],
-            "_rotation": [
-                0.0,
-                2.1729226112365723,
                 0.0
             ],
             "_scale": [
