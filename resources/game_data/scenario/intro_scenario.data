@@ -1,0 +1,63 @@
+{
+    "_characters": {
+        "ewa": {
+            "_character_data_name": "characters/family/ewa",
+            "_position": [
+                16.94754409790039,
+                5.884868621826172,
+                22.743745803833008
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "koa": {
+            "_character_data_name": "characters/family/koa",
+            "_position": [
+                11.436752319335938,
+                5.944416046142578,
+                22.537572860717773
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        }
+    },
+    "_game_scenes": {},
+    "_items": {},
+    "_player": {
+        "aru": {
+            "_character_data_name": "characters/family/aru",
+            "_position": [
+                12.999935150146484,
+                5.858468055725098,
+                18.17281723022461
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        }
+    },
+    "_props": {}
+}
