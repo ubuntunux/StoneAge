@@ -9,5 +9,6 @@ pub mod items_impl;
 pub mod item_updater;
 pub mod props;
 pub mod props_impl;
+pub mod scenario;
 pub mod weapons;
 pub mod weapons_impl;

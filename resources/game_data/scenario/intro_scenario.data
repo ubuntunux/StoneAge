@@ -35,9 +35,388 @@
                 1.0,
                 1.0
             ]
+        },
+        "villager_00": {
+            "_character_data_name": "characters/villager_00",
+            "_position": [
+                3.3837127685546875,
+                -0.12717628479003906,
+                2.5518805980682373
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "villager_00.001": {
+            "_character_data_name": "characters/villager_00",
+            "_position": [
+                -7.359485626220703,
+                0.3921489715576172,
+                13.167901039123535
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "villager_00.002": {
+            "_character_data_name": "characters/villager_00",
+            "_position": [
+                4.386329650878906,
+                1.137125015258789,
+                7.143401145935059
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "villager_00.003": {
+            "_character_data_name": "characters/villager_00",
+            "_position": [
+                -3.023967742919922,
+                1.191070556640625,
+                16.129711151123047
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "villager_00.004": {
+            "_character_data_name": "characters/villager_00",
+            "_position": [
+                9.654027938842773,
+                -1.0,
+                45.6995735168457
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "villager_00.005": {
+            "_character_data_name": "characters/villager_00",
+            "_position": [
+                33.407264709472656,
+                1.5118331909179688,
+                34.91139221191406
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "villager_00.006": {
+            "_character_data_name": "characters/villager_00",
+            "_position": [
+                34.549652099609375,
+                1.2578811645507812,
+                42.16248321533203
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "villager_00.007": {
+            "_character_data_name": "characters/villager_00",
+            "_position": [
+                22.94778823852539,
+                -0.9999885559082031,
+                43.77812194824219
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "villager_00.008": {
+            "_character_data_name": "characters/villager_00",
+            "_position": [
+                30.702465057373047,
+                1.1674003601074219,
+                4.96727180480957
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "villager_00.009": {
+            "_character_data_name": "characters/villager_00",
+            "_position": [
+                16.58338165283203,
+                -0.2648048400878906,
+                -4.813810348510742
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "villager_00.010": {
+            "_character_data_name": "characters/villager_00",
+            "_position": [
+                23.425270080566406,
+                0.4367027282714844,
+                2.3280982971191406
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "villager_00.011": {
+            "_character_data_name": "characters/villager_00",
+            "_position": [
+                9.192371368408203,
+                0.9267730712890625,
+                -4.526493072509766
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "villager_00.012": {
+            "_character_data_name": "characters/villager_00",
+            "_position": [
+                0.20184326171875,
+                -0.9962959289550781,
+                -3.631627082824707
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "villager_00.013": {
+            "_character_data_name": "characters/villager_00",
+            "_position": [
+                16.739513397216797,
+                0.7952537536621094,
+                3.2596206665039062
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "villager_00.014": {
+            "_character_data_name": "characters/villager_00",
+            "_position": [
+                38.43763732910156,
+                -1.0,
+                20.515886306762695
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "villager_00.015": {
+            "_character_data_name": "characters/villager_00",
+            "_position": [
+                44.032535552978516,
+                0.6891708374023438,
+                37.17561340332031
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "villager_00.016": {
+            "_character_data_name": "characters/villager_00",
+            "_position": [
+                4.7453460693359375,
+                -0.9509353637695312,
+                -15.665298461914062
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "villager_00.017": {
+            "_character_data_name": "characters/villager_00",
+            "_position": [
+                -5.6418609619140625,
+                0.0748748779296875,
+                -11.996246337890625
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "villager_00.018": {
+            "_character_data_name": "characters/villager_00",
+            "_position": [
+                52.16759490966797,
+                1.0523223876953125,
+                0.6482086181640625
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "villager_00.019": {
+            "_character_data_name": "characters/villager_00",
+            "_position": [
+                -11.129379272460938,
+                0.03298187255859375,
+                38.35503387451172
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
         }
     },
-    "_game_scenes": {},
+    "_game_scenes": {
+        "intro_stage": {
+            "_game_scene_data_name": "game_scenes/intro_stage",
+            "_position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        }
+    },
     "_items": {},
     "_player": {
         "aru": {

@@ -5,7 +5,7 @@ use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
 use crate::application::application::Application;
 use crate::game_module::actors::character_data::ActionAnimationState;
 use crate::game_module::actors::character_manager::CharacterManager;
-use crate::game_module::game_constants::{AMBIENT_SOUND, CAMERA_DISTANCE_MAX, GAME_MUSIC, GAME_SCENE_INTRO, MATERIAL_INTRO_IMAGE, SLEEP_TIMER, STORY_BOARDS, STORY_BOARD_FADE_TIME, STORY_IMAGE_NONE};
+use crate::game_module::game_constants::{AMBIENT_SOUND, CAMERA_DISTANCE_MAX, GAME_MUSIC, MATERIAL_INTRO_IMAGE, SCENARIO_INTRO, SLEEP_TIMER, STORY_BOARDS, STORY_BOARD_FADE_TIME, STORY_IMAGE_NONE};
 use crate::game_module::game_controller::GameController;
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::{GameSceneManager, GameSceneState};
@@ -228,7 +228,7 @@ impl<'a> GameClient<'a> {
             GamePhase::Loading => {
                 if game_ui_manager.is_done_manual_fade_out() {
                     if game_scene_manager.is_game_scene_state(GameSceneState::None) {
-                        game_scene_manager.open_game_scene_data(GAME_SCENE_INTRO);
+                        game_scene_manager.open_scenario_data(SCENARIO_INTRO);
                     } else if game_scene_manager.is_game_scene_state(GameSceneState::LoadComplete) {
                         if false == self._game_controller.is_null() {
                             let game_controller = ptr_as_mut(self._game_controller);

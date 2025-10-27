@@ -50,7 +50,7 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
         // initialize project managers
         let application = ptr_as_ref(self);
         self.get_game_resources_mut().initialize_game_resources(engine_core.get_engine_resources());
-        self.get_game_resources_mut().load_game_resources(engine_core.get_renderer_context());
+        self.get_game_resources_mut().load_game_resources();
         self.get_game_client_mut().initialize_game_client(engine_core, application);
         self.get_game_controller_mut().initialize_game_controller(application);
         self.get_game_ui_manager_mut().initialize_game_ui_manager(engine_core, application);
