@@ -1,11 +1,12 @@
 use nalgebra::Vector3;
 use rust_engine_3d::utilities::math::lerp;
 use crate::game_module::actors::character::Character;
+use crate::game_module::actors::character_data::ActionAnimationState;
 use crate::game_module::behavior::behavior_base::{BehaviorBase, BehaviorState};
 use crate::game_module::game_constants::{ARRIVAL_DISTANCE_THRESHOLD, NPC_IDLE_TERM_MAX, NPC_IDLE_TERM_MIN, NPC_ROAMING_RADIUS, NPC_ROAMING_TIME, NPC_TRACKING_RANGE};
 
 #[derive(Default)]
-pub struct BehaviorDefault {
+pub struct BehaviorCivilian {
     pub _idle_time: f32,
     pub _move_direction: Vector3<f32>,
     pub _spawn_point: Vector3<f32>,
@@ -14,7 +15,7 @@ pub struct BehaviorDefault {
     pub _behavior_state: BehaviorState,
 }
 
-impl BehaviorBase for BehaviorDefault {
+impl BehaviorBase for BehaviorCivilian {
     fn initialize_behavior(&mut self, _owner: &mut Character, position: &Vector3<f32>) {
         self._spawn_point = position.clone();
         self._behavior_state = BehaviorState::None;
@@ -27,37 +28,6 @@ impl BehaviorBase for BehaviorDefault {
             }
         }
         false
-    }
-
-    fn set_behavior(&mut self, behavior_state: BehaviorState, owner: &mut Character, player: Option<&Character>, is_force: bool) {
-        if self._behavior_state != behavior_state || is_force {
-            self.end_behavior(owner, player);
-
-            self._behavior_state = behavior_state;
-            match behavior_state {
-                BehaviorState::None => {
-                },
-                BehaviorState::Idle => {
-                    owner.set_move_stop();
-                    self._idle_time = lerp(NPC_IDLE_TERM_MIN, NPC_IDLE_TERM_MAX, rand::random::<f32>());
-                },
-                BehaviorState::Move => {
-                    let move_area = Vector3::new(rand::random::<f32>() - 0.5, 0.0, rand::random::<f32>() - 0.5).normalize() * NPC_ROAMING_RADIUS;
-                    self._target_point = self._spawn_point + move_area;
-                    self._move_direction = (self._target_point - owner.get_position()).normalize();
-                    self._move_time = NPC_ROAMING_TIME;
-                    owner.set_move(&self._move_direction);
-                    owner.set_run(false);
-                },
-                _ => ()
-            }
-        }
-    }
-
-    fn end_behavior(&mut self, _owner: &mut Character, _player: Option<&Character>) {
-        match self._behavior_state {
-            _ => ()
-        }
     }
 
     fn update_behavior(&mut self, owner: &mut Character, player: Option<&Character>, delta_time: f32) {
@@ -90,6 +60,43 @@ impl BehaviorBase for BehaviorDefault {
                 }
                 self._move_time -= delta_time;
             },
+            _ => ()
+        }
+    }
+
+    fn set_behavior(&mut self, behavior_state: BehaviorState, owner: &mut Character, player: Option<&Character>, is_force: bool) {
+        if self._behavior_state != behavior_state || is_force {
+            self.end_behavior(owner, player);
+
+            self._behavior_state = behavior_state;
+            match behavior_state {
+                BehaviorState::None => {
+                },
+                BehaviorState::Idle => {
+                    owner.set_move_stop();
+                    self._idle_time = lerp(NPC_IDLE_TERM_MIN, NPC_IDLE_TERM_MAX, rand::random::<f32>());
+                },
+                BehaviorState::Move => {
+                    let move_area = Vector3::new(rand::random::<f32>() - 0.5, 0.0, rand::random::<f32>() - 0.5).normalize() * NPC_ROAMING_RADIUS;
+                    self._target_point = self._spawn_point + move_area;
+                    self._move_direction = (self._target_point - owner.get_position()).normalize();
+                    self._move_time = NPC_ROAMING_TIME;
+                    owner.set_move(&self._move_direction);
+                    owner.set_run(false);
+                },
+                BehaviorState::Chase => {
+                },
+                BehaviorState::Attack => {
+                },
+                BehaviorState::Sleep => {
+                    owner.set_action_animation(ActionAnimationState::Sleep, 1.0);
+                }
+            }
+        }
+    }
+
+    fn end_behavior(&mut self, _owner: &mut Character, _player: Option<&Character>) {
+        match self._behavior_state {
             _ => ()
         }
     }

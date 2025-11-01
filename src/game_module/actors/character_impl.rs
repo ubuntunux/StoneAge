@@ -14,7 +14,7 @@ use crate::game_module::actors::character_controller::CharacterController;
 use crate::game_module::actors::character_data::{ActionAnimationState, CharacterData, MoveAnimationState};
 use crate::game_module::actors::character_manager::{CharacterID, CharacterManager};
 use crate::game_module::actors::weapons::Weapon;
-use crate::game_module::behavior::behavior_base::create_character_behavior;
+use crate::game_module::behavior::behavior_base::{create_character_behavior, BehaviorState};
 use crate::game_module::game_constants::*;
 
 impl CharacterAnimationState {
@@ -90,6 +90,7 @@ impl CharacterStats {
 impl<'a> Character<'a> {
     pub fn create_character_instance(
         character_manager: &CharacterManager<'a>,
+        character_name: &str,
         character_id: CharacterID,
         is_player: bool,
         character_data_name: &str,
@@ -102,6 +103,7 @@ impl<'a> Character<'a> {
         let character_data_borrow = character_data.borrow();
         let mut character = Character {
             _character_manager: character_manager,
+            _character_name: String::from(character_name),
             _character_id: character_id,
             _is_player: is_player,
             _character_data_name: String::from(character_data_name),
@@ -156,6 +158,10 @@ impl<'a> Character<'a> {
 
     pub fn get_character_manager_mut(&self) -> &mut CharacterManager<'a> {
         ptr_as_mut(self._character_manager)
+    }
+
+    pub fn get_character_name(&self) -> &String {
+        &self._character_name
     }
 
     pub fn get_character_id(&self) -> CharacterID {
@@ -376,6 +382,11 @@ impl<'a> Character<'a> {
 
     pub fn set_invincibility(&mut self, invincibility: bool) {
         self._character_stats._invincibility = invincibility;
+    }
+
+    pub fn set_behavior(&mut self, behavior_state: BehaviorState) {
+        let owner = ptr_as_mut(self);
+        self._behavior.set_behavior(behavior_state, owner, None, false);
     }
 
     pub fn set_dead(&mut self) {
@@ -846,7 +857,7 @@ impl<'a> Character<'a> {
 
         // behavior
         if false == self._is_player && self.is_alive() {
-            self._behavior.update_behavior(ptr_as_mut(self), player, delta_time);
+            self._behavior.update_behavior(ptr_as_mut(self), Some(player), delta_time);
         }
 
         // update stats - stamina

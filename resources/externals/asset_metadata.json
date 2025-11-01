@@ -245,7 +245,7 @@
             "asset_path": "family/aru",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/family/aru.blend",
             "guid": "",
-            "mtime": 1761495902.2558248,
+            "mtime": 1762026555.3607035,
             "data": {}
         }
     ],
@@ -255,7 +255,7 @@
             "asset_path": "family/ewa",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/family/ewa.blend",
             "guid": "",
-            "mtime": 1761495956.5420313,
+            "mtime": 1762026542.9080257,
             "data": {}
         }
     ],
@@ -265,7 +265,7 @@
             "asset_path": "family/koa",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/family/koa.blend",
             "guid": "",
-            "mtime": 1761495937.0740726,
+            "mtime": 1762026526.066951,
             "data": {}
         }
     ],
@@ -8569,13 +8569,13 @@
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/game_data/scenario/intro_scenario.blend": [
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/scenario/intro.blend": [
         {
             "asset_type": "GAME_SCENARIO",
-            "asset_path": "intro_scenario",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/scenario/intro_scenario.blend",
+            "asset_path": "intro",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/scenario/intro.blend",
             "guid": "",
-            "mtime": 1761581746.685363,
+            "mtime": 1762024434.6705763,
             "data": {}
         }
     ]

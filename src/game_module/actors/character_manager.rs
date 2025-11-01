@@ -19,7 +19,7 @@ use crate::game_module::game_scene_manager::GameSceneManager;
 #[derive(Copy, Clone, Debug, Default, Hash, Eq, PartialEq)]
 pub struct CharacterID(u64);
 
-pub type CharacterMap<'a> = HashMap<CharacterID, RcRefCell<Character<'a>>>;
+pub type CharacterMap<'a> = HashMap<String, RcRefCell<Character<'a>>>;
 
 pub struct CharacterManager<'a> {
     pub _game_client: *const GameClient<'a>,
@@ -88,8 +88,8 @@ impl<'a> CharacterManager<'a> {
         self._id_generator = CharacterID(self._id_generator.0 + 1);
         id
     }
-    pub fn get_character(&self, character_id: CharacterID) -> Option<&RcRefCell<Character<'a>>> {
-        self._characters.get(&character_id)
+    pub fn get_character(&self, character_name: &str) -> Option<&RcRefCell<Character<'a>>> {
+        self._characters.get(character_name)
     }
     pub fn add_character_weapon(&self, character: &mut Character<'a>, weapon_create_info: &WeaponCreateInfo) {
         // remove previous weapon
@@ -127,7 +127,7 @@ impl<'a> CharacterManager<'a> {
             character.add_weapon(weapon.unwrap());
         }
     }
-    pub fn create_character(&mut self, character_name: &str, character_create_info: &CharacterCreateInfo, is_player: bool) {
+    pub fn create_character(&mut self, character_name: &str, character_create_info: &CharacterCreateInfo, is_player: bool) -> RcRefCell<Character<'a>> {
         let game_resources = ptr_as_ref(self._game_resources);
         let mut spawn_point = character_create_info._position.clone();
         spawn_point.y = spawn_point.y.max(self.get_scene_manager().get_height_map_data().get_height_bilinear(&spawn_point, 0));
@@ -150,6 +150,7 @@ impl<'a> CharacterManager<'a> {
         let id = self.generate_id();
         let character = newRcRefCell(Character::create_character_instance(
             self,
+            character_name,
             id,
             is_player,
             character_data_name,
@@ -172,10 +173,13 @@ impl<'a> CharacterManager<'a> {
             self._player = Some(character.clone());
         }
 
-        self._characters.insert(id, character.clone());
+        self._characters.insert(String::from(character_name), character.clone());
+
+        character
     }
+
     pub fn remove_character(&mut self, character: &RcRefCell<Character>) {
-        self._characters.remove(&character.borrow().get_character_id());
+        self._characters.remove(character.borrow().get_character_name().as_str());
         self.get_scene_manager_mut().remove_skeletal_render_object(character.borrow()._render_object.borrow()._object_id);
     }
     pub fn clear_characters(&mut self, clear_player: bool) {

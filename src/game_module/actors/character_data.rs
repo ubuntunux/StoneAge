@@ -41,7 +41,12 @@ pub enum SpawnPointType {
 #[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq)]
 pub enum CharacterDataType {
     None,
-    Roamer
+    Player,
+    Civilian,
+    Roamer,
+    Guardian,
+    Stalker,
+    Invader
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]

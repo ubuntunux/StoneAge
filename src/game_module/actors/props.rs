@@ -22,7 +22,9 @@ pub enum PropDataType {
     Destruction,
     Gate,
     Harvestable,
-    Pickup
+    Pickup,
+    Dungeon,
+    Building
 }
 
 #[derive(Serialize, Deserialize, Default, Debug, Clone, PartialEq)]

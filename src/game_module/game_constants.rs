@@ -19,7 +19,7 @@ pub const CAMERA_ROTATION_SPEED_MAX: f32 = 30.0;
 pub const ARRIVAL_DISTANCE_THRESHOLD: f32 = 1.0;
 
 // time
-pub const TIME_OF_MORNING: f32 = 10.0;
+pub const TIME_OF_MORNING: f32 = 7.0;
 pub const TIME_OF_DAY_SPEED: f32 = 14.0 / (24.0 * 60.0); // Minute 14 per day
 pub const TEMPERATURE_MIN: f32 = 12.0;
 pub const TEMPERATURE_MAX: f32 = 32.0;
@@ -99,4 +99,4 @@ pub const ITEM_MEAT: &str = "items/meat";
 pub const ITEM_SPIRIT_BALL: &str = "items/spirit_ball";
 
 // Scenario
-pub const SCENARIO_INTRO: &str = "scenario/intro_scenario";
+pub const SCENARIO_INTRO: &str = "scenario/intro";

@@ -45,7 +45,7 @@
         "_run_speed": 5.400000095367432,
         "_walk_speed": 3.0
     },
-    "_character_type": "Roamer",
+    "_character_type": "Civilian",
     "_model_data_name": "characters/jack",
-    "_name": "UBUNTU"
+    "_name": "koa"
 }
