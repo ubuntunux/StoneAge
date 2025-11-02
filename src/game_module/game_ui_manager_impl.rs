@@ -2,11 +2,13 @@ use nalgebra::Vector2;
 use rust_engine_3d::core::engine_core::EngineCore;
 use rust_engine_3d::scene::ui::{UIComponentInstance, UIManager, UIWidgetTypes, WidgetDefault};
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
+use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::application::application::Application;
 use crate::game_module::actors::items::ItemDataType;
 use crate::game_module::game_client::GameClient;
 use crate::game_module::game_constants::{MATERIAL_CROSS_HAIR, MATERIAL_INTRO_IMAGE};
-use crate::game_module::game_ui_manager::GameUIManager;
+use crate::game_module::game_resource::GameResources;
+use crate::game_module::game_ui_manager::{EditorUIComponents, GameUIComponents, GameUIManager};
 use crate::game_module::widgets::controller_help::ControllerHelpWidget;
 use crate::game_module::widgets::cross_hair_widget::CrossHairWidget;
 use crate::game_module::widgets::image_widget::ImageLayout;
@@ -15,12 +17,50 @@ use crate::game_module::widgets::player_hud::PlayerHud;
 use crate::game_module::widgets::target_status_bar::TargetStatusWidget;
 use crate::game_module::widgets::time_of_day::TimeOfDayWidget;
 
-impl<'a> GameUIManager<'a> {
-    pub fn create_game_ui_manager() -> Box<GameUIManager<'a>> {
-        Box::new(GameUIManager {
-            _ui_manager: std::ptr::null(),
-            _game_client: std::ptr::null(),
-            _root_widget: std::ptr::null(),
+impl<'a> EditorUIComponents<'a> {
+    pub fn create_editor_ui_components() -> Box<EditorUIComponents<'a>> {
+        Box::new(EditorUIComponents {
+            _editor_ui_layout: std::ptr::null(),
+        })
+    }
+
+    pub fn get_editor_ui_layout(&self) -> *const WidgetDefault<'a> {
+        self._editor_ui_layout
+    }
+
+    pub fn show_editor_ui(&mut self, show: bool) {
+        if false == self._editor_ui_layout.is_null() {
+            let editor_ui_layout_mut = ptr_as_mut(self._editor_ui_layout);
+            editor_ui_layout_mut.get_ui_component_mut().set_visible(show);
+        }
+    }
+
+    pub fn build_editor_ui(&mut self, root_widget: &mut WidgetDefault<'a>, window_size: &Vector2<i32>) {
+        log::info!("build_editor_ui");
+        let editor_ui_layout = UIManager::create_widget("editor ui layout", UIWidgetTypes::Default);
+        let editor_ui_layout_mut: &mut WidgetDefault = ptr_as_mut(editor_ui_layout.as_ref());
+        let ui_component: &mut UIComponentInstance = editor_ui_layout_mut.get_ui_component_mut();
+        ui_component.set_size_hint_x(Some(1.0));
+        ui_component.set_size_hint_y(Some(1.0));
+        ui_component.set_renderable(false);
+        root_widget.add_widget(&editor_ui_layout);
+        self._editor_ui_layout = editor_ui_layout.as_ref();
+
+        self.changed_window_size(window_size);
+    }
+
+    pub fn changed_window_size(&mut self, window_size: &Vector2<i32>) {
+        log::info!("EditorUIComponents::changed_window_size: {:?}", window_size);
+    }
+
+    pub fn update_editor_ui(&mut self, _game_scene_manager: &GameSceneManager<'a>, _mouse_pos: &Vector2<i32>, _delta_time: f64) {
+
+    }
+}
+
+impl<'a> GameUIComponents<'a> {
+    pub fn create_game_ui_components() -> Box<GameUIComponents<'a>> {
+        Box::new(GameUIComponents {
             _game_ui_layout: std::ptr::null(),
             _game_image: None,
             _cross_hair: None,
@@ -28,13 +68,161 @@ impl<'a> GameUIManager<'a> {
             _time_of_day: None,
             _item_bar_widget: None,
             _player_hud: None,
-            _controller_help_widget: None,
-            _window_size: Vector2::new(1024,768)
+            _controller_help_widget: None
         })
     }
 
-    pub fn game_ui_layout(&self) -> *const WidgetDefault<'a> {
+    pub fn build_game_ui(&mut self, game_resources: &GameResources<'a>, root_widget: &mut WidgetDefault<'a>, window_size: &Vector2<i32>) {
+        log::info!("build_game_ui");
+        let engine_resources = game_resources.get_engine_resources();
+
+        // create layout
+        let game_ui_layout = UIManager::create_widget("game ui layout", UIWidgetTypes::Default);
+        let game_ui_layout_mut: &mut WidgetDefault = ptr_as_mut(game_ui_layout.as_ref());
+        let ui_component: &mut UIComponentInstance = game_ui_layout_mut.get_ui_component_mut();
+        ui_component.set_size_hint_x(Some(1.0));
+        ui_component.set_size_hint_y(Some(1.0));
+        ui_component.set_renderable(false);
+        root_widget.add_widget(&game_ui_layout);
+        self._game_ui_layout = game_ui_layout.as_ref();
+        self._game_image = Some(ImageLayout::create_image_layout(root_widget, window_size, MATERIAL_INTRO_IMAGE));
+
+        let cross_hair_material_instance = game_resources.get_engine_resources().get_material_instance_data(MATERIAL_CROSS_HAIR);
+        self._cross_hair = Some(Box::new(CrossHairWidget::create_cross_hair(game_ui_layout_mut, cross_hair_material_instance)));
+        self._player_hud = Some(Box::new(PlayerHud::create_player_hud(game_ui_layout_mut)));
+        self._controller_help_widget = Some(Box::new(ControllerHelpWidget::create_controller_help_widget(game_ui_layout_mut)));
+        self._target_status_bar = Some(Box::new(TargetStatusWidget::create_target_status_widget(game_ui_layout_mut)));
+        self._time_of_day = Some(Box::new(TimeOfDayWidget::create_time_of_day_widget(game_ui_layout_mut)));
+        self._item_bar_widget = Some(Box::new(ItemBarWidget::create_item_bar_widget(engine_resources, game_ui_layout_mut)));
+        self.changed_window_size(window_size);
+    }
+
+    pub fn get_game_ui_layout(&self) -> *const WidgetDefault<'a> {
         self._game_ui_layout
+    }
+
+    pub fn show_ui(&mut self, show: bool) {
+        if false == self._game_ui_layout.is_null() {
+            let game_ui_layout_mut = ptr_as_mut(self._game_ui_layout);
+            game_ui_layout_mut.get_ui_component_mut().set_visible(show);
+        }
+    }
+
+    pub fn is_done_manual_fade_out(&self) -> bool {
+        self._game_image.as_ref().unwrap().is_done_manual_fade_out()
+    }
+
+    pub fn is_done_game_image_progress(&self) -> bool {
+        self._game_image.as_ref().unwrap().is_done_game_image_progress()
+    }
+
+    pub fn set_auto_fade_inout(&mut self, auto_fade_inout: bool) {
+        self._game_image.as_mut().unwrap().set_auto_fade_inout(auto_fade_inout);
+    }
+
+    pub fn set_game_image(&mut self, game_resources: &GameResources<'a>, material_instance_name: &str, fadeout_time: f32, auto_fade_inout: bool) {
+        let material_instance = if game_resources.get_engine_resources().has_material_instance_data(material_instance_name) {
+            Some(game_resources.get_engine_resources().get_material_instance_data(material_instance_name).clone())
+        } else {
+            None
+        };
+
+        self._game_image.as_mut().unwrap().set_game_image(&game_resources, material_instance, fadeout_time, auto_fade_inout);
+    }
+
+    pub fn set_game_image_fade_speed(&mut self, fade_speed: f32) {
+        self._game_image.as_mut().unwrap().set_game_image_fade_speed(fade_speed);
+    }
+
+    pub fn changed_window_size(&mut self, window_size: &Vector2<i32>) {
+        log::info!("GameUIComponents::changed_window_size: {:?}", window_size);
+        self._game_image.as_mut().unwrap().changed_window_size(&window_size);
+        self._player_hud.as_mut().unwrap().changed_window_size(&window_size);
+        self._controller_help_widget.as_mut().unwrap().changed_window_size(&window_size);
+        self._target_status_bar.as_mut().unwrap().changed_window_size(&window_size);
+        self._time_of_day.as_mut().unwrap().changed_window_size(&window_size);
+        self._item_bar_widget.as_mut().unwrap().changed_window_size(&window_size);
+    }
+
+    pub fn add_item(&mut self, item_data_type: &ItemDataType, item_count: usize) -> bool {
+        self._item_bar_widget.as_mut().unwrap().add_item(item_data_type, item_count)
+    }
+
+    pub fn remove_item(&mut self, item_data_type: &ItemDataType, item_count: usize) -> bool {
+        self._item_bar_widget.as_mut().unwrap().remove_item(item_data_type, item_count)
+    }
+
+    pub fn get_selected_inventory_item_data_type(&self) -> ItemDataType {
+        self._item_bar_widget.as_ref().unwrap().get_selected_item_type()
+    }
+
+    pub fn select_next_item(&mut self) {
+        self._item_bar_widget.as_mut().unwrap().select_next_item()
+    }
+
+    pub fn select_previous_item(&mut self) {
+        self._item_bar_widget.as_mut().unwrap().select_previous_item()
+    }
+
+    pub fn select_item_by_index(&mut self, item_index: usize) {
+        self._item_bar_widget.as_mut().unwrap().select_item_by_index(item_index)
+    }
+
+    pub fn update_game_ui(&mut self, game_scene_manager: &GameSceneManager<'a>, mouse_pos: &Vector2<i32>, delta_time: f64) {
+        if let Some(cross_hair) = self._cross_hair.as_mut() {
+            // TEST: hide cross hair
+            cross_hair.update_cross_hair_visible(false);
+
+            if cross_hair.get_cross_hair_visible() {
+                cross_hair.update_cross_hair(mouse_pos);
+            }
+        }
+
+        // game image
+        if let Some(game_image) = self._game_image.as_mut() {
+            game_image.update_game_image(delta_time, false);
+        }
+
+        // player hud
+        if let Some(player_hud) = self._player_hud.as_mut() {
+            if game_scene_manager.get_character_manager().is_valid_player() {
+                let player = game_scene_manager.get_character_manager().get_player().borrow();
+                player_hud.update_status_widget(&player);
+            }
+        }
+
+        // target status
+        if let Some(target_status_bar) = self._target_status_bar.as_mut() {
+            if game_scene_manager.get_character_manager().is_valid_target_character() {
+                let target = game_scene_manager.get_character_manager().get_target_character().borrow();
+                target_status_bar.update_status_widget(&target);
+            } else {
+                target_status_bar.fade_out_status_widget();
+            }
+        }
+
+        // controller_help_widget
+        if let Some(controller_help_widget) = self._controller_help_widget.as_mut() {
+            controller_help_widget.update_controller_help_widget(game_scene_manager);
+        }
+
+        // time of day
+        if let Some(time_of_day) = self._time_of_day.as_mut() {
+            time_of_day.update_time_of_day_widget(game_scene_manager);
+        }
+    }
+}
+
+impl<'a> GameUIManager<'a> {
+    pub fn create_game_ui_manager() -> Box<GameUIManager<'a>> {
+        Box::new(GameUIManager {
+            _ui_manager: std::ptr::null(),
+            _game_client: std::ptr::null(),
+            _root_widget: std::ptr::null(),
+            _game_ui_components: GameUIComponents::create_game_ui_components(),
+            _editor_ui_components: EditorUIComponents::create_editor_ui_components(),
+            _window_size: Vector2::new(1024,768)
+        })
     }
 }
 
@@ -74,15 +262,15 @@ impl<'a> GameUIManager<'a> {
     }
 
     pub fn is_done_manual_fade_out(&self) -> bool {
-        self._game_image.as_ref().unwrap().is_done_manual_fade_out()
+        self._game_ui_components.as_ref().is_done_manual_fade_out()
     }
 
     pub fn is_done_game_image_progress(&self) -> bool {
-        self._game_image.as_ref().unwrap().is_done_game_image_progress()
+        self._game_ui_components.as_ref().is_done_game_image_progress()
     }
 
     pub fn set_auto_fade_inout(&mut self, auto_fade_inout: bool) {
-        self._game_image.as_mut().unwrap().set_auto_fade_inout(auto_fade_inout);
+        self._game_ui_components.as_mut().set_auto_fade_inout(auto_fade_inout);
     }
 
     pub fn set_image_manual_fade_inout(&mut self, material_instance_name: &str, fadeout_time: f32) {
@@ -96,73 +284,65 @@ impl<'a> GameUIManager<'a> {
     fn set_game_image(&mut self, material_instance_name: &str, fadeout_time: f32, auto_fade_inout: bool) {
         let game_client = ptr_as_ref(self._game_client);
         let game_resources = game_client.get_game_resources();
-        let material_instance = if game_resources.get_engine_resources().has_material_instance_data(material_instance_name) {
-            Some(game_resources.get_engine_resources().get_material_instance_data(material_instance_name).clone())
-        } else {
-            None
-        };
-
-        self._game_image.as_mut().unwrap().set_game_image(&game_resources, material_instance, fadeout_time, auto_fade_inout);
+        self._game_ui_components.as_mut().set_game_image(game_resources, material_instance_name, fadeout_time, auto_fade_inout);
     }
 
     pub fn set_game_image_fade_speed(&mut self, fade_speed: f32) {
-        self._game_image.as_mut().unwrap().set_game_image_fade_speed(fade_speed);
-    }
-
-    pub fn build_game_ui(&mut self, window_size: &Vector2<i32>) {
-        log::info!("build_game_ui");
-        self._window_size = window_size.clone();
-        let game_client = ptr_as_ref(self._game_client);
-        let game_resources = game_client.get_game_resources();
-        let engine_resources = game_resources.get_engine_resources();
-        let root_widget_mut = ptr_as_mut(self._root_widget);
-
-        // create layout
-        let game_ui_layout = UIManager::create_widget("game ui layout", UIWidgetTypes::Default);
-        let game_ui_layout_mut: &mut WidgetDefault = ptr_as_mut(game_ui_layout.as_ref());
-        let ui_component: &mut UIComponentInstance = game_ui_layout_mut.get_ui_component_mut();
-        ui_component.set_size_hint_x(Some(1.0));
-        ui_component.set_size_hint_y(Some(1.0));
-        ui_component.set_renderable(false);
-        root_widget_mut.add_widget(&game_ui_layout);
-        self._game_ui_layout = game_ui_layout.as_ref();
-        self._game_image = Some(ImageLayout::create_image_layout(root_widget_mut, &self._window_size, MATERIAL_INTRO_IMAGE));
-
-        let cross_hair_material_instance = game_resources.get_engine_resources().get_material_instance_data(MATERIAL_CROSS_HAIR);
-        self._cross_hair = Some(Box::new(CrossHairWidget::create_cross_hair(game_ui_layout_mut, cross_hair_material_instance)));
-        self._player_hud = Some(Box::new(PlayerHud::create_player_hud(game_ui_layout_mut)));
-        self._controller_help_widget = Some(Box::new(ControllerHelpWidget::create_controller_help_widget(game_ui_layout_mut)));
-        self._target_status_bar = Some(Box::new(TargetStatusWidget::create_target_status_widget(game_ui_layout_mut)));
-        self._time_of_day = Some(Box::new(TimeOfDayWidget::create_time_of_day_widget(game_ui_layout_mut)));
-        self._item_bar_widget = Some(Box::new(ItemBarWidget::create_item_bar_widget(engine_resources, game_ui_layout_mut)));
-        self.changed_window_size();
+        self._game_ui_components.as_mut().set_game_image_fade_speed(fade_speed);
     }
 
     pub fn show_ui(&mut self, show: bool) {
-        if false == self._game_ui_layout.is_null() {
-            let game_ui_layout_mut = ptr_as_mut(self._game_ui_layout);
-            game_ui_layout_mut.get_ui_component_mut().set_visible(show);
-        }
+        self._game_ui_components.as_mut().show_ui(show);
+    }
+
+    pub fn show_editor_ui(&mut self, show: bool) {
+        self._editor_ui_components.as_mut().show_editor_ui(show);
     }
 
     pub fn changed_window_size(&mut self) {
-        log::info!("GameUIManager::changed_window_size: {:?}", self._window_size);
-        self._game_image.as_mut().unwrap().changed_window_size(&self._window_size);
-        self._player_hud.as_mut().unwrap().changed_window_size(&self._window_size);
-        self._controller_help_widget.as_mut().unwrap().changed_window_size(&self._window_size);
-        self._target_status_bar.as_mut().unwrap().changed_window_size(&self._window_size);
-        self._time_of_day.as_mut().unwrap().changed_window_size(&self._window_size);
-        self._item_bar_widget.as_mut().unwrap().changed_window_size(&self._window_size);
+        self._editor_ui_components.as_mut().changed_window_size(&self._window_size);
+        self._game_ui_components.as_mut().changed_window_size(&self._window_size);
     }
 
     pub fn add_item(&mut self, item_data_type: &ItemDataType, item_count: usize) -> bool {
-        self._item_bar_widget.as_mut().unwrap().add_item(item_data_type, item_count)
+        self._game_ui_components.as_mut().add_item(item_data_type, item_count)
+    }
+
+    pub fn remove_item(&mut self, item_data_type: &ItemDataType, item_count: usize) -> bool {
+        self._game_ui_components.as_mut().remove_item(item_data_type, item_count)
+    }
+
+    pub fn get_selected_inventory_item_data_type(&self) -> ItemDataType {
+        self._game_ui_components.as_ref().get_selected_inventory_item_data_type()
+    }
+
+    pub fn select_next_item(&mut self) {
+        self._game_ui_components.as_mut().select_next_item()
+    }
+
+    pub fn select_previous_item(&mut self) {
+        self._game_ui_components.as_mut().select_previous_item()
+    }
+
+    pub fn select_item_by_index(&mut self, item_index: usize) {
+        self._game_ui_components.as_mut().select_item_by_index(item_index)
+    }
+
+    pub fn build_game_ui(&mut self) {
+        let game_client = ptr_as_ref(self._game_client);
+        let game_resources = game_client.get_game_resources();
+        let root_widget = ptr_as_mut(self._root_widget);
+
+        self._editor_ui_components.as_mut().build_editor_ui(root_widget, &self._window_size);
+        self._game_ui_components.as_mut().build_game_ui(game_resources, root_widget, &self._window_size);
     }
 
     pub fn update_game_ui(&mut self, delta_time: f64) {
         let game_client = ptr_as_ref(self._game_client);
         let game_scene_manager = game_client.get_game_scene_manager();
         let window_size = &game_client.get_application().get_engine_core()._window_size;
+        let engine_core = ptr_as_ref(game_client._engine_core);
+        let mouse_pos = &engine_core._mouse_move_data._mouse_pos;
 
         // changed window size
         if self._window_size != *window_size {
@@ -170,47 +350,7 @@ impl<'a> GameUIManager<'a> {
             self.changed_window_size();
         }
 
-        if let Some(cross_hair) = self._cross_hair.as_mut() {
-            // TEST: hide cross hair
-            cross_hair.update_cross_hair_visible(false);
-
-            if cross_hair.get_cross_hair_visible() {
-                let engine_core = game_client.get_engine_core();
-                cross_hair.update_cross_hair(&engine_core._mouse_move_data._mouse_pos);
-            }
-        }
-
-        // game image
-        if let Some(game_image) = self._game_image.as_mut() {
-            game_image.update_game_image(delta_time, false);
-        }
-
-        // player hud
-        if let Some(player_hud) = self._player_hud.as_mut() {
-            if game_scene_manager.get_character_manager().is_valid_player() {
-                let player = game_scene_manager.get_character_manager().get_player().borrow();
-                player_hud.update_status_widget(&player);
-            }
-        }
-
-        // target status
-        if let Some(target_status_bar) = self._target_status_bar.as_mut() {
-            if game_scene_manager.get_character_manager().is_valid_target_character() {
-                let target = game_scene_manager.get_character_manager().get_target_character().borrow();
-                target_status_bar.update_status_widget(&target);
-            } else {
-                target_status_bar.fade_out_status_widget();
-            }
-        }
-
-        // controller_help_widget
-        if let Some(controller_help_widget) = self._controller_help_widget.as_mut() {
-            controller_help_widget.update_controller_help_widget(game_scene_manager);
-        }
-
-        // time of day
-        if let Some(time_of_day) = self._time_of_day.as_mut() {
-            time_of_day.update_time_of_day_widget(game_scene_manager);
-        }
+        self._editor_ui_components.as_mut().update_editor_ui(game_scene_manager, mouse_pos, delta_time);
+        self._game_ui_components.as_mut().update_game_ui(game_scene_manager, mouse_pos, delta_time);
     }
 }

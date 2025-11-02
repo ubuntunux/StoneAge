@@ -210,8 +210,7 @@ impl<'a> ItemManager<'a> {
     }
 
     pub fn use_inventory_item(&self, item_data_type: &ItemDataType, item_count: usize) -> bool {
-        let item_bar = self.get_game_client().get_game_ui_manager_mut()._item_bar_widget.as_mut().unwrap();
-        let success = item_bar.remove_item(item_data_type, item_count);
+        let success = self.get_game_client().get_game_ui_manager_mut().remove_item(item_data_type, item_count);
         if success {
             self.get_audio_manager_mut().play_audio_bank(AUDIO_ITEM_INVENTORY, AudioLoop::ONCE, None);
         }
@@ -226,23 +225,19 @@ impl<'a> ItemManager<'a> {
     }
 
     pub fn get_selected_inventory_item_data_type(&self) -> ItemDataType {
-        let item_bar = self.get_game_client().get_game_ui_manager()._item_bar_widget.as_ref().unwrap();
-        item_bar.get_selected_item_type()
+        self.get_game_client().get_game_ui_manager().get_selected_inventory_item_data_type()
     }
 
     pub fn select_next_item(&self) {
-        let item_bar = self.get_game_client().get_game_ui_manager_mut()._item_bar_widget.as_mut().unwrap();
-        item_bar.select_next_item();
+        self.get_game_client().get_game_ui_manager_mut().select_next_item()
     }
 
     pub fn select_previous_item(&self) {
-        let item_bar = self.get_game_client().get_game_ui_manager_mut()._item_bar_widget.as_mut().unwrap();
-        item_bar.select_previous_item();
+        self.get_game_client().get_game_ui_manager_mut().select_previous_item()
     }
 
     pub fn select_item_by_index(&self, item_index: usize) {
-        let item_bar = self.get_game_client().get_game_ui_manager_mut()._item_bar_widget.as_mut().unwrap();
-        item_bar.select_item_by_index(item_index);
+        self.get_game_client().get_game_ui_manager_mut().select_item_by_index(item_index)
     }
 
     pub fn update_item_manager(&mut self, delta_time: f64) {
