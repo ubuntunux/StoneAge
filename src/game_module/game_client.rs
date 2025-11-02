@@ -148,19 +148,17 @@ impl<'a> GameClient<'a> {
     pub fn set_game_phase(&mut self, game_phase: GamePhase) {
         if self._game_phase != game_phase {
             log::debug!("set_game_phase: {:?}", game_phase);
-
-            self.update_game_mode_end(self._game_phase);
-
+            self.update_game_mode_end();
             self._game_phase = game_phase;
-            self.update_game_mode_start(game_phase);
+            self.update_game_mode_begin();
         }
     }
 
-    pub fn update_game_mode_start(&mut self, game_phase: GamePhase) {
+    pub fn update_game_mode_begin(&mut self) {
         let game_scene_manager = ptr_as_mut(self._game_scene_manager);
         let character_manager = ptr_as_mut(game_scene_manager._character_manager.as_ref());
         let game_ui_manager = ptr_as_mut(self._game_ui_manager);
-        match game_phase {
+        match self._game_phase {
             GamePhase::Teleport => {
                 if character_manager.is_valid_player() {
                     character_manager.get_player().borrow_mut().set_move_stop();
@@ -175,10 +173,10 @@ impl<'a> GameClient<'a> {
         }
     }
 
-    pub fn update_game_mode_end(&mut self, game_phase: GamePhase) {
+    pub fn update_game_mode_end(&mut self) {
         let game_scene_manager = ptr_as_mut(self._game_scene_manager);
         let character_manager = ptr_as_mut(game_scene_manager._character_manager.as_ref());
-        match game_phase {
+        match self._game_phase {
             GamePhase::Sleep => {
                 character_manager.get_player().borrow_mut().set_action_stand_up();
             }
@@ -239,11 +237,12 @@ impl<'a> GameClient<'a> {
                 if game_ui_manager.is_done_manual_fade_out() {
                     if game_scene_manager.is_game_scene_state(GameSceneState::None) {
                         game_scene_manager.open_scenario_data(SCENARIO_INTRO);
-                    } else if game_scene_manager.is_game_scene_state(GameSceneState::LoadComplete) {
+                    } else if game_scene_manager.is_game_scene_state(GameSceneState::PlayGame) {
                         if false == self._game_controller.is_null() {
                             let game_controller = ptr_as_mut(self._game_controller);
                             game_controller.update_on_open_game_scene();
                         }
+                        game_ui_manager.set_image_manual_fade_inout(STORY_IMAGE_NONE, STORY_BOARD_FADE_TIME);
                         game_ui_manager.set_auto_fade_inout(true);
                         self.set_game_phase(GamePhase::GamePlay);
                     }
@@ -258,7 +257,7 @@ impl<'a> GameClient<'a> {
                     self._teleport_stage = None;
                 }
 
-                if self._teleport_stage.is_none() && self._teleport_gate.is_some() && game_scene_manager.is_game_scene_state(GameSceneState::LoadComplete) {
+                if self._teleport_stage.is_none() && self._teleport_gate.is_some() && game_scene_manager.is_game_scene_state(GameSceneState::PlayGame) {
                     let teleport_point = game_scene_manager.get_prop_manager().get_teleport_point(self._teleport_gate.as_ref().unwrap().as_str());
                     if teleport_point.is_some() && character_manager.is_valid_player() {
                         character_manager.get_player().borrow_mut().set_position(teleport_point.as_ref().unwrap());
@@ -274,7 +273,7 @@ impl<'a> GameClient<'a> {
                     game_scene_manager.spawn_game_object_data();
                 }
 
-                if game_scene_manager.is_game_scene_state(GameSceneState::LoadComplete) {
+                if game_scene_manager.is_game_scene_state(GameSceneState::PlayGame) {
                     if false == self._game_controller.is_null() && character_manager.is_valid_player() {
                         if self._teleport_stage.is_some() {
                             self.set_game_phase(GamePhase::Teleport);

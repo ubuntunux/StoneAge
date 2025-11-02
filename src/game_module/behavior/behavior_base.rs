@@ -14,12 +14,14 @@ pub enum BehaviorState {
     Move,
     Chase,
     Attack,
+    LayingDown,
     Sleep,
+    StandUp,
 }
 
 pub fn create_character_behavior(character_type: CharacterDataType) -> Box<dyn BehaviorBase> {
     match character_type {
-        CharacterDataType::Civilian => Box::new(BehaviorCivilian {
+        CharacterDataType::Civilian | CharacterDataType::Player => Box::new(BehaviorCivilian {
             ..Default::default()
         }),
         CharacterDataType::Roamer => Box::new(BehaviorRoamer {

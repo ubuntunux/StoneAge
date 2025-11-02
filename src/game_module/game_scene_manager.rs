@@ -28,7 +28,8 @@ pub type ScenarioMap<'a> = HashMap<String, RcRefCell<dyn ScenarioBase + 'a>>;
 pub enum GameSceneState {
     None,
     Loading,
-    LoadComplete,
+    PlayGame,
+    PlayingScenario
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
@@ -186,18 +187,6 @@ impl<'a> GameSceneManager<'a> {
         self._date
     }
 
-    pub fn get_game_scene_state(&self) -> GameSceneState {
-        self._game_scene_state
-    }
-
-    pub fn set_game_scene_state(&mut self, state: GameSceneState) {
-        self._game_scene_state = state;
-    }
-
-    pub fn is_game_scene_state(&self, state: GameSceneState) -> bool {
-        self._game_scene_state == state
-    }
-
     pub fn get_current_game_scene_data_name(&self) -> &String {
         &self._current_game_scene_data_name
     }
@@ -337,21 +326,67 @@ impl<'a> GameSceneManager<'a> {
         }
     }
 
+    pub fn has_scenario(&self) -> bool {
+        0 < self._scenario_map.len()
+    }
+
+    pub fn get_game_scene_state(&self) -> GameSceneState {
+        self._game_scene_state
+    }
+
+    pub fn set_game_scene_state(&mut self, state: GameSceneState) {
+        if self._game_scene_state != state {
+            self.update_game_scene_state_end();
+            self._game_scene_state = state;
+            self.update_game_scene_state_begin();
+        }
+    }
+
+    pub fn is_game_scene_state(&self, state: GameSceneState) -> bool {
+        self._game_scene_state == state
+    }
+
+    pub fn update_game_scene_state_begin(&mut self) {
+        match self._game_scene_state {
+            _ => (),
+        }
+    }
+
+    pub fn update_game_scene_state_end(&mut self) {
+        match self._game_scene_state {
+            _ => (),
+        }
+    }
+
     pub fn update_game_scene_manager(&mut self, delta_time: f64) {
         match self._game_scene_state {
             GameSceneState::None => {
-
             },
             GameSceneState::Loading => {
                 if self.get_scene_manager().is_load_complete() {
                     self.spawn_game_object_data();
-                    self.set_game_scene_state(GameSceneState::LoadComplete);
+                    self.set_game_scene_state(GameSceneState::PlayGame);
                 }
             },
-            GameSceneState::LoadComplete => {
-                self._scenario_map.values_mut().for_each(|scenario| {
-                    scenario.borrow_mut().update_game_scenario(delta_time)
-                });
+            GameSceneState::PlayGame => {
+                if self.has_scenario() {
+                    self.set_game_scene_state(GameSceneState::PlayingScenario);
+                }
+                self.update_time_of_day(delta_time);
+                self._prop_manager.update_prop_manager(delta_time);
+                self._item_manager.update_item_manager(delta_time);
+                self._character_manager.update_character_manager(delta_time);
+            },
+            GameSceneState::PlayingScenario => {
+                if self.has_scenario() {
+                    self._scenario_map.values_mut().for_each(|scenario| {
+                        scenario.borrow_mut().update_game_scenario(delta_time)
+                    });
+                    self._scenario_map.retain(|_key, value| value.borrow().is_end_of_scenario() == false)
+                } else {
+                    self.set_game_scene_state(GameSceneState::PlayGame);
+                }
+
                 self.update_time_of_day(delta_time);
                 self._prop_manager.update_prop_manager(delta_time);
                 self._item_manager.update_item_manager(delta_time);

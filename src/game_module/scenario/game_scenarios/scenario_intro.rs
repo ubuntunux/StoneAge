@@ -1,4 +1,5 @@
 use std::str::FromStr;
+use nalgebra::Vector3;
 use strum_macros::{Display, EnumCount, EnumIter, EnumString};
 use rust_engine_3d::utilities::system::{ptr_as_mut, RcRefCell};
 use crate::game_module::actors::character::Character;
@@ -11,6 +12,8 @@ use crate::game_module::scenario::scenario::{ScenarioBase, ScenarioDataCreateInf
 pub enum ScenarioIntroPhase {
     None,
     Sleep,
+    WakeUp,
+    End
 }
 
 pub struct ScenarioIntro<'a> {
@@ -20,7 +23,12 @@ pub struct ScenarioIntro<'a> {
     pub _actor_aru: Option<RcRefCell<Character<'a>>>,
     pub _actor_ewa: Option<RcRefCell<Character<'a>>>,
     pub _actor_koa: Option<RcRefCell<Character<'a>>>,
-
+    pub _around_start_position: Vector3<f32>,
+    pub _around_end_position: Vector3<f32>,
+    pub _around_start_rotation: Vector3<f32>,
+    pub _around_end_rotation: Vector3<f32>,
+    pub _phase_time: f32,
+    pub _phase_duration: f32,
 }
 
 impl<'a> ScenarioIntro<'a> {
@@ -32,24 +40,39 @@ impl<'a> ScenarioIntro<'a> {
             _actor_aru: None,
             _actor_ewa: None,
             _actor_koa: None,
+            _around_start_position: Vector3::new(65.0, 33.25, -26.0),
+            _around_end_position: Vector3::new(13.086, 13.4679, 10.657),
+            _around_start_rotation: Vector3::new(0.37, -1.0, 0.0),
+            _around_end_rotation: Vector3::new(0.7205, -0.002, 0.0),
+            _phase_time: 0.0,
+            _phase_duration: 0.0,
         }
     }
 }
 
 impl<'a> ScenarioBase for ScenarioIntro<'a> {
-    fn set_scenario_data(&mut self, next_scenario_phase: &str) {
+    fn is_end_of_scenario(&self) -> bool {
+        self._scenario_phase == ScenarioIntroPhase::End
+    }
+
+    fn set_scenario_phase(&mut self, next_scenario_phase: &str, phase_duration: f32) {
         let next_scenario_phase = ScenarioIntroPhase::from_str(next_scenario_phase).unwrap();
         if next_scenario_phase != self._scenario_phase {
             self.update_game_scenario_end();
             self._scenario_phase = next_scenario_phase;
-            self.update_game_scenario_start();
+            self._phase_time = 0.0;
+            self._phase_duration = phase_duration;
+            self.update_game_scenario_begin();
         }
     }
 
-    fn update_game_scenario_start(&mut self) {
+    fn update_game_scenario_begin(&mut self) {
         match self._scenario_phase {
             ScenarioIntroPhase::Sleep => {
                 let game_scene_manager = ptr_as_mut(self._game_scene_manager);
+                let main_camera = game_scene_manager.get_scene_manager().get_main_camera_mut();
+                main_camera._transform_object.set_position(&self._around_start_position);
+                main_camera._transform_object.set_rotation(&self._around_start_rotation);
                 game_scene_manager.set_time_of_day(TIME_OF_MORNING, 0.0);
                 self._actor_aru = if let Some(actor) = game_scene_manager.get_actor("aru") { Some(actor.clone()) } else { None };
                 self._actor_ewa = if let Some(actor) = game_scene_manager.get_actor("ewa") { Some(actor.clone()) } else { None };
@@ -58,6 +81,11 @@ impl<'a> ScenarioBase for ScenarioIntro<'a> {
                 self._actor_ewa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::Sleep);
                 self._actor_koa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::Sleep);
             },
+            ScenarioIntroPhase::WakeUp => {
+                self._actor_aru.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::StandUp);
+                self._actor_ewa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::StandUp);
+                self._actor_koa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::StandUp);
+            }
             _ => ()
         }
     }
@@ -68,13 +96,38 @@ impl<'a> ScenarioBase for ScenarioIntro<'a> {
         }
     }
 
-    fn update_game_scenario(&mut self, _delta_time: f64) {
+    fn update_game_scenario(&mut self, delta_time: f64) {
+        let phase_ratio = if 0.0 < self._phase_duration {
+            0f32.max(1f32.min(self._phase_time / self._phase_duration))
+        } else {
+            0.0
+        };
+
         match self._scenario_phase {
             ScenarioIntroPhase::None => {
-                self.set_scenario_data(ScenarioIntroPhase::Sleep.to_string().as_str())
+                self.set_scenario_phase(ScenarioIntroPhase::Sleep.to_string().as_str(), 10.0);
             },
             ScenarioIntroPhase::Sleep => {
-            }
+                let game_scene_manager = ptr_as_mut(self._game_scene_manager);
+                let main_camera = game_scene_manager.get_scene_manager().get_main_camera_mut();
+                let progress = 1.0 - (phase_ratio * -5.0).exp2();
+                let position = self._around_start_position.lerp(&self._around_end_position, progress);
+                let rotation = self._around_start_rotation.lerp(&self._around_end_rotation, progress);
+                main_camera._transform_object.set_position(&position);
+                main_camera._transform_object.set_rotation(&rotation);
+
+                if 1.0 <= phase_ratio {
+                    self.set_scenario_phase(ScenarioIntroPhase::WakeUp.to_string().as_str(), 0.0);
+                }
+            },
+            ScenarioIntroPhase::WakeUp => {
+                self.set_scenario_phase(ScenarioIntroPhase::End.to_string().as_str(), 0.0);
+            },
+            _ => ()
+        }
+
+        if 0.0 < self._phase_duration {
+            self._phase_time = self._phase_duration.min(self._phase_time + delta_time as f32);
         }
     }
 }

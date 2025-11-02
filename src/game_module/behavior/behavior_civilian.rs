@@ -60,6 +60,11 @@ impl BehaviorBase for BehaviorCivilian {
                 }
                 self._move_time -= delta_time;
             },
+            BehaviorState::StandUp => {
+                if owner.is_available_move() {
+                    self.set_behavior(BehaviorState::Idle, owner, player, false);
+                }
+            },
             _ => ()
         }
     }
@@ -70,8 +75,6 @@ impl BehaviorBase for BehaviorCivilian {
 
             self._behavior_state = behavior_state;
             match behavior_state {
-                BehaviorState::None => {
-                },
                 BehaviorState::Idle => {
                     owner.set_move_stop();
                     self._idle_time = lerp(NPC_IDLE_TERM_MIN, NPC_IDLE_TERM_MAX, rand::random::<f32>());
@@ -84,13 +87,16 @@ impl BehaviorBase for BehaviorCivilian {
                     owner.set_move(&self._move_direction);
                     owner.set_run(false);
                 },
-                BehaviorState::Chase => {
-                },
-                BehaviorState::Attack => {
+                BehaviorState::LayingDown => {
+                    owner.set_action_animation(ActionAnimationState::LayingDown, 1.0);
                 },
                 BehaviorState::Sleep => {
                     owner.set_action_animation(ActionAnimationState::Sleep, 1.0);
-                }
+                },
+                BehaviorState::StandUp => {
+                    owner.set_action_animation(ActionAnimationState::StandUp, 1.0);
+                },
+                _ => ()
             }
         }
     }

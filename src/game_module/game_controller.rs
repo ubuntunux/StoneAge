@@ -28,7 +28,7 @@ impl<'a> GameController<'a> {
             _game_client: std::ptr::null(),
             _game_ui_manager: std::ptr::null(),
             _camera_goal_distance: CAMERA_DISTANCE_MAX,
-            _camera_distance: 0.0,
+            _camera_distance: CAMERA_DISTANCE_MAX,
             _camera_goal_pitch: 0.0,
             _camera_goal_yaw: 0.0,
             _camera_pitch: 0.0,
