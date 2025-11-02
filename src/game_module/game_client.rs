@@ -307,6 +307,6 @@ impl<'a> GameClient<'a> {
             }
         }
 
-        game_scene_manager.update_game_scene_manager(delta_time);
+        game_scene_manager.update_game_scene_manager(any_key_hold, delta_time);
     }
 }

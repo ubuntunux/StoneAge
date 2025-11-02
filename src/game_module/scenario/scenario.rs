@@ -30,7 +30,7 @@ pub trait ScenarioBase {
     fn set_scenario_phase(&mut self, next_scenario_phase: &str, phase_duration: f32);
     fn update_game_scenario_begin(&mut self);
     fn update_game_scenario_end(&mut self);
-    fn update_game_scenario(&mut self, _delta_time: f64);
+    fn update_game_scenario(&mut self, any_key_hold: bool, delta_time: f64);
 }
 
 pub fn create_scenario<'a>(game_scene_manager: *const GameSceneManager<'a>, scenario_name: &str, scenario_create_info: &ScenarioDataCreateInfo) -> RcRefCell<dyn ScenarioBase + 'a> {

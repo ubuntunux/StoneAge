@@ -358,7 +358,7 @@ impl<'a> GameSceneManager<'a> {
         }
     }
 
-    pub fn update_game_scene_manager(&mut self, delta_time: f64) {
+    pub fn update_game_scene_manager(&mut self, any_key_hold: bool, delta_time: f64) {
         match self._game_scene_state {
             GameSceneState::None => {
             },
@@ -380,7 +380,7 @@ impl<'a> GameSceneManager<'a> {
             GameSceneState::PlayingScenario => {
                 if self.has_scenario() {
                     self._scenario_map.values_mut().for_each(|scenario| {
-                        scenario.borrow_mut().update_game_scenario(delta_time)
+                        scenario.borrow_mut().update_game_scenario(any_key_hold, delta_time)
                     });
                     self._scenario_map.retain(|_key, value| value.borrow().is_end_of_scenario() == false)
                 } else {

@@ -96,7 +96,7 @@ impl<'a> ScenarioBase for ScenarioIntro<'a> {
         }
     }
 
-    fn update_game_scenario(&mut self, delta_time: f64) {
+    fn update_game_scenario(&mut self, any_key_hold: bool, delta_time: f64) {
         let phase_ratio = if 0.0 < self._phase_duration {
             0f32.max(1f32.min(self._phase_time / self._phase_duration))
         } else {
@@ -127,7 +127,7 @@ impl<'a> ScenarioBase for ScenarioIntro<'a> {
         }
 
         if 0.0 < self._phase_duration {
-            self._phase_time = self._phase_duration.min(self._phase_time + delta_time as f32);
+            self._phase_time = self._phase_duration.min(self._phase_time + delta_time as f32 * if any_key_hold { 5.0 } else { 1.0 });
         }
     }
 }
