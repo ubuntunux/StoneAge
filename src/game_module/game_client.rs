@@ -155,7 +155,7 @@ impl<'a> GameClient<'a> {
                 if character_manager.is_valid_player() {
                     character_manager.get_player().borrow_mut().set_move_stop();
                 }
-                self.get_game_ui_manager_mut().set_image_manual_fade_inout(STORY_IMAGE_NONE, STORY_BOARD_FADE_TIME);
+                game_ui_manager.set_image_manual_fade_inout(STORY_IMAGE_NONE, STORY_BOARD_FADE_TIME);
             }
             GamePhase::Sleep => {
                 self.reset_sleep_timer();
