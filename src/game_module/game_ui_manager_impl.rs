@@ -1,9 +1,9 @@
- use nalgebra::Vector2;
+ use nalgebra::{Vector2};
 use rust_engine_3d::core::engine_core::EngineCore;
-use rust_engine_3d::scene::ui::{UIComponentInstance, UIManager, UIWidgetTypes, WidgetDefault};
-use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
-use crate::game_module::game_scene_manager::GameSceneManager;
-use crate::application::application::Application;
+use rust_engine_3d::scene::ui::{HorizontalAlign, UIComponentInstance, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault};
+ use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
+ use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
+ use crate::application::application::Application;
 use crate::game_module::actors::items::ItemDataType;
 use crate::game_module::game_client::GameClient;
 use crate::game_module::game_constants::{MATERIAL_CROSS_HAIR, MATERIAL_INTRO_IMAGE};
@@ -17,13 +17,15 @@ use crate::game_module::widgets::target_status_bar::TargetStatusWidget;
 use crate::game_module::widgets::time_of_day::TimeOfDayWidget;
 
 impl<'a> EditorUIManager<'a> {
-    pub fn create_editor_ui_components() -> Box<EditorUIManager<'a>> {
+    pub fn create_editor_ui_manager() -> Box<EditorUIManager<'a>> {
         Box::new(EditorUIManager {
             _ui_manager: std::ptr::null(),
             _game_client: std::ptr::null(),
             _game_resources: std::ptr::null(),
             _root_widget: std::ptr::null(),
             _editor_ui_layout: std::ptr::null(),
+            _actor_positions: Vec::new(),
+            _window_size: Vector2::new(1024,768)
         })
     }
 
@@ -33,9 +35,11 @@ impl<'a> EditorUIManager<'a> {
         self._game_resources = ptr_as_ref(self._game_client).get_game_resources();
         self._ui_manager = engine_core.get_ui_manager();
         self._root_widget = ptr_as_ref(self._ui_manager).get_root_ptr();
+        self._actor_positions.clear();
     }
 
     pub fn destroy_game_ui_manager(&mut self) {
+        self._actor_positions.clear();
     }
 
     pub fn get_editor_ui_layout(&self) -> *const WidgetDefault<'a> {
@@ -49,7 +53,7 @@ impl<'a> EditorUIManager<'a> {
         }
     }
 
-    pub fn build_editor_ui(&mut self, root_widget: &mut WidgetDefault<'a>, window_size: &Vector2<i32>) {
+    pub fn build_editor_ui(&mut self, window_size: &Vector2<i32>) {
         log::info!("build_editor_ui");
         let editor_ui_layout = UIManager::create_widget("editor ui layout", UIWidgetTypes::Default);
         let editor_ui_layout_mut: &mut WidgetDefault = ptr_as_mut(editor_ui_layout.as_ref());
@@ -57,7 +61,7 @@ impl<'a> EditorUIManager<'a> {
         ui_component.set_size_hint_x(Some(1.0));
         ui_component.set_size_hint_y(Some(1.0));
         ui_component.set_renderable(false);
-        root_widget.add_widget(&editor_ui_layout);
+        ptr_as_mut(self._root_widget).add_widget(&editor_ui_layout);
         self._editor_ui_layout = editor_ui_layout.as_ref();
 
         self.changed_window_size(window_size);
@@ -65,10 +69,37 @@ impl<'a> EditorUIManager<'a> {
 
     pub fn changed_window_size(&mut self, window_size: &Vector2<i32>) {
         log::info!("EditorUIComponents::changed_window_size: {:?}", window_size);
+        self._window_size = window_size.clone();
     }
 
-    pub fn update_editor_ui(&mut self, _game_scene_manager: &GameSceneManager<'a>, _mouse_pos: &Vector2<i32>, _delta_time: f64) {
+    pub fn update_editor_ui(&mut self, _delta_time: f64) {
+        let game_client = ptr_as_ref(self._game_client);
+        let game_scene_manager = game_client.get_game_scene_manager();
+        let main_camera = game_scene_manager.get_scene_manager().get_main_camera();
+        let characters = game_scene_manager.get_character_manager().get_characters();
+        for (i, character) in characters.iter().enumerate() {
+            if self._actor_positions.len() <= i {
+                let ui_layout = UIManager::create_widget("actor position", UIWidgetTypes::Default);
+                let ui_layout_mut: &mut WidgetDefault = ptr_as_mut(ui_layout.as_ref());
+                let ui_component: &mut UIComponentInstance = ui_layout_mut.get_ui_component_mut();
+                ui_component.set_expandable(true);
+                ui_component.set_size_y(20.0);
+                ui_component.set_halign(HorizontalAlign::CENTER);
+                ui_component.set_valign(VerticalAlign::CENTER);
+                ui_component.set_font_color(get_color32(255, 255, 255, 255));
+                ui_component.set_color(get_color32(255, 255, 255, 0));
+                ptr_as_mut(self._editor_ui_layout).add_widget(&ui_layout);
+                self._actor_positions.push(ui_layout.as_ref());
+            }
 
+            // update position
+            let character = character.1.borrow();
+            let position = character.get_position();
+            let screen_position = main_camera.convert_world_to_screen(position, false);
+            let widget = ptr_as_mut(self._actor_positions[i]);
+            widget._ui_component.set_text(format!("[{:.1}, {:.1}, {:.1}]", position.x, position.y, position.z).as_str());
+            widget._ui_component.set_pos(screen_position.x, self._window_size.y as f32 - screen_position.y);
+        }
     }
 }
 
@@ -248,7 +279,7 @@ impl<'a> GameUIManager<'a> {
         }
 
         if let Some(cross_hair) = self._cross_hair.as_mut() {
-            // TEST: hide cross hair
+            // TEST: hide cross-hair
             cross_hair.update_cross_hair_visible(false);
 
             if cross_hair.get_cross_hair_visible() {

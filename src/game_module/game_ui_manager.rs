@@ -16,6 +16,8 @@ pub struct EditorUIManager<'a> {
     pub _game_resources: *const GameResources<'a>,
     pub _root_widget: *const WidgetDefault<'a>,
     pub _editor_ui_layout: *const WidgetDefault<'a>,
+    pub _actor_positions: Vec<*const WidgetDefault<'a>>,
+    pub _window_size: Vector2<i32>,
 }
 
 pub struct GameUIManager<'a> {

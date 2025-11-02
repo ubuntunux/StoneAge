@@ -9,7 +9,7 @@ use crate::game_module::game_constants::{AMBIENT_SOUND, CAMERA_DISTANCE_MAX, GAM
 use crate::game_module::game_controller::GameController;
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::{GameSceneManager, GameSceneState};
-use crate::game_module::game_ui_manager::GameUIManager;
+use crate::game_module::game_ui_manager::{EditorUIManager, GameUIManager};
 
 #[derive(Clone, Copy, Debug, Hash, PartialEq)]
 pub enum GamePhase {
@@ -29,6 +29,7 @@ pub struct GameClient<'a> {
     pub _game_resources: *const GameResources<'a>,
     pub _game_controller: *const GameController<'a>,
     pub _game_ui_manager: *const GameUIManager<'a>,
+    pub _editor_ui_manager: *const EditorUIManager<'a>,
     pub _game_phase: GamePhase,
     pub _story_board_phase: usize,
     pub _teleport_stage: Option<String>,
@@ -46,6 +47,7 @@ impl<'a> GameClient<'a> {
             _game_resources: std::ptr::null(),
             _game_controller: std::ptr::null(),
             _game_ui_manager: std::ptr::null(),
+            _editor_ui_manager: std::ptr::null(),
             _game_phase: GamePhase::None,
             _story_board_phase: 0,
             _teleport_stage: None,
@@ -62,6 +64,7 @@ impl<'a> GameClient<'a> {
         self._game_scene_manager = application.get_game_scene_manager();
         self._game_resources = application.get_game_resources();
         self._game_ui_manager = application.get_game_ui_manager();
+        self._editor_ui_manager = application.get_editor_ui_manager();
         self._sleep_timer = 0.0;
     }
     pub fn destroy_game_client(&mut self) {
@@ -103,7 +106,14 @@ impl<'a> GameClient<'a> {
     pub fn get_game_ui_manager_mut(&self) -> &mut GameUIManager<'a> {
         ptr_as_mut(self._game_ui_manager)
     }
+    pub fn get_editor_ui_manager(&self) -> &EditorUIManager<'a> {
+        ptr_as_ref(self._editor_ui_manager)
+    }
+    pub fn get_editor_ui_manager_mut(&self) -> &mut EditorUIManager<'a> {
+        ptr_as_mut(self._editor_ui_manager)
+    }
     pub fn set_game_mode(&mut self, is_game_mode: bool) {
+        self.get_editor_ui_manager_mut().show_editor_ui(!is_game_mode);
         self.get_game_ui_manager_mut().show_ui(is_game_mode);
         if is_game_mode {
             if self.get_game_scene_manager().get_character_manager().is_valid_player() {

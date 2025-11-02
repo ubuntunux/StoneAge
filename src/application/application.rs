@@ -19,7 +19,7 @@ use crate::game_module::game_constants;
 use crate::game_module::game_controller::GameController;
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
-use crate::game_module::game_ui_manager::GameUIManager;
+use crate::game_module::game_ui_manager::{EditorUIManager, GameUIManager};
 use crate::render_pass;
 
 pub struct Application<'a> {
@@ -30,6 +30,7 @@ pub struct Application<'a> {
     pub _game_resources: Box<GameResources<'a>>,
     pub _game_scene_manager: Box<GameSceneManager<'a>>,
     pub _game_ui_manager: Box<GameUIManager<'a>>,
+    pub _editor_ui_manager: Box<EditorUIManager<'a>>,
     pub _game_controller: Box<GameController<'a>>,
     pub _game_client: Box<GameClient<'a>>,
     pub _is_game_mode: bool,
@@ -55,9 +56,11 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
         self.get_game_controller_mut().initialize_game_controller(application);
         self.get_game_ui_manager_mut().initialize_game_ui_manager(engine_core, application);
         self.get_game_scene_manager_mut().initialize_game_scene_manager(application, engine_core, window_size);
+        self.get_editor_ui_manager_mut().initialize_editor_ui_manager(engine_core, application);
 
         // start game
         self.get_game_ui_manager_mut().build_game_ui(window_size);
+        self.get_editor_ui_manager_mut().build_editor_ui(window_size);
         self.set_game_mode(true);
     }
 
@@ -217,10 +220,12 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
 
         // update managers
         if self._is_game_mode {
-            // delta time threshold: 0.1s
+            // delta time threshold: 0.1 sec
             let game_delta_time = 0.1_f64.min(delta_time);
             self._game_client.update_game_mode(game_delta_time);
             self.get_game_ui_manager_mut().update_game_ui(delta_time);
+        } else {
+            self.get_editor_ui_manager_mut().update_editor_ui(delta_time);
         }
     }
 }
@@ -255,6 +260,12 @@ impl<'a> Application<'a> {
     }
     pub fn get_renderer_data_mut(&self) -> &mut RendererData<'a> {
         ptr_as_mut(self._renderer_data)
+    }
+    pub fn get_editor_ui_manager(&self) -> &EditorUIManager<'a> {
+        ptr_as_ref(self._editor_ui_manager.as_ref())
+    }
+    pub fn get_editor_ui_manager_mut(&self) -> &mut EditorUIManager<'a> {
+        ptr_as_mut(self._editor_ui_manager.as_ref())
     }
     pub fn get_game_ui_manager(&self) -> &GameUIManager<'a> {
         ptr_as_ref(self._game_ui_manager.as_ref())
@@ -349,6 +360,7 @@ pub fn run_application() {
     let game_resources = GameResources::create_game_resources();
     let game_scene_manager = GameSceneManager::create_game_scene_manager();
     let game_ui_manager = GameUIManager::create_game_ui_manager();
+    let editor_ui_manager = EditorUIManager::create_editor_ui_manager();
     let game_controller = GameController::create_game_controller();
     let game_client = GameClient::create_game_client();
     let application = Application {
@@ -359,6 +371,7 @@ pub fn run_application() {
         _game_resources: game_resources,
         _game_scene_manager: game_scene_manager,
         _game_ui_manager: game_ui_manager,
+        _editor_ui_manager: editor_ui_manager,
         _game_controller: game_controller,
         _game_client: game_client,
         _is_game_mode: false,

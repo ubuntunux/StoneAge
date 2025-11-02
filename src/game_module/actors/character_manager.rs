@@ -88,6 +88,9 @@ impl<'a> CharacterManager<'a> {
         self._id_generator = CharacterID(self._id_generator.0 + 1);
         id
     }
+    pub fn get_characters(&self) -> &CharacterMap<'a> {
+        &self._characters
+    }
     pub fn get_character(&self, character_name: &str) -> Option<&RcRefCell<Character<'a>>> {
         self._characters.get(character_name)
     }
@@ -98,7 +101,7 @@ impl<'a> CharacterManager<'a> {
             character.remove_weapon();
         }
 
-        // create new weapon
+        // create a new weapon
         let game_resources = ptr_as_ref(self._game_resources);
         let weapon_data = game_resources.get_weapon_data(&weapon_create_info._weapon_data_name);
         let render_object_create_info = RenderObjectCreateInfo {
