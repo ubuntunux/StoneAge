@@ -75,12 +75,8 @@ impl<'a> ScenarioBase for ScenarioIntro<'a> {
             ScenarioIntroPhase::Sleep => {
                 let game_scene_manager = ptr_as_mut(self._game_scene_manager);
                 let main_camera = game_scene_manager.get_scene_manager().get_main_camera_mut();
-                main_camera
-                    ._transform_object
-                    .set_position(&self._around_start_position);
-                main_camera
-                    ._transform_object
-                    .set_rotation(&self._around_start_rotation);
+                main_camera._transform_object.set_position(&self._around_start_position);
+                main_camera._transform_object.set_rotation(&self._around_start_rotation);
                 game_scene_manager.set_time_of_day(TIME_OF_MORNING, 0.0);
                 self._actor_aru = if let Some(actor) = game_scene_manager.get_actor("aru") {
                     Some(actor.clone())
@@ -97,38 +93,14 @@ impl<'a> ScenarioBase for ScenarioIntro<'a> {
                 } else {
                     None
                 };
-                self._actor_aru
-                    .as_ref()
-                    .unwrap()
-                    .borrow_mut()
-                    .set_behavior(BehaviorState::Sleep);
-                self._actor_ewa
-                    .as_ref()
-                    .unwrap()
-                    .borrow_mut()
-                    .set_behavior(BehaviorState::Sleep);
-                self._actor_koa
-                    .as_ref()
-                    .unwrap()
-                    .borrow_mut()
-                    .set_behavior(BehaviorState::Sleep);
+                self._actor_aru.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::Sleep);
+                self._actor_ewa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::Sleep);
+                self._actor_koa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::Sleep);
             }
             ScenarioIntroPhase::WakeUp => {
-                self._actor_aru
-                    .as_ref()
-                    .unwrap()
-                    .borrow_mut()
-                    .set_behavior(BehaviorState::StandUp);
-                self._actor_ewa
-                    .as_ref()
-                    .unwrap()
-                    .borrow_mut()
-                    .set_behavior(BehaviorState::StandUp);
-                self._actor_koa
-                    .as_ref()
-                    .unwrap()
-                    .borrow_mut()
-                    .set_behavior(BehaviorState::StandUp);
+                self._actor_aru.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::StandUp);
+                self._actor_ewa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::StandUp);
+                self._actor_koa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::StandUp);
             }
             _ => (),
         }
@@ -155,12 +127,8 @@ impl<'a> ScenarioBase for ScenarioIntro<'a> {
                 let game_scene_manager = ptr_as_mut(self._game_scene_manager);
                 let main_camera = game_scene_manager.get_scene_manager().get_main_camera_mut();
                 let progress = 1.0 - (phase_ratio * -5.0).exp2();
-                let position = self
-                    ._around_start_position
-                    .lerp(&self._around_end_position, progress);
-                let rotation = self
-                    ._around_start_rotation
-                    .lerp(&self._around_end_rotation, progress);
+                let position = self._around_start_position.lerp(&self._around_end_position, progress);
+                let rotation = self._around_start_rotation.lerp(&self._around_end_rotation, progress);
                 main_camera._transform_object.set_position(&position);
                 main_camera._transform_object.set_rotation(&rotation);
 
@@ -175,9 +143,7 @@ impl<'a> ScenarioBase for ScenarioIntro<'a> {
         }
 
         if 0.0 < self._phase_duration {
-            self._phase_time = self
-                ._phase_duration
-                .min(self._phase_time + delta_time as f32 * if any_key_hold { 5.0 } else { 1.0 });
+            self._phase_time = self._phase_duration.min(self._phase_time + delta_time as f32 * if any_key_hold { 5.0 } else { 1.0 });
         }
     }
 }

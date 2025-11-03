@@ -26,8 +26,7 @@ impl CharacterAnimationState {
         self._action_event == ActionAnimationState::Pickup
     }
     pub fn is_attack_event(&self) -> bool {
-        self._action_event == ActionAnimationState::Attack
-            || self._action_event == ActionAnimationState::PowerAttack
+        self._action_event == ActionAnimationState::Attack || self._action_event == ActionAnimationState::PowerAttack
     }
     pub fn get_action_event(&self) -> ActionAnimationState {
         self._action_event
@@ -45,6 +44,7 @@ impl CharacterStats {
             _stamina_recovery_delay_time: 0.0,
             _prev_stamina: MAX_STAMINA,
             _stamina: MAX_STAMINA,
+            _hunger: 0.0,
             _invincibility: false,
         }
     }
@@ -55,43 +55,69 @@ impl CharacterStats {
         self._stamina_recovery_delay_time = 0.0;
         self._prev_stamina = MAX_STAMINA;
         self._stamina = MAX_STAMINA;
+        self._hunger = 0.0;
         self._invincibility = false;
     }
 }
 
 impl CharacterStats {
+    pub fn get_hp(&self) -> i32 {
+        self._hp
+    }
+
+    pub fn set_hp(&mut self, hp: i32) {
+        self._hp = hp;
+    }
+
+    pub fn get_hunger(&self) -> f32 {
+        self._hunger
+    }
+
+    pub fn set_hunger(&mut self, hunger: f32) {
+        self._hunger = hunger;
+    }
+
+    pub fn set_invincibility(&mut self, invincibility: bool) {
+        self._invincibility = invincibility;
+    }
+
+    pub fn update_hp<'a>(&mut self, owner: &Character<'a>, delta_time: f32) {
+
+    }
+
     pub fn update_stamina<'a>(&mut self, owner: &Character<'a>, delta_time: f32) {
+        if self._prev_stamina != self._stamina {
+            if self._stamina < self._prev_stamina {
+                self._stamina_recovery_delay_time = STAMINA_RECOVERY_DELAY_TIME;
+            }
+            self._prev_stamina = self._stamina;
+        }
+
+        if owner.is_move_state(MoveAnimationState::Run) {
+            self._stamina -= STAMINA_RUN * delta_time;
+            if self._stamina < 0.0 {
+                self._stamina = 0.0;
+            }
+        } else if owner.is_action(ActionAnimationState::None) && (owner.is_move_state(MoveAnimationState::None) || owner.is_move_state(MoveAnimationState::Idle) || owner.is_move_state(MoveAnimationState::Walk)) {
+            if self._stamina < 0.0 {
+                self._stamina = 0.0;
+            }
+
+            if self._stamina_recovery_delay_time <= 0.0 {
+                self._stamina += STAMINA_RECOVERY * delta_time;
+                if MAX_STAMINA < self._stamina {
+                    self._stamina = MAX_STAMINA;
+                }
+            } else {
+                self._stamina_recovery_delay_time -= delta_time;
+            }
+        }
+    }
+
+    pub fn update_stat<'a>(&mut self, owner: &Character<'a>, delta_time: f32) {
         if owner._is_player && self._is_alive {
-            if self._prev_stamina != self._stamina {
-                if self._stamina < self._prev_stamina {
-                    self._stamina_recovery_delay_time = STAMINA_RECOVERY_DELAY_TIME;
-                }
-                self._prev_stamina = self._stamina;
-            }
-
-            if owner.is_move_state(MoveAnimationState::Run) {
-                self._stamina -= STAMINA_RUN * delta_time;
-                if self._stamina < 0.0 {
-                    self._stamina = 0.0;
-                }
-            } else if owner.is_action(ActionAnimationState::None)
-                && (owner.is_move_state(MoveAnimationState::None)
-                    || owner.is_move_state(MoveAnimationState::Idle)
-                    || owner.is_move_state(MoveAnimationState::Walk))
-            {
-                if self._stamina < 0.0 {
-                    self._stamina = 0.0;
-                }
-
-                if self._stamina_recovery_delay_time <= 0.0 {
-                    self._stamina += STAMINA_RECOVERY * delta_time;
-                    if MAX_STAMINA < self._stamina {
-                        self._stamina = MAX_STAMINA;
-                    }
-                } else {
-                    self._stamina_recovery_delay_time -= delta_time;
-                }
-            }
+            self.update_hp(owner, delta_time);
+            self.update_stamina(owner, delta_time);
         }
     }
 }
@@ -135,12 +161,9 @@ impl<'a> Character<'a> {
         rotation: &Vector3<f32>,
         scale: &Vector3<f32>,
     ) {
-        self._character_stats
-            .initialize_character_stats(&self._character_data.borrow());
-        self._controller
-            .initialize_controller(position, rotation, scale);
-        self._behavior
-            .initialize_behavior(ptr_as_mut(self), position);
+        self._character_stats.initialize_character_stats(&self._character_data.borrow());
+        self._controller.initialize_controller(position, rotation, scale);
+        self._behavior.initialize_behavior(ptr_as_mut(self), position);
 
         self.set_move_idle();
         self.set_action_none();
@@ -376,16 +399,13 @@ impl<'a> Character<'a> {
     pub fn set_damage(&mut self, damage: i32) {
         if 0 < damage && self.is_alive() {
             let character_manager = ptr_as_ref(self._character_manager);
-            self._character_stats._hp -= damage;
-            if self._character_stats._hp <= 0 {
-                character_manager
-                    .get_scene_manager()
-                    .play_audio(&self._character_data.borrow()._audio_data._audio_dead);
+            let hp = self._character_stats.get_hp() - damage;
+            self._character_stats.set_hp(hp);
+            if hp <= 0 {
+                character_manager.get_scene_manager().play_audio(&self._character_data.borrow()._audio_data._audio_dead);
                 self.set_dead();
             } else {
-                character_manager
-                    .get_scene_manager()
-                    .play_audio(&self._character_data.borrow()._audio_data._audio_pain);
+                character_manager.get_scene_manager().play_audio(&self._character_data.borrow()._audio_data._audio_pain);
                 if self._is_player {
                     self.set_action_hit();
                 }
@@ -394,12 +414,9 @@ impl<'a> Character<'a> {
     }
 
     pub fn check_falling_in_water_damage(&mut self) -> bool {
-        let dead_zone_height = self
-            .get_character_manager()
-            .get_scene_manager()
-            .get_dead_zone_height();
+        let dead_zone_height = self.get_character_manager().get_scene_manager().get_dead_zone_height();
         if self.get_position().y <= dead_zone_height {
-            self.set_damage(self._character_stats._hp);
+            self.set_damage(self._character_stats.get_hp());
 
             let effect_create_info = EffectCreateInfo {
                 _effect_position: Vector3::new(
@@ -411,12 +428,8 @@ impl<'a> Character<'a> {
                 ..Default::default()
             };
             let character_manager = ptr_as_ref(self._character_manager);
-            character_manager
-                .get_scene_manager_mut()
-                .add_effect(EFFECT_FALLING_WATER, &effect_create_info);
-            character_manager
-                .get_scene_manager()
-                .play_audio_bank(AUDIO_FALLING_WATER);
+            character_manager.get_scene_manager_mut().add_effect(EFFECT_FALLING_WATER, &effect_create_info);
+            character_manager.get_scene_manager().play_audio_bank(AUDIO_FALLING_WATER);
             return true;
         }
         false
@@ -1073,7 +1086,7 @@ impl<'a> Character<'a> {
 
         // update stats - stamina
         let owner = ptr_as_ref(self);
-        self._character_stats.update_stamina(owner, delta_time);
+        self._character_stats.update_stat(owner, delta_time);
         if owner.is_move_state(MoveAnimationState::Run) {
             if self._character_stats._stamina == 0.0 {
                 self.set_run(false);

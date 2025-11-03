@@ -56,12 +56,11 @@ impl<'a> PlayerHud<'a> {
     }
 
     pub fn update_status_widget(&mut self, player: &Character<'a>) {
-        let hp = player._character_stats._hp as f32;
+        let hp = player._character_stats.get_hp() as f32;
         let max_hp = player.get_character_data()._stat_data._max_hp as f32;
         let stamina = player._character_stats._stamina;
         let max_stamina = MAX_STAMINA;
         self._hp_widget.update_status_widget(hp, max_hp);
-        self._stamina_widget
-            .update_status_widget(stamina, max_stamina);
+        self._stamina_widget.update_status_widget(stamina, max_stamina);
     }
 }

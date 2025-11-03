@@ -34,6 +34,7 @@ pub struct CharacterStats {
     pub _stamina_recovery_delay_time: f32,
     pub _prev_stamina: f32,
     pub _stamina: f32,
+    pub _hunger: f32,
     pub _invincibility: bool,
 }
 

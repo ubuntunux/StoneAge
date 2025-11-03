@@ -340,6 +340,8 @@ impl<'a> GameSceneManager<'a> {
 
     pub fn set_time_of_day(&mut self, time: f32, minute: f32) {
         self._time_of_day = time + minute / 60.0f32;
+        self.update_time_of_day(0.0);
+        self.get_scene_manager_mut().reset_render_light_probe_time();
     }
 
     pub fn update_time_of_day(&mut self, delta_time: f64) {

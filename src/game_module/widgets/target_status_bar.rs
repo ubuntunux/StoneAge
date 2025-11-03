@@ -77,7 +77,7 @@ impl<'a> TargetStatusWidget<'a> {
                 .set_text(name.as_str());
             self._target = target;
         }
-        let hp = target._character_stats._hp as f32;
+        let hp = target._character_stats.get_hp() as f32;
         let max_hp = target.get_character_data()._stat_data._max_hp as f32;
         self._hp_widget.update_status_widget(hp, max_hp);
     }
