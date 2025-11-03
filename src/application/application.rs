@@ -1,19 +1,3 @@
-use ash::vk;
-use log::LevelFilter;
-use nalgebra::Vector2;
-use rust_engine_3d::audio::audio_manager::AudioManager;
-use rust_engine_3d::constants;
-use rust_engine_3d::constants::DEVELOPMENT;
-use rust_engine_3d::core::engine_core::{
-    self, ApplicationBase, EngineCore, WindowMode,
-};
-use rust_engine_3d::effect::effect_manager::EffectManager;
-use rust_engine_3d::renderer::renderer_data::RendererData;
-use rust_engine_3d::resource::resource::CallbackLoadRenderPassCreateInfo;
-use rust_engine_3d::utilities::logger;
-use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
-use winit::keyboard::KeyCode;
-use rust_engine_3d::core::input::ButtonState;
 use crate::game_module::game_client::GameClient;
 use crate::game_module::game_constants;
 use crate::game_module::game_controller::GameController;
@@ -21,6 +5,20 @@ use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::game_ui_manager::{EditorUIManager, GameUIManager};
 use crate::render_pass;
+use ash::vk;
+use log::LevelFilter;
+use nalgebra::Vector2;
+use rust_engine_3d::audio::audio_manager::AudioManager;
+use rust_engine_3d::constants;
+use rust_engine_3d::constants::DEVELOPMENT;
+use rust_engine_3d::core::engine_core::{self, ApplicationBase, EngineCore, WindowMode};
+use rust_engine_3d::core::input::ButtonState;
+use rust_engine_3d::effect::effect_manager::EffectManager;
+use rust_engine_3d::renderer::renderer_data::RendererData;
+use rust_engine_3d::resource::resource::CallbackLoadRenderPassCreateInfo;
+use rust_engine_3d::utilities::logger;
+use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
+use winit::keyboard::KeyCode;
 
 pub struct Application<'a> {
     pub _engine_core: *const EngineCore<'a>,
@@ -50,17 +48,24 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
 
         // initialize project managers
         let application = ptr_as_ref(self);
-        self.get_game_resources_mut().initialize_game_resources(engine_core.get_engine_resources());
+        self.get_game_resources_mut()
+            .initialize_game_resources(engine_core.get_engine_resources());
         self.get_game_resources_mut().load_game_resources();
-        self.get_game_client_mut().initialize_game_client(engine_core, application);
-        self.get_game_controller_mut().initialize_game_controller(application);
-        self.get_game_ui_manager_mut().initialize_game_ui_manager(engine_core, application);
-        self.get_game_scene_manager_mut().initialize_game_scene_manager(application, engine_core, window_size);
-        self.get_editor_ui_manager_mut().initialize_editor_ui_manager(engine_core, application);
+        self.get_game_client_mut()
+            .initialize_game_client(engine_core, application);
+        self.get_game_controller_mut()
+            .initialize_game_controller(application);
+        self.get_game_ui_manager_mut()
+            .initialize_game_ui_manager(engine_core, application);
+        self.get_game_scene_manager_mut()
+            .initialize_game_scene_manager(application, engine_core, window_size);
+        self.get_editor_ui_manager_mut()
+            .initialize_editor_ui_manager(engine_core, application);
 
         // start game
         self.get_game_ui_manager_mut().build_game_ui(window_size);
-        self.get_editor_ui_manager_mut().build_editor_ui(window_size);
+        self.get_editor_ui_manager_mut()
+            .build_editor_ui(window_size);
         self.set_game_mode(true);
     }
 
@@ -72,7 +77,8 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
     }
 
     fn get_render_pass_create_info_callback(&self) -> *const CallbackLoadRenderPassCreateInfo {
-        static CALLBACK: CallbackLoadRenderPassCreateInfo = render_pass::render_pass::get_render_pass_data_create_infos;
+        static CALLBACK: CallbackLoadRenderPassCreateInfo =
+            render_pass::render_pass::get_render_pass_data_create_infos;
         &CALLBACK
     }
 
@@ -89,13 +95,17 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
         let joystick_input_data = &engine_core._joystick_input_data;
 
         if unsafe { DEVELOPMENT } {
-            let is_toggle_game_mode_by_joystick =
-                joystick_input_data._btn_left_trigger == ButtonState::Hold &&
-                joystick_input_data._btn_right_trigger == ButtonState::Hold &&
-                joystick_input_data._btn_left_shoulder == ButtonState::Hold &&
-                joystick_input_data._btn_right_shoulder == ButtonState::Hold;
+            let is_toggle_game_mode_by_joystick = joystick_input_data._btn_left_trigger
+                == ButtonState::Hold
+                && joystick_input_data._btn_right_trigger == ButtonState::Hold
+                && joystick_input_data._btn_left_shoulder == ButtonState::Hold
+                && joystick_input_data._btn_right_shoulder == ButtonState::Hold;
 
-            if engine_core._keyboard_input_data.get_key_pressed(KeyCode::Tab) || is_toggle_game_mode_by_joystick {
+            if engine_core
+                ._keyboard_input_data
+                .get_key_pressed(KeyCode::Tab)
+                || is_toggle_game_mode_by_joystick
+            {
                 self.toggle_game_mode();
             }
         }
@@ -132,8 +142,10 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
             let pressed_key_c = keyboard_input_data.get_key_hold(KeyCode::KeyC);
             let pressed_key_comma = keyboard_input_data.get_key_hold(KeyCode::Comma);
             let pressed_key_period = keyboard_input_data.get_key_hold(KeyCode::Period);
-            let released_key_left_bracket = keyboard_input_data.get_key_released(KeyCode::BracketLeft);
-            let released_key_right_bracket = keyboard_input_data.get_key_released(KeyCode::BracketRight);
+            let released_key_left_bracket =
+                keyboard_input_data.get_key_released(KeyCode::BracketLeft);
+            let released_key_right_bracket =
+                keyboard_input_data.get_key_released(KeyCode::BracketRight);
             let released_key_subtract = keyboard_input_data.get_key_released(KeyCode::Minus);
             let released_key_equals = keyboard_input_data.get_key_released(KeyCode::Equal);
             let modifier_keys_shift = keyboard_input_data.get_key_hold(KeyCode::ShiftLeft);
@@ -225,7 +237,8 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
             self._game_client.update_game_mode(game_delta_time);
             self.get_game_ui_manager_mut().update_game_ui(delta_time);
         } else {
-            self.get_editor_ui_manager_mut().update_editor_ui(delta_time);
+            self.get_editor_ui_manager_mut()
+                .update_editor_ui(delta_time);
         }
     }
 }
@@ -298,7 +311,9 @@ impl<'a> Application<'a> {
         self._is_game_mode = is_game_mode;
         self.get_game_client_mut().set_game_mode(is_game_mode);
         self.get_engine_core_mut().set_grab_mode(is_game_mode);
-        self.get_engine_core_mut().get_ui_manager_mut().set_visible_world_axis(!is_game_mode);
+        self.get_engine_core_mut()
+            .get_ui_manager_mut()
+            .set_visible_world_axis(!is_game_mode);
     }
 }
 
@@ -327,7 +342,7 @@ pub fn run_application() {
             constants::DEBUG_MESSAGE_LEVEL = vk::DebugUtilsMessageSeverityFlagsEXT::WARNING;
             constants::REQUIRED_INSTANCE_LAYERS = vec![
                 "VK_LAYER_KHRONOS_validation".to_string(),
-                "VK_LAYER_LUNARG_standard_validation".to_string()
+                "VK_LAYER_LUNARG_standard_validation".to_string(),
             ];
         } else {
             constants::DEBUG_MESSAGE_LEVEL = vk::DebugUtilsMessageSeverityFlagsEXT::ERROR;
@@ -352,9 +367,11 @@ pub fn run_application() {
     }
 
     // logger
-    logger::initialize_logger(
-        if unsafe { DEVELOPMENT } { LevelFilter::Info } else { LevelFilter::Error }
-    );
+    logger::initialize_logger(if unsafe { DEVELOPMENT } {
+        LevelFilter::Info
+    } else {
+        LevelFilter::Error
+    });
 
     // create project application & managers
     let game_resources = GameResources::create_game_resources();

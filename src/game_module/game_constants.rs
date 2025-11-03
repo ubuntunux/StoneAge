@@ -86,7 +86,7 @@ pub const STORY_BOARD_FADE_TIME: f32 = 2.0;
 pub const STORY_BOARDS: [&str; 3] = [
     "ui/story_board/story_board_00_00",
     "ui/story_board/story_board_00_01",
-    "ui/story_board/story_board_00_02"
+    "ui/story_board/story_board_00_02",
 ];
 pub const MATERIAL_FADE_TO_BLACK: &str = "ui/fade_to_black";
 

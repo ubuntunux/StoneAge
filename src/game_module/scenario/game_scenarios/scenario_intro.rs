@@ -1,19 +1,19 @@
-use std::str::FromStr;
-use nalgebra::Vector3;
-use strum_macros::{Display, EnumCount, EnumIter, EnumString};
-use rust_engine_3d::utilities::system::{ptr_as_mut, RcRefCell};
 use crate::game_module::actors::character::Character;
 use crate::game_module::behavior::behavior_base::BehaviorState;
 use crate::game_module::game_constants::TIME_OF_MORNING;
 use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::scenario::scenario::{ScenarioBase, ScenarioDataCreateInfo};
+use nalgebra::Vector3;
+use rust_engine_3d::utilities::system::{ptr_as_mut, RcRefCell};
+use std::str::FromStr;
+use strum_macros::{Display, EnumCount, EnumIter, EnumString};
 
 #[derive(Clone, PartialEq, Eq, Hash, Display, Debug, Copy, EnumIter, EnumString, EnumCount)]
 pub enum ScenarioIntroPhase {
     None,
     Sleep,
     WakeUp,
-    End
+    End,
 }
 
 pub struct ScenarioIntro<'a> {
@@ -32,7 +32,11 @@ pub struct ScenarioIntro<'a> {
 }
 
 impl<'a> ScenarioIntro<'a> {
-    pub fn create_game_scenario(game_scene_manager: *const GameSceneManager<'a>, scenario_name: &str, _scenario_create_info: &ScenarioDataCreateInfo) -> ScenarioIntro<'a> {
+    pub fn create_game_scenario(
+        game_scene_manager: *const GameSceneManager<'a>,
+        scenario_name: &str,
+        _scenario_create_info: &ScenarioDataCreateInfo,
+    ) -> ScenarioIntro<'a> {
         ScenarioIntro {
             _scenario_name: String::from(scenario_name),
             _scenario_phase: ScenarioIntroPhase::None,
@@ -71,28 +75,68 @@ impl<'a> ScenarioBase for ScenarioIntro<'a> {
             ScenarioIntroPhase::Sleep => {
                 let game_scene_manager = ptr_as_mut(self._game_scene_manager);
                 let main_camera = game_scene_manager.get_scene_manager().get_main_camera_mut();
-                main_camera._transform_object.set_position(&self._around_start_position);
-                main_camera._transform_object.set_rotation(&self._around_start_rotation);
+                main_camera
+                    ._transform_object
+                    .set_position(&self._around_start_position);
+                main_camera
+                    ._transform_object
+                    .set_rotation(&self._around_start_rotation);
                 game_scene_manager.set_time_of_day(TIME_OF_MORNING, 0.0);
-                self._actor_aru = if let Some(actor) = game_scene_manager.get_actor("aru") { Some(actor.clone()) } else { None };
-                self._actor_ewa = if let Some(actor) = game_scene_manager.get_actor("ewa") { Some(actor.clone()) } else { None };
-                self._actor_koa = if let Some(actor) = game_scene_manager.get_actor("koa") { Some(actor.clone()) } else { None };
-                self._actor_aru.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::Sleep);
-                self._actor_ewa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::Sleep);
-                self._actor_koa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::Sleep);
-            },
-            ScenarioIntroPhase::WakeUp => {
-                self._actor_aru.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::StandUp);
-                self._actor_ewa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::StandUp);
-                self._actor_koa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::StandUp);
+                self._actor_aru = if let Some(actor) = game_scene_manager.get_actor("aru") {
+                    Some(actor.clone())
+                } else {
+                    None
+                };
+                self._actor_ewa = if let Some(actor) = game_scene_manager.get_actor("ewa") {
+                    Some(actor.clone())
+                } else {
+                    None
+                };
+                self._actor_koa = if let Some(actor) = game_scene_manager.get_actor("koa") {
+                    Some(actor.clone())
+                } else {
+                    None
+                };
+                self._actor_aru
+                    .as_ref()
+                    .unwrap()
+                    .borrow_mut()
+                    .set_behavior(BehaviorState::Sleep);
+                self._actor_ewa
+                    .as_ref()
+                    .unwrap()
+                    .borrow_mut()
+                    .set_behavior(BehaviorState::Sleep);
+                self._actor_koa
+                    .as_ref()
+                    .unwrap()
+                    .borrow_mut()
+                    .set_behavior(BehaviorState::Sleep);
             }
-            _ => ()
+            ScenarioIntroPhase::WakeUp => {
+                self._actor_aru
+                    .as_ref()
+                    .unwrap()
+                    .borrow_mut()
+                    .set_behavior(BehaviorState::StandUp);
+                self._actor_ewa
+                    .as_ref()
+                    .unwrap()
+                    .borrow_mut()
+                    .set_behavior(BehaviorState::StandUp);
+                self._actor_koa
+                    .as_ref()
+                    .unwrap()
+                    .borrow_mut()
+                    .set_behavior(BehaviorState::StandUp);
+            }
+            _ => (),
         }
     }
 
     fn update_game_scenario_end(&mut self) {
         match self._scenario_phase {
-            _ => ()
+            _ => (),
         }
     }
 
@@ -106,28 +150,34 @@ impl<'a> ScenarioBase for ScenarioIntro<'a> {
         match self._scenario_phase {
             ScenarioIntroPhase::None => {
                 self.set_scenario_phase(ScenarioIntroPhase::Sleep.to_string().as_str(), 10.0);
-            },
+            }
             ScenarioIntroPhase::Sleep => {
                 let game_scene_manager = ptr_as_mut(self._game_scene_manager);
                 let main_camera = game_scene_manager.get_scene_manager().get_main_camera_mut();
                 let progress = 1.0 - (phase_ratio * -5.0).exp2();
-                let position = self._around_start_position.lerp(&self._around_end_position, progress);
-                let rotation = self._around_start_rotation.lerp(&self._around_end_rotation, progress);
+                let position = self
+                    ._around_start_position
+                    .lerp(&self._around_end_position, progress);
+                let rotation = self
+                    ._around_start_rotation
+                    .lerp(&self._around_end_rotation, progress);
                 main_camera._transform_object.set_position(&position);
                 main_camera._transform_object.set_rotation(&rotation);
 
                 if 1.0 <= phase_ratio {
                     self.set_scenario_phase(ScenarioIntroPhase::WakeUp.to_string().as_str(), 0.0);
                 }
-            },
+            }
             ScenarioIntroPhase::WakeUp => {
                 self.set_scenario_phase(ScenarioIntroPhase::End.to_string().as_str(), 0.0);
-            },
-            _ => ()
+            }
+            _ => (),
         }
 
         if 0.0 < self._phase_duration {
-            self._phase_time = self._phase_duration.min(self._phase_time + delta_time as f32 * if any_key_hold { 5.0 } else { 1.0 });
+            self._phase_time = self
+                ._phase_duration
+                .min(self._phase_time + delta_time as f32 * if any_key_hold { 5.0 } else { 1.0 });
         }
     }
 }

@@ -1,9 +1,11 @@
-use std::collections::HashMap;
-use nalgebra::Vector3;
-use serde::{Deserialize, Serialize};
-use rust_engine_3d::utilities::system::{newRcRefCell, RcRefCell};
-use crate::game_module::game_scene_manager::{CharacterCreateInfoMap, GameSceneManager, ItemCreateInfoMap, PropCreateInfoMap};
+use crate::game_module::game_scene_manager::{
+    CharacterCreateInfoMap, GameSceneManager, ItemCreateInfoMap, PropCreateInfoMap,
+};
 use crate::game_module::scenario::game_scenarios::scenario_intro::ScenarioIntro;
+use nalgebra::Vector3;
+use rust_engine_3d::utilities::system::{newRcRefCell, RcRefCell};
+use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 pub type GameSceneCreateInfoMap = HashMap<String, GameSceneCreateInfo>;
 
@@ -23,7 +25,7 @@ pub struct ScenarioDataCreateInfo {
     pub _items: ItemCreateInfoMap,
     pub _player: CharacterCreateInfoMap,
     pub _props: PropCreateInfoMap,
-    pub _game_scenes: GameSceneCreateInfoMap
+    pub _game_scenes: GameSceneCreateInfoMap,
 }
 pub trait ScenarioBase {
     fn is_end_of_scenario(&self) -> bool;
@@ -33,6 +35,14 @@ pub trait ScenarioBase {
     fn update_game_scenario(&mut self, any_key_hold: bool, delta_time: f64);
 }
 
-pub fn create_scenario<'a>(game_scene_manager: *const GameSceneManager<'a>, scenario_name: &str, scenario_create_info: &ScenarioDataCreateInfo) -> RcRefCell<dyn ScenarioBase + 'a> {
-    newRcRefCell(ScenarioIntro::create_game_scenario(game_scene_manager, scenario_name, scenario_create_info))
+pub fn create_scenario<'a>(
+    game_scene_manager: *const GameSceneManager<'a>,
+    scenario_name: &str,
+    scenario_create_info: &ScenarioDataCreateInfo,
+) -> RcRefCell<dyn ScenarioBase + 'a> {
+    newRcRefCell(ScenarioIntro::create_game_scenario(
+        game_scene_manager,
+        scenario_name,
+        scenario_create_info,
+    ))
 }

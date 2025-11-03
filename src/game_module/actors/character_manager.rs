@@ -4,7 +4,7 @@ use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::AudioManager;
 use rust_engine_3d::core::engine_core::EngineCore;
 use rust_engine_3d::scene::render_object::RenderObjectCreateInfo;
-use rust_engine_3d::scene::scene_manager::{SceneManager};
+use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
 
 use crate::application::application::Application;
@@ -50,7 +50,11 @@ impl<'a> CharacterManager<'a> {
         })
     }
 
-    pub fn initialize_character_manager(&mut self, engine_core: &EngineCore<'a>, application: &Application<'a>) {
+    pub fn initialize_character_manager(
+        &mut self,
+        engine_core: &EngineCore<'a>,
+        application: &Application<'a>,
+    ) {
         log::info!("initialize_character_manager");
         self._game_client = application.get_game_client();
         self._game_scene_manager = application.get_game_scene_manager();
@@ -94,10 +98,15 @@ impl<'a> CharacterManager<'a> {
     pub fn get_character(&self, character_name: &str) -> Option<&RcRefCell<Character<'a>>> {
         self._characters.get(character_name)
     }
-    pub fn add_character_weapon(&self, character: &mut Character<'a>, weapon_create_info: &WeaponCreateInfo) {
+    pub fn add_character_weapon(
+        &self,
+        character: &mut Character<'a>,
+        weapon_create_info: &WeaponCreateInfo,
+    ) {
         // remove previous weapon
         if let Some(weapon) = character.get_weapon() {
-            self.get_scene_manager_mut().remove_skeletal_render_object(weapon._render_object.borrow()._object_id);
+            self.get_scene_manager_mut()
+                .remove_skeletal_render_object(weapon._render_object.borrow()._object_id);
             character.remove_weapon();
         }
 
@@ -105,24 +114,34 @@ impl<'a> CharacterManager<'a> {
         let game_resources = ptr_as_ref(self._game_resources);
         let weapon_data = game_resources.get_weapon_data(&weapon_create_info._weapon_data_name);
         let render_object_create_info = RenderObjectCreateInfo {
-            _model_data_name: weapon_data.borrow()._model_data.borrow()._model_data_name.clone(),
+            _model_data_name: weapon_data
+                .borrow()
+                ._model_data
+                .borrow()
+                ._model_data_name
+                .clone(),
             _position: weapon_create_info._position.clone(),
             _rotation: weapon_create_info._rotation.clone(),
-            _scale: weapon_create_info._scale.clone()
+            _scale: weapon_create_info._scale.clone(),
         };
 
         let render_object_data = self.get_scene_manager_mut().add_skeletal_render_object(
             weapon_create_info._weapon_data_name.as_str(),
-            &render_object_create_info
+            &render_object_create_info,
         );
 
         let mut weapon: Option<Box<Weapon<'a>>> = None;
-        if let Some(weapon_socket) = character._render_object.borrow()._sockets.get(&weapon_create_info._weapon_socket_name) {
+        if let Some(weapon_socket) = character
+            ._render_object
+            .borrow()
+            ._sockets
+            .get(&weapon_create_info._weapon_socket_name)
+        {
             weapon = Some(Box::new(Weapon::create_weapon(
                 weapon_socket,
                 weapon_create_info,
                 weapon_data,
-                &render_object_data
+                &render_object_data,
             )));
         }
 
@@ -130,10 +149,19 @@ impl<'a> CharacterManager<'a> {
             character.add_weapon(weapon.unwrap());
         }
     }
-    pub fn create_character(&mut self, character_name: &str, character_create_info: &CharacterCreateInfo, is_player: bool) -> RcRefCell<Character<'a>> {
+    pub fn create_character(
+        &mut self,
+        character_name: &str,
+        character_create_info: &CharacterCreateInfo,
+        is_player: bool,
+    ) -> RcRefCell<Character<'a>> {
         let game_resources = ptr_as_ref(self._game_resources);
         let mut spawn_point = character_create_info._position.clone();
-        spawn_point.y = spawn_point.y.max(self.get_scene_manager().get_height_map_data().get_height_bilinear(&spawn_point, 0));
+        spawn_point.y = spawn_point.y.max(
+            self.get_scene_manager()
+                .get_height_map_data()
+                .get_height_bilinear(&spawn_point, 0),
+        );
 
         let character_data_name = character_create_info._character_data_name.as_str();
         let character_data = game_resources.get_character_data(character_data_name);
@@ -145,10 +173,9 @@ impl<'a> CharacterManager<'a> {
             _scale: character_create_info._scale.clone(),
         };
 
-        let render_object_data = self.get_scene_manager_mut().add_skeletal_render_object(
-            character_name,
-            &render_object_create_info,
-        );
+        let render_object_data = self
+            .get_scene_manager_mut()
+            .add_skeletal_render_object(character_name, &render_object_create_info);
 
         let id = self.generate_id();
         let character = newRcRefCell(Character::create_character_instance(
@@ -161,14 +188,19 @@ impl<'a> CharacterManager<'a> {
             &render_object_data,
             &spawn_point,
             &character_create_info._rotation,
-            &character_create_info._scale
+            &character_create_info._scale,
         ));
 
         // add weapon
-        if !character_data.borrow()._weapon_create_info._weapon_data_name.is_empty() {
+        if !character_data
+            .borrow()
+            ._weapon_create_info
+            ._weapon_data_name
+            .is_empty()
+        {
             self.add_character_weapon(
                 &mut *character.borrow_mut(),
-                &character_data.borrow()._weapon_create_info
+                &character_data.borrow()._weapon_create_info,
             )
         }
 
@@ -176,17 +208,24 @@ impl<'a> CharacterManager<'a> {
             self._player = Some(character.clone());
         }
 
-        self._characters.insert(String::from(character_name), character.clone());
+        self._characters
+            .insert(String::from(character_name), character.clone());
 
         character
     }
 
     pub fn remove_character(&mut self, character: &RcRefCell<Character>) {
-        self._characters.remove(character.borrow().get_character_name().as_str());
-        self.get_scene_manager_mut().remove_skeletal_render_object(character.borrow()._render_object.borrow()._object_id);
+        self._characters
+            .remove(character.borrow().get_character_name().as_str());
+        self.get_scene_manager_mut()
+            .remove_skeletal_render_object(character.borrow()._render_object.borrow()._object_id);
     }
     pub fn clear_characters(&mut self, clear_player: bool) {
-        let characters = self._characters.values().cloned().collect::<Vec<RcRefCell<Character>>>();
+        let characters = self
+            ._characters
+            .values()
+            .cloned()
+            .collect::<Vec<RcRefCell<Character>>>();
         for character in characters.iter() {
             if clear_player || character.borrow().is_player() == false {
                 self.remove_character(character);
@@ -220,11 +259,7 @@ impl<'a> CharacterManager<'a> {
             let character_mut = ptr_as_mut(character.as_ptr());
 
             // update character
-            character_mut.update_character(
-                self.get_scene_manager(),
-                player,
-                delta_time as f32
-            );
+            character_mut.update_character(self.get_scene_manager(), player, delta_time as f32);
 
             if character_mut.is_alive() == false {
                 continue;
@@ -237,37 +272,51 @@ impl<'a> CharacterManager<'a> {
                     // player attack to npc
                     for target_character in self._characters.values() {
                         let target_character_mut = ptr_as_mut(target_character.as_ptr());
-                        if false == target_character_mut._is_player &&
-                            target_character_mut.is_alive() &&
-                            false == target_character_mut._character_stats._invincibility &&
-                            character_mut.check_in_range(target_character_mut.get_collision(), NPC_ATTACK_HIT_RANGE, check_direction) {
-                                register_target_character = Some(target_character.clone());
-                                let target_position = ptr_as_ref(target_character_mut.get_position());
-                                target_character_mut.set_hit_damage(
-                                    character_mut.get_power(character_mut._animation_state.get_action_event()),
-                                    Some(character_mut.get_front())
-                                );
-                                if false == target_character_mut.is_alive() {
-                                    dead_characters.push(target_character.clone());
+                        if false == target_character_mut._is_player
+                            && target_character_mut.is_alive()
+                            && false == target_character_mut._character_stats._invincibility
+                            && character_mut.check_in_range(
+                                target_character_mut.get_collision(),
+                                NPC_ATTACK_HIT_RANGE,
+                                check_direction,
+                            )
+                        {
+                            register_target_character = Some(target_character.clone());
+                            let target_position = ptr_as_ref(target_character_mut.get_position());
+                            target_character_mut.set_hit_damage(
+                                character_mut
+                                    .get_power(character_mut._animation_state.get_action_event()),
+                                Some(character_mut.get_front()),
+                            );
+                            if false == target_character_mut.is_alive() {
+                                dead_characters.push(target_character.clone());
 
-                                    // TestCode: Item
-                                    let item_create_info = ItemCreateInfo {
-                                        _item_data_name: String::from(ITEM_SPIRIT_BALL),
-                                        _position: target_position + Vector3::new(0.0, 0.5, 0.0),
-                                        ..Default::default()
-                                    };
-                                    self.get_game_scene_manager().get_item_manager_mut().create_item(&item_create_info, true);
-                                }
+                                // TestCode: Item
+                                let item_create_info = ItemCreateInfo {
+                                    _item_data_name: String::from(ITEM_SPIRIT_BALL),
+                                    _position: target_position + Vector3::new(0.0, 0.5, 0.0),
+                                    ..Default::default()
+                                };
+                                self.get_game_scene_manager()
+                                    .get_item_manager_mut()
+                                    .create_item(&item_create_info, true);
+                            }
                         }
                     }
                 } else {
                     // npc attack to player
-                    if player.is_alive() &&
-                        false == player._character_stats._invincibility &&
-                        character_mut.check_in_range(player.get_collision(), NPC_ATTACK_HIT_RANGE, check_direction) {
+                    if player.is_alive()
+                        && false == player._character_stats._invincibility
+                        && character_mut.check_in_range(
+                            player.get_collision(),
+                            NPC_ATTACK_HIT_RANGE,
+                            check_direction,
+                        )
+                    {
                         player.set_hit_damage(
-                            character_mut.get_power(character_mut._animation_state.get_action_event()),
-                            Some(character_mut.get_front())
+                            character_mut
+                                .get_power(character_mut._animation_state.get_action_event()),
+                            Some(character_mut.get_front()),
                         );
                     }
                 }

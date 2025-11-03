@@ -1,4 +1,13 @@
-use std::collections::HashMap;
+use crate::application::application::Application;
+use crate::game_module::actors::character::InteractionObject;
+use crate::game_module::actors::items::ItemCreateInfo;
+use crate::game_module::actors::props::{
+    Prop, PropCreateInfo, PropData, PropDataType, PropID, PropManager, PropMap, PropStats,
+};
+use crate::game_module::game_client::GameClient;
+use crate::game_module::game_constants::{AUDIO_HIT, EFFECT_HIT, NPC_ATTACK_HIT_RANGE};
+use crate::game_module::game_resource::GameResources;
+use crate::game_module::game_scene_manager::GameSceneManager;
 use nalgebra::Vector3;
 use rand;
 use rust_engine_3d::audio::audio_manager::{AudioLoop, AudioManager};
@@ -9,14 +18,7 @@ use rust_engine_3d::scene::collision::{CollisionData, CollisionType};
 use rust_engine_3d::scene::render_object::{RenderObjectCreateInfo, RenderObjectData};
 use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
-use crate::application::application::Application;
-use crate::game_module::actors::character::InteractionObject;
-use crate::game_module::actors::items::{ItemCreateInfo};
-use crate::game_module::actors::props::{Prop, PropCreateInfo, PropData, PropDataType, PropID, PropManager, PropMap, PropStats};
-use crate::game_module::game_client::GameClient;
-use crate::game_module::game_constants::{AUDIO_HIT, EFFECT_HIT, NPC_ATTACK_HIT_RANGE};
-use crate::game_module::game_resource::GameResources;
-use crate::game_module::game_scene_manager::GameSceneManager;
+use std::collections::HashMap;
 
 impl Default for PropData {
     fn default() -> Self {
@@ -29,7 +31,7 @@ impl Default for PropData {
             _item_drop_count_max: 1,
             _item_drop_count_min: 1,
             _item_regenerate_count: 1,
-            _item_regenerate_time: 0.0
+            _item_regenerate_time: 0.0,
         }
     }
 }
@@ -64,8 +66,12 @@ impl<'a> Prop<'a> {
             _instance_parameters: prop_create_info._instance_parameters.clone(),
         };
 
-        if prop_data_ref._prop_type == PropDataType::Ceiling || prop_data_ref._prop_type == PropDataType::Gate {
-            render_object.borrow_mut().set_collision_type(CollisionType::NONE);
+        if prop_data_ref._prop_type == PropDataType::Ceiling
+            || prop_data_ref._prop_type == PropDataType::Gate
+        {
+            render_object
+                .borrow_mut()
+                .set_collision_type(CollisionType::NONE);
         }
 
         prop.initialize_prop();
@@ -99,7 +105,9 @@ impl<'a> Prop<'a> {
         rand::random_range(prop_data._item_drop_count_min..=prop_data._item_drop_count_max)
     }
     pub fn get_position(&self) -> &Vector3<f32> {
-        &ptr_as_ref(self._render_object.as_ptr())._transform_object._position
+        &ptr_as_ref(self._render_object.as_ptr())
+            ._transform_object
+            ._position
     }
     pub fn get_bounding_box(&self) -> &BoundingBox {
         &ptr_as_ref(self._render_object.as_ptr())._bounding_box
@@ -124,8 +132,12 @@ impl<'a> Prop<'a> {
             _effect_data_name: String::from(EFFECT_HIT),
             ..Default::default()
         };
-        self.get_prop_manager().get_scene_manager_mut().add_effect(EFFECT_HIT, &effect_create_info);
-        self.get_prop_manager().get_audio_manager_mut().play_audio_bank(AUDIO_HIT, AudioLoop::ONCE, None);
+        self.get_prop_manager()
+            .get_scene_manager_mut()
+            .add_effect(EFFECT_HIT, &effect_create_info);
+        self.get_prop_manager()
+            .get_audio_manager_mut()
+            .play_audio_bank(AUDIO_HIT, AudioLoop::ONCE, None);
     }
     pub fn drop_items(&mut self) -> Vec<ItemCreateInfo> {
         let mut item_create_infos: Vec<ItemCreateInfo> = vec![];
@@ -143,14 +155,19 @@ impl<'a> Prop<'a> {
         item_create_infos
     }
     pub fn update_transform(&mut self) {
-        self._render_object.borrow_mut()._transform_object.set_position_rotation_scale(
-            &self._prop_stats._position,
-            &self._prop_stats._rotation,
-            &self._prop_stats._scale,
-        );
+        self._render_object
+            .borrow_mut()
+            ._transform_object
+            .set_position_rotation_scale(
+                &self._prop_stats._position,
+                &self._prop_stats._rotation,
+                &self._prop_stats._scale,
+            );
     }
     pub fn update_render_object(&mut self) {
-        self._render_object.borrow_mut().update_render_object_data(0.0);
+        self._render_object
+            .borrow_mut()
+            .update_render_object_data(0.0);
     }
     pub fn update_prop(&mut self, delta_time: f64) {
         self.update_transform();
@@ -175,7 +192,11 @@ impl<'a> PropManager<'a> {
         })
     }
 
-    pub fn initialize_prop_manager(&mut self, engine_core: &EngineCore<'a>, application: &Application<'a>) {
+    pub fn initialize_prop_manager(
+        &mut self,
+        engine_core: &EngineCore<'a>,
+        application: &Application<'a>,
+    ) {
         log::info!("initialize_prop_manager");
         self._game_client = application.get_game_client();
         self._game_scene_manager = application.get_game_scene_manager();
@@ -183,8 +204,7 @@ impl<'a> PropManager<'a> {
         self._audio_manager = application.get_audio_manager();
         self._scene_manager = engine_core.get_scene_manager();
     }
-    pub fn destroy_prop_manager(&mut self) {
-    }
+    pub fn destroy_prop_manager(&mut self) {}
     pub fn get_game_resources(&self) -> &GameResources<'a> {
         ptr_as_ref(self._game_resources)
     }
@@ -225,7 +245,11 @@ impl<'a> PropManager<'a> {
     pub fn get_props(&self) -> &PropMap<'a> {
         &self._props
     }
-    pub fn create_prop(&mut self, prop_name: &str, prop_create_info: &PropCreateInfo) -> RcRefCell<Prop<'a>> {
+    pub fn create_prop(
+        &mut self,
+        prop_name: &str,
+        prop_create_info: &PropCreateInfo,
+    ) -> RcRefCell<Prop<'a>> {
         let game_resources = ptr_as_ref(self._game_resources);
         let prop_data = game_resources.get_prop_data(prop_create_info._prop_data_name.as_str());
         let render_object_create_info = RenderObjectCreateInfo {
@@ -235,7 +259,11 @@ impl<'a> PropManager<'a> {
             _scale: prop_create_info._scale.clone(),
             ..Default::default()
         };
-        let render_object_data = self.get_scene_manager_mut().add_dynamic_render_object(prop_name, &render_object_create_info, None);
+        let render_object_data = self.get_scene_manager_mut().add_dynamic_render_object(
+            prop_name,
+            &render_object_create_info,
+            None,
+        );
         let id = self.generate_id();
         let prop = newRcRefCell(Prop::create_prop(
             self,
@@ -243,7 +271,7 @@ impl<'a> PropManager<'a> {
             prop_name,
             prop_data,
             &render_object_data,
-            &prop_create_info
+            &prop_create_info,
         ));
         self._props.insert(id, prop.clone());
         prop
@@ -251,7 +279,8 @@ impl<'a> PropManager<'a> {
 
     pub fn remove_prop(&mut self, prop: &RcRefCell<Prop<'a>>) {
         self._props.remove(&prop.borrow().get_prop_id());
-        self.get_scene_manager_mut().remove_static_render_object(prop.borrow()._render_object.borrow()._object_id);
+        self.get_scene_manager_mut()
+            .remove_static_render_object(prop.borrow()._render_object.borrow()._object_id);
     }
 
     pub fn clear_props(&mut self) {
@@ -266,8 +295,14 @@ impl<'a> PropManager<'a> {
         if gate.is_some() {
             let prop = gate.unwrap().borrow();
             let prop_bounding_box = prop.get_bounding_box();
-            let mut teleport_point = prop.get_position() + prop_bounding_box.get_orientation().column(2) * (prop_bounding_box._mag_xz + 1.0);
-            teleport_point.y = teleport_point.y.max(self.get_game_scene_manager().get_scene_manager().get_height_map_data().get_height_bilinear(&teleport_point, 0));
+            let mut teleport_point = prop.get_position()
+                + prop_bounding_box.get_orientation().column(2) * (prop_bounding_box._mag_xz + 1.0);
+            teleport_point.y = teleport_point.y.max(
+                self.get_game_scene_manager()
+                    .get_scene_manager()
+                    .get_height_map_data()
+                    .get_height_bilinear(&teleport_point, 0),
+            );
             return Some(teleport_point);
         }
         None
@@ -278,7 +313,11 @@ impl<'a> PropManager<'a> {
             prop.borrow_mut().update_prop(delta_time);
         }
 
-        let player_refcell = self.get_game_scene_manager().get_character_manager().get_player().clone();
+        let player_refcell = self
+            .get_game_scene_manager()
+            .get_character_manager()
+            .get_player()
+            .clone();
         let mut player = player_refcell.borrow_mut();
 
         let mut dead_props: Vec<RcRefCell<Prop>> = Vec::new();
@@ -293,28 +332,52 @@ impl<'a> PropManager<'a> {
                     match prop_type {
                         PropDataType::Bed => {
                             let was_in_range = prop._prop_stats._is_in_player_range;
-                            prop._prop_stats._is_in_player_range = player.get_bounding_box().collide_bound_box(&bounding_box._min, &bounding_box._max);
+                            prop._prop_stats._is_in_player_range = player
+                                .get_bounding_box()
+                                .collide_bound_box(&bounding_box._min, &bounding_box._max);
 
                             if was_in_range == false && prop._prop_stats._is_in_player_range {
-                                player._controller.add_interaction_object(InteractionObject::PropBed(prop.get_prop_id()));
-                            } else if was_in_range && prop._prop_stats._is_in_player_range == false {
-                                player._controller.remove_interaction_object(InteractionObject::PropBed(prop.get_prop_id()));
+                                player._controller.add_interaction_object(
+                                    InteractionObject::PropBed(prop.get_prop_id()),
+                                );
+                            } else if was_in_range && prop._prop_stats._is_in_player_range == false
+                            {
+                                player._controller.remove_interaction_object(
+                                    InteractionObject::PropBed(prop.get_prop_id()),
+                                );
                             }
-                        },
+                        }
                         PropDataType::Ceiling => {
-                            prop._render_object.borrow_mut().set_render_camera(!bounding_box.collide_point(&player.get_position()));
-                        },
+                            prop._render_object.borrow_mut().set_render_camera(
+                                !bounding_box.collide_point(&player.get_position()),
+                            );
+                        }
                         PropDataType::Destruction | PropDataType::Harvestable => {
-                            if prop_type == PropDataType::Destruction || prop_type == PropDataType::Harvestable && prop.can_drop_item() {
-                                if player._animation_state.is_attack_event() && player.check_in_range(prop.get_collision(), NPC_ATTACK_HIT_RANGE, check_direction) {
-                                    prop.set_hit_damage(player.get_power(player._animation_state.get_action_event()));
+                            if prop_type == PropDataType::Destruction
+                                || prop_type == PropDataType::Harvestable && prop.can_drop_item()
+                            {
+                                if player._animation_state.is_attack_event()
+                                    && player.check_in_range(
+                                        prop.get_collision(),
+                                        NPC_ATTACK_HIT_RANGE,
+                                        check_direction,
+                                    )
+                                {
+                                    prop.set_hit_damage(
+                                        player
+                                            .get_power(player._animation_state.get_action_event()),
+                                    );
                                     if false == prop.is_alive() {
                                         for item_create_info in prop.drop_items().iter() {
                                             // drop items
-                                            self.get_game_scene_manager().get_item_manager_mut().create_item(&item_create_info, true);
+                                            self.get_game_scene_manager()
+                                                .get_item_manager_mut()
+                                                .create_item(&item_create_info, true);
                                         }
 
-                                        if prop_type == PropDataType::Harvestable && 0 < prop.get_item_regenerate_count() {
+                                        if prop_type == PropDataType::Harvestable
+                                            && 0 < prop.get_item_regenerate_count()
+                                        {
                                             prop.refresh_prop_state();
                                         } else {
                                             dead_props.push(prop_refcell.clone());
@@ -322,10 +385,11 @@ impl<'a> PropManager<'a> {
                                     }
                                 }
                             }
-                        },
+                        }
                         PropDataType::Gate => {
                             let was_in_range = prop._prop_stats._is_in_player_range;
-                            prop._prop_stats._is_in_player_range = bounding_box.collide_point(player.get_center());
+                            prop._prop_stats._is_in_player_range =
+                                bounding_box.collide_point(player.get_center());
 
                             if was_in_range == false && prop._prop_stats._is_in_player_range {
                                 let linked_gate = prop._instance_parameters.get("_linked_gate");
@@ -333,19 +397,24 @@ impl<'a> PropManager<'a> {
                                 if linked_stage.is_some() && linked_gate.is_some() {
                                     self.get_game_client_mut().teleport_stage(
                                         linked_stage.unwrap().as_str().unwrap(),
-                                        linked_gate.unwrap().as_str().unwrap()
+                                        linked_gate.unwrap().as_str().unwrap(),
                                     );
                                 }
                             }
-                        },
+                        }
                         PropDataType::Pickup => {
                             let was_in_range = prop._prop_stats._is_in_player_range;
-                            prop._prop_stats._is_in_player_range = player.get_bounding_box().collide_bound_box(&bounding_box._min, &bounding_box._max);
+                            prop._prop_stats._is_in_player_range = player
+                                .get_bounding_box()
+                                .collide_bound_box(&bounding_box._min, &bounding_box._max);
                             if prop._prop_stats._is_in_player_range {
                                 if player._animation_state.is_pickup_event() {
                                     let mut pickup_items: bool = false;
                                     for item_create_info in prop.drop_items().iter() {
-                                        pickup_items |= self.get_game_scene_manager().get_item_manager_mut().instance_pickup_item(&item_create_info);
+                                        pickup_items |= self
+                                            .get_game_scene_manager()
+                                            .get_item_manager_mut()
+                                            .instance_pickup_item(&item_create_info);
                                     }
 
                                     if pickup_items {
@@ -356,12 +425,17 @@ impl<'a> PropManager<'a> {
                             }
 
                             if was_in_range == false && prop._prop_stats._is_in_player_range {
-                                player._controller.add_interaction_object(InteractionObject::PropPickup(prop.get_prop_id()));
-                            } else if was_in_range && prop._prop_stats._is_in_player_range == false {
-                                player._controller.remove_interaction_object(InteractionObject::PropPickup(prop.get_prop_id()));
+                                player._controller.add_interaction_object(
+                                    InteractionObject::PropPickup(prop.get_prop_id()),
+                                );
+                            } else if was_in_range && prop._prop_stats._is_in_player_range == false
+                            {
+                                player._controller.remove_interaction_object(
+                                    InteractionObject::PropPickup(prop.get_prop_id()),
+                                );
                             }
-                        },
-                        _ => ()
+                        }
+                        _ => (),
                     }
                 }
             }

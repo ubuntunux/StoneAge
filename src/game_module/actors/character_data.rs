@@ -1,10 +1,10 @@
+use crate::game_module::actors::weapons::WeaponCreateInfo;
 use nalgebra::Vector3;
 use rust_engine_3d::resource::resource::ResourceData;
 use rust_engine_3d::scene::animation::AnimationLayerData;
 use rust_engine_3d::scene::mesh::MeshData;
 use rust_engine_3d::utilities::system::RcRefCell;
 use serde::{Deserialize, Serialize};
-use crate::game_module::actors::weapons::WeaponCreateInfo;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ActionAnimationState {
@@ -46,7 +46,7 @@ pub enum CharacterDataType {
     Roamer,
     Guardian,
     Stalker,
-    Invader
+    Invader,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
@@ -66,7 +66,7 @@ pub struct CharacterDataCreateInfo {
     pub _character_animation_data: CharacterAnimationDataCreateInfo,
     pub _character_audio_data: CharacterAudioDataCreateInfo,
     pub _character_stat_data: CharacterStatData,
-    pub _weapon_create_info: WeaponCreateInfo
+    pub _weapon_create_info: WeaponCreateInfo,
 }
 
 #[derive(Serialize, Deserialize, Default, Debug, Clone, PartialEq)]
@@ -152,7 +152,7 @@ pub struct CharacterAnimationData {
     pub _stand_up_animation: RcRefCell<MeshData>,
     pub _walk_animation: RcRefCell<MeshData>,
     pub _walk_animation_speed: f32,
-    pub _upper_animation_layer: RcRefCell<AnimationLayerData>
+    pub _upper_animation_layer: RcRefCell<AnimationLayerData>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
@@ -168,5 +168,5 @@ pub struct CharacterStatData {
     pub _jump_speed: f32,
     pub _roll_speed: f32,
     pub _run_speed: f32,
-    pub _walk_speed: f32
+    pub _walk_speed: f32,
 }

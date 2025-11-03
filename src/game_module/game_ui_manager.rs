@@ -1,5 +1,3 @@
-use nalgebra::Vector2;
-use rust_engine_3d::scene::ui::{UIManager, WidgetDefault};
 use crate::game_module::game_client::GameClient;
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::widgets::controller_help::ControllerHelpWidget;
@@ -9,6 +7,8 @@ use crate::game_module::widgets::item_bar_widget::ItemBarWidget;
 use crate::game_module::widgets::player_hud::PlayerHud;
 use crate::game_module::widgets::target_status_bar::TargetStatusWidget;
 use crate::game_module::widgets::time_of_day::TimeOfDayWidget;
+use nalgebra::Vector2;
+use rust_engine_3d::scene::ui::{UIManager, WidgetDefault};
 
 pub struct EditorUIManager<'a> {
     pub _ui_manager: *const UIManager<'a>,

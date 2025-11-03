@@ -1,13 +1,13 @@
-use std::collections::HashMap;
+use crate::game_module::game_client::GameClient;
+use crate::game_module::game_resource::GameResources;
+use crate::game_module::game_scene_manager::GameSceneManager;
 use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::AudioManager;
 use rust_engine_3d::scene::render_object::RenderObjectData;
 use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::system::RcRefCell;
 use serde::{Deserialize, Serialize};
-use crate::game_module::game_client::GameClient;
-use crate::game_module::game_resource::GameResources;
-use crate::game_module::game_scene_manager::GameSceneManager;
+use std::collections::HashMap;
 
 #[derive(Copy, Clone, Debug, Default, Hash, Eq, PartialEq)]
 pub struct PropID(pub u64);
@@ -24,7 +24,7 @@ pub enum PropDataType {
     Harvestable,
     Pickup,
     Dungeon,
-    Building
+    Building,
 }
 
 #[derive(Serialize, Deserialize, Default, Debug, Clone, PartialEq)]
@@ -34,7 +34,7 @@ pub struct PropCreateInfo {
     pub _position: Vector3<f32>,
     pub _rotation: Vector3<f32>,
     pub _scale: Vector3<f32>,
-    pub _instance_parameters: serde_json::Map<String, serde_json::Value>
+    pub _instance_parameters: serde_json::Map<String, serde_json::Value>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
@@ -48,7 +48,7 @@ pub struct PropData {
     pub _item_drop_count_max: i32,
     pub _item_drop_count_min: i32,
     pub _item_regenerate_count: i32,
-    pub _item_regenerate_time: f32
+    pub _item_regenerate_time: f32,
 }
 
 pub struct PropStats {
@@ -70,7 +70,7 @@ pub struct Prop<'a> {
     pub _render_object: RcRefCell<RenderObjectData<'a>>,
     pub _prop_data: RcRefCell<PropData>,
     pub _prop_stats: Box<PropStats>,
-    pub _instance_parameters: serde_json::Map<String, serde_json::Value>
+    pub _instance_parameters: serde_json::Map<String, serde_json::Value>,
 }
 
 pub struct PropManager<'a> {
@@ -80,5 +80,5 @@ pub struct PropManager<'a> {
     pub _audio_manager: *const AudioManager<'a>,
     pub _scene_manager: *const SceneManager<'a>,
     pub _id_generator: PropID,
-    pub _props: PropMap<'a>
+    pub _props: PropMap<'a>,
 }

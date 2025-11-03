@@ -1,9 +1,12 @@
-use nalgebra::Vector3;
-use rust_engine_3d::utilities::math::lerp;
 use crate::game_module::actors::character::Character;
 use crate::game_module::actors::character_data::ActionAnimationState;
 use crate::game_module::behavior::behavior_base::{BehaviorBase, BehaviorState};
-use crate::game_module::game_constants::{ARRIVAL_DISTANCE_THRESHOLD, NPC_IDLE_TERM_MAX, NPC_IDLE_TERM_MIN, NPC_ROAMING_RADIUS, NPC_ROAMING_TIME, NPC_TRACKING_RANGE};
+use crate::game_module::game_constants::{
+    ARRIVAL_DISTANCE_THRESHOLD, NPC_IDLE_TERM_MAX, NPC_IDLE_TERM_MIN, NPC_ROAMING_RADIUS,
+    NPC_ROAMING_TIME, NPC_TRACKING_RANGE,
+};
+use nalgebra::Vector3;
+use rust_engine_3d::utilities::math::lerp;
 
 #[derive(Default)]
 pub struct BehaviorCivilian {
@@ -30,17 +33,22 @@ impl BehaviorBase for BehaviorCivilian {
         false
     }
 
-    fn update_behavior(&mut self, owner: &mut Character, player: Option<&Character>, delta_time: f32) {
+    fn update_behavior(
+        &mut self,
+        owner: &mut Character,
+        player: Option<&Character>,
+        delta_time: f32,
+    ) {
         match self._behavior_state {
             BehaviorState::None => {
                 self.set_behavior(BehaviorState::Idle, owner, player, false);
-            },
+            }
             BehaviorState::Idle => {
                 if self._idle_time < 0.0 {
                     self.set_behavior(BehaviorState::Move, owner, player, false);
                 }
                 self._idle_time -= delta_time;
-            },
+            }
             BehaviorState::Move => {
                 let mut do_idle: bool = false;
                 if 0.0 < self._move_time {
@@ -48,7 +56,9 @@ impl BehaviorBase for BehaviorCivilian {
                     let dist = offset.x * offset.x + offset.z * offset.z;
                     if dist < ARRIVAL_DISTANCE_THRESHOLD {
                         do_idle = true;
-                    } else if (owner._controller._is_blocked || owner._controller._is_cliff) && !owner.is_falling() {
+                    } else if (owner._controller._is_blocked || owner._controller._is_cliff)
+                        && !owner.is_falling()
+                    {
                         do_idle = true;
                     }
                 } else {
@@ -59,17 +69,23 @@ impl BehaviorBase for BehaviorCivilian {
                     self.set_behavior(BehaviorState::Idle, owner, player, false);
                 }
                 self._move_time -= delta_time;
-            },
+            }
             BehaviorState::StandUp => {
                 if owner.is_available_move() {
                     self.set_behavior(BehaviorState::Idle, owner, player, false);
                 }
-            },
-            _ => ()
+            }
+            _ => (),
         }
     }
 
-    fn set_behavior(&mut self, behavior_state: BehaviorState, owner: &mut Character, player: Option<&Character>, is_force: bool) {
+    fn set_behavior(
+        &mut self,
+        behavior_state: BehaviorState,
+        owner: &mut Character,
+        player: Option<&Character>,
+        is_force: bool,
+    ) {
         if self._behavior_state != behavior_state || is_force {
             self.end_behavior(owner, player);
 
@@ -77,33 +93,40 @@ impl BehaviorBase for BehaviorCivilian {
             match behavior_state {
                 BehaviorState::Idle => {
                     owner.set_move_stop();
-                    self._idle_time = lerp(NPC_IDLE_TERM_MIN, NPC_IDLE_TERM_MAX, rand::random::<f32>());
-                },
+                    self._idle_time =
+                        lerp(NPC_IDLE_TERM_MIN, NPC_IDLE_TERM_MAX, rand::random::<f32>());
+                }
                 BehaviorState::Move => {
-                    let move_area = Vector3::new(rand::random::<f32>() - 0.5, 0.0, rand::random::<f32>() - 0.5).normalize() * NPC_ROAMING_RADIUS;
+                    let move_area = Vector3::new(
+                        rand::random::<f32>() - 0.5,
+                        0.0,
+                        rand::random::<f32>() - 0.5,
+                    )
+                    .normalize()
+                        * NPC_ROAMING_RADIUS;
                     self._target_point = self._spawn_point + move_area;
                     self._move_direction = (self._target_point - owner.get_position()).normalize();
                     self._move_time = NPC_ROAMING_TIME;
                     owner.set_move(&self._move_direction);
                     owner.set_run(false);
-                },
+                }
                 BehaviorState::LayingDown => {
                     owner.set_action_animation(ActionAnimationState::LayingDown, 1.0);
-                },
+                }
                 BehaviorState::Sleep => {
                     owner.set_action_animation(ActionAnimationState::Sleep, 1.0);
-                },
+                }
                 BehaviorState::StandUp => {
                     owner.set_action_animation(ActionAnimationState::StandUp, 1.0);
-                },
-                _ => ()
+                }
+                _ => (),
             }
         }
     }
 
     fn end_behavior(&mut self, _owner: &mut Character, _player: Option<&Character>) {
         match self._behavior_state {
-            _ => ()
+            _ => (),
         }
     }
 }

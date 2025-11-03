@@ -1,12 +1,18 @@
 use ash::vk;
 use nalgebra::Vector4;
-use serde::{Deserialize, Serialize};
 use rust_engine_3d::render_pass::render_object::common;
-use rust_engine_3d::render_pass::render_object::common::{USER_BINDING_INDEX0, USER_BINDING_INDEX1, USER_BINDING_INDEX2, USER_BINDING_INDEX3};
-use rust_engine_3d::renderer::push_constants::{PushConstant, PushConstantName, PushConstantParameter, PushConstant_RenderObjectBase};
+use rust_engine_3d::render_pass::render_object::common::{
+    USER_BINDING_INDEX0, USER_BINDING_INDEX1, USER_BINDING_INDEX2, USER_BINDING_INDEX3,
+};
+use rust_engine_3d::renderer::push_constants::{
+    PushConstant, PushConstantName, PushConstantParameter, PushConstant_RenderObjectBase,
+};
 use rust_engine_3d::renderer::renderer_data::RendererData;
-use rust_engine_3d::vulkan_context::descriptor::{DescriptorDataCreateInfo, DescriptorResourceType};
+use rust_engine_3d::vulkan_context::descriptor::{
+    DescriptorDataCreateInfo, DescriptorResourceType,
+};
 use rust_engine_3d::vulkan_context::render_pass::RenderPassDataCreateInfo;
+use serde::{Deserialize, Serialize};
 
 #[repr(C)]
 #[allow(non_camel_case_types, non_snake_case)]
@@ -26,7 +32,7 @@ pub struct PushConstant_TriplanarBasic {
     pub _SidesScaleY: f32,
     pub _SidesNormalScaleX: f32,
     pub _SidesNormalScaleY: f32,
-    pub _reserved0: f32
+    pub _reserved0: f32,
 }
 
 impl Default for PushConstant_TriplanarBasic {
@@ -107,7 +113,9 @@ impl PushConstant for PushConstant_TriplanarBasic {
                 self._SidesNormalScaleY = *value;
             }
         } else {
-            return self._push_constant_base.set_push_constant_parameter(key, value);
+            return self
+                ._push_constant_base
+                .set_push_constant_parameter(key, value);
         }
         true
     }
@@ -146,11 +154,13 @@ pub fn get_descriptor_data_create_infos() -> Vec<DescriptorDataCreateInfo> {
             _descriptor_resource_type: DescriptorResourceType::Texture,
             _descriptor_shader_stage: vk::ShaderStageFlags::FRAGMENT,
             ..Default::default()
-        }
+        },
     ]
 }
 
-pub fn get_render_pass_data_create_infos(renderer_data: &RendererData) -> Vec<RenderPassDataCreateInfo> {
+pub fn get_render_pass_data_create_infos(
+    renderer_data: &RendererData,
+) -> Vec<RenderPassDataCreateInfo> {
     common::get_render_pass_data_create_infos(
         renderer_data,
         vk::CullModeFlags::BACK,
@@ -158,6 +168,6 @@ pub fn get_render_pass_data_create_infos(renderer_data: &RendererData) -> Vec<Re
         "PolygonNatureBiomes/TriplanarBasic.vert",
         "PolygonNatureBiomes/TriplanarBasic.frag",
         &get_push_constant_data(),
-        &get_descriptor_data_create_infos()
+        &get_descriptor_data_create_infos(),
     )
 }

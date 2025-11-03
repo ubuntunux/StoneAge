@@ -15,7 +15,9 @@ pub struct StatusBarWidget<'a> {
 }
 
 // Implementation
-fn create_status_layer_widget<'a>(parent_widget: &mut WidgetDefault<'a>) -> *const WidgetDefault<'a> {
+fn create_status_layer_widget<'a>(
+    parent_widget: &mut WidgetDefault<'a>,
+) -> *const WidgetDefault<'a> {
     let status_layer = UIManager::create_widget("status_layer", UIWidgetTypes::Default);
     let ui_component = ptr_as_mut(status_layer.as_ref()).get_ui_component_mut();
     ui_component.set_layout_type(UILayoutType::BoxLayout);
@@ -33,7 +35,10 @@ fn create_status_layer_widget<'a>(parent_widget: &mut WidgetDefault<'a>) -> *con
     status_layer.as_ref()
 }
 
-fn create_status_bar_widget<'a>(parent_widget: &mut WidgetDefault<'a>, color: u32) -> *const WidgetDefault<'a> {
+fn create_status_bar_widget<'a>(
+    parent_widget: &mut WidgetDefault<'a>,
+    color: u32,
+) -> *const WidgetDefault<'a> {
     let status_bar = UIManager::create_widget("status_bar", UIWidgetTypes::Default);
     let ui_component = ptr_as_mut(status_bar.as_ref()).get_ui_component_mut();
     ui_component.set_size_hint_x(Some(1.0));
@@ -47,7 +52,10 @@ fn create_status_bar_widget<'a>(parent_widget: &mut WidgetDefault<'a>, color: u3
 }
 
 impl<'a> StatusBarWidget<'a> {
-    pub fn create_status_widget(parent_widget: &mut WidgetDefault<'a>, color: u32) -> StatusBarWidget<'a> {
+    pub fn create_status_widget(
+        parent_widget: &mut WidgetDefault<'a>,
+        color: u32,
+    ) -> StatusBarWidget<'a> {
         let status_layer = create_status_layer_widget(parent_widget);
         let status_bar = create_status_bar_widget(ptr_as_mut(status_layer), color);
         StatusBarWidget {

@@ -1,13 +1,13 @@
-use nalgebra::Vector2;
-use rust_engine_3d::scene::ui::{
-    HorizontalAlign, Orientation,
-    UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault
-};
-use rust_engine_3d::utilities::system::ptr_as_mut;
-use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use crate::game_module::actors::character::Character;
 use crate::game_module::game_constants::MAX_STAMINA;
 use crate::game_module::widgets::status_bar_widget::StatusBarWidget;
+use nalgebra::Vector2;
+use rust_engine_3d::scene::ui::{
+    HorizontalAlign, Orientation, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign,
+    WidgetDefault,
+};
+use rust_engine_3d::utilities::system::ptr_as_mut;
+use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 
 pub struct PlayerHud<'a> {
     pub _widget: *const WidgetDefault<'a>,
@@ -38,8 +38,14 @@ impl<'a> PlayerHud<'a> {
 
         PlayerHud {
             _widget: player_widget_ptr,
-            _hp_widget: StatusBarWidget::create_status_widget(player_widget_ptr, get_color32(255, 64, 0, 128)),
-            _stamina_widget: StatusBarWidget::create_status_widget(player_widget_ptr, get_color32(128, 128, 255, 128)),
+            _hp_widget: StatusBarWidget::create_status_widget(
+                player_widget_ptr,
+                get_color32(255, 64, 0, 128),
+            ),
+            _stamina_widget: StatusBarWidget::create_status_widget(
+                player_widget_ptr,
+                get_color32(128, 128, 255, 128),
+            ),
         }
     }
 
@@ -55,6 +61,7 @@ impl<'a> PlayerHud<'a> {
         let stamina = player._character_stats._stamina;
         let max_stamina = MAX_STAMINA;
         self._hp_widget.update_status_widget(hp, max_hp);
-        self._stamina_widget.update_status_widget(stamina, max_stamina);
+        self._stamina_widget
+            .update_status_widget(stamina, max_stamina);
     }
 }

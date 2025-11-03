@@ -1,12 +1,12 @@
 pub mod character;
-pub mod character_impl;
 pub mod character_controller;
 pub mod character_data;
 pub mod character_data_impl;
+pub mod character_impl;
 pub mod character_manager;
+pub mod item_updater;
 pub mod items;
 pub mod items_impl;
-pub mod item_updater;
 pub mod props;
 pub mod props_impl;
 pub mod weapons;

@@ -1,10 +1,13 @@
+use crate::game_module::actors::items::ItemDataType;
 use nalgebra::Vector2;
 use rust_engine_3d::resource::resource::EngineResources;
 use rust_engine_3d::scene::material_instance::MaterialInstanceData;
-use rust_engine_3d::scene::ui::{HorizontalAlign, Orientation, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault};
+use rust_engine_3d::scene::ui::{
+    HorizontalAlign, Orientation, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign,
+    WidgetDefault,
+};
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
-use crate::game_module::actors::items::ItemDataType;
 
 const ITEM_BAR_WIDGET_POS_Y_FROM_BOTTOM: f32 = 50.0;
 const MAX_ITEM_TYPE_COUNT: usize = 10;
@@ -36,7 +39,7 @@ pub struct ItemBarWidget<'a> {
 impl<'a> ItemWidget<'a> {
     pub fn create_item_widget(
         parent_widget: &mut WidgetDefault<'a>,
-        item_index: usize
+        item_index: usize,
     ) -> ItemWidget<'a> {
         let item_widget = UIManager::create_widget("item_widget", UIWidgetTypes::Default);
         let ui_component = ptr_as_mut(item_widget.as_ref()).get_ui_component_mut();
@@ -55,11 +58,16 @@ impl<'a> ItemWidget<'a> {
             _item_type: ItemDataType::None,
             _item_index: item_index,
             _item_count: 0,
-            _widget: item_widget.as_ref()
+            _widget: item_widget.as_ref(),
         }
     }
 
-    pub fn set_item_data(&mut self, item_data_type: &ItemDataType, material_instance: Option<RcRefCell<MaterialInstanceData<'a>>>, item_count: usize) {
+    pub fn set_item_data(
+        &mut self,
+        item_data_type: &ItemDataType,
+        material_instance: Option<RcRefCell<MaterialInstanceData<'a>>>,
+        item_count: usize,
+    ) {
         let ui_component = ptr_as_mut(self._widget).get_ui_component_mut();
         ui_component.set_material_instance(material_instance);
         self._item_type = *item_data_type;
@@ -103,7 +111,7 @@ impl<'a> ItemSelectionWidget<'a> {
     pub fn update_selected_item_widget(&mut self, item_index: usize) {
         self._item_index = item_index;
         let widget = ptr_as_mut(self._widget);
-        let ui_component =widget.get_ui_component_mut();
+        let ui_component = widget.get_ui_component_mut();
         if self._item_index != INVALID_ITEM_INDEX {
             ui_component.set_pos_x(ITEM_UI_SIZE * item_index as f32);
             ui_component.set_visible(true);
@@ -114,7 +122,10 @@ impl<'a> ItemSelectionWidget<'a> {
 }
 
 impl<'a> ItemBarWidget<'a> {
-    pub fn create_item_bar_widget(engine_resources: &EngineResources<'a>, parent_widget: &mut WidgetDefault<'a>) -> ItemBarWidget<'a> {
+    pub fn create_item_bar_widget(
+        engine_resources: &EngineResources<'a>,
+        parent_widget: &mut WidgetDefault<'a>,
+    ) -> ItemBarWidget<'a> {
         let layer = UIManager::create_widget("item_bar_widget", UIWidgetTypes::Default);
         let ui_component = ptr_as_mut(layer.as_ref()).get_ui_component_mut();
         ui_component.set_layout_type(UILayoutType::FloatLayout);
@@ -130,7 +141,8 @@ impl<'a> ItemBarWidget<'a> {
         ui_component.set_resizable(true);
         parent_widget.add_widget(&layer);
 
-        let selected_item_widget = UIManager::create_widget("selected_item_widget", UIWidgetTypes::Default);
+        let selected_item_widget =
+            UIManager::create_widget("selected_item_widget", UIWidgetTypes::Default);
         let ui_component = ptr_as_mut(selected_item_widget.as_ref()).get_ui_component_mut();
         ui_component.set_size(ITEM_UI_SIZE, ITEM_UI_SIZE);
         ui_component.set_color(get_color32(255, 255, 255, 0));
@@ -139,7 +151,7 @@ impl<'a> ItemBarWidget<'a> {
         ui_component.set_round(5.0);
         ui_component.set_border(2.0);
         ui_component.set_visible(false);
-        ptr_as_mut(layer.as_ref()) .add_widget(&selected_item_widget);
+        ptr_as_mut(layer.as_ref()).add_widget(&selected_item_widget);
 
         let mut item_bar_widget = ItemBarWidget {
             _engine_resources: engine_resources,
@@ -147,14 +159,15 @@ impl<'a> ItemBarWidget<'a> {
             _item_widgets: Vec::new(),
             _selected_item_widget: ItemSelectionWidget {
                 _item_index: INVALID_ITEM_INDEX,
-                _widget: selected_item_widget.as_ref()
+                _widget: selected_item_widget.as_ref(),
             },
             _item_type_count: 0,
             _max_item_type_count: MAX_ITEM_TYPE_COUNT,
         };
 
         for item_index in 0..MAX_ITEM_TYPE_COUNT {
-            let item_widget = ItemWidget::create_item_widget(ptr_as_mut(layer.as_ref()), item_index);
+            let item_widget =
+                ItemWidget::create_item_widget(ptr_as_mut(layer.as_ref()), item_index);
             item_bar_widget._item_widgets.push(item_widget);
         }
 
@@ -168,11 +181,18 @@ impl<'a> ItemBarWidget<'a> {
     }
 
     pub fn find_item_widget(&self, item_data_type: &ItemDataType) -> Option<&ItemWidget<'a>> {
-        self._item_widgets.iter().find(|item_widget| item_widget._item_type == *item_data_type)
+        self._item_widgets
+            .iter()
+            .find(|item_widget| item_widget._item_type == *item_data_type)
     }
 
-    pub fn find_item_widget_mut(&mut self, item_data_type: &ItemDataType) -> Option<&mut ItemWidget<'a>> {
-        self._item_widgets.iter_mut().find(|item_widget| item_widget._item_type == *item_data_type)
+    pub fn find_item_widget_mut(
+        &mut self,
+        item_data_type: &ItemDataType,
+    ) -> Option<&mut ItemWidget<'a>> {
+        self._item_widgets
+            .iter_mut()
+            .find(|item_widget| item_widget._item_type == *item_data_type)
     }
 
     pub fn get_item_count(&self, item_data_type: &ItemDataType) -> usize {
@@ -183,16 +203,23 @@ impl<'a> ItemBarWidget<'a> {
     }
 
     pub fn add_item(&mut self, item_data_type: &ItemDataType, item_count: usize) -> bool {
-        if *item_data_type != ItemDataType::None && self._item_type_count < self._max_item_type_count {
+        if *item_data_type != ItemDataType::None
+            && self._item_type_count < self._max_item_type_count
+        {
             if let Some(item_widget) = self.find_item_widget_mut(item_data_type) {
                 item_widget.add_item_count(item_count);
             } else {
                 for item_widget in self._item_widgets.iter_mut() {
                     if item_widget._item_type == ItemDataType::None {
-                        let material = ptr_as_ref(self._engine_resources).get_material_instance_data(
-                            ItemDataType::get_item_material_instance_name(&item_data_type)
+                        let material = ptr_as_ref(self._engine_resources)
+                            .get_material_instance_data(
+                                ItemDataType::get_item_material_instance_name(&item_data_type),
+                            );
+                        item_widget.set_item_data(
+                            item_data_type,
+                            Some(material.clone()),
+                            item_count,
                         );
-                        item_widget.set_item_data(item_data_type, Some(material.clone()), item_count);
                         self._item_type_count += 1;
                         break;
                     }
@@ -227,16 +254,22 @@ impl<'a> ItemBarWidget<'a> {
     }
 
     pub fn select_item_by_index(&mut self, item_index: usize) {
-        if item_index < self._item_widgets.len() && self._item_widgets[item_index]._item_type != ItemDataType::None {
-            self._selected_item_widget.update_selected_item_widget(item_index);
+        if item_index < self._item_widgets.len()
+            && self._item_widgets[item_index]._item_type != ItemDataType::None
+        {
+            self._selected_item_widget
+                .update_selected_item_widget(item_index);
         } else {
-            self._selected_item_widget.update_selected_item_widget(INVALID_ITEM_INDEX);
+            self._selected_item_widget
+                .update_selected_item_widget(INVALID_ITEM_INDEX);
         }
     }
 
     pub fn select_next_item(&mut self) {
         if 0 < self._item_type_count {
-            let start_index = if self._selected_item_widget.get_item_index() == INVALID_ITEM_INDEX || self._selected_item_widget.get_item_index() == (self._item_widgets.len() - 1) {
+            let start_index = if self._selected_item_widget.get_item_index() == INVALID_ITEM_INDEX
+                || self._selected_item_widget.get_item_index() == (self._item_widgets.len() - 1)
+            {
                 0
             } else {
                 self._selected_item_widget.get_item_index() + 1
@@ -249,18 +282,22 @@ impl<'a> ItemBarWidget<'a> {
                 }
 
                 if self._item_widgets[item_index]._item_type != ItemDataType::None {
-                    self._selected_item_widget.update_selected_item_widget(item_index);
+                    self._selected_item_widget
+                        .update_selected_item_widget(item_index);
                     break;
                 }
             }
         } else {
-            self._selected_item_widget.update_selected_item_widget(INVALID_ITEM_INDEX);
+            self._selected_item_widget
+                .update_selected_item_widget(INVALID_ITEM_INDEX);
         }
     }
 
     pub fn select_previous_item(&mut self) {
         if 0 < self._item_type_count {
-            let start_index = if self._selected_item_widget.get_item_index() == INVALID_ITEM_INDEX || 0 == self._selected_item_widget.get_item_index() {
+            let start_index = if self._selected_item_widget.get_item_index() == INVALID_ITEM_INDEX
+                || 0 == self._selected_item_widget.get_item_index()
+            {
                 self._item_widgets.len() - 1
             } else {
                 self._selected_item_widget.get_item_index() - 1
@@ -274,18 +311,22 @@ impl<'a> ItemBarWidget<'a> {
                 };
 
                 if self._item_widgets[item_index]._item_type != ItemDataType::None {
-                    self._selected_item_widget.update_selected_item_widget(item_index);
+                    self._selected_item_widget
+                        .update_selected_item_widget(item_index);
                     break;
                 }
             }
         } else {
-            self._selected_item_widget.update_selected_item_widget(INVALID_ITEM_INDEX);
+            self._selected_item_widget
+                .update_selected_item_widget(INVALID_ITEM_INDEX);
         }
     }
 
     pub fn changed_window_size(&mut self, window_size: &Vector2<i32>) {
         let ui_component = ptr_as_mut(self._layer).get_ui_component_mut();
         ui_component.set_center_hint_x(Some(0.5));
-        ui_component.set_pos_y(window_size.y as f32 - ui_component.get_size_y() - ITEM_BAR_WIDGET_POS_Y_FROM_BOTTOM);
+        ui_component.set_pos_y(
+            window_size.y as f32 - ui_component.get_size_y() - ITEM_BAR_WIDGET_POS_Y_FROM_BOTTOM,
+        );
     }
 }

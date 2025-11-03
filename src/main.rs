@@ -2,8 +2,8 @@ pub mod application;
 pub mod game_module;
 pub mod render_pass;
 
-use std::env;
 use rust_engine_3d::constants::DEVELOPMENT;
+use std::env;
 
 pub fn main() {
     unsafe {

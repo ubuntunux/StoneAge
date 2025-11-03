@@ -1,22 +1,26 @@
 use std::collections::HashMap;
 
+use crate::application::application::Application;
+use crate::game_module::actors::character::{Character, CharacterCreateInfo};
+use crate::game_module::actors::character_manager::CharacterManager;
+use crate::game_module::actors::items::{ItemCreateInfo, ItemManager};
+use crate::game_module::actors::props::{PropCreateInfo, PropManager};
+use crate::game_module::game_constants::{
+    TEMPERATURE_MAX, TEMPERATURE_MIN, TIME_OF_DAY_SPEED, TIME_OF_MORNING,
+};
+use crate::game_module::game_resource::GameResources;
+use crate::game_module::scenario::scenario::{create_scenario, ScenarioBase};
 use nalgebra::{Vector2, Vector3};
 use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop, AudioManager};
 use rust_engine_3d::begin_block;
 use rust_engine_3d::core::engine_core::EngineCore;
 use rust_engine_3d::effect::effect_manager::EffectManager;
-use rust_engine_3d::scene::scene_manager::{RenderObjectCreateInfoMap, SceneDataCreateInfo, SceneManager};
+use rust_engine_3d::scene::scene_manager::{
+    RenderObjectCreateInfoMap, SceneDataCreateInfo, SceneManager,
+};
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use serde::{Deserialize, Serialize};
-use crate::application::application::Application;
-use crate::game_module::actors::character::{Character, CharacterCreateInfo};
-use crate::game_module::actors::character_manager::{CharacterManager};
-use crate::game_module::actors::items::{ItemCreateInfo, ItemManager};
-use crate::game_module::actors::props::{PropCreateInfo, PropManager};
-use crate::game_module::scenario::scenario::{create_scenario, ScenarioBase};
-use crate::game_module::game_constants::{TEMPERATURE_MAX, TEMPERATURE_MIN, TIME_OF_DAY_SPEED, TIME_OF_MORNING};
-use crate::game_module::game_resource::GameResources;
 
 pub type CharacterCreateInfoMap = HashMap<String, CharacterCreateInfo>;
 pub type ItemCreateInfoMap = HashMap<String, ItemCreateInfo>;
@@ -29,7 +33,7 @@ pub enum GameSceneState {
     None,
     Loading,
     PlayGame,
-    PlayingScenario
+    PlayingScenario,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
@@ -40,7 +44,7 @@ pub struct GameSceneDataCreateInfo {
     pub _player: CharacterCreateInfoMap,
     pub _props: PropCreateInfoMap,
     pub _scene: SceneDataCreateInfo,
-    pub _terrain: RenderObjectCreateInfoMap
+    pub _terrain: RenderObjectCreateInfoMap,
 }
 
 pub struct GameSceneManager<'a> {
@@ -59,7 +63,7 @@ pub struct GameSceneManager<'a> {
     pub _time_of_day: f32,
     pub _temperature: f32,
     pub _date: u32,
-    pub _game_scene_state: GameSceneState
+    pub _game_scene_state: GameSceneState,
 }
 
 impl<'a> GameSceneManager<'a> {
@@ -138,18 +142,23 @@ impl<'a> GameSceneManager<'a> {
         self._audio_manager = engine_core.get_audio_manager();
         self._scene_manager = engine_core.get_scene_manager();
         self._effect_manager = engine_core.get_effect_manager();
-        engine_core.get_scene_manager_mut().initialize_scene_manager(
-            engine_core.get_renderer_context(),
-            engine_core.get_audio_manager(),
-            engine_core.get_effect_manager(),
-            engine_core.get_engine_resources(),
-            window_size,
-        );
+        engine_core
+            .get_scene_manager_mut()
+            .initialize_scene_manager(
+                engine_core.get_renderer_context(),
+                engine_core.get_audio_manager(),
+                engine_core.get_effect_manager(),
+                engine_core.get_engine_resources(),
+                window_size,
+            );
 
         self._game_resources = application.get_game_resources();
-        self._character_manager.initialize_character_manager(engine_core, application);
-        self._item_manager.initialize_item_manager(engine_core, application);
-        self._prop_manager.initialize_prop_manager(engine_core, application);
+        self._character_manager
+            .initialize_character_manager(engine_core, application);
+        self._item_manager
+            .initialize_item_manager(engine_core, application);
+        self._prop_manager
+            .initialize_prop_manager(engine_core, application);
     }
 
     pub fn play_bgm(&mut self, audio_name: &str, volume: Option<f32>) {
@@ -157,7 +166,8 @@ impl<'a> GameSceneManager<'a> {
     }
 
     pub fn play_ambient_sound(&mut self, audio_name: &str, volume: Option<f32>) {
-        self._ambient_sound = ptr_as_mut(self._audio_manager).play_audio_bank(audio_name, AudioLoop::LOOP, volume);
+        self._ambient_sound =
+            ptr_as_mut(self._audio_manager).play_audio_bank(audio_name, AudioLoop::LOOP, volume);
     }
 
     pub fn stop_bgm(&self) {
@@ -195,13 +205,24 @@ impl<'a> GameSceneManager<'a> {
     pub fn open_scenario_data(&mut self, scenario_data_name: &str) {
         log::info!("open_scenario_data: {:?}", scenario_data_name);
         let game_resources = ptr_as_mut(self._game_resources);
-        let scenario_data_create_info_refcell = game_resources.get_scenario_data(scenario_data_name);
+        let scenario_data_create_info_refcell =
+            game_resources.get_scenario_data(scenario_data_name);
         let scenario_data_create_info = scenario_data_create_info_refcell.borrow();
         let scenario = create_scenario(self, scenario_data_name, &scenario_data_create_info);
-        self._scenario_map.insert(String::from(scenario_data_name), scenario.clone());
+        self._scenario_map
+            .insert(String::from(scenario_data_name), scenario.clone());
 
         // open game scene data
-        self.open_game_scene_data(scenario_data_create_info._game_scenes.values().last().as_ref().unwrap()._game_scene_data_name.as_str());
+        self.open_game_scene_data(
+            scenario_data_create_info
+                ._game_scenes
+                .values()
+                .last()
+                .as_ref()
+                .unwrap()
+                ._game_scene_data_name
+                .as_str(),
+        );
 
         // create items
         for (_item_data_name, item_create_info) in scenario_data_create_info._items.iter() {
@@ -215,13 +236,16 @@ impl<'a> GameSceneManager<'a> {
 
         // create player
         for (character_name, character_create_info) in scenario_data_create_info._player.iter() {
-            self._character_manager.create_character(character_name, character_create_info, true);
+            self._character_manager
+                .create_character(character_name, character_create_info, true);
             self._spawn_point = character_create_info._position;
         }
 
         // create npc
-        for (character_name, character_create_info) in scenario_data_create_info._characters.iter() {
-            self._character_manager.create_character(character_name, character_create_info, false);
+        for (character_name, character_create_info) in scenario_data_create_info._characters.iter()
+        {
+            self._character_manager
+                .create_character(character_name, character_create_info, false);
         }
     }
 
@@ -278,13 +302,21 @@ impl<'a> GameSceneManager<'a> {
 
             // create player
             for (character_name, character_create_info) in game_scene_data_ref._player.iter() {
-                self._character_manager.create_character(character_name, character_create_info, true);
+                self._character_manager.create_character(
+                    character_name,
+                    character_create_info,
+                    true,
+                );
                 self._spawn_point = character_create_info._position;
             }
 
             // create npc
             for (character_name, character_create_info) in game_scene_data_ref._characters.iter() {
-                self._character_manager.create_character(character_name, character_create_info, false);
+                self._character_manager.create_character(
+                    character_name,
+                    character_create_info,
+                    false,
+                );
             }
         }
     }
@@ -316,13 +348,18 @@ impl<'a> GameSceneManager<'a> {
             self._time_of_day = self._time_of_day % 24.0;
             self._date += 1;
         }
-        
+
         let temperature_ratio = 1.0 - (self._time_of_day - 12.0) / 12.0;
         self._temperature = math::lerp(TEMPERATURE_MIN, TEMPERATURE_MAX, temperature_ratio);
-        begin_block!("MainLight"); {
+        begin_block!("MainLight");
+        {
             let mut main_light = self.get_scene_manager().get_main_light().borrow_mut();
             let pitch_ratio = (self._time_of_day - 12.0) / 12.0;
-            main_light._transform_object.set_pitch(math::lerp(std::f32::consts::PI * 0.5, -std::f32::consts::PI * 0.5, pitch_ratio));
+            main_light._transform_object.set_pitch(math::lerp(
+                std::f32::consts::PI * 0.5,
+                -std::f32::consts::PI * 0.5,
+                pitch_ratio,
+            ));
         }
     }
 
@@ -360,14 +397,13 @@ impl<'a> GameSceneManager<'a> {
 
     pub fn update_game_scene_manager(&mut self, any_key_hold: bool, delta_time: f64) {
         match self._game_scene_state {
-            GameSceneState::None => {
-            },
+            GameSceneState::None => {}
             GameSceneState::Loading => {
                 if self.get_scene_manager().is_load_complete() {
                     self.spawn_game_object_data();
                     self.set_game_scene_state(GameSceneState::PlayGame);
                 }
-            },
+            }
             GameSceneState::PlayGame => {
                 if self.has_scenario() {
                     self.set_game_scene_state(GameSceneState::PlayingScenario);
@@ -376,13 +412,16 @@ impl<'a> GameSceneManager<'a> {
                 self._prop_manager.update_prop_manager(delta_time);
                 self._item_manager.update_item_manager(delta_time);
                 self._character_manager.update_character_manager(delta_time);
-            },
+            }
             GameSceneState::PlayingScenario => {
                 if self.has_scenario() {
                     self._scenario_map.values_mut().for_each(|scenario| {
-                        scenario.borrow_mut().update_game_scenario(any_key_hold, delta_time)
+                        scenario
+                            .borrow_mut()
+                            .update_game_scenario(any_key_hold, delta_time)
                     });
-                    self._scenario_map.retain(|_key, value| value.borrow().is_end_of_scenario() == false)
+                    self._scenario_map
+                        .retain(|_key, value| value.borrow().is_end_of_scenario() == false)
                 } else {
                     self.set_game_scene_state(GameSceneState::PlayGame);
                 }
@@ -391,7 +430,7 @@ impl<'a> GameSceneManager<'a> {
                 self._prop_manager.update_prop_manager(delta_time);
                 self._item_manager.update_item_manager(delta_time);
                 self._character_manager.update_character_manager(delta_time);
-            },
+            }
         }
     }
 }

@@ -1,10 +1,14 @@
 use ash::vk;
-use serde::{Deserialize, Serialize};
 use rust_engine_3d::render_pass::render_object::common;
-use rust_engine_3d::renderer::push_constants::{PushConstant, PushConstantName, PushConstantParameter, PushConstant_RenderObjectBase};
+use rust_engine_3d::renderer::push_constants::{
+    PushConstant, PushConstantName, PushConstantParameter, PushConstant_RenderObjectBase,
+};
 use rust_engine_3d::renderer::renderer_data::RendererData;
-use rust_engine_3d::vulkan_context::descriptor::{DescriptorDataCreateInfo, DescriptorResourceType};
+use rust_engine_3d::vulkan_context::descriptor::{
+    DescriptorDataCreateInfo, DescriptorResourceType,
+};
 use rust_engine_3d::vulkan_context::render_pass::RenderPassDataCreateInfo;
+use serde::{Deserialize, Serialize};
 
 #[repr(C)]
 #[allow(non_camel_case_types)]
@@ -91,7 +95,9 @@ impl PushConstant for PushConstant_RenderLandscape {
                 self.layer4_tiling = *value;
             }
         } else {
-            return self.push_constant_base.set_push_constant_parameter(key, value);
+            return self
+                .push_constant_base
+                .set_push_constant_parameter(key, value);
         }
         true
     }
@@ -207,11 +213,13 @@ pub fn get_descriptor_data_create_infos() -> Vec<DescriptorDataCreateInfo> {
             _descriptor_resource_type: DescriptorResourceType::Texture,
             _descriptor_shader_stage: vk::ShaderStageFlags::FRAGMENT,
             ..Default::default()
-        }
+        },
     ]
 }
 
-pub fn get_render_pass_data_create_infos(renderer_data: &RendererData) -> Vec<RenderPassDataCreateInfo> {
+pub fn get_render_pass_data_create_infos(
+    renderer_data: &RendererData,
+) -> Vec<RenderPassDataCreateInfo> {
     common::get_render_pass_data_create_infos(
         renderer_data,
         vk::CullModeFlags::BACK,
@@ -219,6 +227,6 @@ pub fn get_render_pass_data_create_infos(renderer_data: &RendererData) -> Vec<Re
         "render_landscape/render_landscape.vert",
         "render_landscape/render_landscape.frag",
         &get_push_constant_data(),
-        &get_descriptor_data_create_infos()
+        &get_descriptor_data_create_infos(),
     )
 }

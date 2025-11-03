@@ -16,7 +16,7 @@ pub type WeaponMap<'a> = HashMap<WeaponID, RcRefCell<Weapon<'a>>>;
 #[derive(Serialize, Deserialize, Hash, Eq, Clone, Copy, Debug, EnumIter, Display, PartialEq)]
 pub enum WeaponDataType {
     None,
-    WoodenClub
+    WoodenClub,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
@@ -25,13 +25,13 @@ pub struct WeaponDataCreateInfo {
     pub _damage: f32,
     pub _model_data_name: String,
     pub _name: String,
-    pub _weapon_data_type: WeaponDataType
+    pub _weapon_data_type: WeaponDataType,
 }
 
 pub struct WeaponData<'a> {
     pub _damage: f32,
     pub _model_data: RcRefCell<ModelData<'a>>,
-    pub _weapon_data_type: WeaponDataType
+    pub _weapon_data_type: WeaponDataType,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
@@ -41,12 +41,12 @@ pub struct WeaponCreateInfo {
     pub _weapon_data_name: String,
     pub _position: Vector3<f32>,
     pub _rotation: Vector3<f32>,
-    pub _scale: Vector3<f32>
+    pub _scale: Vector3<f32>,
 }
 
 pub struct Weapon<'a> {
     pub _weapon_socket: RcRefCell<Socket>,
     pub _weapon_data: RcRefCell<WeaponData<'a>>,
     pub _render_object: RcRefCell<RenderObjectData<'a>>,
-    pub _transform: Matrix4<f32>
+    pub _transform: Matrix4<f32>,
 }

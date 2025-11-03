@@ -1,5 +1,9 @@
 use std::collections::HashMap;
 
+use crate::game_module::actors::item_updater::ItemUpdaterBase;
+use crate::game_module::game_client::GameClient;
+use crate::game_module::game_resource::GameResources;
+use crate::game_module::game_scene_manager::GameSceneManager;
 use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::AudioManager;
 use rust_engine_3d::scene::render_object::RenderObjectData;
@@ -7,10 +11,6 @@ use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::system::RcRefCell;
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumIter};
-use crate::game_module::actors::item_updater::ItemUpdaterBase;
-use crate::game_module::game_client::GameClient;
-use crate::game_module::game_resource::GameResources;
-use crate::game_module::game_scene_manager::GameSceneManager;
 
 #[derive(Copy, Clone, Debug, Default, Hash, Eq, PartialEq)]
 pub struct ItemID(pub u64);
@@ -23,7 +23,7 @@ pub enum ItemDataType {
     Meat,
     Rock,
     Wood,
-    SpiritBall
+    SpiritBall,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]

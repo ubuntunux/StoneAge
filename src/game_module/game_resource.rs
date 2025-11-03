@@ -2,16 +2,19 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 
-use rust_engine_3d::resource::resource::{APPLICATION_RESOURCE_PATH, EngineResources, get_unique_resource_name, ResourceDataContainer, get_resource_data_must};
-use rust_engine_3d::utilities::system::{self, newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
-use serde_json::{self};
-use crate::game_module::actors::weapons::WeaponDataCreateInfo;
 use crate::game_module::actors::character_data::{CharacterData, CharacterDataCreateInfo};
 use crate::game_module::actors::items::ItemData;
 use crate::game_module::actors::props::PropData;
 use crate::game_module::actors::weapons::WeaponData;
+use crate::game_module::actors::weapons::WeaponDataCreateInfo;
 use crate::game_module::game_scene_manager::GameSceneDataCreateInfo;
-use crate::game_module::scenario::scenario::{ScenarioDataCreateInfo};
+use crate::game_module::scenario::scenario::ScenarioDataCreateInfo;
+use rust_engine_3d::resource::resource::{
+    get_resource_data_must, get_unique_resource_name, EngineResources, ResourceDataContainer,
+    APPLICATION_RESOURCE_PATH,
+};
+use rust_engine_3d::utilities::system::{self, newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
+use serde_json::{self};
 
 pub const GAME_DATA_DIRECTORY: &str = "game_data";
 pub const CHARACTER_DATA_FILE_PATH: &str = "game_data/characters";
@@ -62,7 +65,8 @@ impl<'a> GameResources<'a> {
         ptr_as_mut(self._engine_resources)
     }
     pub fn collect_resources(&self, dir: &Path, extensions: &[&str]) -> Vec<PathBuf> {
-        self.get_engine_resources().collect_resources(dir, extensions)
+        self.get_engine_resources()
+            .collect_resources(dir, extensions)
     }
     pub fn initialize_game_resources(&mut self, engine_resources: &EngineResources<'a>) {
         self._engine_resources = engine_resources;
@@ -72,7 +76,6 @@ impl<'a> GameResources<'a> {
         self.load_game_data();
         self.load_game_scene_data();
         self.load_scenario_data();
-
     }
     pub fn destroy_game_resources(&mut self) {
         self.unload_scenario_data();
@@ -85,12 +88,21 @@ impl<'a> GameResources<'a> {
         log::info!("    load_scenario_data");
         let game_data_directory = PathBuf::from(GAME_DATA_DIRECTORY);
         let scenario_directory = PathBuf::from(SCENARIO_FILE_PATH);
-        let scenario_data_files: Vec<PathBuf> = self.collect_resources(&scenario_directory, &[EXT_GAME_DATA]);
+        let scenario_data_files: Vec<PathBuf> =
+            self.collect_resources(&scenario_directory, &[EXT_GAME_DATA]);
         for scenario_data_file in scenario_data_files {
-            let scenario_data_name = get_unique_resource_name(&self._scenario_data_create_info_map, &game_data_directory, &scenario_data_file);
+            let scenario_data_name = get_unique_resource_name(
+                &self._scenario_data_create_info_map,
+                &game_data_directory,
+                &scenario_data_file,
+            );
             let loaded_contents = system::load(&scenario_data_file);
-            let scenario_data_create_info: ScenarioDataCreateInfo = serde_json::from_reader(loaded_contents).expect("Failed to deserialize.");
-            self._scenario_data_create_info_map.insert(scenario_data_name.clone(), newRcRefCell(scenario_data_create_info));
+            let scenario_data_create_info: ScenarioDataCreateInfo =
+                serde_json::from_reader(loaded_contents).expect("Failed to deserialize.");
+            self._scenario_data_create_info_map.insert(
+                scenario_data_name.clone(),
+                newRcRefCell(scenario_data_create_info),
+            );
         }
     }
 
@@ -99,11 +111,17 @@ impl<'a> GameResources<'a> {
     }
 
     pub fn has_scenario_data(&self, resource_name: &str) -> bool {
-        self._scenario_data_create_info_map.get(resource_name).is_some()
+        self._scenario_data_create_info_map
+            .get(resource_name)
+            .is_some()
     }
 
     pub fn get_scenario_data(&self, resource_name: &str) -> &RcRefCell<ScenarioDataCreateInfo> {
-        get_resource_data_must("scenario_data", &self._scenario_data_create_info_map, resource_name)
+        get_resource_data_must(
+            "scenario_data",
+            &self._scenario_data_create_info_map,
+            resource_name,
+        )
     }
 
     // game scene data
@@ -111,12 +129,21 @@ impl<'a> GameResources<'a> {
         log::info!("    load_game_scene_data");
         let game_data_directory = PathBuf::from(GAME_DATA_DIRECTORY);
         let game_scene_directory = PathBuf::from(GAME_SCENE_FILE_PATH);
-        let game_scene_data_files: Vec<PathBuf> = self.collect_resources(&game_scene_directory, &[EXT_GAME_DATA]);
+        let game_scene_data_files: Vec<PathBuf> =
+            self.collect_resources(&game_scene_directory, &[EXT_GAME_DATA]);
         for game_scene_data_file in game_scene_data_files {
-            let game_scene_data_name = get_unique_resource_name(&self._game_scene_data_create_info_map, &game_data_directory, &game_scene_data_file);
+            let game_scene_data_name = get_unique_resource_name(
+                &self._game_scene_data_create_info_map,
+                &game_data_directory,
+                &game_scene_data_file,
+            );
             let loaded_contents = system::load(&game_scene_data_file);
-            let game_scene_data_create_info: GameSceneDataCreateInfo = serde_json::from_reader(loaded_contents).expect("Failed to deserialize.");
-            self._game_scene_data_create_info_map.insert(game_scene_data_name.clone(), newRcRefCell(game_scene_data_create_info));
+            let game_scene_data_create_info: GameSceneDataCreateInfo =
+                serde_json::from_reader(loaded_contents).expect("Failed to deserialize.");
+            self._game_scene_data_create_info_map.insert(
+                game_scene_data_name.clone(),
+                newRcRefCell(game_scene_data_create_info),
+            );
         }
     }
 
@@ -124,25 +151,42 @@ impl<'a> GameResources<'a> {
         self._game_scene_data_create_info_map.clear();
     }
 
-    pub fn save_game_scene_data(&mut self, game_scene_data_name: &str, game_scene_data_create_info: &GameSceneDataCreateInfo) {
+    pub fn save_game_scene_data(
+        &mut self,
+        game_scene_data_name: &str,
+        game_scene_data_create_info: &GameSceneDataCreateInfo,
+    ) {
         let mut game_scene_data_filepath = PathBuf::from(APPLICATION_RESOURCE_PATH);
         game_scene_data_filepath.push(GAME_SCENE_FILE_PATH);
         game_scene_data_filepath.push(game_scene_data_name);
         game_scene_data_filepath.set_extension(EXT_GAME_DATA);
-        let mut write_file = File::create(&game_scene_data_filepath).expect("Failed to create file");
-        let mut write_contents: String = serde_json::to_string(&game_scene_data_create_info).expect("Failed to serialize.");
+        let mut write_file =
+            File::create(&game_scene_data_filepath).expect("Failed to create file");
+        let mut write_contents: String =
+            serde_json::to_string(&game_scene_data_create_info).expect("Failed to serialize.");
         write_contents = write_contents.replace(",\"", ",\n\"");
-        write_file.write(write_contents.as_bytes()).expect("Failed to write");
+        write_file
+            .write(write_contents.as_bytes())
+            .expect("Failed to write");
 
-        self._game_scene_data_create_info_map.insert(String::from(game_scene_data_name), newRcRefCell(game_scene_data_create_info.clone()));
+        self._game_scene_data_create_info_map.insert(
+            String::from(game_scene_data_name),
+            newRcRefCell(game_scene_data_create_info.clone()),
+        );
     }
 
     pub fn has_game_scene_data(&self, resource_name: &str) -> bool {
-        self._game_scene_data_create_info_map.get(resource_name).is_some()
+        self._game_scene_data_create_info_map
+            .get(resource_name)
+            .is_some()
     }
 
     pub fn get_game_scene_data(&self, resource_name: &str) -> &RcRefCell<GameSceneDataCreateInfo> {
-        get_resource_data_must("game_scene_data", &self._game_scene_data_create_info_map, resource_name)
+        get_resource_data_must(
+            "game_scene_data",
+            &self._game_scene_data_create_info_map,
+            resource_name,
+        )
     }
 
     // Game Data
@@ -167,12 +211,19 @@ impl<'a> GameResources<'a> {
         let prop_data_directory = PathBuf::from(PROP_DATA_FILE_PATH);
 
         // load_prop_data
-        let game_data_files: Vec<PathBuf> = self.collect_resources(&prop_data_directory, &[EXT_GAME_DATA]);
+        let game_data_files: Vec<PathBuf> =
+            self.collect_resources(&prop_data_directory, &[EXT_GAME_DATA]);
         for game_data_file in game_data_files {
-            let prop_data_name = get_unique_resource_name(&self._prop_data_map, &game_data_directory, &game_data_file);
+            let prop_data_name = get_unique_resource_name(
+                &self._prop_data_map,
+                &game_data_directory,
+                &game_data_file,
+            );
             let loaded_contents = system::load(&game_data_file);
-            let prop_data: PropData = serde_json::from_reader(loaded_contents).expect("Failed to deserialize.");
-            self._prop_data_map.insert(prop_data_name.clone(), newRcRefCell(prop_data));
+            let prop_data: PropData =
+                serde_json::from_reader(loaded_contents).expect("Failed to deserialize.");
+            self._prop_data_map
+                .insert(prop_data_name.clone(), newRcRefCell(prop_data));
         }
     }
 
@@ -194,14 +245,24 @@ impl<'a> GameResources<'a> {
         let weapon_data_directory = PathBuf::from(WEAPON_DATA_FILE_PATH);
 
         // load_weapon_data
-        let game_data_files: Vec<PathBuf> = self.collect_resources(&weapon_data_directory, &[EXT_GAME_DATA]);
+        let game_data_files: Vec<PathBuf> =
+            self.collect_resources(&weapon_data_directory, &[EXT_GAME_DATA]);
         for game_data_file in game_data_files {
-            let weapon_data_name = get_unique_resource_name(&self._weapon_data_map, &game_data_directory, &game_data_file);
+            let weapon_data_name = get_unique_resource_name(
+                &self._weapon_data_map,
+                &game_data_directory,
+                &game_data_file,
+            );
             let loaded_contents = system::load(&game_data_file);
-            let weapon_data_create_info: WeaponDataCreateInfo = serde_json::from_reader(loaded_contents).expect("Failed to deserialize.");
-            let weapon_model_data = self.get_engine_resources().get_model_data(&weapon_data_create_info._model_data_name);
-            let weapon_data = WeaponData::create_weapon_data(&weapon_data_create_info, weapon_model_data);
-            self._weapon_data_map.insert(weapon_data_name.clone(), newRcRefCell(weapon_data));
+            let weapon_data_create_info: WeaponDataCreateInfo =
+                serde_json::from_reader(loaded_contents).expect("Failed to deserialize.");
+            let weapon_model_data = self
+                .get_engine_resources()
+                .get_model_data(&weapon_data_create_info._model_data_name);
+            let weapon_data =
+                WeaponData::create_weapon_data(&weapon_data_create_info, weapon_model_data);
+            self._weapon_data_map
+                .insert(weapon_data_name.clone(), newRcRefCell(weapon_data));
         }
     }
 
@@ -223,13 +284,21 @@ impl<'a> GameResources<'a> {
         let character_data_directory = PathBuf::from(CHARACTER_DATA_FILE_PATH);
 
         // load_character_data
-        let game_data_files: Vec<PathBuf> = self.collect_resources(&character_data_directory, &[EXT_GAME_DATA]);
+        let game_data_files: Vec<PathBuf> =
+            self.collect_resources(&character_data_directory, &[EXT_GAME_DATA]);
         for game_data_file in game_data_files {
-            let character_data_name = get_unique_resource_name(&self._character_data_map, &game_data_directory, &game_data_file);
+            let character_data_name = get_unique_resource_name(
+                &self._character_data_map,
+                &game_data_directory,
+                &game_data_file,
+            );
             let loaded_contents = system::load(&game_data_file);
-            let character_data_create_info: CharacterDataCreateInfo = serde_json::from_reader(loaded_contents).expect("Failed to deserialize.");
-            let character_data = CharacterData::create_character_data(&character_data_create_info, self);
-            self._character_data_map.insert(character_data_name.clone(), newRcRefCell(character_data));
+            let character_data_create_info: CharacterDataCreateInfo =
+                serde_json::from_reader(loaded_contents).expect("Failed to deserialize.");
+            let character_data =
+                CharacterData::create_character_data(&character_data_create_info, self);
+            self._character_data_map
+                .insert(character_data_name.clone(), newRcRefCell(character_data));
         }
     }
 
@@ -251,12 +320,19 @@ impl<'a> GameResources<'a> {
         let item_data_directory = PathBuf::from(ITEM_DATA_FILE_PATH);
 
         // load_item_data
-        let game_data_files: Vec<PathBuf> = self.collect_resources(&item_data_directory, &[EXT_GAME_DATA]);
+        let game_data_files: Vec<PathBuf> =
+            self.collect_resources(&item_data_directory, &[EXT_GAME_DATA]);
         for game_data_file in game_data_files {
-            let item_data_name = get_unique_resource_name(&self._item_data_map, &game_data_directory, &game_data_file);
+            let item_data_name = get_unique_resource_name(
+                &self._item_data_map,
+                &game_data_directory,
+                &game_data_file,
+            );
             let loaded_contents = system::load(&game_data_file);
-            let item_data: ItemData = serde_json::from_reader(loaded_contents).expect("Failed to deserialize.");
-            self._item_data_map.insert(item_data_name.clone(), newRcRefCell(item_data));
+            let item_data: ItemData =
+                serde_json::from_reader(loaded_contents).expect("Failed to deserialize.");
+            self._item_data_map
+                .insert(item_data_name.clone(), newRcRefCell(item_data));
         }
     }
 

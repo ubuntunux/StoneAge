@@ -1,11 +1,11 @@
+use crate::game_module::game_scene_manager::GameSceneManager;
 use nalgebra::Vector2;
 use rust_engine_3d::scene::ui::{
-    HorizontalAlign, Orientation,
-    UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault
+    HorizontalAlign, Orientation, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign,
+    WidgetDefault,
 };
 use rust_engine_3d::utilities::system::ptr_as_mut;
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
-use crate::game_module::game_scene_manager::GameSceneManager;
 
 pub struct TimeOfDayWidget<'a> {
     pub _widget: *const WidgetDefault<'a>,
@@ -17,7 +17,8 @@ pub struct TimeOfDayWidget<'a> {
 // TimeOfDayWidget
 impl<'a> TimeOfDayWidget<'a> {
     pub fn create_time_of_day_widget(root_widget: &mut WidgetDefault<'a>) -> TimeOfDayWidget<'a> {
-        let time_of_day_widget = UIManager::create_widget("time_of_day_widget", UIWidgetTypes::Default);
+        let time_of_day_widget =
+            UIManager::create_widget("time_of_day_widget", UIWidgetTypes::Default);
         let time_of_day_widget_ptr = ptr_as_mut(time_of_day_widget.as_ref());
         let ui_component = ptr_as_mut(time_of_day_widget.as_ref()).get_ui_component_mut();
         ui_component.set_size(250.0, 150.0);
@@ -91,6 +92,7 @@ impl<'a> TimeOfDayWidget<'a> {
         time_ui_component.set_text(format!("{:02}:{:02}", time, minute).as_str());
 
         let temperature_ui_component = ptr_as_mut(self._temperature).get_ui_component_mut();
-        temperature_ui_component.set_text(format!("Temperature {:.01}", game_scene_manager.get_temperature()).as_str());
+        temperature_ui_component
+            .set_text(format!("Temperature {:.01}", game_scene_manager.get_temperature()).as_str());
     }
 }
