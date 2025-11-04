@@ -1,5 +1,4 @@
 use crate::game_module::actors::character::Character;
-use crate::game_module::game_constants::MAX_STAMINA;
 use crate::game_module::widgets::status_bar_widget::StatusBarWidget;
 use nalgebra::Vector2;
 use rust_engine_3d::scene::ui::{
@@ -55,12 +54,18 @@ impl<'a> PlayerHud<'a> {
         ui_component.set_pos_y(window_size.y as f32 - ui_component.get_size_y() - 50.0);
     }
 
-    pub fn update_status_widget(&mut self, player: &Character<'a>) {
-        let hp = player._character_stats.get_hp() as f32;
-        let max_hp = player.get_character_data()._stat_data._max_hp as f32;
-        let stamina = player._character_stats._stamina;
-        let max_stamina = MAX_STAMINA;
-        self._hp_widget.update_status_widget(hp, max_hp);
-        self._stamina_widget.update_status_widget(stamina, max_stamina);
+    pub fn update_status_widget(&mut self, player: &Character<'a>, delta_time: f64) {
+        self._hp_widget.update_status_widget(
+            player.get_stats().get_hp() as f32,
+            player.get_stats().get_max_hp() as f32,
+            player.get_stats().get_max_hp_data() as f32,
+            delta_time
+        );
+        self._stamina_widget.update_status_widget(
+            player.get_stats().get_stamina(),
+            player.get_stats().get_max_stamina(),
+            player.get_stats().get_max_stamina_data(),
+            delta_time
+        );
     }
 }

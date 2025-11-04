@@ -273,7 +273,7 @@ impl CharacterController {
 
         // jump
         if self._is_jump_start {
-            let not_enough_stamina = owner._character_stats._stamina < 0.0;
+            let not_enough_stamina = owner.get_stats().get_stamina() < 0.0;
             let jump_speed =
                 character_data._stat_data._jump_speed * if not_enough_stamina { 0.5 } else { 1.0 };
             self._velocity.y = jump_speed;

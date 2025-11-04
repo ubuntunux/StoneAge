@@ -66,7 +66,7 @@ impl<'a> TargetStatusWidget<'a> {
         ui_component.set_center_x(window_size.x as f32 * 0.5);
         ui_component.set_pos_y(50.0);
     }
-    pub fn update_status_widget(&mut self, target: &Character<'a>) {
+    pub fn update_status_widget(&mut self, target: &Character<'a>, delta_time: f64) {
         if self._target != target {
             ptr_as_mut(self._widget)
                 .get_ui_component_mut()
@@ -77,9 +77,10 @@ impl<'a> TargetStatusWidget<'a> {
                 .set_text(name.as_str());
             self._target = target;
         }
-        let hp = target._character_stats.get_hp() as f32;
-        let max_hp = target.get_character_data()._stat_data._max_hp as f32;
-        self._hp_widget.update_status_widget(hp, max_hp);
+        let hp = target.get_stats().get_hp() as f32;
+        let max_hp = target.get_stats().get_max_hp() as f32;
+        let max_hp_data = target.get_character_data()._stat_data._max_hp as f32;
+        self._hp_widget.update_status_widget(hp, max_hp, max_hp_data, delta_time);
     }
     pub fn fade_out_status_widget(&mut self) {
         ptr_as_mut(self._widget)

@@ -43,7 +43,8 @@ pub const HIT_VELOCITY_DECAY: f32 = 200.0;
 pub const ATTACK_DELAY: f32 = 0.0;
 pub const PICKUP_EVENT_TIME: f32 = 0.1;
 
-// stamina
+// stats
+pub const MAX_HUNGER: f32 = 1.0;
 pub const MAX_STAMINA: f32 = 100.0;
 pub const STAMINA_RECOVERY_DELAY_TIME: f32 = 1.0;
 pub const STAMINA_RECOVERY: f32 = 40.0;

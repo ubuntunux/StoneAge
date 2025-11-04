@@ -41,9 +41,13 @@ impl CharacterStats {
         CharacterStats {
             _is_alive: true,
             _hp: 100,
+            _max_hp: 100,
+            _max_hp_data: 100,
             _stamina_recovery_delay_time: 0.0,
             _prev_stamina: MAX_STAMINA,
             _stamina: MAX_STAMINA,
+            _max_stamina: MAX_STAMINA,
+            _max_stamina_data: MAX_STAMINA,
             _hunger: 0.0,
             _invincibility: false,
         }
@@ -52,9 +56,13 @@ impl CharacterStats {
     pub fn initialize_character_stats(&mut self, character_data: &CharacterData) {
         self._is_alive = true;
         self._hp = character_data._stat_data._max_hp;
+        self._max_hp = character_data._stat_data._max_hp;
+        self._max_hp_data = character_data._stat_data._max_hp;
         self._stamina_recovery_delay_time = 0.0;
         self._prev_stamina = MAX_STAMINA;
         self._stamina = MAX_STAMINA;
+        self._max_stamina = MAX_STAMINA;
+        self._max_stamina_data = MAX_STAMINA;
         self._hunger = 0.0;
         self._invincibility = false;
     }
@@ -66,7 +74,31 @@ impl CharacterStats {
     }
 
     pub fn set_hp(&mut self, hp: i32) {
-        self._hp = hp;
+        self._hp = self._max_hp.min(0.max(hp));
+    }
+
+    pub fn add_hp(&mut self, hp: i32) {
+        self.set_hp(self.get_hp() + hp);
+    }
+
+    pub fn get_max_hp(&self) -> i32 {
+        self._max_hp
+    }
+
+    pub fn set_max_hp(&mut self, hp: i32) {
+        self._max_hp = self._max_hp_data.min(0.max(hp));
+    }
+
+    pub fn add_max_hp(&mut self, hp: i32) {
+        self.set_max_hp(self.get_max_hp() + hp);
+    }
+
+    pub fn get_max_hp_data(&self) -> i32 {
+        self._max_hp_data
+    }
+
+    pub fn get_hunger_level(&self) -> f32 {
+        1f32.min(((MAX_HUNGER - self._hunger) * 10.0).ceil() / 10.0)
     }
 
     pub fn get_hunger(&self) -> f32 {
@@ -74,18 +106,66 @@ impl CharacterStats {
     }
 
     pub fn set_hunger(&mut self, hunger: f32) {
-        self._hunger = hunger;
+        self._hunger = MAX_HUNGER.min(0f32.max(hunger));
+        let hunger_level = self.get_hunger_level();
+        self.set_max_hp((self._max_hp_data as f32 * hunger_level).ceil() as i32);
+        if self._max_hp < self._hp {
+            self.set_hp(self._max_hp);
+        }
+
+        self.set_max_stamina((self._max_stamina_data * hunger_level).ceil());
+        if self._max_stamina < self._stamina {
+            self.set_stamina(self._max_stamina);
+        }
+    }
+
+    pub fn add_hunger(&mut self, hunger: f32) {
+        self.set_hunger(self.get_hunger() + hunger);
+    }
+
+    pub fn get_stamina(&self) -> f32 {
+        self._stamina
+    }
+
+    pub fn set_stamina(&mut self, stamina: f32) {
+        self._stamina = self._max_stamina.min(0f32.max(stamina));
+    }
+
+    pub fn add_stamina(&mut self, stamina: f32) {
+        self.set_stamina(self.get_stamina() + stamina);
+    }
+
+    pub fn get_max_stamina(&self) -> f32 {
+        self._max_stamina
+    }
+
+    pub fn set_max_stamina(&mut self, stamina: f32) {
+        self._max_stamina = self._max_stamina_data.min(0f32.max(stamina));
+    }
+
+    pub fn add_max_stamina(&mut self, stamina: f32) {
+        self.set_max_stamina(self.get_max_stamina() + stamina);
+    }
+
+    pub fn get_max_stamina_data(&self) -> f32 {
+        self._max_stamina_data
     }
 
     pub fn set_invincibility(&mut self, invincibility: bool) {
         self._invincibility = invincibility;
     }
 
-    pub fn update_hp<'a>(&mut self, owner: &Character<'a>, delta_time: f32) {
-
+    pub fn update_hp<'a>(&mut self, _owner: &Character<'a>, _delta_time: f32) {
+        if self._max_hp < self._hp {
+            self._hp = self._max_hp;
+        }
     }
 
     pub fn update_stamina<'a>(&mut self, owner: &Character<'a>, delta_time: f32) {
+        if self._max_stamina < self._stamina {
+            self._stamina = self._max_stamina;
+        }
+
         if self._prev_stamina != self._stamina {
             if self._stamina < self._prev_stamina {
                 self._stamina_recovery_delay_time = STAMINA_RECOVERY_DELAY_TIME;
@@ -105,8 +185,8 @@ impl CharacterStats {
 
             if self._stamina_recovery_delay_time <= 0.0 {
                 self._stamina += STAMINA_RECOVERY * delta_time;
-                if MAX_STAMINA < self._stamina {
-                    self._stamina = MAX_STAMINA;
+                if self._max_stamina < self._stamina {
+                    self._stamina = self._max_stamina;
                 }
             } else {
                 self._stamina_recovery_delay_time -= delta_time;
@@ -217,6 +297,14 @@ impl<'a> Character<'a> {
 
     pub fn get_collision(&self) -> &CollisionData {
         &ptr_as_ref(self._render_object.as_ptr())._collision
+    }
+
+    pub fn get_stats(&self) -> &CharacterStats {
+        self._character_stats.as_ref()
+    }
+
+    pub fn get_stats_mut(&mut self) -> &mut CharacterStats {
+        self._character_stats.as_mut()
     }
 
     pub fn is_player(&self) -> bool {

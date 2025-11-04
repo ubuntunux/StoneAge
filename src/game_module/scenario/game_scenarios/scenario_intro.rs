@@ -99,8 +99,11 @@ impl<'a> ScenarioBase for ScenarioIntro<'a> {
             }
             ScenarioIntroPhase::WakeUp => {
                 self._actor_aru.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::StandUp);
+                self._actor_aru.as_ref().unwrap().borrow_mut()._character_stats.set_hunger(0.8);
                 self._actor_ewa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::StandUp);
+                self._actor_ewa.as_ref().unwrap().borrow_mut()._character_stats.set_hunger(0.8);
                 self._actor_koa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::StandUp);
+                self._actor_koa.as_ref().unwrap().borrow_mut()._character_stats.set_hunger(0.8);
             }
             _ => (),
         }

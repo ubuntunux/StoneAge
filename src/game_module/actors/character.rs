@@ -31,9 +31,13 @@ pub struct CharacterCreateInfo {
 pub struct CharacterStats {
     pub _is_alive: bool,
     pub _hp: i32,
+    pub _max_hp: i32,
+    pub _max_hp_data: i32,
     pub _stamina_recovery_delay_time: f32,
     pub _prev_stamina: f32,
     pub _stamina: f32,
+    pub _max_stamina: f32,
+    pub _max_stamina_data: f32,
     pub _hunger: f32,
     pub _invincibility: bool,
 }

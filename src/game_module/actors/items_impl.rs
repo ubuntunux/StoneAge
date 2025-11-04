@@ -250,16 +250,18 @@ impl<'a> ItemManager<'a> {
     }
 
     pub fn use_inventory_item(&self, item_data_type: &ItemDataType, item_count: usize) -> bool {
-        let success = self
-            .get_game_client()
-            .get_game_ui_manager_mut()
-            .remove_item(item_data_type, item_count);
+        let success = self.get_game_client().get_game_ui_manager_mut().remove_item(item_data_type, item_count);
         if success {
             self.get_audio_manager_mut().play_audio_bank(
                 AUDIO_ITEM_INVENTORY,
                 AudioLoop::ONCE,
                 None,
             );
+
+            let mut player = self.get_game_scene_manager().get_character_manager().get_player().borrow_mut();
+            player.get_stats_mut().add_hunger(-0.2);
+            player.get_stats_mut().add_hp(10);
+            player.get_stats_mut().add_stamina(10.0);
         }
         success
     }

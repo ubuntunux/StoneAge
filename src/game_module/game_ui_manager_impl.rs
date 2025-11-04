@@ -393,7 +393,7 @@ impl<'a> GameUIManager<'a> {
                     .get_character_manager()
                     .get_player()
                     .borrow();
-                player_hud.update_status_widget(&player);
+                player_hud.update_status_widget(&player, delta_time);
             }
         }
 
@@ -407,7 +407,7 @@ impl<'a> GameUIManager<'a> {
                     .get_character_manager()
                     .get_target_character()
                     .borrow();
-                target_status_bar.update_status_widget(&target);
+                target_status_bar.update_status_widget(&target, delta_time);
             } else {
                 target_status_bar.fade_out_status_widget();
             }
