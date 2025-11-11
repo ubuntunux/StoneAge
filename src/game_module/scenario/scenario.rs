@@ -9,6 +9,35 @@ use std::collections::HashMap;
 
 pub type GameSceneCreateInfoMap = HashMap<String, GameSceneCreateInfo>;
 
+pub struct ScenarioTrack<T: Copy + PartialEq> {
+    pub _scenario_phase: T,
+    pub _phase_time: f32,
+    pub _phase_duration: f32,
+}
+
+impl<T: Copy + PartialEq> ScenarioTrack<T> {
+    pub fn set_scenario_phase(&mut self, next_scenario_phase: T, phase_duration: f32) {
+        if next_scenario_phase != self._scenario_phase {
+            self._scenario_phase = next_scenario_phase;
+            self._phase_time = 0.0;
+            self._phase_duration = phase_duration;
+        }
+    }
+
+    pub fn get_phase_ratio(&self) -> f32 {
+        if 0.0 < self._phase_duration {
+            return 0f32.max(1f32.min(self._phase_time / self._phase_duration));
+        }
+        0.0
+    }
+
+    pub fn update_scenario_track(&mut self, delta_time: f32) {
+        if 0.0 < self._phase_duration {
+            self._phase_time = self._phase_duration.min(self._phase_time + delta_time as f32);
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[serde(default)]
 pub struct GameSceneCreateInfo {
