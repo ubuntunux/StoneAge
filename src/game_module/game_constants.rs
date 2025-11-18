@@ -80,6 +80,14 @@ pub const AUDIO_PICKUP_ITEM: &str = "pickup_item";
 pub const AUDIO_ITEM_INVENTORY: &str = "item_inventory";
 
 // UI
+pub const MATERIAL_UI_CONTROLLER_MOUSE_L: &str = "ui/controller/mouse_l";
+pub const MATERIAL_UI_CONTROLLER_MOUSE_R: &str = "ui/controller/mouse_r";
+pub const MATERIAL_UI_CONTROLLER_MOVE: &str = "ui/controller/move";
+pub const MATERIAL_UI_CONTROLLER_SPRINT: &str = "ui/controller/sprint";
+pub const MATERIAL_UI_CONTROLLER_JUMP: &str = "ui/controller/jump";
+pub const MATERIAL_UI_CONTROLLER_ROLL: &str = "ui/controller/roll";
+pub const MATERIAL_UI_CONTROLLER_PICKUP: &str = "ui/controller/pickup";
+pub const MATERIAL_UI_CONTROLLER_ZOOM: &str = "ui/controller/zoom";
 pub const MATERIAL_CROSS_HAIR: &str = "ui/cross_hair_box";
 pub const MATERIAL_INTRO_IMAGE: &str = "ui/intro_image";
 pub const STORY_IMAGE_NONE: &str = "";

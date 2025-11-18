@@ -195,27 +195,13 @@ impl<'a> GameUIManager<'a> {
             MATERIAL_INTRO_IMAGE,
         ));
 
-        let cross_hair_material_instance = game_resources
-            .get_engine_resources()
-            .get_material_instance_data(MATERIAL_CROSS_HAIR);
-        self._cross_hair = Some(Box::new(CrossHairWidget::create_cross_hair(
-            game_ui_layout_mut,
-            cross_hair_material_instance,
-        )));
+        let cross_hair_material_instance = game_resources.get_engine_resources().get_material_instance_data(MATERIAL_CROSS_HAIR);
+        self._cross_hair = Some(Box::new(CrossHairWidget::create_cross_hair(game_ui_layout_mut, cross_hair_material_instance)));
         self._player_hud = Some(Box::new(PlayerHud::create_player_hud(game_ui_layout_mut)));
-        self._controller_help_widget = Some(Box::new(
-            ControllerHelpWidget::create_controller_help_widget(game_ui_layout_mut),
-        ));
-        self._target_status_bar = Some(Box::new(TargetStatusWidget::create_target_status_widget(
-            game_ui_layout_mut,
-        )));
-        self._time_of_day = Some(Box::new(TimeOfDayWidget::create_time_of_day_widget(
-            game_ui_layout_mut,
-        )));
-        self._item_bar_widget = Some(Box::new(ItemBarWidget::create_item_bar_widget(
-            engine_resources,
-            game_ui_layout_mut,
-        )));
+        self._controller_help_widget = Some(Box::new(ControllerHelpWidget::create_controller_help_widget(game_ui_layout_mut, game_resources)));
+        self._target_status_bar = Some(Box::new(TargetStatusWidget::create_target_status_widget(game_ui_layout_mut)));
+        self._time_of_day = Some(Box::new(TimeOfDayWidget::create_time_of_day_widget(game_ui_layout_mut)));
+        self._item_bar_widget = Some(Box::new(ItemBarWidget::create_item_bar_widget(engine_resources, game_ui_layout_mut)));
         self.changed_window_size(window_size);
     }
 
