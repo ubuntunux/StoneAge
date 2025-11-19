@@ -1,3 +1,4 @@
+use indexmap::IndexSet;
 use crate::game_module::actors::character::{
     Character, CharacterAnimationState, CharacterStats, InteractionObject,
 };
@@ -333,6 +334,10 @@ impl<'a> Character<'a> {
 
     pub fn is_in_interaction_range(&self) -> bool {
         self._controller.is_in_interaction_range()
+    }
+
+    pub fn get_interaction_objects(&self) -> &IndexSet<InteractionObject> {
+        self._controller.get_interaction_objects()
     }
 
     pub fn add_interaction_object(&mut self, object: InteractionObject) {

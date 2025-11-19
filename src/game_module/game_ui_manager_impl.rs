@@ -108,10 +108,7 @@ impl<'a> EditorUIManager<'a> {
             widget._ui_component.set_text(
                 format!("[{:.1}, {:.1}, {:.1}]", position.x, position.y, position.z).as_str(),
             );
-            widget._ui_component.set_pos(
-                screen_position.x,
-                self._window_size.y as f32 - screen_position.y,
-            );
+            widget._ui_component.set_pos(screen_position.x, screen_position.y);
         }
     }
 }
