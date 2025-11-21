@@ -20,6 +20,7 @@ serde_json = "1.0"
 strum = "0.27"
 strum_macros = "0.27"
 winit = "0.29.15"
+sdl2 = "0.38.0"
 
 [[bin]]
 name = "stone_age"

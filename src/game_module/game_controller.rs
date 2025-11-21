@@ -4,6 +4,7 @@ use crate::game_module::game_client::GameClient;
 use crate::game_module::game_constants::*;
 use crate::game_module::game_ui_manager::GameUIManager;
 use nalgebra::{Vector2, Vector3};
+use strum_macros::{Display, EnumCount, EnumIter, EnumString};
 use rust_engine_3d::core::engine_core::TimeData;
 use rust_engine_3d::core::input::{
     ButtonState, JoystickInputData, KeyboardInputData, MouseInputData, MouseMoveData,
@@ -12,6 +13,32 @@ use rust_engine_3d::scene::camera::CameraObjectData;
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use winit::keyboard::KeyCode;
+
+#[derive(Copy, Clone, PartialEq, Eq, Hash, Debug, Display, EnumIter, EnumString, EnumCount)]
+pub enum InputControlType {
+    Attack,
+    PowerAttack,
+    Interaction,
+    CameraRotation,
+    Zoom,
+    Move,
+    Sprint,
+    Jump,
+    Roll,
+    SelectPreviousItem,
+    SelectNextItem,
+    UseCurrentItem,
+    UseItem01,
+    UseItem02,
+    UseItem03,
+    UseItem04,
+    UseItem05,
+    UseItem06,
+    UseItem07,
+    UseItem08,
+    UseItem09,
+    UseItem10,
+}
 
 pub struct GameController<'a> {
     pub _game_client: *const GameClient<'a>,
@@ -221,10 +248,7 @@ impl<'a> GameController<'a> {
         ) * joystick_sensitivity;
 
         // item control
-        let item_manager = self
-            .get_game_client()
-            .get_game_scene_manager()
-            .get_item_manager();
+        let item_manager = self.get_game_client().get_game_scene_manager().get_item_manager();
         if is_previous_item {
             item_manager.select_previous_item();
         } else if is_next_item {
