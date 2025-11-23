@@ -1,8 +1,9 @@
+use std::collections::HashMap;
+use std::ffi::c_void;
 use crate::game_module::actors::character::{Character, InteractionObject};
 use crate::game_module::actors::character_data::{CharacterData, MoveAnimationState};
 use crate::game_module::game_constants::*;
-use indexmap::IndexSet;
-use nalgebra::Vector3;
+use nalgebra::{Vector3};
 use rust_engine_3d::begin_block;
 use rust_engine_3d::scene::collision::CollisionData;
 use rust_engine_3d::scene::render_object::RenderObjectData;
@@ -11,7 +12,7 @@ use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::math::HALF_PI;
 use rust_engine_3d::utilities::system::ptr_as_ref;
 
-pub struct CharacterController {
+pub struct CharacterController<'a> {
     pub _position: Vector3<f32>,
     pub _rotation: Vector3<f32>,
     pub _scale: Vector3<f32>,
@@ -31,11 +32,12 @@ pub struct CharacterController {
     pub _is_jump: bool,
     pub _is_cliff: bool,
     pub _is_blocked: bool,
-    pub _interaction_objects: IndexSet<InteractionObject>,
+    pub _nearest_interaction_object: InteractionObject<'a>,
+    pub _interaction_objects: HashMap<*const c_void, InteractionObject<'a>>,
 }
 
-impl CharacterController {
-    pub fn create_character_controller() -> CharacterController {
+impl<'a> CharacterController<'a> {
+    pub fn create_character_controller() -> CharacterController<'a> {
         CharacterController {
             _position: Vector3::zeros(),
             _rotation: Vector3::zeros(),
@@ -56,7 +58,8 @@ impl CharacterController {
             _is_jump: false,
             _is_cliff: false,
             _is_blocked: false,
-            _interaction_objects: IndexSet::new(),
+            _nearest_interaction_object: InteractionObject::None,
+            _interaction_objects: HashMap::new(),
         }
     }
 
@@ -126,23 +129,17 @@ impl CharacterController {
     pub fn is_blocked(&self) -> bool {
         self._is_blocked
     }
-    pub fn get_interaction_object(&self) -> InteractionObject {
-        if self._interaction_objects.is_empty() {
-            return InteractionObject::None;
-        }
-        self._interaction_objects.last().unwrap().clone()
+    pub fn get_nearest_interaction_object(&self) -> &InteractionObject<'a> {
+        &self._nearest_interaction_object
     }
     pub fn is_in_interaction_range(&self) -> bool {
         self._interaction_objects.is_empty() == false
     }
-    pub fn add_interaction_object(&mut self, object: InteractionObject) {
-        self._interaction_objects.insert(object);
+    pub fn add_interaction_object(&mut self, object: InteractionObject<'a>) {
+        self._interaction_objects.insert(object.get_key(), object);
     }
-    pub fn get_interaction_objects(&self) -> &IndexSet<InteractionObject> {
-        &self._interaction_objects
-    }
-    pub fn remove_interaction_object(&mut self, object: InteractionObject) {
-        self._interaction_objects.retain(|&x| x != object);
+    pub fn remove_interaction_object(&mut self, object: InteractionObject<'a>) -> Option<InteractionObject<'a>> {
+        self._interaction_objects.remove(&object.get_key())
     }
     pub fn set_position(&mut self, position: &Vector3<f32>) {
         self._position = position.clone();
@@ -185,7 +182,21 @@ impl CharacterController {
         }
     }
 
-    pub fn update_character_controller<'a>(
+    pub fn update_interaction_objects(&mut self) {
+        let mut dist_min = f32::MAX;
+        let mut nearest_interaction_object = InteractionObject::None;
+        for interaction_object in self._interaction_objects.values() {
+            let dist = (interaction_object.get_position() - self._position).norm_squared();
+            if dist_min > dist {
+                dist_min = dist;
+                nearest_interaction_object = interaction_object.clone();
+            }
+        }
+        self._nearest_interaction_object = nearest_interaction_object;
+
+    }
+
+    pub fn update_character_controller(
         &mut self,
         owner: &Character,
         scene_manager: &SceneManager<'a>,
@@ -369,8 +380,7 @@ impl CharacterController {
             &actor_collision._bounding_box._max,
             &current_actor_collision._bounding_box._max,
         );
-        let collision_objects =
-            scene_manager.collect_collision_objects(&collision_pos_min, &collision_pos_max);
+        let collision_objects = scene_manager.collect_collision_objects(&collision_pos_min, &collision_pos_max);
 
         // check ground and side
         for collision_object in collision_objects.values() {

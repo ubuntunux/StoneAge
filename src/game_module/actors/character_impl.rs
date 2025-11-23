@@ -1,4 +1,4 @@
-use indexmap::IndexSet;
+use std::ffi::c_void;
 use crate::game_module::actors::character::{
     Character, CharacterAnimationState, CharacterStats, InteractionObject,
 };
@@ -21,6 +21,28 @@ use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::scene::transform_object::TransformObjectData;
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
+
+impl<'a> InteractionObject<'a> {
+    pub fn get_key(&self) -> *const c_void {
+        match self {
+            InteractionObject::None => { std::ptr::null() }
+            InteractionObject::PropBed(prop) => { prop.as_ptr() as *const c_void }
+            InteractionObject::PropPickup(prop) => { prop.as_ptr() as *const c_void }
+        }
+    }
+
+    pub fn get_position(&self) -> Vector3<f32> {
+        match self {
+            InteractionObject::PropBed(prop) => {
+                prop.borrow().get_bounding_box().get_center().clone()
+            }
+            InteractionObject::PropPickup(prop) => {
+                prop.borrow().get_bounding_box().get_center().clone()
+            }
+            _ => Vector3::new(0.0, 0.0, 0.0)
+        }
+    }
+}
 
 impl CharacterAnimationState {
     pub fn is_pickup_event(&self) -> bool {
@@ -332,15 +354,13 @@ impl<'a> Character<'a> {
         self._controller.is_jump()
     }
 
+    pub fn get_nearest_interaction_object(&self) -> &InteractionObject<'a> {
+        self._controller.get_nearest_interaction_object()
+    }
     pub fn is_in_interaction_range(&self) -> bool {
         self._controller.is_in_interaction_range()
     }
-
-    pub fn get_interaction_objects(&self) -> &IndexSet<InteractionObject> {
-        self._controller.get_interaction_objects()
-    }
-
-    pub fn add_interaction_object(&mut self, object: InteractionObject) {
+    pub fn add_interaction_object(&mut self, object: InteractionObject<'a>) {
         self._controller.add_interaction_object(object);
     }
 
@@ -590,7 +610,7 @@ impl<'a> Character<'a> {
         {
             self.set_move_stop();
 
-            match self._controller.get_interaction_object() {
+            match self._controller._nearest_interaction_object {
                 InteractionObject::None => {}
                 InteractionObject::PropBed(_) => {
                     self.set_action_animation(ActionAnimationState::LayingDown, 2.0);
@@ -1160,7 +1180,7 @@ impl<'a> Character<'a> {
 
     pub fn update_character(
         &mut self,
-        scene_manager: &SceneManager,
+        scene_manager: &SceneManager<'a>,
         player: &Character<'a>,
         delta_time: f32,
     ) {
@@ -1195,6 +1215,7 @@ impl<'a> Character<'a> {
             &self._render_object.borrow()._collision,
             delta_time,
         );
+        self._controller.update_interaction_objects();
 
         // falling water or falling on ground
         if self.is_alive() {
@@ -1204,6 +1225,7 @@ impl<'a> Character<'a> {
                 self.check_falling_on_ground_damage(falling_height);
             }
         }
+
         // transform
         self.update_transform();
 

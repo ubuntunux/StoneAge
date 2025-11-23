@@ -3,7 +3,7 @@ use crate::game_module::actors::character_data::{
     ActionAnimationState, CharacterData, MoveAnimationState,
 };
 use crate::game_module::actors::character_manager::{CharacterID, CharacterManager};
-use crate::game_module::actors::props::PropID;
+use crate::game_module::actors::props::{Prop};
 use crate::game_module::actors::weapons::Weapon;
 use crate::game_module::behavior::behavior_base::BehaviorBase;
 use nalgebra::Vector3;
@@ -11,11 +11,11 @@ use rust_engine_3d::scene::render_object::RenderObjectData;
 use rust_engine_3d::utilities::system::RcRefCell;
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
-pub enum InteractionObject {
+#[derive(Clone)]
+pub enum InteractionObject<'a> {
     None,
-    PropBed(PropID),
-    PropPickup(PropID),
+    PropBed(RcRefCell<Prop<'a>>),
+    PropPickup(RcRefCell<Prop<'a>>),
 }
 
 #[derive(Serialize, Deserialize, Default, Debug, Clone, PartialEq)]
@@ -60,7 +60,7 @@ pub struct Character<'a> {
     pub _character_data: RcRefCell<CharacterData>,
     pub _render_object: RcRefCell<RenderObjectData<'a>>,
     pub _character_stats: Box<CharacterStats>,
-    pub _controller: Box<CharacterController>,
+    pub _controller: Box<CharacterController<'a>>,
     pub _behavior: Box<dyn BehaviorBase>,
     pub _animation_state: Box<CharacterAnimationState>,
     pub _weapon: Option<Box<Weapon<'a>>>,

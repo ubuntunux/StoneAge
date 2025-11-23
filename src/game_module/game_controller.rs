@@ -49,6 +49,7 @@ pub struct GameController<'a> {
     pub _camera_goal_yaw: f32,
     pub _camera_pitch: f32,
     pub _camera_yaw: f32,
+    pub _is_keyboard_input_mode: bool,
 }
 
 impl<'a> GameController<'a> {
@@ -62,6 +63,7 @@ impl<'a> GameController<'a> {
             _camera_goal_yaw: 0.0,
             _camera_pitch: 0.0,
             _camera_yaw: 0.0,
+            _is_keyboard_input_mode: true,
         })
     }
 
@@ -94,6 +96,11 @@ impl<'a> GameController<'a> {
             .get_scene_manager()
             .get_main_camera_mut()
     }
+
+    pub fn is_keyboard_input_mode(&self) -> bool {
+        self._is_keyboard_input_mode
+    }
+
     pub fn update_on_open_game_scene(&mut self) {
         let main_camera = self
             .get_game_client()
@@ -246,6 +253,13 @@ impl<'a> GameController<'a> {
             joystick_input_data._stick_right_direction.x as f32,
             joystick_input_data._stick_right_direction.y as f32,
         ) * joystick_sensitivity;
+
+        //
+        if keyboard_input_data.is_any_key_pressed() {
+            self._is_keyboard_input_mode = true;
+        } else if joystick_input_data.is_any_button_pressed() {
+            self._is_keyboard_input_mode = false;
+        }
 
         // item control
         let item_manager = self.get_game_client().get_game_scene_manager().get_item_manager();

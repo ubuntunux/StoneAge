@@ -3,15 +3,14 @@ use nalgebra::Vector2;
 use rust_engine_3d::resource::resource::EngineResources;
 use rust_engine_3d::scene::material_instance::MaterialInstanceData;
 use rust_engine_3d::scene::ui::{
-    HorizontalAlign, Orientation, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign,
-    WidgetDefault,
+    HorizontalAlign, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault,
 };
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 
 const ITEM_BAR_WIDGET_POS_Y_FROM_BOTTOM: f32 = 50.0;
 const MAX_ITEM_TYPE_COUNT: usize = 10;
-const ITEM_UI_SIZE: f32 = 64.0;
+pub const ITEM_UI_SIZE: f32 = 64.0;
 const WIDGET_UI_MARGIN: f32 = 5.0;
 const INVALID_ITEM_INDEX: usize = usize::MAX;
 
@@ -30,6 +29,8 @@ pub struct ItemSelectionWidget<'a> {
 pub struct ItemBarWidget<'a> {
     pub _engine_resources: *const EngineResources<'a>,
     pub _layer: *const WidgetDefault<'a>,
+    pub _select_previous_item_widget: *const WidgetDefault<'a>,
+    pub _select_next_item_widget: *const WidgetDefault<'a>,
     pub _item_widgets: Vec<ItemWidget<'a>>,
     pub _selected_item_widget: ItemSelectionWidget<'a>,
     pub _item_type_count: usize,
@@ -124,12 +125,11 @@ impl<'a> ItemSelectionWidget<'a> {
 impl<'a> ItemBarWidget<'a> {
     pub fn create_item_bar_widget(
         engine_resources: &EngineResources<'a>,
-        parent_widget: &mut WidgetDefault<'a>,
+        parent_widget: &mut WidgetDefault<'a>
     ) -> ItemBarWidget<'a> {
         let layer = UIManager::create_widget("item_bar_widget", UIWidgetTypes::Default);
         let ui_component = ptr_as_mut(layer.as_ref()).get_ui_component_mut();
         ui_component.set_layout_type(UILayoutType::FloatLayout);
-        ui_component.set_layout_orientation(Orientation::HORIZONTAL);
         ui_component.set_halign(HorizontalAlign::LEFT);
         ui_component.set_valign(VerticalAlign::CENTER);
         ui_component.set_size_x(MAX_ITEM_TYPE_COUNT as f32 * ITEM_UI_SIZE);
@@ -141,8 +141,23 @@ impl<'a> ItemBarWidget<'a> {
         ui_component.set_resizable(true);
         parent_widget.add_widget(&layer);
 
-        let selected_item_widget =
-            UIManager::create_widget("selected_item_widget", UIWidgetTypes::Default);
+        let select_previous_item_widget = UIManager::create_widget("select_previous_item_widget", UIWidgetTypes::Default);
+        let ui_component = ptr_as_mut(select_previous_item_widget.as_ref()).get_ui_component_mut();
+        ui_component.set_layout_type(UILayoutType::FloatLayout);
+        ui_component.set_size(ITEM_UI_SIZE * 3.0, ITEM_UI_SIZE);
+        ui_component.set_color(get_color32(50, 50, 50, 128));
+        ui_component.set_border_color(get_color32(0, 0, 0, 255));
+        parent_widget.add_widget(&select_previous_item_widget);
+
+        let select_next_item_widget = UIManager::create_widget("select_next_item_widget", UIWidgetTypes::Default);
+        let ui_component = ptr_as_mut(select_next_item_widget.as_ref()).get_ui_component_mut();
+        ui_component.set_layout_type(UILayoutType::FloatLayout);
+        ui_component.set_size(ITEM_UI_SIZE * 3.0, ITEM_UI_SIZE);
+        ui_component.set_color(get_color32(50, 50, 50, 128));
+        ui_component.set_border_color(get_color32(0, 0, 0, 255));
+        parent_widget.add_widget(&select_next_item_widget);
+
+        let selected_item_widget = UIManager::create_widget("selected_item_widget", UIWidgetTypes::Default);
         let ui_component = ptr_as_mut(selected_item_widget.as_ref()).get_ui_component_mut();
         ui_component.set_size(ITEM_UI_SIZE, ITEM_UI_SIZE);
         ui_component.set_color(get_color32(255, 255, 255, 0));
@@ -156,6 +171,8 @@ impl<'a> ItemBarWidget<'a> {
         let mut item_bar_widget = ItemBarWidget {
             _engine_resources: engine_resources,
             _layer: layer.as_ref(),
+            _select_previous_item_widget: select_previous_item_widget.as_ref(),
+            _select_next_item_widget: select_next_item_widget.as_ref(),
             _item_widgets: Vec::new(),
             _selected_item_widget: ItemSelectionWidget {
                 _item_index: INVALID_ITEM_INDEX,
@@ -166,8 +183,7 @@ impl<'a> ItemBarWidget<'a> {
         };
 
         for item_index in 0..MAX_ITEM_TYPE_COUNT {
-            let item_widget =
-                ItemWidget::create_item_widget(ptr_as_mut(layer.as_ref()), item_index);
+            let item_widget = ItemWidget::create_item_widget(ptr_as_mut(layer.as_ref()), item_index);
             item_bar_widget._item_widgets.push(item_widget);
         }
 
@@ -175,9 +191,29 @@ impl<'a> ItemBarWidget<'a> {
         item_bar_widget
     }
 
+    pub fn get_select_previous_item_widget(&self) -> *const WidgetDefault<'a> {
+        self._select_previous_item_widget
+    }
+
+    pub fn get_select_next_item_widget(&self) -> *const WidgetDefault<'a> {
+        self._select_next_item_widget
+    }
+
+    pub fn get_selected_item_widget(&self) -> &ItemSelectionWidget<'a> {
+        &self._selected_item_widget
+    }
+
     pub fn update_item_bar_widget(&mut self) {
         let ui_component = ptr_as_mut(self._layer).get_ui_component_mut();
         ui_component.set_size_y(ITEM_UI_SIZE);
+    }
+
+    pub fn get_item_widget(&self, index: usize) -> &ItemWidget<'a> {
+        &self._item_widgets[index]
+    }
+
+    pub fn get_item_widget_mut(&mut self, index: usize) -> &mut ItemWidget<'a> {
+        &mut self._item_widgets[index]
     }
 
     pub fn find_item_widget(&self, item_data_type: &ItemDataType) -> Option<&ItemWidget<'a>> {
@@ -325,8 +361,14 @@ impl<'a> ItemBarWidget<'a> {
     pub fn changed_window_size(&mut self, window_size: &Vector2<i32>) {
         let ui_component = ptr_as_mut(self._layer).get_ui_component_mut();
         ui_component.set_center_hint_x(Some(0.5));
-        ui_component.set_pos_y(
-            window_size.y as f32 - ui_component.get_size_y() - ITEM_BAR_WIDGET_POS_Y_FROM_BOTTOM,
-        );
+        ui_component.set_pos_y(window_size.y as f32 - ui_component.get_size_y() - ITEM_BAR_WIDGET_POS_Y_FROM_BOTTOM);
+
+        let ui_component = ptr_as_mut(self._select_previous_item_widget).get_ui_component_mut();
+        ui_component.set_pos_x((window_size.x as f32 - MAX_ITEM_TYPE_COUNT as f32 * ITEM_UI_SIZE) * 0.5 - ui_component.get_size_x());
+        ui_component.set_pos_y(window_size.y as f32 - ui_component.get_size_y() - ITEM_BAR_WIDGET_POS_Y_FROM_BOTTOM);
+
+        let ui_component = ptr_as_mut(self._select_next_item_widget).get_ui_component_mut();
+        ui_component.set_pos_x((window_size.x as f32 + MAX_ITEM_TYPE_COUNT as f32 * ITEM_UI_SIZE) * 0.5);
+        ui_component.set_pos_y(window_size.y as f32 - ui_component.get_size_y() - ITEM_BAR_WIDGET_POS_Y_FROM_BOTTOM);
     }
 }
