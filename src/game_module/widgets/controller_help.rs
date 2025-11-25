@@ -13,7 +13,8 @@ use crate::game_module::game_resource::GameResources;
 use crate::game_module::widgets::item_bar_widget::{ItemBarWidget, ITEM_UI_SIZE};
 
 const MAIN_LAYOUT_MARGIN: f32 = 10.0;
-const MAIN_LAYOUT_SIZE: (f32, f32) = (250.0, 420.0);
+const MAIN_LAYOUT_PADDING: f32 = 10.0;
+const MAIN_LAYOUT_SIZE: (f32, f32) = (250.0, 460.0);
 const ITEM_SIZE: f32 = 50.0;
 const FONT_SIZE: f32 = 24.0;
 
@@ -112,14 +113,13 @@ impl<'a> ControllerHelpWidget<'a> {
         let sprint_key_binding_widget = KeyBindingWidget::create_key_binding_widget(character_controller_help_widget_mut, "sprint_key_binding", "Sprint", None);
         let jump_key_binding_widget = KeyBindingWidget::create_key_binding_widget(character_controller_help_widget_mut, "jump_key_binding", "Jump", None);
         let roll_key_binding_widget = KeyBindingWidget::create_key_binding_widget(character_controller_help_widget_mut, "roll_key_binding", "Roll", None);
+        let select_item_key_binding_widget = KeyBindingWidget::create_key_binding_widget(character_controller_help_widget_mut, "select_item_key_binding", "Select Item", None);
 
         // interaction
         let interaction_key_binding_widget = KeyBindingWidget::create_key_binding_widget(root_widget, "interaction_key_binding", "Interaction", None);
 
         // quick slot
-        let select_previous_item_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_select_previous_item_widget()), "interaction_key_binding", "Previous Item", None);
-        let select_next_item_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_select_next_item_widget()), "interaction_key_binding", "Next Item", None);
-        let use_current_item_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_selected_item_widget()._widget), "interaction_key_binding", "Use Item", Some(Vector2::new(0.0, -ITEM_UI_SIZE * 0.25)));
+        let use_current_item_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_selected_item_widget()._widget), "use_current_item_key_binding", "Use Item", Some(Vector2::new(0.0, -ITEM_UI_SIZE * 0.25)));
         let use_item01_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(0)._widget), "use_item01_key_binding", "", Some(Vector2::new(0.0, ITEM_UI_SIZE * 0.25)));
         let use_item02_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(1)._widget), "use_item02_key_binding", "", Some(Vector2::new(0.0, ITEM_UI_SIZE * 0.25)));
         let use_item03_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(2)._widget), "use_item03_key_binding", "", Some(Vector2::new(0.0, ITEM_UI_SIZE * 0.25)));
@@ -143,8 +143,7 @@ impl<'a> ControllerHelpWidget<'a> {
                 (InputControlType::Sprint, Some(engine_resources.get_material_instance_data("ui/controller/keycode_shift").clone())),
                 (InputControlType::Jump, Some(engine_resources.get_material_instance_data("ui/controller/keycode_space").clone())),
                 (InputControlType::Roll, Some(engine_resources.get_material_instance_data("ui/controller/keycode_alt").clone())),
-                (InputControlType::SelectPreviousItem, Some(engine_resources.get_material_instance_data("ui/controller/keycode_q").clone())),
-                (InputControlType::SelectNextItem, Some(engine_resources.get_material_instance_data("ui/controller/keycode_e").clone())),
+                (InputControlType::SelectItem, Some(engine_resources.get_material_instance_data("ui/controller/keycode_q").clone())),
                 (InputControlType::UseCurrentItem, Some(engine_resources.get_material_instance_data("ui/controller/keycode_c").clone())),
                 (InputControlType::UseItem01, Some(engine_resources.get_material_instance_data("ui/controller/keycode_1").clone())),
                 (InputControlType::UseItem02, Some(engine_resources.get_material_instance_data("ui/controller/keycode_2").clone())),
@@ -167,8 +166,7 @@ impl<'a> ControllerHelpWidget<'a> {
                 (InputControlType::Sprint, Some(engine_resources.get_material_instance_data("ui/controller/joystick_lb").clone())),
                 (InputControlType::Jump, Some(engine_resources.get_material_instance_data("ui/controller/joystick_a").clone())),
                 (InputControlType::Roll, Some(engine_resources.get_material_instance_data("ui/controller/joystick_b").clone())),
-                (InputControlType::SelectPreviousItem, Some(engine_resources.get_material_instance_data("ui/controller/joystick_left").clone())),
-                (InputControlType::SelectNextItem, Some(engine_resources.get_material_instance_data("ui/controller/joystick_right").clone())),
+                (InputControlType::SelectItem, Some(engine_resources.get_material_instance_data("ui/controller/joystick_left").clone())),
                 (InputControlType::UseCurrentItem, Some(engine_resources.get_material_instance_data("ui/controller/joystick_y").clone())),
                 (InputControlType::UseItem01, None),
                 (InputControlType::UseItem02, None),
@@ -191,8 +189,7 @@ impl<'a> ControllerHelpWidget<'a> {
                 (InputControlType::Sprint, sprint_key_binding_widget),
                 (InputControlType::Jump, jump_key_binding_widget),
                 (InputControlType::Roll, roll_key_binding_widget),
-                (InputControlType::SelectPreviousItem, select_previous_item_key_binding_widget),
-                (InputControlType::SelectNextItem, select_next_item_key_binding_widget),
+                (InputControlType::SelectItem, select_item_key_binding_widget),
                 (InputControlType::UseCurrentItem, use_current_item_key_binding_widget),
                 (InputControlType::UseItem01, use_item01_key_binding_widget),
                 (InputControlType::UseItem02, use_item02_key_binding_widget),
@@ -218,6 +215,7 @@ impl<'a> ControllerHelpWidget<'a> {
 
     pub fn changed_window_size(&mut self, window_size: &Vector2<i32>) {
         let ui_component = ptr_as_mut(self._character_controller_help_widget).get_ui_component_mut();
+        ui_component.set_size_y(ui_component.get_num_children() as f32 * ITEM_SIZE + MAIN_LAYOUT_PADDING * 2.0);
         ui_component.set_pos_x(window_size.x as f32 - ui_component.get_size_x() - MAIN_LAYOUT_MARGIN);
         ui_component.set_pos_y(window_size.y as f32 - ui_component.get_size_y() - MAIN_LAYOUT_MARGIN);
     }

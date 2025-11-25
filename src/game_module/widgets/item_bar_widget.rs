@@ -29,8 +29,6 @@ pub struct ItemSelectionWidget<'a> {
 pub struct ItemBarWidget<'a> {
     pub _engine_resources: *const EngineResources<'a>,
     pub _layer: *const WidgetDefault<'a>,
-    pub _select_previous_item_widget: *const WidgetDefault<'a>,
-    pub _select_next_item_widget: *const WidgetDefault<'a>,
     pub _item_widgets: Vec<ItemWidget<'a>>,
     pub _selected_item_widget: ItemSelectionWidget<'a>,
     pub _item_type_count: usize,
@@ -171,8 +169,6 @@ impl<'a> ItemBarWidget<'a> {
         let mut item_bar_widget = ItemBarWidget {
             _engine_resources: engine_resources,
             _layer: layer.as_ref(),
-            _select_previous_item_widget: select_previous_item_widget.as_ref(),
-            _select_next_item_widget: select_next_item_widget.as_ref(),
             _item_widgets: Vec::new(),
             _selected_item_widget: ItemSelectionWidget {
                 _item_index: INVALID_ITEM_INDEX,
@@ -189,14 +185,6 @@ impl<'a> ItemBarWidget<'a> {
 
         item_bar_widget.update_item_bar_widget();
         item_bar_widget
-    }
-
-    pub fn get_select_previous_item_widget(&self) -> *const WidgetDefault<'a> {
-        self._select_previous_item_widget
-    }
-
-    pub fn get_select_next_item_widget(&self) -> *const WidgetDefault<'a> {
-        self._select_next_item_widget
     }
 
     pub fn get_selected_item_widget(&self) -> &ItemSelectionWidget<'a> {
@@ -361,14 +349,6 @@ impl<'a> ItemBarWidget<'a> {
     pub fn changed_window_size(&mut self, window_size: &Vector2<i32>) {
         let ui_component = ptr_as_mut(self._layer).get_ui_component_mut();
         ui_component.set_center_hint_x(Some(0.5));
-        ui_component.set_pos_y(window_size.y as f32 - ui_component.get_size_y() - ITEM_BAR_WIDGET_POS_Y_FROM_BOTTOM);
-
-        let ui_component = ptr_as_mut(self._select_previous_item_widget).get_ui_component_mut();
-        ui_component.set_pos_x((window_size.x as f32 - MAX_ITEM_TYPE_COUNT as f32 * ITEM_UI_SIZE) * 0.5 - ui_component.get_size_x());
-        ui_component.set_pos_y(window_size.y as f32 - ui_component.get_size_y() - ITEM_BAR_WIDGET_POS_Y_FROM_BOTTOM);
-
-        let ui_component = ptr_as_mut(self._select_next_item_widget).get_ui_component_mut();
-        ui_component.set_pos_x((window_size.x as f32 + MAX_ITEM_TYPE_COUNT as f32 * ITEM_UI_SIZE) * 0.5);
         ui_component.set_pos_y(window_size.y as f32 - ui_component.get_size_y() - ITEM_BAR_WIDGET_POS_Y_FROM_BOTTOM);
     }
 }

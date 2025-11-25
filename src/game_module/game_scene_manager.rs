@@ -205,12 +205,10 @@ impl<'a> GameSceneManager<'a> {
     pub fn open_scenario_data(&mut self, scenario_data_name: &str) {
         log::info!("open_scenario_data: {:?}", scenario_data_name);
         let game_resources = ptr_as_mut(self._game_resources);
-        let scenario_data_create_info_refcell =
-            game_resources.get_scenario_data(scenario_data_name);
+        let scenario_data_create_info_refcell = game_resources.get_scenario_data(scenario_data_name);
         let scenario_data_create_info = scenario_data_create_info_refcell.borrow();
         let scenario = create_scenario(self, scenario_data_name, &scenario_data_create_info);
-        self._scenario_map
-            .insert(String::from(scenario_data_name), scenario.clone());
+        self._scenario_map.insert(String::from(scenario_data_name), scenario.clone());
 
         // open game scene data
         self.open_game_scene_data(
@@ -236,16 +234,13 @@ impl<'a> GameSceneManager<'a> {
 
         // create player
         for (character_name, character_create_info) in scenario_data_create_info._player.iter() {
-            self._character_manager
-                .create_character(character_name, character_create_info, true);
+            self._character_manager.create_character(character_name, character_create_info, true);
             self._spawn_point = character_create_info._position;
         }
 
         // create npc
-        for (character_name, character_create_info) in scenario_data_create_info._characters.iter()
-        {
-            self._character_manager
-                .create_character(character_name, character_create_info, false);
+        for (character_name, character_create_info) in scenario_data_create_info._characters.iter() {
+            self._character_manager.create_character(character_name, character_create_info, false);
         }
     }
 
