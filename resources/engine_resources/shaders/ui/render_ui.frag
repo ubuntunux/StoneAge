@@ -80,6 +80,6 @@ void main()
         }
     }
 
-    color.w = saturate(color.w * ui_render_data._ui_opacity + 0.1);
+    color.w = saturate(color.w * ui_render_data._ui_opacity);
     fs_output = color;
 }
