@@ -32,27 +32,51 @@ VERTEX_SHADER_MAIN()
 }
 
 #elif SHADER_STAGE_FLAG == FRAGMENT
+vec4 TriplanarSampling( sampler2D texMap, in const float weight_xz, in const float weight_y, in const vec2 texcoord_x, in const vec2 texcoord_y, in const vec2 texcoord_z, in const float tiling )
+{
+    vec4 color_x = texture(texMap, texcoord_x * tiling);
+    vec4 color_y = texture(texMap, texcoord_y * tiling);
+    vec4 color_z = texture(texMap, texcoord_z * tiling);
+    vec4 color = mix(color_x, color_z, weight_xz);
+    color = mix(color, color_y, weight_y);
+    return color;
+}
+
+vec3 TriplanarSamplingNormal( sampler2D texMap, in const float weight_xz, in const float weight_y, in const vec2 texcoord_x, in const vec2 texcoord_y, in const vec2 texcoord_z, in const float tiling )
+{
+    vec3 normal_x = texture(texMap, texcoord_x * tiling).xyz * 2.0 - 1.0;
+    vec3 normal_y = texture(texMap, texcoord_y * tiling).xyz * 2.0 - 1.0;
+    vec3 normal_z = texture(texMap, texcoord_z * tiling).xyz * 2.0 - 1.0;
+    vec3 normal = mix(normal_x, normal_z, weight_xz);
+    normal = mix(normal, normal_y, weight_y);
+    return normalize(normal);
+}
+
 FRAGMENT_SHADER_MAIN()
 {
     const vec3 world_position = in_vertex_output._relative_position.xyz + view_constants.CAMERA_POSITION;
-    const vec2 texcoord = world_position.xz * GET_PUSH_CONSTANT().tiling;
-    const vec2 layer0_texcoord = texcoord * GET_PUSH_CONSTANT().layer0_tiling;
-    const vec2 layer1_texcoord = texcoord * GET_PUSH_CONSTANT().layer1_tiling;
-    const vec2 layer2_texcoord = texcoord * GET_PUSH_CONSTANT().layer2_tiling;
-    const vec2 layer3_texcoord = texcoord * GET_PUSH_CONSTANT().layer3_tiling;
-    const vec2 layer4_texcoord = texcoord * GET_PUSH_CONSTANT().layer4_tiling;
+    const vec3 world_normal = normalize(in_vertex_output._tangent_to_world[2]);
+    const vec2 world_normal_xz = normalize(world_normal.xz);
+    const float weight = 10.0;
+    const float bias = 0.707 - 0.5 / weight;
+    float weight_xz = saturate((abs(world_normal_xz.y) - bias) * weight);
+    float weight_y = saturate((abs(world_normal.y) - bias) * weight);
 
-    const vec4 color4 = texture(layer4_textureBase, layer4_texcoord);
-    const vec4 color3 = texture(layer3_textureBase, layer3_texcoord);
-    const vec4 color2 = texture(layer2_textureBase, layer2_texcoord);
-    const vec4 color1 = texture(layer1_textureBase, layer1_texcoord);
-    const vec4 color0 = texture(layer0_textureBase, layer0_texcoord);
+    const vec2 texcoord_x = world_position.yz * GET_PUSH_CONSTANT().tiling;
+    const vec2 texcoord_y = world_position.xz * GET_PUSH_CONSTANT().tiling;
+    const vec2 texcoord_z = world_position.xy * GET_PUSH_CONSTANT().tiling;
 
-    const vec3 normal4 = texture(layer3_textureNormal, layer4_texcoord).xyz * 2.0 - 1.0;
-    const vec3 normal3 = texture(layer3_textureNormal, layer3_texcoord).xyz * 2.0 - 1.0;
-    const vec3 normal2 = texture(layer2_textureNormal, layer2_texcoord).xyz * 2.0 - 1.0;
-    const vec3 normal1 = texture(layer1_textureNormal, layer1_texcoord).xyz * 2.0 - 1.0;
-    const vec3 normal0 = texture(layer0_textureNormal, layer0_texcoord).xyz * 2.0 - 1.0;
+    const vec4 color4 = TriplanarSampling( layer4_textureBase, weight_xz, weight_y, texcoord_x, texcoord_y, texcoord_z, GET_PUSH_CONSTANT().layer4_tiling );
+    const vec4 color3 = TriplanarSampling( layer3_textureBase, weight_xz, weight_y, texcoord_x, texcoord_y, texcoord_z, GET_PUSH_CONSTANT().layer3_tiling );
+    const vec4 color2 = TriplanarSampling( layer2_textureBase, weight_xz, weight_y, texcoord_x, texcoord_y, texcoord_z, GET_PUSH_CONSTANT().layer2_tiling );
+    const vec4 color1 = TriplanarSampling( layer1_textureBase, weight_xz, weight_y, texcoord_x, texcoord_y, texcoord_z, GET_PUSH_CONSTANT().layer1_tiling );
+    const vec4 color0 = TriplanarSampling( layer0_textureBase, weight_xz, weight_y, texcoord_x, texcoord_y, texcoord_z, GET_PUSH_CONSTANT().layer0_tiling );
+
+    const vec3 normal4 = TriplanarSamplingNormal( layer4_textureNormal, weight_xz, weight_y, texcoord_x, texcoord_y, texcoord_z, GET_PUSH_CONSTANT().layer4_tiling );
+    const vec3 normal3 = TriplanarSamplingNormal( layer3_textureNormal, weight_xz, weight_y, texcoord_x, texcoord_y, texcoord_z, GET_PUSH_CONSTANT().layer3_tiling );
+    const vec3 normal2 = TriplanarSamplingNormal( layer2_textureNormal, weight_xz, weight_y, texcoord_x, texcoord_y, texcoord_z, GET_PUSH_CONSTANT().layer2_tiling );
+    const vec3 normal1 = TriplanarSamplingNormal( layer1_textureNormal, weight_xz, weight_y, texcoord_x, texcoord_y, texcoord_z, GET_PUSH_CONSTANT().layer1_tiling );
+    const vec3 normal0 = TriplanarSamplingNormal( layer0_textureNormal, weight_xz, weight_y, texcoord_x, texcoord_y, texcoord_z, GET_PUSH_CONSTANT().layer0_tiling );
 
     const vec4 layer_mask_weight = mix(vec4(8.0), vec4(1.0), vec4(
         normal0.z * get_luminance(color0.xyz) * color0.w,
