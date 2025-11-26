@@ -128,7 +128,7 @@ impl<'a> ItemBarWidget<'a> {
         let layer = UIManager::create_widget("item_bar_widget", UIWidgetTypes::Default);
         let ui_component = ptr_as_mut(layer.as_ref()).get_ui_component_mut();
         ui_component.set_layout_type(UILayoutType::FloatLayout);
-        ui_component.set_halign(HorizontalAlign::LEFT);
+        ui_component.set_halign(HorizontalAlign::CENTER);
         ui_component.set_valign(VerticalAlign::CENTER);
         ui_component.set_size_x(MAX_ITEM_TYPE_COUNT as f32 * ITEM_UI_SIZE);
         ui_component.set_color(get_color32(50, 50, 50, 128));
@@ -136,7 +136,6 @@ impl<'a> ItemBarWidget<'a> {
         ui_component.set_round(5.0);
         ui_component.set_border(2.0);
         ui_component.set_expandable(true);
-        ui_component.set_resizable(true);
         parent_widget.add_widget(&layer);
 
         let select_previous_item_widget = UIManager::create_widget("select_previous_item_widget", UIWidgetTypes::Default);
@@ -319,9 +318,7 @@ impl<'a> ItemBarWidget<'a> {
 
     pub fn select_previous_item(&mut self) {
         if 0 < self._item_type_count {
-            let start_index = if self._selected_item_widget.get_item_index() == INVALID_ITEM_INDEX
-                || 0 == self._selected_item_widget.get_item_index()
-            {
+            let start_index = if self._selected_item_widget.get_item_index() == INVALID_ITEM_INDEX || 0 == self._selected_item_widget.get_item_index() {
                 self._item_widgets.len() - 1
             } else {
                 self._selected_item_widget.get_item_index() - 1

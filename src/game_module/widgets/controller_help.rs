@@ -48,7 +48,7 @@ impl<'a> KeyBindingWidget<'a> {
         if let Some(offset) = offset {
             ui_component.set_pos(offset.x, offset.y);
         }
-        ui_component.set_size_hint_x(Some(1.0));
+        ui_component.set_size_x(MAIN_LAYOUT_SIZE.0);
         ui_component.set_size_y(ITEM_SIZE);
         ui_component.set_color(get_color32(0, 0, 0, 0));
         parent_widget.add_widget(&layout_widget);
@@ -100,11 +100,13 @@ impl<'a> ControllerHelpWidget<'a> {
         ui_component.set_layout_orientation(Orientation::VERTICAL);
         ui_component.set_halign(HorizontalAlign::CENTER);
         ui_component.set_valign(VerticalAlign::TOP);
+        ui_component.set_expandable(true);
         ui_component.set_padding(10.0);
         ui_component.set_round(15.0);
         ui_component.set_size(MAIN_LAYOUT_SIZE.0, MAIN_LAYOUT_SIZE.1);
         ui_component.set_color(get_color32(0, 0, 0, 128));
         root_widget.add_widget(&character_controller_help_widget);
+
         let camera_key_binding_widget = KeyBindingWidget::create_key_binding_widget(character_controller_help_widget_mut, "view_key_binding", "View", None);
         let move_key_binding_widget = KeyBindingWidget::create_key_binding_widget(character_controller_help_widget_mut, "move_key_binding", "Move", None);
         let zoom_key_binding_widget = KeyBindingWidget::create_key_binding_widget(character_controller_help_widget_mut, "zoom_key_binding", "Zoom", None);
@@ -114,22 +116,22 @@ impl<'a> ControllerHelpWidget<'a> {
         let jump_key_binding_widget = KeyBindingWidget::create_key_binding_widget(character_controller_help_widget_mut, "jump_key_binding", "Jump", None);
         let roll_key_binding_widget = KeyBindingWidget::create_key_binding_widget(character_controller_help_widget_mut, "roll_key_binding", "Roll", None);
         let select_item_key_binding_widget = KeyBindingWidget::create_key_binding_widget(character_controller_help_widget_mut, "select_item_key_binding", "Select Item", None);
+        let use_item_key_binding_widget = KeyBindingWidget::create_key_binding_widget(character_controller_help_widget_mut, "use_item_key_binding", "UseItem", None);
 
         // interaction
         let interaction_key_binding_widget = KeyBindingWidget::create_key_binding_widget(root_widget, "interaction_key_binding", "Interaction", None);
 
         // quick slot
-        let use_current_item_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_selected_item_widget()._widget), "use_current_item_key_binding", "Use Item", Some(Vector2::new(0.0, -ITEM_UI_SIZE * 0.25)));
-        let use_item01_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(0)._widget), "use_item01_key_binding", "", Some(Vector2::new(0.0, ITEM_UI_SIZE * 0.25)));
-        let use_item02_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(1)._widget), "use_item02_key_binding", "", Some(Vector2::new(0.0, ITEM_UI_SIZE * 0.25)));
-        let use_item03_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(2)._widget), "use_item03_key_binding", "", Some(Vector2::new(0.0, ITEM_UI_SIZE * 0.25)));
-        let use_item04_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(3)._widget), "use_item04_key_binding", "", Some(Vector2::new(0.0, ITEM_UI_SIZE * 0.25)));
-        let use_item05_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(4)._widget), "use_item05_key_binding", "", Some(Vector2::new(0.0, ITEM_UI_SIZE * 0.25)));
-        let use_item06_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(5)._widget), "use_item06_key_binding", "", Some(Vector2::new(0.0, ITEM_UI_SIZE * 0.25)));
-        let use_item07_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(6)._widget), "use_item07_key_binding", "", Some(Vector2::new(0.0, ITEM_UI_SIZE * 0.25)));
-        let use_item08_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(7)._widget), "use_item08_key_binding", "", Some(Vector2::new(0.0, ITEM_UI_SIZE * 0.25)));
-        let use_item09_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(8)._widget), "use_item09_key_binding", "", Some(Vector2::new(0.0, ITEM_UI_SIZE * 0.25)));
-        let use_item10_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(9)._widget), "use_item10_key_binding", "", Some(Vector2::new(0.0, ITEM_UI_SIZE * 0.25)));
+        let use_item01_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(0)._widget), "use_item01_key_binding", "", Some(Vector2::new(0.0, ITEM_UI_SIZE * 0.8)));
+        let use_item02_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(1)._widget), "use_item02_key_binding", "", Some(Vector2::new(0.0, ITEM_UI_SIZE * 0.8)));
+        let use_item03_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(2)._widget), "use_item03_key_binding", "", Some(Vector2::new(0.0, ITEM_UI_SIZE * 0.8)));
+        let use_item04_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(3)._widget), "use_item04_key_binding", "", Some(Vector2::new(0.0, ITEM_UI_SIZE * 0.8)));
+        let use_item05_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(4)._widget), "use_item05_key_binding", "", Some(Vector2::new(0.0, ITEM_UI_SIZE * 0.8)));
+        let use_item06_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(5)._widget), "use_item06_key_binding", "", Some(Vector2::new(0.0, ITEM_UI_SIZE * 0.8)));
+        let use_item07_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(6)._widget), "use_item07_key_binding", "", Some(Vector2::new(0.0, ITEM_UI_SIZE * 0.8)));
+        let use_item08_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(7)._widget), "use_item08_key_binding", "", Some(Vector2::new(0.0, ITEM_UI_SIZE * 0.8)));
+        let use_item09_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(8)._widget), "use_item09_key_binding", "", Some(Vector2::new(0.0, ITEM_UI_SIZE * 0.8)));
+        let use_item10_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(9)._widget), "use_item10_key_binding", "", Some(Vector2::new(0.0, ITEM_UI_SIZE * 0.8)));
 
         let mut character_controller_help_widget = ControllerHelpWidget {
             _character_controller_help_widget: character_controller_help_widget_mut,
@@ -190,7 +192,7 @@ impl<'a> ControllerHelpWidget<'a> {
                 (InputControlType::Jump, jump_key_binding_widget),
                 (InputControlType::Roll, roll_key_binding_widget),
                 (InputControlType::SelectItem, select_item_key_binding_widget),
-                (InputControlType::UseCurrentItem, use_current_item_key_binding_widget),
+                (InputControlType::UseCurrentItem, use_item_key_binding_widget),
                 (InputControlType::UseItem01, use_item01_key_binding_widget),
                 (InputControlType::UseItem02, use_item02_key_binding_widget),
                 (InputControlType::UseItem03, use_item03_key_binding_widget),
@@ -216,8 +218,8 @@ impl<'a> ControllerHelpWidget<'a> {
     pub fn changed_window_size(&mut self, window_size: &Vector2<i32>) {
         let ui_component = ptr_as_mut(self._character_controller_help_widget).get_ui_component_mut();
         ui_component.set_size_y(ui_component.get_num_children() as f32 * ITEM_SIZE + MAIN_LAYOUT_PADDING * 2.0);
-        ui_component.set_pos_x(window_size.x as f32 - ui_component.get_size_x() - MAIN_LAYOUT_MARGIN);
-        ui_component.set_pos_y(window_size.y as f32 - ui_component.get_size_y() - MAIN_LAYOUT_MARGIN);
+        ui_component.set_pos_x(window_size.x as f32 - ui_component.get_ui_size().x - MAIN_LAYOUT_MARGIN * 2.0);
+        ui_component.set_pos_y(window_size.y as f32 - ui_component.get_ui_size().y - MAIN_LAYOUT_MARGIN * 2.0);
     }
 
     pub fn update_key_binding_widgets(&mut self, is_keyboard_input_mode: bool) {

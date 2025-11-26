@@ -17,7 +17,7 @@ pub struct PlayerHud<'a> {
 // PlayerHud
 impl<'a> PlayerHud<'a> {
     pub fn create_player_hud(root_widget: &mut WidgetDefault<'a>) -> PlayerHud<'a> {
-        let hud_layer_width: f32 = 360.0;
+        let hud_layer_width: f32 = 100.0;
         let hud_layer_height: f32 = 100.0;
         let hud_layer_padding: f32 = 10.0;
 
@@ -30,6 +30,7 @@ impl<'a> PlayerHud<'a> {
         ui_component.set_layout_orientation(Orientation::VERTICAL);
         ui_component.set_halign(HorizontalAlign::CENTER);
         ui_component.set_valign(VerticalAlign::CENTER);
+        ui_component.set_expandable(true);
         ui_component.set_round(10.0);
         ui_component.set_padding(hud_layer_padding);
         ui_component.set_color(get_color32(0, 0, 0, 128));
@@ -51,7 +52,7 @@ impl<'a> PlayerHud<'a> {
     pub fn changed_window_size(&mut self, window_size: &Vector2<i32>) {
         let ui_component = ptr_as_mut(self._widget).get_ui_component_mut();
         ui_component.set_pos_x(10.0);
-        ui_component.set_pos_y(window_size.y as f32 - ui_component.get_size_y() - 50.0);
+        ui_component.set_pos_y(window_size.y as f32 - ui_component.get_ui_size().y - 10.0);
     }
 
     pub fn update_status_widget(&mut self, player: &Character<'a>, delta_time: f64) {

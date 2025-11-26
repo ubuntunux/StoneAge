@@ -67,7 +67,7 @@ impl<'a> StatusBarWidget<'a> {
     }
 
     pub fn update_status_widget(&self, status: f32, max_status: f32, max_status_data: f32, delta_time: f64) {
-        let status_ratio = 1.0f32.min(status / max_status_data);
+        let status_ratio = 0f32.max(1.0f32.min(status / max_status_data));
         let status_bar = ptr_as_mut(self._status_bar).get_ui_component_mut();
         let mut status = status_bar.get_size_hint_x().unwrap_or(1.0);
         if status < status_ratio {
