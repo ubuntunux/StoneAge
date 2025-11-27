@@ -1,6 +1,5 @@
 use crate::game_module::actors::character::Character;
-use crate::game_module::behavior::behavior_base::BehaviorState;
-use crate::game_module::game_constants::TIME_OF_MORNING;
+use crate::game_module::game_constants::TIME_OF_NOON;
 use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::scenario::scenario::{ScenarioBase, ScenarioDataCreateInfo, ScenarioTrack};
 use nalgebra::Vector3;
@@ -13,9 +12,9 @@ const SLEEP_PHASE_TIME: f32 = 10.0;
 #[derive(Clone, PartialEq, Eq, Hash, Display, Debug, Copy, EnumIter, EnumString, EnumCount)]
 pub enum ScenarioIntroPhase {
     None,
-    Sleep,
-    WakeUp,
-    End,
+    Intro,
+    Tutorial,
+    GameStart
 }
 
 pub struct ScenarioIntro<'a> {
@@ -58,7 +57,7 @@ impl<'a> ScenarioIntro<'a> {
 
 impl<'a> ScenarioBase for ScenarioIntro<'a> {
     fn is_end_of_scenario(&self) -> bool {
-        self._scenario_track._scenario_phase == ScenarioIntroPhase::End
+        self._scenario_track._scenario_phase == ScenarioIntroPhase::GameStart
     }
 
     fn set_scenario_phase(&mut self, next_scenario_phase: &str, phase_duration: f32) {
@@ -74,12 +73,12 @@ impl<'a> ScenarioBase for ScenarioIntro<'a> {
 
     fn update_game_scenario_begin(&mut self) {
         match self._scenario_track._scenario_phase {
-            ScenarioIntroPhase::Sleep => {
+            ScenarioIntroPhase::Intro => {
                 let game_scene_manager = ptr_as_mut(self._game_scene_manager);
                 let main_camera = game_scene_manager.get_scene_manager().get_main_camera_mut();
                 main_camera._transform_object.set_position(&self._around_start_position);
                 main_camera._transform_object.set_rotation(&self._around_start_rotation);
-                game_scene_manager.set_time_of_day(TIME_OF_MORNING, 0.0);
+                game_scene_manager.set_time_of_day(TIME_OF_NOON, 0.0);
                 self._actor_aru = if let Some(actor) = game_scene_manager.get_actor("aru") {
                     Some(actor.clone())
                 } else {
@@ -95,17 +94,9 @@ impl<'a> ScenarioBase for ScenarioIntro<'a> {
                 } else {
                     None
                 };
-                self._actor_aru.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::Sleep);
-                self._actor_ewa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::Sleep);
-                self._actor_koa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::Sleep);
             }
-            ScenarioIntroPhase::WakeUp => {
-                self._actor_aru.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::StandUp);
+            ScenarioIntroPhase::Tutorial => {
                 self._actor_aru.as_ref().unwrap().borrow_mut()._character_stats.set_hunger(0.8);
-                self._actor_ewa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::StandUp);
-                self._actor_ewa.as_ref().unwrap().borrow_mut()._character_stats.set_hunger(0.8);
-                self._actor_koa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::StandUp);
-                self._actor_koa.as_ref().unwrap().borrow_mut()._character_stats.set_hunger(0.8);
             }
             _ => (),
         }
@@ -121,9 +112,9 @@ impl<'a> ScenarioBase for ScenarioIntro<'a> {
         let phase_ratio = self._scenario_track.get_phase_ratio();
         match self._scenario_track._scenario_phase {
             ScenarioIntroPhase::None => {
-                self.set_scenario_phase(ScenarioIntroPhase::Sleep.to_string().as_str(), SLEEP_PHASE_TIME);
+                self.set_scenario_phase(ScenarioIntroPhase::Intro.to_string().as_str(), SLEEP_PHASE_TIME);
             }
-            ScenarioIntroPhase::Sleep => {
+            ScenarioIntroPhase::Intro => {
                 let game_scene_manager = ptr_as_mut(self._game_scene_manager);
                 let main_camera = game_scene_manager.get_scene_manager().get_main_camera_mut();
                 let progress = 1.0 - (phase_ratio * -5.0).exp2();
@@ -133,11 +124,11 @@ impl<'a> ScenarioBase for ScenarioIntro<'a> {
                 main_camera._transform_object.set_rotation(&rotation);
 
                 if 1.0 <= phase_ratio {
-                    self.set_scenario_phase(ScenarioIntroPhase::WakeUp.to_string().as_str(), 0.0);
+                    self.set_scenario_phase(ScenarioIntroPhase::Tutorial.to_string().as_str(), 0.0);
                 }
             }
-            ScenarioIntroPhase::WakeUp => {
-                self.set_scenario_phase(ScenarioIntroPhase::End.to_string().as_str(), 0.0);
+            ScenarioIntroPhase::Tutorial => {
+                self.set_scenario_phase(ScenarioIntroPhase::GameStart.to_string().as_str(), 0.0);
             }
             _ => (),
         }

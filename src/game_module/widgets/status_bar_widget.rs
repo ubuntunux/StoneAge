@@ -24,8 +24,8 @@ fn create_status_layer_widget<'a>(
     ui_component.set_size(WIDGET_UI_WIDTH, WIDGET_UI_HEIGHT);
     ui_component.set_color(get_color32(0, 0, 0, 128));
     ui_component.set_border_color(get_color32(0, 0, 0, 255));
-    ui_component.set_round(5.0);
-    ui_component.set_border(2.0);
+    ui_component.set_round(15.0);
+    ui_component.set_border(4.0);
     ui_component.set_margin(WIDGET_UI_MARGIN);
     ui_component.set_padding(WIDGET_UI_PADDING);
     parent_widget.add_widget(&status_layer);
@@ -40,6 +40,7 @@ fn create_status_bar_widget<'a>(
     let ui_component = ptr_as_mut(max_status_bar.as_ref()).get_ui_component_mut();
     ui_component.set_size_hint_x(Some(1.0));
     ui_component.set_size_hint_y(Some(1.0));
+    ui_component.set_enable_renderable_area(true);
     ui_component.set_color(get_color32(50, 50, 50, 255));
     parent_widget.add_widget(&max_status_bar);
 
@@ -47,6 +48,7 @@ fn create_status_bar_widget<'a>(
     let ui_component = ptr_as_mut(status_bar.as_ref()).get_ui_component_mut();
     ui_component.set_size_hint_x(Some(1.0));
     ui_component.set_size_hint_y(Some(1.0));
+    ui_component.set_enable_renderable_area(true);
     ui_component.set_color(color);
     parent_widget.add_widget(&status_bar);
     (status_bar.as_ref(), max_status_bar.as_ref())

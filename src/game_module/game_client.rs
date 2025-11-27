@@ -181,13 +181,11 @@ impl<'a> GameClient<'a> {
                 if character_manager.is_valid_player() {
                     character_manager.get_player().borrow_mut().set_move_stop();
                 }
-                game_ui_manager
-                    .set_image_manual_fade_inout(STORY_IMAGE_NONE, STORY_BOARD_FADE_TIME);
+                game_ui_manager.set_image_manual_fade_inout(STORY_IMAGE_NONE, STORY_BOARD_FADE_TIME);
             }
             GamePhase::Sleep => {
                 self.reset_sleep_timer();
-                game_ui_manager
-                    .set_image_manual_fade_inout(STORY_IMAGE_NONE, STORY_BOARD_FADE_TIME);
+                game_ui_manager.set_image_manual_fade_inout(STORY_IMAGE_NONE, STORY_BOARD_FADE_TIME);
             }
             _ => (),
         }
@@ -198,10 +196,7 @@ impl<'a> GameClient<'a> {
         let character_manager = ptr_as_mut(game_scene_manager._character_manager.as_ref());
         match self._game_phase {
             GamePhase::Sleep => {
-                character_manager
-                    .get_player()
-                    .borrow_mut()
-                    .set_action_stand_up();
+                character_manager.get_player().borrow_mut().set_action_stand_up();
             }
             _ => (),
         }
@@ -244,7 +239,9 @@ impl<'a> GameClient<'a> {
                 game_ui_manager.set_game_image_fade_speed(if any_key_hold { 5.0 } else { 1.0 });
 
                 if any_key_pressed {
-                    let story_board_phase = self.get_story_board_phase();
+                    // TEST CODE
+                    // let story_board_phase = self.get_story_board_phase();
+                    let story_board_phase = STORY_BOARDS.len();
                     if game_ui_manager.is_done_game_image_progress() {
                         if STORY_BOARDS.len() <= story_board_phase {
                             game_ui_manager.set_image_manual_fade_inout(
