@@ -10,7 +10,7 @@ use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::game_controller::{GameController, InputControlType};
 use crate::game_module::game_resource::GameResources;
-use crate::game_module::widgets::item_bar_widget::{ItemBarWidget, ITEM_UI_SIZE};
+use crate::game_module::widgets::item_bar_widget::{ItemBarWidget};
 
 const MAIN_LAYOUT_MARGIN: f32 = 10.0;
 const MAIN_LAYOUT_PADDING: f32 = 10.0;
@@ -28,8 +28,7 @@ pub struct ControllerHelpWidget<'a> {
 
 pub struct KeyBindingWidget<'a> {
     pub _layout_widget: *const WidgetDefault<'a>,
-    pub _binding_icon_widget: *const WidgetDefault<'a>,
-    pub _binding_name_widget: *const WidgetDefault<'a>,
+    pub _binding_icon_widget: *const WidgetDefault<'a>
 }
 
 impl<'a> KeyBindingWidget<'a> {
@@ -37,18 +36,20 @@ impl<'a> KeyBindingWidget<'a> {
         parent_widget: &mut WidgetDefault<'a>,
         widget_name: &str,
         key_binding_text: &str,
-        offset: Option<Vector2<f32>>
+        center_offset: Option<Vector2<f32>>
     ) -> KeyBindingWidget<'a> {
         let layout_widget = UIManager::create_widget(widget_name, UIWidgetTypes::Default);
         let layout_widget_mut = ptr_as_mut(layout_widget.as_ref());
         let ui_component = ptr_as_mut(layout_widget.as_ref()).get_ui_component_mut();
         ui_component.set_layout_type(UILayoutType::BoxLayout);
         ui_component.set_layout_orientation(Orientation::HORIZONTAL);
-        ui_component.set_halign(HorizontalAlign::LEFT);
-        if let Some(offset) = offset {
-            ui_component.set_pos(offset.x, offset.y);
+        if let Some(center_offset) = center_offset {
+            ui_component.set_halign(HorizontalAlign::CENTER);
+            ui_component.set_valign(VerticalAlign::CENTER);
+            ui_component.set_center_hint_x(Some(center_offset.x));
+            ui_component.set_center_hint_y(Some(center_offset.y));
         }
-        ui_component.set_size_x(MAIN_LAYOUT_SIZE.0);
+        ui_component.set_expandable_x(true);
         ui_component.set_size_y(ITEM_SIZE);
         ui_component.set_color(get_color32(0, 0, 0, 0));
         parent_widget.add_widget(&layout_widget);
@@ -59,23 +60,24 @@ impl<'a> KeyBindingWidget<'a> {
         ui_component.set_size_y(ITEM_SIZE);
         layout_widget_mut.add_widget(&binding_icon_widget);
 
-        let binding_name_widget = UIManager::create_widget(widget_name, UIWidgetTypes::Default);
-        let ui_component = ptr_as_mut(binding_name_widget.as_ref()).get_ui_component_mut();
-        ui_component.set_size_hint_x(Some(1.0));
-        ui_component.set_size_y(ITEM_SIZE);
-        ui_component.set_halign(HorizontalAlign::LEFT);
-        ui_component.set_valign(VerticalAlign::CENTER);
-        ui_component.set_font_size(FONT_SIZE);
-        ui_component.set_font_color(get_color32(255, 255, 255, 255));
-        ui_component.set_color(get_color32(255, 255, 255, 0));
-        ui_component.set_padding_left(10.0);
-        ui_component.set_text(key_binding_text);
-        layout_widget_mut.add_widget(&binding_name_widget);
+        if key_binding_text.is_empty() == false {
+            let binding_name_widget = UIManager::create_widget(widget_name, UIWidgetTypes::Default);
+            let ui_component = ptr_as_mut(binding_name_widget.as_ref()).get_ui_component_mut();
+            ui_component.set_size_hint_x(Some(1.0));
+            ui_component.set_size_y(ITEM_SIZE);
+            ui_component.set_halign(HorizontalAlign::LEFT);
+            ui_component.set_valign(VerticalAlign::CENTER);
+            ui_component.set_font_size(FONT_SIZE);
+            ui_component.set_font_color(get_color32(255, 255, 255, 255));
+            ui_component.set_color(get_color32(255, 255, 255, 0));
+            ui_component.set_padding_left(10.0);
+            ui_component.set_text(key_binding_text);
+            layout_widget_mut.add_widget(&binding_name_widget);
+        }
 
         KeyBindingWidget {
             _layout_widget: layout_widget.as_ref(),
-            _binding_icon_widget: binding_icon_widget.as_ref(),
-            _binding_name_widget: binding_name_widget.as_ref(),
+            _binding_icon_widget: binding_icon_widget.as_ref()
         }
     }
 
@@ -98,7 +100,7 @@ impl<'a> ControllerHelpWidget<'a> {
         let ui_component = ptr_as_mut(character_controller_help_widget.as_ref()).get_ui_component_mut();
         ui_component.set_layout_type(UILayoutType::BoxLayout);
         ui_component.set_layout_orientation(Orientation::VERTICAL);
-        ui_component.set_halign(HorizontalAlign::CENTER);
+        ui_component.set_halign(HorizontalAlign::LEFT);
         ui_component.set_valign(VerticalAlign::TOP);
         ui_component.set_expandable(true);
         ui_component.set_padding(10.0);
@@ -122,16 +124,16 @@ impl<'a> ControllerHelpWidget<'a> {
         let interaction_key_binding_widget = KeyBindingWidget::create_key_binding_widget(root_widget, "interaction_key_binding", "Interaction", None);
 
         // quick slot
-        let use_item01_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(0)._widget), "use_item01_key_binding", "", Some(Vector2::new(0.0, ITEM_UI_SIZE * 0.8)));
-        let use_item02_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(1)._widget), "use_item02_key_binding", "", Some(Vector2::new(0.0, ITEM_UI_SIZE * 0.8)));
-        let use_item03_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(2)._widget), "use_item03_key_binding", "", Some(Vector2::new(0.0, ITEM_UI_SIZE * 0.8)));
-        let use_item04_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(3)._widget), "use_item04_key_binding", "", Some(Vector2::new(0.0, ITEM_UI_SIZE * 0.8)));
-        let use_item05_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(4)._widget), "use_item05_key_binding", "", Some(Vector2::new(0.0, ITEM_UI_SIZE * 0.8)));
-        let use_item06_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(5)._widget), "use_item06_key_binding", "", Some(Vector2::new(0.0, ITEM_UI_SIZE * 0.8)));
-        let use_item07_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(6)._widget), "use_item07_key_binding", "", Some(Vector2::new(0.0, ITEM_UI_SIZE * 0.8)));
-        let use_item08_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(7)._widget), "use_item08_key_binding", "", Some(Vector2::new(0.0, ITEM_UI_SIZE * 0.8)));
-        let use_item09_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(8)._widget), "use_item09_key_binding", "", Some(Vector2::new(0.0, ITEM_UI_SIZE * 0.8)));
-        let use_item10_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(9)._widget), "use_item10_key_binding", "", Some(Vector2::new(0.0, ITEM_UI_SIZE * 0.8)));
+        let use_item01_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(0)._widget), "use_item01_key_binding", "", Some(Vector2::new(0.5, 1.3)));
+        let use_item02_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(1)._widget), "use_item02_key_binding", "", Some(Vector2::new(0.5, 1.3)));
+        let use_item03_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(2)._widget), "use_item03_key_binding", "", Some(Vector2::new(0.5, 1.3)));
+        let use_item04_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(3)._widget), "use_item04_key_binding", "", Some(Vector2::new(0.5, 1.3)));
+        let use_item05_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(4)._widget), "use_item05_key_binding", "", Some(Vector2::new(0.5, 1.3)));
+        let use_item06_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(5)._widget), "use_item06_key_binding", "", Some(Vector2::new(0.5, 1.3)));
+        let use_item07_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(6)._widget), "use_item07_key_binding", "", Some(Vector2::new(0.5, 1.3)));
+        let use_item08_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(7)._widget), "use_item08_key_binding", "", Some(Vector2::new(0.5, 1.3)));
+        let use_item09_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(8)._widget), "use_item09_key_binding", "", Some(Vector2::new(0.5, 1.3)));
+        let use_item10_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(9)._widget), "use_item10_key_binding", "", Some(Vector2::new(0.5, 1.3)));
 
         let mut character_controller_help_widget = ControllerHelpWidget {
             _character_controller_help_widget: character_controller_help_widget_mut,
