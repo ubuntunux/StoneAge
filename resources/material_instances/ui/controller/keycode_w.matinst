@@ -1,0 +1,8 @@
+{
+    "material_name": "ui/render_ui",
+    "material_parameters": {
+        "texture_color": "ui/controller",
+        "_uv_size": [0.1, 0.1],
+        "_uv_offset": [0.2, 0.2]
+    }
+}
