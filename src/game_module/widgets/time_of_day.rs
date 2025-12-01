@@ -1,10 +1,8 @@
 use crate::game_module::game_scene_manager::GameSceneManager;
 use nalgebra::Vector2;
-use rust_engine_3d::scene::ui::{
-    HorizontalAlign, Orientation, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign,
-    WidgetDefault,
-};
-use rust_engine_3d::utilities::system::ptr_as_mut;
+use rust_engine_3d::scene::material_instance::MaterialInstanceData;
+use rust_engine_3d::scene::ui::{HorizontalAlign, Orientation, PosHintX, PosHintY, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault};
+use rust_engine_3d::utilities::system::{ptr_as_mut, RcRefCell};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 
 pub struct TimeOfDayWidget<'a> {
@@ -16,22 +14,26 @@ pub struct TimeOfDayWidget<'a> {
 
 // TimeOfDayWidget
 impl<'a> TimeOfDayWidget<'a> {
-    pub fn create_time_of_day_widget(root_widget: &mut WidgetDefault<'a>) -> TimeOfDayWidget<'a> {
+    pub fn create_time_of_day_widget(
+        root_widget: &mut WidgetDefault<'a>,
+        tod_material_instance: &RcRefCell<MaterialInstanceData<'a>>
+    ) -> TimeOfDayWidget<'a> {
         let time_of_day_widget =
             UIManager::create_widget("time_of_day_widget", UIWidgetTypes::Default);
         let time_of_day_widget_ptr = ptr_as_mut(time_of_day_widget.as_ref());
         let ui_component = ptr_as_mut(time_of_day_widget.as_ref()).get_ui_component_mut();
-        ui_component.set_size(250.0, 150.0);
+        ui_component.set_size(250.0, 250.0);
         ui_component.set_layout_type(UILayoutType::BoxLayout);
         ui_component.set_layout_orientation(Orientation::VERTICAL);
         ui_component.set_halign(HorizontalAlign::CENTER);
-        ui_component.set_valign(VerticalAlign::TOP);
-        ui_component.set_margin(10.0);
+        ui_component.set_valign(VerticalAlign::CENTER);
+        ui_component.set_pos_hint_x(PosHintX::Right(1.0));
+        ui_component.set_pos_hint_y(PosHintY::Top(0.0));
+        ui_component.set_material_instance(Some(tod_material_instance.clone()));
+        ui_component.set_margin(20.0);
         ui_component.set_padding(10.0);
         ui_component.set_round(15.0);
         ui_component.set_border(2.0);
-        ui_component.set_halign(HorizontalAlign::CENTER);
-        ui_component.set_color(get_color32(200, 180, 0, 200));
         root_widget.add_widget(&time_of_day_widget);
 
         let date_widget = UIManager::create_widget("date_widget", UIWidgetTypes::Default);
@@ -42,6 +44,7 @@ impl<'a> TimeOfDayWidget<'a> {
         ui_component.set_halign(HorizontalAlign::CENTER);
         ui_component.set_valign(VerticalAlign::CENTER);
         ui_component.set_font_size(35.0);
+        ui_component.set_font_color(get_color32(255, 255, 255, 255));
         ui_component.set_color(get_color32(255, 255, 255, 0));
         time_of_day_widget_ptr.add_widget(&date_widget);
 
@@ -53,6 +56,7 @@ impl<'a> TimeOfDayWidget<'a> {
         ui_component.set_halign(HorizontalAlign::CENTER);
         ui_component.set_valign(VerticalAlign::CENTER);
         ui_component.set_font_size(35.0);
+        ui_component.set_font_color(get_color32(255, 255, 255, 255));
         ui_component.set_color(get_color32(255, 255, 255, 0));
         time_of_day_widget_ptr.add_widget(&time_widget);
 
@@ -64,6 +68,7 @@ impl<'a> TimeOfDayWidget<'a> {
         ui_component.set_halign(HorizontalAlign::CENTER);
         ui_component.set_valign(VerticalAlign::CENTER);
         ui_component.set_font_size(35.0);
+        ui_component.set_font_color(get_color32(255, 255, 255, 255));
         ui_component.set_color(get_color32(255, 255, 255, 0));
         time_of_day_widget_ptr.add_widget(&temperature_widget);
 
@@ -75,10 +80,7 @@ impl<'a> TimeOfDayWidget<'a> {
         }
     }
 
-    pub fn changed_window_size(&mut self, window_size: &Vector2<i32>) {
-        let ui_component = ptr_as_mut(self._widget).get_ui_component_mut();
-        ui_component.set_pos_x(window_size.x as f32 - ui_component.get_size_x());
-        ui_component.set_pos_y(50.0);
+    pub fn changed_window_size(&mut self, _window_size: &Vector2<i32>) {
     }
 
     pub fn update_time_of_day_widget(&mut self, game_scene_manager: &GameSceneManager) {

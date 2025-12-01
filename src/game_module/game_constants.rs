@@ -83,6 +83,7 @@ pub const AUDIO_ITEM_INVENTORY: &str = "item_inventory";
 
 // UI
 pub const MATERIAL_CROSS_HAIR: &str = "ui/cross_hair_box";
+pub const MATERIAL_TIME_OF_DAY: &str = "ui/tod";
 pub const MATERIAL_INTRO_IMAGE: &str = "ui/intro_image";
 pub const STORY_IMAGE_NONE: &str = "";
 pub const STORY_BOARD_FADE_TIME: f32 = 2.0;

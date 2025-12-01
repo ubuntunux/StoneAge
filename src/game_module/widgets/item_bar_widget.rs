@@ -2,7 +2,7 @@ use crate::game_module::actors::items::ItemDataType;
 use nalgebra::Vector2;
 use rust_engine_3d::resource::resource::EngineResources;
 use rust_engine_3d::scene::material_instance::MaterialInstanceData;
-use rust_engine_3d::scene::ui::{HorizontalAlign, Orientation, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault};
+use rust_engine_3d::scene::ui::{HorizontalAlign, Orientation, PosHintX, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault};
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 
@@ -313,7 +313,7 @@ impl<'a> ItemBarWidget<'a> {
 
     pub fn changed_window_size(&mut self, window_size: &Vector2<i32>) {
         let ui_component = ptr_as_mut(self._layer).get_ui_component_mut();
-        ui_component.set_center_hint_x(Some(0.5));
+        ui_component.set_pos_hint_x(PosHintX::Center(0.5));
         ui_component.set_pos_y(window_size.y as f32 - ui_component.get_size_y() - ITEM_BAR_WIDGET_POS_Y_FROM_BOTTOM);
     }
 }

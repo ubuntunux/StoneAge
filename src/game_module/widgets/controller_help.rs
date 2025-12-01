@@ -1,10 +1,7 @@
 use std::collections::HashMap;
 use nalgebra::{Vector2};
 use rust_engine_3d::scene::material_instance::MaterialInstanceData;
-use rust_engine_3d::scene::ui::{
-    HorizontalAlign, Orientation, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign,
-    WidgetDefault,
-};
+use rust_engine_3d::scene::ui::{HorizontalAlign, Orientation, PosHintX, PosHintY, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault};
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use crate::game_module::game_scene_manager::GameSceneManager;
@@ -49,8 +46,8 @@ impl<'a> KeyBindingWidget<'a> {
         if let Some(center_offset) = center_offset {
             ui_component.set_halign(HorizontalAlign::CENTER);
             ui_component.set_valign(VerticalAlign::CENTER);
-            ui_component.set_center_hint_x(Some(center_offset.x));
-            ui_component.set_center_hint_y(Some(center_offset.y));
+            ui_component.set_pos_hint_x(PosHintX::Center(center_offset.x));
+            ui_component.set_pos_hint_y(PosHintY::Center(center_offset.y));
         }
         ui_component.set_expandable_x(true);
         ui_component.set_size_y(ITEM_SIZE);
