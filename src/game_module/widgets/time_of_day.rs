@@ -1,3 +1,4 @@
+use ash::vk;
 use crate::game_module::game_scene_manager::GameSceneManager;
 use nalgebra::Vector2;
 use rust_engine_3d::scene::material_instance::MaterialInstanceData;
@@ -6,7 +7,7 @@ use rust_engine_3d::utilities::system::{ptr_as_mut, RcRefCell};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 
 pub struct TimeOfDayWidget<'a> {
-    pub _widget: *const WidgetDefault<'a>,
+    pub _time_of_day_widget: *const WidgetDefault<'a>,
     pub _date_widget: *const WidgetDefault<'a>,
     pub _time_widget: *const WidgetDefault<'a>,
     pub _temperature: *const WidgetDefault<'a>,
@@ -34,6 +35,7 @@ impl<'a> TimeOfDayWidget<'a> {
         ui_component.set_padding(10.0);
         ui_component.set_round(15.0);
         ui_component.set_border(2.0);
+        ui_component.set_texture_wrap_mode(vk::SamplerAddressMode::CLAMP_TO_EDGE);
         root_widget.add_widget(&time_of_day_widget);
 
         let date_widget = UIManager::create_widget("date_widget", UIWidgetTypes::Default);
@@ -73,7 +75,7 @@ impl<'a> TimeOfDayWidget<'a> {
         time_of_day_widget_ptr.add_widget(&temperature_widget);
 
         TimeOfDayWidget {
-            _widget: time_of_day_widget_ptr,
+            _time_of_day_widget: time_of_day_widget_ptr,
             _date_widget: date_widget_ptr,
             _time_widget: time_widget_ptr,
             _temperature: temperature_widget_ptr,
@@ -84,17 +86,21 @@ impl<'a> TimeOfDayWidget<'a> {
     }
 
     pub fn update_time_of_day_widget(&mut self, game_scene_manager: &GameSceneManager) {
+        let time_of_day = game_scene_manager.get_time_of_day();
+
+        let tod_ui_component = ptr_as_mut(self._time_of_day_widget).get_ui_component_mut();
+        let tod_to_angle = (time_of_day - 12.0) / 24.0 * 360.0;
+        tod_ui_component.set_rotation(tod_to_angle);
+
         let date_ui_component = ptr_as_mut(self._date_widget).get_ui_component_mut();
         date_ui_component.set_text(format!("DAY {}", game_scene_manager.get_date()).as_str());
 
         let time_ui_component = ptr_as_mut(self._time_widget).get_ui_component_mut();
-        let time_of_day = game_scene_manager.get_time_of_day();
         let time = time_of_day as u32;
         let minute = (time_of_day.fract() * 60.0) as u32;
         time_ui_component.set_text(format!("{:02}:{:02}", time, minute).as_str());
 
         let temperature_ui_component = ptr_as_mut(self._temperature).get_ui_component_mut();
-        temperature_ui_component
-            .set_text(format!("Temperature {:.01}", game_scene_manager.get_temperature()).as_str());
+        temperature_ui_component.set_text(format!("Temperature {:.01}", game_scene_manager.get_temperature()).as_str());
     }
 }
