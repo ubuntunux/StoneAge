@@ -3,7 +3,7 @@ use crate::game_module::actors::character::Character;
 use crate::game_module::game_client::GameClient;
 use crate::game_module::game_constants::*;
 use crate::game_module::game_ui_manager::GameUIManager;
-use nalgebra::{Vector2, Vector3};
+use nalgebra::{Matrix4, Vector2, Vector3};
 use strum_macros::{Display, EnumCount, EnumIter, EnumString};
 use rust_engine_3d::core::engine_core::TimeData;
 use rust_engine_3d::core::input::{
@@ -48,6 +48,9 @@ pub struct GameController<'a> {
     pub _camera_goal_yaw: f32,
     pub _camera_pitch: f32,
     pub _camera_yaw: f32,
+    pub _camera_position: Vector3<f32>,
+    pub _lock_camera_rotation: bool,
+    pub _is_camera_blend_mode: bool,
     pub _is_keyboard_input_mode: bool,
 }
 
@@ -62,6 +65,9 @@ impl<'a> GameController<'a> {
             _camera_goal_yaw: 0.0,
             _camera_pitch: 0.0,
             _camera_yaw: 0.0,
+            _camera_position: Vector3::zeros(),
+            _lock_camera_rotation: false,
+            _is_camera_blend_mode: false,
             _is_keyboard_input_mode: true,
         })
     }
@@ -100,12 +106,16 @@ impl<'a> GameController<'a> {
         self._is_keyboard_input_mode
     }
 
+    pub fn is_camera_blend_mode(&self) -> bool {
+        self._is_camera_blend_mode
+    }
+
+    pub fn set_camera_blend_mode(&mut self, is_camera_blend_mode: bool) {
+        self._is_camera_blend_mode = is_camera_blend_mode
+    }
+
     pub fn update_on_open_game_scene(&mut self) {
-        let main_camera = self
-            .get_game_client()
-            .get_game_scene_manager()
-            .get_scene_manager()
-            .get_main_camera();
+        let main_camera = self.get_game_client().get_game_scene_manager().get_scene_manager().get_main_camera();
         let pitch = main_camera._transform_object.get_pitch();
         let yaw = main_camera._transform_object.get_yaw();
         self._camera_goal_pitch = pitch;
@@ -148,8 +158,7 @@ impl<'a> GameController<'a> {
             pitch_control,
             delta_time,
         );
-        self._camera_goal_pitch =
-            CAMERA_PITCH_MIN.max(CAMERA_PITCH_MAX.min(self._camera_goal_pitch));
+        self._camera_goal_pitch = CAMERA_PITCH_MIN.max(CAMERA_PITCH_MAX.min(self._camera_goal_pitch));
         self._camera_pitch = CAMERA_PITCH_MIN.max(CAMERA_PITCH_MAX.min(self._camera_pitch));
 
         (self._camera_goal_yaw, self._camera_yaw) = self.update_camera_smooth_rotation(
@@ -161,8 +170,7 @@ impl<'a> GameController<'a> {
     }
 
     pub fn update_camera_pitch_by_distance(&mut self) {
-        let dist_ratio = (self._camera_distance - CAMERA_DISTANCE_MIN)
-            / (CAMERA_DISTANCE_MAX - CAMERA_DISTANCE_MIN);
+        let dist_ratio = (self._camera_distance - CAMERA_DISTANCE_MIN) / (CAMERA_DISTANCE_MAX - CAMERA_DISTANCE_MIN);
         self._camera_pitch = math::degree_to_radian(math::lerp(
             CAMERA_PITCH_MIN_BY_DISTANCE,
             CAMERA_PITCH_MAX_BY_DISTANCE,
@@ -172,8 +180,7 @@ impl<'a> GameController<'a> {
 
     pub fn update_camera_distance(&mut self, zoom_control: f32, delta_time: f32) {
         self._camera_goal_distance += zoom_control;
-        self._camera_goal_distance =
-            CAMERA_DISTANCE_MIN.max(CAMERA_DISTANCE_MAX.min(self._camera_goal_distance));
+        self._camera_goal_distance = CAMERA_DISTANCE_MIN.max(CAMERA_DISTANCE_MAX.min(self._camera_goal_distance));
         if self._camera_goal_distance != self._camera_distance {
             let diff = (self._camera_goal_distance - self._camera_distance) * CAMERA_ZOOM_SPEED;
             let sign = diff.signum();
@@ -183,6 +190,65 @@ impl<'a> GameController<'a> {
                 self._camera_distance = self._camera_goal_distance;
             }
         }
+    }
+
+    pub fn update_game_camera(&mut self, pitch_control: f32, yaw_control: f32, zoom_control: f32, delta_time: f32) {
+        self.update_camera_distance(zoom_control, delta_time);
+        if self._lock_camera_rotation {
+            self.update_camera_pitch_by_distance();
+        } else {
+            self.update_camera_rotation(pitch_control, yaw_control, delta_time);
+        }
+    }
+
+    pub fn apply_game_camera_transform(&mut self, main_camera: &mut CameraObjectData, player: &mut Character) {
+        main_camera._transform_object.set_pitch(self._camera_pitch);
+        main_camera._transform_object.set_yaw(self._camera_yaw);
+        main_camera._transform_object.set_roll(0.0);
+        main_camera._transform_object.update_transform_object();
+
+        let player_center = &player.get_bounding_box()._center;
+        let camera_dir = -main_camera._transform_object.get_front();
+        self._camera_position = player_center + camera_dir * self._camera_distance;
+        let mut collision_point: Vector3<f32> = Vector3::zeros();
+        let scene_manager = self.get_game_client().get_game_scene_manager().get_scene_manager();
+        if scene_manager.get_height_map_data().get_collision_point(
+            &(player_center + camera_dir),
+            &camera_dir,
+            self._camera_distance,
+            CAMERA_COLLIDE_PADDING,
+            &mut collision_point) {
+            self._camera_position = collision_point;
+        }
+        main_camera._transform_object.set_position(&self._camera_position);
+    }
+
+    pub fn update_camera_blend_mode(&mut self, time_data: &TimeData, main_camera: &mut CameraObjectData, player: &RcRefCell<Character>) {
+        let delta_time: f32 = time_data._delta_time as f32;
+        self._camera_goal_pitch = main_camera._transform_object.get_pitch();
+        self._camera_pitch = self._camera_goal_pitch;
+        self._camera_goal_yaw = main_camera._transform_object.get_yaw();
+        self._camera_yaw = self._camera_goal_yaw;
+
+        let rotation_matrix: Matrix4<f32> = math::make_rotation_matrix(self._camera_pitch, self._camera_yaw, 0f32);
+        let goal_camera_position = player.borrow().get_bounding_box()._center - rotation_matrix.column(2).xyz() * self._camera_distance;
+        let mut to_goal_camera = goal_camera_position - main_camera._transform_object.get_position();
+        let mut to_goal_dist = to_goal_camera.magnitude();
+        if 0.0 < to_goal_dist {
+            to_goal_camera /= to_goal_dist;
+        }
+        let t = 1.0 - (-to_goal_dist).exp();
+        let camera_blend_speed = math::lerp(CAMERA_POSITION_BLEND_SPEED_MIN, CAMERA_POSITION_BLEND_SPEED_MAX, t * t);
+        to_goal_dist -= camera_blend_speed * delta_time;
+
+        if to_goal_dist < 0.0 {
+            self._camera_position = goal_camera_position;
+            self.set_camera_blend_mode(false);
+        } else {
+            self._camera_position = goal_camera_position - to_goal_camera * to_goal_dist;
+        }
+
+        main_camera._transform_object.set_position(&self._camera_position);
     }
 
     pub fn update_game_controller(
@@ -196,7 +262,6 @@ impl<'a> GameController<'a> {
         main_camera: &mut CameraObjectData,
         player: &RcRefCell<Character>,
     ) {
-        let lock_camera_rotation: bool = false;
         let delta_time: f32 = time_data._delta_time as f32;
         let is_attack: bool = mouse_input_data._btn_l_pressed
             || joystick_input_data._btn_right_shoulder == ButtonState::Pressed;
@@ -402,38 +467,7 @@ impl<'a> GameController<'a> {
             player_mut.set_action_power_attack();
         }
 
-        self.update_camera_distance(zoom_control, delta_time);
-
-        if lock_camera_rotation {
-            self.update_camera_pitch_by_distance();
-        } else {
-            self.update_camera_rotation(pitch_control, yaw_control, delta_time);
-        }
-
-        // update camera transform
-        main_camera._transform_object.set_pitch(self._camera_pitch);
-        main_camera._transform_object.set_yaw(self._camera_yaw);
-        main_camera._transform_object.set_roll(0.0);
-        main_camera._transform_object.update_transform_object();
-
-        let player_center = &player_mut.get_bounding_box()._center;
-        let camera_dir = -main_camera._transform_object.get_front();
-        let camera_distance = self._camera_distance;
-        let mut camera_position = player_center + camera_dir * camera_distance;
-        let mut collision_point: Vector3<f32> = Vector3::zeros();
-        let scene_manager = self
-            .get_game_client()
-            .get_game_scene_manager()
-            .get_scene_manager();
-        if scene_manager.get_height_map_data().get_collision_point(
-            &(player_center + camera_dir),
-            &camera_dir,
-            camera_distance,
-            CAMERA_COLLIDE_PADDING,
-            &mut collision_point,
-        ) {
-            camera_position = collision_point;
-        }
-        main_camera._transform_object.set_position(&camera_position);
+        self.update_game_camera(pitch_control, yaw_control, zoom_control, delta_time);
+        self.apply_game_camera_transform(main_camera, &mut player_mut);
     }
 }

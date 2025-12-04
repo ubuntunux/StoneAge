@@ -30,8 +30,7 @@ pub type ScenarioMap<'a> = HashMap<String, RcRefCell<dyn ScenarioBase + 'a>>;
 pub enum GameSceneState {
     None,
     Loading,
-    PlayGame,
-    PlayingScenario,
+    PlayGame
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
@@ -58,6 +57,8 @@ pub struct GameSceneManager<'a> {
     pub _current_game_scene_data: Option<RcRefCell<GameSceneDataCreateInfo>>,
     pub _ambient_sound: Option<RcRefCell<AudioInstance>>,
     pub _spawn_point: Vector3<f32>,
+    pub _teleport_stage: Option<String>,
+    pub _teleport_gate: Option<String>,
     pub _time_of_day: f32,
     pub _temperature: f32,
     pub _date: u32,
@@ -123,6 +124,8 @@ impl<'a> GameSceneManager<'a> {
             _scenario_map: Default::default(),
             _ambient_sound: None,
             _spawn_point: Vector3::new(0.0, 0.0, 0.0),
+            _teleport_stage: None,
+            _teleport_gate: None,
             _time_of_day: TIME_OF_MORNING,
             _temperature: 30.0,
             _date: 1,
@@ -197,6 +200,34 @@ impl<'a> GameSceneManager<'a> {
 
     pub fn get_current_game_scene_data_name(&self) -> &String {
         &self._current_game_scene_data_name
+    }
+
+    // update teleport
+    pub fn is_teleport_mode(&self) -> bool {
+        self._teleport_stage.is_some()
+    }
+    pub fn set_teleport_stage(&mut self, teleport_stage: &str, teleport_gate: &str) {
+        self._teleport_stage = Some(String::from(teleport_stage));
+        self._teleport_gate = Some(String::from(teleport_gate));
+    }
+
+    pub fn update_teleport(&mut self, character_manager: &CharacterManager<'a>) {
+        if self._teleport_stage.is_some() {
+            let game_scene_data_name = ptr_as_ref(self._teleport_stage.as_ref().unwrap().as_str());
+            if self.get_current_game_scene_data_name().eq(game_scene_data_name) == false {
+                self.close_game_scene_data();
+                self.open_game_scene_data(game_scene_data_name);
+            }
+            self._teleport_stage = None;
+        }
+
+        if self._teleport_stage.is_none() && self._teleport_gate.is_some() && self.is_game_scene_state(GameSceneState::PlayGame) {
+            let teleport_point = self.get_prop_manager().get_teleport_point(self._teleport_gate.as_ref().unwrap().as_str());
+            if teleport_point.is_some() && character_manager.is_valid_player() {
+                character_manager.get_player().borrow_mut().set_position(teleport_point.as_ref().unwrap());
+            }
+            self._teleport_gate = None;
+        }
     }
 
     // scenario
@@ -390,7 +421,16 @@ impl<'a> GameSceneManager<'a> {
         }
     }
 
-    pub fn update_game_scene_manager(&mut self, any_key_hold: bool, delta_time: f64) {
+    pub fn update_game_scenario(&mut self, any_key_hold: bool, delta_time: f64) {
+        if self.has_scenario() {
+            self._scenario_map.values_mut().for_each(|scenario| {
+                scenario.borrow_mut().update_game_scenario(any_key_hold, delta_time)
+            });
+            self._scenario_map.retain(|_key, value| value.borrow().is_end_of_scenario() == false)
+        }
+    }
+
+    pub fn update_game_scene_manager(&mut self, delta_time: f64) {
         match self._game_scene_state {
             GameSceneState::None => {}
             GameSceneState::Loading => {
@@ -400,24 +440,6 @@ impl<'a> GameSceneManager<'a> {
                 }
             }
             GameSceneState::PlayGame => {
-                if self.has_scenario() {
-                    self.set_game_scene_state(GameSceneState::PlayingScenario);
-                }
-                self.update_time_of_day(delta_time);
-                self._prop_manager.update_prop_manager(delta_time);
-                self._item_manager.update_item_manager(delta_time);
-                self._character_manager.update_character_manager(delta_time);
-            }
-            GameSceneState::PlayingScenario => {
-                if self.has_scenario() {
-                    self._scenario_map.values_mut().for_each(|scenario| {
-                        scenario.borrow_mut().update_game_scenario(any_key_hold, delta_time)
-                    });
-                    self._scenario_map.retain(|_key, value| value.borrow().is_end_of_scenario() == false)
-                } else {
-                    self.set_game_scene_state(GameSceneState::PlayGame);
-                }
-
                 self.update_time_of_day(delta_time);
                 self._prop_manager.update_prop_manager(delta_time);
                 self._item_manager.update_item_manager(delta_time);

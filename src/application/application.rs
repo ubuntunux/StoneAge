@@ -152,10 +152,8 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
             let scene_manager = self.get_game_scene_manager().get_scene_manager();
             let main_camera = scene_manager.get_main_camera_mut();
             let main_light = ptr_as_mut(scene_manager.get_main_light().as_ptr());
-            let camera_move_speed_multiplier = if modifier_keys_shift { 20000.0 } else { 1.0 };
-            let move_speed: f32 = game_constants::EDITOR_CAMERA_MOVE_SPEED
-                * camera_move_speed_multiplier
-                * delta_time as f32;
+            let camera_move_speed_multiplier = if modifier_keys_shift { 10.0 } else { 1.0 };
+            let move_speed: f32 = game_constants::EDITOR_CAMERA_MOVE_SPEED * camera_move_speed_multiplier * delta_time as f32;
             let pan_speed = game_constants::EDITOR_CAMERA_PAN_SPEED * camera_move_speed_multiplier;
             let rotation_speed = game_constants::EDITOR_CAMERA_ROTATION_SPEED;
 

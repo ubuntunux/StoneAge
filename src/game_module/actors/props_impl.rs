@@ -387,7 +387,7 @@ impl<'a> PropManager<'a> {
                                 let linked_gate = prop._instance_parameters.get("_linked_gate");
                                 let linked_stage = prop._instance_parameters.get("_linked_stage");
                                 if linked_stage.is_some() && linked_gate.is_some() {
-                                    self.get_game_client_mut().teleport_stage(
+                                    self.get_game_scene_manager_mut().set_teleport_stage(
                                         linked_stage.unwrap().as_str().unwrap(),
                                         linked_gate.unwrap().as_str().unwrap(),
                                     );
