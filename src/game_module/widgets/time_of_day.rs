@@ -19,10 +19,9 @@ impl<'a> TimeOfDayWidget<'a> {
         root_widget: &mut WidgetDefault<'a>,
         tod_material_instance: &RcRefCell<MaterialInstanceData<'a>>
     ) -> TimeOfDayWidget<'a> {
-        let time_of_day_widget =
-            UIManager::create_widget("time_of_day_widget", UIWidgetTypes::Default);
-        let time_of_day_widget_ptr = ptr_as_mut(time_of_day_widget.as_ref());
-        let ui_component = ptr_as_mut(time_of_day_widget.as_ref()).get_ui_component_mut();
+        let parent_layer = UIManager::create_widget("time_of_day_widget", UIWidgetTypes::Default);
+        let parent_layer_ptr = ptr_as_mut(parent_layer.as_ref());
+        let ui_component = parent_layer_ptr.get_ui_component_mut();
         ui_component.set_size(250.0, 250.0);
         ui_component.set_layout_type(UILayoutType::BoxLayout);
         ui_component.set_layout_orientation(Orientation::VERTICAL);
@@ -30,13 +29,47 @@ impl<'a> TimeOfDayWidget<'a> {
         ui_component.set_valign(VerticalAlign::CENTER);
         ui_component.set_pos_hint_x(PosHintX::Right(1.0));
         ui_component.set_pos_hint_y(PosHintY::Top(0.0));
-        ui_component.set_material_instance(Some(tod_material_instance.clone()));
         ui_component.set_margin(20.0);
         ui_component.set_padding(10.0);
         ui_component.set_round(15.0);
-        ui_component.set_border(2.0);
+        //ui_component.set_border(2.0);
+        ui_component.set_color(get_color32(0, 0, 0, 160));
+        root_widget.add_widget(&parent_layer);
+
+        // top layer
+        let top_widget = UIManager::create_widget("tod_layer", UIWidgetTypes::Default);
+        let top_widget_mut = ptr_as_mut(top_widget.as_ref());
+        let ui_component = top_widget_mut.get_ui_component_mut();
+        ui_component.set_layout_type(UILayoutType::BoxLayout);
+        ui_component.set_size_hint_x(Some(1.0));
+        ui_component.set_size_hint_y(Some(0.5));
+        ui_component.set_halign(HorizontalAlign::CENTER);
+        ui_component.set_valign(VerticalAlign::TOP);
+        ui_component.set_color(get_color32(255, 255, 255, 0));
+        parent_layer_ptr.add_widget(&top_widget);
+
+        let time_of_day_widget = UIManager::create_widget("tod_widget", UIWidgetTypes::Default);
+        let time_of_day_widget_ptr = ptr_as_mut(time_of_day_widget.as_ref());
+        let ui_component = time_of_day_widget_ptr.get_ui_component_mut();
+        ui_component.set_size_hint_x(Some(1.0));
+        ui_component.set_size_hint_y(Some(2.0));
         ui_component.set_texture_wrap_mode(vk::SamplerAddressMode::CLAMP_TO_EDGE);
-        root_widget.add_widget(&time_of_day_widget);
+        ui_component.set_material_instance(Some(tod_material_instance.clone()));
+        ui_component.set_enable_renderable_area(true);
+        top_widget_mut.add_widget(&time_of_day_widget);
+
+        // bottom layer
+        let bottom_widget = UIManager::create_widget("top_widget", UIWidgetTypes::Default);
+        let bottom_widget_mut = ptr_as_mut(bottom_widget.as_ref());
+        let ui_component = bottom_widget_mut.get_ui_component_mut();
+        ui_component.set_layout_type(UILayoutType::BoxLayout);
+        ui_component.set_layout_orientation(Orientation::VERTICAL);
+        ui_component.set_size_hint_x(Some(1.0));
+        ui_component.set_size_hint_y(Some(0.5));
+        ui_component.set_halign(HorizontalAlign::CENTER);
+        ui_component.set_valign(VerticalAlign::CENTER);
+        ui_component.set_color(get_color32(255, 255, 255, 0));
+        parent_layer_ptr.add_widget(&bottom_widget);
 
         let date_widget = UIManager::create_widget("date_widget", UIWidgetTypes::Default);
         let date_widget_ptr = ptr_as_mut(date_widget.as_ref());
@@ -48,7 +81,7 @@ impl<'a> TimeOfDayWidget<'a> {
         ui_component.set_font_size(35.0);
         ui_component.set_font_color(get_color32(255, 255, 255, 255));
         ui_component.set_color(get_color32(255, 255, 255, 0));
-        time_of_day_widget_ptr.add_widget(&date_widget);
+        bottom_widget_mut.add_widget(&date_widget);
 
         let time_widget = UIManager::create_widget("time_widget", UIWidgetTypes::Default);
         let time_widget_ptr = ptr_as_mut(time_widget.as_ref());
@@ -60,7 +93,7 @@ impl<'a> TimeOfDayWidget<'a> {
         ui_component.set_font_size(35.0);
         ui_component.set_font_color(get_color32(255, 255, 255, 255));
         ui_component.set_color(get_color32(255, 255, 255, 0));
-        time_of_day_widget_ptr.add_widget(&time_widget);
+        bottom_widget_mut.add_widget(&time_widget);
 
         let temperature_widget = UIManager::create_widget("temperature", UIWidgetTypes::Default);
         let temperature_widget_ptr = ptr_as_mut(temperature_widget.as_ref());
@@ -72,7 +105,7 @@ impl<'a> TimeOfDayWidget<'a> {
         ui_component.set_font_size(35.0);
         ui_component.set_font_color(get_color32(255, 255, 255, 255));
         ui_component.set_color(get_color32(255, 255, 255, 0));
-        time_of_day_widget_ptr.add_widget(&temperature_widget);
+        bottom_widget_mut.add_widget(&temperature_widget);
 
         TimeOfDayWidget {
             _time_of_day_widget: time_of_day_widget_ptr,
