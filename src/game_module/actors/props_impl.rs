@@ -348,7 +348,10 @@ impl<'a> PropManager<'a> {
                         }
                         PropDataType::Destruction | PropDataType::Harvestable => {
                             if prop_type == PropDataType::Destruction || prop_type == PropDataType::Harvestable && prop.can_drop_item() {
-                                if player._animation_state.is_attack_event() && player.check_in_range(prop.get_collision(), NPC_ATTACK_HIT_RANGE, check_direction) {
+                                let was_in_range = prop._prop_stats._is_in_player_range;
+                                prop._prop_stats._is_in_player_range = player.check_in_range(prop.get_collision(), NPC_ATTACK_HIT_RANGE, check_direction);
+
+                                if player._animation_state.is_attack_event() && prop._prop_stats._is_in_player_range {
                                     prop.set_hit_damage(player.get_power(player._animation_state.get_action_event()));
 
                                     if false == prop.is_alive() {
@@ -363,6 +366,12 @@ impl<'a> PropManager<'a> {
                                             dead_props.push(prop_refcell.clone());
                                         }
                                     }
+                                }
+
+                                if was_in_range == false && prop._prop_stats._is_in_player_range && prop.is_alive() {
+                                    player._controller.add_interaction_object(InteractionObject::PropGathering(prop_refcell.clone()));
+                                } else if was_in_range && prop._prop_stats._is_in_player_range == false || prop.is_alive() == false {
+                                    player._controller.remove_interaction_object(InteractionObject::PropGathering(prop_refcell.clone()));
                                 }
                             }
                         }

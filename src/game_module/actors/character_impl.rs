@@ -26,9 +26,10 @@ impl<'a> InteractionObject<'a> {
     pub fn get_key(&self) -> *const c_void {
         match self {
             InteractionObject::None => { std::ptr::null() }
-            InteractionObject::PropBed(prop) => { prop.as_ptr() as *const c_void }
-            InteractionObject::PropPickup(prop) => { prop.as_ptr() as *const c_void },
-            InteractionObject::PropGate(prop) => { prop.as_ptr() as *const c_void },
+            InteractionObject::PropBed(prop) |
+            InteractionObject::PropPickup(prop) |
+            InteractionObject::PropGate(prop) |
+            InteractionObject::PropGathering(prop) => { prop.as_ptr() as *const c_void }
         }
     }
 
@@ -38,13 +39,17 @@ impl<'a> InteractionObject<'a> {
             InteractionObject::PropBed(_) => "Sleep",
             InteractionObject::PropPickup(_) => "Pick up",
             InteractionObject::PropGate(_) => "Enter Gate",
+            InteractionObject::PropGathering(_) => "Gathering",
         }
     }
 
     pub fn get_position(&self) -> Vector3<f32> {
         match self {
             InteractionObject::None => Vector3::new(0.0, 0.0, 0.0),
-            InteractionObject::PropBed(prop) | InteractionObject::PropPickup(prop) | InteractionObject::PropGate(prop) => {
+            InteractionObject::PropBed(prop) |
+            InteractionObject::PropPickup(prop) |
+            InteractionObject::PropGate(prop) |
+            InteractionObject::PropGathering(prop) => {
                 prop.borrow().get_bounding_box().get_center().clone()
             }
         }
@@ -606,7 +611,7 @@ impl<'a> Character<'a> {
             self.set_move_stop();
 
             match self._controller._nearest_interaction_object {
-                InteractionObject::None => {}
+                InteractionObject::None  => {}
                 InteractionObject::PropBed(_) => {
                     self.set_action_animation(ActionAnimationState::LayingDown, 2.0);
                 }
@@ -616,6 +621,7 @@ impl<'a> Character<'a> {
                 InteractionObject::PropGate(_) => {
                     self.set_action_animation(ActionAnimationState::EnterGate, 1.0);
                 }
+                InteractionObject::PropGathering(_) => {}
             }
         }
     }

@@ -1,9 +1,11 @@
 use std::collections::HashMap;
+use std::ffi::c_void;
 use nalgebra::{Vector2};
 use rust_engine_3d::scene::material_instance::MaterialInstanceData;
 use rust_engine_3d::scene::ui::{HorizontalAlign, Orientation, PosHintX, PosHintY, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault};
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
+use crate::game_module::actors::character::InteractionObject;
 use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::game_controller::{GameController, InputControlType};
 use crate::game_module::game_resource::GameResources;
@@ -22,6 +24,7 @@ pub struct ControllerHelpWidget<'a> {
     pub _joystick_material_instance_map: HashMap<InputControlType, Option<Vec<RcRefCell<MaterialInstanceData<'a>>>>>,
     pub _key_binding_widget_map: HashMap<InputControlType, KeyBindingWidget<'a>>,
     pub _is_keyboard_input_mode: bool,
+    pub _last_interaction_object_key: *const c_void,
 }
 
 pub struct KeyBindingWidget<'a> {
@@ -149,6 +152,9 @@ impl<'a> ControllerHelpWidget<'a> {
         // interaction
         let interaction_key_binding_widget = KeyBindingWidget::create_key_binding_widget(root_widget, 1, "interaction_key_binding", "Interaction", None);
 
+        // gathering
+        let gathering_key_binding_widget = KeyBindingWidget::create_key_binding_widget(root_widget, 1, "gathering_key_binding", "Gathering", None);
+
         // quick slot
         let use_item01_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(0)._widget), 1, "use_item01_key_binding", "", Some(Vector2::new(0.5, 1.3)));
         let use_item02_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(1)._widget), 1, "use_item02_key_binding", "", Some(Vector2::new(0.5, 1.3)));
@@ -161,14 +167,13 @@ impl<'a> ControllerHelpWidget<'a> {
         let use_item09_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(8)._widget), 1, "use_item09_key_binding", "", Some(Vector2::new(0.5, 1.3)));
         let use_item10_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(9)._widget), 1, "use_item10_key_binding", "", Some(Vector2::new(0.5, 1.3)));
 
-        let _material_none = engine_resources.get_material_instance_data("ui/controller/controller_none");
-
         let mut character_controller_help_widget = ControllerHelpWidget {
             _character_controller_help_widget: character_controller_help_widget_mut,
             _keyboard_material_instance_map: HashMap::from([
                 (InputControlType::Attack, Some(vec![engine_resources.get_material_instance_data("ui/controller/mouse_l").clone()])),
                 (InputControlType::PowerAttack, Some(vec![engine_resources.get_material_instance_data("ui/controller/mouse_r").clone()])),
                 (InputControlType::Interaction, Some(vec![engine_resources.get_material_instance_data("ui/controller/keycode_f").clone()])),
+                (InputControlType::Gathering, Some(vec![engine_resources.get_material_instance_data("ui/controller/mouse_l").clone()])),
                 (InputControlType::CameraRotation, Some(vec![engine_resources.get_material_instance_data("ui/controller/mouse").clone()])),
                 (InputControlType::Zoom, Some(vec![engine_resources.get_material_instance_data("ui/controller/mouse_m").clone()])),
                 (InputControlType::Move, Some(vec![
@@ -200,6 +205,7 @@ impl<'a> ControllerHelpWidget<'a> {
                 (InputControlType::Attack, Some(vec![engine_resources.get_material_instance_data("ui/controller/joystick_rb").clone()])),
                 (InputControlType::PowerAttack, Some(vec![engine_resources.get_material_instance_data("ui/controller/joystick_rt").clone()])),
                 (InputControlType::Interaction, Some(vec![engine_resources.get_material_instance_data("ui/controller/joystick_x").clone()])),
+                (InputControlType::Gathering, Some(vec![engine_resources.get_material_instance_data("ui/controller/joystick_rb").clone()])),
                 (InputControlType::CameraRotation, Some(vec![engine_resources.get_material_instance_data("ui/controller/joystick_l_stick").clone()])),
                 (InputControlType::Zoom, Some(vec![
                     engine_resources.get_material_instance_data("ui/controller/joystick_up").clone(),
@@ -229,6 +235,7 @@ impl<'a> ControllerHelpWidget<'a> {
                 (InputControlType::Attack, attack_key_binding_widget),
                 (InputControlType::PowerAttack, power_attack_key_binding_widget),
                 (InputControlType::Interaction, interaction_key_binding_widget),
+                (InputControlType::Gathering, gathering_key_binding_widget),
                 (InputControlType::CameraRotation, camera_key_binding_widget),
                 (InputControlType::Zoom, zoom_key_binding_widget),
                 (InputControlType::Move, move_key_binding_widget),
@@ -249,6 +256,7 @@ impl<'a> ControllerHelpWidget<'a> {
                 (InputControlType::UseItem10, use_item10_key_binding_widget)
             ]),
             _is_keyboard_input_mode: true,
+            _last_interaction_object_key: std::ptr::null(),
         };
 
         character_controller_help_widget.update_key_binding_widgets( character_controller_help_widget._is_keyboard_input_mode );
@@ -266,6 +274,18 @@ impl<'a> ControllerHelpWidget<'a> {
         ui_component.set_pos_y(window_size.y as f32 - ui_component.get_ui_size().y - MAIN_LAYOUT_MARGIN * 2.0);
     }
 
+    pub fn update_custom_key_binding_widgets(&mut self, key_binding_widget_type: InputControlType, material_instance_type: InputControlType) {
+        let material_instance_map = if self._is_keyboard_input_mode {
+            &self._keyboard_material_instance_map
+        } else {
+            &self._joystick_material_instance_map
+        };
+
+        let key_binding_widget = self._key_binding_widget_map.get_mut(&key_binding_widget_type).unwrap();
+        let material_instance_data: Option<Vec<RcRefCell<MaterialInstanceData<'a>>>> = material_instance_map.get(&material_instance_type).unwrap().clone();
+        key_binding_widget.update_icon_material_instance(material_instance_data);
+    }
+
     pub fn update_key_binding_widgets(&mut self, is_keyboard_input_mode: bool) {
         let material_instance_map = if is_keyboard_input_mode {
             &self._keyboard_material_instance_map
@@ -279,6 +299,49 @@ impl<'a> ControllerHelpWidget<'a> {
         }
     }
 
+    pub fn update_interaction_widget(&mut self, input_control_type: InputControlType, game_scene_manager: &GameSceneManager) {
+        let character_manager = game_scene_manager.get_character_manager();
+        let interaction_key_binding_widget = self._key_binding_widget_map.get(&input_control_type).unwrap();
+        let interaction_widget = ptr_as_mut(interaction_key_binding_widget._layout_widget);
+
+        let mut is_visible_interaction_widget = false;
+
+        if character_manager.is_valid_player() {
+            let player = character_manager.get_player().borrow();
+            if player.is_in_interaction_range() {
+                let interaction_object = player.get_nearest_interaction_object();
+                let is_matched = match interaction_object {
+                    InteractionObject::None => {
+                        false
+                    }
+                    InteractionObject::PropBed(_) |
+                    InteractionObject::PropPickup(_) |
+                    InteractionObject::PropGate(_) => {
+                        input_control_type == InputControlType::Interaction
+                    }
+                    InteractionObject::PropGathering(_) => {
+                        input_control_type == InputControlType::Gathering
+                    }
+                };
+
+                if is_matched {
+                    let position = interaction_object.get_position();
+                    let main_camera = game_scene_manager.get_scene_manager().get_main_camera();
+                    let screen_position = main_camera.convert_world_to_screen(&position, false);
+                    interaction_widget._ui_component.set_pos(screen_position.x, screen_position.y);
+                    if self._last_interaction_object_key != interaction_object.get_key() {
+                        let binding_name_widget = ptr_as_mut(interaction_key_binding_widget._binding_name_widget);
+                        binding_name_widget._ui_component.set_text(interaction_object.get_interaction_name());
+                        self._last_interaction_object_key = interaction_object.get_key();
+                    }
+                    is_visible_interaction_widget = true;
+                }
+            }
+        }
+
+        interaction_widget._ui_component.set_visible(is_visible_interaction_widget);
+    }
+
     pub fn update_controller_help_widget(&mut self, game_scene_manager: &GameSceneManager, game_controller: &GameController) {
         let is_keyboard_input_mode = game_controller.is_keyboard_input_mode();
         if self._is_keyboard_input_mode != is_keyboard_input_mode {
@@ -287,26 +350,7 @@ impl<'a> ControllerHelpWidget<'a> {
         }
 
         // update interaction icon visibility
-        let character_manager = game_scene_manager.get_character_manager();
-        let interaction_key_binding_widget = self._key_binding_widget_map.get(&InputControlType::Interaction).unwrap();
-        let interaction_widget = ptr_as_mut(interaction_key_binding_widget._layout_widget);
-        let mut is_visible_interaction_widget = false;
-        if character_manager.is_valid_player() {
-            let player = character_manager.get_player().borrow();
-            if player.is_in_interaction_range() {
-                let interaction_object = player.get_nearest_interaction_object();
-                let position = interaction_object.get_position();
-                let main_camera = game_scene_manager.get_scene_manager().get_main_camera();
-                let screen_position = main_camera.convert_world_to_screen(&position, false);
-                interaction_widget._ui_component.set_pos(screen_position.x, screen_position.y);
-                let binding_name_widget = ptr_as_mut(interaction_key_binding_widget._binding_name_widget);
-                binding_name_widget._ui_component.set_text(interaction_object.get_interaction_name());
-                is_visible_interaction_widget = true;
-            }
-        }
-
-        if interaction_widget._ui_component.get_visible() != is_visible_interaction_widget {
-            interaction_widget._ui_component.set_visible(is_visible_interaction_widget);
-        }
+        self.update_interaction_widget(InputControlType::Interaction, game_scene_manager);
+        self.update_interaction_widget(InputControlType::Gathering, game_scene_manager);
     }
 }

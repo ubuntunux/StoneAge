@@ -19,6 +19,7 @@ pub enum InputControlType {
     Attack,
     PowerAttack,
     Interaction,
+    Gathering,
     CameraRotation,
     Zoom,
     Move,
