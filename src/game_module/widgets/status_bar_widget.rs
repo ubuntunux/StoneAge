@@ -68,11 +68,11 @@ impl<'a> StatusBarWidget<'a> {
         }
     }
 
-    pub fn update_status_widget(&self, status: f32, max_status: f32, max_status_data: f32, delta_time: f64) {
+    pub fn update_status_widget(&self, status: f32, max_status: f32, max_status_data: f32, delta_time: f64, smooth_update: bool) {
         let status_ratio = 0f32.max(1.0f32.min(status / max_status_data));
         let status_bar = ptr_as_mut(self._status_bar).get_ui_component_mut();
         let mut status = status_bar.get_size_hint_x().unwrap_or(1.0);
-        if status < status_ratio {
+        if smooth_update && status < status_ratio {
             status = status_ratio.min(status + delta_time as f32 * STATUS_BAR_DECAY_SPEED);
             status_bar.set_size_hint_x(Some(status));
         } else {
@@ -82,7 +82,7 @@ impl<'a> StatusBarWidget<'a> {
         let max_status_ratio = 1.0f32.min(max_status / max_status_data);
         let max_status_bar = ptr_as_mut(self._max_status_bar).get_ui_component_mut();
         let mut size_hint_x = max_status_bar.get_size_hint_x().unwrap_or(1.0);
-        if max_status_ratio < size_hint_x {
+        if smooth_update && max_status_ratio < size_hint_x {
             size_hint_x = max_status_ratio.max(size_hint_x - delta_time as f32 * STATUS_BAR_DECAY_SPEED);
             max_status_bar.set_size_hint_x(Some(size_hint_x));
         } else {

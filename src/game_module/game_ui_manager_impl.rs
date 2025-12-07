@@ -349,24 +349,15 @@ impl<'a> GameUIManager<'a> {
         // player hud
         if let Some(player_hud) = self._player_hud.as_mut() {
             if game_scene_manager.get_character_manager().is_valid_player() {
-                let player = game_scene_manager
-                    .get_character_manager()
-                    .get_player()
-                    .borrow();
+                let player = game_scene_manager.get_character_manager().get_player().borrow();
                 player_hud.update_status_widget(&player, delta_time);
             }
         }
 
         // target status
         if let Some(target_status_bar) = self._target_status_bar.as_mut() {
-            if game_scene_manager
-                .get_character_manager()
-                .is_valid_target_character()
-            {
-                let target = game_scene_manager
-                    .get_character_manager()
-                    .get_target_character()
-                    .borrow();
+            if game_scene_manager.get_character_manager().is_valid_target_character() {
+                let target = game_scene_manager.get_character_manager().get_target_character().borrow();
                 target_status_bar.update_status_widget(&target, delta_time);
             } else {
                 target_status_bar.fade_out_status_widget();

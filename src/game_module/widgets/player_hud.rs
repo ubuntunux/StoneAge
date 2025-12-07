@@ -24,7 +24,6 @@ impl<'a> PlayerHud<'a> {
         let player_widget = UIManager::create_widget("player_widget", UIWidgetTypes::Default);
         let player_widget_ptr = ptr_as_mut(player_widget.as_ref());
         let ui_component = ptr_as_mut(player_widget.as_ref()).get_ui_component_mut();
-        ui_component.set_pos(100.0, 100.0);
         ui_component.set_size(hud_layer_width, hud_layer_height);
         ui_component.set_layout_type(UILayoutType::BoxLayout);
         ui_component.set_layout_orientation(Orientation::VERTICAL);
@@ -60,13 +59,15 @@ impl<'a> PlayerHud<'a> {
             player.get_stats().get_hp() as f32,
             player.get_stats().get_max_hp() as f32,
             player.get_stats().get_max_hp_data() as f32,
-            delta_time
+            delta_time,
+            true
         );
         self._stamina_widget.update_status_widget(
             player.get_stats().get_stamina(),
             player.get_stats().get_max_stamina(),
             player.get_stats().get_max_stamina_data(),
-            delta_time
+            delta_time,
+            true
         );
     }
 }
