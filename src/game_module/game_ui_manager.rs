@@ -18,6 +18,7 @@ pub struct EditorUIManager<'a> {
     pub _editor_ui_layout: *const WidgetDefault<'a>,
     pub _actor_positions: Vec<*const WidgetDefault<'a>>,
     pub _window_size: Vector2<i32>,
+    pub _need_to_refresh: bool,
 }
 
 pub struct GameUIManager<'a> {
@@ -34,4 +35,5 @@ pub struct GameUIManager<'a> {
     pub _time_of_day: Option<Box<TimeOfDayWidget<'a>>>,
     pub _item_bar_widget: Option<Box<ItemBarWidget<'a>>>,
     pub _window_size: Vector2<i32>,
+    pub _need_to_refresh: bool,
 }

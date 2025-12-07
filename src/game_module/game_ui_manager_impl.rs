@@ -12,6 +12,7 @@ use crate::game_module::widgets::target_status_bar::TargetStatusWidget;
 use crate::game_module::widgets::time_of_day::TimeOfDayWidget;
 use nalgebra::Vector2;
 use rust_engine_3d::core::engine_core::EngineCore;
+use rust_engine_3d::renderer::push_constants::PushConstantSize;
 use rust_engine_3d::scene::ui::{
     HorizontalAlign, UIComponentInstance, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault,
 };
@@ -28,6 +29,7 @@ impl<'a> EditorUIManager<'a> {
             _editor_ui_layout: std::ptr::null(),
             _actor_positions: Vec::new(),
             _window_size: Vector2::new(1024, 768),
+            _need_to_refresh: true,
         })
     }
 
@@ -72,7 +74,6 @@ impl<'a> EditorUIManager<'a> {
         ptr_as_mut(self._root_widget).add_widget(&editor_ui_layout);
         self._editor_ui_layout = editor_ui_layout.as_ref();
 
-        self.changed_window_size(window_size);
     }
 
     pub fn changed_window_size(&mut self, window_size: &Vector2<i32>) {
@@ -83,8 +84,16 @@ impl<'a> EditorUIManager<'a> {
     pub fn update_editor_ui(&mut self, _delta_time: f64) {
         let game_client = ptr_as_ref(self._game_client);
         let game_scene_manager = game_client.get_game_scene_manager();
+        let ui_manager = ptr_as_ref(self._ui_manager);
         let main_camera = game_scene_manager.get_scene_manager().get_main_camera();
         let characters = game_scene_manager.get_character_manager().get_characters();
+
+        if self._need_to_refresh || self._window_size != ui_manager._window_size {
+            self._window_size = ui_manager._window_size.clone();
+            self.changed_window_size(&ui_manager._window_size);
+            self._need_to_refresh = false;
+        }
+
         for (i, character) in characters.iter().enumerate() {
             if self._actor_positions.len() <= i {
                 let ui_layout = UIManager::create_widget("actor position", UIWidgetTypes::Default);
@@ -128,7 +137,8 @@ impl<'a> GameUIManager<'a> {
             _item_bar_widget: None,
             _player_hud: None,
             _controller_help_widget: None,
-            _window_size: Vector2::new(1024, 768),
+            _window_size: Vector2::new(0, 0),
+            _need_to_refresh: true,
         })
     }
 
@@ -204,7 +214,6 @@ impl<'a> GameUIManager<'a> {
             self._item_bar_widget.as_ref().unwrap(),
             game_resources
         )));
-        self.changed_window_size(window_size);
     }
 
     pub fn get_game_ui_layout(&self) -> *const WidgetDefault<'a> {
@@ -274,59 +283,29 @@ impl<'a> GameUIManager<'a> {
     }
 
     pub fn set_game_image_fade_speed(&mut self, fade_speed: f32) {
-        self._game_image
-            .as_mut()
-            .unwrap()
-            .set_game_image_fade_speed(fade_speed);
+        self._game_image.as_mut().unwrap().set_game_image_fade_speed(fade_speed);
     }
 
     pub fn changed_window_size(&mut self, window_size: &Vector2<i32>) {
         log::info!("GameUIComponents::changed_window_size: {:?}", window_size);
-        self._game_image
-            .as_mut()
-            .unwrap()
-            .changed_window_size(&window_size);
-        self._player_hud
-            .as_mut()
-            .unwrap()
-            .changed_window_size(&window_size);
-        self._controller_help_widget
-            .as_mut()
-            .unwrap()
-            .changed_window_size(&window_size);
-        self._target_status_bar
-            .as_mut()
-            .unwrap()
-            .changed_window_size(&window_size);
-        self._time_of_day
-            .as_mut()
-            .unwrap()
-            .changed_window_size(&window_size);
-        self._item_bar_widget
-            .as_mut()
-            .unwrap()
-            .changed_window_size(&window_size);
+        self._game_image.as_mut().unwrap().changed_window_size(&window_size);
+        self._player_hud.as_mut().unwrap().changed_window_size(&window_size);
+        self._controller_help_widget.as_mut().unwrap().changed_window_size(&window_size);
+        self._target_status_bar.as_mut().unwrap().changed_window_size(&window_size);
+        self._time_of_day.as_mut().unwrap().changed_window_size(&window_size);
+        self._item_bar_widget.as_mut().unwrap().changed_window_size(&window_size);
     }
 
     pub fn add_item(&mut self, item_data_type: &ItemDataType, item_count: usize) -> bool {
-        self._item_bar_widget
-            .as_mut()
-            .unwrap()
-            .add_item(item_data_type, item_count)
+        self._item_bar_widget.as_mut().unwrap().add_item(item_data_type, item_count)
     }
 
     pub fn remove_item(&mut self, item_data_type: &ItemDataType, item_count: usize) -> bool {
-        self._item_bar_widget
-            .as_mut()
-            .unwrap()
-            .remove_item(item_data_type, item_count)
+        self._item_bar_widget.as_mut().unwrap().remove_item(item_data_type, item_count)
     }
 
     pub fn get_selected_inventory_item_data_type(&self) -> ItemDataType {
-        self._item_bar_widget
-            .as_ref()
-            .unwrap()
-            .get_selected_item_type()
+        self._item_bar_widget.as_ref().unwrap().get_selected_item_type()
     }
 
     pub fn select_next_item(&mut self) {
@@ -334,31 +313,26 @@ impl<'a> GameUIManager<'a> {
     }
 
     pub fn select_previous_item(&mut self) {
-        self._item_bar_widget
-            .as_mut()
-            .unwrap()
-            .select_previous_item()
+        self._item_bar_widget.as_mut().unwrap().select_previous_item()
     }
 
     pub fn select_item_by_index(&mut self, item_index: usize) {
-        self._item_bar_widget
-            .as_mut()
-            .unwrap()
-            .select_item_by_index(item_index)
+        self._item_bar_widget.as_mut().unwrap().select_item_by_index(item_index)
     }
 
     pub fn update_game_ui(&mut self, delta_time: f64) {
         let game_client = ptr_as_ref(self._game_client);
         let game_scene_manager = game_client.get_game_scene_manager();
-        let window_size = &game_client.get_application().get_engine_core()._window_size;
+        let ui_manager = ptr_as_ref(self._ui_manager);
         let engine_core = ptr_as_ref(game_client._engine_core);
         let mouse_pos = &engine_core._mouse_move_data._mouse_pos;
         let game_controller = game_client.get_game_controller();
 
         // changed window size
-        if self._window_size != *window_size {
-            self._window_size = window_size.clone();
-            self.changed_window_size(window_size);
+        if self._need_to_refresh || self._window_size != ui_manager._window_size {
+            self._window_size = ui_manager._window_size.clone();
+            self.changed_window_size(&ui_manager._window_size);
+            self._need_to_refresh = false;
         }
 
         if let Some(cross_hair) = self._cross_hair.as_mut() {

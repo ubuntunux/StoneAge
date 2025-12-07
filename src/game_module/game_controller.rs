@@ -238,7 +238,7 @@ impl<'a> GameController<'a> {
             to_goal_camera /= to_goal_dist;
         }
         let t = 1.0 - (-to_goal_dist).exp();
-        let camera_blend_speed = math::lerp(CAMERA_POSITION_BLEND_SPEED_MIN, CAMERA_POSITION_BLEND_SPEED_MAX, t * t);
+        let camera_blend_speed = math::lerp(CAMERA_POSITION_BLEND_SPEED_MIN, CAMERA_POSITION_BLEND_SPEED_MAX, t);
         to_goal_dist -= camera_blend_speed * delta_time;
 
         if to_goal_dist < 0.0 {

@@ -138,8 +138,6 @@ impl<'a> ImageLayout<'a> {
         self._prev_opacity = self._opacity;
         self._prev_image_brightness = self._image_brightness;
 
-        self.changed_window_size(&self._window_size.clone());
-
         if fade_time == 0.0 {
             self.update_game_image(0.0, true);
         }
@@ -155,8 +153,6 @@ impl<'a> ImageLayout<'a> {
         self._image_aspect = self._next_image_aspect;
         self._prev_opacity = self._opacity;
         self._prev_image_brightness = self._image_brightness;
-
-        self.changed_window_size(&self._window_size.clone());
     }
 
     pub fn is_done_manual_fade_out(&self) -> bool {
@@ -187,9 +183,7 @@ impl<'a> ImageLayout<'a> {
         let window_aspect: f32 = window_size.x as f32 / window_size.y as f32;
         let image_widget = ptr_as_mut(self._image_layout.as_ref());
         let ui_component = image_widget.get_ui_component_mut();
-        ui_component.set_size_hint_x(Some(
-            self._image_aspect / window_aspect * self._image_size_hint,
-        ));
+        ui_component.set_size_hint_x(Some(self._image_aspect / window_aspect * self._image_size_hint));
         ui_component.set_size_hint_y(Some(self._image_size_hint));
     }
 
