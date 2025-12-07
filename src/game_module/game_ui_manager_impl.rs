@@ -12,7 +12,6 @@ use crate::game_module::widgets::target_status_bar::TargetStatusWidget;
 use crate::game_module::widgets::time_of_day::TimeOfDayWidget;
 use nalgebra::Vector2;
 use rust_engine_3d::core::engine_core::EngineCore;
-use rust_engine_3d::renderer::push_constants::PushConstantSize;
 use rust_engine_3d::scene::ui::{
     HorizontalAlign, UIComponentInstance, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault,
 };
@@ -57,13 +56,11 @@ impl<'a> EditorUIManager<'a> {
     pub fn show_editor_ui(&mut self, show: bool) {
         if false == self._editor_ui_layout.is_null() {
             let editor_ui_layout_mut = ptr_as_mut(self._editor_ui_layout);
-            editor_ui_layout_mut
-                .get_ui_component_mut()
-                .set_visible(show);
+            editor_ui_layout_mut.get_ui_component_mut().set_visible(show);
         }
     }
 
-    pub fn build_editor_ui(&mut self, window_size: &Vector2<i32>) {
+    pub fn build_editor_ui(&mut self, _window_size: &Vector2<i32>) {
         log::info!("build_editor_ui");
         let editor_ui_layout = UIManager::create_widget("editor ui layout", UIWidgetTypes::Default);
         let editor_ui_layout_mut: &mut WidgetDefault = ptr_as_mut(editor_ui_layout.as_ref());

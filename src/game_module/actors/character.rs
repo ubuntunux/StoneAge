@@ -16,6 +16,7 @@ pub enum InteractionObject<'a> {
     None,
     PropBed(RcRefCell<Prop<'a>>),
     PropPickup(RcRefCell<Prop<'a>>),
+    PropGate(RcRefCell<Prop<'a>>),
 }
 
 #[derive(Serialize, Deserialize, Default, Debug, Clone, PartialEq)]

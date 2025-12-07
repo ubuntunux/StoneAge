@@ -27,7 +27,8 @@ impl<'a> InteractionObject<'a> {
         match self {
             InteractionObject::None => { std::ptr::null() }
             InteractionObject::PropBed(prop) => { prop.as_ptr() as *const c_void }
-            InteractionObject::PropPickup(prop) => { prop.as_ptr() as *const c_void }
+            InteractionObject::PropPickup(prop) => { prop.as_ptr() as *const c_void },
+            InteractionObject::PropGate(prop) => { prop.as_ptr() as *const c_void },
         }
     }
 
@@ -35,29 +36,27 @@ impl<'a> InteractionObject<'a> {
         match self {
             InteractionObject::None => "",
             InteractionObject::PropBed(_) => "Sleep",
-            InteractionObject::PropPickup(_) => "Pick up"
+            InteractionObject::PropPickup(_) => "Pick up",
+            InteractionObject::PropGate(_) => "Enter Gate",
         }
     }
 
     pub fn get_position(&self) -> Vector3<f32> {
         match self {
-            InteractionObject::PropBed(prop) => {
+            InteractionObject::None => Vector3::new(0.0, 0.0, 0.0),
+            InteractionObject::PropBed(prop) | InteractionObject::PropPickup(prop) | InteractionObject::PropGate(prop) => {
                 prop.borrow().get_bounding_box().get_center().clone()
             }
-            InteractionObject::PropPickup(prop) => {
-                prop.borrow().get_bounding_box().get_center().clone()
-            }
-            _ => Vector3::new(0.0, 0.0, 0.0)
         }
     }
 }
 
 impl CharacterAnimationState {
-    pub fn is_pickup_event(&self) -> bool {
-        self._action_event == ActionAnimationState::Pickup
-    }
     pub fn is_attack_event(&self) -> bool {
         self._action_event == ActionAnimationState::Attack || self._action_event == ActionAnimationState::PowerAttack
+    }
+    pub fn is_action_event(&self, action_event: ActionAnimationState) -> bool {
+        self._action_event == action_event
     }
     pub fn get_action_event(&self) -> ActionAnimationState {
         self._action_event
@@ -419,6 +418,7 @@ impl<'a> Character<'a> {
             && self.is_action(ActionAnimationState::LayingDown) == false
             && self.is_action(ActionAnimationState::Sleep) == false
             && self.is_action(ActionAnimationState::StandUp) == false
+            && self.is_action(ActionAnimationState::EnterGate) == false
     }
 
     pub fn is_available_jump(&self) -> bool {
@@ -460,39 +460,26 @@ impl<'a> Character<'a> {
         check_direction: bool,
     ) -> bool {
         let collision = self.get_collision();
-        let height_diff =
-            (target_collision._bounding_box._min.y - collision._bounding_box._min.y).abs();
+        let height_diff = (target_collision._bounding_box._min.y - collision._bounding_box._min.y).abs();
         if collision._bounding_box._extents.y < height_diff {
             return false;
         }
 
         let to_target = target_collision._bounding_box._center - collision._bounding_box._center;
         let (to_target_dir, distance) = math::make_normalize_xz_with_norm(&to_target);
-        let d0 = collision
-            ._bounding_box
-            ._orientation
-            .column(0)
-            .dot(&to_target_dir)
-            .abs();
+        let d0 = collision._bounding_box._orientation.column(0).dot(&to_target_dir).abs();
         let r0 = math::lerp(
             collision._bounding_box._extents.z,
             collision._bounding_box._extents.x,
             d0,
         );
-        let d1 = target_collision
-            ._bounding_box
-            ._orientation
-            .column(0)
-            .dot(&to_target_dir)
-            .abs();
+        let d1 = target_collision._bounding_box._orientation.column(0).dot(&to_target_dir).abs();
         let r1 = math::lerp(
             target_collision._bounding_box._extents.z,
             target_collision._bounding_box._extents.x,
             d1,
         );
-        distance <= (r0 + check_range + r1)
-            && (check_direction == false
-                || self.get_transform().get_front().dot(&to_target_dir) < 0.0)
+        distance <= (r0 + check_range + r1) && (check_direction == false || self.get_transform().get_front().dot(&to_target_dir) < 0.0)
     }
 
     pub fn get_front(&self) -> &Vector3<f32> {
@@ -625,6 +612,9 @@ impl<'a> Character<'a> {
                 }
                 InteractionObject::PropPickup(_) => {
                     self.set_action_animation(ActionAnimationState::Pickup, 2.0);
+                }
+                InteractionObject::PropGate(_) => {
+                    self.set_action_animation(ActionAnimationState::EnterGate, 1.0);
                 }
             }
         }
@@ -810,6 +800,14 @@ impl<'a> Character<'a> {
                 );
             }
             ActionAnimationState::Pickup => {
+                render_object.set_animation(
+                    &animation_data._pickup_animation,
+                    &animation_info,
+                    AnimationLayer::ActionLayer,
+                );
+            }
+            ActionAnimationState::EnterGate => {
+                animation_info._animation_fade_out_time = 0.0; // keep end of animation
                 render_object.set_animation(
                     &animation_data._pickup_animation,
                     &animation_info,
@@ -1039,7 +1037,10 @@ impl<'a> Character<'a> {
 
     pub fn update_action_animation_begin_event(&mut self) {
         match self._animation_state._action_animation_state {
-            _ => (),
+            ActionAnimationState::EnterGate => {
+                self._animation_state.set_action_event(ActionAnimationState::EnterGate);
+            }
+            _ => ()
         }
     }
 
@@ -1051,11 +1052,8 @@ impl<'a> Character<'a> {
             render_object.get_animation_play_info(AnimationLayer::ActionLayer);
         match action_animation {
             ActionAnimationState::Attack => {
-                if animation_play_info
-                    .check_animation_event_time(character_data._stat_data._attack_event_time)
-                {
-                    self._animation_state
-                        .set_action_event(ActionAnimationState::Attack);
+                if animation_play_info.check_animation_event_time(character_data._stat_data._attack_event_time) {
+                    self._animation_state.set_action_event(ActionAnimationState::Attack);
                     self.get_character_manager()
                         .get_scene_manager()
                         .play_audio_bank(AUDIO_ATTACK);
@@ -1092,26 +1090,23 @@ impl<'a> Character<'a> {
             }
             ActionAnimationState::Pickup => {
                 if animation_play_info.check_animation_event_time(PICKUP_EVENT_TIME) {
-                    self.get_character_manager()
-                        .get_scene_manager()
-                        .play_audio_bank(AUDIO_ATTACK);
-                    self._animation_state
-                        .set_action_event(ActionAnimationState::Pickup);
+                    self.get_character_manager().get_scene_manager().play_audio_bank(AUDIO_ATTACK);
+                    self._animation_state.set_action_event(ActionAnimationState::Pickup);
                 }
 
                 if animation_play_info._is_animation_end {
                     self.set_action_none();
                 }
             }
+            ActionAnimationState::EnterGate => {
+                if animation_play_info._is_animation_end {
+                    self.set_action_none();
+                }
+            }
             ActionAnimationState::PowerAttack => {
-                if animation_play_info
-                    .check_animation_event_time(character_data._stat_data._power_attack_event_time)
-                {
-                    self.get_character_manager()
-                        .get_scene_manager()
-                        .play_audio_bank(AUDIO_ATTACK);
-                    self._animation_state
-                        .set_action_event(ActionAnimationState::PowerAttack);
+                if animation_play_info.check_animation_event_time(character_data._stat_data._power_attack_event_time) {
+                    self.get_character_manager().get_scene_manager().play_audio_bank(AUDIO_ATTACK);
+                    self._animation_state.set_action_event(ActionAnimationState::PowerAttack);
                 }
 
                 if animation_play_info._is_animation_end {
@@ -1151,15 +1146,9 @@ impl<'a> Character<'a> {
 
     pub fn update_transform(&mut self) {
         let mut render_object = self._render_object.borrow_mut();
-        render_object
-            ._transform_object
-            .set_position(&self._controller._position);
-        render_object
-            ._transform_object
-            .set_rotation(&self._controller._rotation);
-        render_object
-            ._transform_object
-            .set_scale(&self._controller._scale);
+        render_object._transform_object.set_position(&self._controller._position);
+        render_object._transform_object.set_rotation(&self._controller._rotation);
+        render_object._transform_object.set_scale(&self._controller._scale);
     }
 
     pub fn update_render_object(&mut self) {
@@ -1176,11 +1165,7 @@ impl<'a> Character<'a> {
         // set additive animation layer
         if self.is_additive_animation_for_action() {
             render_object.set_animation_layers(
-                self._character_data
-                    .borrow()
-                    ._animation_data
-                    ._upper_animation_layer
-                    .as_ptr(),
+                self._character_data.borrow()._animation_data._upper_animation_layer.as_ptr(),
                 AnimationLayer::ActionLayer,
             );
         }
@@ -1201,8 +1186,7 @@ impl<'a> Character<'a> {
 
         // behavior
         if false == self._is_player && self.is_alive() {
-            self._behavior
-                .update_behavior(ptr_as_mut(self), Some(player), delta_time);
+            self._behavior.update_behavior(ptr_as_mut(self), Some(player), delta_time);
         }
 
         // update stats - stamina

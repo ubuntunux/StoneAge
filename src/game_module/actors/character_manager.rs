@@ -275,19 +275,15 @@ impl<'a> CharacterManager<'a> {
                         if false == target_character_mut._is_player
                             && target_character_mut.is_alive()
                             && false == target_character_mut._character_stats._invincibility
-                            && character_mut.check_in_range(
-                                target_character_mut.get_collision(),
-                                NPC_ATTACK_HIT_RANGE,
-                                check_direction,
-                            )
-                        {
+                            && character_mut.check_in_range(target_character_mut.get_collision(), NPC_ATTACK_HIT_RANGE, check_direction
+                        ) {
                             register_target_character = Some(target_character.clone());
                             let target_position = ptr_as_ref(target_character_mut.get_position());
                             target_character_mut.set_hit_damage(
-                                character_mut
-                                    .get_power(character_mut._animation_state.get_action_event()),
+                                character_mut.get_power(character_mut._animation_state.get_action_event()),
                                 Some(character_mut.get_front()),
                             );
+
                             if false == target_character_mut.is_alive() {
                                 dead_characters.push(target_character.clone());
 
@@ -297,9 +293,7 @@ impl<'a> CharacterManager<'a> {
                                     _position: target_position + Vector3::new(0.0, 0.5, 0.0),
                                     ..Default::default()
                                 };
-                                self.get_game_scene_manager()
-                                    .get_item_manager_mut()
-                                    .create_item(&item_create_info, true);
+                                self.get_game_scene_manager().get_item_manager_mut().create_item(&item_create_info, true);
                             }
                         }
                     }

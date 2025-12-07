@@ -19,6 +19,7 @@ use rust_engine_3d::scene::render_object::{RenderObjectCreateInfo, RenderObjectD
 use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
 use std::collections::HashMap;
+use crate::game_module::actors::character_data::ActionAnimationState;
 
 impl Default for PropData {
     fn default() -> Self {
@@ -93,6 +94,9 @@ impl<'a> Prop<'a> {
     }
     pub fn get_prop_manager(&self) -> &PropManager<'a> {
         ptr_as_ref(self._prop_manager)
+    }
+    pub fn get_instance_parameters(&self, key: &str) -> Option<serde_json::Value> {
+        self._instance_parameters.get(key).cloned()
     }
     pub fn get_item_regenerate_count(&self) -> i32 {
         self._prop_stats._item_regenerate_count
@@ -340,36 +344,20 @@ impl<'a> PropManager<'a> {
                             }
                         }
                         PropDataType::Ceiling => {
-                            prop._render_object.borrow_mut().set_render_camera(
-                                !bounding_box.collide_point(&player.get_position()),
-                            );
+                            prop._render_object.borrow_mut().set_render_camera(!bounding_box.collide_point(&player.get_position()));
                         }
                         PropDataType::Destruction | PropDataType::Harvestable => {
-                            if prop_type == PropDataType::Destruction
-                                || prop_type == PropDataType::Harvestable && prop.can_drop_item()
-                            {
-                                if player._animation_state.is_attack_event()
-                                    && player.check_in_range(
-                                        prop.get_collision(),
-                                        NPC_ATTACK_HIT_RANGE,
-                                        check_direction,
-                                    )
-                                {
-                                    prop.set_hit_damage(
-                                        player
-                                            .get_power(player._animation_state.get_action_event()),
-                                    );
+                            if prop_type == PropDataType::Destruction || prop_type == PropDataType::Harvestable && prop.can_drop_item() {
+                                if player._animation_state.is_attack_event() && player.check_in_range(prop.get_collision(), NPC_ATTACK_HIT_RANGE, check_direction) {
+                                    prop.set_hit_damage(player.get_power(player._animation_state.get_action_event()));
+
                                     if false == prop.is_alive() {
                                         for item_create_info in prop.drop_items().iter() {
                                             // drop items
-                                            self.get_game_scene_manager()
-                                                .get_item_manager_mut()
-                                                .create_item(&item_create_info, true);
+                                            self.get_game_scene_manager().get_item_manager_mut().create_item(&item_create_info, true);
                                         }
 
-                                        if prop_type == PropDataType::Harvestable
-                                            && 0 < prop.get_item_regenerate_count()
-                                        {
+                                        if prop_type == PropDataType::Harvestable && 0 < prop.get_item_regenerate_count() {
                                             prop.refresh_prop_state();
                                         } else {
                                             dead_props.push(prop_refcell.clone());
@@ -380,31 +368,34 @@ impl<'a> PropManager<'a> {
                         }
                         PropDataType::Gate => {
                             let was_in_range = prop._prop_stats._is_in_player_range;
-                            prop._prop_stats._is_in_player_range =
-                                bounding_box.collide_point(player.get_center());
+                            prop._prop_stats._is_in_player_range = bounding_box.collide_point(player.get_center());
+                            if prop._prop_stats._is_in_player_range {
+                                if player._animation_state.is_action_event(ActionAnimationState::EnterGate) {
+                                    let linked_gate = prop.get_instance_parameters("_linked_gate");
+                                    let linked_stage = prop.get_instance_parameters("_linked_stage");
+                                    if linked_stage.is_some() && linked_gate.is_some() {
+                                        self.get_game_scene_manager_mut().set_teleport_stage(
+                                            linked_stage.unwrap().as_str().unwrap(),
+                                            linked_gate.unwrap().as_str().unwrap(),
+                                        );
+                                    }
+                                }
+                            }
 
                             if was_in_range == false && prop._prop_stats._is_in_player_range {
-                                let linked_gate = prop._instance_parameters.get("_linked_gate");
-                                let linked_stage = prop._instance_parameters.get("_linked_stage");
-                                if linked_stage.is_some() && linked_gate.is_some() {
-                                    self.get_game_scene_manager_mut().set_teleport_stage(
-                                        linked_stage.unwrap().as_str().unwrap(),
-                                        linked_gate.unwrap().as_str().unwrap(),
-                                    );
-                                }
+                                player._controller.add_interaction_object(InteractionObject::PropGate(prop_refcell.clone()));
+                            } else if was_in_range && prop._prop_stats._is_in_player_range == false {
+                                player._controller.remove_interaction_object(InteractionObject::PropGate(prop_refcell.clone()));
                             }
                         }
                         PropDataType::Pickup => {
                             let was_in_range = prop._prop_stats._is_in_player_range;
                             prop._prop_stats._is_in_player_range = player.get_bounding_box().collide_bound_box(&bounding_box._min, &bounding_box._max);
                             if prop._prop_stats._is_in_player_range {
-                                if player._animation_state.is_pickup_event() {
+                                if player._animation_state.is_action_event(ActionAnimationState::Pickup) {
                                     let mut pickup_items: bool = false;
                                     for item_create_info in prop.drop_items().iter() {
-                                        pickup_items |= self
-                                            .get_game_scene_manager()
-                                            .get_item_manager_mut()
-                                            .instance_pickup_item(&item_create_info);
+                                        pickup_items |= self.get_game_scene_manager().get_item_manager_mut().instance_pickup_item(&item_create_info);
                                     }
 
                                     if pickup_items {

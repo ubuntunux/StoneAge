@@ -113,6 +113,9 @@ impl BehaviorBase for BehaviorCivilian {
                 BehaviorState::LayingDown => {
                     owner.set_action_animation(ActionAnimationState::LayingDown, 1.0);
                 }
+                BehaviorState::EnterGate => {
+                    owner.set_action_animation(ActionAnimationState::EnterGate, 1.0);
+                }
                 BehaviorState::Sleep => {
                     owner.set_action_animation(ActionAnimationState::Sleep, 1.0);
                 }

@@ -15,6 +15,7 @@ pub enum BehaviorState {
     Chase,
     Attack,
     LayingDown,
+    EnterGate,
     Sleep,
     StandUp,
 }

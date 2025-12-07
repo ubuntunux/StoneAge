@@ -130,9 +130,7 @@ impl BehaviorBase for BehaviorRoamer {
                         let dist = offset.x * offset.x + offset.z * offset.z;
                         if dist < ARRIVAL_DISTANCE_THRESHOLD {
                             do_idle = true;
-                        } else if (owner._controller._is_blocked || owner._controller._is_cliff)
-                            && !owner.is_falling()
-                        {
+                        } else if (owner._controller._is_blocked || owner._controller._is_cliff) && !owner.is_falling() {
                             do_idle = true;
                         }
                     } else {
@@ -149,20 +147,11 @@ impl BehaviorBase for BehaviorRoamer {
                 let mut do_idle: bool = true;
                 if let Some(player_ref) = player {
                     if player_ref.is_alive() {
-                        if owner.check_in_range(
-                            player_ref.get_collision(),
-                            NPC_TRACKING_RANGE,
-                            false,
-                        ) {
-                            if owner.check_in_range(
-                                player_ref.get_collision(),
-                                NPC_ATTACK_RANGE,
-                                false,
-                            ) {
+                        if owner.check_in_range(player_ref.get_collision(), NPC_TRACKING_RANGE, false) {
+                            if owner.check_in_range(player_ref.get_collision(), NPC_ATTACK_RANGE, false) {
                                 self.set_behavior(BehaviorState::Attack, owner, player, false);
                             } else {
-                                let to_player: Vector3<f32> =
-                                    player_ref.get_position() - owner.get_position();
+                                let to_player: Vector3<f32> = player_ref.get_position() - owner.get_position();
                                 owner.set_move(&to_player);
                                 owner.set_run(true);
                             }
@@ -180,9 +169,7 @@ impl BehaviorBase for BehaviorRoamer {
                 if let Some(player_ref) = player {
                     if player_ref.is_alive() && 0.0 < self._attack_time {
                         if owner.is_attack_animation() {
-                            if !owner.is_available_move()
-                                || (NPC_AVAILABLE_MOVING_ATTACK || !owner.is_attack_animation())
-                            {
+                            if !owner.is_available_move() || (NPC_AVAILABLE_MOVING_ATTACK || !owner.is_attack_animation()) {
                                 owner.set_move_stop();
                             }
                         } else {
