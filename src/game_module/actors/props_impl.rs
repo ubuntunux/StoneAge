@@ -19,6 +19,7 @@ use rust_engine_3d::scene::render_object::{RenderObjectCreateInfo, RenderObjectD
 use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
 use std::collections::HashMap;
+use std::ffi::c_void;
 use crate::game_module::actors::character_data::ActionAnimationState;
 
 impl Default for PropData {
@@ -31,9 +32,14 @@ impl Default for PropData {
             _item_data_name: String::new(),
             _item_drop_count_max: 1,
             _item_drop_count_min: 1,
-            _item_regenerate_count: 1,
             _item_regenerate_time: 0.0,
         }
+    }
+}
+
+impl PropData {
+    pub fn get_item_drop_count(&self) -> i32 {
+        rand::random_range(self._item_drop_count_min..=self._item_drop_count_max)
     }
 }
 
@@ -47,6 +53,7 @@ impl<'a> Prop<'a> {
         prop_create_info: &PropCreateInfo,
     ) -> Prop<'a> {
         let prop_data_ref = prop_data.borrow();
+        let item_count = prop_data_ref.get_item_drop_count();
         let mut prop = Prop {
             _prop_name: String::from(prop_name),
             _prop_id: prop_id,
@@ -57,8 +64,9 @@ impl<'a> Prop<'a> {
             _prop_stats: Box::from(PropStats {
                 _is_alive: false,
                 _prop_hp: prop_data_ref._max_hp,
-                _item_regenerate_count: prop_data_ref._item_regenerate_count,
                 _item_regenerate_time: 0.0,
+                _item_count_max: item_count,
+                _item_count: item_count,
                 _position: prop_create_info._position.clone(),
                 _rotation: prop_create_info._rotation.clone(),
                 _scale: prop_create_info._scale.clone(),
@@ -67,12 +75,8 @@ impl<'a> Prop<'a> {
             _instance_parameters: prop_create_info._instance_parameters.clone(),
         };
 
-        if prop_data_ref._prop_type == PropDataType::Ceiling
-            || prop_data_ref._prop_type == PropDataType::Gate
-        {
-            render_object
-                .borrow_mut()
-                .set_collision_type(CollisionType::NONE);
+        if prop_data_ref._prop_type == PropDataType::Ceiling || prop_data_ref._prop_type == PropDataType::Gate  {
+            render_object.borrow_mut().set_collision_type(CollisionType::NONE);
         }
 
         prop.initialize_prop();
@@ -83,12 +87,6 @@ impl<'a> Prop<'a> {
         self._prop_stats._item_regenerate_time = 0.0;
         self.update_transform();
     }
-    pub fn refresh_prop_state(&mut self) {
-        let prop_data_ref = self._prop_data.borrow();
-        self._prop_stats._is_alive = true;
-        self._prop_stats._prop_hp = prop_data_ref._max_hp;
-        self._prop_stats._item_regenerate_time = prop_data_ref._item_regenerate_time;
-    }
     pub fn get_prop_id(&self) -> PropID {
         self._prop_id
     }
@@ -98,20 +96,11 @@ impl<'a> Prop<'a> {
     pub fn get_instance_parameters(&self, key: &str) -> Option<serde_json::Value> {
         self._instance_parameters.get(key).cloned()
     }
-    pub fn get_item_regenerate_count(&self) -> i32 {
-        self._prop_stats._item_regenerate_count
-    }
     pub fn can_drop_item(&self) -> bool {
-        self._prop_stats._item_regenerate_time <= 0.0 && 0 < self._prop_stats._item_regenerate_count
-    }
-    pub fn get_item_drop_count(&self) -> i32 {
-        let prop_data = self._prop_data.borrow();
-        rand::random_range(prop_data._item_drop_count_min..=prop_data._item_drop_count_max)
+        0 < self._prop_stats._item_count
     }
     pub fn get_position(&self) -> &Vector3<f32> {
-        &ptr_as_ref(self._render_object.as_ptr())
-            ._transform_object
-            ._position
+        &ptr_as_ref(self._render_object.as_ptr())._transform_object._position
     }
     pub fn get_bounding_box(&self) -> &BoundingBox {
         &ptr_as_ref(self._render_object.as_ptr())._bounding_box
@@ -126,9 +115,13 @@ impl<'a> Prop<'a> {
         self._prop_stats._is_alive = false;
     }
     pub fn set_hit_damage(&mut self, damage: i32) {
-        self._prop_stats._prop_hp -= damage;
-        if self._prop_stats._prop_hp <= 0 {
-            self.set_dead();
+        if PropDataType::Harvestable == self._prop_data.borrow()._prop_type {
+            // nothing to do
+        } else {
+            self._prop_stats._prop_hp -= damage;
+            if self._prop_stats._prop_hp <= 0 {
+                self.set_dead();
+            }
         }
 
         let effect_create_info = EffectCreateInfo {
@@ -136,25 +129,24 @@ impl<'a> Prop<'a> {
             _effect_data_name: String::from(EFFECT_HIT),
             ..Default::default()
         };
-        self.get_prop_manager()
-            .get_scene_manager_mut()
-            .add_effect(EFFECT_HIT, &effect_create_info);
-        self.get_prop_manager()
-            .get_audio_manager_mut()
-            .play_audio_bank(AUDIO_HIT, AudioLoop::ONCE, None);
+        self.get_prop_manager().get_scene_manager_mut().add_effect(EFFECT_HIT, &effect_create_info);
+        self.get_prop_manager().get_audio_manager_mut().play_audio_bank(AUDIO_HIT, AudioLoop::ONCE, None);
     }
-    pub fn drop_items(&mut self) -> Vec<ItemCreateInfo> {
-        let mut item_create_infos: Vec<ItemCreateInfo> = vec![];
-        if self.can_drop_item() {
-            self._prop_stats._item_regenerate_count -= 1;
+    pub fn drop_items(&mut self, mut drop_count: i32) -> Vec<ItemCreateInfo> {
+        if self._prop_stats._item_count <= drop_count {
+            drop_count = self._prop_stats._item_count;
+            self._prop_stats._item_count = 0;
+        } else {
+            self._prop_stats._item_count -= drop_count;
+        }
 
-            for _ in 0..self.get_item_drop_count() {
-                item_create_infos.push(ItemCreateInfo {
-                    _item_data_name: self._prop_data.borrow()._item_data_name.clone(),
-                    _position: self.get_bounding_box().get_center().clone(),
-                    ..Default::default()
-                });
-            }
+        let mut item_create_infos: Vec<ItemCreateInfo> = vec![];
+        for _ in 0..drop_count {
+            item_create_infos.push(ItemCreateInfo {
+                _item_data_name: self._prop_data.borrow()._item_data_name.clone(),
+                _position: self.get_bounding_box().get_center().clone(),
+                ..Default::default()
+            });
         }
         item_create_infos
     }
@@ -176,8 +168,13 @@ impl<'a> Prop<'a> {
     pub fn update_prop(&mut self, delta_time: f64) {
         self.update_transform();
 
-        if 0.0 < self._prop_stats._item_regenerate_time {
-            self._prop_stats._item_regenerate_time -= delta_time as f32;
+        if self._prop_data.borrow()._prop_type == PropDataType::Harvestable && self._prop_stats._item_count < self._prop_stats._item_count_max {
+            if self._prop_data.borrow()._item_regenerate_time <= self._prop_stats._item_regenerate_time {
+                self._prop_stats._item_count += 1;
+                self._prop_stats._item_regenerate_time = 0.0;
+            } else {
+                self._prop_stats._item_regenerate_time += delta_time as f32;
+            }
         }
     }
 }
@@ -330,53 +327,60 @@ impl<'a> PropManager<'a> {
             if player.is_alive() {
                 for prop_refcell in self._props.values() {
                     let mut prop = prop_refcell.borrow_mut();
+                    let key = prop_refcell.as_ptr() as *const c_void;
+                    let is_interaction_object = player._controller.is_interaction_object(key);
                     let prop_type = prop._prop_data.borrow()._prop_type;
                     let bounding_box = prop.get_bounding_box();
 
                     match prop_type {
                         PropDataType::Bed => {
-                            let was_in_range = prop._prop_stats._is_in_player_range;
                             prop._prop_stats._is_in_player_range = player.get_bounding_box().collide_bound_box(&bounding_box._min, &bounding_box._max);
-                            if was_in_range == false && prop._prop_stats._is_in_player_range {
+                            if is_interaction_object == false && prop._prop_stats._is_in_player_range {
                                 player._controller.add_interaction_object(InteractionObject::PropBed(prop_refcell.clone()));
-                            } else if was_in_range && prop._prop_stats._is_in_player_range == false {
+                            } else if is_interaction_object && prop._prop_stats._is_in_player_range == false {
                                 player._controller.remove_interaction_object(InteractionObject::PropBed(prop_refcell.clone()));
                             }
                         }
                         PropDataType::Ceiling => {
                             prop._render_object.borrow_mut().set_render_camera(!bounding_box.collide_point(&player.get_position()));
                         }
-                        PropDataType::Destruction | PropDataType::Harvestable => {
-                            if prop_type == PropDataType::Destruction || prop_type == PropDataType::Harvestable && prop.can_drop_item() {
-                                let was_in_range = prop._prop_stats._is_in_player_range;
-                                prop._prop_stats._is_in_player_range = player.check_in_range(prop.get_collision(), NPC_ATTACK_HIT_RANGE, check_direction);
-
-                                if player._animation_state.is_attack_event() && prop._prop_stats._is_in_player_range {
-                                    prop.set_hit_damage(player.get_power(player._animation_state.get_action_event()));
-
-                                    if false == prop.is_alive() {
-                                        for item_create_info in prop.drop_items().iter() {
-                                            // drop items
-                                            self.get_game_scene_manager().get_item_manager_mut().create_item(&item_create_info, true);
-                                        }
-
-                                        if prop_type == PropDataType::Harvestable && 0 < prop.get_item_regenerate_count() {
-                                            prop.refresh_prop_state();
-                                        } else {
-                                            dead_props.push(prop_refcell.clone());
-                                        }
+                        PropDataType::Destruction => {
+                            prop._prop_stats._is_in_player_range = player.check_in_range(prop.get_collision(), NPC_ATTACK_HIT_RANGE, check_direction);
+                            if player._animation_state.is_attack_event() && prop._prop_stats._is_in_player_range {
+                                prop.set_hit_damage(player.get_power(player._animation_state.get_action_event()));
+                                if false == prop.is_alive() {
+                                    let drop_count = prop._prop_stats._item_count;
+                                    for item_create_info in prop.drop_items(drop_count).iter() {
+                                        self.get_game_scene_manager().get_item_manager_mut().create_item(&item_create_info, true);
                                     }
+                                    dead_props.push(prop_refcell.clone());
                                 }
+                            }
 
-                                if was_in_range == false && prop._prop_stats._is_in_player_range && prop.is_alive() {
-                                    player._controller.add_interaction_object(InteractionObject::PropGathering(prop_refcell.clone()));
-                                } else if was_in_range && prop._prop_stats._is_in_player_range == false || prop.is_alive() == false {
-                                    player._controller.remove_interaction_object(InteractionObject::PropGathering(prop_refcell.clone()));
+                            if is_interaction_object == false && prop._prop_stats._is_in_player_range && prop.is_alive() {
+                                player._controller.add_interaction_object(InteractionObject::PropGathering(prop_refcell.clone()));
+                            } else if is_interaction_object && prop._prop_stats._is_in_player_range == false || prop.is_alive() == false {
+                                player._controller.remove_interaction_object(InteractionObject::PropGathering(prop_refcell.clone()));
+                            }
+                        }
+                        PropDataType::Harvestable => {
+                            prop._prop_stats._is_in_player_range = player.check_in_range(prop.get_collision(), NPC_ATTACK_HIT_RANGE, check_direction);
+                            let can_drop_item = prop.can_drop_item();
+                            if can_drop_item && player._animation_state.is_attack_event() && prop._prop_stats._is_in_player_range {
+                                prop.set_hit_damage(0);
+                                let drop_count = 1;
+                                for item_create_info in prop.drop_items(drop_count).iter() {
+                                    self.get_game_scene_manager().get_item_manager_mut().create_item(&item_create_info, true);
                                 }
+                            }
+
+                            if is_interaction_object == false && prop._prop_stats._is_in_player_range && can_drop_item {
+                                player._controller.add_interaction_object(InteractionObject::PropGathering(prop_refcell.clone()));
+                            } else if is_interaction_object && (prop._prop_stats._is_in_player_range == false || can_drop_item == false) {
+                                player._controller.remove_interaction_object(InteractionObject::PropGathering(prop_refcell.clone()));
                             }
                         }
                         PropDataType::Gate => {
-                            let was_in_range = prop._prop_stats._is_in_player_range;
                             prop._prop_stats._is_in_player_range = bounding_box.collide_point(player.get_center());
                             if prop._prop_stats._is_in_player_range {
                                 if player._animation_state.is_action_event(ActionAnimationState::EnterGate) {
@@ -391,19 +395,19 @@ impl<'a> PropManager<'a> {
                                 }
                             }
 
-                            if was_in_range == false && prop._prop_stats._is_in_player_range {
+                            if is_interaction_object == false && prop._prop_stats._is_in_player_range {
                                 player._controller.add_interaction_object(InteractionObject::PropGate(prop_refcell.clone()));
-                            } else if was_in_range && prop._prop_stats._is_in_player_range == false {
+                            } else if is_interaction_object && prop._prop_stats._is_in_player_range == false {
                                 player._controller.remove_interaction_object(InteractionObject::PropGate(prop_refcell.clone()));
                             }
                         }
                         PropDataType::Pickup => {
-                            let was_in_range = prop._prop_stats._is_in_player_range;
                             prop._prop_stats._is_in_player_range = player.get_bounding_box().collide_bound_box(&bounding_box._min, &bounding_box._max);
                             if prop._prop_stats._is_in_player_range {
                                 if player._animation_state.is_action_event(ActionAnimationState::Pickup) {
                                     let mut pickup_items: bool = false;
-                                    for item_create_info in prop.drop_items().iter() {
+                                    let drop_count = prop._prop_stats._item_count;
+                                    for item_create_info in prop.drop_items(drop_count).iter() {
                                         pickup_items |= self.get_game_scene_manager().get_item_manager_mut().instance_pickup_item(&item_create_info);
                                     }
 
@@ -414,9 +418,9 @@ impl<'a> PropManager<'a> {
                                 }
                             }
 
-                            if was_in_range == false && prop._prop_stats._is_in_player_range {
+                            if is_interaction_object == false && prop._prop_stats._is_in_player_range {
                                 player._controller.add_interaction_object(InteractionObject::PropPickup(prop_refcell.clone()));
-                            } else if was_in_range && prop._prop_stats._is_in_player_range == false {
+                            } else if is_interaction_object && prop._prop_stats._is_in_player_range == false {
                                 player._controller.remove_interaction_object(InteractionObject::PropPickup(prop_refcell.clone()));
                             }
                         }

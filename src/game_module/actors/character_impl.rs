@@ -50,7 +50,8 @@ impl<'a> InteractionObject<'a> {
             InteractionObject::PropPickup(prop) |
             InteractionObject::PropGate(prop) |
             InteractionObject::PropGathering(prop) => {
-                prop.borrow().get_bounding_box().get_center().clone()
+                let bounding_box = ptr_as_ref(prop.as_ptr()).get_bounding_box();
+                Vector3::new(bounding_box._center.x, bounding_box._min.y + 1.0, bounding_box._center.z)
             }
         }
     }

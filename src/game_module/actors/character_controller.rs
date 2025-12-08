@@ -135,6 +135,9 @@ impl<'a> CharacterController<'a> {
     pub fn is_in_interaction_range(&self) -> bool {
         self._interaction_objects.is_empty() == false
     }
+    pub fn is_interaction_object(&self, key: *const c_void) -> bool {
+        self._interaction_objects.get(&key).is_some()
+    }
     pub fn add_interaction_object(&mut self, object: InteractionObject<'a>) {
         self._interaction_objects.insert(object.get_key(), object);
     }

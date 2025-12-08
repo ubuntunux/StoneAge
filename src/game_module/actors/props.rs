@@ -47,15 +47,15 @@ pub struct PropData {
     pub _item_data_name: String,
     pub _item_drop_count_max: i32,
     pub _item_drop_count_min: i32,
-    pub _item_regenerate_count: i32,
     pub _item_regenerate_time: f32,
 }
 
 pub struct PropStats {
     pub _is_alive: bool,
     pub _prop_hp: i32,
-    pub _item_regenerate_count: i32,
     pub _item_regenerate_time: f32,
+    pub _item_count_max: i32,
+    pub _item_count: i32,
     pub _position: Vector3<f32>,
     pub _rotation: Vector3<f32>,
     pub _scale: Vector3<f32>,
