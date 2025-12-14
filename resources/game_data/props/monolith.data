@@ -1,0 +1,9 @@
+{
+    "_item_drop_count_max": 1,
+    "_item_drop_count_min": 1,
+    "_item_regenerate_time": 300.0,
+    "_max_hp": 100,
+    "_model_data_name": "PolygonNatureBiomes/SM_Env_Monolith_01",
+    "_name": "MONOLITH",
+    "_prop_type": "Monolith"
+}

@@ -59,6 +59,7 @@ pub struct GameSceneManager<'a> {
     pub _spawn_point: Vector3<f32>,
     pub _teleport_stage: Option<String>,
     pub _teleport_gate: Option<String>,
+    pub _is_sleep_mode: bool,
     pub _time_of_day: f32,
     pub _temperature: f32,
     pub _date: u32,
@@ -126,6 +127,7 @@ impl<'a> GameSceneManager<'a> {
             _spawn_point: Vector3::new(0.0, 0.0, 0.0),
             _teleport_stage: None,
             _teleport_gate: None,
+            _is_sleep_mode: false,
             _time_of_day: TIME_OF_MORNING,
             _temperature: 30.0,
             _date: 1,
@@ -210,7 +212,6 @@ impl<'a> GameSceneManager<'a> {
         self._teleport_stage = Some(String::from(teleport_stage));
         self._teleport_gate = Some(String::from(teleport_gate));
     }
-
     pub fn update_teleport(&mut self, character_manager: &CharacterManager<'a>) {
         if self._teleport_stage.is_some() {
             let game_scene_data_name = ptr_as_ref(self._teleport_stage.as_ref().unwrap().as_str());

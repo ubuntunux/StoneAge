@@ -3391,16 +3391,6 @@
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Monolith_01.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "PolygonNatureBiomes/SM_Env_Monolith_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Monolith_01.blend",
-            "guid": "",
-            "mtime": 1756485104.5175645,
-            "data": {}
-        }
-    ],
     "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Monolith_02.blend": [
         {
             "asset_type": "MODEL",
@@ -4408,6 +4398,16 @@
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/environments/birch_tree_01.blend",
             "guid": "",
             "mtime": 1765710915.765594,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Monolith_01.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "PolygonNatureBiomes/SM_Env_Monolith_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Monolith_01.blend",
+            "guid": "",
+            "mtime": 1765733689.6022723,
             "data": {}
         }
     ],
@@ -8407,7 +8407,7 @@
             "asset_path": "intro_stage",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/intro_stage.blend",
             "guid": "",
-            "mtime": 1761572908.136847,
+            "mtime": 1765728648.2345216,
             "data": {}
         }
     ],
@@ -8518,6 +8518,16 @@
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/props/birch_tree_00.blend",
             "guid": "",
             "mtime": 1765720882.6552067,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/props/monolith.blend": [
+        {
+            "asset_type": "GAME_PROP",
+            "asset_path": "monolith",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/props/monolith.blend",
+            "guid": "",
+            "mtime": 1765727521.8487422,
             "data": {}
         }
     ],

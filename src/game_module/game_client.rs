@@ -1,5 +1,4 @@
 use crate::application::application::Application;
-use crate::game_module::actors::character_data::ActionAnimationState;
 use crate::game_module::actors::character_manager::CharacterManager;
 use crate::game_module::game_constants::{
     AMBIENT_SOUND, CAMERA_DISTANCE_MAX, GAME_MUSIC, MATERIAL_INTRO_IMAGE, SCENARIO_INTRO,
@@ -35,6 +34,7 @@ pub struct GameClient<'a> {
     pub _editor_ui_manager: *const EditorUIManager<'a>,
     pub _game_phase: GamePhase,
     pub _story_board_phase: usize,
+    pub _is_sleep_mode: bool,
     pub _sleep_timer: f32,
 }
 
@@ -51,6 +51,7 @@ impl<'a> GameClient<'a> {
             _editor_ui_manager: std::ptr::null(),
             _game_phase: GamePhase::None,
             _story_board_phase: 0,
+            _is_sleep_mode: false,
             _sleep_timer: 0.0,
         })
     }
@@ -68,6 +69,7 @@ impl<'a> GameClient<'a> {
         self._game_resources = application.get_game_resources();
         self._game_ui_manager = application.get_game_ui_manager();
         self._editor_ui_manager = application.get_editor_ui_manager();
+        self._is_sleep_mode = false;
         self._sleep_timer = 0.0;
     }
     pub fn destroy_game_client(&mut self) {
@@ -141,13 +143,17 @@ impl<'a> GameClient<'a> {
     pub fn get_story_board_phase(&self) -> usize {
         self._story_board_phase
     }
-
     pub fn clear_story_board_phase(&mut self) {
         self._story_board_phase = 0;
     }
-
     pub fn next_story_board_phase(&mut self) {
         self._story_board_phase += 1;
+    }
+    pub fn set_sleep_mode(&mut self, is_sleep_mode: bool) {
+        self._is_sleep_mode = is_sleep_mode;
+    }
+    pub fn is_sleep_mode(&self) -> bool {
+        self._is_sleep_mode
     }
     pub fn reset_sleep_timer(&mut self) {
         self._sleep_timer = 0.0;
@@ -189,6 +195,7 @@ impl<'a> GameClient<'a> {
                 game_ui_manager.set_auto_fade_inout(true);
             }
             GamePhase::Sleep => {
+                self.set_sleep_mode(false);
                 character_manager.get_player().borrow_mut().set_action_stand_up();
             }
             GamePhase::PlayGameScenario => {
@@ -284,7 +291,7 @@ impl<'a> GameClient<'a> {
                             self.set_game_phase(GamePhase::PlayGameScenario);
                         } else if game_scene_manager.is_teleport_mode() {
                             self.set_game_phase(GamePhase::Teleport);
-                        } else if character_manager.get_player().borrow().is_action(ActionAnimationState::Sleep) {
+                        } else if self.is_sleep_mode() {
                             self.set_game_phase(GamePhase::Sleep);
                         } else {
                             if game_controller.is_camera_blend_mode() {

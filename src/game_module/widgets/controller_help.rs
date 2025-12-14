@@ -322,6 +322,9 @@ impl<'a> ControllerHelpWidget<'a> {
                     InteractionObject::PropGathering(_) => {
                         input_control_type == InputControlType::Gathering
                     }
+                    InteractionObject::PropMonolith(_) => {
+                        input_control_type == InputControlType::Interaction
+                    }
                 };
 
                 if is_matched {

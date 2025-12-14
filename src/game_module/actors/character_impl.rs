@@ -29,7 +29,8 @@ impl<'a> InteractionObject<'a> {
             InteractionObject::PropBed(prop) |
             InteractionObject::PropPickup(prop) |
             InteractionObject::PropGate(prop) |
-            InteractionObject::PropGathering(prop) => { prop.as_ptr() as *const c_void }
+            InteractionObject::PropGathering(prop) |
+            InteractionObject::PropMonolith(prop) => { prop.as_ptr() as *const c_void }
         }
     }
 
@@ -40,6 +41,7 @@ impl<'a> InteractionObject<'a> {
             InteractionObject::PropPickup(_) => "Pick up",
             InteractionObject::PropGate(_) => "Enter Gate",
             InteractionObject::PropGathering(_) => "Gathering",
+            &InteractionObject::PropMonolith(_) => "Open Toolbox",
         }
     }
 
@@ -49,7 +51,8 @@ impl<'a> InteractionObject<'a> {
             InteractionObject::PropBed(prop) |
             InteractionObject::PropPickup(prop) |
             InteractionObject::PropGate(prop) |
-            InteractionObject::PropGathering(prop) => {
+            InteractionObject::PropGathering(prop) |
+            InteractionObject::PropMonolith(prop) => {
                 let bounding_box = ptr_as_ref(prop.as_ptr()).get_bounding_box();
                 Vector3::new(bounding_box._center.x, bounding_box._min.y + 1.0, bounding_box._center.z)
             }
@@ -614,6 +617,7 @@ impl<'a> Character<'a> {
             match self._controller._nearest_interaction_object {
                 InteractionObject::None  => {}
                 InteractionObject::PropBed(_) => {
+                    self.get_character_manager().get_game_client_mut().set_sleep_mode(true);
                     self.set_action_animation(ActionAnimationState::LayingDown, 2.0);
                 }
                 InteractionObject::PropPickup(_) => {
@@ -622,7 +626,10 @@ impl<'a> Character<'a> {
                 InteractionObject::PropGate(_) => {
                     self.set_action_animation(ActionAnimationState::EnterGate, 1.0);
                 }
-                InteractionObject::PropGathering(_) => {}
+                InteractionObject::PropGathering(_) => {},
+                InteractionObject::PropMonolith(_) => {
+                    self.set_action_animation(ActionAnimationState::OpenMonolith, 1.0);
+                }
             }
         }
     }
@@ -844,6 +851,14 @@ impl<'a> Character<'a> {
                     &animation_info,
                     AnimationLayer::ActionLayer,
                 );
+            },
+            ActionAnimationState::OpenMonolith => {
+                animation_info._animation_fade_out_time = 0.0; // keep end of animation
+                render_object.set_animation(
+                    &animation_data._pickup_animation,
+                    &animation_info,
+                    AnimationLayer::ActionLayer,
+                );
             }
         }
 
@@ -1046,6 +1061,9 @@ impl<'a> Character<'a> {
         match self._animation_state._action_animation_state {
             ActionAnimationState::EnterGate => {
                 self._animation_state.set_action_event(ActionAnimationState::EnterGate);
+            },
+            ActionAnimationState::OpenMonolith => {
+                self._animation_state.set_action_event(ActionAnimationState::OpenMonolith);
             }
             _ => ()
         }
@@ -1084,11 +1102,6 @@ impl<'a> Character<'a> {
                     );
                 }
             }
-            ActionAnimationState::Hit => {
-                if animation_play_info._is_animation_end {
-                    self.set_action_none();
-                }
-            }
             ActionAnimationState::LayingDown => {
                 if animation_play_info._is_animation_end {
                     self.set_move_stop();
@@ -1105,11 +1118,6 @@ impl<'a> Character<'a> {
                     self.set_action_none();
                 }
             }
-            ActionAnimationState::EnterGate => {
-                if animation_play_info._is_animation_end {
-                    self.set_action_none();
-                }
-            }
             ActionAnimationState::PowerAttack => {
                 if animation_play_info.check_animation_event_time(character_data._stat_data._power_attack_event_time) {
                     self.get_character_manager().get_scene_manager().play_audio_bank(AUDIO_ATTACK);
@@ -1120,12 +1128,11 @@ impl<'a> Character<'a> {
                     self.set_action_none();
                 }
             }
-            ActionAnimationState::StandUp => {
+            _ => {
                 if animation_play_info._is_animation_end {
                     self.set_action_none();
                 }
             }
-            _ => (),
         }
     }
 

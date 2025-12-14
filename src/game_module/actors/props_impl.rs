@@ -475,6 +475,14 @@ impl<'a> PropManager<'a> {
                             } else if is_interaction_object && prop._prop_stats._is_in_player_range == false {
                                 player._controller.remove_interaction_object(InteractionObject::PropPickup(prop_refcell.clone()));
                             }
+                        },
+                        PropDataType::Monolith => {
+                            prop._prop_stats._is_in_player_range = player.check_in_range(prop.get_collision(), NPC_ATTACK_HIT_RANGE, check_direction);
+                            if is_interaction_object == false && prop._prop_stats._is_in_player_range {
+                                player._controller.add_interaction_object(InteractionObject::PropMonolith(prop_refcell.clone()));
+                            } else if is_interaction_object && prop._prop_stats._is_in_player_range == false {
+                                player._controller.remove_interaction_object(InteractionObject::PropMonolith(prop_refcell.clone()));
+                            }
                         }
                         _ => (),
                     }
