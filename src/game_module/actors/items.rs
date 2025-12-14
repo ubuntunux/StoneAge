@@ -20,6 +20,7 @@ pub type ItemMap<'a> = HashMap<ItemID, RcRefCell<Item<'a>>>;
 #[derive(Serialize, Deserialize, Hash, Eq, Clone, Copy, Debug, EnumIter, Display, PartialEq)]
 pub enum ItemDataType {
     None,
+    Coconut,
     Meat,
     Rock,
     Wood,
@@ -33,6 +34,7 @@ pub struct ItemCreateInfo {
     pub _position: Vector3<f32>,
     pub _rotation: Vector3<f32>,
     pub _scale: Vector3<f32>,
+    pub _velocity: Vector3<f32>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]

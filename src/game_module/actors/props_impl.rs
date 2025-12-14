@@ -20,6 +20,7 @@ use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
 use std::collections::HashMap;
 use std::ffi::c_void;
+use rust_engine_3d::utilities::math;
 use crate::game_module::actors::character_data::ActionAnimationState;
 
 impl Default for PropData {
@@ -50,6 +51,7 @@ impl<'a> Prop<'a> {
         prop_name: &str,
         prop_data: &RcRefCell<PropData>,
         render_object: &RcRefCell<RenderObjectData<'a>>,
+        item_render_objects: Vec<RcRefCell<RenderObjectData<'a>>>,
         prop_create_info: &PropCreateInfo,
     ) -> Prop<'a> {
         let prop_data_ref = prop_data.borrow();
@@ -60,6 +62,7 @@ impl<'a> Prop<'a> {
             _prop_radius: render_object.borrow()._collision._bounding_box.get_mag_xz(),
             _prop_manager: prop_manager,
             _render_object: render_object.clone(),
+            _item_render_objects: item_render_objects,
             _prop_data: prop_data.clone(),
             _prop_stats: Box::from(PropStats {
                 _is_alive: false,
@@ -75,7 +78,7 @@ impl<'a> Prop<'a> {
             _instance_parameters: prop_create_info._instance_parameters.clone(),
         };
 
-        if prop_data_ref._prop_type == PropDataType::Ceiling || prop_data_ref._prop_type == PropDataType::Gate  {
+        if prop_data_ref._prop_type == PropDataType::Ceiling || prop_data_ref._prop_type == PropDataType::Gate {
             render_object.borrow_mut().set_collision_type(CollisionType::NONE);
         }
 
@@ -85,6 +88,7 @@ impl<'a> Prop<'a> {
     pub fn initialize_prop(&mut self) {
         self._prop_stats._is_alive = true;
         self._prop_stats._item_regenerate_time = 0.0;
+        self.update_item_visible();
         self.update_transform();
     }
     pub fn get_prop_id(&self) -> PropID {
@@ -132,6 +136,17 @@ impl<'a> Prop<'a> {
         self.get_prop_manager().get_scene_manager_mut().add_effect(EFFECT_HIT, &effect_create_info);
         self.get_prop_manager().get_audio_manager_mut().play_audio_bank(AUDIO_HIT, AudioLoop::ONCE, None);
     }
+    pub fn update_generate_item(&mut self, delta_time: f64) {
+        if self._prop_data.borrow()._prop_type == PropDataType::Harvestable && self._prop_stats._item_count < self._prop_stats._item_count_max {
+            if self._prop_data.borrow()._item_regenerate_time <= self._prop_stats._item_regenerate_time {
+                self._prop_stats._item_count += 1;
+                self._prop_stats._item_regenerate_time = 0.0;
+                self.update_item_visible();
+            } else {
+                self._prop_stats._item_regenerate_time += delta_time as f32;
+            }
+        }
+    }
     pub fn drop_items(&mut self, mut drop_count: i32) -> Vec<ItemCreateInfo> {
         if self._prop_stats._item_count <= drop_count {
             drop_count = self._prop_stats._item_count;
@@ -139,43 +154,57 @@ impl<'a> Prop<'a> {
         } else {
             self._prop_stats._item_count -= drop_count;
         }
+        self.update_item_visible();
 
         let mut item_create_infos: Vec<ItemCreateInfo> = vec![];
-        for _ in 0..drop_count {
+        for drop_index in 0..drop_count {
+            let mut position = self.get_bounding_box().get_center().clone();
+            let mut velocity = Vector3::new(0.0, 0.0, 0.0);
+            if let Some(item_render_object) = &self._item_render_objects.get((self._prop_stats._item_count + drop_index) as usize) {
+                match self._prop_data.borrow()._prop_type {
+                    PropDataType::Harvestable => {
+                        position = item_render_object.borrow()._transform_object._position.clone();
+                        let mut to_item = item_render_object.borrow()._transform_object._position - self.get_position();
+                        to_item = math::make_normalize_xz(&to_item);
+                        velocity = Vector3::new(to_item.x, 1.0, to_item.z) * 2.0;
+                    },
+                    _ => {
+                        velocity = Vector3::new(
+                            (rand::random::<f32>() * 2.0 - 1.0) * 5.0,
+                            rand::random::<f32>() * 10.0,
+                            (rand::random::<f32>() * 2.0 - 1.0) * 5.0,
+                        );
+                    }
+                };
+            }
+
             item_create_infos.push(ItemCreateInfo {
                 _item_data_name: self._prop_data.borrow()._item_data_name.clone(),
-                _position: self.get_bounding_box().get_center().clone(),
+                _position: position,
+                _velocity: velocity,
                 ..Default::default()
             });
         }
         item_create_infos
     }
+    pub fn update_item_visible(&mut self) {
+        for (i, item_render_object) in self._item_render_objects.iter().enumerate() {
+            item_render_object.borrow_mut().set_visible( i < self._prop_stats._item_count as usize );
+        }
+    }
     pub fn update_transform(&mut self) {
-        self._render_object
-            .borrow_mut()
-            ._transform_object
-            .set_position_rotation_scale(
-                &self._prop_stats._position,
-                &self._prop_stats._rotation,
-                &self._prop_stats._scale,
-            );
+        self._render_object.borrow_mut()._transform_object.set_position_rotation_scale(
+            &self._prop_stats._position,
+            &self._prop_stats._rotation,
+            &self._prop_stats._scale,
+        );
     }
     pub fn update_render_object(&mut self) {
-        self._render_object
-            .borrow_mut()
-            .update_render_object_data(0.0);
+        self._render_object.borrow_mut().update_render_object_data(0.0);
     }
     pub fn update_prop(&mut self, delta_time: f64) {
+        self.update_generate_item(delta_time);
         self.update_transform();
-
-        if self._prop_data.borrow()._prop_type == PropDataType::Harvestable && self._prop_stats._item_count < self._prop_stats._item_count_max {
-            if self._prop_data.borrow()._item_regenerate_time <= self._prop_stats._item_regenerate_time {
-                self._prop_stats._item_count += 1;
-                self._prop_stats._item_regenerate_time = 0.0;
-            } else {
-                self._prop_stats._item_regenerate_time += delta_time as f32;
-            }
-        }
     }
 }
 
@@ -253,6 +282,8 @@ impl<'a> PropManager<'a> {
     ) -> RcRefCell<Prop<'a>> {
         let game_resources = ptr_as_ref(self._game_resources);
         let prop_data = game_resources.get_prop_data(prop_create_info._prop_data_name.as_str());
+
+        // create prop render objects
         let render_object_create_info = RenderObjectCreateInfo {
             _model_data_name: prop_data.borrow()._model_data_name.clone(),
             _position: prop_create_info._position.clone(),
@@ -265,6 +296,26 @@ impl<'a> PropManager<'a> {
             &render_object_create_info,
             None,
         );
+
+        // create item render objects
+        let mut item_render_objects: Vec<RcRefCell<RenderObjectData<'a>>> = Vec::new();
+        for (_, socket) in render_object_data.borrow()._sockets.iter() {
+            let item_data = game_resources.get_item_data(prop_data.borrow()._item_data_name.as_str());
+            let render_object_create_info = RenderObjectCreateInfo {
+                _model_data_name: item_data.borrow()._model_data_name.clone(),
+                _position: math::extract_location(&socket.borrow()._transform),
+                _rotation: math::matrix_decompose_pitch_yaw_roll(&socket.borrow()._transform),
+                _scale: math::extract_scale(&socket.borrow()._transform),
+                ..Default::default()
+            };
+            let render_object_data = self.get_scene_manager_mut().add_dynamic_render_object(
+                render_object_create_info._model_data_name.as_str(),
+                &render_object_create_info,
+                None,
+            );
+            item_render_objects.push(render_object_data);
+        }
+
         let id = self.generate_id();
         let prop = newRcRefCell(Prop::create_prop(
             self,
@@ -272,6 +323,7 @@ impl<'a> PropManager<'a> {
             prop_name,
             prop_data,
             &render_object_data,
+            item_render_objects,
             &prop_create_info,
         ));
         self._props.insert(id, prop.clone());
@@ -351,7 +403,7 @@ impl<'a> PropManager<'a> {
                                 if false == prop.is_alive() {
                                     let drop_count = prop._prop_stats._item_count;
                                     for item_create_info in prop.drop_items(drop_count).iter() {
-                                        self.get_game_scene_manager().get_item_manager_mut().create_item(&item_create_info, true);
+                                        self.get_game_scene_manager().get_item_manager_mut().create_item(&item_create_info);
                                     }
                                     dead_props.push(prop_refcell.clone());
                                 }
@@ -370,7 +422,7 @@ impl<'a> PropManager<'a> {
                                 prop.set_hit_damage(0);
                                 let drop_count = 1;
                                 for item_create_info in prop.drop_items(drop_count).iter() {
-                                    self.get_game_scene_manager().get_item_manager_mut().create_item(&item_create_info, true);
+                                    self.get_game_scene_manager().get_item_manager_mut().create_item(&item_create_info);
                                 }
                             }
 

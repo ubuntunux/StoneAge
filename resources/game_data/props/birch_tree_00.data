@@ -1,8 +1,7 @@
 {
-    "_item_data_name": "items/wood",
+    "_item_data_name": "items/coconut",
     "_item_drop_count_max": 5,
     "_item_drop_count_min": 3,
-    "_item_regenerate_count": 9999,
     "_item_regenerate_time": 10.0,
     "_max_hp": 100,
     "_model_data_name": "environments/birch_tree_00",

@@ -68,6 +68,7 @@ pub struct Prop<'a> {
     pub _prop_radius: f32,
     pub _prop_manager: *const PropManager<'a>,
     pub _render_object: RcRefCell<RenderObjectData<'a>>,
+    pub _item_render_objects: Vec<RcRefCell<RenderObjectData<'a>>>,
     pub _prop_data: RcRefCell<PropData>,
     pub _prop_stats: Box<PropStats>,
     pub _instance_parameters: serde_json::Map<String, serde_json::Value>,

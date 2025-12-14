@@ -253,7 +253,7 @@ impl<'a> GameSceneManager<'a> {
 
         // create items
         for (_item_data_name, item_create_info) in scenario_data_create_info._items.iter() {
-            self._item_manager.create_item(item_create_info, false);
+            self._item_manager.create_item(item_create_info);
         }
 
         // create props
@@ -316,7 +316,7 @@ impl<'a> GameSceneManager<'a> {
 
             // create items
             for (_item_data_name, item_create_info) in game_scene_data_ref._items.iter() {
-                self._item_manager.create_item(item_create_info, false);
+                self._item_manager.create_item(item_create_info);
             }
 
             // create props

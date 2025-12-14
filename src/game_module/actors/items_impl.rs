@@ -23,11 +23,12 @@ use std::collections::HashMap;
 impl ItemDataType {
     pub fn get_item_material_instance_name(item_data_type: &ItemDataType) -> &str {
         match item_data_type {
+            ItemDataType::None => "ui/items/item_none",
+            ItemDataType::Coconut => "ui/items/item_coconut",
             ItemDataType::Meat => "ui/items/item_meat",
             ItemDataType::Rock => "ui/items/item_rock",
             ItemDataType::Wood => "ui/items/item_wood",
             ItemDataType::SpiritBall => "ui/items/item_spirit_ball",
-            &ItemDataType::None => "ui/items/item_none",
         }
     }
 }
@@ -39,6 +40,7 @@ impl Default for ItemCreateInfo {
             _position: Vector3::zeros(),
             _rotation: Vector3::zeros(),
             _scale: Vector3::new(1.0, 1.0, 1.0),
+            _velocity: Vector3::zeros(),
         }
     }
 }
@@ -46,7 +48,7 @@ impl Default for ItemCreateInfo {
 impl Default for ItemData {
     fn default() -> Self {
         ItemData {
-            _item_type: ItemDataType::Meat,
+            _item_type: ItemDataType::None,
             _model_data_name: String::new(),
             _name: String::new(),
         }
@@ -62,7 +64,7 @@ impl<'a> Item<'a> {
         position: &Vector3<f32>,
         rotation: &Vector3<f32>,
         scale: &Vector3<f32>,
-        pop: bool,
+        velocity: &Vector3<f32>,
     ) -> Item<'a> {
         let mut item = Item {
             _item_name: String::from(item_name),
@@ -73,15 +75,7 @@ impl<'a> Item<'a> {
                 _position: position.clone(),
                 _rotation: rotation.clone(),
                 _scale: scale.clone(),
-                _velocity: if pop {
-                    Vector3::new(
-                        (rand::random::<f32>() * 2.0 - 1.0) * 5.0,
-                        10.0,
-                        (rand::random::<f32>() * 2.0 - 1.0) * 5.0,
-                    )
-                } else {
-                    Vector3::zeros()
-                },
+                _velocity: velocity.clone(),
                 _is_on_ground: false,
             }),
             _item_updater: create_item_updater(item_data.borrow()._item_type),
@@ -175,18 +169,10 @@ impl<'a> ItemManager<'a> {
     pub fn get_item(&self, item_id: ItemID) -> Option<&RcRefCell<Item<'a>>> {
         self._items.get(&item_id)
     }
-    pub fn create_item(
-        &mut self,
-        item_create_info: &ItemCreateInfo,
-        pop: bool,
-    ) -> RcRefCell<Item<'a>> {
+    pub fn create_item(&mut self, item_create_info: &ItemCreateInfo) -> RcRefCell<Item<'a>> {
         let game_resources = ptr_as_ref(self._game_resources);
         let mut spawn_point = item_create_info._position.clone();
-        spawn_point.y = spawn_point.y.max(
-            self.get_scene_manager()
-                .get_height_map_data()
-                .get_height_bilinear(&spawn_point, 0),
-        );
+        spawn_point.y = spawn_point.y.max(self.get_scene_manager().get_height_map_data().get_height_bilinear(&spawn_point, 0));
 
         let item_data = game_resources.get_item_data(item_create_info._item_data_name.as_str());
         let render_object_create_info = RenderObjectCreateInfo {
@@ -207,7 +193,7 @@ impl<'a> ItemManager<'a> {
             &spawn_point,
             &item_create_info._rotation,
             &item_create_info._scale,
-            pop,
+            &item_create_info._velocity,
         ));
         self._items.insert(id, item.clone());
         item
