@@ -16,7 +16,7 @@ pub enum ActionAnimationState {
     LayingDown,
     Pickup,
     EnterGate,
-    OpenMonolith,
+    OpenToolbox,
     PowerAttack,
     Sleep,
     StandUp,

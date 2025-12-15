@@ -478,6 +478,12 @@ impl<'a> PropManager<'a> {
                         },
                         PropDataType::Monolith => {
                             prop._prop_stats._is_in_player_range = player.check_in_range(prop.get_collision(), NPC_ATTACK_HIT_RANGE, check_direction);
+                            if prop._prop_stats._is_in_player_range {
+                                if player._animation_state.is_action_event(ActionAnimationState::OpenToolbox) {
+                                    self.get_game_client_mut().set_need_toolbox_mode(true);
+                                }
+                            }
+
                             if is_interaction_object == false && prop._prop_stats._is_in_player_range {
                                 player._controller.add_interaction_object(InteractionObject::PropMonolith(prop_refcell.clone()));
                             } else if is_interaction_object && prop._prop_stats._is_in_player_range == false {

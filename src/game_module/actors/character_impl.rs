@@ -617,7 +617,7 @@ impl<'a> Character<'a> {
             match self._controller._nearest_interaction_object {
                 InteractionObject::None  => {}
                 InteractionObject::PropBed(_) => {
-                    self.get_character_manager().get_game_client_mut().set_sleep_mode(true);
+                    self.get_character_manager().get_game_client_mut().set_need_sleep_mode(true);
                     self.set_action_animation(ActionAnimationState::LayingDown, 2.0);
                 }
                 InteractionObject::PropPickup(_) => {
@@ -628,7 +628,7 @@ impl<'a> Character<'a> {
                 }
                 InteractionObject::PropGathering(_) => {},
                 InteractionObject::PropMonolith(_) => {
-                    self.set_action_animation(ActionAnimationState::OpenMonolith, 1.0);
+                    self.set_action_animation(ActionAnimationState::OpenToolbox, 1.0);
                 }
             }
         }
@@ -852,7 +852,7 @@ impl<'a> Character<'a> {
                     AnimationLayer::ActionLayer,
                 );
             },
-            ActionAnimationState::OpenMonolith => {
+            ActionAnimationState::OpenToolbox => {
                 animation_info._animation_fade_out_time = 0.0; // keep end of animation
                 render_object.set_animation(
                     &animation_data._pickup_animation,
@@ -1062,8 +1062,8 @@ impl<'a> Character<'a> {
             ActionAnimationState::EnterGate => {
                 self._animation_state.set_action_event(ActionAnimationState::EnterGate);
             },
-            ActionAnimationState::OpenMonolith => {
-                self._animation_state.set_action_event(ActionAnimationState::OpenMonolith);
+            ActionAnimationState::OpenToolbox => {
+                self._animation_state.set_action_event(ActionAnimationState::OpenToolbox);
             }
             _ => ()
         }
