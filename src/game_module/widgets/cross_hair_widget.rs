@@ -12,8 +12,7 @@ impl<'a> CrossHairWidget<'a> {
         root_widget: &mut WidgetDefault<'a>,
         material_instance: &RcRefCell<MaterialInstanceData<'a>>,
     ) -> CrossHairWidget<'a> {
-        let cross_hair_widget =
-            UIManager::create_widget("cross_hair_widget", UIWidgetTypes::Default);
+        let cross_hair_widget = UIManager::create_widget("cross_hair_widget", UIWidgetTypes::Default);
         let cross_hair_widget_ptr = ptr_as_mut(cross_hair_widget.as_ref());
         let ui_component = ptr_as_mut(cross_hair_widget.as_ref()).get_ui_component_mut();
         ui_component.set_material_instance(Some(material_instance.clone()));

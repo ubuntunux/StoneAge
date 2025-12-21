@@ -35,24 +35,34 @@ impl<'a> ToolboxItem<'a> {
         let ui_component = ptr_as_mut(item_icon.as_ref()).get_ui_component_mut();
         ui_component.set_layout_type(UILayoutType::BoxLayout);
         ui_component.set_layout_orientation(Orientation::HORIZONTAL);
+        ui_component.set_halign(HorizontalAlign::CENTER);
+        ui_component.set_valign(VerticalAlign::CENTER);
         ui_component.set_size_x(ITEM_HEIGHT);
         ui_component.set_size_y(ITEM_HEIGHT);
-        ui_component.set_color(get_color32(50, 50, 50, 128));
+        ui_component.set_color(get_color32(50, 50, 50, 255));
         ui_component.set_border_color(get_color32(0, 0, 0, 255));
         ui_component.set_margin(10.0);
         ui_component.set_round(5.0);
+        ui_component.set_text("ICON");
+        ui_component.set_font_size(40.0);
+        ui_component.set_font_color(get_color32(255, 255, 255, 255));
         layout_mut.add_widget(&item_icon);
 
         let ingredient_layout = UIManager::create_widget("ingredient", UIWidgetTypes::Default);
         let ui_component = ptr_as_mut(ingredient_layout.as_ref()).get_ui_component_mut();
         ui_component.set_layout_type(UILayoutType::BoxLayout);
         ui_component.set_layout_orientation(Orientation::HORIZONTAL);
+        ui_component.set_halign(HorizontalAlign::CENTER);
+        ui_component.set_valign(VerticalAlign::CENTER);
         ui_component.set_size_x(ITEM_HEIGHT * 2.0);
         ui_component.set_size_y(ITEM_HEIGHT);
-        ui_component.set_color(get_color32(50, 50, 50, 128));
+        ui_component.set_color(get_color32(50, 50, 50, 255));
         ui_component.set_border_color(get_color32(0, 0, 0, 255));
         ui_component.set_margin(10.0);
         ui_component.set_round(5.0);
+        ui_component.set_text("INGREDIENT");
+        ui_component.set_font_size(40.0);
+        ui_component.set_font_color(get_color32(255, 255, 255, 255));
         layout_mut.add_widget(&ingredient_layout);
 
         ToolboxItem {
@@ -73,21 +83,19 @@ impl<'a> ToolboxWidget<'a> {
         parent_widget: &mut WidgetDefault<'a>,
     ) -> ToolboxWidget<'a> {
         let layer = UIManager::create_widget("toolbox_widget", UIWidgetTypes::Default);
-        let ui_component = ptr_as_mut(layer.as_ref()).get_ui_component_mut();
+        let layer_mut = ptr_as_mut(layer.as_ref());
+        let ui_component = layer_mut.get_ui_component_mut();
         ui_component.set_layout_type(UILayoutType::BoxLayout);
         ui_component.set_layout_orientation(Orientation::VERTICAL);
-        ui_component.set_halign(HorizontalAlign::CENTER);
-        ui_component.set_valign(VerticalAlign::CENTER);
+        ui_component.set_halign(HorizontalAlign::LEFT);
+        ui_component.set_valign(VerticalAlign::TOP);
         ui_component.set_pos_hint_x(PosHintX::Center(0.5));
         ui_component.set_pos_hint_y(PosHintY::Center(0.5));
         ui_component.set_color(get_color32(50, 50, 50, 128));
         ui_component.set_border_color(get_color32(0, 0, 0, 255));
         ui_component.set_round(5.0);
 
-        {
-            let layer_mut = ptr_as_mut(layer.as_ref());
-            ToolboxItem::create_toolbox_item(layer_mut);
-        }
+        ToolboxItem::create_toolbox_item(layer_mut);
 
         ToolboxWidget {
             _parent_widget: parent_widget,

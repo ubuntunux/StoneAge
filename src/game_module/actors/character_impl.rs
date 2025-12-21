@@ -428,6 +428,7 @@ impl<'a> Character<'a> {
             && self.is_action(ActionAnimationState::Sleep) == false
             && self.is_action(ActionAnimationState::StandUp) == false
             && self.is_action(ActionAnimationState::EnterGate) == false
+            && self.is_action(ActionAnimationState::OpenToolbox) == false
     }
 
     pub fn is_available_jump(&self) -> bool {

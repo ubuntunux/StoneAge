@@ -232,12 +232,10 @@ impl<'a> GameUIManager<'a> {
             MATERIAL_INTRO_IMAGE,
         ));
 
-        let cross_hair_material_instance = game_resources.get_engine_resources().get_material_instance_data(MATERIAL_CROSS_HAIR);
-        let tod_material_instance = game_resources.get_engine_resources().get_material_instance_data(MATERIAL_TIME_OF_DAY);
-        self._cross_hair = Some(Box::new(CrossHairWidget::create_cross_hair(game_ui_layout_mut, cross_hair_material_instance)));
         self._player_hud = Some(Box::new(PlayerHud::create_player_hud(game_ui_layout_mut)));
         self._item_bar_widget = Some(Box::new(ItemBarWidget::create_item_bar_widget(engine_resources, game_ui_layout_mut)));
         self._target_status_bar = Some(Box::new(TargetStatusWidget::create_target_status_widget(game_ui_layout_mut)));
+        let tod_material_instance = game_resources.get_engine_resources().get_material_instance_data(MATERIAL_TIME_OF_DAY);
         self._time_of_day = Some(Box::new(TimeOfDayWidget::create_time_of_day_widget(game_ui_layout_mut, tod_material_instance)));
         self._controller_help_widget = Some(Box::new(ControllerHelpWidget::create_controller_help_widget(
             game_ui_layout_mut,
@@ -245,6 +243,10 @@ impl<'a> GameUIManager<'a> {
             game_resources
         )));
         self._toolbox_widget = Some(Box::new(ToolboxWidget::create_toolbox_widget(engine_resources, game_ui_layout_mut)));
+
+        let cross_hair_material_instance = game_resources.get_engine_resources().get_material_instance_data(MATERIAL_CROSS_HAIR);
+        self._cross_hair = Some(Box::new(CrossHairWidget::create_cross_hair(root_widget, cross_hair_material_instance)));
+        self.set_cross_hair_visible(false);
     }
 
     pub fn get_game_ui_layout(&self) -> *const WidgetDefault<'a> {
@@ -315,6 +317,13 @@ impl<'a> GameUIManager<'a> {
         self._game_image.as_mut().unwrap().set_game_image_fade_speed(fade_speed);
     }
 
+    // cross-hair
+    pub fn set_cross_hair_visible(&mut self, visible: bool) {
+        if let Some(cross_hair) = self._cross_hair.as_mut() {
+            cross_hair.update_cross_hair_visible(visible);
+        }
+    }
+
     // item bar
     pub fn add_item(&mut self, item_data_type: &ItemDataType, item_count: usize) -> bool {
         self._item_bar_widget.as_mut().unwrap().add_item(item_data_type, item_count)
@@ -343,8 +352,10 @@ impl<'a> GameUIManager<'a> {
     // toolbox
     pub fn open_toolbox(&mut self) {
         self._toolbox_widget.as_mut().unwrap().open_toolbox();
+        self.set_cross_hair_visible(true);
     }
     pub fn close_toolbox(&mut self) {
+        self.set_cross_hair_visible(false);
         self._toolbox_widget.as_mut().unwrap().close_toolbox();
     }
     pub fn is_opened_toolbox(&self) -> bool {
@@ -401,9 +412,6 @@ impl<'a> GameUIManager<'a> {
         }
 
         if let Some(cross_hair) = self._cross_hair.as_mut() {
-            // TEST: hide cross-hair
-            cross_hair.update_cross_hair_visible(false);
-
             if cross_hair.get_cross_hair_visible() {
                 cross_hair.update_cross_hair(mouse_pos);
             }
