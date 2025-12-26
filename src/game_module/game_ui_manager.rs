@@ -291,16 +291,8 @@ impl<'a> GameUIManager<'a> {
         auto_fade_inout: bool,
     ) {
         let game_resources = ptr_as_ref(self._game_resources);
-        let material_instance = if game_resources
-            .get_engine_resources()
-            .has_material_instance_data(material_instance_name)
-        {
-            Some(
-                game_resources
-                    .get_engine_resources()
-                    .get_material_instance_data(material_instance_name)
-                    .clone(),
-            )
+        let material_instance = if game_resources.get_engine_resources().has_material_instance_data(material_instance_name) {
+            Some(game_resources.get_engine_resources().get_material_instance_data(material_instance_name).clone())
         } else {
             None
         };

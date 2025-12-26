@@ -102,16 +102,10 @@ impl<'a> ImageLayout<'a> {
         if material_instance.is_some() {
             let material_instance_refcell = material_instance.as_ref().unwrap();
             let material_instance_ref = material_instance_refcell.borrow();
-            let texture_parameter = material_instance_ref
-                ._material_parameters
-                .get("texture_color")
-                .unwrap();
+            let texture_parameter = material_instance_ref._material_parameters.get("texture_color").unwrap();
             let texture_name = texture_parameter.as_str().unwrap();
-            let texture = game_resources
-                .get_engine_resources()
-                .get_texture_data(texture_name);
-            self._next_image_aspect =
-                texture.borrow()._image_width as f32 / texture.borrow()._image_height as f32;
+            let texture = game_resources.get_engine_resources().get_texture_data(texture_name);
+            self._next_image_aspect = texture.borrow()._image_width as f32 / texture.borrow()._image_height as f32;
             self._fadeout_opacity = 1.0;
             self._fadeout_image_brightness = 0.0;
             self._fadein_opacity = 1.0;
@@ -144,15 +138,19 @@ impl<'a> ImageLayout<'a> {
     }
 
     pub fn change_game_image(&mut self) {
-        let image_widget = ptr_as_mut(self._image_layout.as_ref());
-        let ui_component = image_widget.get_ui_component_mut();
-        ui_component.set_material_instance(self._next_material_instance.clone());
-        ui_component.set_visible(self._next_material_instance.is_some());
         self._material_instance = self._next_material_instance.clone();
         self._next_material_instance = None;
         self._image_aspect = self._next_image_aspect;
         self._prev_opacity = self._opacity;
         self._prev_image_brightness = self._image_brightness;
+
+        let window_aspect: f32 = self._window_size.x as f32 / self._window_size.y as f32;
+        let image_widget = ptr_as_mut(self._image_layout.as_ref());
+        let ui_component = image_widget.get_ui_component_mut();
+        ui_component.set_material_instance(self._material_instance.clone());
+        ui_component.set_size_hint_x(Some(self._image_aspect / window_aspect * self._image_size_hint));
+        ui_component.set_size_hint_y(Some(self._image_size_hint));
+        ui_component.set_visible(self._material_instance.is_some());
     }
 
     pub fn is_done_manual_fade_out(&self) -> bool {
@@ -180,6 +178,7 @@ impl<'a> ImageLayout<'a> {
     }
 
     pub fn changed_window_size(&mut self, window_size: &Vector2<i32>) {
+        self._window_size = window_size.clone();
         let window_aspect: f32 = window_size.x as f32 / window_size.y as f32;
         let image_widget = ptr_as_mut(self._image_layout.as_ref());
         let ui_component = image_widget.get_ui_component_mut();

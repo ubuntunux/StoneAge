@@ -24,7 +24,7 @@ impl<'a> ToolboxItem<'a> {
         let ui_component = layout_mut.get_ui_component_mut();
         ui_component.set_layout_type(UILayoutType::BoxLayout);
         ui_component.set_layout_orientation(Orientation::HORIZONTAL);
-        ui_component.set_halign(HorizontalAlign::LEFT);
+        ui_component.set_halign(HorizontalAlign::LEFT); 
         ui_component.set_valign(VerticalAlign::TOP);
         ui_component.set_size_hint_x(Some(1.0));
         ui_component.set_size_y(ITEM_HEIGHT);

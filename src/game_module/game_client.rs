@@ -246,6 +246,10 @@ impl<'a> GameClient<'a> {
             || mouse_input_data.is_any_button_hold()
             || keyboard_input_data.is_any_key_hold();
 
+        if game_ui_manager.is_done_game_image_progress() {
+            game_ui_manager.set_game_image_fade_speed(if any_key_hold { 5.0 } else { 1.0 });
+        }
+
         match self._game_phase {
             GamePhase::None => {
                 game_ui_manager.set_image_auto_fade_inout(MATERIAL_INTRO_IMAGE, 0.0);
@@ -255,24 +259,14 @@ impl<'a> GameClient<'a> {
                 self.set_game_phase(GamePhase::Intro);
             }
             GamePhase::Intro => {
-                game_ui_manager.set_game_image_fade_speed(if any_key_hold { 5.0 } else { 1.0 });
-
                 if any_key_pressed {
-                    // TEST CODE
-                    // let story_board_phase = self.get_story_board_phase();
-                    let story_board_phase = STORY_BOARDS.len();
+                    let story_board_phase = self.get_story_board_phase();
                     if game_ui_manager.is_done_game_image_progress() {
                         if STORY_BOARDS.len() <= story_board_phase {
-                            game_ui_manager.set_image_manual_fade_inout(
-                                STORY_IMAGE_NONE,
-                                STORY_BOARD_FADE_TIME,
-                            );
+                            game_ui_manager.set_image_manual_fade_inout(STORY_IMAGE_NONE, STORY_BOARD_FADE_TIME);
                             self.set_game_phase(GamePhase::Loading);
                         } else {
-                            game_ui_manager.set_image_auto_fade_inout(
-                                &STORY_BOARDS[story_board_phase],
-                                STORY_BOARD_FADE_TIME,
-                            );
+                            game_ui_manager.set_image_auto_fade_inout(&STORY_BOARDS[story_board_phase], STORY_BOARD_FADE_TIME);
                             self.next_story_board_phase();
                         }
                     }
@@ -287,8 +281,7 @@ impl<'a> GameClient<'a> {
                             let game_controller = ptr_as_mut(self._game_controller);
                             game_controller.update_on_open_game_scene();
                         }
-                        game_ui_manager
-                            .set_image_manual_fade_inout(STORY_IMAGE_NONE, STORY_BOARD_FADE_TIME);
+                        game_ui_manager.set_image_manual_fade_inout(STORY_IMAGE_NONE, STORY_BOARD_FADE_TIME);
                         game_ui_manager.set_auto_fade_inout(true);
                         self.set_game_phase(GamePhase::GamePlay);
                     }
