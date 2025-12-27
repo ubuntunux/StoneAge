@@ -2,7 +2,7 @@ use crate::application::application::Application;
 use crate::game_module::actors::character_manager::CharacterManager;
 use crate::game_module::game_constants::{
     AMBIENT_SOUND, CAMERA_DISTANCE_MAX, GAME_MUSIC, MATERIAL_INTRO_IMAGE, SCENARIO_INTRO,
-    SLEEP_TIMER, STORY_BOARDS, STORY_BOARD_FADE_TIME, STORY_IMAGE_NONE,
+    SLEEP_TIMER, STORY_BOARD_FADE_TIME, STORY_IMAGE_NONE,
 };
 use crate::game_module::game_controller::GameController;
 use crate::game_module::game_resource::GameResources;
@@ -14,8 +14,7 @@ use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
 
 #[derive(Clone, Copy, Debug, Hash, PartialEq)]
 pub enum GamePhase {
-    None,
-    Intro,
+    Start,
     Loading,
     GamePlay,
     PlayGameScenario,
@@ -34,7 +33,6 @@ pub struct GameClient<'a> {
     pub _game_ui_manager: *const GameUIManager<'a>,
     pub _editor_ui_manager: *const EditorUIManager<'a>,
     pub _game_phase: GamePhase,
-    pub _story_board_phase: usize,
     pub _need_sleep_mode: bool,
     pub _need_toolbox_mode: bool,
     pub _sleep_timer: f32,
@@ -51,8 +49,7 @@ impl<'a> GameClient<'a> {
             _game_controller: std::ptr::null(),
             _game_ui_manager: std::ptr::null(),
             _editor_ui_manager: std::ptr::null(),
-            _game_phase: GamePhase::None,
-            _story_board_phase: 0,
+            _game_phase: GamePhase::Start,
             _need_sleep_mode: false,
             _need_toolbox_mode: false,
             _sleep_timer: 0.0,
@@ -121,36 +118,15 @@ impl<'a> GameClient<'a> {
         ptr_as_mut(self._editor_ui_manager)
     }
     pub fn set_game_mode(&mut self, is_game_mode: bool) {
-        self.get_editor_ui_manager_mut()
-            .show_editor_ui(!is_game_mode);
+        self.get_editor_ui_manager_mut().show_editor_ui(!is_game_mode);
         self.get_game_ui_manager_mut().show_ui(is_game_mode);
         if is_game_mode {
-            if self
-                .get_game_scene_manager()
-                .get_character_manager()
-                .is_valid_player()
-            {
+            if self.get_game_scene_manager().get_character_manager().is_valid_player() {
                 let main_camera = self.get_game_controller().get_main_camera();
-                let player = self
-                    .get_game_scene_manager()
-                    .get_character_manager()
-                    .get_player();
-                player.borrow_mut().set_position(
-                    &(main_camera.get_camera_position()
-                        + CAMERA_DISTANCE_MAX * main_camera.get_camera_front()),
-                );
+                let player = self.get_game_scene_manager().get_character_manager().get_player();
+                player.borrow_mut().set_position(&(main_camera.get_camera_position() + CAMERA_DISTANCE_MAX * main_camera.get_camera_front()));
             }
         }
-    }
-
-    pub fn get_story_board_phase(&self) -> usize {
-        self._story_board_phase
-    }
-    pub fn clear_story_board_phase(&mut self) {
-        self._story_board_phase = 0;
-    }
-    pub fn next_story_board_phase(&mut self) {
-        self._story_board_phase += 1;
     }
     pub fn set_need_sleep_mode(&mut self, need_sleep_mode: bool) {
         self._need_sleep_mode = need_sleep_mode;
@@ -251,40 +227,18 @@ impl<'a> GameClient<'a> {
         }
 
         match self._game_phase {
-            GamePhase::None => {
+            GamePhase::Start => {
                 game_ui_manager.set_image_auto_fade_inout(MATERIAL_INTRO_IMAGE, 0.0);
                 game_scene_manager.play_bgm(GAME_MUSIC, Some(0.5));
                 game_scene_manager.play_ambient_sound(AMBIENT_SOUND, None);
-                self.clear_story_board_phase();
-                self.set_game_phase(GamePhase::Intro);
-            }
-            GamePhase::Intro => {
-                if any_key_pressed {
-                    let story_board_phase = self.get_story_board_phase();
-                    if game_ui_manager.is_done_game_image_progress() {
-                        if STORY_BOARDS.len() <= story_board_phase {
-                            game_ui_manager.set_image_manual_fade_inout(STORY_IMAGE_NONE, STORY_BOARD_FADE_TIME);
-                            self.set_game_phase(GamePhase::Loading);
-                        } else {
-                            game_ui_manager.set_image_auto_fade_inout(&STORY_BOARDS[story_board_phase], STORY_BOARD_FADE_TIME);
-                            self.next_story_board_phase();
-                        }
-                    }
-                }
+                self.set_game_phase(GamePhase::Loading);
             }
             GamePhase::Loading => {
-                if game_ui_manager.is_done_manual_fade_out() {
-                    if game_scene_manager.is_game_scene_state(GameSceneState::None) {
-                        game_scene_manager.open_scenario_data(SCENARIO_INTRO);
-                    } else if game_scene_manager.is_game_scene_state(GameSceneState::PlayGame) {
-                        if false == self._game_controller.is_null() {
-                            let game_controller = ptr_as_mut(self._game_controller);
-                            game_controller.update_on_open_game_scene();
-                        }
-                        game_ui_manager.set_image_manual_fade_inout(STORY_IMAGE_NONE, STORY_BOARD_FADE_TIME);
-                        game_ui_manager.set_auto_fade_inout(true);
-                        self.set_game_phase(GamePhase::GamePlay);
-                    }
+                if game_scene_manager.is_game_scene_state(GameSceneState::None) {
+                    game_scene_manager.open_scenario_data(SCENARIO_INTRO);
+                } else if game_scene_manager.is_game_scene_state(GameSceneState::PlayGame) {
+                    game_controller.update_on_open_game_scene();
+                    self.set_game_phase(GamePhase::GamePlay);
                 }
             }
             GamePhase::GamePlay => {
@@ -295,7 +249,7 @@ impl<'a> GameClient<'a> {
                 // }
 
                 if game_scene_manager.is_game_scene_state(GameSceneState::PlayGame) {
-                    if false == self._game_controller.is_null() && character_manager.is_valid_player() {
+                    if character_manager.is_valid_player() {
                         if game_scene_manager.has_scenario() {
                             self.set_game_phase(GamePhase::PlayGameScenario);
                         } else if game_scene_manager.is_teleport_mode() {
@@ -328,7 +282,7 @@ impl<'a> GameClient<'a> {
                 }
             }
             GamePhase::PlayGameScenario => {
-                game_scene_manager.update_game_scenario(any_key_hold, delta_time);
+                game_scene_manager.update_game_scenario(game_ui_manager, any_key_hold, any_key_pressed, delta_time);
                 if game_scene_manager.has_scenario() == false {
                     self.set_game_phase(GamePhase::GamePlay);
                 }

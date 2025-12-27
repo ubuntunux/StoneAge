@@ -7,6 +7,7 @@ use crate::game_module::actors::items::{ItemCreateInfo, ItemManager};
 use crate::game_module::actors::props::{PropCreateInfo, PropManager};
 use crate::game_module::game_constants::{TEMPERATURE_MAX, TEMPERATURE_MIN, TIME_OF_DAWN, TIME_OF_DAY_SPEED, TIME_OF_MORNING};
 use crate::game_module::game_resource::GameResources;
+use crate::game_module::game_ui_manager::GameUIManager;
 use crate::game_module::scenario::scenario::{create_scenario, ScenarioBase};
 use nalgebra::{Vector2, Vector3};
 use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop, AudioManager};
@@ -241,16 +242,7 @@ impl<'a> GameSceneManager<'a> {
         self._scenario_map.insert(String::from(scenario_data_name), scenario.clone());
 
         // open game scene data
-        self.open_game_scene_data(
-            scenario_data_create_info
-                ._game_scenes
-                .values()
-                .last()
-                .as_ref()
-                .unwrap()
-                ._game_scene_data_name
-                .as_str(),
-        );
+        self.open_game_scene_data(scenario_data_create_info._game_scenes.values().last().as_ref().unwrap()._game_scene_data_name.as_str());
 
         // create items
         for (_item_data_name, item_create_info) in scenario_data_create_info._items.iter() {
@@ -422,10 +414,10 @@ impl<'a> GameSceneManager<'a> {
         }
     }
 
-    pub fn update_game_scenario(&mut self, any_key_hold: bool, delta_time: f64) {
+    pub fn update_game_scenario(&mut self, game_ui_manager: &mut GameUIManager, any_key_hold: bool, any_key_pressed: bool, delta_time: f64) {
         if self.has_scenario() {
             self._scenario_map.values_mut().for_each(|scenario| {
-                scenario.borrow_mut().update_game_scenario(any_key_hold, delta_time)
+                scenario.borrow_mut().update_game_scenario(game_ui_manager, any_key_hold, any_key_pressed, delta_time)
             });
             self._scenario_map.retain(|_key, value| value.borrow().is_end_of_scenario() == false)
         }

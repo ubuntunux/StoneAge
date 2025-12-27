@@ -266,10 +266,7 @@ impl<'a> GameUIManager<'a> {
     }
 
     pub fn is_done_game_image_progress(&self) -> bool {
-        self._game_image
-            .as_ref()
-            .unwrap()
-            .is_done_game_image_progress()
+        self._game_image.as_ref().unwrap().is_done_game_image_progress()
     }
 
     pub fn set_auto_fade_inout(&mut self, auto_fade_inout: bool) {

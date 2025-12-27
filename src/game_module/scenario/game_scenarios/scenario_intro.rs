@@ -1,6 +1,7 @@
 use crate::game_module::actors::character::Character;
-use crate::game_module::game_constants::TIME_OF_NOON;
+use crate::game_module::game_constants::{STORY_BOARDS, STORY_BOARD_FADE_TIME, STORY_IMAGE_NONE, TIME_OF_NOON};
 use crate::game_module::game_scene_manager::GameSceneManager;
+use  crate::game_module::game_ui_manager::GameUIManager;
 use crate::game_module::scenario::scenario::{ScenarioBase, ScenarioDataCreateInfo, ScenarioTrack};
 use nalgebra::Vector3;
 use rust_engine_3d::utilities::system::{ptr_as_mut, RcRefCell};
@@ -11,10 +12,10 @@ const SLEEP_PHASE_TIME: f32 = 10.0;
 
 #[derive(Clone, PartialEq, Eq, Hash, Display, Debug, Copy, EnumIter, EnumString, EnumCount)]
 pub enum ScenarioIntroPhase {
-    None,
-    Intro,
-    Tutorial,
-    GameStart
+    Start,
+    StoryBoard,
+    Zoomin,
+    End
 }
 
 pub struct ScenarioIntro<'a> {
@@ -27,7 +28,8 @@ pub struct ScenarioIntro<'a> {
     pub _around_end_position: Vector3<f32>,
     pub _around_start_rotation: Vector3<f32>,
     pub _around_end_rotation: Vector3<f32>,
-    pub _scenario_track: ScenarioTrack<ScenarioIntroPhase>
+    pub _scenario_track: ScenarioTrack<ScenarioIntroPhase>,
+    pub _story_board_phase: usize,
 }
 
 impl<'a> ScenarioIntro<'a> {
@@ -47,17 +49,30 @@ impl<'a> ScenarioIntro<'a> {
             _around_start_rotation: Vector3::new(0.37, -1.0, 0.0),
             _around_end_rotation: Vector3::new(0.7205, -0.002, 0.0),
             _scenario_track: ScenarioTrack {
-                _scenario_phase: ScenarioIntroPhase::None,
+                _scenario_phase: ScenarioIntroPhase::Start,
                 _phase_time: 0.0,
                 _phase_duration: 0.0,
             },
+            _story_board_phase: 0,
         }
+    }
+}
+
+impl<'a> ScenarioIntro<'a> {
+    pub fn get_story_board_phase(&self) -> usize {
+        self._story_board_phase
+    }
+    pub fn clear_story_board_phase(&mut self) {
+        self._story_board_phase = 0;
+    }
+    pub fn next_story_board_phase(&mut self) {
+        self._story_board_phase += 1;
     }
 }
 
 impl<'a> ScenarioBase for ScenarioIntro<'a> {
     fn is_end_of_scenario(&self) -> bool {
-        self._scenario_track._scenario_phase == ScenarioIntroPhase::GameStart
+        self._scenario_track._scenario_phase == ScenarioIntroPhase::End
     }
 
     fn set_scenario_phase(&mut self, next_scenario_phase: &str, phase_duration: f32) {
@@ -65,15 +80,13 @@ impl<'a> ScenarioBase for ScenarioIntro<'a> {
         if next_scenario_phase != self._scenario_track._scenario_phase {
             self.update_game_scenario_end();
             self._scenario_track.set_scenario_phase(next_scenario_phase, phase_duration);
-            self._scenario_track._phase_time = 0.0;
-            self._scenario_track._phase_duration = phase_duration;
             self.update_game_scenario_begin();
         }
     }
 
     fn update_game_scenario_begin(&mut self) {
         match self._scenario_track._scenario_phase {
-            ScenarioIntroPhase::Intro => {
+            ScenarioIntroPhase::Zoomin => {
                 let game_scene_manager = ptr_as_mut(self._game_scene_manager);
                 let main_camera = game_scene_manager.get_scene_manager().get_main_camera_mut();
                 main_camera._transform_object.set_position(&self._around_start_position);
@@ -95,7 +108,7 @@ impl<'a> ScenarioBase for ScenarioIntro<'a> {
                     None
                 };
             }
-            ScenarioIntroPhase::Tutorial => {
+            ScenarioIntroPhase::End => {
                 self._actor_aru.as_ref().unwrap().borrow_mut()._character_stats.set_hunger(0.8);
             }
             _ => (),
@@ -108,13 +121,26 @@ impl<'a> ScenarioBase for ScenarioIntro<'a> {
         }
     }
 
-    fn update_game_scenario(&mut self, any_key_hold: bool, delta_time: f64) {
+    fn update_game_scenario(&mut self, game_ui_manager: &mut GameUIManager, any_key_hold: bool, any_key_pressed: bool, delta_time: f64) {
         let phase_ratio = self._scenario_track.get_phase_ratio();
         match self._scenario_track._scenario_phase {
-            ScenarioIntroPhase::None => {
-                self.set_scenario_phase(ScenarioIntroPhase::Intro.to_string().as_str(), SLEEP_PHASE_TIME);
+            ScenarioIntroPhase::Start => {
+                self.set_scenario_phase(ScenarioIntroPhase::StoryBoard.to_string().as_str(), 0.0);
             }
-            ScenarioIntroPhase::Intro => {
+            ScenarioIntroPhase::StoryBoard => {
+                let story_board_phase = self.get_story_board_phase();
+                if game_ui_manager.is_done_game_image_progress() && any_key_pressed {
+                    if STORY_BOARDS.len() <= story_board_phase {
+                        game_ui_manager.set_image_manual_fade_inout(STORY_IMAGE_NONE, STORY_BOARD_FADE_TIME);
+                        game_ui_manager.set_auto_fade_inout(true);
+                        self.set_scenario_phase(ScenarioIntroPhase::Zoomin.to_string().as_str(), SLEEP_PHASE_TIME);
+                    } else {
+                        game_ui_manager.set_image_auto_fade_inout(&STORY_BOARDS[story_board_phase], STORY_BOARD_FADE_TIME);
+                        self.next_story_board_phase();
+                    }
+                }
+            }
+            ScenarioIntroPhase::Zoomin => {
                 let game_scene_manager = ptr_as_mut(self._game_scene_manager);
                 let main_camera = game_scene_manager.get_scene_manager().get_main_camera_mut();
                 let progress = 1.0 - (phase_ratio * -5.0).exp2();
@@ -124,13 +150,11 @@ impl<'a> ScenarioBase for ScenarioIntro<'a> {
                 main_camera._transform_object.set_rotation(&rotation);
 
                 if 1.0 <= phase_ratio {
-                    self.set_scenario_phase(ScenarioIntroPhase::Tutorial.to_string().as_str(), 0.0);
+                    self.set_scenario_phase(ScenarioIntroPhase::End.to_string().as_str(), 0.0);
                 }
             }
-            ScenarioIntroPhase::Tutorial => {
-                self.set_scenario_phase(ScenarioIntroPhase::GameStart.to_string().as_str(), 0.0);
+            ScenarioIntroPhase::End => {
             }
-            _ => (),
         }
 
         self._scenario_track.update_scenario_track(delta_time as f32 * if any_key_hold { 5.0 } else { 1.0 });

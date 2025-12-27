@@ -1,6 +1,7 @@
 use crate::game_module::game_scene_manager::{
     CharacterCreateInfoMap, GameSceneManager, ItemCreateInfoMap, PropCreateInfoMap,
 };
+use crate::game_module::game_ui_manager::GameUIManager;
 use crate::game_module::scenario::game_scenarios::scenario_intro::ScenarioIntro;
 use nalgebra::Vector3;
 use rust_engine_3d::utilities::system::{newRcRefCell, RcRefCell};
@@ -61,7 +62,7 @@ pub trait ScenarioBase {
     fn set_scenario_phase(&mut self, next_scenario_phase: &str, phase_duration: f32);
     fn update_game_scenario_begin(&mut self);
     fn update_game_scenario_end(&mut self);
-    fn update_game_scenario(&mut self, any_key_hold: bool, delta_time: f64);
+    fn update_game_scenario(&mut self, game_ui_manager: &mut GameUIManager, any_key_hold: bool, any_key_pressed: bool, delta_time: f64);
 }
 
 pub fn create_scenario<'a>(
