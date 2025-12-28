@@ -2,7 +2,7 @@ use crate::application::application::Application;
 use crate::game_module::actors::character_manager::CharacterManager;
 use crate::game_module::game_constants::{
     AMBIENT_SOUND, CAMERA_DISTANCE_MAX, GAME_MUSIC, MATERIAL_INTRO_IMAGE, SCENARIO_INTRO,
-    SLEEP_TIMER, STORY_BOARD_FADE_TIME, STORY_IMAGE_NONE,
+    SLEEP_TIMER, STORY_BOARD_FADE_TIME, STORY_IMAGE_NONE, GAME_MODE_2D
 };
 use crate::game_module::game_controller::GameController;
 use crate::game_module::game_resource::GameResources;
@@ -124,7 +124,11 @@ impl<'a> GameClient<'a> {
             if self.get_game_scene_manager().get_character_manager().is_valid_player() {
                 let main_camera = self.get_game_controller().get_main_camera();
                 let player = self.get_game_scene_manager().get_character_manager().get_player();
-                player.borrow_mut().set_position(&(main_camera.get_camera_position() + CAMERA_DISTANCE_MAX * main_camera.get_camera_front()));
+                let mut player_position = main_camera.get_camera_position() + CAMERA_DISTANCE_MAX * main_camera.get_camera_front();
+                if GAME_MODE_2D {
+                    player_position.z = player.borrow().get_position().z;
+                }
+                player.borrow_mut().set_position(&player_position);
             }
         }
     }
