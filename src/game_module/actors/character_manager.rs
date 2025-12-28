@@ -290,7 +290,7 @@ impl<'a> CharacterManager<'a> {
                                 // TestCode: Item
                                 let item_create_info = ItemCreateInfo {
                                     _item_data_name: String::from(ITEM_SPIRIT_BALL),
-                                    _position: target_position + Vector3::new(0.0, 0.5, 0.0),
+                                    _position: target_position.clone(),
                                     ..Default::default()
                                 };
                                 self.get_game_scene_manager().get_item_manager_mut().create_item(&item_create_info);

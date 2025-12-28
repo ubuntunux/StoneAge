@@ -1,5 +1,5 @@
 use crate::game_module::actors::character::Character;
-use crate::game_module::game_constants::{STORY_BOARDS, STORY_BOARD_FADE_TIME, STORY_IMAGE_NONE, TIME_OF_NOON};
+use crate::game_module::game_constants::{STORY_BOARD_FADE_TIME, STORY_IMAGE_NONE, TIME_OF_NOON};
 use crate::game_module::game_scene_manager::GameSceneManager;
 use  crate::game_module::game_ui_manager::GameUIManager;
 use crate::game_module::scenario::scenario::{ScenarioBase, ScenarioDataCreateInfo, ScenarioTrack};
@@ -7,11 +7,17 @@ use nalgebra::Vector3;
 use rust_engine_3d::utilities::system::{ptr_as_mut, RcRefCell};
 use std::str::FromStr;
 use strum_macros::{Display, EnumCount, EnumIter, EnumString};
+use crate::game_module::behavior::behavior_base::BehaviorState;
 
 const SLEEP_PHASE_TIME: f32 = 10.0;
 
+pub const STORY_BOARDS: [&str; 1] = [
+    "ui/story_board/story_board_intro_00"
+];
+
 #[derive(Clone, PartialEq, Eq, Hash, Display, Debug, Copy, EnumIter, EnumString, EnumCount)]
 pub enum ScenarioIntroPhase {
+    None,
     Start,
     StoryBoard,
     Zoomin,
@@ -49,7 +55,7 @@ impl<'a> ScenarioIntro<'a> {
             _around_start_rotation: Vector3::new(0.37, -1.0, 0.0),
             _around_end_rotation: Vector3::new(0.7205, -0.002, 0.0),
             _scenario_track: ScenarioTrack {
-                _scenario_phase: ScenarioIntroPhase::Start,
+                _scenario_phase: ScenarioIntroPhase::None,
                 _phase_time: 0.0,
                 _phase_duration: 0.0,
             },
@@ -86,30 +92,24 @@ impl<'a> ScenarioBase for ScenarioIntro<'a> {
 
     fn update_game_scenario_begin(&mut self) {
         match self._scenario_track._scenario_phase {
-            ScenarioIntroPhase::Zoomin => {
+            ScenarioIntroPhase::Start => {
                 let game_scene_manager = ptr_as_mut(self._game_scene_manager);
                 let main_camera = game_scene_manager.get_scene_manager().get_main_camera_mut();
                 main_camera._transform_object.set_position(&self._around_start_position);
                 main_camera._transform_object.set_rotation(&self._around_start_rotation);
                 game_scene_manager.set_time_of_day(TIME_OF_NOON, 0.0);
-                self._actor_aru = if let Some(actor) = game_scene_manager.get_actor("aru") {
-                    Some(actor.clone())
-                } else {
-                    None
-                };
-                self._actor_ewa = if let Some(actor) = game_scene_manager.get_actor("ewa") {
-                    Some(actor.clone())
-                } else {
-                    None
-                };
-                self._actor_koa = if let Some(actor) = game_scene_manager.get_actor("koa") {
-                    Some(actor.clone())
-                } else {
-                    None
-                };
+                self._actor_aru = if let Some(actor) = game_scene_manager.get_actor("aru") { Some(actor.clone()) } else { None };
+                self._actor_ewa = if let Some(actor) = game_scene_manager.get_actor("ewa") { Some(actor.clone()) } else { None };
+                self._actor_koa = if let Some(actor) = game_scene_manager.get_actor("koa") { Some(actor.clone()) } else { None };
+                self._actor_aru.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::Sleep);
+                self._actor_ewa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::Sleep);
+                self._actor_koa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::Sleep);
             }
             ScenarioIntroPhase::End => {
-                self._actor_aru.as_ref().unwrap().borrow_mut()._character_stats.set_hunger(0.8);
+                //self._actor_aru.as_ref().unwrap().borrow_mut()._character_stats.set_hunger(0.8);
+                self._actor_aru.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::StandUp);
+                self._actor_ewa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::StandUp);
+                self._actor_koa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::StandUp);
             }
             _ => (),
         }
@@ -124,6 +124,9 @@ impl<'a> ScenarioBase for ScenarioIntro<'a> {
     fn update_game_scenario(&mut self, game_ui_manager: &mut GameUIManager, any_key_hold: bool, any_key_pressed: bool, delta_time: f64) {
         let phase_ratio = self._scenario_track.get_phase_ratio();
         match self._scenario_track._scenario_phase {
+            ScenarioIntroPhase::None => {
+                self.set_scenario_phase(ScenarioIntroPhase::Start.to_string().as_str(), 0.0);
+            }
             ScenarioIntroPhase::Start => {
                 self.set_scenario_phase(ScenarioIntroPhase::StoryBoard.to_string().as_str(), 0.0);
             }

@@ -20,6 +20,8 @@ pub const CAMERA_ROTATION_SPEED_MIN: f32 = 0.05;
 pub const CAMERA_ROTATION_SPEED_MAX: f32 = 30.0;
 pub const ARRIVAL_DISTANCE_THRESHOLD: f32 = 1.0;
 
+pub const GAME_MODE_2D: bool = true;
+
 // time
 pub const TIME_OF_DAWN: f32 = 6.0;
 pub const TIME_OF_MORNING: f32 = 10.0;
@@ -89,11 +91,6 @@ pub const MATERIAL_TIME_OF_DAY: &str = "ui/tod";
 pub const MATERIAL_INTRO_IMAGE: &str = "ui/intro_image";
 pub const STORY_IMAGE_NONE: &str = "";
 pub const STORY_BOARD_FADE_TIME: f32 = 2.0;
-pub const STORY_BOARDS: [&str; 3] = [
-    "ui/story_board/story_board_00_00",
-    "ui/story_board/story_board_00_01",
-    "ui/story_board/story_board_00_02",
-];
 pub const MATERIAL_FADE_TO_BLACK: &str = "ui/fade_to_black";
 
 // EFFECT DATA

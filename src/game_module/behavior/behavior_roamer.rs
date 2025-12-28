@@ -71,9 +71,7 @@ impl BehaviorBase for BehaviorRoamer {
                     //owner.get_character_manager().get_scene_manager().play_audio(&owner._audio_growl);
                 }
                 BehaviorState::Attack => {
-                    let to_player_direction = (player.as_ref().unwrap().get_position()
-                        - owner.get_position())
-                    .normalize();
+                    let to_player_direction = (player.as_ref().unwrap().get_position() - owner.get_position()).normalize();
                     owner.set_move_direction(&to_player_direction);
                     if !NPC_AVAILABLE_MOVING_ATTACK {
                         owner.set_move_stop();

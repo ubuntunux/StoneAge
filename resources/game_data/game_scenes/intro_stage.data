@@ -1409,9 +1409,9 @@
             "SM_Env_Grass_Bush_01.004": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Grass_Bush_01",
                 "_position": [
-                    27.801918029785156,
-                    0.8164466619491577,
-                    9.118910789489746
+                    27.691471099853516,
+                    1.1928434371948242,
+                    9.464188575744629
                 ],
                 "_rotation": [
                     0.0,
@@ -2453,9 +2453,9 @@
             "SM_Env_Ground_Cover_03.002": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Ground_Cover_03",
                 "_position": [
-                    26.690547943115234,
-                    1.1396212577819824,
-                    8.270669937133789
+                    26.377708435058594,
+                    1.2826259136199951,
+                    7.408905029296875
                 ],
                 "_rotation": [
                     0.0,
@@ -2471,9 +2471,9 @@
             "SM_Env_Ground_Cover_03.003": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Ground_Cover_03",
                 "_position": [
-                    24.714313507080078,
-                    1.1613943576812744,
-                    9.544649124145508
+                    24.74213409423828,
+                    2.18320894241333,
+                    8.70925521850586
                 ],
                 "_rotation": [
                     0.0,
@@ -2489,9 +2489,9 @@
             "SM_Env_Ground_Cover_03.004": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Ground_Cover_03",
                 "_position": [
-                    27.582191467285156,
-                    -0.2729032039642334,
-                    15.77514362335205
+                    27.531620025634766,
+                    3.208876609802246,
+                    16.233787536621094
                 ],
                 "_rotation": [
                     0.0,
@@ -2579,9 +2579,9 @@
             "SM_Env_Ground_Cover_03.009": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Ground_Cover_03",
                 "_position": [
-                    28.584060668945312,
-                    -0.18191063404083252,
-                    12.461024284362793
+                    27.90536117553711,
+                    1.6146786212921143,
+                    12.50872802734375
                 ],
                 "_rotation": [
                     0.0,
@@ -3497,9 +3497,9 @@
             "SM_Env_Tree_Palm_01_Coconuts_01.001": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Tree_Palm_01_Coconuts_01",
                 "_position": [
-                    21.146936416625977,
-                    1.5181996822357178,
-                    5.687073707580566
+                    23.8675537109375,
+                    1.2833247184753418,
+                    6.116933822631836
                 ],
                 "_rotation": [
                     0.0,
@@ -3515,9 +3515,9 @@
             "SM_Env_Tree_Palm_02": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Tree_Palm_02",
                 "_position": [
-                    34.084503173828125,
-                    -0.826716423034668,
-                    26.52186393737793
+                    34.241783142089844,
+                    -0.7650781273841858,
+                    27.21585464477539
                 ],
                 "_rotation": [
                     0.0,
@@ -4367,24 +4367,6 @@
                 27.79724884033203,
                 1.1785719394683838,
                 33.35076141357422
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "SM_Env_Pile_02": {
-            "_model_data_name": "PolygonNatureBiomes/SM_Env_Pile_02",
-            "_position": [
-                14.565632820129395,
-                5.0662360191345215,
-                30.23876953125
             ],
             "_rotation": [
                 0.0,

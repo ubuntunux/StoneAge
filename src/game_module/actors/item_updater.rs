@@ -19,13 +19,9 @@ pub trait ItemUpdaterBase {
     ) {
         if owner._item_properties._is_on_ground == false {
             let item_height = owner._render_object.borrow_mut()._bounding_box._extents.y;
-            owner._item_properties._position +=
-                owner._item_properties._velocity * delta_time as f32;
-            let ground_height =
-                height_map_data.get_height_bilinear(&owner._item_properties._position, 0);
-            if (owner._item_properties._position.y - item_height) <= ground_height
-                && owner._item_properties._velocity.y <= 0.0
-            {
+            owner._item_properties._position += owner._item_properties._velocity * delta_time as f32;
+            let ground_height = height_map_data.get_height_bilinear(&owner._item_properties._position, 0);
+            if (owner._item_properties._position.y - item_height) <= ground_height && owner._item_properties._velocity.y <= 0.0 {
                 owner._item_properties._position.y = ground_height + item_height;
                 owner._item_properties._is_on_ground = true;
             }

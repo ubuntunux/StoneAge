@@ -50,7 +50,6 @@ pub struct GameController<'a> {
     pub _camera_pitch: f32,
     pub _camera_yaw: f32,
     pub _camera_position: Vector3<f32>,
-    pub _lock_camera_rotation: bool,
     pub _is_camera_blend_mode: bool,
     pub _is_keyboard_input_mode: bool,
 }
@@ -67,7 +66,6 @@ impl<'a> GameController<'a> {
             _camera_pitch: 0.0,
             _camera_yaw: 0.0,
             _camera_position: Vector3::zeros(),
-            _lock_camera_rotation: false,
             _is_camera_blend_mode: false,
             _is_keyboard_input_mode: true,
         })
@@ -195,7 +193,7 @@ impl<'a> GameController<'a> {
 
     pub fn update_game_camera(&mut self, pitch_control: f32, yaw_control: f32, zoom_control: f32, delta_time: f32) {
         self.update_camera_distance(zoom_control, delta_time);
-        if self._lock_camera_rotation {
+        if GAME_MODE_2D {
             self.update_camera_pitch_by_distance();
         } else {
             self.update_camera_rotation(pitch_control, yaw_control, delta_time);

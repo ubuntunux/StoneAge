@@ -5,7 +5,7 @@ use crate::game_module::actors::props::{
     Prop, PropCreateInfo, PropData, PropDataType, PropID, PropManager, PropMap, PropStats,
 };
 use crate::game_module::game_client::GameClient;
-use crate::game_module::game_constants::{AUDIO_HIT, EFFECT_HIT, NPC_ATTACK_HIT_RANGE};
+use crate::game_module::game_constants::{AUDIO_HIT, EFFECT_HIT, GAME_MODE_2D, NPC_ATTACK_HIT_RANGE};
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
 use nalgebra::Vector3;
@@ -147,7 +147,7 @@ impl<'a> Prop<'a> {
             }
         }
     }
-    pub fn drop_items(&mut self, mut drop_count: i32) -> Vec<ItemCreateInfo> {
+    pub fn drop_items(&mut self, mut drop_count: i32, player_position: &Vector3<f32>) -> Vec<ItemCreateInfo> {
         if self._prop_stats._item_count <= drop_count {
             drop_count = self._prop_stats._item_count;
             self._prop_stats._item_count = 0;
@@ -176,6 +176,11 @@ impl<'a> Prop<'a> {
                         );
                     }
                 };
+            }
+
+            if GAME_MODE_2D {
+                position.z = player_position.z;
+                velocity.z = 0.0;
             }
 
             item_create_infos.push(ItemCreateInfo {
@@ -366,11 +371,7 @@ impl<'a> PropManager<'a> {
             prop.borrow_mut().update_prop(delta_time);
         }
 
-        let player_refcell = self
-            .get_game_scene_manager()
-            .get_character_manager()
-            .get_player()
-            .clone();
+        let player_refcell = self.get_game_scene_manager().get_character_manager().get_player().clone();
         let mut player = player_refcell.borrow_mut();
 
         let mut dead_props: Vec<RcRefCell<Prop>> = Vec::new();
@@ -402,7 +403,7 @@ impl<'a> PropManager<'a> {
                                 prop.set_hit_damage(player.get_power(player._animation_state.get_action_event()));
                                 if false == prop.is_alive() {
                                     let drop_count = prop._prop_stats._item_count;
-                                    for item_create_info in prop.drop_items(drop_count).iter() {
+                                    for item_create_info in prop.drop_items(drop_count, player.get_position()).iter_mut() {
                                         self.get_game_scene_manager().get_item_manager_mut().create_item(&item_create_info);
                                     }
                                     dead_props.push(prop_refcell.clone());
@@ -421,7 +422,7 @@ impl<'a> PropManager<'a> {
                             if can_drop_item && player._animation_state.is_attack_event() && prop._prop_stats._is_in_player_range {
                                 prop.set_hit_damage(0);
                                 let drop_count = 1;
-                                for item_create_info in prop.drop_items(drop_count).iter() {
+                                for item_create_info in prop.drop_items(drop_count, player.get_position()).iter_mut() {
                                     self.get_game_scene_manager().get_item_manager_mut().create_item(&item_create_info);
                                 }
                             }
@@ -459,7 +460,7 @@ impl<'a> PropManager<'a> {
                                 if player._animation_state.is_action_event(ActionAnimationState::Pickup) {
                                     let mut pickup_items: bool = false;
                                     let drop_count = prop._prop_stats._item_count;
-                                    for item_create_info in prop.drop_items(drop_count).iter() {
+                                    for item_create_info in prop.drop_items(drop_count, player.get_position()).iter() {
                                         pickup_items |= self.get_game_scene_manager().get_item_manager_mut().instance_pickup_item(&item_create_info);
                                     }
 

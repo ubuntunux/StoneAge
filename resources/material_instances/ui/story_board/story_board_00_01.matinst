@@ -1,6 +1,0 @@
-{
-    "material_name": "ui/render_ui",
-    "material_parameters": {
-        "texture_color": "ui/story_board/story_board_00_01"
-    }
-}
