@@ -152,6 +152,10 @@ impl<'a> CharacterController<'a> {
     pub fn set_position(&mut self, position: &Vector3<f32>) {
         self._position = position.clone();
     }
+    pub fn set_position_xy(&mut self, position: &Vector3<f32>) {
+        self._position.x = position.x;
+        self._position.y = position.y;
+    }
     pub fn set_move_speed(&mut self, move_speed: f32) {
         self._move_speed = move_speed;
     }

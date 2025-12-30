@@ -896,6 +896,10 @@ impl<'a> Character<'a> {
         }
     }
 
+    pub fn set_position_xy(&mut self, position: &Vector3<f32>) {
+        self._controller.set_position_xy(position);
+    }
+
     pub fn set_position(&mut self, position: &Vector3<f32>) {
         self._controller.set_position(position);
     }
