@@ -11,8 +11,9 @@ use crate::game_module::behavior::behavior_base::BehaviorState;
 
 const SLEEP_PHASE_TIME: f32 = 10.0;
 
-pub const STORY_BOARDS: [&str; 1] = [
-    "ui/story_board/story_board_intro_00"
+pub const STORY_BOARDS: [&str; 2] = [
+    "ui/story_board/story_board_intro_00",
+    "ui/story_board/story_board_intro_01"
 ];
 
 #[derive(Clone, PartialEq, Eq, Hash, Display, Debug, Copy, EnumIter, EnumString, EnumCount)]

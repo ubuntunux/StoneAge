@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 
-use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::AudioManager;
 use rust_engine_3d::core::engine_core::EngineCore;
 use rust_engine_3d::scene::render_object::RenderObjectCreateInfo;

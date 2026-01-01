@@ -4,7 +4,7 @@ use crate::game_module::actors::items::{
     Item, ItemCreateInfo, ItemData, ItemDataType, ItemID, ItemManager, ItemProperties,
 };
 use crate::game_module::game_client::GameClient;
-use crate::game_module::game_constants::{AUDIO_ITEM_INVENTORY, AUDIO_PICKUP_ITEM, EAT_ITEM_DISTANCE, GAME_MODE_2D};
+use crate::game_module::game_constants::{AUDIO_ITEM_INVENTORY, AUDIO_PICKUP_ITEM, EAT_ITEM_DISTANCE};
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
 use nalgebra::Vector3;
