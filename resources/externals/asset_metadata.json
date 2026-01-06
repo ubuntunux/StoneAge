@@ -265,7 +265,7 @@
             "asset_path": "family/koa",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/family/koa.blend",
             "guid": "",
-            "mtime": 1762026526.066951,
+            "mtime": 1767713877.867035,
             "data": {}
         }
     ],
@@ -1205,24 +1205,6 @@
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/jack/jack.blend": [
-        {
-            "asset_type": "MATERIAL_INSTANCE",
-            "asset_path": "characters/jack",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/jack/jack.blend",
-            "guid": "",
-            "mtime": 1763825883.8102787,
-            "data": {}
-        },
-        {
-            "asset_type": "MESH",
-            "asset_path": "characters/jack/jack",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/jack/jack.blend",
-            "guid": "",
-            "mtime": 1763825883.8102787,
-            "data": {}
-        }
-    ],
     "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/neanderthal/neanderthal.blend": [
         {
             "asset_type": "MATERIAL_INSTANCE",
@@ -2098,6 +2080,32 @@
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/environments/birch_tree_00.blend",
             "guid": "",
             "mtime": 1765721263.4112365,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/jack/jack.blend": [
+        {
+            "asset_type": "MATERIAL_INSTANCE",
+            "asset_path": "characters/jack",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/jack/jack.blend",
+            "guid": "",
+            "mtime": 1767717856.6156936,
+            "data": {}
+        },
+        {
+            "asset_type": "MATERIAL_INSTANCE",
+            "asset_path": "characters/koa",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/jack/jack.blend",
+            "guid": "",
+            "mtime": 1767717856.6156936,
+            "data": {}
+        },
+        {
+            "asset_type": "MESH",
+            "asset_path": "characters/jack/jack",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/jack/jack.blend",
+            "guid": "",
+            "mtime": 1767717856.6156936,
             "data": {}
         }
     ],
@@ -4408,6 +4416,26 @@
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Env_Monolith_01.blend",
             "guid": "",
             "mtime": 1765733797.63868,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/characters/koa.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "characters/koa",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/characters/koa.blend",
+            "guid": "",
+            "mtime": 1767717212.7219985,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa.blend": [
+        {
+            "asset_type": "MESH",
+            "asset_path": "characters/koa/koa",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa.blend",
+            "guid": "",
+            "mtime": 1767717320.6692853,
             "data": {}
         }
     ],
