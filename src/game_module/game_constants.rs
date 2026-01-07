@@ -20,7 +20,7 @@ pub const CAMERA_ROTATION_SPEED_MIN: f32 = 0.05;
 pub const CAMERA_ROTATION_SPEED_MAX: f32 = 30.0;
 pub const ARRIVAL_DISTANCE_THRESHOLD: f32 = 1.0;
 
-pub const GAME_MODE_2D: bool = true;
+pub const GAME_MODE_2D: bool = false;
 
 // time
 pub const TIME_OF_DAWN: f32 = 6.0;

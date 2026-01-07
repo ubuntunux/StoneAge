@@ -1,9 +1,6 @@
 use crate::game_module::actors::character::Character;
 use crate::game_module::behavior::behavior_base::{BehaviorBase, BehaviorState};
-use crate::game_module::game_constants::{
-    ARRIVAL_DISTANCE_THRESHOLD, NPC_IDLE_TERM_MAX, NPC_IDLE_TERM_MIN, NPC_ROAMING_RADIUS,
-    NPC_ROAMING_TIME, NPC_TRACKING_RANGE,
-};
+use crate::game_module::game_constants::{ARRIVAL_DISTANCE_THRESHOLD, GAME_MODE_2D, NPC_IDLE_TERM_MAX, NPC_IDLE_TERM_MIN, NPC_ROAMING_RADIUS, NPC_ROAMING_TIME, NPC_TRACKING_RANGE};
 use nalgebra::Vector3;
 use rust_engine_3d::utilities::math::lerp;
 
@@ -54,7 +51,7 @@ impl BehaviorBase for BehaviorDefault {
                     let move_area = Vector3::new(
                         rand::random::<f32>() - 0.5,
                         0.0,
-                        rand::random::<f32>() - 0.5,
+                        if GAME_MODE_2D { 0.0 } else { rand::random::<f32>() - 0.5 },
                     )
                     .normalize()
                         * NPC_ROAMING_RADIUS;

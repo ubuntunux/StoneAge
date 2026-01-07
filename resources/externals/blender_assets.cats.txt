@@ -10,6 +10,7 @@ VERSION 1
 fa46e7b2-70fd-4bef-849a-1f00f8241032:StoneAge/animation_layers:StoneAge-animation_layers
 13ac26d6-3f5d-4899-9469-b065dbf50e28:StoneAge/animation_layers/brachiosaurus:StoneAge-animation_layers-brachiosaurus
 1bbc0027-d246-41b8-a2b9-b9a6c2fe4a29:StoneAge/animation_layers/jack:StoneAge-animation_layers-jack
+aa38c9f8-9b99-4cee-9857-1717502477e2:StoneAge/animation_layers/koa:StoneAge-animation_layers-koa
 c2cca466-4617-4851-bad8-634633e9ab7e:StoneAge/animation_layers/spider:StoneAge-animation_layers-spider
 0ebbd3cf-ae0b-438a-a0f7-dc166046796a:StoneAge/animation_layers/trex:StoneAge-animation_layers-trex
 f625eb9b-7945-416d-b5b3-49dc9fa16152:StoneAge/animation_layers/trex_01:StoneAge-animation_layers-trex_01

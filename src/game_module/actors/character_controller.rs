@@ -113,7 +113,11 @@ impl<'a> CharacterController<'a> {
     }
     pub fn set_move_direction(&mut self, move_direction: &Vector3<f32>) {
         if GAME_MODE_2D {
-            self._move_direction = Vector3::new(if 0.0 < move_direction.x { 1.0 } else { -1.0 }, 0f32, 0f32);
+            if move_direction.x.abs() >= move_direction.z.abs() {
+                self._move_direction = Vector3::new(if 0.0 < move_direction.x { 1.0 } else { -1.0 }, 0f32, 0f32);
+            } else {
+                self._move_direction = Vector3::new(0f32, 0f32, if 0.0 < move_direction.z { 1.0 } else { -1.0 });
+            }
         } else {
             self._move_direction.clone_from(move_direction);
         }
