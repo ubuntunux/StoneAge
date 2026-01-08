@@ -2,7 +2,7 @@
     "material_name": "common/render_skeletal_object",
     "material_parameters": {
         "textureBase": "characters/koa/koa_d",
-        "textureMaterial": "common/default_m",
+        "textureMaterial": "characters/koa/koa_m",
         "textureNormal": "common/default_n"
     }
 }

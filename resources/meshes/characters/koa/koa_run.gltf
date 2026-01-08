@@ -1726,14 +1726,14 @@
 					"sampler":123,
 					"target":{
 						"node":42,
-						"path":"translation"
+						"path":"scale"
 					}
 				},
 				{
 					"sampler":124,
 					"target":{
 						"node":42,
-						"path":"scale"
+						"path":"translation"
 					}
 				}
 			],
