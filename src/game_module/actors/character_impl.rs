@@ -492,6 +492,36 @@ impl<'a> Character<'a> {
         distance <= (r0 + check_range + r1) && (check_direction == false || self.get_transform().get_front().dot(&to_target_dir) < 0.0)
     }
 
+    pub fn check_in_range_xy(
+        &self,
+        target_collision: &CollisionData,
+        check_range: f32,
+        check_direction: bool,
+    ) -> bool {
+        let collision = self.get_collision();
+        let height_diff = (target_collision._bounding_box._min.y - collision._bounding_box._min.y).abs();
+        if collision._bounding_box._extents.y < height_diff {
+            return false;
+        }
+
+        let to_target = target_collision._bounding_box._center - collision._bounding_box._center;
+        let to_target = Vector3::new(to_target.x, 0.0, 0.0);
+        let (to_target_dir, distance) = math::make_normalize_xz_with_norm(&to_target);
+        let d0 = collision._bounding_box._orientation.column(0).dot(&to_target_dir).abs();
+        let r0 = math::lerp(
+            collision._bounding_box._extents.z,
+            collision._bounding_box._extents.x,
+            d0,
+        );
+        let d1 = target_collision._bounding_box._orientation.column(0).dot(&to_target_dir).abs();
+        let r1 = math::lerp(
+            target_collision._bounding_box._extents.z,
+            target_collision._bounding_box._extents.x,
+            d1,
+        );
+        distance <= (r0 + check_range + r1) && (check_direction == false || self.get_transform().get_front().dot(&to_target_dir) < 0.0)
+    }
+
     pub fn get_front(&self) -> &Vector3<f32> {
         &self._controller._face_direction
     }
