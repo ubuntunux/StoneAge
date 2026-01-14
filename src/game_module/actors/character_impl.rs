@@ -688,10 +688,7 @@ impl<'a> Character<'a> {
                     animation_speed = 0.5;
                 }
             }
-            //self.set_action_animation(ActionAnimationState::PowerAttack, animation_speed);
-
-            self.set_action_animation(ActionAnimationState::Kick, animation_speed);
-            self.set_move_stop();
+            self.set_action_animation(ActionAnimationState::PowerAttack, animation_speed);
         }
     }
 

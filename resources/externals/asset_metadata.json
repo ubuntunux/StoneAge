@@ -2111,21 +2111,21 @@
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/aru/aru_walk.blend": [
+    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/aru/aru_kick.blend": [
         {
             "asset_type": "MATERIAL_INSTANCE",
             "asset_path": "characters/aru",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/aru/aru_walk.blend",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/aru/aru_kick.blend",
             "guid": "",
-            "mtime": 1768407776.6363063,
+            "mtime": 1768409174.1513877,
             "data": {}
         },
         {
             "asset_type": "MESH",
-            "asset_path": "characters/aru/aru_walk",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/aru/aru_walk.blend",
+            "asset_path": "characters/aru/aru_kick",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/aru/aru_kick.blend",
             "guid": "",
-            "mtime": 1768407776.6363063,
+            "mtime": 1768409174.1513877,
             "data": {}
         }
     ],
@@ -4459,6 +4459,16 @@
             "data": {}
         }
     ],
+    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/aru/aru_walk.blend": [
+        {
+            "asset_type": "MESH",
+            "asset_path": "characters/aru/aru_walk",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/aru/aru_walk.blend",
+            "guid": "",
+            "mtime": 1768407776.6363063,
+            "data": {}
+        }
+    ],
     "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/aru/aru.blend": [
         {
             "asset_type": "MESH",
@@ -4576,16 +4586,6 @@
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/jack/jack_jump.blend",
             "guid": "",
             "mtime": 1763825884.0700276,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/jack/jack_kick.blend": [
-        {
-            "asset_type": "MESH",
-            "asset_path": "characters/jack/jack_kick",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/jack/jack_kick.blend",
-            "guid": "",
-            "mtime": 1763825884.086072,
             "data": {}
         }
     ],
@@ -7339,16 +7339,6 @@
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/aru/aru_kick.blend": [
-        {
-            "asset_type": "MESH",
-            "asset_path": "characters/aru/aru_kick",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/aru/aru_kick.blend",
-            "guid": "",
-            "mtime": 1768407708.0164337,
-            "data": {}
-        }
-    ],
     "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/aru/aru_pickup.blend": [
         {
             "asset_type": "MESH",
@@ -7469,16 +7459,6 @@
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_kick.blend": [
-        {
-            "asset_type": "MESH",
-            "asset_path": "characters/koa/koa_kick",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_kick.blend",
-            "guid": "",
-            "mtime": 1768408380.6660686,
-            "data": {}
-        }
-    ],
     "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_laying_down.blend": [
         {
             "asset_type": "MESH",
@@ -7566,6 +7546,26 @@
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_walk.blend",
             "guid": "",
             "mtime": 1768408448.5766673,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/jack/jack_kick.blend": [
+        {
+            "asset_type": "MESH",
+            "asset_path": "characters/jack/jack_kick",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/jack/jack_kick.blend",
+            "guid": "",
+            "mtime": 1768409421.7302537,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_kick.blend": [
+        {
+            "asset_type": "MESH",
+            "asset_path": "characters/koa/koa_kick",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_kick.blend",
+            "guid": "",
+            "mtime": 1768409449.7645216,
             "data": {}
         }
     ],

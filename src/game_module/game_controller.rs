@@ -463,7 +463,11 @@ impl<'a> GameController<'a> {
         }
 
         if is_power_attack {
-            player_mut.set_action_power_attack();
+            if player_mut.get_weapon().is_none() {
+                player_mut.set_action_kick();
+            } else {
+                player_mut.set_action_power_attack();
+            }
         }
 
         self.update_game_camera(pitch_control, yaw_control, zoom_control, delta_time);
