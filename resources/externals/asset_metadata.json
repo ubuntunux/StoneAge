@@ -4455,7 +4455,7 @@
             "asset_path": "characters/aru",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/characters/aru.blend",
             "guid": "",
-            "mtime": 1768408044.134979,
+            "mtime": 1768408732.083927,
             "data": {}
         }
     ],
@@ -7269,156 +7269,6 @@
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_attack.blend": [
-        {
-            "asset_type": "MESH",
-            "asset_path": "characters/koa/koa_attack",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_attack.blend",
-            "guid": "",
-            "mtime": 1768143462.546014,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_dead.blend": [
-        {
-            "asset_type": "MESH",
-            "asset_path": "characters/koa/koa_dead",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_dead.blend",
-            "guid": "",
-            "mtime": 1768143462.562667,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_hit.blend": [
-        {
-            "asset_type": "MESH",
-            "asset_path": "characters/koa/koa_hit",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_hit.blend",
-            "guid": "",
-            "mtime": 1768143462.5788834,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_idle.blend": [
-        {
-            "asset_type": "MESH",
-            "asset_path": "characters/koa/koa_idle",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_idle.blend",
-            "guid": "",
-            "mtime": 1768143462.5956142,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_jump.blend": [
-        {
-            "asset_type": "MESH",
-            "asset_path": "characters/koa/koa_jump",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_jump.blend",
-            "guid": "",
-            "mtime": 1768143462.6125524,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_kick.blend": [
-        {
-            "asset_type": "MESH",
-            "asset_path": "characters/koa/koa_kick",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_kick.blend",
-            "guid": "",
-            "mtime": 1768143462.6295304,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_laying_down.blend": [
-        {
-            "asset_type": "MESH",
-            "asset_path": "characters/koa/koa_laying_down",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_laying_down.blend",
-            "guid": "",
-            "mtime": 1768143462.6466632,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_pickup.blend": [
-        {
-            "asset_type": "MESH",
-            "asset_path": "characters/koa/koa_pickup",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_pickup.blend",
-            "guid": "",
-            "mtime": 1768143462.6627789,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_power_attack.blend": [
-        {
-            "asset_type": "MESH",
-            "asset_path": "characters/koa/koa_power_attak",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_power_attack.blend",
-            "guid": "",
-            "mtime": 1768143462.6787224,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_roll.blend": [
-        {
-            "asset_type": "MESH",
-            "asset_path": "characters/koa/koa_roll",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_roll.blend",
-            "guid": "",
-            "mtime": 1768143462.699975,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_run.blend": [
-        {
-            "asset_type": "MESH",
-            "asset_path": "characters/koa/koa_run",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_run.blend",
-            "guid": "",
-            "mtime": 1768143462.7172122,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_running_jump.blend": [
-        {
-            "asset_type": "MESH",
-            "asset_path": "characters/koa/koa_running_jump",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_running_jump.blend",
-            "guid": "",
-            "mtime": 1768143462.7360795,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_sleep.blend": [
-        {
-            "asset_type": "MESH",
-            "asset_path": "characters/koa/koa_sleep",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_sleep.blend",
-            "guid": "",
-            "mtime": 1768143462.755881,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_stand_up.blend": [
-        {
-            "asset_type": "MESH",
-            "asset_path": "characters/koa/koa_stand_up",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_stand_up.blend",
-            "guid": "",
-            "mtime": 1768143462.7752821,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_walk.blend": [
-        {
-            "asset_type": "MESH",
-            "asset_path": "characters/koa/koa_walk",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_walk.blend",
-            "guid": "",
-            "mtime": 1768143462.7943044,
-            "data": {}
-        }
-    ],
     "/mnt/Workspace/StoneAge/resources/externals/meshes/landscapes/landscape_00.blend": [
         {
             "asset_type": "MESH",
@@ -7566,6 +7416,156 @@
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/aru/aru_stand_up.blend",
             "guid": "",
             "mtime": 1768407783.6055326,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_attack.blend": [
+        {
+            "asset_type": "MESH",
+            "asset_path": "characters/koa/koa_attack",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_attack.blend",
+            "guid": "",
+            "mtime": 1768408251.1346884,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_dead.blend": [
+        {
+            "asset_type": "MESH",
+            "asset_path": "characters/koa/koa_dead",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_dead.blend",
+            "guid": "",
+            "mtime": 1768408407.5563564,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_hit.blend": [
+        {
+            "asset_type": "MESH",
+            "asset_path": "characters/koa/koa_hit",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_hit.blend",
+            "guid": "",
+            "mtime": 1768408399.517229,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_idle.blend": [
+        {
+            "asset_type": "MESH",
+            "asset_path": "characters/koa/koa_idle",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_idle.blend",
+            "guid": "",
+            "mtime": 1768408393.507085,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_jump.blend": [
+        {
+            "asset_type": "MESH",
+            "asset_path": "characters/koa/koa_jump",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_jump.blend",
+            "guid": "",
+            "mtime": 1768408386.723059,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_kick.blend": [
+        {
+            "asset_type": "MESH",
+            "asset_path": "characters/koa/koa_kick",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_kick.blend",
+            "guid": "",
+            "mtime": 1768408380.6660686,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_laying_down.blend": [
+        {
+            "asset_type": "MESH",
+            "asset_path": "characters/koa/koa_laying_down",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_laying_down.blend",
+            "guid": "",
+            "mtime": 1768408374.152703,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_pickup.blend": [
+        {
+            "asset_type": "MESH",
+            "asset_path": "characters/koa/koa_pickup",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_pickup.blend",
+            "guid": "",
+            "mtime": 1768408367.2315068,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_power_attack.blend": [
+        {
+            "asset_type": "MESH",
+            "asset_path": "characters/koa/koa_power_attak",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_power_attack.blend",
+            "guid": "",
+            "mtime": 1768408357.4676871,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_roll.blend": [
+        {
+            "asset_type": "MESH",
+            "asset_path": "characters/koa/koa_roll",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_roll.blend",
+            "guid": "",
+            "mtime": 1768408349.1290698,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_run.blend": [
+        {
+            "asset_type": "MESH",
+            "asset_path": "characters/koa/koa_run",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_run.blend",
+            "guid": "",
+            "mtime": 1768408342.001424,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_running_jump.blend": [
+        {
+            "asset_type": "MESH",
+            "asset_path": "characters/koa/koa_running_jump",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_running_jump.blend",
+            "guid": "",
+            "mtime": 1768408335.2086484,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_sleep.blend": [
+        {
+            "asset_type": "MESH",
+            "asset_path": "characters/koa/koa_sleep",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_sleep.blend",
+            "guid": "",
+            "mtime": 1768408327.145149,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_stand_up.blend": [
+        {
+            "asset_type": "MESH",
+            "asset_path": "characters/koa/koa_stand_up",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_stand_up.blend",
+            "guid": "",
+            "mtime": 1768408435.8001018,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_walk.blend": [
+        {
+            "asset_type": "MESH",
+            "asset_path": "characters/koa/koa_walk",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_walk.blend",
+            "guid": "",
+            "mtime": 1768408448.5766673,
             "data": {}
         }
     ],
