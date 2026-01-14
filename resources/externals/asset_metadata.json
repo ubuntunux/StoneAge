@@ -249,16 +249,6 @@
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/family/aru.blend": [
-        {
-            "asset_type": "GAME_CHARACTER",
-            "asset_path": "family/aru",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/family/aru.blend",
-            "guid": "",
-            "mtime": 1768403915.6268077,
-            "data": {}
-        }
-    ],
     "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/family/ewa.blend": [
         {
             "asset_type": "GAME_CHARACTER",
@@ -276,6 +266,16 @@
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/family/koa.blend",
             "guid": "",
             "mtime": 1768403938.7570796,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/family/aru.blend": [
+        {
+            "asset_type": "GAME_CHARACTER",
+            "asset_path": "family/aru",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/family/aru.blend",
+            "guid": "",
+            "mtime": 1768407892.5629525,
             "data": {}
         }
     ],
@@ -2117,7 +2117,7 @@
             "asset_path": "characters/aru",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/aru/aru_walk.blend",
             "guid": "",
-            "mtime": 1768402622.0528185,
+            "mtime": 1768407776.6363063,
             "data": {}
         },
         {
@@ -2125,7 +2125,7 @@
             "asset_path": "characters/aru/aru_walk",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/aru/aru_walk.blend",
             "guid": "",
-            "mtime": 1768402622.0528185,
+            "mtime": 1768407776.6363063,
             "data": {}
         }
     ],
@@ -4429,16 +4429,6 @@
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/characters/aru.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "characters/aru",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/characters/aru.blend",
-            "guid": "",
-            "mtime": 1768239929.427282,
-            "data": {}
-        }
-    ],
     "/mnt/Workspace/StoneAge/resources/externals/models/characters/koa.blend": [
         {
             "asset_type": "MODEL",
@@ -4456,6 +4446,16 @@
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/environments/birch_tree_01.blend",
             "guid": "",
             "mtime": 1768140344.201479,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/characters/aru.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "characters/aru",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/characters/aru.blend",
+            "guid": "",
+            "mtime": 1768408044.134979,
             "data": {}
         }
     ],
@@ -7445,7 +7445,7 @@
             "asset_path": "characters/aru/aru_attack",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/aru/aru_attack.blend",
             "guid": "",
-            "mtime": 1768401717.7546587,
+            "mtime": 1768407747.239215,
             "data": {}
         }
     ],
@@ -7455,7 +7455,7 @@
             "asset_path": "characters/aru/aru_dead",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/aru/aru_dead.blend",
             "guid": "",
-            "mtime": 1768401755.4638605,
+            "mtime": 1768407739.9172442,
             "data": {}
         }
     ],
@@ -7465,7 +7465,7 @@
             "asset_path": "characters/aru/aru_down",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/aru/aru_down.blend",
             "guid": "",
-            "mtime": 1768402433.8703308,
+            "mtime": 1768407732.0043638,
             "data": {}
         }
     ],
@@ -7475,7 +7475,7 @@
             "asset_path": "characters/aru/aru_hit",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/aru/aru_hit.blend",
             "guid": "",
-            "mtime": 1768401802.2360234,
+            "mtime": 1768407723.8132355,
             "data": {}
         }
     ],
@@ -7485,7 +7485,7 @@
             "asset_path": "characters/aru/aru_jump",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/aru/aru_jump.blend",
             "guid": "",
-            "mtime": 1768402059.3520725,
+            "mtime": 1768407716.6482048,
             "data": {}
         }
     ],
@@ -7495,7 +7495,7 @@
             "asset_path": "characters/aru/aru_kick",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/aru/aru_kick.blend",
             "guid": "",
-            "mtime": 1768402408.3123033,
+            "mtime": 1768407708.0164337,
             "data": {}
         }
     ],
@@ -7505,7 +7505,7 @@
             "asset_path": "characters/aru/aru_pickup",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/aru/aru_pickup.blend",
             "guid": "",
-            "mtime": 1768402123.5525258,
+            "mtime": 1768407693.133417,
             "data": {}
         }
     ],
@@ -7515,7 +7515,7 @@
             "asset_path": "characters/aru/aru_power_attack",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/aru/aru_power_attack.blend",
             "guid": "",
-            "mtime": 1768402161.334763,
+            "mtime": 1768407820.9856386,
             "data": {}
         }
     ],
@@ -7525,7 +7525,7 @@
             "asset_path": "characters/aru/aru_roll",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/aru/aru_roll.blend",
             "guid": "",
-            "mtime": 1768402500.4069786,
+            "mtime": 1768407814.1039286,
             "data": {}
         }
     ],
@@ -7535,7 +7535,7 @@
             "asset_path": "characters/aru/aru_run",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/aru/aru_run.blend",
             "guid": "",
-            "mtime": 1768402209.853583,
+            "mtime": 1768407807.3971915,
             "data": {}
         }
     ],
@@ -7545,7 +7545,7 @@
             "asset_path": "characters/aru/aru_running_jump",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/aru/aru_running_jump.blend",
             "guid": "",
-            "mtime": 1768402233.5128925,
+            "mtime": 1768407800.717115,
             "data": {}
         }
     ],
@@ -7555,7 +7555,7 @@
             "asset_path": "characters/aru/aru_sleep",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/aru/aru_sleep.blend",
             "guid": "",
-            "mtime": 1768402558.8165455,
+            "mtime": 1768407792.9409502,
             "data": {}
         }
     ],
@@ -7565,7 +7565,7 @@
             "asset_path": "characters/aru/aru_stand_up",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/aru/aru_stand_up.blend",
             "guid": "",
-            "mtime": 1768402458.8966584,
+            "mtime": 1768407783.6055326,
             "data": {}
         }
     ],
