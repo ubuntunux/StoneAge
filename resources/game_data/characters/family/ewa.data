@@ -11,6 +11,7 @@
         "_jump_animation": "characters/jack/jack_jump",
         "_jump_animation_speed": 1.0,
         "_kick_animation": "characters/jack/jack_kick",
+        "_kick_animation_speed": 1.5,
         "_laying_down_animation": "characters/jack/jack_laying_down",
         "_pickup_animation": "characters/jack/jack_pickup",
         "_power_attack_animation": "characters/jack/jack_power_attack",

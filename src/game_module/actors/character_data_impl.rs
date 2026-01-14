@@ -34,7 +34,7 @@ impl Default for CharacterAnimationDataCreateInfo {
             _jump_animation: String::default(),
             _jump_animation_speed: 1.0,
             _kick_animation: String::default(),
-            _kick_animation_animation: String::default(),
+            _kick_animation_speed: 1.0,
             _laying_down_animation: String::default(),
             _pickup_animation: String::default(),
             _power_attack_animation: String::default(),
@@ -102,67 +102,33 @@ impl CharacterAnimationData {
         engine_resources: &EngineResources,
     ) -> CharacterAnimationData {
         CharacterAnimationData {
-            _attack_animation: engine_resources
-                .get_mesh_data(&animation_data_create_info._attack_animation)
-                .clone(),
+            _attack_animation: engine_resources.get_mesh_data(&animation_data_create_info._attack_animation).clone(),
             _attack_animation_speed: animation_data_create_info._attack_animation_speed,
-            _dead_animation: engine_resources
-                .get_mesh_data(&animation_data_create_info._dead_animation)
-                .clone(),
+            _dead_animation: engine_resources.get_mesh_data(&animation_data_create_info._dead_animation).clone(),
             _dead_animation_speed: animation_data_create_info._dead_animation_speed,
-            _hit_animation: engine_resources
-                .get_mesh_data(&animation_data_create_info._hit_animation)
-                .clone(),
+            _hit_animation: engine_resources.get_mesh_data(&animation_data_create_info._hit_animation).clone(),
             _hit_animation_speed: animation_data_create_info._hit_animation_speed,
-            _idle_animation: engine_resources
-                .get_mesh_data(&animation_data_create_info._idle_animation)
-                .clone(),
+            _idle_animation: engine_resources.get_mesh_data(&animation_data_create_info._idle_animation).clone(),
             _idle_animation_speed: animation_data_create_info._idle_animation_speed,
-            _jump_animation: engine_resources
-                .get_mesh_data(&animation_data_create_info._jump_animation)
-                .clone(),
+            _jump_animation: engine_resources.get_mesh_data(&animation_data_create_info._jump_animation).clone(),
             _jump_animation_speed: animation_data_create_info._jump_animation_speed,
-            _kick_animation: engine_resources
-                .get_mesh_data(&animation_data_create_info._kick_animation)
-                .clone(),
-            _kick_animation_animation: engine_resources
-                .get_mesh_data(&animation_data_create_info._kick_animation_animation)
-                .clone(),
-            _laying_down_animation: engine_resources
-                .get_mesh_data(&animation_data_create_info._laying_down_animation)
-                .clone(),
-            _pickup_animation: engine_resources
-                .get_mesh_data(&animation_data_create_info._pickup_animation)
-                .clone(),
-            _power_attack_animation: engine_resources
-                .get_mesh_data(&animation_data_create_info._power_attack_animation)
-                .clone(),
+            _kick_animation: engine_resources.get_mesh_data(&animation_data_create_info._kick_animation).clone(),
+            _kick_animation_speed: animation_data_create_info._kick_animation_speed,
+            _laying_down_animation: engine_resources.get_mesh_data(&animation_data_create_info._laying_down_animation).clone(),
+            _pickup_animation: engine_resources.get_mesh_data(&animation_data_create_info._pickup_animation).clone(),
+            _power_attack_animation: engine_resources.get_mesh_data(&animation_data_create_info._power_attack_animation).clone(),
             _power_attack_animation_speed: animation_data_create_info._power_attack_animation_speed,
-            _roll_animation: engine_resources
-                .get_mesh_data(&animation_data_create_info._roll_animation)
-                .clone(),
+            _roll_animation: engine_resources.get_mesh_data(&animation_data_create_info._roll_animation).clone(),
             _roll_animation_speed: animation_data_create_info._roll_animation_speed,
-            _run_animation: engine_resources
-                .get_mesh_data(&animation_data_create_info._run_animation)
-                .clone(),
+            _run_animation: engine_resources.get_mesh_data(&animation_data_create_info._run_animation).clone(),
             _run_animation_speed: animation_data_create_info._run_animation_speed,
-            _running_jump_animation: engine_resources
-                .get_mesh_data(&animation_data_create_info._running_jump_animation)
-                .clone(),
+            _running_jump_animation: engine_resources.get_mesh_data(&animation_data_create_info._running_jump_animation).clone(),
             _running_jump_animation_speed: animation_data_create_info._running_jump_animation_speed,
-            _sleep_animation: engine_resources
-                .get_mesh_data(&animation_data_create_info._sleep_animation)
-                .clone(),
-            _stand_up_animation: engine_resources
-                .get_mesh_data(&animation_data_create_info._stand_up_animation)
-                .clone(),
-            _walk_animation: engine_resources
-                .get_mesh_data(&animation_data_create_info._walk_animation)
-                .clone(),
+            _sleep_animation: engine_resources.get_mesh_data(&animation_data_create_info._sleep_animation).clone(),
+            _stand_up_animation: engine_resources.get_mesh_data(&animation_data_create_info._stand_up_animation).clone(),
+            _walk_animation: engine_resources.get_mesh_data(&animation_data_create_info._walk_animation).clone(),
             _walk_animation_speed: animation_data_create_info._walk_animation_speed,
-            _upper_animation_layer: engine_resources
-                .get_animation_layer_data(&animation_data_create_info._upper_animation_layer)
-                .clone(),
+            _upper_animation_layer: engine_resources.get_animation_layer_data(&animation_data_create_info._upper_animation_layer).clone(),
         }
     }
 }
@@ -177,6 +143,9 @@ impl Default for CharacterStatData {
             _power_attack_damage: 100,
             _power_attack_event_time: 1.0,
             _power_attack_range: 1.0,
+            _kick_damage: 70,
+            _kick_event_time: 0.6,
+            _kick_range: 0.6,
             _jump_speed: 13.0,
             _roll_speed: 4.5,
             _run_speed: 5.4,

@@ -11,6 +11,7 @@
         "_jump_animation": "characters/koa/koa_jump",
         "_jump_animation_speed": 1.0,
         "_kick_animation": "characters/koa/koa_kick",
+        "_kick_animation_speed": 1.5,
         "_laying_down_animation": "characters/koa/koa_laying_down",
         "_pickup_animation": "characters/koa/koa_pickup",
         "_power_attack_animation": "characters/koa/koa_power_attak",
