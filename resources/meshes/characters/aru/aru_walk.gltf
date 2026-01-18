@@ -2731,14 +2731,14 @@
 					"sampler":195,
 					"target":{
 						"node":65,
-						"path":"translation"
+						"path":"scale"
 					}
 				},
 				{
 					"sampler":196,
 					"target":{
 						"node":65,
-						"path":"scale"
+						"path":"translation"
 					}
 				}
 			],

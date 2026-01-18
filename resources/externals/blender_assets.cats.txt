@@ -42,6 +42,7 @@ a2176b85-d63c-4d9a-9a5a-dcd634a9e03f:StoneAge/meshes/PolygonNatureBiomes:StoneAg
 f16677b8-5725-4004-80f4-4129b0cd7dfe:StoneAge/meshes/characters:StoneAge-meshes-characters
 9d3aa2c2-dc69-4c06-a2eb-8033798af8dc:StoneAge/meshes/characters/aru:StoneAge-meshes-characters-aru
 22cea626-34c8-4e52-8754-70385b37c2aa:StoneAge/meshes/characters/brachiosaurus:StoneAge-meshes-characters-brachiosaurus
+a1d45f44-0800-4581-b3a3-f76f4daf4264:StoneAge/meshes/characters/ewa:StoneAge-meshes-characters-ewa
 f97f048e-5bf3-4586-b095-982e98204afd:StoneAge/meshes/characters/iguanodon:StoneAge-meshes-characters-iguanodon
 8773c78b-4d23-4740-bedb-820a9f3daf7f:StoneAge/meshes/characters/jack:StoneAge-meshes-characters-jack
 998a1ceb-9f22-4202-a1d1-7667eaca2e30:StoneAge/meshes/characters/koa:StoneAge-meshes-characters-koa
