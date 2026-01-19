@@ -251,6 +251,10 @@ impl<'a> CharacterManager<'a> {
         self._target_character = target_character;
     }
     pub fn update_character_manager(&mut self, delta_time: f64) {
+        if self._player.is_none() {
+            return;
+        }
+
         let player = ptr_as_mut(self._player.as_ref().unwrap().as_ptr());
         let mut dead_characters: Vec<RcRefCell<Character>> = Vec::new();
         let mut register_target_character: Option<RcRefCell<Character<'a>>> = None;

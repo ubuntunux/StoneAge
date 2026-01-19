@@ -111,6 +111,9 @@ impl<'a> CharacterController<'a> {
     pub fn toggle_run(&mut self) {
         self._is_running = !self._is_running;
     }
+    pub fn get_move_direction(&self) -> &Vector3<f32> {
+        &self._move_direction
+    }
     pub fn set_move_direction(&mut self, move_direction: &Vector3<f32>) {
         if GAME_MODE_2D {
             if move_direction.x.abs() >= move_direction.z.abs() {

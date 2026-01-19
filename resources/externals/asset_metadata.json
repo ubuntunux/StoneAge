@@ -2859,26 +2859,6 @@
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/landscapes/landscape_tile_00.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "landscapes/landscape_tile_00",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/landscapes/landscape_tile_00.blend",
-            "guid": "",
-            "mtime": 1756056120.6939628,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/landscapes/mountain_00.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "landscapes/mountain_00",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/landscapes/mountain_00.blend",
-            "guid": "",
-            "mtime": 1756308098.0662403,
-            "data": {}
-        }
-    ],
     "/mnt/Workspace/StoneAge/resources/externals/models/PolygonNatureBiomes/SM_Bld_Ruins_Archway_01.blend": [
         {
             "asset_type": "MODEL",
@@ -4389,26 +4369,6 @@
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/landscapes/landscape_cave.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "landscapes/landscape_cave",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/landscapes/landscape_cave.blend",
-            "guid": "",
-            "mtime": 1759161108.6175897,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/models/landscapes/landscape_cave_ceil.blend": [
-        {
-            "asset_type": "MODEL",
-            "asset_path": "landscapes/landscape_cave_ceil",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/landscapes/landscape_cave_ceil.blend",
-            "guid": "",
-            "mtime": 1759161774.048593,
-            "data": {}
-        }
-    ],
     "/mnt/Workspace/StoneAge/resources/externals/models/props/gate.blend": [
         {
             "asset_type": "MODEL",
@@ -4466,6 +4426,16 @@
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/characters/ewa.blend",
             "guid": "",
             "mtime": 1768675110.2932425,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/landscapes/landscape_cave.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "landscapes/landscape_cave",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/landscapes/landscape_cave.blend",
+            "guid": "",
+            "mtime": 1768837319.439265,
             "data": {}
         }
     ],
@@ -5366,46 +5336,6 @@
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/environments/tree_05.blend",
             "guid": "",
             "mtime": 1763825886.7011857,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/meshes/landscapes/landscape_cave.blend": [
-        {
-            "asset_type": "MESH",
-            "asset_path": "landscapes/landscape_cave",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/landscapes/landscape_cave.blend",
-            "guid": "",
-            "mtime": 1763825886.7104988,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/meshes/landscapes/landscape_cave_ceil.blend": [
-        {
-            "asset_type": "MESH",
-            "asset_path": "landscapes/landscape_cave_ceil",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/landscapes/landscape_cave_ceil.blend",
-            "guid": "",
-            "mtime": 1763825886.7146213,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/meshes/landscapes/landscape_tile_00.blend": [
-        {
-            "asset_type": "MESH",
-            "asset_path": "landscapes/landscape_tile_00",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/landscapes/landscape_tile_00.blend",
-            "guid": "",
-            "mtime": 1763825886.719629,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/meshes/landscapes/mountain_00.blend": [
-        {
-            "asset_type": "MESH",
-            "asset_path": "landscapes/mountain_00",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/landscapes/mountain_00.blend",
-            "guid": "",
-            "mtime": 1763825886.7297041,
             "data": {}
         }
     ],
@@ -7739,6 +7669,16 @@
             "data": {}
         }
     ],
+    "/mnt/Workspace/StoneAge/resources/externals/meshes/landscapes/landscape_cave.blend": [
+        {
+            "asset_type": "MESH",
+            "asset_path": "landscapes/landscape_cave",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/landscapes/landscape_cave.blend",
+            "guid": "",
+            "mtime": 1768838593.122374,
+            "data": {}
+        }
+    ],
     "/mnt/Workspace/StoneAge/resources/externals/scenes/stage_forest.blend": [
         {
             "asset_type": "SCENE",
@@ -8909,23 +8849,23 @@
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/stage_cave.blend": [
-        {
-            "asset_type": "GAME_SCENE",
-            "asset_path": "stage_cave",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/stage_cave.blend",
-            "guid": "",
-            "mtime": 1761490223.9679048,
-            "data": {}
-        }
-    ],
     "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/intro_stage.blend": [
         {
             "asset_type": "GAME_SCENE",
             "asset_path": "intro_stage",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/intro_stage.blend",
             "guid": "",
-            "mtime": 1768149241.1117172,
+            "mtime": 1768838669.4796207,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/stage_cave.blend": [
+        {
+            "asset_type": "GAME_SCENE",
+            "asset_path": "stage_cave",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/stage_cave.blend",
+            "guid": "",
+            "mtime": 1768841420.2051873,
             "data": {}
         }
     ],
@@ -9049,16 +8989,6 @@
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/game_data/scenario/intro.blend": [
-        {
-            "asset_type": "GAME_SCENARIO",
-            "asset_path": "intro",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/scenario/intro.blend",
-            "guid": "",
-            "mtime": 1768143462.5124104,
-            "data": {}
-        }
-    ],
     "/mnt/Workspace/StoneAge/resources/externals/game_data/data/data.blend": [
         {
             "asset_type": "GAME_DATA",
@@ -9114,6 +9044,16 @@
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/data/data.blend",
             "guid": "",
             "mtime": 1768403888.392212,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/scenario/intro.blend": [
+        {
+            "asset_type": "GAME_SCENARIO",
+            "asset_path": "intro",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/scenario/intro.blend",
+            "guid": "",
+            "mtime": 1768839115.074589,
             "data": {}
         }
     ]

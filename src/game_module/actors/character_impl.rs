@@ -942,6 +942,10 @@ impl<'a> Character<'a> {
         self._controller.set_move_speed(speed);
     }
 
+    pub fn get_move_direction(&self) -> &Vector3<f32> {
+        self._controller.get_move_direction()
+    }
+
     pub fn set_move_direction(&mut self, move_direction: &Vector3<f32>) {
         if self.is_available_move() {
             self._controller.set_move_direction(move_direction);
@@ -956,22 +960,20 @@ impl<'a> Character<'a> {
 
             let character_data = self.get_character_data();
             let (move_animation, move_speed) = if self._controller._is_running {
-                (
-                    MoveAnimationState::Run,
-                    character_data._stat_data._run_speed,
-                )
+                (MoveAnimationState::Run, character_data._stat_data._run_speed)
             } else {
-                (
-                    MoveAnimationState::Walk,
-                    character_data._stat_data._walk_speed,
-                )
+                (MoveAnimationState::Walk, character_data._stat_data._walk_speed)
             };
 
-            self.set_move_speed(move_speed);
             self.set_move_direction(move_direction);
 
-            if false == self.is_move_state(move_animation) && self._controller._is_ground {
-                self.set_move_animation(move_animation);
+            if GAME_MODE_2D == false || move_direction.x.abs() >= move_direction.z.abs() {
+                self.set_move_speed(move_speed);
+                if false == self.is_move_state(move_animation) && self._controller._is_ground {
+                    self.set_move_animation(move_animation);
+                }
+            } else {
+                self.set_move_stop();
             }
         }
     }

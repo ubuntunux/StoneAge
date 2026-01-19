@@ -277,6 +277,10 @@ impl<'a> ItemManager<'a> {
         let game_scene_manager = ptr_as_ref(self._game_scene_manager);
         let scene_manager = ptr_as_ref(self._scene_manager);
 
+        if game_scene_manager.get_character_manager().is_valid_player() == false {
+            return;
+        }
+
         for item in self._items.values() {
             item.borrow_mut()
                 .update_item(scene_manager.get_height_map_data(), delta_time);

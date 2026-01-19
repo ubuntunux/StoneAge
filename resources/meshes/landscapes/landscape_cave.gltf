@@ -1,6 +1,6 @@
 {
 	"asset":{
-		"generator":"Khronos glTF Blender I/O v4.5.48",
+		"generator":"Khronos glTF Blender I/O v5.0.21",
 		"version":"2.0"
 	},
 	"scene":0,
@@ -15,12 +15,7 @@
 	"nodes":[
 		{
 			"mesh":0,
-			"name":"landscape_cave",
-			"scale":[
-				50,
-				50,
-				50
-			]
+			"name":"Plane"
 		},
 		{
 			"children":[
@@ -31,7 +26,7 @@
 	],
 	"meshes":[
 		{
-			"name":"Plane.001",
+			"name":"Plane",
 			"primitives":[
 				{
 					"attributes":{
@@ -50,92 +45,92 @@
 		{
 			"bufferView":0,
 			"componentType":5126,
-			"count":975,
+			"count":4489,
 			"max":[
-				1.046565055847168,
-				0.20077665150165558,
-				0.863554835319519
+				10.000000953674316,
+				0,
+				10.000001907348633
 			],
 			"min":[
-				-0.7112134695053101,
-				-0.006569862365722656,
-				-0.718096911907196
+				-10.000000953674316,
+				-1,
+				-10.000000953674316
 			],
 			"type":"VEC3"
 		},
 		{
 			"bufferView":1,
 			"componentType":5126,
-			"count":975,
+			"count":4489,
 			"type":"VEC3"
 		},
 		{
 			"bufferView":2,
 			"componentType":5126,
-			"count":975,
+			"count":4489,
 			"type":"VEC2"
 		},
 		{
 			"bufferView":3,
 			"componentType":5126,
-			"count":975,
+			"count":4489,
 			"type":"VEC4"
 		},
 		{
 			"bufferView":4,
 			"componentType":5123,
-			"count":975,
+			"count":4489,
 			"normalized":true,
 			"type":"VEC4"
 		},
 		{
 			"bufferView":5,
 			"componentType":5123,
-			"count":5418,
+			"count":24576,
 			"type":"SCALAR"
 		}
 	],
 	"bufferViews":[
 		{
 			"buffer":0,
-			"byteLength":11700,
+			"byteLength":53868,
 			"byteOffset":0,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":11700,
-			"byteOffset":11700,
+			"byteLength":53868,
+			"byteOffset":53868,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":7800,
-			"byteOffset":23400,
+			"byteLength":35912,
+			"byteOffset":107736,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":15600,
-			"byteOffset":31200,
+			"byteLength":71824,
+			"byteOffset":143648,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":7800,
-			"byteOffset":46800,
+			"byteLength":35912,
+			"byteOffset":215472,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":10836,
-			"byteOffset":54600,
+			"byteLength":49152,
+			"byteOffset":251384,
 			"target":34963
 		}
 	],
 	"buffers":[
 		{
-			"byteLength":65436,
+			"byteLength":300536,
 			"uri":"landscape_cave.bin"
 		}
 	]

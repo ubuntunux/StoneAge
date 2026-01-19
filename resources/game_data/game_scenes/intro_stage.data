@@ -1,7 +1,26 @@
 {
     "_characters": {},
     "_items": {},
-    "_player": {},
+    "_player": {
+        "aru": {
+            "_character_data_name": "characters/family/aru",
+            "_position": [
+                5.729712963104248,
+                2.1316800117492676,
+                20.0
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        }
+    },
     "_props": {
         "bed.001": {
             "_position": [

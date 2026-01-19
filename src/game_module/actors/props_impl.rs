@@ -367,6 +367,10 @@ impl<'a> PropManager<'a> {
     }
 
     pub fn update_prop_manager(&mut self, delta_time: f64) {
+        if self.get_game_scene_manager().get_character_manager().is_valid_player() == false {
+            return;
+        }
+
         for prop in self._props.values() {
             prop.borrow_mut().update_prop(delta_time);
         }
