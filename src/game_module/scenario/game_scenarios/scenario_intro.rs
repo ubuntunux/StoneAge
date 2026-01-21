@@ -9,7 +9,7 @@ use std::str::FromStr;
 use strum_macros::{Display, EnumCount, EnumIter, EnumString};
 use crate::game_module::behavior::behavior_base::BehaviorState;
 
-const SLEEP_PHASE_TIME: f32 = 10.0;
+const SLEEP_PHASE_TIME: f32 = 3.0;
 
 pub const STORY_BOARDS: [&str; 2] = [
     "ui/story_board/story_board_intro_00",
@@ -51,10 +51,10 @@ impl<'a> ScenarioIntro<'a> {
             _actor_aru: None,
             _actor_ewa: None,
             _actor_koa: None,
-            _around_start_position: Vector3::new(65.0, 33.25, -26.0),
-            _around_end_position: Vector3::new(13.086, 13.4679, 10.657),
-            _around_start_rotation: Vector3::new(0.37, -1.0, 0.0),
-            _around_end_rotation: Vector3::new(0.7205, -0.002, 0.0),
+            _around_start_position: Vector3::new(0.91, 14.61, -35.0),
+            _around_end_position: Vector3::new(0.91, 14.61, -20.0),
+            _around_start_rotation: Vector3::new(0.37, 0.0, 0.0),
+            _around_end_rotation: Vector3::new(0.35, 0.0, 0.0),
             _scenario_track: ScenarioTrack {
                 _scenario_phase: ScenarioIntroPhase::None,
                 _phase_time: 0.0,

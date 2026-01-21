@@ -162,6 +162,7 @@ impl<'a> GameClient<'a> {
         match self._game_phase {
             GamePhase::Teleport => {
                 if character_manager.is_valid_player() {
+                    character_manager.get_player().borrow_mut().set_action_none();
                     character_manager.get_player().borrow_mut().set_move_stop();
                 }
                 game_ui_manager.set_image_manual_fade_inout(STORY_IMAGE_NONE, STORY_BOARD_FADE_TIME);
@@ -187,12 +188,16 @@ impl<'a> GameClient<'a> {
         match self._game_phase {
             GamePhase::Teleport => {
                 game_ui_manager.set_auto_fade_inout(true);
+                if character_manager.is_valid_player() {
+                    character_manager.get_player().borrow_mut().set_action_none();
+                    character_manager.get_player().borrow_mut().set_move_stop();
+                }
             }
             GamePhase::Sleep => {
                 character_manager.get_player().borrow_mut().set_action_stand_up();
             }
             GamePhase::PlayGameScenario => {
-                game_controller.set_camera_blend_mode(true);
+                game_controller.set_game_camera_auto_blend_mode(true);
             }
             GamePhase::OpenToolbox => {
                 game_ui_manager.close_toolbox();
@@ -241,7 +246,11 @@ impl<'a> GameClient<'a> {
                 if game_scene_manager.is_game_scene_state(GameSceneState::None) {
                     game_scene_manager.open_scenario_data(SCENARIO_INTRO);
                 } else if game_scene_manager.is_game_scene_state(GameSceneState::PlayGame) {
-                    game_controller.update_on_open_game_scene();
+                    game_controller.set_game_camera_goal_transform(
+                        1.0,
+                        scene_manager.get_main_camera()._transform_object.get_pitch(),
+                        scene_manager.get_main_camera()._transform_object.get_yaw()
+                    );
                     self.set_game_phase(GamePhase::GamePlay);
                 }
             }
@@ -263,11 +272,11 @@ impl<'a> GameClient<'a> {
                         } else if self.need_toolbox_mode() {
                             self.set_game_phase(GamePhase::OpenToolbox);
                         } else {
-                            if game_controller.is_camera_blend_mode() {
-                                game_controller.update_camera_blend_mode(
-                                    time_data,
+                            if game_controller.is_game_camera_auto_blend_mode() {
+                                game_controller.update_game_camera_auto_blend(
                                     scene_manager.get_main_camera_mut(),
-                                    character_manager.get_player()
+                                    character_manager.get_player(),
+                                    time_data._delta_time as f32
                                 );
                             } else {
                                 game_controller.update_game_controller(

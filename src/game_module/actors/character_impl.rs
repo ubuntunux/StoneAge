@@ -421,7 +421,7 @@ impl<'a> Character<'a> {
     pub fn is_available_move(&self) -> bool {
         self.is_alive() &&
         self.is_move_state(MoveAnimationState::Roll) == false &&
-        self.is_action(ActionAnimationState::Kick) == false &&
+        (self.is_on_ground() == false || self.is_action(ActionAnimationState::Kick) == false) &&
         self.is_action(ActionAnimationState::LayingDown) == false &&
         self.is_action(ActionAnimationState::Sleep) == false &&
         self.is_action(ActionAnimationState::StandUp) == false &&
@@ -858,7 +858,7 @@ impl<'a> Character<'a> {
             ActionAnimationState::EnterGate => {
                 animation_info._animation_fade_out_time = 0.0; // keep end of animation
                 render_object.set_animation(
-                    &animation_data._pickup_animation,
+                    &animation_data._idle_animation,
                     &animation_info,
                     AnimationLayer::ActionLayer,
                 );
@@ -1145,6 +1145,9 @@ impl<'a> Character<'a> {
 
                 if animation_play_info._is_animation_end {
                     self.set_action_none();
+                } else if self.is_on_ground() {
+                    // prevent slip after jump kick
+                    self.set_move_stop();
                 }
             }
             ActionAnimationState::LayingDown => {
