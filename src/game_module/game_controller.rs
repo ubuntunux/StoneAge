@@ -169,7 +169,7 @@ impl<'a> GameController<'a> {
 
     pub fn set_game_camera_goal_transform(&mut self, goal_distance_ratio: f32, goal_pitch: f32, goal_yaw: f32) {
         self._camera_goal_distance = math::lerp(CAMERA_DISTANCE_MIN, CAMERA_DISTANCE_MAX, goal_distance_ratio);
-        if GAME_MODE_2D {
+        if GAME_VIEW_MODE == GameViewMode::GameViewMode2D || GAME_VIEW_MODE == GameViewMode::GameViewMode25D {
             self._camera_goal_pitch = self.get_camera_pitch_by_distance(self._camera_goal_distance);
         } else {
             self._camera_goal_pitch = CAMERA_PITCH_MIN.max(CAMERA_PITCH_MAX.min(goal_pitch % math::TWO_PI));
@@ -269,7 +269,7 @@ impl<'a> GameController<'a> {
 
     pub fn update_game_camera(&mut self, pitch_control: f32, yaw_control: f32, zoom_control: f32, delta_time: f32) {
         self.update_camera_distance(zoom_control, delta_time);
-        if GAME_MODE_2D {
+        if GAME_VIEW_MODE == GameViewMode::GameViewMode2D || GAME_VIEW_MODE == GameViewMode::GameViewMode25D {
             self._camera_pitch = self.get_camera_pitch_by_distance(self._camera_distance);
         } else {
             self.update_camera_rotation(pitch_control, yaw_control, delta_time);

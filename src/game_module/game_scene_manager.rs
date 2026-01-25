@@ -5,7 +5,7 @@ use crate::game_module::actors::character::{Character, CharacterCreateInfo};
 use crate::game_module::actors::character_manager::CharacterManager;
 use crate::game_module::actors::items::{ItemCreateInfo, ItemManager};
 use crate::game_module::actors::props::{PropCreateInfo, PropManager};
-use crate::game_module::game_constants::{GAME_MODE_2D, TEMPERATURE_MAX, TEMPERATURE_MIN, TIME_OF_DAWN, TIME_OF_DAY_SPEED, TIME_OF_MORNING};
+use crate::game_module::game_constants::{GameViewMode, GAME_VIEW_MODE, TEMPERATURE_MAX, TEMPERATURE_MIN, TIME_OF_DAWN, TIME_OF_DAY_SPEED, TIME_OF_MORNING};
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_ui_manager::GameUIManager;
 use crate::game_module::scenario::scenario::{create_scenario, ScenarioBase};
@@ -226,7 +226,7 @@ impl<'a> GameSceneManager<'a> {
         if self._teleport_stage.is_none() && self._teleport_gate.is_some() && self.is_game_scene_state(GameSceneState::PlayGame) {
             let teleport_point = self.get_prop_manager().get_teleport_point(self._teleport_gate.as_ref().unwrap().as_str());
             if teleport_point.is_some() && character_manager.is_valid_player() {
-                if GAME_MODE_2D {
+                if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
                     character_manager.get_player().borrow_mut().set_position_xy(teleport_point.as_ref().unwrap());
                 } else {
                     character_manager.get_player().borrow_mut().set_position(teleport_point.as_ref().unwrap());

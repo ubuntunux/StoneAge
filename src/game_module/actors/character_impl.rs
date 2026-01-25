@@ -967,7 +967,7 @@ impl<'a> Character<'a> {
 
             self.set_move_direction(move_direction);
 
-            if GAME_MODE_2D == false || move_direction.x.abs() >= move_direction.z.abs() {
+            if GAME_VIEW_MODE != GameViewMode::GameViewMode2D || move_direction.x.abs() >= move_direction.z.abs() {
                 self.set_move_speed(move_speed);
                 if false == self.is_move_state(move_animation) && self._controller._is_ground {
                     self.set_move_animation(move_animation);

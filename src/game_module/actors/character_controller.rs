@@ -115,7 +115,7 @@ impl<'a> CharacterController<'a> {
         &self._move_direction
     }
     pub fn set_move_direction(&mut self, move_direction: &Vector3<f32>) {
-        if GAME_MODE_2D {
+        if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
             if move_direction.x.abs() >= move_direction.z.abs() {
                 self._move_direction = Vector3::new(if 0.0 < move_direction.x { 1.0 } else { -1.0 }, 0f32, 0f32);
             } else {
@@ -186,7 +186,7 @@ impl<'a> CharacterController<'a> {
     }
 
     pub fn set_hit_direction(&mut self, direction: &Vector3<f32>) {
-        if GAME_MODE_2D {
+        if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
             self._hit_velocity = Vector3::new(if 0.0 < direction.x { 1.0 } else { -1.0 } * HIT_VELOCITY_SPEED, 0f32, 0f32);
         } else {
             self._hit_velocity = direction.clone() * HIT_VELOCITY_SPEED;
@@ -275,7 +275,7 @@ impl<'a> CharacterController<'a> {
                 let ground_normal_y = self._last_ground_normal.y.abs();
                 let (mut slope_move_dir, mut slope_move_distance) = math::make_normalize_with_norm(&self._slop_velocity);
 
-                if GAME_MODE_2D {
+                if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
                     slope_move_dir.z = 0.0;
                     slope_move_dir = math::safe_normalize(&slope_move_dir);
                 }
@@ -367,7 +367,7 @@ impl<'a> CharacterController<'a> {
 
                 if 0.0 < move_distance && SLOPE_ANGLE <= new_move_dir.y || ground_normal.y < SLOPE_ANGLE && ground_normal.dot(&move_dir) < 0.0 {
                     let slop_speed = SLOPE_SPEED.max(self._move_speed);
-                    if GAME_MODE_2D {
+                    if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
                         self._slop_velocity.x += ground_normal.x * slop_speed;
                         self._slop_velocity.z = 0.0;
                     } else {
@@ -502,7 +502,7 @@ impl<'a> CharacterController<'a> {
         // reset
         self._is_jump_start = false;
 
-        if GAME_MODE_2D {
+        if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
             self._position.z = prev_position.z;
         }
     }

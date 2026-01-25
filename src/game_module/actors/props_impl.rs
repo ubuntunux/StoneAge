@@ -5,7 +5,7 @@ use crate::game_module::actors::props::{
     Prop, PropCreateInfo, PropData, PropDataType, PropID, PropManager, PropMap, PropStats,
 };
 use crate::game_module::game_client::GameClient;
-use crate::game_module::game_constants::{AUDIO_HIT, EFFECT_HIT, GAME_MODE_2D, NPC_ATTACK_HIT_RANGE};
+use crate::game_module::game_constants::{GameViewMode, AUDIO_HIT, EFFECT_HIT, GAME_VIEW_MODE, NPC_ATTACK_HIT_RANGE};
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
 use nalgebra::Vector3;
@@ -178,7 +178,7 @@ impl<'a> Prop<'a> {
                 };
             }
 
-            if GAME_MODE_2D {
+            if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
                 position.z = player_position.z;
                 velocity.z = 0.0;
             }
@@ -402,7 +402,7 @@ impl<'a> PropManager<'a> {
                             prop._render_object.borrow_mut().set_render_camera(!bounding_box.collide_point(&player.get_position()));
                         }
                         PropDataType::Destruction => {
-                            prop._prop_stats._is_in_player_range = if GAME_MODE_2D {
+                            prop._prop_stats._is_in_player_range = if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
                                 player.check_in_range_xy(prop.get_collision(), NPC_ATTACK_HIT_RANGE, check_direction)
                             } else {
                                 player.check_in_range(prop.get_collision(), NPC_ATTACK_HIT_RANGE, check_direction)
@@ -426,7 +426,7 @@ impl<'a> PropManager<'a> {
                             }
                         }
                         PropDataType::Harvestable => {
-                            prop._prop_stats._is_in_player_range = if GAME_MODE_2D {
+                            prop._prop_stats._is_in_player_range = if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
                                 player.check_in_range_xy(prop.get_collision(), NPC_ATTACK_HIT_RANGE, check_direction)
                             } else {
                                 player.check_in_range(prop.get_collision(), NPC_ATTACK_HIT_RANGE, check_direction)
@@ -448,7 +448,7 @@ impl<'a> PropManager<'a> {
                             }
                         }
                         PropDataType::Gate => {
-                            prop._prop_stats._is_in_player_range = if GAME_MODE_2D {
+                            prop._prop_stats._is_in_player_range = if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
                                 bounding_box.collide_point_xy(player.get_center())
                             } else {
                                 bounding_box.collide_point(player.get_center())
@@ -474,7 +474,7 @@ impl<'a> PropManager<'a> {
                             }
                         }
                         PropDataType::Pickup => {
-                            prop._prop_stats._is_in_player_range = if GAME_MODE_2D {
+                            prop._prop_stats._is_in_player_range = if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
                                 player.get_bounding_box().collide_bound_box_xy(&bounding_box._min, &bounding_box._max)
                             } else {
                                 player.get_bounding_box().collide_bound_box(&bounding_box._min, &bounding_box._max)
@@ -502,7 +502,7 @@ impl<'a> PropManager<'a> {
                             }
                         },
                         PropDataType::Monolith => {
-                            prop._prop_stats._is_in_player_range = if GAME_MODE_2D {
+                            prop._prop_stats._is_in_player_range = if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
                                 player.check_in_range_xy(prop.get_collision(), NPC_ATTACK_HIT_RANGE, check_direction)
                             } else {
                                 player.check_in_range(prop.get_collision(), NPC_ATTACK_HIT_RANGE, check_direction)
