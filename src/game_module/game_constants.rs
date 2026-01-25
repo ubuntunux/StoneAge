@@ -35,7 +35,7 @@ pub const TIME_OF_NOON: f32 = 14.0;
 pub const TIME_OF_DAY_SPEED: f32 = 14.0 / (20.0 * 60.0); // Minute 14 per day for 20 hours
 pub const TEMPERATURE_MIN: f32 = 12.0;
 pub const TEMPERATURE_MAX: f32 = 32.0;
-pub const SLEEP_TIMER: f32 = 3.0;
+pub const SLEEP_TIMER: f32 = 1.5;
 
 // player
 pub const GRAVITY: f32 = 30.0;
@@ -96,7 +96,7 @@ pub const MATERIAL_CROSS_HAIR: &str = "ui/cross_hair_box";
 pub const MATERIAL_TIME_OF_DAY: &str = "ui/tod";
 pub const MATERIAL_INTRO_IMAGE: &str = "ui/intro_image";
 pub const STORY_IMAGE_NONE: &str = "";
-pub const STORY_BOARD_FADE_TIME: f32 = 2.0;
+pub const STORY_BOARD_FADE_TIME: f32 = 1.0;
 pub const MATERIAL_FADE_TO_BLACK: &str = "ui/fade_to_black";
 
 // EFFECT DATA

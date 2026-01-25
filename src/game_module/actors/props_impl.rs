@@ -455,7 +455,7 @@ impl<'a> PropManager<'a> {
                             };
 
                             if prop._prop_stats._is_in_player_range {
-                                if player._animation_state.is_action_event(ActionAnimationState::EnterGate) {
+                                if GAME_VIEW_MODE == GameViewMode::GameViewMode3D || player._animation_state.is_action_event(ActionAnimationState::EnterGate) {
                                     let linked_gate = prop.get_instance_parameters("_linked_gate");
                                     let linked_stage = prop.get_instance_parameters("_linked_stage");
                                     if linked_stage.is_some() && linked_gate.is_some() {

@@ -19,6 +19,7 @@ pub enum InputControlType {
     Attack,
     PowerAttack,
     Interaction,
+    EnterGate,
     Gathering,
     CameraRotation,
     Zoom,
@@ -487,6 +488,10 @@ impl<'a> GameController<'a> {
 
                 // stop
                 player_mut.set_move_stop();
+            }
+
+            if is_up && player_mut.is_in_interaction_range() {
+                player_mut.set_action_enter_gate();
             }
         }
 

@@ -632,24 +632,31 @@ impl<'a> Character<'a> {
     }
     pub fn set_action_interaction(&mut self) {
         if self._controller.is_on_ground() && self.is_available_move() && self.is_action(ActionAnimationState::None) {
-            self.set_move_stop();
-
             match self._controller._nearest_interaction_object {
-                InteractionObject::None  => {}
                 InteractionObject::PropBed(_) => {
                     self.get_character_manager().get_game_client_mut().set_need_sleep_mode(true);
                     self.set_action_animation(ActionAnimationState::LayingDown, 2.0);
+                    self.set_move_stop();
                 }
                 InteractionObject::PropPickup(_) => {
                     self.set_action_animation(ActionAnimationState::Pickup, 2.0);
                 }
-                InteractionObject::PropGate(_) => {
-                    self.set_action_animation(ActionAnimationState::EnterGate, 1.0);
-                }
-                InteractionObject::PropGathering(_) => {},
                 InteractionObject::PropMonolith(_) => {
                     self.set_action_animation(ActionAnimationState::OpenToolbox, 1.0);
+                    self.set_move_stop();
                 }
+                _ => {},
+            }
+        }
+    }
+    pub fn set_action_enter_gate(&mut self) {
+        if self._controller.is_on_ground() && self.is_available_move() && self.is_action(ActionAnimationState::None) {
+            match self._controller._nearest_interaction_object {
+                InteractionObject::PropGate(_) => {
+                    self.set_action_animation(ActionAnimationState::EnterGate, 1.0);
+                    self.set_move_stop();
+                }
+                _ => ()
             }
         }
     }

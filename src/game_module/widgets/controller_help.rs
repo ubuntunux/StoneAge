@@ -6,6 +6,7 @@ use rust_engine_3d::scene::ui::{HorizontalAlign, Orientation, PosHintX, PosHintY
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use crate::game_module::actors::character::InteractionObject;
+use crate::game_module::game_constants::{GameViewMode, GAME_VIEW_MODE};
 use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::game_controller::{GameController, InputControlType};
 use crate::game_module::game_resource::GameResources;
@@ -151,6 +152,7 @@ impl<'a> ControllerHelpWidget<'a> {
 
         // interaction
         let interaction_key_binding_widget = KeyBindingWidget::create_key_binding_widget(root_widget, 1, "interaction_key_binding", "Interaction", None);
+        let enter_gate_key_binding_widget = KeyBindingWidget::create_key_binding_widget(root_widget, 1, "enter_gate_key_binding", "Enter", None);
 
         // gathering
         let gathering_key_binding_widget = KeyBindingWidget::create_key_binding_widget(root_widget, 1, "gathering_key_binding", "Gathering", None);
@@ -173,6 +175,7 @@ impl<'a> ControllerHelpWidget<'a> {
                 (InputControlType::Attack, Some(vec![engine_resources.get_material_instance_data("ui/controller/mouse_l").clone()])),
                 (InputControlType::PowerAttack, Some(vec![engine_resources.get_material_instance_data("ui/controller/mouse_r").clone()])),
                 (InputControlType::Interaction, Some(vec![engine_resources.get_material_instance_data("ui/controller/keycode_f").clone()])),
+                (InputControlType::EnterGate, Some(vec![engine_resources.get_material_instance_data("ui/controller/keycode_w").clone()])),
                 (InputControlType::Gathering, Some(vec![engine_resources.get_material_instance_data("ui/controller/mouse_l").clone()])),
                 (InputControlType::CameraRotation, Some(vec![engine_resources.get_material_instance_data("ui/controller/mouse").clone()])),
                 (InputControlType::Zoom, Some(vec![engine_resources.get_material_instance_data("ui/controller/mouse_m").clone()])),
@@ -205,6 +208,7 @@ impl<'a> ControllerHelpWidget<'a> {
                 (InputControlType::Attack, Some(vec![engine_resources.get_material_instance_data("ui/controller/joystick_rb").clone()])),
                 (InputControlType::PowerAttack, Some(vec![engine_resources.get_material_instance_data("ui/controller/joystick_rt").clone()])),
                 (InputControlType::Interaction, Some(vec![engine_resources.get_material_instance_data("ui/controller/joystick_x").clone()])),
+                (InputControlType::EnterGate, Some(vec![engine_resources.get_material_instance_data("ui/controller/joystick_r_stick").clone()])),
                 (InputControlType::Gathering, Some(vec![engine_resources.get_material_instance_data("ui/controller/joystick_rb").clone()])),
                 (InputControlType::CameraRotation, Some(vec![engine_resources.get_material_instance_data("ui/controller/joystick_l_stick").clone()])),
                 (InputControlType::Zoom, Some(vec![
@@ -235,6 +239,7 @@ impl<'a> ControllerHelpWidget<'a> {
                 (InputControlType::Attack, attack_key_binding_widget),
                 (InputControlType::PowerAttack, power_attack_key_binding_widget),
                 (InputControlType::Interaction, interaction_key_binding_widget),
+                (InputControlType::EnterGate, enter_gate_key_binding_widget),
                 (InputControlType::Gathering, gathering_key_binding_widget),
                 (InputControlType::CameraRotation, camera_key_binding_widget),
                 (InputControlType::Zoom, zoom_key_binding_widget),
@@ -315,9 +320,11 @@ impl<'a> ControllerHelpWidget<'a> {
                         false
                     }
                     InteractionObject::PropBed(_) |
-                    InteractionObject::PropPickup(_) |
-                    InteractionObject::PropGate(_) => {
+                    InteractionObject::PropPickup(_) => {
                         input_control_type == InputControlType::Interaction
+                    }
+                    InteractionObject::PropGate(_) => {
+                        input_control_type == InputControlType::EnterGate
                     }
                     InteractionObject::PropGathering(_) => {
                         input_control_type == InputControlType::Gathering
@@ -353,6 +360,7 @@ impl<'a> ControllerHelpWidget<'a> {
         }
 
         // update interaction icon visibility
+        self.update_interaction_widget(InputControlType::EnterGate, game_scene_manager);
         self.update_interaction_widget(InputControlType::Interaction, game_scene_manager);
         self.update_interaction_widget(InputControlType::Gathering, game_scene_manager);
     }

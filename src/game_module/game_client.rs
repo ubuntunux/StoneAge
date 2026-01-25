@@ -230,7 +230,7 @@ impl<'a> GameClient<'a> {
             || keyboard_input_data.is_any_key_hold();
 
         if game_ui_manager.is_done_game_image_progress() {
-            game_ui_manager.set_game_image_fade_speed(if any_key_hold { 5.0 } else { 1.0 });
+            //game_ui_manager.set_game_image_fade_speed(if any_key_hold { 5.0 } else { 1.0 });
         }
 
         match self._game_phase {
