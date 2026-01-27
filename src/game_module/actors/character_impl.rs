@@ -11,7 +11,7 @@ use crate::game_module::actors::weapons::Weapon;
 use crate::game_module::behavior::behavior_base::{create_character_behavior, BehaviorState};
 use crate::game_module::game_constants::*;
 use nalgebra::Vector3;
-use rust_engine_3d::audio::audio_manager::AudioLoop;
+use rust_engine_3d::audio::audio_manager::{AudioLoop};
 use rust_engine_3d::effect::effect_data::EffectCreateInfo;
 use rust_engine_3d::scene::animation::{AnimationPlayArgs, AnimationPlayInfo};
 use rust_engine_3d::scene::bounding_box::BoundingBox;
@@ -268,6 +268,7 @@ impl<'a> Character<'a> {
             _controller: Box::new(CharacterController::create_character_controller()),
             _behavior: create_character_behavior(character_data_borrow._character_type),
             _weapon: None,
+            _audio_snoring: None
         };
 
         character.initialize_character(position, rotation, scale);
@@ -953,8 +954,8 @@ impl<'a> Character<'a> {
         self._controller.get_move_direction()
     }
 
-    pub fn set_move_direction(&mut self, move_direction: &Vector3<f32>) {
-        if self.is_available_move() {
+    pub fn set_move_direction(&mut self, move_direction: &Vector3<f32>, force_update: bool) {
+        if self.is_available_move() || force_update {
             self._controller.set_move_direction(move_direction);
         }
     }
@@ -972,7 +973,7 @@ impl<'a> Character<'a> {
                 (MoveAnimationState::Walk, character_data._stat_data._walk_speed)
             };
 
-            self.set_move_direction(move_direction);
+            self.set_move_direction(move_direction, false);
 
             if GAME_VIEW_MODE != GameViewMode::GameViewMode2D || move_direction.x.abs() >= move_direction.z.abs() {
                 self.set_move_speed(move_speed);
@@ -1015,7 +1016,7 @@ impl<'a> Character<'a> {
             } else {
                 self.set_move_speed(character_data._stat_data._roll_speed);
             }
-            self.set_move_direction(&self._controller._face_direction.clone());
+            self.set_move_direction(&self._controller._face_direction.clone(), false);
             self.set_move_animation(MoveAnimationState::Roll);
         }
     }
@@ -1107,6 +1108,18 @@ impl<'a> Character<'a> {
 
     pub fn update_action_animation_begin_event(&mut self) {
         match self._animation_state._action_animation_state {
+            ActionAnimationState::Sleep => {
+                if self._is_player {
+                    if let Some(audio_instance) = self._audio_snoring.as_ref() {
+                        self.get_character_manager().get_scene_manager().stop_audio_instance(&audio_instance)
+                    }
+                    self._audio_snoring = self.get_character_manager().get_scene_manager().play_audio_options(
+                        AUDIO_SNORING,
+                        AudioLoop::LOOP,
+                        Some(1.0),
+                    );
+                }
+            }
             ActionAnimationState::EnterGate => {
                 self._animation_state.set_action_event(ActionAnimationState::EnterGate);
             },
@@ -1193,7 +1206,14 @@ impl<'a> Character<'a> {
 
     pub fn update_action_animation_end_event(&mut self) {
         match self._animation_state._action_animation_state_prev {
-            _ => (),
+            ActionAnimationState::Sleep => {
+                if self._is_player {
+                    if let Some(audio_instance) = self._audio_snoring.as_ref() {
+                        self.get_character_manager().get_scene_manager().stop_audio_instance(&audio_instance)
+                    }
+                }
+            }
+            _ => ()
         }
     }
 

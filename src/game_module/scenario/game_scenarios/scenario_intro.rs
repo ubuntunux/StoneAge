@@ -1,5 +1,5 @@
 use crate::game_module::actors::character::Character;
-use crate::game_module::game_constants::{STORY_BOARD_FADE_TIME, STORY_IMAGE_NONE, TIME_OF_NOON};
+use crate::game_module::game_constants::{AUDIO_ROOSTER, STORY_BOARD_FADE_TIME, STORY_IMAGE_NONE, TIME_OF_DAWN};
 use crate::game_module::game_scene_manager::GameSceneManager;
 use  crate::game_module::game_ui_manager::GameUIManager;
 use crate::game_module::scenario::scenario::{ScenarioBase, ScenarioDataCreateInfo, ScenarioTrack};
@@ -9,19 +9,16 @@ use std::str::FromStr;
 use strum_macros::{Display, EnumCount, EnumIter, EnumString};
 use crate::game_module::behavior::behavior_base::BehaviorState;
 
-const SLEEP_PHASE_TIME: f32 = 3.0;
+const SLEEP_PHASE_TIME: f32 = 5.0;
 
-pub const STORY_BOARDS: [&str; 2] = [
-    "ui/story_board/story_board_intro_00",
-    "ui/story_board/story_board_intro_01"
-];
+pub const STORY_BOARDS: [&str; 2] = ["ui/story_board/story_board_intro_00", "ui/story_board/story_board_intro_01"];
 
 #[derive(Clone, PartialEq, Eq, Hash, Display, Debug, Copy, EnumIter, EnumString, EnumCount)]
 pub enum ScenarioIntroPhase {
     None,
-    Start,
     StoryBoard,
-    Zoomin,
+    Sleep,
+    WakeUp,
     End
 }
 
@@ -31,6 +28,9 @@ pub struct ScenarioIntro<'a> {
     pub _actor_aru: Option<RcRefCell<Character<'a>>>,
     pub _actor_ewa: Option<RcRefCell<Character<'a>>>,
     pub _actor_koa: Option<RcRefCell<Character<'a>>>,
+    pub _wakeup_delay_aru: f32,
+    pub _wakeup_delay_ewa: f32,
+    pub _wakeup_delay_koa: f32,
     pub _around_start_position: Vector3<f32>,
     pub _around_end_position: Vector3<f32>,
     pub _around_start_rotation: Vector3<f32>,
@@ -51,14 +51,17 @@ impl<'a> ScenarioIntro<'a> {
             _actor_aru: None,
             _actor_ewa: None,
             _actor_koa: None,
-            _around_start_position: Vector3::new(0.91, 14.61, -35.0),
-            _around_end_position: Vector3::new(0.91, 14.61, -20.0),
-            _around_start_rotation: Vector3::new(0.37, 0.0, 0.0),
+            _wakeup_delay_aru: 2.0,
+            _wakeup_delay_ewa: 3.5,
+            _wakeup_delay_koa: 4.0,
+            _around_start_position: Vector3::new(0.6, 14.6, -3.0),
+            _around_end_position: Vector3::new(0.6, 14.6, -9.4),
+            _around_start_rotation: Vector3::new(0.0, 0.0, 0.0),
             _around_end_rotation: Vector3::new(0.35, 0.0, 0.0),
             _scenario_track: ScenarioTrack {
                 _scenario_phase: ScenarioIntroPhase::None,
                 _phase_time: 0.0,
-                _phase_duration: 0.0,
+                _phase_duration: None,
             },
             _story_board_phase: 0,
         }
@@ -82,7 +85,7 @@ impl<'a> ScenarioBase for ScenarioIntro<'a> {
         self._scenario_track._scenario_phase == ScenarioIntroPhase::End
     }
 
-    fn set_scenario_phase(&mut self, next_scenario_phase: &str, phase_duration: f32) {
+    fn set_scenario_phase(&mut self, next_scenario_phase: &str, phase_duration: Option<f32>) {
         let next_scenario_phase = ScenarioIntroPhase::from_str(next_scenario_phase).unwrap();
         if next_scenario_phase != self._scenario_track._scenario_phase {
             self.update_game_scenario_end();
@@ -92,25 +95,29 @@ impl<'a> ScenarioBase for ScenarioIntro<'a> {
     }
 
     fn update_game_scenario_begin(&mut self) {
+        let game_scene_manager = ptr_as_mut(self._game_scene_manager);
+
         match self._scenario_track._scenario_phase {
-            ScenarioIntroPhase::Start => {
-                let game_scene_manager = ptr_as_mut(self._game_scene_manager);
+            ScenarioIntroPhase::None => {
+                game_scene_manager.set_time_of_day(0.0, 0.0);
+            },
+            ScenarioIntroPhase::Sleep => {
                 let main_camera = game_scene_manager.get_scene_manager().get_main_camera_mut();
                 main_camera._transform_object.set_position(&self._around_start_position);
                 main_camera._transform_object.set_rotation(&self._around_start_rotation);
-                game_scene_manager.set_time_of_day(TIME_OF_NOON, 0.0);
                 self._actor_aru = if let Some(actor) = game_scene_manager.get_actor("aru") { Some(actor.clone()) } else { None };
                 self._actor_ewa = if let Some(actor) = game_scene_manager.get_actor("ewa") { Some(actor.clone()) } else { None };
                 self._actor_koa = if let Some(actor) = game_scene_manager.get_actor("koa") { Some(actor.clone()) } else { None };
                 self._actor_aru.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::Sleep);
                 self._actor_ewa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::Sleep);
                 self._actor_koa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::Sleep);
-            }
-            ScenarioIntroPhase::End => {
-                //self._actor_aru.as_ref().unwrap().borrow_mut()._character_stats.set_hunger(0.8);
-                self._actor_aru.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::StandUp);
-                self._actor_ewa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::StandUp);
-                self._actor_koa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::StandUp);
+                self._actor_aru.as_ref().unwrap().borrow_mut().set_move_direction(&Vector3::new(0.0, 0.0, -1.0), true);
+                self._actor_ewa.as_ref().unwrap().borrow_mut().set_move_direction(&Vector3::new(0.0, 0.0, -1.0), true);
+                self._actor_koa.as_ref().unwrap().borrow_mut().set_move_direction(&Vector3::new(0.0, 0.0, -1.0), true);
+                game_scene_manager.set_time_of_day(TIME_OF_DAWN, 0.0);
+            },
+            ScenarioIntroPhase::WakeUp => {
+                game_scene_manager.get_scene_manager().play_audio_bank(AUDIO_ROOSTER);
             }
             _ => (),
         }
@@ -126,25 +133,23 @@ impl<'a> ScenarioBase for ScenarioIntro<'a> {
         let phase_ratio = self._scenario_track.get_phase_ratio();
         match self._scenario_track._scenario_phase {
             ScenarioIntroPhase::None => {
-                self.set_scenario_phase(ScenarioIntroPhase::Start.to_string().as_str(), 0.0);
-            }
-            ScenarioIntroPhase::Start => {
-                self.set_scenario_phase(ScenarioIntroPhase::StoryBoard.to_string().as_str(), 0.0);
+                self.set_scenario_phase(ScenarioIntroPhase::StoryBoard.to_string().as_str(), None);
             }
             ScenarioIntroPhase::StoryBoard => {
                 let story_board_phase = self.get_story_board_phase();
                 if game_ui_manager.is_done_game_image_progress() && any_key_pressed {
-                    if STORY_BOARDS.len() <= story_board_phase {
+                    const USE_STORY_BOARDS: bool = false;
+                    if USE_STORY_BOARDS == false || STORY_BOARDS.len() <= story_board_phase {
                         game_ui_manager.set_image_manual_fade_inout(STORY_IMAGE_NONE, STORY_BOARD_FADE_TIME);
                         game_ui_manager.set_auto_fade_inout(true);
-                        self.set_scenario_phase(ScenarioIntroPhase::Zoomin.to_string().as_str(), SLEEP_PHASE_TIME);
+                        self.set_scenario_phase(ScenarioIntroPhase::Sleep.to_string().as_str(), Some(SLEEP_PHASE_TIME));
                     } else {
                         game_ui_manager.set_image_auto_fade_inout(&STORY_BOARDS[story_board_phase], STORY_BOARD_FADE_TIME);
                         self.next_story_board_phase();
                     }
                 }
             }
-            ScenarioIntroPhase::Zoomin => {
+            ScenarioIntroPhase::Sleep => {
                 let game_scene_manager = ptr_as_mut(self._game_scene_manager);
                 let main_camera = game_scene_manager.get_scene_manager().get_main_camera_mut();
                 let progress = 1.0 - (phase_ratio * -5.0).exp2();
@@ -154,11 +159,35 @@ impl<'a> ScenarioBase for ScenarioIntro<'a> {
                 main_camera._transform_object.set_rotation(&rotation);
 
                 if 1.0 <= phase_ratio {
-                    self.set_scenario_phase(ScenarioIntroPhase::End.to_string().as_str(), 0.0);
+                    self.set_scenario_phase(ScenarioIntroPhase::WakeUp.to_string().as_str(), None);
                 }
             }
-            ScenarioIntroPhase::End => {
+            ScenarioIntroPhase::WakeUp => {
+                let prev_wakeup_delay_aru = self._wakeup_delay_aru;
+                let prev_wakeup_delay_ewa = self._wakeup_delay_ewa;
+                let prev_wakeup_delay_koa = self._wakeup_delay_koa;
+                self._wakeup_delay_aru -= delta_time as f32;
+                self._wakeup_delay_ewa -= delta_time as f32;
+                self._wakeup_delay_koa -= delta_time as f32;
+
+                if 0.0 <= prev_wakeup_delay_aru && self._wakeup_delay_aru < 0.0 {
+                    //self._actor_aru.as_ref().unwrap().borrow_mut()._character_stats.set_hunger(0.8);
+                    self._actor_aru.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::StandUp);
+                }
+
+                if 0.0 <= prev_wakeup_delay_ewa && self._wakeup_delay_ewa < 0.0 {
+                    self._actor_ewa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::StandUp);
+                }
+
+                if 0.0 <= prev_wakeup_delay_koa && self._wakeup_delay_koa < 0.0 {
+                    self._actor_koa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::StandUp);
+                }
+
+                if self._wakeup_delay_aru.max(self._wakeup_delay_ewa.max(self._wakeup_delay_koa)) < 0.0 {
+                    self.set_scenario_phase(ScenarioIntroPhase::End.to_string().as_str(), None);
+                }
             }
+            _ => ()
         }
 
         self._scenario_track.update_scenario_track(delta_time as f32 * if any_key_hold { 5.0 } else { 1.0 });

@@ -6,7 +6,6 @@ use rust_engine_3d::scene::ui::{HorizontalAlign, Orientation, PosHintX, PosHintY
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use crate::game_module::actors::character::InteractionObject;
-use crate::game_module::game_constants::{GameViewMode, GAME_VIEW_MODE};
 use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::game_controller::{GameController, InputControlType};
 use crate::game_module::game_resource::GameResources;

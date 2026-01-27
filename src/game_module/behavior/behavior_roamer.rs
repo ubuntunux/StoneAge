@@ -68,7 +68,7 @@ impl BehaviorBase for BehaviorRoamer {
                 }
                 BehaviorState::Attack => {
                     let to_player_direction = (player.as_ref().unwrap().get_position() - owner.get_position()).normalize();
-                    owner.set_move_direction(&to_player_direction);
+                    owner.set_move_direction(&to_player_direction, false);
                     if !NPC_AVAILABLE_MOVING_ATTACK {
                         owner.set_move_stop();
                     }

@@ -111,6 +111,12 @@ impl<'a> CharacterController<'a> {
     pub fn toggle_run(&mut self) {
         self._is_running = !self._is_running;
     }
+    pub fn get_face_direction(&self) -> &Vector3<f32> {
+        &self._face_direction
+    }
+    pub fn set_face_direction(&mut self, face_direction: &Vector3<f32>) {
+        self._face_direction.clone_from(&face_direction);
+    }
     pub fn get_move_direction(&self) -> &Vector3<f32> {
         &self._move_direction
     }

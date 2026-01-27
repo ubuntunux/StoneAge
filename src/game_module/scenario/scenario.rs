@@ -13,11 +13,11 @@ pub type GameSceneCreateInfoMap = HashMap<String, GameSceneCreateInfo>;
 pub struct ScenarioTrack<T: Copy + PartialEq> {
     pub _scenario_phase: T,
     pub _phase_time: f32,
-    pub _phase_duration: f32,
+    pub _phase_duration: Option<f32>,
 }
 
 impl<T: Copy + PartialEq> ScenarioTrack<T> {
-    pub fn set_scenario_phase(&mut self, next_scenario_phase: T, phase_duration: f32) {
+    pub fn set_scenario_phase(&mut self, next_scenario_phase: T, phase_duration: Option<f32>) {
         if next_scenario_phase != self._scenario_phase {
             self._scenario_phase = next_scenario_phase;
             self._phase_time = 0.0;
@@ -26,15 +26,17 @@ impl<T: Copy + PartialEq> ScenarioTrack<T> {
     }
 
     pub fn get_phase_ratio(&self) -> f32 {
-        if 0.0 < self._phase_duration {
-            return 0f32.max(1f32.min(self._phase_time / self._phase_duration));
+        if let Some(phase_duration) = self._phase_duration.as_ref() {
+            if 0.0f32 < *phase_duration {
+                return 0f32.max(1f32.min(self._phase_time / phase_duration));
+            }
         }
         0.0
     }
 
     pub fn update_scenario_track(&mut self, delta_time: f32) {
-        if 0.0 < self._phase_duration {
-            self._phase_time = self._phase_duration.min(self._phase_time + delta_time as f32);
+        if let Some(phase_duration) = self._phase_duration.as_ref() {
+            self._phase_time = (*phase_duration).min(self._phase_time + delta_time as f32);
         }
     }
 }
@@ -59,7 +61,7 @@ pub struct ScenarioDataCreateInfo {
 }
 pub trait ScenarioBase {
     fn is_end_of_scenario(&self) -> bool;
-    fn set_scenario_phase(&mut self, next_scenario_phase: &str, phase_duration: f32);
+    fn set_scenario_phase(&mut self, next_scenario_phase: &str, phase_duration: Option<f32>);
     fn update_game_scenario_begin(&mut self);
     fn update_game_scenario_end(&mut self);
     fn update_game_scenario(&mut self, game_ui_manager: &mut GameUIManager, any_key_hold: bool, any_key_pressed: bool, delta_time: f64);

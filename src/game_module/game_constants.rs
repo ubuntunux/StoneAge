@@ -86,10 +86,14 @@ pub const AUDIO_FOOTSTEP: &str = "footstep";
 pub const AUDIO_ROLL: &str = "roll";
 pub const AUDIO_JUMP: &str = "jump";
 pub const AUDIO_FALLING_WATER: &str = "falling_water";
-pub const AMBIENT_SOUND: &str = "ambient_sound";
-pub const GAME_MUSIC: &str = "game_music";
 pub const AUDIO_PICKUP_ITEM: &str = "pickup_item";
 pub const AUDIO_ITEM_INVENTORY: &str = "item_inventory";
+pub const AUDIO_ROOSTER: &str = "rooster";
+pub const AUDIO_SNORING: &str = "snoring";
+
+// music
+pub const AMBIENT_SOUND: &str = "ambient_sound";
+pub const GAME_MUSIC: &str = "game_music";
 
 // UI
 pub const MATERIAL_CROSS_HAIR: &str = "ui/cross_hair_box";

@@ -10,6 +10,7 @@ use nalgebra::Vector3;
 use rust_engine_3d::scene::render_object::RenderObjectData;
 use rust_engine_3d::utilities::system::RcRefCell;
 use serde::{Deserialize, Serialize};
+use rust_engine_3d::audio::audio_manager::AudioInstance;
 
 #[derive(Clone)]
 pub enum InteractionObject<'a> {
@@ -67,4 +68,5 @@ pub struct Character<'a> {
     pub _behavior: Box<dyn BehaviorBase>,
     pub _animation_state: Box<CharacterAnimationState>,
     pub _weapon: Option<Box<Weapon<'a>>>,
+    pub _audio_snoring: Option<RcRefCell<AudioInstance>>,
 }
