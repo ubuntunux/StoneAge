@@ -111,9 +111,9 @@ impl<'a> ScenarioBase for ScenarioIntro<'a> {
                 self._actor_aru.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::Sleep);
                 self._actor_ewa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::Sleep);
                 self._actor_koa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::Sleep);
-                self._actor_aru.as_ref().unwrap().borrow_mut().set_move_direction(&Vector3::new(0.0, 0.0, -1.0), true);
-                self._actor_ewa.as_ref().unwrap().borrow_mut().set_move_direction(&Vector3::new(0.0, 0.0, -1.0), true);
-                self._actor_koa.as_ref().unwrap().borrow_mut().set_move_direction(&Vector3::new(0.0, 0.0, -1.0), true);
+                self._actor_aru.as_ref().unwrap().borrow_mut().set_move_direction(&Vector3::new(1.0, 0.0, 0.0), true);
+                self._actor_ewa.as_ref().unwrap().borrow_mut().set_move_direction(&Vector3::new(1.0, 0.0, 0.0), true);
+                self._actor_koa.as_ref().unwrap().borrow_mut().set_move_direction(&Vector3::new(1.0, 0.0, 0.0), true);
                 game_scene_manager.set_time_of_day(TIME_OF_DAWN, 0.0);
             },
             ScenarioIntroPhase::WakeUp => {
