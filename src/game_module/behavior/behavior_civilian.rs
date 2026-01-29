@@ -37,9 +37,6 @@ impl BehaviorBase for BehaviorCivilian {
         delta_time: f32,
     ) {
         match self._behavior_state {
-            BehaviorState::None => {
-                self.set_behavior(BehaviorState::Idle, owner, player, false);
-            }
             BehaviorState::Idle => {
                 if self._idle_time < 0.0 {
                     self.set_behavior(BehaviorState::Move, owner, player, false);
@@ -107,16 +104,16 @@ impl BehaviorBase for BehaviorCivilian {
                     owner.set_run(false);
                 }
                 BehaviorState::LayingDown => {
-                    owner.set_action_animation(ActionAnimationState::LayingDown, 1.0);
+                    owner.set_action_laying_down();
                 }
                 BehaviorState::EnterGate => {
                     owner.set_action_animation(ActionAnimationState::EnterGate, 1.0);
                 }
                 BehaviorState::Sleep => {
-                    owner.set_action_animation(ActionAnimationState::Sleep, 1.0);
+                    owner.set_action_sleep();
                 }
                 BehaviorState::StandUp => {
-                    owner.set_action_animation(ActionAnimationState::StandUp, 1.0);
+                    owner.set_action_stand_up();
                 }
                 _ => (),
             }

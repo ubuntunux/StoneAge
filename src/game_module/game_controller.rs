@@ -120,8 +120,9 @@ impl<'a> GameController<'a> {
         let mut done_auto_blend_mode = true;
 
         // blend distance
+        let pivot = player.borrow().get_bounding_box()._center + Vector3::new(0.0, CAMERA_OFFSET_Y, 0.0);
         let rotation_matrix: Matrix4<f32> = math::make_rotation_matrix(self._camera_pitch, self._camera_yaw, 0f32);
-        let goal_camera_position = player.borrow().get_bounding_box()._center - rotation_matrix.column(2).xyz() * self._camera_goal_distance;
+        let goal_camera_position = pivot - rotation_matrix.column(2).xyz() * self._camera_goal_distance;
         let mut to_goal_camera = goal_camera_position - main_camera._transform_object.get_position();
         let mut to_goal_dist = to_goal_camera.magnitude();
         if 0.0 < to_goal_dist {
@@ -135,7 +136,7 @@ impl<'a> GameController<'a> {
             self._camera_position = goal_camera_position - to_goal_camera * to_goal_dist;
             done_auto_blend_mode = false;
         }
-        self._camera_distance = (self._camera_position - player.borrow().get_bounding_box()._center).magnitude();
+        self._camera_distance = (pivot - self._camera_position).magnitude();
 
         // blend pitch
         let pitch_diff = math::get_normalized_diff_radian(main_camera._transform_object.get_pitch(), self._camera_goal_pitch);
@@ -191,9 +192,10 @@ impl<'a> GameController<'a> {
         self._camera_yaw = math::lerp_radian(blend_start_yaw, self._camera_goal_yaw, blend_ratio);
 
         let rotation_matrix: Matrix4<f32> = math::make_rotation_matrix(self._camera_pitch, self._camera_yaw, 0f32);
-        let goal_camera_position = player.borrow().get_bounding_box()._center - rotation_matrix.column(2).xyz() * self._camera_goal_distance;
+        let pivot = player.borrow().get_bounding_box()._center + Vector3::new(0.0, CAMERA_OFFSET_Y, 0.0);
+        let goal_camera_position = pivot - rotation_matrix.column(2).xyz() * self._camera_goal_distance;
         self._camera_position = blend_start_position.lerp(&goal_camera_position, blend_ratio);
-        self._camera_distance = (self._camera_position - player.borrow().get_bounding_box()._center).magnitude();
+        self._camera_distance = (pivot - self._camera_position).magnitude();
 
         main_camera._transform_object.set_position(&self._camera_position);
         main_camera._transform_object.set_pitch(self._camera_pitch);
@@ -283,13 +285,13 @@ impl<'a> GameController<'a> {
         main_camera._transform_object.set_roll(0.0);
         main_camera._transform_object.update_transform_object();
 
-        let player_center = &player.get_bounding_box()._center;
+        let pivot = player.get_bounding_box()._center + Vector3::new(0.0, CAMERA_OFFSET_Y, 0.0);
         let camera_dir = -main_camera._transform_object.get_front();
-        self._camera_position = player_center + camera_dir * self._camera_distance;
+        self._camera_position = pivot + camera_dir * self._camera_distance;
         let mut collision_point: Vector3<f32> = Vector3::zeros();
         let scene_manager = self.get_game_client().get_game_scene_manager().get_scene_manager();
         if scene_manager.get_height_map_data().get_collision_point(
-            &(player_center + camera_dir),
+            &(pivot + camera_dir),
             &camera_dir,
             self._camera_distance,
             CAMERA_COLLIDE_PADDING,

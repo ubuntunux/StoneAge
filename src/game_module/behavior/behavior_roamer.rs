@@ -42,7 +42,6 @@ impl BehaviorBase for BehaviorRoamer {
 
             self._behavior_state = behavior_state;
             match behavior_state {
-                BehaviorState::None => {}
                 BehaviorState::Idle => {
                     owner.set_move_stop();
                     self._idle_time =
@@ -80,10 +79,7 @@ impl BehaviorBase for BehaviorRoamer {
                     );
 
                     // growl
-                    owner
-                        .get_character_manager()
-                        .get_scene_manager()
-                        .play_audio(&owner._character_data.borrow()._audio_data._audio_growl);
+                    owner.get_character_manager().get_scene_manager().play_audio(&owner._character_data.borrow()._audio_data._audio_growl);
                 }
                 _ => (),
             }

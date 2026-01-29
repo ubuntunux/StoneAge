@@ -158,6 +158,12 @@ impl<'a> GameClient<'a> {
         let character_manager = ptr_as_mut(game_scene_manager._character_manager.as_ref());
         let game_ui_manager = ptr_as_mut(self._game_ui_manager);
         match self._game_phase {
+            GamePhase::GamePlay => {
+                game_ui_manager.show_ui(true);
+            }
+            GamePhase::PlayGameScenario => {
+                game_ui_manager.show_ui(false);
+            }
             GamePhase::Teleport => {
                 if character_manager.is_valid_player() {
                     character_manager.get_player().borrow_mut().set_action_none();

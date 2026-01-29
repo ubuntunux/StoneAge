@@ -287,6 +287,7 @@ impl<'a> Character<'a> {
 
         self.set_move_idle();
         self.set_action_none();
+        self.set_behavior(BehaviorState::Idle);
         self.update_transform();
         self.update_render_object();
     }
@@ -631,13 +632,23 @@ impl<'a> Character<'a> {
     pub fn set_action_stand_up(&mut self) {
         self.set_action_animation(ActionAnimationState::StandUp, 1.0);
     }
+
+    pub fn set_action_laying_down(&mut self) {
+        self.set_move_stop();
+        self.set_action_animation(ActionAnimationState::LayingDown, 2.0);
+    }
+
+    pub fn set_action_sleep(&mut self) {
+        self.set_move_stop();
+        self.set_action_animation(ActionAnimationState::Sleep, 1.0);
+    }
+
     pub fn set_action_interaction(&mut self) {
         if self._controller.is_on_ground() && self.is_available_move() && self.is_action(ActionAnimationState::None) {
             match self._controller._nearest_interaction_object {
                 InteractionObject::PropBed(_) => {
                     self.get_character_manager().get_game_client_mut().set_need_sleep_mode(true);
-                    self.set_action_animation(ActionAnimationState::LayingDown, 2.0);
-                    self.set_move_stop();
+                    self.set_action_laying_down();
                 }
                 InteractionObject::PropPickup(_) => {
                     self.set_action_animation(ActionAnimationState::Pickup, 2.0);
@@ -1172,8 +1183,7 @@ impl<'a> Character<'a> {
             }
             ActionAnimationState::LayingDown => {
                 if animation_play_info._is_animation_end {
-                    self.set_move_stop();
-                    self.set_action_animation(ActionAnimationState::Sleep, 1.0);
+                    self.set_action_sleep();
                 }
             }
             ActionAnimationState::Pickup => {

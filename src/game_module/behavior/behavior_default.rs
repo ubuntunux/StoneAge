@@ -41,7 +41,6 @@ impl BehaviorBase for BehaviorDefault {
 
             self._behavior_state = behavior_state;
             match behavior_state {
-                BehaviorState::None => {}
                 BehaviorState::Idle => {
                     owner.set_move_stop();
                     self._idle_time =

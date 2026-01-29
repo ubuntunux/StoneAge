@@ -18,6 +18,7 @@ use crate::game_module::widgets::image_widget::ImageLayout;
 use crate::game_module::widgets::item_bar_widget::ItemBarWidget;
 use crate::game_module::widgets::player_hud::PlayerHud;
 use crate::game_module::widgets::target_status_bar::TargetStatusWidget;
+use crate::game_module::widgets::text_box_widget::TextBoxWidget;
 use crate::game_module::widgets::time_of_day::TimeOfDayWidget;
 use crate::game_module::widgets::toolbox_widget::ToolboxWidget;
 
@@ -41,6 +42,7 @@ pub struct GameUIManager<'a> {
     pub _game_image: Option<Box<ImageLayout<'a>>>,
     pub _cross_hair: Option<Box<CrossHairWidget<'a>>>,
     pub _player_hud: Option<Box<PlayerHud<'a>>>,
+    pub _text_box_widget: Option<Box<TextBoxWidget<'a>>>,
     pub _controller_help_widget: Option<Box<ControllerHelpWidget<'a>>>,
     pub _target_status_bar: Option<Box<TargetStatusWidget<'a>>>,
     pub _time_of_day: Option<Box<TimeOfDayWidget<'a>>>,
@@ -161,6 +163,7 @@ impl<'a> GameUIManager<'a> {
             _game_ui_layout: std::ptr::null(),
             _game_image: None,
             _cross_hair: None,
+            _text_box_widget: None,
             _target_status_bar: None,
             _time_of_day: None,
             _item_bar_widget: None,
@@ -234,6 +237,7 @@ impl<'a> GameUIManager<'a> {
 
         self._player_hud = Some(Box::new(PlayerHud::create_player_hud(game_ui_layout_mut)));
         self._item_bar_widget = Some(Box::new(ItemBarWidget::create_item_bar_widget(engine_resources, game_ui_layout_mut)));
+        self._text_box_widget = Some(Box::new(TextBoxWidget::create_text_box_widget(engine_resources, game_ui_layout_mut)));
         self._target_status_bar = Some(Box::new(TargetStatusWidget::create_target_status_widget(game_ui_layout_mut)));
         let tod_material_instance = game_resources.get_engine_resources().get_material_instance_data(MATERIAL_TIME_OF_DAY);
         self._time_of_day = Some(Box::new(TimeOfDayWidget::create_time_of_day_widget(game_ui_layout_mut, tod_material_instance)));
@@ -379,6 +383,7 @@ impl<'a> GameUIManager<'a> {
         self._game_image.as_mut().unwrap().changed_window_size(&window_size);
         self._player_hud.as_mut().unwrap().changed_window_size(&window_size);
         self._controller_help_widget.as_mut().unwrap().changed_window_size(&window_size);
+        self._text_box_widget.as_mut().unwrap().changed_window_size(&window_size);
         self._target_status_bar.as_mut().unwrap().changed_window_size(&window_size);
         self._time_of_day.as_mut().unwrap().changed_window_size(&window_size);
         self._item_bar_widget.as_mut().unwrap().changed_window_size(&window_size);
@@ -428,6 +433,10 @@ impl<'a> GameUIManager<'a> {
 
         if let Some(controller_help_widget) = self._controller_help_widget.as_mut() {
             controller_help_widget.update_controller_help_widget(game_scene_manager, game_controller);
+        }
+
+        if let Some(text_box_widget) = self._text_box_widget.as_mut() {
+            text_box_widget.update_text_box_widget(game_scene_manager, game_controller);
         }
 
         if let Some(time_of_day) = self._time_of_day.as_mut() {
