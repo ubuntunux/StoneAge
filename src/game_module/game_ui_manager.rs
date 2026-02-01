@@ -17,8 +17,9 @@ use crate::game_module::widgets::cross_hair_widget::CrossHairWidget;
 use crate::game_module::widgets::image_widget::ImageLayout;
 use crate::game_module::widgets::item_bar_widget::ItemBarWidget;
 use crate::game_module::widgets::player_hud::PlayerHud;
+use crate::game_module::widgets::quest_widget::{QuestContent, QuestWidget};
 use crate::game_module::widgets::target_status_bar::TargetStatusWidget;
-use crate::game_module::widgets::text_box_widget::TextBoxWidget;
+use crate::game_module::widgets::text_box_widget::{TextBoxContent, TextBoxWidget};
 use crate::game_module::widgets::time_of_day::TimeOfDayWidget;
 use crate::game_module::widgets::toolbox_widget::ToolboxWidget;
 
@@ -48,6 +49,7 @@ pub struct GameUIManager<'a> {
     pub _time_of_day: Option<Box<TimeOfDayWidget<'a>>>,
     pub _item_bar_widget: Option<Box<ItemBarWidget<'a>>>,
     pub _toolbox_widget: Option<Box<ToolboxWidget<'a>>>,
+    pub _quest_widget: Option<Box<QuestWidget<'a>>>,
     pub _window_size: Vector2<i32>,
     pub _need_to_refresh: bool,
 }
@@ -170,6 +172,7 @@ impl<'a> GameUIManager<'a> {
             _player_hud: None,
             _controller_help_widget: None,
             _toolbox_widget: None,
+            _quest_widget: None,
             _window_size: Vector2::new(0, 0),
             _need_to_refresh: true,
         })
@@ -237,7 +240,7 @@ impl<'a> GameUIManager<'a> {
 
         self._player_hud = Some(Box::new(PlayerHud::create_player_hud(game_ui_layout_mut)));
         self._item_bar_widget = Some(Box::new(ItemBarWidget::create_item_bar_widget(engine_resources, game_ui_layout_mut)));
-        self._text_box_widget = Some(Box::new(TextBoxWidget::create_text_box_widget(engine_resources, game_ui_layout_mut)));
+        self._text_box_widget = Some(Box::new(TextBoxWidget::create_text_box_widget(engine_resources, root_widget)));
         self._target_status_bar = Some(Box::new(TargetStatusWidget::create_target_status_widget(game_ui_layout_mut)));
         let tod_material_instance = game_resources.get_engine_resources().get_material_instance_data(MATERIAL_TIME_OF_DAY);
         self._time_of_day = Some(Box::new(TimeOfDayWidget::create_time_of_day_widget(game_ui_layout_mut, tod_material_instance)));
@@ -247,9 +250,10 @@ impl<'a> GameUIManager<'a> {
             game_resources
         )));
         self._toolbox_widget = Some(Box::new(ToolboxWidget::create_toolbox_widget(engine_resources, game_ui_layout_mut)));
+        self._quest_widget = Some(Box::new(QuestWidget::create_quest_widget(engine_resources, game_ui_layout_mut)));
 
         let cross_hair_material_instance = game_resources.get_engine_resources().get_material_instance_data(MATERIAL_CROSS_HAIR);
-        self._cross_hair = Some(Box::new(CrossHairWidget::create_cross_hair(root_widget, cross_hair_material_instance)));
+        self._cross_hair = Some(Box::new(CrossHairWidget::create_cross_hair(game_ui_layout_mut, cross_hair_material_instance)));
         self.set_cross_hair_visible(false);
     }
 
@@ -257,7 +261,7 @@ impl<'a> GameUIManager<'a> {
         self._game_ui_layout
     }
 
-    pub fn show_ui(&mut self, show: bool) {
+    pub fn show_game_ui(&mut self, show: bool) {
         if false == self._game_ui_layout.is_null() {
             let game_ui_layout_mut = ptr_as_mut(self._game_ui_layout);
             game_ui_layout_mut.get_ui_component_mut().set_visible(show);
@@ -340,6 +344,16 @@ impl<'a> GameUIManager<'a> {
 
     pub fn select_item_by_index(&mut self, item_index: usize) {
         self._item_bar_widget.as_mut().unwrap().select_item_by_index(item_index)
+    }
+
+    // text box
+    pub fn add_quest_item(&mut self, contents: &Vec<QuestContent>, duration: f32) {
+        self._quest_widget.as_mut().unwrap().add_quest_item(contents, duration);
+    }
+
+    // text box
+    pub fn add_text_box_item(&mut self, character_name: &str, contents: &Vec<TextBoxContent<'a>>, duration: f32) {
+        self._text_box_widget.as_mut().unwrap().add_text_box_item(character_name, contents, duration);
     }
 
     // toolbox
@@ -436,11 +450,15 @@ impl<'a> GameUIManager<'a> {
         }
 
         if let Some(text_box_widget) = self._text_box_widget.as_mut() {
-            text_box_widget.update_text_box_widget(game_scene_manager, game_controller);
+            text_box_widget.update_text_box_widget(game_scene_manager, game_controller, delta_time as f32);
         }
 
         if let Some(time_of_day) = self._time_of_day.as_mut() {
             time_of_day.update_time_of_day_widget(game_scene_manager);
+        }
+
+        if let Some(quest_widget) = self._quest_widget.as_mut() {
+            quest_widget.update_quest_widget(game_scene_manager, game_controller, delta_time as f32);
         }
     }
 }

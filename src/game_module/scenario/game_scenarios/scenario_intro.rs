@@ -4,11 +4,15 @@ use crate::game_module::game_scene_manager::GameSceneManager;
 use  crate::game_module::game_ui_manager::GameUIManager;
 use crate::game_module::scenario::scenario::{ScenarioBase, ScenarioDataCreateInfo, ScenarioTrack};
 use nalgebra::Vector3;
-use rust_engine_3d::utilities::system::{ptr_as_mut, RcRefCell};
+use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use std::str::FromStr;
 use strum_macros::{Display, EnumCount, EnumIter, EnumString};
 use rust_engine_3d::utilities::math;
+use crate::game_module::actors::character_data::ActionAnimationState;
+use crate::game_module::actors::items::ItemDataType;
 use crate::game_module::behavior::behavior_base::BehaviorState;
+use crate::game_module::widgets::quest_widget::QuestContent;
+use crate::game_module::widgets::text_box_widget::TextBoxContent;
 
 const INTRO_FADE_TIME: f32 = 2.0;
 const SLEEP_PHASE_TIME: f32 = 5.0;
@@ -83,7 +87,7 @@ impl<'a> ScenarioIntro<'a> {
     }
 }
 
-impl<'a> ScenarioBase for ScenarioIntro<'a> {
+impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
     fn is_end_of_scenario(&self) -> bool {
         self._scenario_track._scenario_phase == ScenarioIntroPhase::End
     }
@@ -144,7 +148,12 @@ impl<'a> ScenarioBase for ScenarioIntro<'a> {
         }
     }
 
-    fn update_game_scenario(&mut self, game_ui_manager: &mut GameUIManager, any_key_hold: bool, any_key_pressed: bool, delta_time: f64) {
+    fn update_game_scenario(&mut self, game_ui_manager: &mut GameUIManager<'a>, any_key_hold: bool, any_key_pressed: bool, mut delta_time: f64) {
+        if any_key_hold {
+            delta_time *= 5.0;
+        }
+
+        let phase_time = self._scenario_track.get_phase_time();
         let phase_ratio = self._scenario_track.get_phase_ratio();
         match self._scenario_track._scenario_phase {
             ScenarioIntroPhase::None => {
@@ -165,7 +174,7 @@ impl<'a> ScenarioBase for ScenarioIntro<'a> {
                 }
             }
             ScenarioIntroPhase::Sleep => {
-                let game_scene_manager = ptr_as_mut(self._game_scene_manager);
+                let game_scene_manager = ptr_as_ref(self._game_scene_manager);
                 let main_camera = game_scene_manager.get_scene_manager().get_main_camera_mut();
                 let progress = 1.0 - (phase_ratio * -5.0).exp2();
                 let position = self._around_start_position.lerp(&self._around_end_position, progress);
@@ -198,14 +207,40 @@ impl<'a> ScenarioBase for ScenarioIntro<'a> {
                     self._actor_koa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::StandUp);
                 }
 
-                if 1.0 <= phase_ratio {
+                if self._actor_aru.as_ref().unwrap().borrow_mut().is_action(ActionAnimationState::None) {
+                    self._actor_aru.as_ref().unwrap().borrow_mut().set_move_direction(&Vector3::new(-1.0, 0.0, 0.0), true);
+                }
+
+                if /*20.0 < phase_time ||*/ self._actor_aru.as_ref().unwrap().borrow_mut().is_action(ActionAnimationState::None) && self._actor_ewa.as_ref().unwrap().borrow_mut().is_action(ActionAnimationState::None) && self._actor_koa.as_ref().unwrap().borrow_mut().is_action(ActionAnimationState::None) {
+                    let material_instance = ptr_as_ref(self._game_scene_manager).get_game_resources().get_engine_resources().get_material_instance_data(
+                        ItemDataType::get_item_material_instance_name(ItemDataType::Coconut)
+                    ).clone();
+                    game_ui_manager.add_text_box_item(
+                        self._actor_ewa.as_ref().unwrap().borrow().get_character_name(),
+                        &vec![TextBoxContent::MaterialInstance(material_instance)],
+                        10.0
+                    );
+
+                    let material_instance = ptr_as_ref(self._game_scene_manager).get_game_resources().get_engine_resources().get_material_instance_data(
+                        ItemDataType::get_item_material_instance_name(ItemDataType::Meat)
+                    ).clone();
+                    game_ui_manager.add_text_box_item(
+                        self._actor_koa.as_ref().unwrap().borrow().get_character_name(),
+                        &vec![TextBoxContent::MaterialInstance(material_instance)],
+                        10.0
+                    );
+
+                    game_ui_manager.add_quest_item(
+                        &vec![QuestContent::Text(String::from("Coconut"))],
+                        10.0
+                    );
+
                     self.set_scenario_phase(ScenarioIntroPhase::End.to_string().as_str(), None);
                 }
             }
             _ => ()
         }
 
-        //self._scenario_track.update_scenario_track(delta_time as f32 * if any_key_hold { 5.0 } else { 1.0 });
         self._scenario_track.update_scenario_track(delta_time as f32);
     }
 }

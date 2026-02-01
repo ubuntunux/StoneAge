@@ -191,12 +191,7 @@ impl<'a> CharacterManager<'a> {
         ));
 
         // add weapon
-        if !character_data
-            .borrow()
-            ._weapon_create_info
-            ._weapon_data_name
-            .is_empty()
-        {
+        if !character_data.borrow()._weapon_create_info._weapon_data_name.is_empty() {
             self.add_character_weapon(
                 &mut *character.borrow_mut(),
                 &character_data.borrow()._weapon_create_info,
@@ -311,8 +306,7 @@ impl<'a> CharacterManager<'a> {
                         )
                     {
                         player.set_hit_damage(
-                            character_mut
-                                .get_power(character_mut._animation_state.get_action_event()),
+                            character_mut.get_power(character_mut._animation_state.get_action_event()),
                             Some(character_mut.get_front()),
                         );
                     }

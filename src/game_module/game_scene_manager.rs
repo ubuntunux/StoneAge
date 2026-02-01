@@ -25,7 +25,7 @@ pub type CharacterCreateInfoMap = HashMap<String, CharacterCreateInfo>;
 pub type ItemCreateInfoMap = HashMap<String, ItemCreateInfo>;
 pub type PropCreateInfoMap = HashMap<String, PropCreateInfo>;
 
-pub type ScenarioMap<'a> = HashMap<String, RcRefCell<dyn ScenarioBase + 'a>>;
+pub type ScenarioMap<'a> = HashMap<String, RcRefCell<dyn ScenarioBase<'a> + 'a>>;
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub enum GameSceneState {
@@ -419,7 +419,7 @@ impl<'a> GameSceneManager<'a> {
         }
     }
 
-    pub fn update_game_scenario(&mut self, game_ui_manager: &mut GameUIManager, any_key_hold: bool, any_key_pressed: bool, delta_time: f64) {
+    pub fn update_game_scenario(&mut self, game_ui_manager: &mut GameUIManager<'a>, any_key_hold: bool, any_key_pressed: bool, delta_time: f64) {
         if self.has_scenario() {
             self._scenario_map.values_mut().for_each(|scenario| {
                 scenario.borrow_mut().update_game_scenario(game_ui_manager, any_key_hold, any_key_pressed, delta_time)

@@ -117,7 +117,7 @@ impl<'a> GameClient<'a> {
     }
     pub fn set_game_mode(&mut self, is_game_mode: bool) {
         self.get_editor_ui_manager_mut().show_editor_ui(!is_game_mode);
-        self.get_game_ui_manager_mut().show_ui(is_game_mode);
+        self.get_game_ui_manager_mut().show_game_ui(is_game_mode);
         if is_game_mode {
             if self.get_game_scene_manager().get_character_manager().is_valid_player() {
                 let main_camera = self.get_game_controller().get_main_camera();
@@ -159,10 +159,10 @@ impl<'a> GameClient<'a> {
         let game_ui_manager = ptr_as_mut(self._game_ui_manager);
         match self._game_phase {
             GamePhase::GamePlay => {
-                game_ui_manager.show_ui(true);
+                game_ui_manager.show_game_ui(true);
             }
             GamePhase::PlayGameScenario => {
-                game_ui_manager.show_ui(false);
+                game_ui_manager.show_game_ui(false);
             }
             GamePhase::Teleport => {
                 if character_manager.is_valid_player() {

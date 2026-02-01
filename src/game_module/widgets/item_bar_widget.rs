@@ -213,7 +213,7 @@ impl<'a> ItemBarWidget<'a> {
             } else {
                 for item_widget in self._item_widgets.iter_mut() {
                     if item_widget._item_type == ItemDataType::None {
-                        let material = ptr_as_ref(self._engine_resources).get_material_instance_data(ItemDataType::get_item_material_instance_name(&item_data_type));
+                        let material = ptr_as_ref(self._engine_resources).get_material_instance_data(ItemDataType::get_item_material_instance_name(*item_data_type));
                         item_widget.set_item_data(
                             item_data_type,
                             Some(material.clone()),

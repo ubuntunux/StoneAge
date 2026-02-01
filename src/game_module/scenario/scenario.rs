@@ -34,10 +34,12 @@ impl<T: Copy + PartialEq> ScenarioTrack<T> {
         0.0
     }
 
+    pub fn get_phase_time(&self) -> f32 {
+        self._phase_time
+    }
+
     pub fn update_scenario_track(&mut self, delta_time: f32) {
-        if let Some(phase_duration) = self._phase_duration.as_ref() {
-            self._phase_time = (*phase_duration).min(self._phase_time + delta_time as f32);
-        }
+        self._phase_time += delta_time;
     }
 }
 
@@ -59,19 +61,19 @@ pub struct ScenarioDataCreateInfo {
     pub _props: PropCreateInfoMap,
     pub _game_scenes: GameSceneCreateInfoMap,
 }
-pub trait ScenarioBase {
+pub trait ScenarioBase<'a> {
     fn is_end_of_scenario(&self) -> bool;
     fn set_scenario_phase(&mut self, next_scenario_phase: &str, phase_duration: Option<f32>);
     fn update_game_scenario_begin(&mut self);
     fn update_game_scenario_end(&mut self);
-    fn update_game_scenario(&mut self, game_ui_manager: &mut GameUIManager, any_key_hold: bool, any_key_pressed: bool, delta_time: f64);
+    fn update_game_scenario(&mut self, game_ui_manager: &mut GameUIManager<'a>, any_key_hold: bool, any_key_pressed: bool, delta_time: f64);
 }
 
 pub fn create_scenario<'a>(
     game_scene_manager: *const GameSceneManager<'a>,
     scenario_name: &str,
     scenario_create_info: &ScenarioDataCreateInfo,
-) -> RcRefCell<dyn ScenarioBase + 'a> {
+) -> RcRefCell<dyn ScenarioBase<'a> + 'a> {
     newRcRefCell(ScenarioIntro::create_game_scenario(
         game_scene_manager,
         scenario_name,

@@ -19,7 +19,7 @@ use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, Rc
 use std::collections::HashMap;
 
 impl ItemDataType {
-    pub fn get_item_material_instance_name(item_data_type: &ItemDataType) -> &str {
+    pub fn get_item_material_instance_name(item_data_type: ItemDataType) -> &'static str {
         match item_data_type {
             ItemDataType::None => "ui/items/item_none",
             ItemDataType::Coconut => "ui/items/item_coconut",
