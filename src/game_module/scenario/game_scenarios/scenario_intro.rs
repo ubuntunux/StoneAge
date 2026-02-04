@@ -11,7 +11,8 @@ use rust_engine_3d::utilities::math;
 use crate::game_module::actors::character_data::ActionAnimationState;
 use crate::game_module::actors::items::ItemDataType;
 use crate::game_module::behavior::behavior_base::BehaviorState;
-use crate::game_module::widgets::quest_widget::QuestContent;
+use crate::game_module::widgets::quest_widgets::quest_item_gather_item::GatherItemData;
+use crate::game_module::widgets::quest_widgets::quest_widget::QuestContent;
 use crate::game_module::widgets::text_box_widget::TextBoxContent;
 
 const INTRO_FADE_TIME: f32 = 2.0;
@@ -211,7 +212,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                     self._actor_aru.as_ref().unwrap().borrow_mut().set_move_direction(&Vector3::new(-1.0, 0.0, 0.0), true);
                 }
 
-                if /*20.0 < phase_time ||*/ self._actor_aru.as_ref().unwrap().borrow_mut().is_action(ActionAnimationState::None) && self._actor_ewa.as_ref().unwrap().borrow_mut().is_action(ActionAnimationState::None) && self._actor_koa.as_ref().unwrap().borrow_mut().is_action(ActionAnimationState::None) {
+                if 20.0 < phase_time || self._actor_aru.as_ref().unwrap().borrow_mut().is_action(ActionAnimationState::None) && self._actor_ewa.as_ref().unwrap().borrow_mut().is_action(ActionAnimationState::None) && self._actor_koa.as_ref().unwrap().borrow_mut().is_action(ActionAnimationState::None) {
                     let material_instance = ptr_as_ref(self._game_scene_manager).get_game_resources().get_engine_resources().get_material_instance_data(
                         ItemDataType::get_item_material_instance_name(ItemDataType::Coconut)
                     ).clone();
@@ -224,16 +225,22 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                     let material_instance = ptr_as_ref(self._game_scene_manager).get_game_resources().get_engine_resources().get_material_instance_data(
                         ItemDataType::get_item_material_instance_name(ItemDataType::Meat)
                     ).clone();
+
                     game_ui_manager.add_text_box_item(
                         self._actor_koa.as_ref().unwrap().borrow().get_character_name(),
                         &vec![TextBoxContent::MaterialInstance(material_instance)],
                         10.0
                     );
 
-                    game_ui_manager.add_quest_item(
-                        &vec![QuestContent::Text(String::from("Coconut"))],
-                        10.0
-                    );
+                    game_ui_manager.add_quest_item(QuestContent::GatherItem(GatherItemData {
+                        _item_data_type: ItemDataType::Coconut,
+                        _gather_item_count: 5,
+                    }));
+
+                    game_ui_manager.add_quest_item(QuestContent::GatherItem(GatherItemData {
+                        _item_data_type: ItemDataType::Meat,
+                        _gather_item_count: 5,
+                    }));
 
                     self.set_scenario_phase(ScenarioIntroPhase::End.to_string().as_str(), None);
                 }

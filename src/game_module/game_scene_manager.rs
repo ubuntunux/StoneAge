@@ -11,7 +11,6 @@ use crate::game_module::game_ui_manager::GameUIManager;
 use crate::game_module::scenario::scenario::{create_scenario, ScenarioBase};
 use nalgebra::{Vector2, Vector3};
 use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop, AudioManager};
-use rust_engine_3d::begin_block;
 use rust_engine_3d::core::engine_core::EngineCore;
 use rust_engine_3d::effect::effect_manager::EffectManager;
 use rust_engine_3d::scene::scene_manager::{
@@ -20,6 +19,7 @@ use rust_engine_3d::scene::scene_manager::{
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use serde::{Deserialize, Serialize};
+use rust_engine_3d::begin_block;
 
 pub type CharacterCreateInfoMap = HashMap<String, CharacterCreateInfo>;
 pub type ItemCreateInfoMap = HashMap<String, ItemCreateInfo>;

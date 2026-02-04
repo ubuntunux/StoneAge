@@ -108,8 +108,7 @@ impl<'a> Item<'a> {
 
     pub fn update_item(&mut self, height_map_data: &HeightMapData, delta_time: f64) {
         let owner = ptr_as_mut(self);
-        self._item_updater
-            .update_item_updater(owner, height_map_data, delta_time);
+        self._item_updater.update_item_updater(owner, height_map_data, delta_time);
     }
 }
 

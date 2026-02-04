@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use nalgebra::{Vector2};
 use rust_engine_3d::resource::resource::EngineResources;
 use rust_engine_3d::scene::material_instance::MaterialInstanceData;
-use rust_engine_3d::scene::ui::{HorizontalAlign, Orientation, PosHintX, PosHintY, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault};
+use rust_engine_3d::scene::ui::{HorizontalAlign, Orientation, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault};
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use crate::game_module::game_scene_manager::GameSceneManager;

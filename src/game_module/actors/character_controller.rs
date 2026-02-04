@@ -4,7 +4,7 @@ use crate::game_module::actors::character::{Character, InteractionObject};
 use crate::game_module::actors::character_data::{CharacterData, MoveAnimationState};
 use crate::game_module::game_constants::*;
 use nalgebra::{Vector3};
-use rust_engine_3d::begin_block;
+use rust_engine_3d::{begin_block};
 use rust_engine_3d::scene::collision::CollisionData;
 use rust_engine_3d::scene::render_object::RenderObjectData;
 use rust_engine_3d::scene::scene_manager::SceneManager;
@@ -262,8 +262,7 @@ impl<'a> CharacterController<'a> {
             self._velocity.z = 0.0;
         }
 
-        begin_block!("apply hit velocity");
-        {
+        begin_block!("apply hit velocity"); {
             if self._hit_velocity.x != 0.0 || self._hit_velocity.z != 0.0 {
                 self._position += self._hit_velocity * delta_time;
                 let (hit_move_dir, hit_move_distance) = math::make_normalize_with_norm(&self._hit_velocity);
@@ -271,8 +270,7 @@ impl<'a> CharacterController<'a> {
             }
         }
 
-        begin_block!("apply slop velocity");
-        {
+        begin_block!("apply slop velocity"); {
             if (self._slop_velocity.x * self._velocity.x + self._slop_velocity.z * self._velocity.z) <= 0.0 {
                 self._position += self._slop_velocity * delta_time;
             }

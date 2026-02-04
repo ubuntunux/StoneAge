@@ -17,7 +17,7 @@ use crate::game_module::widgets::cross_hair_widget::CrossHairWidget;
 use crate::game_module::widgets::image_widget::ImageLayout;
 use crate::game_module::widgets::item_bar_widget::ItemBarWidget;
 use crate::game_module::widgets::player_hud::PlayerHud;
-use crate::game_module::widgets::quest_widget::{QuestContent, QuestWidget};
+use crate::game_module::widgets::quest_widgets::quest_widget::{QuestContent, QuestItemBase, QuestWidget};
 use crate::game_module::widgets::target_status_bar::TargetStatusWidget;
 use crate::game_module::widgets::text_box_widget::{TextBoxContent, TextBoxWidget};
 use crate::game_module::widgets::time_of_day::TimeOfDayWidget;
@@ -216,6 +216,10 @@ impl<'a> GameUIManager<'a> {
         ptr_as_mut(self._root_widget)
     }
 
+    pub fn get_item_bar_widget(&self) -> &ItemBarWidget<'a> {
+        self._item_bar_widget.as_ref().unwrap()
+    }
+
     pub fn build_game_ui(&mut self, window_size: &Vector2<i32>) {
         log::info!("build_game_ui");
         let game_client = ptr_as_ref(self._game_client);
@@ -250,7 +254,7 @@ impl<'a> GameUIManager<'a> {
             game_resources
         )));
         self._toolbox_widget = Some(Box::new(ToolboxWidget::create_toolbox_widget(engine_resources, game_ui_layout_mut)));
-        self._quest_widget = Some(Box::new(QuestWidget::create_quest_widget(engine_resources, game_ui_layout_mut)));
+        self._quest_widget = Some(Box::new(QuestWidget::create_quest_widget(game_resources, game_ui_layout_mut)));
 
         let cross_hair_material_instance = game_resources.get_engine_resources().get_material_instance_data(MATERIAL_CROSS_HAIR);
         self._cross_hair = Some(Box::new(CrossHairWidget::create_cross_hair(game_ui_layout_mut, cross_hair_material_instance)));
@@ -347,8 +351,8 @@ impl<'a> GameUIManager<'a> {
     }
 
     // text box
-    pub fn add_quest_item(&mut self, contents: &Vec<QuestContent>, duration: f32) {
-        self._quest_widget.as_mut().unwrap().add_quest_item(contents, duration);
+    pub fn add_quest_item(&mut self, content: QuestContent) -> RcRefCell<dyn QuestItemBase<'a> + 'a> {
+        self._quest_widget.as_mut().unwrap().add_quest_item(content)
     }
 
     // text box
