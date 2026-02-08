@@ -76,7 +76,6 @@ impl<'a> QuestItemBase<'a> for QuestItemGatherItem<'a> {
     }
 
     fn update_quest_item(&mut self, _game_scene_manager: &GameSceneManager, game_controller: &GameController, _delta_time: f32) {
-        log::info!("update");
         let item_bar_widget = game_controller.get_game_ui_manager().get_item_bar_widget();
         let item_count = item_bar_widget.get_item_count(&self._item_data._item_data_type);
         if self._item_count != item_count {
