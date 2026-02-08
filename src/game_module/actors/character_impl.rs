@@ -427,8 +427,7 @@ impl<'a> Character<'a> {
         self.is_action(ActionAnimationState::LayingDown) == false &&
         self.is_action(ActionAnimationState::Sleep) == false &&
         self.is_action(ActionAnimationState::StandUp) == false &&
-        self.is_action(ActionAnimationState::EnterGate) == false &&
-        self.is_action(ActionAnimationState::OpenToolbox) == false
+        self.is_action(ActionAnimationState::EnterGate) == false
     }
 
     pub fn is_available_jump(&self) -> bool {
@@ -907,12 +906,7 @@ impl<'a> Character<'a> {
                 );
             },
             ActionAnimationState::OpenToolbox => {
-                animation_info._animation_fade_out_time = 0.0; // keep end of animation
-                render_object.set_animation(
-                    &animation_data._pickup_animation,
-                    &animation_info,
-                    AnimationLayer::ActionLayer,
-                );
+                // nothing
             }
         }
 

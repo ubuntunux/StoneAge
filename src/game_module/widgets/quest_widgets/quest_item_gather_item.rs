@@ -1,11 +1,12 @@
 use std::rc::Rc;
 use rust_engine_3d::scene::ui::{HorizontalAlign, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault};
-use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
+use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use crate::game_module::actors::items::ItemDataType;
 use crate::game_module::game_controller::GameController;
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
+use crate::game_module::game_ui_manager::QuestItemType;
 use crate::game_module::widgets::quest_widgets::quest_widget::{create_quest_item_layout, QuestItemBase, FONT_SIZE, ITEM_SIZE};
 
 pub struct GatherItemData {
@@ -22,7 +23,7 @@ pub struct QuestItemGatherItem<'a> {
 }
 
 impl<'a> QuestItemGatherItem<'a> {
-    pub(crate) fn create_quest_item(game_resources: *const GameResources<'a>, parent_widget: &mut WidgetDefault<'a>, content: GatherItemData) -> RcRefCell<dyn QuestItemBase<'a> + 'a> {
+    pub(crate) fn create_quest_item(game_resources: *const GameResources<'a>, parent_widget: &mut WidgetDefault<'a>, content: GatherItemData) -> QuestItemType<'a> {
         let item = newRcRefCell(QuestItemGatherItem {
             _layout_widget: create_quest_item_layout(parent_widget),
             _icon_widget: UIManager::create_widget("icon_widget", UIWidgetTypes::Default),
@@ -71,7 +72,7 @@ impl<'a> QuestItemBase<'a> for QuestItemGatherItem<'a> {
     }
 
     fn is_completed_quest(&self) -> bool {
-        false
+        self._item_data._gather_item_count <= self._item_count
     }
 
     fn update_quest_item(&mut self, _game_scene_manager: &GameSceneManager, game_controller: &GameController, _delta_time: f32) {

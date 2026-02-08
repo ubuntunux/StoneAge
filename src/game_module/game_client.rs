@@ -267,7 +267,9 @@ impl<'a> GameClient<'a> {
 
                 if game_scene_manager.is_game_scene_state(GameSceneState::PlayGame) {
                     if character_manager.is_valid_player() {
-                        if game_scene_manager.has_scenario() {
+                        game_scene_manager.update_game_scenario(game_ui_manager, any_key_hold, any_key_pressed, delta_time);
+
+                        if game_scene_manager.is_play_scenario_mode() {
                             self.set_game_phase(GamePhase::PlayGameScenario);
                         } else if game_scene_manager.is_teleport_mode() {
                             self.set_game_phase(GamePhase::Teleport);
@@ -300,7 +302,7 @@ impl<'a> GameClient<'a> {
             }
             GamePhase::PlayGameScenario => {
                 game_scene_manager.update_game_scenario(game_ui_manager, any_key_hold, any_key_pressed, delta_time);
-                if game_scene_manager.has_scenario() == false {
+                if game_scene_manager.is_play_scenario_mode() == false {
                     self.set_game_phase(GamePhase::GamePlay);
                 }
             }

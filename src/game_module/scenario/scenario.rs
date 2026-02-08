@@ -62,6 +62,7 @@ pub struct ScenarioDataCreateInfo {
     pub _game_scenes: GameSceneCreateInfoMap,
 }
 pub trait ScenarioBase<'a> {
+    fn is_play_scenario_mode(&self) -> bool;
     fn is_end_of_scenario(&self) -> bool;
     fn set_scenario_phase(&mut self, next_scenario_phase: &str, phase_duration: Option<f32>);
     fn update_game_scenario_begin(&mut self);

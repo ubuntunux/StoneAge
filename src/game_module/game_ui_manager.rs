@@ -23,6 +23,8 @@ use crate::game_module::widgets::text_box_widget::{TextBoxContent, TextBoxWidget
 use crate::game_module::widgets::time_of_day::TimeOfDayWidget;
 use crate::game_module::widgets::toolbox_widget::ToolboxWidget;
 
+pub type QuestItemType<'a> = RcRefCell<dyn QuestItemBase<'a> + 'a>;
+
 pub struct EditorUIManager<'a> {
     pub _ui_manager: *const UIManager<'a>,
     pub _game_client: *const GameClient<'a>,
@@ -351,7 +353,7 @@ impl<'a> GameUIManager<'a> {
     }
 
     // text box
-    pub fn add_quest_item(&mut self, content: QuestContent) -> RcRefCell<dyn QuestItemBase<'a> + 'a> {
+    pub fn add_quest_item(&mut self, content: QuestContent) -> QuestItemType<'a> {
         self._quest_widget.as_mut().unwrap().add_quest_item(content)
     }
 

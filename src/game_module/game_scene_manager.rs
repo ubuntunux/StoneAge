@@ -54,6 +54,7 @@ pub struct GameSceneManager<'a> {
     pub _item_manager: Box<ItemManager<'a>>,
     pub _prop_manager: Box<PropManager<'a>>,
     pub _scenario_map: ScenarioMap<'a>,
+    pub _is_play_scenario_mode: bool,
     pub _current_game_scene_data_name: String,
     pub _current_game_scene_data: Option<RcRefCell<GameSceneDataCreateInfo>>,
     pub _ambient_sound: Option<RcRefCell<AudioInstance>>,
@@ -124,6 +125,7 @@ impl<'a> GameSceneManager<'a> {
             _item_manager: ItemManager::create_item_manager(),
             _prop_manager: PropManager::create_prop_manager(),
             _scenario_map: Default::default(),
+            _is_play_scenario_mode: false,
             _ambient_sound: None,
             _spawn_point: Vector3::new(0.0, 0.0, 0.0),
             _teleport_stage: None,
@@ -391,6 +393,10 @@ impl<'a> GameSceneManager<'a> {
         0 < self._scenario_map.len()
     }
 
+    pub fn is_play_scenario_mode(&self) -> bool {
+        self._is_play_scenario_mode
+    }
+
     pub fn get_game_scene_state(&self) -> GameSceneState {
         self._game_scene_state
     }
@@ -420,9 +426,14 @@ impl<'a> GameSceneManager<'a> {
     }
 
     pub fn update_game_scenario(&mut self, game_ui_manager: &mut GameUIManager<'a>, any_key_hold: bool, any_key_pressed: bool, delta_time: f64) {
+        self._is_play_scenario_mode = false;
+
         if self.has_scenario() {
             self._scenario_map.values_mut().for_each(|scenario| {
-                scenario.borrow_mut().update_game_scenario(game_ui_manager, any_key_hold, any_key_pressed, delta_time)
+                scenario.borrow_mut().update_game_scenario(game_ui_manager, any_key_hold, any_key_pressed, delta_time);
+                if scenario.borrow().is_play_scenario_mode() {
+                    self._is_play_scenario_mode = true;
+                }
             });
             self._scenario_map.retain(|_key, value| value.borrow().is_end_of_scenario() == false)
         }

@@ -2,11 +2,12 @@ use std::rc::Rc;
 use nalgebra::Vector2;
 use rust_engine_3d::begin_block;
 use rust_engine_3d::scene::ui::{HorizontalAlign, Orientation, PosHintX, PosHintY, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault};
-use rust_engine_3d::utilities::system::{ptr_as_mut, RcRefCell};
+use rust_engine_3d::utilities::system::{ptr_as_mut};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use crate::game_module::game_controller::GameController;
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
+use crate::game_module::game_ui_manager::QuestItemType;
 use crate::game_module::widgets::quest_widgets::quest_item_gather_item::{GatherItemData, QuestItemGatherItem};
 
 pub const FONT_SIZE: f32 = 30.0;
@@ -27,10 +28,10 @@ pub trait QuestItemBase<'a> {
 pub struct QuestWidget<'a> {
     pub _game_resources: *const GameResources<'a>,
     pub _root_widget: Rc<WidgetDefault<'a>>,
-    pub _quest_items:  Vec<RcRefCell<dyn QuestItemBase<'a> + 'a>>
+    pub _quest_items:  Vec<QuestItemType<'a>>
 }
 
-pub fn create_quest_item<'a>(game_resources: *const GameResources<'a>, parent_widget: &mut WidgetDefault<'a>, content: QuestContent) -> RcRefCell<dyn QuestItemBase<'a> + 'a> {
+pub fn create_quest_item<'a>(game_resources: *const GameResources<'a>, parent_widget: &mut WidgetDefault<'a>, content: QuestContent) -> QuestItemType<'a> {
     match content {
         QuestContent::GatherItem(gather_item_data) => QuestItemGatherItem::create_quest_item(game_resources, parent_widget, gather_item_data),
     }
@@ -76,7 +77,7 @@ impl<'a> QuestWidget<'a> {
     pub fn changed_window_size(&mut self, _window_size: &Vector2<i32>) {
     }
 
-    pub fn add_quest_item(&mut self, content: QuestContent) -> RcRefCell<dyn QuestItemBase<'a> + 'a> {
+    pub fn add_quest_item(&mut self, content: QuestContent) -> QuestItemType<'a> {
         let quest_item = create_quest_item(self._game_resources, ptr_as_mut(self._root_widget.as_ref()), content);
         self._quest_items.push(quest_item.clone());
         quest_item.clone()
