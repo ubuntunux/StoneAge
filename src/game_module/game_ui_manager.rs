@@ -358,8 +358,16 @@ impl<'a> GameUIManager<'a> {
     }
 
     // text box
-    pub fn add_text_box_item(&mut self, character_name: &str, contents: &Vec<TextBoxContent<'a>>, duration: f32) {
+    pub fn has_text_box_item(&self, character_name: &str) -> bool {
+        self._text_box_widget.as_ref().unwrap().has_text_box_item(character_name)
+    }
+
+    pub fn add_text_box_item(&mut self, character_name: &str, contents: &Vec<TextBoxContent<'a>>, duration: Option<f32>) {
         self._text_box_widget.as_mut().unwrap().add_text_box_item(character_name, contents, duration);
+    }
+
+    pub fn remove_text_box_item(&mut self, character_name: &str) {
+        self._text_box_widget.as_mut().unwrap().remove_text_box_item(character_name);
     }
 
     // toolbox

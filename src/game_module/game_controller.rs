@@ -304,16 +304,18 @@ impl<'a> GameController<'a> {
         }
 
         // Step 2: Check collision with scene objects
-        let ideal_camera_pos = pivot + camera_dir * self._camera_distance;
-        let search_min = pivot.inf(&ideal_camera_pos);
-        let search_max = pivot.sup(&ideal_camera_pos);
-        let collision_objects = scene_manager.collect_collision_objects(&search_min, &search_max);
+        if GAME_VIEW_MODE == GameViewMode::GameViewMode3D {
+            let ideal_camera_pos = pivot + camera_dir * self._camera_distance;
+            let search_min = pivot.inf(&ideal_camera_pos);
+            let search_max = pivot.sup(&ideal_camera_pos);
+            let collision_objects = scene_manager.collect_collision_objects(&search_min, &search_max);
 
-        for collision_object in collision_objects.values() {
-            let block_render_object = ptr_as_ref(collision_object.as_ptr());
-            if let Some(distance) = block_render_object._collision.ray_vs_aabb(&pivot, &camera_dir) {
-                if distance < min_collision_distance {
-                    min_collision_distance = distance;
+            for collision_object in collision_objects.values() {
+                let block_render_object = ptr_as_ref(collision_object.as_ptr());
+                if let Some(distance) = block_render_object._collision.ray_vs_aabb(&pivot, &camera_dir) {
+                    if distance < min_collision_distance {
+                        min_collision_distance = distance;
+                    }
                 }
             }
         }

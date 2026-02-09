@@ -65,6 +65,7 @@ impl<'a> QuestWidget<'a> {
         ui_component.set_padding(ITEM_PADDING);
         ui_component.set_expandable_x(true);
         ui_component.set_expandable_y(true);
+        ui_component.set_visible(false);
         root_widget.add_widget(&layout_widget);
 
         QuestWidget {
@@ -78,6 +79,7 @@ impl<'a> QuestWidget<'a> {
     }
 
     pub fn add_quest_item(&mut self, content: QuestContent) -> QuestItemType<'a> {
+        ptr_as_mut(self._root_widget.as_ref()).get_ui_component_mut().set_visible(false);
         let quest_item = create_quest_item(self._game_resources, ptr_as_mut(self._root_widget.as_ref()), content);
         self._quest_items.push(quest_item.clone());
         quest_item.clone()
@@ -103,6 +105,10 @@ impl<'a> QuestWidget<'a> {
             }
 
             index += 1;
+        }
+
+        if 0 < item_count && self._quest_items.is_empty() {
+            ptr_as_mut(self._root_widget.as_ref()).get_ui_component_mut().set_visible(false);
         }
     }
 }

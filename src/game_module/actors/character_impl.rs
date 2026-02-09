@@ -89,6 +89,7 @@ impl CharacterStats {
             _max_stamina_data: MAX_STAMINA,
             _hunger: 0.0,
             _invincibility: false,
+            _is_hunger_warning_displayed: false,
         }
     }
 
@@ -608,6 +609,10 @@ impl<'a> Character<'a> {
                 .get_scene_manager()
                 .play_audio_bank(AUDIO_HIT);
         }
+    }
+
+    pub fn set_hunger(&mut self, hunger: f32) {
+        self._character_stats.set_hunger(hunger)
     }
 
     pub fn set_invincibility(&mut self, invincibility: bool) {

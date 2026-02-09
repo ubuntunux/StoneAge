@@ -25,11 +25,11 @@ pub struct TextBoxWidget<'a> {
 
 pub struct TextBoxItem<'a> {
     pub _layout_widget: *const WidgetDefault<'a>,
-    pub _duration: f32,
+    pub _duration: Option<f32>,
 }
 
 impl<'a> TextBoxItem<'a> {
-    pub fn create_text_box_item(parent_widget: &mut WidgetDefault<'a>, contents: &Vec<TextBoxContent<'a>>, duration: f32) -> TextBoxItem<'a> {
+    pub fn create_text_box_item(parent_widget: &mut WidgetDefault<'a>, contents: &Vec<TextBoxContent<'a>>, duration: Option<f32>) -> TextBoxItem<'a> {
         let layout_widget = UIManager::create_widget("layout_widget", UIWidgetTypes::Default);
         let ui_component = ptr_as_mut(layout_widget.as_ref()).get_ui_component_mut();
         ui_component.set_layout_type(UILayoutType::BoxLayout);
@@ -42,7 +42,7 @@ impl<'a> TextBoxItem<'a> {
         ui_component.set_round(10.0);
         ui_component.set_padding(ITEM_PADDING);
         ui_component.set_expandable_x(true);
-        ui_component.set_visible(false);
+        //ui_component.set_visible(false);
         parent_widget.add_widget(&layout_widget);
 
         let mut item = TextBoxItem {
@@ -54,7 +54,7 @@ impl<'a> TextBoxItem<'a> {
         item
     }
 
-    pub fn update_text_box_item(&mut self, contents: &Vec<TextBoxContent<'a>>, duration: f32) {
+    pub fn update_text_box_item(&mut self, contents: &Vec<TextBoxContent<'a>>, duration: Option<f32>) {
         let mut widget_height = 0.0;
         for content in contents.iter() {
             let binding_widget = UIManager::create_widget("binding_widget", UIWidgetTypes::Default);
@@ -97,7 +97,11 @@ impl<'a> TextBoxWidget<'a> {
     pub fn changed_window_size(&mut self, _window_size: &Vector2<i32>) {
     }
 
-    pub fn add_text_box_item(&mut self, character_name: &str, contents: &Vec<TextBoxContent<'a>>, duration: f32) {
+    pub fn has_text_box_item(&self, character_name: &str) -> bool {
+        self._text_box_items.contains_key(character_name)
+    }
+
+    pub fn add_text_box_item(&mut self, character_name: &str, contents: &Vec<TextBoxContent<'a>>, duration: Option<f32>) {
         if let Some(item) = self._text_box_items.get_mut(character_name) {
             item.update_text_box_item(contents, duration);
         } else {
@@ -124,11 +128,14 @@ impl<'a> TextBoxWidget<'a> {
                 let screen_position = main_camera.convert_world_to_screen(&position, false);
                 ptr_as_mut(text_box_item._layout_widget)._ui_component.set_center_x(screen_position.x);
                 ptr_as_mut(text_box_item._layout_widget)._ui_component.set_pos_y(screen_position.y - ptr_as_ref(text_box_item._layout_widget).get_ui_component().get_ui_size().y);
-                ptr_as_mut(text_box_item._layout_widget)._ui_component.set_visible(true);
+                //ptr_as_mut(text_box_item._layout_widget)._ui_component.set_visible(true);
 
-                text_box_item._duration -= delta_time;
-                if text_box_item._duration <= 0.0 {
-                    remove_items.push(character_name.clone());
+                if let Some(mut duration) = text_box_item._duration {
+                    duration -= delta_time;
+                    if duration <= 0.0f32 {
+                        remove_items.push(character_name.clone());
+                    }
+                    text_box_item._duration = Some(duration);
                 }
             } else {
                 remove_items.push(character_name.clone());

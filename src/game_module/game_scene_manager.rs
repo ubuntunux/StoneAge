@@ -1,5 +1,6 @@
 use std::collections::HashMap;
-
+use nalgebra::{Vector2, Vector3};
+use serde::{Deserialize, Serialize};
 use crate::application::application::Application;
 use crate::game_module::actors::character::{Character, CharacterCreateInfo};
 use crate::game_module::actors::character_manager::CharacterManager;
@@ -7,18 +8,14 @@ use crate::game_module::actors::items::{ItemCreateInfo, ItemManager};
 use crate::game_module::actors::props::{PropCreateInfo, PropManager};
 use crate::game_module::game_constants::{GameViewMode, GAME_VIEW_MODE, TEMPERATURE_MAX, TEMPERATURE_MIN, TIME_OF_DAWN, TIME_OF_DAY_SPEED, TIME_OF_MORNING};
 use crate::game_module::game_resource::GameResources;
-use crate::game_module::game_ui_manager::GameUIManager;
+use crate::game_module::game_ui_manager::{GameUIManager};
 use crate::game_module::scenario::scenario::{create_scenario, ScenarioBase};
-use nalgebra::{Vector2, Vector3};
 use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop, AudioManager};
 use rust_engine_3d::core::engine_core::EngineCore;
 use rust_engine_3d::effect::effect_manager::EffectManager;
-use rust_engine_3d::scene::scene_manager::{
-    RenderObjectCreateInfoMap, SceneDataCreateInfo, SceneManager,
-};
+use rust_engine_3d::scene::scene_manager::{RenderObjectCreateInfoMap, SceneDataCreateInfo, SceneManager};
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
-use serde::{Deserialize, Serialize};
 use rust_engine_3d::begin_block;
 
 pub type CharacterCreateInfoMap = HashMap<String, CharacterCreateInfo>;
@@ -50,6 +47,7 @@ pub struct GameSceneManager<'a> {
     pub _effect_manager: *const EffectManager<'a>,
     pub _scene_manager: *const SceneManager<'a>,
     pub _game_resources: *const GameResources<'a>,
+    pub _game_ui_manager: *const GameUIManager<'a>,
     pub _character_manager: Box<CharacterManager<'a>>,
     pub _item_manager: Box<ItemManager<'a>>,
     pub _prop_manager: Box<PropManager<'a>>,
@@ -63,6 +61,7 @@ pub struct GameSceneManager<'a> {
     pub _teleport_gate: Option<String>,
     pub _is_sleep_mode: bool,
     pub _time_of_day: f32,
+    pub _time_of_day_speed: f32,
     pub _temperature: f32,
     pub _date: u32,
     pub _game_scene_state: GameSceneState,
@@ -119,6 +118,7 @@ impl<'a> GameSceneManager<'a> {
             _effect_manager: std::ptr::null(),
             _scene_manager: std::ptr::null(),
             _game_resources: std::ptr::null(),
+            _game_ui_manager: std::ptr::null(),
             _current_game_scene_data_name: String::new(),
             _current_game_scene_data: None,
             _character_manager: CharacterManager::create_character_manager(),
@@ -132,6 +132,7 @@ impl<'a> GameSceneManager<'a> {
             _teleport_gate: None,
             _is_sleep_mode: false,
             _time_of_day: TIME_OF_MORNING,
+            _time_of_day_speed: 1.0,
             _temperature: 30.0,
             _date: 1,
             _game_scene_state: GameSceneState::None,
@@ -148,6 +149,7 @@ impl<'a> GameSceneManager<'a> {
         self._audio_manager = engine_core.get_audio_manager();
         self._scene_manager = engine_core.get_scene_manager();
         self._effect_manager = engine_core.get_effect_manager();
+        self._game_ui_manager = application.get_game_ui_manager();
         engine_core
             .get_scene_manager_mut()
             .initialize_scene_manager(
@@ -361,6 +363,10 @@ impl<'a> GameSceneManager<'a> {
         self._time_of_day = TIME_OF_DAWN;
     }
 
+    pub fn set_time_of_day_speed(&mut self, speed: f32) {
+        self._time_of_day_speed = speed;
+    }
+
     pub fn set_time_of_day(&mut self, time: f32, minute: f32) {
         self._time_of_day = time + minute / 60.0f32;
         self.update_time_of_day(0.0);
@@ -368,7 +374,7 @@ impl<'a> GameSceneManager<'a> {
     }
 
     pub fn update_time_of_day(&mut self, delta_time: f64) {
-        self._time_of_day += delta_time as f32 * TIME_OF_DAY_SPEED;
+        self._time_of_day += self._time_of_day_speed * TIME_OF_DAY_SPEED * delta_time as f32;
 
         if 24.0 <= self._time_of_day {
             self._time_of_day = self._time_of_day % 24.0;

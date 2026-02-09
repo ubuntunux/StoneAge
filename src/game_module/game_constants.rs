@@ -58,6 +58,9 @@ pub const PICKUP_EVENT_TIME: f32 = 0.1;
 // stats
 pub const MAX_HUNGER: f32 = 1.0;
 pub const MAX_STAMINA: f32 = 100.0;
+pub const HUNGER_WARNING_DISTANCE: f32 = 2.0;
+pub const HUNGER_WARNING_THRESHOLD: f32 = 0.5;
+pub const HUNGER_RECOVERY_THRESHOLD: f32 = 0.25;
 pub const STAMINA_RECOVERY_DELAY_TIME: f32 = 1.0;
 pub const STAMINA_RECOVERY: f32 = 40.0;
 pub const STAMINA_ATTACK: f32 = 2.0;

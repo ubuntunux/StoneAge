@@ -4,16 +4,19 @@ use rust_engine_3d::audio::audio_manager::AudioManager;
 use rust_engine_3d::core::engine_core::EngineCore;
 use rust_engine_3d::scene::render_object::RenderObjectCreateInfo;
 use rust_engine_3d::scene::scene_manager::SceneManager;
+use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
 
 use crate::application::application::Application;
 use crate::game_module::actors::character::{Character, CharacterCreateInfo};
-use crate::game_module::actors::items::ItemCreateInfo;
+use crate::game_module::actors::items::{ItemCreateInfo, ItemDataType};
 use crate::game_module::actors::weapons::{Weapon, WeaponCreateInfo};
 use crate::game_module::game_client::GameClient;
-use crate::game_module::game_constants::{ITEM_SPIRIT_BALL, NPC_ATTACK_HIT_RANGE};
+use crate::game_module::game_constants::{GameViewMode, GAME_VIEW_MODE, HUNGER_RECOVERY_THRESHOLD, HUNGER_WARNING_DISTANCE, HUNGER_WARNING_THRESHOLD, ITEM_SPIRIT_BALL, NPC_ATTACK_HIT_RANGE};
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
+use crate::game_module::game_ui_manager::GameUIManager;
+use crate::game_module::widgets::text_box_widget::TextBoxContent;
 
 #[derive(Copy, Clone, Debug, Default, Hash, Eq, PartialEq)]
 pub struct CharacterID(u64);
@@ -26,6 +29,7 @@ pub struct CharacterManager<'a> {
     pub _game_resources: *const GameResources<'a>,
     pub _audio_manager: *const AudioManager<'a>,
     pub _scene_manager: *const SceneManager<'a>,
+    pub _game_ui_manager: *const GameUIManager<'a>,
     pub _id_generator: CharacterID,
     pub _player: Option<RcRefCell<Character<'a>>>,
     pub _target_character: Option<RcRefCell<Character<'a>>>,
@@ -41,6 +45,7 @@ impl<'a> CharacterManager<'a> {
             _game_resources: std::ptr::null(),
             _audio_manager: std::ptr::null(),
             _scene_manager: std::ptr::null(),
+            _game_ui_manager: std::ptr::null(),
             _id_generator: CharacterID(0),
             _player: None,
             _target_character: None,
@@ -57,6 +62,7 @@ impl<'a> CharacterManager<'a> {
         log::info!("initialize_character_manager");
         self._game_client = application.get_game_client();
         self._game_scene_manager = application.get_game_scene_manager();
+        self._game_ui_manager = application.get_game_ui_manager();
         self._game_resources = application.get_game_resources();
         self._audio_manager = application.get_audio_manager();
         self._scene_manager = engine_core.get_scene_manager();
@@ -245,19 +251,58 @@ impl<'a> CharacterManager<'a> {
     pub fn set_target_character(&mut self, target_character: Option<RcRefCell<Character<'a>>>) {
         self._target_character = target_character;
     }
+    pub fn update_character_text_box(&self, game_ui_manager: &mut GameUIManager<'a>, to_player_distance: f32, character: &mut Character<'a>) {
+        if character.is_player() == false {
+            // hunger ui
+            if character._character_stats._is_hunger_warning_displayed || HUNGER_WARNING_THRESHOLD <= character._character_stats._hunger {
+                character._character_stats._is_hunger_warning_displayed = game_ui_manager.has_text_box_item(character.get_character_name());
+
+                if character.is_alive() &&
+                    HUNGER_WARNING_THRESHOLD <= character._character_stats._hunger &&
+                    to_player_distance <= HUNGER_WARNING_DISTANCE &&
+                    character._character_stats._is_hunger_warning_displayed == false {
+                    character._character_stats._is_hunger_warning_displayed = true;
+
+                    let material_instance = ptr_as_ref(self._game_resources).get_engine_resources().get_material_instance_data(
+                        ItemDataType::get_item_material_instance_name(ItemDataType::Meat)
+                    ).clone();
+
+                    game_ui_manager.add_text_box_item(
+                        character.get_character_name(),
+                        &vec![TextBoxContent::MaterialInstance(material_instance)],
+                        Some(3.0)
+                    );
+                } else if character._character_stats._is_hunger_warning_displayed &&
+                    (character.is_alive() == false || character._character_stats._hunger <= HUNGER_RECOVERY_THRESHOLD) {
+                    character._character_stats._is_hunger_warning_displayed = false;
+                    game_ui_manager.remove_text_box_item(character.get_character_name());
+                }
+            }
+        }
+    }
+
     pub fn update_character_manager(&mut self, delta_time: f64) {
         if self._player.is_none() {
             return;
         }
 
+        let game_ui_manager = ptr_as_mut(self._game_ui_manager);
         let player = ptr_as_mut(self._player.as_ref().unwrap().as_ptr());
         let mut dead_characters: Vec<RcRefCell<Character>> = Vec::new();
         let mut register_target_character: Option<RcRefCell<Character<'a>>> = None;
         for character in self._characters.values() {
-            let character_mut = ptr_as_mut(character.as_ptr());
-
             // update character
+            let character_mut = ptr_as_mut(character.as_ptr());
             character_mut.update_character(self.get_scene_manager(), player, delta_time as f32);
+
+            // update text box
+            let to_player = player.get_position() - character_mut.get_position();
+            let (_to_player_dir, to_player_distance) = if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
+                math::make_normalize_xy_with_norm(&to_player)
+            } else {
+                math::make_normalize_with_norm(&to_player)
+            };
+            self.update_character_text_box(game_ui_manager, to_player_distance, character_mut);
 
             if character_mut.is_alive() == false {
                 continue;
@@ -270,18 +315,22 @@ impl<'a> CharacterManager<'a> {
                     // player attack to npc
                     for target_character in self._characters.values() {
                         let target_character_mut = ptr_as_mut(target_character.as_ptr());
-                        if false == target_character_mut._is_player
-                            && target_character_mut.is_alive()
-                            && false == target_character_mut._character_stats._invincibility
-                            && character_mut.check_in_range(target_character_mut.get_collision(), NPC_ATTACK_HIT_RANGE, check_direction
-                        ) {
+                        if target_character_mut._is_player == false &&
+                            target_character_mut.is_alive() &&
+                            target_character_mut._character_stats._invincibility == false &&
+                            character_mut.check_in_range(target_character_mut.get_collision(), NPC_ATTACK_HIT_RANGE, check_direction) {
+
                             register_target_character = Some(target_character.clone());
+
                             let target_position = ptr_as_ref(target_character_mut.get_position());
+
+                            // hit..
                             target_character_mut.set_hit_damage(
                                 character_mut.get_power(character_mut._animation_state.get_action_event()),
                                 Some(character_mut.get_front()),
                             );
 
+                            // character dead..
                             if false == target_character_mut.is_alive() {
                                 dead_characters.push(target_character.clone());
 
@@ -297,14 +346,9 @@ impl<'a> CharacterManager<'a> {
                     }
                 } else {
                     // npc attack to player
-                    if player.is_alive()
-                        && false == player._character_stats._invincibility
-                        && character_mut.check_in_range(
-                            player.get_collision(),
-                            NPC_ATTACK_HIT_RANGE,
-                            check_direction,
-                        )
-                    {
+                    if player.is_alive() &&
+                        player._character_stats._invincibility == false &&
+                        character_mut.check_in_range(player.get_collision(), NPC_ATTACK_HIT_RANGE, check_direction) {
                         player.set_hit_damage(
                             character_mut.get_power(character_mut._animation_state.get_action_event()),
                             Some(character_mut.get_front()),
