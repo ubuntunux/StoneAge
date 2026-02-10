@@ -26,7 +26,7 @@ pub enum GameViewMode {
     GameViewMode25D,
     GameViewMode3D,
 }
-pub const GAME_VIEW_MODE: GameViewMode = GameViewMode::GameViewMode2D;
+pub const GAME_VIEW_MODE: GameViewMode = GameViewMode::GameViewMode3D;
 
 // time
 pub const TIME_OF_DAWN: f32 = 6.0;
