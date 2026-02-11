@@ -6,6 +6,7 @@ use crate::game_module::game_constants::*;
 use nalgebra::{Vector3};
 use rust_engine_3d::{begin_block};
 use rust_engine_3d::scene::collision::CollisionData;
+use rust_engine_3d::scene::render_object::RenderObjectData;
 use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::math::HALF_PI;
@@ -363,19 +364,12 @@ impl<'a> CharacterController<'a> {
             if self._position.y <= ground_height && self._velocity.y <= 0.0 {
                 let ground_normal = height_map_data.get_normal_bilinear(&prev_position);
 
-                // Adjust position to be exactly on the ground
-                self._position.y = ground_height;
-                self._velocity.y = 0.0; // Stop vertical velocity
+                let move_delta = self._position - prev_position;
+                let (move_dir, move_distance) = math::make_normalize_with_norm(&move_delta);
+                let new_move_dir = math::safe_normalize(&(Vector3::new(self._position.x, ground_height, self._position.z) - prev_position));
+                self._position = prev_position + new_move_dir * move_distance;
 
-                // Calculate the movement vector from prev_position to the current position,
-                // with the y-component adjusted to be on the ground_height.
-                let move_delta_on_ground = Vector3::new(self._position.x - prev_position.x, ground_height - prev_position.y, self._position.z - prev_position.z);
-                let (move_dir_on_ground, move_distance_on_ground) = math::make_normalize_with_norm(&move_delta_on_ground);
-
-                // Slope check:
-                // 1. If moving up a steep slope (move_dir_on_ground.y is large)
-                // 2. Or if on a steep slope (ground_normal.y is small) and moving into it (ground_normal.dot(&move_dir_on_ground) is negative)
-                if 0.0 < move_distance_on_ground && SLOPE_ANGLE <= move_dir_on_ground.y || ground_normal.y < SLOPE_ANGLE && ground_normal.dot(&move_dir_on_ground) < 0.0 {
+                if 0.0 < move_distance && SLOPE_ANGLE <= new_move_dir.y || ground_normal.y < SLOPE_ANGLE && ground_normal.dot(&move_dir) < 0.0 {
                     let slop_speed = SLOPE_SPEED.max(self._move_speed);
                     if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
                         self._slop_velocity.x += ground_normal.x * slop_speed;
@@ -411,60 +405,72 @@ impl<'a> CharacterController<'a> {
         );
         let collision_objects = scene_manager.collect_collision_objects(&collision_pos_min, &collision_pos_max);
 
-        // Reset _is_blocked before checking for new collisions with blocks
-        self._is_blocked = false;
-
         // check ground and side
         for collision_object in collision_objects.values() {
             let block_render_object = ptr_as_ref(collision_object.as_ptr());
             let block_bound_box = &block_render_object._collision._bounding_box;
             let block_location = &block_bound_box._center;
+            let mut collided_block: *const RenderObjectData<'a> = std::ptr::null();
 
-            // Check if the *current* actor collision (potentially adjusted by previous collisions)
-            // collides with the current block.
+            // check collide with block
             if current_actor_collision.collide_collision(&block_render_object._collision) {
                 if self._velocity.y <= 0.0 && block_bound_box._max.y <= prev_position.y {
-                    // Landing on top of a block
                     self.set_on_ground(block_bound_box._max.y, &Vector3::new(0.0, 1.0, 0.0));
-                    self._is_blocked = true; // Blocked by landing on it
                 } else if 0.0 < self._velocity.y && actor_collision._bounding_box._max.y < block_bound_box._min.y {
-                    // Hitting the bottom of a block while moving up
                     self._velocity.y = 0.0;
-                    self._position.y = prev_position.y; // Revert vertical movement
-                    self._is_blocked = true; // Blocked by hitting head
+                    self._position.y = prev_position.y;
                 } else {
-                    // Side collision
                     let block_to_player = Vector3::new(
                         self._position.x - block_location.x,
                         0.0,
                         self._position.z - block_location.z,
                     )
                         .normalize();
-
-                    // Only adjust if moving towards the block horizontally
-                    let horizontal_move_delta = Vector3::new(move_delta.x, 0.0, move_delta.z);
-                    if horizontal_move_delta.norm_squared() > f32::EPSILON && block_to_player.dot(&horizontal_move_delta.normalize()) < 0.0 {
-                        // Calculate the distance from the block center to the player's previous horizontal position
-                        let dist_from_block_center_prev = Vector3::new(
+                    if block_to_player.dot(&move_delta.normalize()) < 0.0 {
+                        let dist = Vector3::new(
                             prev_position.x - block_location.x,
                             0.0,
                             prev_position.z - block_location.z,
                         )
                             .norm();
-
-                        // Calculate the new horizontal position to be just outside the block
-                        let new_horizontal_pos = block_to_player * dist_from_block_center_prev + block_location;
-                        self._position.x = new_horizontal_pos.x;
-                        self._position.z = new_horizontal_pos.z;
+                        let new_pos = block_to_player * dist + block_location;
+                        self._position.x = new_pos.x;
+                        self._position.z = new_pos.z;
                         self._is_blocked = true;
+                        collided_block = collision_object.as_ptr();
                     }
                 }
+            }
 
-                // Update current_actor_collision after each adjustment
+            // Recheck whether the adjusted position due to a collision with a block collides with another blocks.
+            if collided_block != std::ptr::null() {
+                // update delta & bound_box
                 move_delta = self._position - prev_position;
                 current_actor_collision._bounding_box._center = actor_collision._bounding_box._center + move_delta;
                 current_actor_collision._bounding_box._min = actor_collision._bounding_box._min + move_delta;
                 current_actor_collision._bounding_box._max = actor_collision._bounding_box._max + move_delta;
+
+                // Recheck collide with another blocks
+                for recheck_collision_object in collision_objects.values() {
+                    let recheck_block = ptr_as_ref(recheck_collision_object.as_ptr());
+                    if collided_block != recheck_block {
+                        let recheck_block_bound_box = &recheck_block._collision._bounding_box;
+                        if current_actor_collision.collide_collision(&recheck_block._collision) {
+                            if self._velocity.y <= 0.0
+                                && recheck_block_bound_box._max.y <= prev_position.y
+                            {
+                                self.set_on_ground(
+                                    recheck_block_bound_box._max.y,
+                                    &Vector3::new(0.0, 1.0, 0.0),
+                                );
+                            } else {
+                                // move back
+                                self._position.x = prev_position.x;
+                                self._position.z = prev_position.z;
+                            }
+                        }
+                    }
+                }
             }
         }
 
