@@ -1,5 +1,41 @@
 {
     "_characters": {
+        "ewa": {
+            "_character_data_name": "characters/family/ewa",
+            "_position": [
+                -10.877023696899414,
+                3.7392349243164062,
+                -3.3507885932922363
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "koa": {
+            "_character_data_name": "characters/family/koa",
+            "_position": [
+                -9.173731803894043,
+                3.7392349243164062,
+                -3.3507885932922363
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
         "neanderthal": {
             "_character_data_name": "characters/neanderthal",
             "_position": [
@@ -508,12 +544,12 @@
         }
     },
     "_player": {
-        "player": {
-            "_character_data_name": "characters/jack",
+        "aru": {
+            "_character_data_name": "characters/family/aru",
             "_position": [
-                -6.742209434509277,
-                3.2552452087402344,
-                -3.8515148162841797
+                -7.495084762573242,
+                3.7392349243164062,
+                -3.3507885932922363
             ],
             "_rotation": [
                 0.0,
