@@ -361,7 +361,7 @@ pub fn run_application() {
             "VK_KHR_acceleration_structure".to_string(),
         ];
 
-        constants::ENABLE_UPSCALE = false;
+        constants::ENABLE_UPSCALE = true;
     }
 
     // logger
