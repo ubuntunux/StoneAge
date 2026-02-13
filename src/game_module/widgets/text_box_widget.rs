@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use nalgebra::{Vector2};
+use strum_macros::EnumString;
 use rust_engine_3d::resource::resource::EngineResources;
 use rust_engine_3d::scene::material_instance::MaterialInstanceData;
 use rust_engine_3d::scene::ui::{HorizontalAlign, Orientation, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault};
@@ -14,8 +15,7 @@ const ICON_SIZE: f32 = 100.0;
 const ITEM_PADDING: f32 = 10.0;
 const TEXT_BOX_ANIMATION_DURATION: f32 = 0.25;
 
-#[derive(PartialEq)]
-#[derive(Debug)]
+#[derive(PartialEq, Debug, EnumString)]
 pub enum TextBoxAnimationState {
     None,
     Growing,
@@ -98,8 +98,10 @@ impl<'a> TextBoxItem<'a> {
     }
 
     pub fn set_animation_state(&mut self, state: TextBoxAnimationState) {
-        self._animation_state = state;
-        self._animation_timer = 0.0;
+        if self._animation_state != state {
+            self._animation_state = state;
+            self._animation_timer = 0.0;
+        }
     }
 }
 
@@ -156,7 +158,6 @@ impl<'a> TextBoxWidget<'a> {
                     TextBoxAnimationState::Growing => {
                         let opacity = (text_box_item._animation_timer / TEXT_BOX_ANIMATION_DURATION).min(1.0);
                         ptr_as_mut(text_box_item._layout_widget)._ui_component.set_opacity(opacity);
-                        log::info!("{:?} {:?} {:?} {:?}", character_name, text_box_item._animation_state, ptr_as_ref(text_box_item._layout_widget).get_ui_component().get_opacity(), opacity);
                         if 1.0 <= opacity {
                             text_box_item.set_animation_state(TextBoxAnimationState::Idle);
                         }
@@ -172,14 +173,12 @@ impl<'a> TextBoxWidget<'a> {
                         }
                     }
                     TextBoxAnimationState::Shrinking => {
-                        text_box_item._animation_timer += delta_time;
                         let opacity = 1.0 - (text_box_item._animation_timer / TEXT_BOX_ANIMATION_DURATION).min(1.0);
                         ptr_as_mut(text_box_item._layout_widget)._ui_component.set_opacity(opacity);
                         if opacity <= 0.0 {
                             remove_items.push(character_name.clone());
                         }
                         text_box_item._animation_timer += delta_time;
-                        log::info!("{:?} {:?} {:?} {:?}", character_name, text_box_item._animation_state, ptr_as_ref(text_box_item._layout_widget).get_ui_component().get_opacity(), opacity);
                     },
                 }
             } else {

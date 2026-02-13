@@ -254,7 +254,7 @@ impl<'a> CharacterManager<'a> {
     pub fn update_character_text_box(&self, game_ui_manager: &mut GameUIManager<'a>, to_player_distance: f32, character: &mut Character<'a>) {
         if character.is_player() == false {
             // hunger ui
-            if character._character_stats._is_hunger_warning_displayed || HUNGER_WARNING_THRESHOLD <= character._character_stats._hunger {
+            if character._character_stats._is_hunger_warning_displayed || character.is_alive() && HUNGER_WARNING_THRESHOLD <= character._character_stats._hunger {
                 character._character_stats._is_hunger_warning_displayed = game_ui_manager.has_text_box_item(character.get_character_name());
 
                 if character.is_alive() &&

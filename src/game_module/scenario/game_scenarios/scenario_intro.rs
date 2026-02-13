@@ -1,7 +1,7 @@
 use crate::game_module::actors::character::Character;
 use crate::game_module::game_constants::{AUDIO_ROOSTER, CAMERA_DISTANCE_MAX, CAMERA_OFFSET_Y, HUNGER_WARNING_THRESHOLD, STORY_BOARD_FADE_TIME, STORY_IMAGE_NONE, TIME_OF_MORNING};
 use crate::game_module::game_scene_manager::GameSceneManager;
-use crate::game_module::game_ui_manager::{GameUIManager};
+use crate::game_module::game_ui_manager::{GameUIManager, QuestItemType};
 use crate::game_module::scenario::scenario::{ScenarioBase, ScenarioDataCreateInfo, ScenarioTrack};
 use nalgebra::Vector3;
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
@@ -9,6 +9,9 @@ use std::str::FromStr;
 use strum_macros::{Display, EnumCount, EnumIter, EnumString};
 use rust_engine_3d::utilities::math;
 use crate::game_module::actors::character_data::ActionAnimationState;
+use crate::game_module::actors::items::ItemDataType;
+use crate::game_module::widgets::quest_widgets::quest_item_gather_item::GatherItemData;
+use crate::game_module::widgets::quest_widgets::quest_widget::QuestContent;
 
 const INTRO_FADE_TIME: f32 = 2.0;
 const SLEEP_PHASE_TIME: f32 = 5.0;
@@ -22,7 +25,8 @@ pub enum ScenarioIntroPhase {
     StoryBoard,
     Sleep,
     WakeUp,
-    End
+    End,
+    QuestGathering,
 }
 
 pub struct ScenarioIntro<'a> {
@@ -31,6 +35,8 @@ pub struct ScenarioIntro<'a> {
     pub _actor_aru: Option<RcRefCell<Character<'a>>>,
     pub _actor_ewa: Option<RcRefCell<Character<'a>>>,
     pub _actor_koa: Option<RcRefCell<Character<'a>>>,
+    pub _quest_gather_coconut: Option<QuestItemType<'a>>,
+    pub _quest_gather_meat: Option<QuestItemType<'a>>,
     pub _wakeup_delay_aru: f32,
     pub _wakeup_delay_ewa: f32,
     pub _wakeup_delay_koa: f32,
@@ -54,6 +60,8 @@ impl<'a> ScenarioIntro<'a> {
             _actor_aru: None,
             _actor_ewa: None,
             _actor_koa: None,
+            _quest_gather_coconut: None,
+            _quest_gather_meat: None,
             _wakeup_delay_aru: 2.0,
             _wakeup_delay_ewa: 3.5,
             _wakeup_delay_koa: 4.0,
@@ -85,7 +93,7 @@ impl<'a> ScenarioIntro<'a> {
 
 impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
     fn is_play_scenario_mode(&self) -> bool {
-        self._scenario_track._scenario_phase != ScenarioIntroPhase::End
+        self._scenario_track._scenario_phase != ScenarioIntroPhase::QuestGathering && self._scenario_track._scenario_phase != ScenarioIntroPhase::End
     }
 
     fn is_end_of_scenario(&self) -> bool {
@@ -216,6 +224,36 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                 if 20.0 < phase_time || self._actor_aru.as_ref().unwrap().borrow_mut().is_action(ActionAnimationState::None) && self._actor_ewa.as_ref().unwrap().borrow_mut().is_action(ActionAnimationState::None) && self._actor_koa.as_ref().unwrap().borrow_mut().is_action(ActionAnimationState::None) {
                     self._actor_ewa.as_ref().unwrap().borrow_mut().set_hunger(HUNGER_WARNING_THRESHOLD);
                     self._actor_koa.as_ref().unwrap().borrow_mut().set_hunger(HUNGER_WARNING_THRESHOLD);
+
+                    // quest
+                    self._quest_gather_coconut = Some(game_ui_manager.add_quest_item(QuestContent::GatherItem(GatherItemData {
+                        _item_data_type: ItemDataType::Coconut,
+                        _gather_item_count: 5,
+                    })));
+
+                    // quest
+                    self._quest_gather_meat = Some(game_ui_manager.add_quest_item(QuestContent::GatherItem(GatherItemData {
+                        _item_data_type: ItemDataType::Meat,
+                        _gather_item_count: 5,
+                    })));
+
+                    self.set_scenario_phase(ScenarioIntroPhase::QuestGathering.to_string().as_str(), None);
+                }
+            }
+            ScenarioIntroPhase::QuestGathering => {
+                let coconut_quest_completed = if let Some(quest) = &self._quest_gather_coconut {
+                    quest.borrow().is_completed_quest()
+                } else {
+                    false
+                };
+
+                let meat_quest_completed = if let Some(quest) = &self._quest_gather_meat {
+                    quest.borrow().is_completed_quest()
+                } else {
+                    false
+                };
+
+                if coconut_quest_completed && meat_quest_completed {
                     self.set_scenario_phase(ScenarioIntroPhase::End.to_string().as_str(), None);
                 }
             }

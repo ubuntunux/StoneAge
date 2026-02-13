@@ -59,6 +59,7 @@ impl<'a> QuestWidget<'a> {
         ui_component.set_valign(VerticalAlign::CENTER);
         ui_component.set_pos_hint_x(PosHintX::Left(0.0));
         ui_component.set_pos_hint_y(PosHintY::Center(0.5));
+        ui_component.set_margin_left(20.0);
         ui_component.set_color(get_color32(0, 0, 0, 128));
         ui_component.set_size_y(ITEM_SIZE);
         ui_component.set_round(10.0);
@@ -79,7 +80,7 @@ impl<'a> QuestWidget<'a> {
     }
 
     pub fn add_quest_item(&mut self, content: QuestContent) -> QuestItemType<'a> {
-        ptr_as_mut(self._root_widget.as_ref()).get_ui_component_mut().set_visible(false);
+        ptr_as_mut(self._root_widget.as_ref()).get_ui_component_mut().set_visible(true);
         let quest_item = create_quest_item(self._game_resources, ptr_as_mut(self._root_widget.as_ref()), content);
         self._quest_items.push(quest_item.clone());
         quest_item.clone()
