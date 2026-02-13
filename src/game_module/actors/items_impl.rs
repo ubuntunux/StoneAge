@@ -27,6 +27,7 @@ impl ItemDataType {
             ItemDataType::Rock => "ui/items/item_rock",
             ItemDataType::Wood => "ui/items/item_wood",
             ItemDataType::SpiritBall => "ui/items/item_spirit_ball",
+            ItemDataType::EnergyBall => "ui/items/item_energy_ball",
         }
     }
 }

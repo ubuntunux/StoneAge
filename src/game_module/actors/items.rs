@@ -25,6 +25,7 @@ pub enum ItemDataType {
     Rock,
     Wood,
     SpiritBall,
+    EnergyBall,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
