@@ -414,7 +414,7 @@ impl<'a> Character<'a> {
             }
         } else {
             if self.is_action(ActionAnimationState::Kick) {
-                let attackable_time = self.get_character_data()._stat_data._kick_event_time + ATTACK_DELAY;
+                let attackable_time = self.get_character_data()._stat_data._kick_event_time + KICK_DELAY;
                 return attackable_time < action_animation_play_info._animation_play_time;
             }
         }
@@ -689,7 +689,7 @@ impl<'a> Character<'a> {
 
                 self._character_stats._stamina -= STAMINA_ATTACK;
                 if self._character_stats._stamina < 0.0 {
-                    animation_speed = 0.5;
+                    animation_speed = ANIMATION_SPEED_BY_STAMINA;
                 }
             }
             self.set_action_animation(ActionAnimationState::Attack, animation_speed);
@@ -708,7 +708,7 @@ impl<'a> Character<'a> {
 
                 self._character_stats._stamina -= STAMINA_POWER_ATTACK;
                 if self._character_stats._stamina < 0.0 {
-                    animation_speed = 0.5;
+                    animation_speed = ANIMATION_SPEED_BY_STAMINA;
                 }
             }
             self.set_action_animation(ActionAnimationState::PowerAttack, animation_speed);
@@ -726,9 +726,9 @@ impl<'a> Character<'a> {
                 }
 
                 self._character_stats._stamina -= STAMINA_ATTACK;
-                if self._character_stats._stamina < 0.0 {
-                    animation_speed = 0.5;
-                }
+                // if self._character_stats._stamina < 0.0 {
+                //     animation_speed = 0.5;
+                // }
             }
             self.set_move_stop();
             self.set_action_animation(ActionAnimationState::Kick, animation_speed);

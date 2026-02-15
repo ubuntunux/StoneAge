@@ -53,6 +53,7 @@ pub const SLOPE_VELOCITY_DECAY: f32 = 100.0;
 pub const HIT_VELOCITY_SPEED: f32 = 20.0;
 pub const HIT_VELOCITY_DECAY: f32 = 200.0;
 pub const ATTACK_DELAY: f32 = 0.0;
+pub const KICK_DELAY: f32 = 0.2;
 pub const PICKUP_EVENT_TIME: f32 = 0.1;
 
 // stats
@@ -63,11 +64,12 @@ pub const HUNGER_WARNING_THRESHOLD: f32 = 0.5;
 pub const HUNGER_RECOVERY_THRESHOLD: f32 = 0.25;
 pub const STAMINA_RECOVERY_DELAY_TIME: f32 = 1.0;
 pub const STAMINA_RECOVERY: f32 = 40.0;
-pub const STAMINA_ATTACK: f32 = 2.0;
-pub const STAMINA_POWER_ATTACK: f32 = 6.0;
+pub const STAMINA_ATTACK: f32 = 5.0;
+pub const STAMINA_POWER_ATTACK: f32 = 10.0;
 pub const STAMINA_RUN: f32 = 20.0;
-pub const STAMINA_JUMP: f32 = 15.0;
-pub const STAMINA_ROLL: f32 = 20.0;
+pub const STAMINA_JUMP: f32 = 25.0;
+pub const STAMINA_ROLL: f32 = 25.0;
+pub const ANIMATION_SPEED_BY_STAMINA: f32 = 1.0;
 
 // npc
 pub const NPC_IDLE_TERM_MIN: f32 = 1.0;
