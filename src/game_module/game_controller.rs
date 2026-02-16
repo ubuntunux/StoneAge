@@ -132,7 +132,6 @@ impl<'a> GameController<'a> {
         if 0.0 < to_goal_dist {
             to_goal_camera /= to_goal_dist;
         }
-        let t = 1.0 - (-to_goal_dist).exp();
         to_goal_dist -= CAMERA_POSITION_BLEND_SPEED_MIN.max(to_goal_dist * 2.0) * delta_time;
         if to_goal_dist < 0.0 {
             self._camera_position = goal_camera_position;
