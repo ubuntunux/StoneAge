@@ -169,7 +169,7 @@ void main()
     float visibility = 1.0;
     float cloud_opacity = 0.0;
 
-    if(false)
+    if(render_cloud)
     {
         vec3 cloud_inscatter = vec3(0.0);
         vec3 cloud_sun_irradiance = vec3(0.0);
