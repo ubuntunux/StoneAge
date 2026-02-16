@@ -113,7 +113,11 @@ impl<'a> GameController<'a> {
     }
 
     pub fn set_game_camera_auto_blend_mode(&mut self, is_game_camera_auto_blend_mode: bool) {
-        self._is_game_camera_auto_blend_mode = is_game_camera_auto_blend_mode
+        if is_game_camera_auto_blend_mode {
+            self.update_current_game_camera_transform();
+        }
+
+        self._is_game_camera_auto_blend_mode = is_game_camera_auto_blend_mode;
     }
 
     pub fn update_game_camera_auto_blend(&mut self, main_camera: &mut CameraObjectData, player: &RcRefCell<Character>, delta_time: f32) {
@@ -179,27 +183,31 @@ impl<'a> GameController<'a> {
         self._camera_goal_yaw = goal_yaw % math::TWO_PI;
     }
 
-    pub fn update_game_camera_blend(
-        &mut self,
-        main_camera: &mut CameraObjectData,
-        player: &RcRefCell<Character>,
-        blend_start_position: &Vector3<f32>,
-        blend_start_pitch: f32,
-        blend_start_yaw: f32,
-        blend_ratio: f32
-    ) {
-        self._camera_pitch = math::lerp_radian(blend_start_pitch, self._camera_goal_pitch, blend_ratio);
-        self._camera_yaw = math::lerp_radian(blend_start_yaw, self._camera_goal_yaw, blend_ratio);
+    pub fn update_current_game_camera_transform(&mut self) {
+        let (pitch, yaw, position) = {
+            let main_camera = self.get_main_camera();
+            (
+                main_camera._transform_object.get_pitch(),
+                main_camera._transform_object.get_yaw(),
+                main_camera._transform_object.get_position().clone(),
+            )
+        };
+        self._camera_pitch = pitch;
+        self._camera_yaw = yaw;
+        self._camera_position = position;
 
-        let rotation_matrix: Matrix4<f32> = math::make_rotation_matrix(self._camera_pitch, self._camera_yaw, 0f32);
-        let pivot = player.borrow().get_bounding_box()._center + Vector3::new(0.0, CAMERA_OFFSET_Y, 0.0);
-        let goal_camera_position = pivot - rotation_matrix.column(2).xyz() * self._camera_goal_distance;
-        self._camera_position = blend_start_position.lerp(&goal_camera_position, blend_ratio);
-        self._camera_distance = (pivot - self._camera_position).magnitude();
+        let calculated_distance = if let Some(player) = self.get_game_client().get_game_scene_manager().get_character_manager().get_maybe_player() {
+            let pivot = player.borrow().get_bounding_box()._center + Vector3::new(0.0, CAMERA_OFFSET_Y, 0.0);
+            Some((pivot - self._camera_position).magnitude())
+        } else {
+            None
+        };
 
-        main_camera._transform_object.set_position(&self._camera_position);
-        main_camera._transform_object.set_pitch(self._camera_pitch);
-        main_camera._transform_object.set_yaw(self._camera_yaw);
+        if let Some(distance) = calculated_distance {
+            self._camera_distance = distance;
+        }
+
+        self.set_game_camera_goal_transform(1.0, self._camera_pitch, self._camera_yaw);
     }
 
     pub fn update_camera_smooth_rotation(

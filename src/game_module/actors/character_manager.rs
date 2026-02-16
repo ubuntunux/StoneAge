@@ -239,6 +239,9 @@ impl<'a> CharacterManager<'a> {
     pub fn is_valid_player(&self) -> bool {
         self._player.is_some()
     }
+    pub fn get_maybe_player(&self) -> &Option<RcRefCell<Character<'a>>> {
+        &self._player
+    }
     pub fn get_player(&self) -> &RcRefCell<Character<'a>> {
         self._player.as_ref().unwrap()
     }

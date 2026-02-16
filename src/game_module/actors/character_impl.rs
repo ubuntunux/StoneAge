@@ -717,7 +717,7 @@ impl<'a> Character<'a> {
 
     pub fn set_action_kick(&mut self) {
         if self.is_available_attack() {
-            let mut animation_speed: f32 = 1.0;
+            let animation_speed: f32 = 1.0;
             if self._is_player {
                 let render_object = self._render_object.borrow();
                 let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
