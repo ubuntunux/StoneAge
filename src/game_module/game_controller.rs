@@ -294,43 +294,17 @@ impl<'a> GameController<'a> {
 
         let pivot = player.get_bounding_box()._center + Vector3::new(0.0, CAMERA_OFFSET_Y, 0.0);
         let camera_dir = -main_camera._transform_object.get_front();
+        self._camera_position = pivot + camera_dir * self._camera_distance;
+        let mut collision_point: Vector3<f32> = Vector3::zeros();
         let scene_manager = self.get_game_client().get_game_scene_manager().get_scene_manager();
-
-        let mut min_collision_distance = self._camera_distance;
-
-        // Step 1: Check collision with height map
-        let mut height_map_collision_point: Vector3<f32> = Vector3::zeros();
         if scene_manager.get_height_map_data().get_collision_point(
-            &pivot,
+            &(pivot + camera_dir),
             &camera_dir,
             self._camera_distance,
-            0.0, // No padding for initial check
-            &mut height_map_collision_point
-        ) {
-            min_collision_distance = (height_map_collision_point - pivot).magnitude();
+            CAMERA_COLLIDE_PADDING,
+            &mut collision_point) {
+            self._camera_position = collision_point;
         }
-
-        // Step 2: Check collision with scene objects
-        // if GAME_VIEW_MODE == GameViewMode::GameViewMode3D {
-        //     let ideal_camera_pos = pivot + camera_dir * self._camera_distance;
-        //     let search_min = pivot.inf(&ideal_camera_pos);
-        //     let search_max = pivot.sup(&ideal_camera_pos);
-        //     let collision_objects = scene_manager.collect_collision_objects(&search_min, &search_max);
-        //
-        //     for collision_object in collision_objects.values() {
-        //         let block_render_object = ptr_as_ref(collision_object.as_ptr());
-        //         if let Some(distance) = block_render_object._collision.ray_vs_aabb(&pivot, &camera_dir) {
-        //             if distance < min_collision_distance {
-        //                 min_collision_distance = distance;
-        //             }
-        //         }
-        //     }
-        // }
-
-        // Step 3: Apply padding and set final position
-        let final_distance = (min_collision_distance - CAMERA_COLLIDE_PADDING).max(CAMERA_DISTANCE_MIN);
-        self._camera_position = pivot + camera_dir * final_distance;
-
         main_camera._transform_object.set_position(&self._camera_position);
     }
 
