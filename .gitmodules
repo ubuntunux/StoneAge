@@ -1,3 +1,6 @@
 [submodule "RustEngine3D"]
 	path = RustEngine3D
 	url = https://github.com/ubuntunux/RustEngine3D
+[submodule "rust_engine_3d_asset_manager"]
+	path = rust_engine_3d_asset_manager
+	url = https://github.com/ubuntunux/rust_engine_3d_asset_manager
