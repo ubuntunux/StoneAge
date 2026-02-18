@@ -1,5 +1,5 @@
 use crate::game_module::actors::character::Character;
-use crate::game_module::game_constants::{AUDIO_ROOSTER, CAMERA_DISTANCE_MAX, CAMERA_OFFSET_Y, HUNGER_WARNING_THRESHOLD, STORY_BOARD_FADE_TIME, STORY_IMAGE_NONE, TIME_OF_MORNING};
+use crate::game_module::game_constants::{AUDIO_ROOSTER, CAMERA_DISTANCE_MAX, CAMERA_OFFSET_Y, HUNGER_WARNING_THRESHOLD, STORY_BOARD_FADE_TIME, STORY_IMAGE_NONE, TIME_OF_DAWN, TIME_OF_MORNING};
 use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::game_ui_manager::{GameUIManager, QuestItemType};
 use crate::game_module::scenario::scenario::{ScenarioBase, ScenarioDataCreateInfo, ScenarioTrack};
@@ -115,9 +115,9 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
         match self._scenario_track._scenario_phase {
             ScenarioIntroPhase::StoryBoard => {
                 game_scene_manager.set_time_of_day(0.0, 0.0);
-                self._actor_aru = if let Some(actor) = game_scene_manager.get_actor("aru") { Some(actor.clone()) } else { None };
-                self._actor_ewa = if let Some(actor) = game_scene_manager.get_actor("ewa") { Some(actor.clone()) } else { None };
-                self._actor_koa = if let Some(actor) = game_scene_manager.get_actor("koa") { Some(actor.clone()) } else { None };
+                self._actor_aru = if let Some(actor) = game_scene_manager.get_actor("monkey_aru") { Some(actor.clone()) } else { None };
+                self._actor_ewa = if let Some(actor) = game_scene_manager.get_actor("monkey_ewa") { Some(actor.clone()) } else { None };
+                self._actor_koa = if let Some(actor) = game_scene_manager.get_actor("monkey_koa") { Some(actor.clone()) } else { None };
                 self._actor_aru.as_ref().unwrap().borrow_mut().set_move_direction(&Vector3::new(1.0, 0.0, 0.0), true);
                 self._actor_ewa.as_ref().unwrap().borrow_mut().set_move_direction(&Vector3::new(1.0, 0.0, 0.0), true);
                 self._actor_koa.as_ref().unwrap().borrow_mut().set_move_direction(&Vector3::new(1.0, 0.0, 0.0), true);
@@ -138,7 +138,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                 main_camera._transform_object.set_position(&self._around_start_position);
                 main_camera._transform_object.set_rotation(&self._around_start_rotation);
 
-                game_scene_manager.set_time_of_day(TIME_OF_MORNING, 0.0);
+                game_scene_manager.set_time_of_day(TIME_OF_DAWN, 0.0);
             },
             ScenarioIntroPhase::WakeUp => {
                 game_scene_manager.get_scene_manager().play_audio_bank(AUDIO_ROOSTER);

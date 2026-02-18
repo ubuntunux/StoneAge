@@ -285,7 +285,27 @@
             "asset_path": "family/monkey_aru",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/family/monkey_aru.blend",
             "guid": "",
-            "mtime": 1771401653.3515422,
+            "mtime": 1771421502.3534155,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/family/monkey_ewa.blend": [
+        {
+            "asset_type": "GAME_CHARACTER",
+            "asset_path": "family/monkey_ewa",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/family/monkey_ewa.blend",
+            "guid": "",
+            "mtime": 1771427619.4880319,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/family/monkey_koa.blend": [
+        {
+            "asset_type": "GAME_CHARACTER",
+            "asset_path": "family/monkey_koa",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/family/monkey_koa.blend",
+            "guid": "",
+            "mtime": 1771429072.6337826,
             "data": {}
         }
     ],
@@ -4863,7 +4883,7 @@
             "asset_path": "characters/monkey_aru/monkey_aru",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/monkey_aru/monkey_aru.blend",
             "guid": "",
-            "mtime": 1771402415.3807592,
+            "mtime": 1771428507.7398584,
             "data": {}
         },
         {
@@ -4871,7 +4891,7 @@
             "asset_path": "characters/jack",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/monkey_aru/monkey_aru.blend",
             "guid": "",
-            "mtime": 1771402415.3807592,
+            "mtime": 1771428507.7398584,
             "data": {}
         },
         {
@@ -4879,7 +4899,43 @@
             "asset_path": "characters/monkey_aru",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/monkey_aru/monkey_aru.blend",
             "guid": "",
-            "mtime": 1771402415.3807592,
+            "mtime": 1771428507.7398584,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/monkey_ewa/monkey_ewa.blend": [
+        {
+            "asset_type": "MESH",
+            "asset_path": "characters/monkey_ewa/monkey_ewa",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/monkey_ewa/monkey_ewa.blend",
+            "guid": "",
+            "mtime": 1771428618.9949746,
+            "data": {}
+        },
+        {
+            "asset_type": "MATERIAL_INSTANCE",
+            "asset_path": "characters/monkey_ewa",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/monkey_ewa/monkey_ewa.blend",
+            "guid": "",
+            "mtime": 1771428618.9949746,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/monkey_koa/monkey_koa.blend": [
+        {
+            "asset_type": "MESH",
+            "asset_path": "characters/monkey_koa/monkey_koa",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/monkey_koa/monkey_koa.blend",
+            "guid": "",
+            "mtime": 1771430423.2940276,
+            "data": {}
+        },
+        {
+            "asset_type": "MATERIAL_INSTANCE",
+            "asset_path": "characters/monkey_koa",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/monkey_koa/monkey_koa.blend",
+            "guid": "",
+            "mtime": 1771430423.2940276,
             "data": {}
         }
     ],
@@ -7941,6 +7997,26 @@
             "data": {}
         }
     ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/characters/monkey_ewa.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "characters/monkey_ewa",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/characters/monkey_ewa.blend",
+            "guid": "",
+            "mtime": 1771427458.0976949,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/characters/monkey_koa.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "characters/monkey_koa",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/characters/monkey_koa.blend",
+            "guid": "",
+            "mtime": 1771428974.5275497,
+            "data": {}
+        }
+    ],
     "/mnt/Workspace/StoneAge/resources/externals/scenes/stage_forest.blend": [
         {
             "asset_type": "SCENE",
@@ -7981,16 +8057,6 @@
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/intro_stage.blend": [
-        {
-            "asset_type": "GAME_SCENE",
-            "asset_path": "intro_stage",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/intro_stage.blend",
-            "guid": "",
-            "mtime": 1771401670.660268,
-            "data": {}
-        }
-    ],
     "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/stage_01.blend": [
         {
             "asset_type": "GAME_SCENE",
@@ -8008,6 +8074,16 @@
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/stage_cave.blend",
             "guid": "",
             "mtime": 1771264897.0926,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/intro_stage.blend": [
+        {
+            "asset_type": "GAME_SCENE",
+            "asset_path": "intro_stage",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/intro_stage.blend",
+            "guid": "",
+            "mtime": 1771429099.1630175,
             "data": {}
         }
     ],

@@ -47,6 +47,8 @@ f97f048e-5bf3-4586-b095-982e98204afd:StoneAge/meshes/characters/iguanodon:StoneA
 8773c78b-4d23-4740-bedb-820a9f3daf7f:StoneAge/meshes/characters/jack:StoneAge-meshes-characters-jack
 998a1ceb-9f22-4202-a1d1-7667eaca2e30:StoneAge/meshes/characters/koa:StoneAge-meshes-characters-koa
 1d1c1233-4d97-4218-b4a1-cbba716bd910:StoneAge/meshes/characters/monkey_aru:StoneAge-meshes-characters-monkey_aru
+dd16ac7b-9d35-4485-b04a-77fd8d4a3b05:StoneAge/meshes/characters/monkey_ewa:StoneAge-meshes-characters-monkey_ewa
+7dceac6c-bb07-49b8-a5ac-e4f2b04aaa17:StoneAge/meshes/characters/monkey_koa:StoneAge-meshes-characters-monkey_koa
 21636e58-76d7-4636-9ce1-5988adf00134:StoneAge/meshes/characters/neanderthalensis:StoneAge-meshes-characters-neanderthalensis
 b95aefe5-b059-4470-a559-ffdd51ba0ee0:StoneAge/meshes/characters/pachycephalosaurus:StoneAge-meshes-characters-pachycephalosaurus
 7c6fa0d1-c245-4fa2-a226-3bd2622dd9cf:StoneAge/meshes/characters/pachycephalosaurus_01:StoneAge-meshes-characters-pachycephalosaurus_01
@@ -59,6 +61,7 @@ f0a73abd-9da5-43a6-9635-6962ae3e963d:StoneAge/meshes/characters/trex:StoneAge-me
 da628b8d-d192-41be-b9bc-481b0a4b58ab:StoneAge/meshes/characters/trex_02:StoneAge-meshes-characters-trex_02
 d07da559-c89b-4bec-b90c-cfeabd95fd15:StoneAge/meshes/characters/triceratops:StoneAge-meshes-characters-triceratops
 9a5d5771-4227-4101-9802-2c8581322c0c:StoneAge/meshes/characters/triceratops_01:StoneAge-meshes-characters-triceratops_01
+2c856256-48f5-48fd-a6e4-af7cbc162e04:StoneAge/meshes/characters/ufo:StoneAge-meshes-characters-ufo
 3cac81ba-961a-4032-9ea6-9176038644da:StoneAge/meshes/characters/velociraptor:StoneAge-meshes-characters-velociraptor
 f55bf270-24cd-4392-9e6b-a68901d7c38e:StoneAge/meshes/characters/velociraptor_01:StoneAge-meshes-characters-velociraptor_01
 ef906e5f-59e3-43cd-bcd3-d14ccfd7bfa2:StoneAge/meshes/characters/villager:StoneAge-meshes-characters-villager

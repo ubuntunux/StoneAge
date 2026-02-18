@@ -1,0 +1,56 @@
+{
+    "_collision": {
+        "_collision_type": "CYLINDER",
+        "_extents": [
+            0.800000011920929,
+            1.0,
+            0.800000011920929
+        ],
+        "_location": [
+            0.0,
+            1.0,
+            0.0
+        ]
+    },
+    "_is_render_camera": true,
+    "_is_render_shadow": true,
+    "_material_instances": [
+        "characters/monkey_koa"
+    ],
+    "_mesh": "characters/monkey_koa/monkey_koa",
+    "_position": [
+        0.0,
+        0.0,
+        0.0
+    ],
+    "_rotation": [
+        0.0,
+        0.0,
+        0.0
+    ],
+    "_scale": [
+        0.15013587474822998,
+        0.15013587474822998,
+        0.15013587474822998
+    ],
+    "_sockets": {
+        "SOCKET_WEAPON": {
+            "_parent_bone": "mixamorig:RightHand",
+            "_position": [
+                0.0,
+                0.5,
+                0.20000000298023224
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                -1.5707963705062866
+            ],
+            "_scale": [
+                4.0,
+                4.0,
+                4.0
+            ]
+        }
+    }
+}
