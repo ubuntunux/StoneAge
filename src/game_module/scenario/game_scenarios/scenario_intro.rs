@@ -138,7 +138,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                 main_camera._transform_object.set_position(&self._around_start_position);
                 main_camera._transform_object.set_rotation(&self._around_start_rotation);
 
-                game_scene_manager.set_time_of_day(TIME_OF_DAWN, 0.0);
+                game_scene_manager.set_time_of_day(TIME_OF_MORNING, 0.0);
             },
             ScenarioIntroPhase::WakeUp => {
                 game_scene_manager.get_scene_manager().play_audio_bank(AUDIO_ROOSTER);

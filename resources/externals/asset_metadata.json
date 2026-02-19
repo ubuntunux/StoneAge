@@ -309,6 +309,16 @@
             "data": {}
         }
     ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/ufo.blend": [
+        {
+            "asset_type": "GAME_CHARACTER",
+            "asset_path": "ufo",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/ufo.blend",
+            "guid": "",
+            "mtime": 1771434017.4112973,
+            "data": {}
+        }
+    ],
     "/mnt/Workspace/StoneAge/resources/externals/game_data/data/data.blend": [
         {
             "asset_type": "GAME_DATA",
@@ -4927,7 +4937,7 @@
             "asset_path": "characters/monkey_koa/monkey_koa",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/monkey_koa/monkey_koa.blend",
             "guid": "",
-            "mtime": 1771430423.2940276,
+            "mtime": 1771433886.9711568,
             "data": {}
         },
         {
@@ -4935,7 +4945,25 @@
             "asset_path": "characters/monkey_koa",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/monkey_koa/monkey_koa.blend",
             "guid": "",
-            "mtime": 1771430423.2940276,
+            "mtime": 1771433886.9711568,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/ufo/ufo.blend": [
+        {
+            "asset_type": "MESH",
+            "asset_path": "characters/ufo/ufo",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/ufo/ufo.blend",
+            "guid": "",
+            "mtime": 1771432807.4198465,
+            "data": {}
+        },
+        {
+            "asset_type": "MATERIAL_INSTANCE",
+            "asset_path": "characters/ufo",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/ufo/ufo.blend",
+            "guid": "",
+            "mtime": 1771432807.4198465,
             "data": {}
         }
     ],
@@ -8017,6 +8045,16 @@
             "data": {}
         }
     ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/characters/ufo.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "characters/ufo",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/characters/ufo.blend",
+            "guid": "",
+            "mtime": 1771433722.990574,
+            "data": {}
+        }
+    ],
     "/mnt/Workspace/StoneAge/resources/externals/scenes/stage_forest.blend": [
         {
             "asset_type": "SCENE",
@@ -8067,23 +8105,23 @@
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/stage_cave.blend": [
-        {
-            "asset_type": "GAME_SCENE",
-            "asset_path": "stage_cave",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/stage_cave.blend",
-            "guid": "",
-            "mtime": 1771264897.0926,
-            "data": {}
-        }
-    ],
     "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/intro_stage.blend": [
         {
             "asset_type": "GAME_SCENE",
             "asset_path": "intro_stage",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/intro_stage.blend",
             "guid": "",
-            "mtime": 1771429099.1630175,
+            "mtime": 1771434033.652891,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/stage_cave.blend": [
+        {
+            "asset_type": "GAME_SCENE",
+            "asset_path": "stage_cave",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/stage_cave.blend",
+            "guid": "",
+            "mtime": 1771520004.4782777,
             "data": {}
         }
     ],
@@ -8093,7 +8131,7 @@
             "asset_path": "intro",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/scenario/intro.blend",
             "guid": "",
-            "mtime": 1771265319.641944,
+            "mtime": 1771434216.1585686,
             "data": {}
         }
     ]

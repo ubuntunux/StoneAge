@@ -1,10 +1,10 @@
 {
     "_characters": {
-        "ewa": {
-            "_character_data_name": "characters/family/ewa",
+        "monkey_ewa": {
+            "_character_data_name": "characters/family/monkey_ewa",
             "_position": [
-                -8.189125061035156,
-                10.143827438354492,
+                -8.38672924041748,
+                10.0,
                 0.0
             ],
             "_rotation": [
@@ -18,11 +18,11 @@
                 1.0
             ]
         },
-        "koa": {
-            "_character_data_name": "characters/family/koa",
+        "monkey_koa": {
+            "_character_data_name": "characters/family/monkey_koa",
             "_position": [
-                -6.485833644866943,
-                10.143827438354492,
+                -6.660023212432861,
+                10.344499588012695,
                 0.0
             ],
             "_rotation": [
@@ -39,11 +39,11 @@
     },
     "_items": {},
     "_player": {
-        "aru": {
-            "_character_data_name": "characters/family/aru",
+        "monkey_aru": {
+            "_character_data_name": "characters/family/monkey_aru",
             "_position": [
-                -4.807186126708984,
-                10.143827438354492,
+                -4.732234954833984,
+                10.03738784790039,
                 0.0
             ],
             "_rotation": [
@@ -1871,13 +1871,13 @@
             "leaves_02": {
                 "_model_data_name": "environments/leaves_02",
                 "_position": [
-                    -8.434502601623535,
-                    11.52076244354248,
-                    1.4665350914001465
+                    -10.084582328796387,
+                    11.332408905029297,
+                    1.9862251281738281
                 ],
                 "_rotation": [
                     0.0,
-                    -1.6078256368637085,
+                    -0.10985457897186279,
                     0.0
                 ],
                 "_scale": [

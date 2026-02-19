@@ -49,6 +49,7 @@ pub enum CharacterDataType {
     Guardian,
     Stalker,
     Invader,
+    Ufo
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
