@@ -651,7 +651,6 @@ impl<'a> Character<'a> {
         if self._controller.is_on_ground() && self.is_available_move() && self.is_action(ActionAnimationState::None) {
             match self._controller._nearest_interaction_object {
                 InteractionObject::PropBed(_) => {
-                    self.get_character_manager().get_game_client_mut().set_need_sleep_mode(true);
                     self.set_action_laying_down();
                 }
                 InteractionObject::PropPickup(_) => {
@@ -1186,6 +1185,7 @@ impl<'a> Character<'a> {
             }
             ActionAnimationState::LayingDown => {
                 if animation_play_info._is_animation_end {
+                    self.get_character_manager().get_game_client_mut().set_need_sleep_mode(true);
                     self.set_action_sleep();
                 }
             }

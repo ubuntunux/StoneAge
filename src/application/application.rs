@@ -14,7 +14,7 @@ use rust_engine_3d::constants::DEVELOPMENT;
 use rust_engine_3d::core::engine_core::{self, ApplicationBase, EngineCore, WindowMode};
 use rust_engine_3d::core::input::ButtonState;
 use rust_engine_3d::effect::effect_manager::EffectManager;
-use rust_engine_3d::renderer::renderer_data::RendererData;
+use rust_engine_3d::renderer::renderer_data::{RenderOption, RenderQualityLevel, RendererData};
 use rust_engine_3d::resource::resource::CallbackLoadRenderPassCreateInfo;
 use rust_engine_3d::utilities::logger;
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
@@ -361,7 +361,32 @@ pub fn run_application() {
             "VK_KHR_acceleration_structure".to_string(),
         ];
 
-        constants::ENABLE_UPSCALE = true;
+        // render options
+        const RENDER_QUALITY_LEVEL: RenderQualityLevel = RenderQualityLevel::Medium;
+        match RENDER_QUALITY_LEVEL {
+            RenderQualityLevel::Low => {
+                constants::ENABLE_UPSCALE = true;
+                constants::CURRENT_RENDER_OPTION =
+                    std::mem::transmute(
+                        RenderOption::RenderOcean as u32 |
+                            RenderOption::RenderAtmosphere as u32 |
+                            RenderOption::RenderSky as u32 |
+                            RenderOption::RenderShadow as u32
+                    );
+            }
+            RenderQualityLevel::Medium => {
+                constants::CURRENT_RENDER_OPTION =
+                    std::mem::transmute(
+                        RenderOption::RenderOcean as u32 |
+                            RenderOption::RenderAtmosphere as u32 |
+                            RenderOption::RenderSky as u32 |
+                            RenderOption::RenderShadow as u32
+                    );
+            }
+            RenderQualityLevel::High => {
+                constants::CURRENT_RENDER_OPTION = RenderOption::ALL;
+            }
+        }
     }
 
     // logger

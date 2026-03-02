@@ -29,6 +29,7 @@ pub const GAME_VIEW_MODE: GameViewMode = GameViewMode::GameViewMode3D;
 
 // time
 pub const TIME_OF_DAWN: f32 = 6.0;
+pub const TIME_OF_EARLY_MORNING: f32 = 8.0;
 pub const TIME_OF_MORNING: f32 = 10.0;
 pub const TIME_OF_NOON: f32 = 14.0;
 pub const TIME_OF_DAY_SPEED: f32 = 14.0 / (20.0 * 60.0); // Minute 14 per day for 20 hours

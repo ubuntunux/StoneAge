@@ -1,5 +1,5 @@
 use crate::game_module::actors::character::Character;
-use crate::game_module::game_constants::{AUDIO_ROOSTER, CAMERA_DISTANCE_MAX, CAMERA_OFFSET_Y, HUNGER_WARNING_THRESHOLD, STORY_BOARD_FADE_TIME, STORY_IMAGE_NONE, TIME_OF_MORNING};
+use crate::game_module::game_constants::{AUDIO_ROOSTER, CAMERA_DISTANCE_MAX, CAMERA_OFFSET_Y, HUNGER_WARNING_THRESHOLD, STORY_BOARD_FADE_TIME, STORY_IMAGE_NONE, TIME_OF_EARLY_MORNING, TIME_OF_MORNING};
 use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::game_ui_manager::{GameUIManager, QuestItemType};
 use crate::game_module::scenario::scenario::{ScenarioBase, ScenarioDataCreateInfo, ScenarioTrack};
@@ -10,9 +10,12 @@ use strum_macros::{Display, EnumCount, EnumIter, EnumString};
 use rust_engine_3d::utilities::math;
 use crate::game_module::actors::character_data::ActionAnimationState;
 use crate::game_module::actors::items::ItemDataType;
+use crate::game_module::behavior::behavior_base::BehaviorState;
 use crate::game_module::widgets::quest_widgets::quest_item_gather_item::GatherItemData;
 use crate::game_module::widgets::quest_widgets::quest_widget::QuestContent;
 
+const SKIP_SCENARIO: bool = false;
+const USE_STORY_BOARDS: bool = false;
 const INTRO_FADE_TIME: f32 = 2.0;
 const SLEEP_PHASE_TIME: f32 = 5.0;
 const WAKE_UP_PHASE_TIME: f32 = 6.0;
@@ -118,9 +121,12 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                 self._actor_aru = if let Some(actor) = game_scene_manager.get_actor("monkey_aru") { Some(actor.clone()) } else { None };
                 self._actor_ewa = if let Some(actor) = game_scene_manager.get_actor("monkey_ewa") { Some(actor.clone()) } else { None };
                 self._actor_koa = if let Some(actor) = game_scene_manager.get_actor("monkey_koa") { Some(actor.clone()) } else { None };
-                self._actor_aru.as_ref().unwrap().borrow_mut().set_move_direction(&Vector3::new(1.0, 0.0, 0.0), true);
-                self._actor_ewa.as_ref().unwrap().borrow_mut().set_move_direction(&Vector3::new(1.0, 0.0, 0.0), true);
-                self._actor_koa.as_ref().unwrap().borrow_mut().set_move_direction(&Vector3::new(1.0, 0.0, 0.0), true);
+                self._actor_aru.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::None);
+                self._actor_ewa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::None);
+                self._actor_koa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::None);
+                self._actor_aru.as_ref().unwrap().borrow_mut().set_move_direction(&Vector3::new(0.0, 0.0, -1.0), true);
+                self._actor_ewa.as_ref().unwrap().borrow_mut().set_move_direction(&Vector3::new(0.0, 0.0, -1.0), true);
+                self._actor_koa.as_ref().unwrap().borrow_mut().set_move_direction(&Vector3::new(0.0, 0.0, -1.0), true);
             },
             ScenarioIntroPhase::Sleep => {
                 self._actor_aru.as_ref().unwrap().borrow_mut().set_action_sleep();
@@ -138,7 +144,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                 main_camera._transform_object.set_position(&self._around_start_position);
                 main_camera._transform_object.set_rotation(&self._around_start_rotation);
 
-                game_scene_manager.set_time_of_day(TIME_OF_MORNING, 0.0);
+                game_scene_manager.set_time_of_day(TIME_OF_EARLY_MORNING, 0.0);
             },
             ScenarioIntroPhase::WakeUp => {
                 game_scene_manager.get_scene_manager().play_audio_bank(AUDIO_ROOSTER);
@@ -167,7 +173,6 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
         let phase_ratio = self._scenario_track.get_phase_ratio();
         match self._scenario_track._scenario_phase {
             ScenarioIntroPhase::None => {
-                const SKIP_SCENARIO: bool = true;
                 if SKIP_SCENARIO {
                     game_ui_manager.set_image_manual_fade_inout(STORY_IMAGE_NONE, INTRO_FADE_TIME);
                     game_ui_manager.set_auto_fade_inout(true);
@@ -179,7 +184,6 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
             ScenarioIntroPhase::StoryBoard => {
                 let story_board_phase = self.get_story_board_phase();
                 if game_ui_manager.is_done_game_image_progress() && any_key_pressed {
-                    const USE_STORY_BOARDS: bool = false;
                     if USE_STORY_BOARDS == false || STORY_BOARDS.len() <= story_board_phase {
                         game_ui_manager.set_image_manual_fade_inout(STORY_IMAGE_NONE, INTRO_FADE_TIME);
                         game_ui_manager.set_auto_fade_inout(true);
@@ -222,10 +226,6 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
 
                 if 0.0 <= prev_wakeup_delay_koa && self._wakeup_delay_koa < 0.0 {
                     self._actor_koa.as_ref().unwrap().borrow_mut().set_action_stand_up();
-                }
-
-                if self._actor_aru.as_ref().unwrap().borrow_mut().is_action(ActionAnimationState::None) {
-                    self._actor_aru.as_ref().unwrap().borrow_mut().set_move_direction(&Vector3::new(-1.0, 0.0, 0.0), true);
                 }
 
                 if 20.0 < phase_time || self._actor_aru.as_ref().unwrap().borrow_mut().is_action(ActionAnimationState::None) && self._actor_ewa.as_ref().unwrap().borrow_mut().is_action(ActionAnimationState::None) && self._actor_koa.as_ref().unwrap().borrow_mut().is_action(ActionAnimationState::None) {

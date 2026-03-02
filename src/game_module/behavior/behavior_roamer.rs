@@ -39,9 +39,6 @@ impl BehaviorBase for BehaviorRoamer {
         delta_time: f32,
     ) {
         match self._behavior_state {
-            BehaviorState::None => {
-                self.set_behavior(BehaviorState::Idle, owner, player, false);
-            }
             BehaviorState::Idle => {
                 if self.is_enemy_in_range(owner, player) {
                     self.set_behavior(BehaviorState::Chase, owner, player, false);
