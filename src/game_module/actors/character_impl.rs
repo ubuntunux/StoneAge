@@ -283,7 +283,7 @@ impl<'a> Character<'a> {
         scale: &Vector3<f32>,
     ) {
         self._character_stats.initialize_character_stats(&self._character_data.borrow());
-        self._controller.initialize_controller(position, rotation, scale);
+        self._controller.initialize_controller(&self._character_data.borrow(), position, rotation, scale);
         self._behavior.initialize_behavior(ptr_as_mut(self), position);
 
         self.set_move_idle();

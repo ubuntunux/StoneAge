@@ -75,6 +75,10 @@ impl CharacterData {
             _weapon_create_info: character_data_create_info._weapon_create_info.clone(),
         }
     }
+
+    pub fn can_fly(&self) -> bool {
+        self._character_type == CharacterDataType::Ufo
+    }
 }
 
 impl CharacterAudioData {

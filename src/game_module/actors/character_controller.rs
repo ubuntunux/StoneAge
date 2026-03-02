@@ -32,6 +32,7 @@ pub struct CharacterController<'a> {
     pub _is_jump: bool,
     pub _is_cliff: bool,
     pub _is_blocked: bool,
+    pub _is_flying_mode: bool,
     pub _nearest_interaction_object: InteractionObject<'a>,
     pub _interaction_objects: HashMap<*const c_void, InteractionObject<'a>>,
 }
@@ -58,6 +59,7 @@ impl<'a> CharacterController<'a> {
             _is_jump: false,
             _is_cliff: false,
             _is_blocked: false,
+            _is_flying_mode: false,
             _nearest_interaction_object: InteractionObject::None,
             _interaction_objects: HashMap::new(),
         }
@@ -65,6 +67,7 @@ impl<'a> CharacterController<'a> {
 
     pub fn initialize_controller(
         &mut self,
+        character_data: &CharacterData,
         position: &Vector3<f32>,
         rotation: &Vector3<f32>,
         scale: &Vector3<f32>,
@@ -88,6 +91,7 @@ impl<'a> CharacterController<'a> {
         self._is_ground = true;
         self._is_blocked = false;
         self._is_cliff = false;
+        self._is_flying_mode = character_data.can_fly();
         self._interaction_objects.clear();
     }
     pub fn is_falling(&self) -> bool {
@@ -233,6 +237,114 @@ impl<'a> CharacterController<'a> {
         actor_collision: &CollisionData,
         delta_time: f32,
     ) {
+        if self._is_flying_mode {
+            self.update_fly_controller(
+                owner,
+                scene_manager,
+                character_data,
+                move_animation,
+                actor_collision,
+                delta_time,
+            )
+        } else {
+            self.update_ground_controller(
+                owner,
+                scene_manager,
+                character_data,
+                move_animation,
+                actor_collision,
+                delta_time,
+            )
+        }
+    }
+
+    pub fn update_fly_controller(
+        &mut self,
+        _owner: &Character,
+        _scene_manager: &SceneManager<'a>,
+        _character_data: &CharacterData,
+        move_animation: MoveAnimationState,
+        _actor_collision: &CollisionData,
+        delta_time: f32,
+    ) {
+        let prev_position = self._position.clone();
+
+        // update fall time
+        self._fall_time = 0.0;
+        self._is_falling = false;
+
+        // move on ground
+        let mut move_direction = if MoveAnimationState::Roll == move_animation {
+            self._face_direction.clone()
+        } else {
+            self._move_direction.clone()
+        };
+
+        if move_direction.x != 0.0 || move_direction.z != 0.0 {
+            move_direction.normalize_mut();
+            self._velocity.x = move_direction.x * self._move_speed;
+            self._velocity.z = move_direction.z * self._move_speed;
+        } else {
+            self._velocity.x = 0.0;
+            self._velocity.z = 0.0;
+        }
+
+        begin_block!("apply hit velocity"); {
+            if self._hit_velocity.x != 0.0 || self._hit_velocity.z != 0.0 {
+                self._position += self._hit_velocity * delta_time;
+                let (hit_move_dir, hit_move_distance) = math::make_normalize_with_norm(&self._hit_velocity);
+                self._hit_velocity = hit_move_dir * (hit_move_distance - HIT_VELOCITY_DECAY * delta_time).max(0.0);
+            }
+        }
+
+        // move
+        self._position.x += self._velocity.x * delta_time;
+        self._position.y += self._velocity.y * delta_time;
+        self._position.z += self._velocity.z * delta_time;
+
+        // update rotation
+        self.rotate_to_direction(&move_direction, delta_time);
+
+        begin_block!("check delta limited - prevent pass block");
+        {
+            let delta = self._position - prev_position;
+            if MOVE_LIMIT < delta.x.abs() {
+                self._position.x = prev_position.x + delta.x.signum() * MOVE_LIMIT;
+            }
+
+            if MOVE_LIMIT < delta.y.abs() {
+                self._position.y = prev_position.y + delta.y.signum() * MOVE_LIMIT;
+            }
+
+            if MOVE_LIMIT < delta.z.abs() {
+                self._position.z = prev_position.z + delta.z.signum() * MOVE_LIMIT;
+            }
+        }
+
+        // reset flags
+        let _was_on_ground = self._is_ground;
+        self._is_cliff = true;
+        self._is_blocked = false;
+        self._is_ground = false;
+        self._is_jump = true;
+
+        // reset
+        self._is_jump_start = false;
+
+        if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
+            self._position.z = prev_position.z;
+        }
+    }
+
+    pub fn update_ground_controller(
+        &mut self,
+        owner: &Character,
+        scene_manager: &SceneManager<'a>,
+        character_data: &CharacterData,
+        move_animation: MoveAnimationState,
+        actor_collision: &CollisionData,
+        delta_time: f32,
+    ) {
         let prev_position = self._position.clone();
 
         // update fall time
@@ -262,7 +374,8 @@ impl<'a> CharacterController<'a> {
             self._velocity.z = 0.0;
         }
 
-        begin_block!("apply hit velocity"); {
+        begin_block!("apply hit velocity");
+        {
             if self._hit_velocity.x != 0.0 || self._hit_velocity.z != 0.0 {
                 self._position += self._hit_velocity * delta_time;
                 let (hit_move_dir, hit_move_distance) = math::make_normalize_with_norm(&self._hit_velocity);
@@ -270,7 +383,8 @@ impl<'a> CharacterController<'a> {
             }
         }
 
-        begin_block!("apply slop velocity"); {
+        begin_block!("apply slop velocity");
+        {
             if (self._slop_velocity.x * self._velocity.x + self._slop_velocity.z * self._velocity.z) <= 0.0 {
                 self._position += self._slop_velocity * delta_time;
             }
@@ -420,25 +534,49 @@ impl<'a> CharacterController<'a> {
                     self._velocity.y = 0.0;
                     self._position.y = prev_position.y;
                 } else {
+                    // Cylinder collision response
                     let block_to_player = Vector3::new(
                         self._position.x - block_location.x,
                         0.0,
                         self._position.z - block_location.z,
-                    )
-                        .normalize();
+                    ).normalize();
+
                     if block_to_player.dot(&move_delta.normalize()) < 0.0 {
                         let dist = Vector3::new(
                             prev_position.x - block_location.x,
                             0.0,
                             prev_position.z - block_location.z,
-                        )
-                            .norm();
+                        ).norm();
+
                         let new_pos = block_to_player * dist + block_location;
                         self._position.x = new_pos.x;
                         self._position.z = new_pos.z;
                         self._is_blocked = true;
                         collided_block = collision_object.as_ptr();
                     }
+
+                    // AABB collision response
+                    // let player_box = &current_actor_collision._bounding_box;
+                    // let block_box = block_bound_box;
+                    // let center_dist_x = player_box._center.x - block_box._center.x;
+                    // let center_dist_z = player_box._center.z - block_box._center.z;
+                    // let player_half_width = (player_box._max.x - player_box._min.x) * 0.5;
+                    // let player_half_depth = (player_box._max.z - player_box._min.z) * 0.5;
+                    // let block_half_width = (block_box._max.x - block_box._min.x) * 0.5;
+                    // let block_half_depth = (block_box._max.z - block_box._min.z) * 0.5;
+                    //
+                    // let pen_x = player_half_width + block_half_width - center_dist_x.abs();
+                    // let pen_z = player_half_depth + block_half_depth - center_dist_z.abs();
+                    //
+                    // if pen_x < pen_z {
+                    //     let sign = center_dist_x.signum();
+                    //     self._position.x += pen_x * sign;
+                    // } else {
+                    //     let sign = center_dist_z.signum();
+                    //     self._position.z += pen_z * sign;
+                    // }
+                    // self._is_blocked = true;
+                    // collided_block = collision_object.as_ptr();
                 }
             }
 

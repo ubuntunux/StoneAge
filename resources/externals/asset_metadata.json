@@ -4955,7 +4955,7 @@
             "asset_path": "characters/ufo/ufo",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/ufo/ufo.blend",
             "guid": "",
-            "mtime": 1771432807.4198465,
+            "mtime": 1772462796.8010457,
             "data": {}
         },
         {
@@ -4963,7 +4963,17 @@
             "asset_path": "characters/ufo",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/ufo/ufo.blend",
             "guid": "",
-            "mtime": 1771432807.4198465,
+            "mtime": 1772462796.8010457,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/meshes/props/cube.blend": [
+        {
+            "asset_type": "MESH",
+            "asset_path": "props/cube",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/props/cube.blend",
+            "guid": "",
+            "mtime": 1772465932.866335,
             "data": {}
         }
     ],
@@ -5692,6 +5702,24 @@
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/props/meat.blend",
             "guid": "",
             "mtime": 1770904422.2951384,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/props/cube.blend": [
+        {
+            "asset_type": "MATERIAL_INSTANCE",
+            "asset_path": "props/cube",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/props/cube.blend",
+            "guid": "",
+            "mtime": 1772474244.681188,
+            "data": {}
+        },
+        {
+            "asset_type": "MODEL",
+            "asset_path": "props/cube",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/props/cube.blend",
+            "guid": "",
+            "mtime": 1772474244.681188,
             "data": {}
         }
     ],
@@ -8131,7 +8159,7 @@
             "asset_path": "stage_cave",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/stage_cave.blend",
             "guid": "",
-            "mtime": 1772458249.4145188,
+            "mtime": 1772476427.4346106,
             "data": {}
         }
     ]
