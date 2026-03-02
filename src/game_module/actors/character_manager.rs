@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use rust_engine_3d::audio::audio_manager::AudioManager;
 use rust_engine_3d::core::engine_core::EngineCore;
-use rust_engine_3d::scene::render_object::RenderObjectCreateInfo;
+use rust_engine_3d::scene::render_object::{RenderObjectCreateInfo, SceneObjectType};
 use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
@@ -119,12 +119,8 @@ impl<'a> CharacterManager<'a> {
         let game_resources = ptr_as_ref(self._game_resources);
         let weapon_data = game_resources.get_weapon_data(&weapon_create_info._weapon_data_name);
         let render_object_create_info = RenderObjectCreateInfo {
-            _model_data_name: weapon_data
-                .borrow()
-                ._model_data
-                .borrow()
-                ._model_data_name
-                .clone(),
+            _scene_object_type: SceneObjectType::Default,
+            _model_data_name: weapon_data.borrow()._model_data.borrow()._model_data_name.clone(),
             _position: weapon_create_info._position.clone(),
             _rotation: weapon_create_info._rotation.clone(),
             _scale: weapon_create_info._scale.clone(),
@@ -136,12 +132,7 @@ impl<'a> CharacterManager<'a> {
         );
 
         let mut weapon: Option<Box<Weapon<'a>>> = None;
-        if let Some(weapon_socket) = character
-            ._render_object
-            .borrow()
-            ._sockets
-            .get(&weapon_create_info._weapon_socket_name)
-        {
+        if let Some(weapon_socket) = character._render_object.borrow()._sockets.get(&weapon_create_info._weapon_socket_name) {
             weapon = Some(Box::new(Weapon::create_weapon(
                 weapon_socket,
                 weapon_create_info,
@@ -154,6 +145,7 @@ impl<'a> CharacterManager<'a> {
             character.add_weapon(weapon.unwrap());
         }
     }
+
     pub fn create_character(
         &mut self,
         character_name: &str,
@@ -162,16 +154,13 @@ impl<'a> CharacterManager<'a> {
     ) -> RcRefCell<Character<'a>> {
         let game_resources = ptr_as_ref(self._game_resources);
         let mut spawn_point = character_create_info._position.clone();
-        spawn_point.y = spawn_point.y.max(
-            self.get_scene_manager()
-                .get_height_map_data()
-                .get_height_bilinear(&spawn_point, 0),
-        );
+        spawn_point.y = spawn_point.y.max(self.get_scene_manager().get_height_map_data().get_height_bilinear(&spawn_point, 0));
 
         let character_data_name = character_create_info._character_data_name.as_str();
         let character_data = game_resources.get_character_data(character_data_name);
         let character_data_ref = character_data.borrow();
         let render_object_create_info = RenderObjectCreateInfo {
+            _scene_object_type: SceneObjectType::Default,
             _model_data_name: character_data_ref._model_data_name.clone(),
             _position: spawn_point.clone(),
             _rotation: character_create_info._rotation.clone(),

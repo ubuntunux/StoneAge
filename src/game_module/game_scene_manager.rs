@@ -13,7 +13,7 @@ use crate::game_module::scenario::scenario::{create_scenario, ScenarioBase};
 use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop, AudioManager};
 use rust_engine_3d::core::engine_core::EngineCore;
 use rust_engine_3d::effect::effect_manager::EffectManager;
-use rust_engine_3d::scene::scene_manager::{RenderObjectCreateInfoMap, SceneDataCreateInfo, SceneManager};
+use rust_engine_3d::scene::scene_manager::{SceneDataCreateInfo, SceneManager};
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use rust_engine_3d::begin_block;
@@ -38,8 +38,7 @@ pub struct GameSceneDataCreateInfo {
     pub _items: ItemCreateInfoMap,
     pub _player: CharacterCreateInfoMap,
     pub _props: PropCreateInfoMap,
-    pub _scene: SceneDataCreateInfo,
-    pub _terrain: RenderObjectCreateInfoMap,
+    pub _scene: SceneDataCreateInfo
 }
 
 pub struct GameSceneManager<'a> {
@@ -290,11 +289,6 @@ impl<'a> GameSceneManager<'a> {
 
             // load scene
             scene_manager.create_scene_data(&game_scene_data_ref._scene);
-
-            // terrain
-            for (object_name, render_object_create_info) in game_scene_data_ref._terrain.iter() {
-                scene_manager.add_terrain_render_object(object_name, render_object_create_info);
-            }
 
             scene_manager.set_start_capture_height_map(true);
         }

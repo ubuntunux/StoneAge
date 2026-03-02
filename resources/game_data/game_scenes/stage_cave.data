@@ -138,7 +138,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Bush_Tropical_01": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Bush_Tropical_01",
@@ -156,7 +157,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Bush_Tropical_01.001": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Bush_Tropical_01",
@@ -174,7 +176,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Bush_Tropical_02": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Bush_Tropical_02",
@@ -192,7 +195,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Bush_Tropical_02.001": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Bush_Tropical_02",
@@ -210,7 +214,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Bush_Tropical_03": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Bush_Tropical_03",
@@ -228,7 +233,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Bush_Tropical_04": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Bush_Tropical_04",
@@ -246,7 +252,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Bush_Tropical_04.001": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Bush_Tropical_04",
@@ -264,7 +271,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Bush_Tropical_04.002": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Bush_Tropical_04",
@@ -282,7 +290,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Creeper_Clump_01": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Creeper_Clump_01",
@@ -300,7 +309,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Creeper_Clump_01.001": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Creeper_Clump_01",
@@ -318,7 +328,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_DriftWood_03": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_DriftWood_03",
@@ -336,7 +347,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_DriftWood_03.001": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_DriftWood_03",
@@ -354,7 +366,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_DriftWood_05": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_DriftWood_05",
@@ -372,7 +385,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Fern_Part_01": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Fern_Part_01",
@@ -390,7 +404,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Fern_Part_02": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Fern_Part_02",
@@ -408,7 +423,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Flowers_05": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Flowers_05",
@@ -426,7 +442,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Flowers_Flat_01": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Flowers_Flat_01",
@@ -444,7 +461,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Flowers_Flat_01.001": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Flowers_Flat_01",
@@ -462,7 +480,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Flowers_Flat_01.002": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Flowers_Flat_01",
@@ -480,7 +499,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Flowers_Flat_03": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Flowers_Flat_03",
@@ -498,7 +518,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Flowers_Flat_03.001": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Flowers_Flat_03",
@@ -516,7 +537,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Grass_Med_Clump_01": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Grass_Med_Clump_01",
@@ -534,7 +556,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Grass_Med_Clump_03": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Grass_Med_Clump_03",
@@ -552,7 +575,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Grass_Med_Clump_03.001": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Grass_Med_Clump_03",
@@ -570,7 +594,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Grass_Med_Plane_01": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Grass_Med_Plane_01",
@@ -588,7 +613,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Grass_Med_Plane_01.001": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Grass_Med_Plane_01",
@@ -606,7 +632,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Grass_Short_Clump_01": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Grass_Short_Clump_01",
@@ -624,7 +651,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Grass_Short_Clump_02": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Grass_Short_Clump_02",
@@ -642,7 +670,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Grass_Short_Clump_02.001": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Grass_Short_Clump_02",
@@ -660,7 +689,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Grass_Short_Clump_03": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Grass_Short_Clump_03",
@@ -678,7 +708,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Grass_Short_Clump_03.001": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Grass_Short_Clump_03",
@@ -696,7 +727,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Grass_Short_Clump_03.002": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Grass_Short_Clump_03",
@@ -714,7 +746,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Grass_Short_Plane_01": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Grass_Short_Plane_01",
@@ -732,7 +765,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Grass_Tall_Clump_01": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Grass_Tall_Clump_01",
@@ -750,7 +784,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Grass_Tall_Clump_01.001": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Grass_Tall_Clump_01",
@@ -768,7 +803,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Grass_Tall_Clump_03": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Grass_Tall_Clump_03",
@@ -786,7 +822,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Grass_Tall_Clump_03.001": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Grass_Tall_Clump_03",
@@ -804,7 +841,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Grass_Tall_Clump_03.002": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Grass_Tall_Clump_03",
@@ -822,7 +860,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Grass_Tall_Clump_03.003": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Grass_Tall_Clump_03",
@@ -840,7 +879,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Grass_Tall_Clump_03.004": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Grass_Tall_Clump_03",
@@ -858,7 +898,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Grass_Tall_Clump_03.005": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Grass_Tall_Clump_03",
@@ -876,7 +917,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Grass_Tall_Clump_03.006": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Grass_Tall_Clump_03",
@@ -894,7 +936,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Grass_Tall_Clump_03.007": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Grass_Tall_Clump_03",
@@ -912,7 +955,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Grass_Tall_Clump_03.008": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Grass_Tall_Clump_03",
@@ -930,7 +974,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Grass_Tall_Clump_03.009": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Grass_Tall_Clump_03",
@@ -948,7 +993,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Grass_Tall_Plane_01": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Grass_Tall_Plane_01",
@@ -966,7 +1012,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Ground_Cover_01": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Ground_Cover_01",
@@ -984,7 +1031,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Ground_Cover_02": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Ground_Cover_02",
@@ -1002,7 +1050,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Ground_Cover_02.001": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Ground_Cover_02",
@@ -1020,7 +1069,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Ground_Cover_02.002": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Ground_Cover_02",
@@ -1038,7 +1088,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Ground_Cover_02.003": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Ground_Cover_02",
@@ -1056,7 +1107,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Ground_Cover_02.004": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Ground_Cover_02",
@@ -1074,7 +1126,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Ground_Cover_02.005": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Ground_Cover_02",
@@ -1092,7 +1145,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Ground_Cover_03": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Ground_Cover_03",
@@ -1110,7 +1164,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Ground_Cover_03.001": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Ground_Cover_03",
@@ -1128,7 +1183,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Ground_Cover_03.002": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Ground_Cover_03",
@@ -1146,7 +1202,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Growth_Plane_01": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Growth_Plane_01",
@@ -1164,7 +1221,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Growth_Plane_01.001": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Growth_Plane_01",
@@ -1182,7 +1240,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Growth_Plane_01.002": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Growth_Plane_01",
@@ -1200,7 +1259,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Growth_Plane_01.003": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Growth_Plane_01",
@@ -1218,7 +1278,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Growth_Plane_01.004": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Growth_Plane_01",
@@ -1236,7 +1297,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Growth_Plane_01.005": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Growth_Plane_01",
@@ -1254,7 +1316,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Growth_Plane_01.006": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Growth_Plane_01",
@@ -1272,7 +1335,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Rock_Arch_01": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Rock_Arch_01",
@@ -1290,7 +1354,8 @@
                     0.6739541888237,
                     0.9533334374427795,
                     0.4605894684791565
-                ]
+                ],
+                "_scene_object_type": "NoCollision"
             },
             "SM_Env_Rock_Cliff_02.001": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Rock_Cliff_02",
@@ -1308,7 +1373,8 @@
                     1.0,
                     1.7090758085250854,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "NoCollision"
             },
             "SM_Env_Rock_Cliff_02.002": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Rock_Cliff_02",
@@ -1326,7 +1392,8 @@
                     1.0000001192092896,
                     1.4145374298095703,
                     1.0000001192092896
-                ]
+                ],
+                "_scene_object_type": "NoCollision"
             },
             "SM_Env_Rock_Cliff_02.003": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Rock_Cliff_02",
@@ -1344,7 +1411,8 @@
                     1.0,
                     1.4145374298095703,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "NoCollision"
             },
             "SM_Env_Rock_Cliff_02.004": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Rock_Cliff_02",
@@ -1362,7 +1430,8 @@
                     1.0,
                     1.4145374298095703,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "NoCollision"
             },
             "SM_Env_Rock_Cliff_02.005": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Rock_Cliff_02",
@@ -1380,7 +1449,8 @@
                     1.0,
                     1.4145374298095703,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "NoCollision"
             },
             "SM_Env_Rock_Cliff_02.006": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Rock_Cliff_02",
@@ -1398,7 +1468,8 @@
                     1.0,
                     1.4145374298095703,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "NoCollision"
             },
             "SM_Env_Rock_Cliff_02.007": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Rock_Cliff_02",
@@ -1416,7 +1487,8 @@
                     1.0,
                     1.4145374298095703,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "NoCollision"
             },
             "SM_Env_Rock_Cliff_02.008": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Rock_Cliff_02",
@@ -1434,7 +1506,8 @@
                     1.0,
                     1.4145374298095703,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "NoCollision"
             },
             "SM_Env_Rock_Cliff_02.009": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Rock_Cliff_02",
@@ -1452,9 +1525,13 @@
                     1.8944495916366577,
                     2.67976975440979,
                     1.8944495916366577
-                ]
+                ],
+                "_scene_object_type": "NoCollision"
             },
             "SM_Env_Rock_Cliff_02.010": {
+                "_instance_parameters": {
+                    "prop": 1.0
+                },
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Rock_Cliff_02",
                 "_position": [
                     -16.415416717529297,
@@ -1470,7 +1547,8 @@
                     1.0,
                     1.7090758085250854,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "NoCollision"
             },
             "SM_Env_Rock_Cliff_02.011": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Rock_Cliff_02",
@@ -1488,9 +1566,13 @@
                     1.8944495916366577,
                     2.67976975440979,
                     1.8944495916366577
-                ]
+                ],
+                "_scene_object_type": "NoCollision"
             },
             "SM_Env_Rock_Pile_02": {
+                "_instance_parameters": {
+                    "enable_collision": true
+                },
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Rock_Pile_02",
                 "_position": [
                     -5.5801897048950195,
@@ -1506,7 +1588,8 @@
                     4.757809638977051,
                     1.0,
                     4.757809638977051
-                ]
+                ],
+                "_scene_object_type": "NoCollision"
             },
             "SM_Env_Rock_Pile_04": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Rock_Pile_04",
@@ -1524,7 +1607,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Seaweed_Beach_01": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Seaweed_Beach_01",
@@ -1542,7 +1626,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Seaweed_Beach_01.001": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Seaweed_Beach_01",
@@ -1560,7 +1645,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Seaweed_Beach_01.002": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Seaweed_Beach_01",
@@ -1578,7 +1664,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Seaweed_Beach_01.003": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Seaweed_Beach_01",
@@ -1596,7 +1683,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Tree_Pohutukawa_01": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Tree_Pohutukawa_01",
@@ -1614,7 +1702,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Env_Tree_Pohutukawa_03": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Tree_Pohutukawa_03",
@@ -1632,7 +1721,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Prop_Coconut_01": {
                 "_model_data_name": "PolygonNatureBiomes/Props/SM_Prop_Coconut_01",
@@ -1650,7 +1740,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Prop_Coconut_02": {
                 "_model_data_name": "PolygonNatureBiomes/Props/SM_Prop_Coconut_02",
@@ -1668,7 +1759,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Prop_Coconut_02.001": {
                 "_model_data_name": "PolygonNatureBiomes/Props/SM_Prop_Coconut_02",
@@ -1686,7 +1778,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Prop_Coconut_02.002": {
                 "_model_data_name": "PolygonNatureBiomes/Props/SM_Prop_Coconut_02",
@@ -1704,7 +1797,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Prop_Coconut_Half_01": {
                 "_model_data_name": "PolygonNatureBiomes/Props/SM_Prop_Coconut_Half_01",
@@ -1722,7 +1816,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Prop_Coral_06": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Prop_Coral_06",
@@ -1740,7 +1835,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Prop_Coral_07": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Prop_Coral_07",
@@ -1758,7 +1854,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Prop_GiantClam_01": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Prop_GiantClam_01",
@@ -1776,7 +1873,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "SM_Prop_Starfish_01": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Prop_Starfish_01",
@@ -1794,7 +1892,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "hyacinth.001": {
                 "_model_data_name": "environments/hyacinth",
@@ -1812,7 +1911,27 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
+            },
+            "landscape_cave": {
+                "_model_data_name": "landscapes/landscape_cave",
+                "_position": [
+                    0.0,
+                    10.0,
+                    0.0
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    2.0,
+                    1.0,
+                    2.0
+                ],
+                "_scene_object_type": "Terrain"
             },
             "leaves_00": {
                 "_model_data_name": "environments/leaves_00",
@@ -1830,7 +1949,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "NoCollision"
             },
             "leaves_00.002": {
                 "_model_data_name": "environments/leaves_00",
@@ -1848,7 +1968,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "NoCollision"
             },
             "leaves_00.003": {
                 "_model_data_name": "environments/leaves_00",
@@ -1866,7 +1987,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "NoCollision"
             },
             "leaves_02": {
                 "_model_data_name": "environments/leaves_02",
@@ -1884,7 +2006,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "leaves_02.001": {
                 "_model_data_name": "environments/leaves_02",
@@ -1902,7 +2025,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "leaves_02.002": {
                 "_model_data_name": "environments/leaves_02",
@@ -1920,7 +2044,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             },
             "leaves_02.003": {
                 "_model_data_name": "environments/leaves_02",
@@ -1938,7 +2063,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "NoCollision"
             },
             "leaves_02.004": {
                 "_model_data_name": "environments/leaves_02",
@@ -1956,7 +2082,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "NoCollision"
             },
             "leaves_02.005": {
                 "_model_data_name": "environments/leaves_02",
@@ -1974,7 +2101,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "NoCollision"
             },
             "leaves_02.006": {
                 "_model_data_name": "environments/leaves_02",
@@ -1992,7 +2120,8 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "NoCollision"
             },
             "sunflower": {
                 "_model_data_name": "environments/sunflower",
@@ -2010,28 +2139,9 @@
                     1.0,
                     1.0,
                     1.0
-                ]
+                ],
+                "_scene_object_type": "Default"
             }
-        }
-    },
-    "_terrain": {
-        "landscape_cave": {
-            "_model_data_name": "landscapes/landscape_cave",
-            "_position": [
-                -5.565954208374023,
-                10.0,
-                2.593785285949707
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                2.0,
-                1.0,
-                2.0
-            ]
         }
     }
 }
