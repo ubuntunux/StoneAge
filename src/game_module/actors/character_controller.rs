@@ -5,7 +5,7 @@ use crate::game_module::actors::character_data::{CharacterData, MoveAnimationSta
 use crate::game_module::game_constants::*;
 use nalgebra::{Vector3};
 use rust_engine_3d::{begin_block};
-use rust_engine_3d::scene::collision::CollisionData;
+use rust_engine_3d::scene::collision::{CollisionData, CollisionType};
 use rust_engine_3d::scene::render_object::RenderObjectData;
 use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::math;
@@ -534,49 +534,99 @@ impl<'a> CharacterController<'a> {
                     self._velocity.y = 0.0;
                     self._position.y = prev_position.y;
                 } else {
-                    // Cylinder collision response
-                    let block_to_player = Vector3::new(
-                        self._position.x - block_location.x,
-                        0.0,
-                        self._position.z - block_location.z,
-                    ).normalize();
+                    let mut push_vec = Vector3::zeros();
+                    let char_center_xz = Vector3::new(self._position.x, 0.0, self._position.z);
+                    let block_center_xz = Vector3::new(block_location.x, 0.0, block_location.z);
 
-                    if block_to_player.dot(&move_delta.normalize()) < 0.0 {
-                        let dist = Vector3::new(
-                            prev_position.x - block_location.x,
-                            0.0,
-                            prev_position.z - block_location.z,
-                        ).norm();
+                    match block_render_object._collision._collision_type {
+                        CollisionType::BOX => {
+                            let to_char = char_center_xz - block_center_xz;
+                            let box_rot_inv = block_bound_box._orientation.transpose();
+                            let local_char = box_rot_inv * to_char;
+                            let ext = block_bound_box._extents;
 
-                        let new_pos = block_to_player * dist + block_location;
-                        self._position.x = new_pos.x;
-                        self._position.z = new_pos.z;
-                        self._is_blocked = true;
-                        collided_block = collision_object.as_ptr();
+                            let is_inside = local_char.x.abs() < ext.x && local_char.z.abs() < ext.z;
+                            let mut normal_world = Vector3::zeros();
+                            let mut dist_to_surface = 0.0;
+
+                            if is_inside {
+                                let d_x_pos = ext.x - local_char.x;
+                                let d_x_neg = local_char.x - (-ext.x);
+                                let d_z_pos = ext.z - local_char.z;
+                                let d_z_neg = local_char.z - (-ext.z);
+
+                                let min_d = d_x_pos.min(d_x_neg).min(d_z_pos).min(d_z_neg);
+                                let mut normal_local = Vector3::zeros();
+
+                                if min_d == d_x_pos { normal_local = Vector3::new(1.0, 0.0, 0.0); }
+                                else if min_d == d_x_neg { normal_local = Vector3::new(-1.0, 0.0, 0.0); }
+                                else if min_d == d_z_pos { normal_local = Vector3::new(0.0, 0.0, 1.0); }
+                                else { normal_local = Vector3::new(0.0, 0.0, -1.0); }
+
+                                normal_world = block_bound_box._orientation * normal_local;
+                                dist_to_surface = min_d;
+                            } else {
+                                let closest_local = Vector3::new(
+                                    local_char.x.clamp(-ext.x, ext.x),
+                                    0.0,
+                                    local_char.z.clamp(-ext.z, ext.z)
+                                );
+                                let normal_local = local_char - closest_local;
+                                let dist = normal_local.norm();
+                                if dist > 1e-6 {
+                                    normal_world = (block_bound_box._orientation * normal_local).normalize();
+                                    dist_to_surface = -dist;
+                                }
+                            }
+
+                            if normal_world.magnitude_squared() > 0.0 {
+                                let penetration = current_actor_collision._bounding_box._mag_xz * 0.5 + dist_to_surface;
+                                if penetration > 0.0 {
+                                    push_vec = normal_world * penetration;
+                                }
+                            }
+                        },
+                        CollisionType::CYLINDER | CollisionType::SPHERE => {
+                            let diff = char_center_xz - block_center_xz;
+                            let dist = diff.norm();
+                            let dir = if dist < 1e-6 { Vector3::new(1.0, 0.0, 0.0) } else { diff / dist };
+
+                            let r_char = current_actor_collision._bounding_box._mag_xz * 0.5;
+                            let r_block = block_bound_box._mag_xz * 0.5;
+
+                            let penetration = (r_char + r_block) - dist;
+                            if penetration > 0.0 {
+                                push_vec = dir * penetration;
+                            }
+                        },
+                        _ => {}
                     }
 
-                    // AABB collision response
-                    // let player_box = &current_actor_collision._bounding_box;
-                    // let block_box = block_bound_box;
-                    // let center_dist_x = player_box._center.x - block_box._center.x;
-                    // let center_dist_z = player_box._center.z - block_box._center.z;
-                    // let player_half_width = (player_box._max.x - player_box._min.x) * 0.5;
-                    // let player_half_depth = (player_box._max.z - player_box._min.z) * 0.5;
-                    // let block_half_width = (block_box._max.x - block_box._min.x) * 0.5;
-                    // let block_half_depth = (block_box._max.z - block_box._min.z) * 0.5;
-                    //
-                    // let pen_x = player_half_width + block_half_width - center_dist_x.abs();
-                    // let pen_z = player_half_depth + block_half_depth - center_dist_z.abs();
-                    //
-                    // if pen_x < pen_z {
-                    //     let sign = center_dist_x.signum();
-                    //     self._position.x += pen_x * sign;
-                    // } else {
-                    //     let sign = center_dist_z.signum();
-                    //     self._position.z += pen_z * sign;
-                    // }
-                    // self._is_blocked = true;
-                    // collided_block = collision_object.as_ptr();
+                    if push_vec.magnitude_squared() > 0.0 {
+                        self._position.x += push_vec.x;
+                        self._position.z += push_vec.z;
+                        self._is_blocked = true;
+                        collided_block = collision_object.as_ptr();
+
+                        let push_vec_xz = Vector3::new(push_vec.x, 0.0, push_vec.z);
+                        if push_vec_xz.magnitude_squared() > 0.0 {
+                            let push_dir = push_vec_xz.normalize();
+                            let vel_dot = self._velocity.dot(&push_dir);
+                            if vel_dot < 0.0 {
+                                self._velocity -= push_dir * vel_dot;
+                            }
+
+                            let slop_dot = self._slop_velocity.dot(&push_dir);
+                            if slop_dot < 0.0 {
+                                self._slop_velocity -= push_dir * slop_dot;
+                            }
+
+                            let hit_dot = self._hit_velocity.dot(&push_dir);
+                            if hit_dot < 0.0 {
+                                self._hit_velocity -= push_dir * hit_dot;
+                            }
+                        }
+                    }
                 }
             }
 

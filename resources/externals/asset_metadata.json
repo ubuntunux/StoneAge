@@ -4949,24 +4949,6 @@
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/ufo/ufo.blend": [
-        {
-            "asset_type": "MESH",
-            "asset_path": "characters/ufo/ufo",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/ufo/ufo.blend",
-            "guid": "",
-            "mtime": 1772462796.8010457,
-            "data": {}
-        },
-        {
-            "asset_type": "MATERIAL_INSTANCE",
-            "asset_path": "characters/ufo",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/ufo/ufo.blend",
-            "guid": "",
-            "mtime": 1772462796.8010457,
-            "data": {}
-        }
-    ],
     "/mnt/Workspace/StoneAge/resources/externals/meshes/props/cube.blend": [
         {
             "asset_type": "MESH",
@@ -4974,6 +4956,24 @@
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/props/cube.blend",
             "guid": "",
             "mtime": 1772465932.866335,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/ufo/ufo.blend": [
+        {
+            "asset_type": "MESH",
+            "asset_path": "characters/ufo/ufo",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/ufo/ufo.blend",
+            "guid": "",
+            "mtime": 1772564217.9105966,
+            "data": {}
+        },
+        {
+            "asset_type": "MATERIAL_INSTANCE",
+            "asset_path": "characters/ufo",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/ufo/ufo.blend",
+            "guid": "",
+            "mtime": 1772564217.9105966,
             "data": {}
         }
     ],
@@ -8159,7 +8159,7 @@
             "asset_path": "stage_cave",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/stage_cave.blend",
             "guid": "",
-            "mtime": 1772476427.4346106,
+            "mtime": 1772560850.466527,
             "data": {}
         }
     ]

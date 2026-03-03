@@ -58,7 +58,30 @@
             ]
         }
     },
-    "_props": {},
+    "_props": {
+        "gate": {
+            "_instance_parameters": {
+                "_linked_gate": "gate.001",
+                "_linked_stage": "game_scenes/intro_stage"
+            },
+            "_position": [
+                0.13453584909439087,
+                8.817523956298828,
+                7.001183032989502
+            ],
+            "_prop_data_name": "props/gate",
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                3.280320882797241,
+                3.280320882797241,
+                3.280320882797241
+            ]
+        }
+    },
     "_scene": {
         "_cameras": {
             "Camera": {
