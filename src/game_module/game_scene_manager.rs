@@ -79,6 +79,10 @@ impl<'a> GameSceneManager<'a> {
         ptr_as_ref(self._scene_manager)
     }
 
+    pub fn get_scene_manager_ptr(&self) -> *const SceneManager<'a> {
+        self._scene_manager
+    }
+
     pub fn get_scene_manager_mut(&self) -> &mut SceneManager<'a> {
         ptr_as_mut(self._scene_manager)
     }

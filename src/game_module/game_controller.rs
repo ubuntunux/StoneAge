@@ -13,6 +13,7 @@ use rust_engine_3d::scene::camera::CameraObjectData;
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use winit::keyboard::KeyCode;
+use rust_engine_3d::scene::collision::{CollisionCreateInfo, CollisionData, CollisionType};
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Debug, Display, EnumIter, EnumString, EnumCount)]
 pub enum InputControlType {
@@ -294,16 +295,75 @@ impl<'a> GameController<'a> {
 
         let pivot = player.get_bounding_box()._center + Vector3::new(0.0, CAMERA_OFFSET_Y, 0.0);
         let camera_dir = -main_camera._transform_object.get_front();
-        self._camera_position = pivot + camera_dir * self._camera_distance;
-        let mut collision_point: Vector3<f32> = Vector3::zeros();
-        let scene_manager = self.get_game_client().get_game_scene_manager().get_scene_manager();
+        let mut prev_camera_position = self._camera_position.clone();
+        let mut camera_position = pivot + camera_dir * self._camera_distance;
+        let camera_move_delta = self._camera_position - prev_camera_position;
+
+        let scene_manager = ptr_as_ref(self.get_game_client().get_game_scene_manager().get_scene_manager_ptr());
+
+        // check collide with block
+        {
+            let bound_size = 0.5;
+            let collision_info = CollisionCreateInfo {
+                _collision_type: CollisionType::CYLINDER,
+                _location: camera_position.clone(),
+                _extents: Vector3::new(bound_size, bound_size, bound_size),
+            };
+            let camera_collision = CollisionData::create_collision(&collision_info);
+            let mut collision_pos_min = math::get_min(
+                &camera_collision._bounding_box._min,
+                &(camera_collision._bounding_box._min - camera_move_delta),
+            );
+            collision_pos_min = math::get_min(&collision_pos_min, &pivot);
+
+            let mut collision_pos_max = math::get_max(
+                &camera_collision._bounding_box._max,
+                &(camera_collision._bounding_box._max - camera_move_delta),
+            );
+            collision_pos_max = math::get_max(&collision_pos_max, &pivot);
+
+            let collision_objects = scene_manager.collect_collision_objects(&collision_pos_min, &collision_pos_max);
+
+            // check ground and side
+            for collision_object in collision_objects.values() {
+                let block_render_object = ptr_as_ref(collision_object.as_ptr());
+                let block_bound_box = &block_render_object._collision._bounding_box;
+                if camera_collision.collide_collision(&block_render_object._collision) {
+                    let prev_height = prev_camera_position.y;
+                    prev_camera_position = camera_position;
+
+                    if camera_move_delta.y <= 0.0 && block_bound_box._max.y <= prev_height {
+                        camera_position.y = block_bound_box._max.y + bound_size;
+                    } else if 0.0 < camera_move_delta.y && camera_collision._bounding_box._max.y < block_bound_box._min.y {
+                        camera_position.y = prev_height;
+                    } else {
+                        let push_vec = camera_collision.push_by_collide(&block_render_object._collision);
+                        if push_vec.x != 0.0 || push_vec.z != 0.0 {
+                            camera_position.x += push_vec.x;
+                            camera_position.z += push_vec.z;
+                        }
+                    }
+
+                    // check line of sight
+                    if let Some(hit_dist) = block_render_object._collision.collide_ray(&pivot, &camera_dir) {
+                        if (hit_dist - bound_size) < self._camera_distance {
+                            self._camera_distance = hit_dist - bound_size;
+                            camera_position = pivot + camera_dir * (hit_dist - bound_size);
+                        }
+                    }
+                }
+            }
+        }
+        self._camera_position = camera_position;
+
+        // check height map collision
         if scene_manager.get_height_map_data().get_collision_point(
             &(pivot + camera_dir),
             &camera_dir,
             self._camera_distance,
             CAMERA_COLLIDE_PADDING,
-            &mut collision_point) {
-            self._camera_position = collision_point;
+            &mut camera_position) {
+            self._camera_position = camera_position;
         }
         main_camera._transform_object.set_position(&self._camera_position);
     }
