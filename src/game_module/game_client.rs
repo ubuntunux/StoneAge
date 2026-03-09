@@ -6,7 +6,7 @@ use crate::game_module::game_controller::GameController;
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::{GameSceneManager, GameSceneState};
 use crate::game_module::game_ui_manager::{EditorUIManager, GameUIManager};
-use nalgebra::Vector2;
+use nalgebra::{Vector2, Vector3};
 use rust_engine_3d::core::engine_core::EngineCore;
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
 
@@ -127,6 +127,7 @@ impl<'a> GameClient<'a> {
                     player_position.z = player.borrow().get_position().z;
                 }
                 player.borrow_mut().set_position(&player_position);
+                player.borrow_mut().set_on_ground(player_position.y, &Vector3::new(0.0, 1.0, 0.0));
             }
         }
     }

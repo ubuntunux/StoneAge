@@ -9,7 +9,7 @@ pub struct BehaviorUfo {
 }
 
 impl BehaviorBase for BehaviorUfo {
-    fn initialize_behavior(&mut self, _owner: &mut Character, position: &Vector3<f32>) {
+    fn initialize_behavior(&mut self, _owner: &mut Character, _position: &Vector3<f32>) {
         self._behavior_state = BehaviorState::None;
     }
 

@@ -231,16 +231,19 @@ impl<'a> GameSceneManager<'a> {
         }
 
         if self._teleport_stage.is_none() && self._teleport_gate.is_some() && self.is_game_scene_state(GameSceneState::PlayGame) {
-            let teleport_point = self.get_prop_manager().get_teleport_point(self._teleport_gate.as_ref().unwrap().as_str());
-            if teleport_point.is_some() && character_manager.is_valid_player() {
-                log::info!("pos: {:?}", teleport_point.as_ref().unwrap());
-                if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
-                    character_manager.get_player().borrow_mut().set_position_xy(teleport_point.as_ref().unwrap());
-                } else {
-                    character_manager.get_player().borrow_mut().set_position(teleport_point.as_ref().unwrap());
+            if character_manager.is_valid_player() {
+                if let Some(teleport_point) = self.get_prop_manager().get_teleport_point(self._teleport_gate.as_ref().unwrap().as_str()) {
+                    if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
+                        character_manager.get_player().borrow_mut().set_position_xy(&teleport_point);
+                    } else {
+                        let height_map_data = self.get_scene_manager().get_height_map_data();
+                        let ground_height = height_map_data.get_height_bilinear(&teleport_point, 0);
+                        let ground_normal = height_map_data.get_normal_bilinear(&teleport_point);
+                        character_manager.get_player().borrow_mut().set_position(&teleport_point);
+                        character_manager.get_player().borrow_mut().set_on_ground(ground_height, &ground_normal);
+                    }
                 }
             }
-            log::info!("is_some: {:?}", teleport_point.is_some());
             self._teleport_gate = None;
         }
     }

@@ -956,6 +956,10 @@ impl<'a> Character<'a> {
         self._controller.set_position(position);
     }
 
+    pub fn set_on_ground(&mut self, ground_height: f32, ground_normal: &Vector3<f32>) {
+        self._controller.set_on_ground(ground_height, ground_normal);
+    }
+
     pub fn set_move_speed(&mut self, speed: f32) {
         self._controller.set_move_speed(speed);
     }
