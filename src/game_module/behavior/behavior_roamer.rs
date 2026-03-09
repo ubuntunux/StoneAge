@@ -15,12 +15,7 @@ pub struct BehaviorRoamer {
     pub _behavior_state: BehaviorState,
 }
 
-impl BehaviorBase for BehaviorRoamer {
-    fn initialize_behavior(&mut self, _owner: &mut Character, position: &Vector3<f32>) {
-        self._spawn_point = position.clone();
-        self._behavior_state = BehaviorState::None;
-    }
-
+impl BehaviorRoamer {
     fn is_enemy_in_range(&self, owner: &Character, player: Option<&Character>) -> bool {
         if let Some(player) = player {
             if player.is_alive() {
@@ -29,67 +24,12 @@ impl BehaviorBase for BehaviorRoamer {
         }
         false
     }
+}
 
-    fn set_behavior(
-        &mut self,
-        behavior_state: BehaviorState,
-        owner: &mut Character,
-        player: Option<&Character>,
-        is_force: bool,
-    ) {
-        if self._behavior_state != behavior_state || is_force {
-            self.end_behavior(owner, player);
-
-            self._behavior_state = behavior_state;
-            match behavior_state {
-                BehaviorState::Idle => {
-                    owner.set_move_stop();
-                    self._idle_time =
-                        lerp(NPC_IDLE_TERM_MIN, NPC_IDLE_TERM_MAX, rand::random::<f32>());
-                }
-                BehaviorState::Move => {
-                    let move_area = Vector3::new(
-                        rand::random::<f32>() - 0.5,
-                        0.0,
-                        if GAME_VIEW_MODE == GameViewMode::GameViewMode2D { 0.0 } else { rand::random::<f32>() - 0.5 },
-                    )
-                    .normalize()
-                        * NPC_ROAMING_RADIUS;
-                    self._target_point = self._spawn_point + move_area;
-                    self._move_direction = (self._target_point - owner.get_position()).normalize();
-                    self._move_time = NPC_ROAMING_TIME;
-                    owner.set_move(&self._move_direction);
-                    owner.set_run(false);
-                }
-                BehaviorState::Chase => {
-                    // growl
-                    //owner.get_character_manager().get_scene_manager().play_audio(&owner._audio_growl);
-                }
-                BehaviorState::Attack => {
-                    let to_player_direction = (player.as_ref().unwrap().get_position() - owner.get_position()).normalize();
-                    owner.set_move_direction(&to_player_direction, false);
-                    if !NPC_AVAILABLE_MOVING_ATTACK {
-                        owner.set_move_stop();
-                    }
-                    owner.set_action_attack();
-                    self._attack_time = lerp(
-                        NPC_ATTACK_TERM_MIN,
-                        NPC_ATTACK_TERM_MAX,
-                        rand::random::<f32>(),
-                    );
-
-                    // growl
-                    owner.get_character_manager().get_scene_manager().play_audio(&owner._character_data.borrow()._audio_data._audio_growl);
-                }
-                _ => (),
-            }
-        }
-    }
-
-    fn end_behavior(&mut self, _owner: &mut Character, _player: Option<&Character>) {
-        match self._behavior_state {
-            _ => (),
-        }
+impl BehaviorBase for BehaviorRoamer {
+    fn initialize_behavior(&mut self, _owner: &mut Character, position: &Vector3<f32>) {
+        self._spawn_point = position.clone();
+        self._behavior_state = BehaviorState::None;
     }
 
     fn update_behavior(
@@ -174,6 +114,68 @@ impl BehaviorBase for BehaviorRoamer {
                     self.set_behavior(BehaviorState::Idle, owner, player, false);
                 }
             }
+            _ => (),
+        }
+    }
+
+    fn set_behavior(
+        &mut self,
+        behavior_state: BehaviorState,
+        owner: &mut Character,
+        player: Option<&Character>,
+        is_force: bool,
+    ) {
+        if self._behavior_state != behavior_state || is_force {
+            self.end_behavior(owner, player);
+
+            self._behavior_state = behavior_state;
+            match behavior_state {
+                BehaviorState::Idle => {
+                    owner.set_move_stop();
+                    self._idle_time =
+                        lerp(NPC_IDLE_TERM_MIN, NPC_IDLE_TERM_MAX, rand::random::<f32>());
+                }
+                BehaviorState::Move => {
+                    let move_area = Vector3::new(
+                        rand::random::<f32>() - 0.5,
+                        0.0,
+                        if GAME_VIEW_MODE == GameViewMode::GameViewMode2D { 0.0 } else { rand::random::<f32>() - 0.5 },
+                    )
+                    .normalize()
+                        * NPC_ROAMING_RADIUS;
+                    self._target_point = self._spawn_point + move_area;
+                    self._move_direction = (self._target_point - owner.get_position()).normalize();
+                    self._move_time = NPC_ROAMING_TIME;
+                    owner.set_move(&self._move_direction);
+                    owner.set_run(false);
+                }
+                BehaviorState::Chase => {
+                    // growl
+                    //owner.get_character_manager().get_scene_manager().play_audio(&owner._audio_growl);
+                }
+                BehaviorState::Attack => {
+                    let to_player_direction = (player.as_ref().unwrap().get_position() - owner.get_position()).normalize();
+                    owner.set_move_direction(&to_player_direction, false);
+                    if !NPC_AVAILABLE_MOVING_ATTACK {
+                        owner.set_move_stop();
+                    }
+                    owner.set_action_attack();
+                    self._attack_time = lerp(
+                        NPC_ATTACK_TERM_MIN,
+                        NPC_ATTACK_TERM_MAX,
+                        rand::random::<f32>(),
+                    );
+
+                    // growl
+                    owner.get_character_manager().get_scene_manager().play_audio(&owner._character_data.borrow()._audio_data._audio_growl);
+                }
+                _ => (),
+            }
+        }
+    }
+
+    fn end_behavior(&mut self, _owner: &mut Character, _player: Option<&Character>) {
+        match self._behavior_state {
             _ => (),
         }
     }

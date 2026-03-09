@@ -1,7 +1,7 @@
 use crate::game_module::actors::character::Character;
 use crate::game_module::actors::character_data::ActionAnimationState;
 use crate::game_module::behavior::behavior_base::{BehaviorBase, BehaviorState};
-use crate::game_module::game_constants::{GameViewMode, ARRIVAL_DISTANCE_THRESHOLD, GAME_VIEW_MODE, NPC_IDLE_TERM_MAX, NPC_IDLE_TERM_MIN, NPC_ROAMING_RADIUS, NPC_ROAMING_TIME, NPC_TRACKING_RANGE};
+use crate::game_module::game_constants::{GameViewMode, ARRIVAL_DISTANCE_THRESHOLD, GAME_VIEW_MODE, NPC_IDLE_TERM_MAX, NPC_IDLE_TERM_MIN, NPC_ROAMING_RADIUS, NPC_ROAMING_TIME};
 use nalgebra::Vector3;
 use rust_engine_3d::utilities::math::lerp;
 
@@ -19,15 +19,6 @@ impl BehaviorBase for BehaviorCivilian {
     fn initialize_behavior(&mut self, _owner: &mut Character, position: &Vector3<f32>) {
         self._spawn_point = position.clone();
         self._behavior_state = BehaviorState::None;
-    }
-
-    fn is_enemy_in_range(&self, owner: &Character, player: Option<&Character>) -> bool {
-        if let Some(player) = player {
-            if player.is_alive() {
-                return owner.check_in_range(player.get_collision(), NPC_TRACKING_RANGE, false);
-            }
-        }
-        false
     }
 
     fn update_behavior(

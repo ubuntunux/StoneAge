@@ -214,7 +214,7 @@ impl<'a> GameSceneManager<'a> {
 
     // update teleport
     pub fn is_teleport_mode(&self) -> bool {
-        self._teleport_stage.is_some()
+        self._teleport_stage.is_some() || self._teleport_gate.is_some()
     }
     pub fn set_teleport_stage(&mut self, teleport_stage: &str, teleport_gate: &str) {
         self._teleport_stage = Some(String::from(teleport_stage));
@@ -233,12 +233,14 @@ impl<'a> GameSceneManager<'a> {
         if self._teleport_stage.is_none() && self._teleport_gate.is_some() && self.is_game_scene_state(GameSceneState::PlayGame) {
             let teleport_point = self.get_prop_manager().get_teleport_point(self._teleport_gate.as_ref().unwrap().as_str());
             if teleport_point.is_some() && character_manager.is_valid_player() {
+                log::info!("pos: {:?}", teleport_point.as_ref().unwrap());
                 if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
                     character_manager.get_player().borrow_mut().set_position_xy(teleport_point.as_ref().unwrap());
                 } else {
                     character_manager.get_player().borrow_mut().set_position(teleport_point.as_ref().unwrap());
                 }
             }
+            log::info!("is_some: {:?}", teleport_point.is_some());
             self._teleport_gate = None;
         }
     }

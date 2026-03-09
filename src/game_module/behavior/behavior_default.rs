@@ -1,6 +1,6 @@
 use crate::game_module::actors::character::Character;
 use crate::game_module::behavior::behavior_base::{BehaviorBase, BehaviorState};
-use crate::game_module::game_constants::{GameViewMode, ARRIVAL_DISTANCE_THRESHOLD, GAME_VIEW_MODE, NPC_IDLE_TERM_MAX, NPC_IDLE_TERM_MIN, NPC_ROAMING_RADIUS, NPC_ROAMING_TIME, NPC_TRACKING_RANGE};
+use crate::game_module::game_constants::{GameViewMode, ARRIVAL_DISTANCE_THRESHOLD, GAME_VIEW_MODE, NPC_IDLE_TERM_MAX, NPC_IDLE_TERM_MIN, NPC_ROAMING_RADIUS, NPC_ROAMING_TIME};
 use nalgebra::Vector3;
 use rust_engine_3d::utilities::math::lerp;
 
@@ -20,13 +20,45 @@ impl BehaviorBase for BehaviorDefault {
         self._behavior_state = BehaviorState::None;
     }
 
-    fn is_enemy_in_range(&self, owner: &Character, player: Option<&Character>) -> bool {
-        if let Some(player) = player {
-            if player.is_alive() {
-                return owner.check_in_range(player.get_collision(), NPC_TRACKING_RANGE, false);
+    fn update_behavior(
+        &mut self,
+        owner: &mut Character,
+        player: Option<&Character>,
+        delta_time: f32,
+    ) {
+        match self._behavior_state {
+            BehaviorState::None => {
+                self.set_behavior(BehaviorState::Idle, owner, player, false);
             }
+            BehaviorState::Idle => {
+                if self._idle_time < 0.0 {
+                    self.set_behavior(BehaviorState::Move, owner, player, false);
+                }
+                self._idle_time -= delta_time;
+            }
+            BehaviorState::Move => {
+                let mut do_idle: bool = false;
+                if 0.0 < self._move_time {
+                    let offset = self._target_point - owner.get_position();
+                    let dist = offset.x * offset.x + offset.z * offset.z;
+                    if dist < ARRIVAL_DISTANCE_THRESHOLD {
+                        do_idle = true;
+                    } else if (owner._controller._is_blocked || owner._controller._is_cliff)
+                        && !owner.is_falling()
+                    {
+                        do_idle = true;
+                    }
+                } else {
+                    do_idle = true;
+                }
+
+                if do_idle {
+                    self.set_behavior(BehaviorState::Idle, owner, player, false);
+                }
+                self._move_time -= delta_time;
+            }
+            _ => (),
         }
-        false
     }
 
     fn set_behavior(
@@ -67,47 +99,6 @@ impl BehaviorBase for BehaviorDefault {
 
     fn end_behavior(&mut self, _owner: &mut Character, _player: Option<&Character>) {
         match self._behavior_state {
-            _ => (),
-        }
-    }
-
-    fn update_behavior(
-        &mut self,
-        owner: &mut Character,
-        player: Option<&Character>,
-        delta_time: f32,
-    ) {
-        match self._behavior_state {
-            BehaviorState::None => {
-                self.set_behavior(BehaviorState::Idle, owner, player, false);
-            }
-            BehaviorState::Idle => {
-                if self._idle_time < 0.0 {
-                    self.set_behavior(BehaviorState::Move, owner, player, false);
-                }
-                self._idle_time -= delta_time;
-            }
-            BehaviorState::Move => {
-                let mut do_idle: bool = false;
-                if 0.0 < self._move_time {
-                    let offset = self._target_point - owner.get_position();
-                    let dist = offset.x * offset.x + offset.z * offset.z;
-                    if dist < ARRIVAL_DISTANCE_THRESHOLD {
-                        do_idle = true;
-                    } else if (owner._controller._is_blocked || owner._controller._is_cliff)
-                        && !owner.is_falling()
-                    {
-                        do_idle = true;
-                    }
-                } else {
-                    do_idle = true;
-                }
-
-                if do_idle {
-                    self.set_behavior(BehaviorState::Idle, owner, player, false);
-                }
-                self._move_time -= delta_time;
-            }
             _ => (),
         }
     }
