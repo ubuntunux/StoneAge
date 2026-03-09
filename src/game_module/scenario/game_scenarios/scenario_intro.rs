@@ -167,7 +167,14 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
         let phase_ratio = self._scenario_track.get_phase_ratio();
         match self._scenario_track._scenario_phase {
             ScenarioIntroPhase::None => {
-                self.set_scenario_phase(ScenarioIntroPhase::StoryBoard.to_string().as_str(), None);
+                const SKIP_SCENARIO: bool = true;
+                if SKIP_SCENARIO {
+                    game_ui_manager.set_image_manual_fade_inout(STORY_IMAGE_NONE, INTRO_FADE_TIME);
+                    game_ui_manager.set_auto_fade_inout(true);
+                    self.set_scenario_phase(ScenarioIntroPhase::QuestGathering.to_string().as_str(), None);
+                } else {
+                    self.set_scenario_phase(ScenarioIntroPhase::StoryBoard.to_string().as_str(), None);
+                }
             }
             ScenarioIntroPhase::StoryBoard => {
                 let story_board_phase = self.get_story_board_phase();
