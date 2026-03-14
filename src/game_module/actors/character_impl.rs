@@ -288,7 +288,6 @@ impl<'a> Character<'a> {
 
         self.set_move_idle();
         self.set_action_none();
-        self.set_behavior(BehaviorState::Idle);
         self.update_transform();
         self.update_render_object();
     }

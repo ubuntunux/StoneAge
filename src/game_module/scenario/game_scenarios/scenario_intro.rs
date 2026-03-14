@@ -121,9 +121,6 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                 self._actor_aru = if let Some(actor) = game_scene_manager.get_actor("monkey_aru") { Some(actor.clone()) } else { None };
                 self._actor_ewa = if let Some(actor) = game_scene_manager.get_actor("monkey_ewa") { Some(actor.clone()) } else { None };
                 self._actor_koa = if let Some(actor) = game_scene_manager.get_actor("monkey_koa") { Some(actor.clone()) } else { None };
-                self._actor_aru.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::None);
-                self._actor_ewa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::None);
-                self._actor_koa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::None);
                 self._actor_aru.as_ref().unwrap().borrow_mut().set_move_direction(&Vector3::new(0.0, 0.0, -1.0), true);
                 self._actor_ewa.as_ref().unwrap().borrow_mut().set_move_direction(&Vector3::new(0.0, 0.0, -1.0), true);
                 self._actor_koa.as_ref().unwrap().borrow_mut().set_move_direction(&Vector3::new(0.0, 0.0, -1.0), true);
