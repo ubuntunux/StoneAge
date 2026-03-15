@@ -1,23 +1,5 @@
 {
     "_characters": {
-        "jack": {
-            "_character_data_name": "characters/jack",
-            "_position": [
-                12.602041244506836,
-                2.1947755813598633,
-                12.644532203674316
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
         "monkey_ewa": {
             "_character_data_name": "characters/family/monkey_ewa",
             "_position": [
