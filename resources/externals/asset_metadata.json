@@ -1023,16 +1023,6 @@
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/jack/jack.blend": [
-        {
-            "asset_type": "MESH",
-            "asset_path": "characters/jack/jack",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/jack/jack.blend",
-            "guid": "",
-            "mtime": 1770906929.4337156,
-            "data": {}
-        }
-    ],
     "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/jack/jack_attack.blend": [
         {
             "asset_type": "MESH",
@@ -1060,16 +1050,6 @@
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/jack/jack_hit.blend",
             "guid": "",
             "mtime": 1770904417.9473019,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/jack/jack_idle.blend": [
-        {
-            "asset_type": "MESH",
-            "asset_path": "characters/jack/jack_idle",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/jack/jack_idle.blend",
-            "guid": "",
-            "mtime": 1770904418.0787642,
             "data": {}
         }
     ],
@@ -4869,36 +4849,10 @@
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/aru/aru.blend": [
-        {
-            "asset_type": "MESH",
-            "asset_path": "characters/aru/aru",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/aru/aru.blend",
-            "guid": "",
-            "mtime": 1771402431.8082714,
-            "data": {}
-        },
-        {
-            "asset_type": "MATERIAL_INSTANCE",
-            "asset_path": "characters/aru",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/aru/aru.blend",
-            "guid": "",
-            "mtime": 1771402431.8082714,
-            "data": {}
-        }
-    ],
     "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/monkey_aru/monkey_aru.blend": [
         {
             "asset_type": "MESH",
             "asset_path": "characters/monkey_aru/monkey_aru",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/monkey_aru/monkey_aru.blend",
-            "guid": "",
-            "mtime": 1771428507.7398584,
-            "data": {}
-        },
-        {
-            "asset_type": "MATERIAL_INSTANCE",
-            "asset_path": "characters/jack",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/monkey_aru/monkey_aru.blend",
             "guid": "",
             "mtime": 1771428507.7398584,
@@ -4974,6 +4928,52 @@
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/ufo/ufo.blend",
             "guid": "",
             "mtime": 1772564217.9105966,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/aru/aru.blend": [
+        {
+            "asset_type": "MESH",
+            "asset_path": "characters/aru/aru",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/aru/aru.blend",
+            "guid": "",
+            "mtime": 1773580937.0442019,
+            "data": {}
+        },
+        {
+            "asset_type": "MATERIAL_INSTANCE",
+            "asset_path": "characters/aru",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/aru/aru.blend",
+            "guid": "",
+            "mtime": 1773580937.0442019,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/jack/jack.blend": [
+        {
+            "asset_type": "MESH",
+            "asset_path": "characters/jack/jack",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/jack/jack.blend",
+            "guid": "",
+            "mtime": 1773590659.477629,
+            "data": {}
+        },
+        {
+            "asset_type": "MATERIAL_INSTANCE",
+            "asset_path": "characters/jack",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/jack/jack.blend",
+            "guid": "",
+            "mtime": 1773590659.477629,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/jack/jack_idle.blend": [
+        {
+            "asset_type": "MESH",
+            "asset_path": "characters/jack/jack_idle",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/jack/jack_idle.blend",
+            "guid": "",
+            "mtime": 1773592445.9339664,
             "data": {}
         }
     ],
@@ -8149,7 +8149,7 @@
             "asset_path": "intro_stage",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/intro_stage.blend",
             "guid": "",
-            "mtime": 1773502564.02159,
+            "mtime": 1773593760.6719189,
             "data": {}
         }
     ],
