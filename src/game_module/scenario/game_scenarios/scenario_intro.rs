@@ -1,5 +1,5 @@
 use crate::game_module::actors::character::Character;
-use crate::game_module::game_constants::{AUDIO_ROOSTER, CAMERA_DISTANCE_MAX, CAMERA_OFFSET_Y, HUNGER_WARNING_THRESHOLD, STORY_BOARD_FADE_TIME, STORY_IMAGE_NONE, TIME_OF_EARLY_MORNING, TIME_OF_MORNING};
+use crate::game_module::game_constants::{AUDIO_ROOSTER, CAMERA_DISTANCE_MAX, CAMERA_DISTANCE_MIN, CAMERA_OFFSET_Y, HUNGER_WARNING_THRESHOLD, STORY_BOARD_FADE_TIME, STORY_IMAGE_NONE, TIME_OF_MORNING};
 use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::game_ui_manager::{GameUIManager, QuestItemType};
 use crate::game_module::scenario::scenario::{ScenarioBase, ScenarioDataCreateInfo, ScenarioTrack};
@@ -10,7 +10,6 @@ use strum_macros::{Display, EnumCount, EnumIter, EnumString};
 use rust_engine_3d::utilities::math;
 use crate::game_module::actors::character_data::ActionAnimationState;
 use crate::game_module::actors::items::ItemDataType;
-use crate::game_module::behavior::behavior_base::BehaviorState;
 use crate::game_module::widgets::quest_widgets::quest_item_gather_item::GatherItemData;
 use crate::game_module::widgets::quest_widgets::quest_widget::QuestContent;
 
@@ -135,13 +134,13 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                 self._around_start_position = pivot - start_rotation_matrix.column(2).xyz() * (CAMERA_DISTANCE_MAX + 6.0);
 
                 let end_rotation_matrix = math::make_rotation_matrix(self._around_end_rotation.x, self._around_end_rotation.y, self._around_end_rotation.z);
-                self._around_end_position = pivot - end_rotation_matrix.column(2).xyz() * CAMERA_DISTANCE_MAX;
+                self._around_end_position = pivot - end_rotation_matrix.column(2).xyz() * CAMERA_DISTANCE_MIN;
 
                 let main_camera = game_scene_manager.get_scene_manager().get_main_camera_mut();
                 main_camera._transform_object.set_position(&self._around_start_position);
                 main_camera._transform_object.set_rotation(&self._around_start_rotation);
 
-                game_scene_manager.set_time_of_day(TIME_OF_EARLY_MORNING, 0.0);
+                game_scene_manager.set_time_of_day(TIME_OF_MORNING, 0.0);
             },
             ScenarioIntroPhase::WakeUp => {
                 game_scene_manager.get_scene_manager().play_audio_bank(AUDIO_ROOSTER);
@@ -214,15 +213,15 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
 
                 if 0.0 <= prev_wakeup_delay_aru && self._wakeup_delay_aru < 0.0 {
                     //self._actor_aru.as_ref().unwrap().borrow_mut()._character_stats.set_hunger(0.8);
-                    self._actor_aru.as_ref().unwrap().borrow_mut().set_action_stand_up();
+                    self._actor_aru.as_ref().unwrap().borrow_mut().set_action_wake_up();
                 }
 
                 if 0.0 <= prev_wakeup_delay_ewa && self._wakeup_delay_ewa < 0.0 {
-                    self._actor_ewa.as_ref().unwrap().borrow_mut().set_action_stand_up();
+                    self._actor_ewa.as_ref().unwrap().borrow_mut().set_action_wake_up();
                 }
 
                 if 0.0 <= prev_wakeup_delay_koa && self._wakeup_delay_koa < 0.0 {
-                    self._actor_koa.as_ref().unwrap().borrow_mut().set_action_stand_up();
+                    self._actor_koa.as_ref().unwrap().borrow_mut().set_action_wake_up();
                 }
 
                 if 20.0 < phase_time || self._actor_aru.as_ref().unwrap().borrow_mut().is_action(ActionAnimationState::None) && self._actor_ewa.as_ref().unwrap().borrow_mut().is_action(ActionAnimationState::None) && self._actor_koa.as_ref().unwrap().borrow_mut().is_action(ActionAnimationState::None) {

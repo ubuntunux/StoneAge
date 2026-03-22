@@ -427,6 +427,7 @@ impl<'a> Character<'a> {
         self.is_action(ActionAnimationState::LayingDown) == false &&
         self.is_action(ActionAnimationState::Sleep) == false &&
         self.is_action(ActionAnimationState::StandUp) == false &&
+        self.is_action(ActionAnimationState::WakeUp) == false &&
         self.is_action(ActionAnimationState::EnterGate) == false
     }
 
@@ -636,6 +637,10 @@ impl<'a> Character<'a> {
         self.set_action_animation(ActionAnimationState::StandUp, 1.0);
     }
 
+    pub fn set_action_wake_up(&mut self) {
+        self.set_action_animation(ActionAnimationState::WakeUp, 1.0);
+    }
+
     pub fn set_action_laying_down(&mut self) {
         self.set_move_stop();
         self.set_action_animation(ActionAnimationState::LayingDown, 2.0);
@@ -802,6 +807,14 @@ impl<'a> Character<'a> {
                     AnimationLayer::BaseLayer,
                 );
             }
+            MoveAnimationState::SitDownLoop => {
+                animation_info._animation_speed = animation_data._walk_animation_speed;
+                render_object.set_animation(
+                    &animation_data._walk_animation,
+                    &animation_info,
+                    AnimationLayer::BaseLayer,
+                );
+            }
         }
 
         self._animation_state._move_animation_state = move_animation_state;
@@ -901,15 +914,39 @@ impl<'a> Character<'a> {
                     AnimationLayer::ActionLayer,
                 );
             }
+            ActionAnimationState::Hungry => {
+                animation_info._animation_loop = true;
+                animation_info._animation_fade_out_time = 0.0; // keep end of animation
+                render_object.set_animation(
+                    &animation_data._sleep_animation,
+                    &animation_info,
+                    AnimationLayer::ActionLayer,
+                );
+            }
+
+            ActionAnimationState::OpenToolbox => {
+                // nothing
+            }
+            ActionAnimationState::SitDown => {
+                render_object.set_animation(
+                    &animation_data._sit_down_animation,
+                    &animation_info,
+                    AnimationLayer::ActionLayer,
+                );
+            }
             ActionAnimationState::StandUp => {
                 render_object.set_animation(
                     &animation_data._stand_up_animation,
                     &animation_info,
                     AnimationLayer::ActionLayer,
                 );
-            },
-            ActionAnimationState::OpenToolbox => {
-                // nothing
+            }
+            ActionAnimationState::WakeUp => {
+                render_object.set_animation(
+                    &animation_data._wake_up_animation,
+                    &animation_info,
+                    AnimationLayer::ActionLayer,
+                );
             }
         }
 

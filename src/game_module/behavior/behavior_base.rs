@@ -18,7 +18,6 @@ pub enum BehaviorState {
     LayingDown,
     EnterGate,
     Sleep,
-    StandUp,
 }
 
 pub fn create_character_behavior(character_type: CharacterDataType) -> Box<dyn BehaviorBase> {

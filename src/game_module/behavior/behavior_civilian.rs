@@ -55,11 +55,6 @@ impl BehaviorBase for BehaviorCivilian {
                 }
                 self._move_time -= delta_time;
             }
-            BehaviorState::StandUp => {
-                if owner.is_available_move() {
-                    self.set_behavior(BehaviorState::Idle, owner, player, false);
-                }
-            }
             _ => (),
         }
     }
@@ -102,9 +97,6 @@ impl BehaviorBase for BehaviorCivilian {
                 }
                 BehaviorState::Sleep => {
                     owner.set_action_sleep();
-                }
-                BehaviorState::StandUp => {
-                    owner.set_action_stand_up();
                 }
                 _ => (),
             }

@@ -29,6 +29,7 @@ impl Default for CharacterAnimationDataCreateInfo {
             _dead_animation_speed: 1.0,
             _hit_animation: String::default(),
             _hit_animation_speed: 1.0,
+            _hungry_animation: String::default(),
             _idle_animation: String::default(),
             _idle_animation_speed: 1.0,
             _jump_animation: String::default(),
@@ -45,11 +46,14 @@ impl Default for CharacterAnimationDataCreateInfo {
             _run_animation_speed: 1.0,
             _running_jump_animation: String::default(),
             _running_jump_animation_speed: 1.0,
+            _sit_down_animation: String::default(),
+            _sit_down_loop_animation: String::default(),
             _sleep_animation: String::default(),
             _stand_up_animation: String::default(),
             _upper_animation_layer: String::default(),
+            _wake_up_animation: String::default(),
             _walk_animation: String::default(),
-            _walk_animation_speed: 1.0,
+            _walk_animation_speed: 1.0
         }
     }
 }
@@ -87,15 +91,9 @@ impl CharacterAudioData {
         engine_resources: &mut EngineResources,
     ) -> CharacterAudioData {
         CharacterAudioData {
-            _audio_dead: engine_resources
-                .get_audio_bank_data(&audio_data_create_info._audio_dead)
-                .clone(),
-            _audio_growl: engine_resources
-                .get_audio_bank_data(&audio_data_create_info._audio_growl)
-                .clone(),
-            _audio_pain: engine_resources
-                .get_audio_bank_data(&audio_data_create_info._audio_pain)
-                .clone(),
+            _audio_dead: engine_resources.get_audio_bank_data(&audio_data_create_info._audio_dead).clone(),
+            _audio_growl: engine_resources.get_audio_bank_data(&audio_data_create_info._audio_growl).clone(),
+            _audio_pain: engine_resources.get_audio_bank_data(&audio_data_create_info._audio_pain).clone(),
         }
     }
 }
@@ -112,6 +110,7 @@ impl CharacterAnimationData {
             _dead_animation_speed: animation_data_create_info._dead_animation_speed,
             _hit_animation: engine_resources.get_mesh_data(&animation_data_create_info._hit_animation).clone(),
             _hit_animation_speed: animation_data_create_info._hit_animation_speed,
+            _hungry_animation: engine_resources.get_mesh_data(&animation_data_create_info._hungry_animation).clone(),
             _idle_animation: engine_resources.get_mesh_data(&animation_data_create_info._idle_animation).clone(),
             _idle_animation_speed: animation_data_create_info._idle_animation_speed,
             _jump_animation: engine_resources.get_mesh_data(&animation_data_create_info._jump_animation).clone(),
@@ -128,8 +127,11 @@ impl CharacterAnimationData {
             _run_animation_speed: animation_data_create_info._run_animation_speed,
             _running_jump_animation: engine_resources.get_mesh_data(&animation_data_create_info._running_jump_animation).clone(),
             _running_jump_animation_speed: animation_data_create_info._running_jump_animation_speed,
+            _sit_down_animation: engine_resources.get_mesh_data(&animation_data_create_info._sit_down_animation).clone(),
+            _sit_down_loop_animation: engine_resources.get_mesh_data(&animation_data_create_info._sit_down_loop_animation).clone(),
             _sleep_animation: engine_resources.get_mesh_data(&animation_data_create_info._sleep_animation).clone(),
             _stand_up_animation: engine_resources.get_mesh_data(&animation_data_create_info._stand_up_animation).clone(),
+            _wake_up_animation: engine_resources.get_mesh_data(&animation_data_create_info._wake_up_animation).clone(),
             _walk_animation: engine_resources.get_mesh_data(&animation_data_create_info._walk_animation).clone(),
             _walk_animation_speed: animation_data_create_info._walk_animation_speed,
             _upper_animation_layer: engine_resources.get_animation_layer_data(&animation_data_create_info._upper_animation_layer).clone(),

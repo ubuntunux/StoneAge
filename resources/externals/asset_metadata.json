@@ -279,26 +279,6 @@
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/family/monkey_ewa.blend": [
-        {
-            "asset_type": "GAME_CHARACTER",
-            "asset_path": "family/monkey_ewa",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/family/monkey_ewa.blend",
-            "guid": "",
-            "mtime": 1771427619.4880319,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/family/monkey_koa.blend": [
-        {
-            "asset_type": "GAME_CHARACTER",
-            "asset_path": "family/monkey_koa",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/family/monkey_koa.blend",
-            "guid": "",
-            "mtime": 1771429072.6337826,
-            "data": {}
-        }
-    ],
     "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/ufo.blend": [
         {
             "asset_type": "GAME_CHARACTER",
@@ -315,7 +295,27 @@
             "asset_path": "family/monkey_aru",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/family/monkey_aru.blend",
             "guid": "",
-            "mtime": 1773940756.27384,
+            "mtime": 1774180676.2775898,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/family/monkey_ewa.blend": [
+        {
+            "asset_type": "GAME_CHARACTER",
+            "asset_path": "family/monkey_ewa",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/family/monkey_ewa.blend",
+            "guid": "",
+            "mtime": 1774186363.65322,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/family/monkey_koa.blend": [
+        {
+            "asset_type": "GAME_CHARACTER",
+            "asset_path": "family/monkey_koa",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/family/monkey_koa.blend",
+            "guid": "",
+            "mtime": 1774186422.779093,
             "data": {}
         }
     ],
@@ -4893,16 +4893,6 @@
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/jack/jack_sit_down.blend": [
-        {
-            "asset_type": "MESH",
-            "asset_path": "characters/jack/jack_sit_down",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/jack/jack_sit_down.blend",
-            "guid": "",
-            "mtime": 1773939794.7398136,
-            "data": {}
-        }
-    ],
     "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/jack/jack_sit_down_loop.blend": [
         {
             "asset_type": "MESH",
@@ -4910,26 +4900,6 @@
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/jack/jack_sit_down_loop.blend",
             "guid": "",
             "mtime": 1773939951.7197342,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/jack/jack_stand_up.blend": [
-        {
-            "asset_type": "MESH",
-            "asset_path": "characters/jack/jack_stand_up",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/jack/jack_stand_up.blend",
-            "guid": "",
-            "mtime": 1773940093.6111565,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/jack/jack_wake_up.blend": [
-        {
-            "asset_type": "MESH",
-            "asset_path": "characters/jack/jack_wake_up",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/jack/jack_wake_up.blend",
-            "guid": "",
-            "mtime": 1773940051.4145682,
             "data": {}
         }
     ],
@@ -4961,13 +4931,41 @@
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/source_assets/jack/jack.blend": [
+    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/jack/jack_sit_down.blend": [
+        {
+            "asset_type": "MESH",
+            "asset_path": "characters/jack/jack_sit_down",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/jack/jack_sit_down.blend",
+            "guid": "",
+            "mtime": 1774180577.5772297,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/jack/jack_wake_up.blend": [
+        {
+            "asset_type": "MESH",
+            "asset_path": "characters/jack/jack_wake_up",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/jack/jack_wake_up.blend",
+            "guid": "",
+            "mtime": 1773941292.9095829,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/jack/jack_stand_up.blend": [
+        {
+            "asset_type": "MESH",
+            "asset_path": "characters/jack/jack_stand_up",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/jack/jack_stand_up.blend",
+            "guid": "",
+            "mtime": 1774186302.4466894,
+            "data": {}
+        },
         {
             "asset_type": "MATERIAL_INSTANCE",
             "asset_path": "characters/jack",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/source_assets/jack/jack.blend",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/jack/jack_stand_up.blend",
             "guid": "",
-            "mtime": 1773939219.9596364,
+            "mtime": 1774186302.4466894,
             "data": {}
         }
     ],

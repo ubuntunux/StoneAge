@@ -12,6 +12,7 @@ pub enum ActionAnimationState {
     Attack,
     Dead,
     Hit,
+    Hungry,
     Kick,
     LayingDown,
     Pickup,
@@ -19,7 +20,9 @@ pub enum ActionAnimationState {
     OpenToolbox,
     PowerAttack,
     Sleep,
+    SitDown,
     StandUp,
+    WakeUp,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -30,6 +33,7 @@ pub enum MoveAnimationState {
     Roll,
     Run,
     RunningJump,
+    SitDownLoop,
     Walk,
 }
 
@@ -87,6 +91,7 @@ pub struct CharacterAnimationDataCreateInfo {
     pub _attack_animation_speed: f32,
     pub _dead_animation: String,
     pub _dead_animation_speed: f32,
+    pub _hungry_animation: String,
     pub _idle_animation: String,
     pub _idle_animation_speed: f32,
     pub _hit_animation: String,
@@ -105,9 +110,12 @@ pub struct CharacterAnimationDataCreateInfo {
     pub _run_animation_speed: f32,
     pub _running_jump_animation: String,
     pub _running_jump_animation_speed: f32,
+    pub _sit_down_animation: String,
+    pub _sit_down_loop_animation: String,
     pub _sleep_animation: String,
     pub _stand_up_animation: String,
     pub _upper_animation_layer: String,
+    pub _wake_up_animation: String,
     pub _walk_animation: String,
     pub _walk_animation_speed: f32,
 }
@@ -135,6 +143,7 @@ pub struct CharacterAnimationData {
     pub _dead_animation_speed: f32,
     pub _hit_animation: RcRefCell<MeshData>,
     pub _hit_animation_speed: f32,
+    pub _hungry_animation: RcRefCell<MeshData>,
     pub _idle_animation: RcRefCell<MeshData>,
     pub _idle_animation_speed: f32,
     pub _jump_animation: RcRefCell<MeshData>,
@@ -151,8 +160,11 @@ pub struct CharacterAnimationData {
     pub _run_animation_speed: f32,
     pub _running_jump_animation: RcRefCell<MeshData>,
     pub _running_jump_animation_speed: f32,
+    pub _sit_down_animation: RcRefCell<MeshData>,
+    pub _sit_down_loop_animation: RcRefCell<MeshData>,
     pub _sleep_animation: RcRefCell<MeshData>,
     pub _stand_up_animation: RcRefCell<MeshData>,
+    pub _wake_up_animation: RcRefCell<MeshData>,
     pub _walk_animation: RcRefCell<MeshData>,
     pub _walk_animation_speed: f32,
     pub _upper_animation_layer: RcRefCell<AnimationLayerData>,

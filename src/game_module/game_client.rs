@@ -199,7 +199,7 @@ impl<'a> GameClient<'a> {
                 }
             }
             GamePhase::Sleep => {
-                character_manager.get_player().borrow_mut().set_action_stand_up();
+                character_manager.get_player().borrow_mut().set_action_wake_up();
             }
             GamePhase::PlayGameScenario => {
                 game_controller.set_game_camera_auto_blend_mode(true);
