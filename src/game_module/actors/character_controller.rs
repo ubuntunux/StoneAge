@@ -25,6 +25,7 @@ pub struct CharacterController<'a> {
     pub _hit_velocity: Vector3<f32>,
     pub _move_speed: f32,
     pub _fall_time: f32,
+    pub _roll_delay: f32,
     pub _is_falling: bool,
     pub _is_ground: bool,
     pub _is_running: bool,
@@ -51,6 +52,7 @@ impl<'a> CharacterController<'a> {
             _slop_velocity: Vector3::zeros(),
             _hit_velocity: Vector3::zeros(),
             _move_speed: 0.0,
+            _roll_delay: 0.0,
             _fall_time: 0.0,
             _is_falling: false,
             _is_ground: false,
@@ -93,6 +95,12 @@ impl<'a> CharacterController<'a> {
         self._is_cliff = false;
         self._is_flying_mode = character_data.can_fly();
         self._interaction_objects.clear();
+    }
+    pub fn is_in_roll_delay(&self) -> bool {
+        0.0 < self._roll_delay
+    }
+    pub fn set_roll_delay(&mut self) {
+        self._roll_delay = ROLL_DELAY;
     }
     pub fn is_falling(&self) -> bool {
         self._is_falling
@@ -602,6 +610,11 @@ impl<'a> CharacterController<'a> {
             if self._is_cliff && (point.y - CLIFF_HEIGHT) <= height_map_data.get_height_bilinear(&point, 0) {
                 self._is_cliff = false;
             }
+        }
+
+        // update roll delay
+        if 0.0 < self._roll_delay {
+            self._roll_delay -= delta_time;
         }
 
         // reset

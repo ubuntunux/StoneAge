@@ -368,6 +368,10 @@ impl<'a> Character<'a> {
         self._controller.is_falling()
     }
 
+    pub fn is_in_roll_delay(&self) -> bool {
+        self._controller.is_in_roll_delay()
+    }
+
     pub fn is_jump(&self) -> bool {
         self._controller.is_jump()
     }
@@ -436,7 +440,7 @@ impl<'a> Character<'a> {
     }
 
     pub fn is_available_roll(&self) -> bool {
-        if self._is_player && self._character_stats._stamina < STAMINA_ROLL {
+        if self._is_player && (self._character_stats._stamina < STAMINA_ROLL || self.is_in_roll_delay()) {
             return false;
         }
         !self.is_falling() && self.is_available_attack() && !self.is_move_state(MoveAnimationState::Roll)
@@ -1037,13 +1041,13 @@ impl<'a> Character<'a> {
 
     pub fn set_jump(&mut self) {
         if self.is_available_jump() {
-            let mut not_enought_stamina = false;
+            let mut not_enough_stamina = false;
             if self._is_player {
                 self._character_stats._stamina -= STAMINA_JUMP;
-                not_enought_stamina = self._character_stats._stamina < 0.0;
+                not_enough_stamina = self._character_stats._stamina < 0.0;
             }
 
-            let move_anim = if self._controller._is_running && not_enought_stamina == false {
+            let move_anim = if self._controller._is_running && not_enough_stamina == false {
                 MoveAnimationState::RunningJump
             } else {
                 MoveAnimationState::Jump
@@ -1093,6 +1097,7 @@ impl<'a> Character<'a> {
     pub fn update_move_animation_end_event(&mut self) {
         match self._animation_state._move_animation_state_prev {
             MoveAnimationState::Roll => {
+                self._controller.set_roll_delay();
                 self.set_invincibility(false);
             }
             _ => (),
