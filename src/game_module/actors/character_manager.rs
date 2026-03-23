@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-
+use std::ffi::c_void;
 use rust_engine_3d::audio::audio_manager::AudioManager;
 use rust_engine_3d::core::engine_core::EngineCore;
 use rust_engine_3d::scene::render_object::{RenderObjectCreateInfo, SceneObjectType};
@@ -8,15 +8,16 @@ use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
 
 use crate::application::application::Application;
-use crate::game_module::actors::character::{Character, CharacterCreateInfo};
+use crate::game_module::actors::character::{Character, CharacterCreateInfo, InteractionObject};
 use crate::game_module::actors::items::{ItemCreateInfo, ItemDataType};
 use crate::game_module::actors::weapons::{Weapon, WeaponCreateInfo};
 use crate::game_module::game_client::GameClient;
-use crate::game_module::game_constants::{GameViewMode, GAME_VIEW_MODE, HUNGER_RECOVERY_THRESHOLD, HUNGER_WARNING_DISTANCE, HUNGER_WARNING_THRESHOLD, ITEM_SPIRIT_BALL, NPC_ATTACK_HIT_RANGE};
+use crate::game_module::game_constants::{GameViewMode, CHARACTER_INTERACTION_DISTANCE, GAME_VIEW_MODE, HUNGER_RECOVERY_THRESHOLD, HUNGER_WARNING_THRESHOLD, ITEM_SPIRIT_BALL, NPC_ATTACK_HIT_RANGE};
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::game_ui_manager::GameUIManager;
 use crate::game_module::widgets::text_box_widget::TextBoxContent;
+use crate::game_module::widgets::text_box_widget::TextBoxContent::Text;
 
 #[derive(Copy, Clone, Debug, Default, Hash, Eq, PartialEq)]
 pub struct CharacterID(u64);
@@ -251,7 +252,7 @@ impl<'a> CharacterManager<'a> {
 
                 if character.is_alive() &&
                     HUNGER_WARNING_THRESHOLD <= character._character_stats._hunger &&
-                    to_player_distance <= HUNGER_WARNING_DISTANCE &&
+                    to_player_distance <= CHARACTER_INTERACTION_DISTANCE &&
                     character._character_stats._is_hunger_warning_displayed == false {
                     character._character_stats._is_hunger_warning_displayed = true;
 
@@ -261,7 +262,10 @@ impl<'a> CharacterManager<'a> {
 
                     game_ui_manager.add_text_box_item(
                         character.get_character_name(),
-                        &vec![TextBoxContent::MaterialInstance(material_instance)],
+                        &vec![
+                            TextBoxContent::MaterialInstance(material_instance),
+                            Text(String::from("dwdw"))
+                        ],
                         Some(3.0)
                     );
                 } else if character._character_stats._is_hunger_warning_displayed &&
@@ -270,6 +274,16 @@ impl<'a> CharacterManager<'a> {
                     game_ui_manager.remove_text_box_item(character.get_character_name());
                 }
             }
+        }
+    }
+    pub fn update_interaction_ui(&self, player: &mut Character<'a>, character: &RcRefCell<Character<'a>>, to_player_distance: f32) {
+        let key = character.as_ptr() as *const c_void;
+        let was_interaction_object = player._controller.is_interaction_object(key);
+        let is_in_player_range = to_player_distance <= CHARACTER_INTERACTION_DISTANCE;
+        if was_interaction_object == false && is_in_player_range {
+            player._controller.add_interaction_object(InteractionObject::Npc(character.clone()));
+        } else if was_interaction_object && is_in_player_range == false {
+            player._controller.remove_interaction_object(InteractionObject::Npc(character.clone()));
         }
     }
 
@@ -287,17 +301,23 @@ impl<'a> CharacterManager<'a> {
             let character_mut = ptr_as_mut(character.as_ptr());
             character_mut.update_character(self.get_scene_manager(), player, delta_time as f32);
 
-            // update text box
+            if character_mut.is_alive() == false {
+                continue;
+            }
+
+            // get distance to player
             let to_player = player.get_position() - character_mut.get_position();
-            let (_to_player_dir, to_player_distance) = if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
+            let (_to_player_dir, mut to_player_distance) = if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
                 math::make_normalize_xy_with_norm(&to_player)
             } else {
                 math::make_normalize_with_norm(&to_player)
             };
-            self.update_character_text_box(game_ui_manager, to_player_distance, character_mut);
+            to_player_distance = 0f32.max(to_player_distance - (player.get_bounding_box()._radius + character_mut.get_bounding_box()._radius));
 
-            if character_mut.is_alive() == false {
-                continue;
+            // update interaction ui
+            if character_mut.is_player() == false {
+                self.update_character_text_box(game_ui_manager, to_player_distance, character_mut);
+                self.update_interaction_ui(player, character, to_player_distance);
             }
 
             // check attack

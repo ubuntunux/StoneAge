@@ -72,8 +72,7 @@ impl<'a> Prop<'a> {
                 _item_count: item_count,
                 _position: prop_create_info._position.clone(),
                 _rotation: prop_create_info._rotation.clone(),
-                _scale: prop_create_info._scale.clone(),
-                _is_in_player_range: false,
+                _scale: prop_create_info._scale.clone()
             }),
             _instance_parameters: prop_create_info._instance_parameters.clone(),
         };
@@ -391,10 +390,10 @@ impl<'a> PropManager<'a> {
 
                     match prop_type {
                         PropDataType::Bed => {
-                            prop._prop_stats._is_in_player_range = player.get_bounding_box().collide_bound_box(&bounding_box._min, &bounding_box._max);
-                            if is_interaction_object == false && prop._prop_stats._is_in_player_range {
+                            let is_in_player_range = player.get_bounding_box().collide_bound_box(&bounding_box._min, &bounding_box._max);
+                            if is_interaction_object == false && is_in_player_range {
                                 player._controller.add_interaction_object(InteractionObject::PropBed(prop_refcell.clone()));
-                            } else if is_interaction_object && prop._prop_stats._is_in_player_range == false {
+                            } else if is_interaction_object && is_in_player_range == false {
                                 player._controller.remove_interaction_object(InteractionObject::PropBed(prop_refcell.clone()));
                             }
                         }
@@ -402,13 +401,13 @@ impl<'a> PropManager<'a> {
                             prop._render_object.borrow_mut().set_render_camera(!bounding_box.collide_point(&player.get_position()));
                         }
                         PropDataType::Destruction => {
-                            prop._prop_stats._is_in_player_range = if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
+                            let is_in_player_range = if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
                                 player.check_in_range_xy(prop.get_collision(), NPC_ATTACK_HIT_RANGE, check_direction)
                             } else {
                                 player.check_in_range(prop.get_collision(), NPC_ATTACK_HIT_RANGE, check_direction)
                             };
 
-                            if player._animation_state.is_attack_event() && prop._prop_stats._is_in_player_range {
+                            if player._animation_state.is_attack_event() && is_in_player_range {
                                 prop.set_hit_damage(player.get_power(player._animation_state.get_action_event()));
                                 if false == prop.is_alive() {
                                     let drop_count = prop._prop_stats._item_count;
@@ -419,21 +418,21 @@ impl<'a> PropManager<'a> {
                                 }
                             }
 
-                            if is_interaction_object == false && prop._prop_stats._is_in_player_range && prop.is_alive() {
+                            if is_interaction_object == false && is_in_player_range && prop.is_alive() {
                                 player._controller.add_interaction_object(InteractionObject::PropGathering(prop_refcell.clone()));
-                            } else if is_interaction_object && prop._prop_stats._is_in_player_range == false || prop.is_alive() == false {
+                            } else if is_interaction_object && is_in_player_range == false || prop.is_alive() == false {
                                 player._controller.remove_interaction_object(InteractionObject::PropGathering(prop_refcell.clone()));
                             }
                         }
                         PropDataType::Harvestable => {
-                            prop._prop_stats._is_in_player_range = if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
+                            let is_in_player_range = if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
                                 player.check_in_range_xy(prop.get_collision(), NPC_ATTACK_HIT_RANGE, check_direction)
                             } else {
                                 player.check_in_range(prop.get_collision(), NPC_ATTACK_HIT_RANGE, check_direction)
                             };
 
                             let can_drop_item = prop.can_drop_item();
-                            if can_drop_item && player._animation_state.is_attack_event() && prop._prop_stats._is_in_player_range {
+                            if can_drop_item && player._animation_state.is_attack_event() && is_in_player_range {
                                 prop.set_hit_damage(0);
                                 let drop_count = 1;
                                 for item_create_info in prop.drop_items(drop_count, player.get_position()).iter_mut() {
@@ -441,20 +440,20 @@ impl<'a> PropManager<'a> {
                                 }
                             }
 
-                            if is_interaction_object == false && prop._prop_stats._is_in_player_range && can_drop_item {
+                            if is_interaction_object == false && is_in_player_range && can_drop_item {
                                 player._controller.add_interaction_object(InteractionObject::PropGathering(prop_refcell.clone()));
-                            } else if is_interaction_object && (prop._prop_stats._is_in_player_range == false || can_drop_item == false) {
+                            } else if is_interaction_object && (is_in_player_range == false || can_drop_item == false) {
                                 player._controller.remove_interaction_object(InteractionObject::PropGathering(prop_refcell.clone()));
                             }
                         }
                         PropDataType::Gate => {
-                            prop._prop_stats._is_in_player_range = if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
+                            let is_in_player_range = if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
                                 bounding_box.collide_point_xy(player.get_center())
                             } else {
                                 bounding_box.collide_point(player.get_center())
                             };
 
-                            if prop._prop_stats._is_in_player_range {
+                            if is_in_player_range {
                                 if GAME_VIEW_MODE == GameViewMode::GameViewMode3D || player._animation_state.is_action_event(ActionAnimationState::EnterGate) {
                                     let linked_gate = prop.get_instance_parameters("_linked_gate");
                                     let linked_stage = prop.get_instance_parameters("_linked_stage");
@@ -467,20 +466,20 @@ impl<'a> PropManager<'a> {
                                 }
                             }
 
-                            if is_interaction_object == false && prop._prop_stats._is_in_player_range {
+                            if is_interaction_object == false && is_in_player_range {
                                 player._controller.add_interaction_object(InteractionObject::PropGate(prop_refcell.clone()));
-                            } else if is_interaction_object && prop._prop_stats._is_in_player_range == false {
+                            } else if is_interaction_object && is_in_player_range == false {
                                 player._controller.remove_interaction_object(InteractionObject::PropGate(prop_refcell.clone()));
                             }
                         }
                         PropDataType::Pickup => {
-                            prop._prop_stats._is_in_player_range = if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
+                            let mut is_in_player_range = if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
                                 player.get_bounding_box().collide_bound_box_xy(&bounding_box._min, &bounding_box._max)
                             } else {
                                 player.get_bounding_box().collide_bound_box(&bounding_box._min, &bounding_box._max)
                             };
 
-                            if prop._prop_stats._is_in_player_range {
+                            if is_in_player_range {
                                 if player._animation_state.is_action_event(ActionAnimationState::Pickup) {
                                     let mut pickup_items: bool = false;
                                     let drop_count = prop._prop_stats._item_count;
@@ -489,34 +488,34 @@ impl<'a> PropManager<'a> {
                                     }
 
                                     if pickup_items {
-                                        prop._prop_stats._is_in_player_range = false;
+                                        is_in_player_range = false;
                                         dead_props.push(prop_refcell.clone());
                                     }
                                 }
                             }
 
-                            if is_interaction_object == false && prop._prop_stats._is_in_player_range {
+                            if is_interaction_object == false && is_in_player_range {
                                 player._controller.add_interaction_object(InteractionObject::PropPickup(prop_refcell.clone()));
-                            } else if is_interaction_object && prop._prop_stats._is_in_player_range == false {
+                            } else if is_interaction_object && is_in_player_range == false {
                                 player._controller.remove_interaction_object(InteractionObject::PropPickup(prop_refcell.clone()));
                             }
                         },
                         PropDataType::Monolith => {
-                            prop._prop_stats._is_in_player_range = if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
+                            let is_in_player_range = if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
                                 player.check_in_range_xy(prop.get_collision(), NPC_ATTACK_HIT_RANGE, check_direction)
                             } else {
                                 player.check_in_range(prop.get_collision(), NPC_ATTACK_HIT_RANGE, check_direction)
                             };
 
-                            if prop._prop_stats._is_in_player_range {
+                            if is_in_player_range {
                                 if player._animation_state.is_action_event(ActionAnimationState::OpenToolbox) {
                                     self.get_game_client_mut().set_need_toolbox_mode(true);
                                 }
                             }
 
-                            if is_interaction_object == false && prop._prop_stats._is_in_player_range {
+                            if is_interaction_object == false && is_in_player_range {
                                 player._controller.add_interaction_object(InteractionObject::PropMonolith(prop_refcell.clone()));
-                            } else if is_interaction_object && prop._prop_stats._is_in_player_range == false {
+                            } else if is_interaction_object && is_in_player_range == false {
                                 player._controller.remove_interaction_object(InteractionObject::PropMonolith(prop_refcell.clone()));
                             }
                         }

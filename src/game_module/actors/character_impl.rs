@@ -31,6 +31,7 @@ impl<'a> InteractionObject<'a> {
             InteractionObject::PropGate(prop) |
             InteractionObject::PropGathering(prop) |
             InteractionObject::PropMonolith(prop) => { prop.as_ptr() as *const c_void }
+            InteractionObject::Npc(character) => { character.as_ptr() as *const c_void }
         }
     }
 
@@ -41,7 +42,8 @@ impl<'a> InteractionObject<'a> {
             InteractionObject::PropPickup(_) => "Pick up",
             InteractionObject::PropGate(_) => "Enter Gate",
             InteractionObject::PropGathering(_) => "Gathering",
-            &InteractionObject::PropMonolith(_) => "Open Toolbox",
+            InteractionObject::PropMonolith(_) => "Open Toolbox",
+            InteractionObject::Npc(_) => "Interaction",
         }
     }
 
@@ -54,6 +56,10 @@ impl<'a> InteractionObject<'a> {
             InteractionObject::PropGathering(prop) |
             InteractionObject::PropMonolith(prop) => {
                 let bounding_box = ptr_as_ref(prop.as_ptr()).get_bounding_box();
+                Vector3::new(bounding_box._center.x, bounding_box._min.y + 1.0, bounding_box._center.z)
+            }
+            InteractionObject::Npc(character) => {
+                let bounding_box = ptr_as_ref(character.as_ptr()).get_bounding_box();
                 Vector3::new(bounding_box._center.x, bounding_box._min.y + 1.0, bounding_box._center.z)
             }
         }
@@ -89,7 +95,7 @@ impl CharacterStats {
             _max_stamina_data: MAX_STAMINA,
             _hunger: 0.0,
             _invincibility: false,
-            _is_hunger_warning_displayed: false,
+            _is_hunger_warning_displayed: false
         }
     }
 
@@ -1112,18 +1118,13 @@ impl<'a> Character<'a> {
         match move_animation {
             MoveAnimationState::Roll => {
                 if self._is_player && animation_play_info.check_animation_event_time(0.2) {
-                    character_manager
-                        .get_scene_manager()
-                        .play_audio_bank(AUDIO_ROLL);
+                    character_manager.get_scene_manager().play_audio_bank(AUDIO_ROLL);
                 } else if animation_play_info._is_animation_end {
                     self.set_move_idle();
                 }
             }
             MoveAnimationState::Run => {
-                if self._is_player
-                    && (animation_play_info.check_animation_event_time(0.1)
-                        || animation_play_info.check_animation_event_time(0.5))
-                {
+                if self._is_player && (animation_play_info.check_animation_event_time(0.1) || animation_play_info.check_animation_event_time(0.5)) {
                     character_manager.get_scene_manager().play_audio_options(
                         AUDIO_FOOTSTEP,
                         AudioLoop::ONCE,
@@ -1132,10 +1133,7 @@ impl<'a> Character<'a> {
                 }
             }
             MoveAnimationState::Walk => {
-                if self._is_player
-                    && (animation_play_info.check_animation_event_time(0.2)
-                        || animation_play_info.check_animation_event_time(0.9))
-                {
+                if self._is_player && (animation_play_info.check_animation_event_time(0.2) || animation_play_info.check_animation_event_time(0.9)) {
                     character_manager.get_scene_manager().play_audio_options(
                         AUDIO_FOOTSTEP,
                         AudioLoop::ONCE,
@@ -1148,13 +1146,10 @@ impl<'a> Character<'a> {
     }
 
     pub fn update_move_keyframe_event(&mut self) {
-        if self._animation_state._move_animation_state_prev
-            != self._animation_state._move_animation_state
-        {
+        if self._animation_state._move_animation_state_prev != self._animation_state._move_animation_state {
             self.update_move_animation_end_event();
             self.update_move_animation_begin_event();
-            self._animation_state._move_animation_state_prev =
-                self._animation_state._move_animation_state;
+            self._animation_state._move_animation_state_prev = self._animation_state._move_animation_state;
         }
 
         self.update_move_animation_loop_event();
