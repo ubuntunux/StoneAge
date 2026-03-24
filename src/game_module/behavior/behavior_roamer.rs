@@ -43,11 +43,11 @@ impl BehaviorBase for BehaviorRoamer {
                 if self.is_enemy_in_range(owner, player) {
                     self.set_behavior(BehaviorState::Chase, owner, player, false);
                 } else if self._idle_time < 0.0 {
-                    self.set_behavior(BehaviorState::Move, owner, player, false);
+                    self.set_behavior(BehaviorState::Roaming, owner, player, false);
                 }
                 self._idle_time -= delta_time;
             }
-            BehaviorState::Move => {
+            BehaviorState::Roaming => {
                 if self.is_enemy_in_range(owner, player) {
                     self.set_behavior(BehaviorState::Chase, owner, player, false);
                 } else {
@@ -132,7 +132,7 @@ impl BehaviorBase for BehaviorRoamer {
                     self._idle_time =
                         lerp(NPC_IDLE_TERM_MIN, NPC_IDLE_TERM_MAX, rand::random::<f32>());
                 }
-                BehaviorState::Move => {
+                BehaviorState::Roaming => {
                     let move_area = Vector3::new(
                         rand::random::<f32>() - 0.5,
                         0.0,

@@ -95,7 +95,7 @@ impl CharacterStats {
             _max_stamina_data: MAX_STAMINA,
             _hunger: 0.0,
             _invincibility: false,
-            _is_hunger_warning_displayed: false
+            _is_stat_displayed: false
         }
     }
 
@@ -118,39 +118,30 @@ impl CharacterStats {
     pub fn get_hp(&self) -> i32 {
         self._hp
     }
-
     pub fn set_hp(&mut self, hp: i32) {
         self._hp = self._max_hp.min(0.max(hp));
     }
-
     pub fn add_hp(&mut self, hp: i32) {
         self.set_hp(self.get_hp() + hp);
     }
-
     pub fn get_max_hp(&self) -> i32 {
         self._max_hp
     }
-
     pub fn set_max_hp(&mut self, hp: i32) {
         self._max_hp = self._max_hp_data.min(0.max(hp));
     }
-
     pub fn add_max_hp(&mut self, hp: i32) {
         self.set_max_hp(self.get_max_hp() + hp);
     }
-
     pub fn get_max_hp_data(&self) -> i32 {
         self._max_hp_data
     }
-
     pub fn get_hunger_level(&self) -> f32 {
         1f32.min(((MAX_HUNGER - self._hunger) * 10.0).ceil() / 10.0)
     }
-
     pub fn get_hunger(&self) -> f32 {
         self._hunger
     }
-
     pub fn set_hunger(&mut self, hunger: f32) {
         self._hunger = MAX_HUNGER.min(0f32.max(hunger));
         let hunger_level = self.get_hunger_level();
@@ -199,6 +190,14 @@ impl CharacterStats {
 
     pub fn set_invincibility(&mut self, invincibility: bool) {
         self._invincibility = invincibility;
+    }
+
+    pub fn get_is_stat_displayed(&self) -> bool {
+        self._is_stat_displayed
+    }
+
+    pub fn set_is_stat_displayed(&mut self, is_stat_displayed: bool) {
+        self._is_stat_displayed = is_stat_displayed
     }
 
     pub fn update_hp<'a>(&mut self, _owner: &Character<'a>, _delta_time: f32) {
@@ -528,8 +527,15 @@ impl<'a> Character<'a> {
         distance <= (r0 + check_range + r1) && (check_direction == false || self.get_transform().get_front().dot(&to_target_dir) < 0.0)
     }
 
-    pub fn get_front(&self) -> &Vector3<f32> {
-        &self._controller._face_direction
+    pub fn get_face_direction(&self) -> &Vector3<f32> {
+        &self._controller.get_face_direction()
+    }
+
+    pub fn look_at(&mut self, face_direction: &Vector3<f32>) {
+        self._controller.set_move_direction(face_direction);
+        self.set_run(false);
+        self.set_move_speed(0.0);
+        //self.set_move_animation(MoveAnimationState::Idle);
     }
 
     pub fn get_position(&self) -> &Vector3<f32> {
@@ -612,12 +618,8 @@ impl<'a> Character<'a> {
             };
 
             let character_manager = ptr_as_ref(self._character_manager);
-            character_manager
-                .get_scene_manager_mut()
-                .add_effect(EFFECT_HIT, &effect_create_info);
-            character_manager
-                .get_scene_manager()
-                .play_audio_bank(AUDIO_HIT);
+            character_manager.get_scene_manager_mut().add_effect(EFFECT_HIT, &effect_create_info);
+            character_manager.get_scene_manager().play_audio_bank(AUDIO_HIT);
         }
     }
 
@@ -627,6 +629,14 @@ impl<'a> Character<'a> {
 
     pub fn set_invincibility(&mut self, invincibility: bool) {
         self._character_stats._invincibility = invincibility;
+    }
+
+    pub fn get_is_stat_displayed(&self) -> bool {
+        self._character_stats._is_stat_displayed
+    }
+
+    pub fn set_is_stat_displayed(&mut self, is_stat_displayed: bool) {
+        self._character_stats._is_stat_displayed = is_stat_displayed;
     }
 
     pub fn set_behavior(&mut self, behavior_state: BehaviorState) {
@@ -663,7 +673,7 @@ impl<'a> Character<'a> {
 
     pub fn set_action_interaction(&mut self) {
         if self._controller.is_on_ground() && self.is_available_move() && self.is_action(ActionAnimationState::None) {
-            match self._controller._nearest_interaction_object {
+            match &self._controller._nearest_interaction_object {
                 InteractionObject::PropBed(_) => {
                     self.set_action_laying_down();
                 }
@@ -673,6 +683,10 @@ impl<'a> Character<'a> {
                 InteractionObject::PropMonolith(_) => {
                     self.set_action_animation(ActionAnimationState::OpenToolbox, 1.0);
                     self.set_move_stop();
+                }
+                InteractionObject::Npc(character) => {
+                    character.borrow_mut().set_is_stat_displayed(true);
+                    character.borrow_mut().set_behavior(BehaviorState::Interaction);
                 }
                 _ => {},
             }
@@ -969,9 +983,7 @@ impl<'a> Character<'a> {
     }
 
     pub fn toggle_run(&mut self) {
-        if self.is_move_state(MoveAnimationState::Run)
-            || self.is_move_state(MoveAnimationState::Walk)
-        {
+        if self.is_move_state(MoveAnimationState::Run) || self.is_move_state(MoveAnimationState::Walk) {
             self._controller.toggle_run();
         }
     }
@@ -979,7 +991,6 @@ impl<'a> Character<'a> {
     pub fn set_move_idle(&mut self) {
         self.set_run(false);
         self.set_move_speed(0.0);
-        //self.set_move_direction(&Vector3::zeros());
         self.set_move_animation(MoveAnimationState::Idle);
     }
 

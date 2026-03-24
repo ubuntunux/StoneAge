@@ -12,7 +12,7 @@ use crate::game_module::actors::character::{Character, CharacterCreateInfo, Inte
 use crate::game_module::actors::items::{ItemCreateInfo, ItemDataType};
 use crate::game_module::actors::weapons::{Weapon, WeaponCreateInfo};
 use crate::game_module::game_client::GameClient;
-use crate::game_module::game_constants::{GameViewMode, CHARACTER_INTERACTION_DISTANCE, GAME_VIEW_MODE, HUNGER_RECOVERY_THRESHOLD, HUNGER_WARNING_THRESHOLD, ITEM_SPIRIT_BALL, NPC_ATTACK_HIT_RANGE};
+use crate::game_module::game_constants::{GameViewMode, CHARACTER_INTERACTION_DISTANCE, CHARACTER_INTERACTION_TIME, GAME_VIEW_MODE, ITEM_SPIRIT_BALL, NPC_ATTACK_HIT_RANGE};
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::game_ui_manager::GameUIManager;
@@ -244,38 +244,26 @@ impl<'a> CharacterManager<'a> {
     pub fn set_target_character(&mut self, target_character: Option<RcRefCell<Character<'a>>>) {
         self._target_character = target_character;
     }
-    pub fn update_character_text_box(&self, game_ui_manager: &mut GameUIManager<'a>, to_player_distance: f32, character: &mut Character<'a>) {
-        if character.is_player() == false {
-            // hunger ui
-            if character._character_stats._is_hunger_warning_displayed || character.is_alive() && HUNGER_WARNING_THRESHOLD <= character._character_stats._hunger {
-                character._character_stats._is_hunger_warning_displayed = game_ui_manager.has_text_box_item(character.get_character_name());
 
-                if character.is_alive() &&
-                    HUNGER_WARNING_THRESHOLD <= character._character_stats._hunger &&
-                    to_player_distance <= CHARACTER_INTERACTION_DISTANCE &&
-                    character._character_stats._is_hunger_warning_displayed == false {
-                    character._character_stats._is_hunger_warning_displayed = true;
+    pub fn update_character_text_box(&self, game_ui_manager: &mut GameUIManager<'a>, character: &mut Character<'a>) {
+        if character.is_player() == false && character._character_stats.get_is_stat_displayed() {
+            let material_instance = ptr_as_ref(self._game_resources).get_engine_resources().get_material_instance_data(
+                ItemDataType::get_item_material_instance_name(ItemDataType::Meat)
+            ).clone();
 
-                    let material_instance = ptr_as_ref(self._game_resources).get_engine_resources().get_material_instance_data(
-                        ItemDataType::get_item_material_instance_name(ItemDataType::Meat)
-                    ).clone();
+            game_ui_manager.add_text_box_item(
+                character.get_character_name(),
+                &vec![
+                    TextBoxContent::MaterialInstance(material_instance),
+                    Text(format!("Hunger: {:?}", character._character_stats.get_hunger()))
+                ],
+                Some( CHARACTER_INTERACTION_TIME )
+            );
 
-                    game_ui_manager.add_text_box_item(
-                        character.get_character_name(),
-                        &vec![
-                            TextBoxContent::MaterialInstance(material_instance),
-                            Text(String::from("dwdw"))
-                        ],
-                        Some(3.0)
-                    );
-                } else if character._character_stats._is_hunger_warning_displayed &&
-                    (character.is_alive() == false || character._character_stats._hunger <= HUNGER_RECOVERY_THRESHOLD) {
-                    character._character_stats._is_hunger_warning_displayed = false;
-                    game_ui_manager.remove_text_box_item(character.get_character_name());
-                }
-            }
+            character._character_stats.set_is_stat_displayed(false);
         }
     }
+
     pub fn update_interaction_ui(&self, player: &mut Character<'a>, character: &RcRefCell<Character<'a>>, to_player_distance: f32) {
         let key = character.as_ptr() as *const c_void;
         let was_interaction_object = player._controller.is_interaction_object(key);
@@ -316,7 +304,7 @@ impl<'a> CharacterManager<'a> {
 
             // update interaction ui
             if character_mut.is_player() == false {
-                self.update_character_text_box(game_ui_manager, to_player_distance, character_mut);
+                self.update_character_text_box(game_ui_manager, character_mut);
                 self.update_interaction_ui(player, character, to_player_distance);
             }
 
@@ -339,7 +327,7 @@ impl<'a> CharacterManager<'a> {
                             // hit..
                             target_character_mut.set_hit_damage(
                                 character_mut.get_power(character_mut._animation_state.get_action_event()),
-                                Some(character_mut.get_front()),
+                                Some(character_mut.get_face_direction()),
                             );
 
                             // character dead..
@@ -363,7 +351,7 @@ impl<'a> CharacterManager<'a> {
                         character_mut.check_in_range(player.get_collision(), NPC_ATTACK_HIT_RANGE, check_direction) {
                         player.set_hit_damage(
                             character_mut.get_power(character_mut._animation_state.get_action_event()),
-                            Some(character_mut.get_front()),
+                            Some(character_mut.get_face_direction()),
                         );
                     }
                 }

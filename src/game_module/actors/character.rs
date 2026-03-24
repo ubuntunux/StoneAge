@@ -45,7 +45,7 @@ pub struct CharacterStats {
     pub _max_stamina_data: f32,
     pub _hunger: f32,
     pub _invincibility: bool,
-    pub _is_hunger_warning_displayed: bool
+    pub _is_stat_displayed: bool
 }
 
 #[derive(Default)]

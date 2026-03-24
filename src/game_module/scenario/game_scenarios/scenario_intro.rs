@@ -10,6 +10,7 @@ use strum_macros::{Display, EnumCount, EnumIter, EnumString};
 use rust_engine_3d::utilities::math;
 use crate::game_module::actors::character_data::ActionAnimationState;
 use crate::game_module::actors::items::ItemDataType;
+use crate::game_module::behavior::behavior_base::BehaviorState;
 use crate::game_module::widgets::quest_widgets::quest_item_gather_item::GatherItemData;
 use crate::game_module::widgets::quest_widgets::quest_widget::QuestContent;
 
@@ -226,7 +227,10 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
 
                 if 20.0 < phase_time || self._actor_aru.as_ref().unwrap().borrow_mut().is_action(ActionAnimationState::None) && self._actor_ewa.as_ref().unwrap().borrow_mut().is_action(ActionAnimationState::None) && self._actor_koa.as_ref().unwrap().borrow_mut().is_action(ActionAnimationState::None) {
                     self._actor_ewa.as_ref().unwrap().borrow_mut().set_hunger(HUNGER_WARNING_THRESHOLD);
+                    self._actor_ewa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::Idle);
+
                     self._actor_koa.as_ref().unwrap().borrow_mut().set_hunger(HUNGER_WARNING_THRESHOLD);
+                    self._actor_koa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::Idle);
 
                     // quest
                     self._quest_gather_coconut = Some(game_ui_manager.add_quest_item(QuestContent::GatherItem(GatherItemData {

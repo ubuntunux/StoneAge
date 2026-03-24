@@ -36,6 +36,7 @@ pub const TIME_OF_DAY_SPEED: f32 = 14.0 / (20.0 * 60.0); // Minute 14 per day fo
 pub const TEMPERATURE_MIN: f32 = 12.0;
 pub const TEMPERATURE_MAX: f32 = 32.0;
 pub const SLEEP_TIMER: f32 = 1.5;
+pub const CHARACTER_INTERACTION_TIME: f32 = 3.0;
 
 // player
 pub const GRAVITY: f32 = 30.0;

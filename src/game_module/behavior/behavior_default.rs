@@ -29,11 +29,11 @@ impl BehaviorBase for BehaviorDefault {
         match self._behavior_state {
             BehaviorState::Idle => {
                 if self._idle_time < 0.0 {
-                    self.set_behavior(BehaviorState::Move, owner, player, false);
+                    self.set_behavior(BehaviorState::Roaming, owner, player, false);
                 }
                 self._idle_time -= delta_time;
             }
-            BehaviorState::Move => {
+            BehaviorState::Roaming => {
                 let mut do_idle: bool = false;
                 if 0.0 < self._move_time {
                     let offset = self._target_point - owner.get_position();
@@ -72,17 +72,14 @@ impl BehaviorBase for BehaviorDefault {
             match behavior_state {
                 BehaviorState::Idle => {
                     owner.set_move_stop();
-                    self._idle_time =
-                        lerp(NPC_IDLE_TERM_MIN, NPC_IDLE_TERM_MAX, rand::random::<f32>());
+                    self._idle_time = lerp(NPC_IDLE_TERM_MIN, NPC_IDLE_TERM_MAX, rand::random::<f32>());
                 }
-                BehaviorState::Move => {
+                BehaviorState::Roaming => {
                     let move_area = Vector3::new(
                         rand::random::<f32>() - 0.5,
                         0.0,
                         if GAME_VIEW_MODE == GameViewMode::GameViewMode2D { 0.0 } else { rand::random::<f32>() - 0.5 },
-                    )
-                    .normalize()
-                        * NPC_ROAMING_RADIUS;
+                    ).normalize() * NPC_ROAMING_RADIUS;
                     self._target_point = self._spawn_point + move_area;
                     self._move_direction = (self._target_point - owner.get_position()).normalize();
                     self._move_time = NPC_ROAMING_TIME;

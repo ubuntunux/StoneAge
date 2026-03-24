@@ -62,11 +62,15 @@ impl<'a> TextBoxItem<'a> {
             _animation_timer: 0.0,
         };
 
-        item.update_text_box_item(contents, duration);
+        item.update_text_box_item(contents, duration, true);
         item
     }
 
-    pub fn update_text_box_item(&mut self, contents: &Vec<TextBoxContent<'a>>, duration: Option<f32>) {
+    pub fn update_text_box_item(&mut self, contents: &Vec<TextBoxContent<'a>>, duration: Option<f32>, clear_widgets: bool) {
+        if clear_widgets {
+            ptr_as_mut(self._layout_widget).clear_widgets();
+        }
+
         let mut widget_height = 0.0;
         for content in contents.iter() {
             let binding_widget = UIManager::create_widget("binding_widget", UIWidgetTypes::Default);
@@ -122,7 +126,7 @@ impl<'a> TextBoxWidget<'a> {
 
     pub fn add_text_box_item(&mut self, character_name: &str, contents: &Vec<TextBoxContent<'a>>, duration: Option<f32>) {
         if let Some(item) = self._text_box_items.get_mut(character_name) {
-            item.update_text_box_item(contents, duration);
+            item.update_text_box_item(contents, duration, true);
             item.set_animation_state(TextBoxAnimationState::None);
         } else {
             self._text_box_items.insert(

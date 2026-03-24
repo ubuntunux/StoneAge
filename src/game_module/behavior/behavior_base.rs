@@ -12,11 +12,10 @@ pub enum BehaviorState {
     #[default]
     None,
     Idle,
-    Move,
+    Roaming,
+    Interaction,
     Chase,
     Attack,
-    LayingDown,
-    EnterGate,
     Sleep,
 }
 
