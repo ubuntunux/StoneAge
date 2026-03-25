@@ -139,6 +139,9 @@ impl CharacterStats {
     pub fn get_hunger_level(&self) -> f32 {
         1f32.min(((MAX_HUNGER - self._hunger) * 10.0).ceil() / 10.0)
     }
+    pub fn is_hungry(&self) -> bool {
+        self._hunger <= HUNGER_WARNING_THRESHOLD
+    }
     pub fn get_hunger(&self) -> f32 {
         self._hunger
     }
@@ -395,6 +398,7 @@ impl<'a> Character<'a> {
         if self.is_action(ActionAnimationState::Attack) ||
             self.is_action(ActionAnimationState::PowerAttack) ||
             self.is_action(ActionAnimationState::Hit) ||
+            self.is_action(ActionAnimationState::Hungry) ||
             self.is_action(ActionAnimationState::Pickup) {
             if self.is_move_state(MoveAnimationState::Idle) == false && self.is_move_state(MoveAnimationState::None) == false {
                 return true;
@@ -671,6 +675,12 @@ impl<'a> Character<'a> {
         self.set_action_animation(ActionAnimationState::Sleep, 1.0);
     }
 
+    pub fn set_action_hungry(&mut self) {
+        if self.is_available_move() {
+            self.set_action_animation(ActionAnimationState::Hungry, 1.0);
+        }
+    }
+
     pub fn set_action_interaction(&mut self) {
         if self._controller.is_on_ground() && self.is_available_move() && self.is_action(ActionAnimationState::None) {
             match &self._controller._nearest_interaction_object {
@@ -942,7 +952,7 @@ impl<'a> Character<'a> {
                 animation_info._animation_loop = true;
                 animation_info._animation_fade_out_time = 0.0; // keep end of animation
                 render_object.set_animation(
-                    &animation_data._sleep_animation,
+                    &animation_data._hungry_animation,
                     &animation_info,
                     AnimationLayer::ActionLayer,
                 );

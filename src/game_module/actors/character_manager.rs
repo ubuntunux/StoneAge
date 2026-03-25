@@ -9,15 +9,14 @@ use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, Rc
 
 use crate::application::application::Application;
 use crate::game_module::actors::character::{Character, CharacterCreateInfo, InteractionObject};
-use crate::game_module::actors::items::{ItemCreateInfo, ItemDataType};
+use crate::game_module::actors::items::{ItemCreateInfo};
 use crate::game_module::actors::weapons::{Weapon, WeaponCreateInfo};
 use crate::game_module::game_client::GameClient;
-use crate::game_module::game_constants::{GameViewMode, CHARACTER_INTERACTION_DISTANCE, CHARACTER_INTERACTION_TIME, GAME_VIEW_MODE, ITEM_SPIRIT_BALL, NPC_ATTACK_HIT_RANGE};
+use crate::game_module::game_constants::{GameViewMode, AUDIO_STOMACH_GROWLING, CHARACTER_INTERACTION_DISTANCE, CHARACTER_INTERACTION_TIME, GAME_VIEW_MODE, ITEM_SPIRIT_BALL, NPC_ATTACK_HIT_RANGE};
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::game_ui_manager::GameUIManager;
 use crate::game_module::widgets::text_box_widget::TextBoxContent;
-use crate::game_module::widgets::text_box_widget::TextBoxContent::Text;
 
 #[derive(Copy, Clone, Debug, Default, Hash, Eq, PartialEq)]
 pub struct CharacterID(u64);
@@ -247,16 +246,17 @@ impl<'a> CharacterManager<'a> {
 
     pub fn update_character_text_box(&self, game_ui_manager: &mut GameUIManager<'a>, character: &mut Character<'a>) {
         if character.is_player() == false && character._character_stats.get_is_stat_displayed() {
-            let material_instance = ptr_as_ref(self._game_resources).get_engine_resources().get_material_instance_data(
-                ItemDataType::get_item_material_instance_name(ItemDataType::Meat)
-            ).clone();
+            let mut contents = vec![
+                TextBoxContent::StatWidget((String::from("Hunger"), character._character_stats.get_hunger()))
+            ];
+
+            if character.get_stats().is_hungry() {
+                contents.push(TextBoxContent::Audio(String::from(AUDIO_STOMACH_GROWLING)))
+            };
 
             game_ui_manager.add_text_box_item(
                 character.get_character_name(),
-                &vec![
-                    TextBoxContent::MaterialInstance(material_instance),
-                    Text(format!("Hunger: {:?}", character._character_stats.get_hunger()))
-                ],
+                &contents,
                 Some( CHARACTER_INTERACTION_TIME )
             );
 

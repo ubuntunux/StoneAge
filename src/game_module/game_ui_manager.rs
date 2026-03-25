@@ -225,6 +225,7 @@ impl<'a> GameUIManager<'a> {
     pub fn build_game_ui(&mut self, window_size: &Vector2<i32>) {
         log::info!("build_game_ui");
         let game_client = ptr_as_ref(self._game_client);
+        let audio_manager = game_client.get_game_scene_manager()._audio_manager;
         let game_resources = game_client.get_game_resources();
         let engine_resources = game_resources.get_engine_resources();
         let root_widget = ptr_as_mut(self._root_widget);
@@ -246,7 +247,7 @@ impl<'a> GameUIManager<'a> {
 
         self._player_hud = Some(Box::new(PlayerHud::create_player_hud(game_ui_layout_mut)));
         self._item_bar_widget = Some(Box::new(ItemBarWidget::create_item_bar_widget(engine_resources, game_ui_layout_mut)));
-        self._text_box_widget = Some(Box::new(TextBoxWidget::create_text_box_widget(engine_resources, root_widget)));
+        self._text_box_widget = Some(Box::new(TextBoxWidget::create_text_box_widget(audio_manager, engine_resources, root_widget)));
         self._target_status_bar = Some(Box::new(TargetStatusWidget::create_target_status_widget(game_ui_layout_mut)));
         let tod_material_instance = game_resources.get_engine_resources().get_material_instance_data(MATERIAL_TIME_OF_DAY);
         self._time_of_day = Some(Box::new(TimeOfDayWidget::create_time_of_day_widget(game_ui_layout_mut, tod_material_instance)));
@@ -362,7 +363,7 @@ impl<'a> GameUIManager<'a> {
         self._text_box_widget.as_ref().unwrap().has_text_box_item(character_name)
     }
 
-    pub fn add_text_box_item(&mut self, character_name: &str, contents: &Vec<TextBoxContent<'a>>, duration: Option<f32>) {
+    pub fn add_text_box_item(&mut self, character_name: &str, contents: &Vec<TextBoxContent>, duration: Option<f32>) {
         self._text_box_widget.as_mut().unwrap().add_text_box_item(character_name, contents, duration);
     }
 

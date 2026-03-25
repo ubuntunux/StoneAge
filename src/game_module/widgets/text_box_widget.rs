@@ -1,10 +1,10 @@
 use std::collections::HashMap;
 use nalgebra::{Vector2};
 use strum_macros::EnumString;
+use rust_engine_3d::audio::audio_manager::{AudioLoop, AudioManager};
 use rust_engine_3d::resource::resource::EngineResources;
-use rust_engine_3d::scene::material_instance::MaterialInstanceData;
 use rust_engine_3d::scene::ui::{HorizontalAlign, Orientation, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault};
-use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
+use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::game_controller::{GameController};
@@ -23,14 +23,18 @@ pub enum TextBoxAnimationState {
     Shrinking,
 }
 
-pub enum TextBoxContent<'a> {
+pub enum TextBoxContent {
+    MaterialInstance(String),
     Text(String),
-    MaterialInstance(RcRefCell<MaterialInstanceData<'a>>),
+    StatWidget((String, f32)),
+    Audio(String),
 }
 
 pub struct TextBoxWidget<'a> {
+    pub _audio_manager: *const AudioManager<'a>,
+    pub _engine_resources: *const EngineResources<'a>,
     pub _root_widget: *const WidgetDefault<'a>,
-    pub _text_box_items:  HashMap<String, TextBoxItem<'a>>
+    pub _text_box_items: HashMap<String, TextBoxItem<'a>>
 }
 
 pub struct TextBoxItem<'a> {
@@ -41,7 +45,7 @@ pub struct TextBoxItem<'a> {
 }
 
 impl<'a> TextBoxItem<'a> {
-    pub fn create_text_box_item(parent_widget: &mut WidgetDefault<'a>, contents: &Vec<TextBoxContent<'a>>, duration: Option<f32>) -> TextBoxItem<'a> {
+    pub fn create_text_box_item(audio_manager: *const AudioManager<'a>, engine_resources: *const EngineResources<'a>, parent_widget: &mut WidgetDefault<'a>, contents: &Vec<TextBoxContent>, duration: Option<f32>) -> TextBoxItem<'a> {
         let layout_widget = UIManager::create_widget("layout_widget", UIWidgetTypes::Default);
         let ui_component = ptr_as_mut(layout_widget.as_ref()).get_ui_component_mut();
         ui_component.set_layout_type(UILayoutType::BoxLayout);
@@ -62,40 +66,54 @@ impl<'a> TextBoxItem<'a> {
             _animation_timer: 0.0,
         };
 
-        item.update_text_box_item(contents, duration, true);
+        item.update_text_box_item(audio_manager, engine_resources, contents, duration, true);
         item
     }
 
-    pub fn update_text_box_item(&mut self, contents: &Vec<TextBoxContent<'a>>, duration: Option<f32>, clear_widgets: bool) {
+    pub fn update_text_box_item(&mut self, audio_manager: *const AudioManager<'a>, engine_resources: *const EngineResources<'a>, contents: &Vec<TextBoxContent>, duration: Option<f32>, clear_widgets: bool) {
         if clear_widgets {
             ptr_as_mut(self._layout_widget).clear_widgets();
         }
 
         let mut widget_height = 0.0;
         for content in contents.iter() {
-            let binding_widget = UIManager::create_widget("binding_widget", UIWidgetTypes::Default);
-            let ui_component = ptr_as_mut(binding_widget.as_ref()).get_ui_component_mut();
-            ui_component.set_halign(HorizontalAlign::LEFT);
-            ui_component.set_valign(VerticalAlign::CENTER);
-            ui_component.set_expandable_x(true);
-            match content {
-                TextBoxContent::Text(text) => {
-                    ui_component.set_size_hint_x(Some(1.0));
-                    ui_component.set_size_y(ITEM_HEIGHT);
-                    ui_component.set_color(get_color32(255, 255, 255, 0));
-                    ui_component.set_font_color(get_color32(0, 0, 0, 255));
-                    ui_component.set_font_size(FONT_SIZE);
-                    ui_component.set_text(text);
+            if let TextBoxContent::Audio(audio_name) = content {
+                ptr_as_mut(audio_manager).play_audio_bank(audio_name, AudioLoop::ONCE, None);
+            } else {
+                let binding_widget = UIManager::create_widget("binding_widget", UIWidgetTypes::Default);
+                let ui_component = ptr_as_mut(binding_widget.as_ref()).get_ui_component_mut();
+                ui_component.set_halign(HorizontalAlign::LEFT);
+                ui_component.set_valign(VerticalAlign::CENTER);
+                ui_component.set_expandable_x(true);
+                match content {
+                    TextBoxContent::MaterialInstance(material_name) => {
+                        let material_instance = ptr_as_mut(engine_resources).get_material_instance_data(material_name);
+                        ui_component.set_size_x(ICON_SIZE);
+                        ui_component.set_size_y(ICON_SIZE);
+                        ui_component.set_color(get_color32(255, 255, 255, 255));
+                        ui_component.set_material_instance(Some(material_instance.clone()));
+                    }
+                    TextBoxContent::StatWidget((text, ratio)) => {
+                        ui_component.set_size_hint_x(Some(1.0));
+                        ui_component.set_size_y(ITEM_HEIGHT);
+                        ui_component.set_color(get_color32(255, 255, 255, 0));
+                        ui_component.set_font_color(get_color32(0, 0, 0, 255));
+                        ui_component.set_font_size(FONT_SIZE);
+                        ui_component.set_text(&format!("{}: {:.1}%", text, ratio));
+                    }
+                    TextBoxContent::Text(text) => {
+                        ui_component.set_size_hint_x(Some(1.0));
+                        ui_component.set_size_y(ITEM_HEIGHT);
+                        ui_component.set_color(get_color32(255, 255, 255, 0));
+                        ui_component.set_font_color(get_color32(0, 0, 0, 255));
+                        ui_component.set_font_size(FONT_SIZE);
+                        ui_component.set_text(text);
+                    },
+                    TextBoxContent::Audio(_) => ()
                 }
-                TextBoxContent::MaterialInstance(material_instance) => {
-                    ui_component.set_size_x(ICON_SIZE);
-                    ui_component.set_size_y(ICON_SIZE);
-                    ui_component.set_color(get_color32(255, 255, 255, 255));
-                    ui_component.set_material_instance(Some(material_instance.clone()));
-                }
+                widget_height += ui_component.get_size_y();
+                ptr_as_mut(self._layout_widget).add_widget(&binding_widget);
             }
-            widget_height += ui_component.get_size_y();
-            ptr_as_mut(self._layout_widget).add_widget(&binding_widget);
         }
         ptr_as_mut(self._layout_widget)._ui_component.set_size_y(widget_height + ITEM_PADDING * 2.0);
         self._duration = duration;
@@ -110,8 +128,10 @@ impl<'a> TextBoxItem<'a> {
 }
 
 impl<'a> TextBoxWidget<'a> {
-    pub fn create_text_box_widget(_engine_resources: &EngineResources<'a>, root_widget: &mut WidgetDefault<'a>) -> TextBoxWidget<'a> {
+    pub fn create_text_box_widget(audio_manager: *const AudioManager<'a>, engine_resources: &EngineResources<'a>, root_widget: &mut WidgetDefault<'a>) -> TextBoxWidget<'a> {
         TextBoxWidget {
+            _audio_manager: audio_manager,
+            _engine_resources: engine_resources,
             _root_widget: root_widget,
             _text_box_items: HashMap::new(),
         }
@@ -124,14 +144,14 @@ impl<'a> TextBoxWidget<'a> {
         self._text_box_items.contains_key(character_name)
     }
 
-    pub fn add_text_box_item(&mut self, character_name: &str, contents: &Vec<TextBoxContent<'a>>, duration: Option<f32>) {
+    pub fn add_text_box_item(&mut self, character_name: &str, contents: &Vec<TextBoxContent>, duration: Option<f32>) {
         if let Some(item) = self._text_box_items.get_mut(character_name) {
-            item.update_text_box_item(contents, duration, true);
+            item.update_text_box_item(self._audio_manager, self._engine_resources, contents, duration, true);
             item.set_animation_state(TextBoxAnimationState::None);
         } else {
             self._text_box_items.insert(
                 String::from(character_name),
-                TextBoxItem::create_text_box_item(ptr_as_mut(self._root_widget), contents, duration)
+                TextBoxItem::create_text_box_item(self._audio_manager, self._engine_resources, ptr_as_mut(self._root_widget), contents, duration)
             );
         }
     }

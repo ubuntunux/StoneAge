@@ -315,7 +315,7 @@
             "asset_path": "family/monkey_koa",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/family/monkey_koa.blend",
             "guid": "",
-            "mtime": 1774186422.779093,
+            "mtime": 1774452602.8641293,
             "data": {}
         }
     ],
@@ -1099,14 +1099,6 @@
         {
             "asset_type": "MESH",
             "asset_path": "characters/koa/koa",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa.blend",
-            "guid": "",
-            "mtime": 1770906929.5444067,
-            "data": {}
-        },
-        {
-            "asset_type": "MATERIAL_INSTANCE",
-            "asset_path": "characters/koa",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa.blend",
             "guid": "",
             "mtime": 1770906929.5444067,
@@ -4959,13 +4951,33 @@
             "guid": "",
             "mtime": 1774186302.4466894,
             "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_hungry.blend": [
+        {
+            "asset_type": "MESH",
+            "asset_path": "characters/koa/koa_hungry",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_hungry.blend",
+            "guid": "",
+            "mtime": 1774452477.1571803,
+            "data": {}
         },
         {
             "asset_type": "MATERIAL_INSTANCE",
-            "asset_path": "characters/jack",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/jack/jack_stand_up.blend",
+            "asset_path": "characters/koa",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_hungry.blend",
             "guid": "",
-            "mtime": 1774186302.4466894,
+            "mtime": 1774452477.1571803,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/source_assets/jack/jack.blend": [
+        {
+            "asset_type": "MATERIAL_INSTANCE",
+            "asset_path": "characters/jack",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/source_assets/jack/jack.blend",
+            "guid": "",
+            "mtime": 1773939219.9596364,
             "data": {}
         }
     ],

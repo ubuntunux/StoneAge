@@ -6,7 +6,7 @@
         "_dead_animation_speed": 1.5,
         "_hit_animation": "characters/koa/koa_hit",
         "_hit_animation_speed": 2.0,
-        "_hungry_animation": "characters/jack/jack_hungry",
+        "_hungry_animation": "characters/koa/koa_hungry",
         "_idle_animation": "characters/koa/koa_idle",
         "_idle_animation_speed": 1.0,
         "_jump_animation": "characters/koa/koa_jump",
