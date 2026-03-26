@@ -247,7 +247,10 @@ impl<'a> CharacterManager<'a> {
     pub fn update_character_text_box(&self, game_ui_manager: &mut GameUIManager<'a>, character: &mut Character<'a>) {
         if character.is_player() == false && character._character_stats.get_is_stat_displayed() {
             let mut contents = vec![
-                TextBoxContent::StatWidget((String::from("Hunger"), character._character_stats.get_hunger()))
+                TextBoxContent::StatWidget((String::from("Health"), character._character_stats.get_hp() as f32 / character._character_stats.get_max_hp() as f32)),
+                TextBoxContent::StatWidget((String::from("Hunger"), character._character_stats.get_hunger())),
+                TextBoxContent::StatWidget((String::from("Tired"), character._character_stats.get_tired())),
+                TextBoxContent::StatWidget((String::from("Happiness"), character._character_stats.get_happiness()))
             ];
 
             if character.get_stats().is_hungry() {

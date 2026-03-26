@@ -1,8 +1,8 @@
 {
     "_characters": {},
     "_game_scenes": {
-        "intro_stage": {
-            "_game_scene_data_name": "game_scenes/intro_stage",
+        "stage_cave": {
+            "_game_scene_data_name": "game_scenes/stage_cave",
             "_position": [
                 0.0,
                 0.0,

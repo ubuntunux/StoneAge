@@ -5,7 +5,7 @@ use crate::game_module::actors::props::{
     Prop, PropCreateInfo, PropData, PropDataType, PropID, PropManager, PropMap, PropStats,
 };
 use crate::game_module::game_client::GameClient;
-use crate::game_module::game_constants::{GameViewMode, AUDIO_HIT, EFFECT_HIT, GAME_VIEW_MODE, NPC_ATTACK_HIT_RANGE};
+use crate::game_module::game_constants::{GameViewMode, AUDIO_HIT, CHARACTER_INTERACTION_DISTANCE, EFFECT_HIT, GAME_VIEW_MODE, NPC_ATTACK_HIT_RANGE};
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
 use nalgebra::Vector3;
@@ -502,9 +502,9 @@ impl<'a> PropManager<'a> {
                         },
                         PropDataType::Monolith => {
                             let is_in_player_range = if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
-                                player.check_in_range_xy(prop.get_collision(), NPC_ATTACK_HIT_RANGE, check_direction)
+                                player.check_in_range_xy(prop.get_collision(), prop.get_collision()._bounding_box.get_mag_xz() + CHARACTER_INTERACTION_DISTANCE, check_direction)
                             } else {
-                                player.check_in_range(prop.get_collision(), NPC_ATTACK_HIT_RANGE, check_direction)
+                                player.check_in_range(prop.get_collision(), prop.get_collision()._bounding_box.get_mag_xz() + CHARACTER_INTERACTION_DISTANCE, check_direction)
                             };
 
                             if is_in_player_range {

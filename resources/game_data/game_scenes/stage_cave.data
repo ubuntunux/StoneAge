@@ -3,9 +3,9 @@
         "monkey_ewa": {
             "_character_data_name": "characters/family/monkey_ewa",
             "_position": [
-                -8.38672924041748,
+                -6.463894844055176,
                 10.0,
-                0.0
+                -3.331348180770874
             ],
             "_rotation": [
                 0.0,
@@ -21,9 +21,9 @@
         "monkey_koa": {
             "_character_data_name": "characters/family/monkey_koa",
             "_position": [
-                -6.660023212432861,
+                -4.146106719970703,
                 10.344499588012695,
-                0.0
+                -5.330570697784424
             ],
             "_rotation": [
                 0.0,
@@ -42,9 +42,9 @@
         "monkey_aru": {
             "_character_data_name": "characters/family/monkey_aru",
             "_position": [
-                -4.732234954833984,
+                -1.6680631637573242,
                 10.03738784790039,
-                0.0
+                -3.6510400772094727
             ],
             "_rotation": [
                 0.0,
@@ -59,6 +59,60 @@
         }
     },
     "_props": {
+        "bed": {
+            "_position": [
+                -1.8805692195892334,
+                10.000001907348633,
+                -3.5626931190490723
+            ],
+            "_prop_data_name": "props/bed",
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "bed.001": {
+            "_position": [
+                -4.103261947631836,
+                10.000001907348633,
+                -5.406373500823975
+            ],
+            "_prop_data_name": "props/bed",
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "bed.002": {
+            "_position": [
+                -6.460508346557617,
+                10.000001907348633,
+                -3.5893208980560303
+            ],
+            "_prop_data_name": "props/bed",
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
         "gate": {
             "_instance_parameters": {
                 "_linked_gate": "gate.001",

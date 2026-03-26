@@ -94,6 +94,8 @@ impl CharacterStats {
             _max_stamina: MAX_STAMINA,
             _max_stamina_data: MAX_STAMINA,
             _hunger: 0.0,
+            _tired: 0.0,
+            _happiness: 1.0,
             _invincibility: false,
             _is_stat_displayed: false
         }
@@ -158,9 +160,20 @@ impl CharacterStats {
             self.set_stamina(self._max_stamina);
         }
     }
-
     pub fn add_hunger(&mut self, hunger: f32) {
         self.set_hunger(self.get_hunger() + hunger);
+    }
+    pub fn get_tired(&self) -> f32 {
+        self._tired
+    }
+    pub fn set_tired(&mut self, tired: f32) {
+        self._tired = tired;
+    }
+    pub fn get_happiness(&self) -> f32 {
+        self._happiness
+    }
+    pub fn set_happiness(&mut self, happiness: f32) {
+        self._happiness = happiness;
     }
 
     pub fn get_stamina(&self) -> f32 {

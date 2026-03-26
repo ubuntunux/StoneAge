@@ -29,7 +29,7 @@ impl BehaviorRoamer {
 impl BehaviorBase for BehaviorRoamer {
     fn initialize_behavior(&mut self, _owner: &mut Character, position: &Vector3<f32>) {
         self._spawn_point = position.clone();
-        self._behavior_state = BehaviorState::None;
+        self._behavior_state = BehaviorState::Idle;
     }
 
     fn update_behavior(

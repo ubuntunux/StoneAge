@@ -10,7 +10,7 @@ pub struct BehaviorUfo {
 
 impl BehaviorBase for BehaviorUfo {
     fn initialize_behavior(&mut self, _owner: &mut Character, _position: &Vector3<f32>) {
-        self._behavior_state = BehaviorState::None;
+        self._behavior_state = BehaviorState::Idle;
     }
 
     fn update_behavior(

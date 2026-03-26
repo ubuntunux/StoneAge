@@ -44,6 +44,8 @@ pub struct CharacterStats {
     pub _max_stamina: f32,
     pub _max_stamina_data: f32,
     pub _hunger: f32,
+    pub _tired: f32,
+    pub _happiness: f32,
     pub _invincibility: bool,
     pub _is_stat_displayed: bool
 }
