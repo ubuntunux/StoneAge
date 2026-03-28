@@ -1,11 +1,11 @@
 {
     "_characters": {
-        "pachycephalosaurus": {
-            "_character_data_name": "characters/pachycephalosaurus",
+        "monkey_ewa": {
+            "_character_data_name": "characters/family/monkey_ewa",
             "_position": [
-                -3.1083059310913086,
-                -0.16614282131195068,
-                31.905681610107422
+                16.395343780517578,
+                2.9496304988861084,
+                12.052227020263672
             ],
             "_rotation": [
                 0.0,
@@ -18,246 +18,12 @@
                 1.0
             ]
         },
-        "pachycephalosaurus_01": {
-            "_character_data_name": "characters/pachycephalosaurus_01",
+        "monkey_koa": {
+            "_character_data_name": "characters/family/monkey_koa",
             "_position": [
-                5.43646240234375,
-                1.7206077575683594,
-                13.390101432800293
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "parasaurolophus": {
-            "_character_data_name": "characters/parasaurolophus",
-            "_position": [
-                26.775402069091797,
-                1.0860092639923096,
-                10.923334121704102
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "pteranodon": {
-            "_character_data_name": "characters/pteranodon",
-            "_position": [
-                26.775402069091797,
-                1.0860092639923096,
-                10.923334121704102
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "spider": {
-            "_character_data_name": "characters/spider",
-            "_position": [
-                35.90874099731445,
-                -0.06602728366851807,
-                8.315598487854004
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "stegosaurus_red": {
-            "_character_data_name": "characters/stegosaurus_red",
-            "_position": [
-                44.579193115234375,
-                -0.20792549848556519,
-                34.79583740234375
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "trex": {
-            "_character_data_name": "characters/trex",
-            "_position": [
-                -6.72098445892334,
-                0.8241307735443115,
-                16.009843826293945
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "trex_02": {
-            "_character_data_name": "characters/trex_02",
-            "_position": [
-                -0.21815967559814453,
-                -1.0,
-                -7.1113739013671875
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "triceratops": {
-            "_character_data_name": "characters/triceratops",
-            "_position": [
-                -16.51648712158203,
-                1.449991226196289,
-                36.02391815185547
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "triceratops_01": {
-            "_character_data_name": "characters/triceratops_01",
-            "_position": [
-                6.2389984130859375,
-                0.391659140586853,
-                3.0014238357543945
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "ufo": {
-            "_character_data_name": "characters/ufo",
-            "_position": [
-                -2.074009418487549,
-                57.70130157470703,
-                -11.507506370544434
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                0.5346481800079346,
-                0.5346481800079346,
-                0.5346481800079346
-            ]
-        },
-        "velociraptor": {
-            "_character_data_name": "characters/velociraptor",
-            "_position": [
-                12.492473602294922,
-                0.9902384281158447,
-                6.309028625488281
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "velociraptor.001": {
-            "_character_data_name": "characters/velociraptor",
-            "_position": [
-                25.221572875976562,
-                -0.5224541425704956,
-                -14.336748123168945
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "velociraptor_01.001": {
-            "_character_data_name": "characters/velociraptor_01.001",
-            "_position": [
-                26.68594741821289,
-                1.4696433544158936,
-                23.26787567138672
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "velociraptor_01.002": {
-            "_character_data_name": "characters/velociraptor_01.001",
-            "_position": [
-                35.18620300292969,
-                -0.9999998807907104,
-                -5.666297912597656
+                18.020801544189453,
+                2.5001397132873535,
+                10.799436569213867
             ],
             "_rotation": [
                 0.0,
@@ -493,9 +259,9 @@
         "monkey_aru": {
             "_character_data_name": "characters/family/monkey_aru",
             "_position": [
-                20.005605697631836,
-                2.5315041542053223,
-                10.768879890441895
+                19.868873596191406,
+                2.7635936737060547,
+                11.655028343200684
             ],
             "_rotation": [
                 0.0,
@@ -510,6 +276,60 @@
         }
     },
     "_props": {
+        "bed": {
+            "_position": [
+                19.916372299194336,
+                2.1597776412963867,
+                11.856958389282227
+            ],
+            "_prop_data_name": "props/bed",
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "bed.001": {
+            "_position": [
+                16.481754302978516,
+                2.303388833999634,
+                12.027506828308105
+            ],
+            "_prop_data_name": "props/bed",
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "bed.002": {
+            "_position": [
+                18.415176391601562,
+                2.0013036727905273,
+                10.720503807067871
+            ],
+            "_prop_data_name": "props/bed",
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
         "birch_tree_00": {
             "_position": [
                 -15.404129028320312,
@@ -646,8 +466,8 @@
         },
         "gate.002": {
             "_instance_parameters": {
-                "_linked_gate": "gate",
-                "_linked_stage": "game_scenes/stage_01"
+                "_linked_gate": "gate.001",
+                "_linked_stage": "game_scenes/intro_stage"
             },
             "_position": [
                 48.633060455322266,

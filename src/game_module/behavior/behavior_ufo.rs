@@ -16,12 +16,12 @@ impl BehaviorBase for BehaviorUfo {
     fn update_behavior(
         &mut self,
         owner: &mut Character,
-        player: Option<&Character>,
+        target: Option<&Character>,
         _delta_time: f32,
     ) {
         match self._behavior_state {
             BehaviorState::None => {
-                self.set_behavior(BehaviorState::Idle, owner, player, false);
+                self.set_behavior(BehaviorState::Idle, owner, target, false);
             }
             _ => (),
         }
@@ -31,16 +31,16 @@ impl BehaviorBase for BehaviorUfo {
         &mut self,
         behavior_state: BehaviorState,
         owner: &mut Character,
-        player: Option<&Character>,
+        target: Option<&Character>,
         is_force: bool,
     ) {
         if self._behavior_state != behavior_state || is_force {
-            self.end_behavior(owner, player);
+            self.end_behavior(owner, target);
             self._behavior_state = behavior_state;
         }
     }
 
-    fn end_behavior(&mut self, _owner: &mut Character, _player: Option<&Character>) {
+    fn end_behavior(&mut self, _owner: &mut Character, _target: Option<&Character>) {
         match self._behavior_state {
             _ => (),
         }

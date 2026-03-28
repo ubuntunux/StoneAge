@@ -849,7 +849,7 @@
 			"children":[
 				41
 			],
-			"name":"koa_stand_up"
+			"name":"koa_sit_down"
 		}
 	],
 	"animations":[
@@ -1745,7 +1745,7 @@
 				},
 				{
 					"input":0,
-					"interpolation":"LINEAR",
+					"interpolation":"STEP",
 					"output":3
 				},
 				{
@@ -1790,7 +1790,7 @@
 				},
 				{
 					"input":0,
-					"interpolation":"STEP",
+					"interpolation":"LINEAR",
 					"output":12
 				},
 				{
@@ -1835,7 +1835,7 @@
 				},
 				{
 					"input":0,
-					"interpolation":"LINEAR",
+					"interpolation":"STEP",
 					"output":21
 				},
 				{
@@ -1940,7 +1940,7 @@
 				},
 				{
 					"input":0,
-					"interpolation":"STEP",
+					"interpolation":"LINEAR",
 					"output":42
 				},
 				{
@@ -2120,7 +2120,7 @@
 				},
 				{
 					"input":0,
-					"interpolation":"STEP",
+					"interpolation":"LINEAR",
 					"output":78
 				},
 				{
@@ -2270,7 +2270,7 @@
 				},
 				{
 					"input":0,
-					"interpolation":"LINEAR",
+					"interpolation":"STEP",
 					"output":108
 				},
 				{
@@ -3820,7 +3820,7 @@
 	"buffers":[
 		{
 			"byteLength":52664,
-			"uri":"koa_stand_up.bin"
+			"uri":"koa_sit_down.bin"
 		}
 	]
 }

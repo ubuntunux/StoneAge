@@ -41,15 +41,15 @@ pub trait BehaviorBase {
     fn update_behavior(
         &mut self,
         owner: &mut Character,
-        player: Option<&Character>,
+        target: Option<&Character>,
         delta_time: f32,
     );
     fn set_behavior(
         &mut self,
         behavior_state: BehaviorState,
         owner: &mut Character,
-        player: Option<&Character>,
+        target: Option<&Character>,
         is_force: bool,
     );
-    fn end_behavior(&mut self, owner: &mut Character, player: Option<&Character>);
+    fn end_behavior(&mut self, owner: &mut Character, target: Option<&Character>);
 }

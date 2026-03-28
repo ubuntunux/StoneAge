@@ -849,7 +849,7 @@
 			"children":[
 				41
 			],
-			"name":"koa_stand_up"
+			"name":"koa_sit_down_loop"
 		}
 	],
 	"animations":[
@@ -1735,37 +1735,37 @@
 			"samplers":[
 				{
 					"input":0,
-					"interpolation":"LINEAR",
+					"interpolation":"STEP",
 					"output":1
 				},
 				{
 					"input":0,
-					"interpolation":"LINEAR",
+					"interpolation":"STEP",
 					"output":2
 				},
 				{
 					"input":0,
-					"interpolation":"LINEAR",
+					"interpolation":"STEP",
 					"output":3
 				},
 				{
 					"input":0,
-					"interpolation":"LINEAR",
+					"interpolation":"STEP",
 					"output":4
 				},
 				{
 					"input":0,
-					"interpolation":"LINEAR",
+					"interpolation":"STEP",
 					"output":5
 				},
 				{
 					"input":0,
-					"interpolation":"LINEAR",
+					"interpolation":"STEP",
 					"output":6
 				},
 				{
 					"input":0,
-					"interpolation":"LINEAR",
+					"interpolation":"STEP",
 					"output":7
 				},
 				{
@@ -1775,7 +1775,7 @@
 				},
 				{
 					"input":0,
-					"interpolation":"LINEAR",
+					"interpolation":"STEP",
 					"output":9
 				},
 				{
@@ -1805,7 +1805,7 @@
 				},
 				{
 					"input":0,
-					"interpolation":"LINEAR",
+					"interpolation":"STEP",
 					"output":15
 				},
 				{
@@ -1815,12 +1815,12 @@
 				},
 				{
 					"input":0,
-					"interpolation":"LINEAR",
+					"interpolation":"STEP",
 					"output":17
 				},
 				{
 					"input":0,
-					"interpolation":"LINEAR",
+					"interpolation":"STEP",
 					"output":18
 				},
 				{
@@ -1835,7 +1835,7 @@
 				},
 				{
 					"input":0,
-					"interpolation":"LINEAR",
+					"interpolation":"STEP",
 					"output":21
 				},
 				{
@@ -1850,7 +1850,7 @@
 				},
 				{
 					"input":0,
-					"interpolation":"LINEAR",
+					"interpolation":"STEP",
 					"output":24
 				},
 				{
@@ -1895,7 +1895,7 @@
 				},
 				{
 					"input":0,
-					"interpolation":"LINEAR",
+					"interpolation":"STEP",
 					"output":33
 				},
 				{
@@ -1920,12 +1920,12 @@
 				},
 				{
 					"input":0,
-					"interpolation":"LINEAR",
+					"interpolation":"STEP",
 					"output":38
 				},
 				{
 					"input":0,
-					"interpolation":"LINEAR",
+					"interpolation":"STEP",
 					"output":39
 				},
 				{
@@ -1940,7 +1940,7 @@
 				},
 				{
 					"input":0,
-					"interpolation":"STEP",
+					"interpolation":"LINEAR",
 					"output":42
 				},
 				{
@@ -1970,7 +1970,7 @@
 				},
 				{
 					"input":0,
-					"interpolation":"LINEAR",
+					"interpolation":"STEP",
 					"output":48
 				},
 				{
@@ -1985,7 +1985,7 @@
 				},
 				{
 					"input":0,
-					"interpolation":"LINEAR",
+					"interpolation":"STEP",
 					"output":51
 				},
 				{
@@ -2015,7 +2015,7 @@
 				},
 				{
 					"input":0,
-					"interpolation":"LINEAR",
+					"interpolation":"STEP",
 					"output":57
 				},
 				{
@@ -2135,7 +2135,7 @@
 				},
 				{
 					"input":0,
-					"interpolation":"LINEAR",
+					"interpolation":"STEP",
 					"output":81
 				},
 				{
@@ -2180,7 +2180,7 @@
 				},
 				{
 					"input":0,
-					"interpolation":"LINEAR",
+					"interpolation":"STEP",
 					"output":90
 				},
 				{
@@ -2195,12 +2195,12 @@
 				},
 				{
 					"input":0,
-					"interpolation":"LINEAR",
+					"interpolation":"STEP",
 					"output":93
 				},
 				{
 					"input":0,
-					"interpolation":"LINEAR",
+					"interpolation":"STEP",
 					"output":94
 				},
 				{
@@ -2220,7 +2220,7 @@
 				},
 				{
 					"input":0,
-					"interpolation":"LINEAR",
+					"interpolation":"STEP",
 					"output":98
 				},
 				{
@@ -2270,17 +2270,17 @@
 				},
 				{
 					"input":0,
-					"interpolation":"LINEAR",
+					"interpolation":"STEP",
 					"output":108
 				},
 				{
 					"input":0,
-					"interpolation":"LINEAR",
+					"interpolation":"STEP",
 					"output":109
 				},
 				{
 					"input":0,
-					"interpolation":"LINEAR",
+					"interpolation":"STEP",
 					"output":110
 				},
 				{
@@ -2315,7 +2315,7 @@
 				},
 				{
 					"input":0,
-					"interpolation":"LINEAR",
+					"interpolation":"STEP",
 					"output":117
 				},
 				{
@@ -2345,7 +2345,7 @@
 				},
 				{
 					"input":0,
-					"interpolation":"LINEAR",
+					"interpolation":"STEP",
 					"output":123
 				},
 				{
@@ -3820,7 +3820,7 @@
 	"buffers":[
 		{
 			"byteLength":52664,
-			"uri":"koa_stand_up.bin"
+			"uri":"koa_sit_down_loop.bin"
 		}
 	]
 }

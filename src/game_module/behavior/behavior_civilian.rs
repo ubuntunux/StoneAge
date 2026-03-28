@@ -22,13 +22,13 @@ impl BehaviorBase for BehaviorCivilian {
     fn update_behavior(
         &mut self,
         owner: &mut Character,
-        player: Option<&Character>,
+        target: Option<&Character>,
         delta_time: f32,
     ) {
         match self._behavior_state {
             BehaviorState::Idle => {
                 if self._behavior_time < 0.0 {
-                    self.set_behavior(BehaviorState::Roaming, owner, player, false);
+                    self.set_behavior(BehaviorState::Roaming, owner, target, false);
                 }
                 self._behavior_time -= delta_time;
             }
@@ -47,16 +47,16 @@ impl BehaviorBase for BehaviorCivilian {
                 }
 
                 if do_idle {
-                    self.set_behavior(BehaviorState::Idle, owner, player, false);
+                    self.set_behavior(BehaviorState::Idle, owner, target, false);
                 }
                 self._behavior_time -= delta_time;
             }
             BehaviorState::Interaction => {
                 if 0.0 < self._behavior_time {
-                    let to_player = (player.unwrap().get_position() - owner.get_position()).normalize();
-                    owner.look_at(&to_player);
+                    let to_target = (target.unwrap().get_position() - owner.get_position()).normalize();
+                    owner.look_at(&to_target);
                 } else {
-                    self.set_behavior(BehaviorState::Idle, owner, player, false);
+                    self.set_behavior(BehaviorState::Idle, owner, target, false);
                 }
                 self._behavior_time -= delta_time;
             }
@@ -68,11 +68,11 @@ impl BehaviorBase for BehaviorCivilian {
         &mut self,
         behavior_state: BehaviorState,
         owner: &mut Character,
-        player: Option<&Character>,
+        target: Option<&Character>,
         is_force: bool,
     ) {
         if self._behavior_state != behavior_state || is_force {
-            self.end_behavior(owner, player);
+            self.end_behavior(owner, target);
 
             self._behavior_state = behavior_state;
             match behavior_state {
@@ -80,6 +80,7 @@ impl BehaviorBase for BehaviorCivilian {
                     owner.set_move_stop();
                     if owner.get_stats().is_hungry() {
                         owner.set_action_hungry();
+                        owner.set_move_stop()
                     }
                     self._behavior_time = lerp(NPC_IDLE_TERM_MIN, NPC_IDLE_TERM_MAX, rand::random::<f32>());
                 }
@@ -108,7 +109,7 @@ impl BehaviorBase for BehaviorCivilian {
         }
     }
 
-    fn end_behavior(&mut self, _owner: &mut Character, _player: Option<&Character>) {
+    fn end_behavior(&mut self, _owner: &mut Character, _target: Option<&Character>) {
         match self._behavior_state {
             _ => (),
         }

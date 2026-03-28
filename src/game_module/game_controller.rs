@@ -569,11 +569,11 @@ impl<'a> GameController<'a> {
         }
 
         if is_jump {
-            player_mut.set_jump();
+            player_mut.set_action_sit_down();
         }
 
         if is_roll {
-            player_mut.set_roll();
+            player_mut.set_action_stand_up();
         }
 
         if is_attack {
