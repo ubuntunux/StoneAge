@@ -77,11 +77,10 @@ impl BehaviorBase for BehaviorCivilian {
             self._behavior_state = behavior_state;
             match behavior_state {
                 BehaviorState::Idle => {
-                    owner.set_move_stop();
                     if owner.get_stats().is_hungry() {
                         owner.set_action_hungry();
-                        owner.set_move_stop()
                     }
+                    owner.set_move_idle();
                     self._behavior_time = lerp(NPC_IDLE_TERM_MIN, NPC_IDLE_TERM_MAX, rand::random::<f32>());
                 }
                 BehaviorState::Roaming => {

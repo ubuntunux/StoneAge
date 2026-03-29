@@ -22,9 +22,10 @@
         "_run_animation_speed": 1.5,
         "_running_jump_animation": "characters/aru/aru_running_jump",
         "_running_jump_animation_speed": 1.0,
+        "_sit_down_loop_animation": "characters/jack/jack_sit_down_loop",
         "_sleep_animation": "characters/aru/aru_sleep",
-        "_stand_up_animation": "characters/aru/aru_stand_up",
         "_upper_animation_layer": "jack/upper_animation_layer",
+        "_wake_up_animation": "characters/aru/aru_wake_up",
         "_walk_animation": "characters/aru/aru_walk",
         "_walk_animation_speed": 1.5
     },

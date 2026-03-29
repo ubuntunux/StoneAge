@@ -7,16 +7,17 @@ use nalgebra::Vector3;
 use rust_engine_3d::utilities::system::{newRcRefCell, RcRefCell};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::hash::Hash;
 
 pub type GameSceneCreateInfoMap = HashMap<String, GameSceneCreateInfo>;
 
-pub struct ScenarioTrack<T: Copy + PartialEq> {
+pub struct ScenarioTrack<T: Copy + PartialEq + Hash> {
     pub _scenario_phase: T,
     pub _phase_time: f32,
     pub _phase_duration: Option<f32>,
 }
 
-impl<T: Copy + PartialEq> ScenarioTrack<T> {
+impl<T: Copy + PartialEq + Hash> ScenarioTrack<T> {
     pub fn set_scenario_phase(&mut self, next_scenario_phase: T, phase_duration: Option<f32>) {
         if next_scenario_phase != self._scenario_phase {
             self._scenario_phase = next_scenario_phase;

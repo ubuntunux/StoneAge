@@ -1,5 +1,5 @@
 use crate::game_module::actors::character::Character;
-use crate::game_module::game_constants::{AUDIO_ROOSTER, CAMERA_DISTANCE_MAX, CAMERA_DISTANCE_MIN, CAMERA_OFFSET_Y, HUNGER_WARNING_THRESHOLD, STORY_BOARD_FADE_TIME, STORY_IMAGE_NONE, TIME_OF_MORNING};
+use crate::game_module::game_constants::{AUDIO_ROOSTER, AUDIO_STOMACH_GROWLING, CAMERA_DISTANCE_MAX, CAMERA_DISTANCE_MIN, CAMERA_OFFSET_Y, HUNGER_WARNING_THRESHOLD, STORY_BOARD_FADE_TIME, STORY_IMAGE_NONE, TIME_OF_MORNING};
 use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::game_ui_manager::{GameUIManager, QuestItemType};
 use crate::game_module::scenario::scenario::{ScenarioBase, ScenarioDataCreateInfo, ScenarioTrack};
@@ -9,16 +9,13 @@ use std::str::FromStr;
 use strum_macros::{Display, EnumCount, EnumIter, EnumString};
 use rust_engine_3d::utilities::math;
 use crate::game_module::actors::character_data::ActionAnimationState;
-use crate::game_module::actors::items::ItemDataType;
 use crate::game_module::behavior::behavior_base::BehaviorState;
-use crate::game_module::widgets::quest_widgets::quest_item_gather_item::GatherItemData;
-use crate::game_module::widgets::quest_widgets::quest_widget::QuestContent;
 
 const SKIP_SCENARIO: bool = false;
 const USE_STORY_BOARDS: bool = false;
 const INTRO_FADE_TIME: f32 = 2.0;
-const SLEEP_PHASE_TIME: f32 = 5.0;
-const WAKE_UP_PHASE_TIME: f32 = 6.0;
+const PHASE_TIME_SLEEP: f32 = 5.0;
+const PHASE_TIME_HUNGRY: f32 = 3.0;
 
 pub const STORY_BOARDS: [&str; 2] = ["ui/story_board/story_board_intro_00", "ui/story_board/story_board_intro_01"];
 
@@ -28,6 +25,7 @@ pub enum ScenarioIntroPhase {
     StoryBoard,
     Sleep,
     WakeUp,
+    Hungry,
     End,
     QuestGathering,
 }
@@ -148,6 +146,21 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
             ScenarioIntroPhase::WakeUp => {
                 game_scene_manager.get_scene_manager().play_audio_bank(AUDIO_ROOSTER);
             }
+            ScenarioIntroPhase::Hungry => {
+                game_scene_manager.get_scene_manager().play_audio_bank(AUDIO_STOMACH_GROWLING);
+                //self._actor_aru.as_ref().unwrap().borrow_mut().set_hunger(HUNGER_WARNING_THRESHOLD);
+                //self._actor_aru.as_ref().unwrap().borrow_mut().set_action_hungry();
+
+                self._actor_ewa.as_ref().unwrap().borrow_mut().set_hunger(HUNGER_WARNING_THRESHOLD);
+                self._actor_ewa.as_ref().unwrap().borrow_mut().set_action_hungry();
+
+                self._actor_koa.as_ref().unwrap().borrow_mut().set_hunger(HUNGER_WARNING_THRESHOLD);
+                self._actor_koa.as_ref().unwrap().borrow_mut().set_action_hungry();
+            }
+            ScenarioIntroPhase::QuestGathering => {
+                self._actor_ewa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::Idle, None, true);
+                self._actor_koa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::Idle, None, true);
+            }
             _ => (),
         }
     }
@@ -168,7 +181,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
             game_scene_manager.set_time_of_day_speed(1.0);
         }
 
-        let phase_time = self._scenario_track.get_phase_time();
+        let _phase_time = self._scenario_track.get_phase_time();
         let phase_ratio = self._scenario_track.get_phase_ratio();
         match self._scenario_track._scenario_phase {
             ScenarioIntroPhase::None => {
@@ -186,7 +199,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                     if USE_STORY_BOARDS == false || STORY_BOARDS.len() <= story_board_phase {
                         game_ui_manager.set_image_manual_fade_inout(STORY_IMAGE_NONE, INTRO_FADE_TIME);
                         game_ui_manager.set_auto_fade_inout(true);
-                        self.set_scenario_phase(ScenarioIntroPhase::Sleep.to_string().as_str(), Some(SLEEP_PHASE_TIME));
+                        self.set_scenario_phase(ScenarioIntroPhase::Sleep.to_string().as_str(), Some(PHASE_TIME_SLEEP));
                     } else {
                         game_ui_manager.set_image_auto_fade_inout(&STORY_BOARDS[story_board_phase], STORY_BOARD_FADE_TIME);
                         self.next_story_board_phase();
@@ -203,7 +216,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                 main_camera._transform_object.set_rotation(&rotation);
 
                 if 1.0 <= phase_ratio {
-                    self.set_scenario_phase(ScenarioIntroPhase::WakeUp.to_string().as_str(), Some(WAKE_UP_PHASE_TIME));
+                    self.set_scenario_phase(ScenarioIntroPhase::WakeUp.to_string().as_str(), None);
                 }
             }
             ScenarioIntroPhase::WakeUp => {
@@ -215,7 +228,6 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                 self._wakeup_delay_koa -= delta_time as f32;
 
                 if 0.0 <= prev_wakeup_delay_aru && self._wakeup_delay_aru < 0.0 {
-                    //self._actor_aru.as_ref().unwrap().borrow_mut()._character_stats.set_hunger(0.8);
                     self._actor_aru.as_ref().unwrap().borrow_mut().set_action_wake_up();
                 }
 
@@ -227,30 +239,20 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                     self._actor_koa.as_ref().unwrap().borrow_mut().set_action_wake_up();
                 }
 
-                if 20.0 < phase_time || self._actor_aru.as_ref().unwrap().borrow_mut().is_action(ActionAnimationState::None) && self._actor_ewa.as_ref().unwrap().borrow_mut().is_action(ActionAnimationState::None) && self._actor_koa.as_ref().unwrap().borrow_mut().is_action(ActionAnimationState::None) {
-                    self._actor_ewa.as_ref().unwrap().borrow_mut().set_hunger(HUNGER_WARNING_THRESHOLD);
-                    self._actor_ewa.as_ref().unwrap().borrow_mut().set_action_sit_down();
-                    //self._actor_ewa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::Idle, None, true);
-
-                    self._actor_koa.as_ref().unwrap().borrow_mut().set_hunger(HUNGER_WARNING_THRESHOLD);
-                    self._actor_koa.as_ref().unwrap().borrow_mut().set_action_sit_down();
-                    //self._actor_koa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::Idle, None, true);
-
-                    // quest
-                    self._quest_gather_coconut = Some(game_ui_manager.add_quest_item(QuestContent::GatherItem(GatherItemData {
-                        _item_data_type: ItemDataType::Coconut,
-                        _gather_item_count: 5,
-                    })));
-
-                    // quest
-                    self._quest_gather_meat = Some(game_ui_manager.add_quest_item(QuestContent::GatherItem(GatherItemData {
-                        _item_data_type: ItemDataType::Meat,
-                        _gather_item_count: 5,
-                    })));
-
+                if self._wakeup_delay_koa < 0.0 &&
+                    self._wakeup_delay_ewa < 0.0 &&
+                    self._wakeup_delay_aru < 0.0 &&
+                    self._actor_aru.as_ref().unwrap().borrow_mut().is_action(ActionAnimationState::None) &&
+                    self._actor_ewa.as_ref().unwrap().borrow_mut().is_action(ActionAnimationState::None) &&
+                    self._actor_koa.as_ref().unwrap().borrow_mut().is_action(ActionAnimationState::None) {
+                    self.set_scenario_phase(ScenarioIntroPhase::Hungry.to_string().as_str(), Some(PHASE_TIME_HUNGRY));
+                }
+            },
+            ScenarioIntroPhase::Hungry => {
+                if 1.0 <= phase_ratio {
                     self.set_scenario_phase(ScenarioIntroPhase::QuestGathering.to_string().as_str(), None);
                 }
-            }
+            },
             ScenarioIntroPhase::QuestGathering => {
                 let coconut_quest_completed = if let Some(quest) = &self._quest_gather_coconut {
                     quest.borrow().is_completed_quest()

@@ -20,8 +20,6 @@ pub enum ActionAnimationState {
     OpenToolbox,
     PowerAttack,
     Sleep,
-    SitDown,
-    StandUp,
     WakeUp,
 }
 
@@ -160,10 +158,8 @@ pub struct CharacterAnimationData {
     pub _run_animation_speed: f32,
     pub _running_jump_animation: RcRefCell<MeshData>,
     pub _running_jump_animation_speed: f32,
-    pub _sit_down_animation: RcRefCell<MeshData>,
     pub _sit_down_loop_animation: RcRefCell<MeshData>,
     pub _sleep_animation: RcRefCell<MeshData>,
-    pub _stand_up_animation: RcRefCell<MeshData>,
     pub _wake_up_animation: RcRefCell<MeshData>,
     pub _walk_animation: RcRefCell<MeshData>,
     pub _walk_animation_speed: f32,

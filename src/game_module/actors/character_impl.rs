@@ -239,7 +239,10 @@ impl CharacterStats {
             if self._stamina < 0.0 {
                 self._stamina = 0.0;
             }
-        } else if owner.is_action(ActionAnimationState::None) && (owner.is_move_state(MoveAnimationState::None) || owner.is_move_state(MoveAnimationState::Idle) || owner.is_move_state(MoveAnimationState::Walk)) {
+        } else if owner.is_idle_action() &&
+            (owner.is_move_stop() ||
+            owner.is_move_state(MoveAnimationState::SitDownLoop) ||
+            owner.is_move_state(MoveAnimationState::Walk)) {
             if self._stamina < 0.0 {
                 self._stamina = 0.0;
             }
@@ -377,6 +380,10 @@ impl<'a> Character<'a> {
         move_state == self._animation_state._move_animation_state
     }
 
+    pub fn is_move_stop(&self) -> bool {
+        self.is_move_state(MoveAnimationState::None) || self.is_move_state(MoveAnimationState::Idle) || self.is_move_state(MoveAnimationState::SitDownLoop)
+    }
+
     pub fn is_alive(&self) -> bool {
         self._character_stats._is_alive
     }
@@ -407,13 +414,18 @@ impl<'a> Character<'a> {
         self._controller.add_interaction_object(object);
     }
 
+    pub fn is_idle_action(&self) -> bool {
+        self.is_action(ActionAnimationState::None) || self.is_action(ActionAnimationState::Hungry)
+    }
+
     pub fn is_additive_animation_for_action(&self) -> bool {
         if self.is_action(ActionAnimationState::Attack) ||
             self.is_action(ActionAnimationState::PowerAttack) ||
             self.is_action(ActionAnimationState::Hit) ||
             self.is_action(ActionAnimationState::Hungry) ||
             self.is_action(ActionAnimationState::Pickup) {
-            if self.is_move_state(MoveAnimationState::Jump) ||
+            if self.is_move_stop() ||
+                self.is_move_state(MoveAnimationState::Jump) ||
                 self.is_move_state(MoveAnimationState::Run) ||
                 self.is_move_state(MoveAnimationState::RunningJump) ||
                 self.is_move_state(MoveAnimationState::SitDownLoop) ||
@@ -435,7 +447,7 @@ impl<'a> Character<'a> {
     pub fn is_available_attack(&self) -> bool {
         let action_animation_play_info = self.get_animation_play_info(AnimationLayer::ActionLayer);
         if self.is_available_move() {
-            if self.is_action(ActionAnimationState::None) || self.is_action(ActionAnimationState::Hit) {
+            if self.is_idle_action() || self.is_action(ActionAnimationState::Hit) {
                 return true;
             } else if self.is_action(ActionAnimationState::Attack) {
                 let attackable_time = self.get_character_data()._stat_data._attack_event_time + ATTACK_DELAY;
@@ -452,13 +464,11 @@ impl<'a> Character<'a> {
 
     pub fn is_available_move(&self) -> bool {
         self.is_alive() &&
-        self.is_move_state(MoveAnimationState::SitDownLoop) == false &&
+        //self.is_move_state(MoveAnimationState::SitDownLoop) == false &&
         self.is_move_state(MoveAnimationState::Roll) == false &&
         (self.is_on_ground() == false || self.is_action(ActionAnimationState::Kick) == false) &&
         self.is_action(ActionAnimationState::LayingDown) == false &&
         self.is_action(ActionAnimationState::Sleep) == false &&
-        self.is_action(ActionAnimationState::SitDown) == false &&
-        self.is_action(ActionAnimationState::StandUp) == false &&
         self.is_action(ActionAnimationState::WakeUp) == false &&
         self.is_action(ActionAnimationState::EnterGate) == false
     }
@@ -469,8 +479,11 @@ impl<'a> Character<'a> {
 
     pub fn is_available_roll(&self) -> bool {
         if self._is_player && (self._character_stats._stamina < STAMINA_ROLL || self.is_in_roll_delay()) {
+            log::info!("_stamina: {:?}, is_in_roll_delay: {:?}", self._character_stats._stamina, self.is_in_roll_delay());
             return false;
         }
+        log::info!("is_falling: {:?}, is_available_attack: {:?}, is_move_state(MoveAnimationState::Roll): {:?}", self.is_falling(), self.is_available_attack(), self.is_move_state(MoveAnimationState::Roll));
+
         !self.is_falling() && self.is_available_attack() && !self.is_move_state(MoveAnimationState::Roll)
     }
 
@@ -556,9 +569,7 @@ impl<'a> Character<'a> {
 
     pub fn look_at(&mut self, face_direction: &Vector3<f32>) {
         self._controller.set_move_direction(face_direction);
-        self.set_run(false);
-        self.set_move_speed(0.0);
-        //self.set_move_animation(MoveAnimationState::Idle);
+        self.set_move_idle();
     }
 
     pub fn get_position(&self) -> &Vector3<f32> {
@@ -681,23 +692,15 @@ impl<'a> Character<'a> {
         self.set_action_animation(ActionAnimationState::None, 1.0);
     }
 
-    pub fn set_action_stand_up(&mut self) {
-        if self.is_move_state(MoveAnimationState::SitDownLoop) {
-            self.set_action_animation(ActionAnimationState::StandUp, 1.0);
-            self.set_move_animation(MoveAnimationState::Idle);
-        }
-    }
-
     pub fn set_action_wake_up(&mut self) {
         self.set_action_animation(ActionAnimationState::WakeUp, 1.0);
     }
 
-    pub fn set_action_sit_down(&mut self) {
-        if self.is_action(ActionAnimationState::None) &&
+    pub fn set_move_sit_down(&mut self) {
+        if self.is_idle_action() &&
             self.is_on_ground() &&
-            (self.is_move_state(MoveAnimationState::Idle) || self.is_move_state(MoveAnimationState::Walk) || self.is_move_state(MoveAnimationState::Run)) {
-            self.set_move_stop();
-            self.set_action_animation(ActionAnimationState::SitDown, 1.0);
+            (self.is_move_stop() || self.is_move_state(MoveAnimationState::Walk) || self.is_move_state(MoveAnimationState::Run)) {
+            self.set_sit_down();
         }
     }
 
@@ -718,7 +721,7 @@ impl<'a> Character<'a> {
     }
 
     pub fn set_action_interaction(&mut self) {
-        if self._controller.is_on_ground() && self.is_available_move() && self.is_action(ActionAnimationState::None) {
+        if self._controller.is_on_ground() && self.is_available_move() && self.is_idle_action() {
             match &self._controller._nearest_interaction_object {
                 InteractionObject::PropBed(_) => {
                     self.set_action_laying_down();
@@ -739,7 +742,7 @@ impl<'a> Character<'a> {
         }
     }
     pub fn set_action_enter_gate(&mut self) {
-        if self._controller.is_on_ground() && self.is_available_move() && self.is_action(ActionAnimationState::None) {
+        if self._controller.is_on_ground() && self.is_available_move() && self.is_idle_action() {
             match self._controller._nearest_interaction_object {
                 InteractionObject::PropGate(_) => {
                     self.set_action_animation(ActionAnimationState::EnterGate, 1.0);
@@ -803,7 +806,7 @@ impl<'a> Character<'a> {
                 //     animation_speed = 0.5;
                 // }
             }
-            self.set_move_stop();
+            self.set_move_idle();
             self.set_action_animation(ActionAnimationState::Kick, animation_speed);
         }
     }
@@ -878,7 +881,6 @@ impl<'a> Character<'a> {
                 );
             }
             MoveAnimationState::SitDownLoop => {
-                animation_info._animation_blend_time = 0.0;
                 render_object.set_animation(
                     &animation_data._sit_down_loop_animation,
                     &animation_info,
@@ -986,33 +988,14 @@ impl<'a> Character<'a> {
             }
             ActionAnimationState::Hungry => {
                 animation_info._animation_loop = true;
-                animation_info._animation_fade_out_time = 0.0; // keep end of animation
                 render_object.set_animation(
                     &animation_data._hungry_animation,
                     &animation_info,
                     AnimationLayer::ActionLayer,
                 );
             }
-
             ActionAnimationState::OpenToolbox => {
                 // nothing
-            }
-            ActionAnimationState::SitDown => {
-                animation_info._animation_fade_out_time = 0.0; // keep end of animation
-                render_object.set_animation(
-                    &animation_data._sit_down_animation,
-                    &animation_info,
-                    AnimationLayer::ActionLayer,
-                );
-            }
-            ActionAnimationState::StandUp => {
-                animation_info._animation_fade_out_time = 0.0; // keep end of animation
-                animation_info._animation_blend_time = 0.0;
-                render_object.set_animation(
-                    &animation_data._stand_up_animation,
-                    &animation_info,
-                    AnimationLayer::ActionLayer,
-                );
             }
             ActionAnimationState::WakeUp => {
                 render_object.set_animation(
@@ -1040,23 +1023,25 @@ impl<'a> Character<'a> {
     pub fn set_move_idle(&mut self) {
         self.set_run(false);
         self.set_move_speed(0.0);
-        if !self.is_move_state(MoveAnimationState::Idle) && !self.is_move_state(MoveAnimationState::SitDownLoop) {
+        if self.is_move_stop() == false {
             self.set_move_animation(MoveAnimationState::Idle);
         }
     }
 
     pub fn set_move_stop(&mut self) {
-        if !self.is_move_state(MoveAnimationState::Roll) {
+        if self.is_move_state(MoveAnimationState::Roll) == false {
             self.set_run(false);
             self.set_move_speed(0.0);
-            if !self.is_move_state(MoveAnimationState::Idle) && !self.is_move_state(MoveAnimationState::SitDownLoop) && self.is_on_ground() {
+            if self.is_move_stop() == false && self.is_on_ground() {
                 self.set_move_animation(MoveAnimationState::Idle);
             }
         }
     }
 
-    pub fn set_move_sit_down_loop(&mut self) {
-        self.set_move_animation(MoveAnimationState::SitDownLoop);
+    pub fn set_sit_down(&mut self) {
+        if self.is_idle_action() && self.is_move_stop() && self.is_on_ground() {
+            self.set_move_animation(MoveAnimationState::SitDownLoop);
+        }
     }
 
     pub fn set_position_xy(&mut self, position: &Vector3<f32>) {
@@ -1142,6 +1127,7 @@ impl<'a> Character<'a> {
                 self.set_move_speed(character_data._stat_data._roll_speed);
             }
             self.set_move_direction(&self._controller._face_direction.clone(), false);
+            self.set_action_none();
             self.set_move_animation(MoveAnimationState::Roll);
         }
     }
@@ -1292,12 +1278,6 @@ impl<'a> Character<'a> {
                     self.set_action_sleep();
                 }
             }
-            ActionAnimationState::SitDown => {
-                if animation_play_info._is_animation_end {
-                    self.set_action_none();
-                    self.set_move_sit_down_loop();
-                }
-            }
             ActionAnimationState::Pickup => {
                 if animation_play_info.check_animation_event_time(PICKUP_EVENT_TIME) {
                     self.get_character_manager().get_scene_manager().play_audio_bank(AUDIO_ATTACK);
@@ -1342,13 +1322,10 @@ impl<'a> Character<'a> {
     pub fn update_action_keyframe_event(&mut self) {
         self._animation_state.set_action_event(ActionAnimationState::None);
 
-        if self._animation_state._action_animation_state_prev
-            != self._animation_state._action_animation_state
-        {
+        if self._animation_state._action_animation_state_prev != self._animation_state._action_animation_state {
             self.update_action_animation_end_event();
             self.update_action_animation_begin_event();
-            self._animation_state._action_animation_state_prev =
-                self._animation_state._action_animation_state;
+            self._animation_state._action_animation_state_prev = self._animation_state._action_animation_state;
         }
 
         self.update_action_animation_loop_event();
@@ -1372,7 +1349,7 @@ impl<'a> Character<'a> {
         // clear
         render_object.clear_animation_layers(AnimationLayer::ActionLayer);
 
-        // set additive animation layer
+        // set an additive animation layer
         if self.is_additive_animation_for_action() {
             render_object.set_animation_layers(
                 self._character_data.borrow()._animation_data._upper_animation_layer.as_ptr(),

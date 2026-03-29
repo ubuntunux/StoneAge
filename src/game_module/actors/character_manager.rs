@@ -245,7 +245,7 @@ impl<'a> CharacterManager<'a> {
     }
 
     pub fn update_character_text_box(&self, game_ui_manager: &mut GameUIManager<'a>, character: &mut Character<'a>) {
-        if character.is_player() == false && character._character_stats.get_is_stat_displayed() {
+        if character._character_stats.get_is_stat_displayed() {
             let mut contents = vec![
                 TextBoxContent::StatWidget((String::from("Health"), character._character_stats.get_hp() as f32 / character._character_stats.get_max_hp() as f32)),
                 TextBoxContent::StatWidget((String::from("Hunger"), character._character_stats.get_hunger())),
@@ -362,9 +362,12 @@ impl<'a> CharacterManager<'a> {
         }
 
         // remove characters
-        // for character in dead_characters.iter() {
-        //     self.remove_character(character);
-        // }
+        for character in dead_characters.iter() {
+            character.borrow_mut()._character_stats.set_is_stat_displayed(false);
+            player._controller.remove_interaction_object(InteractionObject::Npc(character.clone()));
+            game_ui_manager.remove_text_box_item(character.borrow().get_character_name());
+            //self.remove_character(character);
+        }
 
         // target character for ui
         if register_target_character.is_some() {
