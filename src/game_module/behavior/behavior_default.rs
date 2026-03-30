@@ -71,7 +71,7 @@ impl BehaviorBase for BehaviorDefault {
             self._behavior_state = behavior_state;
             match behavior_state {
                 BehaviorState::Idle => {
-                    owner.set_move_stop();
+                    owner.set_move_idle();
                     self._idle_time = lerp(NPC_IDLE_TERM_MIN, NPC_IDLE_TERM_MAX, rand::random::<f32>());
                 }
                 BehaviorState::Roaming => {

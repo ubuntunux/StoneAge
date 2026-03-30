@@ -556,7 +556,7 @@ impl<'a> GameController<'a> {
                 // }
 
                 // stop
-                player_mut.set_move_stop();
+                player_mut.set_move_control_stop();
             }
 
             if is_up && player_mut.is_in_interaction_range() {

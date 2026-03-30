@@ -30,7 +30,8 @@ impl<'a> InteractionObject<'a> {
             InteractionObject::PropPickup(prop) |
             InteractionObject::PropGate(prop) |
             InteractionObject::PropGathering(prop) |
-            InteractionObject::PropMonolith(prop) => { prop.as_ptr() as *const c_void }
+            InteractionObject::PropMonolith(prop) |
+            InteractionObject::PropTable(prop) => { prop.as_ptr() as *const c_void }
             InteractionObject::Npc(character) => { character.as_ptr() as *const c_void }
         }
     }
@@ -43,7 +44,8 @@ impl<'a> InteractionObject<'a> {
             InteractionObject::PropGate(_) => "Enter Gate",
             InteractionObject::PropGathering(_) => "Gathering",
             InteractionObject::PropMonolith(_) => "Open Toolbox",
-            InteractionObject::Npc(_) => "Interaction",
+            &InteractionObject::PropTable(_) => "Sit Down",
+            InteractionObject::Npc(_) => "Talk",
         }
     }
 
@@ -54,7 +56,8 @@ impl<'a> InteractionObject<'a> {
             InteractionObject::PropPickup(prop) |
             InteractionObject::PropGate(prop) |
             InteractionObject::PropGathering(prop) |
-            InteractionObject::PropMonolith(prop) => {
+            InteractionObject::PropMonolith(prop) |
+            InteractionObject::PropTable(prop) => {
                 let bounding_box = ptr_as_ref(prop.as_ptr()).get_bounding_box();
                 Vector3::new(bounding_box._center.x, bounding_box._min.y + 1.0, bounding_box._center.z)
             }
@@ -693,24 +696,17 @@ impl<'a> Character<'a> {
     }
 
     pub fn set_action_wake_up(&mut self) {
+        self.set_move_idle();
         self.set_action_animation(ActionAnimationState::WakeUp, 1.0);
     }
 
-    pub fn set_move_sit_down(&mut self) {
-        if self.is_idle_action() &&
-            self.is_on_ground() &&
-            (self.is_move_stop() || self.is_move_state(MoveAnimationState::Walk) || self.is_move_state(MoveAnimationState::Run)) {
-            self.set_sit_down();
-        }
-    }
-
     pub fn set_action_laying_down(&mut self) {
-        self.set_move_stop();
+        self.set_move_idle();
         self.set_action_animation(ActionAnimationState::LayingDown, 2.0);
     }
 
     pub fn set_action_sleep(&mut self) {
-        self.set_move_stop();
+        self.set_move_idle();
         self.set_action_animation(ActionAnimationState::Sleep, 1.0);
     }
 
@@ -731,7 +727,12 @@ impl<'a> Character<'a> {
                 }
                 InteractionObject::PropMonolith(_) => {
                     self.set_action_animation(ActionAnimationState::OpenToolbox, 1.0);
-                    self.set_move_stop();
+                    self.set_move_idle();
+                }
+                InteractionObject::PropTable(prop) => {
+                    let direction = math::make_normalize_xz(&(prop.borrow().get_position() - self.get_position()));
+                    self.look_at(&direction);
+                    self.set_sit_down();
                 }
                 InteractionObject::Npc(character) => {
                     character.borrow_mut().set_is_stat_displayed(true);
@@ -746,7 +747,7 @@ impl<'a> Character<'a> {
             match self._controller._nearest_interaction_object {
                 InteractionObject::PropGate(_) => {
                     self.set_action_animation(ActionAnimationState::EnterGate, 1.0);
-                    self.set_move_stop();
+                    self.set_move_idle();
                 }
                 _ => ()
             }
@@ -816,7 +817,7 @@ impl<'a> Character<'a> {
     }
 
     pub fn set_action_dead(&mut self) {
-        self.set_move_stop();
+        self.set_move_idle();
         self.set_action_animation(ActionAnimationState::Dead, 1.0);
     }
 
@@ -1028,7 +1029,7 @@ impl<'a> Character<'a> {
         }
     }
 
-    pub fn set_move_stop(&mut self) {
+    pub fn set_move_control_stop(&mut self) {
         if self.is_move_state(MoveAnimationState::Roll) == false {
             self.set_run(false);
             self.set_move_speed(0.0);
@@ -1038,10 +1039,16 @@ impl<'a> Character<'a> {
         }
     }
 
-    pub fn set_sit_down(&mut self) {
-        if self.is_idle_action() && self.is_move_stop() && self.is_on_ground() {
-            self.set_move_animation(MoveAnimationState::SitDownLoop);
+    pub fn set_move_control_sit_down(&mut self) {
+        if self.is_idle_action() && (self.is_move_state(MoveAnimationState::None) || self.is_move_state(MoveAnimationState::Idle)) && self.is_on_ground() {
+            self.set_sit_down();
         }
+    }
+
+    pub fn set_sit_down(&mut self) {
+        self.set_run(false);
+        self.set_move_speed(0.0);
+        self.set_move_animation(MoveAnimationState::SitDownLoop);
     }
 
     pub fn set_position_xy(&mut self, position: &Vector3<f32>) {
@@ -1091,7 +1098,7 @@ impl<'a> Character<'a> {
                     self.set_move_animation(move_animation);
                 }
             } else {
-                self.set_move_stop();
+                self.set_move_control_stop();
             }
         }
     }
@@ -1267,7 +1274,7 @@ impl<'a> Character<'a> {
                     self.set_action_none();
                 } else if self.is_on_ground() {
                     // prevent slip after jump kick
-                    self.set_move_stop();
+                    self.set_move_idle();
                 }
             }
             ActionAnimationState::LayingDown => {

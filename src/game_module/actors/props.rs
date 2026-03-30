@@ -26,6 +26,7 @@ pub enum PropDataType {
     Dungeon,
     Building,
     Monolith,
+    Table
 }
 
 #[derive(Serialize, Deserialize, Default, Debug, Clone, PartialEq)]

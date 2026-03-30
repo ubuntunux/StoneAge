@@ -289,13 +289,23 @@
             "data": {}
         }
     ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/family/monkey_koa.blend": [
+        {
+            "asset_type": "GAME_CHARACTER",
+            "asset_path": "family/monkey_koa",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/family/monkey_koa.blend",
+            "guid": "",
+            "mtime": 1774805121.879297,
+            "data": {}
+        }
+    ],
     "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/family/ewa.blend": [
         {
             "asset_type": "GAME_CHARACTER",
             "asset_path": "family/ewa",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/family/ewa.blend",
             "guid": "",
-            "mtime": 1774805099.4191062,
+            "mtime": 1774891377.1584592,
             "data": {}
         }
     ],
@@ -305,17 +315,7 @@
             "asset_path": "family/monkey_ewa",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/family/monkey_ewa.blend",
             "guid": "",
-            "mtime": 1774805074.3330698,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/family/monkey_koa.blend": [
-        {
-            "asset_type": "GAME_CHARACTER",
-            "asset_path": "family/monkey_koa",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/family/monkey_koa.blend",
-            "guid": "",
-            "mtime": 1774805121.879297,
+            "mtime": 1774891404.878529,
             "data": {}
         }
     ],
@@ -496,6 +496,16 @@
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/props/crystal.blend",
             "guid": "",
             "mtime": 1771265319.6331954,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/props/table.blend": [
+        {
+            "asset_type": "GAME_PROP",
+            "asset_path": "table",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/props/table.blend",
+            "guid": "",
+            "mtime": 1774888272.421373,
             "data": {}
         }
     ],
@@ -5006,10 +5016,10 @@
     "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/ewa/ewa_sit_down_loop.blend": [
         {
             "asset_type": "MESH",
-            "asset_path": "characters/ewa/ewa_sit_down",
+            "asset_path": "characters/ewa/ewa_sit_down_loop",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/ewa/ewa_sit_down_loop.blend",
             "guid": "",
-            "mtime": 1774804996.7365813,
+            "mtime": 1774891344.5003219,
             "data": {}
         },
         {
@@ -5017,7 +5027,7 @@
             "asset_path": "characters/ewa",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/ewa/ewa_sit_down_loop.blend",
             "guid": "",
-            "mtime": 1774804996.7365813,
+            "mtime": 1774891344.5003219,
             "data": {}
         }
     ],
@@ -8187,16 +8197,6 @@
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/intro_stage.blend": [
-        {
-            "asset_type": "GAME_SCENE",
-            "asset_path": "intro_stage",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/intro_stage.blend",
-            "guid": "",
-            "mtime": 1774717794.2385166,
-            "data": {}
-        }
-    ],
     "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/stage_cave.blend": [
         {
             "asset_type": "GAME_SCENE",
@@ -8204,6 +8204,16 @@
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/stage_cave.blend",
             "guid": "",
             "mtime": 1774717661.7277389,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/intro_stage.blend": [
+        {
+            "asset_type": "GAME_SCENE",
+            "asset_path": "intro_stage",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/intro_stage.blend",
+            "guid": "",
+            "mtime": 1774890677.4754868,
             "data": {}
         }
     ],

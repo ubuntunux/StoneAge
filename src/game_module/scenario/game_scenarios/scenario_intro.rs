@@ -151,15 +151,21 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                 //self._actor_aru.as_ref().unwrap().borrow_mut().set_hunger(HUNGER_WARNING_THRESHOLD);
                 //self._actor_aru.as_ref().unwrap().borrow_mut().set_action_hungry();
 
+                let direction = math::make_normalize_xz(&(self._actor_aru.as_ref().unwrap().borrow().get_position() - self._actor_ewa.as_ref().unwrap().borrow().get_position()));
+                self._actor_ewa.as_ref().unwrap().borrow_mut().look_at(&direction);
                 self._actor_ewa.as_ref().unwrap().borrow_mut().set_hunger(HUNGER_WARNING_THRESHOLD);
                 self._actor_ewa.as_ref().unwrap().borrow_mut().set_action_hungry();
+                self._actor_ewa.as_ref().unwrap().borrow_mut().set_sit_down();
 
+                let direction = math::make_normalize_xz(&(self._actor_aru.as_ref().unwrap().borrow().get_position() - self._actor_koa.as_ref().unwrap().borrow().get_position()));
+                self._actor_koa.as_ref().unwrap().borrow_mut().look_at(&direction);
                 self._actor_koa.as_ref().unwrap().borrow_mut().set_hunger(HUNGER_WARNING_THRESHOLD);
                 self._actor_koa.as_ref().unwrap().borrow_mut().set_action_hungry();
+                self._actor_koa.as_ref().unwrap().borrow_mut().set_sit_down();
             }
             ScenarioIntroPhase::QuestGathering => {
-                self._actor_ewa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::Idle, None, true);
-                self._actor_koa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::Idle, None, true);
+                //self._actor_ewa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::Idle, None, true);
+                //self._actor_koa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::Idle, None, true);
             }
             _ => (),
         }

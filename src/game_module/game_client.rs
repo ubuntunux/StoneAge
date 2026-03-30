@@ -168,7 +168,7 @@ impl<'a> GameClient<'a> {
             GamePhase::Teleport => {
                 if character_manager.is_valid_player() {
                     character_manager.get_player().borrow_mut().set_action_none();
-                    character_manager.get_player().borrow_mut().set_move_stop();
+                    character_manager.get_player().borrow_mut().set_move_idle();
                 }
                 game_ui_manager.set_image_manual_fade_inout(STORY_IMAGE_NONE, STORY_BOARD_FADE_TIME);
             }
@@ -195,7 +195,7 @@ impl<'a> GameClient<'a> {
                 game_ui_manager.set_auto_fade_inout(true);
                 if character_manager.is_valid_player() {
                     character_manager.get_player().borrow_mut().set_action_none();
-                    character_manager.get_player().borrow_mut().set_move_stop();
+                    character_manager.get_player().borrow_mut().set_move_idle();
                 }
             }
             GamePhase::Sleep => {

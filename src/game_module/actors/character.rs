@@ -20,6 +20,7 @@ pub enum InteractionObject<'a> {
     PropGate(RcRefCell<Prop<'a>>),
     PropGathering(RcRefCell<Prop<'a>>),
     PropMonolith(RcRefCell<Prop<'a>>),
+    PropTable(RcRefCell<Prop<'a>>),
     Npc(RcRefCell<Character<'a>>),
 }
 

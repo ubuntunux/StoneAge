@@ -97,10 +97,10 @@ impl BehaviorBase for BehaviorRoamer {
                     if target_ref.is_alive() && 0.0 < self._attack_time {
                         if owner.is_attack_animation() {
                             if !owner.is_available_move() || (NPC_AVAILABLE_MOVING_ATTACK || !owner.is_attack_animation()) {
-                                owner.set_move_stop();
+                                owner.set_move_idle();
                             }
                         } else {
-                            owner.set_move_stop();
+                            owner.set_move_idle();
                             self._attack_time -= delta_time;
                         }
                         do_idle = false;
@@ -128,7 +128,7 @@ impl BehaviorBase for BehaviorRoamer {
             self._behavior_state = behavior_state;
             match behavior_state {
                 BehaviorState::Idle => {
-                    owner.set_move_stop();
+                    owner.set_move_idle();
                     self._idle_time =
                         lerp(NPC_IDLE_TERM_MIN, NPC_IDLE_TERM_MAX, rand::random::<f32>());
                 }
@@ -154,7 +154,7 @@ impl BehaviorBase for BehaviorRoamer {
                     let to_target_direction = (target.as_ref().unwrap().get_position() - owner.get_position()).normalize();
                     owner.set_move_direction(&to_target_direction, false);
                     if !NPC_AVAILABLE_MOVING_ATTACK {
-                        owner.set_move_stop();
+                        owner.set_move_idle();
                     }
                     owner.set_action_attack();
                     self._attack_time = lerp(

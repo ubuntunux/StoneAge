@@ -331,6 +331,9 @@ impl<'a> ControllerHelpWidget<'a> {
                     InteractionObject::PropMonolith(_) => {
                         input_control_type == InputControlType::Interaction
                     }
+                    InteractionObject::PropTable(_) => {
+                        input_control_type == InputControlType::Interaction
+                    }
                     InteractionObject::Npc(_) => {
                         input_control_type == InputControlType::Interaction
                     }

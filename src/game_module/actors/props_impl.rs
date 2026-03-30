@@ -519,6 +519,25 @@ impl<'a> PropManager<'a> {
                                 player._controller.remove_interaction_object(InteractionObject::PropMonolith(prop_refcell.clone()));
                             }
                         }
+                        PropDataType::Table => {
+                            let is_in_player_range = if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
+                                player.check_in_range_xy(prop.get_collision(), prop.get_collision()._bounding_box.get_mag_xz() + CHARACTER_INTERACTION_DISTANCE, check_direction)
+                            } else {
+                                player.check_in_range(prop.get_collision(), prop.get_collision()._bounding_box.get_mag_xz() + CHARACTER_INTERACTION_DISTANCE, check_direction)
+                            };
+
+                            if is_in_player_range {
+                                // if player._animation_state.is_action_event(ActionAnimationState::OpenToolbox) {
+                                //     self.get_game_client_mut().set_need_toolbox_mode(true);
+                                // }
+                            }
+
+                            if is_interaction_object == false && is_in_player_range {
+                                player._controller.add_interaction_object(InteractionObject::PropTable(prop_refcell.clone()));
+                            } else if is_interaction_object && is_in_player_range == false {
+                                player._controller.remove_interaction_object(InteractionObject::PropTable(prop_refcell.clone()));
+                            }
+                        }
                         _ => (),
                     }
                 }
