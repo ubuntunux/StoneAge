@@ -97,7 +97,6 @@ impl BehaviorBase for BehaviorCivilian {
                 }
                 BehaviorState::Interaction => {
                     owner.set_move_idle();
-                    owner.set_run(false);
                     self._behavior_time = CHARACTER_INTERACTION_TIME;
                 }
                 BehaviorState::Sleep => {

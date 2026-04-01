@@ -572,7 +572,9 @@ impl<'a> Character<'a> {
 
     pub fn look_at(&mut self, face_direction: &Vector3<f32>) {
         self._controller.set_move_direction(face_direction);
-        self.set_move_idle();
+        if self.is_move_stop() == false {
+            self.set_move_idle();
+        }
     }
 
     pub fn get_position(&self) -> &Vector3<f32> {
@@ -1024,7 +1026,7 @@ impl<'a> Character<'a> {
     pub fn set_move_idle(&mut self) {
         self.set_run(false);
         self.set_move_speed(0.0);
-        if self.is_move_stop() == false {
+        if self.is_move_state(MoveAnimationState::Idle) == false {
             self.set_move_animation(MoveAnimationState::Idle);
         }
     }
@@ -1033,14 +1035,14 @@ impl<'a> Character<'a> {
         if self.is_move_state(MoveAnimationState::Roll) == false {
             self.set_run(false);
             self.set_move_speed(0.0);
-            if self.is_move_stop() == false && self.is_on_ground() {
+            if self.is_move_state(MoveAnimationState::Idle) == false && self.is_on_ground() {
                 self.set_move_animation(MoveAnimationState::Idle);
             }
         }
     }
 
     pub fn set_move_control_sit_down(&mut self) {
-        if self.is_idle_action() && (self.is_move_state(MoveAnimationState::None) || self.is_move_state(MoveAnimationState::Idle)) && self.is_on_ground() {
+        if self.is_idle_action() && self.is_move_state(MoveAnimationState::Idle) && self.is_on_ground() {
             self.set_sit_down();
         }
     }
@@ -1048,7 +1050,9 @@ impl<'a> Character<'a> {
     pub fn set_sit_down(&mut self) {
         self.set_run(false);
         self.set_move_speed(0.0);
-        self.set_move_animation(MoveAnimationState::SitDownLoop);
+        if self.is_move_state(MoveAnimationState::SitDownLoop) == false {
+            self.set_move_animation(MoveAnimationState::SitDownLoop);
+        }
     }
 
     pub fn set_position_xy(&mut self, position: &Vector3<f32>) {
@@ -1143,17 +1147,13 @@ impl<'a> Character<'a> {
         let character_manager = self.get_character_manager();
         match self._animation_state._move_animation_state {
             MoveAnimationState::Jump => {
-                character_manager
-                    .get_scene_manager()
-                    .play_audio_bank(AUDIO_JUMP);
+                character_manager.get_scene_manager().play_audio_bank(AUDIO_JUMP);
             }
             MoveAnimationState::Roll => {
                 self.set_invincibility(true);
             }
             MoveAnimationState::RunningJump => {
-                character_manager
-                    .get_scene_manager()
-                    .play_audio_bank(AUDIO_JUMP);
+                character_manager.get_scene_manager().play_audio_bank(AUDIO_JUMP);
             }
             _ => (),
         }
@@ -1170,6 +1170,9 @@ impl<'a> Character<'a> {
     }
 
     pub fn update_move_animation_loop_event(&mut self) {
+        if self._is_player == false {
+            log::info!("update_move_animation_loop_event: {:?}", self._animation_state._move_animation_state);
+        }
         let character_manager = self.get_character_manager();
         let move_animation = self._animation_state._move_animation_state;
         let render_object = ptr_as_mut(self._render_object.as_ptr());
@@ -1239,6 +1242,9 @@ impl<'a> Character<'a> {
     }
 
     pub fn update_action_animation_loop_event(&mut self) {
+        if self._is_player == false {
+            log::info!("update_action_animation_loop_event: {:?}", self._animation_state._action_animation_state);
+        }
         let character_data = self.get_character_data();
         let action_animation = self._animation_state._action_animation_state;
         let render_object = ptr_as_mut(self._render_object.as_ptr());

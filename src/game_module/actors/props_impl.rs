@@ -379,7 +379,7 @@ impl<'a> PropManager<'a> {
 
         let mut dead_props: Vec<RcRefCell<Prop>> = Vec::new();
         {
-            let check_direction = true;
+            let check_direction = false;
             if player.is_alive() {
                 for prop_refcell in self._props.values() {
                     let mut prop = prop_refcell.borrow_mut();

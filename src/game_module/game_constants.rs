@@ -108,6 +108,7 @@ pub const GAME_MUSIC: &str = "game_music";
 pub const MATERIAL_CROSS_HAIR: &str = "ui/cross_hair_box";
 pub const MATERIAL_TIME_OF_DAY: &str = "ui/tod";
 pub const MATERIAL_INTRO_IMAGE: &str = "ui/intro_image";
+pub const MATERIAL_ITEM_MEAT: &str = "ui/items/item_meat";
 pub const STORY_IMAGE_NONE: &str = "";
 pub const STORY_BOARD_FADE_TIME: f32 = 1.0;
 pub const MATERIAL_FADE_TO_BLACK: &str = "ui/fade_to_black";
