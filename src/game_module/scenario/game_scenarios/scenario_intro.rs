@@ -1,5 +1,5 @@
 use crate::game_module::actors::character::Character;
-use crate::game_module::game_constants::{AUDIO_ROOSTER, AUDIO_STOMACH_GROWLING, CAMERA_DISTANCE_MAX, CAMERA_DISTANCE_MIN, CAMERA_OFFSET_Y, CHARACTER_INTERACTION_TIME, HUNGER_WARNING_THRESHOLD, MATERIAL_ITEM_MEAT, STORY_BOARD_FADE_TIME, STORY_IMAGE_NONE, TIME_OF_MORNING};
+use crate::game_module::game_constants::{AUDIO_ROOSTER, AUDIO_STOMACH_GROWLING, CAMERA_DISTANCE_MAX, CAMERA_DISTANCE_MIN, CAMERA_OFFSET_Y, CHARACTER_INTERACTION_TIME, HUNGER_WARNING_THRESHOLD, MATERIAL_ITEM_MEAT, STORY_BOARD_FADE_TIME, MATERIAL_UI_NONE, TIME_OF_MORNING};
 use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::game_ui_manager::{GameUIManager, QuestItemType};
 use crate::game_module::scenario::scenario::{ScenarioBase, ScenarioDataCreateInfo, ScenarioTrack};
@@ -9,8 +9,11 @@ use std::str::FromStr;
 use strum_macros::{Display, EnumCount, EnumIter, EnumString};
 use rust_engine_3d::utilities::math;
 use crate::game_module::actors::character_data::ActionAnimationState;
+use crate::game_module::actors::items::ItemDataType;
 use crate::game_module::actors::props::Prop;
 use crate::game_module::behavior::behavior_base::BehaviorState;
+use crate::game_module::widgets::quest_widgets::quest_item_gather_item::GatherItemData;
+use crate::game_module::widgets::quest_widgets::quest_widget::QuestContent;
 use crate::game_module::widgets::text_box_widget::TextBoxContent;
 
 const SKIP_SCENARIO: bool = false;
@@ -29,7 +32,6 @@ pub enum ScenarioIntroPhase {
     WakeUp,
     Assemble,
     Hungry,
-    GoToHunt,
     End,
     QuestGathering,
 }
@@ -193,19 +195,23 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                 self._actor_koa.as_ref().unwrap().borrow_mut().set_hunger(HUNGER_WARNING_THRESHOLD);
                 self._actor_koa.as_ref().unwrap().borrow_mut().set_action_hungry();
             }
-            ScenarioIntroPhase::GoToHunt => {
-                let game_scene_manager = ptr_as_ref(self._game_scene_manager);
-                let main_camera = game_scene_manager.get_scene_manager().get_main_camera();
-                (self._camera_direction, self._camera_distance) = math::make_normalize_with_norm(
-                    &(self._actor_aru.as_ref().unwrap().borrow().get_position() - main_camera._transform_object.get_position())
-                );
-
-            }
             ScenarioIntroPhase::QuestGathering => {
                 self._actor_ewa.as_ref().unwrap().borrow_mut().set_sit_down();
                 self._actor_koa.as_ref().unwrap().borrow_mut().set_sit_down();
                 // self._actor_ewa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::Idle, None, true);
                 // self._actor_koa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::Idle, None, true);
+
+                // quest
+                self._quest_gather_coconut = Some(game_scene_manager.get_game_ui_manager_mut().add_quest_item(QuestContent::GatherItem(GatherItemData {
+                    _item_data_type: ItemDataType::Coconut,
+                    _gather_item_count: 5,
+                })));
+
+                // quest
+                self._quest_gather_meat = Some(game_scene_manager.get_game_ui_manager_mut().add_quest_item(QuestContent::GatherItem(GatherItemData {
+                    _item_data_type: ItemDataType::Meat,
+                    _gather_item_count: 5,
+                })));
             }
             _ => (),
         }
@@ -231,24 +237,24 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
         let phase_ratio = self._scenario_track.get_phase_ratio();
         match self._scenario_track._scenario_phase {
             ScenarioIntroPhase::None => {
+                self.set_scenario_phase(ScenarioIntroPhase::StoryBoard.to_string().as_str(), None);
+            }
+            ScenarioIntroPhase::StoryBoard => {
                 if SKIP_SCENARIO {
-                    game_ui_manager.set_image_manual_fade_inout(STORY_IMAGE_NONE, INTRO_FADE_TIME);
+                    game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, INTRO_FADE_TIME);
                     game_ui_manager.set_auto_fade_inout(true);
                     self.set_scenario_phase(ScenarioIntroPhase::QuestGathering.to_string().as_str(), None);
                 } else {
-                    self.set_scenario_phase(ScenarioIntroPhase::StoryBoard.to_string().as_str(), None);
-                }
-            }
-            ScenarioIntroPhase::StoryBoard => {
-                let story_board_phase = self.get_story_board_phase();
-                if game_ui_manager.is_done_game_image_progress() && any_key_pressed {
-                    if USE_STORY_BOARDS == false || STORY_BOARDS.len() <= story_board_phase {
-                        game_ui_manager.set_image_manual_fade_inout(STORY_IMAGE_NONE, INTRO_FADE_TIME);
-                        game_ui_manager.set_auto_fade_inout(true);
-                        self.set_scenario_phase(ScenarioIntroPhase::Sleep.to_string().as_str(), Some(PHASE_TIME_SLEEP));
-                    } else {
-                        game_ui_manager.set_image_auto_fade_inout(&STORY_BOARDS[story_board_phase], STORY_BOARD_FADE_TIME);
-                        self.next_story_board_phase();
+                    let story_board_phase = self.get_story_board_phase();
+                    if game_ui_manager.is_done_game_image_progress() && any_key_pressed {
+                        if USE_STORY_BOARDS == false || STORY_BOARDS.len() <= story_board_phase {
+                            game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, INTRO_FADE_TIME);
+                            game_ui_manager.set_auto_fade_inout(true);
+                            self.set_scenario_phase(ScenarioIntroPhase::Sleep.to_string().as_str(), Some(PHASE_TIME_SLEEP));
+                        } else {
+                            game_ui_manager.set_image_auto_fade_inout(&STORY_BOARDS[story_board_phase], STORY_BOARD_FADE_TIME);
+                            self.next_story_board_phase();
+                        }
                     }
                 }
             }
@@ -311,24 +317,6 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
             }
             ScenarioIntroPhase::Hungry => {
                 if 1.0 <= phase_ratio {
-                    self.set_scenario_phase(ScenarioIntroPhase::GoToHunt.to_string().as_str(), None);
-                }
-            }
-            ScenarioIntroPhase::GoToHunt => {
-                let game_scene_manager = ptr_as_ref(self._game_scene_manager);
-                let main_camera = game_scene_manager.get_scene_manager().get_main_camera_mut();
-                let position = self._actor_aru.as_ref().unwrap().borrow().get_position() - self._camera_direction * self._camera_distance;
-                main_camera._transform_object.set_position(&position);
-
-                let radius = self._gate_prop.as_ref().unwrap().borrow().get_collision()._bounding_box._mag_xz * 0.5 + 0.1;
-                let (direction, dist) = math::make_normalize_with_norm(
-                    &(self._gate_prop.as_ref().unwrap().borrow().get_position() - self._actor_aru.as_ref().unwrap().borrow().get_position())
-                );
-
-                if radius < dist {
-                    self._actor_aru.as_ref().unwrap().borrow_mut().set_move(&direction);
-                } else {
-                    self._actor_aru.as_ref().unwrap().borrow_mut().set_move_idle();
                     self.set_scenario_phase(ScenarioIntroPhase::QuestGathering.to_string().as_str(), None);
                 }
             }

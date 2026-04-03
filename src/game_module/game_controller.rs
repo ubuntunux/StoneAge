@@ -1,8 +1,3 @@
-use crate::application::application::Application;
-use crate::game_module::actors::character::Character;
-use crate::game_module::game_client::GameClient;
-use crate::game_module::game_constants::*;
-use crate::game_module::game_ui_manager::GameUIManager;
 use nalgebra::{Matrix4, Vector2, Vector3};
 use strum_macros::{Display, EnumCount, EnumIter, EnumString};
 use rust_engine_3d::core::engine_core::TimeData;
@@ -14,6 +9,11 @@ use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use winit::keyboard::KeyCode;
 use rust_engine_3d::scene::collision::{CollisionCreateInfo, CollisionData, CollisionType};
+use crate::application::application::Application;
+use crate::game_module::actors::character::Character;
+use crate::game_module::game_client::{GameClient, GamePhase};
+use crate::game_module::game_constants::*;
+use crate::game_module::game_ui_manager::GameUIManager;
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Debug, Display, EnumIter, EnumString, EnumCount)]
 pub enum InputControlType {
@@ -298,7 +298,6 @@ impl<'a> GameController<'a> {
         let mut prev_camera_position = self._camera_position.clone();
         let mut camera_position = pivot + camera_dir * self._camera_distance;
         let camera_move_delta = self._camera_position - prev_camera_position;
-
         let scene_manager = ptr_as_ref(self.get_game_client().get_game_scene_manager().get_scene_manager_ptr());
 
         // check collide with block
@@ -366,6 +365,17 @@ impl<'a> GameController<'a> {
             self._camera_position = camera_position;
         }
         main_camera._transform_object.set_position(&self._camera_position);
+    }
+
+    pub fn is_open_worldmap(&self, joystick_input_data: &JoystickInputData, keyboard_input_data: &KeyboardInputData) -> bool {
+        keyboard_input_data.get_key_released(KeyCode::Escape) ||
+        joystick_input_data._btn_start == ButtonState::Released
+    }
+
+    pub fn is_close_worldmap(&self, joystick_input_data: &JoystickInputData, keyboard_input_data: &KeyboardInputData) -> bool {
+        keyboard_input_data.get_key_released(KeyCode::Escape) ||
+        joystick_input_data._btn_start == ButtonState::Released ||
+        joystick_input_data._btn_b == ButtonState::Released
     }
 
     pub fn update_game_controller(
@@ -440,6 +450,10 @@ impl<'a> GameController<'a> {
             self._is_keyboard_input_mode = true;
         } else if joystick_input_data.is_any_button_pressed() {
             self._is_keyboard_input_mode = false;
+        }
+
+        if self.is_open_worldmap(joystick_input_data, keyboard_input_data) {
+            self.get_game_client_mut().set_game_phase(GamePhase::WorldMap);
         }
 
         // item control

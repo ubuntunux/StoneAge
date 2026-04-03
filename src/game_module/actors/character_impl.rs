@@ -482,11 +482,8 @@ impl<'a> Character<'a> {
 
     pub fn is_available_roll(&self) -> bool {
         if self._is_player && (self._character_stats._stamina < STAMINA_ROLL || self.is_in_roll_delay()) {
-            log::info!("_stamina: {:?}, is_in_roll_delay: {:?}", self._character_stats._stamina, self.is_in_roll_delay());
             return false;
         }
-        log::info!("is_falling: {:?}, is_available_attack: {:?}, is_move_state(MoveAnimationState::Roll): {:?}", self.is_falling(), self.is_available_attack(), self.is_move_state(MoveAnimationState::Roll));
-
         !self.is_falling() && self.is_available_attack() && !self.is_move_state(MoveAnimationState::Roll)
     }
 
@@ -1035,7 +1032,7 @@ impl<'a> Character<'a> {
         if self.is_move_state(MoveAnimationState::Roll) == false {
             self.set_run(false);
             self.set_move_speed(0.0);
-            if self.is_move_state(MoveAnimationState::Idle) == false && self.is_on_ground() {
+            if self.is_move_stop() == false && self.is_on_ground() {
                 self.set_move_animation(MoveAnimationState::Idle);
             }
         }
@@ -1170,9 +1167,6 @@ impl<'a> Character<'a> {
     }
 
     pub fn update_move_animation_loop_event(&mut self) {
-        if self._is_player == false {
-            log::info!("update_move_animation_loop_event: {:?}", self._animation_state._move_animation_state);
-        }
         let character_manager = self.get_character_manager();
         let move_animation = self._animation_state._move_animation_state;
         let render_object = ptr_as_mut(self._render_object.as_ptr());
@@ -1242,9 +1236,6 @@ impl<'a> Character<'a> {
     }
 
     pub fn update_action_animation_loop_event(&mut self) {
-        if self._is_player == false {
-            log::info!("update_action_animation_loop_event: {:?}", self._animation_state._action_animation_state);
-        }
         let character_data = self.get_character_data();
         let action_animation = self._animation_state._action_animation_state;
         let render_object = ptr_as_mut(self._render_object.as_ptr());

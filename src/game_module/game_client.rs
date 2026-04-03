@@ -1,7 +1,7 @@
 use std::cmp::PartialEq;
 use crate::application::application::Application;
 use crate::game_module::actors::character_manager::CharacterManager;
-use crate::game_module::game_constants::{AMBIENT_SOUND, CAMERA_DISTANCE_MAX, GAME_MUSIC, MATERIAL_INTRO_IMAGE, SCENARIO_INTRO, SLEEP_TIMER, STORY_BOARD_FADE_TIME, STORY_IMAGE_NONE, GAME_VIEW_MODE, GameViewMode};
+use crate::game_module::game_constants::{GameViewMode, AMBIENT_SOUND, CAMERA_DISTANCE_MAX, GAME_MUSIC, MATERIAL_INTRO_IMAGE, SCENARIO_INTRO, SLEEP_TIMER, STORY_BOARD_FADE_TIME, MATERIAL_UI_NONE, GAME_VIEW_MODE, MATERIAL_WORLDMAP, MATERIAL_WORLDMAP_FADE_TIME};
 use crate::game_module::game_controller::GameController;
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::{GameSceneManager, GameSceneState};
@@ -19,6 +19,7 @@ pub enum GamePhase {
     Teleport,
     Sleep,
     OpenToolbox,
+    WorldMap,
 }
 
 pub struct GameClient<'a> {
@@ -170,16 +171,20 @@ impl<'a> GameClient<'a> {
                     character_manager.get_player().borrow_mut().set_action_none();
                     character_manager.get_player().borrow_mut().set_move_idle();
                 }
-                game_ui_manager.set_image_manual_fade_inout(STORY_IMAGE_NONE, STORY_BOARD_FADE_TIME);
+                game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, STORY_BOARD_FADE_TIME);
             }
             GamePhase::Sleep => {
                 self.reset_sleep_timer();
-                game_ui_manager.set_image_manual_fade_inout(STORY_IMAGE_NONE, STORY_BOARD_FADE_TIME);
+                game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, STORY_BOARD_FADE_TIME);
                 self.set_need_sleep_mode(false);
             }
             GamePhase::OpenToolbox => {
                 game_ui_manager.open_toolbox();
                 self.set_need_toolbox_mode(false);
+            }
+            GamePhase::WorldMap => {
+                game_ui_manager.set_image_auto_fade_inout(MATERIAL_WORLDMAP, MATERIAL_WORLDMAP_FADE_TIME);
+                game_ui_manager.set_auto_fade_inout(true);
             }
             _ => (),
         }
@@ -338,6 +343,13 @@ impl<'a> GameClient<'a> {
                         character_manager.get_player(),
                     );
                 } else {
+                    self.set_game_phase(GamePhase::GamePlay);
+                }
+            }
+            GamePhase::WorldMap => {
+                if game_controller.is_close_worldmap(joystick_input_data, keyboard_input_data) {
+                    game_ui_manager.set_image_auto_fade_inout(MATERIAL_UI_NONE, MATERIAL_WORLDMAP_FADE_TIME);
+                    game_ui_manager.set_auto_fade_inout(true);
                     self.set_game_phase(GamePhase::GamePlay);
                 }
             }

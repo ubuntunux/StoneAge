@@ -17,6 +17,7 @@ use rust_engine_3d::scene::scene_manager::{SceneDataCreateInfo, SceneManager};
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use rust_engine_3d::begin_block;
+use crate::game_module::game_client::GameClient;
 
 pub type CharacterCreateInfoMap = HashMap<String, CharacterCreateInfo>;
 pub type ItemCreateInfoMap = HashMap<String, ItemCreateInfo>;
@@ -42,6 +43,7 @@ pub struct GameSceneDataCreateInfo {
 }
 
 pub struct GameSceneManager<'a> {
+    pub _game_client: *const GameClient<'a>,
     pub _audio_manager: *const AudioManager<'a>,
     pub _effect_manager: *const EffectManager<'a>,
     pub _scene_manager: *const SceneManager<'a>,
@@ -87,6 +89,14 @@ impl<'a> GameSceneManager<'a> {
         ptr_as_mut(self._scene_manager)
     }
 
+    pub fn get_game_ui_manager(&self) -> &GameUIManager<'a> {
+        ptr_as_ref(self._game_ui_manager)
+    }
+
+    pub fn get_game_ui_manager_mut(&self) -> &mut GameUIManager<'a> {
+        ptr_as_mut(self._game_ui_manager)
+    }
+
     pub fn get_character_manager(&self) -> &CharacterManager<'a> {
         self._character_manager.as_ref()
     }
@@ -117,6 +127,7 @@ impl<'a> GameSceneManager<'a> {
 
     pub fn create_game_scene_manager() -> Box<GameSceneManager<'a>> {
         Box::new(GameSceneManager {
+            _game_client: std::ptr::null(),
             _audio_manager: std::ptr::null(),
             _effect_manager: std::ptr::null(),
             _scene_manager: std::ptr::null(),
@@ -149,27 +160,31 @@ impl<'a> GameSceneManager<'a> {
         window_size: &Vector2<i32>,
     ) {
         log::info!("initialize_game_scene_manager");
+        self._game_client = application.get_game_client();
         self._audio_manager = engine_core.get_audio_manager();
         self._scene_manager = engine_core.get_scene_manager();
         self._effect_manager = engine_core.get_effect_manager();
         self._game_ui_manager = application.get_game_ui_manager();
-        engine_core
-            .get_scene_manager_mut()
-            .initialize_scene_manager(
-                engine_core.get_renderer_context(),
-                engine_core.get_audio_manager(),
-                engine_core.get_effect_manager(),
-                engine_core.get_engine_resources(),
-                window_size,
-            );
+        engine_core.get_scene_manager_mut().initialize_scene_manager(
+            engine_core.get_renderer_context(),
+            engine_core.get_audio_manager(),
+            engine_core.get_effect_manager(),
+            engine_core.get_engine_resources(),
+            window_size,
+        );
 
         self._game_resources = application.get_game_resources();
-        self._character_manager
-            .initialize_character_manager(engine_core, application);
-        self._item_manager
-            .initialize_item_manager(engine_core, application);
-        self._prop_manager
-            .initialize_prop_manager(engine_core, application);
+        self._character_manager.initialize_character_manager(engine_core, application);
+        self._item_manager.initialize_item_manager(engine_core, application);
+        self._prop_manager.initialize_prop_manager(engine_core, application);
+    }
+
+    pub fn get_game_client(&self) -> &GameClient<'a> {
+        ptr_as_ref(self._game_client)
+    }
+
+    pub fn get_game_client_mut(&self) -> &mut GameClient<'a> {
+        ptr_as_mut(self._game_client)
     }
 
     pub fn play_bgm(&mut self, audio_name: &str, volume: Option<f32>) {
