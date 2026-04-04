@@ -1,22 +1,23 @@
+use nalgebra::Vector3;
+use std::str::FromStr;
+use strum_macros::{Display, EnumCount, EnumIter, EnumString};
+use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
+use rust_engine_3d::utilities::math;
 use crate::game_module::actors::character::Character;
 use crate::game_module::game_constants::{AUDIO_ROOSTER, AUDIO_STOMACH_GROWLING, CAMERA_DISTANCE_MAX, CAMERA_DISTANCE_MIN, CAMERA_OFFSET_Y, CHARACTER_INTERACTION_TIME, HUNGER_WARNING_THRESHOLD, MATERIAL_ITEM_MEAT, STORY_BOARD_FADE_TIME, MATERIAL_UI_NONE, TIME_OF_MORNING};
 use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::game_ui_manager::{GameUIManager, QuestItemType};
 use crate::game_module::scenario::scenario::{ScenarioBase, ScenarioDataCreateInfo, ScenarioTrack};
-use nalgebra::Vector3;
-use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
-use std::str::FromStr;
-use strum_macros::{Display, EnumCount, EnumIter, EnumString};
-use rust_engine_3d::utilities::math;
 use crate::game_module::actors::character_data::ActionAnimationState;
 use crate::game_module::actors::items::ItemDataType;
 use crate::game_module::actors::props::Prop;
 use crate::game_module::behavior::behavior_base::BehaviorState;
 use crate::game_module::widgets::quest_widgets::quest_item_gather_item::GatherItemData;
+use crate::game_module::widgets::quest_widgets::quest_title::QuestTitle;
 use crate::game_module::widgets::quest_widgets::quest_widget::QuestContent;
 use crate::game_module::widgets::text_box_widget::TextBoxContent;
 
-const SKIP_SCENARIO: bool = false;
+const SKIP_SCENARIO: bool = true;
 const USE_STORY_BOARDS: bool = false;
 const INTRO_FADE_TIME: f32 = 2.0;
 const PHASE_TIME_SLEEP: f32 = 5.0;
@@ -43,6 +44,7 @@ pub struct ScenarioIntro<'a> {
     pub _actor_ewa: Option<RcRefCell<Character<'a>>>,
     pub _actor_koa: Option<RcRefCell<Character<'a>>>,
     pub _gate_prop: Option<RcRefCell<Prop<'a>>>,
+    pub _quest: Option<RcRefCell<QuestTitle<'a>>>,
     pub _quest_gather_coconut: Option<QuestItemType<'a>>,
     pub _quest_gather_meat: Option<QuestItemType<'a>>,
     pub _wakeup_delay_aru: f32,
@@ -71,6 +73,7 @@ impl<'a> ScenarioIntro<'a> {
             _actor_ewa: None,
             _actor_koa: None,
             _gate_prop: None,
+            _quest: None,
             _quest_gather_coconut: None,
             _quest_gather_meat: None,
             _wakeup_delay_aru: 2.0,
@@ -146,7 +149,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
 
         match self._scenario_track._scenario_phase {
             ScenarioIntroPhase::StoryBoard => {
-                game_scene_manager.set_time_of_day(0.0, 0.0);
+                game_scene_manager.set_time_of_day(TIME_OF_MORNING, 0.0);
                 self._actor_aru = Some(game_scene_manager.get_actor("monkey_aru").unwrap().clone());
                 self._actor_ewa = Some(game_scene_manager.get_actor("monkey_ewa").unwrap().clone());
                 self._actor_koa = Some(game_scene_manager.get_actor("monkey_koa").unwrap().clone());
@@ -172,8 +175,6 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                 let main_camera = game_scene_manager.get_scene_manager().get_main_camera_mut();
                 main_camera._transform_object.set_position(&self._around_start_position);
                 main_camera._transform_object.set_rotation(&self._around_start_rotation);
-
-                game_scene_manager.set_time_of_day(TIME_OF_MORNING, 0.0);
             },
             ScenarioIntroPhase::WakeUp => {
                 game_scene_manager.get_scene_manager().play_audio_bank(AUDIO_ROOSTER);
@@ -202,15 +203,14 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                 // self._actor_koa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::Idle, None, true);
 
                 // quest
-                self._quest_gather_coconut = Some(game_scene_manager.get_game_ui_manager_mut().add_quest_item(QuestContent::GatherItem(GatherItemData {
+                self._quest = Some(game_scene_manager.get_game_ui_manager_mut().add_quest(Some(String::from("Gather food for the hungry family."))));
+                self._quest_gather_coconut = Some(self._quest.as_ref().unwrap().borrow_mut().add_quest_item(QuestContent::GatherItem(GatherItemData {
                     _item_data_type: ItemDataType::Coconut,
-                    _gather_item_count: 5,
+                    _gather_item_count: 1,
                 })));
-
-                // quest
-                self._quest_gather_meat = Some(game_scene_manager.get_game_ui_manager_mut().add_quest_item(QuestContent::GatherItem(GatherItemData {
+                self._quest_gather_meat = Some(self._quest.as_ref().unwrap().borrow_mut().add_quest_item(QuestContent::GatherItem(GatherItemData {
                     _item_data_type: ItemDataType::Meat,
-                    _gather_item_count: 5,
+                    _gather_item_count: 1,
                 })));
             }
             _ => (),

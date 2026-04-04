@@ -731,7 +731,11 @@ impl<'a> Character<'a> {
                 InteractionObject::PropTable(prop) => {
                     let direction = math::make_normalize_xz(&(prop.borrow().get_position() - self.get_position()));
                     self.look_at(&direction);
-                    self.set_sit_down();
+                    if self.is_move_state(MoveAnimationState::SitDownLoop) {
+                        self.set_move_idle();
+                    } else {
+                        self.set_sit_down();
+                    }
                 }
                 InteractionObject::Npc(character) => {
                     character.borrow_mut().set_is_stat_displayed(true);

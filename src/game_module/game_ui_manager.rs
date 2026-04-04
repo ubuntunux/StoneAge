@@ -17,7 +17,8 @@ use crate::game_module::widgets::cross_hair_widget::CrossHairWidget;
 use crate::game_module::widgets::image_widget::ImageLayout;
 use crate::game_module::widgets::item_bar_widget::ItemBarWidget;
 use crate::game_module::widgets::player_hud::PlayerHud;
-use crate::game_module::widgets::quest_widgets::quest_widget::{QuestContent, QuestItemBase, QuestWidget};
+use crate::game_module::widgets::quest_widgets::quest_title::QuestTitle;
+use crate::game_module::widgets::quest_widgets::quest_widget::{QuestItemBase, QuestWidget};
 use crate::game_module::widgets::target_status_bar::TargetStatusWidget;
 use crate::game_module::widgets::text_box_widget::{TextBoxContent, TextBoxWidget};
 use crate::game_module::widgets::time_of_day::TimeOfDayWidget;
@@ -353,9 +354,9 @@ impl<'a> GameUIManager<'a> {
         self._item_bar_widget.as_mut().unwrap().select_item_by_index(item_index)
     }
 
-    // text box
-    pub fn add_quest_item(&mut self, content: QuestContent) -> QuestItemType<'a> {
-        self._quest_widget.as_mut().unwrap().add_quest_item(content)
+    // quest
+    pub fn add_quest(&mut self, title: Option<String>) -> RcRefCell<QuestTitle<'a>> {
+        self._quest_widget.as_mut().unwrap().add_quest(title)
     }
 
     // text box
