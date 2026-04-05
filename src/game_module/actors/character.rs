@@ -1,27 +1,29 @@
-use crate::game_module::actors::character_controller::CharacterController;
-use crate::game_module::actors::character_data::{
-    ActionAnimationState, CharacterData, MoveAnimationState,
-};
-use crate::game_module::actors::character_manager::{CharacterID, CharacterManager};
-use crate::game_module::actors::props::{Prop};
-use crate::game_module::actors::weapons::Weapon;
-use crate::game_module::behavior::behavior_base::BehaviorBase;
+use std::ffi::c_void;
 use nalgebra::Vector3;
+use serde::{Deserialize, Serialize};
 use rust_engine_3d::scene::render_object::RenderObjectData;
 use rust_engine_3d::utilities::system::RcRefCell;
-use serde::{Deserialize, Serialize};
 use rust_engine_3d::audio::audio_manager::AudioInstance;
+use crate::game_module::actors::character_controller::CharacterController;
+use crate::game_module::actors::character_data::{ActionAnimationState, CharacterData, MoveAnimationState};
+use crate::game_module::actors::character_manager::{CharacterID, CharacterManager};
+use crate::game_module::actors::props::Prop;
+use crate::game_module::actors::weapons::Weapon;
+use crate::game_module::behavior::behavior_base::BehaviorBase;
 
 #[derive(Clone)]
-pub enum InteractionObject<'a> {
-    None,
-    PropBed(RcRefCell<Prop<'a>>),
-    PropPickup(RcRefCell<Prop<'a>>),
-    PropGate(RcRefCell<Prop<'a>>),
-    PropGathering(RcRefCell<Prop<'a>>),
-    PropMonolith(RcRefCell<Prop<'a>>),
-    PropTable(RcRefCell<Prop<'a>>),
-    Npc(RcRefCell<Character<'a>>),
+pub enum ActorWrapper<'a> {
+    Prop(RcRefCell<Prop<'a>>),
+    Character(RcRefCell<Character<'a>>),
+}
+
+impl<'a> ActorWrapper<'a> {
+    pub fn get_key(&self) -> *const c_void {
+        match self {
+            ActorWrapper::Prop(prop) => { prop.as_ptr() as *const c_void }
+            ActorWrapper::Character(character) => { character.as_ptr() as *const c_void }
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize, Default, Debug, Clone, PartialEq)]

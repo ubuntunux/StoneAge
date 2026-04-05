@@ -1,7 +1,7 @@
 use std::cmp::PartialEq;
 use crate::application::application::Application;
 use crate::game_module::actors::character_manager::CharacterManager;
-use crate::game_module::game_constants::{GameViewMode, AMBIENT_SOUND, CAMERA_DISTANCE_MAX, GAME_MUSIC, MATERIAL_INTRO_IMAGE, SCENARIO_INTRO, SLEEP_TIMER, STORY_BOARD_FADE_TIME, MATERIAL_UI_NONE, GAME_VIEW_MODE, MATERIAL_WORLDMAP, MATERIAL_WORLDMAP_FADE_TIME};
+use crate::game_module::game_constants::{GameViewMode, AMBIENT_SOUND, CAMERA_DISTANCE_MAX, GAME_MUSIC, MATERIAL_INTRO_IMAGE, SCENARIO_INTRO, SLEEP_TIMER, STORY_BOARD_FADE_TIME, MATERIAL_UI_NONE, GAME_VIEW_MODE, MATERIAL_WORLDMAP, MATERIAL_WORLDMAP_FADE_TIME, AUDIO_ROOSTER};
 use crate::game_module::game_controller::GameController;
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::{GameSceneManager, GameSceneState};
@@ -328,6 +328,7 @@ impl<'a> GameClient<'a> {
                         game_scene_manager.set_next_time_of_day();
                     }
                 } else if game_ui_manager.is_done_game_image_progress() {
+                    game_scene_manager.get_scene_manager().play_audio_bank(AUDIO_ROOSTER);
                     self.set_game_phase(GamePhase::GamePlay);
                 }
             }

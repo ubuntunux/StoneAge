@@ -7,8 +7,9 @@ use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use crate::game_module::game_controller::GameController;
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
-use crate::game_module::game_ui_manager::QuestItemType;
+use crate::game_module::game_ui_manager::QuestItem;
 use crate::game_module::widgets::quest_widgets::quest_item_gather_item::{GatherItemData, QuestItemGatherItem};
+use crate::game_module::widgets::quest_widgets::quest_item_default::{DefaultQuestData, QuestItemDefault};
 use crate::game_module::widgets::quest_widgets::quest_title::QuestTitle;
 
 pub const FONT_SIZE: f32 = 30.0;
@@ -17,7 +18,8 @@ pub const ITEM_MARGIN: f32 = 20.0;
 pub const ITEM_PADDING: f32 = 8.0;
 pub const QUEST_COMPLETE_OPACITY: f32 = 0.3;
 
-pub enum QuestContent {
+pub enum QuestCreateInfo {
+    DefaultQuest(DefaultQuestData),
     GatherItem(GatherItemData),
 }
 
@@ -25,6 +27,7 @@ pub trait QuestItemBase<'a> {
     fn initialize_quest_item(&mut self, game_resources: *const GameResources<'a>);
     fn destroy(&mut self);
     fn is_completed_quest(&self) -> bool;
+    fn set_completed_quest(&mut self);
     fn update_quest_item(&mut self, game_scene_manager: &GameSceneManager, game_controller: &GameController, delta_time: f32);
 }
 
@@ -34,9 +37,14 @@ pub struct QuestWidget<'a> {
     pub _quests: Vec<RcRefCell<QuestTitle<'a>>>
 }
 
-pub fn create_quest_item<'a>(game_resources: *const GameResources<'a>, parent_widget: &mut WidgetDefault<'a>, content: QuestContent) -> QuestItemType<'a> {
-    match content {
-        QuestContent::GatherItem(gather_item_data) => QuestItemGatherItem::create_quest_item(game_resources, parent_widget, gather_item_data)
+pub fn create_quest_item<'a>(game_resources: *const GameResources<'a>, parent_widget: &mut WidgetDefault<'a>, quest_type: QuestCreateInfo) -> QuestItem<'a> {
+    match quest_type {
+        QuestCreateInfo::DefaultQuest(default_quest_data) => {
+            QuestItemDefault::create_quest_item(game_resources, parent_widget, default_quest_data)
+        }
+        QuestCreateInfo::GatherItem(gather_item_data) => {
+            QuestItemGatherItem::create_quest_item(game_resources, parent_widget, gather_item_data)
+        }
     }
 }
 

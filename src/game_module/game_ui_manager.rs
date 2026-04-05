@@ -1,3 +1,4 @@
+use std::ffi::c_void;
 use nalgebra::Vector2;
 use rust_engine_3d::core::engine_core::{EngineCore, TimeData};
 use rust_engine_3d::core::input::{JoystickInputData, KeyboardInputData, MouseInputData, MouseMoveData};
@@ -7,7 +8,7 @@ use rust_engine_3d::scene::ui::{
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use crate::application::application::Application;
-use crate::game_module::actors::character::Character;
+use crate::game_module::actors::character::{ActorWrapper, Character};
 use crate::game_module::actors::items::ItemDataType;
 use crate::game_module::game_client::GameClient;
 use crate::game_module::game_constants::{MATERIAL_CROSS_HAIR, MATERIAL_INTRO_IMAGE, MATERIAL_TIME_OF_DAY};
@@ -24,7 +25,7 @@ use crate::game_module::widgets::text_box_widget::{TextBoxContent, TextBoxWidget
 use crate::game_module::widgets::time_of_day::TimeOfDayWidget;
 use crate::game_module::widgets::toolbox_widget::ToolboxWidget;
 
-pub type QuestItemType<'a> = RcRefCell<dyn QuestItemBase<'a> + 'a>;
+pub type QuestItem<'a> = RcRefCell<dyn QuestItemBase<'a> + 'a>;
 
 pub struct EditorUIManager<'a> {
     pub _ui_manager: *const UIManager<'a>,
@@ -360,16 +361,16 @@ impl<'a> GameUIManager<'a> {
     }
 
     // text box
-    pub fn has_text_box_item(&self, character_name: &str) -> bool {
-        self._text_box_widget.as_ref().unwrap().has_text_box_item(character_name)
+    pub fn has_text_box_item(&self, key: *const c_void) -> bool {
+        self._text_box_widget.as_ref().unwrap().has_text_box_item(key)
     }
 
-    pub fn add_text_box_item(&mut self, character_name: &str, contents: &Vec<TextBoxContent>, duration: Option<f32>) {
-        self._text_box_widget.as_mut().unwrap().add_text_box_item(character_name, contents, duration);
+    pub fn add_text_box_item(&mut self, actor: ActorWrapper<'a>, contents: &Vec<TextBoxContent>, duration: Option<f32>) {
+        self._text_box_widget.as_mut().unwrap().add_text_box_item(actor, contents, duration);
     }
 
-    pub fn remove_text_box_item(&mut self, character_name: &str) {
-        self._text_box_widget.as_mut().unwrap().remove_text_box_item(character_name);
+    pub fn remove_text_box_item(&mut self, key: *const c_void) {
+        self._text_box_widget.as_mut().unwrap().remove_text_box_item(key);
     }
 
     // toolbox

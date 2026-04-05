@@ -2,36 +2,35 @@ use std::rc::Rc;
 use rust_engine_3d::scene::ui::{HorizontalAlign, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault};
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
-use crate::game_module::actors::items::ItemDataType;
 use crate::game_module::game_controller::GameController;
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::game_ui_manager::QuestItem;
 use crate::game_module::widgets::quest_widgets::quest_widget::{create_quest_item_layout, QuestItemBase, FONT_SIZE, ITEM_MARGIN, ITEM_SIZE, QUEST_COMPLETE_OPACITY};
 
-pub struct GatherItemData {
-    pub _item_data_type: ItemDataType,
-    pub _gather_item_count: usize,
+pub struct DefaultQuestData {
+    pub _quest_icon_name: Option<String>,
+    pub _quest_description: Option<String>,
 }
 
-pub struct QuestItemGatherItem<'a> {
+pub struct QuestItemDefault<'a> {
     pub _layout_widget: Rc<WidgetDefault<'a>>,
     pub _is_complete_widget: Rc<WidgetDefault<'a>>,
     pub _icon_widget: Rc<WidgetDefault<'a>>,
     pub _text_widget: Rc<WidgetDefault<'a>>,
-    pub _item_data: GatherItemData,
-    pub _item_count: usize,
+    pub _is_completed_quest: bool,
+    pub _quest_data: DefaultQuestData,
 }
 
-impl<'a> QuestItemGatherItem<'a> {
-    pub fn create_quest_item(game_resources: *const GameResources<'a>, parent_widget: &mut WidgetDefault<'a>, content: GatherItemData) -> QuestItem<'a> {
-        let item = newRcRefCell(QuestItemGatherItem {
+impl<'a> QuestItemDefault<'a> {
+    pub fn create_quest_item(game_resources: *const GameResources<'a>, parent_widget: &mut WidgetDefault<'a>, default_quest_data: DefaultQuestData) -> QuestItem<'a> {
+        let item = newRcRefCell(QuestItemDefault {
             _layout_widget: create_quest_item_layout(parent_widget),
             _is_complete_widget: UIManager::create_widget("is_complete_widget", UIWidgetTypes::Default),
             _icon_widget: UIManager::create_widget("icon_widget", UIWidgetTypes::Default),
             _text_widget: UIManager::create_widget("text_widget", UIWidgetTypes::Default),
-            _item_data: content,
-            _item_count: 0
+            _is_completed_quest: false,
+            _quest_data: default_quest_data,
         });
 
         item.borrow_mut().initialize_quest_item(game_resources);
@@ -47,19 +46,13 @@ impl<'a> QuestItemGatherItem<'a> {
 
         let ui_component = ptr_as_mut(self._is_complete_widget.as_ref()).get_ui_component_mut();
         ui_component.set_text(if is_completed_quest {"[X]"} else {"[ ]"});
-
-        let ui_component = ptr_as_mut(self._text_widget.as_ref()).get_ui_component_mut();
-        ui_component.set_text(format!("Collected: {}/{}", self._item_count, self._item_data._gather_item_count).as_str());
     }
 }
 
-impl<'a> QuestItemBase<'a> for QuestItemGatherItem<'a> {
+impl<'a> QuestItemBase<'a> for QuestItemDefault<'a> {
     fn initialize_quest_item(&mut self, game_resources: *const GameResources<'a>) {
         let game_resources = ptr_as_ref(game_resources);
         let engine_resources = game_resources.get_engine_resources();
-        let item_material_instance = engine_resources.get_material_instance_data(
-            ItemDataType::get_item_material_instance_name(self._item_data._item_data_type)
-        ).clone();
 
         let ui_component = ptr_as_mut(self._layout_widget.as_ref()).get_ui_component_mut();
         ui_component.set_expandable_x(true);
@@ -77,23 +70,29 @@ impl<'a> QuestItemBase<'a> for QuestItemGatherItem<'a> {
         ui_component.set_font_size(FONT_SIZE);
         ptr_as_mut(self._layout_widget.as_ref()).add_widget(&self._is_complete_widget);
 
-        let ui_component = ptr_as_mut(self._icon_widget.as_ref()).get_ui_component_mut();
-        ui_component.set_halign(HorizontalAlign::CENTER);
-        ui_component.set_valign(VerticalAlign::CENTER);
-        ui_component.set_size_x(ITEM_SIZE);
-        ui_component.set_size_y(ITEM_SIZE);
-        ui_component.set_material_instance(Some(item_material_instance));
-        ptr_as_mut(self._layout_widget.as_ref()).add_widget(&self._icon_widget);
+        if let Some(icon_name) = self._quest_data._quest_icon_name.as_ref() {
+            let icon_material_instance = engine_resources.get_material_instance_data(icon_name.as_str()).clone();
+            let ui_component = ptr_as_mut(self._icon_widget.as_ref()).get_ui_component_mut();
+            ui_component.set_halign(HorizontalAlign::CENTER);
+            ui_component.set_valign(VerticalAlign::CENTER);
+            ui_component.set_size_x(ITEM_SIZE);
+            ui_component.set_size_y(ITEM_SIZE);
+            ui_component.set_material_instance(Some(icon_material_instance));
+            ptr_as_mut(self._layout_widget.as_ref()).add_widget(&self._icon_widget);
+        }
 
-        let ui_component = ptr_as_mut(self._text_widget.as_ref()).get_ui_component_mut();
-        ui_component.set_halign(HorizontalAlign::LEFT);
-        ui_component.set_valign(VerticalAlign::CENTER);
-        ui_component.set_expandable_x(true);
-        ui_component.set_size_y(ITEM_SIZE);
-        ui_component.set_color(get_color32(255, 255, 255, 0));
-        ui_component.set_font_color(get_color32(255, 255, 255, 255));
-        ui_component.set_font_size(FONT_SIZE);
-        ptr_as_mut(self._layout_widget.as_ref()).add_widget(&self._text_widget);
+        if let Some(quest_description) = self._quest_data._quest_description.as_ref() {
+            let ui_component = ptr_as_mut(self._text_widget.as_ref()).get_ui_component_mut();
+            ui_component.set_halign(HorizontalAlign::LEFT);
+            ui_component.set_valign(VerticalAlign::CENTER);
+            ui_component.set_expandable_x(true);
+            ui_component.set_size_y(ITEM_SIZE);
+            ui_component.set_color(get_color32(255, 255, 255, 0));
+            ui_component.set_font_color(get_color32(255, 255, 255, 255));
+            ui_component.set_font_size(FONT_SIZE);
+            ui_component.set_text(quest_description);
+            ptr_as_mut(self._layout_widget.as_ref()).add_widget(&self._text_widget);
+        }
     }
 
     fn destroy(&mut self) {
@@ -102,19 +101,14 @@ impl<'a> QuestItemBase<'a> for QuestItemGatherItem<'a> {
     }
 
     fn is_completed_quest(&self) -> bool {
-        self._item_data._gather_item_count <= self._item_count
+        self._is_completed_quest
     }
 
     fn set_completed_quest(&mut self) {
-        self._item_count = self._item_data._gather_item_count;
+        self._is_completed_quest = true;
     }
 
-    fn update_quest_item(&mut self, _game_scene_manager: &GameSceneManager, game_controller: &GameController, _delta_time: f32) {
-        let item_bar_widget = game_controller.get_game_ui_manager().get_item_bar_widget();
-        let item_count = item_bar_widget.get_item_count(&self._item_data._item_data_type);
-        if self._item_count != item_count {
-            self._item_count = self._item_data._gather_item_count.min(item_count);
-            self.update_ui_widgets();
-        }
+    fn update_quest_item(&mut self, _game_scene_manager: &GameSceneManager, _game_controller: &GameController, _delta_time: f32) {
+        self.update_ui_widgets();
     }
 }

@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use std::ffi::c_void;
-use crate::game_module::actors::character::{Character, InteractionObject};
+use crate::game_module::actors::character::{Character};
 use crate::game_module::actors::character_data::{CharacterData, MoveAnimationState};
 use crate::game_module::game_constants::*;
 use nalgebra::{Vector3};
@@ -11,6 +11,7 @@ use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::math::HALF_PI;
 use rust_engine_3d::utilities::system::ptr_as_ref;
+use crate::game_module::actors::interaction_object::InteractionObject;
 
 pub struct CharacterController<'a> {
     pub _position: Vector3<f32>,

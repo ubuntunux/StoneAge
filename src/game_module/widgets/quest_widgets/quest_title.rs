@@ -5,15 +5,15 @@ use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use crate::game_module::game_controller::GameController;
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
-use crate::game_module::game_ui_manager::QuestItemType;
-use crate::game_module::widgets::quest_widgets::quest_widget::{create_quest_item, create_quest_item_layout, QuestContent, FONT_SIZE, ITEM_SIZE};
+use crate::game_module::game_ui_manager::QuestItem;
+use crate::game_module::widgets::quest_widgets::quest_widget::{create_quest_item, create_quest_item_layout, QuestCreateInfo, FONT_SIZE, ITEM_SIZE};
 
 pub struct QuestTitle<'a> {
     pub _game_resources: *const GameResources<'a>,
     pub _layout_widget: Rc<WidgetDefault<'a>>,
     pub _text_widget: Option<Rc<WidgetDefault<'a>>>,
     pub _quest_title: Option<String>,
-    pub _quest_items: Vec<QuestItemType<'a>>,
+    pub _quest_items: Vec<QuestItem<'a>>,
 }
 
 impl<'a> QuestTitle<'a> {
@@ -62,7 +62,7 @@ impl<'a> QuestTitle<'a> {
         ptr_as_mut(*parent).remove_widget(self._layout_widget.as_ref());
     }
 
-    pub fn add_quest_item(&mut self, content: QuestContent) -> QuestItemType<'a> {
+    pub fn add_quest_item(&mut self, content: QuestCreateInfo) -> QuestItem<'a> {
         let quest_item = create_quest_item(self._game_resources, ptr_as_mut(self._layout_widget.as_ref()), content);
         self._quest_items.push(quest_item.clone());
         quest_item.clone()
@@ -75,6 +75,12 @@ impl<'a> QuestTitle<'a> {
             }
         }
         true
+    }
+
+    pub fn set_completed_quest(&mut self) {
+        for quest_item in self._quest_items.iter() {
+            quest_item.borrow_mut().set_completed_quest();
+        }
     }
 
     pub(crate) fn update_quest_item(&mut self, game_scene_manager: &GameSceneManager, game_controller: &GameController, delta_time: f32) {

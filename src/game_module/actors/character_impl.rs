@@ -1,7 +1,4 @@
-use std::ffi::c_void;
-use crate::game_module::actors::character::{
-    Character, CharacterAnimationState, CharacterStats, InteractionObject,
-};
+use crate::game_module::actors::character::{Character, CharacterAnimationState, CharacterStats};
 use crate::game_module::actors::character_controller::CharacterController;
 use crate::game_module::actors::character_data::{
     ActionAnimationState, CharacterData, MoveAnimationState,
@@ -21,53 +18,7 @@ use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::scene::transform_object::TransformObjectData;
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
-
-impl<'a> InteractionObject<'a> {
-    pub fn get_key(&self) -> *const c_void {
-        match self {
-            InteractionObject::None => { std::ptr::null() }
-            InteractionObject::PropBed(prop) |
-            InteractionObject::PropPickup(prop) |
-            InteractionObject::PropGate(prop) |
-            InteractionObject::PropGathering(prop) |
-            InteractionObject::PropMonolith(prop) |
-            InteractionObject::PropTable(prop) => { prop.as_ptr() as *const c_void }
-            InteractionObject::Npc(character) => { character.as_ptr() as *const c_void }
-        }
-    }
-
-    pub fn get_interaction_name(&self) -> &str {
-        match self {
-            InteractionObject::None => "",
-            InteractionObject::PropBed(_) => "Sleep",
-            InteractionObject::PropPickup(_) => "Pick up",
-            InteractionObject::PropGate(_) => "Enter Gate",
-            InteractionObject::PropGathering(_) => "Gathering",
-            InteractionObject::PropMonolith(_) => "Open Toolbox",
-            &InteractionObject::PropTable(_) => "Sit Down",
-            InteractionObject::Npc(_) => "Talk",
-        }
-    }
-
-    pub fn get_position(&self) -> Vector3<f32> {
-        match self {
-            InteractionObject::None => Vector3::new(0.0, 0.0, 0.0),
-            InteractionObject::PropBed(prop) |
-            InteractionObject::PropPickup(prop) |
-            InteractionObject::PropGate(prop) |
-            InteractionObject::PropGathering(prop) |
-            InteractionObject::PropMonolith(prop) |
-            InteractionObject::PropTable(prop) => {
-                let bounding_box = ptr_as_ref(prop.as_ptr()).get_bounding_box();
-                Vector3::new(bounding_box._center.x, bounding_box._min.y + 1.0, bounding_box._center.z)
-            }
-            InteractionObject::Npc(character) => {
-                let bounding_box = ptr_as_ref(character.as_ptr()).get_bounding_box();
-                Vector3::new(bounding_box._center.x, bounding_box._min.y + 1.0, bounding_box._center.z)
-            }
-        }
-    }
-}
+use crate::game_module::actors::interaction_object::InteractionObject;
 
 impl CharacterAnimationState {
     pub fn is_attack_event(&self) -> bool {
@@ -717,7 +668,7 @@ impl<'a> Character<'a> {
 
     pub fn set_action_interaction(&mut self) {
         if self._controller.is_on_ground() && self.is_available_move() && self.is_idle_action() {
-            match &self._controller._nearest_interaction_object {
+            match self._controller._nearest_interaction_object.clone() {
                 InteractionObject::PropBed(_) => {
                     self.set_action_laying_down();
                 }
@@ -738,6 +689,8 @@ impl<'a> Character<'a> {
                     }
                 }
                 InteractionObject::Npc(character) => {
+                    let direction = math::make_normalize_xz(&(character.borrow().get_position() - self.get_position()));
+                    self.look_at(&direction);
                     character.borrow_mut().set_is_stat_displayed(true);
                     character.borrow_mut().set_behavior(BehaviorState::Interaction, None, false);
                 }

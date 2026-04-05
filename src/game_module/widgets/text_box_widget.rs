@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::ffi::c_void;
 use nalgebra::{Vector2};
 use strum_macros::EnumString;
 use rust_engine_3d::audio::audio_manager::{AudioLoop, AudioManager};
@@ -6,6 +7,7 @@ use rust_engine_3d::resource::resource::EngineResources;
 use rust_engine_3d::scene::ui::{HorizontalAlign, Orientation, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault};
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
+use crate::game_module::actors::character::ActorWrapper;
 use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::game_controller::{GameController};
 
@@ -14,6 +16,7 @@ const ITEM_HEIGHT: f32 = 20.0;
 const ICON_SIZE: f32 = 100.0;
 const ITEM_PADDING: f32 = 10.0;
 const TEXT_BOX_ANIMATION_DURATION: f32 = 0.25;
+const MAX_TEXT_BOX_HEIGHT: f32 = 2.0;
 
 #[derive(PartialEq, Debug, EnumString)]
 pub enum TextBoxAnimationState {
@@ -34,10 +37,11 @@ pub struct TextBoxWidget<'a> {
     pub _audio_manager: *const AudioManager<'a>,
     pub _engine_resources: *const EngineResources<'a>,
     pub _root_widget: *const WidgetDefault<'a>,
-    pub _text_box_items: HashMap<String, TextBoxItem<'a>>
+    pub _text_box_items: HashMap<*const c_void, TextBoxItem<'a>>
 }
 
 pub struct TextBoxItem<'a> {
+    pub _actor: ActorWrapper<'a>,
     pub _layout_widget: *const WidgetDefault<'a>,
     pub _duration: Option<f32>,
     pub _animation_state: TextBoxAnimationState,
@@ -45,7 +49,14 @@ pub struct TextBoxItem<'a> {
 }
 
 impl<'a> TextBoxItem<'a> {
-    pub fn create_text_box_item(audio_manager: *const AudioManager<'a>, engine_resources: *const EngineResources<'a>, parent_widget: &mut WidgetDefault<'a>, contents: &Vec<TextBoxContent>, duration: Option<f32>) -> TextBoxItem<'a> {
+    pub fn create_text_box_item(
+        audio_manager: *const AudioManager<'a>,
+        engine_resources: *const EngineResources<'a>,
+        parent_widget: &mut WidgetDefault<'a>,
+        actor: ActorWrapper<'a>,
+        contents: &Vec<TextBoxContent>,
+        duration: Option<f32>
+    ) -> TextBoxItem<'a> {
         let layout_widget = UIManager::create_widget("layout_widget", UIWidgetTypes::Default);
         let ui_component = ptr_as_mut(layout_widget.as_ref()).get_ui_component_mut();
         ui_component.set_layout_type(UILayoutType::BoxLayout);
@@ -60,6 +71,7 @@ impl<'a> TextBoxItem<'a> {
         parent_widget.add_widget(&layout_widget);
 
         let mut item = TextBoxItem {
+            _actor: actor,
             _layout_widget: layout_widget.as_ref(),
             _duration: duration,
             _animation_state: TextBoxAnimationState::None,
@@ -140,80 +152,101 @@ impl<'a> TextBoxWidget<'a> {
     pub fn changed_window_size(&mut self, _window_size: &Vector2<i32>) {
     }
 
-    pub fn has_text_box_item(&self, character_name: &str) -> bool {
-        self._text_box_items.contains_key(character_name)
+    pub fn has_text_box_item(&self, key: *const c_void) -> bool {
+        self._text_box_items.contains_key(&key)
     }
 
-    pub fn add_text_box_item(&mut self, character_name: &str, contents: &Vec<TextBoxContent>, duration: Option<f32>) {
-        if let Some(item) = self._text_box_items.get_mut(character_name) {
+    pub fn add_text_box_item(&mut self, actor: ActorWrapper<'a>, contents: &Vec<TextBoxContent>, duration: Option<f32>) {
+        if let Some(item) = self._text_box_items.get_mut(&actor.get_key()) {
             item.update_text_box_item(self._audio_manager, self._engine_resources, contents, duration, true);
             item.set_animation_state(TextBoxAnimationState::None);
         } else {
             self._text_box_items.insert(
-                String::from(character_name),
-                TextBoxItem::create_text_box_item(self._audio_manager, self._engine_resources, ptr_as_mut(self._root_widget), contents, duration)
+                actor.get_key(),
+                TextBoxItem::create_text_box_item(
+                    self._audio_manager,
+                    self._engine_resources,
+                    ptr_as_mut(self._root_widget),
+                    actor,
+                    contents,
+                    duration
+                )
             );
         }
     }
 
-    pub fn remove_text_box_item(&mut self, character_name: &str) {
-        if let Some(item) = self._text_box_items.get_mut(character_name) {
+    pub fn remove_text_box_item(&mut self, key: *const c_void) {
+        if let Some(item) = self._text_box_items.get_mut(&key) {
             item.set_animation_state(TextBoxAnimationState::Shrinking);
         }
     }
 
     pub fn update_text_box_widget(&mut self, game_scene_manager: &GameSceneManager, _game_controller: &GameController, delta_time: f32) {
-        let mut remove_items: Vec<String> = Vec::new();
-        for (character_name, text_box_item) in self._text_box_items.iter_mut() {
-            let mut remove_text_box = true;
-            if let Some(character) = game_scene_manager.get_character_manager().get_character(character_name) {
-                if character.borrow().is_alive() {
-                    remove_text_box = false;
+        let mut remove_items: Vec<*const c_void> = Vec::new();
+        for (_, text_box_item) in self._text_box_items.iter_mut() {
+            let mut is_enable_text_box = false;
+            let mut position;
+            let key = text_box_item._actor.get_key();
 
-                    let main_camera = game_scene_manager.get_scene_manager().get_main_camera();
-                    let mut position = character.borrow().get_center().clone();
-                    position.y = character.borrow().get_bounding_box()._max.y;
-                    let screen_position = main_camera.convert_world_to_screen(&position, false);
-                    let ui_size = ptr_as_ref(text_box_item._layout_widget).get_ui_component().get_ui_size();
-                    ptr_as_mut(text_box_item._layout_widget)._ui_component.set_center_x(screen_position.x);
-                    ptr_as_mut(text_box_item._layout_widget)._ui_component.set_pos_y(screen_position.y - ui_size.y);
-
-                    match text_box_item._animation_state {
-                        TextBoxAnimationState::None => {
-                            ptr_as_mut(text_box_item._layout_widget)._ui_component.set_opacity(0.0);
-                            text_box_item.set_animation_state(TextBoxAnimationState::Growing);
-                        }
-                        TextBoxAnimationState::Growing => {
-                            let opacity = (text_box_item._animation_timer / TEXT_BOX_ANIMATION_DURATION).min(1.0);
-                            ptr_as_mut(text_box_item._layout_widget)._ui_component.set_opacity(opacity);
-                            if 1.0 <= opacity {
-                                text_box_item.set_animation_state(TextBoxAnimationState::Idle);
-                            }
-                            text_box_item._animation_timer += delta_time;
-                        },
-                        TextBoxAnimationState::Idle => {
-                            if let Some(mut duration) = text_box_item._duration {
-                                duration -= delta_time;
-                                if duration <= 0.0f32 {
-                                    text_box_item.set_animation_state(TextBoxAnimationState::Shrinking);
-                                }
-                                text_box_item._duration = Some(duration);
-                            }
-                        }
-                        TextBoxAnimationState::Shrinking => {
-                            let opacity = 1.0 - (text_box_item._animation_timer / TEXT_BOX_ANIMATION_DURATION).min(1.0);
-                            ptr_as_mut(text_box_item._layout_widget)._ui_component.set_opacity(opacity);
-                            if opacity <= 0.0 {
-                                remove_items.push(character_name.clone());
-                            }
-                            text_box_item._animation_timer += delta_time;
-                        },
+            match &text_box_item._actor {
+                ActorWrapper::Prop(prop) => {
+                    position = prop.borrow().get_position().clone();
+                    position.y += MAX_TEXT_BOX_HEIGHT.min(prop.borrow().get_bounding_box()._max.y - position.y);
+                    if prop.borrow().is_alive() {
+                        is_enable_text_box = true;
+                    }
+                },
+                ActorWrapper::Character(character) => {
+                    position = character.borrow().get_center().clone();
+                    position.y += MAX_TEXT_BOX_HEIGHT.min(character.borrow().get_bounding_box()._max.y - position.y);
+                    if character.borrow().is_alive() {
+                        is_enable_text_box = true;
                     }
                 }
             }
 
-            if remove_text_box {
-                remove_items.push(character_name.clone());
+            if is_enable_text_box {
+                let main_camera = game_scene_manager.get_scene_manager().get_main_camera();
+                let screen_position = main_camera.convert_world_to_screen(&position, false);
+                let ui_size = ptr_as_ref(text_box_item._layout_widget).get_ui_component().get_ui_size();
+                ptr_as_mut(text_box_item._layout_widget)._ui_component.set_center_x(screen_position.x);
+                ptr_as_mut(text_box_item._layout_widget)._ui_component.set_pos_y(screen_position.y - ui_size.y);
+
+                match text_box_item._animation_state {
+                    TextBoxAnimationState::None => {
+                        ptr_as_mut(text_box_item._layout_widget)._ui_component.set_opacity(0.0);
+                        text_box_item.set_animation_state(TextBoxAnimationState::Growing);
+                    }
+                    TextBoxAnimationState::Growing => {
+                        let opacity = (text_box_item._animation_timer / TEXT_BOX_ANIMATION_DURATION).min(1.0);
+                        ptr_as_mut(text_box_item._layout_widget)._ui_component.set_opacity(opacity);
+                        if 1.0 <= opacity {
+                            text_box_item.set_animation_state(TextBoxAnimationState::Idle);
+                        }
+                        text_box_item._animation_timer += delta_time;
+                    },
+                    TextBoxAnimationState::Idle => {
+                        if let Some(mut duration) = text_box_item._duration {
+                            duration -= delta_time;
+                            if duration <= 0.0f32 {
+                                text_box_item.set_animation_state(TextBoxAnimationState::Shrinking);
+                            }
+                            text_box_item._duration = Some(duration);
+                        }
+                    }
+                    TextBoxAnimationState::Shrinking => {
+                        let opacity = 1.0 - (text_box_item._animation_timer / TEXT_BOX_ANIMATION_DURATION).min(1.0);
+                        ptr_as_mut(text_box_item._layout_widget)._ui_component.set_opacity(opacity);
+                        if opacity <= 0.0 {
+                            is_enable_text_box = false;
+                        }
+                        text_box_item._animation_timer += delta_time;
+                    },
+                }
+            }
+
+            if is_enable_text_box == false {
+                remove_items.push(key.clone());
             }
         }
 

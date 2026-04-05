@@ -8,7 +8,8 @@ use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
 
 use crate::application::application::Application;
-use crate::game_module::actors::character::{Character, CharacterCreateInfo, InteractionObject};
+use crate::game_module::actors::character::{ActorWrapper, Character, CharacterCreateInfo};
+use crate::game_module::actors::interaction_object::InteractionObject;
 use crate::game_module::actors::items::{ItemCreateInfo};
 use crate::game_module::actors::weapons::{Weapon, WeaponCreateInfo};
 use crate::game_module::game_client::GameClient;
@@ -244,7 +245,8 @@ impl<'a> CharacterManager<'a> {
         self._target_character = target_character;
     }
 
-    pub fn update_character_text_box(&self, game_ui_manager: &mut GameUIManager<'a>, character: &mut Character<'a>) {
+    pub fn update_character_text_box(&self, game_ui_manager: &mut GameUIManager<'a>, refcell_character: &RcRefCell<Character<'a>>) {
+        let mut character = refcell_character.borrow_mut();
         if character._character_stats.get_is_stat_displayed() {
             let mut contents = vec![
                 TextBoxContent::StatWidget((String::from("Health"), character._character_stats.get_hp() as f32 / character._character_stats.get_max_hp() as f32)),
@@ -258,7 +260,7 @@ impl<'a> CharacterManager<'a> {
             };
 
             game_ui_manager.add_text_box_item(
-                character.get_character_name(),
+                ActorWrapper::Character(refcell_character.clone()),
                 &contents,
                 Some( CHARACTER_INTERACTION_TIME )
             );
@@ -307,7 +309,7 @@ impl<'a> CharacterManager<'a> {
 
             // update interaction ui
             if character_mut.is_player() == false {
-                self.update_character_text_box(game_ui_manager, character_mut);
+                self.update_character_text_box(game_ui_manager, character);
                 self.update_interaction_ui(player, character, to_player_distance);
             }
 
@@ -365,7 +367,7 @@ impl<'a> CharacterManager<'a> {
         for character in dead_characters.iter() {
             character.borrow_mut()._character_stats.set_is_stat_displayed(false);
             player._controller.remove_interaction_object(InteractionObject::Npc(character.clone()));
-            game_ui_manager.remove_text_box_item(character.borrow().get_character_name());
+            game_ui_manager.remove_text_box_item(character.as_ptr() as *const c_void);
             //self.remove_character(character);
         }
 

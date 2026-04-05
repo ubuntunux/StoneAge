@@ -1,9 +1,6 @@
 use crate::application::application::Application;
-use crate::game_module::actors::character::InteractionObject;
 use crate::game_module::actors::items::ItemCreateInfo;
-use crate::game_module::actors::props::{
-    Prop, PropCreateInfo, PropData, PropDataType, PropID, PropManager, PropMap, PropStats,
-};
+use crate::game_module::actors::props::{Prop, PropCreateInfo, PropData, PropDataType, PropID, PropManager, PropMap, PropStats};
 use crate::game_module::game_client::GameClient;
 use crate::game_module::game_constants::{GameViewMode, AUDIO_HIT, CHARACTER_INTERACTION_DISTANCE, EFFECT_HIT, GAME_VIEW_MODE, NPC_ATTACK_HIT_RANGE};
 use crate::game_module::game_resource::GameResources;
@@ -22,6 +19,7 @@ use std::collections::HashMap;
 use std::ffi::c_void;
 use rust_engine_3d::utilities::math;
 use crate::game_module::actors::character_data::ActionAnimationState;
+use crate::game_module::actors::interaction_object::InteractionObject;
 
 impl Default for PropData {
     fn default() -> Self {
