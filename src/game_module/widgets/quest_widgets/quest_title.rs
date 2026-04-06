@@ -9,6 +9,7 @@ use crate::game_module::game_ui_manager::QuestItem;
 use crate::game_module::widgets::quest_widgets::quest_widget::{create_quest_item, create_quest_item_layout, QuestCreateInfo, FONT_SIZE, ITEM_SIZE};
 
 pub struct QuestTitle<'a> {
+    pub _game_scene_manager: *const GameSceneManager<'a>,
     pub _game_resources: *const GameResources<'a>,
     pub _layout_widget: Rc<WidgetDefault<'a>>,
     pub _text_widget: Option<Rc<WidgetDefault<'a>>>,
@@ -17,8 +18,9 @@ pub struct QuestTitle<'a> {
 }
 
 impl<'a> QuestTitle<'a> {
-    pub fn create_quest_title(game_resources: *const GameResources<'a>, parent_widget: &mut WidgetDefault<'a>, title: Option<String>) -> RcRefCell<QuestTitle<'a>> {
+    pub fn create_quest_title(game_scene_manager: *const GameSceneManager<'a>, game_resources: *const GameResources<'a>, parent_widget: &mut WidgetDefault<'a>, title: Option<String>) -> RcRefCell<QuestTitle<'a>> {
         let item = newRcRefCell(QuestTitle {
+            _game_scene_manager: game_scene_manager.clone(),
             _game_resources: game_resources.clone(),
             _layout_widget: create_quest_item_layout(parent_widget),
             _text_widget: if title.is_some() { Some(UIManager::create_widget("text_widget", UIWidgetTypes::Default)) } else { None },
@@ -53,7 +55,7 @@ impl<'a> QuestTitle<'a> {
         }
     }
 
-    pub(crate) fn destroy(&mut self) {
+    pub fn destroy(&mut self) {
         for quest_item in self._quest_items.iter() {
             quest_item.borrow_mut().destroy();
         }
@@ -63,12 +65,12 @@ impl<'a> QuestTitle<'a> {
     }
 
     pub fn add_quest_item(&mut self, content: QuestCreateInfo) -> QuestItem<'a> {
-        let quest_item = create_quest_item(self._game_resources, ptr_as_mut(self._layout_widget.as_ref()), content);
+        let quest_item = create_quest_item(self._game_scene_manager, self._game_resources, ptr_as_mut(self._layout_widget.as_ref()), content);
         self._quest_items.push(quest_item.clone());
         quest_item.clone()
     }
 
-    pub(crate) fn is_completed_quest(&self) -> bool {
+    pub fn is_completed_quest(&self) -> bool {
         for quest_item in self._quest_items.iter() {
             if !quest_item.borrow().is_completed_quest() {
                 return false;
@@ -83,9 +85,9 @@ impl<'a> QuestTitle<'a> {
         }
     }
 
-    pub(crate) fn update_quest_item(&mut self, game_scene_manager: &GameSceneManager, game_controller: &GameController, delta_time: f32) {
+    pub fn update_quest_item(&mut self, game_controller: &GameController, delta_time: f32) {
         for quest_item in self._quest_items.iter() {
-            quest_item.borrow_mut().update_quest_item(game_scene_manager, game_controller, delta_time);
+            quest_item.borrow_mut().update_quest_item(game_controller, delta_time);
         }
     }
 }

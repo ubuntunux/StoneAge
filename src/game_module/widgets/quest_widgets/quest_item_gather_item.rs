@@ -3,6 +3,7 @@ use rust_engine_3d::scene::ui::{HorizontalAlign, UIManager, UIWidgetTypes, Verti
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use crate::game_module::actors::items::ItemDataType;
+use crate::game_module::game_constants::AUDIO_QUEST_COMPLETE;
 use crate::game_module::game_controller::GameController;
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
@@ -15,26 +16,32 @@ pub struct GatherItemData {
 }
 
 pub struct QuestItemGatherItem<'a> {
+    pub _game_scene_manager: *const GameSceneManager<'a>,
+    pub _game_resources: *const GameResources<'a>,
     pub _layout_widget: Rc<WidgetDefault<'a>>,
     pub _is_complete_widget: Rc<WidgetDefault<'a>>,
     pub _icon_widget: Rc<WidgetDefault<'a>>,
     pub _text_widget: Rc<WidgetDefault<'a>>,
     pub _item_data: GatherItemData,
     pub _item_count: usize,
+    pub _is_completed_quest: bool,
 }
 
 impl<'a> QuestItemGatherItem<'a> {
-    pub fn create_quest_item(game_resources: *const GameResources<'a>, parent_widget: &mut WidgetDefault<'a>, content: GatherItemData) -> QuestItem<'a> {
+    pub fn create_quest_item(game_scene_manager: *const GameSceneManager<'a>, game_resources: *const GameResources<'a>, parent_widget: &mut WidgetDefault<'a>, content: GatherItemData) -> QuestItem<'a> {
         let item = newRcRefCell(QuestItemGatherItem {
+            _game_scene_manager: game_scene_manager,
+            _game_resources: game_resources,
             _layout_widget: create_quest_item_layout(parent_widget),
             _is_complete_widget: UIManager::create_widget("is_complete_widget", UIWidgetTypes::Default),
             _icon_widget: UIManager::create_widget("icon_widget", UIWidgetTypes::Default),
             _text_widget: UIManager::create_widget("text_widget", UIWidgetTypes::Default),
             _item_data: content,
-            _item_count: 0
+            _item_count: 0,
+            _is_completed_quest: false,
         });
 
-        item.borrow_mut().initialize_quest_item(game_resources);
+        item.borrow_mut().initialize_quest_item();
         item.borrow_mut().update_ui_widgets();
         item
     }
@@ -54,8 +61,8 @@ impl<'a> QuestItemGatherItem<'a> {
 }
 
 impl<'a> QuestItemBase<'a> for QuestItemGatherItem<'a> {
-    fn initialize_quest_item(&mut self, game_resources: *const GameResources<'a>) {
-        let game_resources = ptr_as_ref(game_resources);
+    fn initialize_quest_item(&mut self) {
+        let game_resources = ptr_as_ref(self._game_resources);
         let engine_resources = game_resources.get_engine_resources();
         let item_material_instance = engine_resources.get_material_instance_data(
             ItemDataType::get_item_material_instance_name(self._item_data._item_data_type)
@@ -106,15 +113,23 @@ impl<'a> QuestItemBase<'a> for QuestItemGatherItem<'a> {
     }
 
     fn set_completed_quest(&mut self) {
-        self._item_count = self._item_data._gather_item_count;
+        if self._is_completed_quest == false {
+            self._item_count = self._item_data._gather_item_count;
+            ptr_as_ref(self._game_scene_manager).get_scene_manager().play_audio_bank(AUDIO_QUEST_COMPLETE);
+            self._is_completed_quest = true;
+        }
     }
 
-    fn update_quest_item(&mut self, _game_scene_manager: &GameSceneManager, game_controller: &GameController, _delta_time: f32) {
+    fn update_quest_item(&mut self, game_controller: &GameController, _delta_time: f32) {
         let item_bar_widget = game_controller.get_game_ui_manager().get_item_bar_widget();
         let item_count = item_bar_widget.get_item_count(&self._item_data._item_data_type);
         if self._item_count != item_count {
             self._item_count = self._item_data._gather_item_count.min(item_count);
             self.update_ui_widgets();
+
+            if self._is_completed_quest == false && self.is_completed_quest() {
+                self.set_completed_quest();
+            }
         }
     }
 }

@@ -19,7 +19,7 @@ use crate::game_module::widgets::quest_widgets::quest_title::QuestTitle;
 use crate::game_module::widgets::quest_widgets::quest_widget::QuestCreateInfo;
 use crate::game_module::widgets::text_box_widget::TextBoxContent;
 
-const SKIP_SCENARIO: bool = false;
+const SKIP_SCENARIO: bool = true;
 const USE_STORY_BOARDS: bool = false;
 const INTRO_FADE_TIME: f32 = 2.0;
 const PHASE_TIME_SLEEP: f32 = 5.0;
@@ -356,12 +356,14 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                 }
 
                 let mut completed_quest_return_home = false;
-                let direction = math::get_norm_xz(&(self._prop_bed.as_ref().unwrap().borrow().get_position() - self._actor_aru.as_ref().unwrap().borrow().get_position()));
-                if direction < 1.0 {
-                    game_scene_manager.get_game_ui_manager_mut().remove_text_box_item(self._prop_bed.as_ref().unwrap().as_ptr() as *const c_void);
-                    self._quest_return_home.as_ref().unwrap().borrow_mut().set_completed_quest();
-                    completed_quest_return_home = true;
-                };
+                if completed_quest_gather_food {
+                    let direction = math::get_norm_xz(&(self._prop_bed.as_ref().unwrap().borrow().get_position() - self._actor_aru.as_ref().unwrap().borrow().get_position()));
+                    if direction < 1.0 {
+                        game_scene_manager.get_game_ui_manager_mut().remove_text_box_item(self._prop_bed.as_ref().unwrap().as_ptr() as *const c_void);
+                        self._quest_return_home.as_ref().unwrap().borrow_mut().set_completed_quest();
+                        completed_quest_return_home = true;
+                    };
+                }
 
                 if completed_quest_gather_food && completed_quest_return_home {
                     self.set_scenario_phase(ScenarioIntroPhase::End.to_string().as_str(), None);

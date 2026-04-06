@@ -98,6 +98,7 @@ pub const AUDIO_ITEM_INVENTORY: &str = "item_inventory";
 pub const AUDIO_ROOSTER: &str = "rooster";
 pub const AUDIO_SNORING: &str = "snoring";
 pub const AUDIO_STOMACH_GROWLING: &str = "stomach_growling";
+pub const AUDIO_QUEST_COMPLETE: &str = "quest_complete";
 
 // music
 pub const AMBIENT_SOUND: &str = "ambient_sound";

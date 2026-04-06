@@ -24,26 +24,27 @@ pub enum QuestCreateInfo {
 }
 
 pub trait QuestItemBase<'a> {
-    fn initialize_quest_item(&mut self, game_resources: *const GameResources<'a>);
+    fn initialize_quest_item(&mut self);
     fn destroy(&mut self);
     fn is_completed_quest(&self) -> bool;
     fn set_completed_quest(&mut self);
-    fn update_quest_item(&mut self, game_scene_manager: &GameSceneManager, game_controller: &GameController, delta_time: f32);
+    fn update_quest_item(&mut self, game_controller: &GameController, delta_time: f32);
 }
 
 pub struct QuestWidget<'a> {
+    pub _game_scene_manager: *const GameSceneManager<'a>,
     pub _game_resources: *const GameResources<'a>,
     pub _root_widget: Rc<WidgetDefault<'a>>,
     pub _quests: Vec<RcRefCell<QuestTitle<'a>>>
 }
 
-pub fn create_quest_item<'a>(game_resources: *const GameResources<'a>, parent_widget: &mut WidgetDefault<'a>, quest_type: QuestCreateInfo) -> QuestItem<'a> {
+pub fn create_quest_item<'a>(game_scene_manager: *const GameSceneManager<'a>, game_resources: *const GameResources<'a>, parent_widget: &mut WidgetDefault<'a>, quest_type: QuestCreateInfo) -> QuestItem<'a> {
     match quest_type {
         QuestCreateInfo::DefaultQuest(default_quest_data) => {
-            QuestItemDefault::create_quest_item(game_resources, parent_widget, default_quest_data)
+            QuestItemDefault::create_quest_item(game_scene_manager, game_resources, parent_widget, default_quest_data)
         }
         QuestCreateInfo::GatherItem(gather_item_data) => {
-            QuestItemGatherItem::create_quest_item(game_resources, parent_widget, gather_item_data)
+            QuestItemGatherItem::create_quest_item(game_scene_manager, game_resources, parent_widget, gather_item_data)
         }
     }
 }
@@ -61,7 +62,7 @@ pub fn create_quest_item_layout<'a>(parent_widget: &mut WidgetDefault<'a>) -> Rc
 }
 
 impl<'a> QuestWidget<'a> {
-    pub fn create_quest_widget(game_resources: *const GameResources<'a>, root_widget: &mut WidgetDefault<'a>) -> QuestWidget<'a> {
+    pub fn create_quest_widget(game_scene_manager: *const GameSceneManager<'a>, game_resources: *const GameResources<'a>, root_widget: &mut WidgetDefault<'a>) -> QuestWidget<'a> {
         let layout_widget = UIManager::create_widget("layout_widget", UIWidgetTypes::Default);
         let ui_component = ptr_as_mut(layout_widget.as_ref()).get_ui_component_mut();
         ui_component.set_layout_type(UILayoutType::BoxLayout);
@@ -82,6 +83,7 @@ impl<'a> QuestWidget<'a> {
         root_widget.add_widget(&layout_widget);
 
         QuestWidget {
+            _game_scene_manager: game_scene_manager,
             _game_resources: game_resources,
             _root_widget: layout_widget,
             _quests: Vec::new(),
@@ -93,19 +95,19 @@ impl<'a> QuestWidget<'a> {
 
     pub fn add_quest(&mut self, title: Option<String>) -> RcRefCell<QuestTitle<'a>> {
         ptr_as_mut(self._root_widget.as_ref()).get_ui_component_mut().set_visible(true);
-        let quest = QuestTitle::create_quest_title(self._game_resources, ptr_as_mut(self._root_widget.as_ref()), title);
+        let quest = QuestTitle::create_quest_title(self._game_scene_manager, self._game_resources, ptr_as_mut(self._root_widget.as_ref()), title);
         self._quests.push(quest.clone());
         quest.clone()
     }
 
-    pub fn update_quest_widget(&mut self, game_scene_manager: &GameSceneManager, game_controller: &GameController, delta_time: f32) {
+    pub fn update_quest_widget(&mut self, game_controller: &GameController, delta_time: f32) {
         let item_count = self._quests.len();
         let mut index = 0;
         for _ in 0..item_count {
             let mut remove = false;
             begin_block!("Update Quest Item"); {
                 let mut quest_item = self._quests[index].borrow_mut();
-                quest_item.update_quest_item(game_scene_manager, game_controller, delta_time);
+                quest_item.update_quest_item(game_controller, delta_time);
                 if quest_item.is_completed_quest() {
                     quest_item.destroy();
                     remove = true;

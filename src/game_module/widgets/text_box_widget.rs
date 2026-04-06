@@ -64,7 +64,9 @@ impl<'a> TextBoxItem<'a> {
         ui_component.set_halign(HorizontalAlign::CENTER);
         ui_component.set_valign(VerticalAlign::CENTER);
         ui_component.set_color(get_color32(255, 255, 255, 128));
-        ui_component.set_round(30.0);
+        ui_component.set_round(20.0);
+        ui_component.set_border(2.0);
+        ui_component.set_border_color(get_color32(0, 0, 0, 128));
         ui_component.set_padding(ITEM_PADDING);
         ui_component.set_expandable_x(true);
         ui_component.set_opacity(0.0);
@@ -207,19 +209,24 @@ impl<'a> TextBoxWidget<'a> {
 
             if is_enable_text_box {
                 let main_camera = game_scene_manager.get_scene_manager().get_main_camera();
-                let screen_position = main_camera.convert_world_to_screen(&position, false);
                 let ui_size = ptr_as_ref(text_box_item._layout_widget).get_ui_component().get_ui_size();
-                ptr_as_mut(text_box_item._layout_widget)._ui_component.set_center_x(screen_position.x);
-                ptr_as_mut(text_box_item._layout_widget)._ui_component.set_pos_y(screen_position.y - ui_size.y);
+                let mut screen_position = main_camera.convert_world_to_screen(&position, false);
+                screen_position.x -= ui_size.x * 0.5;
+                screen_position.y -= ui_size.y * 0.5;
+                screen_position.x = 0f32.max((main_camera._window_size.x as f32 - ui_size.x).min(screen_position.x));
+                screen_position.y = 0f32.max((main_camera._window_size.y as f32 - ui_size.y).min(screen_position.y));
+
+                let ui_component = &mut ptr_as_mut(text_box_item._layout_widget)._ui_component;
+                ui_component.set_pos(screen_position.x, screen_position.y);
 
                 match text_box_item._animation_state {
                     TextBoxAnimationState::None => {
-                        ptr_as_mut(text_box_item._layout_widget)._ui_component.set_opacity(0.0);
+                        ui_component.set_opacity(0.0);
                         text_box_item.set_animation_state(TextBoxAnimationState::Growing);
                     }
                     TextBoxAnimationState::Growing => {
                         let opacity = (text_box_item._animation_timer / TEXT_BOX_ANIMATION_DURATION).min(1.0);
-                        ptr_as_mut(text_box_item._layout_widget)._ui_component.set_opacity(opacity);
+                        ui_component.set_opacity(opacity);
                         if 1.0 <= opacity {
                             text_box_item.set_animation_state(TextBoxAnimationState::Idle);
                         }
@@ -236,7 +243,7 @@ impl<'a> TextBoxWidget<'a> {
                     }
                     TextBoxAnimationState::Shrinking => {
                         let opacity = 1.0 - (text_box_item._animation_timer / TEXT_BOX_ANIMATION_DURATION).min(1.0);
-                        ptr_as_mut(text_box_item._layout_widget)._ui_component.set_opacity(opacity);
+                        ui_component.set_opacity(opacity);
                         if opacity <= 0.0 {
                             is_enable_text_box = false;
                         }
