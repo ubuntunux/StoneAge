@@ -519,9 +519,9 @@ impl<'a> PropManager<'a> {
                         }
                         PropDataType::Table => {
                             let is_in_player_range = if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
-                                player.check_in_range_xy(prop.get_collision(), prop.get_collision()._bounding_box.get_mag_xz() + CHARACTER_INTERACTION_DISTANCE, check_direction)
+                                player.check_in_range_xy(prop.get_collision(), prop.get_collision()._bounding_box.get_mag_xz(), check_direction)
                             } else {
-                                player.check_in_range(prop.get_collision(), prop.get_collision()._bounding_box.get_mag_xz() + CHARACTER_INTERACTION_DISTANCE, check_direction)
+                                player.check_in_range(prop.get_collision(), prop.get_collision()._bounding_box.get_mag_xz(), check_direction)
                             };
 
                             if is_in_player_range {

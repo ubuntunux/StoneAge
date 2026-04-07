@@ -1,10 +1,11 @@
 use ash::vk;
 use crate::game_module::game_scene_manager::GameSceneManager;
 use nalgebra::Vector2;
-use rust_engine_3d::scene::material_instance::MaterialInstanceData;
 use rust_engine_3d::scene::ui::{HorizontalAlign, Orientation, PosHintX, PosHintY, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault};
-use rust_engine_3d::utilities::system::{ptr_as_mut, RcRefCell};
+use rust_engine_3d::utilities::system::{ptr_as_mut};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
+use crate::game_module::game_constants::MATERIAL_TIME_OF_DAY;
+use crate::game_module::game_resource::GameResources;
 
 pub struct TimeOfDayWidget<'a> {
     pub _time_of_day_widget: *const WidgetDefault<'a>,
@@ -17,7 +18,7 @@ pub struct TimeOfDayWidget<'a> {
 impl<'a> TimeOfDayWidget<'a> {
     pub fn create_time_of_day_widget(
         root_widget: &mut WidgetDefault<'a>,
-        tod_material_instance: &RcRefCell<MaterialInstanceData<'a>>
+        game_resources: &GameResources<'a>,
     ) -> TimeOfDayWidget<'a> {
         let parent_layer = UIManager::create_widget("time_of_day_widget", UIWidgetTypes::Default);
         let parent_layer_ptr = ptr_as_mut(parent_layer.as_ref());
@@ -48,6 +49,7 @@ impl<'a> TimeOfDayWidget<'a> {
         ui_component.set_color(get_color32(255, 255, 255, 0));
         parent_layer_ptr.add_widget(&top_widget);
 
+        let tod_material_instance = game_resources.get_engine_resources().get_material_instance_data(MATERIAL_TIME_OF_DAY);
         let time_of_day_widget = UIManager::create_widget("tod_widget", UIWidgetTypes::Default);
         let time_of_day_widget_ptr = ptr_as_mut(time_of_day_widget.as_ref());
         let ui_component = time_of_day_widget_ptr.get_ui_component_mut();

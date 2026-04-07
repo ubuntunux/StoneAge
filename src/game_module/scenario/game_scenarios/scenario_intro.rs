@@ -19,7 +19,7 @@ use crate::game_module::widgets::quest_widgets::quest_title::QuestTitle;
 use crate::game_module::widgets::quest_widgets::quest_widget::QuestCreateInfo;
 use crate::game_module::widgets::text_box_widget::TextBoxContent;
 
-const SKIP_SCENARIO: bool = true;
+const SKIP_SCENARIO: bool = false;
 const USE_STORY_BOARDS: bool = false;
 const INTRO_FADE_TIME: f32 = 2.0;
 const PHASE_TIME_SLEEP: f32 = 5.0;
