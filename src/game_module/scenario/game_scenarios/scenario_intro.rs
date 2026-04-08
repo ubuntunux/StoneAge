@@ -5,7 +5,7 @@ use strum_macros::{Display, EnumCount, EnumIter, EnumString};
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use rust_engine_3d::utilities::math;
 use crate::game_module::actors::character::{ActorWrapper, Character};
-use crate::game_module::game_constants::{AUDIO_ROOSTER, AUDIO_STOMACH_GROWLING, CAMERA_DISTANCE_MAX, CAMERA_DISTANCE_MIN, CAMERA_OFFSET_Y, CHARACTER_INTERACTION_TIME, HUNGER_WARNING_THRESHOLD, MATERIAL_ITEM_MEAT, STORY_BOARD_FADE_TIME, MATERIAL_UI_NONE, TIME_OF_MORNING};
+use crate::game_module::game_constants::{AUDIO_ROOSTER, AUDIO_STOMACH_GROWLING, CAMERA_DISTANCE_MAX, CAMERA_DISTANCE_MIN, CAMERA_OFFSET_Y, CHARACTER_INTERACTION_TIME, HUNGER_WARNING_THRESHOLD, STORY_BOARD_FADE_TIME, MATERIAL_UI_NONE, TIME_OF_MORNING, MATERIAL_ITEM_COCONUT, CHARACTER_INTERACTION_DISTANCE};
 use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::game_ui_manager::{GameUIManager, QuestItem};
 use crate::game_module::scenario::scenario::{ScenarioBase, ScenarioDataCreateInfo, ScenarioTrack};
@@ -19,7 +19,7 @@ use crate::game_module::widgets::quest_widgets::quest_title::QuestTitle;
 use crate::game_module::widgets::quest_widgets::quest_widget::QuestCreateInfo;
 use crate::game_module::widgets::text_box_widget::TextBoxContent;
 
-const SKIP_SCENARIO: bool = false;
+const SKIP_SCENARIO: bool = true;
 const USE_STORY_BOARDS: bool = false;
 const INTRO_FADE_TIME: f32 = 2.0;
 const PHASE_TIME_SLEEP: f32 = 5.0;
@@ -45,7 +45,6 @@ pub struct ScenarioIntro<'a> {
     pub _actor_aru: Option<RcRefCell<Character<'a>>>,
     pub _actor_ewa: Option<RcRefCell<Character<'a>>>,
     pub _actor_koa: Option<RcRefCell<Character<'a>>>,
-    pub _prop_bed: Option<RcRefCell<Prop<'a>>>,
     pub _prop_tree: Option<RcRefCell<Prop<'a>>>,
     pub _quest: Option<RcRefCell<QuestTitle<'a>>>,
     pub _quest_gather_food: Option<QuestItem<'a>>,
@@ -76,7 +75,6 @@ impl<'a> ScenarioIntro<'a> {
             _actor_aru: None,
             _actor_ewa: None,
             _actor_koa: None,
-            _prop_bed: None,
             _prop_tree: None,
             _quest: None,
             _quest_gather_food: None,
@@ -120,7 +118,7 @@ impl<'a> ScenarioIntro<'a> {
             false
         } else {
             let mut ewa = actor.borrow_mut();
-            let contents = vec![TextBoxContent::MaterialInstance(MATERIAL_ITEM_MEAT.to_string())];
+            let contents = vec![TextBoxContent::MaterialInstance(MATERIAL_ITEM_COCONUT.to_string())];
             game_ui_manager.add_text_box_item(
                 ActorWrapper::Character(actor.clone()),
                 &contents,
@@ -159,7 +157,6 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                 self._actor_aru = Some(game_scene_manager.get_actor("monkey_aru").unwrap().clone());
                 self._actor_ewa = Some(game_scene_manager.get_actor("monkey_ewa").unwrap().clone());
                 self._actor_koa = Some(game_scene_manager.get_actor("monkey_koa").unwrap().clone());
-                self._prop_bed = Some(game_scene_manager.get_prop_manager().get_prop_by_name("bed").unwrap().clone());
                 self._prop_tree = Some(game_scene_manager.get_prop_manager().get_prop_by_name("birch_tree_00.001").unwrap().clone());
                 self._actor_ewa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::None, None, true);
                 self._actor_koa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::None, None, true);
@@ -214,7 +211,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                 self._quest = Some(game_scene_manager.get_game_ui_manager_mut().add_quest(Some(String::from("Gather food for the hungry family."))));
                 self._quest_gather_food = Some(self._quest.as_ref().unwrap().borrow_mut().add_quest_item(QuestCreateInfo::GatherItem(GatherItemData {
                     _item_data_type: ItemDataType::Coconut,
-                    _gather_item_count: 1,
+                    _gather_item_count: 3,
                 })));
                 self._quest_return_home = Some(self._quest.as_ref().unwrap().borrow_mut().add_quest_item(QuestCreateInfo::DefaultQuest(DefaultQuestData {
                     _quest_icon_name: None,
@@ -348,7 +345,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
 
                     let contents = vec![TextBoxContent::Text(String::from("\"Return home.\""))];
                     game_scene_manager.get_game_ui_manager_mut().add_text_box_item(
-                        ActorWrapper::Prop(self._prop_bed.as_ref().unwrap().clone()),
+                        ActorWrapper::Character(self._actor_ewa.as_ref().unwrap().clone()),
                         &contents,
                         None
                     );
@@ -357,9 +354,9 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
 
                 let mut completed_quest_return_home = false;
                 if completed_quest_gather_food {
-                    let direction = math::get_norm_xz(&(self._prop_bed.as_ref().unwrap().borrow().get_position() - self._actor_aru.as_ref().unwrap().borrow().get_position()));
-                    if direction < 1.0 {
-                        game_scene_manager.get_game_ui_manager_mut().remove_text_box_item(self._prop_bed.as_ref().unwrap().as_ptr() as *const c_void);
+                    let to_ewa = math::get_norm_xz(&(self._actor_ewa.as_ref().unwrap().borrow().get_position() - self._actor_aru.as_ref().unwrap().borrow().get_position()));
+                    if to_ewa < (self._actor_ewa.as_ref().unwrap().borrow().get_collision()._bounding_box._mag_xz + CHARACTER_INTERACTION_DISTANCE) {
+                        game_scene_manager.get_game_ui_manager_mut().remove_text_box_item(self._actor_ewa.as_ref().unwrap().as_ptr() as *const c_void);
                         self._quest_return_home.as_ref().unwrap().borrow_mut().set_completed_quest();
                         completed_quest_return_home = true;
                     };

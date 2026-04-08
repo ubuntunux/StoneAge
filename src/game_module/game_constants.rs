@@ -109,6 +109,7 @@ pub const MATERIAL_CROSS_HAIR: &str = "ui/cross_hair_box";
 pub const MATERIAL_TIME_OF_DAY: &str = "ui/tod";
 pub const MATERIAL_INTRO_IMAGE: &str = "ui/intro_image";
 pub const MATERIAL_ITEM_MEAT: &str = "ui/items/item_meat";
+pub const MATERIAL_ITEM_COCONUT: &str = "ui/items/item_coconut";
 pub const MATERIAL_WORLDMAP: &str = "ui/worldmap";
 pub const MATERIAL_WORLDMAP_FADE_TIME: f32 = 0.5;
 pub const MATERIAL_UI_NONE: &str = "";
