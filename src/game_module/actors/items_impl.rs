@@ -40,6 +40,7 @@ impl Default for ItemCreateInfo {
             _rotation: Vector3::zeros(),
             _scale: Vector3::new(1.0, 1.0, 1.0),
             _velocity: Vector3::zeros(),
+            _pickup_delay: 0.0,
         }
     }
 }
@@ -64,6 +65,7 @@ impl<'a> Item<'a> {
         rotation: &Vector3<f32>,
         scale: &Vector3<f32>,
         velocity: &Vector3<f32>,
+        pickup_delay: f32,
     ) -> Item<'a> {
         let mut item = Item {
             _item_name: String::from(item_name),
@@ -76,6 +78,7 @@ impl<'a> Item<'a> {
                 _scale: scale.clone(),
                 _velocity: velocity.clone(),
                 _is_on_ground: false,
+                _pickup_delay: pickup_delay,
             }),
             _item_updater: create_item_updater(item_data.borrow()._item_type),
         };
@@ -193,6 +196,7 @@ impl<'a> ItemManager<'a> {
             &item_create_info._rotation,
             &item_create_info._scale,
             &item_create_info._velocity,
+            item_create_info._pickup_delay,
         ));
         self._items.insert(id, item.clone());
         item
@@ -238,6 +242,29 @@ impl<'a> ItemManager<'a> {
             player.get_stats_mut().add_hunger(-0.2);
             player.get_stats_mut().add_hp(10);
             player.get_stats_mut().add_stamina(10.0);
+        }
+        success
+    }
+
+    pub fn drop_inventory_item(&mut self, item_data_type: &ItemDataType, item_count: usize) -> bool {
+        let success = self.get_game_client().get_game_ui_manager_mut().remove_item(item_data_type, item_count);
+        if success {
+            self.get_audio_manager_mut().play_audio_bank(
+                AUDIO_ITEM_INVENTORY,
+                AudioLoop::ONCE,
+                None,
+            );
+
+            let player = ptr_as_ref(self.get_game_scene_manager_mut().get_character_manager_mut().get_player().as_ptr());
+            let item_create_info = ItemCreateInfo {
+                _item_data_name: String::from("items/coconut"),
+                _position: player.get_center().clone() + player.get_face_direction() * player.get_collision()._bounding_box._mag_xz,
+                _velocity: player.get_face_direction() * (3.0 + rand::random::<f32>()),
+                _pickup_delay: 1.0,
+                ..Default::default()
+            };
+
+            self.create_item(&item_create_info);
         }
         success
     }
@@ -298,7 +325,7 @@ impl<'a> ItemManager<'a> {
                 let check_height =
                     item_ref._render_object.borrow()._bounding_box._min.y <= player_bound_box._max.y &&
                     player_bound_box._min.y <= item_ref._render_object.borrow()._bounding_box._max.y;
-                if check_height && math::get_norm_xz(&diff) <= EAT_ITEM_DISTANCE {
+                if check_height && math::get_norm_xz(&diff) <= EAT_ITEM_DISTANCE && item_ref._item_properties._pickup_delay <= 0.0{
                     // pick item
                     let item_count = 1;
                     let success = self.pick_item(&item_ref._item_data.borrow()._item_type, item_count);

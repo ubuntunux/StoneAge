@@ -36,6 +36,7 @@ pub struct ItemCreateInfo {
     pub _rotation: Vector3<f32>,
     pub _scale: Vector3<f32>,
     pub _velocity: Vector3<f32>,
+    pub _pickup_delay: f32,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
@@ -52,6 +53,7 @@ pub struct ItemProperties {
     pub _scale: Vector3<f32>,
     pub _velocity: Vector3<f32>,
     pub _is_on_ground: bool,
+    pub _pickup_delay: f32,
 }
 
 pub struct Item<'a> {

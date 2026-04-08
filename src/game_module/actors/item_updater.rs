@@ -49,6 +49,10 @@ impl ItemUpdaterBase for ItemDefaultUpdater {
         delta_time: f64,
     ) {
         self.update_item_transform(owner, height_map_data, delta_time);
+
+        if 0.0 < owner._item_properties._pickup_delay {
+            owner._item_properties._pickup_delay -= delta_time as f32;
+        }
     }
 }
 
@@ -66,6 +70,10 @@ impl ItemUpdaterBase for ItemSpiritBallUpdater {
         height_map_data: &HeightMapData,
         delta_time: f64,
     ) {
+        if 0.0 < owner._item_properties._pickup_delay {
+            owner._item_properties._pickup_delay -= delta_time as f32;
+        }
+
         if self._floating {
             let floating_speed = self._floating_timer * 0.5;
             let floating_radius = 0.5;

@@ -408,7 +408,7 @@ impl<'a> GameController<'a> {
             || joystick_input_data._btn_left_shoulder == ButtonState::Pressed;
         let is_roll = keyboard_input_data.get_key_pressed(KeyCode::AltLeft)
             || joystick_input_data._btn_b == ButtonState::Pressed;
-        let is_interaction = keyboard_input_data.get_key_pressed(KeyCode::KeyF)
+        let is_interaction_or_drop_item = keyboard_input_data.get_key_pressed(KeyCode::KeyF)
             || joystick_input_data._btn_x == ButtonState::Pressed;
         let is_zoom_in = keyboard_input_data.get_key_hold(KeyCode::ArrowUp)
             || 0 < mouse_move_data._scroll_delta.y
@@ -457,7 +457,7 @@ impl<'a> GameController<'a> {
         }
 
         // item control
-        let item_manager = self.get_game_client().get_game_scene_manager().get_item_manager();
+        let item_manager = self.get_game_client().get_game_scene_manager().get_item_manager_mut();
         if is_previous_item {
             item_manager.select_previous_item();
         } else if is_next_item {
@@ -594,8 +594,13 @@ impl<'a> GameController<'a> {
             player_mut.set_action_attack();
         }
 
-        if is_interaction && player_mut.is_in_interaction_range() {
-            player_mut.set_action_interaction();
+        if is_interaction_or_drop_item {
+            if player_mut.is_in_interaction_range() {
+                player_mut.set_action_interaction();
+            } else {
+                let item_data_type = item_manager.get_selected_inventory_item_data_type();
+                item_manager.drop_inventory_item(&item_data_type, 1);
+            }
         }
 
         if is_power_attack {
