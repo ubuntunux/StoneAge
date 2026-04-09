@@ -305,7 +305,7 @@ impl<'a> CharacterManager<'a> {
             } else {
                 math::make_normalize_with_norm(&to_player)
             };
-            to_player_distance = 0f32.max(to_player_distance - (player.get_bounding_box()._radius + character_mut.get_bounding_box()._radius));
+            to_player_distance = 0f32.max(to_player_distance - (player.get_collision()._bounding_box._mag_xz + character_mut.get_collision()._bounding_box._mag_xz) * 0.5);
 
             // update interaction ui
             if character_mut.is_player() == false {
