@@ -66,11 +66,6 @@ impl<'a> Weapon<'a> {
         weapon_data: &RcRefCell<WeaponData<'a>>,
         render_object: &RcRefCell<RenderObjectData<'a>>,
     ) -> Weapon<'a> {
-        log::info!(
-            "create_weapon: {:?}, socket: {:?}",
-            weapon_data.borrow()._model_data.borrow()._model_data_name,
-            weapon_socket.borrow()._socket_data.borrow()._socket_name
-        );
         Weapon {
             _weapon_socket: weapon_socket.clone(),
             _weapon_data: weapon_data.clone(),

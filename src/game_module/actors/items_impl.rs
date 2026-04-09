@@ -256,10 +256,13 @@ impl<'a> ItemManager<'a> {
             );
 
             let player = ptr_as_ref(self.get_game_scene_manager_mut().get_character_manager_mut().get_player().as_ptr());
+            let yaw = player.get_rotation().y + (rand::random::<f32>() - 0.5) * std::f32::consts::PI * 0.5;
+            let velocity = Vector3::new(-yaw.sin(), 1.0, -yaw.cos()) * (2.0 + rand::random::<f32>() * 2.0);
             let item_create_info = ItemCreateInfo {
+                // TODO: ItemData
                 _item_data_name: String::from("items/coconut"),
                 _position: player.get_center().clone() + player.get_face_direction() * player.get_collision()._bounding_box._mag_xz,
-                _velocity: player.get_face_direction() * (3.0 + rand::random::<f32>()),
+                _velocity: velocity,
                 _pickup_delay: 1.0,
                 ..Default::default()
             };

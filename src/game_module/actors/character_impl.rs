@@ -514,6 +514,9 @@ impl<'a> Character<'a> {
         distance <= (r0 + check_range + r1) && (check_direction == false || self.get_transform().get_front().dot(&to_target_dir) < 0.0)
     }
 
+    pub fn get_rotation(&self) -> &Vector3<f32> {
+        &self._controller.get_rotation()
+    }
     pub fn get_face_direction(&self) -> &Vector3<f32> {
         &self._controller.get_face_direction()
     }

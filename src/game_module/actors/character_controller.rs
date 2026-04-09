@@ -185,6 +185,9 @@ impl<'a> CharacterController<'a> {
     pub fn set_move_speed(&mut self, move_speed: f32) {
         self._move_speed = move_speed;
     }
+    pub fn get_rotation(&self) -> &Vector3<f32> {
+        &self._rotation
+    }
     pub fn set_direction(&mut self, direction: &Vector3<f32>) {
         self._rotation.y = direction.z.atan2(-direction.x) + HALF_PI;
     }
