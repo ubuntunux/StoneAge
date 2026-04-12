@@ -5,7 +5,7 @@ use strum_macros::{Display, EnumCount, EnumIter, EnumString};
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use rust_engine_3d::utilities::math;
 use crate::game_module::actors::character::{ActorWrapper, Character};
-use crate::game_module::game_constants::{AUDIO_ROOSTER, AUDIO_STOMACH_GROWLING, CAMERA_DISTANCE_MAX, CAMERA_DISTANCE_MIN, CAMERA_OFFSET_Y, CHARACTER_INTERACTION_TIME, HUNGER_WARNING_THRESHOLD, STORY_BOARD_FADE_TIME, MATERIAL_UI_NONE, TIME_OF_MORNING, MATERIAL_ITEM_COCONUT, CHARACTER_INTERACTION_DISTANCE};
+use crate::game_module::game_constants::{AUDIO_ROOSTER, AUDIO_STOMACH_GROWLING, CAMERA_DISTANCE_MAX, CAMERA_DISTANCE_MIN, CAMERA_OFFSET_Y, CHARACTER_INTERACTION_TIME, HUNGER_WARNING_THRESHOLD, STORY_BOARD_FADE_TIME, MATERIAL_UI_NONE, TIME_OF_MORNING, CHARACTER_INTERACTION_DISTANCE};
 use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::game_ui_manager::{GameUIManager, QuestItem};
 use crate::game_module::scenario::scenario::{ScenarioBase, ScenarioDataCreateInfo, ScenarioTrack};
@@ -118,7 +118,7 @@ impl<'a> ScenarioIntro<'a> {
             false
         } else {
             let mut ewa = actor.borrow_mut();
-            let contents = vec![TextBoxContent::MaterialInstance(MATERIAL_ITEM_COCONUT.to_string())];
+            let contents = vec![TextBoxContent::MaterialInstance(String::from(ItemDataType::get_item_material_instance_name(ItemDataType::Coconut)))];
             game_ui_manager.add_text_box_item(
                 ActorWrapper::Character(actor.clone()),
                 &contents,

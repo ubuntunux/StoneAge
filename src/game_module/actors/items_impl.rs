@@ -19,15 +19,27 @@ use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, Rc
 use std::collections::HashMap;
 
 impl ItemDataType {
+    pub fn get_item_data_name(item_data_type: ItemDataType) -> &'static str {
+        match item_data_type {
+            ItemDataType::None => "",
+            ItemDataType::Coconut => "items/coconut",
+            ItemDataType::EnergyBall => "items/energy_ball",
+            ItemDataType::Meat => "items/meat",
+            ItemDataType::Rock => "items/rock",
+            ItemDataType::SpiritBall => "items/spirit_ball",
+            ItemDataType::Wood => "items/wood",
+        }
+    }
+
     pub fn get_item_material_instance_name(item_data_type: ItemDataType) -> &'static str {
         match item_data_type {
             ItemDataType::None => "ui/items/item_none",
             ItemDataType::Coconut => "ui/items/item_coconut",
+            ItemDataType::EnergyBall => "ui/items/item_energy_ball",
             ItemDataType::Meat => "ui/items/item_meat",
             ItemDataType::Rock => "ui/items/item_rock",
-            ItemDataType::Wood => "ui/items/item_wood",
             ItemDataType::SpiritBall => "ui/items/item_spirit_ball",
-            ItemDataType::EnergyBall => "ui/items/item_energy_ball",
+            ItemDataType::Wood => "ui/items/item_wood",
         }
     }
 }
@@ -259,8 +271,7 @@ impl<'a> ItemManager<'a> {
             let yaw = player.get_rotation().y + (rand::random::<f32>() - 0.5) * std::f32::consts::PI * 0.5;
             let velocity = Vector3::new(-yaw.sin(), 1.0, -yaw.cos()) * (2.0 + rand::random::<f32>() * 2.0);
             let item_create_info = ItemCreateInfo {
-                // TODO: ItemData
-                _item_data_name: String::from("items/coconut"),
+                _item_data_name: String::from(ItemDataType::get_item_data_name(*item_data_type)),
                 _position: player.get_center().clone() + player.get_face_direction() * player.get_collision()._bounding_box._mag_xz,
                 _velocity: velocity,
                 _pickup_delay: 1.0,
@@ -280,27 +291,19 @@ impl<'a> ItemManager<'a> {
     }
 
     pub fn get_selected_inventory_item_data_type(&self) -> ItemDataType {
-        self.get_game_client()
-            .get_game_ui_manager()
-            .get_selected_inventory_item_data_type()
+        self.get_game_client().get_game_ui_manager().get_selected_inventory_item_data_type()
     }
 
     pub fn select_next_item(&self) {
-        self.get_game_client()
-            .get_game_ui_manager_mut()
-            .select_next_item()
+        self.get_game_client().get_game_ui_manager_mut().select_next_item()
     }
 
     pub fn select_previous_item(&self) {
-        self.get_game_client()
-            .get_game_ui_manager_mut()
-            .select_previous_item()
+        self.get_game_client().get_game_ui_manager_mut().select_previous_item()
     }
 
     pub fn select_item_by_index(&self, item_index: usize) {
-        self.get_game_client()
-            .get_game_ui_manager_mut()
-            .select_item_by_index(item_index)
+        self.get_game_client().get_game_ui_manager_mut().select_item_by_index(item_index)
     }
 
     pub fn update_item_manager(&mut self, delta_time: f64) {

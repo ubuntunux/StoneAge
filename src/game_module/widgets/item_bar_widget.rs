@@ -206,7 +206,7 @@ impl<'a> ItemBarWidget<'a> {
     }
 
     pub fn add_item(&mut self, item_data_type: &ItemDataType, item_count: usize) -> bool {
-        let is_first_item = self._item_type_count == 0;
+        let _is_first_item = self._item_type_count == 0;
         if *item_data_type != ItemDataType::None && self._item_type_count < self._max_item_type_count {
             if let Some(item_widget) = self.find_item_widget_mut(item_data_type) {
                 item_widget.add_item_count(item_count);
@@ -225,9 +225,10 @@ impl<'a> ItemBarWidget<'a> {
                 }
             }
 
-            if is_first_item {
-                self.select_previous_item();
-            }
+            // if is_first_item {
+            //     self.select_previous_item();
+            // }
+
             self.update_item_bar_widget();
             return true;
         }
@@ -248,7 +249,7 @@ impl<'a> ItemBarWidget<'a> {
                 if item_count == 0 {
                     item_widget.set_item_data(&ItemDataType::None, None, 0);
                     self._item_type_count -= 1;
-                    self.select_previous_item();
+                    //self.select_previous_item();
                 }
                 return true;
             }

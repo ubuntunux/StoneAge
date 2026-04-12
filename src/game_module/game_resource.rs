@@ -245,8 +245,7 @@ impl<'a> GameResources<'a> {
         let weapon_data_directory = PathBuf::from(WEAPON_DATA_FILE_PATH);
 
         // load_weapon_data
-        let game_data_files: Vec<PathBuf> =
-            self.collect_resources(&weapon_data_directory, &[EXT_GAME_DATA]);
+        let game_data_files: Vec<PathBuf> = self.collect_resources(&weapon_data_directory, &[EXT_GAME_DATA]);
         for game_data_file in game_data_files {
             let weapon_data_name = get_unique_resource_name(
                 &self._weapon_data_map,
@@ -254,15 +253,10 @@ impl<'a> GameResources<'a> {
                 &game_data_file,
             );
             let loaded_contents = system::load(&game_data_file);
-            let weapon_data_create_info: WeaponDataCreateInfo =
-                serde_json::from_reader(loaded_contents).expect("Failed to deserialize.");
-            let weapon_model_data = self
-                .get_engine_resources()
-                .get_model_data(&weapon_data_create_info._model_data_name);
-            let weapon_data =
-                WeaponData::create_weapon_data(&weapon_data_create_info, weapon_model_data);
-            self._weapon_data_map
-                .insert(weapon_data_name.clone(), newRcRefCell(weapon_data));
+            let weapon_data_create_info: WeaponDataCreateInfo = serde_json::from_reader(loaded_contents).expect("Failed to deserialize.");
+            let weapon_model_data = self.get_engine_resources().get_model_data(&weapon_data_create_info._model_data_name);
+            let weapon_data = WeaponData::create_weapon_data(&weapon_data_create_info, weapon_model_data);
+            self._weapon_data_map.insert(weapon_data_name.clone(), newRcRefCell(weapon_data));
         }
     }
 
