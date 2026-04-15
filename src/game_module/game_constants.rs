@@ -58,6 +58,7 @@ pub const KICK_DELAY: f32 = 0.2;
 pub const ROLL_DELAY: f32 = 0.2;
 pub const PICKUP_EVENT_TIME: f32 = 0.1;
 pub const CHARACTER_INTERACTION_DISTANCE: f32 = 1.0;
+pub const WEAPON_SOCKET_NAME: &str = "SOCKET_WEAPON";
 
 // stats
 pub const MAX_HUNGER: f32 = 1.0;

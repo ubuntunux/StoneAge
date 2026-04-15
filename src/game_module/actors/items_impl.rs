@@ -7,7 +7,7 @@ use crate::game_module::game_client::GameClient;
 use crate::game_module::game_constants::{AUDIO_ITEM_INVENTORY, AUDIO_PICKUP_ITEM, EAT_ITEM_DISTANCE};
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
-use nalgebra::Vector3;
+use nalgebra::{Vector3};
 use rust_engine_3d::audio::audio_manager::{AudioLoop, AudioManager};
 use rust_engine_3d::core::engine_core::EngineCore;
 use rust_engine_3d::scene::collision::CollisionType;
@@ -17,6 +17,7 @@ use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
 use std::collections::HashMap;
+use rust_engine_3d::scene::socket::Socket;
 
 impl Default for ItemCreateInfo {
     fn default() -> Self {
@@ -38,6 +39,8 @@ impl Default for ItemData {
             _model_data_name: String::new(),
             _name: String::new(),
             _ui_material_instance: String::new(),
+            _weapon_damage: 10.0,
+            _weapon_range: 0.0,
         }
     }
 }
@@ -48,6 +51,7 @@ impl<'a> Item<'a> {
         item_data_name: &str,
         item_data: &RcRefCell<ItemData>,
         render_object: &RcRefCell<RenderObjectData<'a>>,
+        attach_socket: Option<RcRefCell<Socket>>,
         position: &Vector3<f32>,
         rotation: &Vector3<f32>,
         scale: &Vector3<f32>,
@@ -59,6 +63,7 @@ impl<'a> Item<'a> {
             _item_id: item_id,
             _item_data: item_data.clone(),
             _render_object: render_object.clone(),
+            _attach_socket: attach_socket,
             _item_properties: Box::new(ItemProperties {
                 _position: position.clone(),
                 _rotation: rotation.clone(),
@@ -75,7 +80,11 @@ impl<'a> Item<'a> {
     }
 
     pub fn initialize_item(&mut self) {
-        self.update_transform();
+        if self.is_attachment() {
+            self.update_item_attach_transform();
+        } else {
+            self.update_item_transform();
+        }
     }
 
     pub fn get_item_id(&self) -> ItemID {
@@ -86,15 +95,27 @@ impl<'a> Item<'a> {
         self._render_object.borrow()._collision.collide_point(pos)
     }
 
-    pub fn update_transform(&mut self) {
-        self._render_object
-            .borrow_mut()
-            ._transform_object
-            .set_position_rotation_scale(
-                &self._item_properties._position,
-                &self._item_properties._rotation,
-                &self._item_properties._scale,
-            );
+    pub fn is_attachment(&self) -> bool {
+        self._attach_socket.is_some()
+    }
+
+    pub fn update_item_attach_transform(&mut self) {
+        let mut render_object_mut = self._render_object.borrow_mut();
+        if render_object_mut.has_animation() {
+            let skeleton_transform = render_object_mut._mesh_data.borrow()._skeleton_data_list[0]._transform.clone();
+            let final_transform = self._attach_socket.as_ref().unwrap().borrow()._transform * skeleton_transform;
+            render_object_mut._transform_object.set_transform(&final_transform);
+        } else {
+            render_object_mut._transform_object.set_transform(&self._attach_socket.as_ref().unwrap().borrow()._transform);
+        }
+    }
+
+    pub fn update_item_transform(&mut self) {
+        self._render_object.borrow_mut()._transform_object.set_position_rotation_scale(
+            &self._item_properties._position,
+            &self._item_properties._rotation,
+            &self._item_properties._scale,
+        );
     }
 
     pub fn update_item(&mut self, height_map_data: &HeightMapData, delta_time: f64) {
@@ -158,7 +179,7 @@ impl<'a> ItemManager<'a> {
     pub fn get_item(&self, item_id: ItemID) -> Option<&RcRefCell<Item<'a>>> {
         self._items.get(&item_id)
     }
-    pub fn create_item(&mut self, item_create_info: &ItemCreateInfo) -> RcRefCell<Item<'a>> {
+    pub fn create_item(&mut self, item_create_info: &ItemCreateInfo, attach_socket: Option<RcRefCell<Socket>>) -> RcRefCell<Item<'a>> {
         let game_resources = ptr_as_ref(self._game_resources);
         let mut spawn_point = item_create_info._position.clone();
         spawn_point.y = spawn_point.y.max(self.get_scene_manager().get_height_map_data().get_height_bilinear(&spawn_point, 0));
@@ -168,17 +189,20 @@ impl<'a> ItemManager<'a> {
             _model_data_name: item_data.borrow()._model_data_name.clone(),
             ..Default::default()
         };
+
         let render_object_data = self.get_scene_manager_mut().add_dynamic_render_object(
             item_create_info._item_data_name.as_str(),
             &render_object_create_info,
             Some(CollisionType::NONE),
         );
+
         let id = self.generate_id();
         let item = newRcRefCell(Item::create_item(
             id,
             item_create_info._item_data_name.as_str(),
             item_data,
             &render_object_data,
+            attach_socket,
             &spawn_point,
             &item_create_info._rotation,
             &item_create_info._scale,
@@ -251,7 +275,9 @@ impl<'a> ItemManager<'a> {
                 ..Default::default()
             };
 
-            self.create_item(&item_create_info);
+            // test
+            // let attach_socket = Some(player._render_object.borrow()._sockets.get(&String::from(WEAPON_SOCKET_NAME)).unwrap().clone());
+            self.create_item(&item_create_info, None);
         }
         success
     }

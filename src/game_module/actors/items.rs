@@ -4,13 +4,14 @@ use crate::game_module::actors::item_updater::ItemUpdaterBase;
 use crate::game_module::game_client::GameClient;
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
-use nalgebra::Vector3;
+use nalgebra::{Vector3};
 use rust_engine_3d::audio::audio_manager::AudioManager;
 use rust_engine_3d::scene::render_object::RenderObjectData;
 use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::system::RcRefCell;
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumIter};
+use rust_engine_3d::scene::socket::Socket;
 
 #[derive(Copy, Clone, Debug, Default, Hash, Eq, PartialEq)]
 pub struct ItemID(pub u64);
@@ -48,6 +49,8 @@ pub struct ItemData {
     pub _model_data_name: String,
     pub _name: String,
     pub _ui_material_instance: String,
+    pub _weapon_damage: f32,
+    pub _weapon_range: f32,
 }
 
 pub struct ItemProperties {
@@ -64,6 +67,7 @@ pub struct Item<'a> {
     pub _item_id: ItemID,
     pub _item_data: RcRefCell<ItemData>,
     pub _render_object: RcRefCell<RenderObjectData<'a>>,
+    pub _attach_socket: Option<RcRefCell<Socket>>,
     pub _item_properties: Box<ItemProperties>,
     pub _item_updater: Box<dyn ItemUpdaterBase>,
 }

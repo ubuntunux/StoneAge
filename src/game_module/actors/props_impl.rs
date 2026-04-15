@@ -410,7 +410,7 @@ impl<'a> PropManager<'a> {
                                 if false == prop.is_alive() {
                                     let drop_count = prop._prop_stats._item_count;
                                     for item_create_info in prop.drop_items(drop_count, player.get_position()).iter_mut() {
-                                        self.get_game_scene_manager().get_item_manager_mut().create_item(&item_create_info);
+                                        self.get_game_scene_manager().get_item_manager_mut().create_item(&item_create_info, None);
                                     }
                                     dead_props.push(prop_refcell.clone());
                                 }
@@ -434,7 +434,7 @@ impl<'a> PropManager<'a> {
                                 prop.set_hit_damage(0);
                                 let drop_count = 1;
                                 for item_create_info in prop.drop_items(drop_count, player.get_position()).iter_mut() {
-                                    self.get_game_scene_manager().get_item_manager_mut().create_item(&item_create_info);
+                                    self.get_game_scene_manager().get_item_manager_mut().create_item(&item_create_info, None);
                                 }
                             }
 

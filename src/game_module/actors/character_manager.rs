@@ -345,7 +345,7 @@ impl<'a> CharacterManager<'a> {
                                     _position: target_position.clone(),
                                     ..Default::default()
                                 };
-                                self.get_game_scene_manager().get_item_manager_mut().create_item(&item_create_info);
+                                self.get_game_scene_manager().get_item_manager_mut().create_item(&item_create_info, None);
                             }
                         }
                     }
