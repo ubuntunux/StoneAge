@@ -1,8 +1,8 @@
 use std::rc::Rc;
 use rust_engine_3d::scene::ui::{HorizontalAlign, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault};
-use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref};
+use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
-use crate::game_module::actors::items::ItemDataType;
+use crate::game_module::actors::items::{ItemData};
 use crate::game_module::game_constants::AUDIO_QUEST_COMPLETE;
 use crate::game_module::game_controller::GameController;
 use crate::game_module::game_resource::GameResources;
@@ -11,7 +11,8 @@ use crate::game_module::game_ui_manager::QuestItem;
 use crate::game_module::widgets::quest_widgets::quest_widget::{create_quest_item_layout, QuestItemBase, FONT_SIZE, ITEM_MARGIN, ITEM_SIZE, QUEST_COMPLETE_OPACITY};
 
 pub struct GatherItemData {
-    pub _item_data_type: ItemDataType,
+    pub _item_data_name: String,
+    pub _item_data: RcRefCell<ItemData>,
     pub _gather_item_count: usize,
 }
 
@@ -64,9 +65,7 @@ impl<'a> QuestItemBase<'a> for QuestItemGatherItem<'a> {
     fn initialize_quest_item(&mut self) {
         let game_resources = ptr_as_ref(self._game_resources);
         let engine_resources = game_resources.get_engine_resources();
-        let item_material_instance = engine_resources.get_material_instance_data(
-            ItemDataType::get_item_material_instance_name(self._item_data._item_data_type)
-        ).clone();
+        let item_material_instance = engine_resources.get_material_instance_data(self._item_data._item_data.borrow()._ui_material_instance.as_str()).clone();
 
         let ui_component = ptr_as_mut(self._layout_widget.as_ref()).get_ui_component_mut();
         ui_component.set_expandable_x(true);
@@ -122,7 +121,7 @@ impl<'a> QuestItemBase<'a> for QuestItemGatherItem<'a> {
 
     fn update_quest_item(&mut self, game_controller: &GameController, _delta_time: f32) {
         let item_bar_widget = game_controller.get_game_ui_manager().get_item_bar_widget();
-        let item_count = item_bar_widget.get_item_count(&self._item_data._item_data_type);
+        let item_count = item_bar_widget.get_item_count(&self._item_data._item_data_name.as_str());
         if self._item_count != item_count {
             self._item_count = self._item_data._gather_item_count.min(item_count);
             self.update_ui_widgets();

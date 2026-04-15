@@ -1,19 +1,20 @@
-use crate::game_module::actors::items::ItemDataType;
 use nalgebra::Vector2;
 use rust_engine_3d::resource::resource::EngineResources;
 use rust_engine_3d::scene::material_instance::MaterialInstanceData;
 use rust_engine_3d::scene::ui::{HorizontalAlign, Orientation, PosHintX, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault};
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
+use crate::game_module::game_constants::ITEM_NONE;
+use crate::game_module::game_resource::GameResources;
 
 const ITEM_BAR_WIDGET_POS_Y_FROM_BOTTOM: f32 = 50.0;
-const MAX_ITEM_TYPE_COUNT: usize = 10;
+const MAX_ITEM_COUNT: usize = 10;
 pub const ITEM_UI_SIZE: f32 = 64.0;
 const WIDGET_UI_MARGIN: f32 = 5.0;
 const INVALID_ITEM_INDEX: usize = usize::MAX;
 
 pub struct ItemWidget<'a> {
-    pub _item_type: ItemDataType,
+    pub _item_data_name: String,
     pub _item_index: usize,
     pub _item_count: usize,
     pub _widget: *const WidgetDefault<'a>,
@@ -25,12 +26,13 @@ pub struct ItemSelectionWidget<'a> {
 }
 
 pub struct ItemBarWidget<'a> {
+    pub _game_resources: *const GameResources<'a>,
     pub _engine_resources: *const EngineResources<'a>,
     pub _layer: *const WidgetDefault<'a>,
     pub _item_widgets: Vec<ItemWidget<'a>>,
     pub _selected_item_widget: ItemSelectionWidget<'a>,
-    pub _item_type_count: usize,
-    pub _max_item_type_count: usize,
+    pub _item_count: usize,
+    pub _max_item_count: usize,
 }
 
 impl<'a> ItemWidget<'a> {
@@ -52,7 +54,7 @@ impl<'a> ItemWidget<'a> {
         parent_widget.add_widget(&item_widget);
 
         ItemWidget {
-            _item_type: ItemDataType::None,
+            _item_data_name: "".to_string(),
             _item_index: item_index,
             _item_count: 0,
             _widget: item_widget.as_ref(),
@@ -61,13 +63,13 @@ impl<'a> ItemWidget<'a> {
 
     pub fn set_item_data(
         &mut self,
-        item_data_type: &ItemDataType,
+        item_data_name: &str,
         material_instance: Option<RcRefCell<MaterialInstanceData<'a>>>,
         item_count: usize,
     ) {
         let ui_component = ptr_as_mut(self._widget).get_ui_component_mut();
         ui_component.set_material_instance(material_instance);
-        self._item_type = *item_data_type;
+        self._item_data_name = String::from(item_data_name);
         self.set_item_count(item_count);
     }
 
@@ -82,7 +84,7 @@ impl<'a> ItemWidget<'a> {
         if 0 < self._item_count {
             ui_component.set_visible(true);
         } else {
-            self._item_type = ItemDataType::None;
+            self._item_data_name = String::from(ITEM_NONE);
             ui_component.set_visible(false);
         }
     }
@@ -121,6 +123,7 @@ impl<'a> ItemSelectionWidget<'a> {
 
 impl<'a> ItemBarWidget<'a> {
     pub fn create_item_bar_widget(
+        game_resources: &GameResources<'a>,
         engine_resources: &EngineResources<'a>,
         parent_widget: &mut WidgetDefault<'a>
     ) -> ItemBarWidget<'a> {
@@ -148,6 +151,7 @@ impl<'a> ItemBarWidget<'a> {
         parent_widget.add_widget(&selected_item_widget);
 
         let mut item_bar_widget = ItemBarWidget {
+            _game_resources: game_resources,
             _engine_resources: engine_resources,
             _layer: layer.as_ref(),
             _item_widgets: Vec::new(),
@@ -155,11 +159,11 @@ impl<'a> ItemBarWidget<'a> {
                 _item_index: INVALID_ITEM_INDEX,
                 _widget: selected_item_widget.as_ref(),
             },
-            _item_type_count: 0,
-            _max_item_type_count: MAX_ITEM_TYPE_COUNT,
+            _item_count: 0,
+            _max_item_count: MAX_ITEM_COUNT,
         };
 
-        for item_index in 0..MAX_ITEM_TYPE_COUNT {
+        for item_index in 0..MAX_ITEM_COUNT {
             let item_widget = ItemWidget::create_item_widget(ptr_as_mut(layer.as_ref()), item_index);
             item_bar_widget._item_widgets.push(item_widget);
         }
@@ -185,41 +189,40 @@ impl<'a> ItemBarWidget<'a> {
         &mut self._item_widgets[index]
     }
 
-    pub fn find_item_widget(&self, item_data_type: &ItemDataType) -> Option<&ItemWidget<'a>> {
-        self._item_widgets
-            .iter()
-            .find(|item_widget| item_widget._item_type == *item_data_type)
+    pub fn find_item_widget(&self, item_data_name: &str) -> Option<&ItemWidget<'a>> {
+        self._item_widgets.iter().find(|item_widget| item_widget._item_data_name == item_data_name)
     }
 
     pub fn find_item_widget_mut(
         &mut self,
-        item_data_type: &ItemDataType,
+        item_data_name: &str,
     ) -> Option<&mut ItemWidget<'a>> {
-        self._item_widgets.iter_mut().find(|item_widget| item_widget._item_type == *item_data_type)
+        self._item_widgets.iter_mut().find(|item_widget| item_widget._item_data_name.as_str() == item_data_name)
     }
 
-    pub fn get_item_count(&self, item_data_type: &ItemDataType) -> usize {
-        if let Some(item_widget) = self.find_item_widget(item_data_type) {
+    pub fn get_item_count(&self, item_data_name: &str) -> usize {
+        if let Some(item_widget) = self.find_item_widget(item_data_name) {
             return item_widget.get_item_count();
         }
         0
     }
 
-    pub fn add_item(&mut self, item_data_type: &ItemDataType, item_count: usize) -> bool {
-        let _is_first_item = self._item_type_count == 0;
-        if *item_data_type != ItemDataType::None && self._item_type_count < self._max_item_type_count {
-            if let Some(item_widget) = self.find_item_widget_mut(item_data_type) {
+    pub fn add_item(&mut self, item_data_name: &str, item_count: usize) -> bool {
+        let _is_first_item = self._item_count == 0;
+        if item_data_name != ITEM_NONE && self._item_count < self._max_item_count {
+            if let Some(item_widget) = self.find_item_widget_mut(item_data_name) {
                 item_widget.add_item_count(item_count);
             } else {
                 for item_widget in self._item_widgets.iter_mut() {
-                    if item_widget._item_type == ItemDataType::None {
-                        let material = ptr_as_ref(self._engine_resources).get_material_instance_data(ItemDataType::get_item_material_instance_name(*item_data_type));
+                    if item_widget._item_data_name == ITEM_NONE {
+                        let item_material_instance = ptr_as_ref(self._game_resources).get_item_data(item_data_name).borrow()._ui_material_instance.clone();
+                        let material = ptr_as_ref(self._engine_resources).get_material_instance_data(item_material_instance.as_str());
                         item_widget.set_item_data(
-                            item_data_type,
+                            item_data_name,
                             Some(material.clone()),
                             item_count,
                         );
-                        self._item_type_count += 1;
+                        self._item_count += 1;
                         break;
                     }
                 }
@@ -235,30 +238,32 @@ impl<'a> ItemBarWidget<'a> {
         false
     }
 
-    pub fn get_selected_item_type(&self) -> ItemDataType {
+    pub fn get_selected_item_data_name(&self) -> &str {
         if self._selected_item_widget._item_index != INVALID_ITEM_INDEX {
-            return self._item_widgets[self._selected_item_widget._item_index]._item_type;
+            return self._item_widgets[self._selected_item_widget._item_index]._item_data_name.as_str();
         }
-        ItemDataType::None
+        ITEM_NONE
     }
 
-    pub fn remove_item(&mut self, item_data_type: &ItemDataType, item_count: usize) -> bool {
-        if *item_data_type != ItemDataType::None {
-            if let Some(item_widget) = self.find_item_widget_mut(item_data_type) {
-                let item_count = item_widget.remove_item_count(item_count);
-                if item_count == 0 {
-                    item_widget.set_item_data(&ItemDataType::None, None, 0);
-                    self._item_type_count -= 1;
-                    //self.select_previous_item();
-                }
-                return true;
+    pub fn remove_item(&mut self, item_data_name: &str, item_count: usize) -> bool {
+        if item_data_name == ITEM_NONE {
+            return false;
+        }
+
+        if let Some(item_widget) = self.find_item_widget_mut(item_data_name) {
+            let item_count = item_widget.remove_item_count(item_count);
+            if item_count == 0 {
+                item_widget.set_item_data(ITEM_NONE, None, 0);
+                self._item_count -= 1;
+                //self.select_previous_item();
             }
+            return true;
         }
         false
     }
 
     pub fn select_item_by_index(&mut self, item_index: usize) {
-        if item_index < self._item_widgets.len() && self._item_widgets[item_index]._item_type != ItemDataType::None {
+        if item_index < self._item_widgets.len() && self._item_widgets[item_index]._item_data_name != ITEM_NONE {
             let item_widget = &self._item_widgets[item_index];
             self._selected_item_widget.update_selected_item_widget(item_index, Some(item_widget));
         } else {
@@ -267,7 +272,7 @@ impl<'a> ItemBarWidget<'a> {
     }
 
     pub fn select_next_item(&mut self) {
-        if 0 < self._item_type_count {
+        if 0 < self._item_count {
             let start_index = if self._selected_item_widget.get_item_index() == INVALID_ITEM_INDEX || self._selected_item_widget.get_item_index() == (self._item_widgets.len() - 1) {
                 0
             } else {
@@ -281,7 +286,7 @@ impl<'a> ItemBarWidget<'a> {
                 }
 
                 let item_widget = &self._item_widgets[item_index];
-                if item_widget._item_type != ItemDataType::None {
+                if item_widget._item_data_name != ITEM_NONE {
                     self._selected_item_widget.update_selected_item_widget(item_index, Some(item_widget));
                     break;
                 }
@@ -292,7 +297,7 @@ impl<'a> ItemBarWidget<'a> {
     }
 
     pub fn select_previous_item(&mut self) {
-        if 0 < self._item_type_count {
+        if 0 < self._item_count {
             let start_index = if self._selected_item_widget.get_item_index() == INVALID_ITEM_INDEX || 0 == self._selected_item_widget.get_item_index() {
                 self._item_widgets.len() - 1
             } else {
@@ -307,7 +312,7 @@ impl<'a> ItemBarWidget<'a> {
                 };
 
                 let item_widget = &self._item_widgets[item_index];
-                if item_widget._item_type != ItemDataType::None {
+                if item_widget._item_data_name != ITEM_NONE {
                     self._selected_item_widget.update_selected_item_widget(item_index, Some(item_widget));
                     break;
                 }

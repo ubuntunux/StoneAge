@@ -119,7 +119,8 @@ pub const EFFECT_HIT: &str = "effect_test";
 pub const EFFECT_FALLING_WATER: &str = "effect_falling_water";
 
 // Items
-pub const ITEM_MEAT: &str = "items/meat";
+pub const ITEM_NONE: &str = "";
+pub const ITEM_COCONUT: &str = "items/coconut";
 pub const ITEM_SPIRIT_BALL: &str = "items/spirit_ball";
 
 // Scenario

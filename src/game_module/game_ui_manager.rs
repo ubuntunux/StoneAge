@@ -9,7 +9,6 @@ use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use crate::application::application::Application;
 use crate::game_module::actors::character::{ActorWrapper, Character};
-use crate::game_module::actors::items::ItemDataType;
 use crate::game_module::game_client::GameClient;
 use crate::game_module::game_constants::{MATERIAL_INTRO_IMAGE};
 use crate::game_module::game_resource::GameResources;
@@ -249,7 +248,7 @@ impl<'a> GameUIManager<'a> {
         ));
 
         self._player_hud = Some(Box::new(PlayerHud::create_player_hud(game_ui_layout_mut)));
-        self._item_bar_widget = Some(Box::new(ItemBarWidget::create_item_bar_widget(engine_resources, game_ui_layout_mut)));
+        self._item_bar_widget = Some(Box::new(ItemBarWidget::create_item_bar_widget(game_resources, engine_resources, game_ui_layout_mut)));
         self._text_box_widget = Some(Box::new(TextBoxWidget::create_text_box_widget(audio_manager, engine_resources, root_widget)));
         self._target_status_bar = Some(Box::new(TargetStatusWidget::create_target_status_widget(game_ui_layout_mut)));
         self._time_of_day = Some(Box::new(TimeOfDayWidget::create_time_of_day_widget(game_ui_layout_mut, game_resources)));
@@ -329,16 +328,16 @@ impl<'a> GameUIManager<'a> {
     }
 
     // item bar
-    pub fn add_item(&mut self, item_data_type: &ItemDataType, item_count: usize) -> bool {
-        self._item_bar_widget.as_mut().unwrap().add_item(item_data_type, item_count)
+    pub fn add_item(&mut self, item_data_name: &str, item_count: usize) -> bool {
+        self._item_bar_widget.as_mut().unwrap().add_item(item_data_name, item_count)
     }
 
-    pub fn remove_item(&mut self, item_data_type: &ItemDataType, item_count: usize) -> bool {
-        self._item_bar_widget.as_mut().unwrap().remove_item(item_data_type, item_count)
+    pub fn remove_item(&mut self, item_data_name: &str, item_count: usize) -> bool {
+        self._item_bar_widget.as_mut().unwrap().remove_item(item_data_name, item_count)
     }
 
-    pub fn get_selected_inventory_item_data_type(&self) -> ItemDataType {
-        self._item_bar_widget.as_ref().unwrap().get_selected_item_type()
+    pub fn get_selected_inventory_item_data_name(&self) -> &str {
+        self._item_bar_widget.as_ref().unwrap().get_selected_item_data_name()
     }
 
     pub fn select_next_item(&mut self) {

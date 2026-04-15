@@ -1,5 +1,6 @@
 {
     "_item_type": "SpiritBall",
     "_model_data_name": "props/spirit_ball",
-    "_name": "spirit_ball"
+    "_name": "spirit_ball",
+    "_ui_material_instance": "ui/items/item_spirit_ball"
 }

@@ -18,36 +18,10 @@ use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
 use std::collections::HashMap;
 
-impl ItemDataType {
-    pub fn get_item_data_name(item_data_type: ItemDataType) -> &'static str {
-        match item_data_type {
-            ItemDataType::None => "",
-            ItemDataType::Coconut => "items/coconut",
-            ItemDataType::EnergyBall => "items/energy_ball",
-            ItemDataType::Meat => "items/meat",
-            ItemDataType::Rock => "items/rock",
-            ItemDataType::SpiritBall => "items/spirit_ball",
-            ItemDataType::Wood => "items/wood",
-        }
-    }
-
-    pub fn get_item_material_instance_name(item_data_type: ItemDataType) -> &'static str {
-        match item_data_type {
-            ItemDataType::None => "ui/items/item_none",
-            ItemDataType::Coconut => "ui/items/item_coconut",
-            ItemDataType::EnergyBall => "ui/items/item_energy_ball",
-            ItemDataType::Meat => "ui/items/item_meat",
-            ItemDataType::Rock => "ui/items/item_rock",
-            ItemDataType::SpiritBall => "ui/items/item_spirit_ball",
-            ItemDataType::Wood => "ui/items/item_wood",
-        }
-    }
-}
-
 impl Default for ItemCreateInfo {
     fn default() -> Self {
         ItemCreateInfo {
-            _item_data_name: String::new(),
+            _item_data_name: "".to_string(),
             _position: Vector3::zeros(),
             _rotation: Vector3::zeros(),
             _scale: Vector3::new(1.0, 1.0, 1.0),
@@ -63,6 +37,7 @@ impl Default for ItemData {
             _item_type: ItemDataType::None,
             _model_data_name: String::new(),
             _name: String::new(),
+            _ui_material_instance: String::new(),
         }
     }
 }
@@ -70,7 +45,7 @@ impl Default for ItemData {
 impl<'a> Item<'a> {
     pub fn create_item(
         item_id: ItemID,
-        item_name: &str,
+        item_data_name: &str,
         item_data: &RcRefCell<ItemData>,
         render_object: &RcRefCell<RenderObjectData<'a>>,
         position: &Vector3<f32>,
@@ -80,7 +55,7 @@ impl<'a> Item<'a> {
         pickup_delay: f32,
     ) -> Item<'a> {
         let mut item = Item {
-            _item_name: String::from(item_name),
+            _item_data_name: String::from(item_data_name),
             _item_id: item_id,
             _item_data: item_data.clone(),
             _render_object: render_object.clone(),
@@ -215,10 +190,8 @@ impl<'a> ItemManager<'a> {
     }
 
     pub fn instance_pickup_item(&mut self, item_create_info: &ItemCreateInfo) -> bool {
-        let game_resources = ptr_as_ref(self._game_resources);
-        let item_data = game_resources.get_item_data(item_create_info._item_data_name.as_str());
         let item_count = 1;
-        self.pick_item(&item_data.borrow()._item_type, item_count)
+        self.pick_item(item_create_info._item_data_name.as_str(), item_count)
     }
 
     pub fn remove_item(&mut self, item: &RcRefCell<Item>) {
@@ -233,16 +206,16 @@ impl<'a> ItemManager<'a> {
         }
     }
 
-    pub fn pick_item(&self, item_data_type: &ItemDataType, item_count: usize) -> bool {
-        let success = self.get_game_client().get_game_ui_manager_mut().add_item(item_data_type, item_count);
+    pub fn pick_item(&self, item_data_name: &str, item_count: usize) -> bool {
+        let success = self.get_game_client().get_game_ui_manager_mut().add_item(item_data_name, item_count);
         if success {
             self.get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
         }
         success
     }
 
-    pub fn use_inventory_item(&self, item_data_type: &ItemDataType, item_count: usize) -> bool {
-        let success = self.get_game_client().get_game_ui_manager_mut().remove_item(item_data_type, item_count);
+    pub fn use_inventory_item(&self, item_data_name: &str, item_count: usize) -> bool {
+        let success = self.get_game_client().get_game_ui_manager_mut().remove_item(item_data_name, item_count);
         if success {
             self.get_audio_manager_mut().play_audio_bank(
                 AUDIO_ITEM_INVENTORY,
@@ -258,8 +231,8 @@ impl<'a> ItemManager<'a> {
         success
     }
 
-    pub fn drop_inventory_item(&mut self, item_data_type: &ItemDataType, item_count: usize) -> bool {
-        let success = self.get_game_client().get_game_ui_manager_mut().remove_item(item_data_type, item_count);
+    pub fn drop_inventory_item(&mut self, item_data_name: &str, item_count: usize) -> bool {
+        let success = self.get_game_client().get_game_ui_manager_mut().remove_item(item_data_name, item_count);
         if success {
             self.get_audio_manager_mut().play_audio_bank(
                 AUDIO_ITEM_INVENTORY,
@@ -271,7 +244,7 @@ impl<'a> ItemManager<'a> {
             let yaw = player.get_rotation().y + (rand::random::<f32>() - 0.5) * std::f32::consts::PI * 0.5;
             let velocity = Vector3::new(-yaw.sin(), 1.0, -yaw.cos()) * (2.0 + rand::random::<f32>() * 2.0);
             let item_create_info = ItemCreateInfo {
-                _item_data_name: String::from(ItemDataType::get_item_data_name(*item_data_type)),
+                _item_data_name: String::from(item_data_name),
                 _position: player.get_center().clone() + player.get_face_direction() * player.get_collision()._bounding_box._mag_xz,
                 _velocity: velocity,
                 _pickup_delay: 1.0,
@@ -285,13 +258,13 @@ impl<'a> ItemManager<'a> {
 
     pub fn use_inventory_item_by_index(&self, item_index: usize) {
         self.select_item_by_index(item_index);
-        let item_data_type = self.get_selected_inventory_item_data_type();
+        let item_data_name = self.get_selected_inventory_item_data_name();
         let item_count = 1;
-        self.use_inventory_item(&item_data_type, item_count);
+        self.use_inventory_item(item_data_name, item_count);
     }
 
-    pub fn get_selected_inventory_item_data_type(&self) -> ItemDataType {
-        self.get_game_client().get_game_ui_manager().get_selected_inventory_item_data_type()
+    pub fn get_selected_inventory_item_data_name(&self) -> &str {
+        self.get_game_client().get_game_ui_manager().get_selected_inventory_item_data_name()
     }
 
     pub fn select_next_item(&self) {
@@ -334,7 +307,7 @@ impl<'a> ItemManager<'a> {
                 if check_height && math::get_norm_xz(&diff) <= EAT_ITEM_DISTANCE && item_ref._item_properties._pickup_delay <= 0.0{
                     // pick item
                     let item_count = 1;
-                    let success = self.pick_item(&item_ref._item_data.borrow()._item_type, item_count);
+                    let success = self.pick_item(item_ref._item_data_name.as_str(), item_count);
                     if success {
                         pick_items.push(item.clone());
                     }

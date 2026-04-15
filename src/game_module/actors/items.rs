@@ -20,12 +20,14 @@ pub type ItemMap<'a> = HashMap<ItemID, RcRefCell<Item<'a>>>;
 #[derive(Serialize, Deserialize, Hash, Eq, Clone, Copy, Debug, EnumIter, Display, PartialEq)]
 pub enum ItemDataType {
     None,
-    Coconut,
-    Meat,
-    Rock,
-    Wood,
-    SpiritBall,
+    Bow,
     EnergyBall,
+    Food,
+    Rock,
+    SpiritBall,
+    MeleeWeapon,
+    Spear,
+    Wood,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
@@ -45,6 +47,7 @@ pub struct ItemData {
     pub _item_type: ItemDataType,
     pub _model_data_name: String,
     pub _name: String,
+    pub _ui_material_instance: String,
 }
 
 pub struct ItemProperties {
@@ -57,7 +60,7 @@ pub struct ItemProperties {
 }
 
 pub struct Item<'a> {
-    pub _item_name: String,
+    pub _item_data_name: String,
     pub _item_id: ItemID,
     pub _item_data: RcRefCell<ItemData>,
     pub _render_object: RcRefCell<RenderObjectData<'a>>,

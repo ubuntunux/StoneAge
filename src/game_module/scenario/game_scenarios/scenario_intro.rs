@@ -5,12 +5,11 @@ use strum_macros::{Display, EnumCount, EnumIter, EnumString};
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use rust_engine_3d::utilities::math;
 use crate::game_module::actors::character::{ActorWrapper, Character};
-use crate::game_module::game_constants::{AUDIO_ROOSTER, AUDIO_STOMACH_GROWLING, CAMERA_DISTANCE_MAX, CAMERA_DISTANCE_MIN, CAMERA_OFFSET_Y, CHARACTER_INTERACTION_TIME, HUNGER_WARNING_THRESHOLD, STORY_BOARD_FADE_TIME, MATERIAL_UI_NONE, TIME_OF_MORNING, CHARACTER_INTERACTION_DISTANCE};
+use crate::game_module::game_constants::{AUDIO_ROOSTER, AUDIO_STOMACH_GROWLING, CAMERA_DISTANCE_MAX, CAMERA_DISTANCE_MIN, CAMERA_OFFSET_Y, CHARACTER_INTERACTION_TIME, HUNGER_WARNING_THRESHOLD, STORY_BOARD_FADE_TIME, MATERIAL_UI_NONE, TIME_OF_MORNING, CHARACTER_INTERACTION_DISTANCE, ITEM_COCONUT};
 use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::game_ui_manager::{GameUIManager, QuestItem};
 use crate::game_module::scenario::scenario::{ScenarioBase, ScenarioDataCreateInfo, ScenarioTrack};
 use crate::game_module::actors::character_data::ActionAnimationState;
-use crate::game_module::actors::items::ItemDataType;
 use crate::game_module::actors::props::Prop;
 use crate::game_module::behavior::behavior_base::BehaviorState;
 use crate::game_module::widgets::quest_widgets::quest_item_default::DefaultQuestData;
@@ -118,7 +117,7 @@ impl<'a> ScenarioIntro<'a> {
             false
         } else {
             let mut ewa = actor.borrow_mut();
-            let contents = vec![TextBoxContent::MaterialInstance(String::from(ItemDataType::get_item_material_instance_name(ItemDataType::Coconut)))];
+            let contents = vec![TextBoxContent::MaterialInstance(String::from(ITEM_COCONUT))];
             game_ui_manager.add_text_box_item(
                 ActorWrapper::Character(actor.clone()),
                 &contents,
@@ -208,9 +207,11 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                 self._actor_koa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::Idle, None, true);
 
                 // quest
+                let item_coconut = game_scene_manager.get_game_resources().get_item_data(ITEM_COCONUT);
                 self._quest = Some(game_scene_manager.get_game_ui_manager_mut().add_quest(Some(String::from("Gather food for the hungry family."))));
                 self._quest_gather_food = Some(self._quest.as_ref().unwrap().borrow_mut().add_quest_item(QuestCreateInfo::GatherItem(GatherItemData {
-                    _item_data_type: ItemDataType::Coconut,
+                    _item_data_name: String::from(ITEM_COCONUT),
+                    _item_data: item_coconut.clone(),
                     _gather_item_count: 3,
                 })));
                 self._quest_return_home = Some(self._quest.as_ref().unwrap().borrow_mut().add_quest_item(QuestCreateInfo::DefaultQuest(DefaultQuestData {
