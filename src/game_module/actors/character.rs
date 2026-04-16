@@ -7,8 +7,8 @@ use rust_engine_3d::audio::audio_manager::AudioInstance;
 use crate::game_module::actors::character_controller::CharacterController;
 use crate::game_module::actors::character_data::{ActionAnimationState, CharacterData, MoveAnimationState};
 use crate::game_module::actors::character_manager::{CharacterID, CharacterManager};
+use crate::game_module::actors::items::Item;
 use crate::game_module::actors::props::Prop;
-use crate::game_module::actors::weapons::Weapon;
 use crate::game_module::behavior::behavior_base::BehaviorBase;
 
 #[derive(Clone)]
@@ -74,6 +74,6 @@ pub struct Character<'a> {
     pub _controller: Box<CharacterController<'a>>,
     pub _behavior: Box<dyn BehaviorBase>,
     pub _animation_state: Box<CharacterAnimationState>,
-    pub _weapon: Option<Box<Weapon<'a>>>,
+    pub _attached_item: Option<RcRefCell<Item<'a>>>,
     pub _audio_snoring: Option<RcRefCell<AudioInstance>>,
 }

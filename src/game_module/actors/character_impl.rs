@@ -4,7 +4,6 @@ use crate::game_module::actors::character_data::{
     ActionAnimationState, CharacterData, MoveAnimationState,
 };
 use crate::game_module::actors::character_manager::{CharacterID, CharacterManager};
-use crate::game_module::actors::weapons::Weapon;
 use crate::game_module::behavior::behavior_base::{create_character_behavior, BehaviorState};
 use crate::game_module::game_constants::*;
 use nalgebra::Vector3;
@@ -19,6 +18,7 @@ use rust_engine_3d::scene::transform_object::TransformObjectData;
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use crate::game_module::actors::interaction_object::InteractionObject;
+use crate::game_module::actors::items::{Item};
 
 impl CharacterAnimationState {
     pub fn is_attack_event(&self) -> bool {
@@ -246,7 +246,7 @@ impl<'a> Character<'a> {
             _animation_state: Box::new(CharacterAnimationState::default()),
             _controller: Box::new(CharacterController::create_character_controller()),
             _behavior: create_character_behavior(character_data_borrow._character_type),
-            _weapon: None,
+            _attached_item: None,
             _audio_snoring: None
         };
 
@@ -270,20 +270,16 @@ impl<'a> Character<'a> {
         self.update_render_object();
     }
 
-    pub fn add_weapon(&mut self, weapon: Box<Weapon<'a>>) {
-        if self._weapon.is_some() {
-            panic!("already has weapon!")
-        } else {
-            self._weapon = Some(weapon);
-        }
+    pub fn attach_item(&mut self, attach_item: RcRefCell<Item<'a>>) {
+        self._attached_item = Some(attach_item);
     }
 
-    pub fn get_weapon(&self) -> &Option<Box<Weapon<'a>>> {
-        &self._weapon
+    pub fn get_attached_item(&self) -> &Option<RcRefCell<Item<'a>>> {
+        &self._attached_item
     }
 
-    pub fn remove_weapon(&mut self) {
-        self._weapon = None;
+    pub fn detach_item(&mut self) {
+        self._attached_item = None;
     }
 
     pub fn get_character_manager(&self) -> &CharacterManager<'a> {
@@ -1371,12 +1367,5 @@ impl<'a> Character<'a> {
 
         // transform
         self.update_transform();
-
-        // update weapon
-        if self._weapon.is_some() {
-            let weapon = self._weapon.as_mut().unwrap();
-            let weapon_socket_transform = weapon._weapon_socket.borrow()._transform.clone();
-            weapon.update_weapon(&weapon_socket_transform, delta_time);
-        }
     }
 }

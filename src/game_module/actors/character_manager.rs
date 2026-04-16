@@ -6,12 +6,10 @@ use rust_engine_3d::scene::render_object::{RenderObjectCreateInfo, SceneObjectTy
 use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
-
 use crate::application::application::Application;
 use crate::game_module::actors::character::{ActorWrapper, Character, CharacterCreateInfo};
 use crate::game_module::actors::interaction_object::InteractionObject;
 use crate::game_module::actors::items::{ItemCreateInfo};
-use crate::game_module::actors::weapons::{Weapon, WeaponCreateInfo};
 use crate::game_module::game_client::GameClient;
 use crate::game_module::game_constants::{GameViewMode, AUDIO_STOMACH_GROWLING, CHARACTER_INTERACTION_DISTANCE, CHARACTER_INTERACTION_TIME, GAME_VIEW_MODE, ITEM_SPIRIT_BALL, NPC_ATTACK_HIT_RANGE};
 use crate::game_module::game_resource::GameResources;
@@ -104,49 +102,6 @@ impl<'a> CharacterManager<'a> {
     pub fn get_character(&self, character_name: &str) -> Option<&RcRefCell<Character<'a>>> {
         self._characters.get(character_name)
     }
-    pub fn add_character_weapon(
-        &self,
-        character: &mut Character<'a>,
-        weapon_create_info: &WeaponCreateInfo,
-    ) {
-        // remove previous weapon
-        if let Some(weapon) = character.get_weapon() {
-            self.get_scene_manager_mut()
-                .remove_skeletal_render_object(weapon._render_object.borrow()._object_id);
-            character.remove_weapon();
-        }
-
-        // create a new weapon
-        let game_resources = ptr_as_ref(self._game_resources);
-        let weapon_data = game_resources.get_weapon_data(&weapon_create_info._weapon_data_name);
-        let render_object_create_info = RenderObjectCreateInfo {
-            _scene_object_type: SceneObjectType::Default,
-            _model_data_name: weapon_data.borrow()._model_data.borrow()._model_data_name.clone(),
-            _position: weapon_create_info._position.clone(),
-            _rotation: weapon_create_info._rotation.clone(),
-            _scale: weapon_create_info._scale.clone(),
-        };
-
-        let render_object_data = self.get_scene_manager_mut().add_skeletal_render_object(
-            weapon_create_info._weapon_data_name.as_str(),
-            &render_object_create_info,
-        );
-
-        let mut weapon: Option<Box<Weapon<'a>>> = None;
-        if let Some(weapon_socket) = character._render_object.borrow()._sockets.get(&weapon_create_info._weapon_socket_name) {
-            weapon = Some(Box::new(Weapon::create_weapon(
-                weapon_socket,
-                weapon_create_info,
-                weapon_data,
-                &render_object_data,
-            )));
-        }
-
-        if weapon.is_some() {
-            character.add_weapon(weapon.unwrap());
-        }
-    }
-
     pub fn create_character(
         &mut self,
         character_name: &str,
@@ -185,14 +140,6 @@ impl<'a> CharacterManager<'a> {
             &character_create_info._rotation,
             &character_create_info._scale,
         ));
-
-        // add weapon
-        if !character_data.borrow()._weapon_create_info._weapon_data_name.is_empty() {
-            self.add_character_weapon(
-                &mut *character.borrow_mut(),
-                &character_data.borrow()._weapon_create_info,
-            )
-        }
 
         if is_player {
             self._player = Some(character.clone());

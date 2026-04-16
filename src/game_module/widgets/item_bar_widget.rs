@@ -4,6 +4,7 @@ use rust_engine_3d::scene::material_instance::MaterialInstanceData;
 use rust_engine_3d::scene::ui::{HorizontalAlign, Orientation, PosHintX, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault};
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
+use crate::game_module::actors::items::ItemManager;
 use crate::game_module::game_constants::ITEM_NONE;
 use crate::game_module::game_resource::GameResources;
 
@@ -28,6 +29,7 @@ pub struct ItemSelectionWidget<'a> {
 pub struct ItemBarWidget<'a> {
     pub _game_resources: *const GameResources<'a>,
     pub _engine_resources: *const EngineResources<'a>,
+    pub _item_manager: *const ItemManager<'a>,
     pub _layer: *const WidgetDefault<'a>,
     pub _item_widgets: Vec<ItemWidget<'a>>,
     pub _selected_item_widget: ItemSelectionWidget<'a>,
@@ -123,8 +125,9 @@ impl<'a> ItemSelectionWidget<'a> {
 
 impl<'a> ItemBarWidget<'a> {
     pub fn create_item_bar_widget(
-        game_resources: &GameResources<'a>,
-        engine_resources: &EngineResources<'a>,
+        game_resources: *const GameResources<'a>,
+        engine_resources: *const EngineResources<'a>,
+        item_manager: *const ItemManager<'a>,
         parent_widget: &mut WidgetDefault<'a>
     ) -> ItemBarWidget<'a> {
         let layer = UIManager::create_widget("item_bar_widget", UIWidgetTypes::Default);
@@ -153,6 +156,7 @@ impl<'a> ItemBarWidget<'a> {
         let mut item_bar_widget = ItemBarWidget {
             _game_resources: game_resources,
             _engine_resources: engine_resources,
+            _item_manager: item_manager,
             _layer: layer.as_ref(),
             _item_widgets: Vec::new(),
             _selected_item_widget: ItemSelectionWidget {
@@ -207,9 +211,18 @@ impl<'a> ItemBarWidget<'a> {
         0
     }
 
+    pub fn get_selected_item_data_name(&self) -> &str {
+        if self._selected_item_widget._item_index != INVALID_ITEM_INDEX {
+            return self._item_widgets[self._selected_item_widget._item_index]._item_data_name.as_str();
+        }
+        ITEM_NONE
+    }
+
     pub fn add_item(&mut self, item_data_name: &str, item_count: usize) -> bool {
-        let _is_first_item = self._item_count == 0;
         if item_data_name != ITEM_NONE && self._item_count < self._max_item_count {
+            let was_empty_item = self.get_selected_item_data_name() == ITEM_NONE;
+            let mut item_index = 0;
+
             if let Some(item_widget) = self.find_item_widget_mut(item_data_name) {
                 item_widget.add_item_count(item_count);
             } else {
@@ -222,27 +235,21 @@ impl<'a> ItemBarWidget<'a> {
                             Some(material.clone()),
                             item_count,
                         );
+                        item_index = item_widget._item_index;
                         self._item_count += 1;
                         break;
                     }
                 }
             }
 
-            // if is_first_item {
-            //     self.select_previous_item();
-            // }
+            if was_empty_item {
+                self.select_item(item_index);
+            }
 
             self.update_item_bar_widget();
             return true;
         }
         false
-    }
-
-    pub fn get_selected_item_data_name(&self) -> &str {
-        if self._selected_item_widget._item_index != INVALID_ITEM_INDEX {
-            return self._item_widgets[self._selected_item_widget._item_index]._item_data_name.as_str();
-        }
-        ITEM_NONE
     }
 
     pub fn remove_item(&mut self, item_data_name: &str, item_count: usize) -> bool {
@@ -255,6 +262,7 @@ impl<'a> ItemBarWidget<'a> {
             if item_count == 0 {
                 item_widget.set_item_data(ITEM_NONE, None, 0);
                 self._item_count -= 1;
+                ptr_as_mut(self._item_manager).detach_item();
                 //self.select_previous_item();
             }
             return true;
@@ -262,64 +270,66 @@ impl<'a> ItemBarWidget<'a> {
         false
     }
 
-    pub fn select_item_by_index(&mut self, item_index: usize) {
+    pub fn select_item(&mut self, item_index: usize) {
         if item_index < self._item_widgets.len() && self._item_widgets[item_index]._item_data_name != ITEM_NONE {
             let item_widget = &self._item_widgets[item_index];
             self._selected_item_widget.update_selected_item_widget(item_index, Some(item_widget));
+            ptr_as_mut(self._item_manager).attach_item(self.get_selected_item_data_name());
         } else {
             self._selected_item_widget.update_selected_item_widget(INVALID_ITEM_INDEX, None);
+            ptr_as_mut(self._item_manager).detach_item();
         }
     }
 
     pub fn select_next_item(&mut self) {
+        let mut item_index = INVALID_ITEM_INDEX;
+
         if 0 < self._item_count {
-            let start_index = if self._selected_item_widget.get_item_index() == INVALID_ITEM_INDEX || self._selected_item_widget.get_item_index() == (self._item_widgets.len() - 1) {
+            item_index = if self._selected_item_widget.get_item_index() == INVALID_ITEM_INDEX || self._selected_item_widget.get_item_index() == (self._item_widgets.len() - 1) {
                 0
             } else {
                 self._selected_item_widget.get_item_index() + 1
             };
 
-            for n in 0..self._item_widgets.len() {
-                let mut item_index = start_index + n;
+            for _ in 0..self._item_widgets.len() {
+                if self._item_widgets[item_index]._item_data_name != ITEM_NONE {
+                    break;
+                }
+
+                item_index += 1;
                 if self._item_widgets.len() <= item_index {
                     item_index -= self._item_widgets.len();
                 }
-
-                let item_widget = &self._item_widgets[item_index];
-                if item_widget._item_data_name != ITEM_NONE {
-                    self._selected_item_widget.update_selected_item_widget(item_index, Some(item_widget));
-                    break;
-                }
             }
-        } else {
-            self._selected_item_widget.update_selected_item_widget(INVALID_ITEM_INDEX, None);
         }
+
+        self.select_item(item_index);
     }
 
     pub fn select_previous_item(&mut self) {
+        let mut item_index = INVALID_ITEM_INDEX;
+
         if 0 < self._item_count {
-            let start_index = if self._selected_item_widget.get_item_index() == INVALID_ITEM_INDEX || 0 == self._selected_item_widget.get_item_index() {
+            item_index = if self._selected_item_widget.get_item_index() == INVALID_ITEM_INDEX || 0 == self._selected_item_widget.get_item_index() {
                 self._item_widgets.len() - 1
             } else {
                 self._selected_item_widget.get_item_index() - 1
             };
 
-            for n in 0..self._item_widgets.len() {
-                let item_index = if start_index < n {
-                    (start_index + self._item_widgets.len()) - n
-                } else {
-                    start_index - n
-                };
-
-                let item_widget = &self._item_widgets[item_index];
-                if item_widget._item_data_name != ITEM_NONE {
-                    self._selected_item_widget.update_selected_item_widget(item_index, Some(item_widget));
+            for _ in 0..self._item_widgets.len() {
+                if self._item_widgets[item_index]._item_data_name != ITEM_NONE {
                     break;
                 }
+
+                if item_index == 0 {
+                    item_index = self._item_widgets.len() - 1;
+                } else {
+                    item_index -= 1;
+                }
             }
-        } else {
-            self._selected_item_widget.update_selected_item_widget(INVALID_ITEM_INDEX, None);
         }
+
+        self.select_item(item_index);
     }
 
     pub fn changed_window_size(&mut self, window_size: &Vector2<i32>) {

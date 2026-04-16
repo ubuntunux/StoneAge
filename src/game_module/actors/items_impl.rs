@@ -4,7 +4,7 @@ use crate::game_module::actors::items::{
     Item, ItemCreateInfo, ItemData, ItemDataType, ItemID, ItemManager, ItemProperties,
 };
 use crate::game_module::game_client::GameClient;
-use crate::game_module::game_constants::{AUDIO_ITEM_INVENTORY, AUDIO_PICKUP_ITEM, EAT_ITEM_DISTANCE};
+use crate::game_module::game_constants::{AUDIO_ITEM_INVENTORY, AUDIO_PICKUP_ITEM, EAT_ITEM_DISTANCE, WEAPON_SOCKET_NAME};
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
 use nalgebra::{Vector3};
@@ -27,7 +27,7 @@ impl Default for ItemCreateInfo {
             _rotation: Vector3::zeros(),
             _scale: Vector3::new(1.0, 1.0, 1.0),
             _velocity: Vector3::zeros(),
-            _pickup_delay: 0.0,
+            _pickup_delay: 0.5,
         }
     }
 }
@@ -91,12 +91,26 @@ impl<'a> Item<'a> {
         self._item_id
     }
 
+    pub fn get_item_data_name(&self) -> &String {
+        &self._item_data_name
+    }
+
     pub fn collide_point(&self, pos: &Vector3<f32>) -> bool {
         self._render_object.borrow()._collision.collide_point(pos)
     }
 
     pub fn is_attachment(&self) -> bool {
         self._attach_socket.is_some()
+    }
+
+    pub fn pickable_item(&self) -> bool {
+        self._item_properties._pickup_delay <= 0.0 && self.is_attachment() == false
+    }
+
+    pub fn update_pickup_delay_time(&mut self, delta_time: f64) {
+        if 0.0 < self._item_properties._pickup_delay {
+            self._item_properties._pickup_delay -= delta_time as f32;
+        }
     }
 
     pub fn update_item_attach_transform(&mut self) {
@@ -180,11 +194,10 @@ impl<'a> ItemManager<'a> {
         self._items.get(&item_id)
     }
     pub fn create_item(&mut self, item_create_info: &ItemCreateInfo, attach_socket: Option<RcRefCell<Socket>>) -> RcRefCell<Item<'a>> {
-        let game_resources = ptr_as_ref(self._game_resources);
         let mut spawn_point = item_create_info._position.clone();
         spawn_point.y = spawn_point.y.max(self.get_scene_manager().get_height_map_data().get_height_bilinear(&spawn_point, 0));
 
-        let item_data = game_resources.get_item_data(item_create_info._item_data_name.as_str());
+        let item_data = ptr_as_ref(self._game_resources).get_item_data(item_create_info._item_data_name.as_str());
         let render_object_create_info = RenderObjectCreateInfo {
             _model_data_name: item_data.borrow()._model_data_name.clone(),
             ..Default::default()
@@ -275,34 +288,53 @@ impl<'a> ItemManager<'a> {
                 ..Default::default()
             };
 
-            // test
-            // let attach_socket = Some(player._render_object.borrow()._sockets.get(&String::from(WEAPON_SOCKET_NAME)).unwrap().clone());
             self.create_item(&item_create_info, None);
         }
         success
-    }
-
-    pub fn use_inventory_item_by_index(&self, item_index: usize) {
-        self.select_item_by_index(item_index);
-        let item_data_name = self.get_selected_inventory_item_data_name();
-        let item_count = 1;
-        self.use_inventory_item(item_data_name, item_count);
     }
 
     pub fn get_selected_inventory_item_data_name(&self) -> &str {
         self.get_game_client().get_game_ui_manager().get_selected_inventory_item_data_name()
     }
 
-    pub fn select_next_item(&self) {
-        self.get_game_client().get_game_ui_manager_mut().select_next_item()
+    pub fn select_next_item(&mut self) {
+        self.get_game_client().get_game_ui_manager_mut().select_next_item();
     }
 
-    pub fn select_previous_item(&self) {
-        self.get_game_client().get_game_ui_manager_mut().select_previous_item()
+    pub fn select_previous_item(&mut self) {
+        self.get_game_client().get_game_ui_manager_mut().select_previous_item();
     }
 
-    pub fn select_item_by_index(&self, item_index: usize) {
-        self.get_game_client().get_game_ui_manager_mut().select_item_by_index(item_index)
+    pub fn select_item(&mut self, item_index: usize) {
+        self.get_game_client().get_game_ui_manager_mut().select_item(item_index);
+    }
+
+    pub fn attach_item(&mut self, item_data_name: &str) {
+        let player = ptr_as_mut(self.get_game_scene_manager_mut().get_character_manager_mut().get_player().as_ptr());
+        if let Some(attached_item) = player.get_attached_item() {
+            if *attached_item.borrow().get_item_data_name() == item_data_name {
+                return;
+            } else {
+                self.remove_item(attached_item);
+                player.detach_item();
+            }
+        }
+
+        let item_create_info = ItemCreateInfo {
+            _item_data_name: String::from(item_data_name),
+            ..Default::default()
+        };
+        let attach_socket = Some(player._render_object.borrow()._sockets.get(&String::from(WEAPON_SOCKET_NAME)).unwrap().clone());
+        let attached_item = self.create_item(&item_create_info, attach_socket);
+        player.attach_item(attached_item);
+    }
+
+    pub fn detach_item(&mut self) {
+        let player = ptr_as_mut(self.get_game_scene_manager_mut().get_character_manager_mut().get_player().as_ptr());
+        if let Some(attached_item) = player.get_attached_item() {
+            self.remove_item(attached_item);
+            player.detach_item();
+        }
     }
 
     pub fn update_item_manager(&mut self, delta_time: f64) {
@@ -314,8 +346,7 @@ impl<'a> ItemManager<'a> {
         }
 
         for item in self._items.values() {
-            item.borrow_mut()
-                .update_item(scene_manager.get_height_map_data(), delta_time);
+            item.borrow_mut().update_item(scene_manager.get_height_map_data(), delta_time);
         }
 
         let mut pick_items: Vec<RcRefCell<Item>> = Vec::new();
@@ -330,7 +361,7 @@ impl<'a> ItemManager<'a> {
                 let check_height =
                     item_ref._render_object.borrow()._bounding_box._min.y <= player_bound_box._max.y &&
                     player_bound_box._min.y <= item_ref._render_object.borrow()._bounding_box._max.y;
-                if check_height && math::get_norm_xz(&diff) <= EAT_ITEM_DISTANCE && item_ref._item_properties._pickup_delay <= 0.0{
+                if check_height && math::get_norm_xz(&diff) <= EAT_ITEM_DISTANCE && item_ref.pickable_item(){
                     // pick item
                     let item_count = 1;
                     let success = self.pick_item(item_ref._item_data_name.as_str(), item_count);

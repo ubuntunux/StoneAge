@@ -51,11 +51,8 @@ impl ItemUpdaterBase for ItemDefaultUpdater {
         height_map_data: &HeightMapData,
         delta_time: f64,
     ) {
+        owner.update_pickup_delay_time(delta_time);
         self.update_item_transform(owner, height_map_data, delta_time);
-
-        if 0.0 < owner._item_properties._pickup_delay {
-            owner._item_properties._pickup_delay -= delta_time as f32;
-        }
     }
 }
 
@@ -76,9 +73,7 @@ impl ItemUpdaterBase for ItemSpiritBallUpdater {
         if owner.is_attachment() {
             owner.update_item_attach_transform();
         } else {
-            if 0.0 < owner._item_properties._pickup_delay {
-                owner._item_properties._pickup_delay -= delta_time as f32;
-            }
+            owner.update_pickup_delay_time(delta_time);
 
             if self._floating {
                 let floating_speed = self._floating_timer * 0.5;

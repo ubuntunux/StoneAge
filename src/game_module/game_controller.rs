@@ -477,7 +477,7 @@ impl<'a> GameController<'a> {
             ];
             for (item_index, numpad_key) in NUMPAD_KEY_MAP.iter().enumerate() {
                 if keyboard_input_data.get_key_pressed(*numpad_key) {
-                    item_manager.use_inventory_item_by_index(item_index);
+                    item_manager.select_item(item_index);
                     break;
                 }
             }
@@ -604,7 +604,7 @@ impl<'a> GameController<'a> {
         }
 
         if is_power_attack {
-            if player_mut.get_weapon().is_none() {
+            if player_mut.get_attached_item().is_none() {
                 player_mut.set_action_kick();
             } else {
                 player_mut.set_action_power_attack();
