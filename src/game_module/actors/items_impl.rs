@@ -197,17 +197,26 @@ impl<'a> ItemManager<'a> {
         let mut spawn_point = item_create_info._position.clone();
         spawn_point.y = spawn_point.y.max(self.get_scene_manager().get_height_map_data().get_height_bilinear(&spawn_point, 0));
 
-        let item_data = ptr_as_ref(self._game_resources).get_item_data(item_create_info._item_data_name.as_str());
+        let game_resource = ptr_as_ref(self._game_resources);
+        let item_data = game_resource.get_item_data(item_create_info._item_data_name.as_str());
+        let item_model_data = game_resource.get_engine_resources().get_model_data(&item_data.borrow()._model_data_name);
         let render_object_create_info = RenderObjectCreateInfo {
             _model_data_name: item_data.borrow()._model_data_name.clone(),
             ..Default::default()
         };
 
-        let render_object_data = self.get_scene_manager_mut().add_dynamic_render_object(
-            item_create_info._item_data_name.as_str(),
-            &render_object_create_info,
-            Some(CollisionType::NONE),
-        );
+        let render_object_data = if item_model_data.borrow()._mesh_data.borrow().has_animation_data() {
+            self.get_scene_manager_mut().add_skeletal_render_object(
+                item_create_info._item_data_name.as_str(),
+                &render_object_create_info
+            )
+        } else {
+            self.get_scene_manager_mut().add_dynamic_render_object(
+                item_create_info._item_data_name.as_str(),
+                &render_object_create_info,
+                Some(CollisionType::NONE),
+            )
+        };
 
         let id = self.generate_id();
         let item = newRcRefCell(Item::create_item(
@@ -233,7 +242,11 @@ impl<'a> ItemManager<'a> {
 
     pub fn remove_item(&mut self, item: &RcRefCell<Item>) {
         self._items.remove(&item.borrow().get_item_id());
-        self.get_scene_manager_mut().remove_static_render_object(item.borrow()._render_object.borrow().get_object_id());
+        if item.borrow()._render_object.borrow().has_animation() {
+            self.get_scene_manager_mut().remove_skeletal_render_object(item.borrow()._render_object.borrow().get_object_id());
+        } else {
+            self.get_scene_manager_mut().remove_static_render_object(item.borrow()._render_object.borrow().get_object_id());
+        }
     }
 
     pub fn clear_items(&mut self) {
