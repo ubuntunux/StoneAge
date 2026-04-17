@@ -83,6 +83,7 @@ impl BehaviorBase for BehaviorCivilian {
                         owner.set_action_hungry();
                         owner.set_sit_down();
                     } else {
+                        owner.set_action_none();
                         owner.set_move_idle();
                     }
                     self._behavior_time = lerp(NPC_IDLE_TERM_MIN, NPC_IDLE_TERM_MAX, rand::random::<f32>());

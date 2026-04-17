@@ -40,7 +40,7 @@ impl<'a> KeyBindingWidget<'a> {
         widget_name: &str,
         key_binding_text: &str,
         center_offset: Option<Vector2<f32>>,
-        layer_opacity: u32,
+        visible_frame: bool,
         text_widget_width: f32,
         text_widget_margin: f32,
         icon_widget_margin: f32
@@ -60,7 +60,7 @@ impl<'a> KeyBindingWidget<'a> {
         ui_component.set_size_x(0.0);
         ui_component.set_size_y(ITEM_SIZE);
         ui_component.set_round(10.0);
-        ui_component.set_color(get_color32(0, 0, 0, layer_opacity));
+        ui_component.set_color(get_color32(0, 0, 0, if visible_frame { 128 } else { 0 }));
         parent_widget.add_widget(&layout_widget);
 
         let binding_name_widget = if key_binding_text.is_empty() {
@@ -146,35 +146,37 @@ impl<'a> ControllerHelpWidget<'a> {
         ui_component.set_color(get_color32(0, 0, 0, 128));
         root_widget.add_widget(&character_controller_help_widget);
 
-        let camera_key_binding_widget = KeyBindingWidget::create_key_binding_widget(character_controller_help_widget_mut, 1, "view_key_binding", "View", None, 0, TEXT_WIDGET_WIDTH, 20.0, -14.0);
-        let move_key_binding_widget = KeyBindingWidget::create_key_binding_widget(character_controller_help_widget_mut, 4, "move_key_binding", "Move", None, 0, TEXT_WIDGET_WIDTH, 20.0, -14.0);
-        let zoom_key_binding_widget = KeyBindingWidget::create_key_binding_widget(character_controller_help_widget_mut, 2, "zoom_key_binding", "Zoom", None, 0, TEXT_WIDGET_WIDTH, 20.0, -14.0);
-        let attack_key_binding_widget = KeyBindingWidget::create_key_binding_widget(character_controller_help_widget_mut, 1, "attack_key_binding", "Attack", None, 0, TEXT_WIDGET_WIDTH, 20.0, -14.0);
-        let power_attack_key_binding_widget = KeyBindingWidget::create_key_binding_widget(character_controller_help_widget_mut, 1, "power_attack_key_binding", "Power Attack", None, 0, TEXT_WIDGET_WIDTH, 20.0, -14.0);
-        let sprint_key_binding_widget = KeyBindingWidget::create_key_binding_widget(character_controller_help_widget_mut, 1, "sprint_key_binding", "Sprint", None, 0, TEXT_WIDGET_WIDTH, 20.0, -14.0);
-        let jump_key_binding_widget = KeyBindingWidget::create_key_binding_widget(character_controller_help_widget_mut, 1, "jump_key_binding", "Jump", None, 0, TEXT_WIDGET_WIDTH, 20.0, -14.0);
-        let roll_key_binding_widget = KeyBindingWidget::create_key_binding_widget(character_controller_help_widget_mut, 1, "roll_key_binding", "Roll", None, 0, TEXT_WIDGET_WIDTH, 20.0, -14.0);
-        let select_item_key_binding_widget = KeyBindingWidget::create_key_binding_widget(character_controller_help_widget_mut, 2, "select_item_key_binding", "Select Item", None, 0, TEXT_WIDGET_WIDTH, 20.0, -14.0);
-        let use_item_key_binding_widget = KeyBindingWidget::create_key_binding_widget(character_controller_help_widget_mut, 1, "use_item_key_binding", "Use Item", None, 0, TEXT_WIDGET_WIDTH, 20.0, -14.0);
+        // player control ui
+        let camera_key_binding_widget = KeyBindingWidget::create_key_binding_widget(character_controller_help_widget_mut, 1, "view_key_binding", "View", None, false, TEXT_WIDGET_WIDTH, 20.0, -14.0);
+        let move_key_binding_widget = KeyBindingWidget::create_key_binding_widget(character_controller_help_widget_mut, 4, "move_key_binding", "Move", None, false, TEXT_WIDGET_WIDTH, 20.0, -14.0);
+        let zoom_key_binding_widget = KeyBindingWidget::create_key_binding_widget(character_controller_help_widget_mut, 2, "zoom_key_binding", "Zoom", None, false, TEXT_WIDGET_WIDTH, 20.0, -14.0);
+        let attack_key_binding_widget = KeyBindingWidget::create_key_binding_widget(character_controller_help_widget_mut, 1, "attack_key_binding", "Attack", None, false, TEXT_WIDGET_WIDTH, 20.0, -14.0);
+        let power_attack_key_binding_widget = KeyBindingWidget::create_key_binding_widget(character_controller_help_widget_mut, 1, "power_attack_key_binding", "Power Attack", None, false, TEXT_WIDGET_WIDTH, 20.0, -14.0);
+        let sprint_key_binding_widget = KeyBindingWidget::create_key_binding_widget(character_controller_help_widget_mut, 1, "sprint_key_binding", "Sprint", None, false, TEXT_WIDGET_WIDTH, 20.0, -14.0);
+        let jump_key_binding_widget = KeyBindingWidget::create_key_binding_widget(character_controller_help_widget_mut, 1, "jump_key_binding", "Jump", None, false, TEXT_WIDGET_WIDTH, 20.0, -14.0);
+        let roll_key_binding_widget = KeyBindingWidget::create_key_binding_widget(character_controller_help_widget_mut, 1, "roll_key_binding", "Roll", None, false, TEXT_WIDGET_WIDTH, 20.0, -14.0);
+
+        // inventory
+        let select_item_key_binding_widget = KeyBindingWidget::create_key_binding_widget(root_widget, 2, "select_item_key_binding", "Select Item", None, false, 0.0, 20.0, -14.0);
+        let drop_item_key_binding_widget = KeyBindingWidget::create_key_binding_widget(root_widget, 1, "drop_item_key_binding", "Drop Item", None, false, 0.0, 20.0, -14.0);
+        let use_item_key_binding_widget = KeyBindingWidget::create_key_binding_widget(root_widget, 1, "use_item_key_binding", "Use Item", None, false, 0.0, 20.0, -14.0);
 
         // interaction
-        let interaction_key_binding_widget = KeyBindingWidget::create_key_binding_widget(root_widget, 1, "interaction_key_binding", "Interaction", None, 128, 0.0, 20.0, -14.0);
-        let enter_gate_key_binding_widget = KeyBindingWidget::create_key_binding_widget(root_widget, 1, "enter_gate_key_binding", "Enter", None, 128, 0.0, 20.0, -14.0);
-
-        // gathering
-        let gathering_key_binding_widget = KeyBindingWidget::create_key_binding_widget(root_widget, 1, "gathering_key_binding", "Gathering", None, 128, 0.0, 20.0, -14.0);
+        let interaction_key_binding_widget = KeyBindingWidget::create_key_binding_widget(root_widget, 1, "interaction_key_binding", "Interaction", None, true, 0.0, 20.0, -14.0);
+        let enter_gate_key_binding_widget = KeyBindingWidget::create_key_binding_widget(root_widget, 1, "enter_gate_key_binding", "Enter", None, true, 0.0, 20.0, -14.0);
+        let gathering_key_binding_widget = KeyBindingWidget::create_key_binding_widget(root_widget, 1, "gathering_key_binding", "Gathering", None, true, 0.0, 20.0, -14.0);
 
         // quick slot
-        let use_item01_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(0)._widget), 1, "use_item01_key_binding", "", Some(Vector2::new(0.5, 1.3)), 0, 0.0, 0.0, 0.0);
-        let use_item02_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(1)._widget), 1, "use_item02_key_binding", "", Some(Vector2::new(0.5, 1.3)), 0, 0.0, 0.0, 0.0);
-        let use_item03_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(2)._widget), 1, "use_item03_key_binding", "", Some(Vector2::new(0.5, 1.3)), 0, 0.0, 0.0, 0.0);
-        let use_item04_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(3)._widget), 1, "use_item04_key_binding", "", Some(Vector2::new(0.5, 1.3)), 0, 0.0, 0.0, 0.0);
-        let use_item05_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(4)._widget), 1, "use_item05_key_binding", "", Some(Vector2::new(0.5, 1.3)), 0, 0.0, 0.0, 0.0);
-        let use_item06_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(5)._widget), 1, "use_item06_key_binding", "", Some(Vector2::new(0.5, 1.3)), 0, 0.0, 0.0, 0.0);
-        let use_item07_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(6)._widget), 1, "use_item07_key_binding", "", Some(Vector2::new(0.5, 1.3)), 0, 0.0, 0.0, 0.0);
-        let use_item08_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(7)._widget), 1, "use_item08_key_binding", "", Some(Vector2::new(0.5, 1.3)), 0, 0.0, 0.0, 0.0);
-        let use_item09_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(8)._widget), 1, "use_item09_key_binding", "", Some(Vector2::new(0.5, 1.3)), 0, 0.0, 0.0, 0.0);
-        let use_item10_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(9)._widget), 1, "use_item10_key_binding", "", Some(Vector2::new(0.5, 1.3)), 0, 0.0, 0.0, 0.0);
+        let use_item01_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(0)._widget), 1, "use_item01_key_binding", "", Some(Vector2::new(0.5, 1.3)), false, 0.0, 0.0, 0.0);
+        let use_item02_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(1)._widget), 1, "use_item02_key_binding", "", Some(Vector2::new(0.5, 1.3)), false, 0.0, 0.0, 0.0);
+        let use_item03_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(2)._widget), 1, "use_item03_key_binding", "", Some(Vector2::new(0.5, 1.3)), false, 0.0, 0.0, 0.0);
+        let use_item04_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(3)._widget), 1, "use_item04_key_binding", "", Some(Vector2::new(0.5, 1.3)), false, 0.0, 0.0, 0.0);
+        let use_item05_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(4)._widget), 1, "use_item05_key_binding", "", Some(Vector2::new(0.5, 1.3)), false, 0.0, 0.0, 0.0);
+        let use_item06_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(5)._widget), 1, "use_item06_key_binding", "", Some(Vector2::new(0.5, 1.3)), false, 0.0, 0.0, 0.0);
+        let use_item07_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(6)._widget), 1, "use_item07_key_binding", "", Some(Vector2::new(0.5, 1.3)), false, 0.0, 0.0, 0.0);
+        let use_item08_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(7)._widget), 1, "use_item08_key_binding", "", Some(Vector2::new(0.5, 1.3)), false, 0.0, 0.0, 0.0);
+        let use_item09_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(8)._widget), 1, "use_item09_key_binding", "", Some(Vector2::new(0.5, 1.3)), false, 0.0, 0.0, 0.0);
+        let use_item10_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(9)._widget), 1, "use_item10_key_binding", "", Some(Vector2::new(0.5, 1.3)), false, 0.0, 0.0, 0.0);
 
         let mut character_controller_help_widget = ControllerHelpWidget {
             _character_controller_help_widget: character_controller_help_widget_mut,
@@ -199,17 +201,18 @@ impl<'a> ControllerHelpWidget<'a> {
                     engine_resources.get_material_instance_data("ui/controller/keycode_q").clone(),
                     engine_resources.get_material_instance_data("ui/controller/keycode_e").clone()
                 ])),
-                (InputControlType::UseCurrentItem, Some(vec![engine_resources.get_material_instance_data("ui/controller/keycode_c").clone()])),
-                (InputControlType::UseItem01, Some(vec![engine_resources.get_material_instance_data("ui/controller/keycode_1").clone()])),
-                (InputControlType::UseItem02, Some(vec![engine_resources.get_material_instance_data("ui/controller/keycode_2").clone()])),
-                (InputControlType::UseItem03, Some(vec![engine_resources.get_material_instance_data("ui/controller/keycode_3").clone()])),
-                (InputControlType::UseItem04, Some(vec![engine_resources.get_material_instance_data("ui/controller/keycode_4").clone()])),
-                (InputControlType::UseItem05, Some(vec![engine_resources.get_material_instance_data("ui/controller/keycode_5").clone()])),
-                (InputControlType::UseItem06, Some(vec![engine_resources.get_material_instance_data("ui/controller/keycode_6").clone()])),
-                (InputControlType::UseItem07, Some(vec![engine_resources.get_material_instance_data("ui/controller/keycode_7").clone()])),
-                (InputControlType::UseItem08, Some(vec![engine_resources.get_material_instance_data("ui/controller/keycode_8").clone()])),
-                (InputControlType::UseItem09, Some(vec![engine_resources.get_material_instance_data("ui/controller/keycode_9").clone()])),
-                (InputControlType::UseItem10, Some(vec![engine_resources.get_material_instance_data("ui/controller/keycode_0").clone()]))
+                (InputControlType::DropItem, Some(vec![engine_resources.get_material_instance_data("ui/controller/keycode_f").clone()])),
+                (InputControlType::UseItem, Some(vec![engine_resources.get_material_instance_data("ui/controller/keycode_c").clone()])),
+                (InputControlType::SelectItem01, Some(vec![engine_resources.get_material_instance_data("ui/controller/keycode_1").clone()])),
+                (InputControlType::SelectItem02, Some(vec![engine_resources.get_material_instance_data("ui/controller/keycode_2").clone()])),
+                (InputControlType::SelectItem03, Some(vec![engine_resources.get_material_instance_data("ui/controller/keycode_3").clone()])),
+                (InputControlType::SelectItem04, Some(vec![engine_resources.get_material_instance_data("ui/controller/keycode_4").clone()])),
+                (InputControlType::SelectItem05, Some(vec![engine_resources.get_material_instance_data("ui/controller/keycode_5").clone()])),
+                (InputControlType::SelectItem06, Some(vec![engine_resources.get_material_instance_data("ui/controller/keycode_6").clone()])),
+                (InputControlType::SelectItem07, Some(vec![engine_resources.get_material_instance_data("ui/controller/keycode_7").clone()])),
+                (InputControlType::SelectItem08, Some(vec![engine_resources.get_material_instance_data("ui/controller/keycode_8").clone()])),
+                (InputControlType::SelectItem09, Some(vec![engine_resources.get_material_instance_data("ui/controller/keycode_9").clone()])),
+                (InputControlType::SelectItem10, Some(vec![engine_resources.get_material_instance_data("ui/controller/keycode_0").clone()]))
             ]),
             _joystick_material_instance_map: HashMap::from([
                 (InputControlType::Attack, Some(vec![engine_resources.get_material_instance_data("ui/controller/joystick_rb").clone()])),
@@ -230,17 +233,18 @@ impl<'a> ControllerHelpWidget<'a> {
                     engine_resources.get_material_instance_data("ui/controller/joystick_left").clone(),
                     engine_resources.get_material_instance_data("ui/controller/joystick_right").clone()
                 ])),
-                (InputControlType::UseCurrentItem, Some(vec![engine_resources.get_material_instance_data("ui/controller/joystick_y").clone()])),
-                (InputControlType::UseItem01, None),
-                (InputControlType::UseItem02, None),
-                (InputControlType::UseItem03, None),
-                (InputControlType::UseItem04, None),
-                (InputControlType::UseItem05, None),
-                (InputControlType::UseItem06, None),
-                (InputControlType::UseItem07, None),
-                (InputControlType::UseItem08, None),
-                (InputControlType::UseItem09, None),
-                (InputControlType::UseItem10, None)
+                (InputControlType::DropItem, Some(vec![engine_resources.get_material_instance_data("ui/controller/joystick_x").clone()])),
+                (InputControlType::UseItem, Some(vec![engine_resources.get_material_instance_data("ui/controller/joystick_y").clone()])),
+                (InputControlType::SelectItem01, None),
+                (InputControlType::SelectItem02, None),
+                (InputControlType::SelectItem03, None),
+                (InputControlType::SelectItem04, None),
+                (InputControlType::SelectItem05, None),
+                (InputControlType::SelectItem06, None),
+                (InputControlType::SelectItem07, None),
+                (InputControlType::SelectItem08, None),
+                (InputControlType::SelectItem09, None),
+                (InputControlType::SelectItem10, None)
             ]),
             _key_binding_widget_map: HashMap::from([
                 (InputControlType::Attack, attack_key_binding_widget),
@@ -255,17 +259,18 @@ impl<'a> ControllerHelpWidget<'a> {
                 (InputControlType::Jump, jump_key_binding_widget),
                 (InputControlType::Roll, roll_key_binding_widget),
                 (InputControlType::SelectItem, select_item_key_binding_widget),
-                (InputControlType::UseCurrentItem, use_item_key_binding_widget),
-                (InputControlType::UseItem01, use_item01_key_binding_widget),
-                (InputControlType::UseItem02, use_item02_key_binding_widget),
-                (InputControlType::UseItem03, use_item03_key_binding_widget),
-                (InputControlType::UseItem04, use_item04_key_binding_widget),
-                (InputControlType::UseItem05, use_item05_key_binding_widget),
-                (InputControlType::UseItem06, use_item06_key_binding_widget),
-                (InputControlType::UseItem07, use_item07_key_binding_widget),
-                (InputControlType::UseItem08, use_item08_key_binding_widget),
-                (InputControlType::UseItem09, use_item09_key_binding_widget),
-                (InputControlType::UseItem10, use_item10_key_binding_widget)
+                (InputControlType::DropItem, drop_item_key_binding_widget),
+                (InputControlType::UseItem, use_item_key_binding_widget),
+                (InputControlType::SelectItem01, use_item01_key_binding_widget),
+                (InputControlType::SelectItem02, use_item02_key_binding_widget),
+                (InputControlType::SelectItem03, use_item03_key_binding_widget),
+                (InputControlType::SelectItem04, use_item04_key_binding_widget),
+                (InputControlType::SelectItem05, use_item05_key_binding_widget),
+                (InputControlType::SelectItem06, use_item06_key_binding_widget),
+                (InputControlType::SelectItem07, use_item07_key_binding_widget),
+                (InputControlType::SelectItem08, use_item08_key_binding_widget),
+                (InputControlType::SelectItem09, use_item09_key_binding_widget),
+                (InputControlType::SelectItem10, use_item10_key_binding_widget)
             ]),
             _is_keyboard_input_mode: true,
             _last_interaction_object_key: std::ptr::null(),
@@ -311,55 +316,51 @@ impl<'a> ControllerHelpWidget<'a> {
         }
     }
 
-    pub fn update_interaction_widget(&mut self, input_control_type: InputControlType, game_scene_manager: &GameSceneManager) {
+    pub fn update_interaction_widget(&mut self, game_scene_manager: &GameSceneManager) {
+        let mut matched_input_control_type = InputControlType::None;
+        let mut interaction_name = "";
         let character_manager = game_scene_manager.get_character_manager();
-        let interaction_key_binding_widget = self._key_binding_widget_map.get(&input_control_type).unwrap();
-        let interaction_widget = ptr_as_mut(interaction_key_binding_widget._layout_widget);
-
-        let mut is_visible_interaction_widget = false;
-
         if character_manager.is_valid_player() {
             let player = character_manager.get_player().borrow();
             if player.is_in_interaction_range() {
                 let interaction_object = player.get_nearest_interaction_object();
-                let is_matched = match interaction_object {
-                    InteractionObject::None => false,
-                    InteractionObject::PropBed(_) | InteractionObject::PropPickup(_) => {
-                        input_control_type == InputControlType::Interaction
-                    }
-                    InteractionObject::PropGate(_) => {
-                        input_control_type == InputControlType::EnterGate
-                    }
-                    InteractionObject::PropGathering(_) => {
-                        input_control_type == InputControlType::Gathering
-                    }
-                    InteractionObject::PropMonolith(_) => {
-                        input_control_type == InputControlType::Interaction
-                    }
-                    InteractionObject::PropTable(_) => {
-                        input_control_type == InputControlType::Interaction
-                    }
+                (matched_input_control_type, interaction_name) = match interaction_object {
+                    InteractionObject::PropBed(_) => (InputControlType::Interaction, "Sleep"),
+                    InteractionObject::PropPickup(_) => (InputControlType::Interaction, "Pick up"),
+                    InteractionObject::PropMonolith(_) => (InputControlType::Interaction, "Open Toolbox"),
+                    InteractionObject::PropTable(_) => (InputControlType::Interaction, "Sit Down"),
                     InteractionObject::Npc(_) => {
-                        input_control_type == InputControlType::Interaction
-                    }
+                        if player.get_attached_item().is_some() {
+                            (InputControlType::Interaction, "Give Item")
+                        } else {
+                            (InputControlType::Interaction, "Interaction")
+                        }
+                    },
+                    InteractionObject::PropGate(_) => (InputControlType::EnterGate, "Enter Gate"),
+                    InteractionObject::PropGathering(_) => (InputControlType::Gathering, "Gathering"),
+                    _ => (InputControlType::Interaction, "interaction")
                 };
-
-                if is_matched {
-                    let position = interaction_object.get_position();
-                    let main_camera = game_scene_manager.get_scene_manager().get_main_camera();
-                    let screen_position = main_camera.convert_world_to_screen(&position, false);
-                    interaction_widget._ui_component.set_pos(screen_position.x, screen_position.y);
-                    if self._last_interaction_object_key != interaction_object.get_key() {
-                        let binding_name_widget = ptr_as_mut(interaction_key_binding_widget._binding_name_widget);
-                        binding_name_widget._ui_component.set_text(interaction_object.get_interaction_name());
-                        self._last_interaction_object_key = interaction_object.get_key();
-                    }
-                    is_visible_interaction_widget = true;
-                }
             }
         }
 
-        interaction_widget._ui_component.set_visible(is_visible_interaction_widget);
+        const INTERACTION_WIDGETS: [InputControlType; 3]= [InputControlType::Interaction, InputControlType::EnterGate, InputControlType::Gathering];
+        for input_control_type in INTERACTION_WIDGETS.iter() {
+            let interaction_key_binding_widget = self._key_binding_widget_map.get(&input_control_type).unwrap();
+            let interaction_widget = ptr_as_mut(interaction_key_binding_widget._layout_widget);
+            if *input_control_type == matched_input_control_type {
+                let player = character_manager.get_player().borrow();
+                let interaction_object = player.get_nearest_interaction_object();
+                let position = interaction_object.get_position();
+                let main_camera = game_scene_manager.get_scene_manager().get_main_camera();
+                let screen_position = main_camera.convert_world_to_screen(&position, false);
+                interaction_widget._ui_component.set_pos(screen_position.x, screen_position.y);
+                interaction_widget._ui_component.set_visible(true);
+                ptr_as_mut(interaction_key_binding_widget._binding_name_widget)._ui_component.set_text(interaction_name);
+                self._last_interaction_object_key = interaction_object.get_key();
+            } else {
+                interaction_widget._ui_component.set_visible(false);
+            }
+        }
     }
 
     pub fn update_controller_help_widget(&mut self, game_scene_manager: &GameSceneManager, game_controller: &GameController) {
@@ -370,8 +371,6 @@ impl<'a> ControllerHelpWidget<'a> {
         }
 
         // update interaction icon visibility
-        self.update_interaction_widget(InputControlType::EnterGate, game_scene_manager);
-        self.update_interaction_widget(InputControlType::Interaction, game_scene_manager);
-        self.update_interaction_widget(InputControlType::Gathering, game_scene_manager);
+        self.update_interaction_widget(game_scene_manager);
     }
 }

@@ -17,6 +17,7 @@ use crate::game_module::game_ui_manager::GameUIManager;
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Debug, Display, EnumIter, EnumString, EnumCount)]
 pub enum InputControlType {
+    None,
     Attack,
     PowerAttack,
     Interaction,
@@ -29,17 +30,18 @@ pub enum InputControlType {
     Jump,
     Roll,
     SelectItem,
-    UseCurrentItem,
-    UseItem01,
-    UseItem02,
-    UseItem03,
-    UseItem04,
-    UseItem05,
-    UseItem06,
-    UseItem07,
-    UseItem08,
-    UseItem09,
-    UseItem10,
+    DropItem,
+    UseItem,
+    SelectItem01,
+    SelectItem02,
+    SelectItem03,
+    SelectItem04,
+    SelectItem05,
+    SelectItem06,
+    SelectItem07,
+    SelectItem08,
+    SelectItem09,
+    SelectItem10,
 }
 
 pub struct GameController<'a> {
@@ -408,7 +410,7 @@ impl<'a> GameController<'a> {
             || joystick_input_data._btn_left_shoulder == ButtonState::Pressed;
         let is_roll = keyboard_input_data.get_key_pressed(KeyCode::AltLeft)
             || joystick_input_data._btn_b == ButtonState::Pressed;
-        let is_interaction_or_drop_item = keyboard_input_data.get_key_pressed(KeyCode::KeyF)
+        let is_interaction = keyboard_input_data.get_key_pressed(KeyCode::KeyF)
             || joystick_input_data._btn_x == ButtonState::Pressed;
         let is_zoom_in = keyboard_input_data.get_key_hold(KeyCode::ArrowUp)
             || 0 < mouse_move_data._scroll_delta.y
@@ -484,7 +486,7 @@ impl<'a> GameController<'a> {
         }
 
         if use_item {
-            let item_data_name = item_manager.get_selected_inventory_item_data_name();
+            let item_data_name = ptr_as_ref(item_manager.get_selected_inventory_item_data_name());
             item_manager.use_inventory_item(item_data_name, 1);
         }
 
@@ -594,12 +596,12 @@ impl<'a> GameController<'a> {
             player_mut.set_action_attack();
         }
 
-        if is_interaction_or_drop_item {
+        if is_interaction {
             if player_mut.is_in_interaction_range() {
                 player_mut.set_action_interaction();
             } else {
-                let item_data_name = String::from(item_manager.get_selected_inventory_item_data_name());
-                item_manager.drop_inventory_item(item_data_name.as_str(), 1);
+                let item_data_name = ptr_as_ref(item_manager.get_selected_inventory_item_data_name());
+                item_manager.drop_inventory_item(item_data_name, 1);
             }
         }
 

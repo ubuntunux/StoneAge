@@ -264,7 +264,7 @@ impl<'a> ItemManager<'a> {
         success
     }
 
-    pub fn use_inventory_item(&self, item_data_name: &str, item_count: usize) -> bool {
+    pub fn remove_inventory_item(&mut self, item_data_name: &str, item_count: usize) -> bool {
         let success = self.get_game_client().get_game_ui_manager_mut().remove_item(item_data_name, item_count);
         if success {
             self.get_audio_manager_mut().play_audio_bank(
@@ -272,7 +272,13 @@ impl<'a> ItemManager<'a> {
                 AudioLoop::ONCE,
                 None,
             );
+        }
+        success
+    }
 
+    pub fn use_inventory_item(&mut self, item_data_name: &str, item_count: usize) -> bool {
+        let success = self.remove_inventory_item(item_data_name, item_count);
+        if success {
             let mut player = self.get_game_scene_manager().get_character_manager().get_player().borrow_mut();
             player.get_stats_mut().add_hunger(-0.2);
             player.get_stats_mut().add_hp(10);
@@ -282,14 +288,8 @@ impl<'a> ItemManager<'a> {
     }
 
     pub fn drop_inventory_item(&mut self, item_data_name: &str, item_count: usize) -> bool {
-        let success = self.get_game_client().get_game_ui_manager_mut().remove_item(item_data_name, item_count);
+        let success = self.remove_inventory_item(item_data_name, item_count);
         if success {
-            self.get_audio_manager_mut().play_audio_bank(
-                AUDIO_ITEM_INVENTORY,
-                AudioLoop::ONCE,
-                None,
-            );
-
             let player = ptr_as_ref(self.get_game_scene_manager_mut().get_character_manager_mut().get_player().as_ptr());
             let yaw = player.get_rotation().y + (rand::random::<f32>() - 0.5) * std::f32::consts::PI * 0.5;
             let velocity = Vector3::new(-yaw.sin(), 1.0, -yaw.cos()) * (2.0 + rand::random::<f32>() * 2.0);
@@ -300,7 +300,6 @@ impl<'a> ItemManager<'a> {
                 _pickup_delay: 1.0,
                 ..Default::default()
             };
-
             self.create_item(&item_create_info, None);
         }
         success

@@ -7,7 +7,7 @@ use rust_engine_3d::audio::audio_manager::AudioInstance;
 use crate::game_module::actors::character_controller::CharacterController;
 use crate::game_module::actors::character_data::{ActionAnimationState, CharacterData, MoveAnimationState};
 use crate::game_module::actors::character_manager::{CharacterID, CharacterManager};
-use crate::game_module::actors::items::Item;
+use crate::game_module::actors::items::{Item, ItemManager};
 use crate::game_module::actors::props::Prop;
 use crate::game_module::behavior::behavior_base::BehaviorBase;
 
@@ -64,6 +64,7 @@ pub struct CharacterAnimationState {
 
 pub struct Character<'a> {
     pub _character_manager: *const CharacterManager<'a>,
+    pub _item_manager: *const ItemManager<'a>,
     pub _character_name: String,
     pub _character_id: CharacterID,
     pub _is_player: bool,

@@ -1,11 +1,3 @@
-use crate::game_module::actors::character::{Character, CharacterAnimationState, CharacterStats};
-use crate::game_module::actors::character_controller::CharacterController;
-use crate::game_module::actors::character_data::{
-    ActionAnimationState, CharacterData, MoveAnimationState,
-};
-use crate::game_module::actors::character_manager::{CharacterID, CharacterManager};
-use crate::game_module::behavior::behavior_base::{create_character_behavior, BehaviorState};
-use crate::game_module::game_constants::*;
 use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::{AudioLoop};
 use rust_engine_3d::effect::effect_data::EffectCreateInfo;
@@ -17,6 +9,15 @@ use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::scene::transform_object::TransformObjectData;
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
+use crate::game_module::actors::character::{Character, CharacterAnimationState, CharacterStats};
+use crate::game_module::actors::character_controller::CharacterController;
+use crate::game_module::actors::character_data::{
+    ActionAnimationState, CharacterData, MoveAnimationState,
+};
+use crate::game_module::actors::character_manager::{CharacterID, CharacterManager};
+use crate::game_module::behavior::behavior_base::{create_character_behavior, BehaviorState};
+use crate::game_module::game_constants::*;
+use crate::game_module::actors::items::ItemManager;
 use crate::game_module::actors::interaction_object::InteractionObject;
 use crate::game_module::actors::items::{Item};
 
@@ -222,7 +223,8 @@ impl CharacterStats {
 
 impl<'a> Character<'a> {
     pub fn create_character_instance(
-        character_manager: &CharacterManager<'a>,
+        character_manager: *const CharacterManager<'a>,
+        item_manager: *const ItemManager<'a>,
         character_name: &str,
         character_id: CharacterID,
         is_player: bool,
@@ -233,9 +235,9 @@ impl<'a> Character<'a> {
         rotation: &Vector3<f32>,
         scale: &Vector3<f32>,
     ) -> Character<'a> {
-        let character_data_borrow = character_data.borrow();
         let mut character = Character {
             _character_manager: character_manager,
+            _item_manager: item_manager,
             _character_name: String::from(character_name),
             _character_id: character_id,
             _is_player: is_player,
@@ -245,7 +247,7 @@ impl<'a> Character<'a> {
             _character_stats: Box::new(CharacterStats::default()),
             _animation_state: Box::new(CharacterAnimationState::default()),
             _controller: Box::new(CharacterController::create_character_controller()),
-            _behavior: create_character_behavior(character_data_borrow._character_type),
+            _behavior: create_character_behavior(character_data.borrow()._character_type),
             _attached_item: None,
             _audio_snoring: None
         };
@@ -374,8 +376,7 @@ impl<'a> Character<'a> {
             self.is_action(ActionAnimationState::Hit) ||
             self.is_action(ActionAnimationState::Hungry) ||
             self.is_action(ActionAnimationState::Pickup) {
-            if self.is_move_stop() ||
-                self.is_move_state(MoveAnimationState::Jump) ||
+            if self.is_move_state(MoveAnimationState::Jump) ||
                 self.is_move_state(MoveAnimationState::Run) ||
                 self.is_move_state(MoveAnimationState::RunningJump) ||
                 self.is_move_state(MoveAnimationState::SitDownLoop) ||
@@ -609,6 +610,10 @@ impl<'a> Character<'a> {
         }
     }
 
+    pub fn get_hunger(&self) -> f32 {
+        self._character_stats.get_hunger()
+    }
+
     pub fn set_hunger(&mut self, hunger: f32) {
         self._character_stats.set_hunger(hunger)
     }
@@ -690,6 +695,16 @@ impl<'a> Character<'a> {
                 InteractionObject::Npc(character) => {
                     let direction = math::make_normalize_xz(&(character.borrow().get_position() - self.get_position()));
                     self.look_at(&direction);
+
+                    let item_data_name = ptr_as_ref(self._item_manager).get_selected_inventory_item_data_name();
+                    if item_data_name != ITEM_NONE {
+                        if let InteractionObject::Npc(npc) = self.get_nearest_interaction_object() {
+                            let hungry = npc.borrow().get_hunger();
+                            npc.borrow_mut().set_hunger(hungry + 100.0);
+                            ptr_as_mut(self._item_manager).remove_inventory_item(item_data_name, 1);
+                        }
+                    }
+
                     character.borrow_mut().set_is_stat_displayed(true);
                     character.borrow_mut().set_behavior(BehaviorState::Interaction, None, false);
                 }

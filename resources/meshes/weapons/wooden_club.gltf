@@ -8,18 +8,29 @@
 		{
 			"name":"Scene",
 			"nodes":[
-				1
+				3
 			]
 		}
 	],
 	"nodes":[
 		{
+			"name":"Bone"
+		},
+		{
 			"mesh":0,
-			"name":"wooden_club"
+			"name":"wooden_club",
+			"skin":0
 		},
 		{
 			"children":[
+				1,
 				0
+			],
+			"name":"Armature"
+		},
+		{
+			"children":[
+				2
 			],
 			"name":"wooden_club"
 		}
@@ -34,11 +45,22 @@
 						"NORMAL":1,
 						"TEXCOORD_0":2,
 						"TANGENT":3,
-						"COLOR_0":4
+						"COLOR_0":4,
+						"JOINTS_0":5,
+						"WEIGHTS_0":6
 					},
-					"indices":5
+					"indices":7
 				}
 			]
+		}
+	],
+	"skins":[
+		{
+			"inverseBindMatrices":8,
+			"joints":[
+				0
+			],
+			"name":"Armature"
 		}
 	],
 	"accessors":[
@@ -48,13 +70,13 @@
 			"count":559,
 			"max":[
 				0.17376786470413208,
-				0.16322794556617737,
-				1.012321949005127
+				1.012321949005127,
+				0.1685549020767212
 			],
 			"min":[
 				-0.1647660732269287,
-				-0.16855493187904358,
-				-0.2250579595565796
+				-0.2250579595565796,
+				-0.16322797536849976
 			],
 			"type":"VEC3"
 		},
@@ -85,9 +107,27 @@
 		},
 		{
 			"bufferView":5,
+			"componentType":5121,
+			"count":559,
+			"type":"VEC4"
+		},
+		{
+			"bufferView":6,
+			"componentType":5126,
+			"count":559,
+			"type":"VEC4"
+		},
+		{
+			"bufferView":7,
 			"componentType":5123,
 			"count":2880,
 			"type":"SCALAR"
+		},
+		{
+			"bufferView":8,
+			"componentType":5126,
+			"count":1,
+			"type":"MAT4"
 		}
 	],
 	"bufferViews":[
@@ -123,14 +163,31 @@
 		},
 		{
 			"buffer":0,
-			"byteLength":5760,
+			"byteLength":2236,
 			"byteOffset":31304,
+			"target":34962
+		},
+		{
+			"buffer":0,
+			"byteLength":8944,
+			"byteOffset":33540,
+			"target":34962
+		},
+		{
+			"buffer":0,
+			"byteLength":5760,
+			"byteOffset":42484,
 			"target":34963
+		},
+		{
+			"buffer":0,
+			"byteLength":64,
+			"byteOffset":48244
 		}
 	],
 	"buffers":[
 		{
-			"byteLength":37064,
+			"byteLength":48308,
 			"uri":"wooden_club.bin"
 		}
 	]

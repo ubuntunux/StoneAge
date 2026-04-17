@@ -6,6 +6,7 @@ use rust_engine_3d::scene::render_object::{RenderObjectCreateInfo, SceneObjectTy
 use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
+use crate::game_module::actors::items::ItemManager;
 use crate::application::application::Application;
 use crate::game_module::actors::character::{ActorWrapper, Character, CharacterCreateInfo};
 use crate::game_module::actors::interaction_object::InteractionObject;
@@ -123,13 +124,12 @@ impl<'a> CharacterManager<'a> {
             _scale: character_create_info._scale.clone(),
         };
 
-        let render_object_data = self
-            .get_scene_manager_mut()
-            .add_skeletal_render_object(character_name, &render_object_create_info);
-
+        let item_manager: *const ItemManager<'a> = ptr_as_ref(self._game_scene_manager)._item_manager.as_ref();
+        let render_object_data = self.get_scene_manager_mut().add_skeletal_render_object(character_name, &render_object_create_info);
         let id = self.generate_id();
         let character = newRcRefCell(Character::create_character_instance(
             self,
+            item_manager,
             character_name,
             id,
             is_player,

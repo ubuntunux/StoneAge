@@ -30,19 +30,6 @@ impl<'a> InteractionObject<'a> {
         }
     }
 
-    pub fn get_interaction_name(&self) -> &str {
-        match self {
-            InteractionObject::None => "",
-            InteractionObject::PropBed(_) => "Sleep",
-            InteractionObject::PropPickup(_) => "Pick up",
-            InteractionObject::PropGate(_) => "Enter Gate",
-            InteractionObject::PropGathering(_) => "Gathering",
-            InteractionObject::PropMonolith(_) => "Open Toolbox",
-            &InteractionObject::PropTable(_) => "Sit Down",
-            InteractionObject::Npc(_) => "Talk",
-        }
-    }
-
     pub fn get_position(&self) -> Vector3<f32> {
         match self {
             InteractionObject::None => Vector3::new(0.0, 0.0, 0.0),
