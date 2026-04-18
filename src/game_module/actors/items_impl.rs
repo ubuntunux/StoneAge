@@ -27,7 +27,7 @@ impl Default for ItemCreateInfo {
             _rotation: Vector3::zeros(),
             _scale: Vector3::new(1.0, 1.0, 1.0),
             _velocity: Vector3::zeros(),
-            _pickup_delay: 0.5,
+            _pickup_delay: 0.25,
         }
     }
 }
@@ -300,6 +300,7 @@ impl<'a> ItemManager<'a> {
                 _pickup_delay: 1.0,
                 ..Default::default()
             };
+
             self.create_item(&item_create_info, None);
         }
         success

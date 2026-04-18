@@ -486,8 +486,8 @@ impl<'a> GameController<'a> {
         }
 
         if use_item {
-            let item_data_name = ptr_as_ref(item_manager.get_selected_inventory_item_data_name());
-            item_manager.use_inventory_item(item_data_name, 1);
+            let item_data_name = String::from(item_manager.get_selected_inventory_item_data_name());
+            item_manager.use_inventory_item(item_data_name.as_str(), 1);
         }
 
         // character control
@@ -600,8 +600,8 @@ impl<'a> GameController<'a> {
             if player_mut.is_in_interaction_range() {
                 player_mut.set_action_interaction();
             } else {
-                let item_data_name = ptr_as_ref(item_manager.get_selected_inventory_item_data_name());
-                item_manager.drop_inventory_item(item_data_name, 1);
+                let item_data_name = String::from(item_manager.get_selected_inventory_item_data_name());
+                item_manager.drop_inventory_item(item_data_name.as_str(), 1);
             }
         }
 
