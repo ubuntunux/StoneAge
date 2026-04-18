@@ -7,6 +7,7 @@ use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use crate::game_module::actors::items::ItemManager;
 use crate::game_module::game_constants::ITEM_NONE;
 use crate::game_module::game_resource::GameResources;
+use crate::game_module::game_scene_manager::GameSceneManager;
 
 const ITEM_BAR_WIDGET_POS_Y_FROM_BOTTOM: f32 = 50.0;
 const MAX_ITEM_COUNT: usize = 10;
@@ -29,6 +30,7 @@ pub struct ItemSelectionWidget<'a> {
 pub struct ItemBarWidget<'a> {
     pub _game_resources: *const GameResources<'a>,
     pub _engine_resources: *const EngineResources<'a>,
+    pub _game_scene_manager: *const GameSceneManager<'a>,
     pub _item_manager: *const ItemManager<'a>,
     pub _layer: *const WidgetDefault<'a>,
     pub _item_widgets: Vec<ItemWidget<'a>>,
@@ -127,6 +129,7 @@ impl<'a> ItemBarWidget<'a> {
     pub fn create_item_bar_widget(
         game_resources: *const GameResources<'a>,
         engine_resources: *const EngineResources<'a>,
+        game_scene_manager: *const GameSceneManager<'a>,
         item_manager: *const ItemManager<'a>,
         parent_widget: &mut WidgetDefault<'a>
     ) -> ItemBarWidget<'a> {
@@ -156,6 +159,7 @@ impl<'a> ItemBarWidget<'a> {
         let mut item_bar_widget = ItemBarWidget {
             _game_resources: game_resources,
             _engine_resources: engine_resources,
+            _game_scene_manager: game_scene_manager,
             _item_manager: item_manager,
             _layer: layer.as_ref(),
             _item_widgets: Vec::new(),
@@ -262,7 +266,9 @@ impl<'a> ItemBarWidget<'a> {
             if item_count == 0 {
                 item_widget.set_item_data(ITEM_NONE, None, 0);
                 self._item_count -= 1;
-                ptr_as_mut(self._item_manager).detach_item();
+
+                let player = ptr_as_mut(ptr_as_ref(self._game_scene_manager).get_character_manager().get_player().as_ptr());
+                ptr_as_mut(self._item_manager).detach_item(player);
                 //self.select_previous_item();
             }
             return true;
@@ -271,13 +277,14 @@ impl<'a> ItemBarWidget<'a> {
     }
 
     pub fn select_item(&mut self, item_index: usize) {
+        let player = ptr_as_mut(ptr_as_ref(self._game_scene_manager).get_character_manager().get_player().as_ptr());
         if item_index < self._item_widgets.len() && self._item_widgets[item_index]._item_data_name != ITEM_NONE {
             let item_widget = &self._item_widgets[item_index];
             self._selected_item_widget.update_selected_item_widget(item_index, Some(item_widget));
-            ptr_as_mut(self._item_manager).attach_item(self.get_selected_item_data_name());
+            ptr_as_mut(self._item_manager).attach_item(player, self.get_selected_item_data_name());
         } else {
             self._selected_item_widget.update_selected_item_widget(INVALID_ITEM_INDEX, None);
-            ptr_as_mut(self._item_manager).detach_item();
+            ptr_as_mut(self._item_manager).detach_item(player);
         }
     }
 

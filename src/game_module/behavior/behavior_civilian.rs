@@ -3,6 +3,7 @@ use crate::game_module::behavior::behavior_base::{BehaviorBase, BehaviorState};
 use crate::game_module::game_constants::{GameViewMode, ARRIVAL_DISTANCE_THRESHOLD, CHARACTER_INTERACTION_TIME, GAME_VIEW_MODE, NPC_IDLE_TERM_MAX, NPC_IDLE_TERM_MIN, NPC_ROAMING_RADIUS, NPC_ROAMING_TIME};
 use nalgebra::Vector3;
 use rust_engine_3d::utilities::math::lerp;
+use crate::game_module::actors::character_data::ActionAnimationState;
 
 #[derive(Default)]
 pub struct BehaviorCivilian {
@@ -27,31 +28,44 @@ impl BehaviorBase for BehaviorCivilian {
     ) {
         match self._behavior_state {
             BehaviorState::Idle => {
-                if owner.get_stats().is_hungry() == false {
-                    if self._behavior_time < 0.0 {
-                        self.set_behavior(BehaviorState::Roaming, owner, target, false);
+                if owner.get_attached_item().is_some() {
+                    self.set_behavior(BehaviorState::Eating, owner, target, false);
+                } else {
+                    if owner.get_stats().is_hungry() == false {
+                        if self._behavior_time < 0.0 {
+                            self.set_behavior(BehaviorState::Roaming, owner, target, false);
+                        }
+                        self._behavior_time -= delta_time;
                     }
-                    self._behavior_time -= delta_time;
+                }
+            }
+            BehaviorState::Eating => {
+                if owner.is_action(ActionAnimationState::Eating) == false {
+                    self.set_behavior(BehaviorState::Idle, owner, target, false);
                 }
             }
             BehaviorState::Roaming => {
-                let mut do_idle: bool = false;
-                if 0.0 < self._behavior_time {
-                    let offset = self._target_point - owner.get_position();
-                    let dist = offset.x * offset.x + offset.z * offset.z;
-                    if dist < ARRIVAL_DISTANCE_THRESHOLD {
-                        do_idle = true;
-                    } else if (owner._controller._is_blocked || owner._controller._is_cliff) && !owner.is_falling() {
+                if owner.get_attached_item().is_some() {
+                    self.set_behavior(BehaviorState::Eating, owner, target, false);
+                } else {
+                    let mut do_idle: bool = false;
+                    if 0.0 < self._behavior_time {
+                        let offset = self._target_point - owner.get_position();
+                        let dist = offset.x * offset.x + offset.z * offset.z;
+                        if dist < ARRIVAL_DISTANCE_THRESHOLD {
+                            do_idle = true;
+                        } else if (owner._controller._is_blocked || owner._controller._is_cliff) && !owner.is_falling() {
+                            do_idle = true;
+                        }
+                    } else {
                         do_idle = true;
                     }
-                } else {
-                    do_idle = true;
-                }
 
-                if do_idle {
-                    self.set_behavior(BehaviorState::Idle, owner, target, false);
+                    if do_idle {
+                        self.set_behavior(BehaviorState::Idle, owner, target, false);
+                    }
+                    self._behavior_time -= delta_time;
                 }
-                self._behavior_time -= delta_time;
             }
             BehaviorState::Interaction => {
                 if 0.0 < self._behavior_time {
@@ -87,6 +101,13 @@ impl BehaviorBase for BehaviorCivilian {
                         owner.set_move_idle();
                     }
                     self._behavior_time = lerp(NPC_IDLE_TERM_MIN, NPC_IDLE_TERM_MAX, rand::random::<f32>());
+                }
+                BehaviorState::Eating => {
+                    owner.set_action_eating();
+                    if owner.is_move_stop() == false {
+                        owner.set_move_idle();
+                    }
+                    self._behavior_time = NPC_IDLE_TERM_MIN;
                 }
                 BehaviorState::Roaming => {
                     let move_area = Vector3::new(

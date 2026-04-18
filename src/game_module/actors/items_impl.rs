@@ -4,7 +4,7 @@ use crate::game_module::actors::items::{
     Item, ItemCreateInfo, ItemData, ItemDataType, ItemID, ItemManager, ItemProperties,
 };
 use crate::game_module::game_client::GameClient;
-use crate::game_module::game_constants::{AUDIO_ITEM_INVENTORY, AUDIO_PICKUP_ITEM, EAT_ITEM_DISTANCE, WEAPON_SOCKET_NAME};
+use crate::game_module::game_constants::{AUDIO_ITEM_INVENTORY, AUDIO_PICKUP_ITEM, EAT_ITEM_DISTANCE, ITEM_NONE, WEAPON_SOCKET_NAME};
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
 use nalgebra::{Vector3};
@@ -18,6 +18,7 @@ use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
 use std::collections::HashMap;
 use rust_engine_3d::scene::socket::Socket;
+use crate::game_module::actors::character::Character;
 
 impl Default for ItemCreateInfo {
     fn default() -> Self {
@@ -276,15 +277,12 @@ impl<'a> ItemManager<'a> {
         success
     }
 
-    pub fn use_inventory_item(&mut self, item_data_name: &str, item_count: usize) -> bool {
-        let success = self.remove_inventory_item(item_data_name, item_count);
-        if success {
+    pub fn use_inventory_item(&mut self) {
+        let item_data_name = String::from(self.get_selected_inventory_item_data_name());
+        if item_data_name != ITEM_NONE {
             let mut player = self.get_game_scene_manager().get_character_manager().get_player().borrow_mut();
-            player.get_stats_mut().add_hunger(-0.2);
-            player.get_stats_mut().add_hp(10);
-            player.get_stats_mut().add_stamina(10.0);
+            player.set_action_eating();
         }
-        success
     }
 
     pub fn drop_inventory_item(&mut self, item_data_name: &str, item_count: usize) -> bool {
@@ -322,14 +320,13 @@ impl<'a> ItemManager<'a> {
         self.get_game_client().get_game_ui_manager_mut().select_item(item_index);
     }
 
-    pub fn attach_item(&mut self, item_data_name: &str) {
-        let player = ptr_as_mut(self.get_game_scene_manager_mut().get_character_manager_mut().get_player().as_ptr());
-        if let Some(attached_item) = player.get_attached_item() {
+    pub fn attach_item(&mut self, character: &mut Character<'a>, item_data_name: &str) {
+        if let Some(attached_item) = character.get_attached_item() {
             if *attached_item.borrow().get_item_data_name() == item_data_name {
                 return;
             } else {
                 self.remove_item(attached_item);
-                player.detach_item();
+                character.detach_item();
             }
         }
 
@@ -337,16 +334,15 @@ impl<'a> ItemManager<'a> {
             _item_data_name: String::from(item_data_name),
             ..Default::default()
         };
-        let attach_socket = Some(player._render_object.borrow()._sockets.get(&String::from(WEAPON_SOCKET_NAME)).unwrap().clone());
+        let attach_socket = Some(character._render_object.borrow()._sockets.get(&String::from(WEAPON_SOCKET_NAME)).unwrap().clone());
         let attached_item = self.create_item(&item_create_info, attach_socket);
-        player.attach_item(attached_item);
+        character.attach_item(attached_item);
     }
 
-    pub fn detach_item(&mut self) {
-        let player = ptr_as_mut(self.get_game_scene_manager_mut().get_character_manager_mut().get_player().as_ptr());
-        if let Some(attached_item) = player.get_attached_item() {
+    pub fn detach_item(&mut self, character: &mut Character<'a>) {
+        if let Some(attached_item) = character.get_attached_item() {
             self.remove_item(attached_item);
-            player.detach_item();
+            character.detach_item();
         }
     }
 

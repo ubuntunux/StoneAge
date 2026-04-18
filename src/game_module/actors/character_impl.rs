@@ -374,6 +374,7 @@ impl<'a> Character<'a> {
         if self.is_action(ActionAnimationState::Attack) ||
             self.is_action(ActionAnimationState::PowerAttack) ||
             self.is_action(ActionAnimationState::Hit) ||
+            self.is_action(ActionAnimationState::Eating) ||
             self.is_action(ActionAnimationState::Hungry) ||
             self.is_action(ActionAnimationState::Pickup) {
             if self.is_move_state(MoveAnimationState::Jump) ||
@@ -415,7 +416,6 @@ impl<'a> Character<'a> {
 
     pub fn is_available_move(&self) -> bool {
         self.is_alive() &&
-        //self.is_move_state(MoveAnimationState::SitDownLoop) == false &&
         self.is_move_state(MoveAnimationState::Roll) == false &&
         (self.is_on_ground() == false || self.is_action(ActionAnimationState::Kick) == false) &&
         self.is_action(ActionAnimationState::LayingDown) == false &&
@@ -614,6 +614,10 @@ impl<'a> Character<'a> {
         self._character_stats.get_hunger()
     }
 
+    pub fn add_hunger(&mut self, hunger: f32) {
+        self._character_stats.add_hunger(hunger)
+    }
+
     pub fn set_hunger(&mut self, hunger: f32) {
         self._character_stats.set_hunger(hunger)
     }
@@ -670,6 +674,12 @@ impl<'a> Character<'a> {
         }
     }
 
+    pub fn set_action_eating(&mut self) {
+        if self.is_idle_action() {
+            self.set_action_animation(ActionAnimationState::Eating, 1.0);
+        }
+    }
+
     pub fn set_action_interaction(&mut self) {
         if self._controller.is_on_ground() && self.is_available_move() && self.is_idle_action() {
             match self._controller._nearest_interaction_object.clone() {
@@ -696,15 +706,15 @@ impl<'a> Character<'a> {
                     let direction = math::make_normalize_xz(&(character.borrow().get_position() - self.get_position()));
                     self.look_at(&direction);
 
-                    let item_data_name = ptr_as_ref(self._item_manager).get_selected_inventory_item_data_name();
-                    if item_data_name != ITEM_NONE {
-                        if let InteractionObject::Npc(npc) = self.get_nearest_interaction_object() {
-                            let hungry = npc.borrow().get_hunger();
-                            npc.borrow_mut().set_hunger(hungry + 100.0);
-                            ptr_as_mut(self._item_manager).remove_inventory_item(item_data_name, 1);
+                    if let Some(attached_item) = self.get_attached_item() {
+                        let item_data_name = attached_item.borrow()._item_data_name.clone();
+                        if item_data_name != ITEM_NONE {
+                            if character.borrow().get_attached_item().is_none() {
+                                ptr_as_mut(self._item_manager).remove_inventory_item(item_data_name.as_str(), 1);
+                                ptr_as_mut(self._item_manager).attach_item(&mut *character.borrow_mut(), item_data_name.as_str());
+                            }
                         }
                     }
-
                     character.borrow_mut().set_is_stat_displayed(true);
                     character.borrow_mut().set_behavior(BehaviorState::Interaction, None, false);
                 }
@@ -957,6 +967,13 @@ impl<'a> Character<'a> {
                     AnimationLayer::ActionLayer,
                 );
             }
+            ActionAnimationState::Eating => {
+                render_object.set_animation(
+                    &animation_data._eating_animation,
+                    &animation_info,
+                    AnimationLayer::ActionLayer,
+                );
+            }
             ActionAnimationState::Hungry => {
                 animation_info._animation_loop = true;
                 render_object.set_animation(
@@ -1184,6 +1201,9 @@ impl<'a> Character<'a> {
 
     pub fn update_action_animation_begin_event(&mut self) {
         match self._animation_state._action_animation_state {
+            ActionAnimationState::Eating => {
+                self.get_character_manager().get_scene_manager().play_audio_bank(AUDIO_EATING);
+            },
             ActionAnimationState::Sleep => {
                 if self._is_player {
                     if let Some(audio_instance) = self._audio_snoring.as_ref() {
@@ -1283,6 +1303,18 @@ impl<'a> Character<'a> {
 
     pub fn update_action_animation_end_event(&mut self) {
         match self._animation_state._action_animation_state_prev {
+            ActionAnimationState::Eating => {
+                if let Some(attached_item) = self.get_attached_item().clone() {
+                    self.get_stats_mut().add_hunger(100.0);
+                    self.get_stats_mut().add_hp(10);
+                    self.get_stats_mut().add_stamina(10.0);
+
+                    if self._is_player {
+                        ptr_as_mut(self._item_manager).remove_inventory_item(attached_item.borrow()._item_data_name.as_str(), 1);
+                    }
+                    ptr_as_mut(self._item_manager).detach_item(self);
+                }
+            }
             ActionAnimationState::Sleep => {
                 if self._is_player {
                     if let Some(audio_instance) = self._audio_snoring.as_ref() {

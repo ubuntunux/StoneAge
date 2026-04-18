@@ -249,7 +249,7 @@ impl<'a> GameUIManager<'a> {
         ));
 
         self._player_hud = Some(Box::new(PlayerHud::create_player_hud(game_ui_layout_mut)));
-        self._item_bar_widget = Some(Box::new(ItemBarWidget::create_item_bar_widget(game_resources, engine_resources, item_manager, game_ui_layout_mut)));
+        self._item_bar_widget = Some(Box::new(ItemBarWidget::create_item_bar_widget(game_resources, engine_resources, game_scene_manager, item_manager, game_ui_layout_mut)));
         self._text_box_widget = Some(Box::new(TextBoxWidget::create_text_box_widget(audio_manager, engine_resources, root_widget)));
         self._target_status_bar = Some(Box::new(TargetStatusWidget::create_target_status_widget(game_ui_layout_mut)));
         self._time_of_day = Some(Box::new(TimeOfDayWidget::create_time_of_day_widget(game_ui_layout_mut, game_resources)));

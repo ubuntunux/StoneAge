@@ -88,6 +88,7 @@ pub const NPC_AVAILABLE_MOVING_ATTACK: bool = false;
 
 // AUDIO DATA
 pub const AUDIO_ATTACK: &str = "swoosh";
+pub const AUDIO_EATING: &str = "eating";
 pub const AUDIO_HIT: &str = "hit";
 pub const AUDIO_CRUNCH: &str = "crunch";
 pub const AUDIO_FOOTSTEP: &str = "footstep";

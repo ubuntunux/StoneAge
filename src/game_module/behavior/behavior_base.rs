@@ -12,6 +12,7 @@ pub enum BehaviorState {
     #[default]
     None,
     Idle,
+    Eating,
     Roaming,
     Interaction,
     Chase,

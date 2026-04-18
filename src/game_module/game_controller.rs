@@ -486,8 +486,7 @@ impl<'a> GameController<'a> {
         }
 
         if use_item {
-            let item_data_name = String::from(item_manager.get_selected_inventory_item_data_name());
-            item_manager.use_inventory_item(item_data_name.as_str(), 1);
+            item_manager.use_inventory_item();
         }
 
         // character control
