@@ -4,7 +4,7 @@ use crate::game_module::actors::items::{
     Item, ItemCreateInfo, ItemData, ItemDataType, ItemID, ItemManager, ItemProperties,
 };
 use crate::game_module::game_client::GameClient;
-use crate::game_module::game_constants::{AUDIO_ITEM_INVENTORY, AUDIO_PICKUP_ITEM, EAT_ITEM_DISTANCE, ITEM_NONE, WEAPON_SOCKET_NAME};
+use crate::game_module::game_constants::{AUDIO_ITEM_INVENTORY, AUDIO_PICKUP_ITEM, EAT_ITEM_DISTANCE, WEAPON_SOCKET_NAME};
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
 use nalgebra::{Vector3};
@@ -43,6 +43,20 @@ impl Default for ItemData {
             _weapon_damage: 10.0,
             _weapon_range: 0.0,
         }
+    }
+}
+
+impl ItemDataType {
+    pub fn is_eatable(&self) -> bool {
+        *self == ItemDataType::Food
+    }
+
+    pub fn is_droppable(&self) -> bool {
+        *self != ItemDataType::Hand && *self != ItemDataType::None
+    }
+
+    pub fn is_weapon_item_type(&self) -> bool {
+        *self == ItemDataType::Bow || *self == ItemDataType::MeleeWeapon || *self == ItemDataType::Spear
     }
 }
 
@@ -90,6 +104,10 @@ impl<'a> Item<'a> {
 
     pub fn get_item_id(&self) -> ItemID {
         self._item_id
+    }
+
+    pub fn get_item_data_type(&self) -> ItemDataType {
+        self._item_data.borrow()._item_type
     }
 
     pub fn get_item_data_name(&self) -> &String {
@@ -277,14 +295,6 @@ impl<'a> ItemManager<'a> {
         success
     }
 
-    pub fn use_inventory_item(&mut self) {
-        let item_data_name = String::from(self.get_selected_inventory_item_data_name());
-        if item_data_name != ITEM_NONE {
-            let mut player = self.get_game_scene_manager().get_character_manager().get_player().borrow_mut();
-            player.set_action_eating();
-        }
-    }
-
     pub fn drop_inventory_item(&mut self, item_data_name: &str, item_count: usize) -> bool {
         let success = self.remove_inventory_item(item_data_name, item_count);
         if success {
@@ -306,6 +316,10 @@ impl<'a> ItemManager<'a> {
 
     pub fn get_selected_inventory_item_data_name(&self) -> &str {
         self.get_game_client().get_game_ui_manager().get_selected_inventory_item_data_name()
+    }
+
+    pub fn get_selected_inventory_item_data_type(&self) -> ItemDataType {
+        self.get_game_client().get_game_ui_manager().get_selected_inventory_item_data_type()
     }
 
     pub fn select_next_item(&mut self) {

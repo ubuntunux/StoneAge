@@ -9,6 +9,7 @@ use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use crate::application::application::Application;
 use crate::game_module::actors::character::{ActorWrapper, Character};
+use crate::game_module::actors::items::ItemDataType;
 use crate::game_module::game_client::GameClient;
 use crate::game_module::game_constants::{MATERIAL_INTRO_IMAGE};
 use crate::game_module::game_resource::GameResources;
@@ -339,6 +340,10 @@ impl<'a> GameUIManager<'a> {
 
     pub fn get_selected_inventory_item_data_name(&self) -> &str {
         self._item_bar_widget.as_ref().unwrap().get_selected_item_data_name()
+    }
+
+    pub fn get_selected_inventory_item_data_type(&self) -> ItemDataType {
+        self._item_bar_widget.as_ref().unwrap().get_selected_item_data_type()
     }
 
     pub fn select_next_item(&mut self) {

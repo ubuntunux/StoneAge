@@ -157,9 +157,9 @@ impl<'a> ControllerHelpWidget<'a> {
         let roll_key_binding_widget = KeyBindingWidget::create_key_binding_widget(character_controller_help_widget_mut, 1, "roll_key_binding", "Roll", None, false, TEXT_WIDGET_WIDTH, 20.0, -14.0);
 
         // inventory
-        let select_item_key_binding_widget = KeyBindingWidget::create_key_binding_widget(root_widget, 2, "select_item_key_binding", "Select Item", None, false, 0.0, 20.0, -14.0);
-        let drop_item_key_binding_widget = KeyBindingWidget::create_key_binding_widget(root_widget, 1, "drop_item_key_binding", "Drop Item", None, false, 0.0, 20.0, -14.0);
-        let use_item_key_binding_widget = KeyBindingWidget::create_key_binding_widget(root_widget, 1, "use_item_key_binding", "Use Item", None, false, 0.0, 20.0, -14.0);
+        let select_item_key_binding_widget = KeyBindingWidget::create_key_binding_widget(character_controller_help_widget_mut, 2, "select_item_key_binding", "Select Item", None, false, TEXT_WIDGET_WIDTH, 20.0, -14.0);
+        let drop_item_key_binding_widget = KeyBindingWidget::create_key_binding_widget(character_controller_help_widget_mut, 1, "drop_item_key_binding", "Drop Item", None, false, TEXT_WIDGET_WIDTH, 20.0, -14.0);
+        let use_item_key_binding_widget = KeyBindingWidget::create_key_binding_widget(character_controller_help_widget_mut, 1, "use_item_key_binding", "Use Item", None, false, TEXT_WIDGET_WIDTH, 20.0, -14.0);
 
         // interaction
         let interaction_key_binding_widget = KeyBindingWidget::create_key_binding_widget(root_widget, 1, "interaction_key_binding", "Interaction", None, true, 0.0, 20.0, -14.0);
@@ -330,7 +330,7 @@ impl<'a> ControllerHelpWidget<'a> {
                     InteractionObject::PropMonolith(_) => (InputControlType::Interaction, "Open Toolbox"),
                     InteractionObject::PropTable(_) => (InputControlType::Interaction, "Sit Down"),
                     InteractionObject::Npc(_) => {
-                        if player.get_attached_item().is_some() {
+                        if player.get_attached_item_data_type().is_eatable() {
                             (InputControlType::Interaction, "Give Item")
                         } else {
                             (InputControlType::Interaction, "Interaction")

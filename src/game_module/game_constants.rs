@@ -107,14 +107,20 @@ pub const AMBIENT_SOUND: &str = "ambient_sound";
 pub const GAME_MUSIC: &str = "game_music";
 
 // UI
+pub const MATERIAL_UI_NONE: &str = "";
 pub const MATERIAL_CROSS_HAIR: &str = "ui/cross_hair_box";
 pub const MATERIAL_TIME_OF_DAY: &str = "ui/tod";
 pub const MATERIAL_INTRO_IMAGE: &str = "ui/intro_image";
 pub const MATERIAL_WORLDMAP: &str = "ui/worldmap";
 pub const MATERIAL_WORLDMAP_FADE_TIME: f32 = 0.5;
-pub const MATERIAL_UI_NONE: &str = "";
 pub const STORY_BOARD_FADE_TIME: f32 = 1.0;
 pub const MATERIAL_FADE_TO_BLACK: &str = "ui/fade_to_black";
+
+// emoji
+pub const MATERIAL_EMOJI_BAD: &str = "ui/emoji/bad";
+pub const MATERIAL_EMOJI_GOOD: &str = "ui/emoji/good";
+pub const MATERIAL_EMOJI_HUNGRY: &str = "ui/emoji/hungry";
+pub const MATERIAL_EMOJI_LOVE: &str = "ui/emoji/love";
 
 // EFFECT DATA
 pub const EFFECT_HIT: &str = "effect_test";
@@ -123,6 +129,7 @@ pub const EFFECT_FALLING_WATER: &str = "effect_falling_water";
 // Items
 pub const ITEM_NONE: &str = "";
 pub const ITEM_COCONUT: &str = "items/coconut";
+pub const ITEM_HAND: &str = "items/hand";
 pub const ITEM_SPIRIT_BALL: &str = "items/spirit_ball";
 
 // Scenario

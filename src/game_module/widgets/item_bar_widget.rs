@@ -4,6 +4,7 @@ use rust_engine_3d::scene::material_instance::MaterialInstanceData;
 use rust_engine_3d::scene::ui::{HorizontalAlign, Orientation, PosHintX, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault};
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
+use crate::game_module::actors::items::ItemDataType;
 use crate::game_module::actors::items::ItemManager;
 use crate::game_module::game_constants::ITEM_NONE;
 use crate::game_module::game_resource::GameResources;
@@ -17,6 +18,7 @@ const INVALID_ITEM_INDEX: usize = usize::MAX;
 
 pub struct ItemWidget<'a> {
     pub _item_data_name: String,
+    pub _item_data_type: ItemDataType,
     pub _item_index: usize,
     pub _item_count: usize,
     pub _widget: *const WidgetDefault<'a>,
@@ -59,6 +61,7 @@ impl<'a> ItemWidget<'a> {
 
         ItemWidget {
             _item_data_name: "".to_string(),
+            _item_data_type: ItemDataType::None,
             _item_index: item_index,
             _item_count: 0,
             _widget: item_widget.as_ref(),
@@ -68,12 +71,14 @@ impl<'a> ItemWidget<'a> {
     pub fn set_item_data(
         &mut self,
         item_data_name: &str,
+        item_data_type: ItemDataType,
         material_instance: Option<RcRefCell<MaterialInstanceData<'a>>>,
         item_count: usize,
     ) {
         let ui_component = ptr_as_mut(self._widget).get_ui_component_mut();
         ui_component.set_material_instance(material_instance);
         self._item_data_name = String::from(item_data_name);
+        self._item_data_type = item_data_type;
         self.set_item_count(item_count);
     }
 
@@ -216,10 +221,21 @@ impl<'a> ItemBarWidget<'a> {
     }
 
     pub fn get_selected_item_data_name(&self) -> &str {
-        if self._selected_item_widget._item_index != INVALID_ITEM_INDEX {
-            return self._item_widgets[self._selected_item_widget._item_index]._item_data_name.as_str();
+        if self.get_selected_item_index() != INVALID_ITEM_INDEX {
+            return self._item_widgets[self.get_selected_item_index()]._item_data_name.as_str();
         }
         ITEM_NONE
+    }
+
+    pub fn get_selected_item_data_type(&self) -> ItemDataType {
+        if self.get_selected_item_index() != INVALID_ITEM_INDEX {
+            return self._item_widgets[self.get_selected_item_index()]._item_data_type
+        }
+        ItemDataType::None
+    }
+
+    pub fn get_selected_item_index(&self) -> usize {
+        self._selected_item_widget.get_item_index()
     }
 
     pub fn add_item(&mut self, item_data_name: &str, item_count: usize) -> bool {
@@ -232,10 +248,11 @@ impl<'a> ItemBarWidget<'a> {
             } else {
                 for item_widget in self._item_widgets.iter_mut() {
                     if item_widget._item_data_name == ITEM_NONE {
-                        let item_material_instance = ptr_as_ref(self._game_resources).get_item_data(item_data_name).borrow()._ui_material_instance.clone();
-                        let material = ptr_as_ref(self._engine_resources).get_material_instance_data(item_material_instance.as_str());
+                        let item_data = ptr_as_ref(self._game_resources).get_item_data(item_data_name).borrow();
+                        let material = ptr_as_ref(self._engine_resources).get_material_instance_data(item_data._ui_material_instance.as_str());
                         item_widget.set_item_data(
                             item_data_name,
+                            item_data._item_type,
                             Some(material.clone()),
                             item_count,
                         );
@@ -264,12 +281,15 @@ impl<'a> ItemBarWidget<'a> {
         if let Some(item_widget) = self.find_item_widget_mut(item_data_name) {
             let item_count = item_widget.remove_item_count(item_count);
             if item_count == 0 {
-                item_widget.set_item_data(ITEM_NONE, None, 0);
+                item_widget.set_item_data(ITEM_NONE, ItemDataType::None, None, 0);
                 self._item_count -= 1;
 
                 let player = ptr_as_mut(ptr_as_ref(self._game_scene_manager).get_character_manager().get_player().as_ptr());
                 ptr_as_mut(self._item_manager).detach_item(player);
                 //self.select_previous_item();
+            } else {
+                let item_index = self.get_selected_item_index();
+                self.select_item(item_index);
             }
             return true;
         }

@@ -5,7 +5,7 @@ use strum_macros::{Display, EnumCount, EnumIter, EnumString};
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use rust_engine_3d::utilities::math;
 use crate::game_module::actors::character::{ActorWrapper, Character};
-use crate::game_module::game_constants::{AUDIO_ROOSTER, AUDIO_STOMACH_GROWLING, CAMERA_DISTANCE_MAX, CAMERA_DISTANCE_MIN, CAMERA_OFFSET_Y, CHARACTER_INTERACTION_TIME, HUNGER_WARNING_THRESHOLD, STORY_BOARD_FADE_TIME, MATERIAL_UI_NONE, TIME_OF_MORNING, CHARACTER_INTERACTION_DISTANCE, ITEM_COCONUT};
+use crate::game_module::game_constants::*;
 use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::game_ui_manager::{GameUIManager, QuestItem};
 use crate::game_module::scenario::scenario::{ScenarioBase, ScenarioDataCreateInfo, ScenarioTrack};
@@ -109,23 +109,24 @@ impl<'a> ScenarioIntro<'a> {
         self._story_board_phase += 1;
     }
 
-    pub fn update_move_character(&self, game_ui_manager: &mut GameUIManager<'a>, actor: &RcRefCell<Character<'a>>, target: &RcRefCell<Character<'a>>) -> bool {
+    pub fn update_assemble(&self, actor: &RcRefCell<Character<'a>>, target: &RcRefCell<Character<'a>>) -> bool {
         let radius = target.borrow().get_collision()._bounding_box._mag_xz + 0.5;
         let (direction, dist) = math::make_normalize_with_norm(&(target.borrow().get_position() - actor.borrow().get_position()));
         if radius < dist {
             actor.borrow_mut().set_move(&direction);
-            false
-        } else {
-            let mut ewa = actor.borrow_mut();
-            let contents = vec![TextBoxContent::MaterialInstance(String::from(ITEM_COCONUT))];
-            game_ui_manager.add_text_box_item(
-                ActorWrapper::Character(actor.clone()),
-                &contents,
-                Some( CHARACTER_INTERACTION_TIME )
-            );
-            ewa.set_move_idle();
-            true
+            return false;
         }
+        true
+    }
+
+    pub fn emoji_hungry(&self, game_ui_manager: &mut GameUIManager<'a>, actor: &RcRefCell<Character<'a>>) {
+        let contents = vec![TextBoxContent::MaterialInstance(String::from(MATERIAL_EMOJI_HUNGRY))];
+        game_ui_manager.add_text_box_item(
+            ActorWrapper::Character(actor.clone()),
+            &contents,
+            Some( CHARACTER_INTERACTION_TIME )
+        );
+        actor.borrow_mut().set_move_idle();
     }
 }
 
@@ -159,9 +160,11 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                 self._prop_tree = Some(game_scene_manager.get_prop_manager().get_prop_by_name("birch_tree_00.001").unwrap().clone());
                 self._actor_ewa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::None, None, true);
                 self._actor_koa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::None, None, true);
-                self._actor_aru.as_ref().unwrap().borrow_mut().set_move_direction(&Vector3::new(0.0, 0.0, -1.0), true);
-                self._actor_ewa.as_ref().unwrap().borrow_mut().set_move_direction(&Vector3::new(0.0, 0.0, -1.0), true);
-                self._actor_koa.as_ref().unwrap().borrow_mut().set_move_direction(&Vector3::new(0.0, 0.0, -1.0), true);
+                self._actor_aru.as_ref().unwrap().borrow_mut().set_move_direction(&Vector3::new(1.0, 0.0, 0.0), true);
+                self._actor_ewa.as_ref().unwrap().borrow_mut().set_move_direction(&Vector3::new(1.0, 0.0, 0.0), true);
+                self._actor_koa.as_ref().unwrap().borrow_mut().set_move_direction(&Vector3::new(1.0, 0.0, 0.0), true);
+
+                game_scene_manager.get_game_ui_manager_mut().add_item(ITEM_HAND, 1);
             },
             ScenarioIntroPhase::Sleep => {
                 self._actor_aru.as_ref().unwrap().borrow_mut().set_action_sleep();
@@ -257,7 +260,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                 if SKIP_SCENARIO {
                     game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, INTRO_FADE_TIME);
                     game_ui_manager.set_auto_fade_inout(true);
-                    self.set_scenario_phase(ScenarioIntroPhase::QuestGathering.to_string().as_str(), None);
+                    self.set_scenario_phase(ScenarioIntroPhase::Hungry.to_string().as_str(), Some(1.0));
                 } else {
                     let story_board_phase = self.get_story_board_phase();
                     if game_ui_manager.is_done_game_image_progress() && any_key_pressed {
@@ -317,11 +320,15 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
             ScenarioIntroPhase::Assemble => {
                 let mut done = true;
 
-                if self.update_move_character(game_ui_manager, self._actor_ewa.as_ref().unwrap(), self._actor_aru.as_ref().unwrap()) == false {
+                if self.update_assemble(self._actor_ewa.as_ref().unwrap(), self._actor_aru.as_ref().unwrap()) {
+                    self.emoji_hungry(game_ui_manager, self._actor_ewa.as_ref().unwrap())
+                } else {
                     done = false;
                 }
 
-                if self.update_move_character(game_ui_manager, self._actor_koa.as_ref().unwrap(), self._actor_aru.as_ref().unwrap()) == false {
+                if self.update_assemble(self._actor_koa.as_ref().unwrap(), self._actor_aru.as_ref().unwrap()) {
+                    self.emoji_hungry(game_ui_manager, self._actor_koa.as_ref().unwrap())
+                } else {
                     done = false;
                 }
 

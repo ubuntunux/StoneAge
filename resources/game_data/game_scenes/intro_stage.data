@@ -275,7 +275,7 @@
     },
     "_player": {
         "monkey_aru": {
-            "_character_data_name": "characters/jack",
+            "_character_data_name": "characters/family/monkey_aru",
             "_position": [
                 19.868873596191406,
                 2.7635936737060547,
@@ -484,8 +484,8 @@
         },
         "gate.002": {
             "_instance_parameters": {
-                "_linked_gate": "gate.001",
-                "_linked_stage": "game_scenes/intro_stage"
+                "_linked_gate": "gate",
+                "_linked_stage": "game_scenes/stage_01"
             },
             "_position": [
                 20.280345916748047,

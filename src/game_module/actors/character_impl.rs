@@ -17,7 +17,7 @@ use crate::game_module::actors::character_data::{
 use crate::game_module::actors::character_manager::{CharacterID, CharacterManager};
 use crate::game_module::behavior::behavior_base::{create_character_behavior, BehaviorState};
 use crate::game_module::game_constants::*;
-use crate::game_module::actors::items::ItemManager;
+use crate::game_module::actors::items::{ItemDataType, ItemManager};
 use crate::game_module::actors::interaction_object::InteractionObject;
 use crate::game_module::actors::items::{Item};
 
@@ -97,7 +97,7 @@ impl CharacterStats {
         1f32.min(((MAX_HUNGER - self._hunger) * 10.0).ceil() / 10.0)
     }
     pub fn is_hungry(&self) -> bool {
-        self._hunger <= HUNGER_WARNING_THRESHOLD
+        HUNGER_WARNING_THRESHOLD <= self._hunger
     }
     pub fn get_hunger(&self) -> f32 {
         self._hunger
@@ -278,6 +278,13 @@ impl<'a> Character<'a> {
 
     pub fn get_attached_item(&self) -> &Option<RcRefCell<Item<'a>>> {
         &self._attached_item
+    }
+
+    pub fn get_attached_item_data_type(&self) -> ItemDataType {
+        if let Some(attached_item) = self._attached_item.as_ref() {
+            return attached_item.borrow().get_item_data_type();
+        }
+        ItemDataType::None
     }
 
     pub fn detach_item(&mut self) {
@@ -706,17 +713,25 @@ impl<'a> Character<'a> {
                     let direction = math::make_normalize_xz(&(character.borrow().get_position() - self.get_position()));
                     self.look_at(&direction);
 
-                    if let Some(attached_item) = self.get_attached_item() {
-                        let item_data_name = attached_item.borrow()._item_data_name.clone();
-                        if item_data_name != ITEM_NONE {
-                            if character.borrow().get_attached_item().is_none() {
+                    let mut give_item = false;
+
+                    // give item
+                    if character.borrow().get_attached_item().is_none() {
+                        if let Some(attached_item) = self.get_attached_item() {
+                            if attached_item.borrow().get_item_data_type().is_eatable() {
+                                give_item = true;
+                                let item_data_name = attached_item.borrow()._item_data_name.clone();
                                 ptr_as_mut(self._item_manager).remove_inventory_item(item_data_name.as_str(), 1);
                                 ptr_as_mut(self._item_manager).attach_item(&mut *character.borrow_mut(), item_data_name.as_str());
                             }
                         }
                     }
-                    character.borrow_mut().set_is_stat_displayed(true);
-                    character.borrow_mut().set_behavior(BehaviorState::Interaction, None, false);
+
+                    // interaction
+                    if give_item == false {
+                        character.borrow_mut().set_is_stat_displayed(true);
+                        character.borrow_mut().set_behavior(BehaviorState::Interaction, None, false);
+                    }
                 }
                 _ => {},
             }
@@ -1305,14 +1320,15 @@ impl<'a> Character<'a> {
         match self._animation_state._action_animation_state_prev {
             ActionAnimationState::Eating => {
                 if let Some(attached_item) = self.get_attached_item().clone() {
-                    self.get_stats_mut().add_hunger(100.0);
+                    self.get_stats_mut().add_hunger(-1.0);
                     self.get_stats_mut().add_hp(10);
                     self.get_stats_mut().add_stamina(10.0);
 
                     if self._is_player {
                         ptr_as_mut(self._item_manager).remove_inventory_item(attached_item.borrow()._item_data_name.as_str(), 1);
+                    } else {
+                        ptr_as_mut(self._item_manager).detach_item(self);
                     }
-                    ptr_as_mut(self._item_manager).detach_item(self);
                 }
             }
             ActionAnimationState::Sleep => {

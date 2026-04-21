@@ -36,24 +36,6 @@
                 1.0
             ]
         },
-        "neanderthal": {
-            "_character_data_name": "characters/neanderthal",
-            "_position": [
-                -14.872201919555664,
-                5.559664726257324,
-                3.6195011138916016
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
         "neanderthal.001": {
             "_character_data_name": "characters/neanderthal",
             "_position": [
@@ -620,7 +602,7 @@
         },
         "gate": {
             "_instance_parameters": {
-                "_linked_gate": "gate",
+                "_linked_gate": "gate.002",
                 "_linked_stage": "game_scenes/intro_stage"
             },
             "_position": [

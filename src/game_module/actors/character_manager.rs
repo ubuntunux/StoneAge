@@ -12,7 +12,7 @@ use crate::game_module::actors::character::{ActorWrapper, Character, CharacterCr
 use crate::game_module::actors::interaction_object::InteractionObject;
 use crate::game_module::actors::items::{ItemCreateInfo};
 use crate::game_module::game_client::GameClient;
-use crate::game_module::game_constants::{GameViewMode, AUDIO_STOMACH_GROWLING, CHARACTER_INTERACTION_DISTANCE, CHARACTER_INTERACTION_TIME, GAME_VIEW_MODE, ITEM_SPIRIT_BALL, NPC_ATTACK_HIT_RANGE};
+use crate::game_module::game_constants::{GameViewMode, AUDIO_STOMACH_GROWLING, CHARACTER_INTERACTION_DISTANCE, CHARACTER_INTERACTION_TIME, GAME_VIEW_MODE, ITEM_SPIRIT_BALL, MATERIAL_EMOJI_GOOD, MATERIAL_EMOJI_HUNGRY, NPC_ATTACK_HIT_RANGE};
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::game_ui_manager::GameUIManager;
@@ -158,11 +158,7 @@ impl<'a> CharacterManager<'a> {
             .remove_skeletal_render_object(character.borrow()._render_object.borrow()._object_id);
     }
     pub fn clear_characters(&mut self, clear_player: bool) {
-        let characters = self
-            ._characters
-            .values()
-            .cloned()
-            .collect::<Vec<RcRefCell<Character>>>();
+        let characters = self._characters.values().cloned().collect::<Vec<RcRefCell<Character>>>();
         for character in characters.iter() {
             if clear_player || character.borrow().is_player() == false {
                 self.remove_character(character);
@@ -195,16 +191,13 @@ impl<'a> CharacterManager<'a> {
     pub fn update_character_text_box(&self, game_ui_manager: &mut GameUIManager<'a>, refcell_character: &RcRefCell<Character<'a>>) {
         let mut character = refcell_character.borrow_mut();
         if character._character_stats.get_is_stat_displayed() {
-            let mut contents = vec![
-                TextBoxContent::StatWidget((String::from("Health"), character._character_stats.get_hp() as f32 / character._character_stats.get_max_hp() as f32)),
-                TextBoxContent::StatWidget((String::from("Hunger"), character._character_stats.get_hunger())),
-                TextBoxContent::StatWidget((String::from("Tired"), character._character_stats.get_tired())),
-                TextBoxContent::StatWidget((String::from("Happiness"), character._character_stats.get_happiness()))
-            ];
-
+            let mut contents = vec![];
             if character.get_stats().is_hungry() {
-                contents.push(TextBoxContent::Audio(String::from(AUDIO_STOMACH_GROWLING)))
-            };
+                contents.push(TextBoxContent::MaterialInstance(String::from(MATERIAL_EMOJI_HUNGRY)));
+                contents.push(TextBoxContent::Audio(String::from(AUDIO_STOMACH_GROWLING)));
+            } else {
+                contents.push(TextBoxContent::MaterialInstance(String::from(MATERIAL_EMOJI_GOOD)));
+            }
 
             game_ui_manager.add_text_box_item(
                 ActorWrapper::Character(refcell_character.clone()),

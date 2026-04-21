@@ -2,5 +2,7 @@
     "_item_type": "Food",
     "_model_data_name": "PolygonNatureBiomes/Props/SM_Prop_Coconut_01",
     "_name": "COCONUT",
-    "_ui_material_instance": "ui/items/item_coconut"
+    "_ui_material_instance": "ui/items/item_coconut",
+    "_weapon_damage": 10.0,
+    "_weapon_range": 1.0
 }

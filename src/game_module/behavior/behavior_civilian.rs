@@ -1,8 +1,8 @@
+use nalgebra::Vector3;
+use rust_engine_3d::utilities::math::lerp;
 use crate::game_module::actors::character::Character;
 use crate::game_module::behavior::behavior_base::{BehaviorBase, BehaviorState};
 use crate::game_module::game_constants::{GameViewMode, ARRIVAL_DISTANCE_THRESHOLD, CHARACTER_INTERACTION_TIME, GAME_VIEW_MODE, NPC_IDLE_TERM_MAX, NPC_IDLE_TERM_MIN, NPC_ROAMING_RADIUS, NPC_ROAMING_TIME};
-use nalgebra::Vector3;
-use rust_engine_3d::utilities::math::lerp;
 use crate::game_module::actors::character_data::ActionAnimationState;
 
 #[derive(Default)]
@@ -28,7 +28,7 @@ impl BehaviorBase for BehaviorCivilian {
     ) {
         match self._behavior_state {
             BehaviorState::Idle => {
-                if owner.get_attached_item().is_some() {
+                if owner.get_attached_item_data_type().is_eatable() {
                     self.set_behavior(BehaviorState::Eating, owner, target, false);
                 } else {
                     if owner.get_stats().is_hungry() == false {
@@ -45,7 +45,7 @@ impl BehaviorBase for BehaviorCivilian {
                 }
             }
             BehaviorState::Roaming => {
-                if owner.get_attached_item().is_some() {
+                if owner.get_attached_item_data_type().is_eatable() {
                     self.set_behavior(BehaviorState::Eating, owner, target, false);
                 } else {
                     let mut do_idle: bool = false;

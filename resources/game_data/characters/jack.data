@@ -27,7 +27,7 @@
         "_sit_down_loop_animation": "characters/jack/jack_sit_down_loop",
         "_sleep_animation": "characters/jack/jack_sleep",
         "_upper_animation_layer": "jack/upper_animation_layer",
-        "_wake_up_animation": "characters/jack/jack_stand_up",
+        "_wake_up_animation": "characters/jack/jack_wake_up",
         "_walk_animation": "characters/jack/jack_walk",
         "_walk_animation_speed": 1.5
     },

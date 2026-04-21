@@ -459,34 +459,40 @@ impl<'a> GameController<'a> {
         }
 
         // item control
-        let item_manager = self.get_game_client().get_game_scene_manager().get_item_manager_mut();
-        if is_previous_item {
-            item_manager.select_previous_item();
-        } else if is_next_item {
-            item_manager.select_next_item();
-        } else if keyboard_input_data.is_any_key_pressed() {
-            const NUMPAD_KEY_MAP: [KeyCode; 10] = [
-                KeyCode::Digit1,
-                KeyCode::Digit2,
-                KeyCode::Digit3,
-                KeyCode::Digit4,
-                KeyCode::Digit5,
-                KeyCode::Digit6,
-                KeyCode::Digit7,
-                KeyCode::Digit8,
-                KeyCode::Digit9,
-                KeyCode::Digit0,
-            ];
-            for (item_index, numpad_key) in NUMPAD_KEY_MAP.iter().enumerate() {
-                if keyboard_input_data.get_key_pressed(*numpad_key) {
-                    item_manager.select_item(item_index);
-                    break;
+        let selectable_item = player.borrow().is_available_move() && player.borrow().is_idle_action();
+        if selectable_item {
+            let item_manager = self.get_game_client().get_game_scene_manager().get_item_manager_mut();
+            if is_previous_item {
+                item_manager.select_previous_item();
+            } else if is_next_item {
+                item_manager.select_next_item();
+            } else if keyboard_input_data.is_any_key_pressed() {
+                const NUMPAD_KEY_MAP: [KeyCode; 10] = [
+                    KeyCode::Digit1,
+                    KeyCode::Digit2,
+                    KeyCode::Digit3,
+                    KeyCode::Digit4,
+                    KeyCode::Digit5,
+                    KeyCode::Digit6,
+                    KeyCode::Digit7,
+                    KeyCode::Digit8,
+                    KeyCode::Digit9,
+                    KeyCode::Digit0,
+                ];
+
+                for (item_index, numpad_key) in NUMPAD_KEY_MAP.iter().enumerate() {
+                    if keyboard_input_data.get_key_pressed(*numpad_key) {
+                        item_manager.select_item(item_index);
+                        break;
+                    }
                 }
             }
-        }
 
-        if use_item {
-            item_manager.use_inventory_item();
+            if use_item {
+                if player.borrow().is_available_move() && player.borrow().is_idle_action() && player.borrow().get_attached_item_data_type().is_eatable() {
+                    player.borrow_mut().set_action_eating();
+                }
+            }
         }
 
         // character control
@@ -598,17 +604,20 @@ impl<'a> GameController<'a> {
         if is_interaction {
             if player_mut.is_in_interaction_range() {
                 player_mut.set_action_interaction();
-            } else {
-                let item_data_name = String::from(item_manager.get_selected_inventory_item_data_name());
-                item_manager.drop_inventory_item(item_data_name.as_str(), 1);
+            } else if selectable_item {
+                let item_manager = self.get_game_client().get_game_scene_manager().get_item_manager_mut();
+                if item_manager.get_selected_inventory_item_data_type().is_droppable() {
+                    let item_data_name = String::from(item_manager.get_selected_inventory_item_data_name());
+                    item_manager.drop_inventory_item(item_data_name.as_str(), 1);
+                }
             }
         }
 
         if is_power_attack {
-            if player_mut.get_attached_item().is_none() {
-                player_mut.set_action_kick();
-            } else {
+            if player_mut.get_attached_item_data_type().is_weapon_item_type() {
                 player_mut.set_action_power_attack();
+            } else {
+                player_mut.set_action_kick();
             }
         }
 
