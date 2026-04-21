@@ -710,12 +710,13 @@ impl<'a> Character<'a> {
                     }
                 }
                 InteractionObject::Npc(character) => {
+                    // interaction
                     let direction = math::make_normalize_xz(&(character.borrow().get_position() - self.get_position()));
                     self.look_at(&direction);
-
-                    let mut give_item = false;
+                    character.borrow_mut().set_behavior(BehaviorState::Interaction, None, false);
 
                     // give item
+                    let mut give_item = false;
                     if character.borrow().get_attached_item().is_none() {
                         if let Some(attached_item) = self.get_attached_item() {
                             if attached_item.borrow().get_item_data_type().is_eatable() {
@@ -727,10 +728,8 @@ impl<'a> Character<'a> {
                         }
                     }
 
-                    // interaction
                     if give_item == false {
                         character.borrow_mut().set_is_stat_displayed(true);
-                        character.borrow_mut().set_behavior(BehaviorState::Interaction, None, false);
                     }
                 }
                 _ => {},
