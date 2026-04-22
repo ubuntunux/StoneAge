@@ -238,7 +238,7 @@ impl<'a> GameSceneManager<'a> {
     pub fn update_teleport(&mut self, character_manager: &CharacterManager<'a>) {
         if self._teleport_stage.is_some() {
             let game_scene_data_name = ptr_as_ref(self._teleport_stage.as_ref().unwrap().as_str());
-            if self.get_current_game_scene_data_name().eq(game_scene_data_name) == false {
+            if self.get_current_game_scene_data_name() != game_scene_data_name {
                 self.close_game_scene_data();
                 self.open_game_scene_data(game_scene_data_name);
             }
@@ -321,6 +321,11 @@ impl<'a> GameSceneManager<'a> {
     }
 
     pub fn close_game_scene_data(&mut self) {
+        if self.has_scenario() {
+            self._scenario_map.values_mut().for_each(|scenario| {
+                scenario.borrow_mut().on_close_game_scene(self._current_game_scene_data_name.as_str());
+            });
+        }
         self.clear_game_object_data();
         self.get_scene_manager_mut().close_scene_data();
         self.set_game_scene_state(GameSceneState::None);
@@ -469,6 +474,11 @@ impl<'a> GameSceneManager<'a> {
             GameSceneState::Loading => {
                 if self.get_scene_manager().is_load_complete() {
                     self.spawn_game_object_data();
+                    if self.has_scenario() {
+                        self._scenario_map.values_mut().for_each(|scenario| {
+                            scenario.borrow_mut().on_open_game_scene(self._current_game_scene_data_name.as_str());
+                        });
+                    }
                     self.set_game_scene_state(GameSceneState::PlayGame);
                 }
             }

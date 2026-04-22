@@ -9,3 +9,4 @@ pub mod time_of_day;
 pub mod toolbox_widget;
 pub mod text_box_widget;
 pub mod quest_widgets;
+pub mod world_map_widget;

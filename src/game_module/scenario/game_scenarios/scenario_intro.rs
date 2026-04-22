@@ -1,6 +1,6 @@
 use std::ffi::c_void;
-use nalgebra::Vector3;
 use std::str::FromStr;
+use nalgebra::Vector3;
 use strum_macros::{Display, EnumCount, EnumIter, EnumString};
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use rust_engine_3d::utilities::math;
@@ -30,12 +30,16 @@ pub const STORY_BOARDS: [&str; 2] = ["ui/story_board/story_board_intro_00", "ui/
 pub enum ScenarioIntroPhase {
     None,
     StoryBoard,
-    Sleep,
+    Morning,
     WakeUp,
-    Assemble,
-    Hungry,
+    AssembleFamily,
+    IamHungry,
+    MoveToTutorialStage,
+    GatheringFood,
+    BackHome,
+    GiveFood,
+    Sleep,
     End,
-    QuestGathering,
 }
 
 pub struct ScenarioIntro<'a> {
@@ -44,11 +48,16 @@ pub struct ScenarioIntro<'a> {
     pub _actor_aru: Option<RcRefCell<Character<'a>>>,
     pub _actor_ewa: Option<RcRefCell<Character<'a>>>,
     pub _actor_koa: Option<RcRefCell<Character<'a>>>,
+    pub _prop_gate: Option<RcRefCell<Prop<'a>>>,
     pub _prop_tree: Option<RcRefCell<Prop<'a>>>,
     pub _quest: Option<RcRefCell<QuestTitle<'a>>>,
-    pub _quest_gather_food: Option<QuestItem<'a>>,
-    pub _was_completed_quest_gather_food: bool,
-    pub _quest_return_home: Option<QuestItem<'a>>,
+    pub _sub_quest_move_to_tutorial_stage: Option<QuestItem<'a>>,
+    pub _sub_quest_gather_food: Option<QuestItem<'a>>,
+    pub _sub_quest_back_home: Option<QuestItem<'a>>,
+    pub _sub_quest_give_food_to_ewa: Option<QuestItem<'a>>,
+    pub _sub_quest_give_food_to_koa: Option<QuestItem<'a>>,
+    pub _sub_quest_sleep: Option<QuestItem<'a>>,
+    pub _was_completed_sub_quest_gather_food: bool,
     pub _wakeup_delay_aru: f32,
     pub _wakeup_delay_ewa: f32,
     pub _wakeup_delay_koa: f32,
@@ -74,11 +83,16 @@ impl<'a> ScenarioIntro<'a> {
             _actor_aru: None,
             _actor_ewa: None,
             _actor_koa: None,
+            _prop_gate: None,
             _prop_tree: None,
             _quest: None,
-            _quest_gather_food: None,
-            _was_completed_quest_gather_food: false,
-            _quest_return_home: None,
+            _sub_quest_move_to_tutorial_stage: None,
+            _sub_quest_gather_food: None,
+            _sub_quest_back_home: None,
+            _sub_quest_give_food_to_ewa: None,
+            _sub_quest_give_food_to_koa: None,
+            _sub_quest_sleep: None,
+            _was_completed_sub_quest_gather_food: false,
             _wakeup_delay_aru: 2.0,
             _wakeup_delay_ewa: 3.5,
             _wakeup_delay_koa: 4.0,
@@ -128,15 +142,92 @@ impl<'a> ScenarioIntro<'a> {
         );
         actor.borrow_mut().set_move_idle();
     }
+
+    pub fn create_hit_this_tree_text_box(&self, game_scene_manager: &GameSceneManager<'a>) {
+        if let Some(prop_tree) = self._prop_tree.as_ref() {
+            let actor_wrapper = ActorWrapper::Prop(prop_tree.clone());
+            let contents = vec![TextBoxContent::Text(String::from("\"Hit this tree to get food.\""))];
+            game_scene_manager.get_game_ui_manager_mut().add_text_box_item(
+                actor_wrapper,
+                &contents,
+                None
+            );
+        }
+    }
+
+    pub fn remove_hit_this_tree_text_box(&self, game_scene_manager: &GameSceneManager<'a>) {
+        if let Some(prop_tree) = self._prop_tree.as_ref() {
+            let actor_wrapper = ActorWrapper::Prop(prop_tree.clone());
+            game_scene_manager.get_game_ui_manager_mut().remove_text_box_item(actor_wrapper.get_key());
+        }
+    }
+
+    pub fn create_return_home_text_box(&self, game_scene_manager: &GameSceneManager<'a>) {
+        if let Some(actor_ewa) = self._actor_ewa.as_ref() {
+            let actor_wrapper = ActorWrapper::Character(actor_ewa.clone());
+            let contents = vec![TextBoxContent::Text(String::from("\"Return home.\""))];
+            game_scene_manager.get_game_ui_manager_mut().add_text_box_item(
+                actor_wrapper,
+                &contents,
+                None
+            );
+        }
+    }
+
+    pub fn remove_return_home_text_box(&self, game_scene_manager: &GameSceneManager<'a>) {
+        if let Some(actor_ewa) = self._actor_ewa.as_ref() {
+            let actor_wrapper = ActorWrapper::Character(actor_ewa.clone());
+            game_scene_manager.get_game_ui_manager_mut().remove_text_box_item(actor_wrapper.get_key());
+        }
+    }
 }
 
 impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
     fn is_play_scenario_mode(&self) -> bool {
-        self._scenario_track._scenario_phase != ScenarioIntroPhase::QuestGathering && self._scenario_track._scenario_phase != ScenarioIntroPhase::End
+        match self._scenario_track._scenario_phase {
+            ScenarioIntroPhase::MoveToTutorialStage |
+            ScenarioIntroPhase::GatheringFood |
+            ScenarioIntroPhase::BackHome |
+            ScenarioIntroPhase::GiveFood |
+            ScenarioIntroPhase::Sleep |
+            ScenarioIntroPhase::End => {
+                false
+            }
+            _ => {
+                true
+            }
+        }
     }
 
     fn is_end_of_scenario(&self) -> bool {
         self._scenario_track._scenario_phase == ScenarioIntroPhase::End
+    }
+
+    fn on_close_game_scene(&mut self, _game_scene_data_name: &str) {
+        let game_scene_manager = ptr_as_ref(self._game_scene_manager);
+        self.remove_hit_this_tree_text_box(game_scene_manager);
+
+        self._actor_aru = None;
+        self._actor_ewa = None;
+        self._actor_koa = None;
+        self._prop_gate = None;
+        self._prop_tree = None;
+    }
+
+    fn on_open_game_scene(&mut self, game_scene_data_name: &str) {
+        let game_scene_manager = ptr_as_ref(self._game_scene_manager);
+        if game_scene_data_name == STAGE_INTRO_STAGE {
+            self._actor_aru = Some(game_scene_manager.get_actor("monkey_aru").unwrap().clone());
+            self._actor_ewa = Some(game_scene_manager.get_actor("monkey_ewa").unwrap().clone());
+            self._actor_koa = Some(game_scene_manager.get_actor("monkey_koa").unwrap().clone());
+            self._prop_gate = Some(game_scene_manager.get_prop_manager().get_prop_by_name("gate.002").unwrap().clone());
+        } else if game_scene_data_name == STAGE_01 {
+            self._prop_tree = Some(game_scene_manager.get_prop_manager().get_prop_by_name("birch_tree_00").unwrap().clone());
+
+            if self._scenario_track._scenario_phase == ScenarioIntroPhase::GatheringFood {
+                self.create_hit_this_tree_text_box(game_scene_manager);
+            }
+        }
     }
 
     fn set_scenario_phase(&mut self, next_scenario_phase: &str, phase_duration: Option<f32>) {
@@ -152,12 +243,10 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
         let game_scene_manager = ptr_as_mut(self._game_scene_manager);
 
         match self._scenario_track._scenario_phase {
+            ScenarioIntroPhase::None => {}
             ScenarioIntroPhase::StoryBoard => {
                 game_scene_manager.set_time_of_day(TIME_OF_MORNING, 0.0);
-                self._actor_aru = Some(game_scene_manager.get_actor("monkey_aru").unwrap().clone());
-                self._actor_ewa = Some(game_scene_manager.get_actor("monkey_ewa").unwrap().clone());
-                self._actor_koa = Some(game_scene_manager.get_actor("monkey_koa").unwrap().clone());
-                self._prop_tree = Some(game_scene_manager.get_prop_manager().get_prop_by_name("birch_tree_00.001").unwrap().clone());
+
                 self._actor_ewa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::None, None, true);
                 self._actor_koa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::None, None, true);
                 self._actor_aru.as_ref().unwrap().borrow_mut().set_move_direction(&Vector3::new(1.0, 0.0, 0.0), true);
@@ -166,7 +255,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
 
                 game_scene_manager.get_game_ui_manager_mut().add_item(ITEM_HAND, 1);
             },
-            ScenarioIntroPhase::Sleep => {
+            ScenarioIntroPhase::Morning => {
                 self._actor_aru.as_ref().unwrap().borrow_mut().set_action_sleep();
                 self._actor_ewa.as_ref().unwrap().borrow_mut().set_action_sleep();
                 self._actor_koa.as_ref().unwrap().borrow_mut().set_action_sleep();
@@ -185,9 +274,9 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
             ScenarioIntroPhase::WakeUp => {
                 game_scene_manager.get_scene_manager().play_audio_bank(AUDIO_ROOSTER);
             }
-            ScenarioIntroPhase::Assemble => {
+            ScenarioIntroPhase::AssembleFamily => {
             }
-            ScenarioIntroPhase::Hungry => {
+            ScenarioIntroPhase::IamHungry => {
                 game_scene_manager.get_scene_manager().play_audio_bank(AUDIO_STOMACH_GROWLING);
 
                 let direction = math::make_normalize_xz(&(self._actor_koa.as_ref().unwrap().borrow().get_position() - self._actor_aru.as_ref().unwrap().borrow().get_position()));
@@ -203,34 +292,51 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                 self._actor_koa.as_ref().unwrap().borrow_mut().set_hunger(HUNGER_WARNING_THRESHOLD);
                 self._actor_koa.as_ref().unwrap().borrow_mut().set_action_hungry();
             }
-            ScenarioIntroPhase::QuestGathering => {
-                // self._actor_ewa.as_ref().unwrap().borrow_mut().set_sit_down();
-                // self._actor_koa.as_ref().unwrap().borrow_mut().set_sit_down();
-                self._actor_ewa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::Idle, None, true);
-                self._actor_koa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::Idle, None, true);
-
-                // quest
+            ScenarioIntroPhase::MoveToTutorialStage => {
+                // start quest
                 let item_coconut = game_scene_manager.get_game_resources().get_item_data(ITEM_COCONUT);
                 self._quest = Some(game_scene_manager.get_game_ui_manager_mut().add_quest(Some(String::from("Gather food for the hungry family."))));
-                self._quest_gather_food = Some(self._quest.as_ref().unwrap().borrow_mut().add_quest_item(QuestCreateInfo::GatherItem(GatherItemData {
+                self._sub_quest_move_to_tutorial_stage = Some(self._quest.as_ref().unwrap().borrow_mut().add_quest_item(QuestCreateInfo::DefaultQuest(DefaultQuestData {
+                    _quest_icon_name: None,
+                    _quest_description: Some(String::from("Move to tutorial stage.")),
+                })));
+                self._sub_quest_gather_food = Some(self._quest.as_ref().unwrap().borrow_mut().add_quest_item(QuestCreateInfo::GatherItem(GatherItemData {
                     _item_data_name: String::from(ITEM_COCONUT),
                     _item_data: item_coconut.clone(),
                     _gather_item_count: 3,
                 })));
-                self._quest_return_home = Some(self._quest.as_ref().unwrap().borrow_mut().add_quest_item(QuestCreateInfo::DefaultQuest(DefaultQuestData {
+                self._sub_quest_back_home = Some(self._quest.as_ref().unwrap().borrow_mut().add_quest_item(QuestCreateInfo::DefaultQuest(DefaultQuestData {
                     _quest_icon_name: None,
                     _quest_description: Some(String::from("Return home.")),
                 })));
-
-                // text box
-                let contents = vec![TextBoxContent::Text(String::from("\"Hit this tree to get food.\""))];
-                game_scene_manager.get_game_ui_manager_mut().add_text_box_item(
-                    ActorWrapper::Prop(self._prop_tree.as_ref().unwrap().clone()),
-                    &contents,
-                    None
-                );
+                self._sub_quest_give_food_to_ewa = Some(self._quest.as_ref().unwrap().borrow_mut().add_quest_item(QuestCreateInfo::DefaultQuest(DefaultQuestData {
+                    _quest_icon_name: None,
+                    _quest_description: Some(String::from("Give food to ewa.")),
+                })));
+                self._sub_quest_give_food_to_koa = Some(self._quest.as_ref().unwrap().borrow_mut().add_quest_item(QuestCreateInfo::DefaultQuest(DefaultQuestData {
+                    _quest_icon_name: None,
+                    _quest_description: Some(String::from("Give food to koa.")),
+                })));
+                self._sub_quest_sleep = Some(self._quest.as_ref().unwrap().borrow_mut().add_quest_item(QuestCreateInfo::DefaultQuest(DefaultQuestData {
+                    _quest_icon_name: None,
+                    _quest_description: Some(String::from("Take a sleep.")),
+                })));
             }
-            _ => (),
+            ScenarioIntroPhase::GatheringFood => {
+                if game_scene_manager.get_current_game_scene_data_name() == STAGE_INTRO_STAGE {
+                    // self._actor_ewa.as_ref().unwrap().borrow_mut().set_sit_down();
+                    // self._actor_koa.as_ref().unwrap().borrow_mut().set_sit_down();
+                    self._actor_ewa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::Idle, None, true);
+                    self._actor_koa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::Idle, None, true);
+
+                    // text box
+                    self.create_hit_this_tree_text_box(game_scene_manager);
+                }
+            }
+            ScenarioIntroPhase::BackHome => {}
+            ScenarioIntroPhase::GiveFood => {}
+            ScenarioIntroPhase::Sleep => {}
+            ScenarioIntroPhase::End => {}
         }
     }
 
@@ -260,7 +366,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                 if SKIP_SCENARIO {
                     game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, INTRO_FADE_TIME);
                     game_ui_manager.set_auto_fade_inout(true);
-                    self.set_scenario_phase(ScenarioIntroPhase::Hungry.to_string().as_str(), Some(1.0));
+                    self.set_scenario_phase(ScenarioIntroPhase::IamHungry.to_string().as_str(), Some(1.0));
                 } else {
                     let story_board_phase = self.get_story_board_phase();
                     if game_ui_manager.is_done_game_image_progress() && any_key_pressed {
@@ -275,7 +381,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                     }
                 }
             }
-            ScenarioIntroPhase::Sleep => {
+            ScenarioIntroPhase::Morning => {
                 let game_scene_manager = ptr_as_ref(self._game_scene_manager);
                 let main_camera = game_scene_manager.get_scene_manager().get_main_camera_mut();
                 let progress = 1.0 - (phase_ratio * -5.0).exp2();
@@ -314,10 +420,10 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                     self._actor_aru.as_ref().unwrap().borrow_mut().is_action(ActionAnimationState::None) &&
                     self._actor_ewa.as_ref().unwrap().borrow_mut().is_action(ActionAnimationState::None) &&
                     self._actor_koa.as_ref().unwrap().borrow_mut().is_action(ActionAnimationState::None) {
-                    self.set_scenario_phase(ScenarioIntroPhase::Assemble.to_string().as_str(), None);
+                    self.set_scenario_phase(ScenarioIntroPhase::AssembleFamily.to_string().as_str(), None);
                 }
             }
-            ScenarioIntroPhase::Assemble => {
+            ScenarioIntroPhase::AssembleFamily => {
                 let mut done = true;
 
                 if self.update_assemble(self._actor_ewa.as_ref().unwrap(), self._actor_aru.as_ref().unwrap()) {
@@ -333,48 +439,73 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                 }
 
                 if done {
-                    self.set_scenario_phase(ScenarioIntroPhase::Hungry.to_string().as_str(), Some(PHASE_TIME_HUNGRY));
+                    self.set_scenario_phase(ScenarioIntroPhase::IamHungry.to_string().as_str(), Some(PHASE_TIME_HUNGRY));
                 }
             }
-            ScenarioIntroPhase::Hungry => {
+            ScenarioIntroPhase::IamHungry => {
                 if 1.0 <= phase_ratio {
-                    self.set_scenario_phase(ScenarioIntroPhase::QuestGathering.to_string().as_str(), None);
+                    self.set_scenario_phase(ScenarioIntroPhase::MoveToTutorialStage.to_string().as_str(), None);
                 }
             }
-            ScenarioIntroPhase::QuestGathering => {
-                let completed_quest_gather_food = if let Some(quest) = &self._quest_gather_food {
-                    quest.borrow().is_completed_quest()
-                } else {
-                    false
-                };
-
-                if self._was_completed_quest_gather_food == false && completed_quest_gather_food {
-                    game_scene_manager.get_game_ui_manager_mut().remove_text_box_item(self._prop_tree.as_ref().unwrap().as_ptr() as *const c_void);
-
-                    let contents = vec![TextBoxContent::Text(String::from("\"Return home.\""))];
-                    game_scene_manager.get_game_ui_manager_mut().add_text_box_item(
-                        ActorWrapper::Character(self._actor_ewa.as_ref().unwrap().clone()),
-                        &contents,
-                        None
-                    );
-                    self._was_completed_quest_gather_food = true;
+            ScenarioIntroPhase::MoveToTutorialStage => {
+                if game_scene_manager.get_current_game_scene_data_name() == STAGE_01 {
+                    self._sub_quest_move_to_tutorial_stage.as_ref().unwrap().borrow_mut().set_completed_quest();
+                    self.set_scenario_phase(ScenarioIntroPhase::GatheringFood.to_string().as_str(), None);
                 }
-
-                let mut completed_quest_return_home = false;
-                if completed_quest_gather_food {
+            }
+            ScenarioIntroPhase::GatheringFood => {
+                if self._sub_quest_gather_food.as_ref().unwrap().borrow().is_completed_quest() {
+                    self.remove_hit_this_tree_text_box(game_scene_manager);
+                    self.create_return_home_text_box(game_scene_manager);
+                    self.set_scenario_phase(ScenarioIntroPhase::BackHome.to_string().as_str(), None);
+                }
+            }
+            ScenarioIntroPhase::BackHome => {
+                if game_scene_manager.get_current_game_scene_data_name() == STAGE_INTRO_STAGE {
+                    self._sub_quest_back_home.as_ref().unwrap().borrow_mut().set_completed_quest();
+                    self.set_scenario_phase(ScenarioIntroPhase::GiveFood.to_string().as_str(), None);
+                }
+            }
+            ScenarioIntroPhase::GiveFood => {
+                let mut sub_quest_give_food_to_ewa = self._sub_quest_give_food_to_ewa.as_ref().unwrap().borrow_mut().is_completed_quest();
+                if self._sub_quest_give_food_to_ewa.as_ref().unwrap().borrow().is_completed_quest() == false {
                     let to_ewa = math::get_norm_xz(&(self._actor_ewa.as_ref().unwrap().borrow().get_position() - self._actor_aru.as_ref().unwrap().borrow().get_position()));
                     if to_ewa < (self._actor_ewa.as_ref().unwrap().borrow().get_collision()._bounding_box._mag_xz + CHARACTER_INTERACTION_DISTANCE) {
                         game_scene_manager.get_game_ui_manager_mut().remove_text_box_item(self._actor_ewa.as_ref().unwrap().as_ptr() as *const c_void);
-                        self._quest_return_home.as_ref().unwrap().borrow_mut().set_completed_quest();
-                        completed_quest_return_home = true;
+                        self._sub_quest_give_food_to_ewa.as_ref().unwrap().borrow_mut().set_completed_quest();
+                        sub_quest_give_food_to_ewa = true;
                     };
                 }
 
-                if completed_quest_gather_food && completed_quest_return_home {
-                    self.set_scenario_phase(ScenarioIntroPhase::End.to_string().as_str(), None);
+                let mut sub_quest_give_food_to_koa = self._sub_quest_give_food_to_koa.as_ref().unwrap().borrow_mut().is_completed_quest();
+                if self._sub_quest_give_food_to_koa.as_ref().unwrap().borrow().is_completed_quest() == false {
+                    let to_koa = math::get_norm_xz(&(self._actor_koa.as_ref().unwrap().borrow().get_position() - self._actor_aru.as_ref().unwrap().borrow().get_position()));
+                    if to_koa < (self._actor_koa.as_ref().unwrap().borrow().get_collision()._bounding_box._mag_xz + CHARACTER_INTERACTION_DISTANCE) {
+                        game_scene_manager.get_game_ui_manager_mut().remove_text_box_item(self._actor_koa.as_ref().unwrap().as_ptr() as *const c_void);
+                        self._sub_quest_give_food_to_koa.as_ref().unwrap().borrow_mut().set_completed_quest();
+                        sub_quest_give_food_to_koa = true;
+                    };
+                }
+
+                if sub_quest_give_food_to_ewa && sub_quest_give_food_to_koa {
+                    self.set_scenario_phase(ScenarioIntroPhase::Sleep.to_string().as_str(), None);
                 }
             }
-            _ => ()
+            ScenarioIntroPhase::Sleep => {
+                if self._sub_quest_sleep.as_ref().unwrap().borrow().is_completed_quest() == false {
+                    if self._actor_aru.as_ref().unwrap().borrow().is_action(ActionAnimationState::Sleep) {
+                        self._sub_quest_sleep.as_ref().unwrap().borrow_mut().set_completed_quest();
+                    }
+                }
+
+                if let Some(quest) = &self._quest {
+                    if quest.borrow().is_completed_quest() {
+                        self.set_scenario_phase(ScenarioIntroPhase::End.to_string().as_str(), None);
+                    }
+                };
+            }
+            ScenarioIntroPhase::End => {
+            }
         }
 
         self._scenario_track.update_scenario_track(delta_time as f32);
