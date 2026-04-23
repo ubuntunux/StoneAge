@@ -108,7 +108,7 @@ impl<'a> QuestItemBase<'a> for QuestItemGatherItem<'a> {
     }
 
     fn is_completed_quest(&self) -> bool {
-        self._item_data._gather_item_count <= self._item_count
+        self._is_completed_quest || self._item_data._gather_item_count <= self._item_count
     }
 
     fn set_completed_quest(&mut self) {

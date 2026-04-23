@@ -197,13 +197,18 @@ impl<'a> TextBoxWidget<'a> {
                     if prop.borrow().is_alive() {
                         is_enable_text_box = true;
                     }
-                },
+                }
                 ActorWrapper::Character(character) => {
                     position = character.borrow().get_center().clone();
                     position.y += MAX_TEXT_BOX_HEIGHT.min(character.borrow().get_bounding_box()._max.y - position.y);
                     if character.borrow().is_alive() {
                         is_enable_text_box = true;
                     }
+                }
+                ActorWrapper::RenderObject(render_object) => {
+                    position = render_object.borrow().get_position().clone();
+                    position.y += MAX_TEXT_BOX_HEIGHT.min(render_object.borrow().get_bounding_box()._max.y - position.y);
+                    is_enable_text_box = true;
                 }
             }
 

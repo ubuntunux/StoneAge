@@ -15,6 +15,7 @@ use crate::game_module::behavior::behavior_base::BehaviorBase;
 pub enum ActorWrapper<'a> {
     Prop(RcRefCell<Prop<'a>>),
     Character(RcRefCell<Character<'a>>),
+    RenderObject(RcRefCell<RenderObjectData<'a>>),
 }
 
 impl<'a> ActorWrapper<'a> {
@@ -22,6 +23,7 @@ impl<'a> ActorWrapper<'a> {
         match self {
             ActorWrapper::Prop(prop) => { prop.as_ptr() as *const c_void }
             ActorWrapper::Character(character) => { character.as_ptr() as *const c_void }
+            ActorWrapper::RenderObject(render_object) => { render_object.as_ptr() as *const c_void }
         }
     }
 }
