@@ -137,9 +137,7 @@ impl BehaviorBase for BehaviorRoamer {
                         rand::random::<f32>() - 0.5,
                         0.0,
                         if GAME_VIEW_MODE == GameViewMode::GameViewMode2D { 0.0 } else { rand::random::<f32>() - 0.5 },
-                    )
-                    .normalize()
-                        * NPC_ROAMING_RADIUS;
+                    ).normalize() * NPC_ROAMING_RADIUS;
                     self._target_point = self._spawn_point + move_area;
                     self._move_direction = (self._target_point - owner.get_position()).normalize();
                     self._move_time = NPC_ROAMING_TIME;

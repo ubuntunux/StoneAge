@@ -335,7 +335,7 @@ impl<'a> CharacterController<'a> {
 
         // reset flags
         let _was_on_ground = self._is_ground;
-        self._is_cliff = true;
+        self._is_cliff = false;
         self._is_blocked = false;
         self._is_ground = false;
         self._is_jump = true;
@@ -479,7 +479,7 @@ impl<'a> CharacterController<'a> {
 
         // reset flags
         let _was_on_ground = self._is_ground;
-        self._is_cliff = true;
+        self._is_cliff = false;
         self._is_blocked = false;
         self._is_ground = false;
 
@@ -589,19 +589,10 @@ impl<'a> CharacterController<'a> {
 
         // check cliff
         if !self._is_falling && (move_delta.x != 0.0 || move_delta.z != 0.0) {
-            let point: Vector3<f32> = Vector3::new(
-                if 0.0 < move_delta.x {
-                    current_actor_collision._bounding_box._max.x + 0.1
-                } else {
-                    current_actor_collision._bounding_box._min.x - 0.1
-                },
-                current_actor_collision._bounding_box._min.y - 0.1,
-                if 0.0 < move_delta.z {
-                    current_actor_collision._bounding_box._max.z + 0.1
-                } else {
-                    current_actor_collision._bounding_box._min.z - 0.1
-                },
-            );
+            self._is_cliff = true;
+
+            const CHECK_DIST: f32 = 1.0;
+            let point: Vector3<f32> = self._position + move_direction * (current_actor_collision._bounding_box._mag_xz + CHECK_DIST);
 
             for collision_object in collision_objects.values() {
                 let block_render_object = ptr_as_ref(collision_object.as_ptr());

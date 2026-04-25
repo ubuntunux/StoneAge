@@ -149,7 +149,7 @@ impl<'a> EditorUIManager<'a> {
             // update position
             let character = character.1.borrow();
             let position = character.get_position();
-            let screen_position = main_camera.convert_world_to_screen(position, false);
+            let screen_position = main_camera.convert_world_to_screen(position, true);
             let widget = ptr_as_mut(self._actor_positions[i]);
             widget._ui_component.set_text(
                 format!("[{:.1}, {:.1}, {:.1}]", position.x, position.y, position.z).as_str(),

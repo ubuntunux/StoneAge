@@ -49,6 +49,7 @@ pub struct ScenarioIntro<'a> {
     pub _actor_ewa: Option<RcRefCell<Character<'a>>>,
     pub _actor_koa: Option<RcRefCell<Character<'a>>>,
     pub _prop_gate: Option<RcRefCell<Prop<'a>>>,
+    pub _prop_gate_stage01: Option<RcRefCell<Prop<'a>>>,
     pub _prop_tree: Option<RcRefCell<Prop<'a>>>,
     pub _prop_bed: Option<RcRefCell<Prop<'a>>>,
     pub _quest: Option<RcRefCell<QuestTitle<'a>>>,
@@ -85,6 +86,7 @@ impl<'a> ScenarioIntro<'a> {
             _actor_ewa: None,
             _actor_koa: None,
             _prop_gate: None,
+            _prop_gate_stage01: None,
             _prop_tree: None,
             _prop_bed: None,
             _quest: None,
@@ -184,11 +186,11 @@ impl<'a> ScenarioIntro<'a> {
     }
 
     pub fn create_return_home_text_box(&self, game_scene_manager: &GameSceneManager<'a>) {
-        if let Some(actor_ewa) = self._actor_ewa.as_ref() {
-            let actor_wrapper = ActorWrapper::Character(actor_ewa.clone());
+        if let Some(prop) = self._prop_gate_stage01.as_ref() {
+            let wrapper = ActorWrapper::Prop(prop.clone());
             let contents = vec![TextBoxContent::Text(String::from("\"Return home.\""))];
             game_scene_manager.get_game_ui_manager_mut().add_text_box_item(
-                actor_wrapper,
+                wrapper,
                 &contents,
                 None
             );
@@ -196,9 +198,9 @@ impl<'a> ScenarioIntro<'a> {
     }
 
     pub fn remove_return_home_text_box(&self, game_scene_manager: &GameSceneManager<'a>) {
-        if let Some(actor_ewa) = self._actor_ewa.as_ref() {
-            let actor_wrapper = ActorWrapper::Character(actor_ewa.clone());
-            game_scene_manager.get_game_ui_manager_mut().remove_text_box_item(actor_wrapper.get_key());
+        if let Some(prop) = self._prop_gate_stage01.as_ref() {
+            let wrapper = ActorWrapper::Prop(prop.clone());
+            game_scene_manager.get_game_ui_manager_mut().remove_text_box_item(wrapper.get_key());
         }
     }
 
@@ -295,6 +297,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
         self._actor_ewa = None;
         self._actor_koa = None;
         self._prop_gate = None;
+        self._prop_gate_stage01 = None;
         self._prop_tree = None;
         self._prop_bed = None;
     }
@@ -309,6 +312,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
             self._prop_bed = Some(game_scene_manager.get_prop_manager().get_prop_by_name("bed").unwrap().clone());
         } else if game_scene_data_name == STAGE_01 {
             self._prop_tree = Some(game_scene_manager.get_prop_manager().get_prop_by_name("birch_tree_00").unwrap().clone());
+            self._prop_gate_stage01 = Some(game_scene_manager.get_prop_manager().get_prop_by_name("gate").unwrap().clone());
         }
 
         // update quest & text box
@@ -570,11 +574,13 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                 }
             }
             ScenarioIntroPhase::GatheringFood => {
-                if self._sub_quest_gather_food.as_ref().unwrap().borrow().is_completed_quest() {
-                    self.remove_move_to_tutorial_stage_text_box(game_scene_manager);
-                    self.remove_hit_this_tree_text_box(game_scene_manager);
-                    self.create_return_home_text_box(game_scene_manager);
-                    self.set_scenario_phase(ScenarioIntroPhase::BackHome.to_string().as_str(), None);
+                if game_scene_manager.get_current_game_scene_data_name() == STAGE_01 {
+                    if self._sub_quest_gather_food.as_ref().unwrap().borrow().is_completed_quest() {
+                        self.remove_move_to_tutorial_stage_text_box(game_scene_manager);
+                        self.remove_hit_this_tree_text_box(game_scene_manager);
+                        self.create_return_home_text_box(game_scene_manager);
+                        self.set_scenario_phase(ScenarioIntroPhase::BackHome.to_string().as_str(), None);
+                    }
                 }
             }
             ScenarioIntroPhase::BackHome => {
@@ -585,34 +591,37 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                 }
             }
             ScenarioIntroPhase::GiveFood => {
-                let mut sub_quest_give_food_to_ewa = self._sub_quest_give_food_to_ewa.as_ref().unwrap().borrow_mut().is_completed_quest();
-                if self._sub_quest_give_food_to_ewa.as_ref().unwrap().borrow().is_completed_quest() == false {
-                    if self._actor_ewa.as_ref().unwrap().borrow().get_stats().is_hungry() == false {
-                        game_scene_manager.get_game_ui_manager_mut().remove_text_box_item(self._actor_ewa.as_ref().unwrap().as_ptr() as *const c_void);
-                        self._sub_quest_give_food_to_ewa.as_ref().unwrap().borrow_mut().set_completed_quest();
-                        self.remove_give_food_to_ewa_text_box(game_scene_manager);
-                        sub_quest_give_food_to_ewa = true;
-                    };
-                }
+                if game_scene_manager.get_current_game_scene_data_name() == STAGE_INTRO_STAGE {
+                    let mut sub_quest_give_food_to_ewa = self._sub_quest_give_food_to_ewa.as_ref().unwrap().borrow_mut().is_completed_quest();
+                    if self._sub_quest_give_food_to_ewa.as_ref().unwrap().borrow().is_completed_quest() == false {
+                        if self._actor_ewa.as_ref().unwrap().borrow().get_stats().is_hungry() == false {
+                            game_scene_manager.get_game_ui_manager_mut().remove_text_box_item(self._actor_ewa.as_ref().unwrap().as_ptr() as *const c_void);
+                            self._sub_quest_give_food_to_ewa.as_ref().unwrap().borrow_mut().set_completed_quest();
+                            self.remove_give_food_to_ewa_text_box(game_scene_manager);
+                            sub_quest_give_food_to_ewa = true;
+                        };
+                    }
 
-                let mut sub_quest_give_food_to_koa = self._sub_quest_give_food_to_koa.as_ref().unwrap().borrow_mut().is_completed_quest();
-                if self._sub_quest_give_food_to_koa.as_ref().unwrap().borrow().is_completed_quest() == false {
-                    if self._actor_koa.as_ref().unwrap().borrow().get_stats().is_hungry() == false {
-                        game_scene_manager.get_game_ui_manager_mut().remove_text_box_item(self._actor_koa.as_ref().unwrap().as_ptr() as *const c_void);
-                        self._sub_quest_give_food_to_koa.as_ref().unwrap().borrow_mut().set_completed_quest();
-                        self.remove_give_food_to_koa_text_box(game_scene_manager);
-                        sub_quest_give_food_to_koa = true;
-                    };
-                }
+                    let mut sub_quest_give_food_to_koa = self._sub_quest_give_food_to_koa.as_ref().unwrap().borrow_mut().is_completed_quest();
+                    if self._sub_quest_give_food_to_koa.as_ref().unwrap().borrow().is_completed_quest() == false {
+                        if self._actor_koa.as_ref().unwrap().borrow().get_stats().is_hungry() == false {
+                            game_scene_manager.get_game_ui_manager_mut().remove_text_box_item(self._actor_koa.as_ref().unwrap().as_ptr() as *const c_void);
+                            self._sub_quest_give_food_to_koa.as_ref().unwrap().borrow_mut().set_completed_quest();
+                            self.remove_give_food_to_koa_text_box(game_scene_manager);
+                            sub_quest_give_food_to_koa = true;
+                        };
+                    }
 
-                if sub_quest_give_food_to_ewa && sub_quest_give_food_to_koa {
-                    self.set_scenario_phase(ScenarioIntroPhase::Sleep.to_string().as_str(), None);
+                    if sub_quest_give_food_to_ewa && sub_quest_give_food_to_koa {
+                        self.set_scenario_phase(ScenarioIntroPhase::Sleep.to_string().as_str(), None);
+                    }
                 }
             }
             ScenarioIntroPhase::Sleep => {
                 if game_scene_manager.get_current_game_scene_data_name() == STAGE_INTRO_STAGE {
                     if self._sub_quest_sleep.as_ref().unwrap().borrow().is_completed_quest() == false {
-                        if self._actor_aru.as_ref().unwrap().borrow().is_action(ActionAnimationState::Sleep) {
+                        if self._actor_aru.as_ref().unwrap().borrow().is_action(ActionAnimationState::LayingDown) ||
+                            self._actor_aru.as_ref().unwrap().borrow().is_action(ActionAnimationState::Sleep) {
                             self._sub_quest_sleep.as_ref().unwrap().borrow_mut().set_completed_quest();
                             self.remove_take_a_sleep_text_box(game_scene_manager);
                         }

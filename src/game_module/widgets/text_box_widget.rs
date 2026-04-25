@@ -215,7 +215,7 @@ impl<'a> TextBoxWidget<'a> {
             if is_enable_text_box {
                 let main_camera = game_scene_manager.get_scene_manager().get_main_camera();
                 let ui_size = ptr_as_ref(text_box_item._layout_widget).get_ui_component().get_ui_size();
-                let mut screen_position = main_camera.convert_world_to_screen(&position, false);
+                let mut screen_position = main_camera.convert_world_to_screen(&position, true);
                 screen_position.x -= ui_size.x * 0.5;
                 screen_position.y -= ui_size.y * 0.5;
                 screen_position.x = 0f32.max((main_camera._window_size.x as f32 - ui_size.x).min(screen_position.x));
