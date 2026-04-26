@@ -455,7 +455,7 @@ impl<'a> GameController<'a> {
         }
 
         if self.is_open_worldmap(joystick_input_data, keyboard_input_data) {
-            self.get_game_client_mut().set_game_phase(GamePhase::WorldMap);
+            self.get_game_client_mut().set_game_phase(GamePhase::WorldMapOpen);
         }
 
         // item control

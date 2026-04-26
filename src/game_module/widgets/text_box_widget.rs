@@ -143,10 +143,17 @@ impl<'a> TextBoxItem<'a> {
 
 impl<'a> TextBoxWidget<'a> {
     pub fn create_text_box_widget(audio_manager: *const AudioManager<'a>, engine_resources: &EngineResources<'a>, root_widget: &mut WidgetDefault<'a>) -> TextBoxWidget<'a> {
+        let text_box_widget_layout = UIManager::create_widget("TextBoxWidget", UIWidgetTypes::Default);
+        let ui_component = ptr_as_mut(text_box_widget_layout.as_ref()).get_ui_component_mut();
+        ui_component.set_size_hint_x(Some(1.0));
+        ui_component.set_size_hint_y(Some(1.0));
+        ui_component.set_color(get_color32(0, 0, 0, 0));
+        root_widget.add_widget(&text_box_widget_layout);
+
         TextBoxWidget {
             _audio_manager: audio_manager,
             _engine_resources: engine_resources,
-            _root_widget: root_widget,
+            _root_widget: text_box_widget_layout.as_ref(),
             _text_box_items: HashMap::new(),
         }
     }

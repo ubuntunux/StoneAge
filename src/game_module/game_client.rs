@@ -1,7 +1,7 @@
 use std::cmp::PartialEq;
 use crate::application::application::Application;
 use crate::game_module::actors::character_manager::CharacterManager;
-use crate::game_module::game_constants::{GameViewMode, AMBIENT_SOUND, CAMERA_DISTANCE_MAX, GAME_MUSIC, MATERIAL_INTRO_IMAGE, SCENARIO_INTRO, SLEEP_TIMER, STORY_BOARD_FADE_TIME, MATERIAL_UI_NONE, GAME_VIEW_MODE, MATERIAL_WORLDMAP, MATERIAL_WORLDMAP_FADE_TIME, AUDIO_ROOSTER};
+use crate::game_module::game_constants::{GameViewMode, AMBIENT_SOUND, CAMERA_DISTANCE_MAX, GAME_MUSIC, MATERIAL_INTRO_IMAGE, SCENARIO_INTRO, SLEEP_TIMER, STORY_BOARD_FADE_TIME, MATERIAL_UI_NONE, GAME_VIEW_MODE, MATERIAL_WORLDMAP_FADE_TIME, AUDIO_ROOSTER};
 use crate::game_module::game_controller::GameController;
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::{GameSceneManager, GameSceneState};
@@ -19,7 +19,9 @@ pub enum GamePhase {
     Teleport,
     Sleep,
     OpenToolbox,
-    WorldMap,
+    WorldMapOpen,
+    WorldMapUpdate,
+    WorldMapClose,
 }
 
 pub struct GameClient<'a> {
@@ -182,9 +184,11 @@ impl<'a> GameClient<'a> {
                 game_ui_manager.open_toolbox();
                 self.set_need_toolbox_mode(false);
             }
-            GamePhase::WorldMap => {
-                game_ui_manager.set_image_auto_fade_inout(MATERIAL_WORLDMAP, MATERIAL_WORLDMAP_FADE_TIME);
-                game_ui_manager.set_auto_fade_inout(true);
+            GamePhase::WorldMapOpen => {
+                game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, MATERIAL_WORLDMAP_FADE_TIME);
+            }
+            GamePhase::WorldMapClose => {
+                game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, MATERIAL_WORLDMAP_FADE_TIME);
             }
             _ => (),
         }
@@ -347,10 +351,23 @@ impl<'a> GameClient<'a> {
                     self.set_game_phase(GamePhase::GamePlay);
                 }
             }
-            GamePhase::WorldMap => {
-                if game_controller.is_close_worldmap(joystick_input_data, keyboard_input_data) {
-                    game_ui_manager.set_image_auto_fade_inout(MATERIAL_UI_NONE, MATERIAL_WORLDMAP_FADE_TIME);
+            GamePhase::WorldMapOpen => {
+                if game_ui_manager.is_done_manual_fade_out() {
+                    game_ui_manager.set_world_map_visible(true);
                     game_ui_manager.set_auto_fade_inout(true);
+                    self.set_game_phase(GamePhase::WorldMapUpdate);
+                }
+            }
+            GamePhase::WorldMapUpdate => {
+                if game_controller.is_close_worldmap(joystick_input_data, keyboard_input_data) {
+                    self.set_game_phase(GamePhase::WorldMapClose);
+                }
+            }
+            GamePhase::WorldMapClose => {
+                if game_ui_manager.is_done_manual_fade_out() {
+                    game_ui_manager.set_world_map_visible(false);
+                    game_ui_manager.set_auto_fade_inout(true);
+                } else if game_ui_manager.is_done_game_image_progress() {
                     self.set_game_phase(GamePhase::GamePlay);
                 }
             }

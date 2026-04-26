@@ -24,6 +24,7 @@ use crate::game_module::widgets::target_status_bar::TargetStatusWidget;
 use crate::game_module::widgets::text_box_widget::{TextBoxContent, TextBoxWidget};
 use crate::game_module::widgets::time_of_day::TimeOfDayWidget;
 use crate::game_module::widgets::toolbox_widget::ToolboxWidget;
+use crate::game_module::widgets::world_map_widget::WorldMapWidget;
 
 pub type QuestItem<'a> = RcRefCell<dyn QuestItemBase<'a> + 'a>;
 
@@ -54,6 +55,7 @@ pub struct GameUIManager<'a> {
     pub _item_bar_widget: Option<Box<ItemBarWidget<'a>>>,
     pub _toolbox_widget: Option<Box<ToolboxWidget<'a>>>,
     pub _quest_widget: Option<Box<QuestWidget<'a>>>,
+    pub _world_map_widget: Option<Box<WorldMapWidget<'a>>>,
     pub _window_size: Vector2<i32>,
     pub _need_to_refresh: bool,
 }
@@ -177,6 +179,7 @@ impl<'a> GameUIManager<'a> {
             _controller_help_widget: None,
             _toolbox_widget: None,
             _quest_widget: None,
+            _world_map_widget: None,
             _window_size: Vector2::new(0, 0),
             _need_to_refresh: true,
         })
@@ -243,25 +246,24 @@ impl<'a> GameUIManager<'a> {
         ui_component.set_renderable(false);
         root_widget.add_widget(&game_ui_layout);
         self._game_ui_layout = game_ui_layout.as_ref();
-        self._game_image = Some(ImageLayout::create_image_layout(
-            root_widget,
-            window_size,
-            MATERIAL_INTRO_IMAGE,
-        ));
-
         self._player_hud = Some(Box::new(PlayerHud::create_player_hud(game_ui_layout_mut)));
         self._item_bar_widget = Some(Box::new(ItemBarWidget::create_item_bar_widget(game_resources, engine_resources, game_scene_manager, item_manager, game_ui_layout_mut)));
-        self._text_box_widget = Some(Box::new(TextBoxWidget::create_text_box_widget(audio_manager, engine_resources, root_widget)));
         self._target_status_bar = Some(Box::new(TargetStatusWidget::create_target_status_widget(game_ui_layout_mut)));
         self._time_of_day = Some(Box::new(TimeOfDayWidget::create_time_of_day_widget(game_ui_layout_mut, game_resources)));
+        self._toolbox_widget = Some(Box::new(ToolboxWidget::create_toolbox_widget(engine_resources, game_ui_layout_mut)));
+        self._text_box_widget = Some(Box::new(TextBoxWidget::create_text_box_widget(audio_manager, engine_resources, game_ui_layout_mut)));
         self._controller_help_widget = Some(Box::new(ControllerHelpWidget::create_controller_help_widget(
             game_ui_layout_mut,
             self._item_bar_widget.as_ref().unwrap(),
             game_resources
         )));
-        self._toolbox_widget = Some(Box::new(ToolboxWidget::create_toolbox_widget(engine_resources, game_ui_layout_mut)));
         self._quest_widget = Some(Box::new(QuestWidget::create_quest_widget(game_scene_manager, game_resources, game_ui_layout_mut)));
+
+        self._world_map_widget = Some(Box::new(WorldMapWidget::create_world_map_widget(root_widget, game_resources, window_size)));
+
         self._cross_hair = Some(Box::new(CrossHairWidget::create_cross_hair(root_widget, game_resources)));
+
+        self._game_image = Some(ImageLayout::create_image_layout(root_widget, window_size, MATERIAL_INTRO_IMAGE));
         self.set_cross_hair_visible(false);
     }
 
@@ -327,6 +329,20 @@ impl<'a> GameUIManager<'a> {
         if let Some(cross_hair) = self._cross_hair.as_mut() {
             cross_hair.update_cross_hair_visible(visible);
         }
+    }
+
+    // world map
+    pub fn set_world_map_visible(&mut self, visible: bool) {
+        if let Some(widget) = self._world_map_widget.as_mut() {
+            widget.set_visible(visible);
+        }
+    }
+
+    pub fn get_world_map_visible(&self) -> bool {
+        if let Some(widget) = self._world_map_widget.as_ref() {
+            return widget.get_visible();
+        }
+        false
     }
 
     // item bar
@@ -422,6 +438,7 @@ impl<'a> GameUIManager<'a> {
         self._time_of_day.as_mut().unwrap().changed_window_size(&window_size);
         self._item_bar_widget.as_mut().unwrap().changed_window_size(&window_size);
         self._toolbox_widget.as_mut().unwrap().changed_window_size(&window_size);
+        self._world_map_widget.as_mut().unwrap().changed_window_size(&window_size);
     }
 
     pub fn update_game_ui(&mut self, delta_time: f64) {
@@ -479,6 +496,10 @@ impl<'a> GameUIManager<'a> {
 
         if let Some(quest_widget) = self._quest_widget.as_mut() {
             quest_widget.update_quest_widget(game_controller, delta_time as f32);
+        }
+
+        if let Some(world_map_widget) = self._world_map_widget.as_mut() {
+            world_map_widget.update_world_map(game_controller, delta_time as f32);
         }
     }
 }

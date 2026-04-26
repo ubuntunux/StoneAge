@@ -148,9 +148,14 @@ impl<'a> ImageLayout<'a> {
         let image_widget = ptr_as_mut(self._image_layout.as_ref());
         let ui_component = image_widget.get_ui_component_mut();
         ui_component.set_material_instance(self._material_instance.clone());
-        ui_component.set_size_hint_x(Some(self._image_aspect / window_aspect * self._image_size_hint));
-        ui_component.set_size_hint_y(Some(self._image_size_hint));
         ui_component.set_visible(self._material_instance.is_some());
+        if window_aspect < self._image_aspect {
+            ui_component.set_size_hint_x(Some(self._image_size_hint));
+            ui_component.set_size_hint_y(Some(window_aspect / self._image_aspect * self._image_size_hint));
+        } else {
+            ui_component.set_size_hint_x(Some(self._image_aspect / window_aspect * self._image_size_hint));
+            ui_component.set_size_hint_y(Some(self._image_size_hint));
+        }
     }
 
     pub fn is_done_manual_fade_out(&self) -> bool {

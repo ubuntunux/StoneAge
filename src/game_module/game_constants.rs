@@ -111,10 +111,15 @@ pub const MATERIAL_UI_NONE: &str = "";
 pub const MATERIAL_CROSS_HAIR: &str = "ui/cross_hair_box";
 pub const MATERIAL_TIME_OF_DAY: &str = "ui/tod";
 pub const MATERIAL_INTRO_IMAGE: &str = "ui/intro_image";
-pub const MATERIAL_WORLDMAP: &str = "ui/worldmap";
-pub const MATERIAL_WORLDMAP_FADE_TIME: f32 = 0.5;
 pub const STORY_BOARD_FADE_TIME: f32 = 1.0;
 pub const MATERIAL_FADE_TO_BLACK: &str = "ui/fade_to_black";
+
+// world map
+pub const MATERIAL_WORLDMAP: &str = "ui/worldmap";
+pub const MATERIAL_WORLDMAP_FADE_TIME: f32 = 0.5;
+pub const MATERIAL_PORTRAIT_MONKEY_ARU: &str = "ui/portraits/monkey_aru";
+pub const MATERIAL_PORTRAIT_ARU: &str = "ui/portraits/aru";
+pub const MATERIAL_WORLD_MAP_STAGE: &str = "ui/world_map/stage";
 
 // emoji
 pub const MATERIAL_EMOJI_BAD: &str = "ui/emoji/bad";

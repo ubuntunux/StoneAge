@@ -318,27 +318,27 @@ impl<'a> ControllerHelpWidget<'a> {
 
     pub fn update_interaction_widget(&mut self, game_scene_manager: &GameSceneManager) {
         let mut matched_input_control_type = InputControlType::None;
-        let mut interaction_name = "";
+        let mut interaction_name: String = String::new();
         let character_manager = game_scene_manager.get_character_manager();
         if character_manager.is_valid_player() {
             let player = character_manager.get_player().borrow();
             if player.is_in_interaction_range() {
                 let interaction_object = player.get_nearest_interaction_object();
                 (matched_input_control_type, interaction_name) = match interaction_object {
-                    InteractionObject::PropBed(_) => (InputControlType::Interaction, "Sleep"),
-                    InteractionObject::PropPickup(_) => (InputControlType::Interaction, "Pick up"),
-                    InteractionObject::PropMonolith(_) => (InputControlType::Interaction, "Open Toolbox"),
-                    InteractionObject::PropTable(_) => (InputControlType::Interaction, "Sit Down"),
+                    InteractionObject::PropBed(_) => (InputControlType::Interaction, String::from("Sleep")),
+                    InteractionObject::PropPickup(prop) => (InputControlType::Interaction, format!("Pick up a {}", prop.borrow()._prop_data.borrow()._name.as_str())),
+                    InteractionObject::PropMonolith(_) => (InputControlType::Interaction, String::from("Open Toolbox")),
+                    InteractionObject::PropTable(_) => (InputControlType::Interaction, String::from("Sit Down")),
                     InteractionObject::Npc(_) => {
                         if player.get_attached_item_data_type().is_eatable() {
-                            (InputControlType::Interaction, "Give Item")
+                            (InputControlType::Interaction, format!("Give a {}", player.get_attached_item().as_ref().unwrap().borrow()._item_data.borrow()._name.as_str()))
                         } else {
-                            (InputControlType::Interaction, "Interaction")
+                            (InputControlType::Interaction, String::from("Interaction"))
                         }
                     },
-                    InteractionObject::PropGate(_) => (InputControlType::EnterGate, "Enter Gate"),
-                    InteractionObject::PropGathering(_) => (InputControlType::Gathering, "Gathering"),
-                    _ => (InputControlType::Interaction, "interaction")
+                    InteractionObject::PropGate(_) => (InputControlType::EnterGate, String::from("Enter Gate")),
+                    InteractionObject::PropGathering(prop) => (InputControlType::Gathering, format!("Hit the {}", prop.borrow()._prop_data.borrow()._name.as_str())),
+                    _ => (InputControlType::Interaction, String::from("interaction"))
                 };
             }
         }
@@ -355,7 +355,7 @@ impl<'a> ControllerHelpWidget<'a> {
                 let screen_position = main_camera.convert_world_to_screen(&position, true);
                 interaction_widget._ui_component.set_pos(screen_position.x, screen_position.y);
                 interaction_widget._ui_component.set_visible(true);
-                ptr_as_mut(interaction_key_binding_widget._binding_name_widget)._ui_component.set_text(interaction_name);
+                ptr_as_mut(interaction_key_binding_widget._binding_name_widget)._ui_component.set_text(interaction_name.as_str());
                 self._last_interaction_object_key = interaction_object.get_key();
             } else {
                 interaction_widget._ui_component.set_visible(false);
