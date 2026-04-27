@@ -6,7 +6,7 @@ use crate::game_module::actors::character::{Character, CharacterCreateInfo};
 use crate::game_module::actors::character_manager::CharacterManager;
 use crate::game_module::actors::items::{ItemCreateInfo, ItemManager};
 use crate::game_module::actors::props::{PropCreateInfo, PropManager};
-use crate::game_module::game_constants::{GameViewMode, GAME_VIEW_MODE, TEMPERATURE_MAX, TEMPERATURE_MIN, TIME_OF_DAWN, TIME_OF_DAY_SPEED, TIME_OF_MORNING};
+use crate::game_module::game_constants::{GameViewMode, GAME_VIEW_MODE, STAGE_WORLD_MAP, TEMPERATURE_MAX, TEMPERATURE_MIN, TIME_OF_DAWN, TIME_OF_DAY_SPEED, TIME_OF_MORNING};
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_ui_manager::{GameUIManager};
 use crate::game_module::scenario::scenario::{create_scenario, ScenarioBase};
@@ -424,6 +424,10 @@ impl<'a> GameSceneManager<'a> {
 
     pub fn is_play_scenario_mode(&self) -> bool {
         self._is_play_scenario_mode
+    }
+
+    pub fn is_world_map_mode(&self) -> bool {
+        self._current_game_scene_data_name == STAGE_WORLD_MAP
     }
 
     pub fn get_game_scene_state(&self) -> GameSceneState {

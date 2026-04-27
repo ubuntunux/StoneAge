@@ -602,13 +602,13 @@
         },
         "gate": {
             "_instance_parameters": {
-                "_linked_gate": "gate.002",
-                "_linked_stage": "game_scenes/intro_stage"
+                "_linked_gate": "gate_stage_01",
+                "_linked_stage": "game_scenes/world_map"
             },
             "_position": [
-                -14.138628005981445,
+                -14.916275024414062,
                 4.061395645141602,
-                1.6679103374481201
+                2.731534719467163
             ],
             "_prop_data_name": "props/gate",
             "_rotation": [
@@ -1838,6 +1838,44 @@
                     -10.254969596862793,
                     -2.2856199741363525,
                     -16.970115661621094
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "_scene_object_type": "Terrain"
+            },
+            "SM_Env_Rock_Ground_01.008": {
+                "_model_data_name": "PolygonNatureBiomes/SM_Env_Rock_Ground_01",
+                "_position": [
+                    -21.769577026367188,
+                    3.2221736907958984,
+                    -2.1008193492889404
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "_scene_object_type": "Terrain"
+            },
+            "SM_Env_Rock_Ground_01.009": {
+                "_model_data_name": "PolygonNatureBiomes/SM_Env_Rock_Ground_01",
+                "_position": [
+                    -15.863201141357422,
+                    1.897293210029602,
+                    -9.006571769714355
                 ],
                 "_rotation": [
                     0.0,

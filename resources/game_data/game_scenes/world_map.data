@@ -1,0 +1,210 @@
+{
+    "_characters": {},
+    "_items": {},
+    "_player": {
+        "monkey_aru": {
+            "_character_data_name": "characters/family/monkey_aru",
+            "_position": [
+                4.73799991607666,
+                3.4236819744110107,
+                -3.845897674560547
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        }
+    },
+    "_props": {
+        "gate_intro_stage": {
+            "_instance_parameters": {
+                "_linked_gate": "gate",
+                "_linked_stage": "game_scenes/intro_stage"
+            },
+            "_position": [
+                7.659207344055176,
+                2.637723445892334,
+                -4.9388556480407715
+            ],
+            "_prop_data_name": "props/gate",
+            "_rotation": [
+                0.0,
+                -1.5052070617675781,
+                0.0
+            ],
+            "_scale": [
+                0.9512222409248352,
+                0.9512222409248352,
+                0.9512222409248352
+            ]
+        },
+        "gate_stage_01": {
+            "_instance_parameters": {
+                "_linked_gate": "gate",
+                "_linked_stage": "game_scenes/stage_01"
+            },
+            "_position": [
+                -12.288477897644043,
+                2.4288508892059326,
+                -1.7035326957702637
+            ],
+            "_prop_data_name": "props/gate",
+            "_rotation": [
+                0.0,
+                1.6175813674926758,
+                0.0
+            ],
+            "_scale": [
+                0.9512222409248352,
+                0.9512222409248352,
+                0.9512222409248352
+            ]
+        },
+        "gate_stage_cave": {
+            "_instance_parameters": {
+                "_linked_gate": "gate",
+                "_linked_stage": "game_scenes/stage_cave"
+            },
+            "_position": [
+                -2.085611343383789,
+                3.112605333328247,
+                5.211549282073975
+            ],
+            "_prop_data_name": "props/gate",
+            "_rotation": [
+                0.0,
+                3.189560890197754,
+                0.0
+            ],
+            "_scale": [
+                0.9512222409248352,
+                0.9512222409248352,
+                0.9512222409248352
+            ]
+        }
+    },
+    "_scene": {
+        "_cameras": {
+            "Camera": {
+                "position": [
+                    -7.551358699798584,
+                    5.443441390991211,
+                    0.0
+                ],
+                "rotation": [
+                    0.7225393811848502,
+                    0.0,
+                    0.0
+                ]
+            }
+        },
+        "_directional_lights": {
+            "Light": {
+                "_light_data": {
+                    "_light_color": [
+                        5.0,
+                        5.0,
+                        5.0
+                    ],
+                    "_light_direction": [
+                        1.4835298220303397,
+                        0.0,
+                        -0.3490658402442932
+                    ]
+                },
+                "_rotation": [
+                    1.4835298220303397,
+                    0.0,
+                    -0.3490658402442932
+                ]
+            }
+        },
+        "_effects": {},
+        "_point_lights": {},
+        "_skeletal_objects": {},
+        "_static_objects": {
+            "landscape_00.001": {
+                "_model_data_name": "landscapes/landscape_00",
+                "_position": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "_scene_object_type": "Terrain"
+            },
+            "mine": {
+                "_model_data_name": "props/mine",
+                "_position": [
+                    10.258427619934082,
+                    2.508133888244629,
+                    -5.111149311065674
+                ],
+                "_rotation": [
+                    0.0,
+                    -1.487308382987976,
+                    0.0
+                ],
+                "_scale": [
+                    0.5,
+                    0.5,
+                    0.5
+                ],
+                "_scene_object_type": "Default"
+            },
+            "mine.001": {
+                "_model_data_name": "props/mine",
+                "_position": [
+                    -14.910259246826172,
+                    2.2992613315582275,
+                    -1.6173248291015625
+                ],
+                "_rotation": [
+                    0.0,
+                    1.6354799270629883,
+                    0.0
+                ],
+                "_scale": [
+                    0.5,
+                    0.5,
+                    0.5
+                ],
+                "_scene_object_type": "Default"
+            },
+            "mine.002": {
+                "_model_data_name": "props/mine",
+                "_position": [
+                    -2.125035285949707,
+                    2.983016014099121,
+                    7.035149574279785
+                ],
+                "_rotation": [
+                    0.0,
+                    3.2074594497680664,
+                    0.0
+                ],
+                "_scale": [
+                    0.5,
+                    0.5,
+                    0.5
+                ],
+                "_scene_object_type": "Default"
+            }
+        }
+    }
+}

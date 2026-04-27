@@ -440,52 +440,8 @@
         },
         "gate": {
             "_instance_parameters": {
-                "_linked_gate": "gate",
-                "_linked_stage": "game_scenes/stage_cave"
-            },
-            "_position": [
-                -19.298847198486328,
-                -0.7408239841461182,
-                9.298608779907227
-            ],
-            "_prop_data_name": "props/gate",
-            "_rotation": [
-                0.0,
-                1.2148985862731934,
-                0.0
-            ],
-            "_scale": [
-                1.9024444818496704,
-                1.9024444818496704,
-                1.9024444818496704
-            ]
-        },
-        "gate.001": {
-            "_instance_parameters": {
-                "_linked_gate": "gate.001",
-                "_linked_stage": "game_scenes/intro_stage"
-            },
-            "_position": [
-                -9.817839622497559,
-                -0.3928263187408447,
-                55.53480911254883
-            ],
-            "_prop_data_name": "props/gate",
-            "_rotation": [
-                0.0,
-                2.928525447845459,
-                0.0
-            ],
-            "_scale": [
-                1.9024444818496704,
-                1.9024444818496704,
-                1.9024444818496704
-            ]
-        },
-        "gate.002": {
-            "_instance_parameters": {
-                "_linked_gate": "gate",
-                "_linked_stage": "game_scenes/stage_01"
+                "_linked_gate": "gate_intro_stage",
+                "_linked_stage": "game_scenes/world_map"
             },
             "_position": [
                 20.280345916748047,
@@ -4685,44 +4641,6 @@
                     1.0
                 ],
                 "_scene_object_type": "Terrain"
-            },
-            "mine": {
-                "_model_data_name": "props/mine",
-                "_position": [
-                    -24.183307647705078,
-                    -1.0000028610229492,
-                    7.486262321472168
-                ],
-                "_rotation": [
-                    0.0,
-                    1.2327972650527954,
-                    0.0
-                ],
-                "_scale": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "_scene_object_type": "Default"
-            },
-            "mine.001": {
-                "_model_data_name": "props/mine",
-                "_position": [
-                    -10.998480796813965,
-                    -0.6520051956176758,
-                    60.64663314819336
-                ],
-                "_rotation": [
-                    0.0,
-                    2.9464240074157715,
-                    0.0
-                ],
-                "_scale": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "_scene_object_type": "Default"
             },
             "mine.002": {
                 "_model_data_name": "props/mine",

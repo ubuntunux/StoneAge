@@ -283,6 +283,17 @@ impl<'a> GameClient<'a> {
                             self.set_game_phase(GamePhase::PlayGameScenario);
                         } else if game_scene_manager.is_teleport_mode() {
                             self.set_game_phase(GamePhase::Teleport);
+                        } else if game_scene_manager.is_world_map_mode() {
+                            game_controller.update_world_map_controller(
+                                time_data,
+                                &joystick_input_data,
+                                &keyboard_input_data,
+                                &mouse_move_data,
+                                &mouse_input_data,
+                                &mouse_delta,
+                                scene_manager.get_main_camera_mut(),
+                                character_manager.get_player(),
+                            );
                         } else if self.need_sleep_mode() {
                             self.set_game_phase(GamePhase::Sleep);
                         } else if self.need_toolbox_mode() {
