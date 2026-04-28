@@ -107,12 +107,18 @@ pub const AMBIENT_SOUND: &str = "ambient_sound";
 pub const GAME_MUSIC: &str = "game_music";
 
 // UI
+pub const STORY_BOARD_FADE_TIME: f32 = 1.0;
 pub const MATERIAL_UI_NONE: &str = "";
 pub const MATERIAL_CROSS_HAIR: &str = "ui/cross_hair_box";
 pub const MATERIAL_TIME_OF_DAY: &str = "ui/tod";
 pub const MATERIAL_INTRO_IMAGE: &str = "ui/intro_image";
-pub const STORY_BOARD_FADE_TIME: f32 = 1.0;
 pub const MATERIAL_FADE_TO_BLACK: &str = "ui/fade_to_black";
+
+// mouse
+pub const MATERIAL_MOUSE_ACTION: &str = "ui/mouse_action";
+pub const MATERIAL_MOUSE_DEFAULT: &str = "ui/mouse_default";
+pub const MATERIAL_MOUSE_GRAB: &str = "ui/mouse_grab";
+pub const MATERIAL_MOUSE_PROGRESS: &str = "ui/mouse_progress";
 
 // world map
 pub const MATERIAL_WORLDMAP: &str = "ui/worldmap";

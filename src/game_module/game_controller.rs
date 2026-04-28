@@ -454,10 +454,6 @@ impl<'a> GameController<'a> {
             self._is_keyboard_input_mode = false;
         }
 
-        if self.is_open_worldmap(joystick_input_data, keyboard_input_data) {
-            self.get_game_client_mut().set_game_phase(GamePhase::WorldMapOpen);
-        }
-
         // set action & move
         let mut player_mut = player.borrow_mut();
         {

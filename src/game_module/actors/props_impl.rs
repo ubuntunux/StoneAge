@@ -505,12 +505,6 @@ impl<'a> PropManager<'a> {
                                 player.check_in_range(prop.get_collision(), CHARACTER_INTERACTION_DISTANCE, check_direction)
                             };
 
-                            if is_in_player_range {
-                                if player._animation_state.is_action_event(ActionAnimationState::OpenToolbox) {
-                                    self.get_game_client_mut().set_need_toolbox_mode(true);
-                                }
-                            }
-
                             if is_interaction_object == false && is_in_player_range {
                                 player._controller.add_interaction_object(InteractionObject::PropMonolith(prop_refcell.clone()));
                             } else if is_interaction_object && is_in_player_range == false {
@@ -523,12 +517,6 @@ impl<'a> PropManager<'a> {
                             } else {
                                 player.check_in_range(prop.get_collision(), CHARACTER_INTERACTION_DISTANCE, check_direction)
                             };
-
-                            if is_in_player_range {
-                                // if player._animation_state.is_action_event(ActionAnimationState::OpenToolbox) {
-                                //     self.get_game_client_mut().set_need_toolbox_mode(true);
-                                // }
-                            }
 
                             if is_interaction_object == false && is_in_player_range {
                                 player._controller.add_interaction_object(InteractionObject::PropTable(prop_refcell.clone()));

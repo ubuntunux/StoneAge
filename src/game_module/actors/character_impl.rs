@@ -688,6 +688,12 @@ impl<'a> Character<'a> {
     }
 
     pub fn set_action_interaction(&mut self) {
+        log::info!("set_action_interaction - is_on_ground: {:?}, is_available_move: {:?}, is_idle_action: {:?}",
+            self._controller.is_on_ground(),
+            self.is_available_move(),
+            self.is_idle_action()
+        );
+
         if self._controller.is_on_ground() && self.is_available_move() && self.is_idle_action() {
             match self._controller._nearest_interaction_object.clone() {
                 InteractionObject::PropBed(_) => {
@@ -697,7 +703,7 @@ impl<'a> Character<'a> {
                     self.set_action_animation(ActionAnimationState::Pickup, 2.0);
                 }
                 InteractionObject::PropMonolith(_) => {
-                    self.set_action_animation(ActionAnimationState::OpenToolbox, 1.0);
+                    self.get_character_manager().get_game_client_mut().set_need_toolbox_mode(true);
                     self.set_move_idle();
                 }
                 InteractionObject::PropTable(prop) => {
@@ -996,9 +1002,6 @@ impl<'a> Character<'a> {
                     AnimationLayer::ActionLayer,
                 );
             }
-            ActionAnimationState::OpenToolbox => {
-                // nothing
-            }
             ActionAnimationState::WakeUp => {
                 render_object.set_animation(
                     &animation_data._wake_up_animation,
@@ -1232,9 +1235,6 @@ impl<'a> Character<'a> {
             }
             ActionAnimationState::EnterGate => {
                 self._animation_state.set_action_event(ActionAnimationState::EnterGate);
-            },
-            ActionAnimationState::OpenToolbox => {
-                self._animation_state.set_action_event(ActionAnimationState::OpenToolbox);
             }
             _ => ()
         }

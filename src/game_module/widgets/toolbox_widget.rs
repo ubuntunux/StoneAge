@@ -143,6 +143,7 @@ impl<'a> ToolboxWidget<'a> {
             || joystick_input_data._btn_b == ButtonState::Pressed;
 
         if close_toolbox {
+            log::info!("TEST::close_toolbox");
             self.close_toolbox();
         }
     }

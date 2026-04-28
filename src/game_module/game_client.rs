@@ -149,9 +149,11 @@ impl<'a> GameClient<'a> {
     pub fn reset_sleep_timer(&mut self) {
         self._sleep_timer = 0.0;
     }
+    pub fn is_game_phase(&self, game_phase: GamePhase) -> bool {
+        self._game_phase == game_phase
+    }
     pub fn set_game_phase(&mut self, game_phase: GamePhase) {
         if self._game_phase != game_phase {
-            log::debug!("set_game_phase: {:?}", game_phase);
             self.update_game_mode_end();
             self._game_phase = game_phase;
             self.update_game_mode_begin();
@@ -364,6 +366,7 @@ impl<'a> GameClient<'a> {
             }
             GamePhase::WorldMapOpen => {
                 if game_ui_manager.is_done_manual_fade_out() {
+                    game_ui_manager.set_cross_hair_visible(true);
                     game_ui_manager.set_world_map_visible(true);
                     game_ui_manager.set_auto_fade_inout(true);
                     self.set_game_phase(GamePhase::WorldMapUpdate);
@@ -376,6 +379,7 @@ impl<'a> GameClient<'a> {
             }
             GamePhase::WorldMapClose => {
                 if game_ui_manager.is_done_manual_fade_out() {
+                    game_ui_manager.set_cross_hair_visible(false);
                     game_ui_manager.set_world_map_visible(false);
                     game_ui_manager.set_auto_fade_inout(true);
                 } else if game_ui_manager.is_done_game_image_progress() {
