@@ -226,7 +226,7 @@ impl<'a> CharacterController<'a> {
         }
     }
 
-    pub fn update_interaction_objects(&mut self) {
+    pub fn update_interaction_objects(&mut self) -> bool {
         let mut dist_min = f32::MAX;
         let mut nearest_interaction_object = InteractionObject::None;
         for interaction_object in self._interaction_objects.values() {
@@ -236,8 +236,10 @@ impl<'a> CharacterController<'a> {
                 nearest_interaction_object = interaction_object.clone();
             }
         }
-        self._nearest_interaction_object = nearest_interaction_object;
 
+        let changed_interaction_object = self._nearest_interaction_object.get_key() != nearest_interaction_object.get_key();
+        self._nearest_interaction_object = nearest_interaction_object;
+        changed_interaction_object
     }
 
     pub fn update_character_controller(

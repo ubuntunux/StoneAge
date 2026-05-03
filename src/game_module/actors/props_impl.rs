@@ -1,7 +1,7 @@
 use crate::application::application::Application;
 use crate::game_module::actors::items::ItemCreateInfo;
 use crate::game_module::actors::props::{Prop, PropCreateInfo, PropData, PropDataType, PropID, PropManager, PropMap, PropStats};
-use crate::game_module::game_client::GameClient;
+use crate::game_module::game_client::{GameClient};
 use crate::game_module::game_constants::{GameViewMode, AUDIO_HIT, CHARACTER_INTERACTION_DISTANCE, EFFECT_HIT, GAME_VIEW_MODE, NPC_ATTACK_HIT_RANGE};
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
@@ -451,18 +451,18 @@ impl<'a> PropManager<'a> {
                                 bounding_box.collide_point(player.get_center())
                             };
 
-                            if is_in_player_range {
-                                if GAME_VIEW_MODE == GameViewMode::GameViewMode3D || player._animation_state.is_action_event(ActionAnimationState::EnterGate) {
-                                    let linked_gate = prop.get_instance_parameters("_linked_gate");
-                                    let linked_stage = prop.get_instance_parameters("_linked_stage");
-                                    if linked_stage.is_some() && linked_gate.is_some() {
-                                        self.get_game_scene_manager_mut().set_teleport_stage(
-                                            linked_stage.unwrap().as_str().unwrap(),
-                                            linked_gate.unwrap().as_str().unwrap(),
-                                        );
-                                    }
-                                }
-                            }
+                            // if is_in_player_range {
+                            //     if GAME_VIEW_MODE == GameViewMode::GameViewMode3D {
+                            //         let linked_gate = prop.get_instance_parameters("_linked_gate");
+                            //         let linked_stage = prop.get_instance_parameters("_linked_stage");
+                            //         if linked_stage.is_some() && linked_gate.is_some() {
+                            //             self.get_game_scene_manager_mut().set_teleport_stage(
+                            //                 linked_stage.unwrap().as_str().unwrap(),
+                            //                 linked_gate.unwrap().as_str().unwrap(),
+                            //             );
+                            //         }
+                            //     }
+                            // }
 
                             if is_interaction_object == false && is_in_player_range {
                                 player._controller.add_interaction_object(InteractionObject::PropGate(prop_refcell.clone()));

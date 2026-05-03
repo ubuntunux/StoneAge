@@ -150,3 +150,6 @@ pub const SCENARIO_INTRO: &str = "scenario/intro";
 pub const STAGE_INTRO_STAGE: &str = "game_scenes/intro_stage";
 pub const STAGE_01: &str = "game_scenes/stage_01";
 pub const STAGE_WORLD_MAP: &str = "game_scenes/world_map";
+
+// props
+pub const DEFAULT_GATE_NAME: &str = "gate";

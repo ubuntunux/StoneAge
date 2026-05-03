@@ -308,11 +308,11 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
             self._actor_aru = Some(game_scene_manager.get_actor("monkey_aru").unwrap().clone());
             self._actor_ewa = Some(game_scene_manager.get_actor("monkey_ewa").unwrap().clone());
             self._actor_koa = Some(game_scene_manager.get_actor("monkey_koa").unwrap().clone());
-            self._prop_gate = Some(game_scene_manager.get_prop_manager().get_prop_by_name("gate").unwrap().clone());
+            self._prop_gate = Some(game_scene_manager.get_prop_manager().get_prop_by_name(DEFAULT_GATE_NAME).unwrap().clone());
             self._prop_bed = Some(game_scene_manager.get_prop_manager().get_prop_by_name("bed").unwrap().clone());
         } else if game_scene_data_name == STAGE_01 {
             self._prop_tree = Some(game_scene_manager.get_prop_manager().get_prop_by_name("birch_tree_00").unwrap().clone());
-            self._prop_gate_stage01 = Some(game_scene_manager.get_prop_manager().get_prop_by_name("gate").unwrap().clone());
+            self._prop_gate_stage01 = Some(game_scene_manager.get_prop_manager().get_prop_by_name(DEFAULT_GATE_NAME).unwrap().clone());
         }
 
         // update quest & text box

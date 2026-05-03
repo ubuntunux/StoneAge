@@ -1,7 +1,7 @@
 use std::cmp::PartialEq;
 use crate::application::application::Application;
 use crate::game_module::actors::character_manager::CharacterManager;
-use crate::game_module::game_constants::{GameViewMode, AMBIENT_SOUND, CAMERA_DISTANCE_MAX, GAME_MUSIC, MATERIAL_INTRO_IMAGE, SCENARIO_INTRO, SLEEP_TIMER, STORY_BOARD_FADE_TIME, MATERIAL_UI_NONE, GAME_VIEW_MODE, MATERIAL_WORLDMAP_FADE_TIME, AUDIO_ROOSTER};
+use crate::game_module::game_constants::{GameViewMode, AMBIENT_SOUND, CAMERA_DISTANCE_MAX, GAME_MUSIC, MATERIAL_INTRO_IMAGE, SCENARIO_INTRO, SLEEP_TIMER, STORY_BOARD_FADE_TIME, MATERIAL_UI_NONE, GAME_VIEW_MODE, MATERIAL_WORLDMAP_FADE_TIME, AUDIO_ROOSTER, DEFAULT_GATE_NAME};
 use crate::game_module::game_controller::GameController;
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::{GameSceneManager, GameSceneState};
@@ -34,6 +34,7 @@ pub struct GameClient<'a> {
     pub _game_ui_manager: *const GameUIManager<'a>,
     pub _editor_ui_manager: *const EditorUIManager<'a>,
     pub _game_phase: GamePhase,
+    pub _need_world_map_mode: bool,
     pub _need_sleep_mode: bool,
     pub _need_toolbox_mode: bool,
     pub _sleep_timer: f32,
@@ -51,6 +52,7 @@ impl<'a> GameClient<'a> {
             _game_ui_manager: std::ptr::null(),
             _editor_ui_manager: std::ptr::null(),
             _game_phase: GamePhase::Start,
+            _need_world_map_mode: false,
             _need_sleep_mode: false,
             _need_toolbox_mode: false,
             _sleep_timer: 0.0,
@@ -70,7 +72,9 @@ impl<'a> GameClient<'a> {
         self._game_resources = application.get_game_resources();
         self._game_ui_manager = application.get_game_ui_manager();
         self._editor_ui_manager = application.get_editor_ui_manager();
+        self._need_world_map_mode = false;
         self._need_sleep_mode = false;
+        self._need_toolbox_mode = false;
         self._sleep_timer = 0.0;
     }
     pub fn destroy_game_client(&mut self) {
@@ -134,16 +138,22 @@ impl<'a> GameClient<'a> {
             }
         }
     }
+    pub fn set_need_world_map_mode(&mut self, need: bool) {
+        self._need_world_map_mode = need;
+    }
+    pub fn get_need_world_map_mode(&self) -> bool {
+        self._need_world_map_mode
+    }
+    pub fn get_need_sleep_mode(&self) -> bool {
+        self._need_sleep_mode
+    }
     pub fn set_need_sleep_mode(&mut self, need_sleep_mode: bool) {
         self._need_sleep_mode = need_sleep_mode;
-    }
-    pub fn need_sleep_mode(&self) -> bool {
-        self._need_sleep_mode
     }
     pub fn set_need_toolbox_mode(&mut self, need_toolbox_mode: bool) {
         self._need_toolbox_mode = need_toolbox_mode;
     }
-    pub fn need_toolbox_mode(&self) -> bool {
+    pub fn get_need_toolbox_mode(&self) -> bool {
         self._need_toolbox_mode
     }
     pub fn reset_sleep_timer(&mut self) {
@@ -188,6 +198,7 @@ impl<'a> GameClient<'a> {
             }
             GamePhase::WorldMapOpen => {
                 game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, MATERIAL_WORLDMAP_FADE_TIME);
+                self.set_need_world_map_mode(false);
             }
             GamePhase::WorldMapClose => {
                 game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, MATERIAL_WORLDMAP_FADE_TIME);
@@ -285,20 +296,11 @@ impl<'a> GameClient<'a> {
                             self.set_game_phase(GamePhase::PlayGameScenario);
                         } else if game_scene_manager.is_teleport_mode() {
                             self.set_game_phase(GamePhase::Teleport);
-                        } else if game_scene_manager.is_world_map_mode() {
-                            game_controller.update_world_map_controller(
-                                time_data,
-                                &joystick_input_data,
-                                &keyboard_input_data,
-                                &mouse_move_data,
-                                &mouse_input_data,
-                                &mouse_delta,
-                                scene_manager.get_main_camera_mut(),
-                                character_manager.get_player(),
-                            );
-                        } else if self.need_sleep_mode() {
+                        } else if self.get_need_world_map_mode() {
+                            self.set_game_phase(GamePhase::WorldMapOpen);
+                        } else if self.get_need_sleep_mode() {
                             self.set_game_phase(GamePhase::Sleep);
-                        } else if self.need_toolbox_mode() {
+                        } else if self.get_need_toolbox_mode() {
                             self.set_game_phase(GamePhase::OpenToolbox);
                         } else {
                             if game_controller.is_game_camera_auto_blend_mode() {
@@ -374,7 +376,22 @@ impl<'a> GameClient<'a> {
             }
             GamePhase::WorldMapUpdate => {
                 if game_controller.is_close_worldmap(joystick_input_data, keyboard_input_data) {
+                    self.get_game_scene_manager_mut().set_teleport_stage(
+                        self.get_game_scene_manager().get_current_game_scene_data_name(),
+                        DEFAULT_GATE_NAME,
+                    );
                     self.set_game_phase(GamePhase::WorldMapClose);
+                } else {
+                    game_controller.update_world_map_controller(
+                        time_data,
+                        &joystick_input_data,
+                        &keyboard_input_data,
+                        &mouse_move_data,
+                        &mouse_input_data,
+                        &mouse_delta,
+                        scene_manager.get_main_camera_mut(),
+                        character_manager.get_player(),
+                    );
                 }
             }
             GamePhase::WorldMapClose => {
@@ -382,7 +399,13 @@ impl<'a> GameClient<'a> {
                     game_ui_manager.set_cross_hair_visible(false);
                     game_ui_manager.set_world_map_visible(false);
                     game_ui_manager.set_auto_fade_inout(true);
+
+                    game_scene_manager.update_teleport(character_manager);
                 } else if game_ui_manager.is_done_game_image_progress() {
+
+                }
+
+                if game_scene_manager.is_teleport_mode() == false {
                     self.set_game_phase(GamePhase::GamePlay);
                 }
             }

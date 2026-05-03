@@ -385,17 +385,13 @@ impl<'a> GameController<'a> {
         time_data: &TimeData,
         joystick_input_data: &JoystickInputData,
         keyboard_input_data: &KeyboardInputData,
-        mouse_move_data: &MouseMoveData,
-        mouse_input_data: &MouseInputData,
+        _mouse_move_data: &MouseMoveData,
+        _mouse_input_data: &MouseInputData,
         _mouse_delta: &Vector2<f32>,
-        main_camera: &mut CameraObjectData,
-        player: &RcRefCell<Character>,
+        _main_camera: &mut CameraObjectData,
+        _player: &RcRefCell<Character>,
     ) {
-        let delta_time: f32 = time_data._delta_time as f32;
-        let is_attack: bool = mouse_input_data._btn_l_pressed
-            || joystick_input_data._btn_right_shoulder == ButtonState::Pressed;
-        let is_power_attack: bool = mouse_input_data._btn_r_pressed
-            || joystick_input_data._btn_right_trigger == ButtonState::Pressed;
+        let _delta_time: f32 = time_data._delta_time as f32;
         let is_left = keyboard_input_data.get_key_hold(KeyCode::KeyA)
             || joystick_input_data._stick_left_direction.x < 0;
         let is_right = keyboard_input_data.get_key_hold(KeyCode::KeyD)
@@ -404,45 +400,15 @@ impl<'a> GameController<'a> {
             || joystick_input_data._stick_left_direction.y < 0;
         let is_up = keyboard_input_data.get_key_hold(KeyCode::KeyW)
             || 0 < joystick_input_data._stick_left_direction.y;
-        let is_jump = keyboard_input_data.get_key_pressed(KeyCode::Space)
-            || joystick_input_data._btn_a == ButtonState::Pressed;
-        let is_run = keyboard_input_data.get_key_pressed(KeyCode::ShiftLeft)
-            || joystick_input_data._btn_left_shoulder == ButtonState::Pressed;
-        let is_roll = keyboard_input_data.get_key_pressed(KeyCode::AltLeft)
-            || joystick_input_data._btn_b == ButtonState::Pressed;
         let is_interaction = keyboard_input_data.get_key_pressed(KeyCode::KeyF)
             || joystick_input_data._btn_x == ButtonState::Pressed;
-        let is_zoom_in = keyboard_input_data.get_key_hold(KeyCode::ArrowUp)
-            || 0 < mouse_move_data._scroll_delta.y
-            || joystick_input_data._btn_up == ButtonState::Hold;
-        let is_zoom_out = keyboard_input_data.get_key_hold(KeyCode::ArrowDown)
-            || mouse_move_data._scroll_delta.y < 0
-            || joystick_input_data._btn_down == ButtonState::Hold;
-        let use_item = keyboard_input_data.get_key_pressed(KeyCode::KeyC)
-            || joystick_input_data._btn_y == ButtonState::Pressed;
-        let is_previous_item = keyboard_input_data.get_key_pressed(KeyCode::ArrowLeft)
-            || keyboard_input_data.get_key_pressed(KeyCode::KeyQ)
-            || joystick_input_data._btn_left == ButtonState::Pressed;
-        let is_next_item = keyboard_input_data.get_key_pressed(KeyCode::ArrowRight)
-            || keyboard_input_data.get_key_pressed(KeyCode::KeyE)
-            || joystick_input_data._btn_right == ButtonState::Pressed;
-
-        let mouse_sensitivity: f32 = 0.001;
-        let mouse_pos_delta = Vector2::<f32>::new(
-            mouse_move_data._mouse_pos_delta.x as f32,
-            mouse_move_data._mouse_pos_delta.y as f32,
-        ) * mouse_sensitivity;
-        let mouse_scroll_delta = Vector2::<f32>::new(
-            mouse_move_data._scroll_delta.x as f32,
-            mouse_move_data._scroll_delta.y as f32,
-        );
 
         let joystick_sensitivity: f32 = 0.1 / 32767.0;
         let stick_left_direction = Vector2::<f32>::new(
             joystick_input_data._stick_left_direction.x as f32,
             joystick_input_data._stick_left_direction.y as f32,
         ) * joystick_sensitivity;
-        let stick_right_direction = Vector2::<f32>::new(
+        let _stick_right_direction = Vector2::<f32>::new(
             joystick_input_data._stick_right_direction.x as f32,
             joystick_input_data._stick_right_direction.y as f32,
         ) * joystick_sensitivity;
@@ -453,59 +419,6 @@ impl<'a> GameController<'a> {
         } else if joystick_input_data.is_any_button_pressed() {
             self._is_keyboard_input_mode = false;
         }
-
-        // set action & move
-        let mut player_mut = player.borrow_mut();
-        {
-            let mut move_direction: Vector3<f32> = Vector3::zeros();
-
-            if is_left || is_right {
-                move_direction.x = if stick_left_direction.x != 0.0 {
-                    stick_left_direction.x
-                } else {
-                    if is_left {
-                        -1.0
-                    } else {
-                        1.0
-                    }
-                };
-            }
-
-            if is_up || is_down {
-                move_direction.z = if stick_left_direction.y != 0.0 {
-                    -stick_left_direction.y
-                } else {
-                    if is_down {
-                        -1.0
-                    } else {
-                        1.0
-                    }
-                };
-            }
-
-            if move_direction.x != 0.0 || move_direction.z != 0.0 {
-                move_direction.normalize_mut();
-
-                player_mut.set_move(&move_direction);
-                player_mut.set_run(true);
-            } else {
-                player_mut.set_move_control_stop();
-            }
-        }
-
-        if is_interaction {
-            if player_mut.is_in_interaction_range() {
-                player_mut.set_action_interaction();
-            }
-        }
-
-        // world map camera transform
-        const PITCH: f32 = 0.707;
-        let camera_position: Vector3<f32> = Vector3::new(0.0, PITCH.sin(), -PITCH.cos()) * 30.0;
-        main_camera._transform_object.set_pitch(PITCH);
-        main_camera._transform_object.set_yaw(0.0);
-        main_camera._transform_object.set_roll(0.0);
-        main_camera._transform_object.set_position(&camera_position);
     }
 
     pub fn update_game_controller(
@@ -706,10 +619,6 @@ impl<'a> GameController<'a> {
 
                 // stop
                 player_mut.set_move_control_stop();
-            }
-
-            if is_up && player_mut.is_in_interaction_range() {
-                player_mut.set_action_enter_gate();
             }
         }
 

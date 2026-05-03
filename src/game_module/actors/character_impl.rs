@@ -427,8 +427,7 @@ impl<'a> Character<'a> {
         (self.is_on_ground() == false || self.is_action(ActionAnimationState::Kick) == false) &&
         self.is_action(ActionAnimationState::LayingDown) == false &&
         self.is_action(ActionAnimationState::Sleep) == false &&
-        self.is_action(ActionAnimationState::WakeUp) == false &&
-        self.is_action(ActionAnimationState::EnterGate) == false
+        self.is_action(ActionAnimationState::WakeUp) == false
     }
 
     pub fn is_available_jump(&self) -> bool {
@@ -688,12 +687,6 @@ impl<'a> Character<'a> {
     }
 
     pub fn set_action_interaction(&mut self) {
-        log::info!("set_action_interaction - is_on_ground: {:?}, is_available_move: {:?}, is_idle_action: {:?}",
-            self._controller.is_on_ground(),
-            self.is_available_move(),
-            self.is_idle_action()
-        );
-
         if self._controller.is_on_ground() && self.is_available_move() && self.is_idle_action() {
             match self._controller._nearest_interaction_object.clone() {
                 InteractionObject::PropBed(_) => {
@@ -742,18 +735,16 @@ impl<'a> Character<'a> {
             }
         }
     }
-    pub fn set_action_enter_gate(&mut self) {
-        if self._controller.is_on_ground() && self.is_available_move() && self.is_idle_action() {
-            match self._controller._nearest_interaction_object {
-                InteractionObject::PropGate(_) => {
-                    self.set_action_animation(ActionAnimationState::EnterGate, 1.0);
-                    self.set_move_idle();
-                }
-                _ => ()
+    pub fn callback_changed_interaction_object(&mut self) {
+        match self._controller._nearest_interaction_object.clone() {
+            InteractionObject::PropGate(_) => {
+                log::info!("InteractionObject::PropGate");
+                self.get_character_manager().get_game_client_mut().set_need_world_map_mode(true);
+                self.set_move_idle();
             }
+            _ => {},
         }
     }
-
     pub fn set_action_attack(&mut self) {
         if self.is_available_attack() {
             let mut animation_speed: f32 = 1.0;
@@ -958,14 +949,6 @@ impl<'a> Character<'a> {
             ActionAnimationState::Pickup => {
                 render_object.set_animation(
                     &animation_data._pickup_animation,
-                    &animation_info,
-                    AnimationLayer::ActionLayer,
-                );
-            }
-            ActionAnimationState::EnterGate => {
-                animation_info._animation_fade_out_time = 0.0; // keep end of animation
-                render_object.set_animation(
-                    &animation_data._idle_animation,
                     &animation_info,
                     AnimationLayer::ActionLayer,
                 );
@@ -1233,9 +1216,6 @@ impl<'a> Character<'a> {
                     );
                 }
             }
-            ActionAnimationState::EnterGate => {
-                self._animation_state.set_action_event(ActionAnimationState::EnterGate);
-            }
             _ => ()
         }
     }
@@ -1416,7 +1396,10 @@ impl<'a> Character<'a> {
             &self._render_object.borrow()._collision,
             delta_time,
         );
-        self._controller.update_interaction_objects();
+
+        if self._controller.update_interaction_objects() {
+            self.callback_changed_interaction_object();
+        }
 
         // falling water or falling on ground
         if self.is_alive() {

@@ -336,7 +336,7 @@ impl<'a> ControllerHelpWidget<'a> {
                             (InputControlType::Interaction, String::from("Interaction"))
                         }
                     },
-                    InteractionObject::PropGate(_) => (InputControlType::EnterGate, String::from("Enter Gate")),
+                    InteractionObject::PropGate(_) => (InputControlType::None, String::from("Enter Gate")),
                     InteractionObject::PropGathering(prop) => (InputControlType::Gathering, format!("Hit the {}", prop.borrow()._prop_data.borrow()._name.as_str())),
                     _ => (InputControlType::Interaction, String::from("interaction"))
                 };
