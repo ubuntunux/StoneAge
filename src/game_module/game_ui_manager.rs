@@ -259,7 +259,7 @@ impl<'a> GameUIManager<'a> {
         )));
         self._quest_widget = Some(Box::new(QuestWidget::create_quest_widget(game_scene_manager, game_resources, game_ui_layout_mut)));
 
-        self._world_map_widget = Some(Box::new(WorldMapWidget::create_world_map_widget(root_widget, game_resources, window_size)));
+        self._world_map_widget = Some(Box::new(WorldMapWidget::create_world_map_widget(root_widget, game_resources)));
 
         self._cross_hair = Some(Box::new(CrossHairWidget::create_cross_hair(root_widget, game_resources)));
 

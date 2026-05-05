@@ -10,3 +10,4 @@ pub mod toolbox_widget;
 pub mod text_box_widget;
 pub mod quest_widgets;
 pub mod world_map_widget;
+pub mod world_map_widget_impl;

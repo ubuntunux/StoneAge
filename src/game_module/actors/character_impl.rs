@@ -738,7 +738,6 @@ impl<'a> Character<'a> {
     pub fn callback_changed_interaction_object(&mut self) {
         match self._controller._nearest_interaction_object.clone() {
             InteractionObject::PropGate(_) => {
-                log::info!("InteractionObject::PropGate");
                 self.get_character_manager().get_game_client_mut().set_need_world_map_mode(true);
                 self.set_move_idle();
             }
