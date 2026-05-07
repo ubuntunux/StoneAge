@@ -319,7 +319,7 @@ pub fn run_application() {
     let app_name: String = "Stone Age".to_string();
     let app_version: u32 = 1;
     let initial_window_size: Option<Vector2<u32>> = None; // Some(Vector2::new(1024, 768));
-    let window_mode = WindowMode::FullScreenBorderlessMode;
+    let window_mode = WindowMode::WindowMode;
 
     // Graphics Settings
     unsafe {

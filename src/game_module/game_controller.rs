@@ -392,19 +392,19 @@ impl<'a> GameController<'a> {
         _player: &RcRefCell<Character>,
     ) {
         let _delta_time: f32 = time_data._delta_time as f32;
-        let is_left = keyboard_input_data.get_key_hold(KeyCode::KeyA)
+        let _is_left = keyboard_input_data.get_key_hold(KeyCode::KeyA)
             || joystick_input_data._stick_left_direction.x < 0;
-        let is_right = keyboard_input_data.get_key_hold(KeyCode::KeyD)
+        let _is_right = keyboard_input_data.get_key_hold(KeyCode::KeyD)
             || 0 < joystick_input_data._stick_left_direction.x;
-        let is_down = keyboard_input_data.get_key_hold(KeyCode::KeyS)
+        let _is_down = keyboard_input_data.get_key_hold(KeyCode::KeyS)
             || joystick_input_data._stick_left_direction.y < 0;
-        let is_up = keyboard_input_data.get_key_hold(KeyCode::KeyW)
+        let _is_up = keyboard_input_data.get_key_hold(KeyCode::KeyW)
             || 0 < joystick_input_data._stick_left_direction.y;
-        let is_interaction = keyboard_input_data.get_key_pressed(KeyCode::KeyF)
+        let _is_interaction = keyboard_input_data.get_key_pressed(KeyCode::KeyF)
             || joystick_input_data._btn_x == ButtonState::Pressed;
 
         let joystick_sensitivity: f32 = 0.1 / 32767.0;
-        let stick_left_direction = Vector2::<f32>::new(
+        let _stick_left_direction = Vector2::<f32>::new(
             joystick_input_data._stick_left_direction.x as f32,
             joystick_input_data._stick_left_direction.y as f32,
         ) * joystick_sensitivity;
