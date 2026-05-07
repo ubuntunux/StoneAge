@@ -67,7 +67,7 @@ impl<'a> WorldMapStage<'a> {
     pub fn callback_touch_down(_ui_component: &UIComponentInstance<'a>, _touched_pos: &Vector2<f32>, _touched_pos_delta: &Vector2<f32>) -> bool {
         if _ui_component.get_user_data().is_null() == false {
             let world_map_stage = ptr_as_mut(_ui_component.get_user_data() as *const WorldMapStage<'a>);
-            world_map_stage.set_selected(world_map_stage.get_selected());
+            world_map_stage.set_selected(!world_map_stage.get_selected());
         }
         true
     }
