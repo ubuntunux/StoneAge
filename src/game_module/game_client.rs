@@ -375,7 +375,9 @@ impl<'a> GameClient<'a> {
                 }
             }
             GamePhase::WorldMapUpdate => {
-                if game_controller.is_close_worldmap(joystick_input_data, keyboard_input_data) {
+                if game_scene_manager.is_teleport_mode() {
+                    self.set_game_phase(GamePhase::WorldMapClose);
+                } else if game_controller.is_close_worldmap(joystick_input_data, keyboard_input_data) {
                     self.get_game_scene_manager_mut().set_teleport_stage(
                         self.get_game_scene_manager().get_current_game_scene_data_name(),
                         DEFAULT_GATE_NAME,
@@ -395,17 +397,11 @@ impl<'a> GameClient<'a> {
                 }
             }
             GamePhase::WorldMapClose => {
-                if game_ui_manager.is_done_manual_fade_out() {
+                if game_ui_manager.is_done_manual_fade_out() || game_ui_manager.is_done_game_image_progress() {
                     game_ui_manager.set_cross_hair_visible(false);
                     game_ui_manager.set_world_map_visible(false);
                     game_ui_manager.set_auto_fade_inout(true);
-
                     game_scene_manager.update_teleport(character_manager);
-                } else if game_ui_manager.is_done_game_image_progress() {
-
-                }
-
-                if game_scene_manager.is_teleport_mode() == false {
                     self.set_game_phase(GamePhase::GamePlay);
                 }
             }
