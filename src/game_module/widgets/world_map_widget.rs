@@ -20,11 +20,11 @@ pub struct WorldMapBridge<'a> {
 
 pub struct WorldMapStage<'a> {
     pub _world_map_widget: *const WorldMapWidget<'a>,
-    pub _teleport_stage_name: String,
+    pub _world_map_stage_name: String,
     pub _selected: bool,
     pub _world_map_stage: Rc<WidgetDefault<'a>>,
-    pub _linked_stages: [Option<Rc<WorldMapStage<'a>>>; WorldMapDirection::COUNT as usize],
-    pub _linked_bridges: [Option<Rc<WidgetDefault<'a>>>; WorldMapDirection::COUNT as usize],
+    pub _linked_stages: [Option<Rc<WorldMapStage<'a>>>; WorldMapDirection::COUNT as usize + 1],
+    pub _linked_bridges: [Option<Rc<WidgetDefault<'a>>>; WorldMapDirection::COUNT as usize + 1],
 
 }
 

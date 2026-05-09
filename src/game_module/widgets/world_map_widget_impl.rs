@@ -69,7 +69,7 @@ impl<'a> WorldMapStage<'a> {
     pub fn callback_touch_down(_ui_component: &UIComponentInstance<'a>, _touched_pos: &Vector2<f32>, _touched_pos_delta: &Vector2<f32>) -> bool {
         if _ui_component.get_user_data().is_null() == false {
             let world_map_stage = ptr_as_ref(_ui_component.get_user_data() as *const WorldMapStage<'a>);
-            world_map_stage.get_world_map_widget_mut().set_selected_world_map_stage(&world_map_stage.get_teleport_stage_name());
+            world_map_stage.get_world_map_widget_mut().set_selected_world_map_stage(&world_map_stage.get_world_map_stage_name());
         }
         true
     }
@@ -95,11 +95,11 @@ impl<'a> WorldMapStage<'a> {
 
         let world_map_stage = Rc::new(WorldMapStage {
             _world_map_widget: world_map_widget,
-            _teleport_stage_name: String::from(teleport_stage_name),
+            _world_map_stage_name: String::from(teleport_stage_name),
             _selected: false,
             _world_map_stage: world_map_stage,
-            _linked_stages: [None, None, None, None],
-            _linked_bridges: [None, None, None, None],
+            _linked_stages: [None, None, None, None, None],
+            _linked_bridges: [None, None, None, None, None],
         });
 
         // set callback event
@@ -150,42 +150,39 @@ impl<'a> WorldMapStage<'a> {
         ui_component.set_pos_hint_y(PosHintY::Center(pos_hint_y));
     }
 
-    pub fn get_teleport_stage_name(&self) -> &String {
-        &self._teleport_stage_name
+    pub fn get_world_map_stage_name(&self) -> &String {
+        &self._world_map_stage_name
     }
 
     pub fn get_linked_stage(&self, direction: WorldMapDirection) -> &Option<Rc<WorldMapStage<'a>>> {
         &self._linked_stages[direction as usize]
     }
 
-    pub fn set_linked_stage(&mut self, game_resources: &GameResources<'a>, bridge_layer: &mut WidgetDefault<'a>, direction: WorldMapDirection, maybe_stage: Option<Rc<WorldMapStage<'a>>>, world_map_aspect: f32) {
-        if let Some(stage) = maybe_stage.as_ref() {
-            let stage = ptr_as_mut(stage.as_ref());
-            let pos_hint = self.get_pos_hint();
-            let pos_hint_step_x = 0.1;
-            let pos_hint_step_y = pos_hint_step_x * world_map_aspect;
-            if direction == WorldMapDirection::LEFT {
-                stage.set_pos_hint(pos_hint.x - pos_hint_step_x, pos_hint.y);
-            } else if direction == WorldMapDirection::RIGHT {
-                stage.set_pos_hint(pos_hint.x + pos_hint_step_x, pos_hint.y);
-            } else if direction == WorldMapDirection::UP {
-                stage.set_pos_hint(pos_hint.x, pos_hint.y + pos_hint_step_y);
-            } else if direction == WorldMapDirection::DOWN {
-                stage.set_pos_hint(pos_hint.x, pos_hint.y - pos_hint_step_y);
-            }
+    pub fn set_linked_stage(&mut self, game_resources: &GameResources<'a>, bridge_layer: &mut WidgetDefault<'a>, direction: WorldMapDirection, linked_stage: &Rc<WorldMapStage<'a>>, world_map_aspect: f32, make_bridge: bool) {
+        let linked_stage_mut = ptr_as_mut(linked_stage.as_ref());
+        let pos_hint_step_x = 0.1;
+        let pos_hint_step_y = pos_hint_step_x * world_map_aspect;
+        let pos_hint = self.get_pos_hint();
+        if direction == WorldMapDirection::LEFT {
+            linked_stage_mut.set_pos_hint(pos_hint.x - pos_hint_step_x, pos_hint.y);
+        } else if direction == WorldMapDirection::RIGHT {
+            linked_stage_mut.set_pos_hint(pos_hint.x + pos_hint_step_x, pos_hint.y);
+        } else if direction == WorldMapDirection::UP {
+            linked_stage_mut.set_pos_hint(pos_hint.x, pos_hint.y - pos_hint_step_y);
+        } else if direction == WorldMapDirection::DOWN {
+            linked_stage_mut.set_pos_hint(pos_hint.x, pos_hint.y + pos_hint_step_y);
+        }
+        self._linked_stages[direction as usize] = Some(linked_stage.clone());
 
+        if make_bridge {
             let bridge_widget = WorldMapBridge::create_world_map_bridge(
                 game_resources,
                 bridge_layer,
                 &pos_hint,
-                &stage.get_pos_hint(),
+                &linked_stage_mut.get_pos_hint(),
                 world_map_aspect
             );
-
-            self._linked_stages[direction as usize] = maybe_stage;
             self._linked_bridges[direction as usize] = Some(bridge_widget);
-        } else {
-            assert!(false, "do not allow set none stage");
         }
     }
 }
@@ -323,15 +320,20 @@ impl<'a> WorldMapWidget<'a> {
 
         // link stages
         ptr_as_mut(world_map_stage_home.as_ref()).set_pos_hint(0.5, 0.5);
-        ptr_as_mut(world_map_stage_home.as_ref()).set_linked_stage(game_resources, bridge_layer, WorldMapDirection::RIGHT, Some(world_map_stage_forest.clone()), image_aspect);
-        ptr_as_mut(world_map_stage_home.as_ref()).set_linked_stage(game_resources, bridge_layer, WorldMapDirection::UP, Some(world_map_stage_cave.clone()), image_aspect);
+        WorldMapWidget::set_linked_stage(game_resources, bridge_layer, &world_map_stage_home, &world_map_stage_forest, WorldMapDirection::RIGHT, image_aspect);
+        WorldMapWidget::set_linked_stage(game_resources, bridge_layer, &world_map_stage_home, &world_map_stage_cave, WorldMapDirection::DOWN, image_aspect);
 
         // register
         let mut world_map_stages = HashMap::new();
-        world_map_stages.insert(world_map_stage_home.get_teleport_stage_name().clone(), world_map_stage_home);
-        world_map_stages.insert(world_map_stage_forest.get_teleport_stage_name().clone(), world_map_stage_forest);
-        world_map_stages.insert(world_map_stage_cave.get_teleport_stage_name().clone(), world_map_stage_cave);
+        world_map_stages.insert(world_map_stage_home.get_world_map_stage_name().clone(), world_map_stage_home);
+        world_map_stages.insert(world_map_stage_forest.get_world_map_stage_name().clone(), world_map_stage_forest);
+        world_map_stages.insert(world_map_stage_cave.get_world_map_stage_name().clone(), world_map_stage_cave);
         world_map_stages
+    }
+
+    pub fn set_linked_stage(game_resources: &GameResources<'a>, bridge_layer: &mut WidgetDefault<'a>, stage: &Rc<WorldMapStage<'a>>, linked_stage: &Rc<WorldMapStage<'a>>, direction: WorldMapDirection, world_map_aspect: f32) {
+        ptr_as_mut(stage.as_ref()).set_linked_stage(game_resources, bridge_layer, direction, linked_stage, world_map_aspect, true);
+        ptr_as_mut(linked_stage.as_ref()).set_linked_stage(game_resources, bridge_layer, direction.get_opposite_direction(), stage, world_map_aspect, false);
     }
 
     pub fn get_audio_manager(&self) -> &AudioManager<'a> {
@@ -366,12 +368,16 @@ impl<'a> WorldMapWidget<'a> {
         ui_component.set_size_hint_y(Some(world_map_size_hint.y));
     }
 
+    pub fn teleport_selected_world_map_stage(&mut self) {
+        self.set_selected_world_map_stage(&self._selected_stage_name.clone());
+    }
+
     pub fn set_selected_world_map_stage(&mut self, selected_stage_name: &String) {
         self.get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
 
         if self._selected_stage_name == *selected_stage_name {
             if let Some(selected_stage) = self._world_map_stages.get_mut(selected_stage_name) {
-                let teleport_stage: &String = ptr_as_ref(selected_stage.as_ref()).get_teleport_stage_name();
+                let teleport_stage: &String = ptr_as_ref(selected_stage.as_ref()).get_world_map_stage_name();
                 ptr_as_mut(self._game_scene_manager).set_teleport_stage(teleport_stage, DEFAULT_GATE_NAME);
             }
         } else {
@@ -386,6 +392,14 @@ impl<'a> WorldMapWidget<'a> {
             }
 
             self._selected_stage_name = selected_stage_name.clone();
+        }
+    }
+
+    pub fn change_selected_world_map_stage(&mut self, direction: WorldMapDirection) {
+        if let Some(selected_stage) = self._world_map_stages.get_mut(&self._selected_stage_name) {
+            if let Some(linked_stage) = ptr_as_ref(selected_stage.as_ref()).get_linked_stage(direction).as_ref() {
+                self.set_selected_world_map_stage(linked_stage.get_world_map_stage_name());
+            }
         }
     }
 

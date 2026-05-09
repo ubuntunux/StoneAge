@@ -24,7 +24,7 @@ use crate::game_module::widgets::target_status_bar::TargetStatusWidget;
 use crate::game_module::widgets::text_box_widget::{TextBoxContent, TextBoxWidget};
 use crate::game_module::widgets::time_of_day::TimeOfDayWidget;
 use crate::game_module::widgets::toolbox_widget::ToolboxWidget;
-use crate::game_module::widgets::world_map_widget::WorldMapWidget;
+use crate::game_module::widgets::world_map_widget::{WorldMapDirection, WorldMapWidget};
 
 pub type QuestItem<'a> = RcRefCell<dyn QuestItemBase<'a> + 'a>;
 
@@ -331,11 +331,20 @@ impl<'a> GameUIManager<'a> {
         }
     }
 
-    pub fn get_world_map_visible(&self) -> bool {
-        if let Some(widget) = self._world_map_widget.as_ref() {
-            return widget.get_visible();
-        }
-        false
+    pub fn set_selected_world_map_stage(&mut self, selected_stage_name: &String) {
+        self._world_map_widget.as_mut().unwrap().set_selected_world_map_stage(selected_stage_name);
+    }
+
+    pub fn unset_selected_world_map_stage(&mut self) {
+        self._world_map_widget.as_mut().unwrap().set_selected_world_map_stage(&String::default());
+    }
+
+    pub fn change_selected_world_map_stage(&mut self, direction: WorldMapDirection) {
+        self._world_map_widget.as_mut().unwrap().change_selected_world_map_stage(direction);
+    }
+
+    pub fn teleport_selected_world_map_stage(&mut self) {
+        self._world_map_widget.as_mut().unwrap().teleport_selected_world_map_stage();
     }
 
     // item bar

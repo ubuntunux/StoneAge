@@ -371,6 +371,7 @@ impl<'a> GameClient<'a> {
                     game_ui_manager.set_cross_hair_visible(true);
                     game_ui_manager.set_world_map_visible(true);
                     game_ui_manager.set_auto_fade_inout(true);
+                    game_ui_manager.set_selected_world_map_stage(self.get_game_scene_manager().get_current_game_scene_data_name());
                     self.set_game_phase(GamePhase::WorldMapUpdate);
                 }
             }
@@ -401,6 +402,7 @@ impl<'a> GameClient<'a> {
                     game_ui_manager.set_cross_hair_visible(false);
                     game_ui_manager.set_world_map_visible(false);
                     game_ui_manager.set_auto_fade_inout(true);
+                    game_ui_manager.unset_selected_world_map_stage();
                     game_scene_manager.update_teleport(character_manager);
                     self.set_game_phase(GamePhase::GamePlay);
                 }

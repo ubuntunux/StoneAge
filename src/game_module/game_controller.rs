@@ -14,6 +14,7 @@ use crate::game_module::actors::character::Character;
 use crate::game_module::game_client::{GameClient};
 use crate::game_module::game_constants::*;
 use crate::game_module::game_ui_manager::GameUIManager;
+use crate::game_module::widgets::world_map_widget::WorldMapDirection;
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Debug, Display, EnumIter, EnumString, EnumCount)]
 pub enum InputControlType {
@@ -392,15 +393,21 @@ impl<'a> GameController<'a> {
         _player: &RcRefCell<Character>,
     ) {
         let _delta_time: f32 = time_data._delta_time as f32;
-        let _is_left = keyboard_input_data.get_key_hold(KeyCode::KeyA)
-            || joystick_input_data._stick_left_direction.x < 0;
-        let _is_right = keyboard_input_data.get_key_hold(KeyCode::KeyD)
-            || 0 < joystick_input_data._stick_left_direction.x;
-        let _is_down = keyboard_input_data.get_key_hold(KeyCode::KeyS)
-            || joystick_input_data._stick_left_direction.y < 0;
-        let _is_up = keyboard_input_data.get_key_hold(KeyCode::KeyW)
-            || 0 < joystick_input_data._stick_left_direction.y;
-        let _is_interaction = keyboard_input_data.get_key_pressed(KeyCode::KeyF)
+        let is_left = keyboard_input_data.get_key_pressed(KeyCode::KeyA)
+            || keyboard_input_data.get_key_pressed(KeyCode::ArrowLeft)
+            || joystick_input_data._btn_left == ButtonState::Pressed;
+        let is_right = keyboard_input_data.get_key_pressed(KeyCode::KeyD)
+            || keyboard_input_data.get_key_pressed(KeyCode::ArrowRight)
+            || joystick_input_data._btn_right == ButtonState::Pressed;
+        let is_down = keyboard_input_data.get_key_pressed(KeyCode::KeyS)
+            || keyboard_input_data.get_key_pressed(KeyCode::ArrowDown)
+            || joystick_input_data._btn_down == ButtonState::Pressed;
+        let is_up = keyboard_input_data.get_key_pressed(KeyCode::KeyW)
+            || keyboard_input_data.get_key_pressed(KeyCode::ArrowUp)
+            || joystick_input_data._btn_up == ButtonState::Pressed;
+        let is_interaction = keyboard_input_data.get_key_pressed(KeyCode::KeyF)
+            || keyboard_input_data.get_key_pressed(KeyCode::Space)
+            || keyboard_input_data.get_key_pressed(KeyCode::Enter)
             || joystick_input_data._btn_x == ButtonState::Pressed;
 
         let joystick_sensitivity: f32 = 0.1 / 32767.0;
@@ -418,6 +425,24 @@ impl<'a> GameController<'a> {
             self._is_keyboard_input_mode = true;
         } else if joystick_input_data.is_any_button_pressed() {
             self._is_keyboard_input_mode = false;
+        }
+
+        //
+        let world_map_direction = if is_left {
+            WorldMapDirection::LEFT
+        } else if is_right {
+            WorldMapDirection::RIGHT
+        } else if is_up {
+            WorldMapDirection::UP
+        } else if is_down {
+            WorldMapDirection::DOWN
+        } else {
+            WorldMapDirection::COUNT
+        };
+        self.get_game_ui_manager_mut().change_selected_world_map_stage(world_map_direction);
+
+        if is_interaction {
+            self.get_game_ui_manager_mut().teleport_selected_world_map_stage();
         }
     }
 
