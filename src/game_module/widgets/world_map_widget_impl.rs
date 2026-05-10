@@ -373,7 +373,9 @@ impl<'a> WorldMapWidget<'a> {
     }
 
     pub fn set_selected_world_map_stage(&mut self, selected_stage_name: &String) {
-        self.get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
+        if self._selected_stage_name.is_empty() == false && selected_stage_name.is_empty() == false {
+            self.get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
+        }
 
         if self._selected_stage_name == *selected_stage_name {
             if let Some(selected_stage) = self._world_map_stages.get_mut(selected_stage_name) {
