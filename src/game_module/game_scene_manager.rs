@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use nalgebra::{Vector2, Vector3};
 use serde::{Deserialize, Serialize};
+use strum_macros::{Display, EnumString};
 use crate::application::application::Application;
 use crate::game_module::actors::character::{Character, CharacterCreateInfo};
 use crate::game_module::actors::character_manager::CharacterManager;
@@ -24,6 +25,50 @@ pub type ItemCreateInfoMap = HashMap<String, ItemCreateInfo>;
 pub type PropCreateInfoMap = HashMap<String, PropCreateInfo>;
 
 pub type ScenarioMap<'a> = HashMap<String, RcRefCell<dyn ScenarioBase<'a> + 'a>>;
+
+#[derive(Clone, PartialEq, Eq, Hash, Debug, Display, EnumString, Copy)]
+pub enum Stages {
+    None,
+    Home,
+    Forest,
+    Cave,
+    WorldMap,
+}
+
+impl Stages {
+    pub fn get_stage_display_name(&self) -> &str {
+        match *self {
+            Stages::None => "",
+            Stages::Home => "HOME",
+            Stages::Forest => "FOREST",
+            Stages::Cave => "CAVE",
+            Stages::WorldMap => "WORLD MAP",
+        }
+    }
+
+    pub fn get_stage_data_name(&self) -> &str {
+        match *self {
+            Stages::None => "",
+            Stages::Home => "game_scenes/intro_stage",
+            Stages::Forest => "game_scenes/stage_01",
+            Stages::Cave => "game_scenes/stage_cave",
+            Stages::WorldMap => "game_scenes/world_map",
+        }
+    }
+
+    pub fn find_stage_value(stage_data_name: &str) -> Stages {
+        if stage_data_name == Stages::Home.get_stage_data_name() {
+            return Stages::Home;
+        } else if stage_data_name == Stages::Forest.get_stage_data_name() {
+            return Stages::Forest;
+        } else if stage_data_name == Stages::Cave.get_stage_data_name() {
+            return Stages::Cave;
+        } else if stage_data_name == Stages::WorldMap.get_stage_data_name() {
+            return Stages::WorldMap;
+        }
+        Stages::None
+    }
+}
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub enum GameSceneState {

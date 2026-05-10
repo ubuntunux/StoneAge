@@ -7,8 +7,8 @@ use rust_engine_3d::audio::audio_manager::{AudioLoop, AudioManager};
 use rust_engine_3d::scene::ui::{HorizontalAlign, PosHintX, PosHintY, UIComponentInstance, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault};
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
-use crate::game_module::game_scene_manager::GameSceneManager;
-use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, DEFAULT_GATE_NAME, STAGE_01, STAGE_CAVE, STAGE_INTRO_STAGE, MATERIAL_PORTRAIT_MONKEY_ARU, MATERIAL_WORLDMAP};
+use crate::game_module::game_scene_manager::{GameSceneManager, Stages};
+use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, DEFAULT_GATE_NAME, MATERIAL_PORTRAIT_MONKEY_ARU, MATERIAL_WORLDMAP};
 use crate::game_module::game_controller::GameController;
 use crate::game_module::widgets::world_map_widget::{WorldMapBridge, WorldMapDirection, WorldMapPlayer, WorldMapStage, WorldMapWidget};
 
@@ -69,12 +69,12 @@ impl<'a> WorldMapStage<'a> {
     pub fn callback_touch_down(_ui_component: &UIComponentInstance<'a>, _touched_pos: &Vector2<f32>, _touched_pos_delta: &Vector2<f32>) -> bool {
         if _ui_component.get_user_data().is_null() == false {
             let world_map_stage = ptr_as_ref(_ui_component.get_user_data() as *const WorldMapStage<'a>);
-            world_map_stage.get_world_map_widget_mut().set_selected_world_map_stage(&world_map_stage.get_world_map_stage_name());
+            world_map_stage.get_world_map_widget_mut().set_selected_world_map_stage(&world_map_stage.get_stage_data_name());
         }
         true
     }
 
-    pub fn create_world_map_stage(world_map_widget: &WorldMapWidget<'a>, _game_resources: &GameResources<'a>, root_layout: &mut WidgetDefault<'a>, stage_name: &str, teleport_stage_name: &str, world_map_aspect: f32) -> Rc<WorldMapStage<'a>> {
+    pub fn create_world_map_stage(world_map_widget: &WorldMapWidget<'a>, _game_resources: &GameResources<'a>, root_layout: &mut WidgetDefault<'a>, stage: Stages, world_map_aspect: f32) -> Rc<WorldMapStage<'a>> {
         let world_map_stage = UIManager::create_widget("world_map_stage", UIWidgetTypes::Default);
         let ui_component = ptr_as_mut(world_map_stage.as_ref()).get_ui_component_mut();
         ui_component.set_layout_type(UILayoutType::FloatLayout);
@@ -83,7 +83,7 @@ impl<'a> WorldMapStage<'a> {
         ui_component.set_round(10.0);
         ui_component.set_halign(HorizontalAlign::CENTER);
         ui_component.set_valign(VerticalAlign::CENTER);
-        ui_component.set_text(stage_name);
+        ui_component.set_text(stage.get_stage_display_name());
         ui_component.set_font_size(32.0);
         ui_component.set_font_color(get_color32(0, 0, 0, 255));
         ui_component.set_color(get_color32(255, 255, 255, 255));
@@ -95,7 +95,7 @@ impl<'a> WorldMapStage<'a> {
 
         let world_map_stage = Rc::new(WorldMapStage {
             _world_map_widget: world_map_widget,
-            _world_map_stage_name: String::from(teleport_stage_name),
+            _stage_data_name: String::from(stage.get_stage_data_name()),
             _selected: false,
             _world_map_stage: world_map_stage,
             _linked_stages: [None, None, None, None, None],
@@ -150,8 +150,8 @@ impl<'a> WorldMapStage<'a> {
         ui_component.set_pos_hint_y(PosHintY::Center(pos_hint_y));
     }
 
-    pub fn get_world_map_stage_name(&self) -> &String {
-        &self._world_map_stage_name
+    pub fn get_stage_data_name(&self) -> &String {
+        &self._stage_data_name
     }
 
     pub fn get_linked_stage(&self, direction: WorldMapDirection) -> &Option<Rc<WorldMapStage<'a>>> {
@@ -314,9 +314,9 @@ impl<'a> WorldMapWidget<'a> {
 
     pub fn create_world_map_stages(world_map_widget: &WorldMapWidget<'a>, game_resources: &GameResources<'a>, stage_layer: &mut WidgetDefault<'a>, bridge_layer: &mut WidgetDefault<'a>, image_aspect: f32) -> HashMap<String, Rc<WorldMapStage<'a>>> {
         // create stages
-        let world_map_stage_home = WorldMapStage::create_world_map_stage(world_map_widget, game_resources, stage_layer, "HOME", STAGE_INTRO_STAGE, image_aspect);
-        let world_map_stage_forest = WorldMapStage::create_world_map_stage(world_map_widget, game_resources, stage_layer, "FOREST", STAGE_01, image_aspect);
-        let world_map_stage_cave = WorldMapStage::create_world_map_stage(world_map_widget, game_resources, stage_layer, "CAVE", STAGE_CAVE, image_aspect);
+        let world_map_stage_home = WorldMapStage::create_world_map_stage(world_map_widget, game_resources, stage_layer, Stages::Home, image_aspect);
+        let world_map_stage_forest = WorldMapStage::create_world_map_stage(world_map_widget, game_resources, stage_layer, Stages::Forest, image_aspect);
+        let world_map_stage_cave = WorldMapStage::create_world_map_stage(world_map_widget, game_resources, stage_layer, Stages::Cave, image_aspect);
 
         // link stages
         ptr_as_mut(world_map_stage_home.as_ref()).set_pos_hint(0.5, 0.5);
@@ -325,9 +325,9 @@ impl<'a> WorldMapWidget<'a> {
 
         // register
         let mut world_map_stages = HashMap::new();
-        world_map_stages.insert(world_map_stage_home.get_world_map_stage_name().clone(), world_map_stage_home);
-        world_map_stages.insert(world_map_stage_forest.get_world_map_stage_name().clone(), world_map_stage_forest);
-        world_map_stages.insert(world_map_stage_cave.get_world_map_stage_name().clone(), world_map_stage_cave);
+        world_map_stages.insert(world_map_stage_home.get_stage_data_name().clone(), world_map_stage_home);
+        world_map_stages.insert(world_map_stage_forest.get_stage_data_name().clone(), world_map_stage_forest);
+        world_map_stages.insert(world_map_stage_cave.get_stage_data_name().clone(), world_map_stage_cave);
         world_map_stages
     }
 
@@ -379,7 +379,7 @@ impl<'a> WorldMapWidget<'a> {
 
         if self._selected_stage_name == *selected_stage_name {
             if let Some(selected_stage) = self._world_map_stages.get_mut(selected_stage_name) {
-                let teleport_stage: &String = ptr_as_ref(selected_stage.as_ref()).get_world_map_stage_name();
+                let teleport_stage: &String = ptr_as_ref(selected_stage.as_ref()).get_stage_data_name();
                 ptr_as_mut(self._game_scene_manager).set_teleport_stage(teleport_stage, DEFAULT_GATE_NAME);
             }
         } else {
@@ -400,7 +400,7 @@ impl<'a> WorldMapWidget<'a> {
     pub fn change_selected_world_map_stage(&mut self, direction: WorldMapDirection) {
         if let Some(selected_stage) = self._world_map_stages.get_mut(&self._selected_stage_name) {
             if let Some(linked_stage) = ptr_as_ref(selected_stage.as_ref()).get_linked_stage(direction).as_ref() {
-                self.set_selected_world_map_stage(linked_stage.get_world_map_stage_name());
+                self.set_selected_world_map_stage(linked_stage.get_stage_data_name());
             }
         }
     }

@@ -146,11 +146,5 @@ pub const ITEM_SPIRIT_BALL: &str = "items/spirit_ball";
 // Scenario
 pub const SCENARIO_INTRO: &str = "scenario/intro";
 
-// Stages
-pub const STAGE_INTRO_STAGE: &str = "game_scenes/intro_stage";
-pub const STAGE_01: &str = "game_scenes/stage_01";
-pub const STAGE_CAVE: &str = "game_scenes/stage_cave";
-pub const STAGE_WORLD_MAP: &str = "game_scenes/world_map";
-
 // props
 pub const DEFAULT_GATE_NAME: &str = "gate";

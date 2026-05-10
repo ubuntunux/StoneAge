@@ -4,6 +4,7 @@ use nalgebra::Vector3;
 use strum_macros::{Display, EnumCount, EnumIter, EnumString};
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use rust_engine_3d::utilities::math;
+use crate::game_module::game_scene_manager::Stages;
 use crate::game_module::actors::character::{ActorWrapper, Character};
 use crate::game_module::game_constants::*;
 use crate::game_module::game_scene_manager::GameSceneManager;
@@ -304,13 +305,13 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
 
     fn on_open_game_scene(&mut self, game_scene_data_name: &str) {
         let game_scene_manager = ptr_as_ref(self._game_scene_manager);
-        if game_scene_data_name == STAGE_INTRO_STAGE {
+        if game_scene_data_name == Stages::Home.get_stage_data_name() {
             self._actor_aru = Some(game_scene_manager.get_actor("monkey_aru").unwrap().clone());
             self._actor_ewa = Some(game_scene_manager.get_actor("monkey_ewa").unwrap().clone());
             self._actor_koa = Some(game_scene_manager.get_actor("monkey_koa").unwrap().clone());
             self._prop_gate = Some(game_scene_manager.get_prop_manager().get_prop_by_name(DEFAULT_GATE_NAME).unwrap().clone());
             self._prop_bed = Some(game_scene_manager.get_prop_manager().get_prop_by_name("bed").unwrap().clone());
-        } else if game_scene_data_name == STAGE_01 {
+        } else if game_scene_data_name == Stages::Forest.get_stage_data_name() {
             self._prop_tree = Some(game_scene_manager.get_prop_manager().get_prop_by_name("birch_tree_00").unwrap().clone());
             self._prop_gate_stage01 = Some(game_scene_manager.get_prop_manager().get_prop_by_name(DEFAULT_GATE_NAME).unwrap().clone());
         }
@@ -318,24 +319,24 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
         // update quest & text box
         match self._scenario_track._scenario_phase {
             ScenarioIntroPhase::MoveToTutorialStage => {
-                if game_scene_data_name == STAGE_INTRO_STAGE {
+                if game_scene_data_name == Stages::Home.get_stage_data_name() {
                     self.create_move_to_tutorial_stage_text_box(game_scene_manager);
                 }
             }
             ScenarioIntroPhase::GatheringFood => {
-                if game_scene_data_name == STAGE_INTRO_STAGE {
+                if game_scene_data_name == Stages::Home.get_stage_data_name() {
                     if self._sub_quest_gather_food.as_ref().unwrap().borrow_mut().is_completed_quest() == false {
                         self.create_move_to_tutorial_stage_text_box(game_scene_manager);
                     }
-                } else if game_scene_data_name == STAGE_01 {
+                } else if game_scene_data_name == Stages::Forest.get_stage_data_name() {
                     self.create_hit_this_tree_text_box(game_scene_manager);
                 }
             }
             ScenarioIntroPhase::BackHome => {
-                if game_scene_data_name == STAGE_INTRO_STAGE {
+                if game_scene_data_name == Stages::Home.get_stage_data_name() {
                     self._actor_ewa.as_ref().unwrap().borrow_mut().set_hunger(HUNGER_WARNING_THRESHOLD);
                     self._actor_koa.as_ref().unwrap().borrow_mut().set_hunger(HUNGER_WARNING_THRESHOLD);
-                } else if game_scene_data_name == STAGE_01 {
+                } else if game_scene_data_name == Stages::Forest.get_stage_data_name() {
                     if self._sub_quest_back_home.as_ref().unwrap().borrow().is_completed_quest() == false {
                         self.create_return_home_text_box(game_scene_manager);
                     }
@@ -568,13 +569,13 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                 }
             }
             ScenarioIntroPhase::MoveToTutorialStage => {
-                if game_scene_manager.get_current_game_scene_data_name() == STAGE_01 {
+                if game_scene_manager.get_current_game_scene_data_name() == Stages::Forest.get_stage_data_name() {
                     self._sub_quest_move_to_tutorial_stage.as_ref().unwrap().borrow_mut().set_completed_quest();
                     self.set_scenario_phase(ScenarioIntroPhase::GatheringFood.to_string().as_str(), None);
                 }
             }
             ScenarioIntroPhase::GatheringFood => {
-                if game_scene_manager.get_current_game_scene_data_name() == STAGE_01 {
+                if game_scene_manager.get_current_game_scene_data_name() == Stages::Forest.get_stage_data_name() {
                     if self._sub_quest_gather_food.as_ref().unwrap().borrow().is_completed_quest() {
                         self.remove_move_to_tutorial_stage_text_box(game_scene_manager);
                         self.remove_hit_this_tree_text_box(game_scene_manager);
@@ -584,14 +585,14 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                 }
             }
             ScenarioIntroPhase::BackHome => {
-                if game_scene_manager.get_current_game_scene_data_name() == STAGE_INTRO_STAGE {
+                if game_scene_manager.get_current_game_scene_data_name() == Stages::Home.get_stage_data_name() {
                     self._sub_quest_back_home.as_ref().unwrap().borrow_mut().set_completed_quest();
                     self.remove_return_home_text_box(game_scene_manager);
                     self.set_scenario_phase(ScenarioIntroPhase::GiveFood.to_string().as_str(), None);
                 }
             }
             ScenarioIntroPhase::GiveFood => {
-                if game_scene_manager.get_current_game_scene_data_name() == STAGE_INTRO_STAGE {
+                if game_scene_manager.get_current_game_scene_data_name() == Stages::Home.get_stage_data_name() {
                     let mut sub_quest_give_food_to_ewa = self._sub_quest_give_food_to_ewa.as_ref().unwrap().borrow_mut().is_completed_quest();
                     if self._sub_quest_give_food_to_ewa.as_ref().unwrap().borrow().is_completed_quest() == false {
                         if self._actor_ewa.as_ref().unwrap().borrow().get_stats().is_hungry() == false {
@@ -618,7 +619,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                 }
             }
             ScenarioIntroPhase::Sleep => {
-                if game_scene_manager.get_current_game_scene_data_name() == STAGE_INTRO_STAGE {
+                if game_scene_manager.get_current_game_scene_data_name() == Stages::Home.get_stage_data_name() {
                     if self._sub_quest_sleep.as_ref().unwrap().borrow().is_completed_quest() == false {
                         if self._actor_aru.as_ref().unwrap().borrow().is_action(ActionAnimationState::LayingDown) ||
                             self._actor_aru.as_ref().unwrap().borrow().is_action(ActionAnimationState::Sleep) {

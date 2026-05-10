@@ -1,5 +1,5 @@
 use ash::vk;
-use crate::game_module::game_scene_manager::GameSceneManager;
+use crate::game_module::game_scene_manager::{GameSceneManager, Stages};
 use nalgebra::Vector2;
 use rust_engine_3d::scene::ui::{HorizontalAlign, Orientation, PosHintX, PosHintY, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault};
 use rust_engine_3d::utilities::system::{ptr_as_mut};
@@ -12,6 +12,7 @@ pub struct TimeOfDayWidget<'a> {
     pub _date_widget: *const WidgetDefault<'a>,
     pub _time_widget: *const WidgetDefault<'a>,
     pub _temperature: *const WidgetDefault<'a>,
+    pub _stage_widget: *const WidgetDefault<'a>,
 }
 
 // TimeOfDayWidget
@@ -20,21 +21,22 @@ impl<'a> TimeOfDayWidget<'a> {
         root_widget: &mut WidgetDefault<'a>,
         game_resources: &GameResources<'a>,
     ) -> TimeOfDayWidget<'a> {
+        let background_color = get_color32(0, 0, 0, 160);
+
         let parent_layer = UIManager::create_widget("time_of_day_widget", UIWidgetTypes::Default);
         let parent_layer_ptr = ptr_as_mut(parent_layer.as_ref());
         let ui_component = parent_layer_ptr.get_ui_component_mut();
-        ui_component.set_size(250.0, 250.0);
+        ui_component.set_size(250.0, 300.0);
         ui_component.set_layout_type(UILayoutType::BoxLayout);
         ui_component.set_layout_orientation(Orientation::VERTICAL);
         ui_component.set_halign(HorizontalAlign::CENTER);
         ui_component.set_valign(VerticalAlign::CENTER);
         ui_component.set_pos_hint_x(PosHintX::Right(1.0));
         ui_component.set_pos_hint_y(PosHintY::Top(0.0));
-        ui_component.set_margin(20.0);
-        ui_component.set_padding(10.0);
+        ui_component.set_margin_top(20.0);
         ui_component.set_round(15.0);
-        //ui_component.set_border(2.0);
-        ui_component.set_color(get_color32(0, 0, 0, 160));
+        ui_component.set_expandable(true);
+        ui_component.set_color(get_color32(0, 0, 0, 0));
         root_widget.add_widget(&parent_layer);
 
         // top layer
@@ -44,9 +46,11 @@ impl<'a> TimeOfDayWidget<'a> {
         ui_component.set_layout_type(UILayoutType::BoxLayout);
         ui_component.set_size_hint_x(Some(1.0));
         ui_component.set_size_hint_y(Some(0.5));
+        ui_component.set_margin(10.0);
         ui_component.set_halign(HorizontalAlign::CENTER);
         ui_component.set_valign(VerticalAlign::TOP);
-        ui_component.set_color(get_color32(255, 255, 255, 0));
+        ui_component.set_round(15.0);
+        ui_component.set_color(background_color);
         parent_layer_ptr.add_widget(&top_widget);
 
         let tod_material_instance = game_resources.get_engine_resources().get_material_instance_data(MATERIAL_TIME_OF_DAY);
@@ -70,14 +74,16 @@ impl<'a> TimeOfDayWidget<'a> {
         ui_component.set_size_hint_y(Some(0.5));
         ui_component.set_halign(HorizontalAlign::CENTER);
         ui_component.set_valign(VerticalAlign::CENTER);
-        ui_component.set_color(get_color32(255, 255, 255, 0));
+        ui_component.set_round(15.0);
+        ui_component.set_margin(15.0);
+        ui_component.set_color(background_color);
         parent_layer_ptr.add_widget(&bottom_widget);
 
         let date_widget = UIManager::create_widget("date_widget", UIWidgetTypes::Default);
         let date_widget_ptr = ptr_as_mut(date_widget.as_ref());
         let ui_component = ptr_as_mut(date_widget.as_ref()).get_ui_component_mut();
         ui_component.set_size_hint_x(Some(1.0));
-        ui_component.set_size_hint_y(Some(0.3));
+        ui_component.set_size_hint_y(Some(0.25));
         ui_component.set_halign(HorizontalAlign::CENTER);
         ui_component.set_valign(VerticalAlign::CENTER);
         ui_component.set_font_size(35.0);
@@ -89,7 +95,7 @@ impl<'a> TimeOfDayWidget<'a> {
         let time_widget_ptr = ptr_as_mut(time_widget.as_ref());
         let ui_component = ptr_as_mut(time_widget.as_ref()).get_ui_component_mut();
         ui_component.set_size_hint_x(Some(1.0));
-        ui_component.set_size_hint_y(Some(0.3));
+        ui_component.set_size_hint_y(Some(0.25));
         ui_component.set_halign(HorizontalAlign::CENTER);
         ui_component.set_valign(VerticalAlign::CENTER);
         ui_component.set_font_size(35.0);
@@ -101,7 +107,7 @@ impl<'a> TimeOfDayWidget<'a> {
         let temperature_widget_ptr = ptr_as_mut(temperature_widget.as_ref());
         let ui_component = ptr_as_mut(temperature_widget.as_ref()).get_ui_component_mut();
         ui_component.set_size_hint_x(Some(1.0));
-        ui_component.set_size_hint_y(Some(0.3));
+        ui_component.set_size_hint_y(Some(0.25));
         ui_component.set_halign(HorizontalAlign::CENTER);
         ui_component.set_valign(VerticalAlign::CENTER);
         ui_component.set_font_size(35.0);
@@ -109,11 +115,25 @@ impl<'a> TimeOfDayWidget<'a> {
         ui_component.set_color(get_color32(255, 255, 255, 0));
         bottom_widget_mut.add_widget(&temperature_widget);
 
+        let stage_widget = UIManager::create_widget("stage", UIWidgetTypes::Default);
+        let stage_widget_ptr = ptr_as_mut(stage_widget.as_ref());
+        let ui_component = ptr_as_mut(stage_widget.as_ref()).get_ui_component_mut();
+        ui_component.set_halign(HorizontalAlign::CENTER);
+        ui_component.set_valign(VerticalAlign::CENTER);
+        ui_component.set_size_hint_x(Some(1.0));
+        ui_component.set_size_hint_y(Some(0.25));
+        ui_component.set_round(15.0);
+        ui_component.set_font_size(35.0);
+        ui_component.set_font_color(get_color32(255, 255, 255, 255));
+        ui_component.set_color(background_color);
+        bottom_widget_mut.add_widget(&stage_widget);
+
         TimeOfDayWidget {
             _time_of_day_widget: time_of_day_widget_ptr,
             _date_widget: date_widget_ptr,
             _time_widget: time_widget_ptr,
             _temperature: temperature_widget_ptr,
+            _stage_widget: stage_widget_ptr
         }
     }
 
@@ -137,5 +157,9 @@ impl<'a> TimeOfDayWidget<'a> {
 
         let temperature_ui_component = ptr_as_mut(self._temperature).get_ui_component_mut();
         temperature_ui_component.set_text(format!("Temperature {:.01}", game_scene_manager.get_temperature()).as_str());
+
+        let stage_widget_component = ptr_as_mut(self._stage_widget).get_ui_component_mut();
+        let stage_data_name = game_scene_manager.get_current_game_scene_data_name();
+        stage_widget_component.set_text(Stages::find_stage_value(stage_data_name).get_stage_display_name());
     }
 }
