@@ -418,7 +418,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                 self._quest = Some(game_scene_manager.get_game_ui_manager_mut().add_quest(Some(String::from("Gather food for the hungry family."))));
                 self._sub_quest_move_to_tutorial_stage = Some(self._quest.as_ref().unwrap().borrow_mut().add_quest_item(QuestCreateInfo::DefaultQuest(DefaultQuestData {
                     _quest_icon_name: None,
-                    _quest_description: Some(String::from("Move to tutorial stage.")),
+                    _quest_description: Some(String::from("Move to the FOREST to find food.")),
                 })));
                 self._sub_quest_gather_food = Some(self._quest.as_ref().unwrap().borrow_mut().add_quest_item(QuestCreateInfo::GatherItem(GatherItemData {
                     _item_data_name: String::from(ITEM_COCONUT),

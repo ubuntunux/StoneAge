@@ -2,12 +2,14 @@ use ash::vk;
 use crate::game_module::game_scene_manager::{GameSceneManager, Stages};
 use nalgebra::Vector2;
 use rust_engine_3d::scene::ui::{HorizontalAlign, Orientation, PosHintX, PosHintY, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault};
-use rust_engine_3d::utilities::system::{ptr_as_mut};
+use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use crate::game_module::game_constants::MATERIAL_TIME_OF_DAY;
 use crate::game_module::game_resource::GameResources;
+use crate::game_module::game_ui_manager::GameUIManager;
 
 pub struct TimeOfDayWidget<'a> {
+    pub _game_ui_manager: *const GameUIManager<'a>,
     pub _time_of_day_widget: *const WidgetDefault<'a>,
     pub _date_widget: *const WidgetDefault<'a>,
     pub _time_widget: *const WidgetDefault<'a>,
@@ -20,8 +22,9 @@ impl<'a> TimeOfDayWidget<'a> {
     pub fn create_time_of_day_widget(
         root_widget: &mut WidgetDefault<'a>,
         game_resources: &GameResources<'a>,
+        game_ui_manager: &GameUIManager<'a>,
     ) -> TimeOfDayWidget<'a> {
-        let background_color = get_color32(0, 0, 0, 160);
+        let background_color = get_color32(0, 0, 0, 200);
 
         let parent_layer = UIManager::create_widget("time_of_day_widget", UIWidgetTypes::Default);
         let parent_layer_ptr = ptr_as_mut(parent_layer.as_ref());
@@ -33,7 +36,7 @@ impl<'a> TimeOfDayWidget<'a> {
         ui_component.set_valign(VerticalAlign::CENTER);
         ui_component.set_pos_hint_x(PosHintX::Right(1.0));
         ui_component.set_pos_hint_y(PosHintY::Top(0.0));
-        ui_component.set_margin_top(20.0);
+        ui_component.set_margin_top(30.0);
         ui_component.set_round(15.0);
         ui_component.set_expandable(true);
         ui_component.set_color(get_color32(0, 0, 0, 0));
@@ -46,7 +49,6 @@ impl<'a> TimeOfDayWidget<'a> {
         ui_component.set_layout_type(UILayoutType::BoxLayout);
         ui_component.set_size_hint_x(Some(1.0));
         ui_component.set_size_hint_y(Some(0.5));
-        ui_component.set_margin(10.0);
         ui_component.set_halign(HorizontalAlign::CENTER);
         ui_component.set_valign(VerticalAlign::TOP);
         ui_component.set_round(15.0);
@@ -75,7 +77,7 @@ impl<'a> TimeOfDayWidget<'a> {
         ui_component.set_halign(HorizontalAlign::CENTER);
         ui_component.set_valign(VerticalAlign::CENTER);
         ui_component.set_round(15.0);
-        ui_component.set_margin(15.0);
+        ui_component.set_margin(10.0);
         ui_component.set_color(background_color);
         parent_layer_ptr.add_widget(&bottom_widget);
 
@@ -120,15 +122,21 @@ impl<'a> TimeOfDayWidget<'a> {
         let ui_component = ptr_as_mut(stage_widget.as_ref()).get_ui_component_mut();
         ui_component.set_halign(HorizontalAlign::CENTER);
         ui_component.set_valign(VerticalAlign::CENTER);
-        ui_component.set_size_hint_x(Some(1.0));
-        ui_component.set_size_hint_y(Some(0.25));
+        ui_component.set_pos_hint_x(PosHintX::Center(0.5));
+        ui_component.set_pos_hint_y(PosHintY::Top(0.0));
+        ui_component.set_size_hint_x(Some(0.5));
+        ui_component.set_expandable(true);
+        ui_component.set_size_y(50.0);
+        ui_component.set_padding(10.0);
+        ui_component.set_margin_top(30.0);
         ui_component.set_round(15.0);
-        ui_component.set_font_size(35.0);
+        ui_component.set_font_size(70.0);
         ui_component.set_font_color(get_color32(255, 255, 255, 255));
         ui_component.set_color(background_color);
-        bottom_widget_mut.add_widget(&stage_widget);
+        root_widget.add_widget(&stage_widget);
 
         TimeOfDayWidget {
+            _game_ui_manager: game_ui_manager,
             _time_of_day_widget: time_of_day_widget_ptr,
             _date_widget: date_widget_ptr,
             _time_widget: time_widget_ptr,
@@ -142,6 +150,7 @@ impl<'a> TimeOfDayWidget<'a> {
 
     pub fn update_time_of_day_widget(&mut self, game_scene_manager: &GameSceneManager) {
         let time_of_day = game_scene_manager.get_time_of_day();
+        let game_ui_manager = ptr_as_ref(self._game_ui_manager);
 
         let tod_ui_component = ptr_as_mut(self._time_of_day_widget).get_ui_component_mut();
         let tod_to_angle = (time_of_day - 12.0) / 24.0 * 360.0;
@@ -159,7 +168,11 @@ impl<'a> TimeOfDayWidget<'a> {
         temperature_ui_component.set_text(format!("Temperature {:.01}", game_scene_manager.get_temperature()).as_str());
 
         let stage_widget_component = ptr_as_mut(self._stage_widget).get_ui_component_mut();
-        let stage_data_name = game_scene_manager.get_current_game_scene_data_name();
-        stage_widget_component.set_text(Stages::find_stage_value(stage_data_name).get_stage_display_name());
+        if game_ui_manager.get_world_map_visible() {
+            stage_widget_component.set_text(Stages::find_stage_value(game_ui_manager.get_selected_world_map_stage_data_name().as_str()).get_stage_display_name());
+        } else {
+            let stage_data_name = game_scene_manager.get_current_game_scene_data_name();
+            stage_widget_component.set_text(Stages::find_stage_value(stage_data_name).get_stage_display_name());
+        }
     }
 }

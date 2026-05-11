@@ -238,7 +238,7 @@ impl<'a> WorldMapWidget<'a> {
         ui_component.set_size_hint_y(Some(1.0));
         ui_component.set_pos_hint_x(PosHintX::Center(0.5));
         ui_component.set_pos_hint_y(PosHintY::Center(0.5));
-        ui_component.set_color(get_color32(0, 0, 0, 255));
+        ui_component.set_color(get_color32(80, 80, 180, 255));
         ui_component.set_visible(false);
         root_widget.add_widget(&background_layout);
 
@@ -370,6 +370,10 @@ impl<'a> WorldMapWidget<'a> {
 
     pub fn teleport_selected_world_map_stage(&mut self) {
         self.set_selected_world_map_stage(&self._selected_stage_name.clone());
+    }
+
+    pub fn get_selected_world_map_stage_data_name(&self) -> &String {
+        &self._selected_stage_name
     }
 
     pub fn set_selected_world_map_stage(&mut self, selected_stage_name: &String) {

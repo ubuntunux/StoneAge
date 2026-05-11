@@ -329,11 +329,11 @@ impl<'a> ControllerHelpWidget<'a> {
                     InteractionObject::PropPickup(prop) => (InputControlType::Interaction, format!("Pick up a {}", prop.borrow()._prop_data.borrow()._name.as_str())),
                     InteractionObject::PropMonolith(_) => (InputControlType::Interaction, String::from("Open Toolbox")),
                     InteractionObject::PropTable(_) => (InputControlType::Interaction, String::from("Sit Down")),
-                    InteractionObject::Npc(_) => {
+                    InteractionObject::Npc(npc) => {
                         if player.get_attached_item_data_type().is_eatable() {
-                            (InputControlType::Interaction, format!("Give a {}", player.get_attached_item().as_ref().unwrap().borrow()._item_data.borrow()._name.as_str()))
+                            (InputControlType::Interaction, format!("Give a {} to {}", player.get_attached_item().as_ref().unwrap().borrow()._item_data.borrow()._name.as_str(), npc.borrow()._character_data.borrow()._name.as_str()))
                         } else {
-                            (InputControlType::Interaction, String::from("Interaction"))
+                            (InputControlType::Interaction, format!("Interaction with {}", npc.borrow()._character_data.borrow()._name.as_str()))
                         }
                     },
                     InteractionObject::PropGate(_) => (InputControlType::None, String::from("Enter Gate")),
