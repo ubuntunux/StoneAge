@@ -3,7 +3,7 @@ use std::ffi::c_void;
 use nalgebra::{Vector2};
 use rust_engine_3d::scene::material_instance::MaterialInstanceData;
 use rust_engine_3d::scene::ui::{HorizontalAlign, Orientation, PosHintX, PosHintY, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault};
-use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
+use rust_engine_3d::utilities::system::{ptr_as_mut, RcRefCell};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use crate::game_module::actors::interaction_object::InteractionObject;
 use crate::game_module::game_scene_manager::GameSceneManager;
@@ -15,8 +15,9 @@ const MAIN_LAYOUT_MARGIN: f32 = 10.0;
 const MAIN_LAYOUT_PADDING: f32 = 10.0;
 const MAIN_LAYOUT_SIZE: (f32, f32) = (280.0, 460.0);
 const ITEM_SIZE: f32 = 50.0;
-const TEXT_WIDGET_WIDTH: f32 = 130.0;
 const FONT_SIZE: f32 = 30.0;
+const TEXT_WIDGET_MARGIN: f32 = 20.0;
+const ICON_WIDGET_MARGIN: f32 = -14.0;
 
 pub struct ControllerHelpWidget<'a> {
     pub _character_controller_help_widget: *const WidgetDefault<'a>,
@@ -34,75 +35,6 @@ pub struct KeyBindingWidget<'a> {
 }
 
 impl<'a> KeyBindingWidget<'a> {
-    pub fn create_key_binding_widget(
-        parent_widget: &mut WidgetDefault<'a>,
-        widget_count: usize,
-        widget_name: &str,
-        key_binding_text: &str,
-        center_offset: Option<Vector2<f32>>,
-        visible_frame: bool,
-        text_widget_width: f32,
-        text_widget_margin: f32,
-        icon_widget_margin: f32
-    ) -> KeyBindingWidget<'a> {
-        let layout_widget = UIManager::create_widget(widget_name, UIWidgetTypes::Default);
-        let layout_widget_mut = ptr_as_mut(layout_widget.as_ref());
-        let ui_component = ptr_as_mut(layout_widget.as_ref()).get_ui_component_mut();
-        ui_component.set_layout_type(UILayoutType::BoxLayout);
-        ui_component.set_layout_orientation(Orientation::HORIZONTAL);
-        if let Some(center_offset) = center_offset {
-            ui_component.set_halign(HorizontalAlign::CENTER);
-            ui_component.set_valign(VerticalAlign::CENTER);
-            ui_component.set_pos_hint_x(PosHintX::Center(center_offset.x));
-            ui_component.set_pos_hint_y(PosHintY::Center(center_offset.y));
-        }
-        ui_component.set_expandable_x(true);
-        ui_component.set_size_x(0.0);
-        ui_component.set_size_y(ITEM_SIZE);
-        ui_component.set_round(10.0);
-        ui_component.set_color(get_color32(0, 0, 0, if visible_frame { 128 } else { 0 }));
-        parent_widget.add_widget(&layout_widget);
-
-        let binding_name_widget = if key_binding_text.is_empty() {
-            std::ptr::null()
-        } else {
-            let binding_name_widget = UIManager::create_widget(widget_name, UIWidgetTypes::Default);
-            let ui_component = ptr_as_mut(binding_name_widget.as_ref()).get_ui_component_mut();
-            ui_component.set_expandable_x(true);
-            ui_component.set_size_x(text_widget_width);
-            ui_component.set_size_y(ITEM_SIZE);
-            ui_component.set_margin_left(text_widget_margin);
-            ui_component.set_margin_right(text_widget_margin);
-            ui_component.set_halign(HorizontalAlign::RIGHT);
-            ui_component.set_valign(VerticalAlign::CENTER);
-            ui_component.set_font_size(FONT_SIZE);
-            ui_component.set_font_color(get_color32(255, 255, 255, 255));
-            ui_component.set_color(get_color32(255, 255, 255, 0));
-            ui_component.set_text(key_binding_text);
-            layout_widget_mut.add_widget(&binding_name_widget);
-            ptr_as_ref(binding_name_widget.as_ref())
-        };
-
-        let mut binding_icon_widgets: Vec<*const WidgetDefault<'a>> = Vec::new();
-        for _ in 0..widget_count {
-            let binding_icon_widget = UIManager::create_widget(widget_name, UIWidgetTypes::Default);
-            let ui_component = ptr_as_mut(binding_icon_widget.as_ref()).get_ui_component_mut();
-            ui_component.set_halign(HorizontalAlign::LEFT);
-            ui_component.set_valign(VerticalAlign::CENTER);
-            ui_component.set_margin_left(icon_widget_margin);
-            ui_component.set_size_x(ITEM_SIZE);
-            ui_component.set_size_y(ITEM_SIZE);
-            layout_widget_mut.add_widget(&binding_icon_widget);
-            binding_icon_widgets.push(binding_icon_widget.as_ref());
-        }
-
-        KeyBindingWidget {
-            _layout_widget: layout_widget.as_ref(),
-            _binding_name_widget: binding_name_widget,
-            _binding_icon_widgets: binding_icon_widgets
-        }
-    }
-
     pub fn update_icon_material_instance(&mut self, material_instance_data: Option<Vec<RcRefCell<MaterialInstanceData<'a>>>>) {
         ptr_as_mut(self._layout_widget)._ui_component.set_visible(material_instance_data.is_some());
         let material_count = if let Some(material_instance_data_list) = material_instance_data.as_ref() {
@@ -122,7 +54,203 @@ impl<'a> KeyBindingWidget<'a> {
             }
         }
     }
+
+    pub fn create_key_binding_widget(
+        parent_widget: &mut WidgetDefault<'a>,
+        widget_count: usize,
+        widget_name: &str,
+        key_binding_text: &str
+    ) -> KeyBindingWidget<'a> {
+        let layout_widget = UIManager::create_widget(widget_name, UIWidgetTypes::Default);
+        let layout_widget_mut = ptr_as_mut(layout_widget.as_ref());
+        let ui_component = ptr_as_mut(layout_widget.as_ref()).get_ui_component_mut();
+        ui_component.set_layout_type(UILayoutType::BoxLayout);
+        ui_component.set_layout_orientation(Orientation::HORIZONTAL);
+        ui_component.set_expandable_x(true);
+        ui_component.set_size_x(0.0);
+        ui_component.set_size_y(ITEM_SIZE);
+        ui_component.set_round(10.0);
+        ui_component.set_color(get_color32(0, 0, 0, 0));
+        parent_widget.add_widget(&layout_widget);
+
+        // icons
+        let mut binding_icon_widgets: Vec<*const WidgetDefault<'a>> = Vec::new();
+        for _ in 0..widget_count {
+            let binding_icon_widget = UIManager::create_widget(widget_name, UIWidgetTypes::Default);
+            let ui_component = ptr_as_mut(binding_icon_widget.as_ref()).get_ui_component_mut();
+            ui_component.set_halign(HorizontalAlign::RIGHT);
+            ui_component.set_valign(VerticalAlign::CENTER);
+            ui_component.set_margin_right(ICON_WIDGET_MARGIN);
+            ui_component.set_size_x(ITEM_SIZE);
+            ui_component.set_size_y(ITEM_SIZE);
+            layout_widget_mut.add_widget(&binding_icon_widget);
+            binding_icon_widgets.push(binding_icon_widget.as_ref());
+        }
+
+        // text widget
+        let binding_name_widget = UIManager::create_widget(widget_name, UIWidgetTypes::Default);
+        let ui_component = ptr_as_mut(binding_name_widget.as_ref()).get_ui_component_mut();
+        ui_component.set_expandable_x(true);
+        ui_component.set_size_x(0.0);
+        ui_component.set_size_y(ITEM_SIZE);
+        ui_component.set_margin_left(TEXT_WIDGET_MARGIN);
+        ui_component.set_margin_right(TEXT_WIDGET_MARGIN);
+        ui_component.set_halign(HorizontalAlign::LEFT);
+        ui_component.set_valign(VerticalAlign::CENTER);
+        ui_component.set_font_size(FONT_SIZE);
+        ui_component.set_font_color(get_color32(255, 255, 255, 255));
+        ui_component.set_color(get_color32(255, 255, 255, 0));
+        ui_component.set_text(key_binding_text);
+        layout_widget_mut.add_widget(&binding_name_widget);
+
+        KeyBindingWidget {
+            _layout_widget: layout_widget.as_ref(),
+            _binding_name_widget: binding_name_widget.as_ref(),
+            _binding_icon_widgets: binding_icon_widgets
+        }
+    }
+
+    pub fn create_inventory_key_binding_widget(
+        parent_widget: &mut WidgetDefault<'a>,
+        widget_count: usize,
+        widget_name: &str,
+        key_binding_text: &str
+    ) -> KeyBindingWidget<'a> {
+        let layout_widget = UIManager::create_widget(widget_name, UIWidgetTypes::Default);
+        let layout_widget_mut = ptr_as_mut(layout_widget.as_ref());
+        let ui_component = ptr_as_mut(layout_widget.as_ref()).get_ui_component_mut();
+        ui_component.set_layout_type(UILayoutType::BoxLayout);
+        ui_component.set_layout_orientation(Orientation::HORIZONTAL);
+        ui_component.set_expandable_x(true);
+        ui_component.set_size_x(0.0);
+        ui_component.set_size_y(ITEM_SIZE);
+        ui_component.set_round(10.0);
+        ui_component.set_color(get_color32(0, 0, 0, 0));
+        parent_widget.add_widget(&layout_widget);
+
+        // icons
+        let mut binding_icon_widgets: Vec<*const WidgetDefault<'a>> = Vec::new();
+        for _ in 0..widget_count {
+            let binding_icon_widget = UIManager::create_widget(widget_name, UIWidgetTypes::Default);
+            let ui_component = ptr_as_mut(binding_icon_widget.as_ref()).get_ui_component_mut();
+            ui_component.set_halign(HorizontalAlign::RIGHT);
+            ui_component.set_valign(VerticalAlign::CENTER);
+            ui_component.set_margin_right(ICON_WIDGET_MARGIN);
+            ui_component.set_size_x(ITEM_SIZE);
+            ui_component.set_size_y(ITEM_SIZE);
+            layout_widget_mut.add_widget(&binding_icon_widget);
+            binding_icon_widgets.push(binding_icon_widget.as_ref());
+        }
+
+        // text widget
+        let binding_name_widget = UIManager::create_widget(widget_name, UIWidgetTypes::Default);
+        let ui_component = ptr_as_mut(binding_name_widget.as_ref()).get_ui_component_mut();
+        ui_component.set_expandable_x(true);
+        ui_component.set_size_x(0.0);
+        ui_component.set_size_y(ITEM_SIZE);
+        ui_component.set_margin_left(TEXT_WIDGET_MARGIN);
+        ui_component.set_margin_right(TEXT_WIDGET_MARGIN);
+        ui_component.set_halign(HorizontalAlign::LEFT);
+        ui_component.set_valign(VerticalAlign::CENTER);
+        ui_component.set_font_size(FONT_SIZE);
+        ui_component.set_font_color(get_color32(255, 255, 255, 255));
+        ui_component.set_color(get_color32(255, 255, 255, 0));
+        ui_component.set_text(key_binding_text);
+        layout_widget_mut.add_widget(&binding_name_widget);
+
+        KeyBindingWidget {
+            _layout_widget: layout_widget.as_ref(),
+            _binding_name_widget: binding_name_widget.as_ref(),
+            _binding_icon_widgets: binding_icon_widgets
+        }
+    }
+
+    pub fn create_interaction_key_binding_widget(
+        parent_widget: &mut WidgetDefault<'a>,
+        widget_count: usize,
+        widget_name: &str,
+        key_binding_text: &str
+    ) -> KeyBindingWidget<'a> {
+        let layout_widget = UIManager::create_widget(widget_name, UIWidgetTypes::Default);
+        let layout_widget_mut = ptr_as_mut(layout_widget.as_ref());
+        let ui_component = ptr_as_mut(layout_widget.as_ref()).get_ui_component_mut();
+        ui_component.set_layout_type(UILayoutType::BoxLayout);
+        ui_component.set_layout_orientation(Orientation::HORIZONTAL);
+        ui_component.set_expandable_x(true);
+        ui_component.set_size_x(0.0);
+        ui_component.set_size_y(ITEM_SIZE);
+        ui_component.set_round(10.0);
+        ui_component.set_color(get_color32(0, 0, 0, 128));
+        parent_widget.add_widget(&layout_widget);
+
+        // icons
+        let mut binding_icon_widgets: Vec<*const WidgetDefault<'a>> = Vec::new();
+        for _ in 0..widget_count {
+            let binding_icon_widget = UIManager::create_widget(widget_name, UIWidgetTypes::Default);
+            let ui_component = ptr_as_mut(binding_icon_widget.as_ref()).get_ui_component_mut();
+            ui_component.set_halign(HorizontalAlign::RIGHT);
+            ui_component.set_valign(VerticalAlign::CENTER);
+            ui_component.set_margin_right(ICON_WIDGET_MARGIN);
+            ui_component.set_size_x(ITEM_SIZE);
+            ui_component.set_size_y(ITEM_SIZE);
+            layout_widget_mut.add_widget(&binding_icon_widget);
+            binding_icon_widgets.push(binding_icon_widget.as_ref());
+        }
+
+        // text widget
+        let binding_name_widget = UIManager::create_widget(widget_name, UIWidgetTypes::Default);
+        let ui_component = ptr_as_mut(binding_name_widget.as_ref()).get_ui_component_mut();
+        ui_component.set_expandable_x(true);
+        ui_component.set_size_x(0.0);
+        ui_component.set_size_y(ITEM_SIZE);
+        ui_component.set_margin_left(TEXT_WIDGET_MARGIN);
+        ui_component.set_margin_right(TEXT_WIDGET_MARGIN);
+        ui_component.set_halign(HorizontalAlign::LEFT);
+        ui_component.set_valign(VerticalAlign::CENTER);
+        ui_component.set_font_size(FONT_SIZE);
+        ui_component.set_font_color(get_color32(255, 255, 255, 255));
+        ui_component.set_color(get_color32(255, 255, 255, 0));
+        ui_component.set_text(key_binding_text);
+        layout_widget_mut.add_widget(&binding_name_widget);
+
+        KeyBindingWidget {
+            _layout_widget: layout_widget.as_ref(),
+            _binding_name_widget: binding_name_widget.as_ref(),
+            _binding_icon_widgets: binding_icon_widgets
+        }
+    }
+
+    pub fn create_quick_slot_key_binding_widget(parent_widget: &mut WidgetDefault<'a>, widget_name: &str) -> KeyBindingWidget<'a> {
+        let layout_widget = UIManager::create_widget(widget_name, UIWidgetTypes::Default);
+        let layout_widget_mut = ptr_as_mut(layout_widget.as_ref());
+        let ui_component = ptr_as_mut(layout_widget.as_ref()).get_ui_component_mut();
+        ui_component.set_layout_type(UILayoutType::BoxLayout);
+        ui_component.set_layout_orientation(Orientation::HORIZONTAL);
+        ui_component.set_pos_hint_x(PosHintX::Center(0.5));
+        ui_component.set_pos_hint_y(PosHintY::Top(1.0));
+        ui_component.set_size_x(ITEM_SIZE);
+        ui_component.set_size_y(ITEM_SIZE);
+        ui_component.set_round(10.0);
+        ui_component.set_color(get_color32(0, 0, 0, 0));
+        parent_widget.add_widget(&layout_widget);
+
+        // icons
+        let mut binding_icon_widgets: Vec<*const WidgetDefault<'a>> = Vec::new();
+        let binding_icon_widget = UIManager::create_widget(widget_name, UIWidgetTypes::Default);
+        let ui_component = ptr_as_mut(binding_icon_widget.as_ref()).get_ui_component_mut();
+        ui_component.set_size_hint_x(Some(1.0));
+        ui_component.set_size_hint_y(Some(1.0));
+        layout_widget_mut.add_widget(&binding_icon_widget);
+        binding_icon_widgets.push(binding_icon_widget.as_ref());
+
+        KeyBindingWidget {
+            _layout_widget: layout_widget.as_ref(),
+            _binding_name_widget: std::ptr::null(),
+            _binding_icon_widgets: binding_icon_widgets
+        }
+    }
 }
+
 impl<'a> ControllerHelpWidget<'a> {
     pub fn create_controller_help_widget(
         root_widget: &mut WidgetDefault<'a>,
@@ -147,36 +275,36 @@ impl<'a> ControllerHelpWidget<'a> {
         root_widget.add_widget(&character_controller_help_widget);
 
         // player control ui
-        let camera_key_binding_widget = KeyBindingWidget::create_key_binding_widget(character_controller_help_widget_mut, 1, "view_key_binding", "View", None, false, TEXT_WIDGET_WIDTH, 20.0, -14.0);
-        let move_key_binding_widget = KeyBindingWidget::create_key_binding_widget(character_controller_help_widget_mut, 4, "move_key_binding", "Move", None, false, TEXT_WIDGET_WIDTH, 20.0, -14.0);
-        let zoom_key_binding_widget = KeyBindingWidget::create_key_binding_widget(character_controller_help_widget_mut, 2, "zoom_key_binding", "Zoom", None, false, TEXT_WIDGET_WIDTH, 20.0, -14.0);
-        let attack_key_binding_widget = KeyBindingWidget::create_key_binding_widget(character_controller_help_widget_mut, 1, "attack_key_binding", "Attack", None, false, TEXT_WIDGET_WIDTH, 20.0, -14.0);
-        let power_attack_key_binding_widget = KeyBindingWidget::create_key_binding_widget(character_controller_help_widget_mut, 1, "power_attack_key_binding", "Power Attack", None, false, TEXT_WIDGET_WIDTH, 20.0, -14.0);
-        let sprint_key_binding_widget = KeyBindingWidget::create_key_binding_widget(character_controller_help_widget_mut, 1, "sprint_key_binding", "Sprint", None, false, TEXT_WIDGET_WIDTH, 20.0, -14.0);
-        let jump_key_binding_widget = KeyBindingWidget::create_key_binding_widget(character_controller_help_widget_mut, 1, "jump_key_binding", "Jump", None, false, TEXT_WIDGET_WIDTH, 20.0, -14.0);
-        let roll_key_binding_widget = KeyBindingWidget::create_key_binding_widget(character_controller_help_widget_mut, 1, "roll_key_binding", "Roll", None, false, TEXT_WIDGET_WIDTH, 20.0, -14.0);
+        let camera_key_binding_widget = KeyBindingWidget::create_key_binding_widget(character_controller_help_widget_mut, 1, "view_key_binding", "View");
+        let move_key_binding_widget = KeyBindingWidget::create_key_binding_widget(character_controller_help_widget_mut, 4, "move_key_binding", "Move");
+        let zoom_key_binding_widget = KeyBindingWidget::create_key_binding_widget(character_controller_help_widget_mut, 1, "zoom_key_binding", "Zoom");
+        let attack_key_binding_widget = KeyBindingWidget::create_key_binding_widget(character_controller_help_widget_mut, 1, "attack_key_binding", "Attack");
+        let power_attack_key_binding_widget = KeyBindingWidget::create_key_binding_widget(character_controller_help_widget_mut, 1, "power_attack_key_binding", "Power Attack");
+        let sprint_key_binding_widget = KeyBindingWidget::create_key_binding_widget(character_controller_help_widget_mut, 1, "sprint_key_binding", "Sprint");
+        let jump_key_binding_widget = KeyBindingWidget::create_key_binding_widget(character_controller_help_widget_mut, 1, "jump_key_binding", "Jump");
+        let roll_key_binding_widget = KeyBindingWidget::create_key_binding_widget(character_controller_help_widget_mut, 1, "roll_key_binding", "Roll");
 
         // inventory
-        let select_item_key_binding_widget = KeyBindingWidget::create_key_binding_widget(character_controller_help_widget_mut, 2, "select_item_key_binding", "Select Item", None, false, TEXT_WIDGET_WIDTH, 20.0, -14.0);
-        let drop_item_key_binding_widget = KeyBindingWidget::create_key_binding_widget(character_controller_help_widget_mut, 1, "drop_item_key_binding", "Drop Item", None, false, TEXT_WIDGET_WIDTH, 20.0, -14.0);
-        let use_item_key_binding_widget = KeyBindingWidget::create_key_binding_widget(character_controller_help_widget_mut, 1, "use_item_key_binding", "Use Item", None, false, TEXT_WIDGET_WIDTH, 20.0, -14.0);
+        let select_item_key_binding_widget = KeyBindingWidget::create_inventory_key_binding_widget(character_controller_help_widget_mut, 2, "select_item_key_binding", "Select Item");
+        let drop_item_key_binding_widget = KeyBindingWidget::create_inventory_key_binding_widget(character_controller_help_widget_mut, 1, "drop_item_key_binding", "Drop Item");
+        let use_item_key_binding_widget = KeyBindingWidget::create_inventory_key_binding_widget(character_controller_help_widget_mut, 1, "use_item_key_binding", "Use Item");
 
         // interaction
-        let interaction_key_binding_widget = KeyBindingWidget::create_key_binding_widget(root_widget, 1, "interaction_key_binding", "Interaction", None, true, 0.0, 20.0, -14.0);
-        let enter_gate_key_binding_widget = KeyBindingWidget::create_key_binding_widget(root_widget, 1, "enter_gate_key_binding", "Enter", None, true, 0.0, 20.0, -14.0);
-        let gathering_key_binding_widget = KeyBindingWidget::create_key_binding_widget(root_widget, 1, "gathering_key_binding", "Gathering", None, true, 0.0, 20.0, -14.0);
+        let interaction_key_binding_widget = KeyBindingWidget::create_interaction_key_binding_widget(root_widget, 1, "interaction_key_binding", "Interaction");
+        let enter_gate_key_binding_widget = KeyBindingWidget::create_interaction_key_binding_widget(root_widget, 1, "enter_gate_key_binding", "Enter");
+        let gathering_key_binding_widget = KeyBindingWidget::create_interaction_key_binding_widget(root_widget, 1, "gathering_key_binding", "Gathering");
 
         // quick slot
-        let use_item01_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(0)._widget), 1, "use_item01_key_binding", "", Some(Vector2::new(0.5, 1.3)), false, 0.0, 0.0, 0.0);
-        let use_item02_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(1)._widget), 1, "use_item02_key_binding", "", Some(Vector2::new(0.5, 1.3)), false, 0.0, 0.0, 0.0);
-        let use_item03_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(2)._widget), 1, "use_item03_key_binding", "", Some(Vector2::new(0.5, 1.3)), false, 0.0, 0.0, 0.0);
-        let use_item04_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(3)._widget), 1, "use_item04_key_binding", "", Some(Vector2::new(0.5, 1.3)), false, 0.0, 0.0, 0.0);
-        let use_item05_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(4)._widget), 1, "use_item05_key_binding", "", Some(Vector2::new(0.5, 1.3)), false, 0.0, 0.0, 0.0);
-        let use_item06_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(5)._widget), 1, "use_item06_key_binding", "", Some(Vector2::new(0.5, 1.3)), false, 0.0, 0.0, 0.0);
-        let use_item07_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(6)._widget), 1, "use_item07_key_binding", "", Some(Vector2::new(0.5, 1.3)), false, 0.0, 0.0, 0.0);
-        let use_item08_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(7)._widget), 1, "use_item08_key_binding", "", Some(Vector2::new(0.5, 1.3)), false, 0.0, 0.0, 0.0);
-        let use_item09_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(8)._widget), 1, "use_item09_key_binding", "", Some(Vector2::new(0.5, 1.3)), false, 0.0, 0.0, 0.0);
-        let use_item10_key_binding_widget = KeyBindingWidget::create_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(9)._widget), 1, "use_item10_key_binding", "", Some(Vector2::new(0.5, 1.3)), false, 0.0, 0.0, 0.0);
+        let use_item01_key_binding_widget = KeyBindingWidget::create_quick_slot_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(0)._widget), "use_item01_key_binding");
+        let use_item02_key_binding_widget = KeyBindingWidget::create_quick_slot_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(1)._widget), "use_item02_key_binding");
+        let use_item03_key_binding_widget = KeyBindingWidget::create_quick_slot_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(2)._widget), "use_item03_key_binding");
+        let use_item04_key_binding_widget = KeyBindingWidget::create_quick_slot_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(3)._widget), "use_item04_key_binding");
+        let use_item05_key_binding_widget = KeyBindingWidget::create_quick_slot_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(4)._widget), "use_item05_key_binding");
+        let use_item06_key_binding_widget = KeyBindingWidget::create_quick_slot_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(5)._widget), "use_item06_key_binding");
+        let use_item07_key_binding_widget = KeyBindingWidget::create_quick_slot_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(6)._widget), "use_item07_key_binding");
+        let use_item08_key_binding_widget = KeyBindingWidget::create_quick_slot_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(7)._widget), "use_item08_key_binding");
+        let use_item09_key_binding_widget = KeyBindingWidget::create_quick_slot_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(8)._widget), "use_item09_key_binding");
+        let use_item10_key_binding_widget = KeyBindingWidget::create_quick_slot_key_binding_widget(ptr_as_mut(item_bar_widget.get_item_widget(9)._widget), "use_item10_key_binding");
 
         let mut character_controller_help_widget = ControllerHelpWidget {
             _character_controller_help_widget: character_controller_help_widget_mut,
