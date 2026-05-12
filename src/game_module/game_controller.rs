@@ -17,7 +17,7 @@ use crate::game_module::game_ui_manager::GameUIManager;
 use crate::game_module::widgets::world_map_widget::WorldMapDirection;
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Debug, Display, EnumIter, EnumString, EnumCount)]
-pub enum InputControlType {
+pub enum KeyBindingType {
     None,
     Attack,
     PowerAttack,
@@ -30,7 +30,8 @@ pub enum InputControlType {
     Sprint,
     Jump,
     Roll,
-    SelectItem,
+    SelectPrevItem,
+    SelectNextItem,
     DropItem,
     UseItem,
     SelectItem01,

@@ -558,7 +558,7 @@ impl<'a> Character<'a> {
                 self.set_dead();
             } else {
                 character_manager.get_scene_manager().play_audio(&self._character_data.borrow()._audio_data._audio_pain);
-                if self._is_player {
+                if self._is_player && self.is_move_state(MoveAnimationState::Roll) == false {
                     self.set_action_hit();
                 }
             }

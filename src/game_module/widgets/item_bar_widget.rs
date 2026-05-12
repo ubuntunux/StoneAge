@@ -1,7 +1,7 @@
 use nalgebra::Vector2;
 use rust_engine_3d::resource::resource::EngineResources;
 use rust_engine_3d::scene::material_instance::MaterialInstanceData;
-use rust_engine_3d::scene::ui::{HorizontalAlign, Orientation, PosHintX, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault};
+use rust_engine_3d::scene::ui::{HorizontalAlign, Orientation, PosHintX, PosHintY, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault};
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use crate::game_module::actors::items::ItemDataType;
@@ -10,10 +10,10 @@ use crate::game_module::game_constants::ITEM_NONE;
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
 
-const ITEM_BAR_WIDGET_POS_Y_FROM_BOTTOM: f32 = 50.0;
-const MAX_ITEM_COUNT: usize = 10;
+pub const ITEM_BAR_WIDGET_POS_Y_FROM_BOTTOM: f32 = 50.0;
+pub const MAX_ITEM_COUNT: usize = 10;
 pub const ITEM_UI_SIZE: f32 = 64.0;
-const WIDGET_UI_MARGIN: f32 = 5.0;
+pub const ITEM_WIDGET_UI_MARGIN: f32 = 5.0;
 const INVALID_ITEM_INDEX: usize = usize::MAX;
 
 pub struct ItemWidget<'a> {
@@ -53,7 +53,7 @@ impl<'a> ItemWidget<'a> {
         ui_component.set_valign(VerticalAlign::BOTTOM);
         ui_component.set_pos_x(ITEM_UI_SIZE * item_index as f32);
         ui_component.set_round(2.0);
-        ui_component.set_margin(WIDGET_UI_MARGIN);
+        ui_component.set_margin(ITEM_WIDGET_UI_MARGIN);
         ui_component.set_font_color(get_color32(255, 255, 255, 255));
         ui_component.set_font_size(30.0);
         ui_component.set_visible(false);
@@ -149,6 +149,9 @@ impl<'a> ItemBarWidget<'a> {
         ui_component.set_round(5.0);
         ui_component.set_border(2.0);
         ui_component.set_expandable(true);
+        ui_component.set_pos_hint_x(PosHintX::Center(0.5));
+        ui_component.set_pos_hint_y(PosHintY::Bottom(1.0));
+        ui_component.set_margin_bottom(ITEM_BAR_WIDGET_POS_Y_FROM_BOTTOM);
         parent_widget.add_widget(&layer);
 
         let selected_item_widget = UIManager::create_widget("selected_item_widget", UIWidgetTypes::Default);
@@ -359,9 +362,6 @@ impl<'a> ItemBarWidget<'a> {
         self.select_item(item_index);
     }
 
-    pub fn changed_window_size(&mut self, window_size: &Vector2<i32>) {
-        let ui_component = ptr_as_mut(self._layer).get_ui_component_mut();
-        ui_component.set_pos_hint_x(PosHintX::Center(0.5));
-        ui_component.set_pos_y(window_size.y as f32 - ui_component.get_size_y() - ITEM_BAR_WIDGET_POS_Y_FROM_BOTTOM);
+    pub fn changed_window_size(&mut self, _window_size: &Vector2<i32>) {
     }
 }
