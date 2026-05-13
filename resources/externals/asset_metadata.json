@@ -325,7 +325,7 @@
             "asset_path": "family/alien",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/alien.blend",
             "guid": "",
-            "mtime": 1778686290.0355775,
+            "mtime": 1778687566.3776371,
             "data": {}
         }
     ],
@@ -4993,6 +4993,24 @@
             "data": {}
         }
     ],
+    "/mnt/Workspace/StoneAge/resources/externals/meshes/props/stage_ufo.blend": [
+        {
+            "asset_type": "MESH",
+            "asset_path": "props/stage_ufo",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/props/stage_ufo.blend",
+            "guid": "",
+            "mtime": 1778689161.633715,
+            "data": {}
+        },
+        {
+            "asset_type": "MATERIAL_INSTANCE",
+            "asset_path": "characters/stage_ufo",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/props/stage_ufo.blend",
+            "guid": "",
+            "mtime": 1778689161.633715,
+            "data": {}
+        }
+    ],
     "/mnt/Workspace/StoneAge/resources/externals/models/characters/spider.blend": [
         {
             "asset_type": "MATERIAL_INSTANCE",
@@ -8119,6 +8137,16 @@
             "data": {}
         }
     ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/props/stage_ufo.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "props/stage_ufo",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/props/stage_ufo.blend",
+            "guid": "",
+            "mtime": 1778689291.1380754,
+            "data": {}
+        }
+    ],
     "/mnt/Workspace/StoneAge/resources/externals/scenes/stage_forest.blend": [
         {
             "asset_type": "SCENE",
@@ -8307,16 +8335,6 @@
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/world_map.blend": [
-        {
-            "asset_type": "GAME_SCENE",
-            "asset_path": "world_map",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/world_map.blend",
-            "guid": "",
-            "mtime": 1777311112.6007786,
-            "data": {}
-        }
-    ],
     "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/stage_cave.blend": [
         {
             "asset_type": "GAME_SCENE",
@@ -8344,6 +8362,26 @@
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/intro_stage.blend",
             "guid": "",
             "mtime": 1778685863.2790446,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/world_map.blend": [
+        {
+            "asset_type": "GAME_SCENE",
+            "asset_path": "world_map",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/world_map.blend",
+            "guid": "",
+            "mtime": 1778687694.0044057,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/stage_ufo.blend": [
+        {
+            "asset_type": "GAME_SCENE",
+            "asset_path": "stage_ufo",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/stage_ufo.blend",
+            "guid": "",
+            "mtime": 1778690390.457968,
             "data": {}
         }
     ]

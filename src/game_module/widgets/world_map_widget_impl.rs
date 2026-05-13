@@ -74,7 +74,7 @@ impl<'a> WorldMapStage<'a> {
         true
     }
 
-    pub fn create_world_map_stage(world_map_widget: &WorldMapWidget<'a>, _game_resources: &GameResources<'a>, root_layout: &mut WidgetDefault<'a>, stage: Stages, world_map_aspect: f32) -> Rc<WorldMapStage<'a>> {
+    pub fn create_world_map_stage(world_map_stages: &mut HashMap<String, Rc<WorldMapStage<'a>>>, world_map_widget: &WorldMapWidget<'a>, _game_resources: &GameResources<'a>, root_layout: &mut WidgetDefault<'a>, stage: Stages, world_map_aspect: f32) -> Rc<WorldMapStage<'a>> {
         let world_map_stage = UIManager::create_widget("world_map_stage", UIWidgetTypes::Default);
         let ui_component = ptr_as_mut(world_map_stage.as_ref()).get_ui_component_mut();
         ui_component.set_layout_type(UILayoutType::FloatLayout);
@@ -106,6 +106,8 @@ impl<'a> WorldMapStage<'a> {
         ui_component.set_touchable(true);
         ui_component.set_callback_touch_down(Some(Box::new(WorldMapStage::callback_touch_down)));
         ui_component.set_user_data(world_map_stage.as_ref() as *const WorldMapStage<'a> as *const c_void);
+
+        world_map_stages.insert(String::from(stage.get_stage_data_name()), world_map_stage.clone());
 
         world_map_stage
     }
@@ -314,20 +316,18 @@ impl<'a> WorldMapWidget<'a> {
 
     pub fn create_world_map_stages(world_map_widget: &WorldMapWidget<'a>, game_resources: &GameResources<'a>, stage_layer: &mut WidgetDefault<'a>, bridge_layer: &mut WidgetDefault<'a>, image_aspect: f32) -> HashMap<String, Rc<WorldMapStage<'a>>> {
         // create stages
-        let world_map_stage_home = WorldMapStage::create_world_map_stage(world_map_widget, game_resources, stage_layer, Stages::Home, image_aspect);
-        let world_map_stage_forest = WorldMapStage::create_world_map_stage(world_map_widget, game_resources, stage_layer, Stages::Forest, image_aspect);
-        let world_map_stage_cave = WorldMapStage::create_world_map_stage(world_map_widget, game_resources, stage_layer, Stages::Cave, image_aspect);
+        let mut world_map_stages = HashMap::new();
+        let world_map_stage_home = WorldMapStage::create_world_map_stage(&mut world_map_stages, world_map_widget, game_resources, stage_layer, Stages::Home, image_aspect);
+        let world_map_stage_forest = WorldMapStage::create_world_map_stage(&mut world_map_stages, world_map_widget, game_resources, stage_layer, Stages::Forest, image_aspect);
+        let world_map_stage_cave = WorldMapStage::create_world_map_stage(&mut world_map_stages, world_map_widget, game_resources, stage_layer, Stages::Cave, image_aspect);
+        let world_map_stage_ufo = WorldMapStage::create_world_map_stage(&mut world_map_stages, world_map_widget, game_resources, stage_layer, Stages::Ufo, image_aspect);
 
         // link stages
         ptr_as_mut(world_map_stage_home.as_ref()).set_pos_hint(0.5, 0.5);
         WorldMapWidget::set_linked_stage(game_resources, bridge_layer, &world_map_stage_home, &world_map_stage_forest, WorldMapDirection::RIGHT, image_aspect);
         WorldMapWidget::set_linked_stage(game_resources, bridge_layer, &world_map_stage_home, &world_map_stage_cave, WorldMapDirection::DOWN, image_aspect);
+        WorldMapWidget::set_linked_stage(game_resources, bridge_layer, &world_map_stage_home, &world_map_stage_ufo, WorldMapDirection::LEFT, image_aspect);
 
-        // register
-        let mut world_map_stages = HashMap::new();
-        world_map_stages.insert(world_map_stage_home.get_stage_data_name().clone(), world_map_stage_home);
-        world_map_stages.insert(world_map_stage_forest.get_stage_data_name().clone(), world_map_stage_forest);
-        world_map_stages.insert(world_map_stage_cave.get_stage_data_name().clone(), world_map_stage_cave);
         world_map_stages
     }
 

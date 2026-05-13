@@ -1,0 +1,220 @@
+{
+    "_characters": {
+        "alien": {
+            "_character_data_name": "characters/family/alien",
+            "_position": [
+                2.8666763305664062,
+                11.977673530578613,
+                -0.5817427635192871
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "alien.001": {
+            "_character_data_name": "characters/family/alien",
+            "_position": [
+                -0.2500152587890625,
+                11.977673530578613,
+                2.9653382301330566
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "monkey_ewa": {
+            "_character_data_name": "characters/family/monkey_ewa",
+            "_position": [
+                1.0012803077697754,
+                11.977673530578613,
+                1.260732650756836
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "monkey_koa": {
+            "_character_data_name": "characters/family/monkey_koa",
+            "_position": [
+                -2.4919519424438477,
+                11.977673530578613,
+                0.32273244857788086
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        }
+    },
+    "_items": {},
+    "_player": {
+        "monkey_aru": {
+            "_character_data_name": "characters/family/monkey_aru",
+            "_position": [
+                0.0,
+                11.97767448425293,
+                0.0
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        }
+    },
+    "_props": {
+        "gate_intro_stage": {
+            "_instance_parameters": {
+                "_linked_gate": "gate",
+                "_linked_stage": "game_scenes/intro_stage"
+            },
+            "_position": [
+                7.659207344055176,
+                11.0,
+                -4.9388556480407715
+            ],
+            "_prop_data_name": "props/gate",
+            "_rotation": [
+                0.0,
+                -1.5052070617675781,
+                0.0
+            ],
+            "_scale": [
+                0.9512222409248352,
+                0.9512222409248352,
+                0.9512222409248352
+            ]
+        }
+    },
+    "_scene": {
+        "_cameras": {
+            "Camera": {
+                "position": [
+                    -7.551358699798584,
+                    5.443441390991211,
+                    0.0
+                ],
+                "rotation": [
+                    0.7225393811848502,
+                    0.0,
+                    0.0
+                ]
+            }
+        },
+        "_directional_lights": {
+            "Light": {
+                "_light_data": {
+                    "_light_color": [
+                        5.0,
+                        5.0,
+                        5.0
+                    ],
+                    "_light_direction": [
+                        1.4835298220303397,
+                        0.0,
+                        -0.3490658402442932
+                    ]
+                },
+                "_rotation": [
+                    1.4835298220303397,
+                    0.0,
+                    -0.3490658402442932
+                ]
+            }
+        },
+        "_effects": {},
+        "_point_lights": {},
+        "_skeletal_objects": {},
+        "_static_objects": {
+            "invisible_cube": {
+                "_model_data_name": "props/invisible_cube",
+                "_position": [
+                    0.0,
+                    10.0,
+                    0.0
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    50.0,
+                    1.0,
+                    50.0
+                ],
+                "_scene_object_type": "Collision"
+            },
+            "mine": {
+                "_model_data_name": "props/mine",
+                "_position": [
+                    7.854168891906738,
+                    11.0,
+                    -5.941781520843506
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    0.35001182556152344,
+                    0.35001182556152344,
+                    0.35001182556152344
+                ],
+                "_scene_object_type": "Default"
+            },
+            "stage_ufo": {
+                "_model_data_name": "props/stage_ufo",
+                "_position": [
+                    0.0,
+                    10.0,
+                    0.0
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "_scene_object_type": "NoCollision"
+            }
+        }
+    }
+}

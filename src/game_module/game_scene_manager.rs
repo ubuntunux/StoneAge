@@ -33,6 +33,7 @@ pub enum Stages {
     Forest,
     Cave,
     WorldMap,
+    Ufo,
 }
 
 impl Stages {
@@ -43,6 +44,7 @@ impl Stages {
             Stages::Forest => "FOREST",
             Stages::Cave => "CAVE",
             Stages::WorldMap => "WORLD MAP",
+            Stages::Ufo => "UFO",
         }
     }
 
@@ -53,11 +55,14 @@ impl Stages {
             Stages::Forest => "game_scenes/stage_01",
             Stages::Cave => "game_scenes/stage_cave",
             Stages::WorldMap => "game_scenes/world_map",
+            Stages::Ufo => "game_scenes/stage_ufo",
         }
     }
 
     pub fn find_stage_value(stage_data_name: &str) -> Stages {
-        if stage_data_name == Stages::Home.get_stage_data_name() {
+        if stage_data_name == Stages::None.get_stage_data_name() {
+            return Stages::None;
+        } else if stage_data_name == Stages::Home.get_stage_data_name() {
             return Stages::Home;
         } else if stage_data_name == Stages::Forest.get_stage_data_name() {
             return Stages::Forest;
@@ -65,7 +70,11 @@ impl Stages {
             return Stages::Cave;
         } else if stage_data_name == Stages::WorldMap.get_stage_data_name() {
             return Stages::WorldMap;
+        } else if stage_data_name == Stages::Ufo.get_stage_data_name() {
+            return Stages::Ufo;
         }
+
+        assert!(false, "not implemented: {}", stage_data_name);
         Stages::None
     }
 }
