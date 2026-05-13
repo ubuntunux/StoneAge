@@ -1,5 +1,23 @@
 {
     "_characters": {
+        "alien": {
+            "_character_data_name": "characters/alien",
+            "_position": [
+                4.498317718505859,
+                0.2770576477050781,
+                3.5443954467773438
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
         "monkey_ewa": {
             "_character_data_name": "characters/family/monkey_ewa",
             "_position": [
@@ -34,6 +52,24 @@
                 1.0,
                 1.0,
                 1.0
+            ]
+        },
+        "ufo": {
+            "_character_data_name": "characters/ufo",
+            "_position": [
+                -7.2784423828125,
+                21.40956687927246,
+                -9.113053321838379
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                0.3766857385635376,
+                0.3766857385635376,
+                0.3766857385635376
             ]
         }
     },
