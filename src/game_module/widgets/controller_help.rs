@@ -10,7 +10,7 @@ use crate::game_module::actors::interaction_object::InteractionObject;
 use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::game_controller::{GameController, KeyBindingType};
 use crate::game_module::game_resource::GameResources;
-use crate::game_module::widgets::item_bar_widget::{ItemBarWidget, ITEM_BAR_WIDGET_POS_Y_FROM_BOTTOM, ITEM_UI_SIZE, ITEM_WIDGET_UI_MARGIN, MAX_ITEM_COUNT};
+use crate::game_module::widgets::item_bar_widget::{ItemBarWidget};
 
 const MAIN_LAYOUT_MARGIN: f32 = 10.0;
 const MAIN_LAYOUT_PADDING: f32 = 10.0;
@@ -36,6 +36,8 @@ pub struct ControllerHelpWidget<'a> {
     pub _key_binding_widget_map: HashMap<KeyBindingType, KeyBindingWidget<'a>>,
     pub _is_keyboard_input_mode: bool,
     pub _last_interaction_object_key: *const c_void,
+    pub _window_size: Vector2<i32>,
+    pub _selected_item_index: usize,
 }
 
 pub struct KeyBindingWidget<'a> {
@@ -175,7 +177,7 @@ impl<'a> KeyBindingWidget<'a> {
             _key_binding_type: key_binding_type,
             _key_binding_group: KeyBindingGroup::Inventory,
             _layout_widget: layout_widget.as_ref(),
-            _binding_name_widget: std::ptr::null(),
+            _binding_name_widget: binding_name_widget.as_ref(),
             _binding_icon_widgets: binding_icon_widgets
         }
     }
@@ -270,20 +272,18 @@ impl<'a> KeyBindingWidget<'a> {
     pub fn changed_window_size(&mut self, window_size: &Vector2<i32>) {
         let ui_component = ptr_as_mut(self._layout_widget).get_ui_component_mut();
         if self._key_binding_group == KeyBindingGroup::Inventory {
-            let item_bar_size_x = (ITEM_UI_SIZE + ITEM_WIDGET_UI_MARGIN * 2.0) * MAX_ITEM_COUNT as f32;
-            let select_item_key_binding_margin_y = window_size.y as f32 - (ITEM_BAR_WIDGET_POS_Y_FROM_BOTTOM + (ITEM_UI_SIZE + ITEM_WIDGET_UI_MARGIN + ui_component.get_ui_size().y) * 0.5);
             if self._key_binding_type == KeyBindingType::SelectPrevItem {
-                ui_component.set_pos_x((window_size.x as f32 - item_bar_size_x) * 0.5 - ui_component.get_ui_size().x - TEXT_WIDGET_MARGIN);
-                ui_component.set_pos_y(select_item_key_binding_margin_y);
+                ui_component.set_pos_x((window_size.x as f32 - ItemBarWidget::get_item_bar_width()) * 0.5 - ui_component.get_ui_size().x - TEXT_WIDGET_MARGIN);
+                ui_component.set_pos_y(window_size.y as f32 - (ItemBarWidget::get_item_bar_center_y() + ui_component.get_ui_size().y * 0.5));
             } else if self._key_binding_type == KeyBindingType::SelectNextItem {
-                ui_component.set_pos_x((window_size.x as f32 + item_bar_size_x) * 0.5 + TEXT_WIDGET_MARGIN);
-                ui_component.set_pos_y(select_item_key_binding_margin_y);
+                ui_component.set_pos_x((window_size.x as f32 + ItemBarWidget::get_item_bar_width()) * 0.5 + TEXT_WIDGET_MARGIN);
+                ui_component.set_pos_y(window_size.y as f32 - (ItemBarWidget::get_item_bar_center_y() + ui_component.get_ui_size().y * 0.5));
             } else if self._key_binding_type == KeyBindingType::UseItem {
-                ui_component.set_pos_hint_x(PosHintX::Center(0.5));
-                ui_component.set_pos_y(window_size.y as f32 - (ITEM_BAR_WIDGET_POS_Y_FROM_BOTTOM + ITEM_UI_SIZE + ITEM_WIDGET_UI_MARGIN * 2.0 + ui_component.get_ui_size().y));
+                ui_component.set_pos_y(window_size.y as f32 - (ItemBarWidget::get_item_bar_pos_top() + ui_component.get_ui_size().y));
             } else if self._key_binding_type == KeyBindingType::DropItem {
-                ui_component.set_pos_hint_x(PosHintX::Center(0.5));
-                ui_component.set_pos_y(window_size.y as f32 - (ITEM_BAR_WIDGET_POS_Y_FROM_BOTTOM + ITEM_UI_SIZE + ITEM_WIDGET_UI_MARGIN * 2.0 + ui_component.get_ui_size().y * 2.0));
+                ui_component.set_pos_y(window_size.y as f32 - (ItemBarWidget::get_item_bar_pos_top() + ui_component.get_ui_size().y * 2.0));
+            } else {
+                assert!(false, "not implemented: {:?}", self._key_binding_type);
             }
         }
     }
@@ -294,7 +294,7 @@ impl<'a> ControllerHelpWidget<'a> {
         root_widget: &mut WidgetDefault<'a>,
         item_bar_widget: &ItemBarWidget<'a>,
         game_resources: &GameResources<'a>,
-        _window_size: &Vector2<i32>
+        window_size: &Vector2<i32>
     ) -> ControllerHelpWidget<'a> {
         let engine_resources = game_resources.get_engine_resources();
 
@@ -410,34 +410,36 @@ impl<'a> ControllerHelpWidget<'a> {
                 (KeyBindingType::SelectItem10, None)
             ]),
             _key_binding_widget_map: HashMap::from([
-                (KeyBindingType::Attack, attack_key_binding_widget),
-                (KeyBindingType::PowerAttack, power_attack_key_binding_widget),
-                (KeyBindingType::Interaction, interaction_key_binding_widget),
-                (KeyBindingType::EnterGate, enter_gate_key_binding_widget),
-                (KeyBindingType::Gathering, gathering_key_binding_widget),
-                (KeyBindingType::CameraRotation, camera_key_binding_widget),
-                (KeyBindingType::Zoom, zoom_key_binding_widget),
-                (KeyBindingType::Move, move_key_binding_widget),
-                (KeyBindingType::Sprint, sprint_key_binding_widget),
-                (KeyBindingType::Jump, jump_key_binding_widget),
-                (KeyBindingType::Roll, roll_key_binding_widget),
-                (KeyBindingType::SelectPrevItem, select_prev_item_key_binding_widget),
-                (KeyBindingType::SelectNextItem, select_next_item_key_binding_widget),
-                (KeyBindingType::DropItem, drop_item_key_binding_widget),
-                (KeyBindingType::UseItem, use_item_key_binding_widget),
-                (KeyBindingType::SelectItem01, select_item01_key_binding_widget),
-                (KeyBindingType::SelectItem02, select_item02_key_binding_widget),
-                (KeyBindingType::SelectItem03, select_item03_key_binding_widget),
-                (KeyBindingType::SelectItem04, select_item04_key_binding_widget),
-                (KeyBindingType::SelectItem05, select_item05_key_binding_widget),
-                (KeyBindingType::SelectItem06, select_item06_key_binding_widget),
-                (KeyBindingType::SelectItem07, select_item07_key_binding_widget),
-                (KeyBindingType::SelectItem08, select_item08_key_binding_widget),
-                (KeyBindingType::SelectItem09, select_item09_key_binding_widget),
-                (KeyBindingType::SelectItem10, select_item10_key_binding_widget)
+                (attack_key_binding_widget._key_binding_type, attack_key_binding_widget),
+                (power_attack_key_binding_widget._key_binding_type, power_attack_key_binding_widget),
+                (interaction_key_binding_widget._key_binding_type, interaction_key_binding_widget),
+                (enter_gate_key_binding_widget._key_binding_type, enter_gate_key_binding_widget),
+                (gathering_key_binding_widget._key_binding_type, gathering_key_binding_widget),
+                (camera_key_binding_widget._key_binding_type, camera_key_binding_widget),
+                (zoom_key_binding_widget._key_binding_type, zoom_key_binding_widget),
+                (move_key_binding_widget._key_binding_type, move_key_binding_widget),
+                (sprint_key_binding_widget._key_binding_type, sprint_key_binding_widget),
+                (jump_key_binding_widget._key_binding_type, jump_key_binding_widget),
+                (roll_key_binding_widget._key_binding_type, roll_key_binding_widget),
+                (select_prev_item_key_binding_widget._key_binding_type, select_prev_item_key_binding_widget),
+                (select_next_item_key_binding_widget._key_binding_type, select_next_item_key_binding_widget),
+                (drop_item_key_binding_widget._key_binding_type, drop_item_key_binding_widget),
+                (use_item_key_binding_widget._key_binding_type, use_item_key_binding_widget),
+                (select_item01_key_binding_widget._key_binding_type, select_item01_key_binding_widget),
+                (select_item02_key_binding_widget._key_binding_type, select_item02_key_binding_widget),
+                (select_item03_key_binding_widget._key_binding_type, select_item03_key_binding_widget),
+                (select_item04_key_binding_widget._key_binding_type, select_item04_key_binding_widget),
+                (select_item05_key_binding_widget._key_binding_type, select_item05_key_binding_widget),
+                (select_item06_key_binding_widget._key_binding_type, select_item06_key_binding_widget),
+                (select_item07_key_binding_widget._key_binding_type, select_item07_key_binding_widget),
+                (select_item08_key_binding_widget._key_binding_type, select_item08_key_binding_widget),
+                (select_item09_key_binding_widget._key_binding_type, select_item09_key_binding_widget),
+                (select_item10_key_binding_widget._key_binding_type, select_item10_key_binding_widget)
             ]),
             _is_keyboard_input_mode: true,
             _last_interaction_object_key: std::ptr::null(),
+            _window_size: window_size.clone(),
+            _selected_item_index: usize::MAX,
         };
 
         character_controller_help_widget.update_key_binding_widgets( character_controller_help_widget._is_keyboard_input_mode );
@@ -448,7 +450,9 @@ impl<'a> ControllerHelpWidget<'a> {
         self._key_binding_widget_map.get(key_binding_type).unwrap()
     }
 
-    pub fn changed_window_size(&mut self, window_size: &Vector2<i32>) {
+    pub fn changed_window_size(&mut self, game_scene_manager: &GameSceneManager, window_size: &Vector2<i32>) {
+        self._window_size = window_size.clone();
+
         let ui_component = ptr_as_mut(self._character_controller_help_widget).get_ui_component_mut();
         ui_component.set_size_y(ui_component.get_num_children() as f32 * KEY_BINDING_UI_SIZE + MAIN_LAYOUT_PADDING * 2.0);
         ui_component.set_pos_x(window_size.x as f32 - ui_component.get_ui_size().x - MAIN_LAYOUT_MARGIN * 2.0);
@@ -457,6 +461,8 @@ impl<'a> ControllerHelpWidget<'a> {
         for key_binding_widget in self._key_binding_widget_map.values_mut() {
             key_binding_widget.changed_window_size(window_size);
         }
+
+        self.update_selected_item_helper_widget(game_scene_manager, true);
     }
 
     pub fn update_custom_key_binding_widgets(&mut self, key_binding_widget_type: KeyBindingType, material_instance_type: KeyBindingType) {
@@ -517,7 +523,7 @@ impl<'a> ControllerHelpWidget<'a> {
             let interaction_widget = ptr_as_mut(interaction_key_binding_widget._layout_widget);
             if *key_binding_type == matched_key_binding_type {
                 let player = character_manager.get_player().borrow();
-                let interaction_object = player.get_nearest_interaction_object();
+                let interactwwwwwwwwion_object = player.get_nearest_interaction_object();
                 let position = interaction_object.get_position();
                 let main_camera = game_scene_manager.get_scene_manager().get_main_camera();
                 let screen_position = main_camera.convert_world_to_screen(&position, true);
@@ -531,6 +537,22 @@ impl<'a> ControllerHelpWidget<'a> {
         }
     }
 
+    pub fn update_selected_item_helper_widget(&mut self, game_scene_manager: &GameSceneManager, force_update: bool) {
+        let selected_item_index = game_scene_manager.get_game_ui_manager().get_selected_inventory_item_index();
+        if self._selected_item_index != selected_item_index || force_update {
+            let _item_name = game_scene_manager.get_game_ui_manager().get_selected_inventory_item_name();
+            let pos_x = self._window_size.x as f32 * 0.5 + ItemBarWidget::get_selected_item_pos_left(selected_item_index);
+
+            let use_item_widget = self.get_key_binding_widget(&KeyBindingType::UseItem);
+            ptr_as_mut(use_item_widget._layout_widget).get_ui_component_mut().set_pos_x(pos_x);
+
+            let drop_item_widget = self.get_key_binding_widget(&KeyBindingType::DropItem);
+            ptr_as_mut(drop_item_widget._layout_widget).get_ui_component_mut().set_pos_x(pos_x);
+
+            self._selected_item_index = selected_item_index;
+        }
+    }
+
     pub fn update_controller_help_widget(&mut self, game_scene_manager: &GameSceneManager, game_controller: &GameController) {
         let is_keyboard_input_mode = game_controller.is_keyboard_input_mode();
         if self._is_keyboard_input_mode != is_keyboard_input_mode {
@@ -539,5 +561,7 @@ impl<'a> ControllerHelpWidget<'a> {
         }
 
         self.update_interaction_widget(game_scene_manager);
+
+        self.update_selected_item_helper_widget(game_scene_manager, false);
     }
 }

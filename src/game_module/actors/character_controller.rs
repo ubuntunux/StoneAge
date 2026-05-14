@@ -604,7 +604,7 @@ impl<'a> CharacterController<'a> {
                 }
             }
 
-            if self._is_cliff && (point.y - CLIFF_HEIGHT) <= height_map_data.get_height_bilinear(&point, 0) {
+            if (point.y - CLIFF_HEIGHT) <= height_map_data.get_height_bilinear(&point, 0) {
                 self._is_cliff = false;
             }
         }

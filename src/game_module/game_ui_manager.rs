@@ -371,6 +371,10 @@ impl<'a> GameUIManager<'a> {
         self._item_bar_widget.as_ref().unwrap().get_selected_item_data_name()
     }
 
+    pub fn get_selected_inventory_item_name(&self) -> &str {
+        self._item_bar_widget.as_ref().unwrap().get_selected_item_name()
+    }
+
     pub fn get_selected_inventory_item_data_type(&self) -> ItemDataType {
         self._item_bar_widget.as_ref().unwrap().get_selected_item_data_type()
     }
@@ -447,9 +451,13 @@ impl<'a> GameUIManager<'a> {
     // game ui manager
     pub fn changed_window_size(&mut self, window_size: &Vector2<i32>) {
         log::info!("GameUIComponents::changed_window_size: {:?}", window_size);
+
+        let game_client = ptr_as_ref(self._game_client);
+        let game_scene_manager = game_client.get_game_scene_manager();
+
         self._game_image.as_mut().unwrap().changed_window_size(&window_size);
         self._player_hud.as_mut().unwrap().changed_window_size(&window_size);
-        self._controller_help_widget.as_mut().unwrap().changed_window_size(&window_size);
+        self._controller_help_widget.as_mut().unwrap().changed_window_size(game_scene_manager, &window_size);
         self._text_box_widget.as_mut().unwrap().changed_window_size(&window_size);
         self._target_status_bar.as_mut().unwrap().changed_window_size(&window_size);
         self._time_of_day.as_mut().unwrap().changed_window_size(&window_size);
