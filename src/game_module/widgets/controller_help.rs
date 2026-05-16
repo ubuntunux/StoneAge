@@ -523,7 +523,7 @@ impl<'a> ControllerHelpWidget<'a> {
             let interaction_widget = ptr_as_mut(interaction_key_binding_widget._layout_widget);
             if *key_binding_type == matched_key_binding_type {
                 let player = character_manager.get_player().borrow();
-                let interactwwwwwwwwion_object = player.get_nearest_interaction_object();
+                let interaction_object = player.get_nearest_interaction_object();
                 let position = interaction_object.get_position();
                 let main_camera = game_scene_manager.get_scene_manager().get_main_camera();
                 let screen_position = main_camera.convert_world_to_screen(&position, true);
