@@ -1,11 +1,47 @@
 {
     "_characters": {
+        "alien": {
+            "_character_data_name": "characters/family/alien",
+            "_position": [
+                2.8666763305664062,
+                11.977673530578613,
+                -0.5817427635192871
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "alien.001": {
+            "_character_data_name": "characters/family/alien",
+            "_position": [
+                -0.2500152587890625,
+                11.977673530578613,
+                2.9653382301330566
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
         "monkey_ewa": {
             "_character_data_name": "characters/family/monkey_ewa",
             "_position": [
-                16.395343780517578,
-                2.9496304988861084,
-                12.052227020263672
+                1.0012803077697754,
+                11.977673530578613,
+                1.260732650756836
             ],
             "_rotation": [
                 0.0,
@@ -21,9 +57,9 @@
         "monkey_koa": {
             "_character_data_name": "characters/family/monkey_koa",
             "_position": [
-                18.020801544189453,
-                2.5001397132873535,
-                10.799436569213867
+                -2.4919519424438477,
+                11.977673530578613,
+                0.32273244857788086
             ],
             "_rotation": [
                 0.0,
@@ -38,8 +74,8 @@
         }
     },
     "_game_scenes": {
-        "intro_stage": {
-            "_game_scene_data_name": "game_scenes/intro_stage",
+        "stage_ufo": {
+            "_game_scene_data_name": "game_scenes/stage_ufo",
             "_position": [
                 0.0,
                 0.0,
@@ -62,9 +98,9 @@
         "monkey_aru": {
             "_character_data_name": "characters/family/monkey_aru",
             "_position": [
-                19.868873596191406,
-                2.7635936737060547,
-                11.655028343200684
+                0.0,
+                11.97767448425293,
+                0.0
             ],
             "_rotation": [
                 0.0,

@@ -1,0 +1,45 @@
+{
+    "_characters": {
+        "ufo": {
+            "_character_data_name": "characters/ufo",
+            "_position": [
+                22.014036178588867,
+                18.112159729003906,
+                9.704626083374023
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                0.10000002384185791,
+                0.10000002384185791,
+                0.10000002384185791
+            ]
+        }
+    },
+    "_game_scenes": {
+        "intro_stage": {
+            "_game_scene_data_name": "game_scenes/intro_stage",
+            "_position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        }
+    },
+    "_items": {},
+    "_player": {},
+    "_props": {}
+}

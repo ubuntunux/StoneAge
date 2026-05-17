@@ -1,7 +1,7 @@
 use std::cmp::PartialEq;
 use crate::application::application::Application;
 use crate::game_module::actors::character_manager::CharacterManager;
-use crate::game_module::game_constants::{GameViewMode, AMBIENT_SOUND, CAMERA_DISTANCE_MAX, GAME_MUSIC, MATERIAL_INTRO_IMAGE, SCENARIO_INTRO, SLEEP_TIMER, STORY_BOARD_FADE_TIME, MATERIAL_UI_NONE, GAME_VIEW_MODE, MATERIAL_WORLDMAP_FADE_TIME, AUDIO_ROOSTER, DEFAULT_GATE_NAME};
+use crate::game_module::game_constants::{GameViewMode, AMBIENT_SOUND, CAMERA_DISTANCE_MAX, GAME_MUSIC, MATERIAL_INTRO_IMAGE, SLEEP_TIMER, STORY_BOARD_FADE_TIME, MATERIAL_UI_NONE, GAME_VIEW_MODE, MATERIAL_WORLDMAP_FADE_TIME, AUDIO_ROOSTER, DEFAULT_GATE_NAME};
 use crate::game_module::game_controller::GameController;
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::{GameSceneManager, GameSceneState};
@@ -9,6 +9,7 @@ use crate::game_module::game_ui_manager::{EditorUIManager, GameUIManager};
 use nalgebra::{Vector2, Vector3};
 use rust_engine_3d::core::engine_core::EngineCore;
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
+use crate::game_module::scenario::scenario::{ScenarioType};
 
 #[derive(Clone, Copy, Debug, Hash, PartialEq)]
 pub enum GamePhase {
@@ -271,7 +272,7 @@ impl<'a> GameClient<'a> {
             }
             GamePhase::Loading => {
                 if game_scene_manager.is_game_scene_state(GameSceneState::None) {
-                    game_scene_manager.open_scenario_data(SCENARIO_INTRO);
+                    game_scene_manager.open_scenario_data(ScenarioType::ScenarioIntro);
                 } else if game_scene_manager.is_game_scene_state(GameSceneState::PlayGame) {
                     game_controller.set_game_camera_goal_transform(
                         1.0,
@@ -290,7 +291,7 @@ impl<'a> GameClient<'a> {
 
                 if game_scene_manager.is_game_scene_state(GameSceneState::PlayGame) {
                     if character_manager.is_valid_player() {
-                        game_scene_manager.update_game_scenario(game_ui_manager, any_key_hold, any_key_pressed, delta_time);
+                        game_scene_manager.update_game_scenario(any_key_hold, any_key_pressed, delta_time);
 
                         if game_scene_manager.is_play_scenario_mode() {
                             self.set_game_phase(GamePhase::PlayGameScenario);
@@ -326,7 +327,7 @@ impl<'a> GameClient<'a> {
                 }
             }
             GamePhase::PlayGameScenario => {
-                game_scene_manager.update_game_scenario(game_ui_manager, any_key_hold, any_key_pressed, delta_time);
+                game_scene_manager.update_game_scenario(any_key_hold, any_key_pressed, delta_time);
                 if game_scene_manager.is_play_scenario_mode() == false {
                     self.set_game_phase(GamePhase::GamePlay);
                 }

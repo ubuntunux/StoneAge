@@ -8,6 +8,7 @@ use rust_engine_3d::scene::render_object::{AnimationLayer, RenderObjectData};
 use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::scene::transform_object::TransformObjectData;
 use rust_engine_3d::utilities::math;
+use rust_engine_3d::utilities::math::make_rotation_matrix;
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use crate::game_module::actors::character::{Character, CharacterAnimationState, CharacterStats};
 use crate::game_module::actors::character_controller::CharacterController;
@@ -268,6 +269,17 @@ impl<'a> Character<'a> {
 
         self.set_move_idle();
         self.set_action_none();
+        self.update_transform();
+        self.update_render_object();
+    }
+
+    pub fn initialize_transform(&mut self, position: &Vector3<f32>, rotation: &Vector3<f32>, scale: &Vector3<f32>) {
+        self._controller._position = position.clone();
+        self._controller._position.y = self._controller._position.y.max(self.get_character_manager().get_scene_manager().get_height_map_data().get_height_bilinear(position, 0));
+        self._controller._rotation = rotation.clone();
+        self._controller._scale = scale.clone();
+        let direction: Vector3<f32> = make_rotation_matrix(self._controller._rotation.x, self._controller._rotation.y, self._controller._rotation.z).column(2).xyz();
+        self._controller.set_move_direction(&direction);
         self.update_transform();
         self.update_render_object();
     }

@@ -332,10 +332,18 @@ impl<'a> PropManager<'a> {
         prop
     }
 
+    pub fn is_exist_prop_name(&self, prop_name: &str) -> bool {
+        for prop in self._props.values() {
+            if prop.borrow()._prop_name == prop_name {
+                return true;
+            }
+        }
+        false
+    }
+
     pub fn remove_prop(&mut self, prop: &RcRefCell<Prop<'a>>) {
         self._props.remove(&prop.borrow().get_prop_id());
-        self.get_scene_manager_mut()
-            .remove_static_render_object(prop.borrow()._render_object.borrow()._object_id);
+        self.get_scene_manager_mut().remove_static_render_object(prop.borrow()._render_object.borrow()._object_id);
     }
 
     pub fn clear_props(&mut self) {

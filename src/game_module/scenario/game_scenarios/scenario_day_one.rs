@@ -6,36 +6,36 @@ use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::scenario::scenario::{ScenarioBase, ScenarioDataCreateInfo, ScenarioTrack, ScenarioType};
 
 #[derive(Clone, PartialEq, Eq, Hash, Display, Debug, Copy, EnumIter, EnumString, EnumCount)]
-pub enum ScenarioUfoPhase {
+pub enum ScenarioDayOnePhase {
     None,
     Begin,
     End,
 }
 
-pub struct ScenarioUfo<'a> {
+pub struct ScenarioDayOne<'a> {
     pub _scenario_type: ScenarioType,
     pub _game_scene_manager: *const GameSceneManager<'a>,
     pub _actor_aru: Option<RcRefCell<Character<'a>>>,
     pub _actor_ewa: Option<RcRefCell<Character<'a>>>,
     pub _actor_koa: Option<RcRefCell<Character<'a>>>,
-    pub _scenario_track: ScenarioTrack<ScenarioUfoPhase>,
+    pub _scenario_track: ScenarioTrack<ScenarioDayOnePhase>,
     pub _scenario_phase: usize,
 }
 
-impl<'a> ScenarioUfo<'a> {
+impl<'a> ScenarioDayOne<'a> {
     pub fn create_game_scenario(
         game_scene_manager: *const GameSceneManager<'a>,
         scenario_type: ScenarioType,
         _scenario_create_info: &ScenarioDataCreateInfo,
-    ) -> RcRefCell<ScenarioUfo<'a>> {
-        newRcRefCell(ScenarioUfo {
+    ) -> RcRefCell<ScenarioDayOne<'a>> {
+        newRcRefCell(ScenarioDayOne {
             _scenario_type: scenario_type,
             _game_scene_manager: game_scene_manager,
             _actor_aru: None,
             _actor_ewa: None,
             _actor_koa: None,
             _scenario_track: ScenarioTrack {
-                _scenario_phase: ScenarioUfoPhase::None,
+                _scenario_phase: ScenarioDayOnePhase::None,
                 _phase_time: 0.0,
                 _phase_duration: None,
             },
@@ -44,7 +44,7 @@ impl<'a> ScenarioUfo<'a> {
     }
 }
 
-impl<'a> ScenarioUfo<'a> {
+impl<'a> ScenarioDayOne<'a> {
     pub fn get_scenario_phase(&self) -> usize {
         self._scenario_phase
     }
@@ -56,14 +56,14 @@ impl<'a> ScenarioUfo<'a> {
     }
 }
 
-impl<'a> ScenarioBase<'a> for ScenarioUfo<'a> {
+impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
     fn get_scenario_type(&self) -> ScenarioType {
         self._scenario_type
     }
 
     fn is_play_scenario_mode(&self) -> bool {
         match self._scenario_track._scenario_phase {
-            ScenarioUfoPhase::End => {
+            ScenarioDayOnePhase::End => {
                 false
             }
             _ => true
@@ -71,7 +71,7 @@ impl<'a> ScenarioBase<'a> for ScenarioUfo<'a> {
     }
 
     fn is_end_of_scenario(&self) -> bool {
-        self._scenario_track._scenario_phase == ScenarioUfoPhase::End
+        self._scenario_track._scenario_phase == ScenarioDayOnePhase::End
     }
 
     fn on_close_game_scene(&mut self, _game_scene_data_name: &str) {
@@ -81,7 +81,7 @@ impl<'a> ScenarioBase<'a> for ScenarioUfo<'a> {
     }
 
     fn set_scenario_phase(&mut self, next_scenario_phase: &str, phase_duration: Option<f32>) {
-        let next_scenario_phase = ScenarioUfoPhase::from_str(next_scenario_phase).expect("scenario error");
+        let next_scenario_phase = ScenarioDayOnePhase::from_str(next_scenario_phase).expect("scenario error");
         if next_scenario_phase != self._scenario_track._scenario_phase {
             self.update_game_scenario_end();
             self._scenario_track.set_scenario_phase(next_scenario_phase, phase_duration);
@@ -93,9 +93,9 @@ impl<'a> ScenarioBase<'a> for ScenarioUfo<'a> {
         let _game_scene_manager = ptr_as_mut(self._game_scene_manager);
 
         match self._scenario_track._scenario_phase {
-            ScenarioUfoPhase::None => {}
-            ScenarioUfoPhase::Begin => {}
-            ScenarioUfoPhase::End => {}
+            ScenarioDayOnePhase::None => {}
+            ScenarioDayOnePhase::Begin => {}
+            ScenarioDayOnePhase::End => {}
         }
     }
 
@@ -115,12 +115,12 @@ impl<'a> ScenarioBase<'a> for ScenarioUfo<'a> {
         let _phase_time = self._scenario_track.get_phase_time();
         let _phase_ratio = self._scenario_track.get_phase_ratio();
         match self._scenario_track._scenario_phase {
-            ScenarioUfoPhase::None => {
-                self.set_scenario_phase(ScenarioUfoPhase::Begin.to_string().as_str(), None);
+            ScenarioDayOnePhase::None => {
+                self.set_scenario_phase(ScenarioDayOnePhase::Begin.to_string().as_str(), None);
             }
-            ScenarioUfoPhase::Begin => {
+            ScenarioDayOnePhase::Begin => {
             }
-            ScenarioUfoPhase::End => {
+            ScenarioDayOnePhase::End => {
             }
         }
 

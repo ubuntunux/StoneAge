@@ -143,8 +143,5 @@ pub const ITEM_COCONUT: &str = "items/coconut";
 pub const ITEM_HAND: &str = "items/hand";
 pub const ITEM_SPIRIT_BALL: &str = "items/spirit_ball";
 
-// Scenario
-pub const SCENARIO_INTRO: &str = "scenario/intro";
-
 // props
 pub const DEFAULT_GATE_NAME: &str = "gate";

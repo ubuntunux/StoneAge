@@ -1,15 +1,36 @@
-use crate::game_module::game_scene_manager::{
-    CharacterCreateInfoMap, GameSceneManager, ItemCreateInfoMap, PropCreateInfoMap,
-};
-use crate::game_module::game_ui_manager::GameUIManager;
-use crate::game_module::scenario::game_scenarios::scenario_intro::ScenarioIntro;
+use crate::game_module::game_scene_manager::{CharacterCreateInfoMap, GameSceneManager, ItemCreateInfoMap, PropCreateInfoMap};
 use nalgebra::Vector3;
-use rust_engine_3d::utilities::system::{newRcRefCell, RcRefCell};
+use rust_engine_3d::utilities::system::{RcRefCell};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::hash::Hash;
+use strum_macros::{Display, EnumString};
+use crate::game_module::scenario::game_scenarios::scenario_day_one::ScenarioDayOne;
+use crate::game_module::scenario::game_scenarios::scenario_intro::ScenarioIntro;
+use crate::game_module::scenario::game_scenarios::scenario_revolution::ScenarioRevolution;
+use crate::game_module::scenario::game_scenarios::scenario_ufo::ScenarioUfo;
 
 pub type GameSceneCreateInfoMap = HashMap<String, GameSceneCreateInfo>;
+
+#[derive(Clone, PartialEq, Eq, Hash, Debug, Display, EnumString, Copy)]
+pub enum ScenarioType {
+    ScenarioIntro,
+    ScenarioUfo,
+    ScenarioRevolution,
+    ScenarioDayOne,
+}
+
+impl ScenarioType {
+    pub fn get_scenario_data_name(&self) -> &str {
+        match *self {
+            ScenarioType::ScenarioIntro => "scenario/intro",
+            ScenarioType::ScenarioUfo => "scenario/ufo",
+            ScenarioType::ScenarioRevolution => "scenario/revolution",
+            ScenarioType::ScenarioDayOne => "scenario/day_one",
+        }
+    }
+}
+
 
 pub struct ScenarioTrack<T: Copy + PartialEq + Hash> {
     pub _scenario_phase: T,
@@ -63,6 +84,7 @@ pub struct ScenarioDataCreateInfo {
     pub _game_scenes: GameSceneCreateInfoMap,
 }
 pub trait ScenarioBase<'a> {
+    fn get_scenario_type(&self) -> ScenarioType;
     fn is_play_scenario_mode(&self) -> bool;
     fn is_end_of_scenario(&self) -> bool;
     fn on_close_game_scene(&mut self, game_scene_data_name: &str);
@@ -70,17 +92,27 @@ pub trait ScenarioBase<'a> {
     fn set_scenario_phase(&mut self, next_scenario_phase: &str, phase_duration: Option<f32>);
     fn update_game_scenario_begin(&mut self);
     fn update_game_scenario_end(&mut self);
-    fn update_game_scenario(&mut self, game_ui_manager: &mut GameUIManager<'a>, any_key_hold: bool, any_key_pressed: bool, delta_time: f64);
+    fn update_game_scenario(&mut self, any_key_hold: bool, any_key_pressed: bool, delta_time: f64);
 }
 
 pub fn create_scenario<'a>(
     game_scene_manager: *const GameSceneManager<'a>,
-    scenario_name: &str,
+    scenario_type: ScenarioType,
     scenario_create_info: &ScenarioDataCreateInfo,
 ) -> RcRefCell<dyn ScenarioBase<'a> + 'a> {
-    newRcRefCell(ScenarioIntro::create_game_scenario(
-        game_scene_manager,
-        scenario_name,
-        scenario_create_info,
-    ))
+    match scenario_type {
+        ScenarioType::ScenarioIntro => {
+            ScenarioIntro::create_game_scenario(game_scene_manager, scenario_type, scenario_create_info)
+        }
+        ScenarioType::ScenarioUfo => {
+            ScenarioUfo::create_game_scenario(game_scene_manager, scenario_type, scenario_create_info)
+        }
+        ScenarioType::ScenarioRevolution => {
+            ScenarioRevolution::create_game_scenario(game_scene_manager, scenario_type, scenario_create_info)
+        }
+        ScenarioType::ScenarioDayOne => {
+            ScenarioDayOne::create_game_scenario(game_scene_manager, scenario_type, scenario_create_info)
+        }
+    }
+
 }

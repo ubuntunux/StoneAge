@@ -2,14 +2,14 @@ use std::ffi::c_void;
 use std::str::FromStr;
 use nalgebra::Vector3;
 use strum_macros::{Display, EnumCount, EnumIter, EnumString};
-use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
+use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
 use rust_engine_3d::utilities::math;
 use crate::game_module::game_scene_manager::Stages;
 use crate::game_module::actors::character::{ActorWrapper, Character};
 use crate::game_module::game_constants::*;
 use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::game_ui_manager::{GameUIManager, QuestItem};
-use crate::game_module::scenario::scenario::{ScenarioBase, ScenarioDataCreateInfo, ScenarioTrack};
+use crate::game_module::scenario::scenario::{ScenarioBase, ScenarioDataCreateInfo, ScenarioTrack, ScenarioType};
 use crate::game_module::actors::character_data::ActionAnimationState;
 use crate::game_module::actors::props::Prop;
 use crate::game_module::behavior::behavior_base::BehaviorState;
@@ -44,7 +44,7 @@ pub enum ScenarioIntroPhase {
 }
 
 pub struct ScenarioIntro<'a> {
-    pub _scenario_name: String,
+    pub _scenario_type: ScenarioType,
     pub _game_scene_manager: *const GameSceneManager<'a>,
     pub _actor_aru: Option<RcRefCell<Character<'a>>>,
     pub _actor_ewa: Option<RcRefCell<Character<'a>>>,
@@ -77,11 +77,11 @@ pub struct ScenarioIntro<'a> {
 impl<'a> ScenarioIntro<'a> {
     pub fn create_game_scenario(
         game_scene_manager: *const GameSceneManager<'a>,
-        scenario_name: &str,
+        scenario_type: ScenarioType,
         _scenario_create_info: &ScenarioDataCreateInfo,
-    ) -> ScenarioIntro<'a> {
-        ScenarioIntro {
-            _scenario_name: String::from(scenario_name),
+    ) -> RcRefCell<ScenarioIntro<'a>> {
+        newRcRefCell(ScenarioIntro {
+            _scenario_type: scenario_type,
             _game_scene_manager: game_scene_manager,
             _actor_aru: None,
             _actor_ewa: None,
@@ -113,7 +113,7 @@ impl<'a> ScenarioIntro<'a> {
                 _phase_duration: None,
             },
             _story_board_phase: 0,
-        }
+        })
     }
 }
 
@@ -264,6 +264,10 @@ impl<'a> ScenarioIntro<'a> {
 }
 
 impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
+    fn get_scenario_type(&self) -> ScenarioType {
+        self._scenario_type
+    }
+
     fn is_play_scenario_mode(&self) -> bool {
         match self._scenario_track._scenario_phase {
             ScenarioIntroPhase::MoveToTutorialStage |
@@ -467,12 +471,14 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
         }
     }
 
-    fn update_game_scenario(&mut self, game_ui_manager: &mut GameUIManager<'a>, any_key_hold: bool, any_key_pressed: bool, mut delta_time: f64) {
+    fn update_game_scenario(&mut self, any_key_hold: bool, any_key_pressed: bool, mut delta_time: f64) {
         if any_key_hold {
             delta_time *= 5.0;
         }
 
         let game_scene_manager = ptr_as_mut(self._game_scene_manager);
+        let game_ui_manager = ptr_as_mut(game_scene_manager._game_ui_manager);
+
         if TIME_OF_MORNING <= game_scene_manager.get_time_of_day() {
             game_scene_manager.set_time_of_day_speed(1.0);
         }

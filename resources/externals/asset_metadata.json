@@ -8187,16 +8187,6 @@
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/game_data/scenario/intro.blend": [
-        {
-            "asset_type": "GAME_SCENARIO",
-            "asset_path": "intro",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/scenario/intro.blend",
-            "guid": "",
-            "mtime": 1774717848.7043648,
-            "data": {}
-        }
-    ],
     "/mnt/Workspace/StoneAge/resources/externals/game_data/items/meat.blend": [
         {
             "asset_type": "GAME_ITEM",
@@ -8355,16 +8345,6 @@
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/intro_stage.blend": [
-        {
-            "asset_type": "GAME_SCENE",
-            "asset_path": "intro_stage",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/intro_stage.blend",
-            "guid": "",
-            "mtime": 1778685863.2790446,
-            "data": {}
-        }
-    ],
     "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/world_map.blend": [
         {
             "asset_type": "GAME_SCENE",
@@ -8375,13 +8355,63 @@
             "data": {}
         }
     ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/intro_stage.blend": [
+        {
+            "asset_type": "GAME_SCENE",
+            "asset_path": "intro_stage",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/intro_stage.blend",
+            "guid": "",
+            "mtime": 1779027366.127318,
+            "data": {}
+        }
+    ],
     "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/stage_ufo.blend": [
         {
             "asset_type": "GAME_SCENE",
             "asset_path": "stage_ufo",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/stage_ufo.blend",
             "guid": "",
-            "mtime": 1778776804.7899146,
+            "mtime": 1779026545.5669758,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/scenario/resolution.blend": [
+        {
+            "asset_type": "GAME_SCENARIO",
+            "asset_path": "revolution",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/scenario/resolution.blend",
+            "guid": "",
+            "mtime": 1779026537.7024913,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/scenario/day_one.blend": [
+        {
+            "asset_type": "GAME_SCENARIO",
+            "asset_path": "day_one",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/scenario/day_one.blend",
+            "guid": "",
+            "mtime": 1779028029.8827028,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/scenario/ufo.blend": [
+        {
+            "asset_type": "GAME_SCENARIO",
+            "asset_path": "ufo",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/scenario/ufo.blend",
+            "guid": "",
+            "mtime": 1779028017.310827,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/scenario/intro.blend": [
+        {
+            "asset_type": "GAME_SCENARIO",
+            "asset_path": "intro",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/scenario/intro.blend",
+            "guid": "",
+            "mtime": 1779036437.7685928,
             "data": {}
         }
     ]
