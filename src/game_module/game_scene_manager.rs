@@ -385,62 +385,79 @@ impl<'a> GameSceneManager<'a> {
 
             // create player
             for (character_name, character_create_info) in game_scene_data_ref._player.iter() {
-                self._character_manager.create_character(
-                    character_name,
-                    character_create_info,
-                    true,
-                );
+                if let Some(character) = self._character_manager.get_character(character_name) {
+                    character.borrow_mut().initialize_transform(
+                        &character_create_info._position,
+                        &character_create_info._rotation,
+                        &character_create_info._scale
+                    );
+                } else {
+                    self._character_manager.create_character(
+                        character_name,
+                        character_create_info,
+                        true,
+                    );
+                }
                 self._spawn_point = character_create_info._position;
             }
 
             // create npc
             for (character_name, character_create_info) in game_scene_data_ref._characters.iter() {
-                self._character_manager.create_character(
-                    character_name,
-                    character_create_info,
-                    false,
-                );
+                if let Some(character) = self._character_manager.get_character(character_name) {
+                    character.borrow_mut().initialize_transform(
+                        &character_create_info._position,
+                        &character_create_info._rotation,
+                        &character_create_info._scale
+                    );
+                } else {
+                    self._character_manager.create_character(
+                        character_name,
+                        character_create_info,
+                        false,
+                    );
+                }
             }
         }
 
         // scenario data
         for scenario in self._scenarios.iter() {
             let scenario_create_info = self.get_game_resources().get_scenario_data(scenario.borrow().get_scenario_type().get_scenario_data_name()).clone();
-
-            // create items
-            for (_item_data_name, item_create_info) in scenario_create_info.borrow()._items.iter() {
-                self._item_manager.create_item(item_create_info, None);
-            }
-
-            // create props
-            for (prop_name, prop_create_info) in scenario_create_info.borrow()._props.iter() {
-                self._prop_manager.create_prop(prop_name, prop_create_info);
-            }
-
-            // create player
-            for (character_name, character_create_info) in scenario_create_info.borrow()._player.iter() {
-                if let Some(character) = self._character_manager.get_character(character_name) {
-                    character.borrow_mut().initialize_transform(
-                        &character_create_info._position,
-                        &character_create_info._rotation,
-                        &character_create_info._scale
-                    );
-                } else {
-                    self._character_manager.create_character(character_name, character_create_info, true);
+            if self.get_current_game_scene_data_name() == scenario_create_info.borrow()._game_scenes.values().last().as_ref().unwrap()._game_scene_data_name.as_str() {
+                // create items
+                for (_item_data_name, item_create_info) in scenario_create_info.borrow()._items.iter() {
+                    self._item_manager.create_item(item_create_info, None);
                 }
-                self._spawn_point = character_create_info._position;
-            }
 
-            // create npc
-            for (character_name, character_create_info) in scenario_create_info.borrow()._characters.iter() {
-                if let Some(character) = self._character_manager.get_character(character_name) {
-                    character.borrow_mut().initialize_transform(
-                        &character_create_info._position,
-                        &character_create_info._rotation,
-                        &character_create_info._scale
-                    );
-                } else {
-                    self._character_manager.create_character(character_name, character_create_info, false);
+                // create props
+                for (prop_name, prop_create_info) in scenario_create_info.borrow()._props.iter() {
+                    self._prop_manager.create_prop(prop_name, prop_create_info);
+                }
+
+                // create player
+                for (character_name, character_create_info) in scenario_create_info.borrow()._player.iter() {
+                    if let Some(character) = self._character_manager.get_character(character_name) {
+                        character.borrow_mut().initialize_transform(
+                            &character_create_info._position,
+                            &character_create_info._rotation,
+                            &character_create_info._scale
+                        );
+                    } else {
+                        self._character_manager.create_character(character_name, character_create_info, true);
+                    }
+                    self._spawn_point = character_create_info._position;
+                }
+
+                // create npc
+                for (character_name, character_create_info) in scenario_create_info.borrow()._characters.iter() {
+                    if let Some(character) = self._character_manager.get_character(character_name) {
+                        character.borrow_mut().initialize_transform(
+                            &character_create_info._position,
+                            &character_create_info._rotation,
+                            &character_create_info._scale
+                        );
+                    } else {
+                        self._character_manager.create_character(character_name, character_create_info, false);
+                    }
                 }
             }
         }
