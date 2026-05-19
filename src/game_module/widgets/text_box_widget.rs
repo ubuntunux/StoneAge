@@ -161,6 +161,10 @@ impl<'a> TextBoxWidget<'a> {
     pub fn changed_window_size(&mut self, _window_size: &Vector2<i32>) {
     }
 
+    pub fn set_text_box_visible(&mut self, visible: bool) {
+        ptr_as_mut(self._root_widget).get_ui_component_mut().set_visible(visible);
+    }
+
     pub fn has_text_box_item(&self, key: *const c_void) -> bool {
         self._text_box_items.contains_key(&key)
     }

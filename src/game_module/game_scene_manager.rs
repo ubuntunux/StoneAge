@@ -557,6 +557,10 @@ impl<'a> GameSceneManager<'a> {
                 if scenario.borrow().is_play_scenario_mode() {
                     self._is_play_scenario_mode = true;
                 }
+
+                if scenario.borrow().is_end_of_scenario() {
+                    scenario.borrow_mut().destroy_game_scenario();
+                }
             });
             self._scenarios.retain(|scenario| scenario.borrow().is_end_of_scenario() == false)
         }

@@ -103,8 +103,9 @@ impl<'a> QuestItemBase<'a> for QuestItemGatherItem<'a> {
     }
 
     fn destroy(&mut self) {
-        let parent: &*const WidgetDefault = self._layout_widget.as_ref()._parent.as_ref().unwrap();
-        ptr_as_mut(*parent).remove_widget(self._layout_widget.as_ref());
+        if let Some(parent) = self._layout_widget.as_ref()._parent {
+            ptr_as_mut(parent).remove_widget(self._layout_widget.as_ref());
+        }
     }
 
     fn is_completed_quest(&self) -> bool {

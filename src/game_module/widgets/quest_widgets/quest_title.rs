@@ -59,9 +59,11 @@ impl<'a> QuestTitle<'a> {
         for quest_item in self._quest_items.iter() {
             quest_item.borrow_mut().destroy();
         }
+        self._quest_items.clear();
 
-        let parent: &*const WidgetDefault = self._layout_widget.as_ref()._parent.as_ref().unwrap();
-        ptr_as_mut(*parent).remove_widget(self._layout_widget.as_ref());
+        if let Some(parent) = self._layout_widget.as_ref()._parent {
+            ptr_as_mut(parent).remove_widget(self._layout_widget.as_ref());
+        }
     }
 
     pub fn add_quest_item(&mut self, content: QuestCreateInfo) -> QuestItem<'a> {

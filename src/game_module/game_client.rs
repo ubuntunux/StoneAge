@@ -369,6 +369,7 @@ impl<'a> GameClient<'a> {
             }
             GamePhase::WorldMapOpen => {
                 if game_ui_manager.is_done_manual_fade_out() {
+                    game_ui_manager.set_text_box_visible(false);
                     game_ui_manager.set_cross_hair_visible(true);
                     game_ui_manager.set_world_map_visible(true);
                     game_ui_manager.set_auto_fade_inout(true);
@@ -400,6 +401,7 @@ impl<'a> GameClient<'a> {
             }
             GamePhase::WorldMapClose => {
                 if game_ui_manager.is_done_manual_fade_out() || game_ui_manager.is_done_game_image_progress() {
+                    game_ui_manager.set_text_box_visible(true);
                     game_ui_manager.set_cross_hair_visible(false);
                     game_ui_manager.set_world_map_visible(false);
                     game_ui_manager.set_auto_fade_inout(true);

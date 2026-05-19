@@ -87,6 +87,7 @@ pub trait ScenarioBase<'a> {
     fn get_scenario_type(&self) -> ScenarioType;
     fn is_play_scenario_mode(&self) -> bool;
     fn is_end_of_scenario(&self) -> bool;
+    fn destroy_game_scenario(&mut self);
     fn on_close_game_scene(&mut self, game_scene_data_name: &str);
     fn on_open_game_scene(&mut self, game_scene_data_name: &str);
     fn set_scenario_phase(&mut self, next_scenario_phase: &str, phase_duration: Option<f32>);

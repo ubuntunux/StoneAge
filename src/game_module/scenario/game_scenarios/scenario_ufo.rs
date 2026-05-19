@@ -7,7 +7,6 @@ use crate::game_module::scenario::scenario::{ScenarioBase, ScenarioDataCreateInf
 
 #[derive(Clone, PartialEq, Eq, Hash, Display, Debug, Copy, EnumIter, EnumString, EnumCount)]
 pub enum ScenarioUfoPhase {
-    None,
     Begin,
     End,
 }
@@ -35,7 +34,7 @@ impl<'a> ScenarioUfo<'a> {
             _actor_ewa: None,
             _actor_koa: None,
             _scenario_track: ScenarioTrack {
-                _scenario_phase: ScenarioUfoPhase::None,
+                _scenario_phase: ScenarioUfoPhase::Begin,
                 _phase_time: 0.0,
                 _phase_duration: None,
             },
@@ -74,6 +73,9 @@ impl<'a> ScenarioBase<'a> for ScenarioUfo<'a> {
         self._scenario_track._scenario_phase == ScenarioUfoPhase::End
     }
 
+    fn destroy_game_scenario(&mut self) {
+    }
+
     fn on_close_game_scene(&mut self, _game_scene_data_name: &str) {
     }
 
@@ -93,7 +95,6 @@ impl<'a> ScenarioBase<'a> for ScenarioUfo<'a> {
         let _game_scene_manager = ptr_as_mut(self._game_scene_manager);
 
         match self._scenario_track._scenario_phase {
-            ScenarioUfoPhase::None => {}
             ScenarioUfoPhase::Begin => {}
             ScenarioUfoPhase::End => {}
         }
@@ -115,9 +116,6 @@ impl<'a> ScenarioBase<'a> for ScenarioUfo<'a> {
         let _phase_time = self._scenario_track.get_phase_time();
         let _phase_ratio = self._scenario_track.get_phase_ratio();
         match self._scenario_track._scenario_phase {
-            ScenarioUfoPhase::None => {
-                self.set_scenario_phase(ScenarioUfoPhase::Begin.to_string().as_str(), None);
-            }
             ScenarioUfoPhase::Begin => {
             }
             ScenarioUfoPhase::End => {

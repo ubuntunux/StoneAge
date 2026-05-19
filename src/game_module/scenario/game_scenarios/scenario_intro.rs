@@ -29,7 +29,7 @@ pub const STORY_BOARDS: [&str; 2] = ["ui/story_board/story_board_intro_00", "ui/
 
 #[derive(Clone, PartialEq, Eq, Hash, Display, Debug, Copy, EnumIter, EnumString, EnumCount)]
 pub enum ScenarioIntroPhase {
-    None,
+    Begin,
     StoryBoard,
     Morning,
     WakeUp,
@@ -108,7 +108,7 @@ impl<'a> ScenarioIntro<'a> {
             _around_start_rotation: Vector3::new(0.4, 0.0, 0.0),
             _around_end_rotation: Vector3::new(0.35, 0.0, 0.0),
             _scenario_track: ScenarioTrack {
-                _scenario_phase: ScenarioIntroPhase::None,
+                _scenario_phase: ScenarioIntroPhase::Begin,
                 _phase_time: 0.0,
                 _phase_duration: None,
             },
@@ -288,6 +288,12 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
         self._scenario_track._scenario_phase == ScenarioIntroPhase::End
     }
 
+    fn destroy_game_scenario(&mut self) {
+        if let Some(quest) = &self._quest {
+            quest.borrow_mut().destroy();
+        }
+    }
+
     fn on_close_game_scene(&mut self, _game_scene_data_name: &str) {
         let game_scene_manager = ptr_as_ref(self._game_scene_manager);
 
@@ -363,7 +369,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
         let game_scene_manager = ptr_as_mut(self._game_scene_manager);
 
         match self._scenario_track._scenario_phase {
-            ScenarioIntroPhase::None => {}
+            ScenarioIntroPhase::Begin => {}
             ScenarioIntroPhase::StoryBoard => {
                 game_scene_manager.set_time_of_day(TIME_OF_MORNING, 0.0);
 
@@ -447,7 +453,11 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                 })));
 
                 //
-                self.create_move_to_tutorial_stage_text_box(game_scene_manager);
+                if SKIP_SCENARIO {
+                    self.set_scenario_phase(ScenarioIntroPhase::Sleep.to_string().as_str(), None);
+                } else {
+                    self.create_move_to_tutorial_stage_text_box(game_scene_manager);
+                }
             }
             ScenarioIntroPhase::GatheringFood => {
                 self.create_hit_this_tree_text_box(game_scene_manager);
@@ -461,7 +471,9 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
             ScenarioIntroPhase::Sleep => {
                 self.create_take_a_sleep_text_box(game_scene_manager);
             }
-            ScenarioIntroPhase::End => {}
+            ScenarioIntroPhase::End => {
+                //game_scene_manager.open_scenario_data(ScenarioType::ScenarioUfo);
+            }
         }
     }
 
@@ -486,14 +498,14 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
         let _phase_time = self._scenario_track.get_phase_time();
         let phase_ratio = self._scenario_track.get_phase_ratio();
         match self._scenario_track._scenario_phase {
-            ScenarioIntroPhase::None => {
+            ScenarioIntroPhase::Begin => {
                 self.set_scenario_phase(ScenarioIntroPhase::StoryBoard.to_string().as_str(), None);
             }
             ScenarioIntroPhase::StoryBoard => {
                 if SKIP_SCENARIO {
                     game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, INTRO_FADE_TIME);
                     game_ui_manager.set_auto_fade_inout(true);
-                    self.set_scenario_phase(ScenarioIntroPhase::IamHungry.to_string().as_str(), Some(1.0));
+                    self.set_scenario_phase(ScenarioIntroPhase::MoveToTutorialStage.to_string().as_str(), None);
                 } else {
                     let story_board_phase = self.get_story_board_phase();
                     if game_ui_manager.is_done_game_image_progress() && any_key_pressed {
@@ -625,20 +637,24 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                 }
             }
             ScenarioIntroPhase::Sleep => {
+                let mut completed_scenario = false;
+
                 if game_scene_manager.get_current_game_scene_data_name() == Stages::Home.get_stage_data_name() {
-                    if self._sub_quest_sleep.as_ref().unwrap().borrow().is_completed_quest() == false {
+                    if SKIP_SCENARIO || self._sub_quest_sleep.as_ref().unwrap().borrow().is_completed_quest() == false {
                         if self._actor_aru.as_ref().unwrap().borrow().is_action(ActionAnimationState::LayingDown) ||
                             self._actor_aru.as_ref().unwrap().borrow().is_action(ActionAnimationState::Sleep) {
                             self._sub_quest_sleep.as_ref().unwrap().borrow_mut().set_completed_quest();
                             self.remove_take_a_sleep_text_box(game_scene_manager);
+                            completed_scenario = true;
                         }
                     }
 
                     if let Some(quest) = &self._quest {
-                        if quest.borrow().is_completed_quest() {
+                        if quest.borrow().is_completed_quest() || completed_scenario {
                             self.set_scenario_phase(ScenarioIntroPhase::End.to_string().as_str(), None);
                         }
                     };
+
                 }
             }
             ScenarioIntroPhase::End => {
