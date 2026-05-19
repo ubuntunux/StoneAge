@@ -472,7 +472,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                 self.create_take_a_sleep_text_box(game_scene_manager);
             }
             ScenarioIntroPhase::End => {
-                //game_scene_manager.open_scenario_data(ScenarioType::ScenarioUfo);
+                game_scene_manager.reservation_open_scenario(ScenarioType::ScenarioUfo);
             }
         }
     }

@@ -83,6 +83,16 @@ pub struct ScenarioDataCreateInfo {
     pub _props: PropCreateInfoMap,
     pub _game_scenes: GameSceneCreateInfoMap,
 }
+
+impl ScenarioDataCreateInfo {
+    pub fn get_game_scene_data_name(&self) -> String {
+        if self._game_scenes.is_empty() {
+            return String::from("");
+        }
+        self._game_scenes.values().last().as_ref().unwrap()._game_scene_data_name.clone()
+    }
+}
+
 pub trait ScenarioBase<'a> {
     fn get_scenario_type(&self) -> ScenarioType;
     fn is_play_scenario_mode(&self) -> bool;

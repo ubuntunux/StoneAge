@@ -17,7 +17,7 @@ use crate::game_module::actors::props::{PropCreateInfo, PropManager};
 use crate::game_module::game_constants::{GameViewMode, GAME_VIEW_MODE, TEMPERATURE_MAX, TEMPERATURE_MIN, TIME_OF_DAWN, TIME_OF_DAY_SPEED, TIME_OF_MORNING};
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_ui_manager::{GameUIManager};
-use crate::game_module::scenario::scenario::{create_scenario, ScenarioBase, ScenarioType};
+use crate::game_module::scenario::scenario::{create_scenario, ScenarioBase, ScenarioDataCreateInfo, ScenarioType};
 use crate::game_module::game_client::GameClient;
 
 pub type CharacterCreateInfoMap = HashMap<String, CharacterCreateInfo>;
@@ -106,6 +106,7 @@ pub struct GameSceneManager<'a> {
     pub _character_manager: Box<CharacterManager<'a>>,
     pub _item_manager: Box<ItemManager<'a>>,
     pub _prop_manager: Box<PropManager<'a>>,
+    pub _reservation_scenarios: Vec<ScenarioType>,
     pub _scenarios: ScenarioList<'a>,
     pub _is_play_scenario_mode: bool,
     pub _current_game_scene_data_name: String,
@@ -192,6 +193,7 @@ impl<'a> GameSceneManager<'a> {
             _character_manager: CharacterManager::create_character_manager(),
             _item_manager: ItemManager::create_item_manager(),
             _prop_manager: PropManager::create_prop_manager(),
+            _reservation_scenarios: Default::default(),
             _scenarios: Default::default(),
             _is_play_scenario_mode: false,
             _ambient_sound: None,
@@ -318,6 +320,10 @@ impl<'a> GameSceneManager<'a> {
     }
 
     // scenario
+    pub fn reservation_open_scenario(&mut self, scenario_type: ScenarioType) {
+        self._reservation_scenarios.push(scenario_type)
+    }
+
     pub fn open_scenario_data(&mut self, scenario_type: ScenarioType) {
         log::info!("open_scenario_data: {:?}", scenario_type);
         let game_resources = ptr_as_mut(self._game_resources);
@@ -367,98 +373,106 @@ impl<'a> GameSceneManager<'a> {
         self._current_game_scene_data_name = String::new();
     }
 
+    pub fn spawn_game_scene_objects(&mut self, game_scene_data: &RcRefCell<GameSceneDataCreateInfo>) {
+        let game_scene_data_ref = game_scene_data.borrow();
+
+        // create items
+        for (_item_data_name, item_create_info) in game_scene_data_ref._items.iter() {
+            self._item_manager.create_item(item_create_info, None);
+        }
+
+        // create props
+        for (prop_name, prop_create_info) in game_scene_data_ref._props.iter() {
+            self._prop_manager.create_prop(prop_name, prop_create_info);
+        }
+
+        // create player
+        for (character_name, character_create_info) in game_scene_data_ref._player.iter() {
+            if let Some(character) = self._character_manager.get_character(character_name) {
+                character.borrow_mut().initialize_transform(
+                    &character_create_info._position,
+                    &character_create_info._rotation,
+                    &character_create_info._scale
+                );
+            } else {
+                self._character_manager.create_character(
+                    character_name,
+                    character_create_info,
+                    true,
+                );
+            }
+            self._spawn_point = character_create_info._position;
+        }
+
+        // create npc
+        for (character_name, character_create_info) in game_scene_data_ref._characters.iter() {
+            if let Some(character) = self._character_manager.get_character(character_name) {
+                character.borrow_mut().initialize_transform(
+                    &character_create_info._position,
+                    &character_create_info._rotation,
+                    &character_create_info._scale
+                );
+            } else {
+                self._character_manager.create_character(
+                    character_name,
+                    character_create_info,
+                    false,
+                );
+            }
+        }
+    }
+
+    pub fn spawn_game_scenario_objects(&mut self, scenario_create_info: &RcRefCell<ScenarioDataCreateInfo>) {
+        // create items
+        for (_item_data_name, item_create_info) in scenario_create_info.borrow()._items.iter() {
+            self._item_manager.create_item(item_create_info, None);
+        }
+
+        // create props
+        for (prop_name, prop_create_info) in scenario_create_info.borrow()._props.iter() {
+            self._prop_manager.create_prop(prop_name, prop_create_info);
+        }
+
+        // create player
+        for (character_name, character_create_info) in scenario_create_info.borrow()._player.iter() {
+            if let Some(character) = self._character_manager.get_character(character_name) {
+                character.borrow_mut().initialize_transform(
+                    &character_create_info._position,
+                    &character_create_info._rotation,
+                    &character_create_info._scale
+                );
+            } else {
+                self._character_manager.create_character(character_name, character_create_info, true);
+            }
+            self._spawn_point = character_create_info._position;
+        }
+
+        // create npc
+        for (character_name, character_create_info) in scenario_create_info.borrow()._characters.iter() {
+            if let Some(character) = self._character_manager.get_character(character_name) {
+                character.borrow_mut().initialize_transform(
+                    &character_create_info._position,
+                    &character_create_info._rotation,
+                    &character_create_info._scale
+                );
+            } else {
+                self._character_manager.create_character(character_name, character_create_info, false);
+            }
+        }
+    }
+
     pub fn spawn_game_object_data(&mut self) {
         assert!(self.get_scene_manager().is_load_complete());
 
         if let Some(game_scene_data) = self._current_game_scene_data.as_ref() {
-            let game_scene_data_ref = game_scene_data.borrow();
-
-            // create items
-            for (_item_data_name, item_create_info) in game_scene_data_ref._items.iter() {
-                self._item_manager.create_item(item_create_info, None);
-            }
-
-            // create props
-            for (prop_name, prop_create_info) in game_scene_data_ref._props.iter() {
-                self._prop_manager.create_prop(prop_name, prop_create_info);
-            }
-
-            // create player
-            for (character_name, character_create_info) in game_scene_data_ref._player.iter() {
-                if let Some(character) = self._character_manager.get_character(character_name) {
-                    character.borrow_mut().initialize_transform(
-                        &character_create_info._position,
-                        &character_create_info._rotation,
-                        &character_create_info._scale
-                    );
-                } else {
-                    self._character_manager.create_character(
-                        character_name,
-                        character_create_info,
-                        true,
-                    );
-                }
-                self._spawn_point = character_create_info._position;
-            }
-
-            // create npc
-            for (character_name, character_create_info) in game_scene_data_ref._characters.iter() {
-                if let Some(character) = self._character_manager.get_character(character_name) {
-                    character.borrow_mut().initialize_transform(
-                        &character_create_info._position,
-                        &character_create_info._rotation,
-                        &character_create_info._scale
-                    );
-                } else {
-                    self._character_manager.create_character(
-                        character_name,
-                        character_create_info,
-                        false,
-                    );
-                }
-            }
+            ptr_as_mut(self).spawn_game_scene_objects(game_scene_data);
         }
 
         // scenario data
         for scenario in self._scenarios.iter() {
             let scenario_create_info = self.get_game_resources().get_scenario_data(scenario.borrow().get_scenario_type().get_scenario_data_name()).clone();
             if self.get_current_game_scene_data_name() == scenario_create_info.borrow()._game_scenes.values().last().as_ref().unwrap()._game_scene_data_name.as_str() {
-                // create items
-                for (_item_data_name, item_create_info) in scenario_create_info.borrow()._items.iter() {
-                    self._item_manager.create_item(item_create_info, None);
-                }
-
-                // create props
-                for (prop_name, prop_create_info) in scenario_create_info.borrow()._props.iter() {
-                    self._prop_manager.create_prop(prop_name, prop_create_info);
-                }
-
-                // create player
-                for (character_name, character_create_info) in scenario_create_info.borrow()._player.iter() {
-                    if let Some(character) = self._character_manager.get_character(character_name) {
-                        character.borrow_mut().initialize_transform(
-                            &character_create_info._position,
-                            &character_create_info._rotation,
-                            &character_create_info._scale
-                        );
-                    } else {
-                        self._character_manager.create_character(character_name, character_create_info, true);
-                    }
-                    self._spawn_point = character_create_info._position;
-                }
-
-                // create npc
-                for (character_name, character_create_info) in scenario_create_info.borrow()._characters.iter() {
-                    if let Some(character) = self._character_manager.get_character(character_name) {
-                        character.borrow_mut().initialize_transform(
-                            &character_create_info._position,
-                            &character_create_info._rotation,
-                            &character_create_info._scale
-                        );
-                    } else {
-                        self._character_manager.create_character(character_name, character_create_info, false);
-                    }
-                }
+                ptr_as_mut(self).spawn_game_scenario_objects(&scenario_create_info);
             }
         }
     }
@@ -563,6 +577,19 @@ impl<'a> GameSceneManager<'a> {
                 }
             });
             self._scenarios.retain(|scenario| scenario.borrow().is_end_of_scenario() == false)
+        }
+
+        if self._reservation_scenarios.is_empty() == false {
+            for scenario_type in self._reservation_scenarios.clone().iter() {
+                let scenario_create_info = self.get_game_resources().get_scenario_data(scenario_type.get_scenario_data_name()).clone();
+                let is_same_game_scene = self.get_current_game_scene_data_name() == scenario_create_info.borrow().get_game_scene_data_name().as_str();
+
+                self.open_scenario_data(*scenario_type);
+
+                if is_same_game_scene {
+                    ptr_as_mut(self).spawn_game_scenario_objects(&scenario_create_info);
+                }
+            }
         }
     }
 

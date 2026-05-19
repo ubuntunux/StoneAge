@@ -61,12 +61,7 @@ impl<'a> ScenarioBase<'a> for ScenarioUfo<'a> {
     }
 
     fn is_play_scenario_mode(&self) -> bool {
-        match self._scenario_track._scenario_phase {
-            ScenarioUfoPhase::End => {
-                false
-            }
-            _ => true
-        }
+        false
     }
 
     fn is_end_of_scenario(&self) -> bool {
