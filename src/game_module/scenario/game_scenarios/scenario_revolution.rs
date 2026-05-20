@@ -6,19 +6,18 @@ use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::scenario::scenario::{ScenarioBase, ScenarioDataCreateInfo, ScenarioTrack, ScenarioType};
 
 #[derive(Clone, PartialEq, Eq, Hash, Display, Debug, Copy, EnumIter, EnumString, EnumCount)]
-pub enum ScenarioRevolutionPhase {
+pub enum ScenarioPhase {
     Begin,
     End,
 }
 
 pub struct ScenarioRevolution<'a> {
-    pub _scenario_type: ScenarioType,
-    pub _game_scene_manager: *const GameSceneManager<'a>,
-    pub _actor_aru: Option<RcRefCell<Character<'a>>>,
-    pub _actor_ewa: Option<RcRefCell<Character<'a>>>,
-    pub _actor_koa: Option<RcRefCell<Character<'a>>>,
-    pub _scenario_track: ScenarioTrack<ScenarioRevolutionPhase>,
-    pub _scenario_phase: usize,
+    _scenario_type: ScenarioType,
+    _game_scene_manager: *const GameSceneManager<'a>,
+    _actor_aru: Option<RcRefCell<Character<'a>>>,
+    _actor_ewa: Option<RcRefCell<Character<'a>>>,
+    _actor_koa: Option<RcRefCell<Character<'a>>>,
+    _scenario_track: ScenarioTrack<ScenarioPhase>
 }
 
 impl<'a> ScenarioRevolution<'a> {
@@ -34,24 +33,11 @@ impl<'a> ScenarioRevolution<'a> {
             _actor_ewa: None,
             _actor_koa: None,
             _scenario_track: ScenarioTrack {
-                _scenario_phase: ScenarioRevolutionPhase::Begin,
+                _scenario_phase: ScenarioPhase::Begin,
                 _phase_time: 0.0,
                 _phase_duration: None,
-            },
-            _scenario_phase: 0,
+            }
         })
-    }
-}
-
-impl<'a> ScenarioRevolution<'a> {
-    pub fn get_scenario_phase(&self) -> usize {
-        self._scenario_phase
-    }
-    pub fn clear_scenario_phase(&mut self) {
-        self._scenario_phase = 0;
-    }
-    pub fn next_scenario_phase(&mut self) {
-        self._scenario_phase += 1;
     }
 }
 
@@ -61,11 +47,14 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
     }
 
     fn is_play_scenario_mode(&self) -> bool {
-        false
+        match self._scenario_track._scenario_phase {
+            ScenarioPhase::Begin => true,
+            _ => false
+        }
     }
 
     fn is_end_of_scenario(&self) -> bool {
-        self._scenario_track._scenario_phase == ScenarioRevolutionPhase::End
+        self._scenario_track._scenario_phase == ScenarioPhase::End
     }
 
     fn destroy_game_scenario(&mut self) {
@@ -78,7 +67,7 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
     }
 
     fn set_scenario_phase(&mut self, next_scenario_phase: &str, phase_duration: Option<f32>) {
-        let next_scenario_phase = ScenarioRevolutionPhase::from_str(next_scenario_phase).expect("scenario error");
+        let next_scenario_phase = ScenarioPhase::from_str(next_scenario_phase).expect("scenario error");
         if next_scenario_phase != self._scenario_track._scenario_phase {
             self.update_game_scenario_end();
             self._scenario_track.set_scenario_phase(next_scenario_phase, phase_duration);
@@ -90,8 +79,8 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
         let _game_scene_manager = ptr_as_mut(self._game_scene_manager);
 
         match self._scenario_track._scenario_phase {
-            ScenarioRevolutionPhase::Begin => {}
-            ScenarioRevolutionPhase::End => {}
+            ScenarioPhase::Begin => {}
+            ScenarioPhase::End => {}
         }
     }
 
@@ -111,9 +100,9 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
         let _phase_time = self._scenario_track.get_phase_time();
         let _phase_ratio = self._scenario_track.get_phase_ratio();
         match self._scenario_track._scenario_phase {
-            ScenarioRevolutionPhase::Begin => {
+            ScenarioPhase::Begin => {
             }
-            ScenarioRevolutionPhase::End => {
+            ScenarioPhase::End => {
             }
         }
 

@@ -324,7 +324,7 @@ impl<'a> GameSceneManager<'a> {
         self._reservation_scenarios.push(scenario_type)
     }
 
-    pub fn open_scenario_data(&mut self, scenario_type: ScenarioType) {
+    pub fn open_scenario_data(&mut self, scenario_type: ScenarioType) -> &RcRefCell<dyn ScenarioBase<'a> + 'a> {
         log::info!("open_scenario_data: {:?}", scenario_type);
         let game_resources = ptr_as_mut(self._game_resources);
         let scenario_data_create_info_refcell = game_resources.get_scenario_data(scenario_type.get_scenario_data_name());
@@ -336,6 +336,8 @@ impl<'a> GameSceneManager<'a> {
         if self.get_current_game_scene_data_name() != scene_data_name {
             self.open_game_scene_data(scene_data_name);
         }
+
+        self._scenarios.last().unwrap()
     }
 
     // game scene
@@ -584,10 +586,11 @@ impl<'a> GameSceneManager<'a> {
                 let scenario_create_info = self.get_game_resources().get_scenario_data(scenario_type.get_scenario_data_name()).clone();
                 let is_same_game_scene = self.get_current_game_scene_data_name() == scenario_create_info.borrow().get_game_scene_data_name().as_str();
 
-                self.open_scenario_data(*scenario_type);
+                let scenario = self.open_scenario_data(*scenario_type).clone();
 
                 if is_same_game_scene {
                     ptr_as_mut(self).spawn_game_scenario_objects(&scenario_create_info);
+                    scenario.borrow_mut().on_open_game_scene(self._current_game_scene_data_name.as_str());
                 }
             }
             self._reservation_scenarios.clear();

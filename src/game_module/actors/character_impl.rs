@@ -21,6 +21,7 @@ use crate::game_module::game_constants::*;
 use crate::game_module::actors::items::{ItemDataType, ItemManager};
 use crate::game_module::actors::interaction_object::InteractionObject;
 use crate::game_module::actors::items::{Item};
+use crate::game_module::game_client::GamePhase;
 
 impl CharacterAnimationState {
     pub fn is_attack_event(&self) -> bool {
@@ -1272,7 +1273,7 @@ impl<'a> Character<'a> {
             }
             ActionAnimationState::LayingDown => {
                 if animation_play_info._is_animation_end {
-                    if self._is_player {
+                    if self._is_player && self.get_character_manager().get_game_client().is_game_phase(GamePhase::GamePlay) {
                         self.get_character_manager().get_game_client_mut().set_need_sleep_mode(true);
                     }
                     self.set_action_sleep();

@@ -6,6 +6,7 @@ use rust_engine_3d::scene::material_instance::MaterialInstanceData;
 use rust_engine_3d::scene::ui::{HorizontalAlign, Orientation, PosHintX, PosHintY, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault};
 use rust_engine_3d::utilities::system::{ptr_as_mut, RcRefCell};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
+use crate::game_module::actors::character_data::ActionAnimationState;
 use crate::game_module::actors::interaction_object::InteractionObject;
 use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::game_controller::{GameController, KeyBindingType};
@@ -499,7 +500,7 @@ impl<'a> ControllerHelpWidget<'a> {
             if player.is_in_interaction_range() {
                 let interaction_object = player.get_nearest_interaction_object();
                 (matched_key_binding_type, interaction_name) = match interaction_object {
-                    InteractionObject::PropBed(_) => (KeyBindingType::Interaction, String::from("Sleep")),
+                    InteractionObject::PropBed(_) => (KeyBindingType::Interaction, String::from("Wrap up the day")),
                     InteractionObject::PropPickup(prop) => (KeyBindingType::Interaction, format!("Pick up a {}", prop.borrow()._prop_data.borrow()._name.as_str())),
                     InteractionObject::PropMonolith(_) => (KeyBindingType::Interaction, String::from("Open Toolbox")),
                     InteractionObject::PropTable(_) => (KeyBindingType::Interaction, String::from("Sit Down")),
@@ -519,9 +520,17 @@ impl<'a> ControllerHelpWidget<'a> {
 
         const INTERACTION_WIDGETS: [KeyBindingType; 3]= [KeyBindingType::Interaction, KeyBindingType::EnterGate, KeyBindingType::Gathering];
         for key_binding_type in INTERACTION_WIDGETS.iter() {
+            let mut enable_interaction = true;
+            if character_manager.is_valid_player() {
+                let player = character_manager.get_player().borrow();
+                if player.is_alive() == false || player.is_action(ActionAnimationState::Sleep) || player.is_action(ActionAnimationState::LayingDown) || player.is_action(ActionAnimationState::WakeUp) {
+                    enable_interaction = false;
+                }
+            }
+
             let interaction_key_binding_widget = self._key_binding_widget_map.get(&key_binding_type).unwrap();
             let interaction_widget = ptr_as_mut(interaction_key_binding_widget._layout_widget);
-            if *key_binding_type == matched_key_binding_type {
+            if enable_interaction && *key_binding_type == matched_key_binding_type {
                 let player = character_manager.get_player().borrow();
                 let interaction_object = player.get_nearest_interaction_object();
                 let position = interaction_object.get_position();

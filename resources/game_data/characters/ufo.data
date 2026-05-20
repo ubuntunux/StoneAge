@@ -27,8 +27,8 @@
         "_power_attack_event_time": 1.0,
         "_power_attack_range": 1.0,
         "_roll_speed": 4.5,
-        "_run_speed": 3.5,
-        "_walk_speed": 2.0
+        "_run_speed": 10.0,
+        "_walk_speed": 10.0
     },
     "_character_type": "Ufo",
     "_model_data_name": "characters/ufo",
