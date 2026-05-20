@@ -590,6 +590,7 @@ impl<'a> GameSceneManager<'a> {
                     ptr_as_mut(self).spawn_game_scenario_objects(&scenario_create_info);
                 }
             }
+            self._reservation_scenarios.clear();
         }
     }
 
