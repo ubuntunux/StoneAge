@@ -41,5 +41,13 @@
     },
     "_items": {},
     "_player": {},
-    "_props": {}
+    "_props": {},
+    "_scene": {
+        "_cameras": {},
+        "_directional_lights": {},
+        "_effects": {},
+        "_point_lights": {},
+        "_skeletal_objects": {},
+        "_static_objects": {}
+    }
 }

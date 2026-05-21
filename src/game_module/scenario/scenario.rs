@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::hash::Hash;
 use strum_macros::{Display, EnumString};
+use rust_engine_3d::scene::scene_manager::SceneDataCreateInfo;
 use crate::game_module::scenario::game_scenarios::scenario_day_one::ScenarioDayOne;
 use crate::game_module::scenario::game_scenarios::scenario_intro::ScenarioIntro;
 use crate::game_module::scenario::game_scenarios::scenario_revolution::ScenarioRevolution;
@@ -82,6 +83,7 @@ pub struct ScenarioDataCreateInfo {
     pub _player: CharacterCreateInfoMap,
     pub _props: PropCreateInfoMap,
     pub _game_scenes: GameSceneCreateInfoMap,
+    pub _scene: SceneDataCreateInfo,
 }
 
 impl ScenarioDataCreateInfo {

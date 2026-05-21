@@ -99,9 +99,7 @@ impl<'a> ScenarioBase<'a> for ScenarioUfo<'a> {
                 main_camera._transform_object.set_rotation(&Vector3::new(0.76, 0.33, 0.0));
             }
             ScenarioPhase::End => {
-                self._actor_aru.as_ref().unwrap().borrow_mut().set_action_wake_up();
-                self._actor_ewa.as_ref().unwrap().borrow_mut().set_action_wake_up();
-                self._actor_koa.as_ref().unwrap().borrow_mut().set_action_wake_up();
+                game_scene_manager.reservation_open_scenario(ScenarioType::ScenarioRevolution);
             }
             _ => {}
         }

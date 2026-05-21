@@ -356,8 +356,6 @@ impl<'a> GameSceneManager<'a> {
 
             // load scene
             scene_manager.create_scene_data(&game_scene_data_ref._scene);
-
-            scene_manager.set_start_capture_height_map(true);
         }
 
         self.set_game_scene_state(GameSceneState::Loading);
@@ -425,6 +423,14 @@ impl<'a> GameSceneManager<'a> {
     }
 
     pub fn spawn_game_scenario_objects(&mut self, scenario_create_info: &RcRefCell<ScenarioDataCreateInfo>) {
+        // cameras
+        let main_camera = self.get_scene_manager().get_main_camera_mut();
+        for (_camera_name, camera_create_info) in scenario_create_info.borrow()._scene._cameras.iter() {
+            main_camera._transform_object.set_position(&camera_create_info.position);
+            main_camera._transform_object.set_rotation(&camera_create_info.rotation);
+            main_camera._transform_object.update_transform_object();
+        }
+
         // create items
         for (_item_data_name, item_create_info) in scenario_create_info.borrow()._items.iter() {
             self._item_manager.create_item(item_create_info, None);

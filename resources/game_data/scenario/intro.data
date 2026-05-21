@@ -78,5 +78,26 @@
             ]
         }
     },
-    "_props": {}
+    "_props": {},
+    "_scene": {
+        "_cameras": {
+            "Camera": {
+                "position": [
+                    22.23931121826172,
+                    5.083066463470459,
+                    3.3626582622528076
+                ],
+                "rotation": [
+                    0.20152302185562654,
+                    -0.38743969798088074,
+                    0.0
+                ]
+            }
+        },
+        "_directional_lights": {},
+        "_effects": {},
+        "_point_lights": {},
+        "_skeletal_objects": {},
+        "_static_objects": {}
+    }
 }
