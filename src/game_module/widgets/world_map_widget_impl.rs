@@ -66,9 +66,10 @@ impl<'a> WorldMapBridge<'a> {
 }
 
 impl<'a> WorldMapStage<'a> {
-    pub fn callback_touch_down(_ui_component: &UIComponentInstance<'a>, _touched_pos: &Vector2<f32>, _touched_pos_delta: &Vector2<f32>) -> bool {
-        if _ui_component.get_user_data().is_null() == false {
-            let world_map_stage = ptr_as_ref(_ui_component.get_user_data() as *const WorldMapStage<'a>);
+    pub fn callback_touch_down(ui_component: &UIComponentInstance<'a>, _touched_pos: &Vector2<f32>, _touched_pos_delta: &Vector2<f32>) -> bool {
+        log::info!("visible: {}, opacity: {}, renderable: {}", ui_component.get_visible(), ui_component.get_opacity(), ui_component.get_renderable());
+        if ui_component.get_user_data().is_null() == false {
+            let world_map_stage = ptr_as_ref(ui_component.get_user_data() as *const WorldMapStage<'a>);
             world_map_stage.get_world_map_widget_mut().set_selected_world_map_stage(&world_map_stage.get_stage_data_name());
         }
         true
