@@ -70,7 +70,7 @@ impl<'a> CharacterController<'a> {
 
     pub fn initialize_controller(
         &mut self,
-        character_data: &CharacterData,
+        _character_data: &CharacterData,
         position: &Vector3<f32>,
         rotation: &Vector3<f32>,
         scale: &Vector3<f32>,
@@ -94,8 +94,11 @@ impl<'a> CharacterController<'a> {
         self._is_ground = true;
         self._is_blocked = false;
         self._is_cliff = false;
-        self._is_flying_mode = character_data.can_fly();
+        self._is_flying_mode = false;
         self._interaction_objects.clear();
+    }
+    pub fn set_flying_mode(&mut self, is_flying_mode: bool) {
+        self._is_flying_mode = is_flying_mode
     }
     pub fn is_in_roll_delay(&self) -> bool {
         0.0 < self._roll_delay
@@ -251,7 +254,7 @@ impl<'a> CharacterController<'a> {
         actor_collision: &CollisionData,
         delta_time: f32,
     ) {
-        if self._is_flying_mode {
+        if self._is_flying_mode || character_data.can_fly() {
             self.update_fly_controller(
                 owner,
                 scene_manager,

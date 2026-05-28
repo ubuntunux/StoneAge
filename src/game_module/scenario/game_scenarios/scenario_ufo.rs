@@ -1,8 +1,10 @@
 use std::str::FromStr;
 use nalgebra::Vector3;
 use strum_macros::{Display, EnumCount, EnumIter, EnumString};
+use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
 use crate::game_module::actors::character::{Character};
+use crate::game_module::game_constants::{MATERIAL_UI_NONE, STORY_BOARD_FADE_TIME};
 use crate::game_module::game_scene_manager::{GameSceneManager, Stages};
 use crate::game_module::scenario::scenario::{ScenarioBase, ScenarioDataCreateInfo, ScenarioTrack, ScenarioType};
 
@@ -11,6 +13,7 @@ enum ScenarioPhase {
     Begin,
     AppearUfo,
     UfoLongShot,
+    BeAbducted,
     End,
 }
 
@@ -43,6 +46,39 @@ impl<'a> ScenarioUfo<'a> {
                 _phase_duration: None,
             }
         })
+    }
+
+    pub fn update_ufo_movement(&mut self) -> bool {
+        let actor = self._actor_ufo.as_ref().unwrap();
+        let target = self._actor_koa.as_ref().unwrap();
+        let to_target = target.borrow().get_position() - actor.borrow().get_position();
+        if math::make_vector_xz(&to_target).magnitude_squared() < 1.0 {
+            actor.borrow_mut().set_move_idle();
+            true
+        } else {
+            actor.borrow_mut().set_move(&to_target.normalize());
+            false
+        }
+    }
+
+    pub fn update_be_abducted_actor(&mut self, actor: RcRefCell<Character>, delta_time: f64) -> bool {
+        let target = self._actor_ufo.as_ref().unwrap();
+        let to_target = target.borrow().get_position() - actor.borrow().get_position();
+        if 1.0 < to_target.magnitude_squared() {
+            let mut pos = actor.borrow().get_position().clone();
+            let speed = 3.0f32;
+            pos += to_target.normalize() * speed * delta_time as f32;
+            actor.borrow_mut().set_position(&pos);
+            return false;
+        }
+        true
+    }
+
+    pub fn update_be_abducted(&mut self, delta_time: f64) -> bool {
+        let arrived_aru = self.update_be_abducted_actor(self._actor_aru.as_ref().unwrap().clone(), delta_time);
+        let arrived_ewa = self.update_be_abducted_actor(self._actor_ewa.as_ref().unwrap().clone(), delta_time);
+        let arrived_koa = self.update_be_abducted_actor(self._actor_koa.as_ref().unwrap().clone(), delta_time);
+        arrived_aru && arrived_ewa && arrived_koa
     }
 }
 
@@ -86,6 +122,7 @@ impl<'a> ScenarioBase<'a> for ScenarioUfo<'a> {
 
     fn update_game_scenario_begin(&mut self) {
         let game_scene_manager = ptr_as_mut(self._game_scene_manager);
+        let game_ui_manager = game_scene_manager.get_game_ui_manager_mut();
 
         match self._scenario_track._scenario_phase {
             ScenarioPhase::UfoLongShot => {
@@ -93,7 +130,13 @@ impl<'a> ScenarioBase<'a> for ScenarioUfo<'a> {
                 main_camera._transform_object.set_position(&Vector3::new(13.48, 26.56, -5.02));
                 main_camera._transform_object.set_rotation(&Vector3::new(0.76, 0.33, 0.0));
             }
+            ScenarioPhase::BeAbducted => {
+                self._actor_aru.as_ref().unwrap().borrow_mut()._controller.set_flying_mode(true);
+                self._actor_ewa.as_ref().unwrap().borrow_mut()._controller.set_flying_mode(true);
+                self._actor_koa.as_ref().unwrap().borrow_mut()._controller.set_flying_mode(true);
+            }
             ScenarioPhase::End => {
+                game_ui_manager.set_auto_fade_inout(true);
                 game_scene_manager.reservation_open_scenario(ScenarioType::ScenarioRevolution);
             }
             _ => {}
@@ -111,7 +154,8 @@ impl<'a> ScenarioBase<'a> for ScenarioUfo<'a> {
             delta_time *= 5.0;
         }
 
-        let _game_scene_manager = ptr_as_mut(self._game_scene_manager);
+        let game_scene_manager = ptr_as_mut(self._game_scene_manager);
+        let game_ui_manager = game_scene_manager.get_game_ui_manager_mut();
 
         let _phase_time = self._scenario_track.get_phase_time();
         let phase_ratio = self._scenario_track.get_phase_ratio();
@@ -120,20 +164,28 @@ impl<'a> ScenarioBase<'a> for ScenarioUfo<'a> {
                 self.set_scenario_phase(ScenarioPhase::AppearUfo.to_string().as_str(), Some(6.0));
             },
             ScenarioPhase::AppearUfo => {
-                let actor = self._actor_ufo.as_ref().unwrap();
-                let target = self._actor_aru.as_ref().unwrap();
-                let direction = (target.borrow().get_position() - actor.borrow().get_position()).normalize();
-                actor.borrow_mut().set_move(&direction);
+                self.update_ufo_movement();
                 if 1.0 <= phase_ratio {
-                    self.set_scenario_phase(ScenarioPhase::UfoLongShot.to_string().as_str(), Some(5.0));
+                    self.set_scenario_phase(ScenarioPhase::UfoLongShot.to_string().as_str(), None);
                 }
             },
             ScenarioPhase::UfoLongShot => {
-                if 1.0 <= phase_ratio {
-                    self.set_scenario_phase(ScenarioPhase::End.to_string().as_str(), None);
+                let arrived = self.update_ufo_movement();
+                if arrived {
+                    self.set_scenario_phase(ScenarioPhase::BeAbducted.to_string().as_str(), None);
+                }
+            },
+            ScenarioPhase::BeAbducted => {
+                let complete = self.update_be_abducted(delta_time);
+                if complete {
+                    if game_ui_manager.is_done_manual_fade_out() {
+                        self.set_scenario_phase(ScenarioPhase::End.to_string().as_str(), None);
+                    } else {
+                        game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, STORY_BOARD_FADE_TIME);
+                    }
                 }
             }
-            _ => ()
+            ScenarioPhase::End => {}
         }
 
         self._scenario_track.update_scenario_track(delta_time as f32);

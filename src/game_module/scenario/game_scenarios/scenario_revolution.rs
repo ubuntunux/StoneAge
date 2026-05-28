@@ -1,13 +1,15 @@
 use std::str::FromStr;
 use strum_macros::{Display, EnumCount, EnumIter, EnumString};
-use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, RcRefCell};
+use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
 use crate::game_module::actors::character::{Character};
-use crate::game_module::game_scene_manager::GameSceneManager;
+use crate::game_module::behavior::behavior_base::BehaviorState;
+use crate::game_module::game_scene_manager::{GameSceneManager};
 use crate::game_module::scenario::scenario::{ScenarioBase, ScenarioDataCreateInfo, ScenarioTrack, ScenarioType};
 
 #[derive(Clone, PartialEq, Eq, Hash, Display, Debug, Copy, EnumIter, EnumString, EnumCount)]
 pub enum ScenarioPhase {
     Begin,
+    Loop,
     End,
 }
 
@@ -48,7 +50,8 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
 
     fn is_play_scenario_mode(&self) -> bool {
         match self._scenario_track._scenario_phase {
-            ScenarioPhase::Begin => true,
+            ScenarioPhase::Begin |
+            ScenarioPhase::Loop => true,
             _ => false
         }
     }
@@ -64,6 +67,10 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
     }
 
     fn on_open_game_scene(&mut self, _game_scene_data_name: &str) {
+        let game_scene_manager = ptr_as_ref(self._game_scene_manager);
+        self._actor_aru = Some(game_scene_manager.get_actor("monkey_aru").unwrap().clone());
+        self._actor_ewa = Some(game_scene_manager.get_actor("monkey_ewa").unwrap().clone());
+        self._actor_koa = Some(game_scene_manager.get_actor("monkey_koa").unwrap().clone());
     }
 
     fn set_scenario_phase(&mut self, next_scenario_phase: &str, phase_duration: Option<f32>) {
@@ -79,8 +86,7 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
         let _game_scene_manager = ptr_as_mut(self._game_scene_manager);
 
         match self._scenario_track._scenario_phase {
-            ScenarioPhase::Begin => {}
-            ScenarioPhase::End => {}
+            _ => (),
         }
     }
 
@@ -96,13 +102,20 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
         }
 
         let _game_scene_manager = ptr_as_mut(self._game_scene_manager);
-
         let _phase_time = self._scenario_track.get_phase_time();
         let _phase_ratio = self._scenario_track.get_phase_ratio();
-
-        log::info!("update scenario: {:?}", self._scenario_track._scenario_phase);
         match self._scenario_track._scenario_phase {
             ScenarioPhase::Begin => {
+                if self._actor_aru.is_some() {
+                    self._actor_aru.as_ref().unwrap().borrow_mut().set_action_sleep();
+                    self._actor_ewa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::None, None, true);
+                    self._actor_ewa.as_ref().unwrap().borrow_mut().set_action_sleep();
+                    self._actor_koa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::None, None, true);
+                    self._actor_koa.as_ref().unwrap().borrow_mut().set_action_sleep();
+                    self.set_scenario_phase(ScenarioPhase::Loop.to_string().as_ref(), None);
+                }
+            }
+            ScenarioPhase::Loop =>{
             }
             ScenarioPhase::End => {
             }
