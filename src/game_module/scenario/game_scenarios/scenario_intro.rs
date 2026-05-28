@@ -281,7 +281,8 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
             ScenarioPhase::WakeUp |
             ScenarioPhase::AssembleFamily |
             ScenarioPhase::IamHungry |
-            ScenarioPhase::Sleeping => {
+            ScenarioPhase::Sleeping |
+            ScenarioPhase::End => {
                 true
             }
             _ => {

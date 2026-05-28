@@ -428,7 +428,7 @@ impl<'a> GameSceneManager<'a> {
         for (_camera_name, camera_create_info) in scenario_create_info.borrow()._scene._cameras.iter() {
             main_camera._transform_object.set_position(&camera_create_info.position);
             main_camera._transform_object.set_rotation(&camera_create_info.rotation);
-            main_camera._transform_object.update_transform_object();
+            //main_camera._transform_object.update_transform_object();
         }
 
         // create items

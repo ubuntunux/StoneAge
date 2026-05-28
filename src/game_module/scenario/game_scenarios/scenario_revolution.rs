@@ -99,6 +99,8 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
 
         let _phase_time = self._scenario_track.get_phase_time();
         let _phase_ratio = self._scenario_track.get_phase_ratio();
+
+        log::info!("update scenario: {:?}", self._scenario_track._scenario_phase);
         match self._scenario_track._scenario_phase {
             ScenarioPhase::Begin => {
             }
