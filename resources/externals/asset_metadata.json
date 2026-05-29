@@ -7949,16 +7949,6 @@
             "data": {}
         }
     ],
-    "/home/deck/Workspace/StoneAge/resources/externals/game_data/scenario/day_one.blend": [
-        {
-            "asset_type": "GAME_SCENARIO",
-            "asset_path": "day_one",
-            "filepath": "/home/deck/Workspace/StoneAge/resources/externals/game_data/scenario/day_one.blend",
-            "guid": "",
-            "mtime": 1779635017.6857796,
-            "data": {}
-        }
-    ],
     "/home/deck/Workspace/StoneAge/resources/externals/game_data/scenario/ufo.blend": [
         {
             "asset_type": "GAME_SCENARIO",
@@ -7975,7 +7965,17 @@
             "asset_path": "revolution",
             "filepath": "/home/deck/Workspace/StoneAge/resources/externals/game_data/scenario/revolution.blend",
             "guid": "",
-            "mtime": 1779941996.136674,
+            "mtime": 1780075927.87562,
+            "data": {}
+        }
+    ],
+    "/home/deck/Workspace/StoneAge/resources/externals/game_data/scenario/day_one.blend": [
+        {
+            "asset_type": "GAME_SCENARIO",
+            "asset_path": "day_one",
+            "filepath": "/home/deck/Workspace/StoneAge/resources/externals/game_data/scenario/day_one.blend",
+            "guid": "",
+            "mtime": 1780078694.8779938,
             "data": {}
         }
     ],

@@ -254,7 +254,7 @@ impl<'a> GameUIManager<'a> {
         self._time_of_day = Some(Box::new(TimeOfDayWidget::create_time_of_day_widget(game_ui_layout_mut, game_resources, self)));
         self._controller_help_widget = Some(Box::new(ControllerHelpWidget::create_controller_help_widget(game_ui_layout_mut, self._item_bar_widget.as_ref().unwrap(), game_resources, window_size)));
         self._quest_widget = Some(Box::new(QuestWidget::create_quest_widget(game_scene_manager, game_resources, game_ui_layout_mut)));
-        self._text_box_widget = Some(Box::new(TextBoxWidget::create_text_box_widget(audio_manager, engine_resources, game_ui_layout_mut)));
+        self._text_box_widget = Some(Box::new(TextBoxWidget::create_text_box_widget(audio_manager, engine_resources, root_widget)));
         self._cross_hair = Some(Box::new(CrossHairWidget::create_cross_hair(root_widget, game_resources)));
         self._game_image = Some(ImageLayout::create_image_layout(root_widget, window_size, MATERIAL_INTRO_IMAGE));
         self.set_cross_hair_visible(false);

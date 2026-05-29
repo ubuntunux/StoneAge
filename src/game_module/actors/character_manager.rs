@@ -110,8 +110,20 @@ impl<'a> CharacterManager<'a> {
         is_player: bool,
     ) -> RcRefCell<Character<'a>> {
         let game_resources = ptr_as_ref(self._game_resources);
+
+        // check height map
         let mut spawn_point = character_create_info._position.clone();
         spawn_point.y = spawn_point.y.max(self.get_scene_manager().get_height_map_data().get_height_bilinear(&spawn_point, 0));
+
+        // check collision objects
+        let collision_objects = self.get_scene_manager().collect_collision_objects(&spawn_point, &spawn_point);
+        for collision_object in collision_objects.values() {
+            let block_render_object = ptr_as_ref(collision_object.as_ptr());
+            let block_bound_box = &block_render_object._collision._bounding_box;
+            if block_render_object._collision.collide_point(&spawn_point) && block_bound_box._max.y < spawn_point.y {
+                spawn_point.y = block_bound_box._max.y;
+            }
+        }
 
         let character_data_name = character_create_info._character_data_name.as_str();
         let character_data = game_resources.get_character_data(character_data_name);

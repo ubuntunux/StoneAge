@@ -1,10 +1,10 @@
 {
     "_characters": {
-        "alien": {
+        "alien_alpha": {
             "_character_data_name": "characters/family/alien",
             "_position": [
                 -1.2043170928955078,
-                11.977673530578613,
+                11.0,
                 -0.03709685802459717
             ],
             "_rotation": [
@@ -18,12 +18,66 @@
                 1.0
             ]
         },
-        "alien.001": {
+        "alien_beta": {
             "_character_data_name": "characters/family/alien",
             "_position": [
                 -0.2500152587890625,
-                11.977673530578613,
+                11.0,
                 2.9653382301330566
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "aru": {
+            "_character_data_name": "characters/family/aru",
+            "_position": [
+                2.2716500759124756,
+                11.0,
+                0.36129701137542725
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "ewa": {
+            "_character_data_name": "characters/family/ewa",
+            "_position": [
+                3.954740047454834,
+                11.0,
+                -0.4204440116882324
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "koa": {
+            "_character_data_name": "characters/family/koa",
+            "_position": [
+                3.259589910507202,
+                11.0,
+                0.6068660020828247
             ],
             "_rotation": [
                 0.0,
@@ -39,9 +93,9 @@
         "monkey_ewa": {
             "_character_data_name": "characters/family/monkey_ewa",
             "_position": [
-                3.954742431640625,
-                11.977673530578613,
-                -0.4204435348510742
+                3.954740047454834,
+                11.0,
+                -0.4204440116882324
             ],
             "_rotation": [
                 0.0,
@@ -57,9 +111,9 @@
         "monkey_koa": {
             "_character_data_name": "characters/family/monkey_koa",
             "_position": [
-                3.259592056274414,
-                11.977673530578613,
-                0.606865644454956
+                3.259589910507202,
+                11.0,
+                0.6068660020828247
             ],
             "_rotation": [
                 0.0,
@@ -98,9 +152,9 @@
         "monkey_aru": {
             "_character_data_name": "characters/family/monkey_aru",
             "_position": [
-                2.321648597717285,
-                11.97767448425293,
-                0.36129653453826904
+                2.2716500759124756,
+                11.0,
+                0.36129701137542725
             ],
             "_rotation": [
                 0.0,

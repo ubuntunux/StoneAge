@@ -1,24 +1,34 @@
 use std::str::FromStr;
 use strum_macros::{Display, EnumCount, EnumIter, EnumString};
+use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
-use crate::game_module::actors::character::{Character};
+use crate::game_module::actors::character::{ActorWrapper, Character};
 use crate::game_module::behavior::behavior_base::BehaviorState;
+use crate::game_module::game_constants::{CHARACTER_INTERACTION_TIME, MATERIAL_EMOJI_GOOD, MATERIAL_UI_NONE, STORY_BOARD_FADE_TIME};
 use crate::game_module::game_scene_manager::{GameSceneManager};
 use crate::game_module::scenario::scenario::{ScenarioBase, ScenarioDataCreateInfo, ScenarioTrack, ScenarioType};
+use crate::game_module::widgets::text_box_widget::TextBoxContent;
 
 #[derive(Clone, PartialEq, Eq, Hash, Display, Debug, Copy, EnumIter, EnumString, EnumCount)]
 pub enum ScenarioPhase {
     Begin,
-    Loop,
+    Investigate,
+    Discussion,
+    Revolution,
     End,
 }
 
 pub struct ScenarioRevolution<'a> {
     _scenario_type: ScenarioType,
     _game_scene_manager: *const GameSceneManager<'a>,
+    _alien_alpha: Option<RcRefCell<Character<'a>>>,
+    _alien_beta: Option<RcRefCell<Character<'a>>>,
     _actor_aru: Option<RcRefCell<Character<'a>>>,
     _actor_ewa: Option<RcRefCell<Character<'a>>>,
     _actor_koa: Option<RcRefCell<Character<'a>>>,
+    _monkey_aru: Option<RcRefCell<Character<'a>>>,
+    _monkey_ewa: Option<RcRefCell<Character<'a>>>,
+    _monkey_koa: Option<RcRefCell<Character<'a>>>,
     _scenario_track: ScenarioTrack<ScenarioPhase>
 }
 
@@ -31,9 +41,14 @@ impl<'a> ScenarioRevolution<'a> {
         newRcRefCell(ScenarioRevolution {
             _scenario_type: scenario_type,
             _game_scene_manager: game_scene_manager,
+            _alien_alpha: None,
+            _alien_beta: None,
             _actor_aru: None,
             _actor_ewa: None,
             _actor_koa: None,
+            _monkey_aru: None,
+            _monkey_ewa: None,
+            _monkey_koa: None,
             _scenario_track: ScenarioTrack {
                 _scenario_phase: ScenarioPhase::Begin,
                 _phase_time: 0.0,
@@ -49,11 +64,7 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
     }
 
     fn is_play_scenario_mode(&self) -> bool {
-        match self._scenario_track._scenario_phase {
-            ScenarioPhase::Begin |
-            ScenarioPhase::Loop => true,
-            _ => false
-        }
+        true
     }
 
     fn is_end_of_scenario(&self) -> bool {
@@ -68,9 +79,32 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
 
     fn on_open_game_scene(&mut self, _game_scene_data_name: &str) {
         let game_scene_manager = ptr_as_ref(self._game_scene_manager);
-        self._actor_aru = Some(game_scene_manager.get_actor("monkey_aru").unwrap().clone());
-        self._actor_ewa = Some(game_scene_manager.get_actor("monkey_ewa").unwrap().clone());
-        self._actor_koa = Some(game_scene_manager.get_actor("monkey_koa").unwrap().clone());
+        self._alien_alpha = Some(game_scene_manager.get_actor("alien_alpha").unwrap().clone());
+        self._alien_beta = Some(game_scene_manager.get_actor("alien_beta").unwrap().clone());
+        self._monkey_aru = Some(game_scene_manager.get_actor("monkey_aru").unwrap().clone());
+        self._monkey_ewa = Some(game_scene_manager.get_actor("monkey_ewa").unwrap().clone());
+        self._monkey_koa = Some(game_scene_manager.get_actor("monkey_koa").unwrap().clone());
+        self._actor_aru = Some(game_scene_manager.get_actor("aru").unwrap().clone());
+        self._actor_ewa = Some(game_scene_manager.get_actor("ewa").unwrap().clone());
+        self._actor_koa = Some(game_scene_manager.get_actor("koa").unwrap().clone());
+
+        self._alien_alpha.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::None, None, true);
+        self._alien_beta.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::None, None, true);
+        self._monkey_aru.as_ref().unwrap().borrow_mut().set_action_sleep();
+        self._monkey_ewa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::None, None, true);
+        self._monkey_ewa.as_ref().unwrap().borrow_mut().set_action_sleep();
+        self._monkey_koa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::None, None, true);
+        self._monkey_koa.as_ref().unwrap().borrow_mut().set_action_sleep();
+
+        self._actor_aru.as_ref().unwrap().borrow_mut()._render_object.borrow_mut().set_visible(false);
+        self._actor_aru.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::None, None, true);
+        self._actor_aru.as_ref().unwrap().borrow_mut().set_action_sleep();
+        self._actor_ewa.as_ref().unwrap().borrow_mut()._render_object.borrow_mut().set_visible(false);
+        self._actor_ewa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::None, None, true);
+        self._actor_ewa.as_ref().unwrap().borrow_mut().set_action_sleep();
+        self._actor_koa.as_ref().unwrap().borrow_mut()._render_object.borrow_mut().set_visible(false);
+        self._actor_koa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::None, None, true);
+        self._actor_koa.as_ref().unwrap().borrow_mut().set_action_sleep();
     }
 
     fn set_scenario_phase(&mut self, next_scenario_phase: &str, phase_duration: Option<f32>) {
@@ -83,9 +117,39 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
     }
 
     fn update_game_scenario_begin(&mut self) {
-        let _game_scene_manager = ptr_as_mut(self._game_scene_manager);
-
+        let game_scene_manager = ptr_as_mut(self._game_scene_manager);
+        let game_ui_manager = game_scene_manager.get_game_ui_manager_mut();
         match self._scenario_track._scenario_phase {
+            ScenarioPhase::Discussion => {
+                let contents = vec![TextBoxContent::MaterialInstance(String::from(MATERIAL_EMOJI_GOOD))];
+                game_ui_manager.add_text_box_item(
+                    ActorWrapper::Character(self._alien_alpha.as_ref().unwrap().clone()),
+                    &contents,
+                    Some( CHARACTER_INTERACTION_TIME )
+                );
+
+                game_ui_manager.add_text_box_item(
+                    ActorWrapper::Character(self._alien_beta.as_ref().unwrap().clone()),
+                    &contents,
+                    Some( CHARACTER_INTERACTION_TIME )
+                );
+
+                let direction = math::make_normalize_xz(&(self._alien_alpha.as_ref().unwrap().borrow().get_position() - self._alien_beta.as_ref().unwrap().borrow().get_position()));
+                self._alien_alpha.as_ref().unwrap().borrow_mut().look_at(&-direction);
+                self._alien_beta.as_ref().unwrap().borrow_mut().look_at(&direction);
+            }
+            ScenarioPhase::Revolution => {
+                self._monkey_aru.as_ref().unwrap().borrow_mut()._render_object.borrow_mut().set_visible(false);
+                self._monkey_ewa.as_ref().unwrap().borrow_mut()._render_object.borrow_mut().set_visible(false);
+                self._monkey_koa.as_ref().unwrap().borrow_mut()._render_object.borrow_mut().set_visible(false);
+                self._actor_aru.as_ref().unwrap().borrow_mut()._render_object.borrow_mut().set_visible(true);
+                self._actor_ewa.as_ref().unwrap().borrow_mut()._render_object.borrow_mut().set_visible(true);
+                self._actor_koa.as_ref().unwrap().borrow_mut()._render_object.borrow_mut().set_visible(true);
+            }
+            ScenarioPhase::End => {
+                game_ui_manager.set_auto_fade_inout(true);
+                game_scene_manager.reservation_open_scenario(ScenarioType::ScenarioDayOne);
+            }
             _ => (),
         }
     }
@@ -101,21 +165,32 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
             delta_time *= 5.0;
         }
 
-        let _game_scene_manager = ptr_as_mut(self._game_scene_manager);
+        let game_scene_manager = ptr_as_mut(self._game_scene_manager);
+        let game_ui_manager = game_scene_manager.get_game_ui_manager_mut();
         let _phase_time = self._scenario_track.get_phase_time();
-        let _phase_ratio = self._scenario_track.get_phase_ratio();
+        let phase_ratio = self._scenario_track.get_phase_ratio();
         match self._scenario_track._scenario_phase {
             ScenarioPhase::Begin => {
-                if self._actor_aru.is_some() {
-                    self._actor_aru.as_ref().unwrap().borrow_mut().set_action_sleep();
-                    self._actor_ewa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::None, None, true);
-                    self._actor_ewa.as_ref().unwrap().borrow_mut().set_action_sleep();
-                    self._actor_koa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::None, None, true);
-                    self._actor_koa.as_ref().unwrap().borrow_mut().set_action_sleep();
-                    self.set_scenario_phase(ScenarioPhase::Loop.to_string().as_ref(), None);
+                self.set_scenario_phase(ScenarioPhase::Investigate.to_string().as_ref(), Some(2.0));
+            }
+            ScenarioPhase::Investigate =>{
+                if 1.0 <= phase_ratio {
+                    self.set_scenario_phase(ScenarioPhase::Discussion.to_string().as_ref(), Some(5.0));
                 }
             }
-            ScenarioPhase::Loop =>{
+            ScenarioPhase::Discussion =>{
+                if 1.0 <= phase_ratio {
+                    self.set_scenario_phase(ScenarioPhase::Revolution.to_string().as_ref(), Some(5.0));
+                }
+            }
+            ScenarioPhase::Revolution =>{
+                if 1.0 <= phase_ratio {
+                    if game_ui_manager.is_done_manual_fade_out() {
+                        self.set_scenario_phase(ScenarioPhase::End.to_string().as_str(), None);
+                    } else {
+                        game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, STORY_BOARD_FADE_TIME);
+                    }
+                }
             }
             ScenarioPhase::End => {
             }
