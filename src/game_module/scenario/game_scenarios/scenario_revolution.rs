@@ -90,21 +90,21 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
 
         self._alien_alpha.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::None, None, true);
         self._alien_beta.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::None, None, true);
-        self._monkey_aru.as_ref().unwrap().borrow_mut().set_action_sleep();
+        self._monkey_aru.as_ref().unwrap().borrow_mut().set_action_sleep_no_snoring();
         self._monkey_ewa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::None, None, true);
-        self._monkey_ewa.as_ref().unwrap().borrow_mut().set_action_sleep();
+        self._monkey_ewa.as_ref().unwrap().borrow_mut().set_action_sleep_no_snoring();
         self._monkey_koa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::None, None, true);
-        self._monkey_koa.as_ref().unwrap().borrow_mut().set_action_sleep();
+        self._monkey_koa.as_ref().unwrap().borrow_mut().set_action_sleep_no_snoring();
 
         self._actor_aru.as_ref().unwrap().borrow_mut()._render_object.borrow_mut().set_visible(false);
         self._actor_aru.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::None, None, true);
-        self._actor_aru.as_ref().unwrap().borrow_mut().set_action_sleep();
+        self._actor_aru.as_ref().unwrap().borrow_mut().set_action_sleep_no_snoring();
         self._actor_ewa.as_ref().unwrap().borrow_mut()._render_object.borrow_mut().set_visible(false);
         self._actor_ewa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::None, None, true);
-        self._actor_ewa.as_ref().unwrap().borrow_mut().set_action_sleep();
+        self._actor_ewa.as_ref().unwrap().borrow_mut().set_action_sleep_no_snoring();
         self._actor_koa.as_ref().unwrap().borrow_mut()._render_object.borrow_mut().set_visible(false);
         self._actor_koa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::None, None, true);
-        self._actor_koa.as_ref().unwrap().borrow_mut().set_action_sleep();
+        self._actor_koa.as_ref().unwrap().borrow_mut().set_action_sleep_no_snoring();
     }
 
     fn set_scenario_phase(&mut self, next_scenario_phase: &str, phase_duration: Option<f32>) {

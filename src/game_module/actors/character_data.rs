@@ -19,6 +19,7 @@ pub enum ActionAnimationState {
     Pickup,
     PowerAttack,
     Sleep,
+    SleepNoSnoring,
     WakeUp,
 }
 

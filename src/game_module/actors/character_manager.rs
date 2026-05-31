@@ -162,6 +162,7 @@ impl<'a> CharacterManager<'a> {
     }
 
     pub fn remove_character(&mut self, character: &RcRefCell<Character>) {
+        character.borrow_mut().destroy_character();
         self._characters.remove(character.borrow().get_character_name().as_str());
         self.get_scene_manager_mut().remove_skeletal_render_object(character.borrow()._render_object.borrow()._object_id);
     }

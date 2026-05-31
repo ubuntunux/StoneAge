@@ -116,17 +116,17 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
 
         self._actor_aru.as_ref().unwrap().borrow_mut()._controller.set_flying_mode(true);
         self._actor_aru.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::None, None, true);
-        self._actor_aru.as_ref().unwrap().borrow_mut().set_action_sleep();
+        self._actor_aru.as_ref().unwrap().borrow_mut().set_action_sleep_no_snoring();
         self._actor_aru.as_ref().unwrap().borrow_mut().set_position(self._actor_ufo.as_ref().unwrap().borrow().get_position());
 
         self._actor_ewa.as_ref().unwrap().borrow_mut()._controller.set_flying_mode(true);
         self._actor_ewa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::None, None, true);
-        self._actor_ewa.as_ref().unwrap().borrow_mut().set_action_sleep();
+        self._actor_ewa.as_ref().unwrap().borrow_mut().set_action_sleep_no_snoring();
         self._actor_ewa.as_ref().unwrap().borrow_mut().set_position(self._actor_ufo.as_ref().unwrap().borrow().get_position());
 
         self._actor_koa.as_ref().unwrap().borrow_mut()._controller.set_flying_mode(true);
         self._actor_koa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::None, None, true);
-        self._actor_koa.as_ref().unwrap().borrow_mut().set_action_sleep();
+        self._actor_koa.as_ref().unwrap().borrow_mut().set_action_sleep_no_snoring();
         self._actor_koa.as_ref().unwrap().borrow_mut().set_position(self._actor_ufo.as_ref().unwrap().borrow().get_position());
 
         let main_camera = game_scene_manager.get_scene_manager().get_main_camera_mut();

@@ -523,7 +523,11 @@ impl<'a> ControllerHelpWidget<'a> {
             let mut enable_interaction = true;
             if character_manager.is_valid_player() {
                 let player = character_manager.get_player().borrow();
-                if player.is_alive() == false || player.is_action(ActionAnimationState::Sleep) || player.is_action(ActionAnimationState::LayingDown) || player.is_action(ActionAnimationState::WakeUp) {
+                if player.is_alive() == false ||
+                    player.is_action(ActionAnimationState::Sleep) ||
+                    player.is_action(ActionAnimationState::SleepNoSnoring) ||
+                    player.is_action(ActionAnimationState::LayingDown) ||
+                    player.is_action(ActionAnimationState::WakeUp) {
                     enable_interaction = false;
                 }
             }

@@ -1,42 +1,5 @@
 {
-    "_characters": {
-        "monkey_ewa": {
-            "_character_data_name": "characters/family/monkey_ewa",
-            "_position": [
-                16.395343780517578,
-                2.9496304988861084,
-                12.052227020263672
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "monkey_koa": {
-            "_character_data_name": "characters/family/monkey_koa",
-            "_position": [
-                18.020801544189453,
-                2.5001397132873535,
-                10.799436569213867
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        }
-    },
+    "_characters": {},
     "_items": {
         "meat": {
             "_item_data_name": "items/meat",
@@ -273,26 +236,7 @@
             ]
         }
     },
-    "_player": {
-        "monkey_aru": {
-            "_character_data_name": "characters/family/monkey_aru",
-            "_position": [
-                19.868873596191406,
-                2.7635936737060547,
-                11.655028343200684
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        }
-    },
+    "_player": {},
     "_props": {
         "bed_for_aru": {
             "_position": [

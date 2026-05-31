@@ -285,6 +285,12 @@ impl<'a> Character<'a> {
         self.update_render_object();
     }
 
+    pub fn destroy_character(&mut self) {
+        self.set_action_animation(ActionAnimationState::None, 1.0);
+        self.set_move_animation(MoveAnimationState::None);
+        self.update_action_keyframe_event();
+    }
+
     pub fn attach_item(&mut self, attach_item: RcRefCell<Item<'a>>) {
         self._attached_item = Some(attach_item);
     }
@@ -440,6 +446,7 @@ impl<'a> Character<'a> {
         (self.is_on_ground() == false || self.is_action(ActionAnimationState::Kick) == false) &&
         self.is_action(ActionAnimationState::LayingDown) == false &&
         self.is_action(ActionAnimationState::Sleep) == false &&
+        self.is_action(ActionAnimationState::SleepNoSnoring) == false &&
         self.is_action(ActionAnimationState::WakeUp) == false
     }
 
@@ -685,6 +692,11 @@ impl<'a> Character<'a> {
     pub fn set_action_sleep(&mut self) {
         self.set_move_idle();
         self.set_action_animation(ActionAnimationState::Sleep, 1.0);
+    }
+
+    pub fn set_action_sleep_no_snoring(&mut self) {
+        self.set_move_idle();
+        self.set_action_animation(ActionAnimationState::SleepNoSnoring, 1.0);
     }
 
     pub fn set_action_hungry(&mut self) {
@@ -973,7 +985,7 @@ impl<'a> Character<'a> {
                     AnimationLayer::ActionLayer,
                 );
             }
-            ActionAnimationState::Sleep => {
+            ActionAnimationState::Sleep | ActionAnimationState::SleepNoSnoring => {
                 animation_info._animation_loop = true;
                 animation_info._animation_fade_out_time = 0.0; // keep end of animation
                 render_object.set_animation(
