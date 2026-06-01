@@ -1,10 +1,13 @@
 use std::str::FromStr;
+use nalgebra::Vector3;
 use strum_macros::{Display, EnumCount, EnumIter, EnumString};
+use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop};
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
 use crate::game_module::actors::character::{ActorWrapper, Character};
 use crate::game_module::behavior::behavior_base::BehaviorState;
-use crate::game_module::game_constants::{CHARACTER_INTERACTION_TIME, MATERIAL_EMOJI_GOOD, MATERIAL_UI_NONE, STORY_BOARD_FADE_TIME};
+use crate::game_module::game_constants::{AUDIO_ALIEN_TALK, AUDIO_UFO_EXPERIMENT, AUDIO_UFO_LABORATORY, CHARACTER_INTERACTION_TIME, MATERIAL_EMOJI_GOOD, MATERIAL_UI_NONE, STORY_BOARD_FADE_TIME};
+use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::{GameSceneManager};
 use crate::game_module::scenario::scenario::{ScenarioBase, ScenarioDataCreateInfo, ScenarioTrack, ScenarioType};
 use crate::game_module::widgets::text_box_widget::TextBoxContent;
@@ -18,6 +21,10 @@ pub enum ScenarioPhase {
     End,
 }
 
+fn update_actor_position(actor: &mut Character, position_y: f32) {
+    actor.set_position(&Vector3::new(actor.get_position().x, position_y, actor.get_position().z));
+}
+
 pub struct ScenarioRevolution<'a> {
     _scenario_type: ScenarioType,
     _game_scene_manager: *const GameSceneManager<'a>,
@@ -29,12 +36,18 @@ pub struct ScenarioRevolution<'a> {
     _monkey_aru: Option<RcRefCell<Character<'a>>>,
     _monkey_ewa: Option<RcRefCell<Character<'a>>>,
     _monkey_koa: Option<RcRefCell<Character<'a>>>,
+    _position_timer: f32,
+    _position_y: f32,
+    _audio_alien_talk: Option<RcRefCell<AudioInstance>>,
+    _audio_ufo_laboratory: Option<RcRefCell<AudioInstance>>,
+    _audio_ufo_experiment: Option<RcRefCell<AudioInstance>>,
     _scenario_track: ScenarioTrack<ScenarioPhase>
 }
 
 impl<'a> ScenarioRevolution<'a> {
     pub fn create_game_scenario(
         game_scene_manager: *const GameSceneManager<'a>,
+        _game_resources: *const GameResources<'a>,
         scenario_type: ScenarioType,
         _scenario_create_info: &ScenarioDataCreateInfo,
     ) -> RcRefCell<ScenarioRevolution<'a>> {
@@ -49,6 +62,11 @@ impl<'a> ScenarioRevolution<'a> {
             _monkey_aru: None,
             _monkey_ewa: None,
             _monkey_koa: None,
+            _position_timer: 0.0,
+            _position_y: 0.0,
+            _audio_alien_talk: None,
+            _audio_ufo_laboratory: None,
+            _audio_ufo_experiment: None,
             _scenario_track: ScenarioTrack {
                 _scenario_phase: ScenarioPhase::Begin,
                 _phase_time: 0.0,
@@ -91,20 +109,28 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
         self._alien_alpha.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::None, None, true);
         self._alien_beta.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::None, None, true);
         self._monkey_aru.as_ref().unwrap().borrow_mut().set_action_sleep_no_snoring();
+        self._monkey_aru.as_ref().unwrap().borrow_mut()._controller.set_flying_mode(true);
         self._monkey_ewa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::None, None, true);
         self._monkey_ewa.as_ref().unwrap().borrow_mut().set_action_sleep_no_snoring();
+        self._monkey_ewa.as_ref().unwrap().borrow_mut()._controller.set_flying_mode(true);
         self._monkey_koa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::None, None, true);
         self._monkey_koa.as_ref().unwrap().borrow_mut().set_action_sleep_no_snoring();
+        self._monkey_koa.as_ref().unwrap().borrow_mut()._controller.set_flying_mode(true);
 
         self._actor_aru.as_ref().unwrap().borrow_mut()._render_object.borrow_mut().set_visible(false);
         self._actor_aru.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::None, None, true);
         self._actor_aru.as_ref().unwrap().borrow_mut().set_action_sleep_no_snoring();
+        self._actor_aru.as_ref().unwrap().borrow_mut()._controller.set_flying_mode(true);
         self._actor_ewa.as_ref().unwrap().borrow_mut()._render_object.borrow_mut().set_visible(false);
         self._actor_ewa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::None, None, true);
         self._actor_ewa.as_ref().unwrap().borrow_mut().set_action_sleep_no_snoring();
+        self._actor_ewa.as_ref().unwrap().borrow_mut()._controller.set_flying_mode(true);
         self._actor_koa.as_ref().unwrap().borrow_mut()._render_object.borrow_mut().set_visible(false);
         self._actor_koa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::None, None, true);
         self._actor_koa.as_ref().unwrap().borrow_mut().set_action_sleep_no_snoring();
+        self._actor_koa.as_ref().unwrap().borrow_mut()._controller.set_flying_mode(true);
+
+        self._position_y = self._monkey_aru.as_ref().unwrap().borrow().get_position().y;
     }
 
     fn set_scenario_phase(&mut self, next_scenario_phase: &str, phase_duration: Option<f32>) {
@@ -120,7 +146,20 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
         let game_scene_manager = ptr_as_mut(self._game_scene_manager);
         let game_ui_manager = game_scene_manager.get_game_ui_manager_mut();
         match self._scenario_track._scenario_phase {
+            ScenarioPhase::Investigate => {
+                self._audio_ufo_laboratory = game_scene_manager.get_scene_manager().play_audio_options(
+                    AUDIO_UFO_LABORATORY,
+                    AudioLoop::LOOP,
+                    Some(0.2),
+                );
+            }
             ScenarioPhase::Discussion => {
+                self._audio_alien_talk = game_scene_manager.get_scene_manager().play_audio_options(
+                    AUDIO_ALIEN_TALK,
+                    AudioLoop::ONCE,
+                    Some(1.0),
+                );
+
                 let contents = vec![TextBoxContent::MaterialInstance(String::from(MATERIAL_EMOJI_GOOD))];
                 game_ui_manager.add_text_box_item(
                     ActorWrapper::Character(self._alien_alpha.as_ref().unwrap().clone()),
@@ -139,14 +178,16 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
                 self._alien_beta.as_ref().unwrap().borrow_mut().look_at(&direction);
             }
             ScenarioPhase::Revolution => {
-                self._monkey_aru.as_ref().unwrap().borrow_mut()._render_object.borrow_mut().set_visible(false);
-                self._monkey_ewa.as_ref().unwrap().borrow_mut()._render_object.borrow_mut().set_visible(false);
-                self._monkey_koa.as_ref().unwrap().borrow_mut()._render_object.borrow_mut().set_visible(false);
-                self._actor_aru.as_ref().unwrap().borrow_mut()._render_object.borrow_mut().set_visible(true);
-                self._actor_ewa.as_ref().unwrap().borrow_mut()._render_object.borrow_mut().set_visible(true);
-                self._actor_koa.as_ref().unwrap().borrow_mut()._render_object.borrow_mut().set_visible(true);
+                self._audio_ufo_experiment = game_scene_manager.get_scene_manager().play_audio_options(
+                    AUDIO_UFO_EXPERIMENT,
+                    AudioLoop::ONCE,
+                    Some(1.0),
+                );
             }
             ScenarioPhase::End => {
+                if let Some(audio_instance) = self._audio_ufo_laboratory.as_ref() {
+                    game_scene_manager.get_scene_manager().stop_audio_instance(&audio_instance)
+                }
                 game_ui_manager.set_auto_fade_inout(true);
                 game_scene_manager.reservation_open_scenario(ScenarioType::ScenarioDayOne);
             }
@@ -180,10 +221,21 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
             }
             ScenarioPhase::Discussion =>{
                 if 1.0 <= phase_ratio {
-                    self.set_scenario_phase(ScenarioPhase::Revolution.to_string().as_ref(), Some(5.0));
+                    self.set_scenario_phase(ScenarioPhase::Revolution.to_string().as_ref(), Some(8.0));
                 }
             }
             ScenarioPhase::Revolution =>{
+                let visible_monkey = if phase_ratio < 0.9 {
+                    ((phase_ratio * phase_ratio * 100.0) as i32 % 2) == 0
+                } else {
+                    false
+                };
+                self._monkey_aru.as_ref().unwrap().borrow()._render_object.borrow_mut().set_visible(visible_monkey);
+                self._monkey_ewa.as_ref().unwrap().borrow()._render_object.borrow_mut().set_visible(visible_monkey);
+                self._monkey_koa.as_ref().unwrap().borrow()._render_object.borrow_mut().set_visible(visible_monkey);
+                self._actor_aru.as_ref().unwrap().borrow()._render_object.borrow_mut().set_visible(!visible_monkey);
+                self._actor_ewa.as_ref().unwrap().borrow()._render_object.borrow_mut().set_visible(!visible_monkey);
+                self._actor_koa.as_ref().unwrap().borrow()._render_object.borrow_mut().set_visible(!visible_monkey);
                 if 1.0 <= phase_ratio {
                     if game_ui_manager.is_done_manual_fade_out() {
                         self.set_scenario_phase(ScenarioPhase::End.to_string().as_str(), None);
@@ -194,6 +246,17 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
             }
             ScenarioPhase::End => {
             }
+        }
+
+        if self._monkey_aru.is_some() {
+            self._position_timer += delta_time as f32;
+            let position_y = self._position_y + (self._position_timer.sin() * 0.5 + 0.5);
+            update_actor_position(&mut *self._monkey_aru.as_ref().unwrap().borrow_mut(), position_y);
+            update_actor_position(&mut *self._monkey_ewa.as_ref().unwrap().borrow_mut(), position_y);
+            update_actor_position(&mut *self._monkey_koa.as_ref().unwrap().borrow_mut(), position_y);
+            update_actor_position(&mut *self._actor_aru.as_ref().unwrap().borrow_mut(), position_y);
+            update_actor_position(&mut *self._actor_ewa.as_ref().unwrap().borrow_mut(), position_y);
+            update_actor_position(&mut *self._actor_koa.as_ref().unwrap().borrow_mut(), position_y);
         }
 
         self._scenario_track.update_scenario_track(delta_time as f32);

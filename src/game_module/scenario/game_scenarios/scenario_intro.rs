@@ -13,6 +13,7 @@ use crate::game_module::scenario::scenario::{ScenarioBase, ScenarioDataCreateInf
 use crate::game_module::actors::character_data::ActionAnimationState;
 use crate::game_module::actors::props::Prop;
 use crate::game_module::behavior::behavior_base::BehaviorState;
+use crate::game_module::game_resource::GameResources;
 use crate::game_module::widgets::quest_widgets::quest_item_default::DefaultQuestData;
 use crate::game_module::widgets::quest_widgets::quest_item_gather_item::GatherItemData;
 use crate::game_module::widgets::quest_widgets::quest_title::QuestTitle;
@@ -80,6 +81,7 @@ pub struct ScenarioIntro<'a> {
 impl<'a> ScenarioIntro<'a> {
     pub fn create_game_scenario(
         game_scene_manager: *const GameSceneManager<'a>,
+        _game_resources: *const GameResources<'a>,
         scenario_type: ScenarioType,
         _scenario_create_info: &ScenarioDataCreateInfo,
     ) -> RcRefCell<ScenarioIntro<'a>> {

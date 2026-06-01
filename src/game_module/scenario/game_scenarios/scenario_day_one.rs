@@ -1,10 +1,14 @@
 use std::str::FromStr;
 use nalgebra::Vector3;
 use strum_macros::{Display, EnumCount, EnumIter, EnumString};
+use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop};
+use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
 use crate::game_module::actors::character::{Character};
 use crate::game_module::actors::props::Prop;
 use crate::game_module::behavior::behavior_base::BehaviorState;
+use crate::game_module::game_constants::{AUDIO_UFO_BEAM, AUDIO_UFO_FLYING, CAMERA_DISTANCE_MAX, CAMERA_OFFSET_Y};
+use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::{GameSceneManager};
 use crate::game_module::scenario::scenario::{ScenarioBase, ScenarioDataCreateInfo, ScenarioTrack, ScenarioType};
 
@@ -20,6 +24,10 @@ enum ScenarioPhase {
 pub struct ScenarioDayOne<'a> {
     _scenario_type: ScenarioType,
     _game_scene_manager: *const GameSceneManager<'a>,
+    _around_start_position: Vector3<f32>,
+    _around_end_position: Vector3<f32>,
+    _around_start_rotation: Vector3<f32>,
+    _around_end_rotation: Vector3<f32>,
     _actor_ufo: Option<RcRefCell<Character<'a>>>,
     _actor_aru: Option<RcRefCell<Character<'a>>>,
     _actor_ewa: Option<RcRefCell<Character<'a>>>,
@@ -27,18 +35,25 @@ pub struct ScenarioDayOne<'a> {
     _prop_bed_for_aru: Option<RcRefCell<Prop<'a>>>,
     _prop_bed_for_ewa: Option<RcRefCell<Prop<'a>>>,
     _prop_bed_for_koa: Option<RcRefCell<Prop<'a>>>,
+    _audio_ufo_flying: Option<RcRefCell<AudioInstance>>,
+    _audio_ufo_beam: Option<RcRefCell<AudioInstance>>,
     _scenario_track: ScenarioTrack<ScenarioPhase>
 }
 
 impl<'a> ScenarioDayOne<'a> {
     pub fn create_game_scenario(
         game_scene_manager: *const GameSceneManager<'a>,
+        _game_resources: *const GameResources<'a>,
         scenario_type: ScenarioType,
         _scenario_create_info: &ScenarioDataCreateInfo,
     ) -> RcRefCell<ScenarioDayOne<'a>> {
         newRcRefCell(ScenarioDayOne {
             _scenario_type: scenario_type,
             _game_scene_manager: game_scene_manager,
+            _around_start_position: Vector3::zeros(),
+            _around_end_position: Vector3::zeros(),
+            _around_start_rotation: Vector3::new(0.4, 0.0, 0.0),
+            _around_end_rotation: Vector3::new(0.35, 0.0, 0.0),
             _actor_ufo: None,
             _actor_aru: None,
             _actor_ewa: None,
@@ -46,6 +61,8 @@ impl<'a> ScenarioDayOne<'a> {
             _prop_bed_for_aru: None,
             _prop_bed_for_ewa: None,
             _prop_bed_for_koa: None,
+            _audio_ufo_flying: None,
+            _audio_ufo_beam: None,
             _scenario_track: ScenarioTrack {
                 _scenario_phase: ScenarioPhase::Begin,
                 _phase_time: 0.0,
@@ -61,7 +78,7 @@ impl<'a> ScenarioDayOne<'a> {
     pub fn update_release_actor(&mut self, actor: RcRefCell<Character>, target: RcRefCell<Prop>, delta_time: f64) -> bool {
         let to_target = target.borrow().get_position() - actor.borrow().get_position();
         let mut pos = actor.borrow().get_position().clone();
-        let move_dist = 3.0f32 * delta_time as f32;
+        let move_dist = 4.0f32 * delta_time as f32;
         let range = 0.1f32;
         if range < to_target.magnitude_squared() {
             pos += to_target.normalize() * move_dist;
@@ -132,6 +149,13 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
         let main_camera = game_scene_manager.get_scene_manager().get_main_camera_mut();
         main_camera._transform_object.set_position(&Vector3::new(13.48, 26.56, -5.02));
         main_camera._transform_object.set_rotation(&Vector3::new(0.76, 0.33, 0.0));
+
+        let pivot = self._actor_aru.as_ref().unwrap().borrow().get_center().clone() + Vector3::new(0.0, CAMERA_OFFSET_Y, 0.0);
+        let start_rotation_matrix = math::make_rotation_matrix(self._around_start_rotation.x, self._around_start_rotation.y, self._around_start_rotation.z);
+        self._around_start_position = pivot - start_rotation_matrix.column(2).xyz() * (CAMERA_DISTANCE_MAX + 6.0);
+
+        let end_rotation_matrix = math::make_rotation_matrix(self._around_end_rotation.x, self._around_end_rotation.y, self._around_end_rotation.z);
+        self._around_end_position = pivot - end_rotation_matrix.column(2).xyz() * CAMERA_DISTANCE_MAX;
     }
 
     fn set_scenario_phase(&mut self, next_scenario_phase: &str, phase_duration: Option<f32>) {
@@ -148,7 +172,24 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
         let _game_ui_manager = game_scene_manager.get_game_ui_manager_mut();
 
         match self._scenario_track._scenario_phase {
+            ScenarioPhase::ReleaseFamily => {
+                self._audio_ufo_flying = game_scene_manager.get_scene_manager().play_audio_options(
+                    AUDIO_UFO_FLYING,
+                    AudioLoop::LOOP,
+                    Some(1.0),
+                );
+
+                self._audio_ufo_beam = game_scene_manager.get_scene_manager().play_audio_options(
+                    AUDIO_UFO_BEAM,
+                    AudioLoop::ONCE,
+                    Some(1.0),
+                );
+            }
             ScenarioPhase::Awake => {
+                if let Some(audio_instance) = self._audio_ufo_flying.as_ref() {
+                    game_scene_manager.get_scene_manager().stop_audio_instance(&audio_instance)
+                }
+
                 game_scene_manager.get_character_manager_mut().remove_character(self._actor_ufo.as_ref().unwrap());
                 self._actor_aru.as_ref().unwrap().borrow_mut().set_action_wake_up();
                 self._actor_aru.as_ref().unwrap().borrow_mut()._controller.set_flying_mode(false);
@@ -186,7 +227,7 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
             ScenarioPhase::ReleaseFamily => {
                 let complete = self.update_release_family(delta_time);
                 if complete {
-                    self.set_scenario_phase(ScenarioPhase::UfoGone.to_string().as_str(), Some(3.0));
+                    self.set_scenario_phase(ScenarioPhase::UfoGone.to_string().as_str(), Some(5.0));
                 }
             },
             ScenarioPhase::UfoGone => {
@@ -196,6 +237,13 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
                 }
             },
             ScenarioPhase::Awake => {
+                let main_camera = game_scene_manager.get_scene_manager().get_main_camera_mut();
+                let progress = 1.0 - (phase_ratio * -5.0).exp2();
+                let position = self._around_start_position.lerp(&self._around_end_position, progress);
+                let rotation = self._around_start_rotation.lerp(&self._around_end_rotation, progress);
+                main_camera._transform_object.set_position(&position);
+                main_camera._transform_object.set_rotation(&rotation);
+
                 if 1.0 <= phase_ratio {
                     self.set_scenario_phase(ScenarioPhase::End.to_string().as_str(), None);
                 }

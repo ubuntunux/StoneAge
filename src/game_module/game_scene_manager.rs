@@ -329,7 +329,7 @@ impl<'a> GameSceneManager<'a> {
         let game_resources = ptr_as_mut(self._game_resources);
         let scenario_data_create_info_refcell = game_resources.get_scenario_data(scenario_type.get_scenario_data_name());
         let scenario_data_create_info = scenario_data_create_info_refcell.borrow();
-        self._scenarios.push(create_scenario(self, scenario_type, &scenario_data_create_info));
+        self._scenarios.push(create_scenario(self, self._game_resources, scenario_type, &scenario_data_create_info));
 
         // open game scene data
         let scene_data_name = scenario_data_create_info._game_scenes.values().last().as_ref().unwrap()._game_scene_data_name.as_str();

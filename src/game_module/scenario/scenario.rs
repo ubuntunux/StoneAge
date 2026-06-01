@@ -6,6 +6,7 @@ use std::collections::HashMap;
 use std::hash::Hash;
 use strum_macros::{Display, EnumString};
 use rust_engine_3d::scene::scene_manager::SceneDataCreateInfo;
+use crate::game_module::game_resource::GameResources;
 use crate::game_module::scenario::game_scenarios::scenario_day_one::ScenarioDayOne;
 use crate::game_module::scenario::game_scenarios::scenario_intro::ScenarioIntro;
 use crate::game_module::scenario::game_scenarios::scenario_revolution::ScenarioRevolution;
@@ -110,21 +111,22 @@ pub trait ScenarioBase<'a> {
 
 pub fn create_scenario<'a>(
     game_scene_manager: *const GameSceneManager<'a>,
+    game_resources: *const GameResources<'a>,
     scenario_type: ScenarioType,
     scenario_create_info: &ScenarioDataCreateInfo,
 ) -> RcRefCell<dyn ScenarioBase<'a> + 'a> {
     match scenario_type {
         ScenarioType::ScenarioIntro => {
-            ScenarioIntro::create_game_scenario(game_scene_manager, scenario_type, scenario_create_info)
+            ScenarioIntro::create_game_scenario(game_scene_manager, game_resources, scenario_type, scenario_create_info)
         }
         ScenarioType::ScenarioUfo => {
-            ScenarioUfo::create_game_scenario(game_scene_manager, scenario_type, scenario_create_info)
+            ScenarioUfo::create_game_scenario(game_scene_manager, game_resources, scenario_type, scenario_create_info)
         }
         ScenarioType::ScenarioRevolution => {
-            ScenarioRevolution::create_game_scenario(game_scene_manager, scenario_type, scenario_create_info)
+            ScenarioRevolution::create_game_scenario(game_scene_manager, game_resources, scenario_type, scenario_create_info)
         }
         ScenarioType::ScenarioDayOne => {
-            ScenarioDayOne::create_game_scenario(game_scene_manager, scenario_type, scenario_create_info)
+            ScenarioDayOne::create_game_scenario(game_scene_manager, game_resources, scenario_type, scenario_create_info)
         }
     }
 
