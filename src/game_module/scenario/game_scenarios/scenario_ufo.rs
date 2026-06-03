@@ -5,7 +5,7 @@ use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop};
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
 use crate::game_module::actors::character::{Character};
-use crate::game_module::game_constants::{AUDIO_UFO_BEAM, AUDIO_UFO_FLYING, MATERIAL_UI_NONE, STORY_BOARD_FADE_TIME};
+use crate::game_module::game_constants::{AUDIO_UFO_BEAM, AUDIO_UFO_FLYING, MATERIAL_UI_NONE, STORY_BOARD_FADE_TIME, TIME_OF_DAWN};
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::{GameSceneManager, Stages};
 use crate::game_module::scenario::scenario::{ScenarioBase, ScenarioDataCreateInfo, ScenarioTrack, ScenarioType};
@@ -143,6 +143,8 @@ impl<'a> ScenarioBase<'a> for ScenarioUfo<'a> {
                 let main_camera = game_scene_manager.get_scene_manager().get_main_camera_mut();
                 main_camera._transform_object.set_position(&Vector3::new(13.48, 26.56, -5.02));
                 main_camera._transform_object.set_rotation(&Vector3::new(0.76, 0.33, 0.0));
+
+                self._actor_aru.as_ref().unwrap().borrow_mut().set_action_sleep_no_snoring();
             }
             ScenarioPhase::BeAbducted => {
                 self._actor_aru.as_ref().unwrap().borrow_mut()._controller.set_flying_mode(true);
@@ -182,9 +184,11 @@ impl<'a> ScenarioBase<'a> for ScenarioUfo<'a> {
 
         let _phase_time = self._scenario_track.get_phase_time();
         let phase_ratio = self._scenario_track.get_phase_ratio();
-        match self._scenario_track._scenario_phase {
+        let current_scenario_phase = self._scenario_track._scenario_phase;
+        match current_scenario_phase {
             ScenarioPhase::Begin => {
-                self.set_scenario_phase(ScenarioPhase::AppearUfo.to_string().as_str(), Some(6.0));
+                game_scene_manager.set_time_of_day(TIME_OF_DAWN, 0.0);
+                self.set_scenario_phase(ScenarioPhase::AppearUfo.to_string().as_str(), Some(3.0));
             },
             ScenarioPhase::AppearUfo => {
                 self.update_ufo_movement();
@@ -211,6 +215,6 @@ impl<'a> ScenarioBase<'a> for ScenarioUfo<'a> {
             ScenarioPhase::End => {}
         }
 
-        self._scenario_track.update_scenario_track(delta_time as f32);
+        self._scenario_track.update_scenario_track(current_scenario_phase, delta_time as f32);
     }
 }

@@ -544,8 +544,9 @@ impl<'a> Character<'a> {
         &self._controller.get_face_direction()
     }
 
-    pub fn look_at(&mut self, face_direction: &Vector3<f32>) {
-        self._controller.set_move_direction(face_direction);
+    pub fn look_at(&mut self, target_position: &Vector3<f32>) {
+        let direction = math::make_normalize_xz(&(target_position - self.get_position()));
+        self._controller.set_move_direction(&direction);
         if self.is_move_stop() == false {
             self.set_move_idle();
         }
@@ -725,8 +726,7 @@ impl<'a> Character<'a> {
                     self.set_move_idle();
                 }
                 InteractionObject::PropTable(prop) => {
-                    let direction = math::make_normalize_xz(&(prop.borrow().get_position() - self.get_position()));
-                    self.look_at(&direction);
+                    self.look_at(prop.borrow().get_position());
                     if self.is_move_state(MoveAnimationState::SitDownLoop) {
                         self.set_move_idle();
                     } else {
@@ -735,8 +735,7 @@ impl<'a> Character<'a> {
                 }
                 InteractionObject::Npc(character) => {
                     // interaction
-                    let direction = math::make_normalize_xz(&(character.borrow().get_position() - self.get_position()));
-                    self.look_at(&direction);
+                    self.look_at(character.borrow().get_position());
                     character.borrow_mut().set_behavior(BehaviorState::Interaction, None, false);
 
                     // give item

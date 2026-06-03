@@ -2,11 +2,10 @@ use std::str::FromStr;
 use nalgebra::Vector3;
 use strum_macros::{Display, EnumCount, EnumIter, EnumString};
 use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop};
-use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
 use crate::game_module::actors::character::{ActorWrapper, Character};
 use crate::game_module::behavior::behavior_base::BehaviorState;
-use crate::game_module::game_constants::{AUDIO_ALIEN_TALK, AUDIO_UFO_EXPERIMENT, AUDIO_UFO_LABORATORY, CHARACTER_INTERACTION_TIME, MATERIAL_EMOJI_GOOD, MATERIAL_UI_NONE, STORY_BOARD_FADE_TIME};
+use crate::game_module::game_constants::{AUDIO_ALIEN_TALK, AUDIO_UFO_EXPERIMENT, AUDIO_UFO_LABORATORY, CHARACTER_INTERACTION_TIME, MATERIAL_EMOJI_GOOD, MATERIAL_UI_NONE, STORY_BOARD_FADE_TIME, TIME_OF_NOON};
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::{GameSceneManager};
 use crate::game_module::scenario::scenario::{ScenarioBase, ScenarioDataCreateInfo, ScenarioTrack, ScenarioType};
@@ -154,12 +153,6 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
                 );
             }
             ScenarioPhase::Discussion => {
-                self._audio_alien_talk = game_scene_manager.get_scene_manager().play_audio_options(
-                    AUDIO_ALIEN_TALK,
-                    AudioLoop::ONCE,
-                    Some(1.0),
-                );
-
                 let contents = vec![TextBoxContent::MaterialInstance(String::from(MATERIAL_EMOJI_GOOD))];
                 game_ui_manager.add_text_box_item(
                     ActorWrapper::Character(self._alien_alpha.as_ref().unwrap().clone()),
@@ -173,12 +166,14 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
                     Some( CHARACTER_INTERACTION_TIME )
                 );
 
-                let direction = math::make_normalize_xz(&(self._alien_alpha.as_ref().unwrap().borrow().get_position() - self._alien_beta.as_ref().unwrap().borrow().get_position()));
-                self._alien_alpha.as_ref().unwrap().borrow_mut().look_at(&-direction);
-                self._alien_beta.as_ref().unwrap().borrow_mut().look_at(&direction);
+                self._alien_alpha.as_ref().unwrap().borrow_mut().look_at(self._alien_beta.as_ref().unwrap().borrow().get_position());
+                self._alien_beta.as_ref().unwrap().borrow_mut().look_at(self._alien_alpha.as_ref().unwrap().borrow().get_position());
             }
             ScenarioPhase::Revolution => {
-                self._audio_ufo_experiment = game_scene_manager.get_scene_manager().play_audio_options(
+                self._alien_alpha.as_ref().unwrap().borrow_mut().look_at(self._actor_aru.as_ref().unwrap().borrow().get_position());
+                self._alien_beta.as_ref().unwrap().borrow_mut().look_at(self._actor_aru.as_ref().unwrap().borrow().get_position());
+
+                game_scene_manager.get_scene_manager().play_audio_options(
                     AUDIO_UFO_EXPERIMENT,
                     AudioLoop::ONCE,
                     Some(1.0),
@@ -186,8 +181,9 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
             }
             ScenarioPhase::End => {
                 if let Some(audio_instance) = self._audio_ufo_laboratory.as_ref() {
-                    game_scene_manager.get_scene_manager().stop_audio_instance(&audio_instance)
+                    game_scene_manager.get_scene_manager().stop_audio_instance(&audio_instance);
                 }
+                self._audio_ufo_laboratory = None;
                 game_ui_manager.set_auto_fade_inout(true);
                 game_scene_manager.reservation_open_scenario(ScenarioType::ScenarioDayOne);
             }
@@ -208,10 +204,12 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
 
         let game_scene_manager = ptr_as_mut(self._game_scene_manager);
         let game_ui_manager = game_scene_manager.get_game_ui_manager_mut();
-        let _phase_time = self._scenario_track.get_phase_time();
         let phase_ratio = self._scenario_track.get_phase_ratio();
-        match self._scenario_track._scenario_phase {
+        let phase_time = self._scenario_track.get_phase_time();
+        let current_scenario_phase = self._scenario_track._scenario_phase;
+        match current_scenario_phase {
             ScenarioPhase::Begin => {
+                game_scene_manager.set_time_of_day(TIME_OF_NOON, 0.0);
                 self.set_scenario_phase(ScenarioPhase::Investigate.to_string().as_ref(), Some(2.0));
             }
             ScenarioPhase::Investigate =>{
@@ -220,6 +218,21 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
                 }
             }
             ScenarioPhase::Discussion =>{
+                if phase_time == 0.0 {
+                    game_scene_manager.get_scene_manager().play_audio_options(
+                        AUDIO_ALIEN_TALK,
+                        AudioLoop::ONCE,
+                        Some(1.0),
+                    );
+                } else if phase_time <= 2.0 && 2.0 < (phase_time + delta_time as f32) {
+                    game_scene_manager.get_scene_manager().play_audio_options(
+                        AUDIO_ALIEN_TALK,
+                        AudioLoop::ONCE,
+                        Some(1.0),
+                    );
+                }
+
+
                 if 1.0 <= phase_ratio {
                     self.set_scenario_phase(ScenarioPhase::Revolution.to_string().as_ref(), Some(8.0));
                 }
@@ -259,6 +272,6 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
             update_actor_position(&mut *self._actor_koa.as_ref().unwrap().borrow_mut(), position_y);
         }
 
-        self._scenario_track.update_scenario_track(delta_time as f32);
+        self._scenario_track.update_scenario_track(current_scenario_phase, delta_time as f32);
     }
 }

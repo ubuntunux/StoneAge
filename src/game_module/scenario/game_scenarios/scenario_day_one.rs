@@ -7,7 +7,7 @@ use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, Rc
 use crate::game_module::actors::character::{Character};
 use crate::game_module::actors::props::Prop;
 use crate::game_module::behavior::behavior_base::BehaviorState;
-use crate::game_module::game_constants::{AUDIO_UFO_BEAM, AUDIO_UFO_FLYING, CAMERA_DISTANCE_MAX, CAMERA_OFFSET_Y};
+use crate::game_module::game_constants::{AUDIO_UFO_BEAM, AUDIO_UFO_FLYING, CAMERA_DISTANCE_MAX, CAMERA_OFFSET_Y, TIME_OF_EARLY_MORNING};
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::{GameSceneManager};
 use crate::game_module::scenario::scenario::{ScenarioBase, ScenarioDataCreateInfo, ScenarioTrack, ScenarioType};
@@ -150,12 +150,9 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
         main_camera._transform_object.set_position(&Vector3::new(13.48, 26.56, -5.02));
         main_camera._transform_object.set_rotation(&Vector3::new(0.76, 0.33, 0.0));
 
-        let pivot = self._actor_aru.as_ref().unwrap().borrow().get_center().clone() + Vector3::new(0.0, CAMERA_OFFSET_Y, 0.0);
+        let pivot = self._actor_aru.as_ref().unwrap().borrow().get_center().clone();
         let start_rotation_matrix = math::make_rotation_matrix(self._around_start_rotation.x, self._around_start_rotation.y, self._around_start_rotation.z);
         self._around_start_position = pivot - start_rotation_matrix.column(2).xyz() * (CAMERA_DISTANCE_MAX + 6.0);
-
-        let end_rotation_matrix = math::make_rotation_matrix(self._around_end_rotation.x, self._around_end_rotation.y, self._around_end_rotation.z);
-        self._around_end_position = pivot - end_rotation_matrix.column(2).xyz() * CAMERA_DISTANCE_MAX;
     }
 
     fn set_scenario_phase(&mut self, next_scenario_phase: &str, phase_duration: Option<f32>) {
@@ -218,27 +215,40 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
         let game_scene_manager = ptr_as_mut(self._game_scene_manager);
         let _game_ui_manager = game_scene_manager.get_game_ui_manager_mut();
 
-        let _phase_time = self._scenario_track.get_phase_time();
+        let phase_time = self._scenario_track.get_phase_time();
         let phase_ratio = self._scenario_track.get_phase_ratio();
-        match self._scenario_track._scenario_phase {
+        let current_scenario_phase = self._scenario_track._scenario_phase;
+        match current_scenario_phase {
             ScenarioPhase::Begin => {
+                game_scene_manager.set_time_of_day(TIME_OF_EARLY_MORNING, 0.0);
                 self.set_scenario_phase(ScenarioPhase::ReleaseFamily.to_string().as_str(), Some(6.0));
             },
             ScenarioPhase::ReleaseFamily => {
                 let complete = self.update_release_family(delta_time);
                 if complete {
-                    self.set_scenario_phase(ScenarioPhase::UfoGone.to_string().as_str(), Some(5.0));
+                    self.set_scenario_phase(ScenarioPhase::UfoGone.to_string().as_str(), Some(6.0));
                 }
             },
             ScenarioPhase::UfoGone => {
                 self.update_ufo_movement();
+
+                if phase_time <= 3.0 && 3.0 < (phase_time + delta_time as f32) {
+                    let main_camera = game_scene_manager.get_scene_manager().get_main_camera_mut();
+                    main_camera._transform_object.set_position(&self._around_start_position);
+                    main_camera._transform_object.set_rotation(&self._around_start_rotation);
+                    self._actor_aru.as_ref().unwrap().borrow_mut().set_action_sleep();
+                }
+
                 if 1.0 <= phase_ratio {
-                    self.set_scenario_phase(ScenarioPhase::Awake.to_string().as_str(), Some(3.0));
+                    self.set_scenario_phase(ScenarioPhase::Awake.to_string().as_str(), Some(5.0));
                 }
             },
             ScenarioPhase::Awake => {
                 let main_camera = game_scene_manager.get_scene_manager().get_main_camera_mut();
-                let progress = 1.0 - (phase_ratio * -5.0).exp2();
+                let pivot = self._actor_aru.as_ref().unwrap().borrow().get_center().clone() + Vector3::new(0.0, CAMERA_OFFSET_Y, 0.0);
+                self._around_end_position = pivot - main_camera._transform_object.get_front() * CAMERA_DISTANCE_MAX;
+
+                let progress = phase_ratio.powf(2.0);
                 let position = self._around_start_position.lerp(&self._around_end_position, progress);
                 let rotation = self._around_start_rotation.lerp(&self._around_end_rotation, progress);
                 main_camera._transform_object.set_position(&position);
@@ -251,6 +261,6 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
             ScenarioPhase::End => {}
         }
 
-        self._scenario_track.update_scenario_track(delta_time as f32);
+        self._scenario_track.update_scenario_track(current_scenario_phase, delta_time as f32);
     }
 }

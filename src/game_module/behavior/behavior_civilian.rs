@@ -69,8 +69,7 @@ impl BehaviorBase for BehaviorCivilian {
             }
             BehaviorState::Interaction => {
                 if 0.0 < self._behavior_time {
-                    let to_target = (target.unwrap().get_position() - owner.get_position()).normalize();
-                    owner.look_at(&to_target);
+                    owner.look_at(&target.unwrap().get_position());
                 } else {
                     self.set_behavior(BehaviorState::Idle, owner, target, false);
                 }

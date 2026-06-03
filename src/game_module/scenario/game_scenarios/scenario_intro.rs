@@ -150,7 +150,7 @@ impl<'a> ScenarioIntro<'a> {
         game_ui_manager.add_text_box_item(
             ActorWrapper::Character(actor.clone()),
             &contents,
-            Some( CHARACTER_INTERACTION_TIME )
+            Some(CHARACTER_INTERACTION_TIME)
         );
         actor.borrow_mut().set_move_idle();
     }
@@ -409,16 +409,13 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
             ScenarioPhase::IamHungry => {
                 game_scene_manager.get_scene_manager().play_audio_bank(AUDIO_STOMACH_GROWLING);
 
-                let direction = math::make_normalize_xz(&(self._actor_koa.as_ref().unwrap().borrow().get_position() - self._actor_aru.as_ref().unwrap().borrow().get_position()));
-                self._actor_aru.as_ref().unwrap().borrow_mut().look_at(&direction);
+                self._actor_aru.as_ref().unwrap().borrow_mut().look_at(self._actor_koa.as_ref().unwrap().borrow().get_position());
 
-                let direction = math::make_normalize_xz(&(self._actor_aru.as_ref().unwrap().borrow().get_position() - self._actor_ewa.as_ref().unwrap().borrow().get_position()));
-                self._actor_ewa.as_ref().unwrap().borrow_mut().look_at(&direction);
+                self._actor_ewa.as_ref().unwrap().borrow_mut().look_at(self._actor_aru.as_ref().unwrap().borrow().get_position());
                 self._actor_ewa.as_ref().unwrap().borrow_mut().set_hunger(HUNGER_WARNING_THRESHOLD);
                 self._actor_ewa.as_ref().unwrap().borrow_mut().set_action_hungry();
 
-                let direction = math::make_normalize_xz(&(self._actor_aru.as_ref().unwrap().borrow().get_position() - self._actor_koa.as_ref().unwrap().borrow().get_position()));
-                self._actor_koa.as_ref().unwrap().borrow_mut().look_at(&direction);
+                self._actor_koa.as_ref().unwrap().borrow_mut().look_at(self._actor_aru.as_ref().unwrap().borrow().get_position());
                 self._actor_koa.as_ref().unwrap().borrow_mut().set_hunger(HUNGER_WARNING_THRESHOLD);
                 self._actor_koa.as_ref().unwrap().borrow_mut().set_action_hungry();
             }
@@ -504,7 +501,8 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
 
         let _phase_time = self._scenario_track.get_phase_time();
         let phase_ratio = self._scenario_track.get_phase_ratio();
-        match self._scenario_track._scenario_phase {
+        let current_scenario_phase = self._scenario_track._scenario_phase;
+        match current_scenario_phase {
             ScenarioPhase::Begin => {
                 let pivot = self._actor_aru.as_ref().unwrap().borrow().get_center().clone() + Vector3::new(0.0, CAMERA_OFFSET_Y, 0.0);
                 let start_rotation_matrix = math::make_rotation_matrix(self._around_start_rotation.x, self._around_start_rotation.y, self._around_start_rotation.z);
@@ -631,21 +629,25 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                 if game_scene_manager.get_current_game_scene_data_name() == Stages::Home.get_stage_data_name() {
                     let mut sub_quest_give_food_to_ewa = self._sub_quest_give_food_to_ewa.as_ref().unwrap().borrow_mut().is_completed_quest();
                     if self._sub_quest_give_food_to_ewa.as_ref().unwrap().borrow().is_completed_quest() == false {
-                        if self._actor_ewa.as_ref().unwrap().borrow().get_stats().is_hungry() == false {
-                            game_scene_manager.get_game_ui_manager_mut().remove_text_box_item(self._actor_ewa.as_ref().unwrap().as_ptr() as *const c_void);
-                            self._sub_quest_give_food_to_ewa.as_ref().unwrap().borrow_mut().set_completed_quest();
-                            self.remove_give_food_to_ewa_text_box(game_scene_manager);
-                            sub_quest_give_food_to_ewa = true;
+                        if let Some(item) = self._actor_ewa.as_ref().unwrap().borrow().get_attached_item() {
+                            if item.borrow().get_item_data_name() == ITEM_COCONUT {
+                                game_scene_manager.get_game_ui_manager_mut().remove_text_box_item(self._actor_ewa.as_ref().unwrap().as_ptr() as *const c_void);
+                                self._sub_quest_give_food_to_ewa.as_ref().unwrap().borrow_mut().set_completed_quest();
+                                self.remove_give_food_to_ewa_text_box(game_scene_manager);
+                                sub_quest_give_food_to_ewa = true;
+                            }
                         };
                     }
 
                     let mut sub_quest_give_food_to_koa = self._sub_quest_give_food_to_koa.as_ref().unwrap().borrow_mut().is_completed_quest();
                     if self._sub_quest_give_food_to_koa.as_ref().unwrap().borrow().is_completed_quest() == false {
-                        if self._actor_koa.as_ref().unwrap().borrow().get_stats().is_hungry() == false {
-                            game_scene_manager.get_game_ui_manager_mut().remove_text_box_item(self._actor_koa.as_ref().unwrap().as_ptr() as *const c_void);
-                            self._sub_quest_give_food_to_koa.as_ref().unwrap().borrow_mut().set_completed_quest();
-                            self.remove_give_food_to_koa_text_box(game_scene_manager);
-                            sub_quest_give_food_to_koa = true;
+                        if let Some(item) = self._actor_koa.as_ref().unwrap().borrow().get_attached_item() {
+                            if item.borrow().get_item_data_name() == ITEM_COCONUT {
+                                game_scene_manager.get_game_ui_manager_mut().remove_text_box_item(self._actor_koa.as_ref().unwrap().as_ptr() as *const c_void);
+                                self._sub_quest_give_food_to_koa.as_ref().unwrap().borrow_mut().set_completed_quest();
+                                self.remove_give_food_to_koa_text_box(game_scene_manager);
+                                sub_quest_give_food_to_koa = true;
+                            }
                         };
                     }
 
@@ -679,8 +681,6 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                     main_camera._transform_object.set_position(&self._around_start_position);
                     main_camera._transform_object.set_rotation(&self._around_start_rotation);
 
-                    game_scene_manager.set_time_of_day(TIME_OF_LATE_NOON, 0.0);
-
                     self._actor_aru.as_ref().unwrap().borrow_mut().set_action_sleep();
                     self._actor_aru.as_ref().unwrap().borrow_mut().set_position(self._prop_bed_for_aru.as_ref().unwrap().borrow().get_position());
                     self._actor_aru.as_ref().unwrap().borrow_mut().set_move_direction(&Vector3::new(1.0, 0.0, 0.0), true);
@@ -704,6 +704,6 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
             }
         }
 
-        self._scenario_track.update_scenario_track(delta_time as f32);
+        self._scenario_track.update_scenario_track(current_scenario_phase, delta_time as f32);
     }
 }
