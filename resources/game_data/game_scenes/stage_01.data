@@ -1,77 +1,5 @@
 {
     "_characters": {
-        "ewa": {
-            "_character_data_name": "characters/family/ewa",
-            "_position": [
-                -10.877023696899414,
-                3.7392349243164062,
-                -3.3507885932922363
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "koa": {
-            "_character_data_name": "characters/family/koa",
-            "_position": [
-                -9.173731803894043,
-                3.7392349243164062,
-                -3.3507885932922363
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "neanderthal.001": {
-            "_character_data_name": "characters/neanderthal",
-            "_position": [
-                -10.148643493652344,
-                2.1010196208953857,
-                13.012275695800781
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "neanderthal.002": {
-            "_character_data_name": "characters/neanderthal",
-            "_position": [
-                -11.744556427001953,
-                1.8470065593719482,
-                11.771495819091797
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
         "pachycephalosaurus": {
             "_character_data_name": "characters/pachycephalosaurus",
             "_position": [
@@ -183,9 +111,9 @@
         "triceratops": {
             "_character_data_name": "characters/triceratops",
             "_position": [
-                -4.608968734741211,
-                1.4222743511199951,
-                35.587371826171875
+                -12.860828399658203,
+                2.0207386016845703,
+                -14.044456481933594
             ],
             "_rotation": [
                 0.0,
@@ -219,9 +147,9 @@
         "triceratops_01.001": {
             "_character_data_name": "characters/triceratops_01",
             "_position": [
-                -12.402694702148438,
-                1.2983272075653076,
-                28.932811737060547
+                -1.8324012756347656,
+                3.596506118774414,
+                0.8284645080566406
             ],
             "_rotation": [
                 0.0,
@@ -276,24 +204,6 @@
                 35.34311294555664,
                 1.8686206340789795,
                 52.03401565551758
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "villager_00": {
-            "_character_data_name": "characters/villager_00",
-            "_position": [
-                -5.0,
-                4.216818809509277,
-                0.0
             ],
             "_rotation": [
                 0.0,
@@ -526,12 +436,12 @@
         }
     },
     "_player": {
-        "aru": {
-            "_character_data_name": "characters/family/aru",
+        "monkey_aru": {
+            "_character_data_name": "characters/family/monkey_aru",
             "_position": [
-                -7.495084762573242,
-                3.7392349243164062,
-                -3.3507885932922363
+                -10.084662437438965,
+                4.392125129699707,
+                -0.4381899833679199
             ],
             "_rotation": [
                 0.0,
@@ -548,9 +458,9 @@
     "_props": {
         "birch_tree_00": {
             "_position": [
-                -15.404129028320312,
-                3.1160011291503906,
-                -5.305456161499023
+                -15.030641555786133,
+                2.9165401458740234,
+                -6.250156402587891
             ],
             "_prop_data_name": "props/birch_tree_00",
             "_rotation": [
@@ -562,24 +472,6 @@
                 1.0,
                 1.0,
                 1.0
-            ]
-        },
-        "cactus": {
-            "_position": [
-                -16.163738250732422,
-                3.4214067459106445,
-                -1.7508392333984375
-            ],
-            "_prop_data_name": "props/cactus",
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                0.4680100679397583,
-                0.4680100679397583,
-                0.4680100679397583
             ]
         },
         "crystal": {
@@ -627,24 +519,6 @@
                 22.10814666748047,
                 1.8905150890350342,
                 -1.4572954177856445
-            ],
-            "_prop_data_name": "props/log",
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "log.001": {
-            "_position": [
-                -12.883424758911133,
-                3.6402339935302734,
-                -1.4116411209106445
             ],
             "_prop_data_name": "props/log",
             "_rotation": [
@@ -1626,9 +1500,9 @@
             "SM_Env_Monolith_01": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Monolith_01",
                 "_position": [
-                    -16.722400665283203,
-                    3.549837112426758,
-                    -3.887362480163574
+                    -25.022550582885742,
+                    3.4810447692871094,
+                    -3.07336688041687
                 ],
                 "_rotation": [
                     0.0,
@@ -1645,9 +1519,9 @@
             "SM_Env_Monolith_02": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Monolith_02",
                 "_position": [
-                    -11.945229530334473,
-                    2.7477073669433594,
-                    -7.840652942657471
+                    -19.898818969726562,
+                    1.904323697090149,
+                    -13.681876182556152
                 ],
                 "_rotation": [
                     0.0,

@@ -8069,26 +8069,6 @@
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/intro_stage.blend": [
-        {
-            "asset_type": "GAME_SCENE",
-            "asset_path": "intro_stage",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/intro_stage.blend",
-            "guid": "",
-            "mtime": 1780243509.7833648,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/stage_01.blend": [
-        {
-            "asset_type": "GAME_SCENE",
-            "asset_path": "stage_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/stage_01.blend",
-            "guid": "",
-            "mtime": 1778514028.3431346,
-            "data": {}
-        }
-    ],
     "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/stage_cave.blend": [
         {
             "asset_type": "GAME_SCENE",
@@ -8116,6 +8096,26 @@
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/world_map.blend",
             "guid": "",
             "mtime": 1778687694.0044057,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/intro_stage.blend": [
+        {
+            "asset_type": "GAME_SCENE",
+            "asset_path": "intro_stage",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/intro_stage.blend",
+            "guid": "",
+            "mtime": 1780584436.8091736,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/stage_01.blend": [
+        {
+            "asset_type": "GAME_SCENE",
+            "asset_path": "stage_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/stage_01.blend",
+            "guid": "",
+            "mtime": 1780585414.2168615,
             "data": {}
         }
     ],
