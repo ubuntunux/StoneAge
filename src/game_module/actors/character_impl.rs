@@ -680,6 +680,11 @@ impl<'a> Character<'a> {
         self.set_action_animation(ActionAnimationState::None, 1.0);
     }
 
+    pub fn set_action_dance(&mut self) {
+        self.set_move_idle();
+        self.set_action_animation(ActionAnimationState::Dance, 1.0);
+    }
+
     pub fn set_action_wake_up(&mut self) {
         self.set_move_idle();
         self.set_action_animation(ActionAnimationState::WakeUp, 1.0);
@@ -932,6 +937,15 @@ impl<'a> Character<'a> {
                 animation_info._animation_speed *= animation_data._attack_animation_speed;
                 render_object.set_animation(
                     &animation_data._attack_animation,
+                    &animation_info,
+                    AnimationLayer::ActionLayer,
+                );
+            }
+            ActionAnimationState::Dance => {
+                animation_info._animation_loop = true;
+                animation_info._animation_fade_out_time = 0.0; // keep end of animation
+                render_object.set_animation(
+                    &animation_data._dance_animation,
                     &animation_info,
                     AnimationLayer::ActionLayer,
                 );

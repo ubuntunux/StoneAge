@@ -10,6 +10,7 @@ use serde::{Deserialize, Serialize};
 pub enum ActionAnimationState {
     None,
     Attack,
+    Dance,
     Dead,
     Eating,
     Hit,
@@ -87,6 +88,7 @@ pub struct CharacterAudioDataCreateInfo {
 pub struct CharacterAnimationDataCreateInfo {
     pub _attack_animation: String,
     pub _attack_animation_speed: f32,
+    pub _dance_animation: String,
     pub _dead_animation: String,
     pub _dead_animation_speed: f32,
     pub _eating_animation: String,
@@ -138,6 +140,7 @@ pub struct CharacterAudioData {
 pub struct CharacterAnimationData {
     pub _attack_animation: RcRefCell<MeshData>,
     pub _attack_animation_speed: f32,
+    pub _dance_animation: RcRefCell<MeshData>,
     pub _dead_animation: RcRefCell<MeshData>,
     pub _dead_animation_speed: f32,
     pub _eating_animation: RcRefCell<MeshData>,

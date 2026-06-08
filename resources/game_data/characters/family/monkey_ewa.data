@@ -2,6 +2,7 @@
     "_character_animation_data": {
         "_attack_animation": "characters/ewa/ewa_attack",
         "_attack_animation_speed": 1.5,
+        "_dance_animation": "characters/ewa/ewa_dance_00",
         "_dead_animation": "characters/ewa/ewa_dead",
         "_dead_animation_speed": 1.5,
         "_eating_animation": "characters/jack/jack_eating",

@@ -25,6 +25,7 @@ impl Default for CharacterAnimationDataCreateInfo {
         CharacterAnimationDataCreateInfo {
             _attack_animation: String::default(),
             _attack_animation_speed: 1.0,
+            _dance_animation: String::default(),
             _dead_animation: String::default(),
             _dead_animation_speed: 1.0,
             _eating_animation: String::default(),
@@ -107,6 +108,7 @@ impl CharacterAnimationData {
         CharacterAnimationData {
             _attack_animation: engine_resources.get_mesh_data(&animation_data_create_info._attack_animation).clone(),
             _attack_animation_speed: animation_data_create_info._attack_animation_speed,
+            _dance_animation: engine_resources.get_mesh_data(&animation_data_create_info._dance_animation).clone(),
             _dead_animation: engine_resources.get_mesh_data(&animation_data_create_info._dead_animation).clone(),
             _dead_animation_speed: animation_data_create_info._dead_animation_speed,
             _eating_animation: engine_resources.get_mesh_data(&animation_data_create_info._eating_animation).clone(),

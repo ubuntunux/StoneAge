@@ -1,4 +1,3 @@
-use std::ffi::c_void;
 use std::str::FromStr;
 use nalgebra::Vector3;
 use strum_macros::{Display, EnumCount, EnumIter, EnumString};
@@ -20,7 +19,7 @@ use crate::game_module::widgets::quest_widgets::quest_title::QuestTitle;
 use crate::game_module::widgets::quest_widgets::quest_widget::QuestCreateInfo;
 use crate::game_module::widgets::text_box_widget::TextBoxContent;
 
-const SKIP_SCENARIO: bool = true;
+const SKIP_SCENARIO: bool = false;
 const USE_STORY_BOARDS: bool = false;
 const INTRO_FADE_TIME: f32 = 2.0;
 const PHASE_TIME_SLEEP: f32 = 5.0;
@@ -39,8 +38,7 @@ enum ScenarioPhase {
     MoveToTutorialStage,
     GatheringFood,
     BackHome,
-    GiveFood,
-    Sleep,
+    WrapUpTheDay,
     Sleeping,
     End,
 }
@@ -61,8 +59,6 @@ pub struct ScenarioIntro<'a> {
     _sub_quest_move_to_tutorial_stage: Option<QuestItem<'a>>,
     _sub_quest_gather_food: Option<QuestItem<'a>>,
     _sub_quest_back_home: Option<QuestItem<'a>>,
-    _sub_quest_give_food_to_ewa: Option<QuestItem<'a>>,
-    _sub_quest_give_food_to_koa: Option<QuestItem<'a>>,
     _sub_quest_sleep: Option<QuestItem<'a>>,
     _was_completed_sub_quest_gather_food: bool,
     _wakeup_delay_aru: f32,
@@ -101,8 +97,6 @@ impl<'a> ScenarioIntro<'a> {
             _sub_quest_move_to_tutorial_stage: None,
             _sub_quest_gather_food: None,
             _sub_quest_back_home: None,
-            _sub_quest_give_food_to_ewa: None,
-            _sub_quest_give_food_to_koa: None,
             _sub_quest_sleep: None,
             _was_completed_sub_quest_gather_food: false,
             _wakeup_delay_aru: 2.0,
@@ -212,34 +206,10 @@ impl<'a> ScenarioIntro<'a> {
         }
     }
 
-    pub fn create_give_food_to_ewa_text_box(&self, game_scene_manager: &GameSceneManager<'a>) {
-        if let Some(actor) = self._actor_ewa.as_ref() {
-            let actor_wrapper = ActorWrapper::Character(actor.clone());
-            let contents = vec![TextBoxContent::Text(String::from("\"Give food to ewa.\""))];
-            game_scene_manager.get_game_ui_manager_mut().add_text_box_item(
-                actor_wrapper,
-                &contents,
-                None
-            );
-        }
-    }
-
     pub fn remove_give_food_to_ewa_text_box(&self, game_scene_manager: &GameSceneManager<'a>) {
         if let Some(actor) = self._actor_ewa.as_ref() {
             let actor_wrapper = ActorWrapper::Character(actor.clone());
             game_scene_manager.get_game_ui_manager_mut().remove_text_box_item(actor_wrapper.get_key());
-        }
-    }
-
-    pub fn create_give_food_to_koa_text_box(&self, game_scene_manager: &GameSceneManager<'a>) {
-        if let Some(actor) = self._actor_koa.as_ref() {
-            let actor_wrapper = ActorWrapper::Character(actor.clone());
-            let contents = vec![TextBoxContent::Text(String::from("\"Give food to koa.\""))];
-            game_scene_manager.get_game_ui_manager_mut().add_text_box_item(
-                actor_wrapper,
-                &contents,
-                None
-            );
         }
     }
 
@@ -309,8 +279,6 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
         self.remove_move_to_tutorial_stage_text_box(game_scene_manager);
         self.remove_hit_this_tree_text_box(game_scene_manager);
         self.remove_return_home_text_box(game_scene_manager);
-        self.remove_give_food_to_ewa_text_box(game_scene_manager);
-        self.remove_give_food_to_koa_text_box(game_scene_manager);
         self.remove_take_a_sleep_text_box(game_scene_manager);
 
         self._actor_aru = None;
@@ -440,14 +408,6 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                     _quest_icon_name: None,
                     _quest_description: Some(String::from("Return home.")),
                 })));
-                self._sub_quest_give_food_to_ewa = Some(self._quest.as_ref().unwrap().borrow_mut().add_quest_item(QuestCreateInfo::DefaultQuest(DefaultQuestData {
-                    _quest_icon_name: None,
-                    _quest_description: Some(String::from("Give food to ewa.")),
-                })));
-                self._sub_quest_give_food_to_koa = Some(self._quest.as_ref().unwrap().borrow_mut().add_quest_item(QuestCreateInfo::DefaultQuest(DefaultQuestData {
-                    _quest_icon_name: None,
-                    _quest_description: Some(String::from("Give food to koa.")),
-                })));
                 self._sub_quest_sleep = Some(self._quest.as_ref().unwrap().borrow_mut().add_quest_item(QuestCreateInfo::DefaultQuest(DefaultQuestData {
                     _quest_icon_name: None,
                     _quest_description: Some(String::from("Wrap up the day.")),
@@ -455,7 +415,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
 
                 //
                 if SKIP_SCENARIO {
-                    self.set_scenario_phase(ScenarioPhase::Sleep.to_string().as_str(), None);
+                    self.set_scenario_phase(ScenarioPhase::WrapUpTheDay.to_string().as_str(), None);
                 } else {
                     self.create_move_to_tutorial_stage_text_box(game_scene_manager);
                 }
@@ -465,11 +425,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
             }
             ScenarioPhase::BackHome => {
             }
-            ScenarioPhase::GiveFood => {
-                self.create_give_food_to_ewa_text_box(game_scene_manager);
-                self.create_give_food_to_koa_text_box(game_scene_manager);
-            }
-            ScenarioPhase::Sleep => {
+            ScenarioPhase::WrapUpTheDay => {
                 self.create_take_a_sleep_text_box(game_scene_manager);
             }
             ScenarioPhase::Sleeping => {
@@ -622,41 +578,10 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                 if game_scene_manager.get_current_game_scene_data_name() == Stages::Home.get_stage_data_name() {
                     self._sub_quest_back_home.as_ref().unwrap().borrow_mut().set_completed_quest();
                     self.remove_return_home_text_box(game_scene_manager);
-                    self.set_scenario_phase(ScenarioPhase::GiveFood.to_string().as_str(), None);
+                    self.set_scenario_phase(ScenarioPhase::WrapUpTheDay.to_string().as_str(), None);
                 }
             }
-            ScenarioPhase::GiveFood => {
-                if game_scene_manager.get_current_game_scene_data_name() == Stages::Home.get_stage_data_name() {
-                    let mut sub_quest_give_food_to_ewa = self._sub_quest_give_food_to_ewa.as_ref().unwrap().borrow_mut().is_completed_quest();
-                    if self._sub_quest_give_food_to_ewa.as_ref().unwrap().borrow().is_completed_quest() == false {
-                        if let Some(item) = self._actor_ewa.as_ref().unwrap().borrow().get_attached_item() {
-                            if item.borrow().get_item_data_name() == ITEM_COCONUT {
-                                game_scene_manager.get_game_ui_manager_mut().remove_text_box_item(self._actor_ewa.as_ref().unwrap().as_ptr() as *const c_void);
-                                self._sub_quest_give_food_to_ewa.as_ref().unwrap().borrow_mut().set_completed_quest();
-                                self.remove_give_food_to_ewa_text_box(game_scene_manager);
-                                sub_quest_give_food_to_ewa = true;
-                            }
-                        };
-                    }
-
-                    let mut sub_quest_give_food_to_koa = self._sub_quest_give_food_to_koa.as_ref().unwrap().borrow_mut().is_completed_quest();
-                    if self._sub_quest_give_food_to_koa.as_ref().unwrap().borrow().is_completed_quest() == false {
-                        if let Some(item) = self._actor_koa.as_ref().unwrap().borrow().get_attached_item() {
-                            if item.borrow().get_item_data_name() == ITEM_COCONUT {
-                                game_scene_manager.get_game_ui_manager_mut().remove_text_box_item(self._actor_koa.as_ref().unwrap().as_ptr() as *const c_void);
-                                self._sub_quest_give_food_to_koa.as_ref().unwrap().borrow_mut().set_completed_quest();
-                                self.remove_give_food_to_koa_text_box(game_scene_manager);
-                                sub_quest_give_food_to_koa = true;
-                            }
-                        };
-                    }
-
-                    if sub_quest_give_food_to_ewa && sub_quest_give_food_to_koa {
-                        self.set_scenario_phase(ScenarioPhase::Sleep.to_string().as_str(), None);
-                    }
-                }
-            }
-            ScenarioPhase::Sleep => {
+            ScenarioPhase::WrapUpTheDay => {
                 let mut completed_scenario = false;
 
                 if game_scene_manager.get_current_game_scene_data_name() == Stages::Home.get_stage_data_name() {
