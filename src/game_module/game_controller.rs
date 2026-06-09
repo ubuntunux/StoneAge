@@ -393,7 +393,7 @@ impl<'a> GameController<'a> {
         _main_camera: &mut CameraObjectData,
         _player: &RcRefCell<Character>,
     ) {
-        let _delta_time: f32 = time_data._delta_time as f32;
+        let _delta_time: f32 = time_data._delta_time_with_scale as f32;
         let is_left = keyboard_input_data.get_key_pressed(KeyCode::KeyA)
             || keyboard_input_data.get_key_pressed(KeyCode::ArrowLeft)
             || joystick_input_data._btn_left == ButtonState::Pressed;
@@ -458,7 +458,7 @@ impl<'a> GameController<'a> {
         main_camera: &mut CameraObjectData,
         player: &RcRefCell<Character>,
     ) {
-        let delta_time: f32 = time_data._delta_time as f32;
+        let delta_time: f32 = time_data._delta_time_with_scale as f32;
         let is_attack: bool = mouse_input_data._btn_l_pressed
             || joystick_input_data._btn_right_shoulder == ButtonState::Pressed;
         let is_power_attack: bool = mouse_input_data._btn_r_pressed

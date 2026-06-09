@@ -721,13 +721,13 @@ impl<'a> Character<'a> {
         if self._controller.is_on_ground() && self.is_available_move() && self.is_idle_action() {
             match self._controller._nearest_interaction_object.clone() {
                 InteractionObject::PropBed(_) => {
-                    self.set_action_laying_down();
+                    self.get_character_manager().get_game_client_mut().set_next_game_phase(GamePhase::WrapUpTheDay);
                 }
                 InteractionObject::PropPickup(_) => {
                     self.set_action_animation(ActionAnimationState::Pickup, 2.0);
                 }
                 InteractionObject::PropMonolith(_) => {
-                    self.get_character_manager().get_game_client_mut().set_need_toolbox_mode(true);
+                    self.get_character_manager().get_game_client_mut().set_next_game_phase(GamePhase::OpenToolbox);
                     self.set_move_idle();
                 }
                 InteractionObject::PropTable(prop) => {
@@ -767,7 +767,7 @@ impl<'a> Character<'a> {
     pub fn callback_changed_interaction_object(&mut self) {
         match self._controller._nearest_interaction_object.clone() {
             InteractionObject::PropGate(_) => {
-                self.get_character_manager().get_game_client_mut().set_need_world_map_mode(true);
+                self.get_character_manager().get_game_client_mut().set_next_game_phase(GamePhase::WorldMapOpen);
                 self.set_move_idle();
             }
             _ => {},
@@ -1298,9 +1298,6 @@ impl<'a> Character<'a> {
             }
             ActionAnimationState::LayingDown => {
                 if animation_play_info._is_animation_end {
-                    if self._is_player && self.get_character_manager().get_game_client().is_game_phase(GamePhase::GamePlay) {
-                        self.get_character_manager().get_game_client_mut().set_need_sleep_mode(true);
-                    }
                     self.set_action_sleep();
                 }
             }

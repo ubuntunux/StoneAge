@@ -44,6 +44,7 @@ enum ScenarioPhase {
 }
 
 pub struct ScenarioIntro<'a> {
+    _is_load_completed: bool,
     _scenario_type: ScenarioType,
     _game_scene_manager: *const GameSceneManager<'a>,
     _actor_aru: Option<RcRefCell<Character<'a>>>,
@@ -52,6 +53,7 @@ pub struct ScenarioIntro<'a> {
     _prop_gate: Option<RcRefCell<Prop<'a>>>,
     _prop_gate_stage01: Option<RcRefCell<Prop<'a>>>,
     _prop_tree: Option<RcRefCell<Prop<'a>>>,
+    _prop_table: Option<RcRefCell<Prop<'a>>>,
     _prop_bed_for_aru: Option<RcRefCell<Prop<'a>>>,
     _prop_bed_for_ewa: Option<RcRefCell<Prop<'a>>>,
     _prop_bed_for_koa: Option<RcRefCell<Prop<'a>>>,
@@ -82,6 +84,7 @@ impl<'a> ScenarioIntro<'a> {
         _scenario_create_info: &ScenarioDataCreateInfo,
     ) -> RcRefCell<ScenarioIntro<'a>> {
         newRcRefCell(ScenarioIntro {
+            _is_load_completed: false,
             _scenario_type: scenario_type,
             _game_scene_manager: game_scene_manager,
             _actor_aru: None,
@@ -90,6 +93,7 @@ impl<'a> ScenarioIntro<'a> {
             _prop_gate: None,
             _prop_gate_stage01: None,
             _prop_tree: None,
+            _prop_table: None,
             _prop_bed_for_aru: None,
             _prop_bed_for_ewa: None,
             _prop_bed_for_koa: None,
@@ -220,10 +224,10 @@ impl<'a> ScenarioIntro<'a> {
         }
     }
 
-    pub fn create_take_a_sleep_text_box(&self, game_scene_manager: &GameSceneManager<'a>) {
-        if let Some(prop) = self._prop_bed_for_aru.as_ref() {
+    pub fn create_wrap_up_the_day_text_box(&self, game_scene_manager: &GameSceneManager<'a>) {
+        if let Some(prop) = self._prop_table.as_ref() {
             let wrapper = ActorWrapper::Prop(prop.clone());
-            let contents = vec![TextBoxContent::Text(String::from("\"Take a sleep.\""))];
+            let contents = vec![TextBoxContent::Text(String::from("\"Wrap up the day.\""))];
             game_scene_manager.get_game_ui_manager_mut().add_text_box_item(
                 wrapper,
                 &contents,
@@ -232,8 +236,8 @@ impl<'a> ScenarioIntro<'a> {
         }
     }
 
-    pub fn remove_take_a_sleep_text_box(&self, game_scene_manager: &GameSceneManager<'a>) {
-        if let Some(prop) = self._prop_bed_for_aru.as_ref() {
+    pub fn remove_wrap_up_the_day_text_box(&self, game_scene_manager: &GameSceneManager<'a>) {
+        if let Some(prop) = self._prop_table.as_ref() {
             let wrapper = ActorWrapper::Prop(prop.clone());
             game_scene_manager.get_game_ui_manager_mut().remove_text_box_item(wrapper.get_key());
         }
@@ -245,21 +249,17 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
         self._scenario_type
     }
 
+    fn is_load_completed(&self) -> bool {
+        self._is_load_completed
+    }
+
     fn is_play_scenario_mode(&self) -> bool {
         match self._scenario_track._scenario_phase {
-            ScenarioPhase::Begin |
-            ScenarioPhase::StoryBoard |
-            ScenarioPhase::Morning |
-            ScenarioPhase::WakeUp |
-            ScenarioPhase::AssembleFamily |
-            ScenarioPhase::IamHungry |
-            ScenarioPhase::Sleeping |
-            ScenarioPhase::End => {
-                true
-            }
-            _ => {
-                false
-            }
+            ScenarioPhase::MoveToTutorialStage |
+            ScenarioPhase::GatheringFood |
+            ScenarioPhase::BackHome |
+            ScenarioPhase::WrapUpTheDay => false,
+            _ => true
         }
     }
 
@@ -279,7 +279,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
         self.remove_move_to_tutorial_stage_text_box(game_scene_manager);
         self.remove_hit_this_tree_text_box(game_scene_manager);
         self.remove_return_home_text_box(game_scene_manager);
-        self.remove_take_a_sleep_text_box(game_scene_manager);
+        self.remove_wrap_up_the_day_text_box(game_scene_manager);
 
         self._actor_aru = None;
         self._actor_ewa = None;
@@ -290,6 +290,8 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
         self._prop_bed_for_aru = None;
         self._prop_bed_for_ewa = None;
         self._prop_bed_for_koa = None;
+
+        self._is_load_completed = false;
     }
 
     fn on_open_game_scene(&mut self, game_scene_data_name: &str) {
@@ -299,6 +301,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
             self._actor_ewa = Some(game_scene_manager.get_actor("monkey_ewa").unwrap().clone());
             self._actor_koa = Some(game_scene_manager.get_actor("monkey_koa").unwrap().clone());
             self._prop_gate = Some(game_scene_manager.get_prop_manager().get_prop_by_name(DEFAULT_GATE_NAME).unwrap().clone());
+            self._prop_table = Some(game_scene_manager.get_prop_manager().get_prop_by_name("table").unwrap().clone());
             self._prop_bed_for_aru = Some(game_scene_manager.get_prop_manager().get_prop_by_name("bed_for_aru").unwrap().clone());
             self._prop_bed_for_ewa = Some(game_scene_manager.get_prop_manager().get_prop_by_name("bed_for_ewa").unwrap().clone());
             self._prop_bed_for_koa = Some(game_scene_manager.get_prop_manager().get_prop_by_name("bed_for_koa").unwrap().clone());
@@ -309,6 +312,20 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
 
         // update quest & text box
         match self._scenario_track._scenario_phase {
+            ScenarioPhase::Begin => {
+                let pivot = self._actor_aru.as_ref().unwrap().borrow().get_center().clone() + Vector3::new(0.0, CAMERA_OFFSET_Y, 0.0);
+                let start_rotation_matrix = math::make_rotation_matrix(self._around_start_rotation.x, self._around_start_rotation.y, self._around_start_rotation.z);
+                self._around_start_position = pivot - start_rotation_matrix.column(2).xyz() * (CAMERA_DISTANCE_MAX + 6.0);
+
+                let end_rotation_matrix = math::make_rotation_matrix(self._around_end_rotation.x, self._around_end_rotation.y, self._around_end_rotation.z);
+                self._around_end_position = pivot - end_rotation_matrix.column(2).xyz() * CAMERA_DISTANCE_MIN;
+
+                let main_camera = game_scene_manager.get_scene_manager().get_main_camera_mut();
+                main_camera._transform_object.set_position(&self._around_start_position);
+                main_camera._transform_object.set_rotation(&self._around_start_rotation);
+
+                self.set_scenario_phase(ScenarioPhase::StoryBoard.to_string().as_str(), None);
+            }
             ScenarioPhase::MoveToTutorialStage => {
                 if game_scene_data_name == Stages::Home.get_stage_data_name() {
                     self.create_move_to_tutorial_stage_text_box(game_scene_manager);
@@ -335,6 +352,8 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
             }
             _ => ()
         }
+
+        self._is_load_completed = true;
     }
 
     fn set_scenario_phase(&mut self, next_scenario_phase: &str, phase_duration: Option<f32>) {
@@ -351,10 +370,8 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
         let game_ui_manager = ptr_as_mut(game_scene_manager._game_ui_manager);
 
         match self._scenario_track._scenario_phase {
-            ScenarioPhase::Begin => {
-            }
             ScenarioPhase::StoryBoard => {
-                game_scene_manager.set_time_of_day(TIME_OF_MORNING, 0.0);
+                game_scene_manager.set_time_of_day(TIME_OF_DAWN, 0.0);
 
                 self._actor_ewa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::None, None, true);
                 self._actor_koa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::None, None, true);
@@ -423,17 +440,16 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
             ScenarioPhase::GatheringFood => {
                 self.create_hit_this_tree_text_box(game_scene_manager);
             }
-            ScenarioPhase::BackHome => {
-            }
             ScenarioPhase::WrapUpTheDay => {
-                self.create_take_a_sleep_text_box(game_scene_manager);
+                self.create_wrap_up_the_day_text_box(game_scene_manager);
             }
             ScenarioPhase::Sleeping => {
                 game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, INTRO_FADE_TIME);
             }
             ScenarioPhase::End => {
-                game_scene_manager.reservation_open_scenario(ScenarioType::ScenarioUfo);
-            },
+                game_scene_manager.open_game_scenario(ScenarioType::ScenarioUfo);
+            }
+            _ => ()
         }
     }
 
@@ -443,11 +459,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
         }
     }
 
-    fn update_game_scenario(&mut self, any_key_hold: bool, any_key_pressed: bool, mut delta_time: f64) {
-        if any_key_hold {
-            delta_time *= 5.0;
-        }
-
+    fn update_game_scenario(&mut self, _any_key_hold: bool, any_key_pressed: bool, delta_time: f64) {
         let game_scene_manager = ptr_as_mut(self._game_scene_manager);
         let game_ui_manager = ptr_as_mut(game_scene_manager._game_ui_manager);
 
@@ -455,23 +467,11 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
             game_scene_manager.set_time_of_day_speed(1.0);
         }
 
-        let _phase_time = self._scenario_track.get_phase_time();
+        let phase_time = self._scenario_track.get_phase_time();
         let phase_ratio = self._scenario_track.get_phase_ratio();
         let current_scenario_phase = self._scenario_track._scenario_phase;
         match current_scenario_phase {
             ScenarioPhase::Begin => {
-                let pivot = self._actor_aru.as_ref().unwrap().borrow().get_center().clone() + Vector3::new(0.0, CAMERA_OFFSET_Y, 0.0);
-                let start_rotation_matrix = math::make_rotation_matrix(self._around_start_rotation.x, self._around_start_rotation.y, self._around_start_rotation.z);
-                self._around_start_position = pivot - start_rotation_matrix.column(2).xyz() * (CAMERA_DISTANCE_MAX + 6.0);
-
-                let end_rotation_matrix = math::make_rotation_matrix(self._around_end_rotation.x, self._around_end_rotation.y, self._around_end_rotation.z);
-                self._around_end_position = pivot - end_rotation_matrix.column(2).xyz() * CAMERA_DISTANCE_MIN;
-
-                let main_camera = game_scene_manager.get_scene_manager().get_main_camera_mut();
-                main_camera._transform_object.set_position(&self._around_start_position);
-                main_camera._transform_object.set_rotation(&self._around_start_rotation);
-
-                self.set_scenario_phase(ScenarioPhase::StoryBoard.to_string().as_str(), None);
             }
             ScenarioPhase::StoryBoard => {
                 if SKIP_SCENARIO {
@@ -506,6 +506,11 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                 }
             }
             ScenarioPhase::WakeUp => {
+                let time_of_day_ratio = phase_time * 0.2;
+                if time_of_day_ratio < 1.0 {
+                    game_scene_manager.set_time_of_day(math::lerp(TIME_OF_DAWN, TIME_OF_EARLY_MORNING, time_of_day_ratio), 0.0);
+                }
+
                 let prev_wakeup_delay_aru = self._wakeup_delay_aru;
                 let prev_wakeup_delay_ewa = self._wakeup_delay_ewa;
                 let prev_wakeup_delay_koa = self._wakeup_delay_koa;
@@ -588,7 +593,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                     if SKIP_SCENARIO || self._sub_quest_sleep.as_ref().unwrap().borrow().is_completed_quest() == false {
                         if self._actor_aru.as_ref().unwrap().borrow().is_action(ActionAnimationState::LayingDown) {
                             self._sub_quest_sleep.as_ref().unwrap().borrow_mut().set_completed_quest();
-                            self.remove_take_a_sleep_text_box(game_scene_manager);
+                            self.remove_wrap_up_the_day_text_box(game_scene_manager);
                             completed_scenario = true;
                         }
                     }

@@ -112,7 +112,7 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
 
         if false == self._is_game_mode {
             const MOUSE_DELTA_RATIO: f32 = 500.0;
-            let delta_time = time_data._delta_time;
+            let delta_time = time_data._delta_time_with_scale;
             let _mouse_pos = &mouse_move_data._mouse_pos;
             let mouse_delta_x = mouse_move_data._mouse_pos_delta.x as f32
                 / engine_core._window_size.x as f32
@@ -235,8 +235,7 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
             self._game_client.update_game_mode(game_delta_time);
             self.get_game_ui_manager_mut().update_game_ui(delta_time);
         } else {
-            self.get_editor_ui_manager_mut()
-                .update_editor_ui(delta_time);
+            self.get_editor_ui_manager_mut().update_editor_ui(delta_time);
         }
     }
 }

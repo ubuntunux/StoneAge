@@ -1,17 +1,16 @@
 [package]
 name = "stone_age"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["ubuntunux <ubuntunux@gmail.com>"]
 license = "BSD 2-Clause"
 homepage = "https://github.com/ubuntunux/StoneAge"
 repository = "https://github.com/ubuntunux/StoneAge"
 readme = "README.md"
-edition = "2021"
+edition = "2024"
 
 [dependencies]
 rust_engine_3d = { path = "RustEngine3D" }
 ash = { version = "0.38", default-features = false, features = ["linked", "debug", "std"] }
-indexmap = "2.12"
 log = "0.4"
 nalgebra = {version = "0.34", features = ["serde-serialize"]}
 rand = "0.9"
@@ -20,7 +19,6 @@ serde_json = "1.0"
 strum = "0.27"
 strum_macros = "0.27"
 winit = "0.29.15"
-sdl2 = "0.38.0"
 
 [[bin]]
 name = "stone_age"

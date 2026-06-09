@@ -8341,6 +8341,16 @@
             "data": {}
         }
     ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/scenario/wrap_up_the_day.blend": [
+        {
+            "asset_type": "GAME_SCENARIO",
+            "asset_path": "wrap_up_the_day",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/scenario/wrap_up_the_day.blend",
+            "guid": "",
+            "mtime": 1781023134.1843874,
+            "data": {}
+        }
+    ],
     "/mnt/Workspace/StoneAge/resources/externals/animation_layers/brachiosaurus/upper_animation_layer.blend": [
         {
             "asset_type": "ANIMATION_LAYER",

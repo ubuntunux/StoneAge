@@ -22,6 +22,7 @@ enum ScenarioPhase {
 }
 
 pub struct ScenarioDayOne<'a> {
+    _is_load_completed: bool,
     _scenario_type: ScenarioType,
     _game_scene_manager: *const GameSceneManager<'a>,
     _around_start_position: Vector3<f32>,
@@ -48,6 +49,7 @@ impl<'a> ScenarioDayOne<'a> {
         _scenario_create_info: &ScenarioDataCreateInfo,
     ) -> RcRefCell<ScenarioDayOne<'a>> {
         newRcRefCell(ScenarioDayOne {
+            _is_load_completed: false,
             _scenario_type: scenario_type,
             _game_scene_manager: game_scene_manager,
             _around_start_position: Vector3::zeros(),
@@ -107,6 +109,10 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
         self._scenario_type
     }
 
+    fn is_load_completed(&self) -> bool {
+        self._is_load_completed
+    }
+
     fn is_play_scenario_mode(&self) -> bool {
         self._scenario_track._scenario_phase != ScenarioPhase::End
     }
@@ -119,6 +125,7 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
     }
 
     fn on_close_game_scene(&mut self, _game_scene_data_name: &str) {
+        self._is_load_completed = false;
     }
 
     fn on_open_game_scene(&mut self, _game_scene_data_name: &str) {
@@ -153,6 +160,8 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
         let pivot = self._actor_aru.as_ref().unwrap().borrow().get_center().clone();
         let start_rotation_matrix = math::make_rotation_matrix(self._around_start_rotation.x, self._around_start_rotation.y, self._around_start_rotation.z);
         self._around_start_position = pivot - start_rotation_matrix.column(2).xyz() * (CAMERA_DISTANCE_MAX + 6.0);
+
+        self._is_load_completed = true;
     }
 
     fn set_scenario_phase(&mut self, next_scenario_phase: &str, phase_duration: Option<f32>) {
@@ -207,11 +216,7 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
         }
     }
 
-    fn update_game_scenario(&mut self, any_key_hold: bool, _any_key_pressed: bool, mut delta_time: f64) {
-        if any_key_hold {
-            delta_time *= 5.0;
-        }
-
+    fn update_game_scenario(&mut self, _any_key_hold: bool, _any_key_pressed: bool, delta_time: f64) {
         let game_scene_manager = ptr_as_mut(self._game_scene_manager);
         let _game_ui_manager = game_scene_manager.get_game_ui_manager_mut();
 

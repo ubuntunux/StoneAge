@@ -20,6 +20,7 @@ enum ScenarioPhase {
 }
 
 pub struct ScenarioUfo<'a> {
+    _is_load_completed: bool,
     _scenario_type: ScenarioType,
     _game_scene_manager: *const GameSceneManager<'a>,
     _actor_ufo: Option<RcRefCell<Character<'a>>>,
@@ -39,6 +40,7 @@ impl<'a> ScenarioUfo<'a> {
         _scenario_create_info: &ScenarioDataCreateInfo,
     ) -> RcRefCell<ScenarioUfo<'a>> {
         newRcRefCell(ScenarioUfo {
+            _is_load_completed: false,
             _scenario_type: scenario_type,
             _game_scene_manager: game_scene_manager,
             _actor_ufo: None,
@@ -94,6 +96,10 @@ impl<'a> ScenarioBase<'a> for ScenarioUfo<'a> {
         self._scenario_type
     }
 
+    fn is_load_completed(&self) -> bool {
+        self._is_load_completed
+    }
+
     fn is_play_scenario_mode(&self) -> bool {
         true
     }
@@ -106,6 +112,7 @@ impl<'a> ScenarioBase<'a> for ScenarioUfo<'a> {
     }
 
     fn on_close_game_scene(&mut self, _game_scene_data_name: &str) {
+        self._is_load_completed = false;
     }
 
     fn on_open_game_scene(&mut self, game_scene_data_name: &str) {
@@ -116,6 +123,8 @@ impl<'a> ScenarioBase<'a> for ScenarioUfo<'a> {
             self._actor_ewa = Some(game_scene_manager.get_actor("monkey_ewa").unwrap().clone());
             self._actor_koa = Some(game_scene_manager.get_actor("monkey_koa").unwrap().clone());
         }
+
+        self._is_load_completed = true;
     }
 
     fn set_scenario_phase(&mut self, next_scenario_phase: &str, phase_duration: Option<f32>) {
@@ -162,7 +171,7 @@ impl<'a> ScenarioBase<'a> for ScenarioUfo<'a> {
                 }
 
                 game_ui_manager.set_auto_fade_inout(true);
-                game_scene_manager.reservation_open_scenario(ScenarioType::ScenarioRevolution);
+                game_scene_manager.open_game_scenario(ScenarioType::ScenarioRevolution);
             }
             _ => {}
         }
@@ -174,11 +183,7 @@ impl<'a> ScenarioBase<'a> for ScenarioUfo<'a> {
         }
     }
 
-    fn update_game_scenario(&mut self, any_key_hold: bool, _any_key_pressed: bool, mut delta_time: f64) {
-        if any_key_hold {
-            delta_time *= 5.0;
-        }
-
+    fn update_game_scenario(&mut self, _any_key_hold: bool, _any_key_pressed: bool, delta_time: f64) {
         let game_scene_manager = ptr_as_mut(self._game_scene_manager);
         let game_ui_manager = game_scene_manager.get_game_ui_manager_mut();
 

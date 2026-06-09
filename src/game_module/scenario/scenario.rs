@@ -11,6 +11,7 @@ use crate::game_module::scenario::game_scenarios::scenario_day_one::ScenarioDayO
 use crate::game_module::scenario::game_scenarios::scenario_intro::ScenarioIntro;
 use crate::game_module::scenario::game_scenarios::scenario_revolution::ScenarioRevolution;
 use crate::game_module::scenario::game_scenarios::scenario_ufo::ScenarioUfo;
+use crate::game_module::scenario::game_scenarios::scenario_wrap_up_the_day::ScenarioWrapUpTheDay;
 
 pub type GameSceneCreateInfoMap = HashMap<String, GameSceneCreateInfo>;
 
@@ -20,6 +21,7 @@ pub enum ScenarioType {
     ScenarioUfo,
     ScenarioRevolution,
     ScenarioDayOne,
+    ScenarioWrapUpTheDay
 }
 
 impl ScenarioType {
@@ -29,6 +31,7 @@ impl ScenarioType {
             ScenarioType::ScenarioUfo => "scenario/ufo",
             ScenarioType::ScenarioRevolution => "scenario/revolution",
             ScenarioType::ScenarioDayOne => "scenario/day_one",
+            ScenarioType::ScenarioWrapUpTheDay => "scenario/wrap_up_the_day",
         }
     }
 }
@@ -100,6 +103,7 @@ impl ScenarioDataCreateInfo {
 
 pub trait ScenarioBase<'a> {
     fn get_scenario_type(&self) -> ScenarioType;
+    fn is_load_completed(&self) -> bool;
     fn is_play_scenario_mode(&self) -> bool;
     fn is_end_of_scenario(&self) -> bool;
     fn destroy_game_scenario(&mut self);
@@ -129,6 +133,9 @@ pub fn create_scenario<'a>(
         }
         ScenarioType::ScenarioDayOne => {
             ScenarioDayOne::create_game_scenario(game_scene_manager, game_resources, scenario_type, scenario_create_info)
+        }
+        ScenarioType::ScenarioWrapUpTheDay => {
+            ScenarioWrapUpTheDay::create_game_scenario(game_scene_manager, game_resources, scenario_type, scenario_create_info)
         }
     }
 
