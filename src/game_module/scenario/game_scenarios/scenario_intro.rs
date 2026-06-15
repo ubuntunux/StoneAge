@@ -19,7 +19,7 @@ use crate::game_module::widgets::quest_widgets::quest_title::QuestTitle;
 use crate::game_module::widgets::quest_widgets::quest_widget::QuestCreateInfo;
 use crate::game_module::widgets::text_box_widget::TextBoxContent;
 
-const SKIP_SCENARIO: bool = true;
+const SKIP_SCENARIO: bool = false;
 const USE_STORY_BOARDS: bool = false;
 const PHASE_TIME_SLEEP: f32 = 5.0;
 const PHASE_TIME_HUNGRY: f32 = 3.0;
@@ -242,7 +242,26 @@ impl<'a> ScenarioIntro<'a> {
         }
     }
 
-    pub fn set_scenario_phase_end(&mut self) {
+    pub fn clear_all(&mut self, game_scene_manager: &GameSceneManager<'a>) {
+        self.remove_move_to_tutorial_stage_text_box(game_scene_manager);
+        self.remove_hit_this_tree_text_box(game_scene_manager);
+        self.remove_return_home_text_box(game_scene_manager);
+        self.remove_wrap_up_the_day_text_box(game_scene_manager);
+
+        self._actor_aru = None;
+        self._actor_ewa = None;
+        self._actor_koa = None;
+        self._prop_gate = None;
+        self._prop_gate_stage01 = None;
+        self._prop_tree = None;
+        self._prop_bed_for_aru = None;
+        self._prop_bed_for_ewa = None;
+        self._prop_bed_for_koa = None;
+
+        self._is_load_completed = false;
+    }
+
+    pub fn continue_scenario_phase(&mut self) {
         self.set_scenario_phase(ScenarioPhase::End.to_string().as_str(), None);
     }
 }
@@ -278,23 +297,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
 
     fn on_close_game_scene(&mut self, _game_scene_data_name: &str) {
         let game_scene_manager = ptr_as_ref(self._game_scene_manager);
-
-        self.remove_move_to_tutorial_stage_text_box(game_scene_manager);
-        self.remove_hit_this_tree_text_box(game_scene_manager);
-        self.remove_return_home_text_box(game_scene_manager);
-        self.remove_wrap_up_the_day_text_box(game_scene_manager);
-
-        self._actor_aru = None;
-        self._actor_ewa = None;
-        self._actor_koa = None;
-        self._prop_gate = None;
-        self._prop_gate_stage01 = None;
-        self._prop_tree = None;
-        self._prop_bed_for_aru = None;
-        self._prop_bed_for_ewa = None;
-        self._prop_bed_for_koa = None;
-
-        self._is_load_completed = false;
+        self.clear_all(game_scene_manager);
     }
 
     fn on_open_game_scene(&mut self, game_scene_data_name: &str) {
@@ -447,6 +450,8 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                 self.create_wrap_up_the_day_text_box(game_scene_manager);
             }
             ScenarioPhase::End => {
+                self.clear_all(game_scene_manager);
+
                 game_scene_manager.open_game_scenario(ScenarioType::ScenarioUfo);
             }
             _ => ()
@@ -587,29 +592,26 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                 }
             }
             ScenarioPhase::WrapUpTheDay => {
-                let mut completed_scenario = false;
+                // wait...
+            }
+            _ => ()
+        }
 
-                if game_scene_manager.get_current_game_scene_data_name() == Stages::Home.get_stage_data_name() {
-                    if SKIP_SCENARIO || self._sub_quest_sleep.as_ref().unwrap().borrow().is_completed_quest() == false {
-                        if game_scene_manager.has_game_scenario(ScenarioType::ScenarioWrapUpTheDay) {
-                            self._sub_quest_sleep.as_ref().unwrap().borrow_mut().set_completed_quest();
-                            self.remove_wrap_up_the_day_text_box(game_scene_manager);
-                            completed_scenario = true;
-                        }
-                    }
-
-                    if let Some(quest) = &self._quest {
-                        if quest.borrow().is_completed_quest() || completed_scenario {
-                            self.set_scenario_phase(ScenarioPhase::Sleeping.to_string().as_str(), None);
-                        }
-                    };
+        let mut completed_scenario = false;
+        if game_scene_manager.get_current_game_scene_data_name() == Stages::Home.get_stage_data_name() {
+            if SKIP_SCENARIO || self._sub_quest_sleep.is_some() && self._sub_quest_sleep.as_ref().unwrap().borrow().is_completed_quest() == false {
+                if game_scene_manager.has_game_scenario(ScenarioType::ScenarioWrapUpTheDay) {
+                    self._sub_quest_sleep.as_ref().unwrap().borrow_mut().set_completed_quest();
+                    self.clear_all(game_scene_manager);
+                    completed_scenario = true;
                 }
             }
-            ScenarioPhase::Sleeping => {
-                // ....
-            }
-            ScenarioPhase::End => {
-            }
+
+            if let Some(quest) = &self._quest {
+                if quest.borrow().is_completed_quest() || completed_scenario {
+                    self.set_scenario_phase(ScenarioPhase::Sleeping.to_string().as_str(), None);
+                }
+            };
         }
 
         self._scenario_track.update_scenario_track(current_scenario_phase, delta_time as f32);
