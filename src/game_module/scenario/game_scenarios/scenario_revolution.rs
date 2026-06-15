@@ -4,8 +4,7 @@ use strum_macros::{Display, EnumCount, EnumIter, EnumString};
 use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop};
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
 use crate::game_module::actors::character::{ActorWrapper, Character};
-use crate::game_module::behavior::behavior_base::BehaviorState;
-use crate::game_module::game_constants::{AUDIO_ALIEN_TALK, AUDIO_UFO_EXPERIMENT, AUDIO_UFO_LABORATORY, CHARACTER_INTERACTION_TIME, MATERIAL_EMOJI_GOOD, MATERIAL_UI_NONE, STORY_BOARD_FADE_TIME, TIME_OF_NOON};
+use crate::game_module::game_constants::{AUDIO_ALIEN_TALK, AUDIO_UFO_EXPERIMENT, AUDIO_UFO_LABORATORY, CHARACTER_INTERACTION_TIME, DEFAULT_FADE_TIME, MATERIAL_EMOJI_GOOD, MATERIAL_UI_NONE, TIME_OF_NOON};
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::{GameSceneManager};
 use crate::game_module::scenario::scenario::{ScenarioBase, ScenarioDataCreateInfo, ScenarioTrack, ScenarioType};
@@ -112,27 +111,27 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
         self._actor_ewa = Some(game_scene_manager.get_actor("ewa").unwrap().clone());
         self._actor_koa = Some(game_scene_manager.get_actor("koa").unwrap().clone());
 
-        self._alien_alpha.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::None, None, true);
-        self._alien_beta.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::None, None, true);
+        self._alien_alpha.as_ref().unwrap().borrow_mut().set_behavior_none();
+        self._alien_beta.as_ref().unwrap().borrow_mut().set_behavior_none();
         self._monkey_aru.as_ref().unwrap().borrow_mut().set_action_sleep_no_snoring();
         self._monkey_aru.as_ref().unwrap().borrow_mut()._controller.set_flying_mode(true);
-        self._monkey_ewa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::None, None, true);
+        self._monkey_ewa.as_ref().unwrap().borrow_mut().set_behavior_none();
         self._monkey_ewa.as_ref().unwrap().borrow_mut().set_action_sleep_no_snoring();
         self._monkey_ewa.as_ref().unwrap().borrow_mut()._controller.set_flying_mode(true);
-        self._monkey_koa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::None, None, true);
+        self._monkey_koa.as_ref().unwrap().borrow_mut().set_behavior_none();
         self._monkey_koa.as_ref().unwrap().borrow_mut().set_action_sleep_no_snoring();
         self._monkey_koa.as_ref().unwrap().borrow_mut()._controller.set_flying_mode(true);
 
         self._actor_aru.as_ref().unwrap().borrow_mut()._render_object.borrow_mut().set_visible(false);
-        self._actor_aru.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::None, None, true);
+        self._actor_aru.as_ref().unwrap().borrow_mut().set_behavior_none();
         self._actor_aru.as_ref().unwrap().borrow_mut().set_action_sleep_no_snoring();
         self._actor_aru.as_ref().unwrap().borrow_mut()._controller.set_flying_mode(true);
         self._actor_ewa.as_ref().unwrap().borrow_mut()._render_object.borrow_mut().set_visible(false);
-        self._actor_ewa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::None, None, true);
+        self._actor_ewa.as_ref().unwrap().borrow_mut().set_behavior_none();
         self._actor_ewa.as_ref().unwrap().borrow_mut().set_action_sleep_no_snoring();
         self._actor_ewa.as_ref().unwrap().borrow_mut()._controller.set_flying_mode(true);
         self._actor_koa.as_ref().unwrap().borrow_mut()._render_object.borrow_mut().set_visible(false);
-        self._actor_koa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::None, None, true);
+        self._actor_koa.as_ref().unwrap().borrow_mut().set_behavior_none();
         self._actor_koa.as_ref().unwrap().borrow_mut().set_action_sleep_no_snoring();
         self._actor_koa.as_ref().unwrap().borrow_mut()._controller.set_flying_mode(true);
 
@@ -258,7 +257,7 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
                     if game_ui_manager.is_done_manual_fade_out() {
                         self.set_scenario_phase(ScenarioPhase::End.to_string().as_str(), None);
                     } else {
-                        game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, STORY_BOARD_FADE_TIME);
+                        game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, DEFAULT_FADE_TIME);
                     }
                 }
             }

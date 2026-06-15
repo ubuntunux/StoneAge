@@ -12,9 +12,7 @@ use rust_engine_3d::utilities::math::make_rotation_matrix;
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use crate::game_module::actors::character::{Character, CharacterAnimationState, CharacterStats};
 use crate::game_module::actors::character_controller::CharacterController;
-use crate::game_module::actors::character_data::{
-    ActionAnimationState, CharacterData, MoveAnimationState,
-};
+use crate::game_module::actors::character_data::{ActionAnimationState, CharacterData, MoveAnimationState};
 use crate::game_module::actors::character_manager::{CharacterID, CharacterManager};
 use crate::game_module::behavior::behavior_base::{create_character_behavior, BehaviorState};
 use crate::game_module::game_constants::*;
@@ -22,6 +20,7 @@ use crate::game_module::actors::items::{ItemDataType, ItemManager};
 use crate::game_module::actors::interaction_object::InteractionObject;
 use crate::game_module::actors::items::{Item};
 use crate::game_module::game_client::GamePhase;
+use crate::game_module::scenario::scenario::ScenarioType;
 
 impl CharacterAnimationState {
     pub fn is_attack_event(&self) -> bool {
@@ -661,6 +660,10 @@ impl<'a> Character<'a> {
         self._character_stats._is_stat_displayed = is_stat_displayed;
     }
 
+    pub fn set_behavior_none(&mut self) {
+        self.set_behavior(BehaviorState::None, None, true);
+    }
+
     pub fn set_behavior(
         &mut self,
         behavior_state: BehaviorState,
@@ -721,7 +724,7 @@ impl<'a> Character<'a> {
         if self._controller.is_on_ground() && self.is_available_move() && self.is_idle_action() {
             match self._controller._nearest_interaction_object.clone() {
                 InteractionObject::PropBed(_) => {
-                    self.get_character_manager().get_game_client_mut().set_next_game_phase(GamePhase::WrapUpTheDay);
+                    self.get_character_manager().get_game_scene_manager_mut().open_game_scenario(ScenarioType::ScenarioWrapUpTheDay);
                 }
                 InteractionObject::PropPickup(_) => {
                     self.set_action_animation(ActionAnimationState::Pickup, 2.0);

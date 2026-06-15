@@ -1,7 +1,7 @@
 use std::cmp::PartialEq;
 use crate::application::application::Application;
 use crate::game_module::actors::character_manager::CharacterManager;
-use crate::game_module::game_constants::{GameViewMode, AMBIENT_SOUND, CAMERA_DISTANCE_MAX, GAME_MUSIC, MATERIAL_INTRO_IMAGE, SLEEP_TIMER, STORY_BOARD_FADE_TIME, MATERIAL_UI_NONE, GAME_VIEW_MODE, MATERIAL_WORLDMAP_FADE_TIME, AUDIO_ROOSTER, DEFAULT_GATE_NAME};
+use crate::game_module::game_constants::{GameViewMode, AMBIENT_SOUND, CAMERA_DISTANCE_MAX, GAME_MUSIC, MATERIAL_INTRO_IMAGE, MATERIAL_UI_NONE, GAME_VIEW_MODE, MATERIAL_WORLDMAP_FADE_TIME, DEFAULT_GATE_NAME, DEFAULT_FADE_TIME, DEFAULT_BGM_VOLUME};
 use crate::game_module::game_controller::GameController;
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::{GameSceneManager, GameSceneState};
@@ -18,8 +18,6 @@ pub enum GamePhase {
     GamePlay,
     PlayGameScenario,
     Teleport,
-    WrapUpTheDay,
-    Sleep,
     OpenToolbox,
     WorldMapOpen,
     WorldMapUpdate,
@@ -36,8 +34,7 @@ pub struct GameClient<'a> {
     pub _game_ui_manager: *const GameUIManager<'a>,
     pub _editor_ui_manager: *const EditorUIManager<'a>,
     pub _game_phase: GamePhase,
-    pub _next_game_phase: GamePhase,
-    pub _sleep_timer: f32,
+    pub _next_game_phase: GamePhase
 }
 
 impl<'a> GameClient<'a> {
@@ -52,8 +49,7 @@ impl<'a> GameClient<'a> {
             _game_ui_manager: std::ptr::null(),
             _editor_ui_manager: std::ptr::null(),
             _game_phase: GamePhase::Start,
-            _next_game_phase: GamePhase::Start,
-            _sleep_timer: 0.0,
+            _next_game_phase: GamePhase::Start
         })
     }
 
@@ -71,7 +67,6 @@ impl<'a> GameClient<'a> {
         self._game_ui_manager = application.get_game_ui_manager();
         self._editor_ui_manager = application.get_editor_ui_manager();
         self._next_game_phase = self._game_phase;
-        self._sleep_timer = 0.0;
     }
     pub fn destroy_game_client(&mut self) {
         ptr_as_mut(self._game_ui_manager).destroy_game_ui_manager();
@@ -134,9 +129,6 @@ impl<'a> GameClient<'a> {
             }
         }
     }
-    pub fn reset_sleep_timer(&mut self) {
-        self._sleep_timer = 0.0;
-    }
     pub fn is_game_phase(&self, game_phase: GamePhase) -> bool {
         self._game_phase == game_phase
     }
@@ -154,6 +146,7 @@ impl<'a> GameClient<'a> {
         let game_scene_manager = ptr_as_mut(self._game_scene_manager);
         let character_manager = ptr_as_mut(game_scene_manager._character_manager.as_ref());
         let game_ui_manager = ptr_as_mut(self._game_ui_manager);
+
         match self._game_phase {
             GamePhase::GamePlay => {
                 game_ui_manager.show_game_ui(true);
@@ -169,14 +162,7 @@ impl<'a> GameClient<'a> {
                     character_manager.get_player().borrow_mut().set_action_none();
                     character_manager.get_player().borrow_mut().set_move_idle();
                 }
-                game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, STORY_BOARD_FADE_TIME);
-            }
-            GamePhase::WrapUpTheDay => {
-                game_scene_manager.open_game_scenario(ScenarioType::ScenarioWrapUpTheDay);
-            }
-            GamePhase::Sleep => {
-                self.reset_sleep_timer();
-                game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, STORY_BOARD_FADE_TIME);
+                game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, DEFAULT_FADE_TIME);
             }
             GamePhase::OpenToolbox => {
                 game_ui_manager.open_toolbox();
@@ -203,9 +189,6 @@ impl<'a> GameClient<'a> {
                     character_manager.get_player().borrow_mut().set_action_none();
                     character_manager.get_player().borrow_mut().set_move_idle();
                 }
-            }
-            GamePhase::Sleep => {
-                character_manager.get_player().borrow_mut().set_action_wake_up();
             }
             GamePhase::PlayGameScenario => {
                 game_controller.set_game_camera_auto_blend_mode(true);
@@ -253,7 +236,7 @@ impl<'a> GameClient<'a> {
         match self._game_phase {
             GamePhase::Start => {
                 game_ui_manager.set_image_auto_fade_inout(MATERIAL_INTRO_IMAGE, 0.0);
-                game_scene_manager.play_bgm(GAME_MUSIC, Some(0.5));
+                game_scene_manager.play_bgm(GAME_MUSIC, DEFAULT_BGM_VOLUME);
                 game_scene_manager.play_ambient_sound(AMBIENT_SOUND, None);
                 self.set_next_game_phase(GamePhase::Loading);
             }
@@ -308,21 +291,6 @@ impl<'a> GameClient<'a> {
                     if game_scene_manager.is_teleport_mode() == false {
                         self.set_next_game_phase(GamePhase::GamePlay);
                     }
-                }
-            }
-            GamePhase::WrapUpTheDay => {
-
-            }
-            GamePhase::Sleep => {
-                if game_ui_manager.is_done_manual_fade_out() && self._sleep_timer < SLEEP_TIMER {
-                    self._sleep_timer += delta_time as f32;
-                    if SLEEP_TIMER <= self._sleep_timer {
-                        game_ui_manager.set_auto_fade_inout(true);
-                        game_scene_manager.set_next_time_of_day();
-                    }
-                } else if game_ui_manager.is_done_game_image_progress() {
-                    game_scene_manager.get_scene_manager().play_audio_bank(AUDIO_ROOSTER);
-                    self.set_next_game_phase(GamePhase::GamePlay);
                 }
             }
             GamePhase::OpenToolbox => {

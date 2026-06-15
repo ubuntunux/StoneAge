@@ -5,7 +5,7 @@ use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop};
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
 use crate::game_module::actors::character::{Character};
-use crate::game_module::game_constants::{AUDIO_UFO_BEAM, AUDIO_UFO_FLYING, MATERIAL_UI_NONE, STORY_BOARD_FADE_TIME, TIME_OF_DAWN};
+use crate::game_module::game_constants::{AUDIO_UFO_BEAM, AUDIO_UFO_FLYING, DEFAULT_FADE_TIME, MATERIAL_UI_NONE, TIME_OF_DAWN};
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::{GameSceneManager, Stages};
 use crate::game_module::scenario::scenario::{ScenarioBase, ScenarioDataCreateInfo, ScenarioTrack, ScenarioType};
@@ -213,7 +213,7 @@ impl<'a> ScenarioBase<'a> for ScenarioUfo<'a> {
                     if game_ui_manager.is_done_manual_fade_out() {
                         self.set_scenario_phase(ScenarioPhase::End.to_string().as_str(), None);
                     } else {
-                        game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, STORY_BOARD_FADE_TIME);
+                        game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, DEFAULT_FADE_TIME);
                     }
                 }
             }

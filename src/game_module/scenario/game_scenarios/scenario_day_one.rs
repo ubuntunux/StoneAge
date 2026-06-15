@@ -6,7 +6,6 @@ use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
 use crate::game_module::actors::character::{Character};
 use crate::game_module::actors::props::Prop;
-use crate::game_module::behavior::behavior_base::BehaviorState;
 use crate::game_module::game_constants::{AUDIO_UFO_BEAM, AUDIO_UFO_FLYING, CAMERA_DISTANCE_MAX, CAMERA_OFFSET_Y, TIME_OF_EARLY_MORNING};
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::{GameSceneManager};
@@ -139,17 +138,17 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
         self._prop_bed_for_koa = Some(game_scene_manager.get_prop_manager().get_prop_by_name("bed_for_koa").unwrap().clone());
 
         self._actor_aru.as_ref().unwrap().borrow_mut()._controller.set_flying_mode(true);
-        self._actor_aru.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::None, None, true);
+        self._actor_aru.as_ref().unwrap().borrow_mut().set_behavior_none();
         self._actor_aru.as_ref().unwrap().borrow_mut().set_action_sleep_no_snoring();
         self._actor_aru.as_ref().unwrap().borrow_mut().set_position(self._actor_ufo.as_ref().unwrap().borrow().get_position());
 
         self._actor_ewa.as_ref().unwrap().borrow_mut()._controller.set_flying_mode(true);
-        self._actor_ewa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::None, None, true);
+        self._actor_ewa.as_ref().unwrap().borrow_mut().set_behavior_none();
         self._actor_ewa.as_ref().unwrap().borrow_mut().set_action_sleep_no_snoring();
         self._actor_ewa.as_ref().unwrap().borrow_mut().set_position(self._actor_ufo.as_ref().unwrap().borrow().get_position());
 
         self._actor_koa.as_ref().unwrap().borrow_mut()._controller.set_flying_mode(true);
-        self._actor_koa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::None, None, true);
+        self._actor_koa.as_ref().unwrap().borrow_mut().set_behavior_none();
         self._actor_koa.as_ref().unwrap().borrow_mut().set_action_sleep_no_snoring();
         self._actor_koa.as_ref().unwrap().borrow_mut().set_position(self._actor_ufo.as_ref().unwrap().borrow().get_position());
 

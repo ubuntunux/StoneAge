@@ -243,13 +243,24 @@ impl<'a> GameSceneManager<'a> {
         ptr_as_mut(self._game_client)
     }
 
+    pub fn get_audio_manager(&self) -> &AudioManager<'a> {
+        ptr_as_ref(self._audio_manager)
+    }
+
+    pub fn get_audio_manager_mut(&self) -> &mut AudioManager<'a> {
+        ptr_as_mut(self._audio_manager)
+    }
+
+    pub fn play_audio(&mut self, audio_name: &str, volume: Option<f32>) {
+        ptr_as_mut(self._audio_manager).play_bgm(audio_name, volume);
+    }
+
     pub fn play_bgm(&mut self, audio_name: &str, volume: Option<f32>) {
         ptr_as_mut(self._audio_manager).play_bgm(audio_name, volume);
     }
 
     pub fn play_ambient_sound(&mut self, audio_name: &str, volume: Option<f32>) {
-        self._ambient_sound =
-            ptr_as_mut(self._audio_manager).play_audio_bank(audio_name, AudioLoop::LOOP, volume);
+        self._ambient_sound = ptr_as_mut(self._audio_manager).play_audio_bank(audio_name, AudioLoop::LOOP, volume);
     }
 
     pub fn stop_bgm(&self) {
@@ -320,6 +331,24 @@ impl<'a> GameSceneManager<'a> {
     }
 
     // scenario
+    pub fn has_game_scenario(&self, scenario_type: ScenarioType) -> bool {
+        for scenario in self._scenarios.iter() {
+            if ptr_as_ref(scenario.as_ptr()).get_scenario_type() == scenario_type {
+                return true;
+            }
+        }
+        false
+    }
+
+    pub fn get_game_scenario(&self, scenario_type: ScenarioType) -> Option<*const (dyn ScenarioBase<'a> + 'a)> {
+        for scenario in self._scenarios.iter() {
+            if ptr_as_ref(scenario.as_ptr()).get_scenario_type() == scenario_type {
+                return Some(scenario.as_ptr());
+            }
+        }
+        None
+    }
+
     pub fn open_game_scenario(&mut self, scenario_type: ScenarioType) {
         self._reservation_scenarios.push(scenario_type)
     }
@@ -477,7 +506,7 @@ impl<'a> GameSceneManager<'a> {
         // scenario data
         for scenario in self._scenarios.iter() {
             let scenario_create_info = self.get_game_resources().get_scenario_data(scenario.borrow().get_scenario_type().get_scenario_data_name()).clone();
-            if self.get_current_game_scene_data_name() == scenario_create_info.borrow()._game_scenes.values().last().as_ref().unwrap()._game_scene_data_name.as_str() {
+            if scenario_create_info.borrow()._game_scenes.is_empty() == false && self.get_current_game_scene_data_name() == scenario_create_info.borrow()._game_scenes.values().last().as_ref().unwrap()._game_scene_data_name.as_str() {
                 ptr_as_mut(self).spawn_game_scenario_objects(&scenario_create_info);
             }
         }

@@ -19,9 +19,8 @@ use crate::game_module::widgets::quest_widgets::quest_title::QuestTitle;
 use crate::game_module::widgets::quest_widgets::quest_widget::QuestCreateInfo;
 use crate::game_module::widgets::text_box_widget::TextBoxContent;
 
-const SKIP_SCENARIO: bool = false;
+const SKIP_SCENARIO: bool = true;
 const USE_STORY_BOARDS: bool = false;
-const INTRO_FADE_TIME: f32 = 2.0;
 const PHASE_TIME_SLEEP: f32 = 5.0;
 const PHASE_TIME_HUNGRY: f32 = 3.0;
 
@@ -135,7 +134,7 @@ impl<'a> ScenarioIntro<'a> {
 
     pub fn update_assemble(&self, actor: &RcRefCell<Character<'a>>, target: &RcRefCell<Character<'a>>) -> bool {
         let radius = target.borrow().get_collision()._bounding_box._mag_xz + 0.5;
-        let (direction, dist) = math::make_normalize_with_norm(&(target.borrow().get_position() - actor.borrow().get_position()));
+        let (direction, dist) = math::make_normalize_xz_with_norm(&(target.borrow().get_position() - actor.borrow().get_position()));
         if radius < dist {
             actor.borrow_mut().set_move(&direction);
             return false;
@@ -241,6 +240,10 @@ impl<'a> ScenarioIntro<'a> {
             let wrapper = ActorWrapper::Prop(prop.clone());
             game_scene_manager.get_game_ui_manager_mut().remove_text_box_item(wrapper.get_key());
         }
+    }
+
+    pub fn set_scenario_phase_end(&mut self) {
+        self.set_scenario_phase(ScenarioPhase::End.to_string().as_str(), None);
     }
 }
 
@@ -373,8 +376,8 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
             ScenarioPhase::StoryBoard => {
                 game_scene_manager.set_time_of_day(TIME_OF_DAWN, 0.0);
 
-                self._actor_ewa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::None, None, true);
-                self._actor_koa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::None, None, true);
+                self._actor_ewa.as_ref().unwrap().borrow_mut().set_behavior_none();
+                self._actor_koa.as_ref().unwrap().borrow_mut().set_behavior_none();
                 self._actor_aru.as_ref().unwrap().borrow_mut().set_move_direction(&Vector3::new(1.0, 0.0, 0.0), true);
                 self._actor_ewa.as_ref().unwrap().borrow_mut().set_move_direction(&Vector3::new(1.0, 0.0, 0.0), true);
                 self._actor_koa.as_ref().unwrap().borrow_mut().set_move_direction(&Vector3::new(1.0, 0.0, 0.0), true);
@@ -443,9 +446,6 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
             ScenarioPhase::WrapUpTheDay => {
                 self.create_wrap_up_the_day_text_box(game_scene_manager);
             }
-            ScenarioPhase::Sleeping => {
-                game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, INTRO_FADE_TIME);
-            }
             ScenarioPhase::End => {
                 game_scene_manager.open_game_scenario(ScenarioType::ScenarioUfo);
             }
@@ -475,18 +475,18 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
             }
             ScenarioPhase::StoryBoard => {
                 if SKIP_SCENARIO {
-                    game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, INTRO_FADE_TIME);
+                    game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, DEFAULT_FADE_TIME);
                     game_ui_manager.set_auto_fade_inout(true);
                     self.set_scenario_phase(ScenarioPhase::MoveToTutorialStage.to_string().as_str(), None);
                 } else {
                     let story_board_phase = self.get_story_board_phase();
                     if game_ui_manager.is_done_game_image_progress() && any_key_pressed {
                         if USE_STORY_BOARDS == false || STORY_BOARDS.len() <= story_board_phase {
-                            game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, INTRO_FADE_TIME);
+                            game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, DEFAULT_FADE_TIME);
                             game_ui_manager.set_auto_fade_inout(true);
                             self.set_scenario_phase(ScenarioPhase::Morning.to_string().as_str(), Some(PHASE_TIME_SLEEP));
                         } else {
-                            game_ui_manager.set_image_auto_fade_inout(&STORY_BOARDS[story_board_phase], STORY_BOARD_FADE_TIME);
+                            game_ui_manager.set_image_auto_fade_inout(&STORY_BOARDS[story_board_phase], DEFAULT_FADE_TIME);
                             self.next_story_board_phase();
                         }
                     }
@@ -591,7 +591,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
 
                 if game_scene_manager.get_current_game_scene_data_name() == Stages::Home.get_stage_data_name() {
                     if SKIP_SCENARIO || self._sub_quest_sleep.as_ref().unwrap().borrow().is_completed_quest() == false {
-                        if self._actor_aru.as_ref().unwrap().borrow().is_action(ActionAnimationState::LayingDown) {
+                        if game_scene_manager.has_game_scenario(ScenarioType::ScenarioWrapUpTheDay) {
                             self._sub_quest_sleep.as_ref().unwrap().borrow_mut().set_completed_quest();
                             self.remove_wrap_up_the_day_text_box(game_scene_manager);
                             completed_scenario = true;
@@ -606,29 +606,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                 }
             }
             ScenarioPhase::Sleeping => {
-                if game_ui_manager.is_done_manual_fade_out() {
-                    let main_camera = game_scene_manager.get_scene_manager().get_main_camera_mut();
-                    main_camera._transform_object.set_position(&self._around_start_position);
-                    main_camera._transform_object.set_rotation(&self._around_start_rotation);
-
-                    self._actor_aru.as_ref().unwrap().borrow_mut().set_action_sleep();
-                    self._actor_aru.as_ref().unwrap().borrow_mut().set_position(self._prop_bed_for_aru.as_ref().unwrap().borrow().get_position());
-                    self._actor_aru.as_ref().unwrap().borrow_mut().set_move_direction(&Vector3::new(1.0, 0.0, 0.0), true);
-
-                    self._actor_ewa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::None, None, true);
-                    self._actor_ewa.as_ref().unwrap().borrow_mut().set_action_sleep();
-                    self._actor_ewa.as_ref().unwrap().borrow_mut().set_position(self._prop_bed_for_ewa.as_ref().unwrap().borrow().get_position());
-                    self._actor_ewa.as_ref().unwrap().borrow_mut().set_move_direction(&Vector3::new(1.0, 0.0, 0.0), true);
-
-                    self._actor_koa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::None, None, true);
-                    self._actor_koa.as_ref().unwrap().borrow_mut().set_action_sleep();
-                    self._actor_koa.as_ref().unwrap().borrow_mut().set_position(self._prop_bed_for_koa.as_ref().unwrap().borrow().get_position());
-                    self._actor_koa.as_ref().unwrap().borrow_mut().set_move_direction(&Vector3::new(1.0, 0.0, 0.0), true);
-
-                    game_ui_manager.set_auto_fade_inout(true);
-
-                    self.set_scenario_phase(ScenarioPhase::End.to_string().as_str(), None);
-                }
+                // ....
             }
             ScenarioPhase::End => {
             }
