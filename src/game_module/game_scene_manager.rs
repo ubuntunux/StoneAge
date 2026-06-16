@@ -251,10 +251,6 @@ impl<'a> GameSceneManager<'a> {
         ptr_as_mut(self._audio_manager)
     }
 
-    pub fn play_audio(&mut self, audio_name: &str, volume: Option<f32>) {
-        ptr_as_mut(self._audio_manager).play_bgm(audio_name, volume);
-    }
-
     pub fn play_bgm(&mut self, audio_name: &str, volume: Option<f32>) {
         ptr_as_mut(self._audio_manager).play_bgm(audio_name, volume);
     }

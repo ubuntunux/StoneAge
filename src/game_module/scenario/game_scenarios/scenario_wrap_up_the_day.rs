@@ -1,13 +1,14 @@
 use std::str::FromStr;
 use nalgebra::Vector3;
 use strum_macros::{Display, EnumCount, EnumIter, EnumString};
+use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop};
 use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
 use crate::game_module::actors::character::{Character};
 use crate::game_module::actors::character_data::ActionAnimationState;
 use crate::game_module::actors::props::Prop;
-use crate::game_module::game_constants::{AUDIO_ROOSTER, AUDIO_WRAP_UP_THE_DAY, CAMERA_DISTANCE_MAX, CAMERA_OFFSET_Y, DEFAULT_BGM_VOLUME, DEFAULT_FADE_TIME, GAME_MUSIC, MATERIAL_UI_NONE, SLEEP_TIMER};
+use crate::game_module::game_constants::{AUDIO_QUEST_COMPLETE, AUDIO_ROOSTER, AUDIO_WRAP_UP_THE_DAY, DEFAULT_BGM_VOLUME, DEFAULT_FADE_TIME, GAME_MUSIC, MATERIAL_UI_NONE, SLEEP_TIMER};
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::{GameSceneManager};
 use crate::game_module::scenario::game_scenarios::scenario_intro::ScenarioIntro;
@@ -37,6 +38,7 @@ pub struct ScenarioWrapUpTheDay<'a> {
     _prop_bed_for_aru: Option<RcRefCell<Prop<'a>>>,
     _prop_bed_for_ewa: Option<RcRefCell<Prop<'a>>>,
     _prop_bed_for_koa: Option<RcRefCell<Prop<'a>>>,
+    _audio_bgm: Option<RcRefCell<AudioInstance>>,
     _scenario_track: ScenarioTrack<ScenarioPhase>
 }
 
@@ -59,6 +61,7 @@ impl<'a> ScenarioWrapUpTheDay<'a> {
             _prop_bed_for_aru: None,
             _prop_bed_for_ewa: None,
             _prop_bed_for_koa: None,
+            _audio_bgm: None,
             _scenario_track: ScenarioTrack {
                 _scenario_phase: ScenarioPhase::Begin,
                 _phase_time: 0.0,
@@ -179,8 +182,8 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
         let game_scene_manager = ptr_as_mut(self._game_scene_manager);
         let game_ui_manager = ptr_as_mut(game_scene_manager._game_ui_manager);
 
-        let _phase_time = self._scenario_track.get_phase_time();
-        let phase_ratio = self._scenario_track.get_phase_ratio();
+        let phase_time = self._scenario_track.get_phase_time();
+        let _phase_ratio = self._scenario_track.get_phase_ratio();
         let current_scenario_phase = self._scenario_track._scenario_phase;
         match current_scenario_phase {
             ScenarioPhase::Begin => {
@@ -196,7 +199,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
             ScenarioPhase::Performance => {
                 if game_ui_manager.is_done_manual_fade_out() {
                     game_scene_manager.stop_bgm();
-                    game_scene_manager.play_bgm(AUDIO_WRAP_UP_THE_DAY, None);
+                    self._audio_bgm = game_scene_manager.get_audio_manager_mut().play_audio_bank(AUDIO_WRAP_UP_THE_DAY, AudioLoop::SOME(4), None);
 
                     let main_camera = game_scene_manager.get_scene_manager().get_main_camera_mut();
                     main_camera._transform_object.set_position(&Vector3::from(TABLE_SCENE_CAMERA_POSITION));
@@ -208,21 +211,26 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                     game_ui_manager.set_auto_fade_inout(true);
                 }
 
-                if 1.0 <= phase_ratio {
-                    self._actor_aru.as_ref().unwrap().borrow_mut().set_action_none();
-                    self._actor_ewa.as_ref().unwrap().borrow_mut().set_action_none();
-                    self._actor_koa.as_ref().unwrap().borrow_mut().set_action_none();
-                    game_scene_manager.stop_bgm();
-                    self.set_scenario_phase(ScenarioPhase::GoToSleep.to_string().as_str(), Some(10.0));
+                if let Some(actor) = self._audio_bgm.as_ref() {
+                    if game_scene_manager.get_audio_manager().is_playing_audio_instance(&actor) == false {
+                        game_scene_manager.stop_bgm();
+                        game_scene_manager.get_audio_manager_mut().play_audio_bank(AUDIO_QUEST_COMPLETE, AudioLoop::ONCE, None);
+                        self._actor_aru.as_ref().unwrap().borrow_mut().set_action_none();
+                        self._actor_ewa.as_ref().unwrap().borrow_mut().set_action_none();
+                        self._actor_koa.as_ref().unwrap().borrow_mut().set_action_none();
+                        self.set_scenario_phase(ScenarioPhase::GoToSleep.to_string().as_str(), Some(10.0));
+                    }
                 }
             }
             ScenarioPhase::GoToSleep => {
-                go_to_sleep(&self._actor_aru, &self._prop_bed_for_aru);
-                go_to_sleep(&self._actor_ewa, &self._prop_bed_for_ewa);
-                go_to_sleep(&self._actor_koa, &self._prop_bed_for_koa);
+                if 3.0 < phase_time {
+                    go_to_sleep(&self._actor_aru, &self._prop_bed_for_aru);
+                    go_to_sleep(&self._actor_ewa, &self._prop_bed_for_ewa);
+                    go_to_sleep(&self._actor_koa, &self._prop_bed_for_koa);
 
-                if self._actor_aru.as_ref().unwrap().borrow().is_action(ActionAnimationState::Sleep) {
-                    self.set_scenario_phase(ScenarioPhase::Sleep.to_string().as_str(), None);
+                    if self._actor_aru.as_ref().unwrap().borrow().is_action(ActionAnimationState::Sleep) {
+                        self.set_scenario_phase(ScenarioPhase::Sleep.to_string().as_str(), None);
+                    }
                 }
             }
             ScenarioPhase::Sleep => {
@@ -232,13 +240,13 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                         game_ui_manager.set_auto_fade_inout(true);
                         game_scene_manager.set_next_time_of_day();
 
-                        let main_camera = game_scene_manager.get_scene_manager().get_main_camera_mut();
-                        let pivot = self._actor_aru.as_ref().unwrap().borrow().get_center().clone() + Vector3::new(0.0, CAMERA_OFFSET_Y, 0.0);
-                        let camera_rotation = Vector3::new(0.4, 0.0, 0.0);
-                        let start_rotation_matrix = math::make_rotation_matrix(camera_rotation.x, camera_rotation.y, camera_rotation.z);
-                        let camera_position = pivot - start_rotation_matrix.column(2).xyz() * CAMERA_DISTANCE_MAX;
-                        main_camera._transform_object.set_position(&camera_position);
-                        main_camera._transform_object.set_rotation(&camera_rotation);
+                        // let main_camera = game_scene_manager.get_scene_manager().get_main_camera_mut();
+                        // let pivot = self._actor_aru.as_ref().unwrap().borrow().get_center().clone() + Vector3::new(0.0, CAMERA_OFFSET_Y, 0.0);
+                        // let camera_rotation = Vector3::new(0.4, 0.0, 0.0);
+                        // let start_rotation_matrix = math::make_rotation_matrix(camera_rotation.x, camera_rotation.y, camera_rotation.z);
+                        // let camera_position = pivot - start_rotation_matrix.column(2).xyz() * CAMERA_DISTANCE_MAX;
+                        // main_camera._transform_object.set_position(&camera_position);
+                        // main_camera._transform_object.set_rotation(&camera_rotation);
                     }
                 } else if game_ui_manager.is_done_game_image_progress() {
                     if let Some(scenario_intro) = game_scene_manager.get_game_scenario(ScenarioType::ScenarioIntro) {
