@@ -72,7 +72,7 @@ impl<'a> ScenarioWrapUpTheDay<'a> {
 }
 
 fn dance_around_the_table(scene_manager: &SceneManager, actor: &Option<RcRefCell<Character>>, table: &Option<RcRefCell<Prop>>, direction: &Vector3<f32>) {
-    let mut pos  = table.as_ref().unwrap().borrow().get_position() - direction.normalize() * 2.0;
+    let mut pos  = table.as_ref().unwrap().borrow().get_position() - math::safe_normalize(&direction) * 2.0;
     pos.y = scene_manager.get_height_bilinear(&pos, 0);
     actor.as_ref().unwrap().borrow_mut().set_position(&pos);
     actor.as_ref().unwrap().borrow_mut().look_at(table.as_ref().unwrap().borrow().get_position());
@@ -183,7 +183,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
         let game_ui_manager = ptr_as_mut(game_scene_manager._game_ui_manager);
 
         let phase_time = self._scenario_track.get_phase_time();
-        let _phase_ratio = self._scenario_track.get_phase_ratio();
+        let phase_ratio = self._scenario_track.get_phase_ratio();
         let current_scenario_phase = self._scenario_track._scenario_phase;
         match current_scenario_phase {
             ScenarioPhase::Begin => {
@@ -211,15 +211,13 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                     game_ui_manager.set_auto_fade_inout(true);
                 }
 
-                if let Some(actor) = self._audio_bgm.as_ref() {
-                    if game_scene_manager.get_audio_manager().is_playing_audio_instance(&actor) == false {
-                        game_scene_manager.stop_bgm();
-                        game_scene_manager.get_audio_manager_mut().play_audio_bank(AUDIO_QUEST_COMPLETE, AudioLoop::ONCE, None);
-                        self._actor_aru.as_ref().unwrap().borrow_mut().set_action_none();
-                        self._actor_ewa.as_ref().unwrap().borrow_mut().set_action_none();
-                        self._actor_koa.as_ref().unwrap().borrow_mut().set_action_none();
-                        self.set_scenario_phase(ScenarioPhase::GoToSleep.to_string().as_str(), Some(10.0));
-                    }
+                if self._audio_bgm.is_some() && game_scene_manager.get_audio_manager().is_playing_audio_instance(self._audio_bgm.as_ref().unwrap()) == false || 1.0 <= phase_ratio {
+                    game_scene_manager.get_audio_manager_mut().stop_audio_instance(self._audio_bgm.as_ref().unwrap());
+                    game_scene_manager.get_audio_manager_mut().play_audio_bank(AUDIO_QUEST_COMPLETE, AudioLoop::ONCE, None);
+                    self._actor_aru.as_ref().unwrap().borrow_mut().set_action_none();
+                    self._actor_ewa.as_ref().unwrap().borrow_mut().set_action_none();
+                    self._actor_koa.as_ref().unwrap().borrow_mut().set_action_none();
+                    self.set_scenario_phase(ScenarioPhase::GoToSleep.to_string().as_str(), Some(10.0));
                 }
             }
             ScenarioPhase::GoToSleep => {

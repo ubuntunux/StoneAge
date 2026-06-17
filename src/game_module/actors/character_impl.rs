@@ -559,6 +559,10 @@ impl<'a> Character<'a> {
         &self.get_bounding_box().get_center()
     }
 
+    pub fn check_arrival_with_radius(&self, target_position: &Vector3<f32>, radius: f32, ignore_y_axis: bool) -> bool {
+        self._controller.check_arrival_with_radius(target_position, radius, ignore_y_axis)
+    }
+
     pub fn get_power(&self, attack_event: ActionAnimationState) -> i32 {
         match attack_event {
             ActionAnimationState::Attack => self.get_character_data()._stat_data._attack_damage,
@@ -946,7 +950,6 @@ impl<'a> Character<'a> {
             }
             ActionAnimationState::Dance => {
                 animation_info._animation_loop = true;
-                animation_info._animation_fade_out_time = 0.0; // keep end of animation
                 render_object.set_animation(
                     &animation_data._dance_animation,
                     &animation_info,
@@ -1130,6 +1133,15 @@ impl<'a> Character<'a> {
                 self.set_move_control_stop();
             }
         }
+    }
+
+    pub fn move_to_target(&mut self, target_position: &Vector3<f32>, radius: f32) -> bool {
+        if self.check_arrival_with_radius(target_position, radius, true) {
+            self.set_position(&Vector3::new(target_position.x, self.get_position().y, target_position.z));
+            return true;
+        }
+        self.set_move(&(target_position - self.get_position()));
+        false
     }
 
     pub fn set_jump(&mut self) {

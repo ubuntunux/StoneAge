@@ -101,7 +101,10 @@ impl<'a> Prop<'a> {
         0 < self._prop_stats._item_count
     }
     pub fn get_position(&self) -> &Vector3<f32> {
-        &ptr_as_ref(self._render_object.as_ptr())._transform_object._position
+        &self._prop_stats._position
+    }
+    pub fn set_position(&mut self, position: &Vector3<f32>) {
+        self._prop_stats._position.clone_from(position);
     }
     pub fn get_bounding_box(&self) -> &BoundingBox {
         &ptr_as_ref(self._render_object.as_ptr())._bounding_box

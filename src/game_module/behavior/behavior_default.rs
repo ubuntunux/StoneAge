@@ -2,6 +2,7 @@ use crate::game_module::actors::character::Character;
 use crate::game_module::behavior::behavior_base::{BehaviorBase, BehaviorState};
 use crate::game_module::game_constants::{GameViewMode, ARRIVAL_DISTANCE_THRESHOLD, GAME_VIEW_MODE, NPC_IDLE_TERM_MAX, NPC_IDLE_TERM_MIN, NPC_ROAMING_RADIUS, NPC_ROAMING_TIME};
 use nalgebra::Vector3;
+use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::math::lerp;
 
 #[derive(Default)]
@@ -73,13 +74,13 @@ impl BehaviorBase for BehaviorDefault {
                     self._idle_time = lerp(NPC_IDLE_TERM_MIN, NPC_IDLE_TERM_MAX, rand::random::<f32>());
                 }
                 BehaviorState::Roaming => {
-                    let move_area = Vector3::new(
+                    let move_area = math::safe_normalize(&Vector3::new(
                         rand::random::<f32>() - 0.5,
                         0.0,
                         if GAME_VIEW_MODE == GameViewMode::GameViewMode2D { 0.0 } else { rand::random::<f32>() - 0.5 },
-                    ).normalize() * NPC_ROAMING_RADIUS;
+                    )) * NPC_ROAMING_RADIUS;
                     self._target_point = self._spawn_point + move_area;
-                    self._move_direction = (self._target_point - owner.get_position()).normalize();
+                    self._move_direction = math::safe_normalize(&(self._target_point - owner.get_position()));
                     self._move_time = NPC_ROAMING_TIME;
                     owner.set_move(&self._move_direction);
                     owner.set_run(false);

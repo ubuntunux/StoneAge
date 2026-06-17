@@ -2,6 +2,7 @@ use crate::game_module::actors::character::Character;
 use crate::game_module::behavior::behavior_base::{BehaviorBase, BehaviorState};
 use crate::game_module::game_constants::{GameViewMode, ARRIVAL_DISTANCE_THRESHOLD, GAME_VIEW_MODE, NPC_ATTACK_RANGE, NPC_ATTACK_TERM_MAX, NPC_ATTACK_TERM_MIN, NPC_AVAILABLE_MOVING_ATTACK, NPC_IDLE_TERM_MAX, NPC_IDLE_TERM_MIN, NPC_ROAMING_RADIUS, NPC_ROAMING_TIME, NPC_TRACKING_RANGE};
 use nalgebra::Vector3;
+use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::math::lerp;
 
 #[derive(Default)]
@@ -133,13 +134,13 @@ impl BehaviorBase for BehaviorRoamer {
                         lerp(NPC_IDLE_TERM_MIN, NPC_IDLE_TERM_MAX, rand::random::<f32>());
                 }
                 BehaviorState::Roaming => {
-                    let move_area = Vector3::new(
+                    let move_area = math::safe_normalize(&Vector3::new(
                         rand::random::<f32>() - 0.5,
                         0.0,
                         if GAME_VIEW_MODE == GameViewMode::GameViewMode2D { 0.0 } else { rand::random::<f32>() - 0.5 },
-                    ).normalize() * NPC_ROAMING_RADIUS;
+                    )) * NPC_ROAMING_RADIUS;
                     self._target_point = self._spawn_point + move_area;
-                    self._move_direction = (self._target_point - owner.get_position()).normalize();
+                    self._move_direction = math::safe_normalize(&(self._target_point - owner.get_position()));
                     self._move_time = NPC_ROAMING_TIME;
                     owner.set_move(&self._move_direction);
                     owner.set_run(false);
@@ -149,7 +150,7 @@ impl BehaviorBase for BehaviorRoamer {
                     //owner.get_character_manager().get_scene_manager().play_audio(&owner._audio_growl);
                 }
                 BehaviorState::Attack => {
-                    let to_target_direction = (target.as_ref().unwrap().get_position() - owner.get_position()).normalize();
+                    let to_target_direction = math::safe_normalize(&(target.as_ref().unwrap().get_position() - owner.get_position()));
                     owner.set_move_direction(&to_target_direction, false);
                     if !NPC_AVAILABLE_MOVING_ATTACK {
                         owner.set_move_idle();

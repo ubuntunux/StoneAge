@@ -96,7 +96,26 @@
             ]
         }
     },
-    "_props": {},
+    "_props": {
+        "monolith": {
+            "_position": [
+                29.432233810424805,
+                0.7094898223876953,
+                8.876251220703125
+            ],
+            "_prop_data_name": "props/monolith",
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        }
+    },
     "_scene": {
         "_cameras": {},
         "_directional_lights": {},

@@ -1,8 +1,7 @@
 use std::str::FromStr;
-use nalgebra::{Vector3, Vector4};
+use nalgebra::{Vector3};
 use strum_macros::{Display, EnumCount, EnumIter, EnumString};
 use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop};
-use rust_engine_3d::renderer::push_constants::PushConstantParameter;
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
 use crate::game_module::actors::character::{Character};
@@ -66,7 +65,7 @@ impl<'a> ScenarioUfo<'a> {
             actor.borrow_mut().set_move_idle();
             true
         } else {
-            actor.borrow_mut().set_move(&to_target.normalize());
+            actor.borrow_mut().set_move(&math::safe_normalize(&to_target));
             false
         }
     }
@@ -77,7 +76,7 @@ impl<'a> ScenarioUfo<'a> {
         if 1.0 < to_target.magnitude_squared() {
             let mut pos = actor.borrow().get_position().clone();
             let speed = 4.0f32;
-            pos += to_target.normalize() * speed * delta_time as f32;
+            pos += math::safe_normalize(&to_target) * speed * delta_time as f32;
             actor.borrow_mut().set_position(&pos);
             return false;
         }

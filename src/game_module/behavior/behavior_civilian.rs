@@ -1,4 +1,5 @@
 use nalgebra::Vector3;
+use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::math::lerp;
 use crate::game_module::actors::character::Character;
 use crate::game_module::behavior::behavior_base::{BehaviorBase, BehaviorState};
@@ -109,13 +110,13 @@ impl BehaviorBase for BehaviorCivilian {
                     self._behavior_time = NPC_IDLE_TERM_MIN;
                 }
                 BehaviorState::Roaming => {
-                    let move_area = Vector3::new(
+                    let move_area = math::safe_normalize(&Vector3::new(
                         rand::random::<f32>() - 0.5,
                         0.0,
                         if GAME_VIEW_MODE == GameViewMode::GameViewMode2D { 0.0 } else { rand::random::<f32>() - 0.5 },
-                    ).normalize() * NPC_ROAMING_RADIUS;
+                    )) * NPC_ROAMING_RADIUS;
                     self._target_point = self._spawn_point + move_area;
-                    self._move_direction = (self._target_point - owner.get_position()).normalize();
+                    self._move_direction = math::make_normalize_xz(&(self._target_point - owner.get_position()));
                     owner.set_move(&self._move_direction);
                     owner.set_run(false);
                     self._behavior_time = NPC_ROAMING_TIME;
