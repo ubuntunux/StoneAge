@@ -9,6 +9,7 @@ use crate::game_module::game_constants::*;
 use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::game_ui_manager::{GameUIManager, QuestItem};
 use crate::game_module::scenario::scenario::{ScenarioBase, ScenarioDataCreateInfo, ScenarioTrack, ScenarioType};
+use crate::game_module::scenario::game_scenarios::scenario_wrap_up_the_day::ScenarioWrapUpTheDay;
 use crate::game_module::actors::character_data::ActionAnimationState;
 use crate::game_module::actors::props::Prop;
 use crate::game_module::behavior::behavior_base::BehaviorState;
@@ -257,12 +258,6 @@ impl<'a> ScenarioIntro<'a> {
         self._prop_bed_for_aru = None;
         self._prop_bed_for_ewa = None;
         self._prop_bed_for_koa = None;
-
-        self._is_load_completed = false;
-    }
-
-    pub fn continue_scenario_phase(&mut self) {
-        self.set_scenario_phase(ScenarioPhase::End.to_string().as_str(), None);
     }
 }
 
@@ -298,6 +293,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
     fn on_close_game_scene(&mut self, _game_scene_data_name: &str) {
         let game_scene_manager = ptr_as_ref(self._game_scene_manager);
         self.clear_all(game_scene_manager);
+        self._is_load_completed = false;
     }
 
     fn on_open_game_scene(&mut self, game_scene_data_name: &str) {
@@ -450,9 +446,6 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                 self.create_wrap_up_the_day_text_box(game_scene_manager);
             }
             ScenarioPhase::End => {
-                self.clear_all(game_scene_manager);
-
-                game_scene_manager.open_game_scenario(ScenarioType::ScenarioUfo);
             }
             _ => ()
         }
@@ -592,26 +585,28 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                 }
             }
             ScenarioPhase::WrapUpTheDay => {
-                // wait...
+                // wait for sleeping
+            }
+            ScenarioPhase::Sleeping => {
+                // end - ScenarioType::ScenarioWrapUpTheDay
+                if game_scene_manager.has_game_scenario(ScenarioType::ScenarioWrapUpTheDay) == false {
+                    self.clear_all(game_scene_manager);
+                    game_scene_manager.open_game_scenario(ScenarioType::ScenarioUfo);
+                    self.set_scenario_phase(ScenarioPhase::End.to_string().as_str(), None);
+                }
             }
             _ => ()
         }
 
-        let mut completed_scenario = false;
-        if game_scene_manager.get_current_game_scene_data_name() == Stages::Home.get_stage_data_name() {
-            if SKIP_SCENARIO || self._sub_quest_sleep.is_some() && self._sub_quest_sleep.as_ref().unwrap().borrow().is_completed_quest() == false {
-                if game_scene_manager.has_game_scenario(ScenarioType::ScenarioWrapUpTheDay) {
-                    self._sub_quest_sleep.as_ref().unwrap().borrow_mut().set_completed_quest();
-                    self.clear_all(game_scene_manager);
-                    completed_scenario = true;
-                }
-            }
+        // NOTE: check is player sleeping mode
+        if self._sub_quest_sleep.is_some() && self._sub_quest_sleep.as_ref().unwrap().borrow().is_completed_quest() == false {
+            if let Some(scenario_wrap_up_the_day) = game_scene_manager.get_game_scenario(ScenarioType::ScenarioWrapUpTheDay).as_ref() {
+                // for manual wakeup
+                ptr_as_mut((*scenario_wrap_up_the_day) as *const ScenarioWrapUpTheDay).set_skip_wakeup(true);
 
-            if let Some(quest) = &self._quest {
-                if quest.borrow().is_completed_quest() || completed_scenario {
-                    self.set_scenario_phase(ScenarioPhase::Sleeping.to_string().as_str(), None);
-                }
-            };
+                self._sub_quest_sleep.as_ref().unwrap().borrow_mut().set_completed_quest();
+                self.set_scenario_phase(ScenarioPhase::Sleeping.to_string().as_str(), None);
+            }
         }
 
         self._scenario_track.update_scenario_track(current_scenario_phase, delta_time as f32);

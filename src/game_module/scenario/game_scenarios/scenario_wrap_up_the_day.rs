@@ -11,7 +11,6 @@ use crate::game_module::actors::props::Prop;
 use crate::game_module::game_constants::{AUDIO_QUEST_COMPLETE, AUDIO_ROOSTER, AUDIO_WRAP_UP_THE_DAY, DEFAULT_BGM_VOLUME, DEFAULT_FADE_TIME, GAME_MUSIC, MATERIAL_UI_NONE, SLEEP_TIMER};
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::{GameSceneManager};
-use crate::game_module::scenario::game_scenarios::scenario_intro::ScenarioIntro;
 use crate::game_module::scenario::scenario::{ScenarioBase, ScenarioDataCreateInfo, ScenarioTrack, ScenarioType};
 
 const TABLE_SCENE_CAMERA_POSITION: [f32; 3] = [23.27, 3.64, 19.15];
@@ -39,6 +38,7 @@ pub struct ScenarioWrapUpTheDay<'a> {
     _prop_bed_for_ewa: Option<RcRefCell<Prop<'a>>>,
     _prop_bed_for_koa: Option<RcRefCell<Prop<'a>>>,
     _audio_bgm: Option<RcRefCell<AudioInstance>>,
+    _skip_wakeup: bool,
     _scenario_track: ScenarioTrack<ScenarioPhase>
 }
 
@@ -62,12 +62,17 @@ impl<'a> ScenarioWrapUpTheDay<'a> {
             _prop_bed_for_ewa: None,
             _prop_bed_for_koa: None,
             _audio_bgm: None,
+            _skip_wakeup: false,
             _scenario_track: ScenarioTrack {
                 _scenario_phase: ScenarioPhase::Begin,
                 _phase_time: 0.0,
                 _phase_duration: None,
             }
         })
+    }
+
+    pub fn set_skip_wakeup(&mut self, skip_wakeup: bool) {
+        self._skip_wakeup = skip_wakeup;
     }
 }
 
@@ -247,8 +252,8 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                         // main_camera._transform_object.set_rotation(&camera_rotation);
                     }
                 } else if game_ui_manager.is_done_game_image_progress() {
-                    if let Some(scenario_intro) = game_scene_manager.get_game_scenario(ScenarioType::ScenarioIntro) {
-                        ptr_as_mut(scenario_intro as *const ScenarioIntro).continue_scenario_phase();
+                    if self._skip_wakeup {
+                        self._skip_wakeup = false;
                     } else {
                         game_scene_manager.get_scene_manager().play_audio_bank(AUDIO_ROOSTER);
                         game_scene_manager.get_character_manager().get_player().borrow_mut().set_action_wake_up();

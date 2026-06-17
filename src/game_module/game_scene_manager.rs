@@ -597,9 +597,9 @@ impl<'a> GameSceneManager<'a> {
         self._is_play_scenario_mode = false;
 
         if self.has_scenario() {
-            self._scenarios.iter_mut().for_each(|scenario| {
-                let mut scenario = scenario.borrow_mut();
-
+            let mut new_scenario_list: ScenarioList<'a> = Vec::new();
+            self._scenarios.iter_mut().for_each(|scenario_refcell| {
+                let mut scenario = scenario_refcell.borrow_mut();
                 if scenario.is_load_completed() {
                     scenario.update_game_scenario(any_key_hold, any_key_pressed, delta_time);
                 }
@@ -610,9 +610,11 @@ impl<'a> GameSceneManager<'a> {
 
                 if scenario.is_end_of_scenario() {
                     scenario.destroy_game_scenario();
+                } else {
+                    new_scenario_list.push(scenario_refcell.clone());
                 }
             });
-            self._scenarios.retain(|scenario| scenario.borrow().is_end_of_scenario() == false)
+            self._scenarios = new_scenario_list;
         }
 
         if self._reservation_scenarios.is_empty() == false {
