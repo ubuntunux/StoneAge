@@ -300,7 +300,8 @@ impl<'a> ItemManager<'a> {
         if success {
             let player = ptr_as_ref(self.get_game_scene_manager_mut().get_character_manager_mut().get_player().as_ptr());
             let yaw = player.get_rotation().y + (rand::random::<f32>() - 0.5) * std::f32::consts::PI * 0.5;
-            let velocity = Vector3::new(-yaw.sin(), 1.0, -yaw.cos()) * (2.0 + rand::random::<f32>() * 2.0);
+            let drop_speed = 2.0 + rand::random::<f32>() * 2.0;
+            let velocity = Vector3::new(-yaw.sin(), 1.0, -yaw.cos()) * drop_speed + player.get_final_velocity();
             let item_create_info = ItemCreateInfo {
                 _item_data_name: String::from(item_data_name),
                 _position: player.get_center().clone() + player.get_face_direction() * player.get_collision()._bounding_box._mag_xz,

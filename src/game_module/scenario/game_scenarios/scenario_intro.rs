@@ -18,7 +18,7 @@ use crate::game_module::widgets::quest_widgets::quest_item_default::DefaultQuest
 use crate::game_module::widgets::quest_widgets::quest_item_gather_item::GatherItemData;
 use crate::game_module::widgets::quest_widgets::quest_title::QuestTitle;
 use crate::game_module::widgets::quest_widgets::quest_widget::QuestCreateInfo;
-use crate::game_module::widgets::text_box_widget::TextBoxContent;
+use crate::game_module::widgets::text_box_widget::{TextBoxContent, TextBoxLayerType};
 
 const SKIP_SCENARIO: bool = false;
 const USE_STORY_BOARDS: bool = false;
@@ -146,6 +146,7 @@ impl<'a> ScenarioIntro<'a> {
     pub fn emoji_hungry(&self, game_ui_manager: &mut GameUIManager<'a>, actor: &RcRefCell<Character<'a>>) {
         let contents = vec![TextBoxContent::MaterialInstance(String::from(MATERIAL_EMOJI_HUNGRY))];
         game_ui_manager.add_text_box_item(
+            TextBoxLayerType::InteractionLayer,
             ActorWrapper::Character(actor.clone()),
             &contents,
             Some(CHARACTER_INTERACTION_TIME)
@@ -158,6 +159,7 @@ impl<'a> ScenarioIntro<'a> {
             let wrapper = ActorWrapper::Prop(prop.clone());
             let contents = vec![TextBoxContent::Text(String::from("\"Move to the Forest to find Food!\""))];
             game_scene_manager.get_game_ui_manager_mut().add_text_box_item(
+                TextBoxLayerType::GamePlayLayer,
                 wrapper,
                 &contents,
                 None
@@ -177,6 +179,7 @@ impl<'a> ScenarioIntro<'a> {
             let actor_wrapper = ActorWrapper::Prop(prop_tree.clone());
             let contents = vec![TextBoxContent::Text(String::from("\"Hit this tree to get food.\""))];
             game_scene_manager.get_game_ui_manager_mut().add_text_box_item(
+                TextBoxLayerType::GamePlayLayer,
                 actor_wrapper,
                 &contents,
                 None
@@ -196,6 +199,7 @@ impl<'a> ScenarioIntro<'a> {
             let wrapper = ActorWrapper::Prop(prop.clone());
             let contents = vec![TextBoxContent::Text(String::from("\"Return home.\""))];
             game_scene_manager.get_game_ui_manager_mut().add_text_box_item(
+                TextBoxLayerType::GamePlayLayer,
                 wrapper,
                 &contents,
                 None
@@ -229,6 +233,7 @@ impl<'a> ScenarioIntro<'a> {
             let wrapper = ActorWrapper::Prop(prop.clone());
             let contents = vec![TextBoxContent::Text(String::from("\"Wrap up the day.\""))];
             game_scene_manager.get_game_ui_manager_mut().add_text_box_item(
+                TextBoxLayerType::GamePlayLayer,
                 wrapper,
                 &contents,
                 None

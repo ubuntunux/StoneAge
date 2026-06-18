@@ -22,6 +22,7 @@ pub struct CharacterController<'a> {
     pub _last_ground_normal: Vector3<f32>,
     pub _face_direction: Vector3<f32>,
     pub _move_direction: Vector3<f32>,
+    pub _final_velocity: Vector3<f32>,
     pub _velocity: Vector3<f32>,
     pub _slop_velocity: Vector3<f32>,
     pub _hit_velocity: Vector3<f32>,
@@ -51,6 +52,7 @@ impl<'a> CharacterController<'a> {
             _last_ground_normal: Vector3::new(0.0, 1.0, 0.0),
             _face_direction: Vector3::zeros(),
             _move_direction: Vector3::zeros(),
+            _final_velocity: Vector3::zeros(),
             _velocity: Vector3::zeros(),
             _slop_velocity: Vector3::zeros(),
             _hit_velocity: Vector3::zeros(),
@@ -85,6 +87,7 @@ impl<'a> CharacterController<'a> {
         self._move_direction = Vector3::zeros();
         self._falling_height = position.y;
         self._last_ground_normal = Vector3::new(0.0, 1.0, 0.0);
+        self._final_velocity = Vector3::zeros();
         self._velocity = Vector3::zeros();
         self._slop_velocity = Vector3::zeros();
         self._hit_velocity = Vector3::zeros();
@@ -191,9 +194,8 @@ impl<'a> CharacterController<'a> {
         self._position.x = position.x;
         self._position.y = position.y;
     }
-    pub fn set_move_speed(&mut self, move_speed: f32) {
-        self._move_speed = move_speed;
-    }
+    pub fn get_move_speed(&self) -> f32 { self._move_speed }
+    pub fn set_move_speed(&mut self, move_speed: f32) { self._move_speed = move_speed; }
     pub fn get_rotation(&self) -> &Vector3<f32> {
         &self._rotation
     }
@@ -629,5 +631,7 @@ impl<'a> CharacterController<'a> {
         if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
             self._position.z = self._prev_position.z;
         }
+
+        self._final_velocity = (self._position - self._prev_position) / delta_time.max(0.001f32);
     }
 }

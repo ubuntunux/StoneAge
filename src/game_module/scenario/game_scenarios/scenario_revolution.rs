@@ -8,7 +8,7 @@ use crate::game_module::game_constants::{AUDIO_ALIEN_TALK, AUDIO_UFO_EXPERIMENT,
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::{GameSceneManager};
 use crate::game_module::scenario::scenario::{ScenarioBase, ScenarioDataCreateInfo, ScenarioTrack, ScenarioType};
-use crate::game_module::widgets::text_box_widget::TextBoxContent;
+use crate::game_module::widgets::text_box_widget::{TextBoxContent, TextBoxLayerType};
 
 #[derive(Clone, PartialEq, Eq, Hash, Display, Debug, Copy, EnumIter, EnumString, EnumCount)]
 pub enum ScenarioPhase {
@@ -162,13 +162,16 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
             }
             ScenarioPhase::Discussion => {
                 let contents = vec![TextBoxContent::MaterialInstance(String::from(MATERIAL_EMOJI_GOOD))];
+
                 game_ui_manager.add_text_box_item(
+                    TextBoxLayerType::InteractionLayer,
                     ActorWrapper::Character(self._alien_alpha.as_ref().unwrap().clone()),
                     &contents,
                     Some( CHARACTER_INTERACTION_TIME )
                 );
 
                 game_ui_manager.add_text_box_item(
+                    TextBoxLayerType::InteractionLayer,
                     ActorWrapper::Character(self._alien_beta.as_ref().unwrap().clone()),
                     &contents,
                     Some( CHARACTER_INTERACTION_TIME )

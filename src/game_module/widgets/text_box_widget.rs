@@ -1,7 +1,8 @@
 use std::collections::HashMap;
 use std::ffi::c_void;
 use nalgebra::{Vector2};
-use strum_macros::EnumString;
+use strum::{IntoEnumIterator};
+use strum_macros::{Display, EnumCount, EnumIter, FromRepr};
 use rust_engine_3d::audio::audio_manager::{AudioLoop, AudioManager};
 use rust_engine_3d::resource::resource::EngineResources;
 use rust_engine_3d::scene::ui::{HorizontalAlign, Orientation, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault};
@@ -18,7 +19,14 @@ const ITEM_PADDING: f32 = 10.0;
 const TEXT_BOX_ANIMATION_DURATION: f32 = 0.25;
 const MAX_TEXT_BOX_HEIGHT: f32 = 2.0;
 
-#[derive(PartialEq, Debug, EnumString)]
+#[repr(u8)]
+#[derive(PartialEq, Debug, Display, EnumCount, EnumIter, FromRepr)]
+pub enum TextBoxLayerType {
+    InteractionLayer,
+    GamePlayLayer
+}
+
+#[derive(PartialEq, Debug)]
 pub enum TextBoxAnimationState {
     None,
     Growing,
@@ -37,6 +45,7 @@ pub struct TextBoxWidget<'a> {
     pub _audio_manager: *const AudioManager<'a>,
     pub _engine_resources: *const EngineResources<'a>,
     pub _root_widget: *const WidgetDefault<'a>,
+    pub _layers: Vec<*const WidgetDefault<'a>>,
     pub _text_box_items: HashMap<*const c_void, TextBoxItem<'a>>
 }
 
@@ -143,17 +152,30 @@ impl<'a> TextBoxItem<'a> {
 
 impl<'a> TextBoxWidget<'a> {
     pub fn create_text_box_widget(audio_manager: *const AudioManager<'a>, engine_resources: &EngineResources<'a>, root_widget: &mut WidgetDefault<'a>) -> TextBoxWidget<'a> {
-        let text_box_widget_layout = UIManager::create_widget("TextBoxWidget", UIWidgetTypes::Default);
-        let ui_component = ptr_as_mut(text_box_widget_layout.as_ref()).get_ui_component_mut();
+        let text_box_root_widget = UIManager::create_widget("TextBoxRootWidget", UIWidgetTypes::Default);
+        let ui_component = ptr_as_mut(text_box_root_widget.as_ref()).get_ui_component_mut();
         ui_component.set_size_hint_x(Some(1.0));
         ui_component.set_size_hint_y(Some(1.0));
-        ui_component.set_color(get_color32(0, 0, 0, 0));
-        root_widget.add_widget(&text_box_widget_layout);
+        ui_component.set_renderable(false);
+        root_widget.add_widget(&text_box_root_widget);
+
+        let mut layers: Vec<*const WidgetDefault<'a>> = Vec::new();
+        for layer_type in TextBoxLayerType::iter() {
+            let text_box_widget_layout = UIManager::create_widget(layer_type.to_string().as_str(), UIWidgetTypes::Default);
+            let ui_component = ptr_as_mut(text_box_widget_layout.as_ref()).get_ui_component_mut();
+            ui_component.set_size_hint_x(Some(1.0));
+            ui_component.set_size_hint_y(Some(1.0));
+            ui_component.set_color(get_color32(0, 0, 0, 0));
+            ptr_as_mut(text_box_root_widget.as_ref()).add_widget(&text_box_widget_layout);
+            layers.push(text_box_widget_layout.as_ref())
+        }
+
 
         TextBoxWidget {
             _audio_manager: audio_manager,
             _engine_resources: engine_resources,
-            _root_widget: text_box_widget_layout.as_ref(),
+            _root_widget: text_box_root_widget.as_ref(),
+            _layers: layers,
             _text_box_items: HashMap::new(),
         }
     }
@@ -165,11 +187,15 @@ impl<'a> TextBoxWidget<'a> {
         ptr_as_mut(self._root_widget).get_ui_component_mut().set_visible(visible);
     }
 
+    pub fn set_text_box_layer_visible(&mut self, layer: TextBoxLayerType, visible: bool) {
+        ptr_as_mut(self._layers[layer as usize]).get_ui_component_mut().set_visible(visible);
+    }
+
     pub fn has_text_box_item(&self, key: *const c_void) -> bool {
         self._text_box_items.contains_key(&key)
     }
 
-    pub fn add_text_box_item(&mut self, actor: ActorWrapper<'a>, contents: &Vec<TextBoxContent>, duration: Option<f32>) {
+    pub fn add_text_box_item(&mut self, layer_type: TextBoxLayerType, actor: ActorWrapper<'a>, contents: &Vec<TextBoxContent>, duration: Option<f32>) {
         if let Some(item) = self._text_box_items.get_mut(&actor.get_key()) {
             item.update_text_box_item(self._audio_manager, self._engine_resources, contents, duration, true);
             item.set_animation_state(TextBoxAnimationState::None);
@@ -179,7 +205,7 @@ impl<'a> TextBoxWidget<'a> {
                 TextBoxItem::create_text_box_item(
                     self._audio_manager,
                     self._engine_resources,
-                    ptr_as_mut(self._root_widget),
+                    ptr_as_mut(self._layers[layer_type as usize]),
                     actor,
                     contents,
                     duration

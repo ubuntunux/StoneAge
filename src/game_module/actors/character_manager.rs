@@ -6,6 +6,7 @@ use rust_engine_3d::scene::render_object::{RenderObjectCreateInfo, SceneObjectTy
 use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
+use crate::game_module::widgets::text_box_widget::TextBoxLayerType;
 use crate::game_module::actors::items::ItemManager;
 use crate::application::application::Application;
 use crate::game_module::actors::character::{ActorWrapper, Character, CharacterCreateInfo};
@@ -209,6 +210,7 @@ impl<'a> CharacterManager<'a> {
             }
 
             game_ui_manager.add_text_box_item(
+                TextBoxLayerType::InteractionLayer,
                 ActorWrapper::Character(refcell_character.clone()),
                 &contents,
                 Some( CHARACTER_INTERACTION_TIME )

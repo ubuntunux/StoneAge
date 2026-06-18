@@ -21,7 +21,7 @@ use crate::game_module::widgets::player_hud::PlayerHud;
 use crate::game_module::widgets::quest_widgets::quest_title::QuestTitle;
 use crate::game_module::widgets::quest_widgets::quest_widget::{QuestItemBase, QuestWidget};
 use crate::game_module::widgets::target_status_bar::TargetStatusWidget;
-use crate::game_module::widgets::text_box_widget::{TextBoxContent, TextBoxWidget};
+use crate::game_module::widgets::text_box_widget::{TextBoxContent, TextBoxLayerType, TextBoxWidget};
 use crate::game_module::widgets::time_of_day::TimeOfDayWidget;
 use crate::game_module::widgets::toolbox_widget::ToolboxWidget;
 use crate::game_module::widgets::world_map_widget::{WorldMapDirection, WorldMapWidget};
@@ -269,6 +269,8 @@ impl<'a> GameUIManager<'a> {
             let game_ui_layout_mut = ptr_as_mut(self._game_ui_layout);
             game_ui_layout_mut.get_ui_component_mut().set_visible(show);
         }
+
+        self._text_box_widget.as_mut().unwrap().set_text_box_layer_visible(TextBoxLayerType::GamePlayLayer, show);
     }
 
     // game image widget
@@ -409,8 +411,8 @@ impl<'a> GameUIManager<'a> {
         self._text_box_widget.as_ref().unwrap().has_text_box_item(key)
     }
 
-    pub fn add_text_box_item(&mut self, actor: ActorWrapper<'a>, contents: &Vec<TextBoxContent>, duration: Option<f32>) {
-        self._text_box_widget.as_mut().unwrap().add_text_box_item(actor, contents, duration);
+    pub fn add_text_box_item(&mut self, layer_type: TextBoxLayerType, actor: ActorWrapper<'a>, contents: &Vec<TextBoxContent>, duration: Option<f32>) {
+        self._text_box_widget.as_mut().unwrap().add_text_box_item(layer_type, actor, contents, duration);
     }
 
     pub fn remove_text_box_item(&mut self, key: *const c_void) {

@@ -41,7 +41,6 @@ pub struct ScenarioDayOne<'a> {
     _prop_monolith: Option<RcRefCell<Prop<'a>>>,
     _monolith_start_position: Vector3<f32>,
     _audio_ufo_flying: Option<RcRefCell<AudioInstance>>,
-    _audio_ufo_beam: Option<RcRefCell<AudioInstance>>,
     _scenario_track: ScenarioTrack<ScenarioPhase>
 }
 
@@ -70,7 +69,6 @@ impl<'a> ScenarioDayOne<'a> {
             _prop_monolith: None,
             _monolith_start_position: Vector3::zeros(),
             _audio_ufo_flying: None,
-            _audio_ufo_beam: None,
             _scenario_track: ScenarioTrack {
                 _scenario_phase: ScenarioPhase::Begin,
                 _phase_time: 0.0,
@@ -197,17 +195,8 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
 
         match self._scenario_track._scenario_phase {
             ScenarioPhase::ReleaseFamily => {
-                self._audio_ufo_flying = game_scene_manager.get_scene_manager().play_audio_options(
-                    AUDIO_UFO_FLYING,
-                    AudioLoop::LOOP,
-                    Some(1.0),
-                );
-
-                self._audio_ufo_beam = game_scene_manager.get_scene_manager().play_audio_options(
-                    AUDIO_UFO_BEAM,
-                    AudioLoop::ONCE,
-                    Some(1.0),
-                );
+                self._audio_ufo_flying = game_scene_manager.get_scene_manager().play_audio_options(AUDIO_UFO_FLYING, AudioLoop::LOOP, Some(1.0));
+                game_scene_manager.get_scene_manager().play_audio_options(AUDIO_UFO_BEAM, AudioLoop::ONCE, Some(1.0));
             }
             ScenarioPhase::CloseUpShot => {
                 let main_camera = game_scene_manager.get_scene_manager().get_main_camera_mut();
@@ -276,6 +265,7 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
                     if self._prop_monolith.as_ref().unwrap().borrow()._render_object.borrow().is_visible() == false {
                         self._prop_monolith.as_ref().unwrap().borrow()._render_object.borrow_mut().set_visible(true);
                         self._prop_monolith.as_ref().unwrap().borrow_mut().set_position(self._actor_ufo.as_ref().unwrap().borrow().get_position());
+                        game_scene_manager.get_scene_manager().play_audio_options(AUDIO_UFO_BEAM, AudioLoop::ONCE, Some(1.0));
                     }
                     drop_completed = self.drop_monolith(delta_time);
                 }

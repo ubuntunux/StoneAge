@@ -28,6 +28,7 @@ pub enum KeyBindingGroup {
     Inventory,
     Interaction,
     QuickSlot,
+    WrapUpTheDayControl,
 }
 
 pub struct ControllerHelpWidget<'a> {

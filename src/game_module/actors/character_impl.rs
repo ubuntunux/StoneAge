@@ -551,10 +551,10 @@ impl<'a> Character<'a> {
         }
     }
 
-    pub fn get_position(&self) -> &Vector3<f32> {
-        &self._controller._position
-    }
-
+    pub fn get_prev_position(&self) -> &Vector3<f32> { &self._controller._prev_position }
+    pub fn get_position(&self) -> &Vector3<f32> { &self._controller._position }
+    pub fn get_velocity(&self) -> &Vector3<f32> { &self._controller._velocity }
+    pub fn get_final_velocity(&self) -> &Vector3<f32> { &self._controller._final_velocity }
     pub fn get_center(&self) -> &Vector3<f32> {
         &self.get_bounding_box().get_center()
     }
@@ -1094,11 +1094,10 @@ impl<'a> Character<'a> {
     pub fn set_on_ground(&mut self, ground_height: f32, ground_normal: &Vector3<f32>) {
         self._controller.set_on_ground(ground_height, ground_normal);
     }
-
+    pub fn get_move_speed(&self) -> f32 { self._controller.get_move_speed() }
     pub fn set_move_speed(&mut self, speed: f32) {
         self._controller.set_move_speed(speed);
     }
-
     pub fn get_move_direction(&self) -> &Vector3<f32> {
         self._controller.get_move_direction()
     }
