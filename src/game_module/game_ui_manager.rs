@@ -17,6 +17,7 @@ use crate::game_module::widgets::controller_help::ControllerHelpWidget;
 use crate::game_module::widgets::cross_hair_widget::CrossHairWidget;
 use crate::game_module::widgets::image_widget::ImageLayout;
 use crate::game_module::widgets::item_bar_widget::ItemBarWidget;
+use crate::game_module::widgets::key_binding_widget::KeyBindingWidgetManager;
 use crate::game_module::widgets::player_hud::PlayerHud;
 use crate::game_module::widgets::quest_widgets::quest_title::QuestTitle;
 use crate::game_module::widgets::quest_widgets::quest_widget::{QuestItemBase, QuestWidget};
@@ -46,6 +47,7 @@ pub struct GameUIManager<'a> {
     pub _root_widget: *const WidgetDefault<'a>,
     pub _game_ui_layout: *const WidgetDefault<'a>,
     pub _game_image: Option<Box<ImageLayout<'a>>>,
+    pub _key_binding_widget_manager: Option<Box<KeyBindingWidgetManager<'a>>>,
     pub _cross_hair: Option<Box<CrossHairWidget<'a>>>,
     pub _player_hud: Option<Box<PlayerHud<'a>>>,
     pub _text_box_widget: Option<Box<TextBoxWidget<'a>>>,
@@ -170,6 +172,7 @@ impl<'a> GameUIManager<'a> {
             _root_widget: std::ptr::null(),
             _game_ui_layout: std::ptr::null(),
             _game_image: None,
+            _key_binding_widget_manager: None,
             _cross_hair: None,
             _text_box_widget: None,
             _target_status_bar: None,
@@ -246,17 +249,32 @@ impl<'a> GameUIManager<'a> {
         ui_component.set_renderable(false);
         root_widget.add_widget(&game_ui_layout);
         self._game_ui_layout = game_ui_layout.as_ref();
+        self._key_binding_widget_manager = Some(Box::new(KeyBindingWidgetManager::default()));
         self._player_hud = Some(Box::new(PlayerHud::create_player_hud(game_ui_layout_mut)));
-        self._item_bar_widget = Some(Box::new(ItemBarWidget::create_item_bar_widget(game_resources, engine_resources, game_scene_manager, item_manager, game_ui_layout_mut)));
+        self._item_bar_widget = Some(Box::new(ItemBarWidget::create_item_bar_widget(
+            game_resources,
+            engine_resources,
+            game_scene_manager,
+            item_manager,
+            self._key_binding_widget_manager.as_ref().unwrap().as_ref(),
+            game_ui_layout_mut,
+            &window_size
+        )));
         self._target_status_bar = Some(Box::new(TargetStatusWidget::create_target_status_widget(game_ui_layout_mut)));
         self._toolbox_widget = Some(Box::new(ToolboxWidget::create_toolbox_widget(engine_resources, game_ui_layout_mut)));
         self._world_map_widget = Some(WorldMapWidget::create_world_map_widget(game_scene_manager, audio_manager, game_resources, game_ui_layout_mut));
         self._time_of_day = Some(Box::new(TimeOfDayWidget::create_time_of_day_widget(game_ui_layout_mut, game_resources, self)));
-        self._controller_help_widget = Some(Box::new(ControllerHelpWidget::create_controller_help_widget(game_ui_layout_mut, self._item_bar_widget.as_ref().unwrap(), game_resources, window_size)));
+        self._controller_help_widget = Some(Box::new(ControllerHelpWidget::create_controller_help_widget(
+            engine_resources,
+            self._key_binding_widget_manager.as_ref().unwrap().as_ref(),
+            game_ui_layout_mut,
+            window_size
+        )));
         self._quest_widget = Some(Box::new(QuestWidget::create_quest_widget(game_scene_manager, game_resources, game_ui_layout_mut)));
         self._text_box_widget = Some(Box::new(TextBoxWidget::create_text_box_widget(audio_manager, engine_resources, root_widget)));
         self._cross_hair = Some(Box::new(CrossHairWidget::create_cross_hair(root_widget, game_resources)));
         self._game_image = Some(ImageLayout::create_image_layout(root_widget, window_size, MATERIAL_INTRO_IMAGE));
+
         self.set_cross_hair_visible(false);
     }
 
@@ -458,12 +476,9 @@ impl<'a> GameUIManager<'a> {
     pub fn changed_window_size(&mut self, window_size: &Vector2<i32>) {
         log::info!("GameUIComponents::changed_window_size: {:?}", window_size);
 
-        let game_client = ptr_as_ref(self._game_client);
-        let game_scene_manager = game_client.get_game_scene_manager();
-
         self._game_image.as_mut().unwrap().changed_window_size(&window_size);
         self._player_hud.as_mut().unwrap().changed_window_size(&window_size);
-        self._controller_help_widget.as_mut().unwrap().changed_window_size(game_scene_manager, &window_size);
+        self._controller_help_widget.as_mut().unwrap().changed_window_size(&window_size);
         self._text_box_widget.as_mut().unwrap().changed_window_size(&window_size);
         self._target_status_bar.as_mut().unwrap().changed_window_size(&window_size);
         self._time_of_day.as_mut().unwrap().changed_window_size(&window_size);
@@ -485,6 +500,10 @@ impl<'a> GameUIManager<'a> {
             self._window_size = ui_manager._window_size.clone();
             self.changed_window_size(&ui_manager._window_size);
             self._need_to_refresh = false;
+        }
+
+        if let Some(key_binding_widget_manager) = self._key_binding_widget_manager.as_mut() {
+            key_binding_widget_manager.update_key_binding_widget_manager(game_controller._is_keyboard_input_mode);
         }
 
         if let Some(cross_hair) = self._cross_hair.as_mut() {
@@ -514,7 +533,11 @@ impl<'a> GameUIManager<'a> {
         }
 
         if let Some(controller_help_widget) = self._controller_help_widget.as_mut() {
-            controller_help_widget.update_controller_help_widget(game_scene_manager, game_controller);
+            controller_help_widget.update_controller_help_widget(game_scene_manager);
+        }
+
+        if let Some(item_bar_widget) = self._item_bar_widget.as_mut() {
+            item_bar_widget.update_item_bar_widget();
         }
 
         if let Some(text_box_widget) = self._text_box_widget.as_mut() {
