@@ -9,6 +9,7 @@ use crate::game_module::game_ui_manager::{EditorUIManager, GameUIManager};
 use nalgebra::{Vector2, Vector3};
 use rust_engine_3d::core::engine_core::EngineCore;
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
+use crate::game_module::scenario::game_scenarios::scenario_day_one;
 use crate::game_module::scenario::scenario::{ScenarioType};
 
 #[derive(Clone, Copy, Debug, Hash, PartialEq)]
@@ -152,7 +153,14 @@ impl<'a> GameClient<'a> {
                 game_ui_manager.show_game_ui(true);
             }
             GamePhase::Loading => {
-                game_scene_manager.open_game_scenario(ScenarioType::ScenarioIntro);
+                const SKIP_SCENARIO: bool = true;
+                if SKIP_SCENARIO {
+                    game_scene_manager.open_game_scenario(ScenarioType::ScenarioDayOne);
+                    unsafe { scenario_day_one::SKIP_SCENARIO = true; }
+                    game_ui_manager.set_image_auto_fade_inout(MATERIAL_UI_NONE, MATERIAL_WORLDMAP_FADE_TIME);
+                } else {
+                    game_scene_manager.open_game_scenario(ScenarioType::ScenarioIntro);
+                }
             }
             GamePhase::PlayGameScenario => {
                 game_ui_manager.show_game_ui(false);

@@ -8,6 +8,7 @@ use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, Rc
 use crate::game_module::actors::character::{Character};
 use crate::game_module::actors::character_data::ActionAnimationState;
 use crate::game_module::actors::props::Prop;
+use crate::game_module::behavior::behavior_base::BehaviorState;
 use crate::game_module::game_constants::{AUDIO_QUEST_COMPLETE, AUDIO_ROOSTER, AUDIO_WRAP_UP_THE_DAY, DEFAULT_BGM_VOLUME, DEFAULT_FADE_TIME, GAME_MUSIC, MATERIAL_UI_NONE, SLEEP_TIMER};
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::{GameSceneManager};
@@ -256,7 +257,9 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                         self._skip_wakeup = false;
                     } else {
                         game_scene_manager.get_scene_manager().play_audio_bank(AUDIO_ROOSTER);
-                        game_scene_manager.get_character_manager().get_player().borrow_mut().set_action_wake_up();
+                        self._actor_aru.as_ref().unwrap().borrow_mut().set_action_wake_up();
+                        self._actor_ewa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::WakeUp, None, true);
+                        self._actor_koa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::WakeUp, None, true);
                     }
 
                     self.set_scenario_phase(ScenarioPhase::End.to_string().as_str(), None);

@@ -519,14 +519,16 @@ impl<'a> ItemBarWidget<'a> {
     }
 
     pub fn select_item(&mut self, item_index: usize) {
-        let player = ptr_as_mut(ptr_as_ref(self._game_scene_manager).get_character_manager().get_player().as_ptr());
-        if item_index < self._item_widgets.len() && self._item_widgets[item_index]._item_data_name != ITEM_NONE {
-            let item_widget = &self._item_widgets[item_index];
-            self._selected_item_widget.update_selected_item_widget(item_index, Some(item_widget));
-            ptr_as_mut(self._item_manager).attach_item(player, self.get_selected_item_data_name());
-        } else {
-            self._selected_item_widget.update_selected_item_widget(INVALID_ITEM_INDEX, None);
-            ptr_as_mut(self._item_manager).detach_item(player);
+        if let Some(player) = ptr_as_ref(self._game_scene_manager).get_character_manager().get_maybe_player() {
+            let player = ptr_as_mut(player.as_ptr());
+            if item_index < self._item_widgets.len() && self._item_widgets[item_index]._item_data_name != ITEM_NONE {
+                let item_widget = &self._item_widgets[item_index];
+                self._selected_item_widget.update_selected_item_widget(item_index, Some(item_widget));
+                ptr_as_mut(self._item_manager).attach_item(player, self.get_selected_item_data_name());
+            } else {
+                self._selected_item_widget.update_selected_item_widget(INVALID_ITEM_INDEX, None);
+                ptr_as_mut(self._item_manager).detach_item(player);
+            }
         }
     }
 

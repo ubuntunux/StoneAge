@@ -13,7 +13,7 @@ use crate::game_module::actors::character::{ActorWrapper, Character, CharacterCr
 use crate::game_module::actors::interaction_object::InteractionObject;
 use crate::game_module::actors::items::{ItemCreateInfo};
 use crate::game_module::game_client::GameClient;
-use crate::game_module::game_constants::{GameViewMode, AUDIO_STOMACH_GROWLING, CHARACTER_INTERACTION_DISTANCE, CHARACTER_INTERACTION_TIME, GAME_VIEW_MODE, ITEM_SPIRIT_BALL, MATERIAL_EMOJI_GOOD, MATERIAL_EMOJI_HUNGRY, NPC_ATTACK_HIT_RANGE};
+use crate::game_module::game_constants::{GameViewMode, AUDIO_STOMACH_GROWLING, CHARACTER_INTERACTION_DISTANCE, CHARACTER_INTERACTION_TIME, GAME_VIEW_MODE, ITEM_HAND, ITEM_SPIRIT_BALL, MATERIAL_EMOJI_GOOD, MATERIAL_EMOJI_HUNGRY, NPC_ATTACK_HIT_RANGE};
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::game_ui_manager::GameUIManager;
@@ -155,6 +155,7 @@ impl<'a> CharacterManager<'a> {
         ));
 
         if is_player {
+            self.get_game_scene_manager().get_game_ui_manager_mut().add_item(ITEM_HAND, 1);
             self._player = Some(character.clone());
         }
 

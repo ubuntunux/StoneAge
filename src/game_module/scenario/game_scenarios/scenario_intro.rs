@@ -385,8 +385,6 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                 self._actor_aru.as_ref().unwrap().borrow_mut().set_move_direction(&Vector3::new(1.0, 0.0, 0.0), true);
                 self._actor_ewa.as_ref().unwrap().borrow_mut().set_move_direction(&Vector3::new(1.0, 0.0, 0.0), true);
                 self._actor_koa.as_ref().unwrap().borrow_mut().set_move_direction(&Vector3::new(1.0, 0.0, 0.0), true);
-
-                game_ui_manager.add_item(ITEM_HAND, 1);
             },
             ScenarioPhase::Morning => {
                 self._actor_aru.as_ref().unwrap().borrow_mut().set_action_sleep();

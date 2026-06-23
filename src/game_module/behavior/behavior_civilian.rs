@@ -13,6 +13,7 @@ pub struct BehaviorCivilian {
     pub _spawn_point: Vector3<f32>,
     pub _target_point: Vector3<f32>,
     pub _behavior_state: BehaviorState,
+    pub _next_behavior_state: BehaviorState,
 }
 
 impl BehaviorBase for BehaviorCivilian {
@@ -76,6 +77,11 @@ impl BehaviorBase for BehaviorCivilian {
                 }
                 self._behavior_time -= delta_time;
             }
+            BehaviorState::WakeUp => {
+                if owner.is_action(ActionAnimationState::WakeUp) == false {
+                    self.set_behavior(BehaviorState::Idle, owner, target, false);
+                }
+            }
             _ => (),
         }
     }
@@ -129,6 +135,9 @@ impl BehaviorBase for BehaviorCivilian {
                 }
                 BehaviorState::Sleep => {
                     owner.set_action_sleep();
+                }
+                BehaviorState::WakeUp => {
+                    owner.set_action_wake_up();
                 }
                 _ => (),
             }

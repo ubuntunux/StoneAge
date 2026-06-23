@@ -6,10 +6,13 @@ use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
 use crate::game_module::actors::character::{Character};
 use crate::game_module::actors::props::Prop;
+use crate::game_module::behavior::behavior_base::BehaviorState;
 use crate::game_module::game_constants::{AUDIO_UFO_BEAM, AUDIO_UFO_FLYING, CAMERA_DISTANCE_MAX, CAMERA_OFFSET_Y, TIME_OF_EARLY_MORNING};
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::{GameSceneManager};
 use crate::game_module::scenario::scenario::{ScenarioBase, ScenarioDataCreateInfo, ScenarioTrack, ScenarioType};
+
+pub static mut SKIP_SCENARIO: bool = false;
 
 #[derive(Clone, PartialEq, Eq, Hash, Display, Debug, Copy, EnumIter, EnumString, EnumCount)]
 enum ScenarioPhase {
@@ -207,14 +210,17 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
             ScenarioPhase::Awake => {
                 game_scene_manager.get_character_manager_mut().remove_character(self._actor_ufo.as_ref().unwrap());
 
-                self._actor_aru.as_ref().unwrap().borrow_mut().set_action_wake_up();
                 self._actor_aru.as_ref().unwrap().borrow_mut()._controller.set_flying_mode(false);
+                self._actor_aru.as_ref().unwrap().borrow_mut().set_position(&self._prop_bed_for_aru.as_ref().unwrap().borrow().get_position());
+                self._actor_aru.as_ref().unwrap().borrow_mut().set_action_wake_up();
 
-                self._actor_ewa.as_ref().unwrap().borrow_mut().set_action_wake_up();
                 self._actor_ewa.as_ref().unwrap().borrow_mut()._controller.set_flying_mode(false);
+                self._actor_ewa.as_ref().unwrap().borrow_mut().set_position(&self._prop_bed_for_ewa.as_ref().unwrap().borrow().get_position());
+                self._actor_ewa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::WakeUp, None, true);
 
-                self._actor_koa.as_ref().unwrap().borrow_mut().set_action_wake_up();
                 self._actor_koa.as_ref().unwrap().borrow_mut()._controller.set_flying_mode(false);
+                self._actor_koa.as_ref().unwrap().borrow_mut().set_position(&self._prop_bed_for_koa.as_ref().unwrap().borrow().get_position());
+                self._actor_koa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::WakeUp, None, true);
             }
             ScenarioPhase::End => {
             }
@@ -243,8 +249,12 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
         let current_scenario_phase = self._scenario_track._scenario_phase;
         match current_scenario_phase {
             ScenarioPhase::Begin => {
-                game_scene_manager.set_time_of_day(TIME_OF_EARLY_MORNING, 0.0);
-                self.set_scenario_phase(ScenarioPhase::ReleaseFamily.to_string().as_str(), Some(6.0));
+                if unsafe { SKIP_SCENARIO } {
+                    self.set_scenario_phase(ScenarioPhase::Awake.to_string().as_str(), Some(6.0));
+                } else {
+                    game_scene_manager.set_time_of_day(TIME_OF_EARLY_MORNING, 0.0);
+                    self.set_scenario_phase(ScenarioPhase::ReleaseFamily.to_string().as_str(), Some(6.0));
+                }
             },
             ScenarioPhase::ReleaseFamily => {
                 let complete = self.update_release_family(delta_time);

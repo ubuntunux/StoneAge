@@ -18,6 +18,7 @@ pub enum BehaviorState {
     Chase,
     Attack,
     Sleep,
+    WakeUp,
 }
 
 pub fn create_character_behavior(character_type: CharacterDataType) -> Box<dyn BehaviorBase> {
