@@ -71,14 +71,14 @@ impl<'a> KeyBindingWidgetMap<'a> {
 }
 
 pub struct KeyBindingWidgetManager<'a> {
-    pub _is_keyboard_input_mode: bool,
+    pub _is_keyboard_input_mode: Option<bool>,
     pub _key_binding_widget_maps: Vec<Rc<KeyBindingWidgetMap<'a>>>,
 }
 
 impl Default for KeyBindingWidgetManager<'_> {
     fn default() -> Self {
         KeyBindingWidgetManager {
-            _is_keyboard_input_mode: false,
+            _is_keyboard_input_mode: None,
             _key_binding_widget_maps: Vec::new(),
         }
     }
@@ -90,11 +90,11 @@ impl<'a> KeyBindingWidgetManager<'a> {
     }
 
     pub fn update_key_binding_widget_manager(&mut self, is_keyboard_input_mode: bool) {
-        if self._is_keyboard_input_mode != is_keyboard_input_mode {
+        if self._is_keyboard_input_mode.is_none() || self._is_keyboard_input_mode.unwrap() != is_keyboard_input_mode {
             for key_binding_widget_map in self._key_binding_widget_maps.iter_mut() {
                 ptr_as_mut(key_binding_widget_map.as_ref()).update_key_binding_widgets(is_keyboard_input_mode);
             }
-            self._is_keyboard_input_mode = !self._is_keyboard_input_mode;
+            self._is_keyboard_input_mode = Some(is_keyboard_input_mode);
         }
     }
 }
