@@ -285,9 +285,7 @@ impl<'a> Character<'a> {
     }
 
     pub fn destroy_character(&mut self) {
-        self.set_action_animation(ActionAnimationState::None, 1.0);
-        self.set_move_animation(MoveAnimationState::None);
-        self.update_action_keyframe_event();
+        self.stop_animations(true);
     }
 
     pub fn attach_item(&mut self, attach_item: RcRefCell<Item<'a>>) {
@@ -1083,6 +1081,17 @@ impl<'a> Character<'a> {
         }
     }
 
+    pub fn stop_animations(&mut self, apply_immediately: bool) {
+        self.set_action_animation(ActionAnimationState::None, 1.0);
+        self.set_move_animation(MoveAnimationState::None);
+        self.set_run(false);
+        self.set_move_speed(0.0);
+        if apply_immediately {
+            self.update_action_keyframe_event();
+            self.update_move_keyframe_event();
+        }
+    }
+
     pub fn set_position_xy(&mut self, position: &Vector3<f32>) {
         self._controller.set_position_xy(position);
     }
@@ -1412,7 +1421,7 @@ impl<'a> Character<'a> {
         &mut self,
         scene_manager: &SceneManager<'a>,
         player: &Character<'a>,
-        delta_time: f32,
+        delta_time: f32
     ) {
         let was_on_ground = self.is_on_ground();
         let falling_height = self._controller.get_falling_height();

@@ -435,26 +435,7 @@
             ]
         }
     },
-    "_player": {
-        "monkey_aru": {
-            "_character_data_name": "characters/family/monkey_aru",
-            "_position": [
-                -10.084662437438965,
-                4.392125129699707,
-                -0.4381899833679199
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        }
-    },
+    "_player": {},
     "_props": {
         "birch_tree_00": {
             "_position": [

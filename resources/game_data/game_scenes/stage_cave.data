@@ -1,26 +1,7 @@
 {
     "_characters": {},
     "_items": {},
-    "_player": {
-        "monkey_aru": {
-            "_character_data_name": "characters/family/monkey_aru",
-            "_position": [
-                -1.6680631637573242,
-                10.03738784790039,
-                -3.6510400772094727
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        }
-    },
+    "_player": {},
     "_props": {
         "bed": {
             "_position": [

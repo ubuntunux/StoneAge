@@ -143,6 +143,12 @@ impl<'a> GameClient<'a> {
             self.update_game_mode_begin();
         }
     }
+    pub fn load_game(&mut self) {
+        //self.get_game_scene_manager_mut().load_game_scene();
+    }
+    pub fn save_game(&mut self) {
+        //self.get_game_scene_manager_mut().save_game_scene();
+    }
     fn update_game_mode_begin(&mut self) {
         let game_scene_manager = ptr_as_mut(self._game_scene_manager);
         let character_manager = ptr_as_mut(game_scene_manager._character_manager.as_ref());

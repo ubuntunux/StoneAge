@@ -162,11 +162,10 @@ impl<'a> CharacterManager<'a> {
         self._characters.insert(String::from(character_name), character.clone());
         character
     }
-
     pub fn remove_character(&mut self, character: &RcRefCell<Character>) {
         character.borrow_mut().destroy_character();
-        self._characters.remove(character.borrow().get_character_name().as_str());
         self.get_scene_manager_mut().remove_skeletal_render_object(character.borrow()._render_object.borrow()._object_id);
+        self._characters.remove(character.borrow().get_character_name().as_str());
     }
     pub fn clear_characters(&mut self, clear_player: bool) {
         let characters = self._characters.values().cloned().collect::<Vec<RcRefCell<Character>>>();

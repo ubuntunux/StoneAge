@@ -160,14 +160,10 @@ impl<'a> GameResources<'a> {
         game_scene_data_filepath.push(GAME_SCENE_FILE_PATH);
         game_scene_data_filepath.push(game_scene_data_name);
         game_scene_data_filepath.set_extension(EXT_GAME_DATA);
-        let mut write_file =
-            File::create(&game_scene_data_filepath).expect("Failed to create file");
-        let mut write_contents: String =
-            serde_json::to_string(&game_scene_data_create_info).expect("Failed to serialize.");
+        let mut write_file = File::create(&game_scene_data_filepath).expect("Failed to create file");
+        let mut write_contents: String = serde_json::to_string(&game_scene_data_create_info).expect("Failed to serialize.");
         write_contents = write_contents.replace(",\"", ",\n\"");
-        write_file
-            .write(write_contents.as_bytes())
-            .expect("Failed to write");
+        write_file.write(write_contents.as_bytes()).expect("Failed to write");
 
         self._game_scene_data_create_info_map.insert(
             String::from(game_scene_data_name),
