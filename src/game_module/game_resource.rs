@@ -8,6 +8,7 @@ use crate::game_module::actors::props::PropData;
 use crate::game_module::actors::weapons::WeaponData;
 use crate::game_module::actors::weapons::WeaponDataCreateInfo;
 use crate::game_module::game_scene_manager::GameSceneDataCreateInfo;
+use crate::game_module::save_data::save_data::GameSaveData;
 use crate::game_module::scenario::scenario::ScenarioDataCreateInfo;
 use rust_engine_3d::resource::resource::{
     get_resource_data_must, get_unique_resource_name, EngineResources, ResourceDataContainer,
@@ -23,6 +24,7 @@ pub const GAME_SCENE_FILE_PATH: &str = "game_data/game_scenes";
 pub const PROP_DATA_FILE_PATH: &str = "game_data/props";
 pub const SCENARIO_FILE_PATH: &str = "game_data/scenario";
 pub const WEAPON_DATA_FILE_PATH: &str = "game_data/weapons";
+pub const GAME_SAVE_DATA_FILE_PATH: &str = "game_data/save_data";
 
 pub const EXT_GAME_DATA: &str = "data";
 
@@ -31,6 +33,7 @@ pub const DEFAULT_GAME_DATA_NAME: &str = "default";
 pub type CharacterDataMap = ResourceDataContainer<CharacterData>;
 pub type ItemDataMap = ResourceDataContainer<ItemData>;
 pub type GameSceneDataCreateInfoMap = ResourceDataContainer<GameSceneDataCreateInfo>;
+pub type GameSaveDataMap = ResourceDataContainer<GameSaveData>;
 pub type PropDataMap = ResourceDataContainer<PropData>;
 pub type ScenarioDataCreateInfoMap = ResourceDataContainer<ScenarioDataCreateInfo>;
 pub type WeaponDataMap<'a> = ResourceDataContainer<WeaponData<'a>>;
@@ -40,6 +43,7 @@ pub struct GameResources<'a> {
     _engine_resources: *const EngineResources<'a>,
     _scenario_data_create_info_map: ScenarioDataCreateInfoMap,
     _game_scene_data_create_info_map: GameSceneDataCreateInfoMap,
+    _game_save_data_map: GameSaveDataMap,
     _character_data_map: CharacterDataMap,
     _item_data_map: ItemDataMap,
     _prop_data_map: PropDataMap,
@@ -52,6 +56,7 @@ impl<'a> GameResources<'a> {
             _engine_resources: std::ptr::null(),
             _scenario_data_create_info_map: ScenarioDataCreateInfoMap::new(),
             _game_scene_data_create_info_map: GameSceneDataCreateInfoMap::new(),
+            _game_save_data_map: GameSaveDataMap::new(),
             _character_data_map: CharacterDataMap::new(),
             _item_data_map: ItemDataMap::new(),
             _prop_data_map: PropDataMap::new(),
@@ -88,8 +93,7 @@ impl<'a> GameResources<'a> {
         log::info!("    load_scenario_data");
         let game_data_directory = PathBuf::from(GAME_DATA_DIRECTORY);
         let scenario_directory = PathBuf::from(SCENARIO_FILE_PATH);
-        let scenario_data_files: Vec<PathBuf> =
-            self.collect_resources(&scenario_directory, &[EXT_GAME_DATA]);
+        let scenario_data_files: Vec<PathBuf> = self.collect_resources(&scenario_directory, &[EXT_GAME_DATA]);
         for scenario_data_file in scenario_data_files {
             let scenario_data_name = get_unique_resource_name(
                 &self._scenario_data_create_info_map,
@@ -111,17 +115,11 @@ impl<'a> GameResources<'a> {
     }
 
     pub fn has_scenario_data(&self, resource_name: &str) -> bool {
-        self._scenario_data_create_info_map
-            .get(resource_name)
-            .is_some()
+        self._scenario_data_create_info_map.get(resource_name).is_some()
     }
 
     pub fn get_scenario_data(&self, resource_name: &str) -> &RcRefCell<ScenarioDataCreateInfo> {
-        get_resource_data_must(
-            "scenario_data",
-            &self._scenario_data_create_info_map,
-            resource_name,
-        )
+        get_resource_data_must("scenario_data", &self._scenario_data_create_info_map, resource_name)
     }
 
     // game scene data
@@ -172,9 +170,7 @@ impl<'a> GameResources<'a> {
     }
 
     pub fn has_game_scene_data(&self, resource_name: &str) -> bool {
-        self._game_scene_data_create_info_map
-            .get(resource_name)
-            .is_some()
+        self._game_scene_data_create_info_map.get(resource_name).is_some()
     }
 
     pub fn get_game_scene_data(&self, resource_name: &str) -> &RcRefCell<GameSceneDataCreateInfo> {
@@ -183,6 +179,61 @@ impl<'a> GameResources<'a> {
             &self._game_scene_data_create_info_map,
             resource_name,
         )
+    }
+
+    // game save data
+    pub fn load_game_save_data(&mut self) {
+        log::info!("    load_game_save_data");
+        let game_data_directory = PathBuf::from(GAME_DATA_DIRECTORY);
+        let game_save_directory = PathBuf::from(GAME_SAVE_DATA_FILE_PATH);
+        let game_save_data_files: Vec<PathBuf> =
+            self.collect_resources(&game_save_directory, &[EXT_GAME_DATA]);
+        for game_save_data_file in game_save_data_files {
+            let game_save_data_name = get_unique_resource_name(
+                &self._game_save_data_map,
+                &game_data_directory,
+                &game_save_data_file,
+            );
+            let loaded_contents = system::load(&game_save_data_file);
+            let game_save_data_create_info: GameSaveData =
+                serde_json::from_reader(loaded_contents).expect("Failed to deserialize.");
+            self._game_save_data_map.insert(
+                game_save_data_name.clone(),
+                newRcRefCell(game_save_data_create_info),
+            );
+        }
+    }
+
+    pub fn unload_game_save_data(&mut self) {
+        self._game_save_data_map.clear();
+    }
+
+    pub fn save_game_save_data(
+        &mut self,
+        game_save_data_name: &str,
+        game_save_data_create_info: &GameSaveData,
+    ) {
+        let mut game_save_data_filepath = PathBuf::from(APPLICATION_RESOURCE_PATH);
+        game_save_data_filepath.push(GAME_SAVE_DATA_FILE_PATH);
+        game_save_data_filepath.push(game_save_data_name);
+        game_save_data_filepath.set_extension(EXT_GAME_DATA);
+        let mut write_file = File::create(&game_save_data_filepath).expect("Failed to create file");
+        let mut write_contents: String = serde_json::to_string(&game_save_data_create_info).expect("Failed to serialize.");
+        write_contents = write_contents.replace(",\"", ",\n\"");
+        write_file.write(write_contents.as_bytes()).expect("Failed to write");
+
+        self._game_save_data_map.insert(
+            String::from(game_save_data_name),
+            newRcRefCell(game_save_data_create_info.clone()),
+        );
+    }
+
+    pub fn has_game_save_data(&self, resource_name: &str) -> bool {
+        self._game_save_data_map.get(resource_name).is_some()
+    }
+
+    pub fn get_game_save_data(&self, resource_name: &str) -> &RcRefCell<GameSaveData> {
+        get_resource_data_must("game_save_data", &self._game_save_data_map, resource_name)
     }
 
     // Game Data
@@ -283,12 +334,9 @@ impl<'a> GameResources<'a> {
                 &game_data_file,
             );
             let loaded_contents = system::load(&game_data_file);
-            let character_data_create_info: CharacterDataCreateInfo =
-                serde_json::from_reader(loaded_contents).expect("Failed to deserialize.");
-            let character_data =
-                CharacterData::create_character_data(&character_data_create_info, self);
-            self._character_data_map
-                .insert(character_data_name.clone(), newRcRefCell(character_data));
+            let character_data_create_info: CharacterDataCreateInfo = serde_json::from_reader(loaded_contents).expect("Failed to deserialize.");
+            let character_data = CharacterData::create_character_data(&character_data_create_info, self);
+            self._character_data_map.insert(character_data_name.clone(), newRcRefCell(character_data));
         }
     }
 

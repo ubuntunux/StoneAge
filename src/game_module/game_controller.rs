@@ -14,7 +14,6 @@ use crate::game_module::actors::character::Character;
 use crate::game_module::game_client::{GameClient};
 use crate::game_module::game_constants::*;
 use crate::game_module::game_ui_manager::GameUIManager;
-use crate::game_module::widgets::world_map_widget::WorldMapDirection;
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Debug, Display, EnumIter, EnumString, EnumCount)]
 pub enum KeyBindingType {
@@ -57,8 +56,7 @@ pub struct GameController<'a> {
     pub _camera_yaw: f32,
     pub _camera_position: Vector3<f32>,
     pub _camera_blend_ratio: f32,
-    pub _is_game_camera_auto_blend_mode: bool,
-    pub _is_keyboard_input_mode: bool,
+    pub _is_game_camera_auto_blend_mode: bool
 }
 
 impl<'a> GameController<'a> {
@@ -74,8 +72,7 @@ impl<'a> GameController<'a> {
             _camera_yaw: 0.0,
             _camera_position: Vector3::zeros(),
             _camera_blend_ratio: 0.0,
-            _is_game_camera_auto_blend_mode: false,
-            _is_keyboard_input_mode: true,
+            _is_game_camera_auto_blend_mode: false
         })
     }
 
@@ -103,14 +100,7 @@ impl<'a> GameController<'a> {
             .get_main_camera()
     }
     pub fn get_main_camera_mut(&self) -> &mut CameraObjectData {
-        self.get_game_client()
-            .get_game_scene_manager()
-            .get_scene_manager()
-            .get_main_camera_mut()
-    }
-
-    pub fn is_keyboard_input_mode(&self) -> bool {
-        self._is_keyboard_input_mode
+        self.get_game_client().get_game_scene_manager().get_scene_manager().get_main_camera_mut()
     }
 
     pub fn is_game_camera_auto_blend_mode(&self) -> bool {
@@ -371,82 +361,6 @@ impl<'a> GameController<'a> {
         main_camera._transform_object.set_position(&self._camera_position);
     }
 
-    pub fn is_open_worldmap(&self, joystick_input_data: &JoystickInputData, keyboard_input_data: &KeyboardInputData) -> bool {
-        keyboard_input_data.get_key_released(KeyCode::Escape) ||
-        joystick_input_data._btn_start == ButtonState::Released
-    }
-
-    pub fn is_close_worldmap(&self, joystick_input_data: &JoystickInputData, keyboard_input_data: &KeyboardInputData) -> bool {
-        keyboard_input_data.get_key_released(KeyCode::Escape) ||
-        joystick_input_data._btn_start == ButtonState::Released ||
-        joystick_input_data._btn_b == ButtonState::Released
-    }
-
-    pub fn update_world_map_controller(
-        &mut self,
-        time_data: &TimeData,
-        joystick_input_data: &JoystickInputData,
-        keyboard_input_data: &KeyboardInputData,
-        _mouse_move_data: &MouseMoveData,
-        _mouse_input_data: &MouseInputData,
-        _mouse_delta: &Vector2<f32>,
-        _main_camera: &mut CameraObjectData,
-        _player: &RcRefCell<Character>,
-    ) {
-        let _delta_time: f32 = time_data._delta_time_with_scale as f32;
-        let is_left = keyboard_input_data.get_key_pressed(KeyCode::KeyA)
-            || keyboard_input_data.get_key_pressed(KeyCode::ArrowLeft)
-            || joystick_input_data._btn_left == ButtonState::Pressed;
-        let is_right = keyboard_input_data.get_key_pressed(KeyCode::KeyD)
-            || keyboard_input_data.get_key_pressed(KeyCode::ArrowRight)
-            || joystick_input_data._btn_right == ButtonState::Pressed;
-        let is_down = keyboard_input_data.get_key_pressed(KeyCode::KeyS)
-            || keyboard_input_data.get_key_pressed(KeyCode::ArrowDown)
-            || joystick_input_data._btn_down == ButtonState::Pressed;
-        let is_up = keyboard_input_data.get_key_pressed(KeyCode::KeyW)
-            || keyboard_input_data.get_key_pressed(KeyCode::ArrowUp)
-            || joystick_input_data._btn_up == ButtonState::Pressed;
-        let is_interaction = keyboard_input_data.get_key_pressed(KeyCode::KeyF)
-            || keyboard_input_data.get_key_pressed(KeyCode::Space)
-            || keyboard_input_data.get_key_pressed(KeyCode::Enter)
-            || joystick_input_data._btn_x == ButtonState::Pressed;
-
-        let joystick_sensitivity: f32 = 0.1 / 32767.0;
-        let _stick_left_direction = Vector2::<f32>::new(
-            joystick_input_data._stick_left_direction.x as f32,
-            joystick_input_data._stick_left_direction.y as f32,
-        ) * joystick_sensitivity;
-        let _stick_right_direction = Vector2::<f32>::new(
-            joystick_input_data._stick_right_direction.x as f32,
-            joystick_input_data._stick_right_direction.y as f32,
-        ) * joystick_sensitivity;
-
-        //
-        if keyboard_input_data.is_any_key_pressed() {
-            self._is_keyboard_input_mode = true;
-        } else if joystick_input_data.is_any_button_pressed() {
-            self._is_keyboard_input_mode = false;
-        }
-
-        //
-        let world_map_direction = if is_left {
-            WorldMapDirection::LEFT
-        } else if is_right {
-            WorldMapDirection::RIGHT
-        } else if is_up {
-            WorldMapDirection::UP
-        } else if is_down {
-            WorldMapDirection::DOWN
-        } else {
-            WorldMapDirection::COUNT
-        };
-        self.get_game_ui_manager_mut().change_selected_world_map_stage(world_map_direction);
-
-        if is_interaction {
-            self.get_game_ui_manager_mut().teleport_selected_world_map_stage();
-        }
-    }
-
     pub fn update_game_controller(
         &mut self,
         time_data: &TimeData,
@@ -514,11 +428,10 @@ impl<'a> GameController<'a> {
             joystick_input_data._stick_right_direction.y as f32,
         ) * joystick_sensitivity;
 
-        //
-        if keyboard_input_data.is_any_key_pressed() {
-            self._is_keyboard_input_mode = true;
-        } else if joystick_input_data.is_any_button_pressed() {
-            self._is_keyboard_input_mode = false;
+        // game menu
+        if keyboard_input_data.get_key_pressed(KeyCode::Escape) ||
+            joystick_input_data._btn_start == ButtonState::Pressed {
+            self.get_game_ui_manager_mut().open_game_menu();
         }
 
         // item control

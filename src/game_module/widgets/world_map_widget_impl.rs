@@ -3,13 +3,14 @@ use std::ffi::c_void;
 use std::rc::Rc;
 use crate::game_module::game_resource::GameResources;
 use nalgebra::Vector2;
+use winit::keyboard::KeyCode;
 use rust_engine_3d::audio::audio_manager::{AudioLoop, AudioManager};
+use rust_engine_3d::core::input::{ButtonState, JoystickInputData, KeyboardInputData};
 use rust_engine_3d::scene::ui::{HorizontalAlign, PosHintX, PosHintY, UIComponentInstance, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault};
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use crate::game_module::game_scene_manager::{GameSceneManager, Stages};
 use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, DEFAULT_GATE_NAME, MATERIAL_PORTRAIT_MONKEY_ARU, MATERIAL_WORLDMAP};
-use crate::game_module::game_controller::GameController;
 use crate::game_module::widgets::world_map_widget::{WorldMapBridge, WorldMapDirection, WorldMapPlayer, WorldMapStage, WorldMapWidget};
 
 impl WorldMapDirection {
@@ -67,7 +68,6 @@ impl<'a> WorldMapBridge<'a> {
 
 impl<'a> WorldMapStage<'a> {
     pub fn callback_touch_down(ui_component: &UIComponentInstance<'a>, _touched_pos: &Vector2<f32>, _touched_pos_delta: &Vector2<f32>) -> bool {
-        log::info!("visible: {}, opacity: {}, renderable: {}", ui_component.get_visible(), ui_component.get_opacity(), ui_component.get_renderable());
         if ui_component.get_user_data().is_null() == false {
             let world_map_stage = ptr_as_ref(ui_component.get_user_data() as *const WorldMapStage<'a>);
             world_map_stage.get_world_map_widget_mut().set_selected_world_map_stage(&world_map_stage.get_stage_data_name());
@@ -242,8 +242,7 @@ impl<'a> WorldMapWidget<'a> {
         ui_component.set_pos_hint_x(PosHintX::Center(0.5));
         ui_component.set_pos_hint_y(PosHintY::Center(0.5));
         ui_component.set_color(get_color32(80, 80, 180, 255));
-        ui_component.set_visible(false);
-        root_widget.add_widget(&background_layout);
+        //root_widget.add_widget(&background_layout);
 
         let world_map_material_instance = game_resources.get_engine_resources().get_material_instance_data(MATERIAL_WORLDMAP);
         let world_map_widget = UIManager::create_widget("world_map_widget", UIWidgetTypes::Default);
@@ -298,6 +297,7 @@ impl<'a> WorldMapWidget<'a> {
         let mut world_map_widget = Box::new(WorldMapWidget {
             _game_scene_manager: game_scene_manager,
             _audio_manager: audio_manager,
+            _root_widget: root_widget,
             _background_layout: background_layout.clone(),
             _world_map_widget: world_map_widget.clone(),
             _bridge_layer_widget: bridge_layer_widget.clone(),
@@ -306,7 +306,9 @@ impl<'a> WorldMapWidget<'a> {
             _image_aspect: image_aspect,
             _selected_stage_name: String::new(),
             _world_map_player: None,
-            _world_map_stages: HashMap::new()
+            _world_map_stages: HashMap::new(),
+            _is_opened_world_map: false,
+            _request_close_world_map: false,
         });
 
         world_map_widget.as_mut()._world_map_player = Some(WorldMapPlayer::create_world_map_player(world_map_widget.as_ref(), game_resources, player_layer_widget_mut, image_aspect));
@@ -345,14 +347,26 @@ impl<'a> WorldMapWidget<'a> {
         ptr_as_mut(self._audio_manager)
     }
 
-    pub fn set_visible(&mut self, visible: bool) {
-        let ui_component = ptr_as_mut(self._background_layout.as_ref()).get_ui_component_mut();
-        ui_component.set_visible(visible);
+    pub fn is_opened_world_map(&self) -> bool {
+        self._is_opened_world_map
     }
-
-    pub fn get_visible(&self) -> bool {
-        let ui_component = ptr_as_ref(self._background_layout.as_ref()).get_ui_component();
-        ui_component.get_visible()
+    pub fn open_world_map(&mut self) {
+        if self._is_opened_world_map == false {
+            ptr_as_mut(self._root_widget).add_widget(&self._background_layout);
+            self._is_opened_world_map = true;
+        }
+    }
+    pub fn is_requested_close_world_map(&self) -> bool {
+        self._request_close_world_map
+    }
+    pub fn request_close_world_map(&mut self){
+        self._request_close_world_map = true;
+    }
+    pub fn close_world_map(&mut self) {
+        if self._is_opened_world_map {
+            ptr_as_mut(self._root_widget).remove_widget(self._background_layout.as_ref());
+            self._is_opened_world_map = false;
+        }
     }
 
     pub fn changed_window_size(&mut self, window_size: &Vector2<i32>) {
@@ -410,6 +424,63 @@ impl<'a> WorldMapWidget<'a> {
         }
     }
 
-    pub fn update_world_map(&mut self, _game_controller: &GameController, _delta_time: f32) {
+    pub fn update_world_map(
+        &mut self,
+        joystick_input_data: &JoystickInputData,
+        keyboard_input_data: &KeyboardInputData
+    ) {
+        if self.is_opened_world_map() == false {
+            return;
+        }
+
+        let is_left = keyboard_input_data.get_key_pressed(KeyCode::KeyA)
+            || keyboard_input_data.get_key_pressed(KeyCode::ArrowLeft)
+            || joystick_input_data._btn_left == ButtonState::Pressed;
+        let is_right = keyboard_input_data.get_key_pressed(KeyCode::KeyD)
+            || keyboard_input_data.get_key_pressed(KeyCode::ArrowRight)
+            || joystick_input_data._btn_right == ButtonState::Pressed;
+        let is_down = keyboard_input_data.get_key_pressed(KeyCode::KeyS)
+            || keyboard_input_data.get_key_pressed(KeyCode::ArrowDown)
+            || joystick_input_data._btn_down == ButtonState::Pressed;
+        let is_up = keyboard_input_data.get_key_pressed(KeyCode::KeyW)
+            || keyboard_input_data.get_key_pressed(KeyCode::ArrowUp)
+            || joystick_input_data._btn_up == ButtonState::Pressed;
+        let is_interaction = keyboard_input_data.get_key_pressed(KeyCode::KeyF)
+            || keyboard_input_data.get_key_pressed(KeyCode::Space)
+            || keyboard_input_data.get_key_pressed(KeyCode::Enter)
+            || joystick_input_data._btn_x == ButtonState::Pressed;
+
+        let joystick_sensitivity: f32 = 0.1 / 32767.0;
+        let _stick_left_direction = Vector2::<f32>::new(
+            joystick_input_data._stick_left_direction.x as f32,
+            joystick_input_data._stick_left_direction.y as f32,
+        ) * joystick_sensitivity;
+        let _stick_right_direction = Vector2::<f32>::new(
+            joystick_input_data._stick_right_direction.x as f32,
+            joystick_input_data._stick_right_direction.y as f32,
+        ) * joystick_sensitivity;
+
+        if keyboard_input_data.get_key_released(KeyCode::Escape) ||
+            joystick_input_data._btn_start == ButtonState::Released ||
+            joystick_input_data._btn_b == ButtonState::Released {
+            self.request_close_world_map();
+        }
+
+        let world_map_direction = if is_left {
+            WorldMapDirection::LEFT
+        } else if is_right {
+            WorldMapDirection::RIGHT
+        } else if is_up {
+            WorldMapDirection::UP
+        } else if is_down {
+            WorldMapDirection::DOWN
+        } else {
+            WorldMapDirection::COUNT
+        };
+        self.change_selected_world_map_stage(world_map_direction);
+
+        if is_interaction {
+            self.teleport_selected_world_map_stage();
+        }
     }
 }

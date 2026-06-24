@@ -36,6 +36,7 @@ pub struct WorldMapPlayer<'a> {
 pub struct WorldMapWidget<'a> {
     pub _game_scene_manager: *const GameSceneManager<'a>,
     pub _audio_manager: *const AudioManager<'a>,
+    pub _root_widget: *const WidgetDefault<'a>,
     pub _background_layout: Rc<WidgetDefault<'a>>,
     pub _world_map_widget: Rc<WidgetDefault<'a>>,
     pub _bridge_layer_widget: Rc<WidgetDefault<'a>>,
@@ -44,5 +45,7 @@ pub struct WorldMapWidget<'a> {
     pub _image_aspect: f32,
     pub _selected_stage_name: String,
     pub _world_map_player: Option<Box<WorldMapPlayer<'a>>>,
-    pub _world_map_stages: HashMap<String, Rc<WorldMapStage<'a>>>
+    pub _world_map_stages: HashMap<String, Rc<WorldMapStage<'a>>>,
+    pub _is_opened_world_map: bool,
+    pub _request_close_world_map: bool,
 }

@@ -6,5 +6,6 @@ pub mod game_controller;
 pub mod game_resource;
 pub mod game_scene_manager;
 pub mod game_ui_manager;
+pub mod save_data;
 pub mod scenario;
 pub mod widgets;

@@ -133,6 +133,10 @@ impl<'a> ToolboxWidget<'a> {
         _mouse_delta: &Vector2<f32>,
         _player: &RcRefCell<Character>
     ) {
+        if self.is_opened_toolbox() == false {
+            return;
+        }
+
         let _move_menu_up = keyboard_input_data.get_key_hold(KeyCode::ArrowUp)
             || 0 < mouse_move_data._scroll_delta.y
             || joystick_input_data._btn_up == ButtonState::Hold;
@@ -143,7 +147,6 @@ impl<'a> ToolboxWidget<'a> {
             || joystick_input_data._btn_b == ButtonState::Pressed;
 
         if close_toolbox {
-            log::info!("TEST::close_toolbox");
             self.close_toolbox();
         }
     }

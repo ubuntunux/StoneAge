@@ -15,6 +15,7 @@ use crate::game_module::game_constants::{MATERIAL_INTRO_IMAGE};
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::widgets::controller_help::ControllerHelpWidget;
 use crate::game_module::widgets::cross_hair_widget::CrossHairWidget;
+use crate::game_module::widgets::game_menu_widget::GameMenuWidget;
 use crate::game_module::widgets::image_widget::ImageLayout;
 use crate::game_module::widgets::item_bar_widget::ItemBarWidget;
 use crate::game_module::widgets::key_binding_widget::KeyBindingWidgetManager;
@@ -25,7 +26,7 @@ use crate::game_module::widgets::target_status_bar::TargetStatusWidget;
 use crate::game_module::widgets::text_box_widget::{TextBoxContent, TextBoxLayerType, TextBoxWidget};
 use crate::game_module::widgets::time_of_day::TimeOfDayWidget;
 use crate::game_module::widgets::toolbox_widget::ToolboxWidget;
-use crate::game_module::widgets::world_map_widget::{WorldMapDirection, WorldMapWidget};
+use crate::game_module::widgets::world_map_widget::{WorldMapWidget};
 
 pub type QuestItem<'a> = RcRefCell<dyn QuestItemBase<'a> + 'a>;
 
@@ -49,6 +50,7 @@ pub struct GameUIManager<'a> {
     pub _game_image: Option<Box<ImageLayout<'a>>>,
     pub _key_binding_widget_manager: Option<Box<KeyBindingWidgetManager<'a>>>,
     pub _cross_hair: Option<Box<CrossHairWidget<'a>>>,
+    pub _game_menu_widget: Option<Box<GameMenuWidget<'a>>>,
     pub _player_hud: Option<Box<PlayerHud<'a>>>,
     pub _text_box_widget: Option<Box<TextBoxWidget<'a>>>,
     pub _controller_help_widget: Option<Box<ControllerHelpWidget<'a>>>,
@@ -174,6 +176,7 @@ impl<'a> GameUIManager<'a> {
             _game_image: None,
             _key_binding_widget_manager: None,
             _cross_hair: None,
+            _game_menu_widget: None,
             _text_box_widget: None,
             _target_status_bar: None,
             _time_of_day: None,
@@ -250,6 +253,7 @@ impl<'a> GameUIManager<'a> {
         root_widget.add_widget(&game_ui_layout);
         self._game_ui_layout = game_ui_layout.as_ref();
         self._key_binding_widget_manager = Some(Box::new(KeyBindingWidgetManager::default()));
+        self._game_menu_widget = Some(Box::new(GameMenuWidget::create_game_menu_widget(game_client, game_resources, root_widget)));
         self._player_hud = Some(Box::new(PlayerHud::create_player_hud(game_ui_layout_mut)));
         self._item_bar_widget = Some(Box::new(ItemBarWidget::create_item_bar_widget(
             game_resources,
@@ -337,6 +341,15 @@ impl<'a> GameUIManager<'a> {
         self._game_image.as_mut().unwrap().set_game_image_fade_speed(fade_speed);
     }
 
+    // game menu
+    pub fn is_opened_game_menu(&self) -> bool {
+        self._game_menu_widget.as_ref().unwrap().is_opened_game_menu()
+    }
+
+    pub fn open_game_menu(&mut self) {
+        self._game_menu_widget.as_mut().unwrap().open_game_menu();
+    }
+
     // cross-hair
     pub fn set_cross_hair_visible(&mut self, visible: bool) {
         if let Some(cross_hair) = self._cross_hair.as_mut() {
@@ -345,37 +358,26 @@ impl<'a> GameUIManager<'a> {
     }
 
     // world map
-    pub fn get_world_map_visible(&self) -> bool {
-        if let Some(widget) = self._world_map_widget.as_ref() {
-            return widget.get_visible();
-        }
-        false
+    pub fn is_opened_world_map(&self) -> bool {
+        self._world_map_widget.as_ref().unwrap().is_opened_world_map()
     }
-
-    pub fn set_world_map_visible(&mut self, visible: bool) {
-        if let Some(widget) = self._world_map_widget.as_mut() {
-            widget.set_visible(visible);
-        }
+    pub fn open_world_map(&mut self) {
+        self._world_map_widget.as_mut().unwrap().open_world_map();
     }
-
+    pub fn is_requested_close_world_map(&self) -> bool {
+        self._world_map_widget.as_ref().unwrap().is_requested_close_world_map()
+    }
+    pub fn close_world_map(&mut self) {
+        self._world_map_widget.as_mut().unwrap().close_world_map();
+    }
     pub fn get_selected_world_map_stage_data_name(&self) -> &String {
         self._world_map_widget.as_ref().unwrap().get_selected_world_map_stage_data_name()
     }
-
     pub fn set_selected_world_map_stage(&mut self, selected_stage_name: &String) {
         self._world_map_widget.as_mut().unwrap().set_selected_world_map_stage(selected_stage_name);
     }
-
     pub fn unset_selected_world_map_stage(&mut self) {
         self._world_map_widget.as_mut().unwrap().set_selected_world_map_stage(&String::default());
-    }
-
-    pub fn change_selected_world_map_stage(&mut self, direction: WorldMapDirection) {
-        self._world_map_widget.as_mut().unwrap().change_selected_world_map_stage(direction);
-    }
-
-    pub fn teleport_selected_world_map_stage(&mut self) {
-        self._world_map_widget.as_mut().unwrap().teleport_selected_world_map_stage();
     }
 
     // item bar
@@ -487,7 +489,12 @@ impl<'a> GameUIManager<'a> {
         self._world_map_widget.as_mut().unwrap().changed_window_size(&window_size);
     }
 
-    pub fn update_game_ui(&mut self, delta_time: f64) {
+    pub fn update_game_ui(
+        &mut self,
+        joystick_input_data: &JoystickInputData,
+        keyboard_input_data: &KeyboardInputData,
+        delta_time: f64
+    ) {
         let game_client = ptr_as_ref(self._game_client);
         let game_scene_manager = game_client.get_game_scene_manager();
         let ui_manager = ptr_as_ref(self._ui_manager);
@@ -503,7 +510,7 @@ impl<'a> GameUIManager<'a> {
         }
 
         if let Some(key_binding_widget_manager) = self._key_binding_widget_manager.as_mut() {
-            key_binding_widget_manager.update_key_binding_widget_manager(game_controller._is_keyboard_input_mode);
+            key_binding_widget_manager.update_key_binding_widget_manager(engine_core.is_keyboard_input_mode());
         }
 
         if let Some(cross_hair) = self._cross_hair.as_mut() {
@@ -553,7 +560,11 @@ impl<'a> GameUIManager<'a> {
         }
 
         if let Some(world_map_widget) = self._world_map_widget.as_mut() {
-            world_map_widget.update_world_map(game_controller, delta_time as f32);
+            world_map_widget.update_world_map(joystick_input_data, keyboard_input_data);
+        }
+
+        if let Some(game_menu_widget) = self._game_menu_widget.as_mut() {
+            game_menu_widget.update_game_menu_widget(joystick_input_data, keyboard_input_data);
         }
     }
 }

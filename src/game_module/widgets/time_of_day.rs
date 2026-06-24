@@ -168,7 +168,7 @@ impl<'a> TimeOfDayWidget<'a> {
         temperature_ui_component.set_text(format!("Temperature {:.01}", game_scene_manager.get_temperature()).as_str());
 
         let stage_widget_component = ptr_as_mut(self._stage_widget).get_ui_component_mut();
-        if game_ui_manager.get_world_map_visible() {
+        if game_ui_manager.is_opened_world_map() {
             stage_widget_component.set_text(Stages::find_stage_value(game_ui_manager.get_selected_world_map_stage_data_name().as_str()).get_stage_display_name());
         } else {
             let stage_data_name = game_scene_manager.get_current_game_scene_data_name();

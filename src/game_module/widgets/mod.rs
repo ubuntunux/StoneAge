@@ -1,5 +1,6 @@
 pub mod controller_help;
 pub mod cross_hair_widget;
+pub mod game_menu_widget;
 pub mod image_widget;
 pub mod item_bar_widget;
 pub mod key_binding_widget;
