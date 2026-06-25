@@ -11,7 +11,7 @@ use winit::keyboard::KeyCode;
 use rust_engine_3d::scene::collision::{CollisionCreateInfo, CollisionData, CollisionType};
 use crate::application::application::Application;
 use crate::game_module::actors::character::Character;
-use crate::game_module::game_client::{GameClient};
+use crate::game_module::game_client::{GameClient, GamePhase};
 use crate::game_module::game_constants::*;
 use crate::game_module::game_ui_manager::GameUIManager;
 
@@ -431,7 +431,7 @@ impl<'a> GameController<'a> {
         // game menu
         if keyboard_input_data.get_key_pressed(KeyCode::Escape) ||
             joystick_input_data._btn_start == ButtonState::Pressed {
-            self.get_game_ui_manager_mut().open_game_menu();
+            self.get_game_client_mut().set_next_game_phase(GamePhase::GameMenu);
         }
 
         // item control

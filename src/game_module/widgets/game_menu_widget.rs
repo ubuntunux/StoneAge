@@ -2,13 +2,16 @@ use std::rc::Rc;
 use nalgebra::Vector2;
 use strum_macros::{Display, EnumString};
 use winit::keyboard::KeyCode;
+use rust_engine_3d::audio::audio_manager::{AudioLoop, AudioManager};
 use rust_engine_3d::core::input::{ButtonState, JoystickInputData, KeyboardInputData};
 use rust_engine_3d::scene::ui::{HorizontalAlign, Orientation, PosHintX, PosHintY, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault};
-use rust_engine_3d::utilities::system::{ptr_as_mut};
+use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use crate::game_module::game_client::GameClient;
+use crate::game_module::game_constants::AUDIO_PICKUP_ITEM;
 use crate::game_module::game_resource::GameResources;
 
+const ITEM_WIDTH: f32 = 250.0;
 const ITEM_HEIGHT: f32 = 100.0;
 
 #[derive(Clone, PartialEq, Eq, Hash, Debug, Display, EnumString, Copy)]
@@ -37,6 +40,7 @@ impl<'a> GameMenuItem<'a> {
         ui_component.set_halign(HorizontalAlign::CENTER);
         ui_component.set_valign(VerticalAlign::CENTER);
         ui_component.set_size_hint_x(Some(1.0));
+        ui_component.set_size_x(ITEM_WIDTH);
         ui_component.set_size_y(ITEM_HEIGHT);
         ui_component.set_color(get_color32(50, 50, 50, 255));
         ui_component.set_border_color(get_color32(0, 0, 0, 255));
@@ -56,9 +60,11 @@ impl<'a> GameMenuItem<'a> {
 
 pub struct GameMenuWidget<'a> {
     pub _game_client: *const GameClient<'a>,
+    pub _audio_manager: *const AudioManager<'a>,
     pub _parent_widget: *const WidgetDefault<'a>,
     pub _layer: Rc<WidgetDefault<'a>>,
     pub _menu_items: Vec<Box<GameMenuItem<'a>>>,
+    pub _selected_menu_item_index: usize,
     pub _is_opened_game_menu: bool,
 }
 
@@ -77,9 +83,13 @@ impl<'a> GameMenuWidget<'a> {
         ui_component.set_valign(VerticalAlign::TOP);
         ui_component.set_pos_hint_x(PosHintX::Center(0.5));
         ui_component.set_pos_hint_y(PosHintY::Center(0.5));
+        ui_component.set_expandable(true);
+        ui_component.set_padding(10.0);
         ui_component.set_color(get_color32(50, 50, 50, 128));
         ui_component.set_border_color(get_color32(0, 0, 0, 255));
         ui_component.set_round(5.0);
+        ui_component.set_enable(false);
+        parent_widget.add_widget(&layer);
 
         let menu_items = vec![
             GameMenuItem::create_game_menu_item(layer_mut, GameMenuType::NewGame),
@@ -90,9 +100,11 @@ impl<'a> GameMenuWidget<'a> {
 
         GameMenuWidget {
             _game_client: game_client,
+            _audio_manager: ptr_as_ref(game_client).get_game_scene_manager().get_audio_manager(),
             _parent_widget: parent_widget,
             _layer: layer,
             _menu_items: menu_items,
+            _selected_menu_item_index: 0,
             _is_opened_game_menu: false,
         }
     }
@@ -105,11 +117,16 @@ impl<'a> GameMenuWidget<'a> {
         self._is_opened_game_menu
     }
     pub fn open_game_menu(&mut self) {
-        self._is_opened_game_menu = true;
+        if self._is_opened_game_menu == false {
+            ptr_as_mut(self._audio_manager).play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
+            ptr_as_mut(self._layer.as_ref()).get_ui_component_mut().set_enable(true);
+            self._is_opened_game_menu = true;
+        }
     }
     pub fn close_game_menu(&mut self) {
         if self._is_opened_game_menu {
-            ptr_as_mut(self._parent_widget).remove_widget(self._layer.as_ref());
+            ptr_as_mut(self._audio_manager).play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
+            ptr_as_mut(self._layer.as_ref()).get_ui_component_mut().set_enable(false);
             self._is_opened_game_menu = false;
         }
     }
@@ -118,16 +135,6 @@ impl<'a> GameMenuWidget<'a> {
         joystick_input_data: &JoystickInputData,
         keyboard_input_data: &KeyboardInputData
     ) {
-        if self.is_opened_game_menu() {
-            if self._layer.has_parent() == false {
-                // return early to prevent the game menu from closing immediately after opening
-                ptr_as_mut(self._parent_widget).add_widget(&self._layer);
-                return;
-            }
-        } else {
-            return;
-        }
-
         let _move_menu_up = keyboard_input_data.get_key_hold(KeyCode::ArrowUp) ||
             joystick_input_data._btn_up == ButtonState::Hold;
         let _move_menu_down = keyboard_input_data.get_key_hold(KeyCode::ArrowDown) ||

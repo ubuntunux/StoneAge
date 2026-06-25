@@ -345,9 +345,13 @@ impl<'a> GameUIManager<'a> {
     pub fn is_opened_game_menu(&self) -> bool {
         self._game_menu_widget.as_ref().unwrap().is_opened_game_menu()
     }
-
     pub fn open_game_menu(&mut self) {
         self._game_menu_widget.as_mut().unwrap().open_game_menu();
+    }
+    pub fn update_game_menu_widget(&mut self, joystick_input_data: &JoystickInputData, keyboard_input_data: &KeyboardInputData) {
+        if let Some(game_menu_widget) = self._game_menu_widget.as_mut() {
+            game_menu_widget.update_game_menu_widget(joystick_input_data, keyboard_input_data);
+        }
     }
 
     // cross-hair
@@ -378,6 +382,11 @@ impl<'a> GameUIManager<'a> {
     }
     pub fn unset_selected_world_map_stage(&mut self) {
         self._world_map_widget.as_mut().unwrap().set_selected_world_map_stage(&String::default());
+    }
+    pub fn update_world_map_widget(&mut self, joystick_input_data: &JoystickInputData, keyboard_input_data: &KeyboardInputData) {
+        if let Some(world_map_widget) = self._world_map_widget.as_mut() {
+            world_map_widget.update_world_map(joystick_input_data, keyboard_input_data);
+        }
     }
 
     // item bar
@@ -489,12 +498,7 @@ impl<'a> GameUIManager<'a> {
         self._world_map_widget.as_mut().unwrap().changed_window_size(&window_size);
     }
 
-    pub fn update_game_ui(
-        &mut self,
-        joystick_input_data: &JoystickInputData,
-        keyboard_input_data: &KeyboardInputData,
-        delta_time: f64
-    ) {
+    pub fn update_game_ui(&mut self, delta_time: f64) {
         let game_client = ptr_as_ref(self._game_client);
         let game_scene_manager = game_client.get_game_scene_manager();
         let ui_manager = ptr_as_ref(self._ui_manager);
@@ -557,14 +561,6 @@ impl<'a> GameUIManager<'a> {
 
         if let Some(quest_widget) = self._quest_widget.as_mut() {
             quest_widget.update_quest_widget(game_controller, delta_time as f32);
-        }
-
-        if let Some(world_map_widget) = self._world_map_widget.as_mut() {
-            world_map_widget.update_world_map(joystick_input_data, keyboard_input_data);
-        }
-
-        if let Some(game_menu_widget) = self._game_menu_widget.as_mut() {
-            game_menu_widget.update_game_menu_widget(joystick_input_data, keyboard_input_data);
         }
     }
 }

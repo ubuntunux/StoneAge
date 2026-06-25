@@ -229,11 +229,7 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
             // delta time threshold: 0.1 sec
             let game_delta_time = 0.1_f64.min(delta_time);
             self._game_client.update_game_mode(game_delta_time);
-            self.get_game_ui_manager_mut().update_game_ui(
-                &engine_core._joystick_input_data,
-                &engine_core._keyboard_input_data,
-                delta_time
-            );
+            self.get_game_ui_manager_mut().update_game_ui(delta_time);
         } else {
             self.get_editor_ui_manager_mut().update_editor_ui(delta_time);
         }

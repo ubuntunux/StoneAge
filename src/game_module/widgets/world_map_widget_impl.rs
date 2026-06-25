@@ -242,7 +242,8 @@ impl<'a> WorldMapWidget<'a> {
         ui_component.set_pos_hint_x(PosHintX::Center(0.5));
         ui_component.set_pos_hint_y(PosHintY::Center(0.5));
         ui_component.set_color(get_color32(80, 80, 180, 255));
-        //root_widget.add_widget(&background_layout);
+        ui_component.set_enable(false);
+        root_widget.add_widget(&background_layout);
 
         let world_map_material_instance = game_resources.get_engine_resources().get_material_instance_data(MATERIAL_WORLDMAP);
         let world_map_widget = UIManager::create_widget("world_map_widget", UIWidgetTypes::Default);
@@ -352,23 +353,25 @@ impl<'a> WorldMapWidget<'a> {
     }
     pub fn open_world_map(&mut self) {
         if self._is_opened_world_map == false {
-            ptr_as_mut(self._root_widget).add_widget(&self._background_layout);
+            self.get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
+            ptr_as_mut(self._background_layout.as_ref()).get_ui_component_mut().set_enable(true);
+            self._request_close_world_map = false;
             self._is_opened_world_map = true;
+        }
+    }
+    pub fn close_world_map(&mut self) {
+        if self._is_opened_world_map {
+            ptr_as_mut(self._background_layout.as_ref()).get_ui_component_mut().set_enable(false);
+            self._is_opened_world_map = false;
         }
     }
     pub fn is_requested_close_world_map(&self) -> bool {
         self._request_close_world_map
     }
     pub fn request_close_world_map(&mut self){
+        self.get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
         self._request_close_world_map = true;
     }
-    pub fn close_world_map(&mut self) {
-        if self._is_opened_world_map {
-            ptr_as_mut(self._root_widget).remove_widget(self._background_layout.as_ref());
-            self._is_opened_world_map = false;
-        }
-    }
-
     pub fn changed_window_size(&mut self, window_size: &Vector2<i32>) {
         let world_map_widget = ptr_as_mut(self._world_map_widget.as_ref());
         let ui_component = world_map_widget.get_ui_component_mut();
@@ -429,10 +432,6 @@ impl<'a> WorldMapWidget<'a> {
         joystick_input_data: &JoystickInputData,
         keyboard_input_data: &KeyboardInputData
     ) {
-        if self.is_opened_world_map() == false {
-            return;
-        }
-
         let is_left = keyboard_input_data.get_key_pressed(KeyCode::KeyA)
             || keyboard_input_data.get_key_pressed(KeyCode::ArrowLeft)
             || joystick_input_data._btn_left == ButtonState::Pressed;
@@ -460,9 +459,9 @@ impl<'a> WorldMapWidget<'a> {
             joystick_input_data._stick_right_direction.y as f32,
         ) * joystick_sensitivity;
 
-        if keyboard_input_data.get_key_released(KeyCode::Escape) ||
-            joystick_input_data._btn_start == ButtonState::Released ||
-            joystick_input_data._btn_b == ButtonState::Released {
+        if keyboard_input_data.get_key_pressed(KeyCode::Escape) ||
+            joystick_input_data._btn_start == ButtonState::Pressed ||
+            joystick_input_data._btn_b == ButtonState::Pressed {
             self.request_close_world_map();
         }
 

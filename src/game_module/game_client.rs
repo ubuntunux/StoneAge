@@ -157,6 +157,7 @@ impl<'a> GameClient<'a> {
 
         match self._game_phase {
             GamePhase::GameMenu => {
+                game_ui_manager.set_cross_hair_visible(true);
                 game_ui_manager.open_game_menu();
             }
             GamePhase::GamePlay => {
@@ -243,10 +244,6 @@ impl<'a> GameClient<'a> {
             || mouse_input_data.is_any_button_hold()
             || keyboard_input_data.is_any_key_hold();
 
-        if game_ui_manager.is_done_game_image_progress() {
-            //game_ui_manager.set_game_image_fade_speed(if any_key_hold { 5.0 } else { 1.0 });
-        }
-
         if self._next_game_phase != self._game_phase {
             self.set_game_phase(self._next_game_phase);
         }
@@ -269,7 +266,10 @@ impl<'a> GameClient<'a> {
                 }
             }
             GamePhase::GameMenu => {
+                game_ui_manager.update_game_menu_widget(joystick_input_data, keyboard_input_data);
+
                 if game_ui_manager.is_opened_game_menu() == false {
+                    game_ui_manager.set_cross_hair_visible(false);
                     self.set_next_game_phase(GamePhase::GamePlay);
                 }
             }
@@ -290,7 +290,7 @@ impl<'a> GameClient<'a> {
                             } else {
                                 game_controller.update_game_controller(
                                     time_data,
-                                    &joystick_input_data,
+                                    joystick_input_data,
                                     &keyboard_input_data,
                                     &mouse_move_data,
                                     &mouse_input_data,
@@ -320,8 +320,8 @@ impl<'a> GameClient<'a> {
                 if game_ui_manager.is_opened_toolbox() {
                     game_ui_manager.update_toolbox_widget(
                         time_data,
-                        &joystick_input_data,
-                        &keyboard_input_data,
+                        joystick_input_data,
+                        keyboard_input_data,
                         &mouse_move_data,
                         &mouse_input_data,
                         &mouse_delta,
@@ -342,6 +342,8 @@ impl<'a> GameClient<'a> {
                 }
             }
             GamePhase::WorldMapUpdate => {
+                game_ui_manager.update_world_map_widget(joystick_input_data, keyboard_input_data);
+
                 if game_scene_manager.is_teleport_mode() {
                     self.set_next_game_phase(GamePhase::WorldMapClose);
                 } else if game_ui_manager.is_requested_close_world_map() {
