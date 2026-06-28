@@ -49,6 +49,7 @@ impl<'a> GameMenuItem<'a> {
         ui_component.set_text(game_menu_type.to_string().as_str());
         ui_component.set_font_size(40.0);
         ui_component.set_font_color(get_color32(255, 255, 255, 255));
+        ui_component.set_touchable(true);
         parent_widget.add_widget(&item_widget);
 
         Box::new(GameMenuItem {
