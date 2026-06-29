@@ -24,6 +24,7 @@ pub enum GamePhase {
     WorldMapOpen,
     WorldMapUpdate,
     WorldMapClose,
+    ExitGame,
 }
 
 pub struct GameClient<'a> {
@@ -72,6 +73,12 @@ impl<'a> GameClient<'a> {
     }
     pub fn destroy_game_client(&mut self) {
         ptr_as_mut(self._game_ui_manager).destroy_game_ui_manager();
+    }
+    pub fn is_game_over(&self) -> bool {
+        self.is_game_phase(GamePhase::ExitGame)
+    }
+    pub fn exit_game(&mut self) {
+        self.set_next_game_phase(GamePhase::ExitGame);
     }
     pub fn get_engine_core(&self) -> &EngineCore<'a> {
         ptr_as_ref(self._engine_core)
@@ -364,6 +371,8 @@ impl<'a> GameClient<'a> {
                     game_scene_manager.update_teleport(character_manager);
                     self.set_next_game_phase(GamePhase::GamePlay);
                 }
+            }
+            GamePhase::ExitGame => {
             }
         }
         game_scene_manager.update_game_scenario(any_key_hold, any_key_pressed, delta_time);

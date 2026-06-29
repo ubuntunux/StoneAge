@@ -1,21 +1,23 @@
+use std::ffi::c_void;
 use std::rc::Rc;
 use nalgebra::Vector2;
 use strum_macros::{Display, EnumString};
 use winit::keyboard::KeyCode;
 use rust_engine_3d::audio::audio_manager::{AudioLoop, AudioManager};
 use rust_engine_3d::core::input::{ButtonState, JoystickInputData, KeyboardInputData};
-use rust_engine_3d::scene::ui::{HorizontalAlign, Orientation, PosHintX, PosHintY, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault};
+use rust_engine_3d::scene::ui::{HorizontalAlign, Orientation, PosHintX, PosHintY, UIComponentInstance, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault};
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use crate::game_module::game_client::GameClient;
-use crate::game_module::game_constants::AUDIO_PICKUP_ITEM;
+use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM};
 use crate::game_module::game_resource::GameResources;
 
 const ITEM_WIDTH: f32 = 250.0;
-const ITEM_HEIGHT: f32 = 100.0;
+const ITEM_HEIGHT: f32 = 60.0;
 
 #[derive(Clone, PartialEq, Eq, Hash, Debug, Display, EnumString, Copy)]
 pub enum GameMenuType {
+    Resume,
     NewGame,
     LoadGame,
     SaveGame,
@@ -23,12 +25,14 @@ pub enum GameMenuType {
 }
 
 pub struct GameMenuItem<'a> {
+    pub _game_menu_widget: *const GameMenuWidget<'a>,
     pub _game_menu_type: GameMenuType,
     pub _item_widget: Rc<WidgetDefault<'a>>,
 }
 
 impl<'a> GameMenuItem<'a> {
     pub fn create_game_menu_item(
+        game_menu_widget: &GameMenuWidget<'a>,
         parent_widget: &mut WidgetDefault<'a>,
         game_menu_type: GameMenuType
     ) -> Box<GameMenuItem<'a>> {
@@ -49,13 +53,20 @@ impl<'a> GameMenuItem<'a> {
         ui_component.set_text(game_menu_type.to_string().as_str());
         ui_component.set_font_size(40.0);
         ui_component.set_font_color(get_color32(255, 255, 255, 255));
-        ui_component.set_touchable(true);
         parent_widget.add_widget(&item_widget);
 
-        Box::new(GameMenuItem {
+        let game_menu_item = Box::new(GameMenuItem {
+            _game_menu_widget: game_menu_widget,
             _game_menu_type: game_menu_type,
             _item_widget: item_widget,
-        })
+        });
+
+        ui_component.set_touchable(true);
+        ui_component.set_callback_touch_over(Some(Box::new(GameMenuWidget::callback_touch_over)));
+        ui_component.set_callback_touch_down(Some(Box::new(GameMenuWidget::callback_touch_down)));
+        ui_component.set_user_data(game_menu_item.as_ref() as *const GameMenuItem<'a> as *const c_void);
+
+        game_menu_item
     }
 }
 
@@ -70,11 +81,42 @@ pub struct GameMenuWidget<'a> {
 }
 
 impl<'a> GameMenuWidget<'a> {
+    pub fn callback_touch_over(ui_component: &UIComponentInstance<'a>, _touched_pos: &Vector2<f32>, _touched_pos_delta: &Vector2<f32>) -> bool {
+        let game_menu_item = ptr_as_ref(ui_component.get_user_data() as *const GameMenuItem<'a>);
+        let game_menu_widget = ptr_as_ref(game_menu_item._game_menu_widget);
+        let audio_manager = ptr_as_mut(game_menu_widget._audio_manager);
+        audio_manager.play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
+        true
+    }
+
+    pub fn callback_touch_down(ui_component: &UIComponentInstance<'a>, _touched_pos: &Vector2<f32>, _touched_pos_delta: &Vector2<f32>) -> bool {
+        let game_menu_item = ptr_as_ref(ui_component.get_user_data() as *const GameMenuItem<'a>);
+        let game_menu_widget = ptr_as_mut(game_menu_item._game_menu_widget);
+        let audio_manager = ptr_as_mut(game_menu_widget._audio_manager);
+        audio_manager.play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
+
+        match game_menu_item._game_menu_type {
+            GameMenuType::Resume => {
+                game_menu_widget.close_game_menu();
+            }
+            GameMenuType::NewGame => {
+            }
+            GameMenuType::LoadGame => {
+            }
+            GameMenuType::SaveGame => {
+            }
+            GameMenuType::Exit => {
+                ptr_as_mut(game_menu_widget._game_client).exit_game();
+            }
+        }
+        true
+    }
+
     pub fn create_game_menu_widget(
         game_client: &GameClient<'a>,
         _game_resources: &GameResources<'a>,
         parent_widget: &mut WidgetDefault<'a>,
-    ) -> GameMenuWidget<'a> {
+    ) -> Box<GameMenuWidget<'a>> {
         let layer = UIManager::create_widget("game_menu_widget", UIWidgetTypes::Default);
         let layer_mut = ptr_as_mut(layer.as_ref());
         let ui_component = layer_mut.get_ui_component_mut();
@@ -92,22 +134,26 @@ impl<'a> GameMenuWidget<'a> {
         ui_component.set_enable(false);
         parent_widget.add_widget(&layer);
 
-        let menu_items = vec![
-            GameMenuItem::create_game_menu_item(layer_mut, GameMenuType::NewGame),
-            GameMenuItem::create_game_menu_item(layer_mut, GameMenuType::LoadGame),
-            GameMenuItem::create_game_menu_item(layer_mut, GameMenuType::SaveGame),
-            GameMenuItem::create_game_menu_item(layer_mut, GameMenuType::Exit)
-        ];
-
-        GameMenuWidget {
+        let mut game_menu_widget = Box::new(GameMenuWidget {
             _game_client: game_client,
             _audio_manager: ptr_as_ref(game_client).get_game_scene_manager().get_audio_manager(),
             _parent_widget: parent_widget,
             _layer: layer,
-            _menu_items: menu_items,
+            _menu_items: Vec::new(),
             _selected_menu_item_index: 0,
             _is_opened_game_menu: false,
-        }
+        });
+
+        let menu_items = vec![
+            GameMenuItem::create_game_menu_item(game_menu_widget.as_ref(), layer_mut, GameMenuType::Resume),
+            GameMenuItem::create_game_menu_item(game_menu_widget.as_ref(), layer_mut, GameMenuType::NewGame),
+            GameMenuItem::create_game_menu_item(game_menu_widget.as_ref(), layer_mut, GameMenuType::LoadGame),
+            GameMenuItem::create_game_menu_item(game_menu_widget.as_ref(), layer_mut, GameMenuType::SaveGame),
+            GameMenuItem::create_game_menu_item(game_menu_widget.as_ref(), layer_mut, GameMenuType::Exit)
+        ];
+
+        game_menu_widget.as_mut()._menu_items = menu_items;
+        game_menu_widget
     }
     pub fn changed_window_size(&mut self, _window_size: &Vector2<i32>) {
         let ui_component = ptr_as_mut(self._layer.as_ref()).get_ui_component_mut();

@@ -1,4 +1,4 @@
-use crate::game_module::game_client::GameClient;
+use crate::game_module::game_client::{GameClient};
 use crate::game_module::game_constants;
 use crate::game_module::game_controller::GameController;
 use crate::game_module::game_resource::GameResources;
@@ -32,6 +32,7 @@ pub struct Application<'a> {
     pub _game_controller: Box<GameController<'a>>,
     pub _game_client: Box<GameClient<'a>>,
     pub _is_game_mode: bool,
+    pub _will_terminate_application: bool,
 }
 
 impl<'a> ApplicationBase<'a> for Application<'a> {
@@ -48,25 +49,22 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
 
         // initialize project managers
         let application = ptr_as_ref(self);
-        self.get_game_resources_mut()
-            .initialize_game_resources(engine_core.get_engine_resources());
+        self.get_game_resources_mut().initialize_game_resources(engine_core.get_engine_resources());
         self.get_game_resources_mut().load_game_resources();
-        self.get_game_client_mut()
-            .initialize_game_client(engine_core, application);
-        self.get_game_controller_mut()
-            .initialize_game_controller(application);
-        self.get_game_ui_manager_mut()
-            .initialize_game_ui_manager(engine_core, application);
-        self.get_game_scene_manager_mut()
-            .initialize_game_scene_manager(application, engine_core, window_size);
-        self.get_editor_ui_manager_mut()
-            .initialize_editor_ui_manager(engine_core, application);
+        self.get_game_client_mut().initialize_game_client(engine_core, application);
+        self.get_game_controller_mut().initialize_game_controller(application);
+        self.get_game_ui_manager_mut().initialize_game_ui_manager(engine_core, application);
+        self.get_game_scene_manager_mut().initialize_game_scene_manager(application, engine_core, window_size);
+        self.get_editor_ui_manager_mut().initialize_editor_ui_manager(engine_core, application);
 
         // start game
         self.get_game_ui_manager_mut().build_game_ui(window_size);
-        self.get_editor_ui_manager_mut()
-            .build_editor_ui(window_size);
+        self.get_editor_ui_manager_mut().build_editor_ui(window_size);
         self.set_game_mode(true);
+    }
+
+    fn will_terminate_application(&self) -> bool {
+        self._will_terminate_application
     }
 
     fn terminate_application(&mut self) {
@@ -77,8 +75,7 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
     }
 
     fn get_render_pass_create_info_callback(&self) -> *const CallbackLoadRenderPassCreateInfo {
-        static CALLBACK: CallbackLoadRenderPassCreateInfo =
-            render_pass::render_pass::get_render_pass_data_create_infos;
+        static CALLBACK: CallbackLoadRenderPassCreateInfo = render_pass::render_pass::get_render_pass_data_create_infos;
         &CALLBACK
     }
 
@@ -230,6 +227,9 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
             let game_delta_time = 0.1_f64.min(delta_time);
             self._game_client.update_game_mode(game_delta_time);
             self.get_game_ui_manager_mut().update_game_ui(delta_time);
+            if self._game_client.is_game_over() {
+                self.set_will_terminate_application();
+            }
         } else {
             self.get_editor_ui_manager_mut().update_editor_ui(delta_time);
         }
@@ -297,6 +297,9 @@ impl<'a> Application<'a> {
     pub fn get_game_client_mut(&self) -> &mut GameClient<'a> {
         ptr_as_mut(self._game_client.as_ref())
     }
+    pub fn set_will_terminate_application(&mut self) {
+        self._will_terminate_application = true;
+    }
     pub fn toggle_game_mode(&mut self) {
         self.set_game_mode(!self._is_game_mode);
     }
@@ -304,9 +307,7 @@ impl<'a> Application<'a> {
         self._is_game_mode = is_game_mode;
         self.get_game_client_mut().set_game_mode(is_game_mode);
         self.get_engine_core_mut().set_grab_mode(is_game_mode);
-        self.get_engine_core_mut()
-            .get_ui_manager_mut()
-            .set_visible_world_axis(!is_game_mode);
+        self.get_engine_core_mut().get_ui_manager_mut().set_visible_world_axis(!is_game_mode);
     }
 }
 
@@ -410,6 +411,7 @@ pub fn run_application() {
         _game_controller: game_controller,
         _game_client: game_client,
         _is_game_mode: false,
+        _will_terminate_application: false,
     };
 
     // run

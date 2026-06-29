@@ -253,7 +253,7 @@ impl<'a> GameUIManager<'a> {
         root_widget.add_widget(&game_ui_layout);
         self._game_ui_layout = game_ui_layout.as_ref();
         self._key_binding_widget_manager = Some(Box::new(KeyBindingWidgetManager::default()));
-        self._game_menu_widget = Some(Box::new(GameMenuWidget::create_game_menu_widget(game_client, game_resources, root_widget)));
+        self._game_menu_widget = Some(GameMenuWidget::create_game_menu_widget(game_client, game_resources, root_widget));
         self._player_hud = Some(Box::new(PlayerHud::create_player_hud(game_ui_layout_mut)));
         self._item_bar_widget = Some(Box::new(ItemBarWidget::create_item_bar_widget(
             game_resources,
