@@ -10,7 +10,7 @@ use rust_engine_3d::scene::transform_object::TransformObjectData;
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::math::make_rotation_matrix;
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
-use crate::game_module::actors::character::{Character, CharacterAnimationState, CharacterStats};
+use crate::game_module::actors::character::{Character, CharacterAnimationState, CharacterCreateInfo, CharacterStats};
 use crate::game_module::actors::character_controller::CharacterController;
 use crate::game_module::actors::character_data::{ActionAnimationState, CharacterData, MoveAnimationState};
 use crate::game_module::actors::character_manager::{CharacterID, CharacterManager};
@@ -288,6 +288,23 @@ impl<'a> Character<'a> {
         self.stop_animations(true);
     }
 
+    pub fn load_character_save_data(&mut self, character_create_info: &CharacterCreateInfo) {
+        self.initialize_transform(
+            &character_create_info._position,
+            &character_create_info._rotation,
+            &character_create_info._scale
+        )
+    }
+
+    pub fn get_character_save_data(&self) -> CharacterCreateInfo {
+        CharacterCreateInfo {
+            _character_data_name: self._character_data_name.clone(),
+            _position: self.get_position().clone(),
+            _rotation: self.get_rotation().clone(),
+            _scale: self.get_scale().clone(),
+        }
+    }
+
     pub fn attach_item(&mut self, attach_item: RcRefCell<Item<'a>>) {
         self._attached_item = Some(attach_item);
     }
@@ -540,7 +557,9 @@ impl<'a> Character<'a> {
     pub fn get_face_direction(&self) -> &Vector3<f32> {
         &self._controller.get_face_direction()
     }
-
+    pub fn get_scale(&self) -> &Vector3<f32> {
+        &self._controller.get_scale()
+    }
     pub fn look_at(&mut self, target_position: &Vector3<f32>) {
         let direction = math::make_normalize_xz(&(target_position - self.get_position()));
         self._controller.set_move_direction(&direction);

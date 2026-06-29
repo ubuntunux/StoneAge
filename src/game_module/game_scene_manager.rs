@@ -9,6 +9,7 @@ use rust_engine_3d::scene::scene_manager::{SceneDataCreateInfo, SceneManager};
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use rust_engine_3d::begin_block;
+use crate::game_module::save_data::save_data::GameSaveData;
 use crate::application::application::Application;
 use crate::game_module::actors::character::{Character, CharacterCreateInfo};
 use crate::game_module::actors::character_manager::CharacterManager;
@@ -121,6 +122,7 @@ pub struct GameSceneManager<'a> {
     pub _temperature: f32,
     pub _date: u32,
     pub _game_scene_state: GameSceneState,
+    pub _game_scenes: HashMap<String, GameSceneDataCreateInfo>,
 }
 
 impl<'a> GameSceneManager<'a> {
@@ -206,6 +208,7 @@ impl<'a> GameSceneManager<'a> {
             _temperature: 30.0,
             _date: 1,
             _game_scene_state: GameSceneState::None,
+            _game_scenes: HashMap::new(),
         })
     }
 
@@ -288,6 +291,19 @@ impl<'a> GameSceneManager<'a> {
 
     pub fn get_current_game_scene_data_name(&self) -> &String {
         &self._current_game_scene_data_name
+    }
+
+    pub fn load_game_save_data(&mut self, game_save_data: &GameSaveData) {
+        self.open_game_scene_data(&game_save_data._last_game_scene_name);
+        self.get_character_manager().get_player().as_ref().borrow_mut().load_character_save_data(&game_save_data._player);
+    }
+
+    pub fn get_game_save_data(&self) -> GameSaveData {
+        GameSaveData {
+            _player: self.get_character_manager().get_player().as_ref().borrow().get_character_save_data(),
+            _last_game_scene_name: self.get_current_game_scene_data_name().clone(),
+            _game_scenes: self._game_scenes.clone(),
+        }
     }
 
     // update teleport

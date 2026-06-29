@@ -97,18 +97,20 @@ impl<'a> GameMenuWidget<'a> {
 
         match game_menu_item._game_menu_type {
             GameMenuType::Resume => {
-                game_menu_widget.close_game_menu();
             }
             GameMenuType::NewGame => {
             }
             GameMenuType::LoadGame => {
+                ptr_as_mut(game_menu_widget._game_client).load_game();
             }
             GameMenuType::SaveGame => {
+                ptr_as_mut(game_menu_widget._game_client).save_game();
             }
             GameMenuType::Exit => {
                 ptr_as_mut(game_menu_widget._game_client).exit_game();
             }
         }
+        game_menu_widget.close_game_menu();
         true
     }
 

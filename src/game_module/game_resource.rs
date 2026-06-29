@@ -101,8 +101,7 @@ impl<'a> GameResources<'a> {
                 &scenario_data_file,
             );
             let loaded_contents = system::load(&scenario_data_file);
-            let scenario_data_create_info: ScenarioDataCreateInfo =
-                serde_json::from_reader(loaded_contents).expect("Failed to deserialize.");
+            let scenario_data_create_info: ScenarioDataCreateInfo = serde_json::from_reader(loaded_contents).expect("Failed to deserialize.");
             self._scenario_data_create_info_map.insert(
                 scenario_data_name.clone(),
                 newRcRefCell(scenario_data_create_info),
@@ -183,11 +182,9 @@ impl<'a> GameResources<'a> {
 
     // game save data
     pub fn load_game_save_data(&mut self) {
-        log::info!("    load_game_save_data");
         let game_data_directory = PathBuf::from(GAME_DATA_DIRECTORY);
         let game_save_directory = PathBuf::from(GAME_SAVE_DATA_FILE_PATH);
-        let game_save_data_files: Vec<PathBuf> =
-            self.collect_resources(&game_save_directory, &[EXT_GAME_DATA]);
+        let game_save_data_files: Vec<PathBuf> = self.collect_resources(&game_save_directory, &[EXT_GAME_DATA]);
         for game_save_data_file in game_save_data_files {
             let game_save_data_name = get_unique_resource_name(
                 &self._game_save_data_map,
@@ -195,12 +192,8 @@ impl<'a> GameResources<'a> {
                 &game_save_data_file,
             );
             let loaded_contents = system::load(&game_save_data_file);
-            let game_save_data_create_info: GameSaveData =
-                serde_json::from_reader(loaded_contents).expect("Failed to deserialize.");
-            self._game_save_data_map.insert(
-                game_save_data_name.clone(),
-                newRcRefCell(game_save_data_create_info),
-            );
+            let game_save_data_create_info: GameSaveData = serde_json::from_reader(loaded_contents).expect("Failed to deserialize.");
+            self._game_save_data_map.insert(game_save_data_name.clone(), newRcRefCell(game_save_data_create_info));
         }
     }
 
@@ -213,8 +206,16 @@ impl<'a> GameResources<'a> {
         game_save_data_name: &str,
         game_save_data_create_info: &GameSaveData,
     ) {
+        // register
+        if self._game_save_data_map.contains_key(game_save_data_name)  {
+            self._game_save_data_map.get(game_save_data_name).as_ref().unwrap().borrow_mut().clone_from(game_save_data_create_info);
+        } else {
+            self._game_save_data_map.insert(game_save_data_name.to_string(), newRcRefCell(game_save_data_create_info.clone()));
+        }
+
+        // save game save data
         let mut game_save_data_filepath = PathBuf::from(APPLICATION_RESOURCE_PATH);
-        game_save_data_filepath.push(GAME_SAVE_DATA_FILE_PATH);
+        game_save_data_filepath.push(GAME_DATA_DIRECTORY);
         game_save_data_filepath.push(game_save_data_name);
         game_save_data_filepath.set_extension(EXT_GAME_DATA);
         let mut write_file = File::create(&game_save_data_filepath).expect("Failed to create file");
@@ -243,9 +244,11 @@ impl<'a> GameResources<'a> {
         self.load_item_data();
         self.load_prop_data();
         self.load_weapon_data();
+        self.load_game_save_data();
     }
 
     fn unload_game_data(&mut self) {
+        self.unload_game_save_data();
         self.unload_weapon_data();
         self.unload_prop_data();
         self.unload_item_data();

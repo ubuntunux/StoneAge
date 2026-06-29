@@ -151,11 +151,16 @@ impl<'a> GameClient<'a> {
             self.update_game_mode_begin();
         }
     }
+    pub fn new_game(&mut self) {
+        log::info!("new_game");
+    }
     pub fn load_game(&mut self) {
-        //self.get_game_scene_manager_mut().load_game_scene();
+        let game_save_data = self.get_game_resources_mut().get_game_save_data("save_data/00");
+        self.get_game_scene_manager_mut().load_game_save_data(&game_save_data.borrow());
     }
     pub fn save_game(&mut self) {
-        //self.get_game_scene_manager_mut().save_game_scene();
+        let game_save_data = self.get_game_scene_manager().get_game_save_data();
+        self.get_game_resources_mut().save_game_save_data("save_data/00", &game_save_data);
     }
     fn update_game_mode_begin(&mut self) {
         let game_scene_manager = ptr_as_mut(self._game_scene_manager);

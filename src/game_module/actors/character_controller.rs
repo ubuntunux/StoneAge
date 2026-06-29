@@ -217,6 +217,9 @@ impl<'a> CharacterController<'a> {
             self._rotation.y += diff.abs().min(CHARACTER_ROTATION_SPEED * delta_time) * diff.signum();
         }
     }
+    pub fn get_scale(&self) -> &Vector3<f32> {
+        &self._scale
+    }
 
     pub fn set_hit_direction(&mut self, direction: &Vector3<f32>) {
         if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
