@@ -141,6 +141,9 @@ impl<'a> GameClient<'a> {
     pub fn is_game_phase(&self, game_phase: GamePhase) -> bool {
         self._game_phase == game_phase
     }
+    pub fn is_next_game_phase(&self, next_game_phase: GamePhase) -> bool {
+        self._next_game_phase == next_game_phase
+    }
     pub fn set_next_game_phase(&mut self, next_game_phase: GamePhase) {
         self._next_game_phase = next_game_phase;
     }
@@ -278,12 +281,12 @@ impl<'a> GameClient<'a> {
                 }
             }
             GamePhase::GameMenu => {
-                game_ui_manager.update_game_menu_widget(joystick_input_data, keyboard_input_data);
-
                 if game_ui_manager.is_opened_game_menu() == false {
                     game_ui_manager.set_cross_hair_visible(false);
                     self.set_next_game_phase(GamePhase::GamePlay);
                 }
+
+                game_ui_manager.update_game_menu_widget(joystick_input_data, keyboard_input_data);
             }
             GamePhase::GamePlay => {
                 if game_scene_manager.is_game_scene_state(GameSceneState::LoadCompleted) {
@@ -380,6 +383,7 @@ impl<'a> GameClient<'a> {
             GamePhase::ExitGame => {
             }
         }
+
         game_scene_manager.update_game_scenario(any_key_hold, any_key_pressed, delta_time);
         game_scene_manager.update_game_scene_manager(delta_time);
     }
