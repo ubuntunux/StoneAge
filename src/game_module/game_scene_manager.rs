@@ -294,8 +294,13 @@ impl<'a> GameSceneManager<'a> {
     }
 
     pub fn load_game_save_data(&mut self, game_save_data: &GameSaveData) {
+        self.clear_all_game_scenario();
         self.open_game_scene_data(&game_save_data._last_game_scene_name);
-        self.get_character_manager().get_player().as_ref().borrow_mut().load_character_save_data(&game_save_data._player);
+        self.get_character_manager_mut().create_character(
+            game_save_data._player._character_data_name.as_str(),
+            &game_save_data._player,
+            true,
+        );
     }
 
     pub fn get_game_save_data(&self) -> GameSaveData {
@@ -361,8 +366,11 @@ impl<'a> GameSceneManager<'a> {
         None
     }
 
-    pub fn open_game_scenario(&mut self, scenario_type: ScenarioType) {
-        self._reservation_scenarios.push(scenario_type)
+    pub fn request_open_game_scenario(&mut self, scenario_type: ScenarioType, force_open_game_scenario: bool) {
+        self._reservation_scenarios.push(scenario_type);
+        if force_open_game_scenario {
+            self.update_game_scenario(false, false, 0.0);
+        }
     }
 
     fn open_game_scenario_data(&mut self, scenario_type: ScenarioType) -> &RcRefCell<dyn ScenarioBase<'a> + 'a> {
@@ -379,6 +387,17 @@ impl<'a> GameSceneManager<'a> {
             }
         }
         self._scenarios.last().unwrap()
+    }
+
+    fn clear_all_game_scenario(&mut self) {
+        if self.has_scenario() {
+            self._scenarios.iter_mut().for_each(|scenario_refcell| {
+                let mut scenario = scenario_refcell.borrow_mut();
+                scenario.destroy_game_scenario();
+            });
+            self._scenarios.clear();
+        }
+        self._is_play_scenario_mode = true;
     }
 
     // game scene

@@ -476,18 +476,18 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
             }
             ScenarioPhase::StoryBoard => {
                 if SKIP_SCENARIO {
-                    game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, DEFAULT_FADE_TIME);
-                    game_ui_manager.set_auto_fade_inout(true);
                     self.set_scenario_phase(ScenarioPhase::MoveToTutorialStage.to_string().as_str(), None);
                 } else {
                     let story_board_phase = self.get_story_board_phase();
-                    if game_ui_manager.is_done_game_image_progress() && any_key_pressed {
-                        if USE_STORY_BOARDS == false || STORY_BOARDS.len() <= story_board_phase {
-                            game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, DEFAULT_FADE_TIME);
-                            game_ui_manager.set_auto_fade_inout(true);
-                            self.set_scenario_phase(ScenarioPhase::Morning.to_string().as_str(), Some(PHASE_TIME_SLEEP));
-                        } else {
-                            game_ui_manager.set_image_auto_fade_inout(&STORY_BOARDS[story_board_phase], DEFAULT_FADE_TIME);
+                    if USE_STORY_BOARDS == false || STORY_BOARDS.len() < story_board_phase {
+                        self.set_scenario_phase(ScenarioPhase::Morning.to_string().as_str(), Some(PHASE_TIME_SLEEP));
+                    } else {
+                        if story_board_phase == 0 || game_ui_manager.is_done_game_image_progress() && any_key_pressed {
+                            if story_board_phase < STORY_BOARDS.len() {
+                                game_ui_manager.set_image_auto_fade_inout(&STORY_BOARDS[story_board_phase], DEFAULT_FADE_TIME);
+                            } else {
+                                game_ui_manager.set_image_auto_fade_inout(MATERIAL_UI_NONE, DEFAULT_FADE_TIME);
+                            }
                             self.next_story_board_phase();
                         }
                     }
@@ -594,7 +594,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                 // end - ScenarioType::ScenarioWrapUpTheDay
                 if game_scene_manager.has_game_scenario(ScenarioType::ScenarioWrapUpTheDay) == false {
                     self.clear_all(game_scene_manager);
-                    game_scene_manager.open_game_scenario(ScenarioType::ScenarioUfo);
+                    game_scene_manager.request_open_game_scenario(ScenarioType::ScenarioUfo, false);
                     self.set_scenario_phase(ScenarioPhase::End.to_string().as_str(), None);
                 }
             }

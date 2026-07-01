@@ -196,7 +196,7 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
                 }
                 self._audio_ufo_laboratory = None;
                 game_ui_manager.set_auto_fade_inout(true);
-                game_scene_manager.open_game_scenario(ScenarioType::ScenarioDayOne);
+                game_scene_manager.request_open_game_scenario(ScenarioType::ScenarioDayOne, false);
             }
             _ => (),
         }

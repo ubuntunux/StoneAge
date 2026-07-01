@@ -171,7 +171,7 @@ impl<'a> ScenarioBase<'a> for ScenarioUfo<'a> {
                 }
 
                 game_ui_manager.set_auto_fade_inout(true);
-                game_scene_manager.open_game_scenario(ScenarioType::ScenarioRevolution);
+                game_scene_manager.request_open_game_scenario(ScenarioType::ScenarioRevolution, false);
             }
             _ => {}
         }

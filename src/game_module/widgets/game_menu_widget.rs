@@ -182,7 +182,7 @@ impl<'a> GameMenuWidget<'a> {
             GameMenuType::NewGame => {
             }
             GameMenuType::LoadGame => {
-                game_client.load_game();
+                game_client.request_load_game();
             }
             GameMenuType::SaveGame => {
                 game_client.save_game();

@@ -745,7 +745,7 @@ impl<'a> Character<'a> {
         if self._controller.is_on_ground() && self.is_available_move() && self.is_idle_action() {
             match self._controller._nearest_interaction_object.clone() {
                 InteractionObject::PropBed(_) => {
-                    self.get_character_manager().get_game_scene_manager_mut().open_game_scenario(ScenarioType::ScenarioWrapUpTheDay);
+                    self.get_character_manager().get_game_scene_manager_mut().request_open_game_scenario(ScenarioType::ScenarioWrapUpTheDay, false);
                 }
                 InteractionObject::PropPickup(_) => {
                     self.set_action_animation(ActionAnimationState::Pickup, 2.0);
