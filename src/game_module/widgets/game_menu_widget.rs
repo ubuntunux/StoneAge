@@ -150,7 +150,6 @@ impl<'a> GameMenuWidget<'a> {
     }
     pub fn open_game_menu(&mut self) {
         if self._is_opened_game_menu == false {
-            ptr_as_mut(self._audio_manager).play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
             ptr_as_mut(self._layer.as_ref()).get_ui_component_mut().set_enable(true);
             self.set_selected_menu_item(self._selected_menu_item, true);
             self._is_opened_game_menu = true;
@@ -169,8 +168,7 @@ impl<'a> GameMenuWidget<'a> {
             let curr_menu_item = &self._menu_items[selected_menu_item as usize];
             ptr_as_mut(prev_menu_item._item_widget.as_ref()).get_ui_component_mut().set_selected(false);
             ptr_as_mut(curr_menu_item._item_widget.as_ref()).get_ui_component_mut().set_selected(true);
-            let audio_manager = ptr_as_mut(self._audio_manager);
-            audio_manager.play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
+            ptr_as_mut(self._audio_manager).play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
             self._selected_menu_item = selected_menu_item;
             return true;
         }
