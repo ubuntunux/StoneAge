@@ -220,6 +220,9 @@ impl<'a> GameClient<'a> {
         let game_ui_manager = ptr_as_mut(self._game_ui_manager);
         let game_controller = ptr_as_mut(self._game_controller);
         match self._game_phase {
+            GamePhase::GameMenu => {
+                game_ui_manager.set_cross_hair_visible(false);
+            }
             GamePhase::Teleport => {
                 game_ui_manager.set_auto_fade_inout(true);
                 if character_manager.is_valid_player() {
@@ -307,7 +310,6 @@ impl<'a> GameClient<'a> {
             }
             GamePhase::GameMenu => {
                 if game_ui_manager.is_opened_game_menu() == false {
-                    game_ui_manager.set_cross_hair_visible(false);
                     self.set_next_game_phase(GamePhase::GamePlay);
                 }
 

@@ -248,10 +248,14 @@ impl<'a> ScenarioIntro<'a> {
         }
     }
 
-    pub fn clear_all(&mut self, game_scene_manager: &GameSceneManager<'a>) {
+    pub fn clear_all(&mut self) {
+        let game_scene_manager = ptr_as_ref(self._game_scene_manager);
+
         self.remove_move_to_tutorial_stage_text_box(game_scene_manager);
         self.remove_hit_this_tree_text_box(game_scene_manager);
         self.remove_return_home_text_box(game_scene_manager);
+        self.remove_give_food_to_ewa_text_box(game_scene_manager);
+        self.remove_give_food_to_koa_text_box(game_scene_manager);
         self.remove_wrap_up_the_day_text_box(game_scene_manager);
 
         self._actor_aru = None;
@@ -290,14 +294,15 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
     }
 
     fn destroy_game_scenario(&mut self) {
+        self.clear_all();
+
         if let Some(quest) = &self._quest {
             quest.borrow_mut().destroy();
         }
     }
 
     fn on_close_game_scene(&mut self, _game_scene_data_name: &str) {
-        let game_scene_manager = ptr_as_ref(self._game_scene_manager);
-        self.clear_all(game_scene_manager);
+        self.clear_all();
         self._is_load_completed = false;
     }
 
@@ -593,7 +598,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
             ScenarioPhase::Sleeping => {
                 // end - ScenarioType::ScenarioWrapUpTheDay
                 if game_scene_manager.has_game_scenario(ScenarioType::ScenarioWrapUpTheDay) == false {
-                    self.clear_all(game_scene_manager);
+                    self.clear_all();
                     game_scene_manager.request_open_game_scenario(ScenarioType::ScenarioUfo, false);
                     self.set_scenario_phase(ScenarioPhase::End.to_string().as_str(), None);
                 }
