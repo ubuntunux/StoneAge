@@ -17,6 +17,7 @@ use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
 use std::collections::HashMap;
+use uuid::Uuid;
 use rust_engine_3d::scene::socket::Socket;
 use crate::game_module::actors::character::Character;
 
@@ -165,7 +166,6 @@ impl<'a> ItemManager<'a> {
             _game_resources: std::ptr::null(),
             _audio_manager: std::ptr::null(),
             _scene_manager: std::ptr::null(),
-            _id_generator: ItemID(0),
             _items: HashMap::new(),
         })
     }
@@ -204,10 +204,8 @@ impl<'a> ItemManager<'a> {
     pub fn get_scene_manager_mut(&self) -> &mut SceneManager<'a> {
         ptr_as_mut(self._scene_manager)
     }
-    pub fn generate_id(&mut self) -> ItemID {
-        let id = self._id_generator.clone();
-        self._id_generator = ItemID(self._id_generator.0 + 1);
-        id
+    pub fn generate_id(&self) -> Uuid {
+        Uuid::new_v4()
     }
     pub fn get_item(&self, item_id: ItemID) -> Option<&RcRefCell<Item<'a>>> {
         self._items.get(&item_id)

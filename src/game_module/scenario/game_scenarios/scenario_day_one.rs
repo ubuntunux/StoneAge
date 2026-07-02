@@ -145,10 +145,10 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
 
     fn on_open_game_scene(&mut self, _game_scene_data_name: &str) {
         let game_scene_manager = ptr_as_ref(self._game_scene_manager);
-        self._actor_ufo = Some(game_scene_manager.get_actor("ufo").unwrap().clone());
-        self._actor_aru = Some(game_scene_manager.get_actor("aru").unwrap().clone());
-        self._actor_ewa = Some(game_scene_manager.get_actor("ewa").unwrap().clone());
-        self._actor_koa = Some(game_scene_manager.get_actor("koa").unwrap().clone());
+        self._actor_ufo = Some(game_scene_manager.get_actor_by_name("ufo").unwrap().clone());
+        self._actor_aru = Some(game_scene_manager.get_actor_by_name("aru").unwrap().clone());
+        self._actor_ewa = Some(game_scene_manager.get_actor_by_name("ewa").unwrap().clone());
+        self._actor_koa = Some(game_scene_manager.get_actor_by_name("koa").unwrap().clone());
         self._prop_bed_for_aru = Some(game_scene_manager.get_prop_manager().get_prop_by_name("bed_for_aru").unwrap().clone());
         self._prop_bed_for_ewa = Some(game_scene_manager.get_prop_manager().get_prop_by_name("bed_for_ewa").unwrap().clone());
         self._prop_bed_for_koa = Some(game_scene_manager.get_prop_manager().get_prop_by_name("bed_for_koa").unwrap().clone());
@@ -252,7 +252,7 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
                 if unsafe { SKIP_SCENARIO } {
                     self.set_scenario_phase(ScenarioPhase::Awake.to_string().as_str(), Some(6.0));
                 } else {
-                    game_scene_manager.set_time_of_day(TIME_OF_EARLY_MORNING, 0.0);
+                    game_scene_manager.set_time(TIME_OF_EARLY_MORNING, 0.0);
                     self.set_scenario_phase(ScenarioPhase::ReleaseFamily.to_string().as_str(), Some(6.0));
                 }
             },

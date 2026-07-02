@@ -17,6 +17,7 @@ use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
 use std::collections::HashMap;
 use std::ffi::c_void;
+use uuid::Uuid;
 use rust_engine_3d::utilities::math;
 use crate::game_module::actors::character_data::ActionAnimationState;
 use crate::game_module::actors::interaction_object::InteractionObject;
@@ -222,8 +223,8 @@ impl<'a> PropManager<'a> {
             _game_resources: std::ptr::null(),
             _audio_manager: std::ptr::null(),
             _scene_manager: std::ptr::null(),
-            _id_generator: PropID(0),
             _props: HashMap::new(),
+            _prop_name_map: HashMap::new(),
         })
     }
 
@@ -261,21 +262,14 @@ impl<'a> PropManager<'a> {
     pub fn get_scene_manager_mut(&self) -> &mut SceneManager<'a> {
         ptr_as_mut(self._scene_manager)
     }
-    pub fn generate_id(&mut self) -> PropID {
-        let id = self._id_generator.clone();
-        self._id_generator = PropID(self._id_generator.0 + 1);
-        id
+    pub fn generate_id(&self) -> Uuid {
+        Uuid::new_v4()
     }
     pub fn get_prop(&self, prop_id: PropID) -> Option<&RcRefCell<Prop<'a>>> {
         self._props.get(&prop_id)
     }
     pub fn get_prop_by_name(&self, prop_name: &str) -> Option<&RcRefCell<Prop<'a>>> {
-        for prop in self._props.values() {
-            if prop.borrow()._prop_name == prop_name {
-                return Some(prop);
-            }
-        }
-        None
+        self._prop_name_map.get(prop_name)
     }
     pub fn get_props(&self) -> &PropMap<'a> {
         &self._props
@@ -332,21 +326,21 @@ impl<'a> PropManager<'a> {
             &prop_create_info,
         ));
         self._props.insert(id, prop.clone());
+        if self._prop_name_map.contains_key(prop_name) == false {
+            self._prop_name_map.insert(String::from(prop_name), prop.clone());
+        }
         prop
     }
 
-    pub fn is_exist_prop_name(&self, prop_name: &str) -> bool {
-        for prop in self._props.values() {
-            if prop.borrow()._prop_name == prop_name {
-                return true;
+    pub fn remove_prop(&mut self, prop_ref: &RcRefCell<Prop<'a>>) {
+        let prop = prop_ref.borrow();
+        self._props.remove(&prop.get_prop_id());
+        if let Some(target) = self._prop_name_map.get(prop._prop_name.as_str()) {
+            if target.as_ptr() == prop_ref.as_ptr() {
+                self._prop_name_map.remove(prop._prop_name.as_str());
             }
         }
-        false
-    }
-
-    pub fn remove_prop(&mut self, prop: &RcRefCell<Prop<'a>>) {
-        self._props.remove(&prop.borrow().get_prop_id());
-        self.get_scene_manager_mut().remove_static_render_object(prop.borrow()._render_object.borrow()._object_id);
+        self.get_scene_manager_mut().remove_static_render_object(prop._render_object.borrow()._object_id);
     }
 
     pub fn clear_props(&mut self) {

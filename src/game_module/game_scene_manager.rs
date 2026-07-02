@@ -12,7 +12,7 @@ use rust_engine_3d::begin_block;
 use crate::game_module::save_data::save_data::GameSaveData;
 use crate::application::application::Application;
 use crate::game_module::actors::character::{Character, CharacterCreateInfo};
-use crate::game_module::actors::character_manager::CharacterManager;
+use crate::game_module::actors::character_manager::{CharacterID, CharacterManager};
 use crate::game_module::actors::items::{ItemCreateInfo, ItemManager};
 use crate::game_module::actors::props::{PropCreateInfo, PropManager};
 use crate::game_module::game_constants::{GameViewMode, GAME_VIEW_MODE, TEMPERATURE_MAX, TEMPERATURE_MIN, TIME_OF_DAWN, TIME_OF_DAY_SPEED, TIME_OF_MORNING};
@@ -162,8 +162,12 @@ impl<'a> GameSceneManager<'a> {
         ptr_as_mut(self._character_manager.as_ref())
     }
 
-    pub fn get_actor(&self, actor_name: &str) -> Option<&RcRefCell<Character<'a>>> {
-        self.get_character_manager().get_character(actor_name)
+    pub fn get_actor(&self, character_id: CharacterID) -> Option<&RcRefCell<Character<'a>>> {
+        self.get_character_manager().get_character(character_id)
+    }
+
+    pub fn get_actor_by_name(&self, actor_name: &str) -> Option<&RcRefCell<Character<'a>>> {
+        self.get_character_manager().get_character_by_name(actor_name)
     }
 
     pub fn get_prop_manager(&self) -> &PropManager<'a> {
@@ -281,8 +285,12 @@ impl<'a> GameSceneManager<'a> {
         self._time_of_day
     }
 
-    pub fn get_temperature(&self) -> f32 {
+    pub fn temperature(&self) -> f32 {
         self._temperature
+    }
+
+    pub fn set_temperature(&mut self, temperature: f32) {
+        self._temperature = temperature;
     }
 
     pub fn get_date(&self) -> u32 {
@@ -296,16 +304,23 @@ impl<'a> GameSceneManager<'a> {
     pub fn load_game_save_data(&mut self, game_save_data: &GameSaveData) {
         self.clear_all_game_scenario();
         self.open_game_scene_data(&game_save_data._last_game_scene_name);
+        self.set_temperature(game_save_data._temperature);
+        self._date = game_save_data._date;
+        self.set_time_of_day(game_save_data._time_of_day);
+
         self.get_character_manager_mut().create_character(
             game_save_data._player._character_data_name.as_str(),
             &game_save_data._player,
-            true,
+            true
         );
     }
 
     pub fn get_game_save_data(&self) -> GameSaveData {
         GameSaveData {
             _player: self.get_character_manager().get_player().as_ref().borrow().get_character_save_data(),
+            _time_of_day: self.get_time_of_day(),
+            _temperature: self.temperature(),
+            _date: self.get_date(),
             _last_game_scene_name: self.get_current_game_scene_data_name().clone(),
             _game_scenes: self._game_scenes.clone(),
         }
@@ -447,7 +462,7 @@ impl<'a> GameSceneManager<'a> {
 
         // create player
         for (character_name, character_create_info) in game_scene_data_ref._player.iter() {
-            if let Some(character) = self._character_manager.get_character(character_name) {
+            if let Some(character) = self._character_manager.get_character_by_name(character_name) {
                 character.borrow_mut().initialize_transform(
                     &character_create_info._position,
                     &character_create_info._rotation,
@@ -465,7 +480,7 @@ impl<'a> GameSceneManager<'a> {
 
         // create npc
         for (character_name, character_create_info) in game_scene_data_ref._characters.iter() {
-            if let Some(character) = self._character_manager.get_character(character_name) {
+            if let Some(character) = self._character_manager.get_character_by_name(character_name) {
                 character.borrow_mut().initialize_transform(
                     &character_create_info._position,
                     &character_create_info._rotation,
@@ -501,7 +516,7 @@ impl<'a> GameSceneManager<'a> {
 
         // create player
         for (character_name, character_create_info) in scenario_create_info.borrow()._player.iter() {
-            if let Some(character) = self._character_manager.get_character(character_name) {
+            if let Some(character) = self._character_manager.get_character_by_name(character_name) {
                 character.borrow_mut().initialize_transform(
                     &character_create_info._position,
                     &character_create_info._rotation,
@@ -515,7 +530,7 @@ impl<'a> GameSceneManager<'a> {
 
         // create npc
         for (character_name, character_create_info) in scenario_create_info.borrow()._characters.iter() {
-            if let Some(character) = self._character_manager.get_character(character_name) {
+            if let Some(character) = self._character_manager.get_character_by_name(character_name) {
                 character.borrow_mut().initialize_transform(
                     &character_create_info._position,
                     &character_create_info._rotation,
@@ -564,10 +579,13 @@ impl<'a> GameSceneManager<'a> {
         self._time_of_day_speed = speed;
     }
 
-    pub fn set_time_of_day(&mut self, time: f32, minute: f32) {
-        self._time_of_day = time + minute / 60.0f32;
+    pub fn set_time_of_day(&mut self, time_of_day: f32) {
+        self._time_of_day = time_of_day;
         self.update_time_of_day(0.0);
         self.get_scene_manager_mut().reset_render_light_probe_time();
+    }
+    pub fn set_time(&mut self, time: f32, minute: f32) {
+        self.set_time_of_day(time + minute / 60.0f32)
     }
 
     pub fn update_time_of_day(&mut self, delta_time: f64) {

@@ -11,10 +11,10 @@ use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::system::RcRefCell;
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumIter};
+use uuid::Uuid;
 use rust_engine_3d::scene::socket::Socket;
 
-#[derive(Copy, Clone, Debug, Default, Hash, Eq, PartialEq)]
-pub struct ItemID(pub u64);
+pub type ItemID = Uuid;
 
 pub type ItemMap<'a> = HashMap<ItemID, RcRefCell<Item<'a>>>;
 
@@ -79,6 +79,5 @@ pub struct ItemManager<'a> {
     pub _game_resources: *const GameResources<'a>,
     pub _audio_manager: *const AudioManager<'a>,
     pub _scene_manager: *const SceneManager<'a>,
-    pub _id_generator: ItemID,
     pub _items: ItemMap<'a>,
 }

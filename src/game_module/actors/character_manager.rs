@@ -1,5 +1,6 @@
-use std::collections::HashMap;
+use std::collections::{HashMap};
 use std::ffi::c_void;
+use uuid::Uuid;
 use rust_engine_3d::audio::audio_manager::AudioManager;
 use rust_engine_3d::core::engine_core::EngineCore;
 use rust_engine_3d::scene::render_object::{RenderObjectCreateInfo, SceneObjectType};
@@ -19,10 +20,9 @@ use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::game_ui_manager::GameUIManager;
 use crate::game_module::widgets::text_box_widget::TextBoxContent;
 
-#[derive(Copy, Clone, Debug, Default, Hash, Eq, PartialEq)]
-pub struct CharacterID(u64);
-
-pub type CharacterMap<'a> = HashMap<String, RcRefCell<Character<'a>>>;
+pub type CharacterID = Uuid;
+pub type CharacterMap<'a> = HashMap<CharacterID, RcRefCell<Character<'a>>>;
+pub type CharacterNameMap<'a> = HashMap<String, RcRefCell<Character<'a>>>;
 
 pub struct CharacterManager<'a> {
     pub _game_client: *const GameClient<'a>,
@@ -31,11 +31,11 @@ pub struct CharacterManager<'a> {
     pub _audio_manager: *const AudioManager<'a>,
     pub _scene_manager: *const SceneManager<'a>,
     pub _game_ui_manager: *const GameUIManager<'a>,
-    pub _id_generator: CharacterID,
     pub _player: Option<RcRefCell<Character<'a>>>,
     pub _target_character: Option<RcRefCell<Character<'a>>>,
     pub _target_focus_time: f64,
     pub _characters: CharacterMap<'a>,
+    pub _character_name_map: CharacterNameMap<'a>,
 }
 
 impl<'a> CharacterManager<'a> {
@@ -47,11 +47,11 @@ impl<'a> CharacterManager<'a> {
             _audio_manager: std::ptr::null(),
             _scene_manager: std::ptr::null(),
             _game_ui_manager: std::ptr::null(),
-            _id_generator: CharacterID(0),
             _player: None,
             _target_character: None,
             _target_focus_time: 0.0,
             _characters: HashMap::new(),
+            _character_name_map: HashMap::new(),
         })
     }
 
@@ -93,16 +93,17 @@ impl<'a> CharacterManager<'a> {
     pub fn get_scene_manager_mut(&self) -> &mut SceneManager<'a> {
         ptr_as_mut(self._scene_manager)
     }
-    pub fn generate_id(&mut self) -> CharacterID {
-        let id = self._id_generator.clone();
-        self._id_generator = CharacterID(self._id_generator.0 + 1);
-        id
+    pub fn generate_id(&self) -> CharacterID {
+        Uuid::new_v4()
     }
     pub fn get_characters(&self) -> &CharacterMap<'a> {
         &self._characters
     }
-    pub fn get_character(&self, character_name: &str) -> Option<&RcRefCell<Character<'a>>> {
-        self._characters.get(character_name)
+    pub fn get_character(&self, character_id: CharacterID) -> Option<&RcRefCell<Character<'a>>> {
+        self._characters.get(&character_id)
+    }
+    pub fn get_character_by_name(&self, character_name: &str) -> Option<&RcRefCell<Character<'a>>> {
+        self._character_name_map.get(character_name)
     }
     pub fn create_character(
         &mut self,
@@ -159,13 +160,23 @@ impl<'a> CharacterManager<'a> {
             self._player = Some(character.clone());
         }
 
-        self._characters.insert(String::from(character_name), character.clone());
+        self._characters.insert(id, character.clone());
+        if self._character_name_map.contains_key(character_name) == false {
+            self._character_name_map.insert(String::from(character_name), character.clone());
+        }
         character
     }
-    pub fn remove_character(&mut self, character: &RcRefCell<Character>) {
-        character.borrow_mut().destroy_character();
-        self.get_scene_manager_mut().remove_skeletal_render_object(character.borrow()._render_object.borrow()._object_id);
-        self._characters.remove(character.borrow().get_character_name().as_str());
+
+    pub fn remove_character(&mut self, character_ref: &RcRefCell<Character<'a>>) {
+        let mut character = character_ref.borrow_mut();
+        character.destroy_character();
+        self.get_scene_manager_mut().remove_skeletal_render_object(character._render_object.borrow()._object_id);
+        self._characters.remove(&character._character_id);
+        if let Some(target) = self._character_name_map.get(character._character_name.as_str()) {
+            if target.as_ptr() == character_ref.as_ptr() {
+                self._character_name_map.remove(character._character_name.as_str());
+            }
+        }
     }
     pub fn clear_characters(&mut self, clear_player: bool) {
         let characters = self._characters.values().cloned().collect::<Vec<RcRefCell<Character>>>();

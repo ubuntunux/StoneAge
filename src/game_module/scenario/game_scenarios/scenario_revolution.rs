@@ -102,14 +102,14 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
 
     fn on_open_game_scene(&mut self, _game_scene_data_name: &str) {
         let game_scene_manager = ptr_as_ref(self._game_scene_manager);
-        self._alien_alpha = Some(game_scene_manager.get_actor("alien_alpha").unwrap().clone());
-        self._alien_beta = Some(game_scene_manager.get_actor("alien_beta").unwrap().clone());
-        self._monkey_aru = Some(game_scene_manager.get_actor("monkey_aru").unwrap().clone());
-        self._monkey_ewa = Some(game_scene_manager.get_actor("monkey_ewa").unwrap().clone());
-        self._monkey_koa = Some(game_scene_manager.get_actor("monkey_koa").unwrap().clone());
-        self._actor_aru = Some(game_scene_manager.get_actor("aru").unwrap().clone());
-        self._actor_ewa = Some(game_scene_manager.get_actor("ewa").unwrap().clone());
-        self._actor_koa = Some(game_scene_manager.get_actor("koa").unwrap().clone());
+        self._alien_alpha = Some(game_scene_manager.get_actor_by_name("alien_alpha").unwrap().clone());
+        self._alien_beta = Some(game_scene_manager.get_actor_by_name("alien_beta").unwrap().clone());
+        self._monkey_aru = Some(game_scene_manager.get_actor_by_name("monkey_aru").unwrap().clone());
+        self._monkey_ewa = Some(game_scene_manager.get_actor_by_name("monkey_ewa").unwrap().clone());
+        self._monkey_koa = Some(game_scene_manager.get_actor_by_name("monkey_koa").unwrap().clone());
+        self._actor_aru = Some(game_scene_manager.get_actor_by_name("aru").unwrap().clone());
+        self._actor_ewa = Some(game_scene_manager.get_actor_by_name("ewa").unwrap().clone());
+        self._actor_koa = Some(game_scene_manager.get_actor_by_name("koa").unwrap().clone());
 
         self._alien_alpha.as_ref().unwrap().borrow_mut().set_behavior_none();
         self._alien_beta.as_ref().unwrap().borrow_mut().set_behavior_none();
@@ -216,7 +216,7 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
         let current_scenario_phase = self._scenario_track._scenario_phase;
         match current_scenario_phase {
             ScenarioPhase::Begin => {
-                game_scene_manager.set_time_of_day(TIME_OF_NOON, 0.0);
+                game_scene_manager.set_time(TIME_OF_NOON, 0.0);
                 self.set_scenario_phase(ScenarioPhase::Investigate.to_string().as_ref(), Some(2.0));
             }
             ScenarioPhase::Investigate =>{

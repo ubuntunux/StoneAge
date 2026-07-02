@@ -8,11 +8,11 @@ use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::system::RcRefCell;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use uuid::Uuid;
 
-#[derive(Copy, Clone, Debug, Default, Hash, Eq, PartialEq)]
-pub struct PropID(pub u64);
-
+pub type PropID = Uuid;
 pub type PropMap<'a> = HashMap<PropID, RcRefCell<Prop<'a>>>;
+pub type PropNameMap<'a> = HashMap<String, RcRefCell<Prop<'a>>>;
 
 #[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq)]
 pub enum PropDataType {
@@ -81,6 +81,6 @@ pub struct PropManager<'a> {
     pub _game_resources: *const GameResources<'a>,
     pub _audio_manager: *const AudioManager<'a>,
     pub _scene_manager: *const SceneManager<'a>,
-    pub _id_generator: PropID,
     pub _props: PropMap<'a>,
+    pub _prop_name_map: PropNameMap<'a>,
 }

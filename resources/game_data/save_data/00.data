@@ -1,6 +1,6 @@
-{"_player":{"_character_data_name":"characters/family/aru",
-"_position":[18.392523,2.621167,16.282427],
-"_rotation":[0.0,2.1375928,0.0],
+{"_player":{"_character_data_name":"characters/family/monkey_aru",
+"_position":[19.868874,1.8106973,11.655028],
+"_rotation":[0.0,1.0193999,0.0],
 "_scale":[1.0,1.0,1.0]},
 "_last_game_scene_name":"game_scenes/intro_stage",
 "_game_scenes":{}}

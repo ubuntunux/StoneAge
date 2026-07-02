@@ -118,10 +118,10 @@ impl<'a> ScenarioBase<'a> for ScenarioUfo<'a> {
     fn on_open_game_scene(&mut self, game_scene_data_name: &str) {
         let game_scene_manager = ptr_as_ref(self._game_scene_manager);
         if game_scene_data_name == Stages::Home.get_stage_data_name() {
-            self._actor_ufo = Some(game_scene_manager.get_actor("ufo").unwrap().clone());
-            self._actor_aru = Some(game_scene_manager.get_actor("monkey_aru").unwrap().clone());
-            self._actor_ewa = Some(game_scene_manager.get_actor("monkey_ewa").unwrap().clone());
-            self._actor_koa = Some(game_scene_manager.get_actor("monkey_koa").unwrap().clone());
+            self._actor_ufo = Some(game_scene_manager.get_actor_by_name("ufo").unwrap().clone());
+            self._actor_aru = Some(game_scene_manager.get_actor_by_name("monkey_aru").unwrap().clone());
+            self._actor_ewa = Some(game_scene_manager.get_actor_by_name("monkey_ewa").unwrap().clone());
+            self._actor_koa = Some(game_scene_manager.get_actor_by_name("monkey_koa").unwrap().clone());
         }
 
         self._is_load_completed = true;
@@ -192,7 +192,7 @@ impl<'a> ScenarioBase<'a> for ScenarioUfo<'a> {
         let current_scenario_phase = self._scenario_track._scenario_phase;
         match current_scenario_phase {
             ScenarioPhase::Begin => {
-                game_scene_manager.set_time_of_day(TIME_OF_DAWN, 0.0);
+                game_scene_manager.set_time(TIME_OF_DAWN, 0.0);
                 self.set_scenario_phase(ScenarioPhase::AppearUfo.to_string().as_str(), Some(3.0));
             },
             ScenarioPhase::AppearUfo => {

@@ -129,21 +129,21 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
 
     fn on_open_game_scene(&mut self, _game_scene_data_name: &str) {
         let game_scene_manager = ptr_as_ref(self._game_scene_manager);
-        if let Some(actor) = game_scene_manager.get_actor("monkey_aru") {
+        if let Some(actor) = game_scene_manager.get_actor_by_name("monkey_aru") {
             self._actor_aru = Some(actor.clone());
-        } else if let Some(actor) = game_scene_manager.get_actor("aru") {
+        } else if let Some(actor) = game_scene_manager.get_actor_by_name("aru") {
             self._actor_aru = Some(actor.clone());
         }
 
-        if let Some(actor) = game_scene_manager.get_actor("monkey_ewa") {
+        if let Some(actor) = game_scene_manager.get_actor_by_name("monkey_ewa") {
             self._actor_ewa = Some(actor.clone());
-        } else if let Some(actor) = game_scene_manager.get_actor("ewa") {
+        } else if let Some(actor) = game_scene_manager.get_actor_by_name("ewa") {
             self._actor_ewa = Some(actor.clone());
         }
 
-        if let Some(actor) = game_scene_manager.get_actor("monkey_koa") {
+        if let Some(actor) = game_scene_manager.get_actor_by_name("monkey_koa") {
             self._actor_koa = Some(actor.clone());
-        } else if let Some(actor) = game_scene_manager.get_actor("koa") {
+        } else if let Some(actor) = game_scene_manager.get_actor_by_name("koa") {
             self._actor_koa = Some(actor.clone());
         }
 
