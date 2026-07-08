@@ -58,10 +58,14 @@ pub struct CharacterStats {
 #[derive(Default)]
 pub struct CharacterAnimationState {
     pub _move_animation_state: MoveAnimationState,
-    pub _move_animation_state_prev: MoveAnimationState,
+    pub _prev_move_animation_state: MoveAnimationState,
+    pub _next_move_animation_state: MoveAnimationState,
+    pub _next_move_animation_speed: f32,
     pub _action_event: ActionAnimationState,
     pub _action_animation_state: ActionAnimationState,
-    pub _action_animation_state_prev: ActionAnimationState,
+    pub _prev_action_animation_state: ActionAnimationState,
+    pub _next_action_animation_state: ActionAnimationState,
+    pub _next_action_animation_speed: f32,
 }
 
 pub struct Character<'a> {
