@@ -1,19 +1,21 @@
 use std::cmp::PartialEq;
 use crate::application::application::Application;
 use crate::game_module::actors::character_manager::CharacterManager;
-use crate::game_module::game_constants::{GameViewMode, AMBIENT_SOUND, CAMERA_DISTANCE_MAX, GAME_MUSIC, MATERIAL_INTRO_IMAGE, MATERIAL_UI_NONE, GAME_VIEW_MODE, MATERIAL_WORLDMAP_FADE_TIME, DEFAULT_GATE_NAME, DEFAULT_FADE_TIME, DEFAULT_BGM_VOLUME};
+use crate::game_module::game_constants::{GameViewMode, AMBIENT_SOUND, CAMERA_DISTANCE_MAX, GAME_MUSIC, MATERIAL_INTRO_IMAGE, MATERIAL_UI_NONE, GAME_VIEW_MODE, MATERIAL_WORLDMAP_FADE_TIME, DEFAULT_GATE_NAME, DEFAULT_FADE_TIME, DEFAULT_BGM_VOLUME, DEFAULT_GAME_SAVE_DATA};
 use crate::game_module::game_controller::GameController;
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::{GameSceneManager, GameSceneState};
 use crate::game_module::game_ui_manager::{EditorUIManager, GameUIManager};
 use nalgebra::{Vector2, Vector3};
+use strum::IntoEnumIterator;
 use rust_engine_3d::core::engine_core::EngineCore;
-use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
+use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, State};
 use crate::game_module::scenario::game_scenarios::scenario_day_one;
 use crate::game_module::scenario::scenario::{ScenarioType};
 
 #[derive(Clone, Copy, Debug, Hash, PartialEq)]
 pub enum GamePhase {
+    None,
     Start,
     TitleScreen,
     BeginLoading,
@@ -54,7 +56,7 @@ impl<'a> GameClient<'a> {
             _game_controller: std::ptr::null(),
             _game_ui_manager: std::ptr::null(),
             _editor_ui_manager: std::ptr::null(),
-            _game_phase: GamePhase::Start,
+            _game_phase: GamePhase::None,
             _next_game_phase: GamePhase::Start,
             _request_load_game_data_name: String::default(),
         })
@@ -73,7 +75,6 @@ impl<'a> GameClient<'a> {
         self._game_resources = application.get_game_resources();
         self._game_ui_manager = application.get_game_ui_manager();
         self._editor_ui_manager = application.get_editor_ui_manager();
-        self._next_game_phase = self._game_phase;
     }
     pub fn destroy_game_client(&mut self) {
         ptr_as_mut(self._game_ui_manager).destroy_game_ui_manager();
@@ -151,18 +152,11 @@ impl<'a> GameClient<'a> {
     pub fn set_next_game_phase(&mut self, next_game_phase: GamePhase) {
         self._next_game_phase = next_game_phase;
     }
-    fn set_game_phase(&mut self, game_phase: GamePhase) {
-        if self._game_phase != game_phase {
-            self.update_game_mode_end();
-            self._game_phase = game_phase;
-            self.update_game_mode_begin();
-        }
-    }
     pub fn new_game(&mut self) {
         log::info!("new_game");
     }
     pub fn request_load_game(&mut self) {
-        self._request_load_game_data_name = String::from("save_data/00");
+        self._request_load_game_data_name = String::from(DEFAULT_GAME_SAVE_DATA);
         self.set_next_game_phase(GamePhase::BeginLoading);
     }
     fn load_game(&mut self) {
@@ -172,74 +166,8 @@ impl<'a> GameClient<'a> {
     }
     pub fn save_game(&mut self) {
         let game_save_data = self.get_game_scene_manager().get_game_save_data();
-        self.get_game_resources_mut().save_game_save_data("save_data/00", &game_save_data);
+        self.get_game_resources_mut().save_game_save_data(DEFAULT_GAME_SAVE_DATA, &game_save_data);
     }
-    fn update_game_mode_begin(&mut self) {
-        let game_scene_manager = ptr_as_mut(self._game_scene_manager);
-        let character_manager = ptr_as_mut(game_scene_manager._character_manager.as_ref());
-        let game_ui_manager = ptr_as_mut(self._game_ui_manager);
-
-        match self._game_phase {
-            GamePhase::BeginLoading => {
-                game_ui_manager.show_game_ui(false);
-                game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, DEFAULT_FADE_TIME);
-            }
-            GamePhase::GameMenu => {
-                game_ui_manager.set_cross_hair_visible(true);
-                game_ui_manager.open_game_menu();
-            }
-            GamePhase::GamePlay => {
-                game_ui_manager.show_game_ui(true);
-            }
-            GamePhase::PlayGameScenario => {
-                game_ui_manager.show_game_ui(false);
-            }
-            GamePhase::Teleport => {
-                if character_manager.is_valid_player() {
-                    character_manager.get_player().borrow_mut().set_action_none();
-                    character_manager.get_player().borrow_mut().set_move_idle();
-                }
-                game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, DEFAULT_FADE_TIME);
-            }
-            GamePhase::OpenToolbox => {
-                game_ui_manager.open_toolbox();
-            }
-            GamePhase::WorldMapOpen => {
-                game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, MATERIAL_WORLDMAP_FADE_TIME);
-            }
-            GamePhase::WorldMapClose => {
-                game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, MATERIAL_WORLDMAP_FADE_TIME);
-            }
-            _ => (),
-        }
-    }
-
-    pub fn update_game_mode_end(&mut self) {
-        let game_scene_manager = ptr_as_mut(self._game_scene_manager);
-        let character_manager = ptr_as_mut(game_scene_manager._character_manager.as_ref());
-        let game_ui_manager = ptr_as_mut(self._game_ui_manager);
-        let game_controller = ptr_as_mut(self._game_controller);
-        match self._game_phase {
-            GamePhase::GameMenu => {
-                game_ui_manager.set_cross_hair_visible(false);
-            }
-            GamePhase::Teleport => {
-                game_ui_manager.set_auto_fade_inout(true);
-                if character_manager.is_valid_player() {
-                    character_manager.get_player().borrow_mut().set_action_none();
-                    character_manager.get_player().borrow_mut().set_move_idle();
-                }
-            }
-            GamePhase::PlayGameScenario => {
-                game_controller.set_game_camera_auto_blend_mode(true);
-            }
-            GamePhase::OpenToolbox => {
-                game_ui_manager.close_toolbox();
-            }
-            _ => (),
-        }
-    }
-
     pub fn update_game_mode(&mut self, delta_time: f64) {
         let engine_core = ptr_as_ref(self._engine_core);
         let game_scene_manager = ptr_as_mut(self._game_scene_manager);
@@ -265,149 +193,266 @@ impl<'a> GameClient<'a> {
             || mouse_input_data.is_any_button_hold()
             || keyboard_input_data.is_any_key_hold();
 
-        if self._next_game_phase != self._game_phase {
-            self.set_game_phase(self._next_game_phase);
-        }
+        let game_phase = self._game_phase;
+        let next_game_phase = self._next_game_phase;
+        for state in State::iter() {
+            if game_phase == next_game_phase && (state == State::End || state == State::Begin) {
+                continue;
+            }
 
-        match self._game_phase {
-            GamePhase::Start => {
-                game_ui_manager.set_image_auto_fade_inout(MATERIAL_INTRO_IMAGE, 0.0);
-                game_scene_manager.play_bgm(GAME_MUSIC, DEFAULT_BGM_VOLUME);
-                game_scene_manager.play_ambient_sound(AMBIENT_SOUND, None);
-                self.set_next_game_phase(GamePhase::TitleScreen);
-            }
-            GamePhase::TitleScreen => {
-                if any_key_pressed {
-                    self.set_next_game_phase(GamePhase::BeginLoading);
+            let update_game_phase: GamePhase = match state {
+                State::End => game_phase,
+                State::Begin => {
+                    self._game_phase = next_game_phase;
+                    next_game_phase
                 }
-            }
-            GamePhase::BeginLoading => {
-                if game_ui_manager.is_done_manual_fade_out() {
-                    if self._request_load_game_data_name.is_empty() == false {
-                        self.load_game();
-                    } else {
-                        const SKIP_SCENARIO: bool = false;
-                        if SKIP_SCENARIO {
-                            game_scene_manager.request_open_game_scenario(ScenarioType::ScenarioDayOne, true);
-                            unsafe { scenario_day_one::SKIP_SCENARIO = true; }
-                        } else {
-                            game_scene_manager.request_open_game_scenario(ScenarioType::ScenarioIntro, true);
+                State::Update => next_game_phase,
+            };
+
+            match update_game_phase {
+                GamePhase::None => {
+                    continue;
+                }
+                GamePhase::Start => {
+                    match state {
+                        State::Update => {
+                            game_ui_manager.set_image_auto_fade_inout(MATERIAL_INTRO_IMAGE, 0.0);
+                            game_scene_manager.play_bgm(GAME_MUSIC, DEFAULT_BGM_VOLUME);
+                            game_scene_manager.play_ambient_sound(AMBIENT_SOUND, None);
+                            self.set_next_game_phase(GamePhase::TitleScreen);
+                        }
+                        _ => {}
+                    }
+                }
+                GamePhase::TitleScreen => {
+                    match state {
+                        State::Update => {
+                            if any_key_pressed {
+                                self.set_next_game_phase(GamePhase::BeginLoading);
+                            }
+                        }
+                        _ => {}
+                    }
+                }
+                GamePhase::BeginLoading => {
+                    match state {
+                        State::Begin => {
+                            game_ui_manager.show_game_ui(false);
+                            game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, DEFAULT_FADE_TIME);
+                        }
+                        State::Update => {
+                            if game_ui_manager.is_done_manual_fade_out() {
+                                if self._request_load_game_data_name.is_empty() == false {
+                                    self.load_game();
+                                } else {
+                                    const SKIP_SCENARIO: bool = false;
+                                    if SKIP_SCENARIO {
+                                        game_scene_manager.request_open_game_scenario(ScenarioType::ScenarioDayOne, true);
+                                        unsafe { scenario_day_one::SKIP_SCENARIO = true; }
+                                    } else {
+                                        game_scene_manager.request_open_game_scenario(ScenarioType::ScenarioIntro, true);
+                                    }
+                                }
+                                self.set_next_game_phase(GamePhase::LoadingProgress);
+                            }
+                        }
+                        State::End => {}
+                    }
+                }
+
+                GamePhase::LoadingProgress => {
+                    match state {
+                        State::Update => {
+                            if game_scene_manager.is_game_scene_state(GameSceneState::LoadCompleted) {
+                                game_ui_manager.set_auto_fade_inout(true);
+                                game_controller.set_game_camera_goal_transform(
+                                    1.0,
+                                    scene_manager.get_main_camera()._transform_object.get_pitch(),
+                                    scene_manager.get_main_camera()._transform_object.get_yaw()
+                                );
+                                self.set_next_game_phase(GamePhase::GamePlay);
+                            }
+                        }
+                        _ => {}
+                    }
+                }
+                GamePhase::GameMenu => {
+                    match state {
+                        State::Begin => {
+                            game_ui_manager.set_cross_hair_visible(true);
+                            game_ui_manager.open_game_menu();
+                        }
+                        State::Update => {
+                            if game_ui_manager.is_opened_game_menu() == false {
+                                self.set_next_game_phase(GamePhase::GamePlay);
+                            }
+                            game_ui_manager.update_game_menu_widget(joystick_input_data, keyboard_input_data);
+                        }
+                        State::End => {
+                            game_ui_manager.set_cross_hair_visible(false);
                         }
                     }
-                    self.set_next_game_phase(GamePhase::LoadingProgress);
                 }
-            }
-            GamePhase::LoadingProgress => {
-                if game_scene_manager.is_game_scene_state(GameSceneState::LoadCompleted) {
-                    game_ui_manager.set_auto_fade_inout(true);
-                    game_controller.set_game_camera_goal_transform(
-                        1.0,
-                        scene_manager.get_main_camera()._transform_object.get_pitch(),
-                        scene_manager.get_main_camera()._transform_object.get_yaw()
-                    );
-                    self.set_next_game_phase(GamePhase::GamePlay);
+                GamePhase::GamePlay => {
+                    match state {
+                        State::Begin => {
+                            game_ui_manager.show_game_ui(true);
+                        }
+                        State::Update => {
+                            if game_scene_manager.is_game_scene_state(GameSceneState::LoadCompleted) {
+                                if character_manager.is_valid_player() {
+                                    if game_scene_manager.is_play_scenario_mode() {
+                                        self.set_next_game_phase(GamePhase::PlayGameScenario);
+                                    } else if game_scene_manager.is_teleport_mode() {
+                                        self.set_next_game_phase(GamePhase::Teleport);
+                                    } else {
+                                        if game_controller.is_game_camera_auto_blend_mode() {
+                                            game_controller.update_game_camera_auto_blend(
+                                                scene_manager.get_main_camera_mut(),
+                                                character_manager.get_player(),
+                                                time_data._delta_time_with_scale as f32
+                                            );
+                                        } else {
+                                            game_controller.update_game_controller(
+                                                time_data,
+                                                joystick_input_data,
+                                                &keyboard_input_data,
+                                                &mouse_move_data,
+                                                &mouse_input_data,
+                                                &mouse_delta,
+                                                scene_manager.get_main_camera_mut(),
+                                                character_manager.get_player(),
+                                            );
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        State::End => {}
+                    }
                 }
-            }
-            GamePhase::GameMenu => {
-                if game_ui_manager.is_opened_game_menu() == false {
-                    self.set_next_game_phase(GamePhase::GamePlay);
+                GamePhase::PlayGameScenario => {
+                    match state {
+                        State::Begin => {
+                            game_ui_manager.show_game_ui(false);
+                        }
+                        State::Update => {
+                            if game_scene_manager.is_play_scenario_mode() == false {
+                                self.set_next_game_phase(GamePhase::GamePlay);
+                            }
+                        }
+                        State::End => {
+                            game_controller.set_game_camera_auto_blend_mode(true);
+                        }
+                    }
                 }
-
-                game_ui_manager.update_game_menu_widget(joystick_input_data, keyboard_input_data);
-            }
-            GamePhase::GamePlay => {
-                if game_scene_manager.is_game_scene_state(GameSceneState::LoadCompleted) {
-                    if character_manager.is_valid_player() {
-                        if game_scene_manager.is_play_scenario_mode() {
-                            self.set_next_game_phase(GamePhase::PlayGameScenario);
-                        } else if game_scene_manager.is_teleport_mode() {
-                            self.set_next_game_phase(GamePhase::Teleport);
-                        } else {
-                            if game_controller.is_game_camera_auto_blend_mode() {
-                                game_controller.update_game_camera_auto_blend(
-                                    scene_manager.get_main_camera_mut(),
-                                    character_manager.get_player(),
-                                    time_data._delta_time_with_scale as f32
-                                );
-                            } else {
-                                game_controller.update_game_controller(
-                                    time_data,
-                                    joystick_input_data,
-                                    &keyboard_input_data,
-                                    &mouse_move_data,
-                                    &mouse_input_data,
-                                    &mouse_delta,
-                                    scene_manager.get_main_camera_mut(),
-                                    character_manager.get_player(),
-                                );
+                GamePhase::Teleport => {
+                    match state {
+                        State::Begin => {
+                            if character_manager.is_valid_player() {
+                            character_manager.get_player().borrow_mut().set_action_none();
+                            character_manager.get_player().borrow_mut().set_move_idle();
+                            }
+                            game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, DEFAULT_FADE_TIME);
+                        }
+                        State::Update => {
+                            if game_ui_manager.is_done_manual_fade_out() {
+                                game_scene_manager.update_teleport(character_manager);
+                                if game_scene_manager.is_teleport_mode() == false {
+                                    self.set_next_game_phase(GamePhase::GamePlay);
+                                }
+                            }
+                        }
+                        State::End => {
+                            game_ui_manager.set_auto_fade_inout(true);
+                            if character_manager.is_valid_player() {
+                            character_manager.get_player().borrow_mut().set_action_none();
+                            character_manager.get_player().borrow_mut().set_move_idle();
                             }
                         }
                     }
                 }
-            }
-            GamePhase::PlayGameScenario => {
-                if game_scene_manager.is_play_scenario_mode() == false {
-                    self.set_next_game_phase(GamePhase::GamePlay);
-                }
-            }
-            GamePhase::Teleport => {
-                if game_ui_manager.is_done_manual_fade_out() {
-                    game_scene_manager.update_teleport(character_manager);
-                    if game_scene_manager.is_teleport_mode() == false {
-                        self.set_next_game_phase(GamePhase::GamePlay);
+                GamePhase::OpenToolbox => {
+                    match state {
+                        State::Begin => {
+                            game_ui_manager.open_toolbox();
+                        }
+                        State::Update => {
+                            if game_ui_manager.is_opened_toolbox() {
+                                game_ui_manager.update_toolbox_widget(
+                                    time_data,
+                                    joystick_input_data,
+                                    keyboard_input_data,
+                                    &mouse_move_data,
+                                    &mouse_input_data,
+                                    &mouse_delta,
+                                    character_manager.get_player(),
+                                );
+                            } else {
+                                self.set_next_game_phase(GamePhase::GamePlay);
+                            }
+                        }
+                        State::End => {
+                            game_ui_manager.close_toolbox();
+                        }
                     }
                 }
-            }
-            GamePhase::OpenToolbox => {
-                if game_ui_manager.is_opened_toolbox() {
-                    game_ui_manager.update_toolbox_widget(
-                        time_data,
-                        joystick_input_data,
-                        keyboard_input_data,
-                        &mouse_move_data,
-                        &mouse_input_data,
-                        &mouse_delta,
-                        character_manager.get_player(),
-                    );
-                } else {
-                    self.set_next_game_phase(GamePhase::GamePlay);
+                GamePhase::WorldMapOpen => {
+                    match state {
+                        State::Begin => {
+                            game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, MATERIAL_WORLDMAP_FADE_TIME);
+                        }
+                        State::Update => {
+                            if game_ui_manager.is_done_manual_fade_out() {
+                                game_ui_manager.set_text_box_visible(false);
+                                game_ui_manager.set_cross_hair_visible(true);
+                                game_ui_manager.set_auto_fade_inout(true);
+                                game_ui_manager.open_world_map();
+                                game_ui_manager.set_selected_world_map_stage(self.get_game_scene_manager().get_current_game_scene_data_name());
+                                self.set_next_game_phase(GamePhase::WorldMapUpdate);
+                            }
+                        }
+                        State::End => {}
+                    }
                 }
-            }
-            GamePhase::WorldMapOpen => {
-                if game_ui_manager.is_done_manual_fade_out() {
-                    game_ui_manager.set_text_box_visible(false);
-                    game_ui_manager.set_cross_hair_visible(true);
-                    game_ui_manager.set_auto_fade_inout(true);
-                    game_ui_manager.open_world_map();
-                    game_ui_manager.set_selected_world_map_stage(self.get_game_scene_manager().get_current_game_scene_data_name());
-                    self.set_next_game_phase(GamePhase::WorldMapUpdate);
+                GamePhase::WorldMapUpdate => {
+                    match state {
+                        State::Begin => {
+                            game_ui_manager.update_world_map_widget(joystick_input_data, keyboard_input_data);
+                        }
+                        State::Update => {
+                            if game_scene_manager.is_teleport_mode() {
+                                self.set_next_game_phase(GamePhase::WorldMapClose);
+                            } else if game_ui_manager.is_requested_close_world_map() {
+                                self.get_game_scene_manager_mut().set_teleport_stage(
+                                    self.get_game_scene_manager().get_current_game_scene_data_name(),
+                                    DEFAULT_GATE_NAME,
+                                );
+                                self.set_next_game_phase(GamePhase::WorldMapClose);
+                            }
+                        }
+                        State::End => {}
+                    }
                 }
-            }
-            GamePhase::WorldMapUpdate => {
-                game_ui_manager.update_world_map_widget(joystick_input_data, keyboard_input_data);
-
-                if game_scene_manager.is_teleport_mode() {
-                    self.set_next_game_phase(GamePhase::WorldMapClose);
-                } else if game_ui_manager.is_requested_close_world_map() {
-                    self.get_game_scene_manager_mut().set_teleport_stage(
-                        self.get_game_scene_manager().get_current_game_scene_data_name(),
-                        DEFAULT_GATE_NAME,
-                    );
-                    self.set_next_game_phase(GamePhase::WorldMapClose);
+                GamePhase::WorldMapClose => {
+                    match state {
+                        State::Update => {
+                            game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, MATERIAL_WORLDMAP_FADE_TIME);
+                            if game_ui_manager.is_done_manual_fade_out() || game_ui_manager.is_done_game_image_progress() {
+                                game_ui_manager.set_text_box_visible(true);
+                                game_ui_manager.set_cross_hair_visible(false);
+                                game_ui_manager.set_auto_fade_inout(true);
+                                game_ui_manager.unset_selected_world_map_stage();
+                                game_ui_manager.close_world_map();
+                                game_scene_manager.update_teleport(character_manager);
+                                self.set_next_game_phase(GamePhase::GamePlay);
+                            }
+                        }
+                        _ => {}
+                    }
                 }
-            }
-            GamePhase::WorldMapClose => {
-                if game_ui_manager.is_done_manual_fade_out() || game_ui_manager.is_done_game_image_progress() {
-                    game_ui_manager.set_text_box_visible(true);
-                    game_ui_manager.set_cross_hair_visible(false);
-                    game_ui_manager.set_auto_fade_inout(true);
-                    game_ui_manager.unset_selected_world_map_stage();
-                    game_ui_manager.close_world_map();
-                    game_scene_manager.update_teleport(character_manager);
-                    self.set_next_game_phase(GamePhase::GamePlay);
+                GamePhase::ExitGame => {
                 }
-            }
-            GamePhase::ExitGame => {
             }
         }
 

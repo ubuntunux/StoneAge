@@ -167,6 +167,24 @@ impl<'a> CharacterManager<'a> {
         character
     }
 
+    pub fn create_or_update_character(
+        &mut self,
+        character_name: &str,
+        character_create_info: &CharacterCreateInfo,
+        is_player: bool,
+    ) -> RcRefCell<Character<'a>> {
+        if let Some(character) = self.get_character_by_name(character_name) {
+            character.borrow_mut().initialize_transform(
+                &character_create_info._position,
+                &character_create_info._rotation,
+                &character_create_info._scale
+            );
+            character.clone()
+        } else {
+            self.create_character(character_name, character_create_info, is_player)
+        }
+    }
+
     pub fn remove_character(&mut self, character_ref: &RcRefCell<Character<'a>>) {
         let mut character = character_ref.borrow_mut();
         character.destroy_character();

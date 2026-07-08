@@ -462,37 +462,13 @@ impl<'a> GameSceneManager<'a> {
 
         // create player
         for (character_name, character_create_info) in game_scene_data_ref._player.iter() {
-            if let Some(character) = self._character_manager.get_character_by_name(character_name) {
-                character.borrow_mut().initialize_transform(
-                    &character_create_info._position,
-                    &character_create_info._rotation,
-                    &character_create_info._scale
-                );
-            } else {
-                self._character_manager.create_character(
-                    character_name,
-                    character_create_info,
-                    true,
-                );
-            }
+            self._character_manager.create_or_update_character(character_name, character_create_info, true);
             self._spawn_point = character_create_info._position;
         }
 
         // create npc
         for (character_name, character_create_info) in game_scene_data_ref._characters.iter() {
-            if let Some(character) = self._character_manager.get_character_by_name(character_name) {
-                character.borrow_mut().initialize_transform(
-                    &character_create_info._position,
-                    &character_create_info._rotation,
-                    &character_create_info._scale
-                );
-            } else {
-                self._character_manager.create_character(
-                    character_name,
-                    character_create_info,
-                    false,
-                );
-            }
+            self._character_manager.create_or_update_character(character_name, character_create_info, false);
         }
     }
 
@@ -516,29 +492,13 @@ impl<'a> GameSceneManager<'a> {
 
         // create player
         for (character_name, character_create_info) in scenario_create_info.borrow()._player.iter() {
-            if let Some(character) = self._character_manager.get_character_by_name(character_name) {
-                character.borrow_mut().initialize_transform(
-                    &character_create_info._position,
-                    &character_create_info._rotation,
-                    &character_create_info._scale
-                );
-            } else {
-                self._character_manager.create_character(character_name, character_create_info, true);
-            }
+            self._character_manager.create_or_update_character(character_name, character_create_info, true);
             self._spawn_point = character_create_info._position;
         }
 
         // create npc
         for (character_name, character_create_info) in scenario_create_info.borrow()._characters.iter() {
-            if let Some(character) = self._character_manager.get_character_by_name(character_name) {
-                character.borrow_mut().initialize_transform(
-                    &character_create_info._position,
-                    &character_create_info._rotation,
-                    &character_create_info._scale
-                );
-            } else {
-                self._character_manager.create_character(character_name, character_create_info, false);
-            }
+            self._character_manager.create_or_update_character(character_name, character_create_info, false);
         }
     }
 

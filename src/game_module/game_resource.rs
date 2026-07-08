@@ -219,14 +219,8 @@ impl<'a> GameResources<'a> {
         game_save_data_filepath.push(game_save_data_name);
         game_save_data_filepath.set_extension(EXT_GAME_DATA);
         let mut write_file = File::create(&game_save_data_filepath).expect("Failed to create file");
-        let mut write_contents: String = serde_json::to_string(&game_save_data_create_info).expect("Failed to serialize.");
-        write_contents = write_contents.replace(",\"", ",\n\"");
+        let write_contents: String = serde_json::to_string_pretty(&game_save_data_create_info).expect("Failed to serialize.");
         write_file.write(write_contents.as_bytes()).expect("Failed to write");
-
-        self._game_save_data_map.insert(
-            String::from(game_save_data_name),
-            newRcRefCell(game_save_data_create_info.clone()),
-        );
     }
 
     pub fn has_game_save_data(&self, resource_name: &str) -> bool {

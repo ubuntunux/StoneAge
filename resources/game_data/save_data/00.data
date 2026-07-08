@@ -1,6 +1,25 @@
-{"_player":{"_character_data_name":"characters/family/monkey_aru",
-"_position":[19.868874,1.8106973,11.655028],
-"_rotation":[0.0,1.0193999,0.0],
-"_scale":[1.0,1.0,1.0]},
-"_last_game_scene_name":"game_scenes/intro_stage",
-"_game_scenes":{}}
+{
+  "_player": {
+    "_character_data_name": "characters/family/aru",
+    "_position": [
+      21.964865,
+      1.7300615,
+      11.470123
+    ],
+    "_rotation": [
+      0.0,
+      4.7074046,
+      0.0
+    ],
+    "_scale": [
+      1.0,
+      1.0,
+      1.0
+    ]
+  },
+  "_time_of_day": 8.346999,
+  "_temperature": 38.088337,
+  "_date": 2,
+  "_last_game_scene_name": "game_scenes/intro_stage",
+  "_game_scenes": {}
+}
