@@ -39,6 +39,7 @@ impl ScenarioType {
 
 pub struct ScenarioTrack<T: Copy + PartialEq + Hash> {
     pub _scenario_phase: T,
+    pub _next_scenario_phase: T,
     pub _phase_time: f32,
     pub _phase_duration: Option<f32>,
 }
@@ -65,10 +66,8 @@ impl<T: Copy + PartialEq + Hash> ScenarioTrack<T> {
         self._phase_time
     }
 
-    pub fn update_scenario_track(&mut self, current_scenario_phase: T, delta_time: f32) {
-        if current_scenario_phase == self._scenario_phase {
-            self._phase_time += delta_time;
-        }
+    pub fn update_scenario_phase_time(&mut self, delta_time: f32) {
+        self._phase_time += delta_time;
     }
 }
 

@@ -1,10 +1,11 @@
 use std::str::FromStr;
 use nalgebra::Vector3;
+use strum::IntoEnumIterator;
 use strum_macros::{Display, EnumCount, EnumIter, EnumString};
 use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop};
 use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::math;
-use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
+use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell, State};
 use crate::game_module::actors::character::{Character};
 use crate::game_module::actors::character_data::ActionAnimationState;
 use crate::game_module::actors::props::Prop;
@@ -19,6 +20,7 @@ const TABLE_SCENE_CAMERA_ROTATION: [f32; 3] = [0.06, -3.13, 0.0];
 
 #[derive(Clone, PartialEq, Eq, Hash, Display, Debug, Copy, EnumIter, EnumString, EnumCount)]
 enum ScenarioPhase {
+    None,
     Begin,
     Performance,
     GoToSleep,
@@ -65,11 +67,17 @@ impl<'a> ScenarioWrapUpTheDay<'a> {
             _audio_bgm: None,
             _skip_wakeup: false,
             _scenario_track: ScenarioTrack {
-                _scenario_phase: ScenarioPhase::Begin,
+                _scenario_phase: ScenarioPhase::None,
+                _next_scenario_phase: ScenarioPhase::Begin,
                 _phase_time: 0.0,
                 _phase_duration: None,
             }
         })
+    }
+
+    fn set_next_scenario_phase(&mut self, next_scenario_phase: ScenarioPhase, phase_duration: Option<f32>) {
+        self._scenario_track._next_scenario_phase = next_scenario_phase;
+        self._scenario_track._phase_duration = phase_duration;
     }
 
     pub fn set_skip_wakeup(&mut self, skip_wakeup: bool) {
@@ -157,31 +165,13 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
 
     fn set_scenario_phase(&mut self, next_scenario_phase: &str, phase_duration: Option<f32>) {
         let next_scenario_phase = ScenarioPhase::from_str(next_scenario_phase).expect("scenario error");
-        if next_scenario_phase != self._scenario_track._scenario_phase {
-            self.update_game_scenario_end();
-            self._scenario_track.set_scenario_phase(next_scenario_phase, phase_duration);
-            self.update_game_scenario_begin();
-        }
+        self.set_next_scenario_phase(next_scenario_phase, phase_duration);
     }
 
     fn update_game_scenario_begin(&mut self) {
-        let game_scene_manager = ptr_as_mut(self._game_scene_manager);
-        let game_ui_manager = ptr_as_mut(game_scene_manager._game_ui_manager);
-
-        match self._scenario_track._scenario_phase {
-            ScenarioPhase::Sleep => {
-                self._sleep_timer = 0.0;
-                game_scene_manager.play_bgm(GAME_MUSIC, DEFAULT_BGM_VOLUME);
-                game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, DEFAULT_FADE_TIME);
-            }
-            _ => {}
-        }
     }
 
     fn update_game_scenario_end(&mut self) {
-        match self._scenario_track._scenario_phase {
-            _ => ()
-        }
     }
 
     fn update_game_scenario(&mut self, _any_key_hold: bool, _any_key_pressed: bool, delta_time: f64) {
@@ -190,84 +180,123 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
 
         let phase_time = self._scenario_track.get_phase_time();
         let phase_ratio = self._scenario_track.get_phase_ratio();
-        let current_scenario_phase = self._scenario_track._scenario_phase;
-        match current_scenario_phase {
-            ScenarioPhase::Begin => {
-                self._actor_aru.as_ref().unwrap().borrow_mut().set_behavior_none();
-                self._actor_ewa.as_ref().unwrap().borrow_mut().set_behavior_none();
-                self._actor_koa.as_ref().unwrap().borrow_mut().set_behavior_none();
-                self._actor_aru.as_ref().unwrap().borrow_mut().set_action_none();
-                self._actor_ewa.as_ref().unwrap().borrow_mut().set_action_none();
-                self._actor_koa.as_ref().unwrap().borrow_mut().set_action_none();
-                game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, DEFAULT_FADE_TIME);
-                self.set_scenario_phase(ScenarioPhase::Performance.to_string().as_str(), Some(10.0));
-            },
-            ScenarioPhase::Performance => {
-                if game_ui_manager.is_done_manual_fade_out() {
-                    game_scene_manager.stop_bgm();
-                    self._audio_bgm = game_scene_manager.get_audio_manager_mut().play_audio_bank(AUDIO_WRAP_UP_THE_DAY, AudioLoop::SOME(4), None);
+        let scenario_phase = self._scenario_track._scenario_phase;
+        let next_scenario_phase = self._scenario_track._next_scenario_phase;
 
-                    let main_camera = game_scene_manager.get_scene_manager().get_main_camera_mut();
-                    main_camera._transform_object.set_position(&Vector3::from(TABLE_SCENE_CAMERA_POSITION));
-                    main_camera._transform_object.set_rotation(&Vector3::from(TABLE_SCENE_CAMERA_ROTATION));
-
-                    dance_around_the_table(game_scene_manager.get_scene_manager(), &self._actor_aru, &self._prop_table, &Vector3::new(1.0, 0.0, 0.0));
-                    dance_around_the_table(game_scene_manager.get_scene_manager(), &self._actor_ewa, &self._prop_table, &Vector3::new(0.0, 0.0, 1.0));
-                    dance_around_the_table(game_scene_manager.get_scene_manager(), &self._actor_koa, &self._prop_table, &Vector3::new(-1.0, 0.0, 0.0));
-                    game_ui_manager.set_auto_fade_inout(true);
-                }
-
-                if self._audio_bgm.is_some() && game_scene_manager.get_audio_manager().is_playing_audio_instance(self._audio_bgm.as_ref().unwrap()) == false || 1.0 <= phase_ratio {
-                    game_scene_manager.get_audio_manager_mut().stop_audio_instance(self._audio_bgm.as_ref().unwrap());
-                    game_scene_manager.get_audio_manager_mut().play_audio_bank(AUDIO_QUEST_COMPLETE, AudioLoop::ONCE, None);
-                    self._actor_aru.as_ref().unwrap().borrow_mut().set_action_none();
-                    self._actor_ewa.as_ref().unwrap().borrow_mut().set_action_none();
-                    self._actor_koa.as_ref().unwrap().borrow_mut().set_action_none();
-                    self.set_scenario_phase(ScenarioPhase::GoToSleep.to_string().as_str(), Some(10.0));
-                }
+        for state in State::iter() {
+            if scenario_phase == next_scenario_phase && (state == State::End || state == State::Begin) {
+                continue;
             }
-            ScenarioPhase::GoToSleep => {
-                if 3.0 < phase_time {
-                    go_to_sleep(&self._actor_aru, &self._prop_bed_for_aru);
-                    go_to_sleep(&self._actor_ewa, &self._prop_bed_for_ewa);
-                    go_to_sleep(&self._actor_koa, &self._prop_bed_for_koa);
 
-                    if self._actor_aru.as_ref().unwrap().borrow().is_action(ActionAnimationState::Sleep) {
-                        self.set_scenario_phase(ScenarioPhase::Sleep.to_string().as_str(), None);
+            let update_scenario_phase: ScenarioPhase = match state {
+                State::End => scenario_phase,
+                State::Begin => {
+                    self._scenario_track._scenario_phase = next_scenario_phase;
+                    self._scenario_track._phase_time = 0.0;
+                    next_scenario_phase
+                }
+                State::Update => next_scenario_phase,
+            };
+
+            match update_scenario_phase {
+                ScenarioPhase::None => {
+                    self.set_next_scenario_phase(ScenarioPhase::Begin, None);
+                }
+                ScenarioPhase::Begin => {
+                    match state {
+                        State::Update => {
+                            self._actor_aru.as_ref().unwrap().borrow_mut().set_behavior_none();
+                            self._actor_ewa.as_ref().unwrap().borrow_mut().set_behavior_none();
+                            self._actor_koa.as_ref().unwrap().borrow_mut().set_behavior_none();
+                            self._actor_aru.as_ref().unwrap().borrow_mut().set_action_none();
+                            self._actor_ewa.as_ref().unwrap().borrow_mut().set_action_none();
+                            self._actor_koa.as_ref().unwrap().borrow_mut().set_action_none();
+                            game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, DEFAULT_FADE_TIME);
+                            self.set_next_scenario_phase(ScenarioPhase::Performance, Some(10.0));
+                        }
+                        _ => {}
+                    }
+                },
+                ScenarioPhase::Performance => {
+                    match state {
+                        State::Update => {
+                            if game_ui_manager.is_done_manual_fade_out() {
+                                game_scene_manager.stop_bgm();
+                                self._audio_bgm = game_scene_manager.get_audio_manager_mut().play_audio_bank(AUDIO_WRAP_UP_THE_DAY, AudioLoop::SOME(4), None);
+
+                                let main_camera = game_scene_manager.get_scene_manager().get_main_camera_mut();
+                                main_camera._transform_object.set_position(&Vector3::from(TABLE_SCENE_CAMERA_POSITION));
+                                main_camera._transform_object.set_rotation(&Vector3::from(TABLE_SCENE_CAMERA_ROTATION));
+
+                                dance_around_the_table(game_scene_manager.get_scene_manager(), &self._actor_aru, &self._prop_table, &Vector3::new(1.0, 0.0, 0.0));
+                                dance_around_the_table(game_scene_manager.get_scene_manager(), &self._actor_ewa, &self._prop_table, &Vector3::new(0.0, 0.0, 1.0));
+                                dance_around_the_table(game_scene_manager.get_scene_manager(), &self._actor_koa, &self._prop_table, &Vector3::new(-1.0, 0.0, 0.0));
+                                game_ui_manager.set_auto_fade_inout(true);
+                            }
+
+                            if (self._audio_bgm.is_some() && !game_scene_manager.get_audio_manager().is_playing_audio_instance(self._audio_bgm.as_ref().unwrap())) || 1.0 <= phase_ratio {
+                                game_scene_manager.get_audio_manager_mut().stop_audio_instance(self._audio_bgm.as_ref().unwrap());
+                                game_scene_manager.get_audio_manager_mut().play_audio_bank(AUDIO_QUEST_COMPLETE, AudioLoop::ONCE, None);
+                                self._actor_aru.as_ref().unwrap().borrow_mut().set_action_none();
+                                self._actor_ewa.as_ref().unwrap().borrow_mut().set_action_none();
+                                self._actor_koa.as_ref().unwrap().borrow_mut().set_action_none();
+                                self.set_next_scenario_phase(ScenarioPhase::GoToSleep, Some(10.0));
+                            }
+                        }
+                        _ => {}
                     }
                 }
+                ScenarioPhase::GoToSleep => {
+                    match state {
+                        State::Update => {
+                            if 3.0 < phase_time {
+                                go_to_sleep(&self._actor_aru, &self._prop_bed_for_aru);
+                                go_to_sleep(&self._actor_ewa, &self._prop_bed_for_ewa);
+                                go_to_sleep(&self._actor_koa, &self._prop_bed_for_koa);
+
+                                if self._actor_aru.as_ref().unwrap().borrow().is_action(ActionAnimationState::Sleep) {
+                                    self.set_next_scenario_phase(ScenarioPhase::Sleep, None);
+                                }
+                            }
+                        }
+                        _ => {}
+                    }
+                }
+                ScenarioPhase::Sleep => {
+                    match state {
+                        State::Begin => {
+                            self._sleep_timer = 0.0;
+                            game_scene_manager.play_bgm(GAME_MUSIC, DEFAULT_BGM_VOLUME);
+                            game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, DEFAULT_FADE_TIME);
+                        }
+                        State::Update => {
+                            if game_ui_manager.is_done_manual_fade_out() && self._sleep_timer < SLEEP_TIMER {
+                                self._sleep_timer += delta_time as f32;
+                                if SLEEP_TIMER <= self._sleep_timer {
+                                    game_ui_manager.set_auto_fade_inout(true);
+                                    game_scene_manager.set_next_time_of_day();
+                                }
+                            } else if game_ui_manager.is_done_game_image_progress() {
+                                if self._skip_wakeup {
+                                    self._skip_wakeup = false;
+                                } else {
+                                    game_scene_manager.get_scene_manager().play_audio_bank(AUDIO_ROOSTER);
+                                    self._actor_aru.as_ref().unwrap().borrow_mut().set_action_wake_up();
+                                    self._actor_ewa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::WakeUp, None, true);
+                                    self._actor_koa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::WakeUp, None, true);
+                                }
+                                self.set_next_scenario_phase(ScenarioPhase::End, None);
+                            }
+                        }
+                        _ => {}
+                    }
+                }
+                ScenarioPhase::End => {}
             }
-            ScenarioPhase::Sleep => {
-                if game_ui_manager.is_done_manual_fade_out() && self._sleep_timer < SLEEP_TIMER {
-                    self._sleep_timer += delta_time as f32;
-                    if SLEEP_TIMER <= self._sleep_timer {
-                        game_ui_manager.set_auto_fade_inout(true);
-                        game_scene_manager.set_next_time_of_day();
-
-                        // let main_camera = game_scene_manager.get_scene_manager().get_main_camera_mut();
-                        // let pivot = self._actor_aru.as_ref().unwrap().borrow().get_center().clone() + Vector3::new(0.0, CAMERA_OFFSET_Y, 0.0);
-                        // let camera_rotation = Vector3::new(0.4, 0.0, 0.0);
-                        // let start_rotation_matrix = math::make_rotation_matrix(camera_rotation.x, camera_rotation.y, camera_rotation.z);
-                        // let camera_position = pivot - start_rotation_matrix.column(2).xyz() * CAMERA_DISTANCE_MAX;
-                        // main_camera._transform_object.set_position(&camera_position);
-                        // main_camera._transform_object.set_rotation(&camera_rotation);
-                    }
-                } else if game_ui_manager.is_done_game_image_progress() {
-                    if self._skip_wakeup {
-                        self._skip_wakeup = false;
-                    } else {
-                        game_scene_manager.get_scene_manager().play_audio_bank(AUDIO_ROOSTER);
-                        self._actor_aru.as_ref().unwrap().borrow_mut().set_action_wake_up();
-                        self._actor_ewa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::WakeUp, None, true);
-                        self._actor_koa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::WakeUp, None, true);
-                    }
-
-                    self.set_scenario_phase(ScenarioPhase::End.to_string().as_str(), None);
-                }
-            },
-            _ => {}
         }
 
-        self._scenario_track.update_scenario_track(current_scenario_phase, delta_time as f32);
+        if scenario_phase == next_scenario_phase {
+            self._scenario_track.update_scenario_phase_time(delta_time as f32);
+        }
     }
 }

@@ -1,8 +1,9 @@
 use std::str::FromStr;
 use nalgebra::Vector3;
+use strum::IntoEnumIterator;
 use strum_macros::{Display, EnumCount, EnumIter, EnumString};
 use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop};
-use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
+use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell, State};
 use crate::game_module::actors::character::{ActorWrapper, Character};
 use crate::game_module::game_constants::{AUDIO_ALIEN_TALK, AUDIO_UFO_EXPERIMENT, AUDIO_UFO_LABORATORY, CHARACTER_INTERACTION_TIME, DEFAULT_FADE_TIME, MATERIAL_EMOJI_GOOD, MATERIAL_UI_NONE, TIME_OF_NOON};
 use crate::game_module::game_resource::GameResources;
@@ -12,6 +13,7 @@ use crate::game_module::widgets::text_box_widget::{TextBoxContent, TextBoxLayerT
 
 #[derive(Clone, PartialEq, Eq, Hash, Display, Debug, Copy, EnumIter, EnumString, EnumCount)]
 pub enum ScenarioPhase {
+    None,
     Begin,
     Investigate,
     Discussion,
@@ -68,11 +70,17 @@ impl<'a> ScenarioRevolution<'a> {
             _audio_ufo_laboratory: None,
             _audio_ufo_experiment: None,
             _scenario_track: ScenarioTrack {
-                _scenario_phase: ScenarioPhase::Begin,
+                _scenario_phase: ScenarioPhase::None,
+                _next_scenario_phase: ScenarioPhase::Begin,
                 _phase_time: 0.0,
                 _phase_duration: None,
             }
         })
+    }
+
+    fn set_next_scenario_phase(&mut self, next_scenario_phase: ScenarioPhase, phase_duration: Option<f32>) {
+        self._scenario_track._next_scenario_phase = next_scenario_phase;
+        self._scenario_track._phase_duration = phase_duration;
     }
 }
 
@@ -142,129 +150,156 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
 
     fn set_scenario_phase(&mut self, next_scenario_phase: &str, phase_duration: Option<f32>) {
         let next_scenario_phase = ScenarioPhase::from_str(next_scenario_phase).expect("scenario error");
-        if next_scenario_phase != self._scenario_track._scenario_phase {
-            self.update_game_scenario_end();
-            self._scenario_track.set_scenario_phase(next_scenario_phase, phase_duration);
-            self.update_game_scenario_begin();
-        }
+        self.set_next_scenario_phase(next_scenario_phase, phase_duration);
     }
 
     fn update_game_scenario_begin(&mut self) {
-        let game_scene_manager = ptr_as_mut(self._game_scene_manager);
-        let game_ui_manager = game_scene_manager.get_game_ui_manager_mut();
-        match self._scenario_track._scenario_phase {
-            ScenarioPhase::Investigate => {
-                self._audio_ufo_laboratory = game_scene_manager.get_scene_manager().play_audio_options(
-                    AUDIO_UFO_LABORATORY,
-                    AudioLoop::LOOP,
-                    Some(0.2),
-                );
-            }
-            ScenarioPhase::Discussion => {
-                let contents = vec![TextBoxContent::MaterialInstance(String::from(MATERIAL_EMOJI_GOOD))];
-
-                game_ui_manager.add_text_box_item(
-                    TextBoxLayerType::InteractionLayer,
-                    ActorWrapper::Character(self._alien_alpha.as_ref().unwrap().clone()),
-                    &contents,
-                    Some( CHARACTER_INTERACTION_TIME )
-                );
-
-                game_ui_manager.add_text_box_item(
-                    TextBoxLayerType::InteractionLayer,
-                    ActorWrapper::Character(self._alien_beta.as_ref().unwrap().clone()),
-                    &contents,
-                    Some( CHARACTER_INTERACTION_TIME )
-                );
-
-                self._alien_alpha.as_ref().unwrap().borrow_mut().look_at(self._alien_beta.as_ref().unwrap().borrow().get_position());
-                self._alien_beta.as_ref().unwrap().borrow_mut().look_at(self._alien_alpha.as_ref().unwrap().borrow().get_position());
-            }
-            ScenarioPhase::Revolution => {
-                self._alien_alpha.as_ref().unwrap().borrow_mut().look_at(self._actor_aru.as_ref().unwrap().borrow().get_position());
-                self._alien_beta.as_ref().unwrap().borrow_mut().look_at(self._actor_aru.as_ref().unwrap().borrow().get_position());
-
-                game_scene_manager.get_scene_manager().play_audio_options(
-                    AUDIO_UFO_EXPERIMENT,
-                    AudioLoop::ONCE,
-                    Some(1.0),
-                );
-            }
-            ScenarioPhase::End => {
-                if let Some(audio_instance) = self._audio_ufo_laboratory.as_ref() {
-                    game_scene_manager.get_scene_manager().stop_audio_instance(&audio_instance);
-                }
-                self._audio_ufo_laboratory = None;
-                game_ui_manager.set_auto_fade_inout(true);
-                game_scene_manager.request_open_game_scenario(ScenarioType::ScenarioDayOne, false);
-            }
-            _ => (),
-        }
     }
 
     fn update_game_scenario_end(&mut self) {
-        match self._scenario_track._scenario_phase {
-            _ => (),
-        }
     }
 
     fn update_game_scenario(&mut self, _any_key_hold: bool, _any_key_pressed: bool, delta_time: f64) {
         let game_scene_manager = ptr_as_mut(self._game_scene_manager);
-        let game_ui_manager = game_scene_manager.get_game_ui_manager_mut();
+        let game_ui_manager = ptr_as_mut(game_scene_manager._game_ui_manager);
         let phase_ratio = self._scenario_track.get_phase_ratio();
         let phase_time = self._scenario_track.get_phase_time();
-        let current_scenario_phase = self._scenario_track._scenario_phase;
-        match current_scenario_phase {
-            ScenarioPhase::Begin => {
-                game_scene_manager.set_time(TIME_OF_NOON, 0.0);
-                self.set_scenario_phase(ScenarioPhase::Investigate.to_string().as_ref(), Some(2.0));
-            }
-            ScenarioPhase::Investigate =>{
-                if 1.0 <= phase_ratio {
-                    self.set_scenario_phase(ScenarioPhase::Discussion.to_string().as_ref(), Some(5.0));
-                }
-            }
-            ScenarioPhase::Discussion =>{
-                if phase_time == 0.0 {
-                    game_scene_manager.get_scene_manager().play_audio_options(
-                        AUDIO_ALIEN_TALK,
-                        AudioLoop::ONCE,
-                        Some(1.0),
-                    );
-                } else if phase_time <= 2.0 && 2.0 < (phase_time + delta_time as f32) {
-                    game_scene_manager.get_scene_manager().play_audio_options(
-                        AUDIO_ALIEN_TALK,
-                        AudioLoop::ONCE,
-                        Some(1.0),
-                    );
-                }
+        let scenario_phase = self._scenario_track._scenario_phase;
+        let next_scenario_phase = self._scenario_track._next_scenario_phase;
 
-
-                if 1.0 <= phase_ratio {
-                    self.set_scenario_phase(ScenarioPhase::Revolution.to_string().as_ref(), Some(8.0));
-                }
+        for state in State::iter() {
+            if scenario_phase == next_scenario_phase && (state == State::End || state == State::Begin) {
+                continue;
             }
-            ScenarioPhase::Revolution =>{
-                let visible_monkey = if phase_ratio < 0.9 {
-                    ((phase_ratio * phase_ratio * 100.0) as i32 % 2) == 0
-                } else {
-                    false
-                };
-                self._monkey_aru.as_ref().unwrap().borrow()._render_object.borrow_mut().set_visible(visible_monkey);
-                self._monkey_ewa.as_ref().unwrap().borrow()._render_object.borrow_mut().set_visible(visible_monkey);
-                self._monkey_koa.as_ref().unwrap().borrow()._render_object.borrow_mut().set_visible(visible_monkey);
-                self._actor_aru.as_ref().unwrap().borrow()._render_object.borrow_mut().set_visible(!visible_monkey);
-                self._actor_ewa.as_ref().unwrap().borrow()._render_object.borrow_mut().set_visible(!visible_monkey);
-                self._actor_koa.as_ref().unwrap().borrow()._render_object.borrow_mut().set_visible(!visible_monkey);
-                if 1.0 <= phase_ratio {
-                    if game_ui_manager.is_done_manual_fade_out() {
-                        self.set_scenario_phase(ScenarioPhase::End.to_string().as_str(), None);
-                    } else {
-                        game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, DEFAULT_FADE_TIME);
+
+            let update_scenario_phase: ScenarioPhase = match state {
+                State::End => scenario_phase,
+                State::Begin => {
+                    self._scenario_track._scenario_phase = next_scenario_phase;
+                    self._scenario_track._phase_time = 0.0;
+                    next_scenario_phase
+                }
+                State::Update => next_scenario_phase,
+            };
+
+            match update_scenario_phase {
+                ScenarioPhase::None => {
+                    self.set_next_scenario_phase(ScenarioPhase::Begin, None);
+                }
+                ScenarioPhase::Begin => {
+                    match state {
+                        State::Update => {
+                            game_scene_manager.set_time(TIME_OF_NOON, 0.0);
+                            self.set_next_scenario_phase(ScenarioPhase::Investigate, Some(2.0));
+                        }
+                        _ => {}
                     }
                 }
-            }
-            ScenarioPhase::End => {
+                ScenarioPhase::Investigate => {
+                    match state {
+                        State::Begin => {
+                            self._audio_ufo_laboratory = game_scene_manager.get_scene_manager().play_audio_options(
+                                AUDIO_UFO_LABORATORY,
+                                AudioLoop::LOOP,
+                                Some(0.2),
+                            );
+                        }
+                        State::Update => {
+                            if 1.0 <= phase_ratio {
+                                self.set_next_scenario_phase(ScenarioPhase::Discussion, Some(5.0));
+                            }
+                        }
+                        _ => {}
+                    }
+                }
+                ScenarioPhase::Discussion => {
+                    match state {
+                        State::Begin => {
+                            let contents = vec![TextBoxContent::MaterialInstance(String::from(MATERIAL_EMOJI_GOOD))];
+                            game_ui_manager.add_text_box_item(
+                                TextBoxLayerType::InteractionLayer,
+                                ActorWrapper::Character(self._alien_alpha.as_ref().unwrap().clone()),
+                                &contents,
+                                Some(CHARACTER_INTERACTION_TIME),
+                            );
+                            game_ui_manager.add_text_box_item(
+                                TextBoxLayerType::InteractionLayer,
+                                ActorWrapper::Character(self._alien_beta.as_ref().unwrap().clone()),
+                                &contents,
+                                Some(CHARACTER_INTERACTION_TIME),
+                            );
+                            self._alien_alpha.as_ref().unwrap().borrow_mut().look_at(self._alien_beta.as_ref().unwrap().borrow().get_position());
+                            self._alien_beta.as_ref().unwrap().borrow_mut().look_at(self._alien_alpha.as_ref().unwrap().borrow().get_position());
+                        }
+                        State::Update => {
+                            if phase_time == 0.0 {
+                                game_scene_manager.get_scene_manager().play_audio_options(
+                                    AUDIO_ALIEN_TALK,
+                                    AudioLoop::ONCE,
+                                    Some(1.0),
+                                );
+                            } else if phase_time <= 2.0 && 2.0 < (phase_time + delta_time as f32) {
+                                game_scene_manager.get_scene_manager().play_audio_options(
+                                    AUDIO_ALIEN_TALK,
+                                    AudioLoop::ONCE,
+                                    Some(1.0),
+                                );
+                            }
+
+                            if 1.0 <= phase_ratio {
+                                self.set_next_scenario_phase(ScenarioPhase::Revolution, Some(8.0));
+                            }
+                        }
+                        _ => {}
+                    }
+                }
+                ScenarioPhase::Revolution => {
+                    match state {
+                        State::Begin => {
+                            self._alien_alpha.as_ref().unwrap().borrow_mut().look_at(self._actor_aru.as_ref().unwrap().borrow().get_position());
+                            self._alien_beta.as_ref().unwrap().borrow_mut().look_at(self._actor_aru.as_ref().unwrap().borrow().get_position());
+                            game_scene_manager.get_scene_manager().play_audio_options(
+                                AUDIO_UFO_EXPERIMENT,
+                                AudioLoop::ONCE,
+                                Some(1.0),
+                            );
+                        }
+                        State::Update => {
+                            let visible_monkey = if phase_ratio < 0.9 {
+                                ((phase_ratio * phase_ratio * 100.0) as i32 % 2) == 0
+                            } else {
+                                false
+                            };
+                            self._monkey_aru.as_ref().unwrap().borrow()._render_object.borrow_mut().set_visible(visible_monkey);
+                            self._monkey_ewa.as_ref().unwrap().borrow()._render_object.borrow_mut().set_visible(visible_monkey);
+                            self._monkey_koa.as_ref().unwrap().borrow()._render_object.borrow_mut().set_visible(visible_monkey);
+                            self._actor_aru.as_ref().unwrap().borrow()._render_object.borrow_mut().set_visible(!visible_monkey);
+                            self._actor_ewa.as_ref().unwrap().borrow()._render_object.borrow_mut().set_visible(!visible_monkey);
+                            self._actor_koa.as_ref().unwrap().borrow()._render_object.borrow_mut().set_visible(!visible_monkey);
+                            if 1.0 <= phase_ratio {
+                                if game_ui_manager.is_done_manual_fade_out() {
+                                    self.set_next_scenario_phase(ScenarioPhase::End, None);
+                                } else {
+                                    game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, DEFAULT_FADE_TIME);
+                                }
+                            }
+                        }
+                        _ => {}
+                    }
+                }
+                ScenarioPhase::End => {
+                    match state {
+                        State::Begin => {
+                            if let Some(audio_instance) = self._audio_ufo_laboratory.as_ref() {
+                                game_scene_manager.get_scene_manager().stop_audio_instance(&audio_instance);
+                            }
+                            self._audio_ufo_laboratory = None;
+                            game_ui_manager.set_auto_fade_inout(true);
+                            game_scene_manager.request_open_game_scenario(ScenarioType::ScenarioDayOne, false);
+                        }
+                        _ => {}
+                    }
+                }
             }
         }
 
@@ -279,6 +314,8 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
             update_actor_position(&mut *self._actor_koa.as_ref().unwrap().borrow_mut(), position_y);
         }
 
-        self._scenario_track.update_scenario_track(current_scenario_phase, delta_time as f32);
+        if scenario_phase == next_scenario_phase {
+            self._scenario_track.update_scenario_phase_time(delta_time as f32);
+        }
     }
 }

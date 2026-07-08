@@ -1,9 +1,10 @@
 use std::str::FromStr;
 use nalgebra::{Vector3};
+use strum::IntoEnumIterator;
 use strum_macros::{Display, EnumCount, EnumIter, EnumString};
 use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop};
 use rust_engine_3d::utilities::math;
-use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
+use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell, State};
 use crate::game_module::actors::character::{Character};
 use crate::game_module::game_constants::{AUDIO_UFO_BEAM, AUDIO_UFO_FLYING, DEFAULT_FADE_TIME, MATERIAL_UI_NONE, TIME_OF_DAWN};
 use crate::game_module::game_resource::GameResources;
@@ -12,6 +13,7 @@ use crate::game_module::scenario::scenario::{ScenarioBase, ScenarioDataCreateInf
 
 #[derive(Clone, PartialEq, Eq, Hash, Display, Debug, Copy, EnumIter, EnumString, EnumCount)]
 enum ScenarioPhase {
+    None,
     Begin,
     AppearUfo,
     UfoLongShot,
@@ -50,11 +52,17 @@ impl<'a> ScenarioUfo<'a> {
             _audio_ufo_flying: None,
             _audio_ufo_beam: None,
             _scenario_track: ScenarioTrack {
-                _scenario_phase: ScenarioPhase::Begin,
+                _scenario_phase: ScenarioPhase::None,
+                _next_scenario_phase: ScenarioPhase::Begin,
                 _phase_time: 0.0,
                 _phase_duration: None,
             }
         })
+    }
+
+    fn set_next_scenario_phase(&mut self, next_scenario_phase: ScenarioPhase, phase_duration: Option<f32>) {
+        self._scenario_track._next_scenario_phase = next_scenario_phase;
+        self._scenario_track._phase_duration = phase_duration;
     }
 
     pub fn update_ufo_movement(&mut self) -> bool {
@@ -129,97 +137,126 @@ impl<'a> ScenarioBase<'a> for ScenarioUfo<'a> {
 
     fn set_scenario_phase(&mut self, next_scenario_phase: &str, phase_duration: Option<f32>) {
         let next_scenario_phase = ScenarioPhase::from_str(next_scenario_phase).expect("scenario error");
-        if next_scenario_phase != self._scenario_track._scenario_phase {
-            self.update_game_scenario_end();
-            self._scenario_track.set_scenario_phase(next_scenario_phase, phase_duration);
-            self.update_game_scenario_begin();
-        }
+        self.set_next_scenario_phase(next_scenario_phase, phase_duration);
     }
 
     fn update_game_scenario_begin(&mut self) {
-        let game_scene_manager = ptr_as_mut(self._game_scene_manager);
-        let game_ui_manager = game_scene_manager.get_game_ui_manager_mut();
-
-        match self._scenario_track._scenario_phase {
-            ScenarioPhase::AppearUfo => {
-                self._audio_ufo_flying = game_scene_manager.get_scene_manager().play_audio_options(
-                    AUDIO_UFO_FLYING,
-                    AudioLoop::LOOP,
-                    Some(1.0),
-                );
-            }
-            ScenarioPhase::UfoLongShot => {
-                let main_camera = game_scene_manager.get_scene_manager().get_main_camera_mut();
-                main_camera._transform_object.set_position(&Vector3::new(13.48, 26.56, -5.02));
-                main_camera._transform_object.set_rotation(&Vector3::new(0.76, 0.33, 0.0));
-
-                self._actor_aru.as_ref().unwrap().borrow_mut().set_action_sleep_no_snoring();
-            }
-            ScenarioPhase::BeAbducted => {
-                self._actor_aru.as_ref().unwrap().borrow_mut()._controller.set_flying_mode(true);
-                self._actor_ewa.as_ref().unwrap().borrow_mut()._controller.set_flying_mode(true);
-                self._actor_koa.as_ref().unwrap().borrow_mut()._controller.set_flying_mode(true);
-                self._audio_ufo_beam = game_scene_manager.get_scene_manager().play_audio_options(
-                    AUDIO_UFO_BEAM,
-                    AudioLoop::ONCE,
-                    Some(1.0),
-                );
-            }
-            ScenarioPhase::End => {
-                if let Some(audio_instance) = self._audio_ufo_flying.as_ref() {
-                    game_scene_manager.get_scene_manager().stop_audio_instance(&audio_instance)
-                }
-
-                game_ui_manager.set_auto_fade_inout(true);
-                game_scene_manager.request_open_game_scenario(ScenarioType::ScenarioRevolution, false);
-            }
-            _ => {}
-        }
     }
 
     fn update_game_scenario_end(&mut self) {
-        match self._scenario_track._scenario_phase {
-            _ => ()
-        }
     }
 
     fn update_game_scenario(&mut self, _any_key_hold: bool, _any_key_pressed: bool, delta_time: f64) {
         let game_scene_manager = ptr_as_mut(self._game_scene_manager);
-        let game_ui_manager = game_scene_manager.get_game_ui_manager_mut();
+        let game_ui_manager = ptr_as_mut(game_scene_manager._game_ui_manager);
 
-        let _phase_time = self._scenario_track.get_phase_time();
         let phase_ratio = self._scenario_track.get_phase_ratio();
-        let current_scenario_phase = self._scenario_track._scenario_phase;
-        match current_scenario_phase {
-            ScenarioPhase::Begin => {
-                game_scene_manager.set_time(TIME_OF_DAWN, 0.0);
-                self.set_scenario_phase(ScenarioPhase::AppearUfo.to_string().as_str(), Some(3.0));
-            },
-            ScenarioPhase::AppearUfo => {
-                self.update_ufo_movement();
-                if 1.0 <= phase_ratio {
-                    self.set_scenario_phase(ScenarioPhase::UfoLongShot.to_string().as_str(), None);
+        let scenario_phase = self._scenario_track._scenario_phase;
+        let next_scenario_phase = self._scenario_track._next_scenario_phase;
+
+        for state in State::iter() {
+            if scenario_phase == next_scenario_phase && (state == State::End || state == State::Begin) {
+                continue;
+            }
+
+            let update_scenario_phase: ScenarioPhase = match state {
+                State::End => scenario_phase,
+                State::Begin => {
+                    self._scenario_track._scenario_phase = next_scenario_phase;
+                    self._scenario_track._phase_time = 0.0;
+                    next_scenario_phase
                 }
-            },
-            ScenarioPhase::UfoLongShot => {
-                let arrived = self.update_ufo_movement();
-                if arrived {
-                    self.set_scenario_phase(ScenarioPhase::BeAbducted.to_string().as_str(), None);
+                State::Update => next_scenario_phase,
+            };
+
+            match update_scenario_phase {
+                ScenarioPhase::None => {
+                    self.set_next_scenario_phase(ScenarioPhase::Begin, None);
                 }
-            },
-            ScenarioPhase::BeAbducted => {
-                let complete = self.update_be_abducted(delta_time);
-                if complete {
-                    if game_ui_manager.is_done_manual_fade_out() {
-                        self.set_scenario_phase(ScenarioPhase::End.to_string().as_str(), None);
-                    } else {
-                        game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, DEFAULT_FADE_TIME);
+                ScenarioPhase::Begin => {
+                    match state {
+                        State::Update => {
+                            game_scene_manager.set_time(TIME_OF_DAWN, 0.0);
+                            self.set_next_scenario_phase(ScenarioPhase::AppearUfo, Some(3.0));
+                        }
+                        _ => {}
+                    }
+                },
+                ScenarioPhase::AppearUfo => {
+                    match state {
+                        State::Begin => {
+                            self._audio_ufo_flying = game_scene_manager.get_scene_manager().play_audio_options(
+                                AUDIO_UFO_FLYING,
+                                AudioLoop::LOOP,
+                                Some(1.0),
+                            );
+                        }
+                        State::Update => {
+                            self.update_ufo_movement();
+                            if 1.0 <= phase_ratio {
+                                self.set_next_scenario_phase(ScenarioPhase::UfoLongShot, None);
+                            }
+                        }
+                        _ => {}
+                    }
+                },
+                ScenarioPhase::UfoLongShot => {
+                    match state {
+                        State::Begin => {
+                            let main_camera = game_scene_manager.get_scene_manager().get_main_camera_mut();
+                            main_camera._transform_object.set_position(&Vector3::new(13.48, 26.56, -5.02));
+                            main_camera._transform_object.set_rotation(&Vector3::new(0.76, 0.33, 0.0));
+                            self._actor_aru.as_ref().unwrap().borrow_mut().set_action_sleep_no_snoring();
+                        }
+                        State::Update => {
+                            if self.update_ufo_movement() {
+                                self.set_next_scenario_phase(ScenarioPhase::BeAbducted, None);
+                            }
+                        }
+                        _ => {}
+                    }
+                },
+                ScenarioPhase::BeAbducted => {
+                    match state {
+                        State::Begin => {
+                            self._actor_aru.as_ref().unwrap().borrow_mut()._controller.set_flying_mode(true);
+                            self._actor_ewa.as_ref().unwrap().borrow_mut()._controller.set_flying_mode(true);
+                            self._actor_koa.as_ref().unwrap().borrow_mut()._controller.set_flying_mode(true);
+                            self._audio_ufo_beam = game_scene_manager.get_scene_manager().play_audio_options(
+                                AUDIO_UFO_BEAM,
+                                AudioLoop::ONCE,
+                                Some(1.0),
+                            );
+                        }
+                        State::Update => {
+                            if self.update_be_abducted(delta_time) {
+                                if game_ui_manager.is_done_manual_fade_out() {
+                                    self.set_next_scenario_phase(ScenarioPhase::End, None);
+                                } else {
+                                    game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, DEFAULT_FADE_TIME);
+                                }
+                            }
+                        }
+                        _ => {}
+                    }
+                }
+                ScenarioPhase::End => {
+                    match state {
+                        State::Begin => {
+                            if let Some(audio_instance) = self._audio_ufo_flying.as_ref() {
+                                game_scene_manager.get_scene_manager().stop_audio_instance(&audio_instance)
+                            }
+                            game_ui_manager.set_auto_fade_inout(true);
+                            game_scene_manager.request_open_game_scenario(ScenarioType::ScenarioRevolution, false);
+                        }
+                        _ => {}
                     }
                 }
             }
-            ScenarioPhase::End => {}
         }
 
-        self._scenario_track.update_scenario_track(current_scenario_phase, delta_time as f32);
+        if scenario_phase == next_scenario_phase {
+            self._scenario_track.update_scenario_phase_time(delta_time as f32);
+        }
     }
 }

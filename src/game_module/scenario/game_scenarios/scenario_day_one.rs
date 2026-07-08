@@ -1,9 +1,10 @@
 use std::str::FromStr;
 use nalgebra::Vector3;
+use strum::IntoEnumIterator;
 use strum_macros::{Display, EnumCount, EnumIter, EnumString};
 use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop};
 use rust_engine_3d::utilities::math;
-use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
+use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell, State};
 use crate::game_module::actors::character::{Character};
 use crate::game_module::actors::props::Prop;
 use crate::game_module::behavior::behavior_base::BehaviorState;
@@ -16,6 +17,7 @@ pub static mut SKIP_SCENARIO: bool = false;
 
 #[derive(Clone, PartialEq, Eq, Hash, Display, Debug, Copy, EnumIter, EnumString, EnumCount)]
 enum ScenarioPhase {
+    None,
     Begin,
     ReleaseFamily,
     UfoGone,
@@ -73,11 +75,17 @@ impl<'a> ScenarioDayOne<'a> {
             _monolith_start_position: Vector3::zeros(),
             _audio_ufo_flying: None,
             _scenario_track: ScenarioTrack {
-                _scenario_phase: ScenarioPhase::Begin,
+                _scenario_phase: ScenarioPhase::None,
+                _next_scenario_phase: ScenarioPhase::Begin,
                 _phase_time: 0.0,
                 _phase_duration: None,
             }
         })
+    }
+
+    fn set_next_scenario_phase(&mut self, next_scenario_phase: ScenarioPhase, phase_duration: Option<f32>) {
+        self._scenario_track._next_scenario_phase = next_scenario_phase;
+        self._scenario_track._phase_duration = phase_duration;
     }
 
     pub fn update_release_actor(&mut self, actor: RcRefCell<Character>, target: RcRefCell<Prop>, delta_time: f64) -> bool {
@@ -185,134 +193,177 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
 
     fn set_scenario_phase(&mut self, next_scenario_phase: &str, phase_duration: Option<f32>) {
         let next_scenario_phase = ScenarioPhase::from_str(next_scenario_phase).expect("scenario error");
-        if next_scenario_phase != self._scenario_track._scenario_phase {
-            self.update_game_scenario_end();
-            self._scenario_track.set_scenario_phase(next_scenario_phase, phase_duration);
-            self.update_game_scenario_begin();
-        }
+        self.set_next_scenario_phase(next_scenario_phase, phase_duration);
     }
 
     fn update_game_scenario_begin(&mut self) {
-        let game_scene_manager = ptr_as_mut(self._game_scene_manager);
-        let _game_ui_manager = game_scene_manager.get_game_ui_manager_mut();
-
-        match self._scenario_track._scenario_phase {
-            ScenarioPhase::ReleaseFamily => {
-                self._audio_ufo_flying = game_scene_manager.get_scene_manager().play_audio_options(AUDIO_UFO_FLYING, AudioLoop::LOOP, Some(1.0));
-                game_scene_manager.get_scene_manager().play_audio_options(AUDIO_UFO_BEAM, AudioLoop::ONCE, Some(1.0));
-            }
-            ScenarioPhase::CloseUpShot => {
-                let main_camera = game_scene_manager.get_scene_manager().get_main_camera_mut();
-                main_camera._transform_object.set_position(&self._around_start_position);
-                main_camera._transform_object.set_rotation(&self._around_start_rotation);
-                self._actor_aru.as_ref().unwrap().borrow_mut().set_action_sleep();
-            }
-            ScenarioPhase::Awake => {
-                game_scene_manager.get_character_manager_mut().remove_character(self._actor_ufo.as_ref().unwrap());
-
-                self._actor_aru.as_ref().unwrap().borrow_mut()._controller.set_flying_mode(false);
-                self._actor_aru.as_ref().unwrap().borrow_mut().set_position(&self._prop_bed_for_aru.as_ref().unwrap().borrow().get_position());
-                self._actor_aru.as_ref().unwrap().borrow_mut().set_action_wake_up();
-
-                self._actor_ewa.as_ref().unwrap().borrow_mut()._controller.set_flying_mode(false);
-                self._actor_ewa.as_ref().unwrap().borrow_mut().set_position(&self._prop_bed_for_ewa.as_ref().unwrap().borrow().get_position());
-                self._actor_ewa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::WakeUp, None, true);
-
-                self._actor_koa.as_ref().unwrap().borrow_mut()._controller.set_flying_mode(false);
-                self._actor_koa.as_ref().unwrap().borrow_mut().set_position(&self._prop_bed_for_koa.as_ref().unwrap().borrow().get_position());
-                self._actor_koa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::WakeUp, None, true);
-            }
-            ScenarioPhase::End => {
-            }
-            _ => {}
-        }
+        todo!()
     }
 
     fn update_game_scenario_end(&mut self) {
-        let game_scene_manager = ptr_as_mut(self._game_scene_manager);
-        match self._scenario_track._scenario_phase {
-            ScenarioPhase::ReallyUfoGone => {
-                if let Some(audio_instance) = self._audio_ufo_flying.as_ref() {
-                    game_scene_manager.get_scene_manager().stop_audio_instance(&audio_instance)
-                }
-            }
-            _ => ()
-        }
+        todo!()
     }
 
     fn update_game_scenario(&mut self, _any_key_hold: bool, _any_key_pressed: bool, delta_time: f64) {
         let game_scene_manager = ptr_as_mut(self._game_scene_manager);
         let _game_ui_manager = game_scene_manager.get_game_ui_manager_mut();
 
-        let _phase_time = self._scenario_track.get_phase_time();
         let phase_ratio = self._scenario_track.get_phase_ratio();
-        let current_scenario_phase = self._scenario_track._scenario_phase;
-        match current_scenario_phase {
-            ScenarioPhase::Begin => {
-                if unsafe { SKIP_SCENARIO } {
-                    self.set_scenario_phase(ScenarioPhase::Awake.to_string().as_str(), Some(6.0));
-                } else {
-                    game_scene_manager.set_time(TIME_OF_EARLY_MORNING, 0.0);
-                    self.set_scenario_phase(ScenarioPhase::ReleaseFamily.to_string().as_str(), Some(6.0));
+        let scenario_phase = self._scenario_track._scenario_phase;
+        let next_scenario_phase = self._scenario_track._next_scenario_phase;
+
+        for state in State::iter() {
+            if scenario_phase == next_scenario_phase && (state == State::End || state == State::Begin) {
+                continue;
+            }
+
+            let update_scenario_phase: ScenarioPhase = match state {
+                State::End => scenario_phase,
+                State::Begin => {
+                    self._scenario_track._scenario_phase = next_scenario_phase;
+                    self._scenario_track._phase_time = 0.0;
+                    next_scenario_phase
                 }
-            },
-            ScenarioPhase::ReleaseFamily => {
-                let complete = self.update_release_family(delta_time);
-                if complete {
-                    self.set_scenario_phase(ScenarioPhase::UfoGone.to_string().as_str(), Some(3.0));
+                State::Update => next_scenario_phase,
+            };
+
+            match update_scenario_phase {
+                ScenarioPhase::None => {
+                    self.set_next_scenario_phase(ScenarioPhase::Begin, None);
                 }
-            },
-            ScenarioPhase::UfoGone => {
-                self._actor_ufo.as_ref().unwrap().borrow_mut().set_move(&Vector3::new(0.0, 0.0, -1.0));
-                if 1.0 <= phase_ratio {
-                    self.set_scenario_phase(ScenarioPhase::DropMonolith.to_string().as_str(), None);
-                }
-            },
-            ScenarioPhase::DropMonolith => {
-                let radius = 0.5;
-                let mut drop_completed: bool = false;
-                if self._actor_ufo.as_ref().unwrap().borrow_mut().move_to_target(&self._monolith_start_position, radius) {
-                    if self._prop_monolith.as_ref().unwrap().borrow()._render_object.borrow().is_visible() == false {
-                        self._prop_monolith.as_ref().unwrap().borrow()._render_object.borrow_mut().set_visible(true);
-                        self._prop_monolith.as_ref().unwrap().borrow_mut().set_position(self._actor_ufo.as_ref().unwrap().borrow().get_position());
-                        game_scene_manager.get_scene_manager().play_audio_options(AUDIO_UFO_BEAM, AudioLoop::ONCE, Some(1.0));
+                ScenarioPhase::Begin => {
+                    match state {
+                        State::Update => {
+                            if unsafe { SKIP_SCENARIO } {
+                                self.set_next_scenario_phase(ScenarioPhase::Awake, Some(6.0));
+                            } else {
+                                game_scene_manager.set_time(TIME_OF_EARLY_MORNING, 0.0);
+                                self.set_next_scenario_phase(ScenarioPhase::ReleaseFamily, Some(6.0));
+                            }
+                        }
+                        _ => {}
                     }
-                    drop_completed = self.drop_monolith(delta_time);
-                }
+                },
+                ScenarioPhase::ReleaseFamily => {
+                    match state {
+                        State::Begin => {
+                            self._audio_ufo_flying = game_scene_manager.get_scene_manager().play_audio_options(AUDIO_UFO_FLYING, AudioLoop::LOOP, Some(1.0));
+                            game_scene_manager.get_scene_manager().play_audio_options(AUDIO_UFO_BEAM, AudioLoop::ONCE, Some(1.0));
+                        }
+                        State::Update => {
+                            let complete = self.update_release_family(delta_time);
+                            if complete {
+                                self.set_next_scenario_phase(ScenarioPhase::UfoGone, Some(3.0));
+                            }
+                        }
+                        _ => {}
+                    }
+                },
+                ScenarioPhase::UfoGone => {
+                    match state {
+                        State::Update => {
+                            self._actor_ufo.as_ref().unwrap().borrow_mut().set_move(&Vector3::new(0.0, 0.0, -1.0));
+                            if 1.0 <= phase_ratio {
+                                self.set_next_scenario_phase(ScenarioPhase::DropMonolith, None);
+                            }
+                        }
+                        _ => {}
+                    }
+                },
+                ScenarioPhase::DropMonolith => {
+                    match state {
+                        State::Update => {
+                            let radius = 0.5;
+                            let mut drop_completed: bool = false;
+                            if self._actor_ufo.as_ref().unwrap().borrow_mut().move_to_target(&self._monolith_start_position, radius) {
+                                if self._prop_monolith.as_ref().unwrap().borrow()._render_object.borrow().is_visible() == false {
+                                    self._prop_monolith.as_ref().unwrap().borrow()._render_object.borrow_mut().set_visible(true);
+                                    self._prop_monolith.as_ref().unwrap().borrow_mut().set_position(self._actor_ufo.as_ref().unwrap().borrow().get_position());
+                                    game_scene_manager.get_scene_manager().play_audio_options(AUDIO_UFO_BEAM, AudioLoop::ONCE, Some(1.0));
+                                }
+                                drop_completed = self.drop_monolith(delta_time);
+                            }
 
-                if drop_completed {
-                    self.set_scenario_phase(ScenarioPhase::ReallyUfoGone.to_string().as_str(), Some(3.0));
+                            if drop_completed {
+                                self.set_next_scenario_phase(ScenarioPhase::ReallyUfoGone, Some(3.0));
+                            }
+                        }
+                        _ => {}
+                    }
+                },
+                ScenarioPhase::ReallyUfoGone => {
+                    match state {
+                        State::Update => {
+                            self._actor_ufo.as_ref().unwrap().borrow_mut().set_move(&Vector3::new(0.0, 0.0, -1.0));
+                            if 1.0 <= phase_ratio {
+                                self.set_next_scenario_phase(ScenarioPhase::CloseUpShot, Some(3.0));
+                            }
+                        }
+                        State::End => {
+                            if let Some(audio_instance) = self._audio_ufo_flying.as_ref() {
+                                game_scene_manager.get_scene_manager().stop_audio_instance(&audio_instance)
+                            }
+                        }
+                        _ => {}
+                    }
+                },
+                ScenarioPhase::CloseUpShot => {
+                    match state {
+                        State::Begin => {
+                            let main_camera = game_scene_manager.get_scene_manager().get_main_camera_mut();
+                            main_camera._transform_object.set_position(&self._around_start_position);
+                            main_camera._transform_object.set_rotation(&self._around_start_rotation);
+                            self._actor_aru.as_ref().unwrap().borrow_mut().set_action_sleep();
+                        }
+                        State::Update => {
+                            if 1.0 <= phase_ratio {
+                                self.set_next_scenario_phase(ScenarioPhase::Awake, Some(5.0));
+                            }
+                        }
+                        _ => {}
+                    }
                 }
-            },
-            ScenarioPhase::ReallyUfoGone => {
-                self._actor_ufo.as_ref().unwrap().borrow_mut().set_move(&Vector3::new(0.0, 0.0, -1.0));
-                if 1.0 <= phase_ratio {
-                    self.set_scenario_phase(ScenarioPhase::CloseUpShot.to_string().as_str(), Some(3.0));
+                ScenarioPhase::Awake => {
+                    match state {
+                        State::Begin => {
+                            game_scene_manager.get_character_manager_mut().remove_character(self._actor_ufo.as_ref().unwrap());
+
+                            self._actor_aru.as_ref().unwrap().borrow_mut()._controller.set_flying_mode(false);
+                            self._actor_aru.as_ref().unwrap().borrow_mut().set_position(&self._prop_bed_for_aru.as_ref().unwrap().borrow().get_position());
+                            self._actor_aru.as_ref().unwrap().borrow_mut().set_action_wake_up();
+
+                            self._actor_ewa.as_ref().unwrap().borrow_mut()._controller.set_flying_mode(false);
+                            self._actor_ewa.as_ref().unwrap().borrow_mut().set_position(&self._prop_bed_for_ewa.as_ref().unwrap().borrow().get_position());
+                            self._actor_ewa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::WakeUp, None, true);
+
+                            self._actor_koa.as_ref().unwrap().borrow_mut()._controller.set_flying_mode(false);
+                            self._actor_koa.as_ref().unwrap().borrow_mut().set_position(&self._prop_bed_for_koa.as_ref().unwrap().borrow().get_position());
+                            self._actor_koa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::WakeUp, None, true);
+                        }
+                        State::Update => {
+                            let main_camera = game_scene_manager.get_scene_manager().get_main_camera_mut();
+                            let pivot = self._actor_aru.as_ref().unwrap().borrow().get_center().clone() + Vector3::new(0.0, CAMERA_OFFSET_Y, 0.0);
+                            self._around_end_position = pivot - main_camera._transform_object.get_front() * CAMERA_DISTANCE_MAX;
+
+                            let progress = phase_ratio.powf(2.0);
+                            let position = self._around_start_position.lerp(&self._around_end_position, progress);
+                            let rotation = self._around_start_rotation.lerp(&self._around_end_rotation, progress);
+                            main_camera._transform_object.set_position(&position);
+                            main_camera._transform_object.set_rotation(&rotation);
+
+                            if 1.0 <= phase_ratio {
+                                self.set_next_scenario_phase(ScenarioPhase::End, None);
+                            }
+                        }
+                        _ => {}
+                    }
                 }
-            },
-            ScenarioPhase::CloseUpShot => {
-                if 1.0 <= phase_ratio {
-                    self.set_scenario_phase(ScenarioPhase::Awake.to_string().as_str(), Some(5.0));
+                ScenarioPhase::End => {
                 }
             }
-            ScenarioPhase::Awake => {
-                let main_camera = game_scene_manager.get_scene_manager().get_main_camera_mut();
-                let pivot = self._actor_aru.as_ref().unwrap().borrow().get_center().clone() + Vector3::new(0.0, CAMERA_OFFSET_Y, 0.0);
-                self._around_end_position = pivot - main_camera._transform_object.get_front() * CAMERA_DISTANCE_MAX;
-
-                let progress = phase_ratio.powf(2.0);
-                let position = self._around_start_position.lerp(&self._around_end_position, progress);
-                let rotation = self._around_start_rotation.lerp(&self._around_end_rotation, progress);
-                main_camera._transform_object.set_position(&position);
-                main_camera._transform_object.set_rotation(&rotation);
-
-                if 1.0 <= phase_ratio {
-                    self.set_scenario_phase(ScenarioPhase::End.to_string().as_str(), None);
-                }
-            }
-            _ => {}
         }
-
-        self._scenario_track.update_scenario_track(current_scenario_phase, delta_time as f32);
+        if scenario_phase == next_scenario_phase {
+            self._scenario_track.update_scenario_phase_time(delta_time as f32);
+        }
     }
 }
