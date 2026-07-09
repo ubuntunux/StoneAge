@@ -40,17 +40,21 @@ impl ScenarioType {
 pub struct ScenarioTrack<T: Copy + PartialEq + Hash> {
     pub _scenario_phase: T,
     pub _next_scenario_phase: T,
-    pub _phase_time: f32,
     pub _phase_duration: Option<f32>,
+    pub _next_phase_duration: Option<f32>,
+    pub _phase_time: f32,
 }
 
 impl<T: Copy + PartialEq + Hash> ScenarioTrack<T> {
-    pub fn set_scenario_phase(&mut self, next_scenario_phase: T, phase_duration: Option<f32>) {
-        if next_scenario_phase != self._scenario_phase {
-            self._scenario_phase = next_scenario_phase;
-            self._phase_time = 0.0;
-            self._phase_duration = phase_duration;
-        }
+    pub fn set_next_scenario_phase(&mut self, next_scenario_phase: T, next_phase_duration: Option<f32>) {
+        self._next_scenario_phase = next_scenario_phase;
+        self._next_phase_duration = next_phase_duration;
+    }
+
+    pub fn set_scenario_phase(&mut self, scenario_phase: T, phase_duration: Option<f32>) {
+        self._scenario_phase = scenario_phase;
+        self._phase_duration = phase_duration;
+        self._phase_time = 0.0;
     }
 
     pub fn get_phase_ratio(&self) -> f32 {
@@ -108,9 +112,6 @@ pub trait ScenarioBase<'a> {
     fn destroy_game_scenario(&mut self);
     fn on_close_game_scene(&mut self, game_scene_data_name: &str);
     fn on_open_game_scene(&mut self, game_scene_data_name: &str);
-    fn set_scenario_phase(&mut self, next_scenario_phase: &str, phase_duration: Option<f32>);
-    fn update_game_scenario_begin(&mut self);
-    fn update_game_scenario_end(&mut self);
     fn update_game_scenario(&mut self, any_key_hold: bool, any_key_pressed: bool, delta_time: f64);
 }
 

@@ -1,4 +1,3 @@
-use std::str::FromStr;
 use nalgebra::Vector3;
 use strum::IntoEnumIterator;
 use strum_macros::{Display, EnumCount, EnumIter, EnumString};
@@ -119,14 +118,10 @@ impl<'a> ScenarioIntro<'a> {
                 _next_scenario_phase: ScenarioPhase::Begin,
                 _phase_time: 0.0,
                 _phase_duration: None,
+                _next_phase_duration: None,
             },
             _story_board_phase: 0,
         })
-    }
-
-    fn set_next_scenario_phase(&mut self, next_scenario_phase: ScenarioPhase, phase_duration: Option<f32>) {
-        self._scenario_track._next_scenario_phase = next_scenario_phase;
-        self._scenario_track._phase_duration = phase_duration;
     }
 
     pub fn get_story_board_phase(&self) -> usize {
@@ -342,7 +337,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                 main_camera._transform_object.set_position(&self._around_start_position);
                 main_camera._transform_object.set_rotation(&self._around_start_rotation);
 
-                self.set_next_scenario_phase(ScenarioPhase::StoryBoard, None);
+                self._scenario_track.set_next_scenario_phase(ScenarioPhase::StoryBoard, None);
             }
             ScenarioPhase::MoveToTutorialStage => {
                 if game_scene_data_name == Stages::Home.get_stage_data_name() {
@@ -374,17 +369,6 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
         self._is_load_completed = true;
     }
 
-    fn set_scenario_phase(&mut self, next_scenario_phase: &str, phase_duration: Option<f32>) {
-        let next_scenario_phase = ScenarioPhase::from_str(next_scenario_phase).expect("scenario error");
-        self.set_next_scenario_phase(next_scenario_phase, phase_duration);
-    }
-
-    fn update_game_scenario_begin(&mut self) {
-    }
-
-    fn update_game_scenario_end(&mut self) {
-    }
-
     fn update_game_scenario(&mut self, _any_key_hold: bool, any_key_pressed: bool, delta_time: f64) {
         let game_scene_manager = ptr_as_mut(self._game_scene_manager);
         let game_ui_manager = ptr_as_mut(game_scene_manager._game_ui_manager);
@@ -393,32 +377,33 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
             game_scene_manager.set_time_of_day_speed(1.0);
         }
 
-        let phase_time = self._scenario_track.get_phase_time();
-        let phase_ratio = self._scenario_track.get_phase_ratio();
-        let scenario_phase = self._scenario_track._scenario_phase;
+        let prev_scenario_phase = self._scenario_track._scenario_phase;
         let next_scenario_phase = self._scenario_track._next_scenario_phase;
+        let next_phase_duration = self._scenario_track._next_phase_duration;
 
         for state in State::iter() {
-            if scenario_phase == next_scenario_phase && (state == State::End || state == State::Begin) {
+            if prev_scenario_phase == next_scenario_phase && (state == State::End || state == State::Begin) {
                 continue;
             }
 
             let update_scenario_phase: ScenarioPhase = match state {
-                State::End => scenario_phase,
+                State::End => prev_scenario_phase,
                 State::Begin => {
-                    self._scenario_track._scenario_phase = next_scenario_phase;
-                    self._scenario_track._phase_time = 0.0;
+                    self._scenario_track.set_scenario_phase(next_scenario_phase, next_phase_duration);
                     next_scenario_phase
                 }
                 State::Update => next_scenario_phase,
             };
 
+            let phase_time = self._scenario_track.get_phase_time();
+            let phase_ratio = self._scenario_track.get_phase_ratio();
+
             match update_scenario_phase {
                 ScenarioPhase::None => {
-                    self.set_next_scenario_phase(ScenarioPhase::Begin, None);
+                    self._scenario_track.set_next_scenario_phase(ScenarioPhase::Begin, None);
                 }
                 ScenarioPhase::Begin => {
-                    self.set_next_scenario_phase(ScenarioPhase::StoryBoard, None);
+                    self._scenario_track.set_next_scenario_phase(ScenarioPhase::StoryBoard, None);
                 }
                 ScenarioPhase::StoryBoard => {
                     match state {
@@ -432,11 +417,11 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                         }
                         State::Update => {
                             if SKIP_SCENARIO {
-                                self.set_next_scenario_phase(ScenarioPhase::MoveToTutorialStage, None);
+                                self._scenario_track.set_next_scenario_phase(ScenarioPhase::MoveToTutorialStage, None);
                             } else {
                                 let story_board_phase = self.get_story_board_phase();
                                 if !USE_STORY_BOARDS || STORY_BOARDS.len() < story_board_phase {
-                                    self.set_next_scenario_phase(ScenarioPhase::Morning, Some(PHASE_TIME_SLEEP));
+                                    self._scenario_track.set_next_scenario_phase(ScenarioPhase::Morning, Some(PHASE_TIME_SLEEP));
                                 } else {
                                     if story_board_phase == 0 || game_ui_manager.is_done_game_image_progress() && any_key_pressed {
                                         if story_board_phase < STORY_BOARDS.len() {
@@ -468,7 +453,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                             main_camera._transform_object.set_rotation(&rotation);
 
                             if 1.0 <= phase_ratio {
-                                self.set_next_scenario_phase(ScenarioPhase::WakeUp, None);
+                                self._scenario_track.set_next_scenario_phase(ScenarioPhase::WakeUp, None);
                             }
                         }
                         _ => {}
@@ -510,7 +495,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                                 self._actor_aru.as_ref().unwrap().borrow_mut().is_action(ActionAnimationState::None) &&
                                 self._actor_ewa.as_ref().unwrap().borrow_mut().is_action(ActionAnimationState::None) &&
                                 self._actor_koa.as_ref().unwrap().borrow_mut().is_action(ActionAnimationState::None) {
-                                self.set_next_scenario_phase(ScenarioPhase::AssembleFamily, None);
+                                self._scenario_track.set_next_scenario_phase(ScenarioPhase::AssembleFamily, None);
                             }
                         }
                         _ => {}
@@ -534,7 +519,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                             }
 
                             if done {
-                                self.set_next_scenario_phase(ScenarioPhase::IamHungry, Some(PHASE_TIME_HUNGRY));
+                                self._scenario_track.set_next_scenario_phase(ScenarioPhase::IamHungry, Some(PHASE_TIME_HUNGRY));
                             }
                         }
                         _ => {}
@@ -557,7 +542,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                         }
                         State::Update => {
                             if 1.0 <= phase_ratio {
-                                self.set_next_scenario_phase(ScenarioPhase::MoveToTutorialStage, None);
+                                self._scenario_track.set_next_scenario_phase(ScenarioPhase::MoveToTutorialStage, None);
                             }
                         }
                         _ => {}
@@ -590,7 +575,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                             })));
 
                             if SKIP_SCENARIO {
-                                self.set_next_scenario_phase(ScenarioPhase::WrapUpTheDay, None);
+                                self._scenario_track.set_next_scenario_phase(ScenarioPhase::WrapUpTheDay, None);
                             } else {
                                 self.create_move_to_tutorial_stage_text_box(game_scene_manager);
                             }
@@ -598,7 +583,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                         State::Update => {
                             if game_scene_manager.get_current_game_scene_data_name() == Stages::Forest.get_stage_data_name() {
                                 self._sub_quest_move_to_tutorial_stage.as_ref().unwrap().borrow_mut().set_completed_quest();
-                                self.set_next_scenario_phase(ScenarioPhase::GatheringFood, None);
+                                self._scenario_track.set_next_scenario_phase(ScenarioPhase::GatheringFood, None);
                             }
                         }
                         _ => {}
@@ -615,7 +600,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                                     self.remove_move_to_tutorial_stage_text_box(game_scene_manager);
                                     self.remove_hit_this_tree_text_box(game_scene_manager);
                                     self.create_return_home_text_box(game_scene_manager);
-                                    self.set_next_scenario_phase(ScenarioPhase::BackHome, None);
+                                    self._scenario_track.set_next_scenario_phase(ScenarioPhase::BackHome, None);
                                 }
                             }
                         }
@@ -628,7 +613,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                             if game_scene_manager.get_current_game_scene_data_name() == Stages::Home.get_stage_data_name() {
                                 self._sub_quest_back_home.as_ref().unwrap().borrow_mut().set_completed_quest();
                                 self.remove_return_home_text_box(game_scene_manager);
-                                self.set_next_scenario_phase(ScenarioPhase::WrapUpTheDay, None);
+                                self._scenario_track.set_next_scenario_phase(ScenarioPhase::WrapUpTheDay, None);
                             }
                         }
                         _ => {}
@@ -648,7 +633,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                             if !game_scene_manager.has_game_scenario(ScenarioType::ScenarioWrapUpTheDay) {
                                 self.clear_all();
                                 game_scene_manager.request_open_game_scenario(ScenarioType::ScenarioUfo, false);
-                                self.set_next_scenario_phase(ScenarioPhase::End, None);
+                                self._scenario_track.set_next_scenario_phase(ScenarioPhase::End, None);
                             }
                         }
                         _ => {}
@@ -656,17 +641,17 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                 }
                 ScenarioPhase::End => {}
             }
-        }
 
-        if scenario_phase == next_scenario_phase {
-            self._scenario_track.update_scenario_phase_time(delta_time as f32);
+            if state == State::Update {
+                self._scenario_track.update_scenario_phase_time(delta_time as f32);
+            }
         }
 
         if self._sub_quest_sleep.is_some() && !self._sub_quest_sleep.as_ref().unwrap().borrow().is_completed_quest() {
             if let Some(scenario_wrap_up_the_day) = game_scene_manager.get_game_scenario(ScenarioType::ScenarioWrapUpTheDay).as_ref() {
                 ptr_as_mut((*scenario_wrap_up_the_day) as *const ScenarioWrapUpTheDay).set_skip_wakeup(true);
                 self._sub_quest_sleep.as_ref().unwrap().borrow_mut().set_completed_quest();
-                self.set_next_scenario_phase(ScenarioPhase::Sleeping, None);
+                self._scenario_track.set_next_scenario_phase(ScenarioPhase::Sleeping, None);
             }
         }
     }

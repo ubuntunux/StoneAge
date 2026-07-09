@@ -1,4 +1,3 @@
-use std::str::FromStr;
 use nalgebra::Vector3;
 use strum::IntoEnumIterator;
 use strum_macros::{Display, EnumCount, EnumIter, EnumString};
@@ -77,15 +76,11 @@ impl<'a> ScenarioDayOne<'a> {
             _scenario_track: ScenarioTrack {
                 _scenario_phase: ScenarioPhase::None,
                 _next_scenario_phase: ScenarioPhase::Begin,
-                _phase_time: 0.0,
                 _phase_duration: None,
+                _next_phase_duration: None,
+                _phase_time: 0.0,
             }
         })
-    }
-
-    fn set_next_scenario_phase(&mut self, next_scenario_phase: ScenarioPhase, phase_duration: Option<f32>) {
-        self._scenario_track._next_scenario_phase = next_scenario_phase;
-        self._scenario_track._phase_duration = phase_duration;
     }
 
     pub fn update_release_actor(&mut self, actor: RcRefCell<Character>, target: RcRefCell<Prop>, delta_time: f64) -> bool {
@@ -191,54 +186,42 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
         self._is_load_completed = true;
     }
 
-    fn set_scenario_phase(&mut self, next_scenario_phase: &str, phase_duration: Option<f32>) {
-        let next_scenario_phase = ScenarioPhase::from_str(next_scenario_phase).expect("scenario error");
-        self.set_next_scenario_phase(next_scenario_phase, phase_duration);
-    }
-
-    fn update_game_scenario_begin(&mut self) {
-        todo!()
-    }
-
-    fn update_game_scenario_end(&mut self) {
-        todo!()
-    }
-
     fn update_game_scenario(&mut self, _any_key_hold: bool, _any_key_pressed: bool, delta_time: f64) {
         let game_scene_manager = ptr_as_mut(self._game_scene_manager);
         let _game_ui_manager = game_scene_manager.get_game_ui_manager_mut();
 
-        let phase_ratio = self._scenario_track.get_phase_ratio();
-        let scenario_phase = self._scenario_track._scenario_phase;
+        let prev_scenario_phase = self._scenario_track._scenario_phase;
         let next_scenario_phase = self._scenario_track._next_scenario_phase;
+        let next_phase_duration = self._scenario_track._next_phase_duration;
 
         for state in State::iter() {
-            if scenario_phase == next_scenario_phase && (state == State::End || state == State::Begin) {
+            if prev_scenario_phase == next_scenario_phase && (state == State::End || state == State::Begin) {
                 continue;
             }
 
             let update_scenario_phase: ScenarioPhase = match state {
-                State::End => scenario_phase,
+                State::End => prev_scenario_phase,
                 State::Begin => {
-                    self._scenario_track._scenario_phase = next_scenario_phase;
-                    self._scenario_track._phase_time = 0.0;
+                    self._scenario_track.set_scenario_phase(next_scenario_phase, next_phase_duration);
                     next_scenario_phase
                 }
                 State::Update => next_scenario_phase,
             };
 
+            let phase_ratio = self._scenario_track.get_phase_ratio();
+
             match update_scenario_phase {
                 ScenarioPhase::None => {
-                    self.set_next_scenario_phase(ScenarioPhase::Begin, None);
+                    self._scenario_track.set_next_scenario_phase(ScenarioPhase::Begin, None);
                 }
                 ScenarioPhase::Begin => {
                     match state {
                         State::Update => {
                             if unsafe { SKIP_SCENARIO } {
-                                self.set_next_scenario_phase(ScenarioPhase::Awake, Some(6.0));
+                                self._scenario_track.set_next_scenario_phase(ScenarioPhase::Awake, Some(6.0));
                             } else {
                                 game_scene_manager.set_time(TIME_OF_EARLY_MORNING, 0.0);
-                                self.set_next_scenario_phase(ScenarioPhase::ReleaseFamily, Some(6.0));
+                                self._scenario_track.set_next_scenario_phase(ScenarioPhase::ReleaseFamily, Some(6.0));
                             }
                         }
                         _ => {}
@@ -253,7 +236,7 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
                         State::Update => {
                             let complete = self.update_release_family(delta_time);
                             if complete {
-                                self.set_next_scenario_phase(ScenarioPhase::UfoGone, Some(3.0));
+                                self._scenario_track.set_next_scenario_phase(ScenarioPhase::UfoGone, Some(3.0));
                             }
                         }
                         _ => {}
@@ -264,7 +247,7 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
                         State::Update => {
                             self._actor_ufo.as_ref().unwrap().borrow_mut().set_move(&Vector3::new(0.0, 0.0, -1.0));
                             if 1.0 <= phase_ratio {
-                                self.set_next_scenario_phase(ScenarioPhase::DropMonolith, None);
+                                self._scenario_track.set_next_scenario_phase(ScenarioPhase::DropMonolith, None);
                             }
                         }
                         _ => {}
@@ -285,7 +268,7 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
                             }
 
                             if drop_completed {
-                                self.set_next_scenario_phase(ScenarioPhase::ReallyUfoGone, Some(3.0));
+                                self._scenario_track.set_next_scenario_phase(ScenarioPhase::ReallyUfoGone, Some(3.0));
                             }
                         }
                         _ => {}
@@ -296,7 +279,7 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
                         State::Update => {
                             self._actor_ufo.as_ref().unwrap().borrow_mut().set_move(&Vector3::new(0.0, 0.0, -1.0));
                             if 1.0 <= phase_ratio {
-                                self.set_next_scenario_phase(ScenarioPhase::CloseUpShot, Some(3.0));
+                                self._scenario_track.set_next_scenario_phase(ScenarioPhase::CloseUpShot, Some(3.0));
                             }
                         }
                         State::End => {
@@ -317,7 +300,7 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
                         }
                         State::Update => {
                             if 1.0 <= phase_ratio {
-                                self.set_next_scenario_phase(ScenarioPhase::Awake, Some(5.0));
+                                self._scenario_track.set_next_scenario_phase(ScenarioPhase::Awake, Some(5.0));
                             }
                         }
                         _ => {}
@@ -352,7 +335,7 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
                             main_camera._transform_object.set_rotation(&rotation);
 
                             if 1.0 <= phase_ratio {
-                                self.set_next_scenario_phase(ScenarioPhase::End, None);
+                                self._scenario_track.set_next_scenario_phase(ScenarioPhase::End, None);
                             }
                         }
                         _ => {}
@@ -361,9 +344,10 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
                 ScenarioPhase::End => {
                 }
             }
-        }
-        if scenario_phase == next_scenario_phase {
-            self._scenario_track.update_scenario_phase_time(delta_time as f32);
+
+            if state == State::Update {
+                self._scenario_track.update_scenario_phase_time(delta_time as f32);
+            }
         }
     }
 }

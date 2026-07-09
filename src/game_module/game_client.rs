@@ -417,10 +417,10 @@ impl<'a> GameClient<'a> {
                 }
                 GamePhase::WorldMapUpdate => {
                     match state {
-                        State::Begin => {
-                            game_ui_manager.update_world_map_widget(joystick_input_data, keyboard_input_data);
-                        }
+                        State::Begin => {}
                         State::Update => {
+                            game_ui_manager.update_world_map_widget(joystick_input_data, keyboard_input_data);
+
                             if game_scene_manager.is_teleport_mode() {
                                 self.set_next_game_phase(GamePhase::WorldMapClose);
                             } else if game_ui_manager.is_requested_close_world_map() {
