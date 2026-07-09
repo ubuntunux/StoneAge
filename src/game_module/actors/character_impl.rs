@@ -266,7 +266,7 @@ impl<'a> Character<'a> {
     ) {
         self._character_stats.initialize_character_stats(&self._character_data.borrow());
         self._controller.initialize_controller(&self._character_data.borrow(), position, rotation, scale);
-        self._behavior.initialize_behavior(ptr_as_ref(self), position);
+        self._behavior.initialize_behavior(position);
 
         self.set_move_idle();
         self.set_action_none();

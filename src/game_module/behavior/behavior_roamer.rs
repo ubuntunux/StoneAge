@@ -33,8 +33,8 @@ impl<'a> BehaviorRoamer<'a> {
 }
 
 impl<'a> BehaviorBase<'a> for BehaviorRoamer<'a> {
-    fn initialize_behavior(&mut self, owner: &Character<'a>, position: &Vector3<f32>) {
-        self._behavior_data.initialize_behavior_data(owner, position);
+    fn initialize_behavior(&mut self, position: &Vector3<f32>) {
+        self._behavior_data.initialize_behavior_data(position);
     }
 
     fn set_next_behavior(&mut self, next_behavior_state: BehaviorState, is_force: bool) {

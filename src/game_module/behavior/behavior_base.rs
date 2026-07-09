@@ -1,5 +1,5 @@
 use nalgebra::Vector3;
-use rust_engine_3d::utilities::system::{ptr_as_ref, RcRefCell};
+use rust_engine_3d::utilities::system::{RcRefCell};
 use crate::game_module::actors::character::Character;
 use crate::game_module::actors::character_data::CharacterDataType;
 use crate::game_module::behavior::behavior_civilian::BehaviorCivilian;
@@ -22,7 +22,6 @@ pub enum BehaviorState {
 }
 
 pub struct BehaviorData<'a> {
-    pub _owner: *const Character<'a>,
     pub _behavior_time: f32,
     pub _behavior_state: BehaviorState,
     pub _next_behavior_state: BehaviorState,
@@ -36,7 +35,6 @@ pub struct BehaviorData<'a> {
 impl<'a> Default for BehaviorData<'a> {
     fn default() -> Self {
         Self {
-            _owner: std::ptr::null(),
             _behavior_time: 0.0,
             _behavior_state: BehaviorState::default(),
             _next_behavior_state: BehaviorState::default(),
@@ -50,17 +48,8 @@ impl<'a> Default for BehaviorData<'a> {
 }
 
 impl<'a> BehaviorData<'a> {
-    pub fn initialize_behavior_data(&mut self, owner: &Character<'a>, spawn_point: &Vector3<f32>) {
-        self._owner = owner;
+    pub fn initialize_behavior_data(&mut self, spawn_point: &Vector3<f32>) {
         self._spawn_point = spawn_point.clone();
-    }
-
-    pub fn get_owner(&self) -> &Character<'a> {
-        ptr_as_ref(self._owner)
-    }
-
-    pub fn get_owner_mut(&self) -> &Character<'a> {
-        ptr_as_ref(self._owner)
     }
 
     pub fn is_end_behavior_time(&self) -> bool {
@@ -106,7 +95,7 @@ impl<'a> BehaviorData<'a> {
 }
 
 pub trait BehaviorBase<'a> {
-    fn initialize_behavior(&mut self, owner: &Character<'a>, position: &Vector3<f32>);
+    fn initialize_behavior(&mut self, position: &Vector3<f32>);
     fn set_next_behavior(&mut self, next_behavior_state: BehaviorState, is_force: bool);
     fn update_behavior(&mut self, owner: &mut Character<'a>, behavior_target: Option<&Character<'a>>, delta_time: f32);
 }
