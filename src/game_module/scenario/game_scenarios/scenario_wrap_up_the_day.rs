@@ -267,8 +267,8 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                                 } else {
                                     game_scene_manager.get_scene_manager().play_audio_bank(AUDIO_ROOSTER);
                                     self._actor_aru.as_ref().unwrap().borrow_mut().set_action_wake_up();
-                                    self._actor_ewa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::WakeUp, None, true);
-                                    self._actor_koa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::WakeUp, None, true);
+                                    self._actor_ewa.as_ref().unwrap().borrow_mut().set_next_behavior(BehaviorState::WakeUp, true);
+                                    self._actor_koa.as_ref().unwrap().borrow_mut().set_next_behavior(BehaviorState::WakeUp, true);
                                 }
                                 self._scenario_track.set_next_scenario_phase(ScenarioPhase::End, None);
                             }

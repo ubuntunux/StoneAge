@@ -317,11 +317,11 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
 
                             self._actor_ewa.as_ref().unwrap().borrow_mut()._controller.set_flying_mode(false);
                             self._actor_ewa.as_ref().unwrap().borrow_mut().set_position(&self._prop_bed_for_ewa.as_ref().unwrap().borrow().get_position());
-                            self._actor_ewa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::WakeUp, None, true);
+                            self._actor_ewa.as_ref().unwrap().borrow_mut().set_next_behavior(BehaviorState::WakeUp, true);
 
                             self._actor_koa.as_ref().unwrap().borrow_mut()._controller.set_flying_mode(false);
                             self._actor_koa.as_ref().unwrap().borrow_mut().set_position(&self._prop_bed_for_koa.as_ref().unwrap().borrow().get_position());
-                            self._actor_koa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::WakeUp, None, true);
+                            self._actor_koa.as_ref().unwrap().borrow_mut().set_next_behavior(BehaviorState::WakeUp, true);
                         }
                         State::Update => {
                             let main_camera = game_scene_manager.get_scene_manager().get_main_camera_mut();

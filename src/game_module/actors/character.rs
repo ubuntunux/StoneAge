@@ -79,7 +79,7 @@ pub struct Character<'a> {
     pub _render_object: RcRefCell<RenderObjectData<'a>>,
     pub _character_stats: Box<CharacterStats>,
     pub _controller: Box<CharacterController<'a>>,
-    pub _behavior: Box<dyn BehaviorBase>,
+    pub _behavior: Box<dyn BehaviorBase<'a> + 'a>,
     pub _animation_state: Box<CharacterAnimationState>,
     pub _attached_item: Option<RcRefCell<Item<'a>>>,
     pub _audio_snoring: Option<RcRefCell<AudioInstance>>,

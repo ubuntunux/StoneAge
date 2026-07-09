@@ -1,48 +1,63 @@
 use crate::game_module::actors::character::Character;
-use crate::game_module::behavior::behavior_base::{BehaviorBase, BehaviorState};
+use crate::game_module::behavior::behavior_base::{BehaviorBase, BehaviorData, BehaviorState};
 use nalgebra::Vector3;
+use strum::IntoEnumIterator;
+use rust_engine_3d::utilities::system::{State};
 
-#[derive(Default)]
-pub struct BehaviorUfo {
-    pub _idle_time: f32,
-    pub _behavior_state: BehaviorState,
+pub struct BehaviorUfo<'a> {
+    pub _behavior_data: BehaviorData<'a>,
 }
 
-impl BehaviorBase for BehaviorUfo {
-    fn initialize_behavior(&mut self, _owner: &mut Character, _position: &Vector3<f32>) {
-        self._behavior_state = BehaviorState::Idle;
+impl<'a> Default for BehaviorUfo<'a> {
+    fn default() -> Self {
+        Self {
+            _behavior_data: BehaviorData::default()
+        }
+    }
+}
+
+impl<'a> BehaviorBase<'a> for BehaviorUfo<'a> {
+    fn initialize_behavior(&mut self, owner: &Character<'a>, position: &Vector3<f32>) {
+        self._behavior_data.initialize_behavior_data(owner, position);
     }
 
-    fn update_behavior(
-        &mut self,
-        owner: &mut Character,
-        target: Option<&Character>,
-        _delta_time: f32,
-    ) {
-        match self._behavior_state {
-            BehaviorState::None => {
-                self.set_behavior(BehaviorState::Idle, owner, target, false);
+    fn set_next_behavior(&mut self, next_behavior_state: BehaviorState, is_force: bool) {
+        self._behavior_data.set_next_behavior_state(next_behavior_state, is_force);
+    }
+
+    fn update_behavior(&mut self, _owner: &mut Character<'a>, _target: Option<&Character<'a>>, delta_time: f32) {
+        let prev_behavior_state = self._behavior_data.get_behavior_state();
+        let next_behavior_state = self._behavior_data.get_next_behavior_state();
+        let is_force = self._behavior_data.is_force_behavior_state_changed();
+
+        for state in State::iter() {
+            if is_force == false && prev_behavior_state == next_behavior_state && (state == State::End || state == State::Begin) {
+                continue;
             }
-            _ => (),
-        }
-    }
 
-    fn set_behavior(
-        &mut self,
-        behavior_state: BehaviorState,
-        owner: &mut Character,
-        target: Option<&Character>,
-        is_force: bool,
-    ) {
-        if self._behavior_state != behavior_state || is_force {
-            self.end_behavior(owner, target);
-            self._behavior_state = behavior_state;
-        }
-    }
+            let update_behavior_state: BehaviorState = match state {
+                State::End => prev_behavior_state,
+                State::Begin => {
+                    self._behavior_data.set_behavior_state(next_behavior_state);
+                    next_behavior_state
+                }
+                State::Update => next_behavior_state,
+            };
 
-    fn end_behavior(&mut self, _owner: &mut Character, _target: Option<&Character>) {
-        match self._behavior_state {
-            _ => (),
+            match update_behavior_state {
+                BehaviorState::Idle => {
+                    match state {
+                        State::Begin => {}
+                        State::Update => {}
+                        State::End => {}
+                    };
+                }
+                _ => {}
+            }
+
+            if state == State::Update {
+                self._behavior_data.update_behavior_time(delta_time);
+            }
         }
     }
 }

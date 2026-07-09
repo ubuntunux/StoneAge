@@ -266,7 +266,7 @@ impl<'a> Character<'a> {
     ) {
         self._character_stats.initialize_character_stats(&self._character_data.borrow());
         self._controller.initialize_controller(&self._character_data.borrow(), position, rotation, scale);
-        self._behavior.initialize_behavior(ptr_as_mut(self), position);
+        self._behavior.initialize_behavior(ptr_as_ref(self), position);
 
         self.set_move_idle();
         self.set_action_none();
@@ -683,17 +683,11 @@ impl<'a> Character<'a> {
     }
 
     pub fn set_behavior_none(&mut self) {
-        self.set_behavior(BehaviorState::None, None, true);
+        self.set_next_behavior(BehaviorState::None, true);
     }
 
-    pub fn set_behavior(
-        &mut self,
-        behavior_state: BehaviorState,
-        target: Option<&Character>,
-        is_force: bool
-    ) {
-        let owner = ptr_as_mut(self);
-        self._behavior.set_behavior(behavior_state, owner, target, is_force);
+    pub fn set_next_behavior(&mut self, behavior_state: BehaviorState, is_force: bool) {
+        self._behavior.set_next_behavior(behavior_state, is_force);
     }
 
     pub fn set_dead(&mut self) {
@@ -766,7 +760,7 @@ impl<'a> Character<'a> {
                 InteractionObject::Npc(character) => {
                     // interaction
                     self.look_at(character.borrow().get_position());
-                    character.borrow_mut().set_behavior(BehaviorState::Interaction, None, false);
+                    character.borrow_mut().set_next_behavior(BehaviorState::Interaction, false);
 
                     // give item
                     let mut give_item = false;

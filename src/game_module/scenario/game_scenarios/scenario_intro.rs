@@ -551,8 +551,8 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                 ScenarioPhase::MoveToTutorialStage => {
                     match state {
                         State::Begin => {
-                            self._actor_ewa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::Idle, None, true);
-                            self._actor_koa.as_ref().unwrap().borrow_mut().set_behavior(BehaviorState::Idle, None, true);
+                            self._actor_ewa.as_ref().unwrap().borrow_mut().set_next_behavior(BehaviorState::Idle, true);
+                            self._actor_koa.as_ref().unwrap().borrow_mut().set_next_behavior(BehaviorState::Idle, true);
 
                             let item_coconut = game_scene_manager.get_game_resources().get_item_data(ITEM_COCONUT);
                             self._quest = Some(game_ui_manager.add_quest(Some(String::from("Gather food for the hungry family."))));
