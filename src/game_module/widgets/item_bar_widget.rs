@@ -1,5 +1,6 @@
 use std::rc::Rc;
 use nalgebra::Vector2;
+use serde::{Deserialize, Serialize};
 use rust_engine_3d::resource::resource::EngineResources;
 use rust_engine_3d::scene::material_instance::MaterialInstanceData;
 use rust_engine_3d::scene::ui::{HorizontalAlign, Orientation, PosHintX, PosHintY, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault};
@@ -18,6 +19,16 @@ pub const MAX_ITEM_COUNT: usize = 10;
 pub const ITEM_UI_SIZE: f32 = 64.0;
 pub const ITEM_WIDGET_UI_MARGIN: f32 = 5.0;
 const INVALID_ITEM_INDEX: usize = usize::MAX;
+
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[serde(default)]
+pub struct InventoryItemCreateInfo {
+    pub _item_data_name: String,
+    pub _item_name: String,
+    pub _item_data_type: ItemDataType,
+    pub _item_index: usize,
+    pub _item_count: usize,
+}
 
 fn create_inventory_key_binding_widget<'a>(
     parent_widget: &mut WidgetDefault<'a>,

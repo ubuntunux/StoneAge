@@ -18,8 +18,9 @@ pub type ItemID = Uuid;
 
 pub type ItemMap<'a> = HashMap<ItemID, RcRefCell<Item<'a>>>;
 
-#[derive(Serialize, Deserialize, Hash, Eq, Clone, Copy, Debug, EnumIter, Display, PartialEq)]
+#[derive(Serialize, Deserialize, Hash, Eq, Clone, Copy, Debug, EnumIter, Display, PartialEq, Default)]
 pub enum ItemDataType {
+    #[default]
     None,
     Hand,
     Bow,
