@@ -16,6 +16,7 @@ use rust_engine_3d::scene::socket::Socket;
 
 pub type ItemID = Uuid;
 
+pub type ItemCreateInfoIDMap = HashMap<ItemID, ItemCreateInfo>;
 pub type ItemMap<'a> = HashMap<ItemID, RcRefCell<Item<'a>>>;
 
 #[derive(Serialize, Deserialize, Hash, Eq, Clone, Copy, Debug, EnumIter, Display, PartialEq, Default)]

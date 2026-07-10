@@ -11,6 +11,7 @@ use std::collections::HashMap;
 use uuid::Uuid;
 
 pub type PropID = Uuid;
+pub type PropCreateInfoIDMap = HashMap<PropID, PropCreateInfo>;
 pub type PropMap<'a> = HashMap<PropID, RcRefCell<Prop<'a>>>;
 pub type PropNameMap<'a> = HashMap<String, RcRefCell<Prop<'a>>>;
 

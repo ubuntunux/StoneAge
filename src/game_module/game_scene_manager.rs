@@ -9,23 +9,39 @@ use rust_engine_3d::scene::scene_manager::{SceneDataCreateInfo, SceneManager};
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use rust_engine_3d::begin_block;
-use crate::game_module::save_data::save_data::{GameSaveData, GameSceneSaveData};
+use crate::game_module::save_data::save_data::{GameSaveData};
 use crate::application::application::Application;
 use crate::game_module::actors::character::{Character};
 use crate::game_module::actors::character_manager::{CharacterCreateInfo, CharacterID, CharacterManager};
-use crate::game_module::actors::items::{ItemCreateInfo, ItemManager};
-use crate::game_module::actors::props::{PropCreateInfo, PropManager};
+use crate::game_module::actors::items::{ItemCreateInfo, ItemCreateInfoIDMap, ItemManager};
+use crate::game_module::actors::props::{PropCreateInfo, PropCreateInfoIDMap, PropManager};
 use crate::game_module::game_constants::{GameViewMode, GAME_VIEW_MODE, TEMPERATURE_MAX, TEMPERATURE_MIN, TIME_OF_DAWN, TIME_OF_DAY_SPEED, TIME_OF_MORNING};
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_ui_manager::{GameUIManager};
 use crate::game_module::scenario::scenario::{create_scenario, ScenarioBase, ScenarioDataCreateInfo, ScenarioType};
 use crate::game_module::game_client::GameClient;
 
+pub type CharacterCreateInfoIDMap = HashMap<CharacterID, CharacterCreateInfo>;
 pub type CharacterCreateInfoMap = HashMap<String, CharacterCreateInfo>;
 pub type ItemCreateInfoMap = HashMap<String, ItemCreateInfo>;
 pub type PropCreateInfoMap = HashMap<String, PropCreateInfo>;
-
 pub type ScenarioList<'a> = Vec<RcRefCell<dyn ScenarioBase<'a> + 'a>>;
+pub type ScenarioSaveDataList = Vec<GameScenarioSaveData>;
+
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[serde(default)]
+pub struct GameSceneSaveData {
+    pub _characters: CharacterCreateInfoIDMap,
+    pub _items: ItemCreateInfoIDMap,
+    pub _props: PropCreateInfoIDMap
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
+#[serde(default)]
+pub struct GameScenarioSaveData {
+    pub _scenario_type: ScenarioType,
+    pub _scenario_phase: String,
+}
 
 #[derive(Clone, PartialEq, Eq, Hash, Debug, Display, EnumString, Copy)]
 pub enum Stages {
@@ -314,7 +330,6 @@ impl<'a> GameSceneManager<'a> {
     }
 
     pub fn get_game_save_data(&self, game_save_data: &mut GameSaveData) {
-        log::info!(">>> get_game_save_data: {:?}", self.get_current_game_scene_data_name().clone());
         game_save_data._player = self.get_character_manager().get_player().as_ref().borrow().get_character_save_data();
         game_save_data._time_of_day = self.get_time_of_day();
         game_save_data._temperature = self.temperature();
@@ -325,14 +340,12 @@ impl<'a> GameSceneManager<'a> {
     }
 
     pub fn get_game_scene_save_data(&self) -> GameSceneSaveData {
-        GameSceneSaveData::default()
-        // GameSceneSaveData {
-        //     _characters: self._character_manager.get_character_save_data(),
-        //     _items: self._item_manager.get_item_save_data(),
-        //     _player: self._character_manager.get_player_save_data(),
-        //     _props: self._prop_manager.get_prop_save_data(),
-        //     _scene: Default::default(),
-        // }
+        GameSceneSaveData {
+            //_characters: self.get_character_manager().get_characters_save_data(),
+            //_items: self._item_manager.get_item_save_data(),
+            //_props: self._prop_manager.get_prop_save_data(),
+            ..Default::default()
+        }
     }
 
     // update teleport
@@ -433,8 +446,6 @@ impl<'a> GameSceneManager<'a> {
         self._current_game_scene_data = Some(game_scene_data.clone());
         self._current_game_scene_data_name = String::from(game_scene_data_name);
 
-        log::info!(">>> open_game_scene_data: {:?}", self._current_game_scene_data_name);
-
         if let Some(game_scene_data) = self._current_game_scene_data.as_ref() {
             let scene_manager = ptr_as_mut(self._scene_manager);
             let game_scene_data_ref = game_scene_data.borrow();
@@ -456,7 +467,6 @@ impl<'a> GameSceneManager<'a> {
         self.get_scene_manager_mut().close_scene_data();
         self.set_game_scene_state(GameSceneState::None);
 
-        log::info!(">>> close_game_scene_data: {:?}", self._current_game_scene_data_name);
         self._current_game_scene_data_name = String::new();
     }
 

@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::rc::Rc;
 use nalgebra::Vector2;
 use serde::{Deserialize, Serialize};
@@ -13,6 +14,8 @@ use crate::game_module::game_controller::KeyBindingType;
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::widgets::key_binding_widget::{KeyBindingWidget, KeyBindingWidgetManager, KeyBindingWidgetMap, KEY_BINDING_FONT_SIZE, KEY_BINDING_ICON_MARGIN, KEY_BINDING_TEXT_MARGIN, KEY_BINDING_UI_SIZE};
+
+pub type InventoryItemCreateInfoList = HashMap<usize, Vec<InventoryItemCreateInfo>>;
 
 pub const ITEM_BAR_WIDGET_POS_Y_FROM_BOTTOM: f32 = 50.0;
 pub const MAX_ITEM_COUNT: usize = 10;
