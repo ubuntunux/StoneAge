@@ -1,5 +1,7 @@
 use std::collections::{HashMap};
 use std::ffi::c_void;
+use nalgebra::Vector3;
+use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use rust_engine_3d::audio::audio_manager::AudioManager;
 use rust_engine_3d::core::engine_core::EngineCore;
@@ -10,7 +12,7 @@ use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, Rc
 use crate::game_module::widgets::text_box_widget::TextBoxLayerType;
 use crate::game_module::actors::items::ItemManager;
 use crate::application::application::Application;
-use crate::game_module::actors::character::{ActorWrapper, Character, CharacterCreateInfo};
+use crate::game_module::actors::character::{ActorWrapper, Character};
 use crate::game_module::actors::interaction_object::InteractionObject;
 use crate::game_module::actors::items::{ItemCreateInfo};
 use crate::game_module::game_client::GameClient;
@@ -23,6 +25,16 @@ use crate::game_module::widgets::text_box_widget::TextBoxContent;
 pub type CharacterID = Uuid;
 pub type CharacterMap<'a> = HashMap<CharacterID, RcRefCell<Character<'a>>>;
 pub type CharacterNameMap<'a> = HashMap<String, RcRefCell<Character<'a>>>;
+
+#[derive(Serialize, Deserialize, Default, Debug, Clone, PartialEq)]
+#[serde(default)]
+pub struct CharacterCreateInfo {
+    pub _character_id: CharacterID,
+    pub _character_data_name: String,
+    pub _position: Vector3<f32>,
+    pub _rotation: Vector3<f32>,
+    pub _scale: Vector3<f32>,
+}
 
 pub struct CharacterManager<'a> {
     pub _game_client: *const GameClient<'a>,

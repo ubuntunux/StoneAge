@@ -1,6 +1,4 @@
 use std::ffi::c_void;
-use nalgebra::Vector3;
-use serde::{Deserialize, Serialize};
 use rust_engine_3d::scene::render_object::RenderObjectData;
 use rust_engine_3d::utilities::system::RcRefCell;
 use rust_engine_3d::audio::audio_manager::AudioInstance;
@@ -26,15 +24,6 @@ impl<'a> ActorWrapper<'a> {
             ActorWrapper::RenderObject(render_object) => { render_object.as_ptr() as *const c_void }
         }
     }
-}
-
-#[derive(Serialize, Deserialize, Default, Debug, Clone, PartialEq)]
-#[serde(default)]
-pub struct CharacterCreateInfo {
-    pub _character_data_name: String,
-    pub _position: Vector3<f32>,
-    pub _rotation: Vector3<f32>,
-    pub _scale: Vector3<f32>,
 }
 
 #[derive(Default)]

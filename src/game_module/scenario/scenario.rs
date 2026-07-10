@@ -15,8 +15,9 @@ use crate::game_module::scenario::game_scenarios::scenario_wrap_up_the_day::Scen
 
 pub type GameSceneCreateInfoMap = HashMap<String, GameSceneCreateInfo>;
 
-#[derive(Clone, PartialEq, Eq, Hash, Debug, Display, EnumString, Copy)]
+#[derive(Serialize, Deserialize, Clone, PartialEq, Eq, Hash, Debug, Display, EnumString, Copy, Default)]
 pub enum ScenarioType {
+    #[default]
     ScenarioIntro,
     ScenarioUfo,
     ScenarioRevolution,

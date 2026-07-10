@@ -10,10 +10,10 @@ use rust_engine_3d::scene::transform_object::TransformObjectData;
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::math::make_rotation_matrix;
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell, State};
-use crate::game_module::actors::character::{Character, CharacterAnimationState, CharacterCreateInfo, CharacterStats};
+use crate::game_module::actors::character::{Character, CharacterAnimationState, CharacterStats};
 use crate::game_module::actors::character_controller::CharacterController;
 use crate::game_module::actors::character_data::{ActionAnimationState, CharacterData, MoveAnimationState};
-use crate::game_module::actors::character_manager::{CharacterID, CharacterManager};
+use crate::game_module::actors::character_manager::{CharacterCreateInfo, CharacterID, CharacterManager};
 use crate::game_module::behavior::behavior_base::{create_character_behavior, BehaviorState};
 use crate::game_module::game_constants::*;
 use crate::game_module::actors::items::{ItemDataType, ItemManager};
@@ -22,6 +22,7 @@ use crate::game_module::actors::items::{Item};
 use crate::game_module::game_client::GamePhase;
 use crate::game_module::scenario::scenario::ScenarioType;
 use strum::IntoEnumIterator;
+use uuid::Uuid;
 
 impl CharacterAnimationState {
     pub fn is_attack_event(&self) -> bool {
@@ -299,6 +300,7 @@ impl<'a> Character<'a> {
 
     pub fn get_character_save_data(&self) -> CharacterCreateInfo {
         CharacterCreateInfo {
+            _character_id: Uuid::nil(),
             _character_data_name: self._character_data_name.clone(),
             _position: self.get_position().clone(),
             _rotation: self.get_rotation().clone(),

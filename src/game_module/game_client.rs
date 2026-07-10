@@ -160,13 +160,14 @@ impl<'a> GameClient<'a> {
         self.set_next_game_phase(GamePhase::BeginLoading);
     }
     fn load_game(&mut self) {
-        let game_save_data = self.get_game_resources_mut().get_game_save_data(self._request_load_game_data_name.as_str());
+        let game_save_data = self.get_game_resources_mut().get_or_create_game_save_data(self._request_load_game_data_name.as_str());
         self.get_game_scene_manager_mut().load_game_save_data(&game_save_data.borrow());
         self._request_load_game_data_name = String::default();
     }
     pub fn save_game(&mut self) {
-        let game_save_data = self.get_game_scene_manager().get_game_save_data();
-        self.get_game_resources_mut().save_game_save_data(DEFAULT_GAME_SAVE_DATA, &game_save_data);
+        let game_save_data = self.get_game_resources_mut().get_or_create_game_save_data(DEFAULT_GAME_SAVE_DATA);
+        self.get_game_scene_manager().get_game_save_data(&mut game_save_data.borrow_mut());
+        self.get_game_resources_mut().save_game_save_data(DEFAULT_GAME_SAVE_DATA);
     }
     pub fn update_game_mode(&mut self, delta_time: f64) {
         let engine_core = ptr_as_ref(self._engine_core);
