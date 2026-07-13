@@ -160,7 +160,7 @@ impl<'a> GameResources<'a> {
         let mut write_file = File::create(&game_scene_data_filepath).expect("Failed to create file");
         let mut write_contents: String = serde_json::to_string(&game_scene_data_create_info).expect("Failed to serialize.");
         write_contents = write_contents.replace(",\"", ",\n\"");
-        write_file.write(write_contents.as_bytes()).expect("Failed to write");
+        write_file.write_all(write_contents.as_bytes()).expect("Failed to write");
 
         self._game_scene_data_create_info_map.insert(
             String::from(game_scene_data_name),
@@ -222,7 +222,7 @@ impl<'a> GameResources<'a> {
         game_save_data_filepath.set_extension(EXT_GAME_DATA);
         let mut write_file = File::create(&game_save_data_filepath).expect("Failed to create file");
         let write_contents: String = serde_json::to_string_pretty(&game_save_data.borrow().clone()).expect("Failed to serialize.");
-        write_file.write(write_contents.as_bytes()).expect("Failed to write");
+        write_file.write_all(write_contents.as_bytes()).expect("Failed to write");
     }
 
     // Game Data

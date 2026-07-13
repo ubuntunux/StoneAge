@@ -10,6 +10,7 @@ use rust_engine_3d::scene::transform_object::TransformObjectData;
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::math::make_rotation_matrix;
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell, State};
+use strum::IntoEnumIterator;
 use crate::game_module::actors::character::{Character, CharacterAnimationState, CharacterStats};
 use crate::game_module::actors::character_controller::CharacterController;
 use crate::game_module::actors::character_data::{ActionAnimationState, CharacterData, MoveAnimationState};
@@ -21,8 +22,6 @@ use crate::game_module::actors::interaction_object::InteractionObject;
 use crate::game_module::actors::items::{Item};
 use crate::game_module::game_client::GamePhase;
 use crate::game_module::scenario::scenario::ScenarioType;
-use strum::IntoEnumIterator;
-use uuid::Uuid;
 
 impl CharacterAnimationState {
     pub fn is_attack_event(&self) -> bool {
@@ -300,12 +299,16 @@ impl<'a> Character<'a> {
 
     pub fn get_character_save_data(&self) -> CharacterCreateInfo {
         CharacterCreateInfo {
-            _character_id: Uuid::nil(),
+            _character_id: self.get_character_id(),
+            _character_name: self._character_name.clone(),
             _character_data_name: self._character_data_name.clone(),
             _position: self.get_position().clone(),
             _rotation: self.get_rotation().clone(),
             _scale: self.get_scale().clone(),
         }
+    }
+
+    pub fn post_process_after_character_loading(&mut self) {
     }
 
     pub fn attach_item(&mut self, attach_item: RcRefCell<Item<'a>>) {

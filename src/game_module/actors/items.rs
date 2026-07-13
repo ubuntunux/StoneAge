@@ -15,8 +15,6 @@ use uuid::Uuid;
 use rust_engine_3d::scene::socket::Socket;
 
 pub type ItemID = Uuid;
-
-pub type ItemCreateInfoIDMap = HashMap<ItemID, ItemCreateInfo>;
 pub type ItemMap<'a> = HashMap<ItemID, RcRefCell<Item<'a>>>;
 
 #[derive(Serialize, Deserialize, Hash, Eq, Clone, Copy, Debug, EnumIter, Display, PartialEq, Default)]
@@ -37,6 +35,7 @@ pub enum ItemDataType {
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(default)]
 pub struct ItemCreateInfo {
+    pub _item_id: ItemID,
     pub _item_data_name: String,
     pub _position: Vector3<f32>,
     pub _rotation: Vector3<f32>,
@@ -56,6 +55,7 @@ pub struct ItemData {
     pub _weapon_range: f32,
 }
 
+#[derive(Serialize, Deserialize, Default, Debug, Clone, PartialEq)]
 pub struct ItemProperties {
     pub _position: Vector3<f32>,
     pub _rotation: Vector3<f32>,

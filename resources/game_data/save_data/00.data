@@ -1,15 +1,16 @@
 {
   "_player": {
-    "_character_id": "00000000-0000-0000-0000-000000000000",
+    "_character_id": "59f47dc7-3222-4041-a35a-853eaca13c2a",
+    "_character_name": "monkey_aru",
     "_character_data_name": "characters/family/monkey_aru",
     "_position": [
-      19.868874,
-      1.9500612,
-      11.655028
+      22.254906,
+      1.7058073,
+      11.515074
     ],
     "_rotation": [
       0.0,
-      1.1372132,
+      4.712389,
       0.0
     ],
     "_scale": [
@@ -18,15 +19,1016 @@
       1.0
     ]
   },
-  "_time_of_day": 8.139477,
-  "_temperature": 38.434204,
+  "_camera": {
+    "meter_per_unit": 1.0,
+    "near": 0.1,
+    "far": 200000.0,
+    "fov": 60.0,
+    "window_size": [
+      1024,
+      768
+    ],
+    "enable_jitter": true,
+    "position": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "rotation": [
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "_time_of_day": 8.177136,
+  "_temperature": 38.371437,
   "_date": 1,
+  "_inventory_item_create_info_list": {},
   "_last_game_scene_data_name": "game_scenes/intro_stage",
   "_game_scenes": {
     "game_scenes/intro_stage": {
-      "_characters": {},
-      "_items": {},
-      "_props": {}
+      "_characters": [
+        {
+          "_character_id": "329bc9bb-3993-42da-bb45-b2decbbd770f",
+          "_character_name": "monkey_ewa",
+          "_character_data_name": "characters/family/monkey_ewa",
+          "_position": [
+            18.306965,
+            2.0861845,
+            11.833632
+          ],
+          "_rotation": [
+            0.0,
+            -1.456941,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "_character_id": "59f47dc7-3222-4041-a35a-853eaca13c2a",
+          "_character_name": "monkey_aru",
+          "_character_data_name": "characters/family/monkey_aru",
+          "_position": [
+            22.254906,
+            1.7058073,
+            11.515074
+          ],
+          "_rotation": [
+            0.0,
+            4.712389,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "_character_id": "c68db1f5-75ba-4653-a574-936a2ac778e7",
+          "_character_name": "monkey_koa",
+          "_character_data_name": "characters/family/monkey_koa",
+          "_position": [
+            18.550785,
+            1.9697949,
+            10.850433
+          ],
+          "_rotation": [
+            0.0,
+            4.164339,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      ],
+      "_items": [
+        {
+          "_item_id": "f9fe2f7a-e0fc-4d91-8a43-17a96e43eff0",
+          "_item_data_name": "items/spirit_ball",
+          "_position": [
+            -9.262807,
+            0.71115994,
+            -4.781526
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_velocity": [
+            0.0,
+            -1.662522,
+            0.0
+          ],
+          "_pickup_delay": -0.033829167
+        },
+        {
+          "_item_id": "4c92a324-6fed-4399-8e0e-a38661a182e5",
+          "_item_data_name": "items/meat",
+          "_position": [
+            4.7469125,
+            -0.028402478,
+            0.51039124
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_velocity": [
+            0.0,
+            -1.662522,
+            0.0
+          ],
+          "_pickup_delay": -0.033829167
+        },
+        {
+          "_item_id": "ce6f5530-8077-4a3e-9b58-46923d128b78",
+          "_item_data_name": "items/rock",
+          "_position": [
+            -4.3317842,
+            -0.3849405,
+            -0.68951035
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_velocity": [
+            0.0,
+            -1.662522,
+            0.0
+          ],
+          "_pickup_delay": -0.033829167
+        },
+        {
+          "_item_id": "054ef96b-07fc-4a18-a0c3-1f0b785f8cfa",
+          "_item_data_name": "items/rock",
+          "_position": [
+            4.9712925,
+            2.4006197,
+            21.731153
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_velocity": [
+            0.0,
+            -1.662522,
+            0.0
+          ],
+          "_pickup_delay": -0.033829167
+        },
+        {
+          "_item_id": "ba87be19-4780-454d-b00b-9a9aee1cc31b",
+          "_item_data_name": "items/meat",
+          "_position": [
+            30.949596,
+            1.202881,
+            42.544575
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_velocity": [
+            0.0,
+            -1.662522,
+            0.0
+          ],
+          "_pickup_delay": -0.033829167
+        },
+        {
+          "_item_id": "c522ddbf-00ca-4480-b78c-96e6d16a8e4c",
+          "_item_data_name": "items/wooden_club",
+          "_position": [
+            11.932209,
+            2.680415,
+            11.956837
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_velocity": [
+            0.0,
+            -1.662522,
+            0.0
+          ],
+          "_pickup_delay": -0.033829167
+        },
+        {
+          "_item_id": "4fbb93f3-83fe-4637-83e0-8fcac85e07d8",
+          "_item_data_name": "items/meat",
+          "_position": [
+            -17.21999,
+            1.6756021,
+            29.936523
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_velocity": [
+            0.0,
+            -1.662522,
+            0.0
+          ],
+          "_pickup_delay": -0.033829167
+        },
+        {
+          "_item_id": "ff6635b1-a57e-4f12-af04-472512ee907a",
+          "_item_data_name": "items/wood",
+          "_position": [
+            2.2551498,
+            1.1275921,
+            6.424775
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_velocity": [
+            0.0,
+            -1.662522,
+            0.0
+          ],
+          "_pickup_delay": -0.033829167
+        },
+        {
+          "_item_id": "ee3d8e2f-4dc2-4de9-8ecc-4e04dab3ae04",
+          "_item_data_name": "items/meat",
+          "_position": [
+            25.486906,
+            -0.38103667,
+            41.755154
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_velocity": [
+            0.0,
+            -1.662522,
+            0.0
+          ],
+          "_pickup_delay": -0.033829167
+        },
+        {
+          "_item_id": "793fd936-4b66-41c4-8e34-abb5df01926c",
+          "_item_data_name": "items/meat",
+          "_position": [
+            16.598572,
+            0.20104465,
+            -4.6602325
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_velocity": [
+            0.0,
+            -1.662522,
+            0.0
+          ],
+          "_pickup_delay": -0.033829167
+        },
+        {
+          "_item_id": "c1f0edb7-a13f-48e6-b68b-420b53b0d256",
+          "_item_data_name": "items/meat",
+          "_position": [
+            9.28624,
+            0.97105986,
+            0.01055336
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_velocity": [
+            0.0,
+            -6.0280266,
+            0.0
+          ],
+          "_pickup_delay": -0.033829167
+        },
+        {
+          "_item_id": "dfa3546f-761b-449d-8612-97b96083de1a",
+          "_item_data_name": "items/meat",
+          "_position": [
+            -11.612084,
+            1.4535803,
+            -9.405914
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_velocity": [
+            0.0,
+            -1.662522,
+            0.0
+          ],
+          "_pickup_delay": -0.033829167
+        },
+        {
+          "_item_id": "d0ef082c-ec9c-49c8-abf1-91423bb59a34",
+          "_item_data_name": "items/wood",
+          "_position": [
+            7.641684,
+            1.059428,
+            4.851573
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_velocity": [
+            0.0,
+            -3.0280268,
+            0.0
+          ],
+          "_pickup_delay": -0.033829167
+        }
+      ],
+      "_props": [
+        {
+          "_prop_id": "edfa9d1d-be5a-495e-8829-ccdd1206a4e7",
+          "_prop_name": "mushroom_orange_00.001",
+          "_prop_data_name": "MUSHROOM",
+          "_position": [
+            -13.352641,
+            1.3161278,
+            -4.2857842
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        {
+          "_prop_id": "0b2e55d2-1e34-4bdf-bc82-4385dba9197d",
+          "_prop_name": "mushroom_orange_00.003",
+          "_prop_data_name": "MUSHROOM",
+          "_position": [
+            21.321821,
+            1.4810977,
+            8.120051
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        {
+          "_prop_id": "eee7ca36-63e6-4017-bd60-2482adf05375",
+          "_prop_name": "bed_for_aru",
+          "_prop_data_name": "Bed",
+          "_position": [
+            21.401073,
+            1.8113737,
+            11.705606
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        {
+          "_prop_id": "d1d9e4ca-bb01-43ae-93f8-433c4ab9ada0",
+          "_prop_name": "gate",
+          "_prop_data_name": "Gate",
+          "_position": [
+            20.280346,
+            2.4644034,
+            23.52963
+          ],
+          "_rotation": [
+            0.0,
+            3.0786493,
+            0.0
+          ],
+          "_scale": [
+            1.9024445,
+            1.9024445,
+            1.9024445
+          ],
+          "_instance_parameters": {
+            "_linked_gate": "gate_intro_stage",
+            "_linked_stage": "game_scenes/world_map"
+          }
+        },
+        {
+          "_prop_id": "eb4d7edc-a03b-449d-9cf6-e07d65782113",
+          "_prop_name": "twigs.001",
+          "_prop_data_name": "TWIGS",
+          "_position": [
+            17.207697,
+            1.3103237,
+            -21.115088
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        {
+          "_prop_id": "b503b255-f189-4e57-b0a0-d41688d1bc21",
+          "_prop_name": "crystal",
+          "_prop_data_name": "CRYSTAL",
+          "_position": [
+            24.387077,
+            1.1574199,
+            5.4557953
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        {
+          "_prop_id": "52c1be5a-ffaf-4990-afed-6f873a8369d3",
+          "_prop_name": "table",
+          "_prop_data_name": "Table",
+          "_position": [
+            23.249563,
+            1.5397471,
+            15.186357
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        {
+          "_prop_id": "24f42d9d-fb87-4fb7-bf00-87d67abc9bc2",
+          "_prop_name": "mushroom_orange_00.004",
+          "_prop_data_name": "MUSHROOM",
+          "_position": [
+            20.387344,
+            2.4789133,
+            24.923893
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        {
+          "_prop_id": "3b2b68c9-ac4f-4fe6-b5f6-65b237bf8cbe",
+          "_prop_name": "crystal.001",
+          "_prop_data_name": "CRYSTAL",
+          "_position": [
+            1.0876551,
+            1.3100855,
+            21.878225
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        {
+          "_prop_id": "0bc92818-6057-416a-b858-acbf6adec3c5",
+          "_prop_name": "rock.002",
+          "_prop_data_name": "ROCK",
+          "_position": [
+            -3.1605387,
+            -1.0,
+            -4.780817
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            0.39150882,
+            0.39150882,
+            0.39150882
+          ],
+          "_instance_parameters": {}
+        },
+        {
+          "_prop_id": "881bef33-7be9-4afd-8068-56904da6c396",
+          "_prop_name": "mushroom_orange_00",
+          "_prop_data_name": "MUSHROOM",
+          "_position": [
+            -1.5161715,
+            -0.97237605,
+            0.56155014
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        {
+          "_prop_id": "aa10d2df-86b8-4e6e-b330-177baf2e20c3",
+          "_prop_name": "stump.001",
+          "_prop_data_name": "STUMP",
+          "_position": [
+            12.550931,
+            1.2360542,
+            -9.092487
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        {
+          "_prop_id": "92faced1-b48e-42e7-b27c-159355c7e7ab",
+          "_prop_name": "log.001",
+          "_prop_data_name": "LOG",
+          "_position": [
+            -12.883425,
+            1.1384335,
+            -1.4116411
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        {
+          "_prop_id": "ea212554-87ea-4e1f-9575-b89567adf394",
+          "_prop_name": "mushroom_orange_00.007",
+          "_prop_data_name": "MUSHROOM",
+          "_position": [
+            41.467354,
+            1.311728,
+            43.255547
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        {
+          "_prop_id": "41bb8a09-4f86-494c-8ad1-d869b75d8320",
+          "_prop_name": "bed_for_koa",
+          "_prop_data_name": "Bed",
+          "_position": [
+            19.45322,
+            1.8658686,
+            10.609284
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        {
+          "_prop_id": "602661cb-f2e2-4f70-a12b-da122ab8e272",
+          "_prop_name": "mushroom_orange_00.005",
+          "_prop_data_name": "MUSHROOM",
+          "_position": [
+            17.52111,
+            2.735724,
+            22.275253
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        {
+          "_prop_id": "f75122e2-5a57-43c5-9dea-bea2dad5238f",
+          "_prop_name": "log",
+          "_prop_data_name": "LOG",
+          "_position": [
+            22.396164,
+            -0.9980582,
+            -2.9903507
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        {
+          "_prop_id": "a8009fd4-a999-4395-b051-264f4cce9f53",
+          "_prop_name": "cactus",
+          "_prop_data_name": "CACTUS",
+          "_position": [
+            -16.884579,
+            1.06126,
+            -1.5476742
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            0.46801007,
+            0.46801007,
+            0.46801007
+          ],
+          "_instance_parameters": {}
+        },
+        {
+          "_prop_id": "3c254940-9795-4421-b3ab-56b3161891b8",
+          "_prop_name": "twigs",
+          "_prop_data_name": "TWIGS",
+          "_position": [
+            -7.9971066,
+            -0.0624187,
+            -6.228842
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        {
+          "_prop_id": "fae42ee5-87ef-4ac6-85a8-a0c046d6e4d8",
+          "_prop_name": "twigs.002",
+          "_prop_data_name": "TWIGS",
+          "_position": [
+            21.32206,
+            1.3036137,
+            -19.26637
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        {
+          "_prop_id": "a452f13c-ee78-46eb-9802-b042c34bb47a",
+          "_prop_name": "stump.002",
+          "_prop_data_name": "STUMP",
+          "_position": [
+            13.50058,
+            0.7658582,
+            -1.2878094
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        {
+          "_prop_id": "6f5c8362-f796-4401-8eb3-35175cc91ead",
+          "_prop_name": "birch_tree_00",
+          "_prop_data_name": "BIRCH TREE",
+          "_position": [
+            -15.404129,
+            1.3121221,
+            -5.305456
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        {
+          "_prop_id": "6d08d7c3-e50f-4c10-bf3c-a5d313eca741",
+          "_prop_name": "mushroom_orange_00.006",
+          "_prop_data_name": "MUSHROOM",
+          "_position": [
+            32.696667,
+            0.9671619,
+            45.50673
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        {
+          "_prop_id": "a626a598-0491-43ef-9731-5e482442619b",
+          "_prop_name": "bed_for_ewa",
+          "_prop_data_name": "Bed",
+          "_position": [
+            16.917131,
+            1.934268,
+            10.097185
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        {
+          "_prop_id": "5e8ef0b6-d0e6-4d6a-88c0-efd5a4aeada3",
+          "_prop_name": "mushroom_orange_00.002",
+          "_prop_data_name": "MUSHROOM",
+          "_position": [
+            -11.260959,
+            1.0974548,
+            -5.967165
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        {
+          "_prop_id": "e2c5f84d-96b0-449e-aff9-132466a252ed",
+          "_prop_name": "stump",
+          "_prop_data_name": "STUMP",
+          "_position": [
+            30.966705,
+            1.0637441,
+            2.4446087
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        {
+          "_prop_id": "dde9c720-1bb8-4f5f-8645-5a3d91718f5d",
+          "_prop_name": "birch_tree_00.001",
+          "_prop_data_name": "BIRCH TREE",
+          "_position": [
+            12.542185,
+            2.383971,
+            21.717415
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        {
+          "_prop_id": "bda445d2-e438-484c-aa13-9bc600a4f85e",
+          "_prop_name": "stump.003",
+          "_prop_data_name": "STUMP",
+          "_position": [
+            24.520283,
+            1.8524711,
+            20.930777
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        }
+      ]
     }
   },
   "_game_scenarios": []

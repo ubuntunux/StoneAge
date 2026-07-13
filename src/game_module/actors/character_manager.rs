@@ -30,6 +30,7 @@ pub type CharacterNameMap<'a> = HashMap<String, RcRefCell<Character<'a>>>;
 #[serde(default)]
 pub struct CharacterCreateInfo {
     pub _character_id: CharacterID,
+    pub _character_name: String,
     pub _character_data_name: String,
     pub _position: Vector3<f32>,
     pub _rotation: Vector3<f32>,
@@ -152,12 +153,17 @@ impl<'a> CharacterManager<'a> {
 
         let item_manager: *const ItemManager<'a> = ptr_as_ref(self._game_scene_manager)._item_manager.as_ref();
         let render_object_data = self.get_scene_manager_mut().add_skeletal_render_object(character_name, &render_object_create_info);
-        let id = self.generate_id();
+        let character_id = if character_create_info._character_id.is_nil() {
+            self.generate_id()
+        } else {
+            character_create_info._character_id
+        };
+
         let character = newRcRefCell(Character::create_character_instance(
             self,
             item_manager,
             character_name,
-            id,
+            character_id,
             is_player,
             character_data_name,
             character_data,
@@ -172,7 +178,7 @@ impl<'a> CharacterManager<'a> {
             self._player = Some(character.clone());
         }
 
-        self._characters.insert(id, character.clone());
+        self._characters.insert(character_id, character.clone());
         if self._character_name_map.contains_key(character_name) == false {
             self._character_name_map.insert(String::from(character_name), character.clone());
         }
@@ -219,6 +225,25 @@ impl<'a> CharacterManager<'a> {
         if clear_player {
             self._player = None;
         }
+    }
+    pub fn load_characters_save_data(&mut self, character_create_infos: &Vec<CharacterCreateInfo>) {
+        for character_create_info in character_create_infos.iter() {
+            self.create_character(
+                character_create_info._character_name.as_str(),
+                character_create_info,
+                false,
+            );
+        }
+    }
+    pub fn get_characters_save_data(&self) -> Vec<CharacterCreateInfo> {
+        self._characters.values().map(|character| {
+            character.borrow().get_character_save_data()
+        }).collect()
+    }
+    pub fn post_process_after_characters_loading(&mut self) {
+        for character in self._characters.values() {
+            character.borrow_mut().post_process_after_character_loading();
+        };
     }
     pub fn is_valid_player(&self) -> bool {
         self._player.is_some()

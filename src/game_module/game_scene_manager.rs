@@ -13,15 +13,14 @@ use crate::game_module::save_data::save_data::{GameSaveData};
 use crate::application::application::Application;
 use crate::game_module::actors::character::{Character};
 use crate::game_module::actors::character_manager::{CharacterCreateInfo, CharacterID, CharacterManager};
-use crate::game_module::actors::items::{ItemCreateInfo, ItemCreateInfoIDMap, ItemManager};
-use crate::game_module::actors::props::{PropCreateInfo, PropCreateInfoIDMap, PropManager};
+use crate::game_module::actors::items::{ItemCreateInfo, ItemManager};
+use crate::game_module::actors::props::{PropCreateInfo, PropManager};
 use crate::game_module::game_constants::{GameViewMode, GAME_VIEW_MODE, TEMPERATURE_MAX, TEMPERATURE_MIN, TIME_OF_DAWN, TIME_OF_DAY_SPEED, TIME_OF_MORNING};
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_ui_manager::{GameUIManager};
 use crate::game_module::scenario::scenario::{create_scenario, ScenarioBase, ScenarioDataCreateInfo, ScenarioType};
 use crate::game_module::game_client::GameClient;
 
-pub type CharacterCreateInfoIDMap = HashMap<CharacterID, CharacterCreateInfo>;
 pub type CharacterCreateInfoMap = HashMap<String, CharacterCreateInfo>;
 pub type ItemCreateInfoMap = HashMap<String, ItemCreateInfo>;
 pub type PropCreateInfoMap = HashMap<String, PropCreateInfo>;
@@ -31,9 +30,9 @@ pub type ScenarioSaveDataList = Vec<GameScenarioSaveData>;
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[serde(default)]
 pub struct GameSceneSaveData {
-    pub _characters: CharacterCreateInfoIDMap,
-    pub _items: ItemCreateInfoIDMap,
-    pub _props: PropCreateInfoIDMap
+    pub _characters: Vec<CharacterCreateInfo>,
+    pub _items: Vec<ItemCreateInfo>,
+    pub _props: Vec<PropCreateInfo>
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
@@ -341,9 +340,9 @@ impl<'a> GameSceneManager<'a> {
 
     pub fn get_game_scene_save_data(&self) -> GameSceneSaveData {
         GameSceneSaveData {
-            //_characters: self.get_character_manager().get_characters_save_data(),
-            //_items: self._item_manager.get_item_save_data(),
-            //_props: self._prop_manager.get_prop_save_data(),
+            _characters: self.get_character_manager().get_characters_save_data(),
+            _items: self._item_manager.get_items_save_data(),
+            _props: self._prop_manager.get_props_save_data(),
             ..Default::default()
         }
     }

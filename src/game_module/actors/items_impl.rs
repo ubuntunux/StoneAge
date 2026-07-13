@@ -24,6 +24,7 @@ use crate::game_module::actors::character::Character;
 impl Default for ItemCreateInfo {
     fn default() -> Self {
         ItemCreateInfo {
+            _item_id: Default::default(),
             _item_data_name: "".to_string(),
             _position: Vector3::zeros(),
             _rotation: Vector3::zeros(),
@@ -94,6 +95,25 @@ impl<'a> Item<'a> {
         item.initialize_item();
         item
     }
+
+    pub fn load_item_save_data(&mut self, _item_create_info: &ItemCreateInfo) {
+    }
+
+    pub fn post_process_after_item_loading(&mut self) {
+    }
+
+    pub fn get_item_save_data(&self) -> ItemCreateInfo {
+        ItemCreateInfo {
+            _item_id: self.get_item_id(),
+            _item_data_name: self._item_data_name.clone(),
+            _position: self._item_properties._position.clone(),
+            _rotation: self._item_properties._rotation.clone(),
+            _scale: self._item_properties._scale.clone(),
+            _velocity: self._item_properties._velocity,
+            _pickup_delay: self._item_properties._pickup_delay
+        }
+    }
+
 
     pub fn initialize_item(&mut self) {
         if self.is_attachment() {
@@ -270,6 +290,21 @@ impl<'a> ItemManager<'a> {
         let items = self._items.values().cloned().collect::<Vec<RcRefCell<Item>>>();
         for item in items {
             self.remove_item(&item);
+        }
+    }
+
+    pub fn load_items_save_data(&mut self, _item_create_infos: &Vec<ItemCreateInfo>) {
+    }
+
+    pub fn get_items_save_data(&self) -> Vec<ItemCreateInfo> {
+        self._items.values().map(|item| {
+            item.borrow().get_item_save_data()
+        }).collect()
+    }
+
+    pub fn post_process_after_item_loading(&mut self) {
+        for item in self._items.values() {
+            item.borrow_mut().post_process_after_item_loading();
         }
     }
 

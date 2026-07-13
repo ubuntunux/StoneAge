@@ -9,9 +9,9 @@ use rust_engine_3d::utilities::system::RcRefCell;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use uuid::Uuid;
+use crate::game_module::actors::items::ItemID;
 
 pub type PropID = Uuid;
-pub type PropCreateInfoIDMap = HashMap<PropID, PropCreateInfo>;
 pub type PropMap<'a> = HashMap<PropID, RcRefCell<Prop<'a>>>;
 pub type PropNameMap<'a> = HashMap<String, RcRefCell<Prop<'a>>>;
 
@@ -33,6 +33,8 @@ pub enum PropDataType {
 #[derive(Serialize, Deserialize, Default, Debug, Clone, PartialEq)]
 #[serde(default)]
 pub struct PropCreateInfo {
+    pub _prop_id: ItemID,
+    pub _prop_name: String,
     pub _prop_data_name: String,
     pub _position: Vector3<f32>,
     pub _rotation: Vector3<f32>,

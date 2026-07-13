@@ -89,6 +89,23 @@ impl<'a> Prop<'a> {
         self.update_item_visible();
         self.update_transform();
     }
+    pub fn load_prop_save_data(&mut self, _prop_create_info: &PropCreateInfo) {
+    }
+
+    pub fn get_prop_save_data(&self) -> PropCreateInfo {
+        PropCreateInfo {
+            _prop_id: self.get_prop_id(),
+            _prop_name: self._prop_name.clone(),
+            _prop_data_name: self._prop_data.borrow()._name.clone(),
+            _position: self._prop_stats._position.clone(),
+            _rotation: self._prop_stats._rotation.clone(),
+            _scale: self._prop_stats._scale.clone(),
+            _instance_parameters: self._instance_parameters.clone(),
+        }
+    }
+
+    pub fn post_process_after_prop_loading(&mut self) {
+    }
     pub fn get_prop_id(&self) -> PropID {
         self._prop_id
     }
@@ -347,6 +364,21 @@ impl<'a> PropManager<'a> {
         let props: Vec<RcRefCell<Prop<'a>>> = self._props.values().cloned().collect();
         for prop in props {
             self.remove_prop(&prop);
+        }
+    }
+
+    pub fn load_props_save_data(&mut self, _prop_create_infos: &Vec<PropCreateInfo>) {
+    }
+
+    pub fn get_props_save_data(&self) -> Vec<PropCreateInfo> {
+        self._props.values().map(|prop| {
+            prop.borrow().get_prop_save_data()
+        }).collect()
+    }
+
+    pub fn post_process_after_prop_loading(&mut self) {
+        for prop in self._props.values() {
+            prop.borrow_mut().post_process_after_prop_loading();
         }
     }
 
