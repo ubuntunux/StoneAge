@@ -1,4 +1,4 @@
-use crate::game_module::game_client::{GameClient};
+use crate::game_module::game_client::GameClient;
 use crate::game_module::game_constants;
 use crate::game_module::game_controller::GameController;
 use crate::game_module::game_resource::GameResources;
@@ -49,17 +49,24 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
 
         // initialize project managers
         let application = ptr_as_ref(self);
-        self.get_game_resources_mut().initialize_game_resources(engine_core.get_engine_resources());
+        self.get_game_resources_mut()
+            .initialize_game_resources(engine_core.get_engine_resources());
         self.get_game_resources_mut().load_game_resources();
-        self.get_game_client_mut().initialize_game_client(engine_core, application);
-        self.get_game_controller_mut().initialize_game_controller(application);
-        self.get_game_ui_manager_mut().initialize_game_ui_manager(engine_core, application);
-        self.get_game_scene_manager_mut().initialize_game_scene_manager(application, engine_core, window_size);
-        self.get_editor_ui_manager_mut().initialize_editor_ui_manager(engine_core, application);
+        self.get_game_client_mut()
+            .initialize_game_client(engine_core, application);
+        self.get_game_controller_mut()
+            .initialize_game_controller(application);
+        self.get_game_ui_manager_mut()
+            .initialize_game_ui_manager(engine_core, application);
+        self.get_game_scene_manager_mut()
+            .initialize_game_scene_manager(application, engine_core, window_size);
+        self.get_editor_ui_manager_mut()
+            .initialize_editor_ui_manager(engine_core, application);
 
         // start game
         self.get_game_ui_manager_mut().build_game_ui(window_size);
-        self.get_editor_ui_manager_mut().build_editor_ui(window_size);
+        self.get_editor_ui_manager_mut()
+            .build_editor_ui(window_size);
         self.set_game_mode(true);
     }
 
@@ -75,7 +82,8 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
     }
 
     fn get_render_pass_create_info_callback(&self) -> *const CallbackLoadRenderPassCreateInfo {
-        static CALLBACK: CallbackLoadRenderPassCreateInfo = render_pass::render_pass::get_render_pass_data_create_infos;
+        static CALLBACK: CallbackLoadRenderPassCreateInfo =
+            render_pass::render_pass::get_render_pass_data_create_infos;
         &CALLBACK
     }
 
@@ -92,18 +100,22 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
         let joystick_input_data = &engine_core._joystick_input_data;
 
         if unsafe { DEVELOPMENT } {
-            let is_toggle_game_mode_by_joystick =
-                joystick_input_data._btn_left_trigger == ButtonState::Hold &&
-                joystick_input_data._btn_right_trigger == ButtonState::Hold &&
-                joystick_input_data._btn_left_shoulder == ButtonState::Hold &&
-                joystick_input_data._btn_right_shoulder == ButtonState::Hold;
+            let is_toggle_game_mode_by_joystick = joystick_input_data._btn_left_trigger
+                == ButtonState::Hold
+                && joystick_input_data._btn_right_trigger == ButtonState::Hold
+                && joystick_input_data._btn_left_shoulder == ButtonState::Hold
+                && joystick_input_data._btn_right_shoulder == ButtonState::Hold;
 
-            if engine_core._keyboard_input_data.get_key_pressed(KeyCode::Tab) || is_toggle_game_mode_by_joystick {
+            if engine_core
+                ._keyboard_input_data
+                .get_key_pressed(KeyCode::Tab)
+                || is_toggle_game_mode_by_joystick
+            {
                 self.toggle_game_mode();
             }
         }
 
-        if false == self._is_game_mode {
+        if !self._is_game_mode {
             const MOUSE_DELTA_RATIO: f32 = 500.0;
             let delta_time = time_data._delta_time_with_scale;
             let _mouse_pos = &mouse_move_data._mouse_pos;
@@ -146,7 +158,9 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
             let main_camera = scene_manager.get_main_camera_mut();
             let main_light = ptr_as_mut(scene_manager.get_main_light().as_ptr());
             let camera_move_speed_multiplier = if modifier_keys_shift { 10.0 } else { 1.0 };
-            let move_speed: f32 = game_constants::EDITOR_CAMERA_MOVE_SPEED * camera_move_speed_multiplier * delta_time as f32;
+            let move_speed: f32 = game_constants::EDITOR_CAMERA_MOVE_SPEED
+                * camera_move_speed_multiplier
+                * delta_time as f32;
             let pan_speed = game_constants::EDITOR_CAMERA_PAN_SPEED * camera_move_speed_multiplier;
             let rotation_speed = game_constants::EDITOR_CAMERA_ROTATION_SPEED;
 
@@ -217,7 +231,7 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
     }
 
     fn update_application(&mut self, delta_time: f64) {
-        let engine_core = ptr_as_ref(self._engine_core.clone());
+        let engine_core = ptr_as_ref(self._engine_core);
         let font_manager = engine_core.get_font_manager_mut();
         font_manager.clear_logs();
 
@@ -231,7 +245,8 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
                 self.set_will_terminate_application();
             }
         } else {
-            self.get_editor_ui_manager_mut().update_editor_ui(delta_time);
+            self.get_editor_ui_manager_mut()
+                .update_editor_ui(delta_time);
         }
     }
 }
@@ -307,7 +322,9 @@ impl<'a> Application<'a> {
         self._is_game_mode = is_game_mode;
         self.get_game_client_mut().set_game_mode(is_game_mode);
         self.get_engine_core_mut().set_grab_mode(is_game_mode);
-        self.get_engine_core_mut().get_ui_manager_mut().set_visible_world_axis(!is_game_mode);
+        self.get_engine_core_mut()
+            .get_ui_manager_mut()
+            .set_visible_world_axis(!is_game_mode);
     }
 }
 
@@ -362,22 +379,20 @@ pub fn run_application() {
         match RENDER_QUALITY_LEVEL {
             RenderQualityLevel::Low => {
                 constants::ENABLE_UPSCALE = true;
-                constants::CURRENT_RENDER_OPTION =
-                    std::mem::transmute(
-                        RenderOption::RenderOcean as u32 |
-                            RenderOption::RenderAtmosphere as u32 |
-                            RenderOption::RenderSky as u32 |
-                            RenderOption::RenderShadow as u32
-                    );
+                constants::CURRENT_RENDER_OPTION = std::mem::transmute(
+                    RenderOption::RenderOcean as u32
+                        | RenderOption::RenderAtmosphere as u32
+                        | RenderOption::RenderSky as u32
+                        | RenderOption::RenderShadow as u32,
+                );
             }
             RenderQualityLevel::Medium => {
-                constants::CURRENT_RENDER_OPTION =
-                    std::mem::transmute(
-                        RenderOption::RenderOcean as u32 |
-                            RenderOption::RenderAtmosphere as u32 |
-                            RenderOption::RenderSky as u32 |
-                            RenderOption::RenderShadow as u32
-                    );
+                constants::CURRENT_RENDER_OPTION = std::mem::transmute(
+                    RenderOption::RenderOcean as u32
+                        | RenderOption::RenderAtmosphere as u32
+                        | RenderOption::RenderSky as u32
+                        | RenderOption::RenderShadow as u32,
+                );
             }
             RenderQualityLevel::High => {
                 constants::CURRENT_RENDER_OPTION = RenderOption::ALL;

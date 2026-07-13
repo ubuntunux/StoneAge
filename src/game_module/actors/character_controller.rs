@@ -1,17 +1,17 @@
-use std::collections::HashMap;
-use std::ffi::c_void;
-use nalgebra::{Vector3};
-use rust_engine_3d::{begin_block};
-use rust_engine_3d::scene::collision::{CollisionData};
+use crate::game_module::actors::character::Character;
+use crate::game_module::actors::character_data::{CharacterData, MoveAnimationState};
+use crate::game_module::actors::interaction_object::InteractionObject;
+use crate::game_module::game_constants::*;
+use nalgebra::Vector3;
+use rust_engine_3d::begin_block;
+use rust_engine_3d::scene::collision::CollisionData;
 use rust_engine_3d::scene::render_object::RenderObjectData;
 use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::math::HALF_PI;
 use rust_engine_3d::utilities::system::ptr_as_ref;
-use crate::game_module::actors::character::{Character};
-use crate::game_module::actors::character_data::{CharacterData, MoveAnimationState};
-use crate::game_module::game_constants::*;
-use crate::game_module::actors::interaction_object::InteractionObject;
+use std::collections::HashMap;
+use std::ffi::c_void;
 
 pub struct CharacterController<'a> {
     pub _prev_position: Vector3<f32>,
@@ -79,10 +79,10 @@ impl<'a> CharacterController<'a> {
         rotation: &Vector3<f32>,
         scale: &Vector3<f32>,
     ) {
-        self._prev_position = position.clone();
-        self._position = position.clone();
-        self._rotation = rotation.clone();
-        self._scale = scale.clone();
+        self._prev_position = *position;
+        self._position = *position;
+        self._rotation = *rotation;
+        self._scale = *scale;
         self._face_direction = Vector3::zeros();
         self._move_direction = Vector3::zeros();
         self._falling_height = position.y;
@@ -137,7 +137,7 @@ impl<'a> CharacterController<'a> {
         &self._face_direction
     }
     pub fn set_face_direction(&mut self, face_direction: &Vector3<f32>) {
-        self._face_direction.clone_from(&face_direction);
+        self._face_direction.clone_from(face_direction);
     }
     pub fn get_move_direction(&self) -> &Vector3<f32> {
         &self._move_direction
@@ -145,15 +145,20 @@ impl<'a> CharacterController<'a> {
     pub fn set_move_direction(&mut self, move_direction: &Vector3<f32>) {
         if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
             if move_direction.x.abs() >= move_direction.z.abs() {
-                self._move_direction = Vector3::new(if 0.0 < move_direction.x { 1.0 } else { -1.0 }, 0f32, 0f32);
+                self._move_direction =
+                    Vector3::new(if 0.0 < move_direction.x { 1.0 } else { -1.0 }, 0f32, 0f32);
             } else {
-                self._move_direction = Vector3::new(0f32, 0f32, if 0.0 < move_direction.z { 1.0 } else { -1.0 });
+                self._move_direction =
+                    Vector3::new(0f32, 0f32, if 0.0 < move_direction.z { 1.0 } else { -1.0 });
             }
         } else {
             self._move_direction.clone_from(move_direction);
         }
 
-        if self._move_direction.x != 0.0 || self._move_direction.y != 0.0 || self._move_direction.z != 0.0 {
+        if self._move_direction.x != 0.0
+            || self._move_direction.y != 0.0
+            || self._move_direction.z != 0.0
+        {
             self._face_direction.clone_from(&self._move_direction);
         }
     }
@@ -173,7 +178,7 @@ impl<'a> CharacterController<'a> {
         &self._nearest_interaction_object
     }
     pub fn is_in_interaction_range(&self) -> bool {
-        self._interaction_objects.is_empty() == false
+        !self._interaction_objects.is_empty()
     }
     pub fn is_interaction_object(&self, key: *const c_void) -> bool {
         self._interaction_objects.get(&key).is_some()
@@ -181,21 +186,39 @@ impl<'a> CharacterController<'a> {
     pub fn add_interaction_object(&mut self, object: InteractionObject<'a>) {
         self._interaction_objects.insert(object.get_key(), object);
     }
-    pub fn remove_interaction_object(&mut self, object: InteractionObject<'a>) -> Option<InteractionObject<'a>> {
+    pub fn remove_interaction_object(
+        &mut self,
+        object: InteractionObject<'a>,
+    ) -> Option<InteractionObject<'a>> {
         self._interaction_objects.remove(&object.get_key())
     }
-    pub fn check_arrival_with_radius(&self, target_position: &Vector3<f32>, radius: f32, ignore_y_axis: bool) -> bool {
-        math::check_arrival_with_radius(&self._prev_position, &self._position, target_position, radius, ignore_y_axis)
+    pub fn check_arrival_with_radius(
+        &self,
+        target_position: &Vector3<f32>,
+        radius: f32,
+        ignore_y_axis: bool,
+    ) -> bool {
+        math::check_arrival_with_radius(
+            &self._prev_position,
+            &self._position,
+            target_position,
+            radius,
+            ignore_y_axis,
+        )
     }
     pub fn set_position(&mut self, position: &Vector3<f32>) {
-        self._position = position.clone();
+        self._position = *position;
     }
     pub fn set_position_xy(&mut self, position: &Vector3<f32>) {
         self._position.x = position.x;
         self._position.y = position.y;
     }
-    pub fn get_move_speed(&self) -> f32 { self._move_speed }
-    pub fn set_move_speed(&mut self, move_speed: f32) { self._move_speed = move_speed; }
+    pub fn get_move_speed(&self) -> f32 {
+        self._move_speed
+    }
+    pub fn set_move_speed(&mut self, move_speed: f32) {
+        self._move_speed = move_speed;
+    }
     pub fn get_rotation(&self) -> &Vector3<f32> {
         &self._rotation
     }
@@ -214,7 +237,8 @@ impl<'a> CharacterController<'a> {
         if diff.abs() < 0.01 {
             self._rotation.y = yaw;
         } else {
-            self._rotation.y += diff.abs().min(CHARACTER_ROTATION_SPEED * delta_time) * diff.signum();
+            self._rotation.y +=
+                diff.abs().min(CHARACTER_ROTATION_SPEED * delta_time) * diff.signum();
         }
     }
     pub fn get_scale(&self) -> &Vector3<f32> {
@@ -223,14 +247,18 @@ impl<'a> CharacterController<'a> {
 
     pub fn set_hit_direction(&mut self, direction: &Vector3<f32>) {
         if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
-            self._hit_velocity = Vector3::new(if 0.0 < direction.x { 1.0 } else { -1.0 } * HIT_VELOCITY_SPEED, 0f32, 0f32);
+            self._hit_velocity = Vector3::new(
+                if 0.0 < direction.x { 1.0 } else { -1.0 } * HIT_VELOCITY_SPEED,
+                0f32,
+                0f32,
+            );
         } else {
-            self._hit_velocity = direction.clone() * HIT_VELOCITY_SPEED;
+            self._hit_velocity = *direction * HIT_VELOCITY_SPEED;
         }
     }
 
     pub fn set_on_ground(&mut self, ground_height: f32, ground_normal: &Vector3<f32>) {
-        if self._is_ground == false || self._position.y < ground_height {
+        if !self._is_ground || self._position.y < ground_height {
             self._position.y = ground_height;
             self._is_ground = true;
             self._is_falling = false;
@@ -251,7 +279,8 @@ impl<'a> CharacterController<'a> {
             }
         }
 
-        let changed_interaction_object = self._nearest_interaction_object.get_key() != nearest_interaction_object.get_key();
+        let changed_interaction_object =
+            self._nearest_interaction_object.get_key() != nearest_interaction_object.get_key();
         self._nearest_interaction_object = nearest_interaction_object;
         changed_interaction_object
     }
@@ -295,7 +324,7 @@ impl<'a> CharacterController<'a> {
         _actor_collision: &CollisionData,
         delta_time: f32,
     ) {
-        self._prev_position = self._position.clone();
+        self._prev_position = self._position;
 
         // update fall time
         self._fall_time = 0.0;
@@ -303,9 +332,9 @@ impl<'a> CharacterController<'a> {
 
         // move on ground
         let mut move_direction = if MoveAnimationState::Roll == move_animation {
-            self._face_direction.clone()
+            self._face_direction
         } else {
-            self._move_direction.clone()
+            self._move_direction
         };
 
         if move_direction.x != 0.0 || move_direction.z != 0.0 {
@@ -317,11 +346,14 @@ impl<'a> CharacterController<'a> {
             self._velocity.z = 0.0;
         }
 
-        begin_block!("apply hit velocity"); {
+        begin_block!("apply hit velocity");
+        {
             if self._hit_velocity.x != 0.0 || self._hit_velocity.z != 0.0 {
                 self._position += self._hit_velocity * delta_time;
-                let (hit_move_dir, hit_move_distance) = math::make_normalize_with_norm(&self._hit_velocity);
-                self._hit_velocity = hit_move_dir * (hit_move_distance - HIT_VELOCITY_DECAY * delta_time).max(0.0);
+                let (hit_move_dir, hit_move_distance) =
+                    math::make_normalize_with_norm(&self._hit_velocity);
+                self._hit_velocity =
+                    hit_move_dir * (hit_move_distance - HIT_VELOCITY_DECAY * delta_time).max(0.0);
             }
         }
 
@@ -373,7 +405,7 @@ impl<'a> CharacterController<'a> {
         actor_collision: &CollisionData,
         delta_time: f32,
     ) {
-        self._prev_position = self._position.clone();
+        self._prev_position = self._position;
 
         // update fall time
         if self._is_ground {
@@ -388,9 +420,9 @@ impl<'a> CharacterController<'a> {
 
         // move on ground
         let mut move_direction = if MoveAnimationState::Roll == move_animation {
-            self._face_direction.clone()
+            self._face_direction
         } else {
-            self._move_direction.clone()
+            self._move_direction
         };
 
         if move_direction.x != 0.0 || move_direction.z != 0.0 {
@@ -406,20 +438,25 @@ impl<'a> CharacterController<'a> {
         {
             if self._hit_velocity.x != 0.0 || self._hit_velocity.z != 0.0 {
                 self._position += self._hit_velocity * delta_time;
-                let (hit_move_dir, hit_move_distance) = math::make_normalize_with_norm(&self._hit_velocity);
-                self._hit_velocity = hit_move_dir * (hit_move_distance - HIT_VELOCITY_DECAY * delta_time).max(0.0);
+                let (hit_move_dir, hit_move_distance) =
+                    math::make_normalize_with_norm(&self._hit_velocity);
+                self._hit_velocity =
+                    hit_move_dir * (hit_move_distance - HIT_VELOCITY_DECAY * delta_time).max(0.0);
             }
         }
 
         begin_block!("apply slop velocity");
         {
-            if (self._slop_velocity.x * self._velocity.x + self._slop_velocity.z * self._velocity.z) <= 0.0 {
+            if (self._slop_velocity.x * self._velocity.x + self._slop_velocity.z * self._velocity.z)
+                <= 0.0
+            {
                 self._position += self._slop_velocity * delta_time;
             }
 
             if self.is_on_ground() {
                 let ground_normal_y = self._last_ground_normal.y.abs();
-                let (mut slope_move_dir, mut slope_move_distance) = math::make_normalize_with_norm(&self._slop_velocity);
+                let (mut slope_move_dir, mut slope_move_distance) =
+                    math::make_normalize_with_norm(&self._slop_velocity);
 
                 if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
                     slope_move_dir.z = 0.0;
@@ -427,7 +464,9 @@ impl<'a> CharacterController<'a> {
                 }
 
                 if SLOPE_ANGLE <= ground_normal_y {
-                    let slope_decay = SLOPE_VELOCITY_DECAY * (ground_normal_y - SLOPE_VELOCITY_DECAY) / (1.0 - SLOPE_VELOCITY_DECAY);
+                    let slope_decay = SLOPE_VELOCITY_DECAY
+                        * (ground_normal_y - SLOPE_VELOCITY_DECAY)
+                        / (1.0 - SLOPE_VELOCITY_DECAY);
                     slope_move_distance = (slope_move_distance - slope_decay * delta_time).max(0.0);
                     self._slop_velocity = slope_move_dir * slope_move_distance;
                 }
@@ -452,7 +491,8 @@ impl<'a> CharacterController<'a> {
         // jump
         if self._is_jump_start {
             let not_enough_stamina = owner.get_stats().get_stamina() < 0.0;
-            let jump_speed = character_data._stat_data._jump_speed * if not_enough_stamina { 0.5 } else { 1.0 };
+            let jump_speed =
+                character_data._stat_data._jump_speed * if not_enough_stamina { 0.5 } else { 1.0 };
             self._velocity.y = jump_speed;
 
             // let ground_normal = math::safe_normalize(&Vector3::new(self._last_ground_normal.x, self._last_ground_normal.y.abs(), self._last_ground_normal.z));
@@ -466,7 +506,7 @@ impl<'a> CharacterController<'a> {
         }
 
         // fall
-        if false == self._is_ground {
+        if !self._is_ground {
             let velocity_prev_y = self._velocity.y;
             self._velocity.y -= GRAVITY * delta_time;
             if 0.0 <= velocity_prev_y && self._velocity.y < 0.0 {
@@ -508,10 +548,15 @@ impl<'a> CharacterController<'a> {
 
                 let move_delta = self._position - self._prev_position;
                 let (move_dir, move_distance) = math::make_normalize_with_norm(&move_delta);
-                let new_move_dir = math::safe_normalize(&(Vector3::new(self._position.x, ground_height, self._position.z) - self._prev_position));
+                let new_move_dir = math::safe_normalize(
+                    &(Vector3::new(self._position.x, ground_height, self._position.z)
+                        - self._prev_position),
+                );
                 self._position = self._prev_position + new_move_dir * move_distance;
 
-                if 0.0 < move_distance && SLOPE_ANGLE <= new_move_dir.y || ground_normal.y < SLOPE_ANGLE && ground_normal.dot(&move_dir) < 0.0 {
+                if 0.0 < move_distance && SLOPE_ANGLE <= new_move_dir.y
+                    || ground_normal.y < SLOPE_ANGLE && ground_normal.dot(&move_dir) < 0.0
+                {
                     let slop_speed = SLOPE_SPEED.max(self._move_speed);
                     if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
                         self._slop_velocity.x += ground_normal.x * slop_speed;
@@ -520,7 +565,8 @@ impl<'a> CharacterController<'a> {
                         self._slop_velocity += math::make_normalize_xz(&ground_normal) * slop_speed;
                     }
 
-                    let (slope_move_dir, slope_move_distance) = math::make_normalize_with_norm(&self._slop_velocity);
+                    let (slope_move_dir, slope_move_distance) =
+                        math::make_normalize_with_norm(&self._slop_velocity);
                     self._slop_velocity = slope_move_dir * slope_move_distance.min(slop_speed);
                     self._position += self._slop_velocity * delta_time;
 
@@ -545,7 +591,8 @@ impl<'a> CharacterController<'a> {
             &actor_collision._bounding_box._max,
             &current_actor_collision._bounding_box._max,
         );
-        let collision_objects = scene_manager.collect_collision_objects(&collision_pos_min, &collision_pos_max);
+        let collision_objects =
+            scene_manager.collect_collision_objects(&collision_pos_min, &collision_pos_max);
 
         // check ground and side
         for collision_object in collision_objects.values() {
@@ -557,11 +604,14 @@ impl<'a> CharacterController<'a> {
             if current_actor_collision.collide_collision(&block_render_object._collision) {
                 if self._velocity.y <= 0.0 && block_bound_box._max.y <= self._prev_position.y {
                     self.set_on_ground(block_bound_box._max.y, &Vector3::new(0.0, 1.0, 0.0));
-                } else if 0.0 < self._velocity.y && actor_collision._bounding_box._max.y < block_bound_box._min.y {
+                } else if 0.0 < self._velocity.y
+                    && actor_collision._bounding_box._max.y < block_bound_box._min.y
+                {
                     self._velocity.y = 0.0;
                     self._position.y = self._prev_position.y;
                 } else {
-                    let push_vec = current_actor_collision.push_by_collide(&block_render_object._collision);
+                    let push_vec =
+                        current_actor_collision.push_by_collide(&block_render_object._collision);
                     if push_vec.x != 0.0 || push_vec.z != 0.0 {
                         self._position.x += push_vec.x;
                         self._position.z += push_vec.z;
@@ -572,12 +622,15 @@ impl<'a> CharacterController<'a> {
             }
 
             // Recheck whether the adjusted position due to a collision with a block collides with another blocks.
-            if collided_block != std::ptr::null() {
+            if !collided_block.is_null() {
                 // update delta & bound_box
                 move_delta = self._position - self._prev_position;
-                current_actor_collision._bounding_box._center = actor_collision._bounding_box._center + move_delta;
-                current_actor_collision._bounding_box._min = actor_collision._bounding_box._min + move_delta;
-                current_actor_collision._bounding_box._max = actor_collision._bounding_box._max + move_delta;
+                current_actor_collision._bounding_box._center =
+                    actor_collision._bounding_box._center + move_delta;
+                current_actor_collision._bounding_box._min =
+                    actor_collision._bounding_box._min + move_delta;
+                current_actor_collision._bounding_box._max =
+                    actor_collision._bounding_box._max + move_delta;
 
                 // Recheck collide with another blocks
                 for recheck_collision_object in collision_objects.values() {
@@ -608,7 +661,8 @@ impl<'a> CharacterController<'a> {
             self._is_cliff = true;
 
             const CHECK_DIST: f32 = 1.0;
-            let point: Vector3<f32> = self._position + move_direction * (current_actor_collision._bounding_box._mag_xz + CHECK_DIST);
+            let point: Vector3<f32> = self._position
+                + move_direction * (current_actor_collision._bounding_box._mag_xz + CHECK_DIST);
 
             for collision_object in collision_objects.values() {
                 let block_render_object = ptr_as_ref(collision_object.as_ptr());

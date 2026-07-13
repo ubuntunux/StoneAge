@@ -1,25 +1,32 @@
-use std::collections::HashMap;
+use crate::application::application::Application;
+use crate::game_module::actors::character::Character;
+use crate::game_module::actors::character_manager::{
+    CharacterCreateInfo, CharacterID, CharacterManager,
+};
+use crate::game_module::actors::items::{ItemCreateInfo, ItemManager};
+use crate::game_module::actors::props::{PropCreateInfo, PropManager};
+use crate::game_module::game_client::GameClient;
+use crate::game_module::game_constants::{
+    GAME_VIEW_MODE, GameViewMode, TEMPERATURE_MAX, TEMPERATURE_MIN, TIME_OF_DAWN,
+    TIME_OF_DAY_SPEED, TIME_OF_MORNING,
+};
+use crate::game_module::game_resource::GameResources;
+use crate::game_module::game_ui_manager::GameUIManager;
+use crate::game_module::save_data::save_data::GameSaveData;
+use crate::game_module::scenario::scenario::{
+    ScenarioBase, ScenarioDataCreateInfo, ScenarioType, create_scenario,
+};
 use nalgebra::{Vector2, Vector3};
-use serde::{Deserialize, Serialize};
-use strum_macros::{Display, EnumString};
 use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop, AudioManager};
+use rust_engine_3d::begin_block;
 use rust_engine_3d::core::engine_core::EngineCore;
 use rust_engine_3d::effect::effect_manager::EffectManager;
 use rust_engine_3d::scene::scene_manager::{SceneDataCreateInfo, SceneManager};
 use rust_engine_3d::utilities::math;
-use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
-use rust_engine_3d::begin_block;
-use crate::game_module::save_data::save_data::{GameSaveData};
-use crate::application::application::Application;
-use crate::game_module::actors::character::{Character};
-use crate::game_module::actors::character_manager::{CharacterCreateInfo, CharacterID, CharacterManager};
-use crate::game_module::actors::items::{ItemCreateInfo, ItemManager};
-use crate::game_module::actors::props::{PropCreateInfo, PropManager};
-use crate::game_module::game_constants::{GameViewMode, GAME_VIEW_MODE, TEMPERATURE_MAX, TEMPERATURE_MIN, TIME_OF_DAWN, TIME_OF_DAY_SPEED, TIME_OF_MORNING};
-use crate::game_module::game_resource::GameResources;
-use crate::game_module::game_ui_manager::{GameUIManager};
-use crate::game_module::scenario::scenario::{create_scenario, ScenarioBase, ScenarioDataCreateInfo, ScenarioType};
-use crate::game_module::game_client::GameClient;
+use rust_engine_3d::utilities::system::{RcRefCell, ptr_as_mut, ptr_as_ref};
+use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
+use strum_macros::{Display, EnumString};
 
 pub type CharacterCreateInfoMap = HashMap<String, CharacterCreateInfo>;
 pub type ItemCreateInfoMap = HashMap<String, ItemCreateInfo>;
@@ -32,7 +39,7 @@ pub type ScenarioSaveDataList = Vec<GameScenarioSaveData>;
 pub struct GameSceneSaveData {
     pub _characters: Vec<CharacterCreateInfo>,
     pub _items: Vec<ItemCreateInfo>,
-    pub _props: Vec<PropCreateInfo>
+    pub _props: Vec<PropCreateInfo>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
@@ -99,7 +106,7 @@ impl Stages {
 pub enum GameSceneState {
     None,
     Loading,
-    LoadCompleted
+    LoadCompleted,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
@@ -109,7 +116,7 @@ pub struct GameSceneDataCreateInfo {
     pub _items: ItemCreateInfoMap,
     pub _player: CharacterCreateInfoMap,
     pub _props: PropCreateInfoMap,
-    pub _scene: SceneDataCreateInfo
+    pub _scene: SceneDataCreateInfo,
 }
 
 pub struct GameSceneManager<'a> {
@@ -181,7 +188,8 @@ impl<'a> GameSceneManager<'a> {
     }
 
     pub fn get_actor_by_name(&self, actor_name: &str) -> Option<&RcRefCell<Character<'a>>> {
-        self.get_character_manager().get_character_by_name(actor_name)
+        self.get_character_manager()
+            .get_character_by_name(actor_name)
     }
 
     pub fn get_prop_manager(&self) -> &PropManager<'a> {
@@ -241,18 +249,23 @@ impl<'a> GameSceneManager<'a> {
         self._scene_manager = engine_core.get_scene_manager();
         self._effect_manager = engine_core.get_effect_manager();
         self._game_ui_manager = application.get_game_ui_manager();
-        engine_core.get_scene_manager_mut().initialize_scene_manager(
-            engine_core.get_renderer_context(),
-            engine_core.get_audio_manager(),
-            engine_core.get_effect_manager(),
-            engine_core.get_engine_resources(),
-            window_size,
-        );
+        engine_core
+            .get_scene_manager_mut()
+            .initialize_scene_manager(
+                engine_core.get_renderer_context(),
+                engine_core.get_audio_manager(),
+                engine_core.get_effect_manager(),
+                engine_core.get_engine_resources(),
+                window_size,
+            );
 
         self._game_resources = application.get_game_resources();
-        self._character_manager.initialize_character_manager(engine_core, application);
-        self._item_manager.initialize_item_manager(engine_core, application);
-        self._prop_manager.initialize_prop_manager(engine_core, application);
+        self._character_manager
+            .initialize_character_manager(engine_core, application);
+        self._item_manager
+            .initialize_item_manager(engine_core, application);
+        self._prop_manager
+            .initialize_prop_manager(engine_core, application);
     }
 
     pub fn get_game_client(&self) -> &GameClient<'a> {
@@ -276,7 +289,8 @@ impl<'a> GameSceneManager<'a> {
     }
 
     pub fn play_ambient_sound(&mut self, audio_name: &str, volume: Option<f32>) {
-        self._ambient_sound = ptr_as_mut(self._audio_manager).play_audio_bank(audio_name, AudioLoop::LOOP, volume);
+        self._ambient_sound =
+            ptr_as_mut(self._audio_manager).play_audio_bank(audio_name, AudioLoop::LOOP, volume);
     }
 
     pub fn stop_bgm(&self) {
@@ -324,17 +338,25 @@ impl<'a> GameSceneManager<'a> {
         self.get_character_manager_mut().create_character(
             game_save_data._player._character_data_name.as_str(),
             &game_save_data._player,
-            true
+            true,
         );
     }
 
     pub fn get_game_save_data(&self, game_save_data: &mut GameSaveData) {
-        game_save_data._player = self.get_character_manager().get_player().as_ref().borrow().get_character_save_data();
+        game_save_data._player = self
+            .get_character_manager()
+            .get_player()
+            .as_ref()
+            .borrow()
+            .get_character_save_data();
         game_save_data._time_of_day = self.get_time_of_day();
         game_save_data._temperature = self.temperature();
         game_save_data._date = self.get_date();
         game_save_data._last_game_scene_data_name = self.get_current_game_scene_data_name().clone();
-        game_save_data._game_scenes.insert(self.get_current_game_scene_data_name().clone(), self.get_game_scene_save_data());
+        game_save_data._game_scenes.insert(
+            self.get_current_game_scene_data_name().clone(),
+            self.get_game_scene_save_data(),
+        );
         // game_save_data._scenarios = self.get_game_scenario_save_data();
     }
 
@@ -365,18 +387,32 @@ impl<'a> GameSceneManager<'a> {
             self._teleport_stage = None;
         }
 
-        if self._teleport_stage.is_none() && self._teleport_gate.is_some() && self.is_game_scene_state(GameSceneState::LoadCompleted) {
-            if character_manager.is_valid_player() {
-                if let Some(teleport_point) = self.get_prop_manager().get_teleport_point(self._teleport_gate.as_ref().unwrap().as_str()) {
-                    if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
-                        character_manager.get_player().borrow_mut().set_position_xy(&teleport_point);
-                    } else {
-                        let height_map_data = self.get_scene_manager().get_height_map_data();
-                        let ground_height = height_map_data.get_height_bilinear(&teleport_point, 0);
-                        let ground_normal = height_map_data.get_normal_bilinear(&teleport_point);
-                        character_manager.get_player().borrow_mut().set_position(&teleport_point);
-                        character_manager.get_player().borrow_mut().set_on_ground(ground_height, &ground_normal);
-                    }
+        if self._teleport_stage.is_none()
+            && self._teleport_gate.is_some()
+            && self.is_game_scene_state(GameSceneState::LoadCompleted)
+        {
+            if character_manager.is_valid_player()
+                && let Some(teleport_point) = self
+                    .get_prop_manager()
+                    .get_teleport_point(self._teleport_gate.as_ref().unwrap().as_str())
+            {
+                if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
+                    character_manager
+                        .get_player()
+                        .borrow_mut()
+                        .set_position_xy(&teleport_point);
+                } else {
+                    let height_map_data = self.get_scene_manager().get_height_map_data();
+                    let ground_height = height_map_data.get_height_bilinear(&teleport_point, 0);
+                    let ground_normal = height_map_data.get_normal_bilinear(&teleport_point);
+                    character_manager
+                        .get_player()
+                        .borrow_mut()
+                        .set_position(&teleport_point);
+                    character_manager
+                        .get_player()
+                        .borrow_mut()
+                        .set_on_ground(ground_height, &ground_normal);
                 }
             }
             self._teleport_gate = None;
@@ -393,7 +429,10 @@ impl<'a> GameSceneManager<'a> {
         false
     }
 
-    pub fn get_game_scenario(&self, scenario_type: ScenarioType) -> Option<*const (dyn ScenarioBase<'a> + 'a)> {
+    pub fn get_game_scenario(
+        &self,
+        scenario_type: ScenarioType,
+    ) -> Option<*const (dyn ScenarioBase<'a> + 'a)> {
         for scenario in self._scenarios.iter() {
             if ptr_as_ref(scenario.as_ptr()).get_scenario_type() == scenario_type {
                 return Some(scenario.as_ptr());
@@ -402,21 +441,39 @@ impl<'a> GameSceneManager<'a> {
         None
     }
 
-    pub fn request_open_game_scenario(&mut self, scenario_type: ScenarioType, force_open_game_scenario: bool) {
+    pub fn request_open_game_scenario(
+        &mut self,
+        scenario_type: ScenarioType,
+        force_open_game_scenario: bool,
+    ) {
         self._reservation_scenarios.push(scenario_type);
         if force_open_game_scenario {
             self.update_game_scenario(false, false, 0.0);
         }
     }
 
-    fn open_game_scenario_data(&mut self, scenario_type: ScenarioType) -> &RcRefCell<dyn ScenarioBase<'a> + 'a> {
+    fn open_game_scenario_data(
+        &mut self,
+        scenario_type: ScenarioType,
+    ) -> &RcRefCell<dyn ScenarioBase<'a> + 'a> {
         let game_resources = ptr_as_mut(self._game_resources);
-        let scenario_data_create_info_refcell = game_resources.get_scenario_data(scenario_type.get_scenario_data_name());
+        let scenario_data_create_info_refcell =
+            game_resources.get_scenario_data(scenario_type.get_scenario_data_name());
         let scenario_data_create_info = scenario_data_create_info_refcell.borrow();
-        self._scenarios.push(create_scenario(self, self._game_resources, scenario_type, &scenario_data_create_info));
+        self._scenarios.push(create_scenario(
+            self,
+            self._game_resources,
+            scenario_type,
+            &scenario_data_create_info,
+        ));
 
         // open game scene data
-        if let Some(game_scene) = scenario_data_create_info._game_scenes.values().last().as_ref() {
+        if let Some(game_scene) = scenario_data_create_info
+            ._game_scenes
+            .values()
+            .last()
+            .as_ref()
+        {
             let scene_data_name = game_scene._game_scene_data_name.as_str();
             if self.get_current_game_scene_data_name() != scene_data_name {
                 self.open_game_scene_data(scene_data_name);
@@ -439,7 +496,7 @@ impl<'a> GameSceneManager<'a> {
     // game scene
     pub fn open_game_scene_data(&mut self, game_scene_data_name: &str) {
         self.close_game_scene_data();
-        
+
         let game_resources = ptr_as_mut(self._game_resources);
         let game_scene_data = game_resources.get_game_scene_data(game_scene_data_name);
         self._current_game_scene_data = Some(game_scene_data.clone());
@@ -459,7 +516,9 @@ impl<'a> GameSceneManager<'a> {
     pub fn close_game_scene_data(&mut self) {
         if self.has_scenario() {
             self._scenarios.iter_mut().for_each(|scenario| {
-                scenario.borrow_mut().on_close_game_scene(self._current_game_scene_data_name.as_str());
+                scenario
+                    .borrow_mut()
+                    .on_close_game_scene(self._current_game_scene_data_name.as_str());
             });
         }
         self.clear_game_object_data();
@@ -469,7 +528,10 @@ impl<'a> GameSceneManager<'a> {
         self._current_game_scene_data_name = String::new();
     }
 
-    pub fn spawn_game_scene_objects(&mut self, game_scene_data: &RcRefCell<GameSceneDataCreateInfo>) {
+    pub fn spawn_game_scene_objects(
+        &mut self,
+        game_scene_data: &RcRefCell<GameSceneDataCreateInfo>,
+    ) {
         let game_scene_data_ref = game_scene_data.borrow();
 
         // create items
@@ -484,22 +546,39 @@ impl<'a> GameSceneManager<'a> {
 
         // create player
         for (character_name, character_create_info) in game_scene_data_ref._player.iter() {
-            self._character_manager.create_or_update_character(character_name, character_create_info, true);
+            self._character_manager.create_or_update_character(
+                character_name,
+                character_create_info,
+                true,
+            );
             self._spawn_point = character_create_info._position;
         }
 
         // create npc
         for (character_name, character_create_info) in game_scene_data_ref._characters.iter() {
-            self._character_manager.create_or_update_character(character_name, character_create_info, false);
+            self._character_manager.create_or_update_character(
+                character_name,
+                character_create_info,
+                false,
+            );
         }
     }
 
-    pub fn spawn_game_scenario_objects(&mut self, scenario_create_info: &RcRefCell<ScenarioDataCreateInfo>) {
+    pub fn spawn_game_scenario_objects(
+        &mut self,
+        scenario_create_info: &RcRefCell<ScenarioDataCreateInfo>,
+    ) {
         // cameras
         let main_camera = self.get_scene_manager().get_main_camera_mut();
-        for (_camera_name, camera_create_info) in scenario_create_info.borrow()._scene._cameras.iter() {
-            main_camera._transform_object.set_position(&camera_create_info.position);
-            main_camera._transform_object.set_rotation(&camera_create_info.rotation);
+        for (_camera_name, camera_create_info) in
+            scenario_create_info.borrow()._scene._cameras.iter()
+        {
+            main_camera
+                ._transform_object
+                .set_position(&camera_create_info.position);
+            main_camera
+                ._transform_object
+                .set_rotation(&camera_create_info.rotation);
         }
 
         // create items
@@ -513,14 +592,25 @@ impl<'a> GameSceneManager<'a> {
         }
 
         // create player
-        for (character_name, character_create_info) in scenario_create_info.borrow()._player.iter() {
-            self._character_manager.create_or_update_character(character_name, character_create_info, true);
+        for (character_name, character_create_info) in scenario_create_info.borrow()._player.iter()
+        {
+            self._character_manager.create_or_update_character(
+                character_name,
+                character_create_info,
+                true,
+            );
             self._spawn_point = character_create_info._position;
         }
 
         // create npc
-        for (character_name, character_create_info) in scenario_create_info.borrow()._characters.iter() {
-            self._character_manager.create_or_update_character(character_name, character_create_info, false);
+        for (character_name, character_create_info) in
+            scenario_create_info.borrow()._characters.iter()
+        {
+            self._character_manager.create_or_update_character(
+                character_name,
+                character_create_info,
+                false,
+            );
         }
     }
 
@@ -533,8 +623,27 @@ impl<'a> GameSceneManager<'a> {
 
         // scenario data
         for scenario in self._scenarios.iter() {
-            let scenario_create_info = self.get_game_resources().get_scenario_data(scenario.borrow().get_scenario_type().get_scenario_data_name()).clone();
-            if scenario_create_info.borrow()._game_scenes.is_empty() == false && self.get_current_game_scene_data_name() == scenario_create_info.borrow()._game_scenes.values().last().as_ref().unwrap()._game_scene_data_name.as_str() {
+            let scenario_create_info = self
+                .get_game_resources()
+                .get_scenario_data(
+                    scenario
+                        .borrow()
+                        .get_scenario_type()
+                        .get_scenario_data_name(),
+                )
+                .clone();
+            if !scenario_create_info.borrow()._game_scenes.is_empty()
+                && self.get_current_game_scene_data_name()
+                    == scenario_create_info
+                        .borrow()
+                        ._game_scenes
+                        .values()
+                        .last()
+                        .as_ref()
+                        .unwrap()
+                        ._game_scene_data_name
+                        .as_str()
+            {
                 ptr_as_mut(self).spawn_game_scenario_objects(&scenario_create_info);
             }
         }
@@ -574,7 +683,7 @@ impl<'a> GameSceneManager<'a> {
         self._time_of_day += self._time_of_day_speed * TIME_OF_DAY_SPEED * delta_time as f32;
 
         if 24.0 <= self._time_of_day {
-            self._time_of_day = self._time_of_day % 24.0;
+            self._time_of_day %= 24.0;
             self._date += 1;
         }
 
@@ -616,19 +725,16 @@ impl<'a> GameSceneManager<'a> {
         self._game_scene_state == state
     }
 
-    pub fn update_game_scene_state_begin(&mut self) {
-        match self._game_scene_state {
-            _ => (),
-        }
-    }
+    pub fn update_game_scene_state_begin(&mut self) {}
 
-    pub fn update_game_scene_state_end(&mut self) {
-        match self._game_scene_state {
-            _ => (),
-        }
-    }
+    pub fn update_game_scene_state_end(&mut self) {}
 
-    pub fn update_game_scenario(&mut self, any_key_hold: bool, any_key_pressed: bool, delta_time: f64) {
+    pub fn update_game_scenario(
+        &mut self,
+        any_key_hold: bool,
+        any_key_pressed: bool,
+        delta_time: f64,
+    ) {
         self._is_play_scenario_mode = false;
 
         if self.has_scenario() {
@@ -652,18 +758,29 @@ impl<'a> GameSceneManager<'a> {
             self._scenarios = new_scenario_list;
         }
 
-        if self._reservation_scenarios.is_empty() == false {
+        if !self._reservation_scenarios.is_empty() {
             for scenario_type in self._reservation_scenarios.clone().iter() {
-                let scenario_create_info = self.get_game_resources().get_scenario_data(scenario_type.get_scenario_data_name()).clone();
-                let is_same_game_scene =
-                    scenario_create_info.borrow().get_game_scene_data_name().is_empty() ||
-                    self.get_current_game_scene_data_name() == scenario_create_info.borrow().get_game_scene_data_name().as_str();
+                let scenario_create_info = self
+                    .get_game_resources()
+                    .get_scenario_data(scenario_type.get_scenario_data_name())
+                    .clone();
+                let is_same_game_scene = scenario_create_info
+                    .borrow()
+                    .get_game_scene_data_name()
+                    .is_empty()
+                    || self.get_current_game_scene_data_name()
+                        == scenario_create_info
+                            .borrow()
+                            .get_game_scene_data_name()
+                            .as_str();
 
                 let scenario = self.open_game_scenario_data(*scenario_type).clone();
 
                 if is_same_game_scene {
                     ptr_as_mut(self).spawn_game_scenario_objects(&scenario_create_info);
-                    scenario.borrow_mut().on_open_game_scene(self.get_current_game_scene_data_name().as_str());
+                    scenario
+                        .borrow_mut()
+                        .on_open_game_scene(self.get_current_game_scene_data_name().as_str());
                 }
             }
             self._reservation_scenarios.clear();
@@ -678,7 +795,9 @@ impl<'a> GameSceneManager<'a> {
                     self.spawn_game_object_data();
                     if self.has_scenario() {
                         self._scenarios.iter_mut().for_each(|scenario| {
-                            scenario.borrow_mut().on_open_game_scene(self._current_game_scene_data_name.as_str());
+                            scenario
+                                .borrow_mut()
+                                .on_open_game_scene(self._current_game_scene_data_name.as_str());
                         });
                     }
                     self.set_game_scene_state(GameSceneState::LoadCompleted);

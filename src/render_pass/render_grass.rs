@@ -4,7 +4,7 @@ use rust_engine_3d::render_pass::render_object::common::{
     USER_BINDING_INDEX0, USER_BINDING_INDEX1, USER_BINDING_INDEX2,
 };
 use rust_engine_3d::renderer::push_constants::{
-    PushConstant, PushConstantName, PushConstantParameter, PushConstant_RenderObjectBase,
+    PushConstant, PushConstant_RenderObjectBase, PushConstantName, PushConstantParameter,
 };
 use rust_engine_3d::renderer::renderer_data::RendererData;
 use rust_engine_3d::vulkan_context::descriptor::{
@@ -17,16 +17,9 @@ use serde::{Deserialize, Serialize};
 #[allow(non_camel_case_types)]
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(default)]
+#[derive(Default)]
 pub struct PushConstant_RenderGrass {
     pub _push_constant_base: PushConstant_RenderObjectBase,
-}
-
-impl Default for PushConstant_RenderGrass {
-    fn default() -> PushConstant_RenderGrass {
-        PushConstant_RenderGrass {
-            _push_constant_base: PushConstant_RenderObjectBase::default(),
-        }
-    }
 }
 
 impl PushConstantName for PushConstant_RenderGrass {

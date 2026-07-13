@@ -1,13 +1,18 @@
-use std::rc::Rc;
-use nalgebra::Vector2;
-use winit::keyboard::KeyCode;
-use rust_engine_3d::core::engine_core::TimeData;
-use rust_engine_3d::core::input::{ButtonState, JoystickInputData, KeyboardInputData, MouseInputData, MouseMoveData};
-use rust_engine_3d::resource::resource::EngineResources;
-use rust_engine_3d::scene::ui::{HorizontalAlign, Orientation, PosHintX, PosHintY, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault};
-use rust_engine_3d::utilities::system::{ptr_as_mut, RcRefCell};
-use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use crate::game_module::actors::character::Character;
+use nalgebra::Vector2;
+use rust_engine_3d::core::engine_core::TimeData;
+use rust_engine_3d::core::input::{
+    ButtonState, JoystickInputData, KeyboardInputData, MouseInputData, MouseMoveData,
+};
+use rust_engine_3d::resource::resource::EngineResources;
+use rust_engine_3d::scene::ui::{
+    HorizontalAlign, Orientation, PosHintX, PosHintY, UILayoutType, UIManager, UIWidgetTypes,
+    VerticalAlign, WidgetDefault,
+};
+use rust_engine_3d::utilities::system::{RcRefCell, ptr_as_mut};
+use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
+use std::rc::Rc;
+use winit::keyboard::KeyCode;
 
 const ITEM_HEIGHT: f32 = 100.0;
 
@@ -16,15 +21,13 @@ pub struct ToolboxItem<'a> {
 }
 
 impl<'a> ToolboxItem<'a> {
-    pub fn create_toolbox_item(
-        parent_widget: &mut WidgetDefault<'a>
-    ) -> ToolboxItem<'a> {
+    pub fn create_toolbox_item(parent_widget: &mut WidgetDefault<'a>) -> ToolboxItem<'a> {
         let layout = UIManager::create_widget("toolbox_item", UIWidgetTypes::Default);
         let layout_mut = ptr_as_mut(layout.as_ref());
         let ui_component = layout_mut.get_ui_component_mut();
         ui_component.set_layout_type(UILayoutType::BoxLayout);
         ui_component.set_layout_orientation(Orientation::HORIZONTAL);
-        ui_component.set_halign(HorizontalAlign::LEFT); 
+        ui_component.set_halign(HorizontalAlign::LEFT);
         ui_component.set_valign(VerticalAlign::TOP);
         ui_component.set_size_hint_x(Some(1.0));
         ui_component.set_size_y(ITEM_HEIGHT);
@@ -65,9 +68,7 @@ impl<'a> ToolboxItem<'a> {
         ui_component.set_font_color(get_color32(255, 255, 255, 255));
         layout_mut.add_widget(&ingredient_layout);
 
-        ToolboxItem {
-            _layout: layout,
-        }
+        ToolboxItem { _layout: layout }
     }
 }
 
@@ -112,7 +113,7 @@ impl<'a> ToolboxWidget<'a> {
         self._is_opened_toolbox
     }
     pub fn open_toolbox(&mut self) {
-        if self._is_opened_toolbox == false {
+        if !self._is_opened_toolbox {
             ptr_as_mut(self._parent_widget).add_widget(&self._layer);
             self._is_opened_toolbox = true;
         }
@@ -131,9 +132,9 @@ impl<'a> ToolboxWidget<'a> {
         mouse_move_data: &MouseMoveData,
         _mouse_input_data: &MouseInputData,
         _mouse_delta: &Vector2<f32>,
-        _player: &RcRefCell<Character>
+        _player: &RcRefCell<Character>,
     ) {
-        if self.is_opened_toolbox() == false {
+        if !self.is_opened_toolbox() {
             return;
         }
 

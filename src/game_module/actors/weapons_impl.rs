@@ -83,8 +83,17 @@ impl<'a> Weapon<'a> {
     }
 
     pub fn update_weapon(&mut self, parent_transform: &Matrix4<f32>, _delta_time: f32) {
-        let skeleton_transform = self._render_object.borrow()._mesh_data.borrow()._skeleton_data_list[0]._transform.clone();
+        let skeleton_transform = self
+            ._render_object
+            .borrow()
+            ._mesh_data
+            .borrow()
+            ._skeleton_data_list[0]
+            ._transform;
         let final_transform = parent_transform * skeleton_transform;
-        self._render_object.borrow_mut()._transform_object.set_transform(&final_transform);
+        self._render_object
+            .borrow_mut()
+            ._transform_object
+            .set_transform(&final_transform);
     }
 }

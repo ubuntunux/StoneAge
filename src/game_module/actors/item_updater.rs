@@ -20,11 +20,15 @@ pub trait ItemUpdaterBase {
         if owner.is_attachment() {
             owner.update_item_attach_transform();
         } else {
-            if owner._item_properties._is_on_ground == false {
+            if !owner._item_properties._is_on_ground {
                 let item_height = owner._render_object.borrow_mut()._bounding_box._extents.y;
-                owner._item_properties._position += owner._item_properties._velocity * delta_time as f32;
-                let ground_height = height_map_data.get_height_bilinear(&owner._item_properties._position, 0);
-                if (owner._item_properties._position.y - item_height) <= ground_height && owner._item_properties._velocity.y <= 0.0 {
+                owner._item_properties._position +=
+                    owner._item_properties._velocity * delta_time as f32;
+                let ground_height =
+                    height_map_data.get_height_bilinear(&owner._item_properties._position, 0);
+                if (owner._item_properties._position.y - item_height) <= ground_height
+                    && owner._item_properties._velocity.y <= 0.0
+                {
                     owner._item_properties._position.y = ground_height + item_height;
                     owner._item_properties._is_on_ground = true;
                 }
@@ -89,7 +93,7 @@ impl ItemUpdaterBase for ItemSpiritBallUpdater {
             } else {
                 let was_on_ground = owner._item_properties._is_on_ground;
                 self.update_item_transform(owner, height_map_data, delta_time);
-                if was_on_ground == false && owner._item_properties._is_on_ground {
+                if !was_on_ground && owner._item_properties._is_on_ground {
                     self._spawn_point = owner._item_properties._position;
                     self._floating_timer = 0.0;
                     self._floating = true;
