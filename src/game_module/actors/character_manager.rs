@@ -254,16 +254,25 @@ impl<'a> CharacterManager<'a> {
     }
     pub fn load_characters_save_data(&mut self, character_create_infos: &Vec<CharacterCreateInfo>) {
         for character_create_info in character_create_infos.iter() {
-            self.create_character(
+            if let Some(player) = &self._player {
+                if player.borrow()._character_name == character_create_info._character_name {
+                    player.borrow_mut().load_character_save_data(character_create_info);
+                    continue;
+                }
+            }
+
+            let character = self.create_character(
                 character_create_info._character_name.as_str(),
                 character_create_info,
                 false,
             );
+            character.borrow_mut().load_character_save_data(character_create_info);
         }
     }
     pub fn get_characters_save_data(&self) -> Vec<CharacterCreateInfo> {
         self._characters
             .values()
+            .filter(|character| !character.borrow().is_player())
             .map(|character| character.borrow().get_character_save_data())
             .collect()
     }

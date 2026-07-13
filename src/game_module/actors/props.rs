@@ -67,8 +67,9 @@ pub struct PropStats {
 }
 
 pub struct Prop<'a> {
-    pub _prop_name: String,
     pub _prop_id: PropID,
+    pub _prop_name: String,
+    pub _prop_data_name: String,
     pub _prop_radius: f32,
     pub _prop_manager: *const PropManager<'a>,
     pub _render_object: RcRefCell<RenderObjectData<'a>>,

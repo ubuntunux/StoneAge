@@ -144,6 +144,7 @@ pub struct GameSceneManager<'a> {
     pub _temperature: f32,
     pub _date: u32,
     pub _game_scene_state: GameSceneState,
+    pub _loaded_game_scene_save_data: Option<GameSceneSaveData>,
 }
 
 impl<'a> GameSceneManager<'a> {
@@ -234,6 +235,7 @@ impl<'a> GameSceneManager<'a> {
             _temperature: 30.0,
             _date: 1,
             _game_scene_state: GameSceneState::None,
+            _loaded_game_scene_save_data: None,
         })
     }
 
@@ -330,6 +332,7 @@ impl<'a> GameSceneManager<'a> {
 
     pub fn load_game_save_data(&mut self, game_save_data: &GameSaveData) {
         self.clear_all_game_scenario();
+        self._loaded_game_scene_save_data = game_save_data._game_scenes.get(&game_save_data._last_game_scene_data_name).cloned();
         self.open_game_scene_data(&game_save_data._last_game_scene_data_name);
         self.set_temperature(game_save_data._temperature);
         self._date = game_save_data._date;
@@ -792,7 +795,20 @@ impl<'a> GameSceneManager<'a> {
             GameSceneState::None => {}
             GameSceneState::Loading => {
                 if self.get_scene_manager().is_load_complete() {
-                    self.spawn_game_object_data();
+                    let is_load_game = self._loaded_game_scene_save_data.is_some();
+                    if is_load_game {
+                        let game_scene_save_data = self._loaded_game_scene_save_data.take().unwrap();
+                        self._character_manager.load_characters_save_data(&game_scene_save_data._characters);
+                        self._item_manager.load_items_save_data(&game_scene_save_data._items);
+                        self._prop_manager.load_props_save_data(&game_scene_save_data._props);
+
+                        self._character_manager.post_process_after_characters_loading();
+                        self._item_manager.post_process_after_item_loading();
+                        self._prop_manager.post_process_after_prop_loading();
+                    } else {
+                        self.spawn_game_object_data();
+                    }
+
                     if self.has_scenario() {
                         self._scenarios.iter_mut().for_each(|scenario| {
                             scenario

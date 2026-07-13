@@ -61,8 +61,9 @@ impl<'a> Prop<'a> {
         let prop_data_ref = prop_data.borrow();
         let item_count = prop_data_ref.get_item_drop_count();
         let mut prop = Prop {
-            _prop_name: String::from(prop_name),
             _prop_id: prop_id,
+            _prop_name: String::from(prop_name),
+            _prop_data_name: prop_create_info._prop_data_name.clone(),
             _prop_radius: render_object.borrow()._collision._bounding_box.get_mag_xz(),
             _prop_manager: prop_manager,
             _render_object: render_object.clone(),
@@ -104,7 +105,7 @@ impl<'a> Prop<'a> {
         PropCreateInfo {
             _prop_id: self.get_prop_id(),
             _prop_name: self._prop_name.clone(),
-            _prop_data_name: self._prop_data.borrow()._name.clone(),
+            _prop_data_name: self._prop_data_name.clone(),
             _position: self._prop_stats._position,
             _rotation: self._prop_stats._rotation,
             _scale: self._prop_stats._scale,
@@ -400,7 +401,12 @@ impl<'a> PropManager<'a> {
         }
     }
 
-    pub fn load_props_save_data(&mut self, _prop_create_infos: &Vec<PropCreateInfo>) {}
+    pub fn load_props_save_data(&mut self, prop_create_infos: &Vec<PropCreateInfo>) {
+        for prop_create_info in prop_create_infos.iter() {
+            let prop = self.create_prop(prop_create_info._prop_name.as_str(), prop_create_info);
+            prop.borrow_mut().load_prop_save_data(prop_create_info);
+        }
+    }
 
     pub fn get_props_save_data(&self) -> Vec<PropCreateInfo> {
         self._props

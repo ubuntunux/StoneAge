@@ -326,7 +326,12 @@ impl<'a> ItemManager<'a> {
         }
     }
 
-    pub fn load_items_save_data(&mut self, _item_create_infos: &Vec<ItemCreateInfo>) {}
+    pub fn load_items_save_data(&mut self, item_create_infos: &Vec<ItemCreateInfo>) {
+        for item_create_info in item_create_infos.iter() {
+            let item = self.create_item(item_create_info, None);
+            item.borrow_mut().load_item_save_data(item_create_info);
+        }
+    }
 
     pub fn get_items_save_data(&self) -> Vec<ItemCreateInfo> {
         self._items
