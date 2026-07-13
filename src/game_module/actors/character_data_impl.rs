@@ -55,7 +55,7 @@ impl Default for CharacterAnimationDataCreateInfo {
             _upper_animation_layer: String::default(),
             _wake_up_animation: String::default(),
             _walk_animation: String::default(),
-            _walk_animation_speed: 1.0
+            _walk_animation_speed: 1.0,
         }
     }
 }
@@ -93,9 +93,15 @@ impl CharacterAudioData {
         engine_resources: &mut EngineResources,
     ) -> CharacterAudioData {
         CharacterAudioData {
-            _audio_dead: engine_resources.get_audio_bank_data(&audio_data_create_info._audio_dead).clone(),
-            _audio_growl: engine_resources.get_audio_bank_data(&audio_data_create_info._audio_growl).clone(),
-            _audio_pain: engine_resources.get_audio_bank_data(&audio_data_create_info._audio_pain).clone(),
+            _audio_dead: engine_resources
+                .get_audio_bank_data(&audio_data_create_info._audio_dead)
+                .clone(),
+            _audio_growl: engine_resources
+                .get_audio_bank_data(&audio_data_create_info._audio_growl)
+                .clone(),
+            _audio_pain: engine_resources
+                .get_audio_bank_data(&audio_data_create_info._audio_pain)
+                .clone(),
         }
     }
 }
@@ -106,37 +112,77 @@ impl CharacterAnimationData {
         engine_resources: &EngineResources,
     ) -> CharacterAnimationData {
         CharacterAnimationData {
-            _attack_animation: engine_resources.get_mesh_data(&animation_data_create_info._attack_animation).clone(),
+            _attack_animation: engine_resources
+                .get_mesh_data(&animation_data_create_info._attack_animation)
+                .clone(),
             _attack_animation_speed: animation_data_create_info._attack_animation_speed,
-            _dance_animation: engine_resources.get_mesh_data(&animation_data_create_info._dance_animation).clone(),
-            _dead_animation: engine_resources.get_mesh_data(&animation_data_create_info._dead_animation).clone(),
+            _dance_animation: engine_resources
+                .get_mesh_data(&animation_data_create_info._dance_animation)
+                .clone(),
+            _dead_animation: engine_resources
+                .get_mesh_data(&animation_data_create_info._dead_animation)
+                .clone(),
             _dead_animation_speed: animation_data_create_info._dead_animation_speed,
-            _eating_animation: engine_resources.get_mesh_data(&animation_data_create_info._eating_animation).clone(),
-            _hit_animation: engine_resources.get_mesh_data(&animation_data_create_info._hit_animation).clone(),
+            _eating_animation: engine_resources
+                .get_mesh_data(&animation_data_create_info._eating_animation)
+                .clone(),
+            _hit_animation: engine_resources
+                .get_mesh_data(&animation_data_create_info._hit_animation)
+                .clone(),
             _hit_animation_speed: animation_data_create_info._hit_animation_speed,
-            _hungry_animation: engine_resources.get_mesh_data(&animation_data_create_info._hungry_animation).clone(),
-            _idle_animation: engine_resources.get_mesh_data(&animation_data_create_info._idle_animation).clone(),
+            _hungry_animation: engine_resources
+                .get_mesh_data(&animation_data_create_info._hungry_animation)
+                .clone(),
+            _idle_animation: engine_resources
+                .get_mesh_data(&animation_data_create_info._idle_animation)
+                .clone(),
             _idle_animation_speed: animation_data_create_info._idle_animation_speed,
-            _jump_animation: engine_resources.get_mesh_data(&animation_data_create_info._jump_animation).clone(),
+            _jump_animation: engine_resources
+                .get_mesh_data(&animation_data_create_info._jump_animation)
+                .clone(),
             _jump_animation_speed: animation_data_create_info._jump_animation_speed,
-            _kick_animation: engine_resources.get_mesh_data(&animation_data_create_info._kick_animation).clone(),
+            _kick_animation: engine_resources
+                .get_mesh_data(&animation_data_create_info._kick_animation)
+                .clone(),
             _kick_animation_speed: animation_data_create_info._kick_animation_speed,
-            _laying_down_animation: engine_resources.get_mesh_data(&animation_data_create_info._laying_down_animation).clone(),
-            _pickup_animation: engine_resources.get_mesh_data(&animation_data_create_info._pickup_animation).clone(),
-            _power_attack_animation: engine_resources.get_mesh_data(&animation_data_create_info._power_attack_animation).clone(),
+            _laying_down_animation: engine_resources
+                .get_mesh_data(&animation_data_create_info._laying_down_animation)
+                .clone(),
+            _pickup_animation: engine_resources
+                .get_mesh_data(&animation_data_create_info._pickup_animation)
+                .clone(),
+            _power_attack_animation: engine_resources
+                .get_mesh_data(&animation_data_create_info._power_attack_animation)
+                .clone(),
             _power_attack_animation_speed: animation_data_create_info._power_attack_animation_speed,
-            _roll_animation: engine_resources.get_mesh_data(&animation_data_create_info._roll_animation).clone(),
+            _roll_animation: engine_resources
+                .get_mesh_data(&animation_data_create_info._roll_animation)
+                .clone(),
             _roll_animation_speed: animation_data_create_info._roll_animation_speed,
-            _run_animation: engine_resources.get_mesh_data(&animation_data_create_info._run_animation).clone(),
+            _run_animation: engine_resources
+                .get_mesh_data(&animation_data_create_info._run_animation)
+                .clone(),
             _run_animation_speed: animation_data_create_info._run_animation_speed,
-            _running_jump_animation: engine_resources.get_mesh_data(&animation_data_create_info._running_jump_animation).clone(),
+            _running_jump_animation: engine_resources
+                .get_mesh_data(&animation_data_create_info._running_jump_animation)
+                .clone(),
             _running_jump_animation_speed: animation_data_create_info._running_jump_animation_speed,
-            _sit_down_loop_animation: engine_resources.get_mesh_data(&animation_data_create_info._sit_down_loop_animation).clone(),
-            _sleep_animation: engine_resources.get_mesh_data(&animation_data_create_info._sleep_animation).clone(),
-            _wake_up_animation: engine_resources.get_mesh_data(&animation_data_create_info._wake_up_animation).clone(),
-            _walk_animation: engine_resources.get_mesh_data(&animation_data_create_info._walk_animation).clone(),
+            _sit_down_loop_animation: engine_resources
+                .get_mesh_data(&animation_data_create_info._sit_down_loop_animation)
+                .clone(),
+            _sleep_animation: engine_resources
+                .get_mesh_data(&animation_data_create_info._sleep_animation)
+                .clone(),
+            _wake_up_animation: engine_resources
+                .get_mesh_data(&animation_data_create_info._wake_up_animation)
+                .clone(),
+            _walk_animation: engine_resources
+                .get_mesh_data(&animation_data_create_info._walk_animation)
+                .clone(),
             _walk_animation_speed: animation_data_create_info._walk_animation_speed,
-            _upper_animation_layer: engine_resources.get_animation_layer_data(&animation_data_create_info._upper_animation_layer).clone(),
+            _upper_animation_layer: engine_resources
+                .get_animation_layer_data(&animation_data_create_info._upper_animation_layer)
+                .clone(),
         }
     }
 }

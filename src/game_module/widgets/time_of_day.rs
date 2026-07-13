@@ -1,12 +1,15 @@
-use ash::vk;
-use crate::game_module::game_scene_manager::{GameSceneManager, Stages};
-use nalgebra::Vector2;
-use rust_engine_3d::scene::ui::{HorizontalAlign, Orientation, PosHintX, PosHintY, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault};
-use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
-use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use crate::game_module::game_constants::MATERIAL_TIME_OF_DAY;
 use crate::game_module::game_resource::GameResources;
+use crate::game_module::game_scene_manager::{GameSceneManager, Stages};
 use crate::game_module::game_ui_manager::GameUIManager;
+use ash::vk;
+use nalgebra::Vector2;
+use rust_engine_3d::scene::ui::{
+    HorizontalAlign, Orientation, PosHintX, PosHintY, UILayoutType, UIManager, UIWidgetTypes,
+    VerticalAlign, WidgetDefault,
+};
+use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
+use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 
 pub struct TimeOfDayWidget<'a> {
     pub _game_ui_manager: *const GameUIManager<'a>,
@@ -55,7 +58,9 @@ impl<'a> TimeOfDayWidget<'a> {
         ui_component.set_color(background_color);
         parent_layer_ptr.add_widget(&top_widget);
 
-        let tod_material_instance = game_resources.get_engine_resources().get_material_instance_data(MATERIAL_TIME_OF_DAY);
+        let tod_material_instance = game_resources
+            .get_engine_resources()
+            .get_material_instance_data(MATERIAL_TIME_OF_DAY);
         let time_of_day_widget = UIManager::create_widget("tod_widget", UIWidgetTypes::Default);
         let time_of_day_widget_ptr = ptr_as_mut(time_of_day_widget.as_ref());
         let ui_component = time_of_day_widget_ptr.get_ui_component_mut();
@@ -141,12 +146,11 @@ impl<'a> TimeOfDayWidget<'a> {
             _date_widget: date_widget_ptr,
             _time_widget: time_widget_ptr,
             _temperature: temperature_widget_ptr,
-            _stage_widget: stage_widget_ptr
+            _stage_widget: stage_widget_ptr,
         }
     }
 
-    pub fn changed_window_size(&mut self, _window_size: &Vector2<i32>) {
-    }
+    pub fn changed_window_size(&mut self, _window_size: &Vector2<i32>) {}
 
     pub fn update_time_of_day_widget(&mut self, game_scene_manager: &GameSceneManager) {
         let time_of_day = game_scene_manager.get_time_of_day();
@@ -165,14 +169,23 @@ impl<'a> TimeOfDayWidget<'a> {
         time_ui_component.set_text(format!("{:02}:{:02}", time, minute).as_str());
 
         let temperature_ui_component = ptr_as_mut(self._temperature).get_ui_component_mut();
-        temperature_ui_component.set_text(format!("Temperature {:.01}", game_scene_manager.temperature()).as_str());
+        temperature_ui_component
+            .set_text(format!("Temperature {:.01}", game_scene_manager.temperature()).as_str());
 
         let stage_widget_component = ptr_as_mut(self._stage_widget).get_ui_component_mut();
         if game_ui_manager.is_opened_world_map() {
-            stage_widget_component.set_text(Stages::find_stage_value(game_ui_manager.get_selected_world_map_stage_data_name().as_str()).get_stage_display_name());
+            stage_widget_component.set_text(
+                Stages::find_stage_value(
+                    game_ui_manager
+                        .get_selected_world_map_stage_data_name()
+                        .as_str(),
+                )
+                .get_stage_display_name(),
+            );
         } else {
             let stage_data_name = game_scene_manager.get_current_game_scene_data_name();
-            stage_widget_component.set_text(Stages::find_stage_value(stage_data_name).get_stage_display_name());
+            stage_widget_component
+                .set_text(Stages::find_stage_value(stage_data_name).get_stage_display_name());
         }
     }
 }

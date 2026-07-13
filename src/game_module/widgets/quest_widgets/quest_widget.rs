@@ -1,16 +1,23 @@
-use std::rc::Rc;
-use nalgebra::Vector2;
-use rust_engine_3d::begin_block;
-use rust_engine_3d::scene::ui::{HorizontalAlign, Orientation, PosHintX, PosHintY, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault};
-use rust_engine_3d::utilities::system::{ptr_as_mut, RcRefCell};
-use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use crate::game_module::game_controller::GameController;
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::game_ui_manager::QuestItem;
-use crate::game_module::widgets::quest_widgets::quest_item_gather_item::{GatherItemData, QuestItemGatherItem};
-use crate::game_module::widgets::quest_widgets::quest_item_default::{DefaultQuestData, QuestItemDefault};
+use crate::game_module::widgets::quest_widgets::quest_item_default::{
+    DefaultQuestData, QuestItemDefault,
+};
+use crate::game_module::widgets::quest_widgets::quest_item_gather_item::{
+    GatherItemData, QuestItemGatherItem,
+};
 use crate::game_module::widgets::quest_widgets::quest_title::QuestTitle;
+use nalgebra::Vector2;
+use rust_engine_3d::begin_block;
+use rust_engine_3d::scene::ui::{
+    HorizontalAlign, Orientation, PosHintX, PosHintY, UILayoutType, UIManager, UIWidgetTypes,
+    VerticalAlign, WidgetDefault,
+};
+use rust_engine_3d::utilities::system::{RcRefCell, ptr_as_mut};
+use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
+use std::rc::Rc;
 
 pub const FONT_SIZE: f32 = 30.0;
 pub const ITEM_SIZE: f32 = 50.0;
@@ -35,21 +42,34 @@ pub struct QuestWidget<'a> {
     pub _game_scene_manager: *const GameSceneManager<'a>,
     pub _game_resources: *const GameResources<'a>,
     pub _root_widget: Rc<WidgetDefault<'a>>,
-    pub _quests: Vec<RcRefCell<QuestTitle<'a>>>
+    pub _quests: Vec<RcRefCell<QuestTitle<'a>>>,
 }
 
-pub fn create_quest_item<'a>(game_scene_manager: *const GameSceneManager<'a>, game_resources: *const GameResources<'a>, parent_widget: &mut WidgetDefault<'a>, quest_type: QuestCreateInfo) -> QuestItem<'a> {
+pub fn create_quest_item<'a>(
+    game_scene_manager: *const GameSceneManager<'a>,
+    game_resources: *const GameResources<'a>,
+    parent_widget: &mut WidgetDefault<'a>,
+    quest_type: QuestCreateInfo,
+) -> QuestItem<'a> {
     match quest_type {
-        QuestCreateInfo::DefaultQuest(default_quest_data) => {
-            QuestItemDefault::create_quest_item(game_scene_manager, game_resources, parent_widget, default_quest_data)
-        }
-        QuestCreateInfo::GatherItem(gather_item_data) => {
-            QuestItemGatherItem::create_quest_item(game_scene_manager, game_resources, parent_widget, gather_item_data)
-        }
+        QuestCreateInfo::DefaultQuest(default_quest_data) => QuestItemDefault::create_quest_item(
+            game_scene_manager,
+            game_resources,
+            parent_widget,
+            default_quest_data,
+        ),
+        QuestCreateInfo::GatherItem(gather_item_data) => QuestItemGatherItem::create_quest_item(
+            game_scene_manager,
+            game_resources,
+            parent_widget,
+            gather_item_data,
+        ),
     }
 }
 
-pub fn create_quest_item_layout<'a>(parent_widget: &mut WidgetDefault<'a>) -> Rc<WidgetDefault<'a>> {
+pub fn create_quest_item_layout<'a>(
+    parent_widget: &mut WidgetDefault<'a>,
+) -> Rc<WidgetDefault<'a>> {
     let layout_widget = UIManager::create_widget("layout_widget", UIWidgetTypes::Default);
     let ui_component = ptr_as_mut(layout_widget.as_ref()).get_ui_component_mut();
     ui_component.set_layout_type(UILayoutType::BoxLayout);
@@ -62,7 +82,11 @@ pub fn create_quest_item_layout<'a>(parent_widget: &mut WidgetDefault<'a>) -> Rc
 }
 
 impl<'a> QuestWidget<'a> {
-    pub fn create_quest_widget(game_scene_manager: *const GameSceneManager<'a>, game_resources: *const GameResources<'a>, root_widget: &mut WidgetDefault<'a>) -> QuestWidget<'a> {
+    pub fn create_quest_widget(
+        game_scene_manager: *const GameSceneManager<'a>,
+        game_resources: *const GameResources<'a>,
+        root_widget: &mut WidgetDefault<'a>,
+    ) -> QuestWidget<'a> {
         let layout_widget = UIManager::create_widget("layout_widget", UIWidgetTypes::Default);
         let ui_component = ptr_as_mut(layout_widget.as_ref()).get_ui_component_mut();
         ui_component.set_layout_type(UILayoutType::BoxLayout);
@@ -90,12 +114,18 @@ impl<'a> QuestWidget<'a> {
         }
     }
 
-    pub fn changed_window_size(&mut self, _window_size: &Vector2<i32>) {
-    }
+    pub fn changed_window_size(&mut self, _window_size: &Vector2<i32>) {}
 
     pub fn add_quest(&mut self, title: Option<String>) -> RcRefCell<QuestTitle<'a>> {
-        ptr_as_mut(self._root_widget.as_ref()).get_ui_component_mut().set_visible(true);
-        let quest = QuestTitle::create_quest_title(self._game_scene_manager, self._game_resources, ptr_as_mut(self._root_widget.as_ref()), title);
+        ptr_as_mut(self._root_widget.as_ref())
+            .get_ui_component_mut()
+            .set_visible(true);
+        let quest = QuestTitle::create_quest_title(
+            self._game_scene_manager,
+            self._game_resources,
+            ptr_as_mut(self._root_widget.as_ref()),
+            title,
+        );
         self._quests.push(quest.clone());
         quest.clone()
     }
@@ -105,7 +135,8 @@ impl<'a> QuestWidget<'a> {
         let mut index = 0;
         for _ in 0..item_count {
             let mut remove = false;
-            begin_block!("Update Quest Item"); {
+            begin_block!("Update Quest Item");
+            {
                 let mut quest_item = self._quests[index].borrow_mut();
                 quest_item.update_quest_item(game_controller, delta_time);
                 if quest_item.is_completed_quest() {
@@ -123,7 +154,9 @@ impl<'a> QuestWidget<'a> {
         }
 
         if 0 < item_count && self._quests.is_empty() {
-            ptr_as_mut(self._root_widget.as_ref()).get_ui_component_mut().set_visible(false);
+            ptr_as_mut(self._root_widget.as_ref())
+                .get_ui_component_mut()
+                .set_visible(false);
         }
     }
 }

@@ -1,9 +1,9 @@
+use crate::game_module::game_scene_manager::GameSceneManager;
+use rust_engine_3d::audio::audio_manager::AudioManager;
+use rust_engine_3d::scene::ui::WidgetDefault;
 use std::collections::HashMap;
 use std::rc::Rc;
 use strum_macros::{Display, EnumString};
-use rust_engine_3d::scene::ui::{WidgetDefault};
-use rust_engine_3d::audio::audio_manager::AudioManager;
-use crate::game_module::game_scene_manager::GameSceneManager;
 
 #[derive(Clone, PartialEq, Eq, Hash, Debug, Display, EnumString, Copy)]
 pub enum WorldMapDirection {
@@ -15,7 +15,7 @@ pub enum WorldMapDirection {
 }
 
 pub struct WorldMapBridge<'a> {
-    pub _bridge_widget: Rc<WidgetDefault<'a>>
+    pub _bridge_widget: Rc<WidgetDefault<'a>>,
 }
 
 pub struct WorldMapStage<'a> {
@@ -25,12 +25,11 @@ pub struct WorldMapStage<'a> {
     pub _world_map_stage: Rc<WidgetDefault<'a>>,
     pub _linked_stages: [Option<Rc<WorldMapStage<'a>>>; WorldMapDirection::COUNT as usize + 1],
     pub _linked_bridges: [Option<Rc<WidgetDefault<'a>>>; WorldMapDirection::COUNT as usize + 1],
-
 }
 
 pub struct WorldMapPlayer<'a> {
     pub _world_map_widget: *const WorldMapWidget<'a>,
-    pub _player_icon: Rc<WidgetDefault<'a>>
+    pub _player_icon: Rc<WidgetDefault<'a>>,
 }
 
 pub struct WorldMapWidget<'a> {

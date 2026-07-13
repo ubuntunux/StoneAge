@@ -21,7 +21,8 @@ impl<'a> TargetStatusWidget<'a> {
     pub fn create_target_status_widget(
         root_widget: &mut WidgetDefault<'a>,
     ) -> TargetStatusWidget<'a> {
-        let target_status_widget = UIManager::create_widget("target_status_widget", UIWidgetTypes::Default);
+        let target_status_widget =
+            UIManager::create_widget("target_status_widget", UIWidgetTypes::Default);
         let target_status_widget_ptr = ptr_as_mut(target_status_widget.as_ref());
         let ui_component = ptr_as_mut(target_status_widget.as_ref()).get_ui_component_mut();
         ui_component.set_layout_type(UILayoutType::BoxLayout);
@@ -34,7 +35,8 @@ impl<'a> TargetStatusWidget<'a> {
         ui_component.set_color(get_color32(0, 0, 0, 128));
         root_widget.add_widget(&target_status_widget);
 
-        let target_name_widget = UIManager::create_widget("target_name_widget", UIWidgetTypes::Default);
+        let target_name_widget =
+            UIManager::create_widget("target_name_widget", UIWidgetTypes::Default);
         let target_name_widget_ptr = ptr_as_mut(target_name_widget.as_ref());
         let ui_component = ptr_as_mut(target_name_widget.as_ref()).get_ui_component_mut();
         ui_component.set_text("Name");
@@ -69,18 +71,25 @@ impl<'a> TargetStatusWidget<'a> {
         let mut smooth_update: bool = true;
         if self._target != target {
             smooth_update = false;
-            ptr_as_mut(self._widget).get_ui_component_mut().set_visible(true);
+            ptr_as_mut(self._widget)
+                .get_ui_component_mut()
+                .set_visible(true);
             let name = target._character_data.borrow()._name.clone();
-            ptr_as_mut(self._target_name_widget).get_ui_component_mut().set_text(name.as_str());
+            ptr_as_mut(self._target_name_widget)
+                .get_ui_component_mut()
+                .set_text(name.as_str());
             self._target = target;
         }
         let hp = target.get_stats().get_hp() as f32;
         let max_hp = target.get_stats().get_max_hp() as f32;
         let max_hp_data = target.get_character_data()._stat_data._max_hp as f32;
-        self._hp_widget.update_status_widget(hp, max_hp, max_hp_data, delta_time, smooth_update);
+        self._hp_widget
+            .update_status_widget(hp, max_hp, max_hp_data, delta_time, smooth_update);
     }
     pub fn fade_out_status_widget(&mut self) {
-        ptr_as_mut(self._widget).get_ui_component_mut().set_visible(false);
+        ptr_as_mut(self._widget)
+            .get_ui_component_mut()
+            .set_visible(false);
         self._target = std::ptr::null();
     }
 }

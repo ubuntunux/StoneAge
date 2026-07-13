@@ -1,13 +1,15 @@
-use std::ffi::c_void;
-use rust_engine_3d::scene::render_object::RenderObjectData;
-use rust_engine_3d::utilities::system::RcRefCell;
-use rust_engine_3d::audio::audio_manager::AudioInstance;
 use crate::game_module::actors::character_controller::CharacterController;
-use crate::game_module::actors::character_data::{ActionAnimationState, CharacterData, MoveAnimationState};
+use crate::game_module::actors::character_data::{
+    ActionAnimationState, CharacterData, MoveAnimationState,
+};
 use crate::game_module::actors::character_manager::{CharacterID, CharacterManager};
 use crate::game_module::actors::items::{Item, ItemManager};
 use crate::game_module::actors::props::Prop;
 use crate::game_module::behavior::behavior_base::BehaviorBase;
+use rust_engine_3d::audio::audio_manager::AudioInstance;
+use rust_engine_3d::scene::render_object::RenderObjectData;
+use rust_engine_3d::utilities::system::RcRefCell;
+use std::ffi::c_void;
 
 #[derive(Clone)]
 pub enum ActorWrapper<'a> {
@@ -19,9 +21,9 @@ pub enum ActorWrapper<'a> {
 impl<'a> ActorWrapper<'a> {
     pub fn get_key(&self) -> *const c_void {
         match self {
-            ActorWrapper::Prop(prop) => { prop.as_ptr() as *const c_void }
-            ActorWrapper::Character(character) => { character.as_ptr() as *const c_void }
-            ActorWrapper::RenderObject(render_object) => { render_object.as_ptr() as *const c_void }
+            ActorWrapper::Prop(prop) => prop.as_ptr() as *const c_void,
+            ActorWrapper::Character(character) => character.as_ptr() as *const c_void,
+            ActorWrapper::RenderObject(render_object) => render_object.as_ptr() as *const c_void,
         }
     }
 }
@@ -41,7 +43,7 @@ pub struct CharacterStats {
     pub _tired: f32,
     pub _happiness: f32,
     pub _invincibility: bool,
-    pub _is_stat_displayed: bool
+    pub _is_stat_displayed: bool,
 }
 
 #[derive(Default)]

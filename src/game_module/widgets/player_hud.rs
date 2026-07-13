@@ -60,14 +60,14 @@ impl<'a> PlayerHud<'a> {
             player.get_stats().get_max_hp() as f32,
             player.get_stats().get_max_hp_data() as f32,
             delta_time,
-            true
+            true,
         );
         self._stamina_widget.update_status_widget(
             player.get_stats().get_stamina(),
             player.get_stats().get_max_stamina(),
             player.get_stats().get_max_stamina_data(),
             delta_time,
-            true
+            true,
         );
     }
 }

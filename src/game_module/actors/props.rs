@@ -1,3 +1,4 @@
+use crate::game_module::actors::items::ItemID;
 use crate::game_module::game_client::GameClient;
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
@@ -9,7 +10,6 @@ use rust_engine_3d::utilities::system::RcRefCell;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use uuid::Uuid;
-use crate::game_module::actors::items::ItemID;
 
 pub type PropID = Uuid;
 pub type PropMap<'a> = HashMap<PropID, RcRefCell<Prop<'a>>>;
@@ -27,7 +27,7 @@ pub enum PropDataType {
     Dungeon,
     Building,
     Monolith,
-    Table
+    Table,
 }
 
 #[derive(Serialize, Deserialize, Default, Debug, Clone, PartialEq)]
@@ -63,7 +63,7 @@ pub struct PropStats {
     pub _item_count: i32,
     pub _position: Vector3<f32>,
     pub _rotation: Vector3<f32>,
-    pub _scale: Vector3<f32>
+    pub _scale: Vector3<f32>,
 }
 
 pub struct Prop<'a> {

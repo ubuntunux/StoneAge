@@ -1,9 +1,9 @@
-use std::collections::HashMap;
-use serde::{Deserialize, Serialize};
-use rust_engine_3d::scene::camera::CameraCreateInfo;
-use crate::game_module::actors::character_manager::{CharacterCreateInfo};
+use crate::game_module::actors::character_manager::CharacterCreateInfo;
 use crate::game_module::game_scene_manager::{GameSceneSaveData, ScenarioSaveDataList};
-use crate::game_module::widgets::item_bar_widget::{InventoryItemCreateInfoList};
+use crate::game_module::widgets::item_bar_widget::InventoryItemCreateInfoList;
+use rust_engine_3d::scene::camera::CameraCreateInfo;
+use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[serde(default)]
