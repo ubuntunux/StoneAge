@@ -1,3 +1,4 @@
+use std::str::FromStr;
 use crate::game_module::actors::character::Character;
 use crate::game_module::actors::props::Prop;
 use crate::game_module::behavior::behavior_base::BehaviorState;
@@ -5,7 +6,7 @@ use crate::game_module::game_constants::{
     AUDIO_UFO_BEAM, AUDIO_UFO_FLYING, CAMERA_DISTANCE_MAX, CAMERA_OFFSET_Y, TIME_OF_EARLY_MORNING,
 };
 use crate::game_module::game_resource::GameResources;
-use crate::game_module::game_scene_manager::GameSceneManager;
+use crate::game_module::game_scene_manager::{GameSceneManager};
 use crate::game_module::scenario::scenario::{
     ScenarioBase, ScenarioDataCreateInfo, ScenarioTrack, ScenarioType,
 };
@@ -166,6 +167,14 @@ impl<'a> ScenarioDayOne<'a> {
 impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
     fn get_scenario_type(&self) -> ScenarioType {
         self._scenario_type
+    }
+
+    fn get_scenario_phase_as_string(&self) -> String {
+        self._scenario_track._scenario_phase.to_string()
+    }
+
+    fn set_scenario_phase_as_string(&mut self, scenario_phase: &String) {
+        self._scenario_track._scenario_phase = ScenarioPhase::from_str(scenario_phase.as_str()).unwrap();
     }
 
     fn is_load_completed(&self) -> bool {

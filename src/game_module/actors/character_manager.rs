@@ -278,9 +278,7 @@ impl<'a> CharacterManager<'a> {
     }
     pub fn post_process_after_characters_loading(&mut self) {
         for character in self._characters.values() {
-            character
-                .borrow_mut()
-                .post_process_after_character_loading();
+            character.borrow_mut().post_process_after_character_loading();
         }
     }
     pub fn is_valid_player(&self) -> bool {

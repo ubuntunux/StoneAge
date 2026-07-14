@@ -261,18 +261,14 @@ impl<'a> GameClient<'a> {
                             } else {
                                 const SKIP_SCENARIO: bool = false;
                                 if SKIP_SCENARIO {
-                                    game_scene_manager.request_open_game_scenario(
-                                        ScenarioType::ScenarioDayOne,
-                                        true,
-                                    );
+                                    game_scene_manager.request_open_game_scenario(ScenarioType::ScenarioDayOne, true);
                                     unsafe {
                                         scenario_day_one::SKIP_SCENARIO = true;
                                     }
                                 } else {
-                                    game_scene_manager.request_open_game_scenario(
-                                        ScenarioType::ScenarioIntro,
-                                        true,
-                                    );
+                                    if !game_scene_manager.is_completed_game_scenario(ScenarioType::ScenarioIntro) {
+                                        game_scene_manager.request_open_game_scenario(ScenarioType::ScenarioIntro, true);
+                                    }
                                 }
                             }
                             self.set_next_game_phase(GamePhase::LoadingProgress);

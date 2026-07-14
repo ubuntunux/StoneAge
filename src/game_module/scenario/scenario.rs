@@ -1,7 +1,5 @@
 use crate::game_module::game_resource::GameResources;
-use crate::game_module::game_scene_manager::{
-    CharacterCreateInfoMap, GameSceneManager, ItemCreateInfoMap, PropCreateInfoMap,
-};
+use crate::game_module::game_scene_manager::{CharacterCreateInfoMap, GameScenarioSaveData, GameSceneManager, ItemCreateInfoMap, PropCreateInfoMap};
 use crate::game_module::scenario::game_scenarios::scenario_day_one::ScenarioDayOne;
 use crate::game_module::scenario::game_scenarios::scenario_intro::ScenarioIntro;
 use crate::game_module::scenario::game_scenarios::scenario_revolution::ScenarioRevolution;
@@ -120,6 +118,18 @@ impl ScenarioDataCreateInfo {
 
 pub trait ScenarioBase<'a> {
     fn get_scenario_type(&self) -> ScenarioType;
+    fn get_scenario_phase_as_string(&self) -> String;
+    fn set_scenario_phase_as_string(&mut self, scenario_phase: &String);
+    fn load_scenario_save_data(&mut self, scenario_save_data: &GameScenarioSaveData) {
+        self.set_scenario_phase_as_string(&scenario_save_data._scenario_phase);
+    }
+    fn get_scenario_save_data(&self) -> GameScenarioSaveData {
+        GameScenarioSaveData {
+            _scenario_type: self.get_scenario_type(),
+            _scenario_phase: self.get_scenario_phase_as_string(),
+        }
+    }
+    fn post_process_after_scenario_loading(&mut self) {}
     fn is_load_completed(&self) -> bool;
     fn is_play_scenario_mode(&self) -> bool;
     fn is_end_of_scenario(&self) -> bool;

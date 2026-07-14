@@ -3,7 +3,8 @@ use crate::game_module::game_scene_manager::{GameSceneSaveData, ScenarioSaveData
 use crate::game_module::widgets::item_bar_widget::InventoryItemCreateInfoList;
 use rust_engine_3d::scene::camera::CameraCreateInfo;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
+use crate::game_module::scenario::scenario::ScenarioType;
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[serde(default)]
@@ -17,4 +18,5 @@ pub struct GameSaveData {
     pub _last_game_scene_data_name: String,
     pub _game_scenes: HashMap<String, GameSceneSaveData>,
     pub _game_scenarios: ScenarioSaveDataList,
+    pub _completed_game_scenarios: HashSet<ScenarioType>,
 }

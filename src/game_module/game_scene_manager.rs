@@ -25,7 +25,7 @@ use rust_engine_3d::scene::scene_manager::{SceneDataCreateInfo, SceneManager};
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{RcRefCell, ptr_as_mut, ptr_as_ref};
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use strum_macros::{Display, EnumString};
 
 pub type CharacterCreateInfoMap = HashMap<String, CharacterCreateInfo>;
@@ -131,6 +131,7 @@ pub struct GameSceneManager<'a> {
     pub _prop_manager: Box<PropManager<'a>>,
     pub _reservation_scenarios: Vec<ScenarioType>,
     pub _scenarios: ScenarioList<'a>,
+    pub _completed_game_scenarios: HashSet<ScenarioType>,
     pub _is_play_scenario_mode: bool,
     pub _current_game_scene_data_name: String,
     pub _current_game_scene_data: Option<RcRefCell<GameSceneDataCreateInfo>>,
@@ -217,13 +218,14 @@ impl<'a> GameSceneManager<'a> {
             _scene_manager: std::ptr::null(),
             _game_resources: std::ptr::null(),
             _game_ui_manager: std::ptr::null(),
-            _current_game_scene_data_name: String::new(),
+            _current_game_scene_data_name: Default::default(),
             _current_game_scene_data: None,
             _character_manager: CharacterManager::create_character_manager(),
             _item_manager: ItemManager::create_item_manager(),
             _prop_manager: PropManager::create_prop_manager(),
             _reservation_scenarios: Default::default(),
             _scenarios: Default::default(),
+            _completed_game_scenarios: Default::default(),
             _is_play_scenario_mode: false,
             _ambient_sound: None,
             _spawn_point: Vector3::new(0.0, 0.0, 0.0),
@@ -332,6 +334,7 @@ impl<'a> GameSceneManager<'a> {
 
     pub fn load_game_save_data(&mut self, game_save_data: &GameSaveData) {
         self.clear_all_game_scenario();
+        self._completed_game_scenarios = game_save_data._completed_game_scenarios.clone();
         self._loaded_game_scene_save_data = game_save_data._game_scenes.get(&game_save_data._last_game_scene_data_name).cloned();
         self.open_game_scene_data(&game_save_data._last_game_scene_data_name);
         self.set_temperature(game_save_data._temperature);
@@ -346,12 +349,7 @@ impl<'a> GameSceneManager<'a> {
     }
 
     pub fn get_game_save_data(&self, game_save_data: &mut GameSaveData) {
-        game_save_data._player = self
-            .get_character_manager()
-            .get_player()
-            .as_ref()
-            .borrow()
-            .get_character_save_data();
+        game_save_data._player = self.get_character_manager().get_player().as_ref().borrow().get_character_save_data();
         game_save_data._time_of_day = self.get_time_of_day();
         game_save_data._temperature = self.temperature();
         game_save_data._date = self.get_date();
@@ -360,7 +358,8 @@ impl<'a> GameSceneManager<'a> {
             self.get_current_game_scene_data_name().clone(),
             self.get_game_scene_save_data(),
         );
-        // game_save_data._scenarios = self.get_game_scenario_save_data();
+        game_save_data._completed_game_scenarios = self._completed_game_scenarios.clone();
+        game_save_data._game_scenarios = self._scenarios.iter().map(|scenario| scenario.borrow().get_scenario_save_data()).collect();
     }
 
     pub fn get_game_scene_save_data(&self) -> GameSceneSaveData {
@@ -704,6 +703,10 @@ impl<'a> GameSceneManager<'a> {
         }
     }
 
+    pub fn is_completed_game_scenario(&self, game_scenario: ScenarioType) -> bool {
+        self._completed_game_scenarios.contains(&game_scenario)
+    }
+
     pub fn has_scenario(&self) -> bool {
         !self._scenarios.is_empty()
     }
@@ -753,6 +756,7 @@ impl<'a> GameSceneManager<'a> {
                 }
 
                 if scenario.is_end_of_scenario() {
+                    self._completed_game_scenarios.insert(scenario.get_scenario_type());
                     scenario.destroy_game_scenario();
                 } else {
                     new_scenario_list.push(scenario_refcell.clone());
@@ -767,15 +771,8 @@ impl<'a> GameSceneManager<'a> {
                     .get_game_resources()
                     .get_scenario_data(scenario_type.get_scenario_data_name())
                     .clone();
-                let is_same_game_scene = scenario_create_info
-                    .borrow()
-                    .get_game_scene_data_name()
-                    .is_empty()
-                    || self.get_current_game_scene_data_name()
-                        == scenario_create_info
-                            .borrow()
-                            .get_game_scene_data_name()
-                            .as_str();
+                let is_same_game_scene = scenario_create_info.borrow().get_game_scene_data_name().is_empty()
+                    || self.get_current_game_scene_data_name() == scenario_create_info.borrow().get_game_scene_data_name().as_str();
 
                 let scenario = self.open_game_scenario_data(*scenario_type).clone();
 

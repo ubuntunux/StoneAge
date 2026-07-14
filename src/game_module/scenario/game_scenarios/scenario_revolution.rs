@@ -1,3 +1,4 @@
+use std::str::FromStr;
 use crate::game_module::actors::character::{ActorWrapper, Character};
 use crate::game_module::game_constants::{
     AUDIO_ALIEN_TALK, AUDIO_UFO_EXPERIMENT, AUDIO_UFO_LABORATORY, CHARACTER_INTERACTION_TIME,
@@ -91,6 +92,14 @@ impl<'a> ScenarioRevolution<'a> {
 impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
     fn get_scenario_type(&self) -> ScenarioType {
         self._scenario_type
+    }
+
+    fn get_scenario_phase_as_string(&self) -> String {
+        self._scenario_track._scenario_phase.to_string()
+    }
+
+    fn set_scenario_phase_as_string(&mut self, scenario_phase: &String) {
+        self._scenario_track._scenario_phase = ScenarioPhase::from_str(scenario_phase.as_str()).unwrap();
     }
 
     fn is_load_completed(&self) -> bool {
