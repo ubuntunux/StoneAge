@@ -26,7 +26,7 @@ use strum_macros::{Display, EnumString};
 pub type CharacterCreateInfoMap = HashMap<String, CharacterCreateInfo>;
 pub type ItemCreateInfoMap = HashMap<String, ItemCreateInfo>;
 pub type PropCreateInfoMap = HashMap<String, PropCreateInfo>;
-pub type ScenarioList<'a> = Vec<RcRefCell<dyn ScenarioBase<'a> + 'a>>;
+pub type ScenarioMap<'a> = HashMap<ScenarioType, RcRefCell<dyn ScenarioBase<'a> + 'a>>;
 pub type ScenarioSaveDataList = Vec<GameScenarioSaveData>;
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
@@ -125,7 +125,7 @@ pub struct GameSceneManager<'a> {
     pub _item_manager: Box<ItemManager<'a>>,
     pub _prop_manager: Box<PropManager<'a>>,
     pub _reservation_scenarios: Vec<ScenarioType>,
-    pub _scenarios: ScenarioList<'a>,
+    pub _scenarios: ScenarioMap<'a>,
     pub _completed_game_scenarios: HashSet<ScenarioType>,
     pub _is_play_scenario_mode: bool,
     pub _current_game_scene_data_name: String,
@@ -349,7 +349,7 @@ impl<'a> GameSceneManager<'a> {
         );
         game_save_data._completed_game_scenarios = self._completed_game_scenarios.clone();
         game_save_data._game_scenarios =
-            self._scenarios.iter().map(|scenario| scenario.borrow().get_scenario_save_data()).collect();
+            self._scenarios.values().map(|scenario| scenario.borrow().get_scenario_save_data()).collect();
     }
 
     pub fn get_game_scene_save_data(&self) -> GameSceneSaveData {
@@ -403,21 +403,11 @@ impl<'a> GameSceneManager<'a> {
 
     // scenario
     pub fn has_game_scenario(&self, scenario_type: ScenarioType) -> bool {
-        for scenario in self._scenarios.iter() {
-            if ptr_as_ref(scenario.as_ptr()).get_scenario_type() == scenario_type {
-                return true;
-            }
-        }
-        false
+        self._scenarios.contains_key(&scenario_type)
     }
 
     pub fn get_game_scenario(&self, scenario_type: ScenarioType) -> Option<*const (dyn ScenarioBase<'a> + 'a)> {
-        for scenario in self._scenarios.iter() {
-            if ptr_as_ref(scenario.as_ptr()).get_scenario_type() == scenario_type {
-                return Some(scenario.as_ptr());
-            }
-        }
-        None
+        self._scenarios.get(&scenario_type).map(|scenario| scenario.as_ptr() as *const (dyn ScenarioBase<'a> + 'a))
     }
 
     pub fn request_open_game_scenario(&mut self, scenario_type: ScenarioType, force_open_game_scenario: bool) {
@@ -432,12 +422,15 @@ impl<'a> GameSceneManager<'a> {
         let scenario_data_create_info_refcell =
             game_resources.get_scenario_data(scenario_type.get_scenario_data_name());
         let scenario_data_create_info = scenario_data_create_info_refcell.borrow();
-        self._scenarios.push(create_scenario(
-            self,
-            self._game_resources,
+        self._scenarios.insert(
             scenario_type,
-            &scenario_data_create_info,
-        ));
+            create_scenario(
+                self,
+                self._game_resources,
+                scenario_type,
+                &scenario_data_create_info,
+            ),
+        );
 
         // open game scene data
         if let Some(game_scene) = scenario_data_create_info._game_scenes.values().last().as_ref() {
@@ -446,12 +439,12 @@ impl<'a> GameSceneManager<'a> {
                 self.open_game_scene_data(scene_data_name);
             }
         }
-        self._scenarios.last().unwrap()
+        self._scenarios.get(&scenario_type).unwrap()
     }
 
     fn clear_all_game_scenario(&mut self) {
         if self.has_scenario() {
-            self._scenarios.iter_mut().for_each(|scenario_refcell| {
+            self._scenarios.values_mut().for_each(|scenario_refcell| {
                 let mut scenario = scenario_refcell.borrow_mut();
                 scenario.destroy_game_scenario();
             });
@@ -482,7 +475,7 @@ impl<'a> GameSceneManager<'a> {
 
     pub fn close_game_scene_data(&mut self) {
         if self.has_scenario() {
-            self._scenarios.iter_mut().for_each(|scenario| {
+            self._scenarios.values_mut().for_each(|scenario| {
                 scenario.borrow_mut().on_close_game_scene(self._current_game_scene_data_name.as_str());
             });
         }
@@ -556,7 +549,7 @@ impl<'a> GameSceneManager<'a> {
         }
 
         // scenario data
-        for scenario in self._scenarios.iter() {
+        for scenario in self._scenarios.values() {
             let scenario_create_info = self
                 .get_game_resources()
                 .get_scenario_data(scenario.borrow().get_scenario_type().get_scenario_data_name())
@@ -664,10 +657,8 @@ impl<'a> GameSceneManager<'a> {
 
     pub fn update_game_scenario(&mut self, any_key_hold: bool, any_key_pressed: bool, delta_time: f64) {
         self._is_play_scenario_mode = false;
-
         if self.has_scenario() {
-            let mut new_scenario_list: ScenarioList<'a> = Vec::new();
-            self._scenarios.iter_mut().for_each(|scenario_refcell| {
+            self._scenarios.retain(|_scenario_type, scenario_refcell| {
                 let mut scenario = scenario_refcell.borrow_mut();
                 if scenario.is_load_completed() {
                     scenario.update_game_scenario(any_key_hold, any_key_pressed, delta_time);
@@ -680,11 +671,11 @@ impl<'a> GameSceneManager<'a> {
                 if scenario.is_end_of_scenario() {
                     self._completed_game_scenarios.insert(scenario.get_scenario_type());
                     scenario.destroy_game_scenario();
+                    false
                 } else {
-                    new_scenario_list.push(scenario_refcell.clone());
+                    true
                 }
             });
-            self._scenarios = new_scenario_list;
         }
 
         if !self._reservation_scenarios.is_empty() {
@@ -726,7 +717,7 @@ impl<'a> GameSceneManager<'a> {
                     }
 
                     if self.has_scenario() {
-                        self._scenarios.iter_mut().for_each(|scenario| {
+                        self._scenarios.values_mut().for_each(|scenario| {
                             scenario.borrow_mut().on_open_game_scene(self._current_game_scene_data_name.as_str());
                         });
                     }
