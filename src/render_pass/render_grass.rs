@@ -7,9 +7,7 @@ use rust_engine_3d::renderer::push_constants::{
     PushConstant, PushConstant_RenderObjectBase, PushConstantName, PushConstantParameter,
 };
 use rust_engine_3d::renderer::renderer_data::RendererData;
-use rust_engine_3d::vulkan_context::descriptor::{
-    DescriptorDataCreateInfo, DescriptorResourceType,
-};
+use rust_engine_3d::vulkan_context::descriptor::{DescriptorDataCreateInfo, DescriptorResourceType};
 use rust_engine_3d::vulkan_context::render_pass::RenderPassDataCreateInfo;
 use serde::{Deserialize, Serialize};
 
@@ -64,9 +62,7 @@ pub fn get_descriptor_data_create_infos() -> Vec<DescriptorDataCreateInfo> {
     ]
 }
 
-pub fn get_render_pass_data_create_infos(
-    renderer_data: &RendererData,
-) -> Vec<RenderPassDataCreateInfo> {
+pub fn get_render_pass_data_create_infos(renderer_data: &RendererData) -> Vec<RenderPassDataCreateInfo> {
     common::get_render_pass_data_create_infos(
         renderer_data,
         vk::CullModeFlags::NONE,

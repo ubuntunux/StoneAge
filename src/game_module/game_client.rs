@@ -1,9 +1,9 @@
 use crate::application::application::Application;
 use crate::game_module::actors::character_manager::CharacterManager;
 use crate::game_module::game_constants::{
-    AMBIENT_SOUND, CAMERA_DISTANCE_MAX, DEFAULT_BGM_VOLUME, DEFAULT_FADE_TIME,
-    DEFAULT_GAME_SAVE_DATA, DEFAULT_GATE_NAME, GAME_MUSIC, GAME_VIEW_MODE, GameViewMode,
-    MATERIAL_INTRO_IMAGE, MATERIAL_UI_NONE, MATERIAL_WORLDMAP_FADE_TIME,
+    AMBIENT_SOUND, CAMERA_DISTANCE_MAX, DEFAULT_BGM_VOLUME, DEFAULT_FADE_TIME, DEFAULT_GAME_SAVE_DATA,
+    DEFAULT_GATE_NAME, GAME_MUSIC, GAME_VIEW_MODE, GameViewMode, MATERIAL_INTRO_IMAGE, MATERIAL_UI_NONE,
+    MATERIAL_WORLDMAP_FADE_TIME,
 };
 use crate::game_module::game_controller::GameController;
 use crate::game_module::game_resource::GameResources;
@@ -66,11 +66,7 @@ impl<'a> GameClient<'a> {
         })
     }
 
-    pub fn initialize_game_client(
-        &mut self,
-        engine_core: *const EngineCore<'a>,
-        application: &Application<'a>,
-    ) {
+    pub fn initialize_game_client(&mut self, engine_core: *const EngineCore<'a>, application: &Application<'a>) {
         log::info!("initialize_game_client");
         self._engine_core = engine_core;
         self._application = application;
@@ -137,8 +133,8 @@ impl<'a> GameClient<'a> {
         if is_game_mode && self.get_game_scene_manager().get_character_manager().is_valid_player() {
             let main_camera = self.get_game_controller().get_main_camera();
             let player = self.get_game_scene_manager().get_character_manager().get_player();
-            let mut player_position = main_camera.get_camera_position()
-                + CAMERA_DISTANCE_MAX * main_camera.get_camera_front();
+            let mut player_position =
+                main_camera.get_camera_position() + CAMERA_DISTANCE_MAX * main_camera.get_camera_front();
             if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
                 player_position.z = player.borrow().get_position().z;
             }
@@ -170,8 +166,7 @@ impl<'a> GameClient<'a> {
         self._request_load_game_data_name = String::default();
     }
     pub fn save_game(&mut self) {
-        let game_save_data =
-            self.get_game_resources_mut().get_or_create_game_save_data(DEFAULT_GAME_SAVE_DATA);
+        let game_save_data = self.get_game_resources_mut().get_or_create_game_save_data(DEFAULT_GAME_SAVE_DATA);
         self.get_game_scene_manager().get_game_save_data(&mut game_save_data.borrow_mut());
         self.get_game_resources_mut().save_game_save_data(DEFAULT_GAME_SAVE_DATA);
     }
@@ -236,8 +231,7 @@ impl<'a> GameClient<'a> {
                 GamePhase::BeginLoading => match state {
                     State::Begin => {
                         game_ui_manager.show_game_ui(false);
-                        game_ui_manager
-                            .set_image_manual_fade_inout(MATERIAL_UI_NONE, DEFAULT_FADE_TIME);
+                        game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, DEFAULT_FADE_TIME);
                     }
                     State::Update => {
                         if game_ui_manager.is_done_manual_fade_out() {
@@ -246,21 +240,14 @@ impl<'a> GameClient<'a> {
                             } else {
                                 const SKIP_SCENARIO: bool = false;
                                 if SKIP_SCENARIO {
-                                    game_scene_manager.request_open_game_scenario(
-                                        ScenarioType::ScenarioDayOne,
-                                        true,
-                                    );
+                                    game_scene_manager.request_open_game_scenario(ScenarioType::ScenarioDayOne, true);
                                     unsafe {
                                         scenario_day_one::SKIP_SCENARIO = true;
                                     }
                                 } else {
-                                    if !game_scene_manager
-                                        .is_completed_game_scenario(ScenarioType::ScenarioIntro)
-                                    {
-                                        game_scene_manager.request_open_game_scenario(
-                                            ScenarioType::ScenarioIntro,
-                                            true,
-                                        );
+                                    if !game_scene_manager.is_completed_game_scenario(ScenarioType::ScenarioIntro) {
+                                        game_scene_manager
+                                            .request_open_game_scenario(ScenarioType::ScenarioIntro, true);
                                     }
                                 }
                             }
@@ -271,9 +258,7 @@ impl<'a> GameClient<'a> {
                 },
 
                 GamePhase::LoadingProgress => {
-                    if state == State::Update
-                        && game_scene_manager.is_game_scene_state(GameSceneState::LoadCompleted)
-                    {
+                    if state == State::Update && game_scene_manager.is_game_scene_state(GameSceneState::LoadCompleted) {
                         game_ui_manager.set_auto_fade_inout(true);
                         game_controller.set_game_camera_goal_transform(
                             1.0,
@@ -292,8 +277,7 @@ impl<'a> GameClient<'a> {
                         if !game_ui_manager.is_opened_game_menu() {
                             self.set_next_game_phase(GamePhase::GamePlay);
                         }
-                        game_ui_manager
-                            .update_game_menu_widget(joystick_input_data, keyboard_input_data);
+                        game_ui_manager.update_game_menu_widget(joystick_input_data, keyboard_input_data);
                     }
                     State::End => {
                         game_ui_manager.set_cross_hair_visible(false);
@@ -354,8 +338,7 @@ impl<'a> GameClient<'a> {
                             character_manager.get_player().borrow_mut().set_action_none();
                             character_manager.get_player().borrow_mut().set_move_idle();
                         }
-                        game_ui_manager
-                            .set_image_manual_fade_inout(MATERIAL_UI_NONE, DEFAULT_FADE_TIME);
+                        game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, DEFAULT_FADE_TIME);
                     }
                     State::Update => {
                         if game_ui_manager.is_done_manual_fade_out() {
@@ -398,10 +381,7 @@ impl<'a> GameClient<'a> {
                 },
                 GamePhase::WorldMapOpen => match state {
                     State::Begin => {
-                        game_ui_manager.set_image_manual_fade_inout(
-                            MATERIAL_UI_NONE,
-                            MATERIAL_WORLDMAP_FADE_TIME,
-                        );
+                        game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, MATERIAL_WORLDMAP_FADE_TIME);
                     }
                     State::Update => {
                         if game_ui_manager.is_done_manual_fade_out() {
@@ -420,8 +400,7 @@ impl<'a> GameClient<'a> {
                 GamePhase::WorldMapUpdate => match state {
                     State::Begin => {}
                     State::Update => {
-                        game_ui_manager
-                            .update_world_map_widget(joystick_input_data, keyboard_input_data);
+                        game_ui_manager.update_world_map_widget(joystick_input_data, keyboard_input_data);
 
                         if game_scene_manager.is_teleport_mode() {
                             self.set_next_game_phase(GamePhase::WorldMapClose);
@@ -437,13 +416,8 @@ impl<'a> GameClient<'a> {
                 },
                 GamePhase::WorldMapClose => {
                     if state == State::Update {
-                        game_ui_manager.set_image_manual_fade_inout(
-                            MATERIAL_UI_NONE,
-                            MATERIAL_WORLDMAP_FADE_TIME,
-                        );
-                        if game_ui_manager.is_done_manual_fade_out()
-                            || game_ui_manager.is_done_game_image_progress()
-                        {
+                        game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, MATERIAL_WORLDMAP_FADE_TIME);
+                        if game_ui_manager.is_done_manual_fade_out() || game_ui_manager.is_done_game_image_progress() {
                             game_ui_manager.set_text_box_visible(true);
                             game_ui_manager.set_cross_hair_visible(false);
                             game_ui_manager.set_auto_fade_inout(true);

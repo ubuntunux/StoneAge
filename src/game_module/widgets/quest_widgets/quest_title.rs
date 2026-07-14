@@ -6,8 +6,7 @@ use crate::game_module::widgets::quest_widgets::quest_widget::{
     FONT_SIZE, ITEM_SIZE, QuestCreateInfo, create_quest_item, create_quest_item_layout,
 };
 use rust_engine_3d::scene::ui::{
-    HorizontalAlign, Orientation, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign,
-    WidgetDefault,
+    HorizontalAlign, Orientation, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault,
 };
 use rust_engine_3d::utilities::system::{RcRefCell, newRcRefCell, ptr_as_mut};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
@@ -34,10 +33,7 @@ impl<'a> QuestTitle<'a> {
             _game_resources: game_resources,
             _layout_widget: create_quest_item_layout(parent_widget),
             _text_widget: if title.is_some() {
-                Some(UIManager::create_widget(
-                    "text_widget",
-                    UIWidgetTypes::Default,
-                ))
+                Some(UIManager::create_widget("text_widget", UIWidgetTypes::Default))
             } else {
                 None
             },
@@ -59,8 +55,7 @@ impl<'a> QuestTitle<'a> {
         ui_component.set_color(get_color32(255, 255, 255, 0));
 
         if self._text_widget.is_some() {
-            let ui_component =
-                ptr_as_mut(self._text_widget.as_ref().unwrap().as_ref()).get_ui_component_mut();
+            let ui_component = ptr_as_mut(self._text_widget.as_ref().unwrap().as_ref()).get_ui_component_mut();
             ui_component.set_expandable_x(true);
             ui_component.set_halign(HorizontalAlign::LEFT);
             ui_component.set_valign(VerticalAlign::CENTER);
@@ -69,8 +64,7 @@ impl<'a> QuestTitle<'a> {
             ui_component.set_font_color(get_color32(255, 255, 255, 255));
             ui_component.set_font_size(FONT_SIZE);
             ui_component.set_text(self._quest_title.as_ref().unwrap().as_str());
-            ptr_as_mut(self._layout_widget.as_ref())
-                .add_widget(self._text_widget.as_ref().unwrap());
+            ptr_as_mut(self._layout_widget.as_ref()).add_widget(self._text_widget.as_ref().unwrap());
         }
     }
 

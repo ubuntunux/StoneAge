@@ -1,7 +1,6 @@
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::{
-    CharacterCreateInfoMap, GameScenarioSaveData, GameSceneManager, ItemCreateInfoMap,
-    PropCreateInfoMap,
+    CharacterCreateInfoMap, GameScenarioSaveData, GameSceneManager, ItemCreateInfoMap, PropCreateInfoMap,
 };
 use crate::game_module::scenario::game_scenarios::scenario_day_one::ScenarioDayOne;
 use crate::game_module::scenario::game_scenarios::scenario_intro::ScenarioIntro;
@@ -18,9 +17,7 @@ use strum_macros::{Display, EnumString};
 
 pub type GameSceneCreateInfoMap = HashMap<String, GameSceneCreateInfo>;
 
-#[derive(
-    Serialize, Deserialize, Clone, PartialEq, Eq, Hash, Debug, Display, EnumString, Copy, Default,
-)]
+#[derive(Serialize, Deserialize, Clone, PartialEq, Eq, Hash, Debug, Display, EnumString, Copy, Default)]
 pub enum ScenarioType {
     #[default]
     ScenarioIntro,
@@ -51,11 +48,7 @@ pub struct ScenarioTrack<T: Copy + PartialEq + Hash> {
 }
 
 impl<T: Copy + PartialEq + Hash> ScenarioTrack<T> {
-    pub fn set_next_scenario_phase(
-        &mut self,
-        next_scenario_phase: T,
-        next_phase_duration: Option<f32>,
-    ) {
+    pub fn set_next_scenario_phase(&mut self, next_scenario_phase: T, next_phase_duration: Option<f32>) {
         self._next_scenario_phase = next_scenario_phase;
         self._next_phase_duration = next_phase_duration;
     }
@@ -143,18 +136,12 @@ pub fn create_scenario<'a>(
     scenario_create_info: &ScenarioDataCreateInfo,
 ) -> RcRefCell<dyn ScenarioBase<'a> + 'a> {
     match scenario_type {
-        ScenarioType::ScenarioIntro => ScenarioIntro::create_game_scenario(
-            game_scene_manager,
-            game_resources,
-            scenario_type,
-            scenario_create_info,
-        ),
-        ScenarioType::ScenarioUfo => ScenarioUfo::create_game_scenario(
-            game_scene_manager,
-            game_resources,
-            scenario_type,
-            scenario_create_info,
-        ),
+        ScenarioType::ScenarioIntro => {
+            ScenarioIntro::create_game_scenario(game_scene_manager, game_resources, scenario_type, scenario_create_info)
+        }
+        ScenarioType::ScenarioUfo => {
+            ScenarioUfo::create_game_scenario(game_scene_manager, game_resources, scenario_type, scenario_create_info)
+        }
         ScenarioType::ScenarioRevolution => ScenarioRevolution::create_game_scenario(
             game_scene_manager,
             game_resources,

@@ -3,14 +3,12 @@ use crate::game_module::actors::character_data::ActionAnimationState;
 use crate::game_module::actors::props::Prop;
 use crate::game_module::behavior::behavior_base::BehaviorState;
 use crate::game_module::game_constants::{
-    AUDIO_QUEST_COMPLETE, AUDIO_ROOSTER, AUDIO_WRAP_UP_THE_DAY, DEFAULT_BGM_VOLUME,
-    DEFAULT_FADE_TIME, GAME_MUSIC, MATERIAL_UI_NONE, SLEEP_TIMER,
+    AUDIO_QUEST_COMPLETE, AUDIO_ROOSTER, AUDIO_WRAP_UP_THE_DAY, DEFAULT_BGM_VOLUME, DEFAULT_FADE_TIME, GAME_MUSIC,
+    MATERIAL_UI_NONE, SLEEP_TIMER,
 };
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
-use crate::game_module::scenario::scenario::{
-    ScenarioBase, ScenarioDataCreateInfo, ScenarioTrack, ScenarioType,
-};
+use crate::game_module::scenario::scenario::{ScenarioBase, ScenarioDataCreateInfo, ScenarioTrack, ScenarioType};
 use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop};
 use rust_engine_3d::scene::scene_manager::SceneManager;
@@ -92,8 +90,7 @@ fn dance_around_the_table(
     table: &Option<RcRefCell<Prop>>,
     direction: &Vector3<f32>,
 ) {
-    let mut pos =
-        table.as_ref().unwrap().borrow().get_position() - math::safe_normalize(direction) * 2.0;
+    let mut pos = table.as_ref().unwrap().borrow().get_position() - math::safe_normalize(direction) * 2.0;
     pos.y = scene_manager.get_height_bilinear(&pos, 0);
     actor.as_ref().unwrap().borrow_mut().set_position(&pos);
     actor.as_ref().unwrap().borrow_mut().look_at(table.as_ref().unwrap().borrow().get_position());
@@ -132,8 +129,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
     }
 
     fn set_scenario_phase_as_string(&mut self, scenario_phase: &String) {
-        self._scenario_track._scenario_phase =
-            ScenarioPhase::from_str(scenario_phase.as_str()).unwrap();
+        self._scenario_track._scenario_phase = ScenarioPhase::from_str(scenario_phase.as_str()).unwrap();
     }
 
     fn is_load_completed(&self) -> bool {
@@ -174,27 +170,18 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
             self._actor_koa = Some(actor.clone());
         }
 
-        self._prop_table =
-            Some(game_scene_manager.get_prop_manager().get_prop_by_name("table").unwrap().clone());
-        self._prop_bed_for_aru = Some(
-            game_scene_manager.get_prop_manager().get_prop_by_name("bed_for_aru").unwrap().clone(),
-        );
-        self._prop_bed_for_ewa = Some(
-            game_scene_manager.get_prop_manager().get_prop_by_name("bed_for_ewa").unwrap().clone(),
-        );
-        self._prop_bed_for_koa = Some(
-            game_scene_manager.get_prop_manager().get_prop_by_name("bed_for_koa").unwrap().clone(),
-        );
+        self._prop_table = Some(game_scene_manager.get_prop_manager().get_prop_by_name("table").unwrap().clone());
+        self._prop_bed_for_aru =
+            Some(game_scene_manager.get_prop_manager().get_prop_by_name("bed_for_aru").unwrap().clone());
+        self._prop_bed_for_ewa =
+            Some(game_scene_manager.get_prop_manager().get_prop_by_name("bed_for_ewa").unwrap().clone());
+        self._prop_bed_for_koa =
+            Some(game_scene_manager.get_prop_manager().get_prop_by_name("bed_for_koa").unwrap().clone());
 
         self._is_load_completed = true;
     }
 
-    fn update_game_scenario(
-        &mut self,
-        _any_key_hold: bool,
-        _any_key_pressed: bool,
-        delta_time: f64,
-    ) {
+    fn update_game_scenario(&mut self, _any_key_hold: bool, _any_key_pressed: bool, delta_time: f64) {
         let game_scene_manager = ptr_as_mut(self._game_scene_manager);
         let game_ui_manager = ptr_as_mut(game_scene_manager._game_ui_manager);
 
@@ -203,17 +190,14 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
         let next_phase_duration = self._scenario_track._next_phase_duration;
 
         for state in State::iter() {
-            if prev_scenario_phase == next_scenario_phase
-                && (state == State::End || state == State::Begin)
-            {
+            if prev_scenario_phase == next_scenario_phase && (state == State::End || state == State::Begin) {
                 continue;
             }
 
             let update_scenario_phase: ScenarioPhase = match state {
                 State::End => prev_scenario_phase,
                 State::Begin => {
-                    self._scenario_track
-                        .set_scenario_phase(next_scenario_phase, next_phase_duration);
+                    self._scenario_track.set_scenario_phase(next_scenario_phase, next_phase_duration);
                     next_scenario_phase
                 }
                 State::Update => next_scenario_phase,
@@ -234,28 +218,23 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                         self._actor_aru.as_ref().unwrap().borrow_mut().set_action_none();
                         self._actor_ewa.as_ref().unwrap().borrow_mut().set_action_none();
                         self._actor_koa.as_ref().unwrap().borrow_mut().set_action_none();
-                        game_ui_manager
-                            .set_image_manual_fade_inout(MATERIAL_UI_NONE, DEFAULT_FADE_TIME);
-                        self._scenario_track
-                            .set_next_scenario_phase(ScenarioPhase::Performance, Some(10.0));
+                        game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, DEFAULT_FADE_TIME);
+                        self._scenario_track.set_next_scenario_phase(ScenarioPhase::Performance, Some(10.0));
                     }
                 }
                 ScenarioPhase::Performance => {
                     if state == State::Update {
                         if game_ui_manager.is_done_manual_fade_out() {
                             game_scene_manager.stop_bgm();
-                            self._audio_bgm = game_scene_manager
-                                .get_audio_manager_mut()
-                                .play_audio_bank(AUDIO_WRAP_UP_THE_DAY, AudioLoop::SOME(4), None);
+                            self._audio_bgm = game_scene_manager.get_audio_manager_mut().play_audio_bank(
+                                AUDIO_WRAP_UP_THE_DAY,
+                                AudioLoop::SOME(4),
+                                None,
+                            );
 
-                            let main_camera =
-                                game_scene_manager.get_scene_manager().get_main_camera_mut();
-                            main_camera
-                                ._transform_object
-                                .set_position(&Vector3::from(TABLE_SCENE_CAMERA_POSITION));
-                            main_camera
-                                ._transform_object
-                                .set_rotation(&Vector3::from(TABLE_SCENE_CAMERA_ROTATION));
+                            let main_camera = game_scene_manager.get_scene_manager().get_main_camera_mut();
+                            main_camera._transform_object.set_position(&Vector3::from(TABLE_SCENE_CAMERA_POSITION));
+                            main_camera._transform_object.set_rotation(&Vector3::from(TABLE_SCENE_CAMERA_ROTATION));
 
                             dance_around_the_table(
                                 game_scene_manager.get_scene_manager(),
@@ -295,8 +274,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                             self._actor_aru.as_ref().unwrap().borrow_mut().set_action_none();
                             self._actor_ewa.as_ref().unwrap().borrow_mut().set_action_none();
                             self._actor_koa.as_ref().unwrap().borrow_mut().set_action_none();
-                            self._scenario_track
-                                .set_next_scenario_phase(ScenarioPhase::GoToSleep, Some(10.0));
+                            self._scenario_track.set_next_scenario_phase(ScenarioPhase::GoToSleep, Some(10.0));
                         }
                     }
                 }
@@ -306,15 +284,8 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                         go_to_sleep(&self._actor_ewa, &self._prop_bed_for_ewa);
                         go_to_sleep(&self._actor_koa, &self._prop_bed_for_koa);
 
-                        if self
-                            ._actor_aru
-                            .as_ref()
-                            .unwrap()
-                            .borrow()
-                            .is_action(ActionAnimationState::Sleep)
-                        {
-                            self._scenario_track
-                                .set_next_scenario_phase(ScenarioPhase::Sleep, None);
+                        if self._actor_aru.as_ref().unwrap().borrow().is_action(ActionAnimationState::Sleep) {
+                            self._scenario_track.set_next_scenario_phase(ScenarioPhase::Sleep, None);
                         }
                     }
                 }
@@ -322,13 +293,10 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                     State::Begin => {
                         self._sleep_timer = 0.0;
                         game_scene_manager.play_bgm(GAME_MUSIC, DEFAULT_BGM_VOLUME);
-                        game_ui_manager
-                            .set_image_manual_fade_inout(MATERIAL_UI_NONE, DEFAULT_FADE_TIME);
+                        game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, DEFAULT_FADE_TIME);
                     }
                     State::Update => {
-                        if game_ui_manager.is_done_manual_fade_out()
-                            && self._sleep_timer < SLEEP_TIMER
-                        {
+                        if game_ui_manager.is_done_manual_fade_out() && self._sleep_timer < SLEEP_TIMER {
                             self._sleep_timer += delta_time as f32;
                             if SLEEP_TIMER <= self._sleep_timer {
                                 game_ui_manager.set_auto_fade_inout(true);
@@ -338,9 +306,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                             if self._skip_wakeup {
                                 self._skip_wakeup = false;
                             } else {
-                                game_scene_manager
-                                    .get_scene_manager()
-                                    .play_audio_bank(AUDIO_ROOSTER);
+                                game_scene_manager.get_scene_manager().play_audio_bank(AUDIO_ROOSTER);
                                 self._actor_aru.as_ref().unwrap().borrow_mut().set_action_wake_up();
                                 self._actor_ewa
                                     .as_ref()

@@ -36,11 +36,7 @@ pub struct Application<'a> {
 }
 
 impl<'a> ApplicationBase<'a> for Application<'a> {
-    fn initialize_application(
-        &'a mut self,
-        engine_core: &EngineCore<'a>,
-        window_size: &Vector2<i32>,
-    ) {
+    fn initialize_application(&'a mut self, engine_core: &EngineCore<'a>, window_size: &Vector2<i32>) {
         // engine managers
         self._engine_core = engine_core;
         self._audio_manager = engine_core.get_audio_manager();
@@ -54,11 +50,8 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
         self.get_game_client_mut().initialize_game_client(engine_core, application);
         self.get_game_controller_mut().initialize_game_controller(application);
         self.get_game_ui_manager_mut().initialize_game_ui_manager(engine_core, application);
-        self.get_game_scene_manager_mut().initialize_game_scene_manager(
-            application,
-            engine_core,
-            window_size,
-        );
+        self.get_game_scene_manager_mut()
+            .initialize_game_scene_manager(application, engine_core, window_size);
         self.get_editor_ui_manager_mut().initialize_editor_ui_manager(engine_core, application);
 
         // start game
@@ -79,8 +72,7 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
     }
 
     fn get_render_pass_create_info_callback(&self) -> *const CallbackLoadRenderPassCreateInfo {
-        static CALLBACK: CallbackLoadRenderPassCreateInfo =
-            render_pass::render_pass::get_render_pass_data_create_infos;
+        static CALLBACK: CallbackLoadRenderPassCreateInfo = render_pass::render_pass::get_render_pass_data_create_infos;
         &CALLBACK
     }
 
@@ -97,15 +89,12 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
         let joystick_input_data = &engine_core._joystick_input_data;
 
         if unsafe { DEVELOPMENT } {
-            let is_toggle_game_mode_by_joystick = joystick_input_data._btn_left_trigger
-                == ButtonState::Hold
+            let is_toggle_game_mode_by_joystick = joystick_input_data._btn_left_trigger == ButtonState::Hold
                 && joystick_input_data._btn_right_trigger == ButtonState::Hold
                 && joystick_input_data._btn_left_shoulder == ButtonState::Hold
                 && joystick_input_data._btn_right_shoulder == ButtonState::Hold;
 
-            if engine_core._keyboard_input_data.get_key_pressed(KeyCode::Tab)
-                || is_toggle_game_mode_by_joystick
-            {
+            if engine_core._keyboard_input_data.get_key_pressed(KeyCode::Tab) || is_toggle_game_mode_by_joystick {
                 self.toggle_game_mode();
             }
         }
@@ -114,12 +103,10 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
             const MOUSE_DELTA_RATIO: f32 = 500.0;
             let delta_time = time_data._delta_time_with_scale;
             let _mouse_pos = &mouse_move_data._mouse_pos;
-            let mouse_delta_x = mouse_move_data._mouse_pos_delta.x as f32
-                / engine_core._window_size.x as f32
-                * MOUSE_DELTA_RATIO;
-            let mouse_delta_y = mouse_move_data._mouse_pos_delta.y as f32
-                / engine_core._window_size.y as f32
-                * MOUSE_DELTA_RATIO;
+            let mouse_delta_x =
+                mouse_move_data._mouse_pos_delta.x as f32 / engine_core._window_size.x as f32 * MOUSE_DELTA_RATIO;
+            let mouse_delta_y =
+                mouse_move_data._mouse_pos_delta.y as f32 / engine_core._window_size.y as f32 * MOUSE_DELTA_RATIO;
             let btn_left: bool = mouse_input_data._btn_l_hold;
             let btn_right: bool = mouse_input_data._btn_r_hold;
             let btn_r_pressed: bool = mouse_input_data._btn_r_pressed;
@@ -142,10 +129,8 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
             let pressed_key_c = keyboard_input_data.get_key_hold(KeyCode::KeyC);
             let pressed_key_comma = keyboard_input_data.get_key_hold(KeyCode::Comma);
             let pressed_key_period = keyboard_input_data.get_key_hold(KeyCode::Period);
-            let released_key_left_bracket =
-                keyboard_input_data.get_key_released(KeyCode::BracketLeft);
-            let released_key_right_bracket =
-                keyboard_input_data.get_key_released(KeyCode::BracketRight);
+            let released_key_left_bracket = keyboard_input_data.get_key_released(KeyCode::BracketLeft);
+            let released_key_right_bracket = keyboard_input_data.get_key_released(KeyCode::BracketRight);
             let released_key_subtract = keyboard_input_data.get_key_released(KeyCode::Minus);
             let released_key_equals = keyboard_input_data.get_key_released(KeyCode::Equal);
             let modifier_keys_shift = keyboard_input_data.get_key_hold(KeyCode::ShiftLeft);
@@ -153,9 +138,8 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
             let main_camera = scene_manager.get_main_camera_mut();
             let main_light = ptr_as_mut(scene_manager.get_main_light().as_ptr());
             let camera_move_speed_multiplier = if modifier_keys_shift { 10.0 } else { 1.0 };
-            let move_speed: f32 = game_constants::EDITOR_CAMERA_MOVE_SPEED
-                * camera_move_speed_multiplier
-                * delta_time as f32;
+            let move_speed: f32 =
+                game_constants::EDITOR_CAMERA_MOVE_SPEED * camera_move_speed_multiplier * delta_time as f32;
             let pan_speed = game_constants::EDITOR_CAMERA_PAN_SPEED * camera_move_speed_multiplier;
             let rotation_speed = game_constants::EDITOR_CAMERA_ROTATION_SPEED;
 
@@ -186,13 +170,9 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
             }
 
             if pressed_key_z {
-                main_camera
-                    ._transform_object
-                    .rotation_roll(-rotation_speed * delta_time as f32 * 100.0);
+                main_camera._transform_object.rotation_roll(-rotation_speed * delta_time as f32 * 100.0);
             } else if pressed_key_c {
-                main_camera
-                    ._transform_object
-                    .rotation_roll(rotation_speed * delta_time as f32 * 100.0);
+                main_camera._transform_object.rotation_roll(rotation_speed * delta_time as f32 * 100.0);
             }
 
             if pressed_key_w {

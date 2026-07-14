@@ -1,7 +1,5 @@
 use crate::game_module::actors::character_controller::CharacterController;
-use crate::game_module::actors::character_data::{
-    ActionAnimationState, CharacterData, MoveAnimationState,
-};
+use crate::game_module::actors::character_data::{ActionAnimationState, CharacterData, MoveAnimationState};
 use crate::game_module::actors::character_manager::{CharacterID, CharacterManager};
 use crate::game_module::actors::items::{Item, ItemManager};
 use crate::game_module::actors::props::Prop;

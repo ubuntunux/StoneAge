@@ -14,17 +14,13 @@ use crate::game_module::widgets::player_hud::PlayerHud;
 use crate::game_module::widgets::quest_widgets::quest_title::QuestTitle;
 use crate::game_module::widgets::quest_widgets::quest_widget::{QuestItemBase, QuestWidget};
 use crate::game_module::widgets::target_status_bar::TargetStatusWidget;
-use crate::game_module::widgets::text_box_widget::{
-    TextBoxContent, TextBoxLayerType, TextBoxWidget,
-};
+use crate::game_module::widgets::text_box_widget::{TextBoxContent, TextBoxLayerType, TextBoxWidget};
 use crate::game_module::widgets::time_of_day::TimeOfDayWidget;
 use crate::game_module::widgets::toolbox_widget::ToolboxWidget;
 use crate::game_module::widgets::world_map_widget::WorldMapWidget;
 use nalgebra::Vector2;
 use rust_engine_3d::core::engine_core::{EngineCore, TimeData};
-use rust_engine_3d::core::input::{
-    JoystickInputData, KeyboardInputData, MouseInputData, MouseMoveData,
-};
+use rust_engine_3d::core::input::{JoystickInputData, KeyboardInputData, MouseInputData, MouseMoveData};
 use rust_engine_3d::scene::ui::{
     HorizontalAlign, UIComponentInstance, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault,
 };
@@ -82,11 +78,7 @@ impl<'a> EditorUIManager<'a> {
         })
     }
 
-    pub fn initialize_editor_ui_manager(
-        &mut self,
-        engine_core: &EngineCore<'a>,
-        application: &Application<'a>,
-    ) {
+    pub fn initialize_editor_ui_manager(&mut self, engine_core: &EngineCore<'a>, application: &Application<'a>) {
         log::info!("initialize_editor_ui_manager");
         self._game_client = application.get_game_client();
         self._game_resources = ptr_as_ref(self._game_client).get_game_resources();
@@ -160,9 +152,9 @@ impl<'a> EditorUIManager<'a> {
             let position = character.get_position();
             let screen_position = main_camera.convert_world_to_screen(position, true);
             let widget = ptr_as_mut(self._actor_positions[i]);
-            widget._ui_component.set_text(
-                format!("[{:.1}, {:.1}, {:.1}]", position.x, position.y, position.z).as_str(),
-            );
+            widget
+                ._ui_component
+                .set_text(format!("[{:.1}, {:.1}, {:.1}]", position.x, position.y, position.z).as_str());
             widget._ui_component.set_pos(screen_position.x, screen_position.y);
         }
     }
@@ -194,11 +186,7 @@ impl<'a> GameUIManager<'a> {
         })
     }
 
-    pub fn initialize_game_ui_manager(
-        &mut self,
-        engine_core: &EngineCore<'a>,
-        application: &Application<'a>,
-    ) {
+    pub fn initialize_game_ui_manager(&mut self, engine_core: &EngineCore<'a>, application: &Application<'a>) {
         log::info!("initialize_game_ui_manager");
         self._game_client = application.get_game_client();
         self._game_resources = ptr_as_ref(self._game_client).get_game_resources();
@@ -289,14 +277,12 @@ impl<'a> GameUIManager<'a> {
             game_resources,
             self,
         )));
-        self._controller_help_widget = Some(Box::new(
-            ControllerHelpWidget::create_controller_help_widget(
-                engine_resources,
-                self._key_binding_widget_manager.as_ref().unwrap().as_ref(),
-                game_ui_layout_mut,
-                window_size,
-            ),
-        ));
+        self._controller_help_widget = Some(Box::new(ControllerHelpWidget::create_controller_help_widget(
+            engine_resources,
+            self._key_binding_widget_manager.as_ref().unwrap().as_ref(),
+            game_ui_layout_mut,
+            window_size,
+        )));
         self._quest_widget = Some(Box::new(QuestWidget::create_quest_widget(
             game_scene_manager,
             game_resources,
@@ -357,26 +343,14 @@ impl<'a> GameUIManager<'a> {
         self.set_game_image(material_instance_name, fadeout_time, true)
     }
 
-    pub fn set_game_image(
-        &mut self,
-        material_instance_name: &str,
-        fadeout_time: f32,
-        auto_fade_inout: bool,
-    ) {
+    pub fn set_game_image(&mut self, material_instance_name: &str, fadeout_time: f32, auto_fade_inout: bool) {
         let game_resources = ptr_as_ref(self._game_resources);
-        let material_instance = if game_resources
-            .get_engine_resources()
-            .has_material_instance_data(material_instance_name)
-        {
-            Some(
-                game_resources
-                    .get_engine_resources()
-                    .get_material_instance_data(material_instance_name)
-                    .clone(),
-            )
-        } else {
-            None
-        };
+        let material_instance =
+            if game_resources.get_engine_resources().has_material_instance_data(material_instance_name) {
+                Some(game_resources.get_engine_resources().get_material_instance_data(material_instance_name).clone())
+            } else {
+                None
+            };
 
         self._game_image.as_mut().unwrap().set_game_image(
             game_resources,
@@ -504,10 +478,7 @@ impl<'a> GameUIManager<'a> {
         contents: &Vec<TextBoxContent>,
         duration: Option<f32>,
     ) {
-        self._text_box_widget
-            .as_mut()
-            .unwrap()
-            .add_text_box_item(layer_type, actor, contents, duration);
+        self._text_box_widget.as_mut().unwrap().add_text_box_item(layer_type, actor, contents, duration);
     }
 
     pub fn remove_text_box_item(&mut self, key: *const c_void) {
@@ -580,8 +551,7 @@ impl<'a> GameUIManager<'a> {
         }
 
         if let Some(key_binding_widget_manager) = self._key_binding_widget_manager.as_mut() {
-            key_binding_widget_manager
-                .update_key_binding_widget_manager(engine_core.is_keyboard_input_mode());
+            key_binding_widget_manager.update_key_binding_widget_manager(engine_core.is_keyboard_input_mode());
         }
 
         if let Some(cross_hair) = self._cross_hair.as_mut()
@@ -603,8 +573,7 @@ impl<'a> GameUIManager<'a> {
 
         if let Some(target_status_bar) = self._target_status_bar.as_mut() {
             if game_scene_manager.get_character_manager().is_valid_target_character() {
-                let target =
-                    game_scene_manager.get_character_manager().get_target_character().borrow();
+                let target = game_scene_manager.get_character_manager().get_target_character().borrow();
                 target_status_bar.update_status_widget(&target, delta_time);
             } else {
                 target_status_bar.fade_out_status_widget();
@@ -620,11 +589,7 @@ impl<'a> GameUIManager<'a> {
         }
 
         if let Some(text_box_widget) = self._text_box_widget.as_mut() {
-            text_box_widget.update_text_box_widget(
-                game_scene_manager,
-                game_controller,
-                delta_time as f32,
-            );
+            text_box_widget.update_text_box_widget(game_scene_manager, game_controller, delta_time as f32);
         }
 
         if let Some(time_of_day) = self._time_of_day.as_mut() {

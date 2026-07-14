@@ -10,8 +10,8 @@ use nalgebra::Vector2;
 use rust_engine_3d::audio::audio_manager::{AudioLoop, AudioManager};
 use rust_engine_3d::core::input::{ButtonState, JoystickInputData, KeyboardInputData};
 use rust_engine_3d::scene::ui::{
-    HorizontalAlign, PosHintX, PosHintY, UIComponentInstance, UILayoutType, UIManager,
-    UIWidgetTypes, VerticalAlign, WidgetDefault,
+    HorizontalAlign, PosHintX, PosHintY, UIComponentInstance, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign,
+    WidgetDefault,
 };
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
@@ -80,8 +80,7 @@ impl<'a> WorldMapStage<'a> {
         _touched_pos_delta: &Vector2<f32>,
     ) -> bool {
         if !ui_component.get_user_data().is_null() {
-            let world_map_stage =
-                ptr_as_ref(ui_component.get_user_data() as *const WorldMapStage<'a>);
+            let world_map_stage = ptr_as_ref(ui_component.get_user_data() as *const WorldMapStage<'a>);
             world_map_stage
                 .get_world_map_widget_mut()
                 .set_selected_world_map_stage(world_map_stage.get_stage_data_name());
@@ -127,13 +126,9 @@ impl<'a> WorldMapStage<'a> {
         // set callback event
         ui_component.set_touchable(true);
         ui_component.set_callback_touch_down(Some(Box::new(WorldMapStage::callback_touch_down)));
-        ui_component
-            .set_user_data(world_map_stage.as_ref() as *const WorldMapStage<'a> as *const c_void);
+        ui_component.set_user_data(world_map_stage.as_ref() as *const WorldMapStage<'a> as *const c_void);
 
-        world_map_stages.insert(
-            String::from(stage.get_stage_data_name()),
-            world_map_stage.clone(),
-        );
+        world_map_stages.insert(String::from(stage.get_stage_data_name()), world_map_stage.clone());
 
         world_map_stage
     }
@@ -234,9 +229,8 @@ impl<'a> WorldMapPlayer<'a> {
         root_layout: &mut WidgetDefault<'a>,
         world_map_aspect: f32,
     ) -> Box<WorldMapPlayer<'a>> {
-        let material_instance = game_resources
-            .get_engine_resources()
-            .get_material_instance_data(MATERIAL_PORTRAIT_MONKEY_ARU);
+        let material_instance =
+            game_resources.get_engine_resources().get_material_instance_data(MATERIAL_PORTRAIT_MONKEY_ARU);
 
         let player_icon = UIManager::create_widget("player_icon", UIWidgetTypes::Default);
         let ui_component = ptr_as_mut(player_icon.as_ref()).get_ui_component_mut();
@@ -275,8 +269,7 @@ impl<'a> WorldMapWidget<'a> {
         game_resources: &GameResources<'a>,
         root_widget: &mut WidgetDefault<'a>,
     ) -> Box<WorldMapWidget<'a>> {
-        let background_layout =
-            UIManager::create_widget("background image layout", UIWidgetTypes::Default);
+        let background_layout = UIManager::create_widget("background image layout", UIWidgetTypes::Default);
         let background_layout_mut = ptr_as_mut(background_layout.as_ref());
         let ui_component = background_layout_mut.get_ui_component_mut();
         ui_component.set_layout_type(UILayoutType::FloatLayout);
@@ -301,8 +294,7 @@ impl<'a> WorldMapWidget<'a> {
         ui_component.set_material_instance(Some(world_map_material_instance.clone()));
         background_layout_mut.add_widget(&world_map_widget);
 
-        let bridge_layer_widget =
-            UIManager::create_widget("bridge_layer_widget", UIWidgetTypes::Default);
+        let bridge_layer_widget = UIManager::create_widget("bridge_layer_widget", UIWidgetTypes::Default);
         let bridge_layer_widget_mut = ptr_as_mut(bridge_layer_widget.as_ref());
         let ui_component = bridge_layer_widget_mut.get_ui_component_mut();
         ui_component.set_layout_type(UILayoutType::FloatLayout);
@@ -313,8 +305,7 @@ impl<'a> WorldMapWidget<'a> {
         ui_component.set_color(get_color32(0, 0, 0, 0));
         world_map_widget_mut.add_widget(&bridge_layer_widget);
 
-        let stage_layer_widget =
-            UIManager::create_widget("stage_layer_widget", UIWidgetTypes::Default);
+        let stage_layer_widget = UIManager::create_widget("stage_layer_widget", UIWidgetTypes::Default);
         let stage_layer_widget_mut = ptr_as_mut(stage_layer_widget.as_ref());
         let ui_component = stage_layer_widget_mut.get_ui_component_mut();
         ui_component.set_layout_type(UILayoutType::FloatLayout);
@@ -325,8 +316,7 @@ impl<'a> WorldMapWidget<'a> {
         ui_component.set_color(get_color32(0, 0, 0, 0));
         world_map_widget_mut.add_widget(&stage_layer_widget);
 
-        let player_layer_widget =
-            UIManager::create_widget("player_layer_widget", UIWidgetTypes::Default);
+        let player_layer_widget = UIManager::create_widget("player_layer_widget", UIWidgetTypes::Default);
         let player_layer_widget_mut = ptr_as_mut(player_layer_widget.as_ref());
         let ui_component = player_layer_widget_mut.get_ui_component_mut();
         ui_component.set_layout_type(UILayoutType::FloatLayout);
@@ -337,16 +327,11 @@ impl<'a> WorldMapWidget<'a> {
         ui_component.set_color(get_color32(0, 0, 0, 0));
         world_map_widget_mut.add_widget(&player_layer_widget);
 
-        let texture_parameter = world_map_material_instance
-            .borrow()
-            ._material_parameters
-            .get("texture_color")
-            .unwrap()
-            .clone();
+        let texture_parameter =
+            world_map_material_instance.borrow()._material_parameters.get("texture_color").unwrap().clone();
         let texture_name = texture_parameter.as_str().unwrap();
         let texture = game_resources.get_engine_resources().get_texture_data(texture_name);
-        let image_aspect =
-            texture.borrow()._image_width as f32 / texture.borrow()._image_height as f32;
+        let image_aspect = texture.borrow()._image_width as f32 / texture.borrow()._image_height as f32;
 
         let mut world_map_widget = Box::new(WorldMapWidget {
             _game_scene_manager: game_scene_manager,
@@ -365,13 +350,12 @@ impl<'a> WorldMapWidget<'a> {
             _request_close_world_map: false,
         });
 
-        world_map_widget.as_mut()._world_map_player =
-            Some(WorldMapPlayer::create_world_map_player(
-                world_map_widget.as_ref(),
-                game_resources,
-                player_layer_widget_mut,
-                image_aspect,
-            ));
+        world_map_widget.as_mut()._world_map_player = Some(WorldMapPlayer::create_world_map_player(
+            world_map_widget.as_ref(),
+            game_resources,
+            player_layer_widget_mut,
+            image_aspect,
+        ));
         world_map_widget.as_mut()._world_map_stages = WorldMapWidget::create_world_map_stages(
             world_map_widget.as_ref(),
             game_resources,
@@ -542,15 +526,11 @@ impl<'a> WorldMapWidget<'a> {
 
         if self._selected_stage_name == *selected_stage_name {
             if let Some(selected_stage) = self._world_map_stages.get_mut(selected_stage_name) {
-                let teleport_stage: &String =
-                    ptr_as_ref(selected_stage.as_ref()).get_stage_data_name();
-                ptr_as_mut(self._game_scene_manager)
-                    .set_teleport_stage(teleport_stage, DEFAULT_GATE_NAME);
+                let teleport_stage: &String = ptr_as_ref(selected_stage.as_ref()).get_stage_data_name();
+                ptr_as_mut(self._game_scene_manager).set_teleport_stage(teleport_stage, DEFAULT_GATE_NAME);
             }
         } else {
-            if let Some(prev_selected_stage) =
-                self._world_map_stages.get_mut(&self._selected_stage_name)
-            {
+            if let Some(prev_selected_stage) = self._world_map_stages.get_mut(&self._selected_stage_name) {
                 ptr_as_mut(prev_selected_stage.as_ref()).set_selected(false);
             }
 
@@ -566,8 +546,7 @@ impl<'a> WorldMapWidget<'a> {
 
     pub fn change_selected_world_map_stage(&mut self, direction: WorldMapDirection) {
         if let Some(selected_stage) = self._world_map_stages.get_mut(&self._selected_stage_name)
-            && let Some(linked_stage) =
-                ptr_as_ref(selected_stage.as_ref()).get_linked_stage(direction).as_ref()
+            && let Some(linked_stage) = ptr_as_ref(selected_stage.as_ref()).get_linked_stage(direction).as_ref()
         {
             self.set_selected_world_map_stage(linked_stage.get_stage_data_name());
         }

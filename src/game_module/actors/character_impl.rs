@@ -1,11 +1,7 @@
 use crate::game_module::actors::character::{Character, CharacterAnimationState, CharacterStats};
 use crate::game_module::actors::character_controller::CharacterController;
-use crate::game_module::actors::character_data::{
-    ActionAnimationState, CharacterData, MoveAnimationState,
-};
-use crate::game_module::actors::character_manager::{
-    CharacterCreateInfo, CharacterID, CharacterManager,
-};
+use crate::game_module::actors::character_data::{ActionAnimationState, CharacterData, MoveAnimationState};
+use crate::game_module::actors::character_manager::{CharacterCreateInfo, CharacterID, CharacterManager};
 use crate::game_module::actors::interaction_object::InteractionObject;
 use crate::game_module::actors::items::Item;
 use crate::game_module::actors::items::{ItemDataType, ItemManager};
@@ -265,19 +261,9 @@ impl<'a> Character<'a> {
         character
     }
 
-    pub fn initialize_character(
-        &mut self,
-        position: &Vector3<f32>,
-        rotation: &Vector3<f32>,
-        scale: &Vector3<f32>,
-    ) {
+    pub fn initialize_character(&mut self, position: &Vector3<f32>, rotation: &Vector3<f32>, scale: &Vector3<f32>) {
         self._character_stats.initialize_character_stats(&self._character_data.borrow());
-        self._controller.initialize_controller(
-            &self._character_data.borrow(),
-            position,
-            rotation,
-            scale,
-        );
+        self._controller.initialize_controller(&self._character_data.borrow(), position, rotation, scale);
         self._behavior.initialize_behavior(position);
 
         self.set_move_idle();
@@ -286,12 +272,7 @@ impl<'a> Character<'a> {
         self.update_render_object();
     }
 
-    pub fn initialize_transform(
-        &mut self,
-        position: &Vector3<f32>,
-        rotation: &Vector3<f32>,
-        scale: &Vector3<f32>,
-    ) {
+    pub fn initialize_transform(&mut self, position: &Vector3<f32>, rotation: &Vector3<f32>, scale: &Vector3<f32>) {
         self._controller._position = *position;
         self._controller._position.y = self._controller._position.y.max(
             self.get_character_manager()
@@ -479,14 +460,12 @@ impl<'a> Character<'a> {
             if self.is_idle_action() || self.is_action(ActionAnimationState::Hit) {
                 return true;
             } else if self.is_action(ActionAnimationState::Attack) {
-                let attackable_time =
-                    self.get_character_data()._stat_data._attack_event_time + ATTACK_DELAY;
+                let attackable_time = self.get_character_data()._stat_data._attack_event_time + ATTACK_DELAY;
                 return attackable_time < action_animation_play_info._animation_play_time;
             }
         } else {
             if self.is_action(ActionAnimationState::Kick) {
-                let attackable_time =
-                    self.get_character_data()._stat_data._kick_event_time + KICK_DELAY;
+                let attackable_time = self.get_character_data()._stat_data._kick_event_time + KICK_DELAY;
                 return attackable_time < action_animation_play_info._animation_play_time;
             }
         }
@@ -508,19 +487,14 @@ impl<'a> Character<'a> {
     }
 
     pub fn is_available_roll(&self) -> bool {
-        if self._is_player
-            && (self._character_stats._stamina < STAMINA_ROLL || self.is_in_roll_delay())
-        {
+        if self._is_player && (self._character_stats._stamina < STAMINA_ROLL || self.is_in_roll_delay()) {
             return false;
         }
-        !self.is_falling()
-            && self.is_available_attack()
-            && !self.is_move_state(MoveAnimationState::Roll)
+        !self.is_falling() && self.is_available_attack() && !self.is_move_state(MoveAnimationState::Roll)
     }
 
     pub fn is_speed_running(&self) -> bool {
-        self.is_move_state(MoveAnimationState::Run)
-            || self.is_move_state(MoveAnimationState::RunningJump)
+        self.is_move_state(MoveAnimationState::Run) || self.is_move_state(MoveAnimationState::RunningJump)
     }
 
     pub fn get_animation_play_info(&self, layer: AnimationLayer) -> &AnimationPlayInfo {
@@ -530,23 +504,15 @@ impl<'a> Character<'a> {
     pub fn get_attack_range(&self, attack_event: ActionAnimationState) -> f32 {
         match attack_event {
             ActionAnimationState::Attack => self.get_character_data()._stat_data._attack_range,
-            ActionAnimationState::PowerAttack => {
-                self.get_character_data()._stat_data._power_attack_range
-            }
+            ActionAnimationState::PowerAttack => self.get_character_data()._stat_data._power_attack_range,
             ActionAnimationState::Kick => self.get_character_data()._stat_data._kick_range,
             _ => panic!("check_attack_range not implemented: {:?}", attack_event),
         }
     }
 
-    pub fn check_in_range(
-        &self,
-        target_collision: &CollisionData,
-        check_range: f32,
-        check_direction: bool,
-    ) -> bool {
+    pub fn check_in_range(&self, target_collision: &CollisionData, check_range: f32, check_direction: bool) -> bool {
         let collision = self.get_collision();
-        let height_diff =
-            (target_collision._bounding_box._min.y - collision._bounding_box._min.y).abs();
+        let height_diff = (target_collision._bounding_box._min.y - collision._bounding_box._min.y).abs();
         if collision._bounding_box._extents.y < height_diff {
             return false;
         }
@@ -569,15 +535,9 @@ impl<'a> Character<'a> {
             && (!check_direction || self.get_transform().get_front().dot(&to_target_dir) < 0.0)
     }
 
-    pub fn check_in_range_xy(
-        &self,
-        target_collision: &CollisionData,
-        check_range: f32,
-        check_direction: bool,
-    ) -> bool {
+    pub fn check_in_range_xy(&self, target_collision: &CollisionData, check_range: f32, check_direction: bool) -> bool {
         let collision = self.get_collision();
-        let height_diff =
-            (target_collision._bounding_box._min.y - collision._bounding_box._min.y).abs();
+        let height_diff = (target_collision._bounding_box._min.y - collision._bounding_box._min.y).abs();
         if collision._bounding_box._extents.y < height_diff {
             return false;
         }
@@ -634,21 +594,14 @@ impl<'a> Character<'a> {
         self.get_bounding_box().get_center()
     }
 
-    pub fn check_arrival_with_radius(
-        &self,
-        target_position: &Vector3<f32>,
-        radius: f32,
-        ignore_y_axis: bool,
-    ) -> bool {
+    pub fn check_arrival_with_radius(&self, target_position: &Vector3<f32>, radius: f32, ignore_y_axis: bool) -> bool {
         self._controller.check_arrival_with_radius(target_position, radius, ignore_y_axis)
     }
 
     pub fn get_power(&self, attack_event: ActionAnimationState) -> i32 {
         match attack_event {
             ActionAnimationState::Attack => self.get_character_data()._stat_data._attack_damage,
-            ActionAnimationState::PowerAttack => {
-                self.get_character_data()._stat_data._power_attack_damage
-            }
+            ActionAnimationState::PowerAttack => self.get_character_data()._stat_data._power_attack_damage,
             ActionAnimationState::Kick => self.get_character_data()._stat_data._kick_damage,
             _ => panic!("get_power not implemented: {:?}", attack_event),
         }
@@ -676,24 +629,17 @@ impl<'a> Character<'a> {
     }
 
     pub fn check_falling_in_water_damage(&mut self) -> bool {
-        let dead_zone_height =
-            self.get_character_manager().get_scene_manager().get_dead_zone_height();
+        let dead_zone_height = self.get_character_manager().get_scene_manager().get_dead_zone_height();
         if self.get_position().y <= dead_zone_height {
             self.set_damage(self._character_stats.get_hp());
 
             let effect_create_info = EffectCreateInfo {
-                _effect_position: Vector3::new(
-                    self.get_position().x,
-                    dead_zone_height,
-                    self.get_position().z,
-                ),
+                _effect_position: Vector3::new(self.get_position().x, dead_zone_height, self.get_position().z),
                 _effect_data_name: String::from(EFFECT_FALLING_WATER),
                 ..Default::default()
             };
             let character_manager = ptr_as_ref(self._character_manager);
-            character_manager
-                .get_scene_manager_mut()
-                .add_effect(EFFECT_FALLING_WATER, &effect_create_info);
+            character_manager.get_scene_manager_mut().add_effect(EFFECT_FALLING_WATER, &effect_create_info);
             character_manager.get_scene_manager().play_audio_bank(AUDIO_FALLING_WATER);
             return true;
         }
@@ -703,8 +649,7 @@ impl<'a> Character<'a> {
     pub fn check_falling_on_ground_damage(&mut self, falling_height: f32) {
         let falling_height = falling_height - self.get_position().y;
         if FALLING_HEIGHT < falling_height {
-            let falling_damage: i32 =
-                (falling_height - FALLING_HEIGHT).ceil() as i32 * FALLING_DAMAGE_RATIO;
+            let falling_damage: i32 = (falling_height - FALLING_HEIGHT).ceil() as i32 * FALLING_DAMAGE_RATIO;
             self.set_hit_damage(falling_damage, None);
         }
     }
@@ -819,9 +764,7 @@ impl<'a> Character<'a> {
                     self.set_next_action_animation(ActionAnimationState::Pickup, 2.0);
                 }
                 InteractionObject::PropMonolith(_) => {
-                    self.get_character_manager()
-                        .get_game_client_mut()
-                        .set_next_game_phase(GamePhase::OpenToolbox);
+                    self.get_character_manager().get_game_client_mut().set_next_game_phase(GamePhase::OpenToolbox);
                     self.set_move_idle();
                 }
                 InteractionObject::PropTable(prop) => {
@@ -845,8 +788,7 @@ impl<'a> Character<'a> {
                     {
                         give_item = true;
                         let item_data_name = attached_item.borrow()._item_data_name.clone();
-                        ptr_as_mut(self._item_manager)
-                            .remove_inventory_item(item_data_name.as_str(), 1);
+                        ptr_as_mut(self._item_manager).remove_inventory_item(item_data_name.as_str(), 1);
                         ptr_as_mut(self._item_manager)
                             .attach_item(&mut character.borrow_mut(), item_data_name.as_str());
                     }
@@ -860,11 +802,8 @@ impl<'a> Character<'a> {
         }
     }
     pub fn callback_changed_interaction_object(&mut self) {
-        if let InteractionObject::PropGate(_) = self._controller._nearest_interaction_object.clone()
-        {
-            self.get_character_manager()
-                .get_game_client_mut()
-                .set_next_game_phase(GamePhase::WorldMapOpen);
+        if let InteractionObject::PropGate(_) = self._controller._nearest_interaction_object.clone() {
+            self.get_character_manager().get_game_client_mut().set_next_game_phase(GamePhase::WorldMapOpen);
             self.set_move_idle();
         }
     }
@@ -873,11 +812,8 @@ impl<'a> Character<'a> {
             let mut animation_speed: f32 = 1.0;
             if self._is_player {
                 let render_object = self._render_object.borrow();
-                let animation_play_info =
-                    render_object.get_animation_play_info(AnimationLayer::ActionLayer);
-                if self._character_stats._stamina < STAMINA_ATTACK
-                    && !animation_play_info._is_animation_end
-                {
+                let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
+                if self._character_stats._stamina < STAMINA_ATTACK && !animation_play_info._is_animation_end {
                     return;
                 }
 
@@ -895,11 +831,8 @@ impl<'a> Character<'a> {
             let mut animation_speed: f32 = 1.0;
             if self._is_player {
                 let render_object = self._render_object.borrow();
-                let animation_play_info =
-                    render_object.get_animation_play_info(AnimationLayer::ActionLayer);
-                if self._character_stats._stamina < STAMINA_POWER_ATTACK
-                    && !animation_play_info._is_animation_end
-                {
+                let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
+                if self._character_stats._stamina < STAMINA_POWER_ATTACK && !animation_play_info._is_animation_end {
                     return;
                 }
 
@@ -917,11 +850,8 @@ impl<'a> Character<'a> {
             let animation_speed: f32 = 1.0;
             if self._is_player {
                 let render_object = self._render_object.borrow();
-                let animation_play_info =
-                    render_object.get_animation_play_info(AnimationLayer::ActionLayer);
-                if self._character_stats._stamina < STAMINA_ATTACK
-                    && !animation_play_info._is_animation_end
-                {
+                let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
+                if self._character_stats._stamina < STAMINA_ATTACK && !animation_play_info._is_animation_end {
                     return;
                 }
 
@@ -941,20 +871,12 @@ impl<'a> Character<'a> {
         self.set_next_action_animation(ActionAnimationState::Dead, 1.0);
     }
 
-    pub fn set_next_move_animation(
-        &mut self,
-        move_animation_state: MoveAnimationState,
-        animation_speed: f32,
-    ) {
+    pub fn set_next_move_animation(&mut self, move_animation_state: MoveAnimationState, animation_speed: f32) {
         self._animation_state._next_move_animation_state = move_animation_state;
         self._animation_state._next_move_animation_speed = animation_speed;
     }
 
-    pub fn set_next_action_animation(
-        &mut self,
-        action_animation_state: ActionAnimationState,
-        animation_speed: f32,
-    ) {
+    pub fn set_next_action_animation(&mut self, action_animation_state: ActionAnimationState, animation_speed: f32) {
         self._animation_state._next_action_animation_state = action_animation_state;
         self._animation_state._next_action_animation_speed = animation_speed;
     }
@@ -964,9 +886,7 @@ impl<'a> Character<'a> {
     }
 
     pub fn toggle_run(&mut self) {
-        if self.is_move_state(MoveAnimationState::Run)
-            || self.is_move_state(MoveAnimationState::Walk)
-        {
+        if self.is_move_state(MoveAnimationState::Run) || self.is_move_state(MoveAnimationState::Walk) {
             self._controller.toggle_run();
         }
     }
@@ -990,10 +910,7 @@ impl<'a> Character<'a> {
     }
 
     pub fn set_move_control_sit_down(&mut self) {
-        if self.is_idle_action()
-            && self.is_move_state(MoveAnimationState::Idle)
-            && self.is_on_ground()
-        {
+        if self.is_idle_action() && self.is_move_state(MoveAnimationState::Idle) && self.is_on_ground() {
             self.set_sit_down();
         }
     }
@@ -1052,22 +969,14 @@ impl<'a> Character<'a> {
 
             let character_data = self.get_character_data();
             let (move_animation, move_speed) = if self._controller._is_running {
-                (
-                    MoveAnimationState::Run,
-                    character_data._stat_data._run_speed,
-                )
+                (MoveAnimationState::Run, character_data._stat_data._run_speed)
             } else {
-                (
-                    MoveAnimationState::Walk,
-                    character_data._stat_data._walk_speed,
-                )
+                (MoveAnimationState::Walk, character_data._stat_data._walk_speed)
             };
 
             self.set_move_direction(move_direction, false);
 
-            if GAME_VIEW_MODE != GameViewMode::GameViewMode2D
-                || move_direction.x.abs() >= move_direction.z.abs()
-            {
+            if GAME_VIEW_MODE != GameViewMode::GameViewMode2D || move_direction.x.abs() >= move_direction.z.abs() {
                 self.set_move_speed(move_speed);
                 if !self.is_move_state(move_animation) && self._controller._is_ground {
                     self.set_next_move_animation(move_animation, 1.0);
@@ -1169,60 +1078,58 @@ impl<'a> Character<'a> {
                         );
                     }
                 }
-                MoveAnimationState::Walk => {
-                    match state {
-                        State::Begin => {
-                            let mut animation_info = AnimationPlayArgs::default();
-                            animation_info._animation_speed =
-                                animation_data._walk_animation_speed * next_move_animation_speed;
-                            render_object.set_animation(
-                                &animation_data._walk_animation,
-                                &animation_info,
-                                AnimationLayer::BaseLayer,
+                MoveAnimationState::Walk => match state {
+                    State::Begin => {
+                        let mut animation_info = AnimationPlayArgs::default();
+                        animation_info._animation_speed =
+                            animation_data._walk_animation_speed * next_move_animation_speed;
+                        render_object.set_animation(
+                            &animation_data._walk_animation,
+                            &animation_info,
+                            AnimationLayer::BaseLayer,
+                        );
+                    }
+                    State::Update => {
+                        let animation_play_info = render_object.get_animation_play_info(AnimationLayer::BaseLayer);
+                        if self._is_player
+                            && (animation_play_info.check_animation_event_time(0.2)
+                                || animation_play_info.check_animation_event_time(0.9))
+                        {
+                            self.get_character_manager().get_scene_manager().play_audio_options(
+                                AUDIO_FOOTSTEP,
+                                AudioLoop::ONCE,
+                                Some(0.5),
                             );
                         }
-                        State::Update => {
-                            let animation_play_info =
-                                render_object.get_animation_play_info(AnimationLayer::BaseLayer);
-                            if self._is_player
-                                && (animation_play_info.check_animation_event_time(0.2)
-                                    || animation_play_info.check_animation_event_time(0.9))
-                            {
-                                self.get_character_manager()
-                                    .get_scene_manager()
-                                    .play_audio_options(AUDIO_FOOTSTEP, AudioLoop::ONCE, Some(0.5));
-                            }
-                        }
-                        _ => {}
                     }
-                }
-                MoveAnimationState::Run => {
-                    match state {
-                        State::Begin => {
-                            let mut animation_info = AnimationPlayArgs::default();
-                            animation_info._animation_speed =
-                                animation_data._run_animation_speed * next_move_animation_speed;
-                            render_object.set_animation(
-                                &animation_data._run_animation,
-                                &animation_info,
-                                AnimationLayer::BaseLayer,
+                    _ => {}
+                },
+                MoveAnimationState::Run => match state {
+                    State::Begin => {
+                        let mut animation_info = AnimationPlayArgs::default();
+                        animation_info._animation_speed =
+                            animation_data._run_animation_speed * next_move_animation_speed;
+                        render_object.set_animation(
+                            &animation_data._run_animation,
+                            &animation_info,
+                            AnimationLayer::BaseLayer,
+                        );
+                    }
+                    State::Update => {
+                        let animation_play_info = render_object.get_animation_play_info(AnimationLayer::BaseLayer);
+                        if self._is_player
+                            && (animation_play_info.check_animation_event_time(0.1)
+                                || animation_play_info.check_animation_event_time(0.5))
+                        {
+                            self.get_character_manager().get_scene_manager().play_audio_options(
+                                AUDIO_FOOTSTEP,
+                                AudioLoop::ONCE,
+                                Some(0.5),
                             );
                         }
-                        State::Update => {
-                            let animation_play_info =
-                                render_object.get_animation_play_info(AnimationLayer::BaseLayer);
-                            if self._is_player
-                                && (animation_play_info.check_animation_event_time(0.1)
-                                    || animation_play_info.check_animation_event_time(0.5))
-                            {
-                                self.get_character_manager()
-                                    .get_scene_manager()
-                                    .play_audio_options(AUDIO_FOOTSTEP, AudioLoop::ONCE, Some(0.5));
-                            }
-                        }
-                        _ => {}
                     }
-                }
+                    _ => {}
+                },
                 MoveAnimationState::Jump => {
                     if state == State::Begin {
                         let mut animation_info = AnimationPlayArgs::default();
@@ -1234,9 +1141,7 @@ impl<'a> Character<'a> {
                             &animation_info,
                             AnimationLayer::BaseLayer,
                         );
-                        self.get_character_manager()
-                            .get_scene_manager()
-                            .play_audio_bank(AUDIO_JUMP);
+                        self.get_character_manager().get_scene_manager().play_audio_bank(AUDIO_JUMP);
                     }
                 }
                 MoveAnimationState::Roll => match state {
@@ -1253,12 +1158,9 @@ impl<'a> Character<'a> {
                         self.set_invincibility(true);
                     }
                     State::Update => {
-                        let animation_play_info =
-                            render_object.get_animation_play_info(AnimationLayer::BaseLayer);
+                        let animation_play_info = render_object.get_animation_play_info(AnimationLayer::BaseLayer);
                         if self._is_player && animation_play_info.check_animation_event_time(0.2) {
-                            self.get_character_manager()
-                                .get_scene_manager()
-                                .play_audio_bank(AUDIO_ROLL);
+                            self.get_character_manager().get_scene_manager().play_audio_bank(AUDIO_ROLL);
                         } else if animation_play_info._is_animation_end {
                             self.set_move_idle();
                         }
@@ -1272,17 +1174,14 @@ impl<'a> Character<'a> {
                     if state == State::Begin {
                         let mut animation_info = AnimationPlayArgs::default();
                         animation_info._animation_loop = false;
-                        animation_info._animation_speed = animation_data
-                            ._running_jump_animation_speed
-                            * next_move_animation_speed;
+                        animation_info._animation_speed =
+                            animation_data._running_jump_animation_speed * next_move_animation_speed;
                         render_object.set_animation(
                             &animation_data._running_jump_animation,
                             &animation_info,
                             AnimationLayer::BaseLayer,
                         );
-                        self.get_character_manager()
-                            .get_scene_manager()
-                            .play_audio_bank(AUDIO_JUMP);
+                        self.get_character_manager().get_scene_manager().play_audio_bank(AUDIO_JUMP);
                     }
                 }
                 MoveAnimationState::SitDownLoop => {
@@ -1350,15 +1249,11 @@ impl<'a> Character<'a> {
                         );
                     }
                     State::Update => {
-                        let animation_play_info =
-                            render_object.get_animation_play_info(AnimationLayer::ActionLayer);
-                        if animation_play_info.check_animation_event_time(
-                            character_data._stat_data._attack_event_time,
-                        ) {
+                        let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
+                        if animation_play_info.check_animation_event_time(character_data._stat_data._attack_event_time)
+                        {
                             self._animation_state.set_action_event(ActionAnimationState::Attack);
-                            self.get_character_manager()
-                                .get_scene_manager()
-                                .play_audio_bank(AUDIO_ATTACK);
+                            self.get_character_manager().get_scene_manager().play_audio_bank(AUDIO_ATTACK);
                         }
                         if animation_play_info._is_animation_end {
                             self.set_action_none();
@@ -1399,15 +1294,10 @@ impl<'a> Character<'a> {
                         );
                     }
                     State::Update => {
-                        let animation_play_info =
-                            render_object.get_animation_play_info(AnimationLayer::ActionLayer);
+                        let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
                         if self._is_player && animation_play_info._is_animation_end {
                             self.initialize_character(
-                                &self
-                                    .get_character_manager()
-                                    .get_game_scene_manager()
-                                    .get_spawn_point()
-                                    .clone(),
+                                &self.get_character_manager().get_game_scene_manager().get_spawn_point().clone(),
                                 &self._controller._rotation.clone(),
                                 &self._controller._scale.clone(),
                             );
@@ -1432,8 +1322,7 @@ impl<'a> Character<'a> {
                         );
                     }
                     State::Update => {
-                        let animation_play_info =
-                            render_object.get_animation_play_info(AnimationLayer::ActionLayer);
+                        let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
                         if animation_play_info._is_animation_end {
                             self.set_action_none();
                         }
@@ -1457,15 +1346,10 @@ impl<'a> Character<'a> {
                         );
                     }
                     State::Update => {
-                        let animation_play_info =
-                            render_object.get_animation_play_info(AnimationLayer::ActionLayer);
-                        if animation_play_info
-                            .check_animation_event_time(character_data._stat_data._kick_event_time)
-                        {
+                        let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
+                        if animation_play_info.check_animation_event_time(character_data._stat_data._kick_event_time) {
                             self._animation_state.set_action_event(ActionAnimationState::Kick);
-                            self.get_character_manager()
-                                .get_scene_manager()
-                                .play_audio_bank(AUDIO_ATTACK);
+                            self.get_character_manager().get_scene_manager().play_audio_bank(AUDIO_ATTACK);
                         }
                         if animation_play_info._is_animation_end {
                             self.set_action_none();
@@ -1491,8 +1375,7 @@ impl<'a> Character<'a> {
                         );
                     }
                     State::Update => {
-                        let animation_play_info =
-                            render_object.get_animation_play_info(AnimationLayer::ActionLayer);
+                        let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
                         if animation_play_info._is_animation_end {
                             self.set_action_sleep();
                         }
@@ -1515,12 +1398,9 @@ impl<'a> Character<'a> {
                         );
                     }
                     State::Update => {
-                        let animation_play_info =
-                            render_object.get_animation_play_info(AnimationLayer::ActionLayer);
+                        let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
                         if animation_play_info.check_animation_event_time(PICKUP_EVENT_TIME) {
-                            self.get_character_manager()
-                                .get_scene_manager()
-                                .play_audio_bank(AUDIO_ATTACK);
+                            self.get_character_manager().get_scene_manager().play_audio_bank(AUDIO_ATTACK);
                             self._animation_state.set_action_event(ActionAnimationState::Pickup);
                         }
                         if animation_play_info._is_animation_end {
@@ -1537,9 +1417,8 @@ impl<'a> Character<'a> {
                             _animation_fade_out_time: 0.1,
                             ..Default::default()
                         };
-                        animation_info._animation_speed = animation_data
-                            ._power_attack_animation_speed
-                            * next_action_animation_speed;
+                        animation_info._animation_speed =
+                            animation_data._power_attack_animation_speed * next_action_animation_speed;
                         render_object.set_animation(
                             &animation_data._power_attack_animation,
                             &animation_info,
@@ -1547,16 +1426,12 @@ impl<'a> Character<'a> {
                         );
                     }
                     State::Update => {
-                        let animation_play_info =
-                            render_object.get_animation_play_info(AnimationLayer::ActionLayer);
-                        if animation_play_info.check_animation_event_time(
-                            character_data._stat_data._power_attack_event_time,
-                        ) {
-                            self.get_character_manager()
-                                .get_scene_manager()
-                                .play_audio_bank(AUDIO_ATTACK);
-                            self._animation_state
-                                .set_action_event(ActionAnimationState::PowerAttack);
+                        let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
+                        if animation_play_info
+                            .check_animation_event_time(character_data._stat_data._power_attack_event_time)
+                        {
+                            self.get_character_manager().get_scene_manager().play_audio_bank(AUDIO_ATTACK);
+                            self._animation_state.set_action_event(ActionAnimationState::PowerAttack);
                         }
                         if animation_play_info._is_animation_end {
                             self.set_action_none();
@@ -1580,23 +1455,20 @@ impl<'a> Character<'a> {
                         );
                         if self._is_player {
                             if let Some(audio_instance) = self._audio_snoring.as_ref() {
-                                self.get_character_manager()
-                                    .get_scene_manager()
-                                    .stop_audio_instance(audio_instance)
+                                self.get_character_manager().get_scene_manager().stop_audio_instance(audio_instance)
                             }
-                            self._audio_snoring = self
-                                .get_character_manager()
-                                .get_scene_manager()
-                                .play_audio_options(AUDIO_SNORING, AudioLoop::LOOP, Some(1.0));
+                            self._audio_snoring = self.get_character_manager().get_scene_manager().play_audio_options(
+                                AUDIO_SNORING,
+                                AudioLoop::LOOP,
+                                Some(1.0),
+                            );
                         }
                     }
                     State::End => {
                         if self._is_player
                             && let Some(audio_instance) = self._audio_snoring.as_ref()
                         {
-                            self.get_character_manager()
-                                .get_scene_manager()
-                                .stop_audio_instance(audio_instance)
+                            self.get_character_manager().get_scene_manager().stop_audio_instance(audio_instance)
                         }
                     }
                     _ => {}
@@ -1615,13 +1487,10 @@ impl<'a> Character<'a> {
                             &animation_info,
                             AnimationLayer::ActionLayer,
                         );
-                        self.get_character_manager()
-                            .get_scene_manager()
-                            .play_audio_bank(AUDIO_EATING);
+                        self.get_character_manager().get_scene_manager().play_audio_bank(AUDIO_EATING);
                     }
                     State::Update => {
-                        let animation_play_info =
-                            render_object.get_animation_play_info(AnimationLayer::ActionLayer);
+                        let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
                         if animation_play_info._is_animation_end {
                             self.set_action_none();
                         }
@@ -1633,10 +1502,8 @@ impl<'a> Character<'a> {
                             self.get_stats_mut().add_stamina(10.0);
 
                             if self._is_player {
-                                ptr_as_mut(self._item_manager).remove_inventory_item(
-                                    attached_item.borrow()._item_data_name.as_str(),
-                                    1,
-                                );
+                                ptr_as_mut(self._item_manager)
+                                    .remove_inventory_item(attached_item.borrow()._item_data_name.as_str(), 1);
                             } else {
                                 ptr_as_mut(self._item_manager).detach_item(self);
                             }
@@ -1659,8 +1526,7 @@ impl<'a> Character<'a> {
                         );
                     }
                     State::Update => {
-                        let animation_play_info =
-                            render_object.get_animation_play_info(AnimationLayer::ActionLayer);
+                        let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
                         if animation_play_info._is_animation_end {
                             self.set_action_none();
                         }
@@ -1683,8 +1549,7 @@ impl<'a> Character<'a> {
                         );
                     }
                     State::Update => {
-                        let animation_play_info =
-                            render_object.get_animation_play_info(AnimationLayer::ActionLayer);
+                        let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
                         if animation_play_info._is_animation_end {
                             self.set_action_none();
                         }
@@ -1723,12 +1588,7 @@ impl<'a> Character<'a> {
         }
     }
 
-    pub fn update_character(
-        &mut self,
-        scene_manager: &SceneManager<'a>,
-        player: &Character<'a>,
-        delta_time: f32,
-    ) {
+    pub fn update_character(&mut self, scene_manager: &SceneManager<'a>, player: &Character<'a>, delta_time: f32) {
         let was_on_ground = self.is_on_ground();
         let falling_height = self._controller.get_falling_height();
 

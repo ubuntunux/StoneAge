@@ -97,29 +97,14 @@ impl<'a> BehaviorData<'a> {
 pub trait BehaviorBase<'a> {
     fn initialize_behavior(&mut self, position: &Vector3<f32>);
     fn set_next_behavior(&mut self, next_behavior_state: BehaviorState, is_force: bool);
-    fn update_behavior(
-        &mut self,
-        owner: &mut Character<'a>,
-        behavior_target: Option<&Character<'a>>,
-        delta_time: f32,
-    );
+    fn update_behavior(&mut self, owner: &mut Character<'a>, behavior_target: Option<&Character<'a>>, delta_time: f32);
 }
 
-pub fn create_character_behavior<'a>(
-    character_type: CharacterDataType,
-) -> Box<dyn BehaviorBase<'a> + 'a> {
+pub fn create_character_behavior<'a>(character_type: CharacterDataType) -> Box<dyn BehaviorBase<'a> + 'a> {
     match character_type {
-        CharacterDataType::Civilian | CharacterDataType::Player => Box::new(BehaviorCivilian {
-            ..Default::default()
-        }),
-        CharacterDataType::Roamer => Box::new(BehaviorRoamer {
-            ..Default::default()
-        }),
-        CharacterDataType::Ufo => Box::new(BehaviorUfo {
-            ..Default::default()
-        }),
-        _ => Box::new(BehaviorDefault {
-            ..Default::default()
-        }),
+        CharacterDataType::Civilian | CharacterDataType::Player => Box::new(BehaviorCivilian { ..Default::default() }),
+        CharacterDataType::Roamer => Box::new(BehaviorRoamer { ..Default::default() }),
+        CharacterDataType::Ufo => Box::new(BehaviorUfo { ..Default::default() }),
+        _ => Box::new(BehaviorDefault { ..Default::default() }),
     }
 }

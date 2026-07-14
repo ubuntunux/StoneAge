@@ -2,8 +2,7 @@ use crate::game_module::actors::character::Character;
 use crate::game_module::widgets::status_bar_widget::StatusBarWidget;
 use nalgebra::Vector2;
 use rust_engine_3d::scene::ui::{
-    HorizontalAlign, Orientation, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign,
-    WidgetDefault,
+    HorizontalAlign, Orientation, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault,
 };
 use rust_engine_3d::utilities::system::ptr_as_mut;
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
@@ -37,14 +36,8 @@ impl<'a> PlayerHud<'a> {
 
         PlayerHud {
             _widget: player_widget_ptr,
-            _hp_widget: StatusBarWidget::create_status_widget(
-                player_widget_ptr,
-                get_color32(255, 64, 0, 128),
-            ),
-            _stamina_widget: StatusBarWidget::create_status_widget(
-                player_widget_ptr,
-                get_color32(128, 128, 255, 128),
-            ),
+            _hp_widget: StatusBarWidget::create_status_widget(player_widget_ptr, get_color32(255, 64, 0, 128)),
+            _stamina_widget: StatusBarWidget::create_status_widget(player_widget_ptr, get_color32(128, 128, 255, 128)),
         }
     }
 

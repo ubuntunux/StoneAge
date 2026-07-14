@@ -5,8 +5,8 @@ use crate::game_module::game_ui_manager::GameUIManager;
 use ash::vk;
 use nalgebra::Vector2;
 use rust_engine_3d::scene::ui::{
-    HorizontalAlign, Orientation, PosHintX, PosHintY, UILayoutType, UIManager, UIWidgetTypes,
-    VerticalAlign, WidgetDefault,
+    HorizontalAlign, Orientation, PosHintX, PosHintY, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign,
+    WidgetDefault,
 };
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
@@ -168,21 +168,17 @@ impl<'a> TimeOfDayWidget<'a> {
         time_ui_component.set_text(format!("{:02}:{:02}", time, minute).as_str());
 
         let temperature_ui_component = ptr_as_mut(self._temperature).get_ui_component_mut();
-        temperature_ui_component
-            .set_text(format!("Temperature {:.01}", game_scene_manager.temperature()).as_str());
+        temperature_ui_component.set_text(format!("Temperature {:.01}", game_scene_manager.temperature()).as_str());
 
         let stage_widget_component = ptr_as_mut(self._stage_widget).get_ui_component_mut();
         if game_ui_manager.is_opened_world_map() {
             stage_widget_component.set_text(
-                Stages::find_stage_value(
-                    game_ui_manager.get_selected_world_map_stage_data_name().as_str(),
-                )
-                .get_stage_display_name(),
+                Stages::find_stage_value(game_ui_manager.get_selected_world_map_stage_data_name().as_str())
+                    .get_stage_display_name(),
             );
         } else {
             let stage_data_name = game_scene_manager.get_current_game_scene_data_name();
-            stage_widget_component
-                .set_text(Stages::find_stage_value(stage_data_name).get_stage_display_name());
+            stage_widget_component.set_text(Stages::find_stage_value(stage_data_name).get_stage_display_name());
         }
     }
 }

@@ -5,12 +5,9 @@ use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::game_ui_manager::QuestItem;
 use crate::game_module::widgets::quest_widgets::quest_widget::{
-    FONT_SIZE, ITEM_MARGIN, ITEM_SIZE, QUEST_COMPLETE_OPACITY, QuestItemBase,
-    create_quest_item_layout,
+    FONT_SIZE, ITEM_MARGIN, ITEM_SIZE, QUEST_COMPLETE_OPACITY, QuestItemBase, create_quest_item_layout,
 };
-use rust_engine_3d::scene::ui::{
-    HorizontalAlign, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault,
-};
+use rust_engine_3d::scene::ui::{HorizontalAlign, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault};
 use rust_engine_3d::utilities::system::{RcRefCell, newRcRefCell, ptr_as_mut, ptr_as_ref};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use std::rc::Rc;
@@ -44,10 +41,7 @@ impl<'a> QuestItemGatherItem<'a> {
             _game_scene_manager: game_scene_manager,
             _game_resources: game_resources,
             _layout_widget: create_quest_item_layout(parent_widget),
-            _is_complete_widget: UIManager::create_widget(
-                "is_complete_widget",
-                UIWidgetTypes::Default,
-            ),
+            _is_complete_widget: UIManager::create_widget("is_complete_widget", UIWidgetTypes::Default),
             _icon_widget: UIManager::create_widget("icon_widget", UIWidgetTypes::Default),
             _text_widget: UIManager::create_widget("text_widget", UIWidgetTypes::Default),
             _item_data: content,
@@ -74,13 +68,8 @@ impl<'a> QuestItemGatherItem<'a> {
         ui_component.set_text(if is_completed_quest { "[X]" } else { "[ ]" });
 
         let ui_component = ptr_as_mut(self._text_widget.as_ref()).get_ui_component_mut();
-        ui_component.set_text(
-            format!(
-                "Collected: {}/{}",
-                self._item_count, self._item_data._gather_item_count
-            )
-            .as_str(),
-        );
+        ui_component
+            .set_text(format!("Collected: {}/{}", self._item_count, self._item_data._gather_item_count).as_str());
     }
 }
 
@@ -89,9 +78,7 @@ impl<'a> QuestItemBase<'a> for QuestItemGatherItem<'a> {
         let game_resources = ptr_as_ref(self._game_resources);
         let engine_resources = game_resources.get_engine_resources();
         let item_material_instance = engine_resources
-            .get_material_instance_data(
-                self._item_data._item_data.borrow()._ui_material_instance.as_str(),
-            )
+            .get_material_instance_data(self._item_data._item_data.borrow()._ui_material_instance.as_str())
             .clone();
 
         let ui_component = ptr_as_mut(self._layout_widget.as_ref()).get_ui_component_mut();
@@ -142,9 +129,7 @@ impl<'a> QuestItemBase<'a> for QuestItemGatherItem<'a> {
     fn set_completed_quest(&mut self) {
         if !self._is_completed_quest {
             self._item_count = self._item_data._gather_item_count;
-            ptr_as_ref(self._game_scene_manager)
-                .get_scene_manager()
-                .play_audio_bank(AUDIO_QUEST_COMPLETE);
+            ptr_as_ref(self._game_scene_manager).get_scene_manager().play_audio_bank(AUDIO_QUEST_COMPLETE);
             self._is_completed_quest = true;
         }
     }

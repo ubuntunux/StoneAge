@@ -1,13 +1,11 @@
 use crate::game_module::actors::character::Character;
 use nalgebra::Vector2;
 use rust_engine_3d::core::engine_core::TimeData;
-use rust_engine_3d::core::input::{
-    ButtonState, JoystickInputData, KeyboardInputData, MouseInputData, MouseMoveData,
-};
+use rust_engine_3d::core::input::{ButtonState, JoystickInputData, KeyboardInputData, MouseInputData, MouseMoveData};
 use rust_engine_3d::resource::resource::EngineResources;
 use rust_engine_3d::scene::ui::{
-    HorizontalAlign, Orientation, PosHintX, PosHintY, UILayoutType, UIManager, UIWidgetTypes,
-    VerticalAlign, WidgetDefault,
+    HorizontalAlign, Orientation, PosHintX, PosHintY, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign,
+    WidgetDefault,
 };
 use rust_engine_3d::utilities::system::{RcRefCell, ptr_as_mut};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
@@ -144,8 +142,8 @@ impl<'a> ToolboxWidget<'a> {
         let _move_menu_down = keyboard_input_data.get_key_hold(KeyCode::ArrowDown)
             || mouse_move_data._scroll_delta.y < 0
             || joystick_input_data._btn_down == ButtonState::Hold;
-        let close_toolbox = keyboard_input_data.get_key_pressed(KeyCode::Escape)
-            || joystick_input_data._btn_b == ButtonState::Pressed;
+        let close_toolbox =
+            keyboard_input_data.get_key_pressed(KeyCode::Escape) || joystick_input_data._btn_b == ButtonState::Pressed;
 
         if close_toolbox {
             self.close_toolbox();

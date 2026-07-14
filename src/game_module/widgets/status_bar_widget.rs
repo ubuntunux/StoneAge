@@ -15,9 +15,7 @@ pub struct StatusBarWidget<'a> {
 }
 
 // Implementation
-fn create_status_layer_widget<'a>(
-    parent_widget: &mut WidgetDefault<'a>,
-) -> *const WidgetDefault<'a> {
+fn create_status_layer_widget<'a>(parent_widget: &mut WidgetDefault<'a>) -> *const WidgetDefault<'a> {
     let status_layer = UIManager::create_widget("status_layer", UIWidgetTypes::Default);
     let ui_component = ptr_as_mut(status_layer.as_ref()).get_ui_component_mut();
     ui_component.set_layout_type(UILayoutType::FloatLayout);
@@ -55,13 +53,9 @@ fn create_status_bar_widget<'a>(
 }
 
 impl<'a> StatusBarWidget<'a> {
-    pub fn create_status_widget(
-        parent_widget: &mut WidgetDefault<'a>,
-        color: u32,
-    ) -> StatusBarWidget<'a> {
+    pub fn create_status_widget(parent_widget: &mut WidgetDefault<'a>, color: u32) -> StatusBarWidget<'a> {
         let status_layer = create_status_layer_widget(parent_widget);
-        let (status_bar, max_status_bar) =
-            create_status_bar_widget(ptr_as_mut(status_layer), color);
+        let (status_bar, max_status_bar) = create_status_bar_widget(ptr_as_mut(status_layer), color);
         StatusBarWidget {
             _status_layer: status_layer,
             _max_status_bar: max_status_bar,
@@ -91,8 +85,7 @@ impl<'a> StatusBarWidget<'a> {
         let max_status_bar = ptr_as_mut(self._max_status_bar).get_ui_component_mut();
         let mut size_hint_x = max_status_bar.get_size_hint_x().unwrap_or(1.0);
         if smooth_update && max_status_ratio < size_hint_x {
-            size_hint_x =
-                max_status_ratio.max(size_hint_x - delta_time as f32 * STATUS_BAR_DECAY_SPEED);
+            size_hint_x = max_status_ratio.max(size_hint_x - delta_time as f32 * STATUS_BAR_DECAY_SPEED);
             max_status_bar.set_size_hint_x(Some(size_hint_x));
         } else {
             max_status_bar.set_size_hint_x(Some(max_status_ratio));

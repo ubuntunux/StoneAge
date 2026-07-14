@@ -2,8 +2,7 @@ use crate::game_module::game_resource::GameResources;
 use nalgebra::Vector2;
 use rust_engine_3d::scene::material_instance::MaterialInstanceData;
 use rust_engine_3d::scene::ui::{
-    HorizontalAlign, Orientation, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign,
-    WidgetDefault,
+    HorizontalAlign, Orientation, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault,
 };
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{RcRefCell, ptr_as_mut};
@@ -42,8 +41,7 @@ impl<'a> ImageLayout<'a> {
         material_instance_name: &str,
     ) -> Box<ImageLayout<'a>> {
         // background layout
-        let background_layout =
-            UIManager::create_widget("background image layout", UIWidgetTypes::Default);
+        let background_layout = UIManager::create_widget("background image layout", UIWidgetTypes::Default);
         let background_layout_mut = ptr_as_mut(background_layout.as_ref());
         let ui_component = ptr_as_mut(background_layout.as_ref()).get_ui_component_mut();
         ui_component.set_layout_type(UILayoutType::BoxLayout);
@@ -102,12 +100,10 @@ impl<'a> ImageLayout<'a> {
         if material_instance.is_some() {
             let material_instance_refcell = material_instance.as_ref().unwrap();
             let material_instance_ref = material_instance_refcell.borrow();
-            let texture_parameter =
-                material_instance_ref._material_parameters.get("texture_color").unwrap();
+            let texture_parameter = material_instance_ref._material_parameters.get("texture_color").unwrap();
             let texture_name = texture_parameter.as_str().unwrap();
             let texture = game_resources.get_engine_resources().get_texture_data(texture_name);
-            self._next_image_aspect =
-                texture.borrow()._image_width as f32 / texture.borrow()._image_height as f32;
+            self._next_image_aspect = texture.borrow()._image_width as f32 / texture.borrow()._image_height as f32;
             self._fadeout_opacity = 1.0;
             self._fadeout_image_brightness = 0.0;
             self._fadein_opacity = 1.0;
@@ -124,12 +120,7 @@ impl<'a> ImageLayout<'a> {
         let progress = self.get_progress(self._fade_time);
         self._initial_fade_time = fade_time;
         self._auto_fade_inout = auto_fade_inout;
-        self._fade_time = fade_time
-            * if progress <= 0.5 {
-                progress
-            } else {
-                1.0 - progress
-            };
+        self._fade_time = fade_time * if progress <= 0.5 { progress } else { 1.0 - progress };
 
         self._prev_opacity = self._opacity;
         self._prev_image_brightness = self._image_brightness;
@@ -153,13 +144,9 @@ impl<'a> ImageLayout<'a> {
         ui_component.set_visible(self._material_instance.is_some());
         if window_aspect < self._image_aspect {
             ui_component.set_size_hint_x(Some(self._image_size_hint));
-            ui_component.set_size_hint_y(Some(
-                window_aspect / self._image_aspect * self._image_size_hint,
-            ));
+            ui_component.set_size_hint_y(Some(window_aspect / self._image_aspect * self._image_size_hint));
         } else {
-            ui_component.set_size_hint_x(Some(
-                self._image_aspect / window_aspect * self._image_size_hint,
-            ));
+            ui_component.set_size_hint_x(Some(self._image_aspect / window_aspect * self._image_size_hint));
             ui_component.set_size_hint_y(Some(self._image_size_hint));
         }
     }
@@ -193,9 +180,7 @@ impl<'a> ImageLayout<'a> {
         let window_aspect: f32 = window_size.x as f32 / window_size.y as f32;
         let image_widget = ptr_as_mut(self._image_layout.as_ref());
         let ui_component = image_widget.get_ui_component_mut();
-        ui_component.set_size_hint_x(Some(
-            self._image_aspect / window_aspect * self._image_size_hint,
-        ));
+        ui_component.set_size_hint_x(Some(self._image_aspect / window_aspect * self._image_size_hint));
         ui_component.set_size_hint_y(Some(self._image_size_hint));
     }
 
@@ -224,8 +209,7 @@ impl<'a> ImageLayout<'a> {
                 self._image_brightness = self._fadein_image_brightness;
             } else if progress <= 0.5 {
                 let curved_progress = 0f32.max(1f32.min((progress * 2.0).powf(0.5)));
-                self._opacity =
-                    math::lerp(self._prev_opacity, self._fadeout_opacity, curved_progress);
+                self._opacity = math::lerp(self._prev_opacity, self._fadeout_opacity, curved_progress);
                 self._image_brightness = math::lerp(
                     self._prev_image_brightness,
                     self._fadeout_image_brightness,
@@ -233,8 +217,7 @@ impl<'a> ImageLayout<'a> {
                 );
             } else {
                 let curved_progress = 0f32.max(1f32.min(((progress - 0.5) * 2.0).powf(2.0)));
-                self._opacity =
-                    math::lerp(self._prev_opacity, self._fadein_opacity, curved_progress);
+                self._opacity = math::lerp(self._prev_opacity, self._fadein_opacity, curved_progress);
                 self._image_brightness = math::lerp(
                     self._prev_image_brightness,
                     self._fadein_image_brightness,

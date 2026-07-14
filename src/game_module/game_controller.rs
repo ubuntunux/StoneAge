@@ -5,9 +5,7 @@ use crate::game_module::game_constants::*;
 use crate::game_module::game_ui_manager::GameUIManager;
 use nalgebra::{Matrix4, Vector2, Vector3};
 use rust_engine_3d::core::engine_core::TimeData;
-use rust_engine_3d::core::input::{
-    ButtonState, JoystickInputData, KeyboardInputData, MouseInputData, MouseMoveData,
-};
+use rust_engine_3d::core::input::{ButtonState, JoystickInputData, KeyboardInputData, MouseInputData, MouseMoveData};
 use rust_engine_3d::scene::camera::CameraObjectData;
 use rust_engine_3d::scene::collision::{CollisionCreateInfo, CollisionData, CollisionType};
 use rust_engine_3d::utilities::math;
@@ -121,14 +119,10 @@ impl<'a> GameController<'a> {
         let mut done_auto_blend_mode = true;
 
         // blend distance
-        let pivot =
-            player.borrow().get_bounding_box()._center + Vector3::new(0.0, CAMERA_OFFSET_Y, 0.0);
-        let rotation_matrix: Matrix4<f32> =
-            math::make_rotation_matrix(self._camera_pitch, self._camera_yaw, 0f32);
-        let goal_camera_position =
-            pivot - rotation_matrix.column(2).xyz() * self._camera_goal_distance;
-        let mut to_goal_camera =
-            goal_camera_position - main_camera._transform_object.get_position();
+        let pivot = player.borrow().get_bounding_box()._center + Vector3::new(0.0, CAMERA_OFFSET_Y, 0.0);
+        let rotation_matrix: Matrix4<f32> = math::make_rotation_matrix(self._camera_pitch, self._camera_yaw, 0f32);
+        let goal_camera_position = pivot - rotation_matrix.column(2).xyz() * self._camera_goal_distance;
+        let mut to_goal_camera = goal_camera_position - main_camera._transform_object.get_position();
         let mut to_goal_dist = to_goal_camera.magnitude();
         if 0.0 < to_goal_dist {
             to_goal_camera /= to_goal_dist;
@@ -143,29 +137,21 @@ impl<'a> GameController<'a> {
         self._camera_distance = (pivot - self._camera_position).magnitude();
 
         // blend pitch
-        let pitch_diff = math::get_normalized_diff_radian(
-            main_camera._transform_object.get_pitch(),
-            self._camera_goal_pitch,
-        );
+        let pitch_diff =
+            math::get_normalized_diff_radian(main_camera._transform_object.get_pitch(), self._camera_goal_pitch);
         let t = 1.0 - (-pitch_diff.abs()).exp();
-        let blend_speed =
-            math::lerp(CAMERA_ROTATION_SPEED_MIN, CAMERA_ROTATION_SPEED_MAX, t) * delta_time;
+        let blend_speed = math::lerp(CAMERA_ROTATION_SPEED_MIN, CAMERA_ROTATION_SPEED_MAX, t) * delta_time;
         if pitch_diff.abs() < blend_speed {
             self._camera_pitch = self._camera_goal_pitch;
         } else {
-            self._camera_pitch =
-                self._camera_goal_pitch - (pitch_diff - blend_speed * pitch_diff.signum());
+            self._camera_pitch = self._camera_goal_pitch - (pitch_diff - blend_speed * pitch_diff.signum());
             done_auto_blend_mode = false;
         }
 
         // blend yaw
-        let yaw_diff = math::get_normalized_diff_radian(
-            main_camera._transform_object.get_yaw(),
-            self._camera_goal_yaw,
-        );
+        let yaw_diff = math::get_normalized_diff_radian(main_camera._transform_object.get_yaw(), self._camera_goal_yaw);
         let t = 1.0 - (-yaw_diff.abs()).exp();
-        let blend_speed =
-            math::lerp(CAMERA_ROTATION_SPEED_MIN, CAMERA_ROTATION_SPEED_MAX, t) * delta_time;
+        let blend_speed = math::lerp(CAMERA_ROTATION_SPEED_MIN, CAMERA_ROTATION_SPEED_MAX, t) * delta_time;
         if yaw_diff.abs() < blend_speed {
             self._camera_yaw = self._camera_goal_yaw;
         } else {
@@ -182,24 +168,12 @@ impl<'a> GameController<'a> {
         }
     }
 
-    pub fn set_game_camera_goal_transform(
-        &mut self,
-        goal_distance_ratio: f32,
-        goal_pitch: f32,
-        goal_yaw: f32,
-    ) {
-        self._camera_goal_distance = math::lerp(
-            CAMERA_DISTANCE_MIN,
-            CAMERA_DISTANCE_MAX,
-            goal_distance_ratio,
-        );
-        if GAME_VIEW_MODE == GameViewMode::GameViewMode2D
-            || GAME_VIEW_MODE == GameViewMode::GameViewMode25D
-        {
+    pub fn set_game_camera_goal_transform(&mut self, goal_distance_ratio: f32, goal_pitch: f32, goal_yaw: f32) {
+        self._camera_goal_distance = math::lerp(CAMERA_DISTANCE_MIN, CAMERA_DISTANCE_MAX, goal_distance_ratio);
+        if GAME_VIEW_MODE == GameViewMode::GameViewMode2D || GAME_VIEW_MODE == GameViewMode::GameViewMode25D {
             self._camera_goal_pitch = self.get_camera_pitch_by_distance(self._camera_goal_distance);
         } else {
-            self._camera_goal_pitch =
-                CAMERA_PITCH_MIN.max(CAMERA_PITCH_MAX.min(goal_pitch % math::TWO_PI));
+            self._camera_goal_pitch = CAMERA_PITCH_MIN.max(CAMERA_PITCH_MAX.min(goal_pitch % math::TWO_PI));
         }
         self._camera_goal_yaw = goal_yaw % math::TWO_PI;
     }
@@ -217,14 +191,10 @@ impl<'a> GameController<'a> {
         self._camera_yaw = yaw;
         self._camera_position = position;
 
-        let calculated_distance = if let Some(player) = self
-            .get_game_client()
-            .get_game_scene_manager()
-            .get_character_manager()
-            .get_maybe_player()
+        let calculated_distance = if let Some(player) =
+            self.get_game_client().get_game_scene_manager().get_character_manager().get_maybe_player()
         {
-            let pivot = player.borrow().get_bounding_box()._center
-                + Vector3::new(0.0, CAMERA_OFFSET_Y, 0.0);
+            let pivot = player.borrow().get_bounding_box()._center + Vector3::new(0.0, CAMERA_OFFSET_Y, 0.0);
             Some((pivot - self._camera_position).magnitude())
         } else {
             None
@@ -259,33 +229,18 @@ impl<'a> GameController<'a> {
         (goal_value, target_value)
     }
 
-    pub fn update_camera_rotation(
-        &mut self,
-        pitch_control: f32,
-        yaw_control: f32,
-        delta_time: f32,
-    ) {
-        (self._camera_goal_pitch, self._camera_pitch) = self.update_camera_smooth_rotation(
-            self._camera_goal_pitch,
-            self._camera_pitch,
-            pitch_control,
-            delta_time,
-        );
-        self._camera_goal_pitch =
-            CAMERA_PITCH_MIN.max(CAMERA_PITCH_MAX.min(self._camera_goal_pitch));
+    pub fn update_camera_rotation(&mut self, pitch_control: f32, yaw_control: f32, delta_time: f32) {
+        (self._camera_goal_pitch, self._camera_pitch) =
+            self.update_camera_smooth_rotation(self._camera_goal_pitch, self._camera_pitch, pitch_control, delta_time);
+        self._camera_goal_pitch = CAMERA_PITCH_MIN.max(CAMERA_PITCH_MAX.min(self._camera_goal_pitch));
         self._camera_pitch = CAMERA_PITCH_MIN.max(CAMERA_PITCH_MAX.min(self._camera_pitch));
 
-        (self._camera_goal_yaw, self._camera_yaw) = self.update_camera_smooth_rotation(
-            self._camera_goal_yaw,
-            self._camera_yaw,
-            yaw_control,
-            delta_time,
-        );
+        (self._camera_goal_yaw, self._camera_yaw) =
+            self.update_camera_smooth_rotation(self._camera_goal_yaw, self._camera_yaw, yaw_control, delta_time);
     }
 
     pub fn get_camera_pitch_by_distance(&self, camera_distance: f32) -> f32 {
-        let dist_ratio =
-            (camera_distance - CAMERA_DISTANCE_MIN) / (CAMERA_DISTANCE_MAX - CAMERA_DISTANCE_MIN);
+        let dist_ratio = (camera_distance - CAMERA_DISTANCE_MIN) / (CAMERA_DISTANCE_MAX - CAMERA_DISTANCE_MIN);
         math::degree_to_radian(math::lerp(
             CAMERA_PITCH_MIN_BY_DISTANCE,
             CAMERA_PITCH_MAX_BY_DISTANCE,
@@ -295,8 +250,7 @@ impl<'a> GameController<'a> {
 
     pub fn update_camera_distance(&mut self, zoom_control: f32, delta_time: f32) {
         self._camera_goal_distance += zoom_control;
-        self._camera_goal_distance =
-            CAMERA_DISTANCE_MIN.max(CAMERA_DISTANCE_MAX.min(self._camera_goal_distance));
+        self._camera_goal_distance = CAMERA_DISTANCE_MIN.max(CAMERA_DISTANCE_MAX.min(self._camera_goal_distance));
         if self._camera_goal_distance != self._camera_distance {
             let diff = (self._camera_goal_distance - self._camera_distance) * CAMERA_ZOOM_SPEED;
             let sign = diff.signum();
@@ -308,28 +262,16 @@ impl<'a> GameController<'a> {
         }
     }
 
-    pub fn update_game_camera(
-        &mut self,
-        pitch_control: f32,
-        yaw_control: f32,
-        zoom_control: f32,
-        delta_time: f32,
-    ) {
+    pub fn update_game_camera(&mut self, pitch_control: f32, yaw_control: f32, zoom_control: f32, delta_time: f32) {
         self.update_camera_distance(zoom_control, delta_time);
-        if GAME_VIEW_MODE == GameViewMode::GameViewMode2D
-            || GAME_VIEW_MODE == GameViewMode::GameViewMode25D
-        {
+        if GAME_VIEW_MODE == GameViewMode::GameViewMode2D || GAME_VIEW_MODE == GameViewMode::GameViewMode25D {
             self._camera_pitch = self.get_camera_pitch_by_distance(self._camera_distance);
         } else {
             self.update_camera_rotation(pitch_control, yaw_control, delta_time);
         }
     }
 
-    pub fn apply_game_camera_transform(
-        &mut self,
-        main_camera: &mut CameraObjectData,
-        player: &mut Character,
-    ) {
+    pub fn apply_game_camera_transform(&mut self, main_camera: &mut CameraObjectData, player: &mut Character) {
         main_camera._transform_object.set_pitch(self._camera_pitch);
         main_camera._transform_object.set_yaw(self._camera_yaw);
         main_camera._transform_object.set_roll(0.0);
@@ -340,8 +282,7 @@ impl<'a> GameController<'a> {
         let mut prev_camera_position = self._camera_position;
         let mut camera_position = pivot + camera_dir * self._camera_distance;
         let camera_move_delta = self._camera_position - prev_camera_position;
-        let scene_manager =
-            ptr_as_ref(self.get_game_client().get_game_scene_manager().get_scene_manager_ptr());
+        let scene_manager = ptr_as_ref(self.get_game_client().get_game_scene_manager().get_scene_manager_ptr());
 
         // check collide with block
         {
@@ -364,8 +305,7 @@ impl<'a> GameController<'a> {
             );
             collision_pos_max = math::get_max(&collision_pos_max, &pivot);
 
-            let collision_objects =
-                scene_manager.collect_collision_objects(&collision_pos_min, &collision_pos_max);
+            let collision_objects = scene_manager.collect_collision_objects(&collision_pos_min, &collision_pos_max);
 
             // check ground and side
             for collision_object in collision_objects.values() {
@@ -382,8 +322,7 @@ impl<'a> GameController<'a> {
                     {
                         camera_position.y = prev_height;
                     } else {
-                        let push_vec =
-                            camera_collision.push_by_collide(&block_render_object._collision);
+                        let push_vec = camera_collision.push_by_collide(&block_render_object._collision);
                         if push_vec.x != 0.0 || push_vec.z != 0.0 {
                             camera_position.x += push_vec.x;
                             camera_position.z += push_vec.z;
@@ -391,8 +330,7 @@ impl<'a> GameController<'a> {
                     }
 
                     // check line of sight
-                    if let Some(hit_dist) =
-                        block_render_object._collision.collide_ray(&pivot, &camera_dir)
+                    if let Some(hit_dist) = block_render_object._collision.collide_ray(&pivot, &camera_dir)
                         && (hit_dist - bound_size) < self._camera_distance
                     {
                         self._camera_distance = hit_dist - bound_size;
@@ -428,34 +366,33 @@ impl<'a> GameController<'a> {
         player: &RcRefCell<Character>,
     ) {
         let delta_time: f32 = time_data._delta_time_with_scale as f32;
-        let is_attack: bool = mouse_input_data._btn_l_pressed
-            || joystick_input_data._btn_right_shoulder == ButtonState::Pressed;
-        let is_power_attack: bool = mouse_input_data._btn_r_pressed
-            || joystick_input_data._btn_right_trigger == ButtonState::Pressed;
-        let is_left = keyboard_input_data.get_key_hold(KeyCode::KeyA)
-            || joystick_input_data._stick_left_direction.x < 0;
-        let is_right = keyboard_input_data.get_key_hold(KeyCode::KeyD)
-            || 0 < joystick_input_data._stick_left_direction.x;
-        let is_down = keyboard_input_data.get_key_hold(KeyCode::KeyS)
-            || joystick_input_data._stick_left_direction.y < 0;
-        let is_up = keyboard_input_data.get_key_hold(KeyCode::KeyW)
-            || 0 < joystick_input_data._stick_left_direction.y;
-        let is_jump = keyboard_input_data.get_key_pressed(KeyCode::Space)
-            || joystick_input_data._btn_a == ButtonState::Pressed;
+        let is_attack: bool =
+            mouse_input_data._btn_l_pressed || joystick_input_data._btn_right_shoulder == ButtonState::Pressed;
+        let is_power_attack: bool =
+            mouse_input_data._btn_r_pressed || joystick_input_data._btn_right_trigger == ButtonState::Pressed;
+        let is_left =
+            keyboard_input_data.get_key_hold(KeyCode::KeyA) || joystick_input_data._stick_left_direction.x < 0;
+        let is_right =
+            keyboard_input_data.get_key_hold(KeyCode::KeyD) || 0 < joystick_input_data._stick_left_direction.x;
+        let is_down =
+            keyboard_input_data.get_key_hold(KeyCode::KeyS) || joystick_input_data._stick_left_direction.y < 0;
+        let is_up = keyboard_input_data.get_key_hold(KeyCode::KeyW) || 0 < joystick_input_data._stick_left_direction.y;
+        let is_jump =
+            keyboard_input_data.get_key_pressed(KeyCode::Space) || joystick_input_data._btn_a == ButtonState::Pressed;
         let is_run = keyboard_input_data.get_key_pressed(KeyCode::ShiftLeft)
             || joystick_input_data._btn_left_shoulder == ButtonState::Pressed;
-        let is_roll = keyboard_input_data.get_key_pressed(KeyCode::AltLeft)
-            || joystick_input_data._btn_b == ButtonState::Pressed;
-        let is_interaction = keyboard_input_data.get_key_pressed(KeyCode::KeyF)
-            || joystick_input_data._btn_x == ButtonState::Pressed;
+        let is_roll =
+            keyboard_input_data.get_key_pressed(KeyCode::AltLeft) || joystick_input_data._btn_b == ButtonState::Pressed;
+        let is_interaction =
+            keyboard_input_data.get_key_pressed(KeyCode::KeyF) || joystick_input_data._btn_x == ButtonState::Pressed;
         let is_zoom_in = keyboard_input_data.get_key_hold(KeyCode::ArrowUp)
             || 0 < mouse_move_data._scroll_delta.y
             || joystick_input_data._btn_up == ButtonState::Hold;
         let is_zoom_out = keyboard_input_data.get_key_hold(KeyCode::ArrowDown)
             || mouse_move_data._scroll_delta.y < 0
             || joystick_input_data._btn_down == ButtonState::Hold;
-        let use_item = keyboard_input_data.get_key_pressed(KeyCode::KeyC)
-            || joystick_input_data._btn_y == ButtonState::Pressed;
+        let use_item =
+            keyboard_input_data.get_key_pressed(KeyCode::KeyC) || joystick_input_data._btn_y == ButtonState::Pressed;
         let is_previous_item = keyboard_input_data.get_key_pressed(KeyCode::ArrowLeft)
             || keyboard_input_data.get_key_pressed(KeyCode::KeyQ)
             || joystick_input_data._btn_left == ButtonState::Pressed;
@@ -491,11 +428,9 @@ impl<'a> GameController<'a> {
         }
 
         // item control
-        let selectable_item =
-            player.borrow().is_available_move() && player.borrow().is_idle_action();
+        let selectable_item = player.borrow().is_available_move() && player.borrow().is_idle_action();
         if selectable_item {
-            let item_manager =
-                self.get_game_client().get_game_scene_manager().get_item_manager_mut();
+            let item_manager = self.get_game_client().get_game_scene_manager().get_item_manager_mut();
             if is_previous_item {
                 item_manager.select_previous_item();
             } else if is_next_item {
@@ -625,11 +560,9 @@ impl<'a> GameController<'a> {
             if player_mut.is_in_interaction_range() {
                 player_mut.set_action_interaction();
             } else if selectable_item {
-                let item_manager =
-                    self.get_game_client().get_game_scene_manager().get_item_manager_mut();
+                let item_manager = self.get_game_client().get_game_scene_manager().get_item_manager_mut();
                 if item_manager.get_selected_inventory_item_data_type().is_droppable() {
-                    let item_data_name =
-                        String::from(item_manager.get_selected_inventory_item_data_name());
+                    let item_data_name = String::from(item_manager.get_selected_inventory_item_data_name());
                     item_manager.drop_inventory_item(item_data_name.as_str(), 1);
                 }
             }

@@ -32,9 +32,7 @@ impl<'a> KeyBindingWidget<'a> {
         for (index, icon_widget) in self._binding_icon_widgets.iter().enumerate() {
             if index < binding_icons.len() {
                 ptr_as_mut(*icon_widget)._ui_component.set_visible(true);
-                ptr_as_mut(*icon_widget)
-                    ._ui_component
-                    .set_material_instance(binding_icons.get(index).cloned());
+                ptr_as_mut(*icon_widget)._ui_component.set_material_instance(binding_icons.get(index).cloned());
             } else {
                 ptr_as_mut(*icon_widget)._ui_component.set_visible(false);
             }
@@ -48,23 +46,16 @@ pub struct KeyBindingWidgetMap<'a> {
 }
 
 impl<'a> KeyBindingWidgetMap<'a> {
-    pub fn get_key_binding_widget_mut(
-        &mut self,
-        key_binding_type: KeyBindingType,
-    ) -> &mut KeyBindingWidget<'a> {
+    pub fn get_key_binding_widget_mut(&mut self, key_binding_type: KeyBindingType) -> &mut KeyBindingWidget<'a> {
         self._key_binding_widget_map.get_mut(&key_binding_type).unwrap()
     }
 
-    pub fn get_key_binding_widget(
-        &self,
-        key_binding_type: KeyBindingType,
-    ) -> &KeyBindingWidget<'a> {
+    pub fn get_key_binding_widget(&self, key_binding_type: KeyBindingType) -> &KeyBindingWidget<'a> {
         self._key_binding_widget_map.get(&key_binding_type).unwrap()
     }
 
     pub fn register_key_binding_widget(&mut self, key_binding_widget: KeyBindingWidget<'a>) {
-        self._key_binding_widget_map
-            .insert(key_binding_widget._key_binding_type, key_binding_widget);
+        self._key_binding_widget_map.insert(key_binding_widget._key_binding_type, key_binding_widget);
     }
 
     pub fn update_key_binding_widgets(&mut self, is_keyboard_input_mode: bool) {
@@ -81,20 +72,14 @@ pub struct KeyBindingWidgetManager<'a> {
 }
 
 impl<'a> KeyBindingWidgetManager<'a> {
-    pub fn register_key_binding_widget_map(
-        &mut self,
-        key_binding_widget_map: &Rc<KeyBindingWidgetMap<'a>>,
-    ) {
+    pub fn register_key_binding_widget_map(&mut self, key_binding_widget_map: &Rc<KeyBindingWidgetMap<'a>>) {
         self._key_binding_widget_maps.push(key_binding_widget_map.clone());
     }
 
     pub fn update_key_binding_widget_manager(&mut self, is_keyboard_input_mode: bool) {
-        if self._is_keyboard_input_mode.is_none()
-            || self._is_keyboard_input_mode.unwrap() != is_keyboard_input_mode
-        {
+        if self._is_keyboard_input_mode.is_none() || self._is_keyboard_input_mode.unwrap() != is_keyboard_input_mode {
             for key_binding_widget_map in self._key_binding_widget_maps.iter_mut() {
-                ptr_as_mut(key_binding_widget_map.as_ref())
-                    .update_key_binding_widgets(is_keyboard_input_mode);
+                ptr_as_mut(key_binding_widget_map.as_ref()).update_key_binding_widgets(is_keyboard_input_mode);
             }
             self._is_keyboard_input_mode = Some(is_keyboard_input_mode);
         }

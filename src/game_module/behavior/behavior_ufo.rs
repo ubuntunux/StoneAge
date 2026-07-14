@@ -18,20 +18,13 @@ impl<'a> BehaviorBase<'a> for BehaviorUfo<'a> {
         self._behavior_data.set_next_behavior_state(next_behavior_state, is_force);
     }
 
-    fn update_behavior(
-        &mut self,
-        _owner: &mut Character<'a>,
-        _target: Option<&Character<'a>>,
-        delta_time: f32,
-    ) {
+    fn update_behavior(&mut self, _owner: &mut Character<'a>, _target: Option<&Character<'a>>, delta_time: f32) {
         let prev_behavior_state = self._behavior_data.get_behavior_state();
         let next_behavior_state = self._behavior_data.get_next_behavior_state();
         let is_force = self._behavior_data.is_force_behavior_state_changed();
 
         for state in State::iter() {
-            if !is_force
-                && prev_behavior_state == next_behavior_state
-                && (state == State::End || state == State::Begin)
+            if !is_force && prev_behavior_state == next_behavior_state && (state == State::End || state == State::Begin)
             {
                 continue;
             }

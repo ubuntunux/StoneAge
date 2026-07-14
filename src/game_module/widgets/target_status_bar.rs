@@ -2,8 +2,7 @@ use crate::game_module::actors::character::Character;
 use crate::game_module::widgets::status_bar_widget::StatusBarWidget;
 use nalgebra::Vector2;
 use rust_engine_3d::scene::ui::{
-    HorizontalAlign, Orientation, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign,
-    WidgetDefault,
+    HorizontalAlign, Orientation, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault,
 };
 use rust_engine_3d::utilities::system::ptr_as_mut;
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
@@ -18,11 +17,8 @@ pub struct TargetStatusWidget<'a> {
 
 // TargetStatusWidget
 impl<'a> TargetStatusWidget<'a> {
-    pub fn create_target_status_widget(
-        root_widget: &mut WidgetDefault<'a>,
-    ) -> TargetStatusWidget<'a> {
-        let target_status_widget =
-            UIManager::create_widget("target_status_widget", UIWidgetTypes::Default);
+    pub fn create_target_status_widget(root_widget: &mut WidgetDefault<'a>) -> TargetStatusWidget<'a> {
+        let target_status_widget = UIManager::create_widget("target_status_widget", UIWidgetTypes::Default);
         let target_status_widget_ptr = ptr_as_mut(target_status_widget.as_ref());
         let ui_component = ptr_as_mut(target_status_widget.as_ref()).get_ui_component_mut();
         ui_component.set_layout_type(UILayoutType::BoxLayout);
@@ -35,8 +31,7 @@ impl<'a> TargetStatusWidget<'a> {
         ui_component.set_color(get_color32(0, 0, 0, 128));
         root_widget.add_widget(&target_status_widget);
 
-        let target_name_widget =
-            UIManager::create_widget("target_name_widget", UIWidgetTypes::Default);
+        let target_name_widget = UIManager::create_widget("target_name_widget", UIWidgetTypes::Default);
         let target_name_widget_ptr = ptr_as_mut(target_name_widget.as_ref());
         let ui_component = ptr_as_mut(target_name_widget.as_ref()).get_ui_component_mut();
         ui_component.set_text("Name");
@@ -49,10 +44,7 @@ impl<'a> TargetStatusWidget<'a> {
         ui_component.set_color(get_color32(255, 255, 255, 0));
         target_status_widget_ptr.add_widget(&target_name_widget);
 
-        let hp_widget = StatusBarWidget::create_status_widget(
-            target_status_widget_ptr,
-            get_color32(255, 64, 0, 128),
-        );
+        let hp_widget = StatusBarWidget::create_status_widget(target_status_widget_ptr, get_color32(255, 64, 0, 128));
 
         TargetStatusWidget {
             _widget: target_status_widget_ptr,

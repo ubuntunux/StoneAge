@@ -5,9 +5,8 @@ use crate::game_module::actors::items::ItemCreateInfo;
 use crate::game_module::actors::items::ItemManager;
 use crate::game_module::game_client::GameClient;
 use crate::game_module::game_constants::{
-    AUDIO_STOMACH_GROWLING, CHARACTER_INTERACTION_DISTANCE, CHARACTER_INTERACTION_TIME,
-    GAME_VIEW_MODE, GameViewMode, ITEM_HAND, ITEM_SPIRIT_BALL, MATERIAL_EMOJI_GOOD,
-    MATERIAL_EMOJI_HUNGRY, NPC_ATTACK_HIT_RANGE,
+    AUDIO_STOMACH_GROWLING, CHARACTER_INTERACTION_DISTANCE, CHARACTER_INTERACTION_TIME, GAME_VIEW_MODE, GameViewMode,
+    ITEM_HAND, ITEM_SPIRIT_BALL, MATERIAL_EMOJI_GOOD, MATERIAL_EMOJI_HUNGRY, NPC_ATTACK_HIT_RANGE,
 };
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
@@ -72,11 +71,7 @@ impl<'a> CharacterManager<'a> {
         })
     }
 
-    pub fn initialize_character_manager(
-        &mut self,
-        engine_core: &EngineCore<'a>,
-        application: &Application<'a>,
-    ) {
+    pub fn initialize_character_manager(&mut self, engine_core: &EngineCore<'a>, application: &Application<'a>) {
         log::info!("initialize_character_manager");
         self._game_client = application.get_game_client();
         self._game_scene_manager = application.get_game_scene_manager();
@@ -132,19 +127,16 @@ impl<'a> CharacterManager<'a> {
 
         // check height map
         let mut spawn_point = character_create_info._position;
-        spawn_point.y = spawn_point.y.max(
-            self.get_scene_manager().get_height_map_data().get_height_bilinear(&spawn_point, 0),
-        );
+        spawn_point.y = spawn_point
+            .y
+            .max(self.get_scene_manager().get_height_map_data().get_height_bilinear(&spawn_point, 0));
 
         // check collision objects
-        let collision_objects =
-            self.get_scene_manager().collect_collision_objects(&spawn_point, &spawn_point);
+        let collision_objects = self.get_scene_manager().collect_collision_objects(&spawn_point, &spawn_point);
         for collision_object in collision_objects.values() {
             let block_render_object = ptr_as_ref(collision_object.as_ptr());
             let block_bound_box = &block_render_object._collision._bounding_box;
-            if block_render_object._collision.collide_point(&spawn_point)
-                && block_bound_box._max.y < spawn_point.y
-            {
+            if block_render_object._collision.collide_point(&spawn_point) && block_bound_box._max.y < spawn_point.y {
                 spawn_point.y = block_bound_box._max.y;
             }
         }
@@ -160,11 +152,9 @@ impl<'a> CharacterManager<'a> {
             _scale: character_create_info._scale,
         };
 
-        let item_manager: *const ItemManager<'a> =
-            ptr_as_ref(self._game_scene_manager)._item_manager.as_ref();
-        let render_object_data = self
-            .get_scene_manager_mut()
-            .add_skeletal_render_object(character_name, &render_object_create_info);
+        let item_manager: *const ItemManager<'a> = ptr_as_ref(self._game_scene_manager)._item_manager.as_ref();
+        let render_object_data =
+            self.get_scene_manager_mut().add_skeletal_render_object(character_name, &render_object_create_info);
         let character_id = if character_create_info._character_id.is_nil() {
             self.generate_id()
         } else {
@@ -296,14 +286,10 @@ impl<'a> CharacterManager<'a> {
         if character._character_stats.get_is_stat_displayed() {
             let mut contents = vec![];
             if character.get_stats().is_hungry() {
-                contents.push(TextBoxContent::MaterialInstance(String::from(
-                    MATERIAL_EMOJI_HUNGRY,
-                )));
+                contents.push(TextBoxContent::MaterialInstance(String::from(MATERIAL_EMOJI_HUNGRY)));
                 contents.push(TextBoxContent::Audio(String::from(AUDIO_STOMACH_GROWLING)));
             } else {
-                contents.push(TextBoxContent::MaterialInstance(String::from(
-                    MATERIAL_EMOJI_GOOD,
-                )));
+                contents.push(TextBoxContent::MaterialInstance(String::from(MATERIAL_EMOJI_GOOD)));
             }
 
             game_ui_manager.add_text_box_item(
@@ -353,12 +339,11 @@ impl<'a> CharacterManager<'a> {
 
             // get distance to player
             let to_player = player.get_position() - character_mut.get_position();
-            let (_to_player_dir, mut to_player_distance) =
-                if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
-                    math::make_normalize_xy_with_norm(&to_player)
-                } else {
-                    math::make_normalize_with_norm(&to_player)
-                };
+            let (_to_player_dir, mut to_player_distance) = if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
+                math::make_normalize_xy_with_norm(&to_player)
+            } else {
+                math::make_normalize_with_norm(&to_player)
+            };
             to_player_distance = 0f32.max(
                 to_player_distance
                     - (player.get_collision()._bounding_box._mag_xz
@@ -394,8 +379,7 @@ impl<'a> CharacterManager<'a> {
 
                             // hit..
                             target_character_mut.set_hit_damage(
-                                character_mut
-                                    .get_power(character_mut._animation_state.get_action_event()),
+                                character_mut.get_power(character_mut._animation_state.get_action_event()),
                                 Some(character_mut.get_face_direction()),
                             );
 
@@ -419,15 +403,10 @@ impl<'a> CharacterManager<'a> {
                     // npc attack to player
                     if player.is_alive()
                         && !player._character_stats._invincibility
-                        && character_mut.check_in_range(
-                            player.get_collision(),
-                            NPC_ATTACK_HIT_RANGE,
-                            check_direction,
-                        )
+                        && character_mut.check_in_range(player.get_collision(), NPC_ATTACK_HIT_RANGE, check_direction)
                     {
                         player.set_hit_damage(
-                            character_mut
-                                .get_power(character_mut._animation_state.get_action_event()),
+                            character_mut.get_power(character_mut._animation_state.get_action_event()),
                             Some(character_mut.get_face_direction()),
                         );
                     }

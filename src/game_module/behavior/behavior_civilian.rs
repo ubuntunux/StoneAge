@@ -2,8 +2,8 @@ use crate::game_module::actors::character::Character;
 use crate::game_module::actors::character_data::ActionAnimationState;
 use crate::game_module::behavior::behavior_base::{BehaviorBase, BehaviorData, BehaviorState};
 use crate::game_module::game_constants::{
-    ARRIVAL_DISTANCE_THRESHOLD, CHARACTER_INTERACTION_TIME, GAME_VIEW_MODE, GameViewMode,
-    NPC_IDLE_TERM_MAX, NPC_IDLE_TERM_MIN, NPC_ROAMING_RADIUS, NPC_ROAMING_TIME,
+    ARRIVAL_DISTANCE_THRESHOLD, CHARACTER_INTERACTION_TIME, GAME_VIEW_MODE, GameViewMode, NPC_IDLE_TERM_MAX,
+    NPC_IDLE_TERM_MIN, NPC_ROAMING_RADIUS, NPC_ROAMING_TIME,
 };
 use nalgebra::Vector3;
 use rust_engine_3d::utilities::math;
@@ -24,20 +24,13 @@ impl<'a> BehaviorBase<'a> for BehaviorCivilian<'a> {
         self._behavior_data.set_next_behavior_state(next_behavior_state, is_force);
     }
 
-    fn update_behavior(
-        &mut self,
-        owner: &mut Character<'a>,
-        target: Option<&Character<'a>>,
-        delta_time: f32,
-    ) {
+    fn update_behavior(&mut self, owner: &mut Character<'a>, target: Option<&Character<'a>>, delta_time: f32) {
         let prev_behavior_state = self._behavior_data.get_behavior_state();
         let next_behavior_state = self._behavior_data.get_next_behavior_state();
         let is_force = self._behavior_data.is_force_behavior_state_changed();
 
         for state in State::iter() {
-            if !is_force
-                && prev_behavior_state == next_behavior_state
-                && (state == State::End || state == State::Begin)
+            if !is_force && prev_behavior_state == next_behavior_state && (state == State::End || state == State::Begin)
             {
                 continue;
             }
@@ -72,9 +65,7 @@ impl<'a> BehaviorBase<'a> for BehaviorCivilian<'a> {
                             if owner.get_attached_item_data_type().is_eatable() {
                                 self.set_next_behavior(BehaviorState::Eating, false);
                             } else {
-                                if !owner.get_stats().is_hungry()
-                                    && self._behavior_data.is_end_behavior_time()
-                                {
+                                if !owner.get_stats().is_hungry() && self._behavior_data.is_end_behavior_time() {
                                     self.set_next_behavior(BehaviorState::Roaming, false);
                                 }
                             }
@@ -111,11 +102,9 @@ impl<'a> BehaviorBase<'a> for BehaviorCivilian<'a> {
                                     rand::random::<f32>() - 0.5
                                 },
                             )) * NPC_ROAMING_RADIUS;
-                            self._behavior_data._target_point =
-                                self._behavior_data._spawn_point + move_area;
-                            self._behavior_data._move_direction = math::make_normalize_xz(
-                                &(self._behavior_data._target_point - owner.get_position()),
-                            );
+                            self._behavior_data._target_point = self._behavior_data._spawn_point + move_area;
+                            self._behavior_data._move_direction =
+                                math::make_normalize_xz(&(self._behavior_data._target_point - owner.get_position()));
                             owner.set_move(&self._behavior_data._move_direction);
                             owner.set_run(false);
                             self._behavior_data.set_behavior_time(NPC_ROAMING_TIME);
@@ -128,13 +117,11 @@ impl<'a> BehaviorBase<'a> for BehaviorCivilian<'a> {
                                 if self._behavior_data.is_end_behavior_time() {
                                     do_idle = true;
                                 } else {
-                                    let offset =
-                                        self._behavior_data._target_point - owner.get_position();
+                                    let offset = self._behavior_data._target_point - owner.get_position();
                                     let dist = offset.x * offset.x + offset.z * offset.z;
                                     if dist < ARRIVAL_DISTANCE_THRESHOLD {
                                         do_idle = true;
-                                    } else if (owner._controller._is_blocked
-                                        || owner._controller._is_cliff)
+                                    } else if (owner._controller._is_blocked || owner._controller._is_cliff)
                                         && !owner.is_falling()
                                     {
                                         do_idle = true;

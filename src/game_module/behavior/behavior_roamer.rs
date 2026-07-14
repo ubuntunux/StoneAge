@@ -1,9 +1,9 @@
 use crate::game_module::actors::character::Character;
 use crate::game_module::behavior::behavior_base::{BehaviorBase, BehaviorData, BehaviorState};
 use crate::game_module::game_constants::{
-    ARRIVAL_DISTANCE_THRESHOLD, GAME_VIEW_MODE, GameViewMode, NPC_ATTACK_RANGE,
-    NPC_ATTACK_TERM_MAX, NPC_ATTACK_TERM_MIN, NPC_AVAILABLE_MOVING_ATTACK, NPC_IDLE_TERM_MAX,
-    NPC_IDLE_TERM_MIN, NPC_ROAMING_RADIUS, NPC_ROAMING_TIME, NPC_TRACKING_RANGE,
+    ARRIVAL_DISTANCE_THRESHOLD, GAME_VIEW_MODE, GameViewMode, NPC_ATTACK_RANGE, NPC_ATTACK_TERM_MAX,
+    NPC_ATTACK_TERM_MIN, NPC_AVAILABLE_MOVING_ATTACK, NPC_IDLE_TERM_MAX, NPC_IDLE_TERM_MIN, NPC_ROAMING_RADIUS,
+    NPC_ROAMING_TIME, NPC_TRACKING_RANGE,
 };
 use nalgebra::Vector3;
 use rust_engine_3d::utilities::math;
@@ -45,20 +45,13 @@ impl<'a> BehaviorBase<'a> for BehaviorRoamer<'a> {
         self._behavior_data.set_next_behavior_state(next_behavior_state, is_force);
     }
 
-    fn update_behavior(
-        &mut self,
-        owner: &mut Character<'a>,
-        target: Option<&Character<'a>>,
-        delta_time: f32,
-    ) {
+    fn update_behavior(&mut self, owner: &mut Character<'a>, target: Option<&Character<'a>>, delta_time: f32) {
         let prev_behavior_state = self._behavior_data.get_behavior_state();
         let next_behavior_state = self._behavior_data.get_next_behavior_state();
         let is_force = self._behavior_data.is_force_behavior_state_changed();
 
         for state in State::iter() {
-            if !is_force
-                && prev_behavior_state == next_behavior_state
-                && (state == State::End || state == State::Begin)
+            if !is_force && prev_behavior_state == next_behavior_state && (state == State::End || state == State::Begin)
             {
                 continue;
             }
@@ -102,11 +95,9 @@ impl<'a> BehaviorBase<'a> for BehaviorRoamer<'a> {
                                 rand::random::<f32>() - 0.5
                             },
                         )) * NPC_ROAMING_RADIUS;
-                        self._behavior_data._target_point =
-                            self._behavior_data._spawn_point + move_area;
-                        self._behavior_data._move_direction = math::safe_normalize(
-                            &(self._behavior_data._target_point - owner.get_position()),
-                        );
+                        self._behavior_data._target_point = self._behavior_data._spawn_point + move_area;
+                        self._behavior_data._move_direction =
+                            math::safe_normalize(&(self._behavior_data._target_point - owner.get_position()));
                         self._behavior_data.set_behavior_time(NPC_ROAMING_TIME);
                         owner.set_move(&self._behavior_data._move_direction);
                         owner.set_run(false);
@@ -119,13 +110,11 @@ impl<'a> BehaviorBase<'a> for BehaviorRoamer<'a> {
                             if self._behavior_data.is_end_behavior_time() {
                                 do_idle = true;
                             } else {
-                                let offset =
-                                    self._behavior_data._target_point - owner.get_position();
+                                let offset = self._behavior_data._target_point - owner.get_position();
                                 let dist = offset.x * offset.x + offset.z * offset.z;
                                 if dist < ARRIVAL_DISTANCE_THRESHOLD {
                                     do_idle = true;
-                                } else if (owner._controller._is_blocked
-                                    || owner._controller._is_cliff)
+                                } else if (owner._controller._is_blocked || owner._controller._is_cliff)
                                     && !owner.is_falling()
                                 {
                                     do_idle = true;
@@ -145,21 +134,12 @@ impl<'a> BehaviorBase<'a> for BehaviorRoamer<'a> {
                         let mut do_idle: bool = true;
                         if let Some(target_ref) = target
                             && target_ref.is_alive()
-                            && owner.check_in_range(
-                                target_ref.get_collision(),
-                                NPC_TRACKING_RANGE,
-                                false,
-                            )
+                            && owner.check_in_range(target_ref.get_collision(), NPC_TRACKING_RANGE, false)
                         {
-                            if owner.check_in_range(
-                                target_ref.get_collision(),
-                                NPC_ATTACK_RANGE,
-                                false,
-                            ) {
+                            if owner.check_in_range(target_ref.get_collision(), NPC_ATTACK_RANGE, false) {
                                 self.set_next_behavior(BehaviorState::Attack, false);
                             } else {
-                                let to_target: Vector3<f32> =
-                                    target_ref.get_position() - owner.get_position();
+                                let to_target: Vector3<f32> = target_ref.get_position() - owner.get_position();
                                 owner.set_move(&to_target);
                                 owner.set_run(true);
                             }
@@ -175,24 +155,20 @@ impl<'a> BehaviorBase<'a> for BehaviorRoamer<'a> {
                 BehaviorState::Attack => {
                     match state {
                         State::Begin => {
-                            let to_target_direction = math::safe_normalize(
-                                &(target.as_ref().unwrap().get_position() - owner.get_position()),
-                            );
+                            let to_target_direction =
+                                math::safe_normalize(&(target.as_ref().unwrap().get_position() - owner.get_position()));
                             owner.set_move_direction(&to_target_direction, false);
                             if !NPC_AVAILABLE_MOVING_ATTACK {
                                 owner.set_move_idle();
                             }
                             owner.set_action_attack();
-                            self._attack_time = lerp(
-                                NPC_ATTACK_TERM_MIN,
-                                NPC_ATTACK_TERM_MAX,
-                                rand::random::<f32>(),
-                            );
+                            self._attack_time = lerp(NPC_ATTACK_TERM_MIN, NPC_ATTACK_TERM_MAX, rand::random::<f32>());
 
                             // growl
-                            owner.get_character_manager().get_scene_manager().play_audio(
-                                &owner._character_data.borrow()._audio_data._audio_growl,
-                            );
+                            owner
+                                .get_character_manager()
+                                .get_scene_manager()
+                                .play_audio(&owner._character_data.borrow()._audio_data._audio_growl);
                         }
                         State::Update => {
                             let mut do_idle: bool = true;
@@ -202,8 +178,7 @@ impl<'a> BehaviorBase<'a> for BehaviorRoamer<'a> {
                             {
                                 if owner.is_attack_animation() {
                                     if !owner.is_available_move()
-                                        || (NPC_AVAILABLE_MOVING_ATTACK
-                                            || !owner.is_attack_animation())
+                                        || (NPC_AVAILABLE_MOVING_ATTACK || !owner.is_attack_animation())
                                     {
                                         owner.set_move_idle();
                                     }
