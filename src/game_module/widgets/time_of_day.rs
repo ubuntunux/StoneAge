@@ -58,9 +58,8 @@ impl<'a> TimeOfDayWidget<'a> {
         ui_component.set_color(background_color);
         parent_layer_ptr.add_widget(&top_widget);
 
-        let tod_material_instance = game_resources
-            .get_engine_resources()
-            .get_material_instance_data(MATERIAL_TIME_OF_DAY);
+        let tod_material_instance =
+            game_resources.get_engine_resources().get_material_instance_data(MATERIAL_TIME_OF_DAY);
         let time_of_day_widget = UIManager::create_widget("tod_widget", UIWidgetTypes::Default);
         let time_of_day_widget_ptr = ptr_as_mut(time_of_day_widget.as_ref());
         let ui_component = time_of_day_widget_ptr.get_ui_component_mut();
@@ -176,9 +175,7 @@ impl<'a> TimeOfDayWidget<'a> {
         if game_ui_manager.is_opened_world_map() {
             stage_widget_component.set_text(
                 Stages::find_stage_value(
-                    game_ui_manager
-                        .get_selected_world_map_stage_data_name()
-                        .as_str(),
+                    game_ui_manager.get_selected_world_map_stage_data_name().as_str(),
                 )
                 .get_stage_display_name(),
             );

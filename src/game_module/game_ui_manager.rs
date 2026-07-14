@@ -106,9 +106,7 @@ impl<'a> EditorUIManager<'a> {
     pub fn show_editor_ui(&mut self, show: bool) {
         if !self._editor_ui_layout.is_null() {
             let editor_ui_layout_mut = ptr_as_mut(self._editor_ui_layout);
-            editor_ui_layout_mut
-                .get_ui_component_mut()
-                .set_visible(show);
+            editor_ui_layout_mut.get_ui_component_mut().set_visible(show);
         }
     }
 
@@ -165,9 +163,7 @@ impl<'a> EditorUIManager<'a> {
             widget._ui_component.set_text(
                 format!("[{:.1}, {:.1}, {:.1}]", position.x, position.y, position.z).as_str(),
             );
-            widget
-                ._ui_component
-                .set_pos(screen_position.x, screen_position.y);
+            widget._ui_component.set_pos(screen_position.x, screen_position.y);
         }
     }
 }
@@ -346,17 +342,11 @@ impl<'a> GameUIManager<'a> {
     }
 
     pub fn is_done_game_image_progress(&self) -> bool {
-        self._game_image
-            .as_ref()
-            .unwrap()
-            .is_done_game_image_progress()
+        self._game_image.as_ref().unwrap().is_done_game_image_progress()
     }
 
     pub fn set_auto_fade_inout(&mut self, auto_fade_inout: bool) {
-        self._game_image
-            .as_mut()
-            .unwrap()
-            .set_auto_fade_inout(auto_fade_inout);
+        self._game_image.as_mut().unwrap().set_auto_fade_inout(auto_fade_inout);
     }
 
     pub fn set_image_manual_fade_inout(&mut self, material_instance_name: &str, fadeout_time: f32) {
@@ -397,18 +387,12 @@ impl<'a> GameUIManager<'a> {
     }
 
     pub fn set_game_image_fade_speed(&mut self, fade_speed: f32) {
-        self._game_image
-            .as_mut()
-            .unwrap()
-            .set_game_image_fade_speed(fade_speed);
+        self._game_image.as_mut().unwrap().set_game_image_fade_speed(fade_speed);
     }
 
     // game menu
     pub fn is_opened_game_menu(&self) -> bool {
-        self._game_menu_widget
-            .as_ref()
-            .unwrap()
-            .is_opened_game_menu()
+        self._game_menu_widget.as_ref().unwrap().is_opened_game_menu()
     }
     pub fn open_game_menu(&mut self) {
         self._game_menu_widget.as_mut().unwrap().open_game_menu();
@@ -432,40 +416,25 @@ impl<'a> GameUIManager<'a> {
 
     // world map
     pub fn is_opened_world_map(&self) -> bool {
-        self._world_map_widget
-            .as_ref()
-            .unwrap()
-            .is_opened_world_map()
+        self._world_map_widget.as_ref().unwrap().is_opened_world_map()
     }
     pub fn open_world_map(&mut self) {
         self._world_map_widget.as_mut().unwrap().open_world_map();
     }
     pub fn is_requested_close_world_map(&self) -> bool {
-        self._world_map_widget
-            .as_ref()
-            .unwrap()
-            .is_requested_close_world_map()
+        self._world_map_widget.as_ref().unwrap().is_requested_close_world_map()
     }
     pub fn close_world_map(&mut self) {
         self._world_map_widget.as_mut().unwrap().close_world_map();
     }
     pub fn get_selected_world_map_stage_data_name(&self) -> &String {
-        self._world_map_widget
-            .as_ref()
-            .unwrap()
-            .get_selected_world_map_stage_data_name()
+        self._world_map_widget.as_ref().unwrap().get_selected_world_map_stage_data_name()
     }
     pub fn set_selected_world_map_stage(&mut self, selected_stage_name: &String) {
-        self._world_map_widget
-            .as_mut()
-            .unwrap()
-            .set_selected_world_map_stage(selected_stage_name);
+        self._world_map_widget.as_mut().unwrap().set_selected_world_map_stage(selected_stage_name);
     }
     pub fn unset_selected_world_map_stage(&mut self) {
-        self._world_map_widget
-            .as_mut()
-            .unwrap()
-            .set_selected_world_map_stage(&String::default());
+        self._world_map_widget.as_mut().unwrap().set_selected_world_map_stage(&String::default());
     }
     pub fn update_world_map_widget(
         &mut self,
@@ -479,45 +448,27 @@ impl<'a> GameUIManager<'a> {
 
     // item bar
     pub fn add_item(&mut self, item_data_name: &str, item_count: usize) -> bool {
-        self._item_bar_widget
-            .as_mut()
-            .unwrap()
-            .add_item(item_data_name, item_count)
+        self._item_bar_widget.as_mut().unwrap().add_item(item_data_name, item_count)
     }
 
     pub fn remove_item(&mut self, item_data_name: &str, item_count: usize) -> bool {
-        self._item_bar_widget
-            .as_mut()
-            .unwrap()
-            .remove_item(item_data_name, item_count)
+        self._item_bar_widget.as_mut().unwrap().remove_item(item_data_name, item_count)
     }
 
     pub fn get_selected_inventory_item_data_name(&self) -> &str {
-        self._item_bar_widget
-            .as_ref()
-            .unwrap()
-            .get_selected_item_data_name()
+        self._item_bar_widget.as_ref().unwrap().get_selected_item_data_name()
     }
 
     pub fn get_selected_inventory_item_name(&self) -> &str {
-        self._item_bar_widget
-            .as_ref()
-            .unwrap()
-            .get_selected_item_name()
+        self._item_bar_widget.as_ref().unwrap().get_selected_item_name()
     }
 
     pub fn get_selected_inventory_item_data_type(&self) -> ItemDataType {
-        self._item_bar_widget
-            .as_ref()
-            .unwrap()
-            .get_selected_item_data_type()
+        self._item_bar_widget.as_ref().unwrap().get_selected_item_data_type()
     }
 
     pub fn get_selected_inventory_item_index(&self) -> usize {
-        self._item_bar_widget
-            .as_ref()
-            .unwrap()
-            .get_selected_item_index()
+        self._item_bar_widget.as_ref().unwrap().get_selected_item_index()
     }
 
     pub fn select_next_item(&mut self) {
@@ -525,17 +476,11 @@ impl<'a> GameUIManager<'a> {
     }
 
     pub fn select_previous_item(&mut self) {
-        self._item_bar_widget
-            .as_mut()
-            .unwrap()
-            .select_previous_item()
+        self._item_bar_widget.as_mut().unwrap().select_previous_item()
     }
 
     pub fn select_item(&mut self, item_index: usize) {
-        self._item_bar_widget
-            .as_mut()
-            .unwrap()
-            .select_item(item_index)
+        self._item_bar_widget.as_mut().unwrap().select_item(item_index)
     }
 
     // quest
@@ -545,17 +490,11 @@ impl<'a> GameUIManager<'a> {
 
     // text box
     pub fn set_text_box_visible(&mut self, visible: bool) {
-        self._text_box_widget
-            .as_mut()
-            .unwrap()
-            .set_text_box_visible(visible);
+        self._text_box_widget.as_mut().unwrap().set_text_box_visible(visible);
     }
 
     pub fn has_text_box_item(&self, key: *const c_void) -> bool {
-        self._text_box_widget
-            .as_ref()
-            .unwrap()
-            .has_text_box_item(key)
+        self._text_box_widget.as_ref().unwrap().has_text_box_item(key)
     }
 
     pub fn add_text_box_item(
@@ -572,10 +511,7 @@ impl<'a> GameUIManager<'a> {
     }
 
     pub fn remove_text_box_item(&mut self, key: *const c_void) {
-        self._text_box_widget
-            .as_mut()
-            .unwrap()
-            .remove_text_box_item(key);
+        self._text_box_widget.as_mut().unwrap().remove_text_box_item(key);
     }
 
     // toolbox
@@ -617,42 +553,15 @@ impl<'a> GameUIManager<'a> {
     pub fn changed_window_size(&mut self, window_size: &Vector2<i32>) {
         log::info!("GameUIComponents::changed_window_size: {:?}", window_size);
 
-        self._game_image
-            .as_mut()
-            .unwrap()
-            .changed_window_size(window_size);
-        self._player_hud
-            .as_mut()
-            .unwrap()
-            .changed_window_size(window_size);
-        self._controller_help_widget
-            .as_mut()
-            .unwrap()
-            .changed_window_size(window_size);
-        self._text_box_widget
-            .as_mut()
-            .unwrap()
-            .changed_window_size(window_size);
-        self._target_status_bar
-            .as_mut()
-            .unwrap()
-            .changed_window_size(window_size);
-        self._time_of_day
-            .as_mut()
-            .unwrap()
-            .changed_window_size(window_size);
-        self._item_bar_widget
-            .as_mut()
-            .unwrap()
-            .changed_window_size(window_size);
-        self._toolbox_widget
-            .as_mut()
-            .unwrap()
-            .changed_window_size(window_size);
-        self._world_map_widget
-            .as_mut()
-            .unwrap()
-            .changed_window_size(window_size);
+        self._game_image.as_mut().unwrap().changed_window_size(window_size);
+        self._player_hud.as_mut().unwrap().changed_window_size(window_size);
+        self._controller_help_widget.as_mut().unwrap().changed_window_size(window_size);
+        self._text_box_widget.as_mut().unwrap().changed_window_size(window_size);
+        self._target_status_bar.as_mut().unwrap().changed_window_size(window_size);
+        self._time_of_day.as_mut().unwrap().changed_window_size(window_size);
+        self._item_bar_widget.as_mut().unwrap().changed_window_size(window_size);
+        self._toolbox_widget.as_mut().unwrap().changed_window_size(window_size);
+        self._world_map_widget.as_mut().unwrap().changed_window_size(window_size);
     }
 
     pub fn update_game_ui(&mut self, delta_time: f64) {
@@ -688,22 +597,14 @@ impl<'a> GameUIManager<'a> {
         if let Some(player_hud) = self._player_hud.as_mut()
             && game_scene_manager.get_character_manager().is_valid_player()
         {
-            let player = game_scene_manager
-                .get_character_manager()
-                .get_player()
-                .borrow();
+            let player = game_scene_manager.get_character_manager().get_player().borrow();
             player_hud.update_status_widget(&player, delta_time);
         }
 
         if let Some(target_status_bar) = self._target_status_bar.as_mut() {
-            if game_scene_manager
-                .get_character_manager()
-                .is_valid_target_character()
-            {
-                let target = game_scene_manager
-                    .get_character_manager()
-                    .get_target_character()
-                    .borrow();
+            if game_scene_manager.get_character_manager().is_valid_target_character() {
+                let target =
+                    game_scene_manager.get_character_manager().get_target_character().borrow();
                 target_status_bar.update_status_widget(&target, delta_time);
             } else {
                 target_status_bar.fade_out_status_widget();

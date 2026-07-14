@@ -202,15 +202,11 @@ impl<'a> TextBoxWidget<'a> {
     pub fn changed_window_size(&mut self, _window_size: &Vector2<i32>) {}
 
     pub fn set_text_box_visible(&mut self, visible: bool) {
-        ptr_as_mut(self._root_widget)
-            .get_ui_component_mut()
-            .set_visible(visible);
+        ptr_as_mut(self._root_widget).get_ui_component_mut().set_visible(visible);
     }
 
     pub fn set_text_box_layer_visible(&mut self, layer: TextBoxLayerType, visible: bool) {
-        ptr_as_mut(self._layers[layer as usize])
-            .get_ui_component_mut()
-            .set_visible(visible);
+        ptr_as_mut(self._layers[layer as usize]).get_ui_component_mut().set_visible(visible);
     }
 
     pub fn has_text_box_item(&self, key: *const c_void) -> bool {
@@ -293,9 +289,8 @@ impl<'a> TextBoxWidget<'a> {
 
             if is_enable_text_box {
                 let main_camera = game_scene_manager.get_scene_manager().get_main_camera();
-                let ui_size = ptr_as_ref(text_box_item._layout_widget)
-                    .get_ui_component()
-                    .get_ui_size();
+                let ui_size =
+                    ptr_as_ref(text_box_item._layout_widget).get_ui_component().get_ui_size();
                 let mut screen_position = main_camera.convert_world_to_screen(&position, true);
                 screen_position.x -= ui_size.x * 0.5;
                 screen_position.y -= ui_size.y * 0.5;

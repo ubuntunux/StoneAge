@@ -288,9 +288,8 @@ impl<'a> WorldMapWidget<'a> {
         ui_component.set_enable(false);
         root_widget.add_widget(&background_layout);
 
-        let world_map_material_instance = game_resources
-            .get_engine_resources()
-            .get_material_instance_data(MATERIAL_WORLDMAP);
+        let world_map_material_instance =
+            game_resources.get_engine_resources().get_material_instance_data(MATERIAL_WORLDMAP);
         let world_map_widget = UIManager::create_widget("world_map_widget", UIWidgetTypes::Default);
         let world_map_widget_mut = ptr_as_mut(world_map_widget.as_ref());
         let ui_component = world_map_widget_mut.get_ui_component_mut();
@@ -345,9 +344,7 @@ impl<'a> WorldMapWidget<'a> {
             .unwrap()
             .clone();
         let texture_name = texture_parameter.as_str().unwrap();
-        let texture = game_resources
-            .get_engine_resources()
-            .get_texture_data(texture_name);
+        let texture = game_resources.get_engine_resources().get_texture_data(texture_name);
         let image_aspect =
             texture.borrow()._image_width as f32 / texture.borrow()._image_height as f32;
 
@@ -497,20 +494,15 @@ impl<'a> WorldMapWidget<'a> {
     }
     pub fn open_world_map(&mut self) {
         if !self._is_opened_world_map {
-            self.get_audio_manager_mut()
-                .play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
-            ptr_as_mut(self._background_layout.as_ref())
-                .get_ui_component_mut()
-                .set_enable(true);
+            self.get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
+            ptr_as_mut(self._background_layout.as_ref()).get_ui_component_mut().set_enable(true);
             self._request_close_world_map = false;
             self._is_opened_world_map = true;
         }
     }
     pub fn close_world_map(&mut self) {
         if self._is_opened_world_map {
-            ptr_as_mut(self._background_layout.as_ref())
-                .get_ui_component_mut()
-                .set_enable(false);
+            ptr_as_mut(self._background_layout.as_ref()).get_ui_component_mut().set_enable(false);
             self._is_opened_world_map = false;
         }
     }
@@ -518,8 +510,7 @@ impl<'a> WorldMapWidget<'a> {
         self._request_close_world_map
     }
     pub fn request_close_world_map(&mut self) {
-        self.get_audio_manager_mut()
-            .play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
+        self.get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
         self._request_close_world_map = true;
     }
     pub fn changed_window_size(&mut self, window_size: &Vector2<i32>) {
@@ -546,8 +537,7 @@ impl<'a> WorldMapWidget<'a> {
 
     pub fn set_selected_world_map_stage(&mut self, selected_stage_name: &String) {
         if !self._selected_stage_name.is_empty() && !selected_stage_name.is_empty() {
-            self.get_audio_manager_mut()
-                .play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
+            self.get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
         }
 
         if self._selected_stage_name == *selected_stage_name {
@@ -567,10 +557,7 @@ impl<'a> WorldMapWidget<'a> {
             if let Some(selected_stage) = self._world_map_stages.get_mut(selected_stage_name) {
                 ptr_as_mut(selected_stage.as_ref()).set_selected(true);
                 let pos_hint: Vector2<f32> = ptr_as_ref(selected_stage.as_ref()).get_pos_hint();
-                self._world_map_player
-                    .as_mut()
-                    .unwrap()
-                    .set_pos_hint(pos_hint.x, pos_hint.y);
+                self._world_map_player.as_mut().unwrap().set_pos_hint(pos_hint.x, pos_hint.y);
             }
 
             self._selected_stage_name = selected_stage_name.clone();
@@ -579,9 +566,8 @@ impl<'a> WorldMapWidget<'a> {
 
     pub fn change_selected_world_map_stage(&mut self, direction: WorldMapDirection) {
         if let Some(selected_stage) = self._world_map_stages.get_mut(&self._selected_stage_name)
-            && let Some(linked_stage) = ptr_as_ref(selected_stage.as_ref())
-                .get_linked_stage(direction)
-                .as_ref()
+            && let Some(linked_stage) =
+                ptr_as_ref(selected_stage.as_ref()).get_linked_stage(direction).as_ref()
         {
             self.set_selected_world_map_stage(linked_stage.get_stage_data_name());
         }

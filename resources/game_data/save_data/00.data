@@ -1,16 +1,16 @@
 {
   "_player": {
-    "_character_id": "447642e1-7bfb-4850-8ead-0a6467ee67f1",
+    "_character_id": "d7674eb5-d332-4edf-81e5-41c17725caff",
     "_character_name": "characters/family/monkey_aru",
     "_character_data_name": "characters/family/monkey_aru",
     "_position": [
-      -0.5072017,
-      1.1951656,
-      21.152214
+      19.868874,
+      1.956671,
+      11.655028
     ],
     "_rotation": [
       0.0,
-      -0.5300902,
+      4.712389,
       0.0
     ],
     "_scale": [
@@ -40,8 +40,8 @@
       0.0
     ]
   },
-  "_time_of_day": 8.467403,
-  "_temperature": 37.88766,
+  "_time_of_day": 8.181331,
+  "_temperature": 38.36445,
   "_date": 1,
   "_inventory_item_create_info_list": {},
   "_last_game_scene_data_name": "game_scenes/intro_stage",
@@ -49,17 +49,17 @@
     "game_scenes/intro_stage": {
       "_characters": [
         {
-          "_character_id": "3da30624-4709-425f-9a2f-5ba86294bb65",
-          "_character_name": "monkey_ewa",
-          "_character_data_name": "characters/family/monkey_ewa",
+          "_character_id": "2daee890-5e45-46bb-ad42-0c0cdd10b370",
+          "_character_name": "monkey_koa",
+          "_character_data_name": "characters/family/monkey_koa",
           "_position": [
-            18.279615,
-            2.1224926,
-            11.836761
+            18.461067,
+            1.9965913,
+            11.0032625
           ],
           "_rotation": [
             0.0,
-            1.6846529,
+            1.1372126,
             0.0
           ],
           "_scale": [
@@ -69,17 +69,17 @@
           ]
         },
         {
-          "_character_id": "bf6ac1ed-816d-4a2d-97b1-b85533052276",
-          "_character_name": "monkey_koa",
-          "_character_data_name": "characters/family/monkey_koa",
+          "_character_id": "6092816d-d9a4-403d-8989-d854ab81de5f",
+          "_character_name": "monkey_ewa",
+          "_character_data_name": "characters/family/monkey_ewa",
           "_position": [
-            18.461386,
-            1.9965894,
-            11.003411
+            18.632368,
+            2.0849788,
+            11.758625
           ],
           "_rotation": [
             0.0,
-            1.1372136,
+            1.6543831,
             0.0
           ],
           "_scale": [
@@ -91,282 +91,7 @@
       ],
       "_items": [
         {
-          "_item_id": "7fed6b31-37ef-4874-be82-a62c50acf10b",
-          "_item_data_name": "items/meat",
-          "_position": [
-            4.7469125,
-            -0.028402478,
-            0.51039124
-          ],
-          "_rotation": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "_scale": [
-            1.0,
-            1.0,
-            1.0
-          ],
-          "_velocity": [
-            0.0,
-            -2.9928985,
-            0.0
-          ],
-          "_pickup_delay": -0.031702574
-        },
-        {
-          "_item_id": "0dce61c8-2a00-407f-87f0-5a1d0ce72787",
-          "_item_data_name": "items/wood",
-          "_position": [
-            2.2551498,
-            1.1275921,
-            6.424775
-          ],
-          "_rotation": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "_scale": [
-            1.0,
-            1.0,
-            1.0
-          ],
-          "_velocity": [
-            0.0,
-            -2.9928985,
-            0.0
-          ],
-          "_pickup_delay": -0.031702574
-        },
-        {
-          "_item_id": "e4292b8c-96ac-401d-97ab-3def22a2f20d",
-          "_item_data_name": "items/wood",
-          "_position": [
-            7.641684,
-            1.059428,
-            4.851573
-          ],
-          "_rotation": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "_scale": [
-            1.0,
-            1.0,
-            1.0
-          ],
-          "_velocity": [
-            0.0,
-            -4.4855866,
-            0.0
-          ],
-          "_pickup_delay": -0.031702574
-        },
-        {
-          "_item_id": "8561d45c-4cc5-4da7-9bc1-16c1e9461894",
-          "_item_data_name": "items/meat",
-          "_position": [
-            -17.21999,
-            1.675602,
-            29.936523
-          ],
-          "_rotation": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "_scale": [
-            1.0,
-            1.0,
-            1.0
-          ],
-          "_velocity": [
-            0.0,
-            -2.9928985,
-            0.0
-          ],
-          "_pickup_delay": -0.031702574
-        },
-        {
-          "_item_id": "e56b22ea-2b82-4c7b-8ad0-3b9cd2adabbc",
-          "_item_data_name": "items/meat",
-          "_position": [
-            30.949596,
-            1.2028809,
-            42.544575
-          ],
-          "_rotation": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "_scale": [
-            1.0,
-            1.0,
-            1.0
-          ],
-          "_velocity": [
-            0.0,
-            -2.9928985,
-            0.0
-          ],
-          "_pickup_delay": -0.031702574
-        },
-        {
-          "_item_id": "2337fa03-6167-4a4e-b6b6-d8b80bcd1116",
-          "_item_data_name": "items/meat",
-          "_position": [
-            9.28624,
-            0.97105986,
-            0.01055336
-          ],
-          "_rotation": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "_scale": [
-            1.0,
-            1.0,
-            1.0
-          ],
-          "_velocity": [
-            0.0,
-            -7.4855866,
-            0.0
-          ],
-          "_pickup_delay": -0.031702574
-        },
-        {
-          "_item_id": "1cc746f8-f93a-49e5-be85-6467e24d01fc",
-          "_item_data_name": "items/meat",
-          "_position": [
-            16.598572,
-            0.20104465,
-            -4.6602325
-          ],
-          "_rotation": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "_scale": [
-            1.0,
-            1.0,
-            1.0
-          ],
-          "_velocity": [
-            0.0,
-            -2.9928985,
-            0.0
-          ],
-          "_pickup_delay": -0.031702574
-        },
-        {
-          "_item_id": "5d59b350-db65-4bbf-b727-146cc1414324",
-          "_item_data_name": "items/meat",
-          "_position": [
-            -11.612084,
-            1.4535801,
-            -9.405914
-          ],
-          "_rotation": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "_scale": [
-            1.0,
-            1.0,
-            1.0
-          ],
-          "_velocity": [
-            0.0,
-            -2.9928985,
-            0.0
-          ],
-          "_pickup_delay": -0.031702574
-        },
-        {
-          "_item_id": "6ebfc6af-1eec-492c-a590-5301a120637a",
-          "_item_data_name": "items/meat",
-          "_position": [
-            25.486906,
-            -0.3810367,
-            41.755154
-          ],
-          "_rotation": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "_scale": [
-            1.0,
-            1.0,
-            1.0
-          ],
-          "_velocity": [
-            0.0,
-            -2.9928985,
-            0.0
-          ],
-          "_pickup_delay": -0.031702574
-        },
-        {
-          "_item_id": "890f2f5d-7575-41f6-b2e7-835d5326333b",
-          "_item_data_name": "items/spirit_ball",
-          "_position": [
-            -9.888052,
-            1.14959,
-            -4.853991
-          ],
-          "_rotation": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "_scale": [
-            1.0,
-            1.0,
-            1.0
-          ],
-          "_velocity": [
-            0.0,
-            -2.9928985,
-            0.0
-          ],
-          "_pickup_delay": -0.031702574
-        },
-        {
-          "_item_id": "9d937662-003a-479c-a17f-ee6d5f929d82",
-          "_item_data_name": "items/wooden_club",
-          "_position": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "_rotation": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "_scale": [
-            1.0,
-            1.0,
-            1.0
-          ],
-          "_velocity": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "_pickup_delay": -0.0007004638
-        },
-        {
-          "_item_id": "2f3aa26c-6ab0-4ac0-86ae-5427573439bc",
+          "_item_id": "77dddea3-8d5a-49d7-8f78-7d91fddeb78a",
           "_item_data_name": "items/rock",
           "_position": [
             -4.3317842,
@@ -385,498 +110,315 @@
           ],
           "_velocity": [
             0.0,
-            -2.9928985,
+            -3.1110435,
             0.0
           ],
-          "_pickup_delay": -0.031702574
+          "_pickup_delay": -0.00069772825
+        },
+        {
+          "_item_id": "c3dc336d-03ca-49e0-8047-b995d4e35694",
+          "_item_data_name": "items/meat",
+          "_position": [
+            25.486906,
+            -0.3810367,
+            41.755154
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_velocity": [
+            0.0,
+            -3.1110435,
+            0.0
+          ],
+          "_pickup_delay": -0.00069772825
+        },
+        {
+          "_item_id": "2ecea721-18b3-4ed7-9d2c-507920a7f975",
+          "_item_data_name": "items/wood",
+          "_position": [
+            7.641684,
+            1.059428,
+            4.851573
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_velocity": [
+            0.0,
+            -4.654906,
+            0.0
+          ],
+          "_pickup_delay": -0.00069772825
+        },
+        {
+          "_item_id": "3030f189-13ea-4dec-a5b0-d54295adcd38",
+          "_item_data_name": "items/spirit_ball",
+          "_position": [
+            -10.588094,
+            0.9247394,
+            -5.0908866
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_velocity": [
+            0.0,
+            -3.1110435,
+            0.0
+          ],
+          "_pickup_delay": -0.00069772825
+        },
+        {
+          "_item_id": "1eb35629-e2d8-478b-975a-6d9ce9a0f359",
+          "_item_data_name": "items/wooden_club",
+          "_position": [
+            11.932209,
+            2.6804147,
+            11.956837
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_velocity": [
+            0.0,
+            -3.1110435,
+            0.0
+          ],
+          "_pickup_delay": -0.00069772825
+        },
+        {
+          "_item_id": "f516842c-6dd3-486c-8f4a-035871585797",
+          "_item_data_name": "items/meat",
+          "_position": [
+            9.28624,
+            0.9710599,
+            0.01055336
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_velocity": [
+            0.0,
+            -7.654906,
+            0.0
+          ],
+          "_pickup_delay": -0.00069772825
+        },
+        {
+          "_item_id": "e8e2fdee-eb2e-45dc-96d6-c034ecf457f8",
+          "_item_data_name": "items/meat",
+          "_position": [
+            4.7469125,
+            -0.028402478,
+            0.51039124
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_velocity": [
+            0.0,
+            -3.1110435,
+            0.0
+          ],
+          "_pickup_delay": -0.00069772825
+        },
+        {
+          "_item_id": "f17c9cea-8fb8-4893-873e-55af7d219510",
+          "_item_data_name": "items/meat",
+          "_position": [
+            30.949596,
+            1.2028809,
+            42.544575
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_velocity": [
+            0.0,
+            -3.1110435,
+            0.0
+          ],
+          "_pickup_delay": -0.00069772825
+        },
+        {
+          "_item_id": "0eb2f7c7-272e-4717-8ee4-6abcbce3adbc",
+          "_item_data_name": "items/wood",
+          "_position": [
+            2.2551498,
+            1.1275921,
+            6.424775
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_velocity": [
+            0.0,
+            -3.1110435,
+            0.0
+          ],
+          "_pickup_delay": -0.00069772825
+        },
+        {
+          "_item_id": "fd26196b-11c4-4cf7-9c80-fc6da928253b",
+          "_item_data_name": "items/rock",
+          "_position": [
+            4.9712925,
+            2.4006197,
+            21.731153
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_velocity": [
+            0.0,
+            -3.1110435,
+            0.0
+          ],
+          "_pickup_delay": -0.00069772825
+        },
+        {
+          "_item_id": "36905bd0-48f0-4a09-bd9a-00bd7ee1d22a",
+          "_item_data_name": "items/meat",
+          "_position": [
+            -11.612084,
+            1.4535801,
+            -9.405914
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_velocity": [
+            0.0,
+            -3.1110435,
+            0.0
+          ],
+          "_pickup_delay": -0.00069772825
+        },
+        {
+          "_item_id": "d2c291b3-e892-4bac-bfb7-9ee4ccf5ceb2",
+          "_item_data_name": "items/meat",
+          "_position": [
+            16.598572,
+            0.20104465,
+            -4.6602325
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_velocity": [
+            0.0,
+            -3.1110435,
+            0.0
+          ],
+          "_pickup_delay": -0.00069772825
+        },
+        {
+          "_item_id": "700f5c67-066f-496e-bcfe-7a3918bac920",
+          "_item_data_name": "items/meat",
+          "_position": [
+            -17.21999,
+            1.675602,
+            29.936523
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_velocity": [
+            0.0,
+            -3.1110435,
+            0.0
+          ],
+          "_pickup_delay": -0.00069772825
         }
       ],
       "_props": [
         {
-          "_prop_id": "1f670cbe-4a51-4f71-b2cd-5c21bdbe3f5e",
-          "_prop_name": "bed_for_koa",
-          "_prop_data_name": "props/bed",
-          "_position": [
-            19.45322,
-            1.8658686,
-            10.609284
-          ],
-          "_rotation": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "_scale": [
-            1.0,
-            1.0,
-            1.0
-          ],
-          "_instance_parameters": {}
-        },
-        {
-          "_prop_id": "345c2922-1a6a-44e1-aea0-d899ce12bf29",
-          "_prop_name": "mushroom_orange_00.002",
-          "_prop_data_name": "props/mushroom_orange_00",
-          "_position": [
-            -11.260959,
-            1.0974548,
-            -5.967165
-          ],
-          "_rotation": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "_scale": [
-            1.0,
-            1.0,
-            1.0
-          ],
-          "_instance_parameters": {}
-        },
-        {
-          "_prop_id": "3e6ab702-93a6-4e26-b984-1859a690f18f",
-          "_prop_name": "log",
-          "_prop_data_name": "props/log",
-          "_position": [
-            22.396164,
-            -0.9980582,
-            -2.9903507
-          ],
-          "_rotation": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "_scale": [
-            1.0,
-            1.0,
-            1.0
-          ],
-          "_instance_parameters": {}
-        },
-        {
-          "_prop_id": "e6a7241b-599d-47a6-b226-f2c6250c4817",
-          "_prop_name": "mushroom_orange_00.006",
-          "_prop_data_name": "props/mushroom_orange_00",
-          "_position": [
-            32.696667,
-            0.9671619,
-            45.50673
-          ],
-          "_rotation": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "_scale": [
-            1.0,
-            1.0,
-            1.0
-          ],
-          "_instance_parameters": {}
-        },
-        {
-          "_prop_id": "1b6893cd-9832-4e6c-9c9b-f649e595a527",
-          "_prop_name": "crystal",
-          "_prop_data_name": "props/crystal",
-          "_position": [
-            24.387077,
-            1.1574199,
-            5.4557953
-          ],
-          "_rotation": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "_scale": [
-            1.0,
-            1.0,
-            1.0
-          ],
-          "_instance_parameters": {}
-        },
-        {
-          "_prop_id": "6d3c1871-8746-4772-8214-3f2b71f0d109",
-          "_prop_name": "mushroom_orange_00.007",
-          "_prop_data_name": "props/mushroom_orange_00",
-          "_position": [
-            41.467354,
-            1.311728,
-            43.255547
-          ],
-          "_rotation": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "_scale": [
-            1.0,
-            1.0,
-            1.0
-          ],
-          "_instance_parameters": {}
-        },
-        {
-          "_prop_id": "40de006b-100e-47fa-a935-2444c09cc8ef",
-          "_prop_name": "twigs",
-          "_prop_data_name": "props/twigs",
-          "_position": [
-            -7.9971066,
-            -0.0624187,
-            -6.228842
-          ],
-          "_rotation": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "_scale": [
-            1.0,
-            1.0,
-            1.0
-          ],
-          "_instance_parameters": {}
-        },
-        {
-          "_prop_id": "e149f91e-f738-4668-8259-f07176b60651",
-          "_prop_name": "bed_for_ewa",
-          "_prop_data_name": "props/bed",
-          "_position": [
-            16.917131,
-            1.934268,
-            10.097185
-          ],
-          "_rotation": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "_scale": [
-            1.0,
-            1.0,
-            1.0
-          ],
-          "_instance_parameters": {}
-        },
-        {
-          "_prop_id": "c117ad12-445c-4e3a-accb-51f3d83db53f",
-          "_prop_name": "mushroom_orange_00.005",
-          "_prop_data_name": "props/mushroom_orange_00",
-          "_position": [
-            17.52111,
-            2.735724,
-            22.275253
-          ],
-          "_rotation": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "_scale": [
-            1.0,
-            1.0,
-            1.0
-          ],
-          "_instance_parameters": {}
-        },
-        {
-          "_prop_id": "ecfe0ff8-66c0-4b19-a3fb-3dcbbfa61a5a",
-          "_prop_name": "stump.003",
-          "_prop_data_name": "props/stump",
-          "_position": [
-            24.520283,
-            1.8524711,
-            20.930777
-          ],
-          "_rotation": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "_scale": [
-            1.0,
-            1.0,
-            1.0
-          ],
-          "_instance_parameters": {}
-        },
-        {
-          "_prop_id": "940cdc24-ce51-4ec3-a639-ab913d6ad94f",
-          "_prop_name": "birch_tree_00",
-          "_prop_data_name": "props/birch_tree_00",
-          "_position": [
-            -15.404129,
-            1.3121221,
-            -5.305456
-          ],
-          "_rotation": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "_scale": [
-            1.0,
-            1.0,
-            1.0
-          ],
-          "_instance_parameters": {}
-        },
-        {
-          "_prop_id": "0dc5abaf-08cd-4c44-9e67-63fc7bc62955",
-          "_prop_name": "twigs.002",
-          "_prop_data_name": "props/twigs",
-          "_position": [
-            21.32206,
-            1.3036137,
-            -19.26637
-          ],
-          "_rotation": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "_scale": [
-            1.0,
-            1.0,
-            1.0
-          ],
-          "_instance_parameters": {}
-        },
-        {
-          "_prop_id": "2cf74dba-ca2a-4944-a418-8040b2b135c3",
-          "_prop_name": "cactus",
-          "_prop_data_name": "props/cactus",
-          "_position": [
-            -16.884579,
-            1.06126,
-            -1.5476742
-          ],
-          "_rotation": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "_scale": [
-            0.46801007,
-            0.46801007,
-            0.46801007
-          ],
-          "_instance_parameters": {}
-        },
-        {
-          "_prop_id": "6a0aa701-6e53-463a-94ad-0c148916f1fa",
-          "_prop_name": "log.001",
-          "_prop_data_name": "props/log",
-          "_position": [
-            -12.883425,
-            1.1384335,
-            -1.4116411
-          ],
-          "_rotation": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "_scale": [
-            1.0,
-            1.0,
-            1.0
-          ],
-          "_instance_parameters": {}
-        },
-        {
-          "_prop_id": "788c9425-273c-4b87-b87b-7dbd1e922119",
-          "_prop_name": "mushroom_orange_00.003",
-          "_prop_data_name": "props/mushroom_orange_00",
-          "_position": [
-            21.321821,
-            1.4810977,
-            8.120051
-          ],
-          "_rotation": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "_scale": [
-            1.0,
-            1.0,
-            1.0
-          ],
-          "_instance_parameters": {}
-        },
-        {
-          "_prop_id": "2e5d273c-6a84-4cc5-9ed5-cf45b1dd265e",
-          "_prop_name": "mushroom_orange_00",
-          "_prop_data_name": "props/mushroom_orange_00",
-          "_position": [
-            -1.5161715,
-            -0.97237605,
-            0.56155014
-          ],
-          "_rotation": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "_scale": [
-            1.0,
-            1.0,
-            1.0
-          ],
-          "_instance_parameters": {}
-        },
-        {
-          "_prop_id": "e2b82a3f-cb03-43ea-9e72-2d55d959e142",
-          "_prop_name": "stump.002",
-          "_prop_data_name": "props/stump",
-          "_position": [
-            13.50058,
-            0.7658582,
-            -1.2878094
-          ],
-          "_rotation": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "_scale": [
-            1.0,
-            1.0,
-            1.0
-          ],
-          "_instance_parameters": {}
-        },
-        {
-          "_prop_id": "11b3aa7d-37b9-4400-9508-ccb182591c4f",
-          "_prop_name": "twigs.001",
-          "_prop_data_name": "props/twigs",
-          "_position": [
-            17.207697,
-            1.3103237,
-            -21.115088
-          ],
-          "_rotation": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "_scale": [
-            1.0,
-            1.0,
-            1.0
-          ],
-          "_instance_parameters": {}
-        },
-        {
-          "_prop_id": "af8760d6-d838-43f3-ac6b-5cd17323b069",
-          "_prop_name": "bed_for_aru",
-          "_prop_data_name": "props/bed",
-          "_position": [
-            21.401073,
-            1.8113737,
-            11.705606
-          ],
-          "_rotation": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "_scale": [
-            1.0,
-            1.0,
-            1.0
-          ],
-          "_instance_parameters": {}
-        },
-        {
-          "_prop_id": "836e6ea1-f502-4c7a-9ce3-aecab0c9bd2c",
-          "_prop_name": "stump",
-          "_prop_data_name": "props/stump",
-          "_position": [
-            30.966705,
-            1.0637441,
-            2.4446087
-          ],
-          "_rotation": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "_scale": [
-            1.0,
-            1.0,
-            1.0
-          ],
-          "_instance_parameters": {}
-        },
-        {
-          "_prop_id": "5e7990c8-9721-42f9-9473-edfe5f7147da",
-          "_prop_name": "mushroom_orange_00.001",
-          "_prop_data_name": "props/mushroom_orange_00",
-          "_position": [
-            -13.352641,
-            1.3161278,
-            -4.2857842
-          ],
-          "_rotation": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "_scale": [
-            1.0,
-            1.0,
-            1.0
-          ],
-          "_instance_parameters": {}
-        },
-        {
-          "_prop_id": "250ffc0c-0a9e-4eed-959b-cda79277c380",
-          "_prop_name": "table",
-          "_prop_data_name": "props/table",
-          "_position": [
-            23.249563,
-            1.5397471,
-            15.186357
-          ],
-          "_rotation": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "_scale": [
-            1.0,
-            1.0,
-            1.0
-          ],
-          "_instance_parameters": {}
-        },
-        {
-          "_prop_id": "edaef192-ee8a-40a9-a1ba-8db652e7e9e3",
-          "_prop_name": "mushroom_orange_00.004",
-          "_prop_data_name": "props/mushroom_orange_00",
-          "_position": [
-            20.387344,
-            2.4789133,
-            24.923893
-          ],
-          "_rotation": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "_scale": [
-            1.0,
-            1.0,
-            1.0
-          ],
-          "_instance_parameters": {}
-        },
-        {
-          "_prop_id": "59f268e9-e6f4-4723-8597-3bd6eb8b0bfa",
+          "_prop_id": "368c4337-e2af-4634-a217-5e24ea873d7a",
           "_prop_name": "gate",
           "_prop_data_name": "props/gate",
           "_position": [
@@ -900,28 +442,7 @@
           }
         },
         {
-          "_prop_id": "9477c558-83a3-4600-9eac-a08f00b7b98a",
-          "_prop_name": "rock.002",
-          "_prop_data_name": "props/rock",
-          "_position": [
-            -3.1605387,
-            -1.0,
-            -4.780817
-          ],
-          "_rotation": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "_scale": [
-            0.39150882,
-            0.39150882,
-            0.39150882
-          ],
-          "_instance_parameters": {}
-        },
-        {
-          "_prop_id": "17aafc66-cb1d-4e84-8983-dd48990d4d9d",
+          "_prop_id": "6f6c86ca-9102-4168-b11a-2d504b3d56b5",
           "_prop_name": "stump.001",
           "_prop_data_name": "props/stump",
           "_position": [
@@ -942,7 +463,238 @@
           "_instance_parameters": {}
         },
         {
-          "_prop_id": "9c934faa-252a-4ddd-8018-9801d5f94683",
+          "_prop_id": "99247344-3770-45f5-8453-bfa57fdf41f7",
+          "_prop_name": "bed_for_ewa",
+          "_prop_data_name": "props/bed",
+          "_position": [
+            16.917131,
+            1.934268,
+            10.097185
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        {
+          "_prop_id": "d50afa9f-1a72-412c-a61f-97dfdc2ba55d",
+          "_prop_name": "mushroom_orange_00.003",
+          "_prop_data_name": "props/mushroom_orange_00",
+          "_position": [
+            21.321821,
+            1.4810977,
+            8.120051
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        {
+          "_prop_id": "93e88157-58fc-4de1-bec5-22a072d53536",
+          "_prop_name": "twigs.001",
+          "_prop_data_name": "props/twigs",
+          "_position": [
+            17.207697,
+            1.3103237,
+            -21.115088
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        {
+          "_prop_id": "d5582adc-54ac-4f5c-bc95-b031256bb2ab",
+          "_prop_name": "mushroom_orange_00.002",
+          "_prop_data_name": "props/mushroom_orange_00",
+          "_position": [
+            -11.260959,
+            1.0974548,
+            -5.967165
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        {
+          "_prop_id": "cb7afcb1-73b3-478d-a716-a2fd70b25f26",
+          "_prop_name": "mushroom_orange_00.007",
+          "_prop_data_name": "props/mushroom_orange_00",
+          "_position": [
+            41.467354,
+            1.311728,
+            43.255547
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        {
+          "_prop_id": "fed6ea0f-d6cd-48fd-b1c0-6426ea43cb0f",
+          "_prop_name": "twigs.002",
+          "_prop_data_name": "props/twigs",
+          "_position": [
+            21.32206,
+            1.3036137,
+            -19.26637
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        {
+          "_prop_id": "fc44b372-12ed-45c9-a7de-4150bb2dde46",
+          "_prop_name": "table",
+          "_prop_data_name": "props/table",
+          "_position": [
+            23.249563,
+            1.5397471,
+            15.186357
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        {
+          "_prop_id": "55fc1642-461f-4654-a913-e3f815428c76",
+          "_prop_name": "rock.002",
+          "_prop_data_name": "props/rock",
+          "_position": [
+            -3.1605387,
+            -1.0,
+            -4.780817
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            0.39150882,
+            0.39150882,
+            0.39150882
+          ],
+          "_instance_parameters": {}
+        },
+        {
+          "_prop_id": "f12dc400-183f-42c1-a480-9db7e994292c",
+          "_prop_name": "stump.003",
+          "_prop_data_name": "props/stump",
+          "_position": [
+            24.520283,
+            1.8524711,
+            20.930777
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        {
+          "_prop_id": "9dd2beeb-2048-45ab-a023-ecab92dafb4a",
+          "_prop_name": "stump",
+          "_prop_data_name": "props/stump",
+          "_position": [
+            30.966705,
+            1.0637441,
+            2.4446087
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        {
+          "_prop_id": "6ea1ff70-449e-4763-9985-6999b3e6d671",
+          "_prop_name": "mushroom_orange_00.006",
+          "_prop_data_name": "props/mushroom_orange_00",
+          "_position": [
+            32.696667,
+            0.9671619,
+            45.50673
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        {
+          "_prop_id": "9cb84c1e-ae56-4ec3-bfbd-b072db4085e0",
           "_prop_name": "birch_tree_00.001",
           "_prop_data_name": "props/birch_tree_00",
           "_position": [
@@ -961,9 +713,304 @@
             1.0
           ],
           "_instance_parameters": {}
+        },
+        {
+          "_prop_id": "e54187be-0678-4a43-9b79-67b22b14fb81",
+          "_prop_name": "cactus",
+          "_prop_data_name": "props/cactus",
+          "_position": [
+            -16.884579,
+            1.06126,
+            -1.5476742
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            0.46801007,
+            0.46801007,
+            0.46801007
+          ],
+          "_instance_parameters": {}
+        },
+        {
+          "_prop_id": "1546e15b-a75b-43d3-b3b8-e2578ca76c1d",
+          "_prop_name": "log.001",
+          "_prop_data_name": "props/log",
+          "_position": [
+            -12.883425,
+            1.1384335,
+            -1.4116411
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        {
+          "_prop_id": "db9f3a7c-353c-41bb-b661-6a50b75015c1",
+          "_prop_name": "mushroom_orange_00.001",
+          "_prop_data_name": "props/mushroom_orange_00",
+          "_position": [
+            -13.352641,
+            1.3161278,
+            -4.2857842
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        {
+          "_prop_id": "f6af9fb7-c287-4f07-bcaa-830f9d75d1d3",
+          "_prop_name": "twigs",
+          "_prop_data_name": "props/twigs",
+          "_position": [
+            -7.9971066,
+            -0.0624187,
+            -6.228842
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        {
+          "_prop_id": "847408dd-8f77-468f-a6fd-56fe5831ff18",
+          "_prop_name": "crystal",
+          "_prop_data_name": "props/crystal",
+          "_position": [
+            24.387077,
+            1.1574199,
+            5.4557953
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        {
+          "_prop_id": "25d64240-235e-45eb-bfaf-212c47ede5d0",
+          "_prop_name": "bed_for_aru",
+          "_prop_data_name": "props/bed",
+          "_position": [
+            21.401073,
+            1.8113737,
+            11.705606
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        {
+          "_prop_id": "efeaf151-b340-4d38-bde6-e201f2e9dd77",
+          "_prop_name": "crystal.001",
+          "_prop_data_name": "props/crystal",
+          "_position": [
+            1.0876551,
+            1.3100855,
+            21.878225
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        {
+          "_prop_id": "39bff689-9668-44b1-beef-017691f49ea8",
+          "_prop_name": "mushroom_orange_00",
+          "_prop_data_name": "props/mushroom_orange_00",
+          "_position": [
+            -1.5161715,
+            -0.97237605,
+            0.56155014
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        {
+          "_prop_id": "43254ff6-4687-4a5a-a54c-83755906fc5d",
+          "_prop_name": "log",
+          "_prop_data_name": "props/log",
+          "_position": [
+            22.396164,
+            -0.9980582,
+            -2.9903507
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        {
+          "_prop_id": "31da86ac-a887-4f59-bf19-7751cf589ce8",
+          "_prop_name": "mushroom_orange_00.004",
+          "_prop_data_name": "props/mushroom_orange_00",
+          "_position": [
+            20.387344,
+            2.4789133,
+            24.923893
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        {
+          "_prop_id": "f9e4808e-5f87-4c45-aba0-b555b2c72492",
+          "_prop_name": "mushroom_orange_00.005",
+          "_prop_data_name": "props/mushroom_orange_00",
+          "_position": [
+            17.52111,
+            2.735724,
+            22.275253
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        {
+          "_prop_id": "6390cd1d-7650-402b-bdd8-8fc8ce3c4147",
+          "_prop_name": "stump.002",
+          "_prop_data_name": "props/stump",
+          "_position": [
+            13.50058,
+            0.7658582,
+            -1.2878094
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        {
+          "_prop_id": "25b81f42-2ae3-4f3e-bfe6-7a58592a40cb",
+          "_prop_name": "birch_tree_00",
+          "_prop_data_name": "props/birch_tree_00",
+          "_position": [
+            -15.404129,
+            1.3121221,
+            -5.305456
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        {
+          "_prop_id": "9dc69286-a51e-4a53-8e88-c87cdec8b4b4",
+          "_prop_name": "bed_for_koa",
+          "_prop_data_name": "props/bed",
+          "_position": [
+            19.45322,
+            1.8658686,
+            10.609284
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
         }
       ]
     }
   },
-  "_game_scenarios": []
+  "_game_scenarios": [],
+  "_completed_game_scenarios": []
 }

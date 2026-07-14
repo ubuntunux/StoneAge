@@ -95,9 +95,7 @@ impl PushConstant for PushConstant_RenderLandscape {
                 self.layer4_tiling = *value;
             }
         } else {
-            return self
-                .push_constant_base
-                .set_push_constant_parameter(key, value);
+            return self.push_constant_base.set_push_constant_parameter(key, value);
         }
         true
     }

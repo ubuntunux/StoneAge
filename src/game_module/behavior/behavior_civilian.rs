@@ -21,8 +21,7 @@ impl<'a> BehaviorBase<'a> for BehaviorCivilian<'a> {
     }
 
     fn set_next_behavior(&mut self, next_behavior_state: BehaviorState, is_force: bool) {
-        self._behavior_data
-            .set_next_behavior_state(next_behavior_state, is_force);
+        self._behavior_data.set_next_behavior_state(next_behavior_state, is_force);
     }
 
     fn update_behavior(
@@ -156,8 +155,7 @@ impl<'a> BehaviorBase<'a> for BehaviorCivilian<'a> {
                             if !owner.is_move_stop() {
                                 owner.set_move_idle();
                             }
-                            self._behavior_data
-                                .set_behavior_time(CHARACTER_INTERACTION_TIME);
+                            self._behavior_data.set_behavior_time(CHARACTER_INTERACTION_TIME);
                         }
                         State::Update => {
                             if self._behavior_data.is_end_behavior_time() {

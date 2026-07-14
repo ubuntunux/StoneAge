@@ -365,9 +365,7 @@ impl<'a> ItemBarWidget<'a> {
                 "select_prev_item_key_binding",
                 "Previous Item",
                 vec![
-                    engine_resources
-                        .get_material_instance_data("ui/controller/keycode_q")
-                        .clone(),
+                    engine_resources.get_material_instance_data("ui/controller/keycode_q").clone(),
                 ],
                 vec![
                     engine_resources
@@ -383,9 +381,7 @@ impl<'a> ItemBarWidget<'a> {
                 "select_next_item_key_binding",
                 "Next Item",
                 vec![
-                    engine_resources
-                        .get_material_instance_data("ui/controller/keycode_e")
-                        .clone(),
+                    engine_resources.get_material_instance_data("ui/controller/keycode_e").clone(),
                 ],
                 vec![
                     engine_resources
@@ -401,14 +397,10 @@ impl<'a> ItemBarWidget<'a> {
                 "drop_item_key_binding",
                 "Drop Item",
                 vec![
-                    engine_resources
-                        .get_material_instance_data("ui/controller/keycode_f")
-                        .clone(),
+                    engine_resources.get_material_instance_data("ui/controller/keycode_f").clone(),
                 ],
                 vec![
-                    engine_resources
-                        .get_material_instance_data("ui/controller/joystick_x")
-                        .clone(),
+                    engine_resources.get_material_instance_data("ui/controller/joystick_x").clone(),
                 ],
             ),
         );
@@ -419,14 +411,10 @@ impl<'a> ItemBarWidget<'a> {
                 "use_item_key_binding",
                 "Use Item",
                 vec![
-                    engine_resources
-                        .get_material_instance_data("ui/controller/keycode_c")
-                        .clone(),
+                    engine_resources.get_material_instance_data("ui/controller/keycode_c").clone(),
                 ],
                 vec![
-                    engine_resources
-                        .get_material_instance_data("ui/controller/joystick_y")
-                        .clone(),
+                    engine_resources.get_material_instance_data("ui/controller/joystick_y").clone(),
                 ],
             ),
         );
@@ -503,9 +491,7 @@ impl<'a> ItemBarWidget<'a> {
     }
 
     pub fn find_item_widget(&self, item_data_name: &str) -> Option<&ItemWidget<'a>> {
-        self._item_widgets
-            .iter()
-            .find(|item_widget| item_widget._item_data_name == item_data_name)
+        self._item_widgets.iter().find(|item_widget| item_widget._item_data_name == item_data_name)
     }
 
     pub fn find_item_widget_mut(&mut self, item_data_name: &str) -> Option<&mut ItemWidget<'a>> {
@@ -523,18 +509,14 @@ impl<'a> ItemBarWidget<'a> {
 
     pub fn get_selected_item_data_name(&self) -> &str {
         if self.get_selected_item_index() != INVALID_ITEM_INDEX {
-            return self._item_widgets[self.get_selected_item_index()]
-                ._item_data_name
-                .as_str();
+            return self._item_widgets[self.get_selected_item_index()]._item_data_name.as_str();
         }
         ITEM_NONE
     }
 
     pub fn get_selected_item_name(&self) -> &str {
         if self.get_selected_item_index() != INVALID_ITEM_INDEX {
-            return self._item_widgets[self.get_selected_item_index()]
-                ._item_name
-                .as_str();
+            return self._item_widgets[self.get_selected_item_index()]._item_name.as_str();
         }
         ITEM_NONE
     }
@@ -560,9 +542,8 @@ impl<'a> ItemBarWidget<'a> {
             } else {
                 for item_widget in self._item_widgets.iter_mut() {
                     if item_widget._item_data_name == ITEM_NONE {
-                        let item_data = ptr_as_ref(self._game_resources)
-                            .get_item_data(item_data_name)
-                            .borrow();
+                        let item_data =
+                            ptr_as_ref(self._game_resources).get_item_data(item_data_name).borrow();
                         let material = ptr_as_ref(self._engine_resources)
                             .get_material_instance_data(item_data._ui_material_instance.as_str());
                         item_widget.set_item_data(
@@ -618,9 +599,8 @@ impl<'a> ItemBarWidget<'a> {
     }
 
     pub fn select_item(&mut self, item_index: usize) {
-        if let Some(player) = ptr_as_ref(self._game_scene_manager)
-            .get_character_manager()
-            .get_maybe_player()
+        if let Some(player) =
+            ptr_as_ref(self._game_scene_manager).get_character_manager().get_maybe_player()
         {
             let player = ptr_as_mut(player.as_ptr());
             if item_index < self._item_widgets.len()
@@ -632,8 +612,7 @@ impl<'a> ItemBarWidget<'a> {
                 ptr_as_mut(self._item_manager)
                     .attach_item(player, self.get_selected_item_data_name());
             } else {
-                self._selected_item_widget
-                    .update_selected_item_widget(INVALID_ITEM_INDEX, None);
+                self._selected_item_widget.update_selected_item_widget(INVALID_ITEM_INDEX, None);
                 ptr_as_mut(self._item_manager).detach_item(player);
             }
         }
@@ -698,14 +677,12 @@ impl<'a> ItemBarWidget<'a> {
         let inventory_key_binding_widget_map =
             ptr_as_mut(self._inventory_key_binding_widget_map.as_ref());
         let game_scene_manager = ptr_as_ref(self._game_scene_manager);
-        let selected_item_index = game_scene_manager
-            .get_game_ui_manager()
-            .get_selected_inventory_item_index();
+        let selected_item_index =
+            game_scene_manager.get_game_ui_manager().get_selected_inventory_item_index();
 
         if self._selected_item_index != selected_item_index || force_update {
-            let _item_name = game_scene_manager
-                .get_game_ui_manager()
-                .get_selected_inventory_item_name();
+            let _item_name =
+                game_scene_manager.get_game_ui_manager().get_selected_inventory_item_name();
             let pos_x = self._window_size.x as f32 * 0.5
                 + ItemBarWidget::get_selected_item_pos_left(selected_item_index);
 

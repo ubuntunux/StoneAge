@@ -1,4 +1,3 @@
-use std::str::FromStr;
 use crate::game_module::actors::character::Character;
 use crate::game_module::actors::character_data::ActionAnimationState;
 use crate::game_module::actors::props::Prop;
@@ -17,6 +16,7 @@ use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop};
 use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{RcRefCell, State, newRcRefCell, ptr_as_mut, ptr_as_ref};
+use std::str::FromStr;
 use strum::IntoEnumIterator;
 use strum_macros::{Display, EnumCount, EnumIter, EnumString};
 
@@ -96,24 +96,13 @@ fn dance_around_the_table(
         table.as_ref().unwrap().borrow().get_position() - math::safe_normalize(direction) * 2.0;
     pos.y = scene_manager.get_height_bilinear(&pos, 0);
     actor.as_ref().unwrap().borrow_mut().set_position(&pos);
-    actor
-        .as_ref()
-        .unwrap()
-        .borrow_mut()
-        .look_at(table.as_ref().unwrap().borrow().get_position());
+    actor.as_ref().unwrap().borrow_mut().look_at(table.as_ref().unwrap().borrow().get_position());
     actor.as_ref().unwrap().borrow_mut().set_action_dance();
 }
 
 fn go_to_sleep(actor: &Option<RcRefCell<Character>>, bed: &Option<RcRefCell<Prop>>) {
     if let Some(actor) = actor.as_ref() {
-        let radius = bed
-            .as_ref()
-            .unwrap()
-            .borrow()
-            .get_collision()
-            ._bounding_box
-            ._mag_xz
-            * 0.5;
+        let radius = bed.as_ref().unwrap().borrow().get_collision()._bounding_box._mag_xz * 0.5;
         let (direction, dist) = math::make_normalize_xz_with_norm(
             &(bed.as_ref().unwrap().borrow().get_position() - actor.borrow().get_position()),
         );
@@ -143,7 +132,8 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
     }
 
     fn set_scenario_phase_as_string(&mut self, scenario_phase: &String) {
-        self._scenario_track._scenario_phase = ScenarioPhase::from_str(scenario_phase.as_str()).unwrap();
+        self._scenario_track._scenario_phase =
+            ScenarioPhase::from_str(scenario_phase.as_str()).unwrap();
     }
 
     fn is_load_completed(&self) -> bool {
@@ -184,33 +174,16 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
             self._actor_koa = Some(actor.clone());
         }
 
-        self._prop_table = Some(
-            game_scene_manager
-                .get_prop_manager()
-                .get_prop_by_name("table")
-                .unwrap()
-                .clone(),
-        );
+        self._prop_table =
+            Some(game_scene_manager.get_prop_manager().get_prop_by_name("table").unwrap().clone());
         self._prop_bed_for_aru = Some(
-            game_scene_manager
-                .get_prop_manager()
-                .get_prop_by_name("bed_for_aru")
-                .unwrap()
-                .clone(),
+            game_scene_manager.get_prop_manager().get_prop_by_name("bed_for_aru").unwrap().clone(),
         );
         self._prop_bed_for_ewa = Some(
-            game_scene_manager
-                .get_prop_manager()
-                .get_prop_by_name("bed_for_ewa")
-                .unwrap()
-                .clone(),
+            game_scene_manager.get_prop_manager().get_prop_by_name("bed_for_ewa").unwrap().clone(),
         );
         self._prop_bed_for_koa = Some(
-            game_scene_manager
-                .get_prop_manager()
-                .get_prop_by_name("bed_for_koa")
-                .unwrap()
-                .clone(),
+            game_scene_manager.get_prop_manager().get_prop_by_name("bed_for_koa").unwrap().clone(),
         );
 
         self._is_load_completed = true;
@@ -251,41 +224,16 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
 
             match update_scenario_phase {
                 ScenarioPhase::None => {
-                    self._scenario_track
-                        .set_next_scenario_phase(ScenarioPhase::Begin, None);
+                    self._scenario_track.set_next_scenario_phase(ScenarioPhase::Begin, None);
                 }
                 ScenarioPhase::Begin => {
                     if state == State::Update {
-                        self._actor_aru
-                            .as_ref()
-                            .unwrap()
-                            .borrow_mut()
-                            .set_behavior_none();
-                        self._actor_ewa
-                            .as_ref()
-                            .unwrap()
-                            .borrow_mut()
-                            .set_behavior_none();
-                        self._actor_koa
-                            .as_ref()
-                            .unwrap()
-                            .borrow_mut()
-                            .set_behavior_none();
-                        self._actor_aru
-                            .as_ref()
-                            .unwrap()
-                            .borrow_mut()
-                            .set_action_none();
-                        self._actor_ewa
-                            .as_ref()
-                            .unwrap()
-                            .borrow_mut()
-                            .set_action_none();
-                        self._actor_koa
-                            .as_ref()
-                            .unwrap()
-                            .borrow_mut()
-                            .set_action_none();
+                        self._actor_aru.as_ref().unwrap().borrow_mut().set_behavior_none();
+                        self._actor_ewa.as_ref().unwrap().borrow_mut().set_behavior_none();
+                        self._actor_koa.as_ref().unwrap().borrow_mut().set_behavior_none();
+                        self._actor_aru.as_ref().unwrap().borrow_mut().set_action_none();
+                        self._actor_ewa.as_ref().unwrap().borrow_mut().set_action_none();
+                        self._actor_koa.as_ref().unwrap().borrow_mut().set_action_none();
                         game_ui_manager
                             .set_image_manual_fade_inout(MATERIAL_UI_NONE, DEFAULT_FADE_TIME);
                         self._scenario_track
@@ -344,21 +292,9 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                                 AudioLoop::ONCE,
                                 None,
                             );
-                            self._actor_aru
-                                .as_ref()
-                                .unwrap()
-                                .borrow_mut()
-                                .set_action_none();
-                            self._actor_ewa
-                                .as_ref()
-                                .unwrap()
-                                .borrow_mut()
-                                .set_action_none();
-                            self._actor_koa
-                                .as_ref()
-                                .unwrap()
-                                .borrow_mut()
-                                .set_action_none();
+                            self._actor_aru.as_ref().unwrap().borrow_mut().set_action_none();
+                            self._actor_ewa.as_ref().unwrap().borrow_mut().set_action_none();
+                            self._actor_koa.as_ref().unwrap().borrow_mut().set_action_none();
                             self._scenario_track
                                 .set_next_scenario_phase(ScenarioPhase::GoToSleep, Some(10.0));
                         }
@@ -405,11 +341,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                                 game_scene_manager
                                     .get_scene_manager()
                                     .play_audio_bank(AUDIO_ROOSTER);
-                                self._actor_aru
-                                    .as_ref()
-                                    .unwrap()
-                                    .borrow_mut()
-                                    .set_action_wake_up();
+                                self._actor_aru.as_ref().unwrap().borrow_mut().set_action_wake_up();
                                 self._actor_ewa
                                     .as_ref()
                                     .unwrap()
@@ -421,8 +353,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                                     .borrow_mut()
                                     .set_next_behavior(BehaviorState::WakeUp, true);
                             }
-                            self._scenario_track
-                                .set_next_scenario_phase(ScenarioPhase::End, None);
+                            self._scenario_track.set_next_scenario_phase(ScenarioPhase::End, None);
                         }
                     }
                     _ => {}
@@ -431,8 +362,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
             }
 
             if state == State::Update {
-                self._scenario_track
-                    .update_scenario_phase_time(delta_time as f32);
+                self._scenario_track.update_scenario_phase_time(delta_time as f32);
             }
         }
     }

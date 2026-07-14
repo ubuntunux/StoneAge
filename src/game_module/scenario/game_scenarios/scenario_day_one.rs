@@ -1,4 +1,3 @@
-use std::str::FromStr;
 use crate::game_module::actors::character::Character;
 use crate::game_module::actors::props::Prop;
 use crate::game_module::behavior::behavior_base::BehaviorState;
@@ -6,7 +5,7 @@ use crate::game_module::game_constants::{
     AUDIO_UFO_BEAM, AUDIO_UFO_FLYING, CAMERA_DISTANCE_MAX, CAMERA_OFFSET_Y, TIME_OF_EARLY_MORNING,
 };
 use crate::game_module::game_resource::GameResources;
-use crate::game_module::game_scene_manager::{GameSceneManager};
+use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::scenario::scenario::{
     ScenarioBase, ScenarioDataCreateInfo, ScenarioTrack, ScenarioType,
 };
@@ -14,6 +13,7 @@ use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop};
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{RcRefCell, State, newRcRefCell, ptr_as_mut, ptr_as_ref};
+use std::str::FromStr;
 use strum::IntoEnumIterator;
 use strum_macros::{Display, EnumCount, EnumIter, EnumString};
 
@@ -130,12 +130,7 @@ impl<'a> ScenarioDayOne<'a> {
     }
 
     pub fn drop_monolith(&mut self, delta_time: f64) -> bool {
-        let pos_before = *self
-            ._prop_monolith
-            .as_ref()
-            .unwrap()
-            .borrow()
-            .get_position();
+        let pos_before = *self._prop_monolith.as_ref().unwrap().borrow().get_position();
         let to_target = self._monolith_start_position - pos_before;
         let move_dist = 10.0f32 * delta_time as f32;
         let moved_pos = pos_before + math::safe_normalize(&to_target) * move_dist;
@@ -147,19 +142,11 @@ impl<'a> ScenarioDayOne<'a> {
             range,
             false,
         ) {
-            self._prop_monolith
-                .as_ref()
-                .unwrap()
-                .borrow_mut()
-                .set_position(&moved_pos);
+            self._prop_monolith.as_ref().unwrap().borrow_mut().set_position(&moved_pos);
             return true;
         }
 
-        self._prop_monolith
-            .as_ref()
-            .unwrap()
-            .borrow_mut()
-            .set_position(&moved_pos);
+        self._prop_monolith.as_ref().unwrap().borrow_mut().set_position(&moved_pos);
         false
     }
 }
@@ -174,7 +161,8 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
     }
 
     fn set_scenario_phase_as_string(&mut self, scenario_phase: &String) {
-        self._scenario_track._scenario_phase = ScenarioPhase::from_str(scenario_phase.as_str()).unwrap();
+        self._scenario_track._scenario_phase =
+            ScenarioPhase::from_str(scenario_phase.as_str()).unwrap();
     }
 
     fn is_load_completed(&self) -> bool {
@@ -202,94 +190,39 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
         self._actor_ewa = Some(game_scene_manager.get_actor_by_name("ewa").unwrap().clone());
         self._actor_koa = Some(game_scene_manager.get_actor_by_name("koa").unwrap().clone());
         self._prop_bed_for_aru = Some(
-            game_scene_manager
-                .get_prop_manager()
-                .get_prop_by_name("bed_for_aru")
-                .unwrap()
-                .clone(),
+            game_scene_manager.get_prop_manager().get_prop_by_name("bed_for_aru").unwrap().clone(),
         );
         self._prop_bed_for_ewa = Some(
-            game_scene_manager
-                .get_prop_manager()
-                .get_prop_by_name("bed_for_ewa")
-                .unwrap()
-                .clone(),
+            game_scene_manager.get_prop_manager().get_prop_by_name("bed_for_ewa").unwrap().clone(),
         );
         self._prop_bed_for_koa = Some(
-            game_scene_manager
-                .get_prop_manager()
-                .get_prop_by_name("bed_for_koa")
-                .unwrap()
-                .clone(),
+            game_scene_manager.get_prop_manager().get_prop_by_name("bed_for_koa").unwrap().clone(),
         );
         self._prop_monolith = Some(
-            game_scene_manager
-                .get_prop_manager()
-                .get_prop_by_name("monolith")
-                .unwrap()
-                .clone(),
+            game_scene_manager.get_prop_manager().get_prop_by_name("monolith").unwrap().clone(),
         );
 
-        self._actor_aru
-            .as_ref()
-            .unwrap()
-            .borrow_mut()
-            ._controller
-            .set_flying_mode(true);
-        self._actor_aru
-            .as_ref()
-            .unwrap()
-            .borrow_mut()
-            .set_behavior_none();
-        self._actor_aru
-            .as_ref()
-            .unwrap()
-            .borrow_mut()
-            .set_action_sleep_no_snoring();
+        self._actor_aru.as_ref().unwrap().borrow_mut()._controller.set_flying_mode(true);
+        self._actor_aru.as_ref().unwrap().borrow_mut().set_behavior_none();
+        self._actor_aru.as_ref().unwrap().borrow_mut().set_action_sleep_no_snoring();
         self._actor_aru
             .as_ref()
             .unwrap()
             .borrow_mut()
             .set_position(self._actor_ufo.as_ref().unwrap().borrow().get_position());
 
-        self._actor_ewa
-            .as_ref()
-            .unwrap()
-            .borrow_mut()
-            ._controller
-            .set_flying_mode(true);
-        self._actor_ewa
-            .as_ref()
-            .unwrap()
-            .borrow_mut()
-            .set_behavior_none();
-        self._actor_ewa
-            .as_ref()
-            .unwrap()
-            .borrow_mut()
-            .set_action_sleep_no_snoring();
+        self._actor_ewa.as_ref().unwrap().borrow_mut()._controller.set_flying_mode(true);
+        self._actor_ewa.as_ref().unwrap().borrow_mut().set_behavior_none();
+        self._actor_ewa.as_ref().unwrap().borrow_mut().set_action_sleep_no_snoring();
         self._actor_ewa
             .as_ref()
             .unwrap()
             .borrow_mut()
             .set_position(self._actor_ufo.as_ref().unwrap().borrow().get_position());
 
-        self._actor_koa
-            .as_ref()
-            .unwrap()
-            .borrow_mut()
-            ._controller
-            .set_flying_mode(true);
-        self._actor_koa
-            .as_ref()
-            .unwrap()
-            .borrow_mut()
-            .set_behavior_none();
-        self._actor_koa
-            .as_ref()
-            .unwrap()
-            .borrow_mut()
-            .set_action_sleep_no_snoring();
+        self._actor_koa.as_ref().unwrap().borrow_mut()._controller.set_flying_mode(true);
+        self._actor_koa.as_ref().unwrap().borrow_mut().set_behavior_none();
+        self._actor_koa.as_ref().unwrap().borrow_mut().set_action_sleep_no_snoring();
         self._actor_koa
             .as_ref()
             .unwrap()
@@ -297,12 +230,8 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
             .set_position(self._actor_ufo.as_ref().unwrap().borrow().get_position());
 
         let main_camera = game_scene_manager.get_scene_manager().get_main_camera_mut();
-        main_camera
-            ._transform_object
-            .set_position(&Vector3::new(13.48, 26.56, -5.02));
-        main_camera
-            ._transform_object
-            .set_rotation(&Vector3::new(0.76, 0.33, 0.0));
+        main_camera._transform_object.set_position(&Vector3::new(13.48, 26.56, -5.02));
+        main_camera._transform_object.set_rotation(&Vector3::new(0.76, 0.33, 0.0));
 
         let pivot = *self._actor_aru.as_ref().unwrap().borrow().get_center();
         let start_rotation_matrix = math::make_rotation_matrix(
@@ -313,12 +242,8 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
         self._around_start_position =
             pivot - start_rotation_matrix.column(2).xyz() * (CAMERA_DISTANCE_MAX + 6.0);
 
-        self._monolith_start_position = *self
-            ._prop_monolith
-            .as_ref()
-            .unwrap()
-            .borrow()
-            .get_position();
+        self._monolith_start_position =
+            *self._prop_monolith.as_ref().unwrap().borrow().get_position();
         self._prop_monolith
             .as_ref()
             .unwrap()
@@ -364,8 +289,7 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
 
             match update_scenario_phase {
                 ScenarioPhase::None => {
-                    self._scenario_track
-                        .set_next_scenario_phase(ScenarioPhase::Begin, None);
+                    self._scenario_track.set_next_scenario_phase(ScenarioPhase::Begin, None);
                 }
                 ScenarioPhase::Begin => {
                     if state == State::Update {
@@ -439,13 +363,9 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
                                     ._render_object
                                     .borrow_mut()
                                     .set_visible(true);
-                                self._prop_monolith
-                                    .as_ref()
-                                    .unwrap()
-                                    .borrow_mut()
-                                    .set_position(
-                                        self._actor_ufo.as_ref().unwrap().borrow().get_position(),
-                                    );
+                                self._prop_monolith.as_ref().unwrap().borrow_mut().set_position(
+                                    self._actor_ufo.as_ref().unwrap().borrow().get_position(),
+                                );
                                 game_scene_manager.get_scene_manager().play_audio_options(
                                     AUDIO_UFO_BEAM,
                                     AudioLoop::ONCE,
@@ -486,17 +406,9 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
                     State::Begin => {
                         let main_camera =
                             game_scene_manager.get_scene_manager().get_main_camera_mut();
-                        main_camera
-                            ._transform_object
-                            .set_position(&self._around_start_position);
-                        main_camera
-                            ._transform_object
-                            .set_rotation(&self._around_start_rotation);
-                        self._actor_aru
-                            .as_ref()
-                            .unwrap()
-                            .borrow_mut()
-                            .set_action_sleep();
+                        main_camera._transform_object.set_position(&self._around_start_position);
+                        main_camera._transform_object.set_rotation(&self._around_start_rotation);
+                        self._actor_aru.as_ref().unwrap().borrow_mut().set_action_sleep();
                     }
                     State::Update => {
                         if 1.0 <= phase_ratio {
@@ -519,17 +431,9 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
                             ._controller
                             .set_flying_mode(false);
                         self._actor_aru.as_ref().unwrap().borrow_mut().set_position(
-                            self._prop_bed_for_aru
-                                .as_ref()
-                                .unwrap()
-                                .borrow()
-                                .get_position(),
+                            self._prop_bed_for_aru.as_ref().unwrap().borrow().get_position(),
                         );
-                        self._actor_aru
-                            .as_ref()
-                            .unwrap()
-                            .borrow_mut()
-                            .set_action_wake_up();
+                        self._actor_aru.as_ref().unwrap().borrow_mut().set_action_wake_up();
 
                         self._actor_ewa
                             .as_ref()
@@ -538,11 +442,7 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
                             ._controller
                             .set_flying_mode(false);
                         self._actor_ewa.as_ref().unwrap().borrow_mut().set_position(
-                            self._prop_bed_for_ewa
-                                .as_ref()
-                                .unwrap()
-                                .borrow()
-                                .get_position(),
+                            self._prop_bed_for_ewa.as_ref().unwrap().borrow().get_position(),
                         );
                         self._actor_ewa
                             .as_ref()
@@ -557,11 +457,7 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
                             ._controller
                             .set_flying_mode(false);
                         self._actor_koa.as_ref().unwrap().borrow_mut().set_position(
-                            self._prop_bed_for_koa
-                                .as_ref()
-                                .unwrap()
-                                .borrow()
-                                .get_position(),
+                            self._prop_bed_for_koa.as_ref().unwrap().borrow().get_position(),
                         );
                         self._actor_koa
                             .as_ref()
@@ -578,18 +474,15 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
                             pivot - main_camera._transform_object.get_front() * CAMERA_DISTANCE_MAX;
 
                         let progress = phase_ratio.powf(2.0);
-                        let position = self
-                            ._around_start_position
-                            .lerp(&self._around_end_position, progress);
-                        let rotation = self
-                            ._around_start_rotation
-                            .lerp(&self._around_end_rotation, progress);
+                        let position =
+                            self._around_start_position.lerp(&self._around_end_position, progress);
+                        let rotation =
+                            self._around_start_rotation.lerp(&self._around_end_rotation, progress);
                         main_camera._transform_object.set_position(&position);
                         main_camera._transform_object.set_rotation(&rotation);
 
                         if 1.0 <= phase_ratio {
-                            self._scenario_track
-                                .set_next_scenario_phase(ScenarioPhase::End, None);
+                            self._scenario_track.set_next_scenario_phase(ScenarioPhase::End, None);
                         }
                     }
                     _ => {}
@@ -598,8 +491,7 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
             }
 
             if state == State::Update {
-                self._scenario_track
-                    .update_scenario_phase_time(delta_time as f32);
+                self._scenario_track.update_scenario_phase_time(delta_time as f32);
             }
         }
     }

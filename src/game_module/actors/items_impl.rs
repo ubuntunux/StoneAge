@@ -161,9 +161,7 @@ impl<'a> Item<'a> {
                 render_object_mut._mesh_data.borrow()._skeleton_data_list[0]._transform;
             let final_transform =
                 self._attach_socket.as_ref().unwrap().borrow()._transform * skeleton_transform;
-            render_object_mut
-                ._transform_object
-                .set_transform(&final_transform);
+            render_object_mut._transform_object.set_transform(&final_transform);
         } else {
             render_object_mut
                 ._transform_object
@@ -172,20 +170,16 @@ impl<'a> Item<'a> {
     }
 
     pub fn update_item_transform(&mut self) {
-        self._render_object
-            .borrow_mut()
-            ._transform_object
-            .set_position_rotation_scale(
-                &self._item_properties._position,
-                &self._item_properties._rotation,
-                &self._item_properties._scale,
-            );
+        self._render_object.borrow_mut()._transform_object.set_position_rotation_scale(
+            &self._item_properties._position,
+            &self._item_properties._rotation,
+            &self._item_properties._scale,
+        );
     }
 
     pub fn update_item(&mut self, height_map_data: &HeightMapData, delta_time: f64) {
         let owner = ptr_as_mut(self);
-        self._item_updater
-            .update_item_updater(owner, height_map_data, delta_time);
+        self._item_updater.update_item_updater(owner, height_map_data, delta_time);
     }
 }
 
@@ -248,9 +242,7 @@ impl<'a> ItemManager<'a> {
     ) -> RcRefCell<Item<'a>> {
         let mut spawn_point = item_create_info._position;
         spawn_point.y = spawn_point.y.max(
-            self.get_scene_manager()
-                .get_height_map_data()
-                .get_height_bilinear(&spawn_point, 0),
+            self.get_scene_manager().get_height_map_data().get_height_bilinear(&spawn_point, 0),
         );
 
         let game_resource = ptr_as_ref(self._game_resources);
@@ -263,23 +255,19 @@ impl<'a> ItemManager<'a> {
             ..Default::default()
         };
 
-        let render_object_data = if item_model_data
-            .borrow()
-            ._mesh_data
-            .borrow()
-            .has_animation_data()
-        {
-            self.get_scene_manager_mut().add_skeletal_render_object(
-                item_create_info._item_data_name.as_str(),
-                &render_object_create_info,
-            )
-        } else {
-            self.get_scene_manager_mut().add_dynamic_render_object(
-                item_create_info._item_data_name.as_str(),
-                &render_object_create_info,
-                Some(CollisionType::NONE),
-            )
-        };
+        let render_object_data =
+            if item_model_data.borrow()._mesh_data.borrow().has_animation_data() {
+                self.get_scene_manager_mut().add_skeletal_render_object(
+                    item_create_info._item_data_name.as_str(),
+                    &render_object_create_info,
+                )
+            } else {
+                self.get_scene_manager_mut().add_dynamic_render_object(
+                    item_create_info._item_data_name.as_str(),
+                    &render_object_create_info,
+                    Some(CollisionType::NONE),
+                )
+            };
 
         let id = self.generate_id();
         let item = newRcRefCell(Item::create_item(
@@ -316,11 +304,7 @@ impl<'a> ItemManager<'a> {
     }
 
     pub fn clear_items(&mut self) {
-        let items = self
-            ._items
-            .values()
-            .cloned()
-            .collect::<Vec<RcRefCell<Item>>>();
+        let items = self._items.values().cloned().collect::<Vec<RcRefCell<Item>>>();
         for item in items {
             self.remove_item(&item);
         }
@@ -334,10 +318,7 @@ impl<'a> ItemManager<'a> {
     }
 
     pub fn get_items_save_data(&self) -> Vec<ItemCreateInfo> {
-        self._items
-            .values()
-            .map(|item| item.borrow().get_item_save_data())
-            .collect()
+        self._items.values().map(|item| item.borrow().get_item_save_data()).collect()
     }
 
     pub fn post_process_after_item_loading(&mut self) {
@@ -347,13 +328,10 @@ impl<'a> ItemManager<'a> {
     }
 
     pub fn pick_item(&self, item_data_name: &str, item_count: usize) -> bool {
-        let success = self
-            .get_game_client()
-            .get_game_ui_manager_mut()
-            .add_item(item_data_name, item_count);
+        let success =
+            self.get_game_client().get_game_ui_manager_mut().add_item(item_data_name, item_count);
         if success {
-            self.get_audio_manager_mut()
-                .play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
+            self.get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
         }
         success
     }
@@ -377,10 +355,7 @@ impl<'a> ItemManager<'a> {
         let success = self.remove_inventory_item(item_data_name, item_count);
         if success {
             let player = ptr_as_ref(
-                self.get_game_scene_manager_mut()
-                    .get_character_manager_mut()
-                    .get_player()
-                    .as_ptr(),
+                self.get_game_scene_manager_mut().get_character_manager_mut().get_player().as_ptr(),
             );
             let yaw = player.get_rotation().y
                 + (rand::random::<f32>() - 0.5) * std::f32::consts::PI * 0.5;
@@ -402,33 +377,23 @@ impl<'a> ItemManager<'a> {
     }
 
     pub fn get_selected_inventory_item_data_name(&self) -> &str {
-        self.get_game_client()
-            .get_game_ui_manager()
-            .get_selected_inventory_item_data_name()
+        self.get_game_client().get_game_ui_manager().get_selected_inventory_item_data_name()
     }
 
     pub fn get_selected_inventory_item_data_type(&self) -> ItemDataType {
-        self.get_game_client()
-            .get_game_ui_manager()
-            .get_selected_inventory_item_data_type()
+        self.get_game_client().get_game_ui_manager().get_selected_inventory_item_data_type()
     }
 
     pub fn select_next_item(&mut self) {
-        self.get_game_client()
-            .get_game_ui_manager_mut()
-            .select_next_item();
+        self.get_game_client().get_game_ui_manager_mut().select_next_item();
     }
 
     pub fn select_previous_item(&mut self) {
-        self.get_game_client()
-            .get_game_ui_manager_mut()
-            .select_previous_item();
+        self.get_game_client().get_game_ui_manager_mut().select_previous_item();
     }
 
     pub fn select_item(&mut self, item_index: usize) {
-        self.get_game_client()
-            .get_game_ui_manager_mut()
-            .select_item(item_index);
+        self.get_game_client().get_game_ui_manager_mut().select_item(item_index);
     }
 
     pub fn attach_item(&mut self, character: &mut Character<'a>, item_data_name: &str) {
@@ -474,8 +439,7 @@ impl<'a> ItemManager<'a> {
         }
 
         for item in self._items.values() {
-            item.borrow_mut()
-                .update_item(scene_manager.get_height_map_data(), delta_time);
+            item.borrow_mut().update_item(scene_manager.get_height_map_data(), delta_time);
         }
 
         let mut pick_items: Vec<RcRefCell<Item>> = Vec::new();

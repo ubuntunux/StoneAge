@@ -90,11 +90,7 @@ impl<'a> QuestItemBase<'a> for QuestItemGatherItem<'a> {
         let engine_resources = game_resources.get_engine_resources();
         let item_material_instance = engine_resources
             .get_material_instance_data(
-                self._item_data
-                    ._item_data
-                    .borrow()
-                    ._ui_material_instance
-                    .as_str(),
+                self._item_data._item_data.borrow()._ui_material_instance.as_str(),
             )
             .clone();
 

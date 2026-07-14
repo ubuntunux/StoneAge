@@ -113,9 +113,7 @@ impl<'a> QuestTitle<'a> {
 
     pub fn update_quest_item(&mut self, game_controller: &GameController, delta_time: f32) {
         for quest_item in self._quest_items.iter() {
-            quest_item
-                .borrow_mut()
-                .update_quest_item(game_controller, delta_time);
+            quest_item.borrow_mut().update_quest_item(game_controller, delta_time);
         }
     }
 }

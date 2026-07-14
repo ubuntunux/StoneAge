@@ -133,15 +133,12 @@ impl<'a> CharacterManager<'a> {
         // check height map
         let mut spawn_point = character_create_info._position;
         spawn_point.y = spawn_point.y.max(
-            self.get_scene_manager()
-                .get_height_map_data()
-                .get_height_bilinear(&spawn_point, 0),
+            self.get_scene_manager().get_height_map_data().get_height_bilinear(&spawn_point, 0),
         );
 
         // check collision objects
-        let collision_objects = self
-            .get_scene_manager()
-            .collect_collision_objects(&spawn_point, &spawn_point);
+        let collision_objects =
+            self.get_scene_manager().collect_collision_objects(&spawn_point, &spawn_point);
         for collision_object in collision_objects.values() {
             let block_render_object = ptr_as_ref(collision_object.as_ptr());
             let block_bound_box = &block_render_object._collision._bounding_box;
@@ -189,16 +186,13 @@ impl<'a> CharacterManager<'a> {
         ));
 
         if is_player {
-            self.get_game_scene_manager()
-                .get_game_ui_manager_mut()
-                .add_item(ITEM_HAND, 1);
+            self.get_game_scene_manager().get_game_ui_manager_mut().add_item(ITEM_HAND, 1);
             self._player = Some(character.clone());
         }
 
         self._characters.insert(character_id, character.clone());
         if !self._character_name_map.contains_key(character_name) {
-            self._character_name_map
-                .insert(String::from(character_name), character.clone());
+            self._character_name_map.insert(String::from(character_name), character.clone());
         }
         character
     }
@@ -227,21 +221,14 @@ impl<'a> CharacterManager<'a> {
         self.get_scene_manager_mut()
             .remove_skeletal_render_object(character._render_object.borrow()._object_id);
         self._characters.remove(&character._character_id);
-        if let Some(target) = self
-            ._character_name_map
-            .get(character._character_name.as_str())
+        if let Some(target) = self._character_name_map.get(character._character_name.as_str())
             && target.as_ptr() == character_ref.as_ptr()
         {
-            self._character_name_map
-                .remove(character._character_name.as_str());
+            self._character_name_map.remove(character._character_name.as_str());
         }
     }
     pub fn clear_characters(&mut self, clear_player: bool) {
-        let characters = self
-            ._characters
-            .values()
-            .cloned()
-            .collect::<Vec<RcRefCell<Character>>>();
+        let characters = self._characters.values().cloned().collect::<Vec<RcRefCell<Character>>>();
         for character in characters.iter() {
             if clear_player || !character.borrow().is_player() {
                 self.remove_character(character);
@@ -340,13 +327,9 @@ impl<'a> CharacterManager<'a> {
         let was_interaction_object = player._controller.is_interaction_object(key);
         let is_in_player_range = to_player_distance <= CHARACTER_INTERACTION_DISTANCE;
         if !was_interaction_object && is_in_player_range {
-            player
-                ._controller
-                .add_interaction_object(InteractionObject::Npc(character.clone()));
+            player._controller.add_interaction_object(InteractionObject::Npc(character.clone()));
         } else if was_interaction_object && !is_in_player_range {
-            player
-                ._controller
-                .remove_interaction_object(InteractionObject::Npc(character.clone()));
+            player._controller.remove_interaction_object(InteractionObject::Npc(character.clone()));
         }
     }
 
@@ -454,13 +437,8 @@ impl<'a> CharacterManager<'a> {
 
         // remove characters
         for character in dead_characters.iter() {
-            character
-                .borrow_mut()
-                ._character_stats
-                .set_is_stat_displayed(false);
-            player
-                ._controller
-                .remove_interaction_object(InteractionObject::Npc(character.clone()));
+            character.borrow_mut()._character_stats.set_is_stat_displayed(false);
+            player._controller.remove_interaction_object(InteractionObject::Npc(character.clone()));
             game_ui_manager.remove_text_box_item(character.as_ptr() as *const c_void);
             //self.remove_character(character);
         }

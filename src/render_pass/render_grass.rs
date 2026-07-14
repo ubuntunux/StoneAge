@@ -30,8 +30,7 @@ impl PushConstantName for PushConstant_RenderGrass {
 
 impl PushConstant for PushConstant_RenderGrass {
     fn set_push_constant_parameter(&mut self, key: &str, value: &PushConstantParameter) -> bool {
-        self._push_constant_base
-            .set_push_constant_parameter(key, value)
+        self._push_constant_base.set_push_constant_parameter(key, value)
     }
 }
 

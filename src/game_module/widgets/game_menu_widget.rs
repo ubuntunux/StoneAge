@@ -135,9 +135,7 @@ impl<'a> GameMenuWidget<'a> {
 
         let mut game_menu_widget = Box::new(GameMenuWidget {
             _game_client: game_client,
-            _audio_manager: ptr_as_ref(game_client)
-                .get_game_scene_manager()
-                .get_audio_manager(),
+            _audio_manager: ptr_as_ref(game_client).get_game_scene_manager().get_audio_manager(),
             _parent_widget: parent_widget,
             _layer: layer,
             _menu_items: Vec::new(),
@@ -186,9 +184,7 @@ impl<'a> GameMenuWidget<'a> {
     }
     pub fn open_game_menu(&mut self) {
         if !self._is_opened_game_menu {
-            ptr_as_mut(self._layer.as_ref())
-                .get_ui_component_mut()
-                .set_enable(true);
+            ptr_as_mut(self._layer.as_ref()).get_ui_component_mut().set_enable(true);
             self.set_selected_menu_item(self._selected_menu_item, true);
             self._is_opened_game_menu = true;
         }
@@ -200,9 +196,7 @@ impl<'a> GameMenuWidget<'a> {
                 AudioLoop::ONCE,
                 None,
             );
-            ptr_as_mut(self._layer.as_ref())
-                .get_ui_component_mut()
-                .set_enable(false);
+            ptr_as_mut(self._layer.as_ref()).get_ui_component_mut().set_enable(false);
             self._is_opened_game_menu = false;
         }
     }

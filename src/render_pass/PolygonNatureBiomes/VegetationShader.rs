@@ -154,9 +154,7 @@ impl PushConstant for PushConstant_VegetationShader {
                 self._TunkTexScaleY = *value;
             }
         } else {
-            return self
-                ._push_constant_base
-                .set_push_constant_parameter(key, value);
+            return self._push_constant_base.set_push_constant_parameter(key, value);
         }
         true
     }

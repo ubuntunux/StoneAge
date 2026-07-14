@@ -1,5 +1,8 @@
 use crate::game_module::game_resource::GameResources;
-use crate::game_module::game_scene_manager::{CharacterCreateInfoMap, GameScenarioSaveData, GameSceneManager, ItemCreateInfoMap, PropCreateInfoMap};
+use crate::game_module::game_scene_manager::{
+    CharacterCreateInfoMap, GameScenarioSaveData, GameSceneManager, ItemCreateInfoMap,
+    PropCreateInfoMap,
+};
 use crate::game_module::scenario::game_scenarios::scenario_day_one::ScenarioDayOne;
 use crate::game_module::scenario::game_scenarios::scenario_intro::ScenarioIntro;
 use crate::game_module::scenario::game_scenarios::scenario_revolution::ScenarioRevolution;
@@ -106,13 +109,7 @@ impl ScenarioDataCreateInfo {
         if self._game_scenes.is_empty() {
             return String::from("");
         }
-        self._game_scenes
-            .values()
-            .last()
-            .as_ref()
-            .unwrap()
-            ._game_scene_data_name
-            .clone()
+        self._game_scenes.values().last().as_ref().unwrap()._game_scene_data_name.clone()
     }
 }
 

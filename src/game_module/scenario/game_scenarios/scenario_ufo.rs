@@ -1,4 +1,3 @@
-use std::str::FromStr;
 use crate::game_module::actors::character::Character;
 use crate::game_module::game_constants::{
     AUDIO_UFO_BEAM, AUDIO_UFO_FLYING, DEFAULT_FADE_TIME, MATERIAL_UI_NONE, TIME_OF_DAWN,
@@ -12,6 +11,7 @@ use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop};
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{RcRefCell, State, newRcRefCell, ptr_as_mut, ptr_as_ref};
+use std::str::FromStr;
 use strum::IntoEnumIterator;
 use strum_macros::{Display, EnumCount, EnumIter, EnumString};
 
@@ -73,9 +73,7 @@ impl<'a> ScenarioUfo<'a> {
             actor.borrow_mut().set_move_idle();
             true
         } else {
-            actor
-                .borrow_mut()
-                .set_move(&math::safe_normalize(&to_target));
+            actor.borrow_mut().set_move(&math::safe_normalize(&to_target));
             false
         }
     }
@@ -118,7 +116,8 @@ impl<'a> ScenarioBase<'a> for ScenarioUfo<'a> {
     }
 
     fn set_scenario_phase_as_string(&mut self, scenario_phase: &String) {
-        self._scenario_track._scenario_phase = ScenarioPhase::from_str(scenario_phase.as_str()).unwrap();
+        self._scenario_track._scenario_phase =
+            ScenarioPhase::from_str(scenario_phase.as_str()).unwrap();
     }
 
     fn is_load_completed(&self) -> bool {
@@ -143,24 +142,12 @@ impl<'a> ScenarioBase<'a> for ScenarioUfo<'a> {
         let game_scene_manager = ptr_as_ref(self._game_scene_manager);
         if game_scene_data_name == Stages::Home.get_stage_data_name() {
             self._actor_ufo = Some(game_scene_manager.get_actor_by_name("ufo").unwrap().clone());
-            self._actor_aru = Some(
-                game_scene_manager
-                    .get_actor_by_name("monkey_aru")
-                    .unwrap()
-                    .clone(),
-            );
-            self._actor_ewa = Some(
-                game_scene_manager
-                    .get_actor_by_name("monkey_ewa")
-                    .unwrap()
-                    .clone(),
-            );
-            self._actor_koa = Some(
-                game_scene_manager
-                    .get_actor_by_name("monkey_koa")
-                    .unwrap()
-                    .clone(),
-            );
+            self._actor_aru =
+                Some(game_scene_manager.get_actor_by_name("monkey_aru").unwrap().clone());
+            self._actor_ewa =
+                Some(game_scene_manager.get_actor_by_name("monkey_ewa").unwrap().clone());
+            self._actor_koa =
+                Some(game_scene_manager.get_actor_by_name("monkey_koa").unwrap().clone());
         }
 
         self._is_load_completed = true;
@@ -200,8 +187,7 @@ impl<'a> ScenarioBase<'a> for ScenarioUfo<'a> {
             let phase_ratio = self._scenario_track.get_phase_ratio();
             match update_scenario_phase {
                 ScenarioPhase::None => {
-                    self._scenario_track
-                        .set_next_scenario_phase(ScenarioPhase::Begin, None);
+                    self._scenario_track.set_next_scenario_phase(ScenarioPhase::Begin, None);
                 }
                 ScenarioPhase::Begin => {
                     if state == State::Update {
@@ -232,9 +218,7 @@ impl<'a> ScenarioBase<'a> for ScenarioUfo<'a> {
                         main_camera
                             ._transform_object
                             .set_position(&Vector3::new(13.48, 26.56, -5.02));
-                        main_camera
-                            ._transform_object
-                            .set_rotation(&Vector3::new(0.76, 0.33, 0.0));
+                        main_camera._transform_object.set_rotation(&Vector3::new(0.76, 0.33, 0.0));
                         self._actor_aru
                             .as_ref()
                             .unwrap()
@@ -303,8 +287,7 @@ impl<'a> ScenarioBase<'a> for ScenarioUfo<'a> {
             }
 
             if state == State::Update {
-                self._scenario_track
-                    .update_scenario_phase_time(delta_time as f32);
+                self._scenario_track.update_scenario_phase_time(delta_time as f32);
             }
         }
     }

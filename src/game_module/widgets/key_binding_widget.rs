@@ -27,9 +27,7 @@ impl<'a> KeyBindingWidget<'a> {
             &self._joystick_binding_icons
         };
 
-        ptr_as_mut(self._layout_widget)
-            ._ui_component
-            .set_visible(!binding_icons.is_empty());
+        ptr_as_mut(self._layout_widget)._ui_component.set_visible(!binding_icons.is_empty());
 
         for (index, icon_widget) in self._binding_icon_widgets.iter().enumerate() {
             if index < binding_icons.len() {
@@ -54,9 +52,7 @@ impl<'a> KeyBindingWidgetMap<'a> {
         &mut self,
         key_binding_type: KeyBindingType,
     ) -> &mut KeyBindingWidget<'a> {
-        self._key_binding_widget_map
-            .get_mut(&key_binding_type)
-            .unwrap()
+        self._key_binding_widget_map.get_mut(&key_binding_type).unwrap()
     }
 
     pub fn get_key_binding_widget(
@@ -89,8 +85,7 @@ impl<'a> KeyBindingWidgetManager<'a> {
         &mut self,
         key_binding_widget_map: &Rc<KeyBindingWidgetMap<'a>>,
     ) {
-        self._key_binding_widget_maps
-            .push(key_binding_widget_map.clone());
+        self._key_binding_widget_maps.push(key_binding_widget_map.clone());
     }
 
     pub fn update_key_binding_widget_manager(&mut self, is_keyboard_input_mode: bool) {

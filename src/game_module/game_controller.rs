@@ -94,16 +94,10 @@ impl<'a> GameController<'a> {
         ptr_as_mut(self._game_ui_manager)
     }
     pub fn get_main_camera(&self) -> &CameraObjectData {
-        self.get_game_client()
-            .get_game_scene_manager()
-            .get_scene_manager()
-            .get_main_camera()
+        self.get_game_client().get_game_scene_manager().get_scene_manager().get_main_camera()
     }
     pub fn get_main_camera_mut(&self) -> &mut CameraObjectData {
-        self.get_game_client()
-            .get_game_scene_manager()
-            .get_scene_manager()
-            .get_main_camera_mut()
+        self.get_game_client().get_game_scene_manager().get_scene_manager().get_main_camera_mut()
     }
 
     pub fn is_game_camera_auto_blend_mode(&self) -> bool {
@@ -179,9 +173,7 @@ impl<'a> GameController<'a> {
             done_auto_blend_mode = false;
         }
 
-        main_camera
-            ._transform_object
-            .set_position(&self._camera_position);
+        main_camera._transform_object.set_position(&self._camera_position);
         main_camera._transform_object.set_pitch(self._camera_pitch);
         main_camera._transform_object.set_yaw(self._camera_yaw);
 
@@ -348,11 +340,8 @@ impl<'a> GameController<'a> {
         let mut prev_camera_position = self._camera_position;
         let mut camera_position = pivot + camera_dir * self._camera_distance;
         let camera_move_delta = self._camera_position - prev_camera_position;
-        let scene_manager = ptr_as_ref(
-            self.get_game_client()
-                .get_game_scene_manager()
-                .get_scene_manager_ptr(),
-        );
+        let scene_manager =
+            ptr_as_ref(self.get_game_client().get_game_scene_manager().get_scene_manager_ptr());
 
         // check collide with block
         {
@@ -402,9 +391,8 @@ impl<'a> GameController<'a> {
                     }
 
                     // check line of sight
-                    if let Some(hit_dist) = block_render_object
-                        ._collision
-                        .collide_ray(&pivot, &camera_dir)
+                    if let Some(hit_dist) =
+                        block_render_object._collision.collide_ray(&pivot, &camera_dir)
                         && (hit_dist - bound_size) < self._camera_distance
                     {
                         self._camera_distance = hit_dist - bound_size;
@@ -425,9 +413,7 @@ impl<'a> GameController<'a> {
         ) {
             self._camera_position = camera_position;
         }
-        main_camera
-            ._transform_object
-            .set_position(&self._camera_position);
+        main_camera._transform_object.set_position(&self._camera_position);
     }
 
     pub fn update_game_controller(
@@ -501,18 +487,15 @@ impl<'a> GameController<'a> {
         if keyboard_input_data.get_key_pressed(KeyCode::Escape)
             || joystick_input_data._btn_start == ButtonState::Pressed
         {
-            self.get_game_client_mut()
-                .set_next_game_phase(GamePhase::GameMenu);
+            self.get_game_client_mut().set_next_game_phase(GamePhase::GameMenu);
         }
 
         // item control
         let selectable_item =
             player.borrow().is_available_move() && player.borrow().is_idle_action();
         if selectable_item {
-            let item_manager = self
-                .get_game_client()
-                .get_game_scene_manager()
-                .get_item_manager_mut();
+            let item_manager =
+                self.get_game_client().get_game_scene_manager().get_item_manager_mut();
             if is_previous_item {
                 item_manager.select_previous_item();
             } else if is_next_item {
@@ -642,14 +625,9 @@ impl<'a> GameController<'a> {
             if player_mut.is_in_interaction_range() {
                 player_mut.set_action_interaction();
             } else if selectable_item {
-                let item_manager = self
-                    .get_game_client()
-                    .get_game_scene_manager()
-                    .get_item_manager_mut();
-                if item_manager
-                    .get_selected_inventory_item_data_type()
-                    .is_droppable()
-                {
+                let item_manager =
+                    self.get_game_client().get_game_scene_manager().get_item_manager_mut();
+                if item_manager.get_selected_inventory_item_data_type().is_droppable() {
                     let item_data_name =
                         String::from(item_manager.get_selected_inventory_item_data_name());
                     item_manager.drop_inventory_item(item_data_name.as_str(), 1);
@@ -658,10 +636,7 @@ impl<'a> GameController<'a> {
         }
 
         if is_power_attack {
-            if player_mut
-                .get_attached_item_data_type()
-                .is_weapon_item_type()
-            {
+            if player_mut.get_attached_item_data_type().is_weapon_item_type() {
                 player_mut.set_action_power_attack();
             } else {
                 player_mut.set_action_kick();

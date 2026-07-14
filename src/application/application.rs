@@ -49,24 +49,21 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
 
         // initialize project managers
         let application = ptr_as_ref(self);
-        self.get_game_resources_mut()
-            .initialize_game_resources(engine_core.get_engine_resources());
+        self.get_game_resources_mut().initialize_game_resources(engine_core.get_engine_resources());
         self.get_game_resources_mut().load_game_resources();
-        self.get_game_client_mut()
-            .initialize_game_client(engine_core, application);
-        self.get_game_controller_mut()
-            .initialize_game_controller(application);
-        self.get_game_ui_manager_mut()
-            .initialize_game_ui_manager(engine_core, application);
-        self.get_game_scene_manager_mut()
-            .initialize_game_scene_manager(application, engine_core, window_size);
-        self.get_editor_ui_manager_mut()
-            .initialize_editor_ui_manager(engine_core, application);
+        self.get_game_client_mut().initialize_game_client(engine_core, application);
+        self.get_game_controller_mut().initialize_game_controller(application);
+        self.get_game_ui_manager_mut().initialize_game_ui_manager(engine_core, application);
+        self.get_game_scene_manager_mut().initialize_game_scene_manager(
+            application,
+            engine_core,
+            window_size,
+        );
+        self.get_editor_ui_manager_mut().initialize_editor_ui_manager(engine_core, application);
 
         // start game
         self.get_game_ui_manager_mut().build_game_ui(window_size);
-        self.get_editor_ui_manager_mut()
-            .build_editor_ui(window_size);
+        self.get_editor_ui_manager_mut().build_editor_ui(window_size);
         self.set_game_mode(true);
     }
 
@@ -106,9 +103,7 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
                 && joystick_input_data._btn_left_shoulder == ButtonState::Hold
                 && joystick_input_data._btn_right_shoulder == ButtonState::Hold;
 
-            if engine_core
-                ._keyboard_input_data
-                .get_key_pressed(KeyCode::Tab)
+            if engine_core._keyboard_input_data.get_key_pressed(KeyCode::Tab)
                 || is_toggle_game_mode_by_joystick
             {
                 self.toggle_game_mode();
@@ -171,11 +166,9 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
             }
 
             if released_key_subtract {
-                self.get_renderer_data_mut()
-                    .prev_debug_render_target_miplevel();
+                self.get_renderer_data_mut().prev_debug_render_target_miplevel();
             } else if released_key_equals {
-                self.get_renderer_data_mut()
-                    .next_debug_render_target_miplevel();
+                self.get_renderer_data_mut().next_debug_render_target_miplevel();
             }
 
             if pressed_key_comma {
@@ -185,19 +178,11 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
             }
 
             if btn_left && btn_right {
-                main_camera
-                    ._transform_object
-                    .move_right(pan_speed * mouse_delta_x);
-                main_camera
-                    ._transform_object
-                    .move_up(-pan_speed * mouse_delta_y);
+                main_camera._transform_object.move_right(pan_speed * mouse_delta_x);
+                main_camera._transform_object.move_up(-pan_speed * mouse_delta_y);
             } else if btn_right {
-                main_camera
-                    ._transform_object
-                    .rotation_pitch(rotation_speed * mouse_delta_y);
-                main_camera
-                    ._transform_object
-                    .rotation_yaw(rotation_speed * mouse_delta_x);
+                main_camera._transform_object.rotation_pitch(rotation_speed * mouse_delta_y);
+                main_camera._transform_object.rotation_yaw(rotation_speed * mouse_delta_x);
             }
 
             if pressed_key_z {
@@ -245,8 +230,7 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
                 self.set_will_terminate_application();
             }
         } else {
-            self.get_editor_ui_manager_mut()
-                .update_editor_ui(delta_time);
+            self.get_editor_ui_manager_mut().update_editor_ui(delta_time);
         }
     }
 }
@@ -322,9 +306,7 @@ impl<'a> Application<'a> {
         self._is_game_mode = is_game_mode;
         self.get_game_client_mut().set_game_mode(is_game_mode);
         self.get_engine_core_mut().set_grab_mode(is_game_mode);
-        self.get_engine_core_mut()
-            .get_ui_manager_mut()
-            .set_visible_world_axis(!is_game_mode);
+        self.get_engine_core_mut().get_ui_manager_mut().set_visible_world_axis(!is_game_mode);
     }
 }
 

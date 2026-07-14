@@ -102,14 +102,10 @@ impl<'a> ImageLayout<'a> {
         if material_instance.is_some() {
             let material_instance_refcell = material_instance.as_ref().unwrap();
             let material_instance_ref = material_instance_refcell.borrow();
-            let texture_parameter = material_instance_ref
-                ._material_parameters
-                .get("texture_color")
-                .unwrap();
+            let texture_parameter =
+                material_instance_ref._material_parameters.get("texture_color").unwrap();
             let texture_name = texture_parameter.as_str().unwrap();
-            let texture = game_resources
-                .get_engine_resources()
-                .get_texture_data(texture_name);
+            let texture = game_resources.get_engine_resources().get_texture_data(texture_name);
             self._next_image_aspect =
                 texture.borrow()._image_width as f32 / texture.borrow()._image_height as f32;
             self._fadeout_opacity = 1.0;

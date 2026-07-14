@@ -207,11 +207,7 @@ impl<'a> ControllerHelpWidget<'a> {
                 KeyBindingType::CameraRotation,
                 "view_key_binding",
                 "View",
-                vec![
-                    engine_resources
-                        .get_material_instance_data("ui/controller/mouse")
-                        .clone(),
-                ],
+                vec![engine_resources.get_material_instance_data("ui/controller/mouse").clone()],
                 vec![
                     engine_resources
                         .get_material_instance_data("ui/controller/joystick_l_stick")
@@ -226,18 +222,10 @@ impl<'a> ControllerHelpWidget<'a> {
                 "move_key_binding",
                 "Move",
                 vec![
-                    engine_resources
-                        .get_material_instance_data("ui/controller/keycode_a")
-                        .clone(),
-                    engine_resources
-                        .get_material_instance_data("ui/controller/keycode_s")
-                        .clone(),
-                    engine_resources
-                        .get_material_instance_data("ui/controller/keycode_d")
-                        .clone(),
-                    engine_resources
-                        .get_material_instance_data("ui/controller/keycode_w")
-                        .clone(),
+                    engine_resources.get_material_instance_data("ui/controller/keycode_a").clone(),
+                    engine_resources.get_material_instance_data("ui/controller/keycode_s").clone(),
+                    engine_resources.get_material_instance_data("ui/controller/keycode_d").clone(),
+                    engine_resources.get_material_instance_data("ui/controller/keycode_w").clone(),
                 ],
                 vec![
                     engine_resources
@@ -252,11 +240,7 @@ impl<'a> ControllerHelpWidget<'a> {
                 KeyBindingType::Zoom,
                 "zoom_key_binding",
                 "Zoom",
-                vec![
-                    engine_resources
-                        .get_material_instance_data("ui/controller/mouse_m")
-                        .clone(),
-                ],
+                vec![engine_resources.get_material_instance_data("ui/controller/mouse_m").clone()],
                 vec![
                     engine_resources
                         .get_material_instance_data("ui/controller/joystick_up")
@@ -273,11 +257,7 @@ impl<'a> ControllerHelpWidget<'a> {
                 KeyBindingType::Attack,
                 "attack_key_binding",
                 "Attack",
-                vec![
-                    engine_resources
-                        .get_material_instance_data("ui/controller/mouse_l")
-                        .clone(),
-                ],
+                vec![engine_resources.get_material_instance_data("ui/controller/mouse_l").clone()],
                 vec![
                     engine_resources
                         .get_material_instance_data("ui/controller/joystick_rb")
@@ -291,11 +271,7 @@ impl<'a> ControllerHelpWidget<'a> {
                 KeyBindingType::PowerAttack,
                 "power_attack_key_binding",
                 "Power Attack",
-                vec![
-                    engine_resources
-                        .get_material_instance_data("ui/controller/mouse_r")
-                        .clone(),
-                ],
+                vec![engine_resources.get_material_instance_data("ui/controller/mouse_r").clone()],
                 vec![
                     engine_resources
                         .get_material_instance_data("ui/controller/joystick_rt")
@@ -333,9 +309,7 @@ impl<'a> ControllerHelpWidget<'a> {
                         .clone(),
                 ],
                 vec![
-                    engine_resources
-                        .get_material_instance_data("ui/controller/joystick_a")
-                        .clone(),
+                    engine_resources.get_material_instance_data("ui/controller/joystick_a").clone(),
                 ],
             ),
         );
@@ -351,9 +325,7 @@ impl<'a> ControllerHelpWidget<'a> {
                         .clone(),
                 ],
                 vec![
-                    engine_resources
-                        .get_material_instance_data("ui/controller/joystick_b")
-                        .clone(),
+                    engine_resources.get_material_instance_data("ui/controller/joystick_b").clone(),
                 ],
             ),
         );
@@ -368,14 +340,10 @@ impl<'a> ControllerHelpWidget<'a> {
                 "interaction_key_binding",
                 "Interaction",
                 vec![
-                    engine_resources
-                        .get_material_instance_data("ui/controller/keycode_f")
-                        .clone(),
+                    engine_resources.get_material_instance_data("ui/controller/keycode_f").clone(),
                 ],
                 vec![
-                    engine_resources
-                        .get_material_instance_data("ui/controller/joystick_x")
-                        .clone(),
+                    engine_resources.get_material_instance_data("ui/controller/joystick_x").clone(),
                 ],
             ),
         );
@@ -386,9 +354,7 @@ impl<'a> ControllerHelpWidget<'a> {
                 "enter_gate_key_binding",
                 "Enter",
                 vec![
-                    engine_resources
-                        .get_material_instance_data("ui/controller/keycode_w")
-                        .clone(),
+                    engine_resources.get_material_instance_data("ui/controller/keycode_w").clone(),
                 ],
                 vec![
                     engine_resources
@@ -403,11 +369,7 @@ impl<'a> ControllerHelpWidget<'a> {
                 KeyBindingType::Gathering,
                 "gathering_key_binding",
                 "Gathering",
-                vec![
-                    engine_resources
-                        .get_material_instance_data("ui/controller/mouse_l")
-                        .clone(),
-                ],
+                vec![engine_resources.get_material_instance_data("ui/controller/mouse_l").clone()],
                 vec![
                     engine_resources
                         .get_material_instance_data("ui/controller/joystick_rb")
@@ -531,9 +493,7 @@ impl<'a> ControllerHelpWidget<'a> {
                 let position = interaction_object.get_position();
                 let main_camera = game_scene_manager.get_scene_manager().get_main_camera();
                 let screen_position = main_camera.convert_world_to_screen(&position, true);
-                interaction_widget
-                    ._ui_component
-                    .set_pos(screen_position.x, screen_position.y);
+                interaction_widget._ui_component.set_pos(screen_position.x, screen_position.y);
                 interaction_widget._ui_component.set_visible(true);
                 ptr_as_mut(interaction_key_binding_widget._binding_name_widget)
                     ._ui_component

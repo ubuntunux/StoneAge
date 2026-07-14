@@ -13,9 +13,8 @@ pub fn register_render_pass_data_create_infos(
         let render_pass_data_create_info = render_pass_data_create_info_map
             .get_mut(&render_grass_render_pass_data_create_info._render_pass_create_info_name)
             .unwrap();
-        for pipeline_data_create_info in render_grass_render_pass_data_create_info
-            ._pipeline_data_create_infos
-            .iter()
+        for pipeline_data_create_info in
+            render_grass_render_pass_data_create_info._pipeline_data_create_infos.iter()
         {
             render_pass_data_create_info
                 ._pipeline_data_create_infos

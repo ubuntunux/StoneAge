@@ -132,29 +132,18 @@ impl<'a> GameClient<'a> {
         ptr_as_mut(self._editor_ui_manager)
     }
     pub fn set_game_mode(&mut self, is_game_mode: bool) {
-        self.get_editor_ui_manager_mut()
-            .show_editor_ui(!is_game_mode);
+        self.get_editor_ui_manager_mut().show_editor_ui(!is_game_mode);
         self.get_game_ui_manager_mut().show_game_ui(is_game_mode);
-        if is_game_mode
-            && self
-                .get_game_scene_manager()
-                .get_character_manager()
-                .is_valid_player()
-        {
+        if is_game_mode && self.get_game_scene_manager().get_character_manager().is_valid_player() {
             let main_camera = self.get_game_controller().get_main_camera();
-            let player = self
-                .get_game_scene_manager()
-                .get_character_manager()
-                .get_player();
+            let player = self.get_game_scene_manager().get_character_manager().get_player();
             let mut player_position = main_camera.get_camera_position()
                 + CAMERA_DISTANCE_MAX * main_camera.get_camera_front();
             if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
                 player_position.z = player.borrow().get_position().z;
             }
             player.borrow_mut().set_position(&player_position);
-            player
-                .borrow_mut()
-                .set_on_ground(player_position.y, &Vector3::new(0.0, 1.0, 0.0));
+            player.borrow_mut().set_on_ground(player_position.y, &Vector3::new(0.0, 1.0, 0.0));
         }
     }
     pub fn is_game_phase(&self, game_phase: GamePhase) -> bool {
@@ -177,18 +166,14 @@ impl<'a> GameClient<'a> {
         let game_save_data = self
             .get_game_resources_mut()
             .get_or_create_game_save_data(self._request_load_game_data_name.as_str());
-        self.get_game_scene_manager_mut()
-            .load_game_save_data(&game_save_data.borrow());
+        self.get_game_scene_manager_mut().load_game_save_data(&game_save_data.borrow());
         self._request_load_game_data_name = String::default();
     }
     pub fn save_game(&mut self) {
-        let game_save_data = self
-            .get_game_resources_mut()
-            .get_or_create_game_save_data(DEFAULT_GAME_SAVE_DATA);
-        self.get_game_scene_manager()
-            .get_game_save_data(&mut game_save_data.borrow_mut());
-        self.get_game_resources_mut()
-            .save_game_save_data(DEFAULT_GAME_SAVE_DATA);
+        let game_save_data =
+            self.get_game_resources_mut().get_or_create_game_save_data(DEFAULT_GAME_SAVE_DATA);
+        self.get_game_scene_manager().get_game_save_data(&mut game_save_data.borrow_mut());
+        self.get_game_resources_mut().save_game_save_data(DEFAULT_GAME_SAVE_DATA);
     }
     pub fn update_game_mode(&mut self, delta_time: f64) {
         let engine_core = ptr_as_ref(self._engine_core);
@@ -261,13 +246,21 @@ impl<'a> GameClient<'a> {
                             } else {
                                 const SKIP_SCENARIO: bool = false;
                                 if SKIP_SCENARIO {
-                                    game_scene_manager.request_open_game_scenario(ScenarioType::ScenarioDayOne, true);
+                                    game_scene_manager.request_open_game_scenario(
+                                        ScenarioType::ScenarioDayOne,
+                                        true,
+                                    );
                                     unsafe {
                                         scenario_day_one::SKIP_SCENARIO = true;
                                     }
                                 } else {
-                                    if !game_scene_manager.is_completed_game_scenario(ScenarioType::ScenarioIntro) {
-                                        game_scene_manager.request_open_game_scenario(ScenarioType::ScenarioIntro, true);
+                                    if !game_scene_manager
+                                        .is_completed_game_scenario(ScenarioType::ScenarioIntro)
+                                    {
+                                        game_scene_manager.request_open_game_scenario(
+                                            ScenarioType::ScenarioIntro,
+                                            true,
+                                        );
                                     }
                                 }
                             }
@@ -284,10 +277,7 @@ impl<'a> GameClient<'a> {
                         game_ui_manager.set_auto_fade_inout(true);
                         game_controller.set_game_camera_goal_transform(
                             1.0,
-                            scene_manager
-                                .get_main_camera()
-                                ._transform_object
-                                .get_pitch(),
+                            scene_manager.get_main_camera()._transform_object.get_pitch(),
                             scene_manager.get_main_camera()._transform_object.get_yaw(),
                         );
                         self.set_next_game_phase(GamePhase::GamePlay);
@@ -361,10 +351,7 @@ impl<'a> GameClient<'a> {
                 GamePhase::Teleport => match state {
                     State::Begin => {
                         if character_manager.is_valid_player() {
-                            character_manager
-                                .get_player()
-                                .borrow_mut()
-                                .set_action_none();
+                            character_manager.get_player().borrow_mut().set_action_none();
                             character_manager.get_player().borrow_mut().set_move_idle();
                         }
                         game_ui_manager
@@ -381,10 +368,7 @@ impl<'a> GameClient<'a> {
                     State::End => {
                         game_ui_manager.set_auto_fade_inout(true);
                         if character_manager.is_valid_player() {
-                            character_manager
-                                .get_player()
-                                .borrow_mut()
-                                .set_action_none();
+                            character_manager.get_player().borrow_mut().set_action_none();
                             character_manager.get_player().borrow_mut().set_move_idle();
                         }
                     }
@@ -426,8 +410,7 @@ impl<'a> GameClient<'a> {
                             game_ui_manager.set_auto_fade_inout(true);
                             game_ui_manager.open_world_map();
                             game_ui_manager.set_selected_world_map_stage(
-                                self.get_game_scene_manager()
-                                    .get_current_game_scene_data_name(),
+                                self.get_game_scene_manager().get_current_game_scene_data_name(),
                             );
                             self.set_next_game_phase(GamePhase::WorldMapUpdate);
                         }
@@ -444,8 +427,7 @@ impl<'a> GameClient<'a> {
                             self.set_next_game_phase(GamePhase::WorldMapClose);
                         } else if game_ui_manager.is_requested_close_world_map() {
                             self.get_game_scene_manager_mut().set_teleport_stage(
-                                self.get_game_scene_manager()
-                                    .get_current_game_scene_data_name(),
+                                self.get_game_scene_manager().get_current_game_scene_data_name(),
                                 DEFAULT_GATE_NAME,
                             );
                             self.set_next_game_phase(GamePhase::WorldMapClose);

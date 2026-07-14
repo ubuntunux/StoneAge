@@ -117,9 +117,7 @@ impl<'a> QuestWidget<'a> {
     pub fn changed_window_size(&mut self, _window_size: &Vector2<i32>) {}
 
     pub fn add_quest(&mut self, title: Option<String>) -> RcRefCell<QuestTitle<'a>> {
-        ptr_as_mut(self._root_widget.as_ref())
-            .get_ui_component_mut()
-            .set_visible(true);
+        ptr_as_mut(self._root_widget.as_ref()).get_ui_component_mut().set_visible(true);
         let quest = QuestTitle::create_quest_title(
             self._game_scene_manager,
             self._game_resources,
@@ -154,9 +152,7 @@ impl<'a> QuestWidget<'a> {
         }
 
         if 0 < item_count && self._quests.is_empty() {
-            ptr_as_mut(self._root_widget.as_ref())
-                .get_ui_component_mut()
-                .set_visible(false);
+            ptr_as_mut(self._root_widget.as_ref()).get_ui_component_mut().set_visible(false);
         }
     }
 }

@@ -21,8 +21,7 @@ impl<'a> BehaviorBase<'a> for BehaviorDefault<'a> {
     }
 
     fn set_next_behavior(&mut self, next_behavior_state: BehaviorState, is_force: bool) {
-        self._behavior_data
-            .set_next_behavior_state(next_behavior_state, is_force);
+        self._behavior_data.set_next_behavior_state(next_behavior_state, is_force);
     }
 
     fn update_behavior(

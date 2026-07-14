@@ -85,9 +85,7 @@ impl<'a> Prop<'a> {
         if prop_data_ref._prop_type == PropDataType::Ceiling
             || prop_data_ref._prop_type == PropDataType::Gate
         {
-            render_object
-                .borrow_mut()
-                .set_collision_type(CollisionType::NONE);
+            render_object.borrow_mut().set_collision_type(CollisionType::NONE);
         }
 
         prop.initialize_prop();
@@ -159,12 +157,12 @@ impl<'a> Prop<'a> {
             _effect_data_name: String::from(EFFECT_HIT),
             ..Default::default()
         };
-        self.get_prop_manager()
-            .get_scene_manager_mut()
-            .add_effect(EFFECT_HIT, &effect_create_info);
-        self.get_prop_manager()
-            .get_audio_manager_mut()
-            .play_audio_bank(AUDIO_HIT, AudioLoop::ONCE, None);
+        self.get_prop_manager().get_scene_manager_mut().add_effect(EFFECT_HIT, &effect_create_info);
+        self.get_prop_manager().get_audio_manager_mut().play_audio_bank(
+            AUDIO_HIT,
+            AudioLoop::ONCE,
+            None,
+        );
     }
     pub fn update_generate_item(&mut self, delta_time: f64) {
         if self._prop_data.borrow()._prop_type == PropDataType::Harvestable
@@ -198,9 +196,8 @@ impl<'a> Prop<'a> {
         for drop_index in 0..drop_count {
             let mut position = *self.get_bounding_box().get_center();
             let mut velocity = Vector3::new(0.0, 0.0, 0.0);
-            if let Some(item_render_object) = &self
-                ._item_render_objects
-                .get((self._prop_stats._item_count + drop_index) as usize)
+            if let Some(item_render_object) =
+                &self._item_render_objects.get((self._prop_stats._item_count + drop_index) as usize)
             {
                 match self._prop_data.borrow()._prop_type {
                     PropDataType::Harvestable => {
@@ -236,25 +233,18 @@ impl<'a> Prop<'a> {
     }
     pub fn update_item_visible(&mut self) {
         for (i, item_render_object) in self._item_render_objects.iter().enumerate() {
-            item_render_object
-                .borrow_mut()
-                .set_visible(i < self._prop_stats._item_count as usize);
+            item_render_object.borrow_mut().set_visible(i < self._prop_stats._item_count as usize);
         }
     }
     pub fn update_transform(&mut self) {
-        self._render_object
-            .borrow_mut()
-            ._transform_object
-            .set_position_rotation_scale(
-                &self._prop_stats._position,
-                &self._prop_stats._rotation,
-                &self._prop_stats._scale,
-            );
+        self._render_object.borrow_mut()._transform_object.set_position_rotation_scale(
+            &self._prop_stats._position,
+            &self._prop_stats._rotation,
+            &self._prop_stats._scale,
+        );
     }
     pub fn update_render_object(&mut self) {
-        self._render_object
-            .borrow_mut()
-            .update_render_object_data(0.0);
+        self._render_object.borrow_mut().update_render_object_data(0.0);
     }
     pub fn update_prop(&mut self, delta_time: f64) {
         self.update_generate_item(delta_time);
@@ -376,8 +366,7 @@ impl<'a> PropManager<'a> {
         ));
         self._props.insert(id, prop.clone());
         if !self._prop_name_map.contains_key(prop_name) {
-            self._prop_name_map
-                .insert(String::from(prop_name), prop.clone());
+            self._prop_name_map.insert(String::from(prop_name), prop.clone());
         }
         prop
     }
@@ -409,10 +398,7 @@ impl<'a> PropManager<'a> {
     }
 
     pub fn get_props_save_data(&self) -> Vec<PropCreateInfo> {
-        self._props
-            .values()
-            .map(|prop| prop.borrow().get_prop_save_data())
-            .collect()
+        self._props.values().map(|prop| prop.borrow().get_prop_save_data()).collect()
     }
 
     pub fn post_process_after_prop_loading(&mut self) {
@@ -440,11 +426,7 @@ impl<'a> PropManager<'a> {
     }
 
     pub fn update_prop_manager(&mut self, delta_time: f64) {
-        if !self
-            .get_game_scene_manager()
-            .get_character_manager()
-            .is_valid_player()
-        {
+        if !self.get_game_scene_manager().get_character_manager().is_valid_player() {
             return;
         }
 
@@ -452,11 +434,8 @@ impl<'a> PropManager<'a> {
             prop.borrow_mut().update_prop(delta_time);
         }
 
-        let player_refcell = self
-            .get_game_scene_manager()
-            .get_character_manager()
-            .get_player()
-            .clone();
+        let player_refcell =
+            self.get_game_scene_manager().get_character_manager().get_player().clone();
         let mut player = player_refcell.borrow_mut();
 
         let mut dead_props: Vec<RcRefCell<Prop>> = Vec::new();
@@ -559,9 +538,8 @@ impl<'a> PropManager<'a> {
                             {
                                 prop.set_hit_damage(0);
                                 let drop_count = 1;
-                                for item_create_info in prop
-                                    .drop_items(drop_count, player.get_position())
-                                    .iter_mut()
+                                for item_create_info in
+                                    prop.drop_items(drop_count, player.get_position()).iter_mut()
                                 {
                                     self.get_game_scene_manager()
                                         .get_item_manager_mut()

@@ -93,9 +93,8 @@ impl<'a> QuestItemBase<'a> for QuestItemDefault<'a> {
         ptr_as_mut(self._layout_widget.as_ref()).add_widget(&self._is_complete_widget);
 
         if let Some(icon_name) = self._quest_data._quest_icon_name.as_ref() {
-            let icon_material_instance = engine_resources
-                .get_material_instance_data(icon_name.as_str())
-                .clone();
+            let icon_material_instance =
+                engine_resources.get_material_instance_data(icon_name.as_str()).clone();
             let ui_component = ptr_as_mut(self._icon_widget.as_ref()).get_ui_component_mut();
             ui_component.set_halign(HorizontalAlign::CENTER);
             ui_component.set_valign(VerticalAlign::CENTER);

@@ -190,8 +190,7 @@ impl<'a> GameSceneManager<'a> {
     }
 
     pub fn get_actor_by_name(&self, actor_name: &str) -> Option<&RcRefCell<Character<'a>>> {
-        self.get_character_manager()
-            .get_character_by_name(actor_name)
+        self.get_character_manager().get_character_by_name(actor_name)
     }
 
     pub fn get_prop_manager(&self) -> &PropManager<'a> {
@@ -253,23 +252,18 @@ impl<'a> GameSceneManager<'a> {
         self._scene_manager = engine_core.get_scene_manager();
         self._effect_manager = engine_core.get_effect_manager();
         self._game_ui_manager = application.get_game_ui_manager();
-        engine_core
-            .get_scene_manager_mut()
-            .initialize_scene_manager(
-                engine_core.get_renderer_context(),
-                engine_core.get_audio_manager(),
-                engine_core.get_effect_manager(),
-                engine_core.get_engine_resources(),
-                window_size,
-            );
+        engine_core.get_scene_manager_mut().initialize_scene_manager(
+            engine_core.get_renderer_context(),
+            engine_core.get_audio_manager(),
+            engine_core.get_effect_manager(),
+            engine_core.get_engine_resources(),
+            window_size,
+        );
 
         self._game_resources = application.get_game_resources();
-        self._character_manager
-            .initialize_character_manager(engine_core, application);
-        self._item_manager
-            .initialize_item_manager(engine_core, application);
-        self._prop_manager
-            .initialize_prop_manager(engine_core, application);
+        self._character_manager.initialize_character_manager(engine_core, application);
+        self._item_manager.initialize_item_manager(engine_core, application);
+        self._prop_manager.initialize_prop_manager(engine_core, application);
     }
 
     pub fn get_game_client(&self) -> &GameClient<'a> {
@@ -335,7 +329,8 @@ impl<'a> GameSceneManager<'a> {
     pub fn load_game_save_data(&mut self, game_save_data: &GameSaveData) {
         self.clear_all_game_scenario();
         self._completed_game_scenarios = game_save_data._completed_game_scenarios.clone();
-        self._loaded_game_scene_save_data = game_save_data._game_scenes.get(&game_save_data._last_game_scene_data_name).cloned();
+        self._loaded_game_scene_save_data =
+            game_save_data._game_scenes.get(&game_save_data._last_game_scene_data_name).cloned();
         self.open_game_scene_data(&game_save_data._last_game_scene_data_name);
         self.set_temperature(game_save_data._temperature);
         self._date = game_save_data._date;
@@ -349,7 +344,8 @@ impl<'a> GameSceneManager<'a> {
     }
 
     pub fn get_game_save_data(&self, game_save_data: &mut GameSaveData) {
-        game_save_data._player = self.get_character_manager().get_player().as_ref().borrow().get_character_save_data();
+        game_save_data._player =
+            self.get_character_manager().get_player().as_ref().borrow().get_character_save_data();
         game_save_data._time_of_day = self.get_time_of_day();
         game_save_data._temperature = self.temperature();
         game_save_data._date = self.get_date();
@@ -359,7 +355,11 @@ impl<'a> GameSceneManager<'a> {
             self.get_game_scene_save_data(),
         );
         game_save_data._completed_game_scenarios = self._completed_game_scenarios.clone();
-        game_save_data._game_scenarios = self._scenarios.iter().map(|scenario| scenario.borrow().get_scenario_save_data()).collect();
+        game_save_data._game_scenarios = self
+            ._scenarios
+            .iter()
+            .map(|scenario| scenario.borrow().get_scenario_save_data())
+            .collect();
     }
 
     pub fn get_game_scene_save_data(&self) -> GameSceneSaveData {
@@ -399,18 +399,12 @@ impl<'a> GameSceneManager<'a> {
                     .get_teleport_point(self._teleport_gate.as_ref().unwrap().as_str())
             {
                 if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
-                    character_manager
-                        .get_player()
-                        .borrow_mut()
-                        .set_position_xy(&teleport_point);
+                    character_manager.get_player().borrow_mut().set_position_xy(&teleport_point);
                 } else {
                     let height_map_data = self.get_scene_manager().get_height_map_data();
                     let ground_height = height_map_data.get_height_bilinear(&teleport_point, 0);
                     let ground_normal = height_map_data.get_normal_bilinear(&teleport_point);
-                    character_manager
-                        .get_player()
-                        .borrow_mut()
-                        .set_position(&teleport_point);
+                    character_manager.get_player().borrow_mut().set_position(&teleport_point);
                     character_manager
                         .get_player()
                         .borrow_mut()
@@ -470,12 +464,7 @@ impl<'a> GameSceneManager<'a> {
         ));
 
         // open game scene data
-        if let Some(game_scene) = scenario_data_create_info
-            ._game_scenes
-            .values()
-            .last()
-            .as_ref()
-        {
+        if let Some(game_scene) = scenario_data_create_info._game_scenes.values().last().as_ref() {
             let scene_data_name = game_scene._game_scene_data_name.as_str();
             if self.get_current_game_scene_data_name() != scene_data_name {
                 self.open_game_scene_data(scene_data_name);
@@ -575,12 +564,8 @@ impl<'a> GameSceneManager<'a> {
         for (_camera_name, camera_create_info) in
             scenario_create_info.borrow()._scene._cameras.iter()
         {
-            main_camera
-                ._transform_object
-                .set_position(&camera_create_info.position);
-            main_camera
-                ._transform_object
-                .set_rotation(&camera_create_info.rotation);
+            main_camera._transform_object.set_position(&camera_create_info.position);
+            main_camera._transform_object.set_rotation(&camera_create_info.rotation);
         }
 
         // create items
@@ -627,12 +612,7 @@ impl<'a> GameSceneManager<'a> {
         for scenario in self._scenarios.iter() {
             let scenario_create_info = self
                 .get_game_resources()
-                .get_scenario_data(
-                    scenario
-                        .borrow()
-                        .get_scenario_type()
-                        .get_scenario_data_name(),
-                )
+                .get_scenario_data(scenario.borrow().get_scenario_type().get_scenario_data_name())
                 .clone();
             if !scenario_create_info.borrow()._game_scenes.is_empty()
                 && self.get_current_game_scene_data_name()
@@ -771,8 +751,10 @@ impl<'a> GameSceneManager<'a> {
                     .get_game_resources()
                     .get_scenario_data(scenario_type.get_scenario_data_name())
                     .clone();
-                let is_same_game_scene = scenario_create_info.borrow().get_game_scene_data_name().is_empty()
-                    || self.get_current_game_scene_data_name() == scenario_create_info.borrow().get_game_scene_data_name().as_str();
+                let is_same_game_scene =
+                    scenario_create_info.borrow().get_game_scene_data_name().is_empty()
+                        || self.get_current_game_scene_data_name()
+                            == scenario_create_info.borrow().get_game_scene_data_name().as_str();
 
                 let scenario = self.open_game_scenario_data(*scenario_type).clone();
 
@@ -794,8 +776,10 @@ impl<'a> GameSceneManager<'a> {
                 if self.get_scene_manager().is_load_complete() {
                     let is_load_game = self._loaded_game_scene_save_data.is_some();
                     if is_load_game {
-                        let game_scene_save_data = self._loaded_game_scene_save_data.take().unwrap();
-                        self._character_manager.load_characters_save_data(&game_scene_save_data._characters);
+                        let game_scene_save_data =
+                            self._loaded_game_scene_save_data.take().unwrap();
+                        self._character_manager
+                            .load_characters_save_data(&game_scene_save_data._characters);
                         self._item_manager.load_items_save_data(&game_scene_save_data._items);
                         self._prop_manager.load_props_save_data(&game_scene_save_data._props);
 

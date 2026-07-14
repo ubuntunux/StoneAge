@@ -71,25 +71,18 @@ impl<'a> TargetStatusWidget<'a> {
         let mut smooth_update: bool = true;
         if self._target != target {
             smooth_update = false;
-            ptr_as_mut(self._widget)
-                .get_ui_component_mut()
-                .set_visible(true);
+            ptr_as_mut(self._widget).get_ui_component_mut().set_visible(true);
             let name = target._character_data.borrow()._name.clone();
-            ptr_as_mut(self._target_name_widget)
-                .get_ui_component_mut()
-                .set_text(name.as_str());
+            ptr_as_mut(self._target_name_widget).get_ui_component_mut().set_text(name.as_str());
             self._target = target;
         }
         let hp = target.get_stats().get_hp() as f32;
         let max_hp = target.get_stats().get_max_hp() as f32;
         let max_hp_data = target.get_character_data()._stat_data._max_hp as f32;
-        self._hp_widget
-            .update_status_widget(hp, max_hp, max_hp_data, delta_time, smooth_update);
+        self._hp_widget.update_status_widget(hp, max_hp, max_hp_data, delta_time, smooth_update);
     }
     pub fn fade_out_status_widget(&mut self) {
-        ptr_as_mut(self._widget)
-            .get_ui_component_mut()
-            .set_visible(false);
+        ptr_as_mut(self._widget).get_ui_component_mut().set_visible(false);
         self._target = std::ptr::null();
     }
 }

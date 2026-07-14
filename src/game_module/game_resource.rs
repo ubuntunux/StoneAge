@@ -70,8 +70,7 @@ impl<'a> GameResources<'a> {
         ptr_as_mut(self._engine_resources)
     }
     pub fn collect_resources(&self, dir: &Path, extensions: &[&str]) -> Vec<PathBuf> {
-        self.get_engine_resources()
-            .collect_resources(dir, extensions)
+        self.get_engine_resources().collect_resources(dir, extensions)
     }
     pub fn initialize_game_resources(&mut self, engine_resources: &EngineResources<'a>) {
         self._engine_resources = engine_resources;
@@ -116,9 +115,7 @@ impl<'a> GameResources<'a> {
     }
 
     pub fn has_scenario_data(&self, resource_name: &str) -> bool {
-        self._scenario_data_create_info_map
-            .get(resource_name)
-            .is_some()
+        self._scenario_data_create_info_map.get(resource_name).is_some()
     }
 
     pub fn get_scenario_data(&self, resource_name: &str) -> &RcRefCell<ScenarioDataCreateInfo> {
@@ -170,9 +167,7 @@ impl<'a> GameResources<'a> {
         let mut write_contents: String =
             serde_json::to_string(&game_scene_data_create_info).expect("Failed to serialize.");
         write_contents = write_contents.replace(",\"", ",\n\"");
-        write_file
-            .write_all(write_contents.as_bytes())
-            .expect("Failed to write");
+        write_file.write_all(write_contents.as_bytes()).expect("Failed to write");
 
         self._game_scene_data_create_info_map.insert(
             String::from(game_scene_data_name),
@@ -181,9 +176,7 @@ impl<'a> GameResources<'a> {
     }
 
     pub fn has_game_scene_data(&self, resource_name: &str) -> bool {
-        self._game_scene_data_create_info_map
-            .get(resource_name)
-            .is_some()
+        self._game_scene_data_create_info_map.get(resource_name).is_some()
     }
 
     pub fn get_game_scene_data(&self, resource_name: &str) -> &RcRefCell<GameSceneDataCreateInfo> {
@@ -234,10 +227,7 @@ impl<'a> GameResources<'a> {
                 newRcRefCell(GameSaveData::default()),
             );
         }
-        self._game_save_data_map
-            .get(resource_name)
-            .as_ref()
-            .unwrap()
+        self._game_save_data_map.get(resource_name).as_ref().unwrap()
     }
 
     pub fn save_game_save_data(&mut self, game_save_data_name: &str) {
@@ -251,9 +241,7 @@ impl<'a> GameResources<'a> {
         let mut write_file = File::create(&game_save_data_filepath).expect("Failed to create file");
         let write_contents: String = serde_json::to_string_pretty(&game_save_data.borrow().clone())
             .expect("Failed to serialize.");
-        write_file
-            .write_all(write_contents.as_bytes())
-            .expect("Failed to write");
+        write_file.write_all(write_contents.as_bytes()).expect("Failed to write");
     }
 
     // Game Data
@@ -291,8 +279,7 @@ impl<'a> GameResources<'a> {
             let loaded_contents = system::load(&game_data_file);
             let prop_data: PropData =
                 serde_json::from_reader(loaded_contents).expect("Failed to deserialize.");
-            self._prop_data_map
-                .insert(prop_data_name.clone(), newRcRefCell(prop_data));
+            self._prop_data_map.insert(prop_data_name.clone(), newRcRefCell(prop_data));
         }
     }
 
@@ -330,8 +317,7 @@ impl<'a> GameResources<'a> {
                 .get_model_data(&weapon_data_create_info._model_data_name);
             let weapon_data =
                 WeaponData::create_weapon_data(&weapon_data_create_info, weapon_model_data);
-            self._weapon_data_map
-                .insert(weapon_data_name.clone(), newRcRefCell(weapon_data));
+            self._weapon_data_map.insert(weapon_data_name.clone(), newRcRefCell(weapon_data));
         }
     }
 
@@ -400,8 +386,7 @@ impl<'a> GameResources<'a> {
             let loaded_contents = system::load(&game_data_file);
             let item_data: ItemData =
                 serde_json::from_reader(loaded_contents).expect("Failed to deserialize.");
-            self._item_data_map
-                .insert(item_data_name.clone(), newRcRefCell(item_data));
+            self._item_data_map.insert(item_data_name.clone(), newRcRefCell(item_data));
         }
     }
 

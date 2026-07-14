@@ -30,9 +30,7 @@ impl<'a> CrossHairWidget<'a> {
     }
 
     pub fn update_cross_hair_visible(&mut self, visible: bool) {
-        ptr_as_mut(self._widget)
-            .get_ui_component_mut()
-            .set_visible(visible);
+        ptr_as_mut(self._widget).get_ui_component_mut().set_visible(visible);
     }
 
     pub fn get_cross_hair_visible(&self) -> bool {
