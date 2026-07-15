@@ -159,9 +159,8 @@ impl<'a> GameClient<'a> {
         self.set_next_game_phase(GamePhase::BeginLoading);
     }
     fn load_game(&mut self) {
-        let game_save_data = self
-            .get_game_resources_mut()
-            .get_or_create_game_save_data(self._request_load_game_data_name.as_str());
+        let game_save_data =
+            self.get_game_resources_mut().get_or_create_game_save_data(self._request_load_game_data_name.as_str());
         self.get_game_scene_manager_mut().load_game_save_data(&game_save_data.borrow());
         self._request_load_game_data_name = String::default();
     }

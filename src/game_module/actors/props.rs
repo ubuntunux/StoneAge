@@ -34,7 +34,6 @@ pub enum PropDataType {
 #[serde(default)]
 pub struct PropCreateInfo {
     pub _prop_id: ItemID,
-    pub _prop_name: String,
     pub _prop_data_name: String,
     pub _position: Vector3<f32>,
     pub _rotation: Vector3<f32>,

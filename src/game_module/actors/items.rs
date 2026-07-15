@@ -16,6 +16,7 @@ use uuid::Uuid;
 
 pub type ItemID = Uuid;
 pub type ItemMap<'a> = HashMap<ItemID, RcRefCell<Item<'a>>>;
+pub type ItemNameMap<'a> = HashMap<String, RcRefCell<Item<'a>>>;
 
 #[derive(Serialize, Deserialize, Hash, Eq, Clone, Copy, Debug, EnumIter, Display, PartialEq, Default)]
 pub enum ItemDataType {
@@ -66,8 +67,9 @@ pub struct ItemProperties {
 }
 
 pub struct Item<'a> {
-    pub _item_data_name: String,
     pub _item_id: ItemID,
+    pub _item_name: String,
+    pub _item_data_name: String,
     pub _item_data: RcRefCell<ItemData>,
     pub _render_object: RcRefCell<RenderObjectData<'a>>,
     pub _attach_socket: Option<RcRefCell<Socket>>,
@@ -82,4 +84,5 @@ pub struct ItemManager<'a> {
     pub _audio_manager: *const AudioManager<'a>,
     pub _scene_manager: *const SceneManager<'a>,
     pub _items: ItemMap<'a>,
+    pub _item_name_map: ItemNameMap<'a>,
 }

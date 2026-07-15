@@ -10,7 +10,7 @@ use crate::game_module::game_constants::{
     AUDIO_HIT, CHARACTER_INTERACTION_DISTANCE, EFFECT_HIT, GAME_VIEW_MODE, GameViewMode, NPC_ATTACK_HIT_RANGE,
 };
 use crate::game_module::game_resource::GameResources;
-use crate::game_module::game_scene_manager::GameSceneManager;
+use crate::game_module::game_scene_manager::{GameSceneManager, PropCreateInfoMap};
 use nalgebra::Vector3;
 use rand;
 use rust_engine_3d::audio::audio_manager::{AudioLoop, AudioManager};
@@ -21,7 +21,9 @@ use rust_engine_3d::scene::collision::{CollisionData, CollisionType};
 use rust_engine_3d::scene::render_object::{RenderObjectCreateInfo, RenderObjectData};
 use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::math;
-use rust_engine_3d::utilities::system::{RcRefCell, newRcRefCell, ptr_as_mut, ptr_as_ref};
+use rust_engine_3d::utilities::system::{
+    RcRefCell, extract_name_and_uuid, format_name_with_uuid, newRcRefCell, ptr_as_mut, ptr_as_ref,
+};
 use std::collections::HashMap;
 use std::ffi::c_void;
 use uuid::Uuid;
@@ -96,16 +98,18 @@ impl<'a> Prop<'a> {
     }
     pub fn load_prop_save_data(&mut self, _prop_create_info: &PropCreateInfo) {}
 
-    pub fn get_prop_save_data(&self) -> PropCreateInfo {
-        PropCreateInfo {
-            _prop_id: self.get_prop_id(),
-            _prop_name: self._prop_name.clone(),
-            _prop_data_name: self._prop_data_name.clone(),
-            _position: self._prop_stats._position,
-            _rotation: self._prop_stats._rotation,
-            _scale: self._prop_stats._scale,
-            _instance_parameters: self._instance_parameters.clone(),
-        }
+    pub fn get_prop_save_data(&self) -> (String, PropCreateInfo) {
+        (
+            format_name_with_uuid(self._prop_name.as_str(), self.get_prop_id()),
+            PropCreateInfo {
+                _prop_id: self.get_prop_id(),
+                _prop_data_name: self._prop_data_name.clone(),
+                _position: self._prop_stats._position,
+                _rotation: self._prop_stats._rotation,
+                _scale: self._prop_stats._scale,
+                _instance_parameters: self._instance_parameters.clone(),
+            },
+        )
     }
 
     pub fn post_process_after_prop_loading(&mut self) {}
@@ -295,6 +299,7 @@ impl<'a> PropManager<'a> {
         &self._props
     }
     pub fn create_prop(&mut self, prop_name: &str, prop_create_info: &PropCreateInfo) -> RcRefCell<Prop<'a>> {
+        let (prop_name, uuid) = extract_name_and_uuid(prop_name);
         let game_resources = ptr_as_ref(self._game_resources);
         let prop_data = game_resources.get_prop_data(prop_create_info._prop_data_name.as_str());
 
@@ -306,8 +311,11 @@ impl<'a> PropManager<'a> {
             _scale: prop_create_info._scale,
             ..Default::default()
         };
-        let render_object_data =
-            self.get_scene_manager_mut().add_dynamic_render_object(prop_name, &render_object_create_info, None);
+        let render_object_data = self.get_scene_manager_mut().add_dynamic_render_object(
+            prop_name.as_str(),
+            &render_object_create_info,
+            None,
+        );
 
         // create item render objects
         let mut item_render_objects: Vec<RcRefCell<RenderObjectData<'a>>> = Vec::new();
@@ -328,19 +336,25 @@ impl<'a> PropManager<'a> {
             item_render_objects.push(render_object_data);
         }
 
-        let id = self.generate_id();
+        let prop_id = if prop_create_info._prop_id.is_nil() {
+            self.generate_id()
+        } else {
+            assert_eq!(prop_create_info._prop_id, uuid.unwrap());
+            prop_create_info._prop_id
+        };
         let prop = newRcRefCell(Prop::create_prop(
             self,
-            id,
-            prop_name,
+            prop_id,
+            prop_name.as_str(),
             prop_data,
             &render_object_data,
             item_render_objects,
             prop_create_info,
         ));
-        self._props.insert(id, prop.clone());
-        if !self._prop_name_map.contains_key(prop_name) {
-            self._prop_name_map.insert(String::from(prop_name), prop.clone());
+
+        self._props.insert(prop_id, prop.clone());
+        if !self._prop_name_map.contains_key(prop_name.as_str()) {
+            self._prop_name_map.insert(prop_name.to_string(), prop.clone());
         }
         prop
     }
@@ -363,14 +377,14 @@ impl<'a> PropManager<'a> {
         }
     }
 
-    pub fn load_props_save_data(&mut self, prop_create_infos: &Vec<PropCreateInfo>) {
-        for prop_create_info in prop_create_infos.iter() {
-            let prop = self.create_prop(prop_create_info._prop_name.as_str(), prop_create_info);
+    pub fn load_props_save_data(&mut self, prop_create_infos: &PropCreateInfoMap) {
+        for (prop_name, prop_create_info) in prop_create_infos.iter() {
+            let prop = self.create_prop(prop_name.as_str(), prop_create_info);
             prop.borrow_mut().load_prop_save_data(prop_create_info);
         }
     }
 
-    pub fn get_props_save_data(&self) -> Vec<PropCreateInfo> {
+    pub fn get_props_save_data(&self) -> PropCreateInfoMap {
         self._props.values().map(|prop| prop.borrow().get_prop_save_data()).collect()
     }
 
@@ -454,9 +468,11 @@ impl<'a> PropManager<'a> {
                                     for item_create_info in
                                         prop.drop_items(drop_count, player.get_position()).iter_mut()
                                     {
-                                        self.get_game_scene_manager()
-                                            .get_item_manager_mut()
-                                            .create_item(item_create_info, None);
+                                        self.get_game_scene_manager().get_item_manager_mut().create_item(
+                                            item_create_info._item_data_name.as_str(),
+                                            item_create_info,
+                                            None,
+                                        );
                                     }
                                     dead_props.push(prop_refcell.clone());
                                 }
@@ -484,9 +500,11 @@ impl<'a> PropManager<'a> {
                                 prop.set_hit_damage(0);
                                 let drop_count = 1;
                                 for item_create_info in prop.drop_items(drop_count, player.get_position()).iter_mut() {
-                                    self.get_game_scene_manager()
-                                        .get_item_manager_mut()
-                                        .create_item(item_create_info, None);
+                                    self.get_game_scene_manager().get_item_manager_mut().create_item(
+                                        item_create_info._item_data_name.as_str(),
+                                        item_create_info,
+                                        None,
+                                    );
                                 }
                             }
 

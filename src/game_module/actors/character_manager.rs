@@ -9,7 +9,7 @@ use crate::game_module::game_constants::{
     ITEM_HAND, ITEM_SPIRIT_BALL, MATERIAL_EMOJI_GOOD, MATERIAL_EMOJI_HUNGRY, NPC_ATTACK_HIT_RANGE,
 };
 use crate::game_module::game_resource::GameResources;
-use crate::game_module::game_scene_manager::GameSceneManager;
+use crate::game_module::game_scene_manager::{CharacterCreateInfoMap, GameSceneManager};
 use crate::game_module::game_ui_manager::GameUIManager;
 use crate::game_module::widgets::text_box_widget::TextBoxContent;
 use crate::game_module::widgets::text_box_widget::TextBoxLayerType;
@@ -19,7 +19,7 @@ use rust_engine_3d::core::engine_core::EngineCore;
 use rust_engine_3d::scene::render_object::{RenderObjectCreateInfo, SceneObjectType};
 use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::math;
-use rust_engine_3d::utilities::system::{RcRefCell, newRcRefCell, ptr_as_mut, ptr_as_ref};
+use rust_engine_3d::utilities::system::{RcRefCell, extract_name_and_uuid, newRcRefCell, ptr_as_mut, ptr_as_ref};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::ffi::c_void;
@@ -33,7 +33,6 @@ pub type CharacterNameMap<'a> = HashMap<String, RcRefCell<Character<'a>>>;
 #[serde(default)]
 pub struct CharacterCreateInfo {
     pub _character_id: CharacterID,
-    pub _character_name: String,
     pub _character_data_name: String,
     pub _position: Vector3<f32>,
     pub _rotation: Vector3<f32>,
@@ -123,13 +122,13 @@ impl<'a> CharacterManager<'a> {
         character_create_info: &CharacterCreateInfo,
         is_player: bool,
     ) -> RcRefCell<Character<'a>> {
+        let (character_name, uuid) = extract_name_and_uuid(character_name);
         let game_resources = ptr_as_ref(self._game_resources);
 
         // check height map
         let mut spawn_point = character_create_info._position;
-        spawn_point.y = spawn_point
-            .y
-            .max(self.get_scene_manager().get_height_map_data().get_height_bilinear(&spawn_point, 0));
+        spawn_point.y =
+            spawn_point.y.max(self.get_scene_manager().get_height_map_data().get_height_bilinear(&spawn_point, 0));
 
         // check collision objects
         let collision_objects = self.get_scene_manager().collect_collision_objects(&spawn_point, &spawn_point);
@@ -153,18 +152,21 @@ impl<'a> CharacterManager<'a> {
         };
 
         let item_manager: *const ItemManager<'a> = ptr_as_ref(self._game_scene_manager)._item_manager.as_ref();
-        let render_object_data =
-            self.get_scene_manager_mut().add_skeletal_render_object(character_name, &render_object_create_info);
+        let render_object_data = self
+            .get_scene_manager_mut()
+            .add_skeletal_render_object(character_name.as_str(), &render_object_create_info);
+
         let character_id = if character_create_info._character_id.is_nil() {
             self.generate_id()
         } else {
+            assert_eq!(character_create_info._character_id, uuid.unwrap());
             character_create_info._character_id
         };
 
         let character = newRcRefCell(Character::create_character_instance(
             self,
             item_manager,
-            character_name,
+            character_name.as_str(),
             character_id,
             is_player,
             character_data_name,
@@ -181,41 +183,23 @@ impl<'a> CharacterManager<'a> {
         }
 
         self._characters.insert(character_id, character.clone());
-        if !self._character_name_map.contains_key(character_name) {
-            self._character_name_map.insert(String::from(character_name), character.clone());
+        if !self._character_name_map.contains_key(character_name.as_str()) {
+            self._character_name_map.insert(character_name.clone(), character.clone());
         }
         character
-    }
-
-    pub fn create_or_update_character(
-        &mut self,
-        character_name: &str,
-        character_create_info: &CharacterCreateInfo,
-        is_player: bool,
-    ) -> RcRefCell<Character<'a>> {
-        if let Some(character) = self.get_character_by_name(character_name) {
-            character.borrow_mut().initialize_transform(
-                &character_create_info._position,
-                &character_create_info._rotation,
-                &character_create_info._scale,
-            );
-            character.clone()
-        } else {
-            self.create_character(character_name, character_create_info, is_player)
-        }
     }
 
     pub fn remove_character(&mut self, character_ref: &RcRefCell<Character<'a>>) {
         let mut character = character_ref.borrow_mut();
         character.destroy_character();
-        self.get_scene_manager_mut()
-            .remove_skeletal_render_object(character._render_object.borrow()._object_id);
         self._characters.remove(&character._character_id);
         if let Some(target) = self._character_name_map.get(character._character_name.as_str())
             && target.as_ptr() == character_ref.as_ptr()
         {
             self._character_name_map.remove(character._character_name.as_str());
         }
+
+        self.get_scene_manager_mut().remove_skeletal_render_object(character._render_object.borrow()._object_id);
     }
     pub fn clear_characters(&mut self, clear_player: bool) {
         let characters = self._characters.values().cloned().collect::<Vec<RcRefCell<Character>>>();
@@ -229,24 +213,14 @@ impl<'a> CharacterManager<'a> {
             self._player = None;
         }
     }
-    pub fn load_characters_save_data(&mut self, character_create_infos: &Vec<CharacterCreateInfo>) {
-        for character_create_info in character_create_infos.iter() {
-            if let Some(player) = &self._player {
-                if player.borrow()._character_name == character_create_info._character_name {
-                    player.borrow_mut().load_character_save_data(character_create_info);
-                    continue;
-                }
-            }
 
-            let character = self.create_character(
-                character_create_info._character_name.as_str(),
-                character_create_info,
-                false,
-            );
-            character.borrow_mut().load_character_save_data(character_create_info);
+    pub fn create_characters(&mut self, character_create_infos: &CharacterCreateInfoMap) {
+        for (character_name, character_create_info) in character_create_infos.iter() {
+            self.create_character(character_name.as_str(), character_create_info, false);
         }
     }
-    pub fn get_characters_save_data(&self) -> Vec<CharacterCreateInfo> {
+
+    pub fn get_characters_save_data(&self) -> CharacterCreateInfoMap {
         self._characters
             .values()
             .filter(|character| !character.borrow().is_player())
@@ -393,9 +367,11 @@ impl<'a> CharacterManager<'a> {
                                     _position: *target_position,
                                     ..Default::default()
                                 };
-                                self.get_game_scene_manager()
-                                    .get_item_manager_mut()
-                                    .create_item(&item_create_info, None);
+                                self.get_game_scene_manager().get_item_manager_mut().create_item(
+                                    item_create_info._item_data_name.as_str(),
+                                    &item_create_info,
+                                    None,
+                                );
                             }
                         }
                     }

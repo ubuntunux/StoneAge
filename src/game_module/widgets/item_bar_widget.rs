@@ -448,9 +448,7 @@ impl<'a> ItemBarWidget<'a> {
     }
 
     pub fn find_item_widget_mut(&mut self, item_data_name: &str) -> Option<&mut ItemWidget<'a>> {
-        self._item_widgets
-            .iter_mut()
-            .find(|item_widget| item_widget._item_data_name.as_str() == item_data_name)
+        self._item_widgets.iter_mut().find(|item_widget| item_widget._item_data_name.as_str() == item_data_name)
     }
 
     pub fn get_item_count(&self, item_data_name: &str) -> usize {

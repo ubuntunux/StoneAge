@@ -20,7 +20,7 @@ use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::scene::transform_object::TransformObjectData;
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::math::make_rotation_matrix;
-use rust_engine_3d::utilities::system::{RcRefCell, State, ptr_as_mut, ptr_as_ref};
+use rust_engine_3d::utilities::system::{RcRefCell, State, format_name_with_uuid, ptr_as_mut, ptr_as_ref};
 use strum::IntoEnumIterator;
 
 impl CharacterAnimationState {
@@ -275,10 +275,7 @@ impl<'a> Character<'a> {
     pub fn initialize_transform(&mut self, position: &Vector3<f32>, rotation: &Vector3<f32>, scale: &Vector3<f32>) {
         self._controller._position = *position;
         self._controller._position.y = self._controller._position.y.max(
-            self.get_character_manager()
-                .get_scene_manager()
-                .get_height_map_data()
-                .get_height_bilinear(position, 0),
+            self.get_character_manager().get_scene_manager().get_height_map_data().get_height_bilinear(position, 0),
         );
         self._controller._rotation = *rotation;
         self._controller._scale = *scale;
@@ -298,7 +295,7 @@ impl<'a> Character<'a> {
         self.stop_animations(true);
     }
 
-    pub fn load_character_save_data(&mut self, character_create_info: &CharacterCreateInfo) {
+    pub fn update_characters_save_data(&mut self, character_create_info: &CharacterCreateInfo) {
         self.initialize_transform(
             &character_create_info._position,
             &character_create_info._rotation,
@@ -306,15 +303,17 @@ impl<'a> Character<'a> {
         )
     }
 
-    pub fn get_character_save_data(&self) -> CharacterCreateInfo {
-        CharacterCreateInfo {
-            _character_id: self.get_character_id(),
-            _character_name: self._character_name.clone(),
-            _character_data_name: self._character_data_name.clone(),
-            _position: *self.get_position(),
-            _rotation: *self.get_rotation(),
-            _scale: *self.get_scale(),
-        }
+    pub fn get_character_save_data(&self) -> (String, CharacterCreateInfo) {
+        (
+            format_name_with_uuid(self._character_name.as_str(), self.get_character_id()),
+            CharacterCreateInfo {
+                _character_id: self.get_character_id(),
+                _character_data_name: self._character_data_name.clone(),
+                _position: *self.get_position(),
+                _rotation: *self.get_rotation(),
+                _scale: *self.get_scale(),
+            },
+        )
     }
 
     pub fn post_process_after_character_loading(&mut self) {}
@@ -1294,6 +1293,7 @@ impl<'a> Character<'a> {
                         );
                     }
                     State::Update => {
+                        // respawn
                         let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
                         if self._is_player && animation_play_info._is_animation_end {
                             self.initialize_character(

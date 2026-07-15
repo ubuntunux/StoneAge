@@ -9,7 +9,7 @@ use crate::game_module::game_constants::{
     AUDIO_ITEM_INVENTORY, AUDIO_PICKUP_ITEM, EAT_ITEM_DISTANCE, WEAPON_SOCKET_NAME,
 };
 use crate::game_module::game_resource::GameResources;
-use crate::game_module::game_scene_manager::GameSceneManager;
+use crate::game_module::game_scene_manager::{GameSceneManager, ItemCreateInfoMap};
 use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::{AudioLoop, AudioManager};
 use rust_engine_3d::core::engine_core::EngineCore;
@@ -19,7 +19,9 @@ use rust_engine_3d::scene::render_object::{RenderObjectCreateInfo, RenderObjectD
 use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::scene::socket::Socket;
 use rust_engine_3d::utilities::math;
-use rust_engine_3d::utilities::system::{RcRefCell, newRcRefCell, ptr_as_mut, ptr_as_ref};
+use rust_engine_3d::utilities::system::{
+    RcRefCell, extract_name_and_uuid, format_name_with_uuid, newRcRefCell, ptr_as_mut, ptr_as_ref,
+};
 use std::collections::HashMap;
 use uuid::Uuid;
 
@@ -67,6 +69,7 @@ impl ItemDataType {
 impl<'a> Item<'a> {
     pub fn create_item(
         item_id: ItemID,
+        item_name: &str,
         item_data_name: &str,
         item_data: &RcRefCell<ItemData>,
         render_object: &RcRefCell<RenderObjectData<'a>>,
@@ -78,8 +81,9 @@ impl<'a> Item<'a> {
         pickup_delay: f32,
     ) -> Item<'a> {
         let mut item = Item {
-            _item_data_name: String::from(item_data_name),
             _item_id: item_id,
+            _item_name: item_name.to_string(),
+            _item_data_name: item_data_name.to_string(),
             _item_data: item_data.clone(),
             _render_object: render_object.clone(),
             _attach_socket: attach_socket,
@@ -98,20 +102,23 @@ impl<'a> Item<'a> {
         item
     }
 
-    pub fn load_item_save_data(&mut self, _item_create_info: &ItemCreateInfo) {}
+    pub fn update_item_save_data(&mut self, _item_create_info: &ItemCreateInfo) {}
 
     pub fn post_process_after_item_loading(&mut self) {}
 
-    pub fn get_item_save_data(&self) -> ItemCreateInfo {
-        ItemCreateInfo {
-            _item_id: self.get_item_id(),
-            _item_data_name: self._item_data_name.clone(),
-            _position: self._item_properties._position,
-            _rotation: self._item_properties._rotation,
-            _scale: self._item_properties._scale,
-            _velocity: self._item_properties._velocity,
-            _pickup_delay: self._item_properties._pickup_delay,
-        }
+    pub fn get_item_save_data(&self) -> (String, ItemCreateInfo) {
+        (
+            format_name_with_uuid(self._item_name.as_str(), self.get_item_id()),
+            ItemCreateInfo {
+                _item_id: self.get_item_id(),
+                _item_data_name: self._item_data_name.clone(),
+                _position: self._item_properties._position,
+                _rotation: self._item_properties._rotation,
+                _scale: self._item_properties._scale,
+                _velocity: self._item_properties._velocity,
+                _pickup_delay: self._item_properties._pickup_delay,
+            },
+        )
     }
 
     pub fn initialize_item(&mut self) {
@@ -188,6 +195,7 @@ impl<'a> ItemManager<'a> {
             _audio_manager: std::ptr::null(),
             _scene_manager: std::ptr::null(),
             _items: HashMap::new(),
+            _item_name_map: HashMap::new(),
         })
     }
 
@@ -227,15 +235,19 @@ impl<'a> ItemManager<'a> {
     pub fn get_item(&self, item_id: ItemID) -> Option<&RcRefCell<Item<'a>>> {
         self._items.get(&item_id)
     }
+    pub fn get_item_by_name(&self, item_name: &str) -> Option<&RcRefCell<Item<'a>>> {
+        self._item_name_map.get(item_name)
+    }
     pub fn create_item(
         &mut self,
+        item_name: &str,
         item_create_info: &ItemCreateInfo,
         attach_socket: Option<RcRefCell<Socket>>,
     ) -> RcRefCell<Item<'a>> {
+        let (item_name, uuid) = extract_name_and_uuid(item_name);
         let mut spawn_point = item_create_info._position;
-        spawn_point.y = spawn_point
-            .y
-            .max(self.get_scene_manager().get_height_map_data().get_height_bilinear(&spawn_point, 0));
+        spawn_point.y =
+            spawn_point.y.max(self.get_scene_manager().get_height_map_data().get_height_bilinear(&spawn_point, 0));
 
         let game_resource = ptr_as_ref(self._game_resources);
         let item_data = game_resource.get_item_data(item_create_info._item_data_name.as_str());
@@ -256,9 +268,16 @@ impl<'a> ItemManager<'a> {
             )
         };
 
-        let id = self.generate_id();
+        let item_id = if item_create_info._item_id.is_nil() {
+            self.generate_id()
+        } else {
+            assert_eq!(item_create_info._item_id, uuid.unwrap());
+            item_create_info._item_id
+        };
+
         let item = newRcRefCell(Item::create_item(
-            id,
+            item_id,
+            item_name.as_str(),
             item_create_info._item_data_name.as_str(),
             item_data,
             &render_object_data,
@@ -269,7 +288,10 @@ impl<'a> ItemManager<'a> {
             &item_create_info._velocity,
             item_create_info._pickup_delay,
         ));
-        self._items.insert(id, item.clone());
+        self._items.insert(item_id, item.clone());
+        if !self._item_name_map.contains_key(item_name.as_str()) {
+            self._item_name_map.insert(item_name.clone(), item.clone());
+        }
         item
     }
 
@@ -278,14 +300,19 @@ impl<'a> ItemManager<'a> {
         self.pick_item(item_create_info._item_data_name.as_str(), item_count)
     }
 
-    pub fn remove_item(&mut self, item: &RcRefCell<Item>) {
-        self._items.remove(&item.borrow().get_item_id());
-        if item.borrow()._render_object.borrow().has_animation() {
-            self.get_scene_manager_mut()
-                .remove_skeletal_render_object(item.borrow()._render_object.borrow().get_object_id());
+    pub fn remove_item(&mut self, item_refcell: &RcRefCell<Item<'a>>) {
+        let item = item_refcell.borrow();
+        self._items.remove(&item.get_item_id());
+        if let Some(target) = self._item_name_map.get(item._item_name.as_str())
+            && target.as_ptr() == item_refcell.as_ptr()
+        {
+            self._item_name_map.remove(item._item_name.as_str());
+        }
+
+        if item._render_object.borrow().has_animation() {
+            self.get_scene_manager_mut().remove_skeletal_render_object(item._render_object.borrow().get_object_id());
         } else {
-            self.get_scene_manager_mut()
-                .remove_static_render_object(item.borrow()._render_object.borrow().get_object_id());
+            self.get_scene_manager_mut().remove_static_render_object(item._render_object.borrow().get_object_id());
         }
     }
 
@@ -296,14 +323,14 @@ impl<'a> ItemManager<'a> {
         }
     }
 
-    pub fn load_items_save_data(&mut self, item_create_infos: &Vec<ItemCreateInfo>) {
-        for item_create_info in item_create_infos.iter() {
-            let item = self.create_item(item_create_info, None);
-            item.borrow_mut().load_item_save_data(item_create_info);
+    pub fn create_items(&mut self, item_create_infos: &ItemCreateInfoMap) {
+        for (item_name, item_create_info) in item_create_infos.iter() {
+            let item = self.create_item(item_name, item_create_info, None);
+            item.borrow_mut().update_item_save_data(item_create_info);
         }
     }
 
-    pub fn get_items_save_data(&self) -> Vec<ItemCreateInfo> {
+    pub fn get_items_save_data(&self) -> ItemCreateInfoMap {
         self._items.values().map(|item| item.borrow().get_item_save_data()).collect()
     }
 
@@ -346,7 +373,7 @@ impl<'a> ItemManager<'a> {
                 ..Default::default()
             };
 
-            self.create_item(&item_create_info, None);
+            self.create_item(item_data_name, &item_create_info, None);
         }
         success
     }
@@ -387,7 +414,7 @@ impl<'a> ItemManager<'a> {
         };
         let attach_socket =
             Some(character._render_object.borrow()._sockets.get(&String::from(WEAPON_SOCKET_NAME)).unwrap().clone());
-        let attached_item = self.create_item(&item_create_info, attach_socket);
+        let attached_item = self.create_item(item_data_name, &item_create_info, attach_socket);
         character.attach_item(attached_item);
     }
 

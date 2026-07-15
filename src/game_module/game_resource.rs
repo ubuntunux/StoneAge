@@ -182,8 +182,7 @@ impl<'a> GameResources<'a> {
             let loaded_contents = system::load(&game_save_data_file);
             let game_save_data_create_info: GameSaveData =
                 serde_json::from_reader(loaded_contents).expect("Failed to deserialize.");
-            self._game_save_data_map
-                .insert(game_save_data_name.clone(), newRcRefCell(game_save_data_create_info));
+            self._game_save_data_map.insert(game_save_data_name.clone(), newRcRefCell(game_save_data_create_info));
         }
     }
 

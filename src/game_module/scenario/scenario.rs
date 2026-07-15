@@ -1,6 +1,6 @@
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::{
-    CharacterCreateInfoMap, GameScenarioSaveData, GameSceneManager, ItemCreateInfoMap, PropCreateInfoMap,
+    CharacterCreateInfoMap, GameSceneManager, ItemCreateInfoMap, PropCreateInfoMap,
 };
 use crate::game_module::scenario::game_scenarios::scenario_day_one::ScenarioDayOne;
 use crate::game_module::scenario::game_scenarios::scenario_intro::ScenarioIntro;
@@ -39,44 +39,6 @@ impl ScenarioType {
     }
 }
 
-pub struct ScenarioTrack<T: Copy + PartialEq + Hash> {
-    pub _scenario_phase: T,
-    pub _next_scenario_phase: T,
-    pub _phase_duration: Option<f32>,
-    pub _next_phase_duration: Option<f32>,
-    pub _phase_time: f32,
-}
-
-impl<T: Copy + PartialEq + Hash> ScenarioTrack<T> {
-    pub fn set_next_scenario_phase(&mut self, next_scenario_phase: T, next_phase_duration: Option<f32>) {
-        self._next_scenario_phase = next_scenario_phase;
-        self._next_phase_duration = next_phase_duration;
-    }
-
-    pub fn set_scenario_phase(&mut self, scenario_phase: T, phase_duration: Option<f32>) {
-        self._scenario_phase = scenario_phase;
-        self._phase_duration = phase_duration;
-        self._phase_time = 0.0;
-    }
-
-    pub fn get_phase_ratio(&self) -> f32 {
-        if let Some(phase_duration) = self._phase_duration.as_ref()
-            && 0.0f32 < *phase_duration
-        {
-            return 0f32.max(1f32.min(self._phase_time / phase_duration));
-        }
-        0.0
-    }
-
-    pub fn get_phase_time(&self) -> f32 {
-        self._phase_time
-    }
-
-    pub fn update_scenario_phase_time(&mut self, delta_time: f32) {
-        self._phase_time += delta_time;
-    }
-}
-
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[serde(default)]
 pub struct GameSceneCreateInfo {
@@ -106,20 +68,26 @@ impl ScenarioDataCreateInfo {
     }
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
+#[serde(default)]
+pub struct GameScenarioCreateInfo {
+    pub _scenario_type: ScenarioType,
+    pub _scenario_phase: String,
+}
+
 pub trait ScenarioBase<'a> {
     fn get_scenario_type(&self) -> ScenarioType;
     fn get_scenario_phase_as_string(&self) -> String;
     fn set_scenario_phase_as_string(&mut self, scenario_phase: &String);
-    fn load_scenario_save_data(&mut self, scenario_save_data: &GameScenarioSaveData) {
+    fn load_scenario_save_data(&mut self, scenario_save_data: &GameScenarioCreateInfo) {
         self.set_scenario_phase_as_string(&scenario_save_data._scenario_phase);
     }
-    fn get_scenario_save_data(&self) -> GameScenarioSaveData {
-        GameScenarioSaveData {
+    fn get_scenario_save_data(&self) -> GameScenarioCreateInfo {
+        GameScenarioCreateInfo {
             _scenario_type: self.get_scenario_type(),
             _scenario_phase: self.get_scenario_phase_as_string(),
         }
     }
-    fn post_process_after_scenario_loading(&mut self) {}
     fn is_load_completed(&self) -> bool;
     fn is_play_scenario_mode(&self) -> bool;
     fn is_end_of_scenario(&self) -> bool;

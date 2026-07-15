@@ -316,10 +316,7 @@ impl<'a> GameUIManager<'a> {
             game_ui_layout_mut.get_ui_component_mut().set_visible(show);
         }
 
-        self._text_box_widget
-            .as_mut()
-            .unwrap()
-            .set_text_box_layer_visible(TextBoxLayerType::GamePlayLayer, show);
+        self._text_box_widget.as_mut().unwrap().set_text_box_layer_visible(TextBoxLayerType::GamePlayLayer, show);
     }
 
     // game image widget

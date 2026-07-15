@@ -50,8 +50,7 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
         self.get_game_client_mut().initialize_game_client(engine_core, application);
         self.get_game_controller_mut().initialize_game_controller(application);
         self.get_game_ui_manager_mut().initialize_game_ui_manager(engine_core, application);
-        self.get_game_scene_manager_mut()
-            .initialize_game_scene_manager(application, engine_core, window_size);
+        self.get_game_scene_manager_mut().initialize_game_scene_manager(application, engine_core, window_size);
         self.get_editor_ui_manager_mut().initialize_editor_ui_manager(engine_core, application);
 
         // start game
