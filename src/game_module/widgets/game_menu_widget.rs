@@ -1,5 +1,5 @@
 use crate::game_module::game_client::GameClient;
-use crate::game_module::game_constants::AUDIO_PICKUP_ITEM;
+use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, DEFAULT_GAME_SAVE_DATA};
 use crate::game_module::game_resource::GameResources;
 use nalgebra::Vector2;
 use rust_engine_3d::audio::audio_manager::{AudioLoop, AudioManager};
@@ -191,10 +191,10 @@ impl<'a> GameMenuWidget<'a> {
             GameMenuType::Resume => {}
             GameMenuType::NewGame => {}
             GameMenuType::LoadGame => {
-                game_client.request_load_game();
+                game_client.request_load_game(DEFAULT_GAME_SAVE_DATA);
             }
             GameMenuType::SaveGame => {
-                game_client.save_game();
+                game_client.save_game(true);
             }
             GameMenuType::Exit => {
                 game_client.exit_game();

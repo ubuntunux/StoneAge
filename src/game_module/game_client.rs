@@ -1,3 +1,4 @@
+use std::cell::RefCell;
 use crate::application::application::Application;
 use crate::game_module::actors::character_manager::CharacterManager;
 use crate::game_module::game_constants::{
@@ -16,6 +17,7 @@ use rust_engine_3d::core::engine_core::EngineCore;
 use rust_engine_3d::utilities::system::{State, ptr_as_mut, ptr_as_ref};
 use std::cmp::PartialEq;
 use strum::IntoEnumIterator;
+use crate::game_module::save_data::save_data::GameSaveData;
 
 #[derive(Clone, Copy, Debug, Hash, PartialEq)]
 pub enum GamePhase {
@@ -46,7 +48,8 @@ pub struct GameClient<'a> {
     pub _editor_ui_manager: *const EditorUIManager<'a>,
     pub _game_phase: GamePhase,
     pub _next_game_phase: GamePhase,
-    pub _request_load_game_data_name: String,
+    pub _game_save_data_name: String,
+    pub _request_load_game_save_data: bool,
 }
 
 impl<'a> GameClient<'a> {
@@ -62,7 +65,8 @@ impl<'a> GameClient<'a> {
             _editor_ui_manager: std::ptr::null(),
             _game_phase: GamePhase::None,
             _next_game_phase: GamePhase::Start,
-            _request_load_game_data_name: String::default(),
+            _game_save_data_name: DEFAULT_GAME_SAVE_DATA.to_string(),
+            _request_load_game_save_data: false,
         })
     }
 
@@ -154,20 +158,24 @@ impl<'a> GameClient<'a> {
     pub fn new_game(&mut self) {
         log::info!("new_game");
     }
-    pub fn request_load_game(&mut self) {
-        self._request_load_game_data_name = String::from(DEFAULT_GAME_SAVE_DATA);
+    pub fn get_game_save_data(&self) -> &RefCell<GameSaveData> {
+        self.get_game_resources_mut().get_or_create_game_save_data(self._game_save_data_name.as_str())
+    }
+    pub fn request_load_game(&mut self, game_save_data_name: &str) {
+        self._game_save_data_name = game_save_data_name.to_string();
+        self._request_load_game_save_data = true;
         self.set_next_game_phase(GamePhase::BeginLoading);
     }
     fn load_game(&mut self) {
-        let game_save_data =
-            self.get_game_resources_mut().get_or_create_game_save_data(self._request_load_game_data_name.as_str());
+        let game_save_data = self.get_game_resources_mut().get_or_create_game_save_data(self._game_save_data_name.as_str());
         self.get_game_scene_manager_mut().load_game_save_data(&game_save_data.borrow());
-        self._request_load_game_data_name = String::default();
     }
-    pub fn save_game(&mut self) {
+    pub fn save_game(&self, save_file: bool) {
         let game_save_data = self.get_game_resources_mut().get_or_create_game_save_data(DEFAULT_GAME_SAVE_DATA);
         self.get_game_scene_manager().get_game_save_data(&mut game_save_data.borrow_mut());
-        self.get_game_resources_mut().save_game_save_data(DEFAULT_GAME_SAVE_DATA);
+        if save_file {
+            self.get_game_resources_mut().save_game_save_data(DEFAULT_GAME_SAVE_DATA);
+        }
     }
     pub fn update_game_mode(&mut self, delta_time: f64) {
         let engine_core = ptr_as_ref(self._engine_core);
@@ -234,8 +242,9 @@ impl<'a> GameClient<'a> {
                     }
                     State::Update => {
                         if game_ui_manager.is_done_manual_fade_out() {
-                            if !self._request_load_game_data_name.is_empty() {
+                            if self._request_load_game_save_data {
                                 self.load_game();
+                                self._request_load_game_save_data = false;
                             } else {
                                 const SKIP_SCENARIO: bool = false;
                                 if SKIP_SCENARIO {
@@ -245,8 +254,7 @@ impl<'a> GameClient<'a> {
                                     }
                                 } else {
                                     if !game_scene_manager.is_completed_game_scenario(ScenarioType::ScenarioIntro) {
-                                        game_scene_manager
-                                            .request_open_game_scenario(ScenarioType::ScenarioIntro, true);
+                                        game_scene_manager.request_open_game_scenario(ScenarioType::ScenarioIntro, true);
                                     }
                                 }
                             }

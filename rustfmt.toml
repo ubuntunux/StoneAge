@@ -1,3 +1,3 @@
-max_width = 120
-chain_width = 120
+max_width = 9999
+chain_width = 9999
 use_small_heuristics = "Default"
