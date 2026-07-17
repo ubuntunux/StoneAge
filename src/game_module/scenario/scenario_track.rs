@@ -1,7 +1,7 @@
-use std::hash::Hash;
-use std::str::FromStr;
 use serde::de::StdError;
 use serde::{Deserialize, Serialize};
+use std::hash::Hash;
+use std::str::FromStr;
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[serde(default)]
@@ -22,7 +22,10 @@ pub struct ScenarioTrack<T: Copy + PartialEq + Hash + FromStr + ToString> {
 }
 
 impl<T: Copy + PartialEq + Hash + FromStr + ToString> ScenarioTrack<T> {
-    pub fn load_scenario_track_data(&mut self, scenario_track_data: &ScenarioTrackCreateInfo) where <T as FromStr>::Err: StdError {
+    pub fn load_scenario_track_data(&mut self, scenario_track_data: &ScenarioTrackCreateInfo)
+    where
+        <T as FromStr>::Err: StdError,
+    {
         self._scenario_phase = scenario_track_data._scenario_phase.parse::<T>().unwrap();
         self._next_scenario_phase = scenario_track_data._next_scenario_phase.parse::<T>().unwrap();
         self._phase_duration = scenario_track_data._phase_duration;

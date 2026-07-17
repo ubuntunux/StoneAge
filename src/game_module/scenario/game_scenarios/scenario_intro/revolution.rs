@@ -5,13 +5,15 @@ use crate::game_module::game_constants::{
 };
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
-use crate::game_module::scenario::scenario::{GameScenarioCreateInfo, ScenarioBase, ScenarioDataCreateInfo, ScenarioType};
+use crate::game_module::scenario::scenario::{
+    GameScenarioCreateInfo, ScenarioBase, ScenarioDataCreateInfo, ScenarioType,
+};
 use crate::game_module::scenario::scenario_track::ScenarioTrack;
-use serde::{Deserialize, Serialize};
 use crate::game_module::widgets::text_box_widget::{TextBoxContent, TextBoxLayerType};
 use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop};
 use rust_engine_3d::utilities::system::{RcRefCell, State, newRcRefCell, ptr_as_mut};
+use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 use strum::IntoEnumIterator;
 use strum_macros::{Display, EnumCount, EnumIter, EnumString};
@@ -105,7 +107,8 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
     }
 
     fn set_scenario_phase_as_string(&mut self, scenario_phase: &String) {
-        self._scenario_track._scenario_phase = ScenarioPhase::from_str(scenario_phase.as_str()).unwrap_or(ScenarioPhase::None);
+        self._scenario_track._scenario_phase =
+            ScenarioPhase::from_str(scenario_phase.as_str()).unwrap_or(ScenarioPhase::None);
     }
 
     fn load_scenario_save_data(&mut self, scenario_save_data: &GameScenarioCreateInfo) {

@@ -8,7 +8,9 @@ use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::game_scene_manager::Stages;
 use crate::game_module::game_ui_manager::{GameUIManager, QuestItem};
 use crate::game_module::scenario::game_scenarios::scenario_wrap_up_the_day::ScenarioWrapUpTheDay;
-use crate::game_module::scenario::scenario::{GameScenarioCreateInfo, ScenarioBase, ScenarioDataCreateInfo, ScenarioType};
+use crate::game_module::scenario::scenario::{
+    GameScenarioCreateInfo, ScenarioBase, ScenarioDataCreateInfo, ScenarioType,
+};
 use crate::game_module::scenario::scenario_track::ScenarioTrack;
 use crate::game_module::widgets::quest_widgets::quest_item_default::DefaultQuestData;
 use crate::game_module::widgets::quest_widgets::quest_item_gather_item::GatherItemData;
@@ -302,7 +304,8 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
     }
 
     fn set_scenario_phase_as_string(&mut self, scenario_phase: &String) {
-        self._scenario_track._scenario_phase = ScenarioPhase::from_str(scenario_phase.as_str()).unwrap_or(ScenarioPhase::None);
+        self._scenario_track._scenario_phase =
+            ScenarioPhase::from_str(scenario_phase.as_str()).unwrap_or(ScenarioPhase::None);
     }
 
     fn load_scenario_save_data(&mut self, scenario_save_data: &GameScenarioCreateInfo) {
@@ -435,8 +438,8 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                         actor.borrow_mut().set_hunger(HUNGER_WARNING_THRESHOLD);
                     }
                 } else if game_scene_data_name == Stages::Forest.get_stage_data_name() {
-                    let back_home_not_completed = self._sub_quest_back_home.as_ref()
-                        .map_or(true, |q| !q.borrow().is_completed_quest());
+                    let back_home_not_completed =
+                        self._sub_quest_back_home.as_ref().map_or(true, |q| !q.borrow().is_completed_quest());
                     if back_home_not_completed {
                         self.create_return_home_text_box(game_scene_manager);
                     }
@@ -511,10 +514,8 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                                 || game_ui_manager.is_done_game_image_progress() && any_key_pressed
                             {
                                 if story_board_phase < STORY_BOARDS.len() {
-                                    game_ui_manager.set_image_auto_fade_inout(
-                                        STORY_BOARDS[story_board_phase],
-                                        DEFAULT_FADE_TIME,
-                                    );
+                                    game_ui_manager
+                                        .set_image_auto_fade_inout(STORY_BOARDS[story_board_phase], DEFAULT_FADE_TIME);
                                 } else {
                                     game_ui_manager.set_image_auto_fade_inout(MATERIAL_UI_NONE, DEFAULT_FADE_TIME);
                                 }
@@ -586,9 +587,18 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                             }
                         }
 
-                        let aru_none = self._actor_aru.as_ref().map_or(true, |actor| actor.borrow_mut().is_action(ActionAnimationState::None));
-                        let ewa_none = self._actor_ewa.as_ref().map_or(true, |actor| actor.borrow_mut().is_action(ActionAnimationState::None));
-                        let koa_none = self._actor_koa.as_ref().map_or(true, |actor| actor.borrow_mut().is_action(ActionAnimationState::None));
+                        let aru_none = self
+                            ._actor_aru
+                            .as_ref()
+                            .map_or(true, |actor| actor.borrow_mut().is_action(ActionAnimationState::None));
+                        let ewa_none = self
+                            ._actor_ewa
+                            .as_ref()
+                            .map_or(true, |actor| actor.borrow_mut().is_action(ActionAnimationState::None));
+                        let koa_none = self
+                            ._actor_koa
+                            .as_ref()
+                            .map_or(true, |actor| actor.borrow_mut().is_action(ActionAnimationState::None));
 
                         if self._wakeup_delay_koa < 0.0
                             && self._wakeup_delay_ewa < 0.0
@@ -606,7 +616,9 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                     if state == State::Update {
                         let mut done = true;
 
-                        if let (Some(actor_aru), Some(actor_ewa), Some(actor_koa)) = (&self._actor_aru, &self._actor_ewa, &self._actor_koa) {
+                        if let (Some(actor_aru), Some(actor_ewa), Some(actor_koa)) =
+                            (&self._actor_aru, &self._actor_ewa, &self._actor_koa)
+                        {
                             if self.update_assemble(actor_ewa, actor_aru) {
                                 self.emoji_hungry(game_ui_manager, actor_ewa);
                             } else {
@@ -632,7 +644,9 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                     State::Begin => {
                         game_scene_manager.get_scene_manager().play_audio_bank(AUDIO_STOMACH_GROWLING);
 
-                        if let (Some(actor_aru), Some(actor_ewa), Some(actor_koa)) = (&self._actor_aru, &self._actor_ewa, &self._actor_koa) {
+                        if let (Some(actor_aru), Some(actor_ewa), Some(actor_koa)) =
+                            (&self._actor_aru, &self._actor_ewa, &self._actor_koa)
+                        {
                             actor_aru.borrow_mut().look_at(actor_koa.borrow().get_position());
                             actor_ewa.borrow_mut().look_at(actor_aru.borrow().get_position());
                             actor_ewa.borrow_mut().set_hunger(HUNGER_WARNING_THRESHOLD);
@@ -662,13 +676,12 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                         self._quest =
                             Some(game_ui_manager.add_quest(Some(String::from("Gather food for the hungry family."))));
                         if let Some(quest) = &self._quest {
-                            self._sub_quest_move_to_tutorial_stage =
-                                Some(quest.borrow_mut().add_quest_item(
-                                    QuestCreateInfo::DefaultQuest(DefaultQuestData {
-                                        _quest_icon_name: None,
-                                        _quest_description: Some(String::from("Move to the FOREST to find food.")),
-                                    }),
-                                ));
+                            self._sub_quest_move_to_tutorial_stage = Some(quest.borrow_mut().add_quest_item(
+                                QuestCreateInfo::DefaultQuest(DefaultQuestData {
+                                    _quest_icon_name: None,
+                                    _quest_description: Some(String::from("Move to the FOREST to find food.")),
+                                }),
+                            ));
                             self._sub_quest_gather_food = Some(quest.borrow_mut().add_quest_item(
                                 QuestCreateInfo::GatherItem(GatherItemData {
                                     _item_data_name: String::from(ITEM_COCONUT),
@@ -693,7 +706,8 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                         self.create_move_to_tutorial_stage_text_box(game_scene_manager);
                     }
                     State::Update => {
-                        if game_scene_manager.get_current_game_scene_data_name() == Stages::Forest.get_stage_data_name() {
+                        if game_scene_manager.get_current_game_scene_data_name() == Stages::Forest.get_stage_data_name()
+                        {
                             if let Some(q) = &self._sub_quest_move_to_tutorial_stage {
                                 q.borrow_mut().set_completed_quest();
                             }
@@ -707,7 +721,8 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                         self.create_hit_this_tree_text_box(game_scene_manager);
                     }
                     State::Update => {
-                        let completed = self._sub_quest_gather_food.as_ref().map_or(false, |q| q.borrow().is_completed_quest());
+                        let completed =
+                            self._sub_quest_gather_food.as_ref().map_or(false, |q| q.borrow().is_completed_quest());
                         if game_scene_manager.get_current_game_scene_data_name() == Stages::Forest.get_stage_data_name()
                             && completed
                         {

@@ -9,13 +9,13 @@ use crate::game_module::game_controller::GameController;
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::{GameSceneManager, GameSceneState};
 use crate::game_module::game_ui_manager::{EditorUIManager, GameUIManager};
-use nalgebra::{Vector2, Vector3};
-use rust_engine_3d::core::engine_core::EngineCore;
-use rust_engine_3d::utilities::system::{State, ptr_as_mut, ptr_as_ref, BoxRefCell, newBoxRefCell};
-use std::cmp::PartialEq;
-use strum::IntoEnumIterator;
 use crate::game_module::save_data::save_data::GameSaveData;
 use crate::game_module::scenario::scenario::ScenarioType;
+use nalgebra::{Vector2, Vector3};
+use rust_engine_3d::core::engine_core::EngineCore;
+use rust_engine_3d::utilities::system::{BoxRefCell, State, newBoxRefCell, ptr_as_mut, ptr_as_ref};
+use std::cmp::PartialEq;
+use strum::IntoEnumIterator;
 
 #[derive(Clone, Copy, Debug, Hash, PartialEq)]
 pub enum GamePhase {
@@ -176,14 +176,16 @@ impl<'a> GameClient<'a> {
         self.get_game_scene_manager_mut().request_open_game_scenario(ScenarioType::ScenarioIntro_Intro);
     }
     fn load_game(&mut self) {
-        let game_save_data = self.get_game_resources_mut().get_game_save_data(self._game_save_data_name.as_str()).clone();
+        let game_save_data =
+            self.get_game_resources_mut().get_game_save_data(self._game_save_data_name.as_str()).clone();
         self._game_save_data = newBoxRefCell(game_save_data.borrow().clone());
         self.get_game_scene_manager_mut().load_game_save_data(&mut self._game_save_data.borrow_mut());
     }
     pub fn save_game(&self, save_file: bool) {
         self.get_game_scene_manager().update_game_save_data(&mut self._game_save_data.borrow_mut());
         if save_file {
-            self.get_game_resources_mut().save_game_save_data(self._game_save_data_name.as_str(), &self._game_save_data.borrow());
+            self.get_game_resources_mut()
+                .save_game_save_data(self._game_save_data_name.as_str(), &self._game_save_data.borrow());
         }
     }
     pub fn update_game_mode(&mut self, delta_time: f64) {

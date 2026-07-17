@@ -208,8 +208,7 @@ impl<'a> GameResources<'a> {
         game_save_data_filepath.push(game_save_data_name);
         game_save_data_filepath.set_extension(EXT_GAME_DATA);
         let mut write_file = File::create(&game_save_data_filepath).expect("Failed to create file");
-        let write_contents: String =
-            serde_json::to_string_pretty(game_save_data).expect("Failed to serialize.");
+        let write_contents: String = serde_json::to_string_pretty(game_save_data).expect("Failed to serialize.");
         write_file.write_all(write_contents.as_bytes()).expect("Failed to write");
     }
 

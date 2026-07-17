@@ -6,13 +6,15 @@ use crate::game_module::game_constants::{
 };
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
-use crate::game_module::scenario::scenario::{GameScenarioCreateInfo, ScenarioBase, ScenarioDataCreateInfo, ScenarioType};
+use crate::game_module::scenario::scenario::{
+    GameScenarioCreateInfo, ScenarioBase, ScenarioDataCreateInfo, ScenarioType,
+};
 use crate::game_module::scenario::scenario_track::ScenarioTrack;
-use serde::{Deserialize, Serialize};
 use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop};
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{RcRefCell, State, newRcRefCell, ptr_as_mut};
+use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 use strum::IntoEnumIterator;
 use strum_macros::{Display, EnumCount, EnumIter, EnumString};
@@ -31,8 +33,7 @@ enum ScenarioPhase {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
-struct ScenarioDayOneSaveData {
-}
+struct ScenarioDayOneSaveData {}
 
 pub struct ScenarioDayOne<'a> {
     _scenario_type: ScenarioType,
@@ -119,29 +120,12 @@ impl<'a> ScenarioDayOne<'a> {
         let actor_koa = self._actor_koa.clone();
         let bed_koa = self._prop_bed_for_koa.clone();
 
-        if let (Some(actor_aru), Some(bed_aru), Some(actor_ewa), Some(bed_ewa), Some(actor_koa), Some(bed_koa)) = (
-            actor_aru,
-            bed_aru,
-            actor_ewa,
-            bed_ewa,
-            actor_koa,
-            bed_koa,
-        ) {
-            let arrived_aru = self.update_release_actor(
-                actor_aru,
-                bed_aru,
-                delta_time,
-            );
-            let arrived_ewa = self.update_release_actor(
-                actor_ewa,
-                bed_ewa,
-                delta_time,
-            );
-            let arrived_koa = self.update_release_actor(
-                actor_koa,
-                bed_koa,
-                delta_time,
-            );
+        if let (Some(actor_aru), Some(bed_aru), Some(actor_ewa), Some(bed_ewa), Some(actor_koa), Some(bed_koa)) =
+            (actor_aru, bed_aru, actor_ewa, bed_ewa, actor_koa, bed_koa)
+        {
+            let arrived_aru = self.update_release_actor(actor_aru, bed_aru, delta_time);
+            let arrived_ewa = self.update_release_actor(actor_ewa, bed_ewa, delta_time);
+            let arrived_koa = self.update_release_actor(actor_koa, bed_koa, delta_time);
             arrived_aru && arrived_ewa && arrived_koa
         } else {
             false
@@ -178,7 +162,8 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
     }
 
     fn set_scenario_phase_as_string(&mut self, scenario_phase: &String) {
-        self._scenario_track._scenario_phase = ScenarioPhase::from_str(scenario_phase.as_str()).unwrap_or(ScenarioPhase::None);
+        self._scenario_track._scenario_phase =
+            ScenarioPhase::from_str(scenario_phase.as_str()).unwrap_or(ScenarioPhase::None);
     }
 
     fn load_scenario_save_data(&mut self, scenario_save_data: &GameScenarioCreateInfo) {
@@ -206,8 +191,7 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
 
     fn destroy_game_scenario(&mut self) {}
 
-    fn on_close_game_scene(&mut self, _game_scene_data_name: &str) {
-    }
+    fn on_close_game_scene(&mut self, _game_scene_data_name: &str) {}
 
     fn on_open_game_scene(&mut self, game_scene_data_name: &str) {
         let game_scene_manager = ptr_as_mut(self._game_scene_manager);

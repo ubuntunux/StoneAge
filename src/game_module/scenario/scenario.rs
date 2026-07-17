@@ -7,6 +7,7 @@ use crate::game_module::scenario::game_scenarios::scenario_intro::intro::Scenari
 use crate::game_module::scenario::game_scenarios::scenario_intro::revolution::ScenarioRevolution;
 use crate::game_module::scenario::game_scenarios::scenario_intro::ufo::ScenarioUfo;
 use crate::game_module::scenario::game_scenarios::scenario_wrap_up_the_day::ScenarioWrapUpTheDay;
+use crate::game_module::scenario::scenario_track::ScenarioTrackCreateInfo;
 use nalgebra::Vector3;
 use rust_engine_3d::scene::scene_manager::SceneDataCreateInfo;
 use rust_engine_3d::utilities::system::RcRefCell;
@@ -14,7 +15,6 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::hash::Hash;
 use strum_macros::{Display, EnumString};
-use crate::game_module::scenario::scenario_track::ScenarioTrackCreateInfo;
 
 pub type GameSceneCreateInfoMap = HashMap<String, GameSceneCreateInfo>;
 

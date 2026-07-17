@@ -4,13 +4,15 @@ use crate::game_module::game_constants::{
 };
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::{GameSceneManager, Stages};
-use crate::game_module::scenario::scenario::{GameScenarioCreateInfo, ScenarioBase, ScenarioDataCreateInfo, ScenarioType};
+use crate::game_module::scenario::scenario::{
+    GameScenarioCreateInfo, ScenarioBase, ScenarioDataCreateInfo, ScenarioType,
+};
 use crate::game_module::scenario::scenario_track::ScenarioTrack;
-use serde::{Deserialize, Serialize};
 use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop};
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{RcRefCell, State, newRcRefCell, ptr_as_mut};
+use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 use strum::IntoEnumIterator;
 use strum_macros::{Display, EnumCount, EnumIter, EnumString};
@@ -26,8 +28,7 @@ enum ScenarioPhase {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
-struct ScenarioUfoSaveData {
-}
+struct ScenarioUfoSaveData {}
 
 pub struct ScenarioUfo<'a> {
     _scenario_type: ScenarioType,
@@ -126,19 +127,18 @@ impl<'a> ScenarioBase<'a> for ScenarioUfo<'a> {
     }
 
     fn set_scenario_phase_as_string(&mut self, scenario_phase: &String) {
-        self._scenario_track._scenario_phase = ScenarioPhase::from_str(scenario_phase.as_str()).unwrap_or(ScenarioPhase::None);
+        self._scenario_track._scenario_phase =
+            ScenarioPhase::from_str(scenario_phase.as_str()).unwrap_or(ScenarioPhase::None);
     }
 
     fn load_scenario_save_data(&mut self, scenario_save_data: &GameScenarioCreateInfo) {
         self._scenario_create_info = scenario_save_data._scenario_create_info.clone();
         self._scenario_track.load_scenario_track_data(&scenario_save_data._scenario_track_create_info);
-        if let Ok(_data) = serde_json::from_str::<ScenarioUfoSaveData>(&scenario_save_data._scenario_data) {
-        }
+        if let Ok(_data) = serde_json::from_str::<ScenarioUfoSaveData>(&scenario_save_data._scenario_data) {}
     }
 
     fn get_scenario_save_data(&self) -> GameScenarioCreateInfo {
-        let save_data = ScenarioUfoSaveData {
-        };
+        let save_data = ScenarioUfoSaveData {};
         GameScenarioCreateInfo {
             _scenario_type: self.get_scenario_type(),
             _scenario_create_info: self._scenario_create_info.clone(),
@@ -157,8 +157,7 @@ impl<'a> ScenarioBase<'a> for ScenarioUfo<'a> {
 
     fn destroy_game_scenario(&mut self) {}
 
-    fn on_close_game_scene(&mut self, _game_scene_data_name: &str) {
-    }
+    fn on_close_game_scene(&mut self, _game_scene_data_name: &str) {}
 
     fn on_open_game_scene(&mut self, game_scene_data_name: &str) {
         let game_scene_manager = ptr_as_mut(self._game_scene_manager);

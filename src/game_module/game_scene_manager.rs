@@ -11,7 +11,7 @@ use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_ui_manager::GameUIManager;
 use crate::game_module::save_data::save_data::GameSaveData;
 use crate::game_module::scenario::scenario::{ScenarioBase, ScenarioDataCreateInfo, ScenarioType, create_scenario};
-use nalgebra::{Vector2};
+use nalgebra::Vector2;
 use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop, AudioManager};
 use rust_engine_3d::begin_block;
 use rust_engine_3d::core::engine_core::EngineCore;
@@ -309,14 +309,19 @@ impl<'a> GameSceneManager<'a> {
 
         self._completed_game_scenarios = game_save_data._completed_game_scenarios.clone();
         for game_scenario_create_info in game_save_data._game_scenarios.iter() {
-            let opened_scenario = self.open_game_scenario_data(game_scenario_create_info._scenario_type, &game_scenario_create_info._scenario_create_info, false);
+            let opened_scenario = self.open_game_scenario_data(
+                game_scenario_create_info._scenario_type,
+                &game_scenario_create_info._scenario_create_info,
+                false,
+            );
             opened_scenario.borrow_mut().load_scenario_save_data(&game_scenario_create_info);
         }
     }
 
     pub fn update_game_save_data(&self, game_save_data: &mut GameSaveData) {
         if self.get_character_manager().is_valid_player() {
-            game_save_data._player = self.get_character_manager().get_player().as_ref().borrow().get_character_save_data();
+            game_save_data._player =
+                self.get_character_manager().get_player().as_ref().borrow().get_character_save_data();
         }
         game_save_data._time_of_day = self.get_time_of_day();
         game_save_data._temperature = self.temperature();
@@ -604,12 +609,17 @@ impl<'a> GameSceneManager<'a> {
         if !self._reservation_scenarios.is_empty() {
             let current_game_scene_state = self._game_scene_state.clone();
             for scenario_type in self._reservation_scenarios.clone().iter() {
-                let scenario_data_create_info = game_resources.get_scenario_data(scenario_type.get_scenario_data_name());
+                let scenario_data_create_info =
+                    game_resources.get_scenario_data(scenario_type.get_scenario_data_name());
                 let scenario = self.open_game_scenario_data(*scenario_type, &scenario_data_create_info.borrow(), true);
                 if current_game_scene_state == GameSceneState::LoadCompleted {
                     let game_scene_data_name = scenario_data_create_info.borrow().get_game_scene_data_name();
-                    if game_scene_data_name.is_empty() || current_game_scene_data_name == scenario_data_create_info.borrow().get_game_scene_data_name() {
-                        scenario.borrow_mut().on_open_game_scene(scenario_data_create_info.borrow().get_game_scene_data_name().as_str());
+                    if game_scene_data_name.is_empty()
+                        || current_game_scene_data_name == scenario_data_create_info.borrow().get_game_scene_data_name()
+                    {
+                        scenario
+                            .borrow_mut()
+                            .on_open_game_scene(scenario_data_create_info.borrow().get_game_scene_data_name().as_str());
                     }
                 }
             }
@@ -643,7 +653,9 @@ impl<'a> GameSceneManager<'a> {
             GameSceneState::Loading => {
                 if self.get_scene_manager().is_load_complete() {
                     let game_save_data = ptr_as_ref(self._game_client).get_game_save_data().borrow();
-                    if let Some(game_scene_save_data) = game_save_data._game_scenes.get(&self._current_game_scene_data_name).as_ref() {
+                    if let Some(game_scene_save_data) =
+                        game_save_data._game_scenes.get(&self._current_game_scene_data_name).as_ref()
+                    {
                         self._character_manager.create_characters(&game_scene_save_data._characters);
                         self._item_manager.create_items(&game_scene_save_data._items);
                         self._prop_manager.create_props(&game_scene_save_data._props);
