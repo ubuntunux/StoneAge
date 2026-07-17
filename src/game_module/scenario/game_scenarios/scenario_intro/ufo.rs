@@ -4,12 +4,13 @@ use crate::game_module::game_constants::{
 };
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::{GameSceneManager, Stages};
-use crate::game_module::scenario::scenario::{ScenarioBase, ScenarioDataCreateInfo, ScenarioType};
+use crate::game_module::scenario::scenario::{GameScenarioCreateInfo, ScenarioBase, ScenarioDataCreateInfo, ScenarioType};
 use crate::game_module::scenario::scenario_track::ScenarioTrack;
+use serde::{Deserialize, Serialize};
 use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop};
 use rust_engine_3d::utilities::math;
-use rust_engine_3d::utilities::system::{RcRefCell, State, newRcRefCell, ptr_as_mut, ptr_as_ref};
+use rust_engine_3d::utilities::system::{RcRefCell, State, newRcRefCell, ptr_as_mut};
 use std::str::FromStr;
 use strum::IntoEnumIterator;
 use strum_macros::{Display, EnumCount, EnumIter, EnumString};
@@ -24,9 +25,13 @@ enum ScenarioPhase {
     End,
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+struct ScenarioUfoSaveData {
+}
+
 pub struct ScenarioUfo<'a> {
-    _is_load_completed: bool,
     _scenario_type: ScenarioType,
+    _scenario_create_info: ScenarioDataCreateInfo,
     _game_scene_manager: *const GameSceneManager<'a>,
     _actor_ufo: Option<RcRefCell<Character<'a>>>,
     _actor_aru: Option<RcRefCell<Character<'a>>>,
@@ -42,11 +47,11 @@ impl<'a> ScenarioUfo<'a> {
         game_scene_manager: *const GameSceneManager<'a>,
         _game_resources: *const GameResources<'a>,
         scenario_type: ScenarioType,
-        _scenario_create_info: &ScenarioDataCreateInfo,
+        scenario_create_info: &ScenarioDataCreateInfo,
     ) -> RcRefCell<ScenarioUfo<'a>> {
         newRcRefCell(ScenarioUfo {
-            _is_load_completed: false,
             _scenario_type: scenario_type,
+            _scenario_create_info: scenario_create_info.clone(),
             _game_scene_manager: game_scene_manager,
             _actor_ufo: None,
             _actor_aru: None,
@@ -65,36 +70,49 @@ impl<'a> ScenarioUfo<'a> {
     }
 
     pub fn update_ufo_movement(&mut self) -> bool {
-        let actor = self._actor_ufo.as_ref().unwrap();
-        let target = self._actor_koa.as_ref().unwrap();
-        let to_target = target.borrow().get_position() - actor.borrow().get_position();
-        if math::make_vector_xz(&to_target).magnitude_squared() < 1.0 {
-            actor.borrow_mut().set_move_idle();
-            true
+        if let (Some(actor), Some(target)) = (&self._actor_ufo, &self._actor_koa) {
+            let to_target = target.borrow().get_position() - actor.borrow().get_position();
+            if math::make_vector_xz(&to_target).magnitude_squared() < 1.0 {
+                actor.borrow_mut().set_move_idle();
+                true
+            } else {
+                actor.borrow_mut().set_move(&math::safe_normalize(&to_target));
+                false
+            }
         } else {
-            actor.borrow_mut().set_move(&math::safe_normalize(&to_target));
             false
         }
     }
 
     pub fn update_be_abducted_actor(&mut self, actor: RcRefCell<Character>, delta_time: f64) -> bool {
-        let target = self._actor_ufo.as_ref().unwrap();
-        let to_target = target.borrow().get_position() - actor.borrow().get_position();
-        if 1.0 < to_target.magnitude_squared() {
-            let mut pos = *actor.borrow().get_position();
-            let speed = 4.0f32;
-            pos += math::safe_normalize(&to_target) * speed * delta_time as f32;
-            actor.borrow_mut().set_position(&pos);
-            return false;
+        if let Some(target) = &self._actor_ufo {
+            let to_target = target.borrow().get_position() - actor.borrow().get_position();
+            if 1.0 < to_target.magnitude_squared() {
+                let mut pos = *actor.borrow().get_position();
+                let speed = 4.0f32;
+                pos += math::safe_normalize(&to_target) * speed * delta_time as f32;
+                actor.borrow_mut().set_position(&pos);
+                return false;
+            }
+            true
+        } else {
+            false
         }
-        true
     }
 
     pub fn update_be_abducted(&mut self, delta_time: f64) -> bool {
-        let arrived_aru = self.update_be_abducted_actor(self._actor_aru.as_ref().unwrap().clone(), delta_time);
-        let arrived_ewa = self.update_be_abducted_actor(self._actor_ewa.as_ref().unwrap().clone(), delta_time);
-        let arrived_koa = self.update_be_abducted_actor(self._actor_koa.as_ref().unwrap().clone(), delta_time);
-        arrived_aru && arrived_ewa && arrived_koa
+        let aru = self._actor_aru.clone();
+        let ewa = self._actor_ewa.clone();
+        let koa = self._actor_koa.clone();
+
+        if let (Some(aru), Some(ewa), Some(koa)) = (aru, ewa, koa) {
+            let arrived_aru = self.update_be_abducted_actor(aru, delta_time);
+            let arrived_ewa = self.update_be_abducted_actor(ewa, delta_time);
+            let arrived_koa = self.update_be_abducted_actor(koa, delta_time);
+            arrived_aru && arrived_ewa && arrived_koa
+        } else {
+            false
+        }
     }
 }
 
@@ -108,11 +126,25 @@ impl<'a> ScenarioBase<'a> for ScenarioUfo<'a> {
     }
 
     fn set_scenario_phase_as_string(&mut self, scenario_phase: &String) {
-        self._scenario_track._scenario_phase = ScenarioPhase::from_str(scenario_phase.as_str()).unwrap();
+        self._scenario_track._scenario_phase = ScenarioPhase::from_str(scenario_phase.as_str()).unwrap_or(ScenarioPhase::None);
     }
 
-    fn is_load_completed(&self) -> bool {
-        self._is_load_completed
+    fn load_scenario_save_data(&mut self, scenario_save_data: &GameScenarioCreateInfo) {
+        self._scenario_create_info = scenario_save_data._scenario_create_info.clone();
+        self._scenario_track.load_scenario_track_data(&scenario_save_data._scenario_track_create_info);
+        if let Ok(_data) = serde_json::from_str::<ScenarioUfoSaveData>(&scenario_save_data._scenario_data) {
+        }
+    }
+
+    fn get_scenario_save_data(&self) -> GameScenarioCreateInfo {
+        let save_data = ScenarioUfoSaveData {
+        };
+        GameScenarioCreateInfo {
+            _scenario_type: self.get_scenario_type(),
+            _scenario_create_info: self._scenario_create_info.clone(),
+            _scenario_track_create_info: self._scenario_track.save_scenario_track_data(),
+            _scenario_data: serde_json::to_string(&save_data).unwrap_or_default(),
+        }
     }
 
     fn is_play_scenario_mode(&self) -> bool {
@@ -126,19 +158,21 @@ impl<'a> ScenarioBase<'a> for ScenarioUfo<'a> {
     fn destroy_game_scenario(&mut self) {}
 
     fn on_close_game_scene(&mut self, _game_scene_data_name: &str) {
-        self._is_load_completed = false;
     }
 
     fn on_open_game_scene(&mut self, game_scene_data_name: &str) {
-        let game_scene_manager = ptr_as_ref(self._game_scene_manager);
-        if game_scene_data_name == Stages::Home.get_stage_data_name() {
-            self._actor_ufo = Some(game_scene_manager.get_actor_by_name("ufo").unwrap().clone());
-            self._actor_aru = Some(game_scene_manager.get_actor_by_name("monkey_aru").unwrap().clone());
-            self._actor_ewa = Some(game_scene_manager.get_actor_by_name("monkey_ewa").unwrap().clone());
-            self._actor_koa = Some(game_scene_manager.get_actor_by_name("monkey_koa").unwrap().clone());
+        let game_scene_manager = ptr_as_mut(self._game_scene_manager);
+        if self._scenario_create_info.get_game_scene_data_name() == game_scene_data_name {
+            game_scene_manager.spawn_game_scenario_objects(&self._scenario_create_info);
+            self._scenario_create_info.reset();
         }
 
-        self._is_load_completed = true;
+        if game_scene_data_name == Stages::Home.get_stage_data_name() {
+            self._actor_ufo = game_scene_manager.get_actor_by_name("ufo").cloned();
+            self._actor_aru = game_scene_manager.get_actor_by_name("monkey_aru").cloned();
+            self._actor_ewa = game_scene_manager.get_actor_by_name("monkey_ewa").cloned();
+            self._actor_koa = game_scene_manager.get_actor_by_name("monkey_koa").cloned();
+        }
     }
 
     fn update_game_scenario(&mut self, _any_key_hold: bool, _any_key_pressed: bool, delta_time: f64) {
@@ -196,7 +230,9 @@ impl<'a> ScenarioBase<'a> for ScenarioUfo<'a> {
                         let main_camera = game_scene_manager.get_scene_manager().get_main_camera_mut();
                         main_camera._transform_object.set_position(&Vector3::new(13.48, 26.56, -5.02));
                         main_camera._transform_object.set_rotation(&Vector3::new(0.76, 0.33, 0.0));
-                        self._actor_aru.as_ref().unwrap().borrow_mut().set_action_sleep_no_snoring();
+                        if let Some(actor) = &self._actor_aru {
+                            actor.borrow_mut().set_action_sleep_no_snoring();
+                        }
                     }
                     State::Update => {
                         if self.update_ufo_movement() {
@@ -207,9 +243,15 @@ impl<'a> ScenarioBase<'a> for ScenarioUfo<'a> {
                 },
                 ScenarioPhase::BeAbducted => match state {
                     State::Begin => {
-                        self._actor_aru.as_ref().unwrap().borrow_mut()._controller.set_flying_mode(true);
-                        self._actor_ewa.as_ref().unwrap().borrow_mut()._controller.set_flying_mode(true);
-                        self._actor_koa.as_ref().unwrap().borrow_mut()._controller.set_flying_mode(true);
+                        if let Some(actor) = &self._actor_aru {
+                            actor.borrow_mut()._controller.set_flying_mode(true);
+                        }
+                        if let Some(actor) = &self._actor_ewa {
+                            actor.borrow_mut()._controller.set_flying_mode(true);
+                        }
+                        if let Some(actor) = &self._actor_koa {
+                            actor.borrow_mut()._controller.set_flying_mode(true);
+                        }
                         self._audio_ufo_beam = game_scene_manager.get_scene_manager().play_audio_options(
                             AUDIO_UFO_BEAM,
                             AudioLoop::ONCE,
@@ -233,7 +275,7 @@ impl<'a> ScenarioBase<'a> for ScenarioUfo<'a> {
                             game_scene_manager.get_scene_manager().stop_audio_instance(audio_instance)
                         }
                         game_ui_manager.set_auto_fade_inout(true);
-                        game_scene_manager.request_open_game_scenario(ScenarioType::ScenarioRevolution, false);
+                        game_scene_manager.request_open_game_scenario(ScenarioType::ScenarioIntro_Revolution);
                     }
                 }
             }

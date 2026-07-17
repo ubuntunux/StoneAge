@@ -757,7 +757,7 @@ impl<'a> Character<'a> {
                 InteractionObject::PropBed(_) => {
                     self.get_character_manager()
                         .get_game_scene_manager_mut()
-                        .request_open_game_scenario(ScenarioType::ScenarioWrapUpTheDay, false);
+                        .request_open_game_scenario(ScenarioType::ScenarioWrapUpTheDay);
                 }
                 InteractionObject::PropPickup(_) => {
                     self.set_next_action_animation(ActionAnimationState::Pickup, 2.0);
@@ -1296,11 +1296,11 @@ impl<'a> Character<'a> {
                         // respawn
                         let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
                         if self._is_player && animation_play_info._is_animation_end {
-                            self.initialize_character(
-                                &self.get_character_manager().get_game_scene_manager().get_spawn_point().clone(),
-                                &self._controller._rotation.clone(),
-                                &self._controller._scale.clone(),
-                            );
+                            // self.initialize_character(
+                            //     &self.get_character_manager().get_game_scene_manager().get_spawn_point().clone(),
+                            //     &self._controller._rotation.clone(),
+                            //     &self._controller._scale.clone(),
+                            // );
                         }
                     }
                     _ => {}

@@ -7781,16 +7781,6 @@
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/alien.blend": [
-        {
-            "asset_type": "GAME_CHARACTER",
-            "asset_path": "family/alien",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/alien.blend",
-            "guid": "",
-            "mtime": 1778687566.3776371,
-            "data": {}
-        }
-    ],
     "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/brachiosaurus.blend": [
         {
             "asset_type": "GAME_CHARACTER",
@@ -8038,6 +8028,16 @@
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/family/monkey_koa.blend",
             "guid": "",
             "mtime": 1780934659.0016487,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/alien.blend": [
+        {
+            "asset_type": "GAME_CHARACTER",
+            "asset_path": "alien",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/alien.blend",
+            "guid": "",
+            "mtime": 1784305114.3127303,
             "data": {}
         }
     ],
@@ -8301,26 +8301,6 @@
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/game_data/scenario/intro.blend": [
-        {
-            "asset_type": "GAME_SCENARIO",
-            "asset_path": "intro",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/scenario/intro.blend",
-            "guid": "",
-            "mtime": 1779385165.4050522,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/game_data/scenario/revolution.blend": [
-        {
-            "asset_type": "GAME_SCENARIO",
-            "asset_path": "revolution",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/scenario/revolution.blend",
-            "guid": "",
-            "mtime": 1780239012.5338416,
-            "data": {}
-        }
-    ],
     "/mnt/Workspace/StoneAge/resources/externals/game_data/scenario/wrap_up_the_day.blend": [
         {
             "asset_type": "GAME_SCENARIO",
@@ -8331,23 +8311,43 @@
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/game_data/scenario/ufo.blend": [
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/scenario/scenario_intro/day_one.blend": [
         {
             "asset_type": "GAME_SCENARIO",
-            "asset_path": "ufo",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/scenario/ufo.blend",
+            "asset_path": "scenario_intro/day_one",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/scenario/scenario_intro/day_one.blend",
             "guid": "",
-            "mtime": 1781545772.4806871,
+            "mtime": 1784216342.4170547,
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/game_data/scenario/day_one.blend": [
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/scenario/scenario_intro/intro.blend": [
         {
             "asset_type": "GAME_SCENARIO",
-            "asset_path": "day_one",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/scenario/day_one.blend",
+            "asset_path": "scenario_intro/intro",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/scenario/scenario_intro/intro.blend",
             "guid": "",
-            "mtime": 1781709163.5037465,
+            "mtime": 1784216384.0203996,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/scenario/scenario_intro/ufo.blend": [
+        {
+            "asset_type": "GAME_SCENARIO",
+            "asset_path": "scenario_intro/ufo",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/scenario/scenario_intro/ufo.blend",
+            "guid": "",
+            "mtime": 1784216415.765009,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/scenario/scenario_intro/revolution.blend": [
+        {
+            "asset_type": "GAME_SCENARIO",
+            "asset_path": "scenario_intro/revolution",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/scenario/scenario_intro/revolution.blend",
+            "guid": "",
+            "mtime": 1784307179.639959,
             "data": {}
         }
     ],

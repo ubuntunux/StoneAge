@@ -96,7 +96,6 @@ impl<'a> Prop<'a> {
         self.update_item_visible();
         self.update_transform();
     }
-    pub fn load_prop_save_data(&mut self, _prop_create_info: &PropCreateInfo) {}
 
     pub fn get_prop_save_data(&self) -> (String, PropCreateInfo) {
         (
@@ -377,10 +376,9 @@ impl<'a> PropManager<'a> {
         }
     }
 
-    pub fn load_props_save_data(&mut self, prop_create_infos: &PropCreateInfoMap) {
+    pub fn create_props(&mut self, prop_create_infos: &PropCreateInfoMap) {
         for (prop_name, prop_create_info) in prop_create_infos.iter() {
-            let prop = self.create_prop(prop_name.as_str(), prop_create_info);
-            prop.borrow_mut().load_prop_save_data(prop_create_info);
+            self.create_prop(prop_name.as_str(), prop_create_info);
         }
     }
 

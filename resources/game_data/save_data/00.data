@@ -1,1 +1,1957 @@
-{}
+{
+  "_player": [
+    "aru_cffc908d-56d3-4c41-baf4-c5e8dd4d2566",
+    {
+      "_character_id": "cffc908d-56d3-4c41-baf4-c5e8dd4d2566",
+      "_character_data_name": "characters/family/aru",
+      "_position": [
+        -13.630401,
+        3.955244,
+        -0.7276621
+      ],
+      "_rotation": [
+        0.0,
+        4.712389,
+        0.0
+      ],
+      "_scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    }
+  ],
+  "_camera": {
+    "meter_per_unit": 1.0,
+    "near": 0.1,
+    "far": 200000.0,
+    "fov": 60.0,
+    "window_size": [
+      1024,
+      768
+    ],
+    "enable_jitter": true,
+    "position": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "rotation": [
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "_time_of_day": 8.423874,
+  "_temperature": 37.96021,
+  "_date": 3,
+  "_inventory_item_create_info_list": {},
+  "_last_game_scene_data_name": "game_scenes/stage_01",
+  "_game_scenes": {
+    "game_scenes/stage_01": {
+      "_characters": {
+        "trex.001_43e604c3-f3f3-4b36-b50f-525515850adb": {
+          "_character_id": "43e604c3-f3f3-4b36-b50f-525515850adb",
+          "_character_data_name": "characters/trex",
+          "_position": [
+            27.51054,
+            0.9582639,
+            53.64165
+          ],
+          "_rotation": [
+            0.0,
+            4.712389,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "triceratops_01_ede54041-088a-4ca0-a96c-bd4ba8596a1a": {
+          "_character_id": "ede54041-088a-4ca0-a96c-bd4ba8596a1a",
+          "_character_data_name": "characters/triceratops_01",
+          "_position": [
+            35.482418,
+            2.9441586,
+            12.400063
+          ],
+          "_rotation": [
+            0.0,
+            4.712389,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "velociraptor_01.001_577c63a0-0e23-4743-9642-d9b8b1eb8af4": {
+          "_character_id": "577c63a0-0e23-4743-9642-d9b8b1eb8af4",
+          "_character_data_name": "characters/velociraptor_01.001",
+          "_position": [
+            28.975494,
+            1.0701303,
+            20.832554
+          ],
+          "_rotation": [
+            0.0,
+            4.712389,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "velociraptor_01.002_5cf1a7ce-0edb-425a-942b-16f72550a778": {
+          "_character_id": "5cf1a7ce-0edb-425a-942b-16f72550a778",
+          "_character_data_name": "characters/velociraptor_01.001",
+          "_position": [
+            39.139584,
+            1.8239574,
+            6.7696342
+          ],
+          "_rotation": [
+            0.0,
+            4.712389,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "triceratops_01.001_0a04d96e-e2ba-445f-9a68-e79637aff505": {
+          "_character_id": "0a04d96e-e2ba-445f-9a68-e79637aff505",
+          "_character_data_name": "characters/triceratops_01",
+          "_position": [
+            -1.8324013,
+            3.5821123,
+            0.8284645
+          ],
+          "_rotation": [
+            0.0,
+            4.712389,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "triceratops_c6c2ac3d-01f8-42ab-bbe0-99976d56ec35": {
+          "_character_id": "c6c2ac3d-01f8-42ab-bbe0-99976d56ec35",
+          "_character_data_name": "characters/triceratops",
+          "_position": [
+            -12.860828,
+            2.00321,
+            -14.0444565
+          ],
+          "_rotation": [
+            0.0,
+            4.712389,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "trex_02_8dbd829e-5e27-45b9-a1af-196f7d242a84": {
+          "_character_id": "8dbd829e-5e27-45b9-a1af-196f7d242a84",
+          "_character_data_name": "characters/trex_02",
+          "_position": [
+            -15.944569,
+            2.2423944,
+            35.144928
+          ],
+          "_rotation": [
+            0.0,
+            4.712389,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "stegosaurus_red_a809768f-2305-4685-a259-24b50cbac190": {
+          "_character_id": "a809768f-2305-4685-a259-24b50cbac190",
+          "_character_data_name": "characters/stegosaurus_red",
+          "_position": [
+            35.676567,
+            2.3032002,
+            43.48289
+          ],
+          "_rotation": [
+            0.0,
+            4.712389,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "trex_a8f3e3af-3a99-417a-9ed1-c98ab67e2702": {
+          "_character_id": "a8f3e3af-3a99-417a-9ed1-c98ab67e2702",
+          "_character_data_name": "characters/trex",
+          "_position": [
+            33.66612,
+            1.8496175,
+            -5.5264435
+          ],
+          "_rotation": [
+            0.0,
+            4.712389,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "stegosaurus_green_17afa409-2628-4b87-9638-26f4eb4a11c9": {
+          "_character_id": "17afa409-2628-4b87-9638-26f4eb4a11c9",
+          "_character_data_name": "characters/stegosaurus_green",
+          "_position": [
+            23.330832,
+            0.91850185,
+            -7.5409794
+          ],
+          "_rotation": [
+            0.0,
+            4.712389,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "pachycephalosaurus_c97dd248-bb2e-464c-84d5-104eee86fc5d": {
+          "_character_id": "c97dd248-bb2e-464c-84d5-104eee86fc5d",
+          "_character_data_name": "characters/pachycephalosaurus",
+          "_position": [
+            14.664133,
+            1.8365335,
+            -0.30605507
+          ],
+          "_rotation": [
+            0.0,
+            4.712389,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "velociraptor_01.003_b58fe64e-987a-48cc-8873-72e3e5bcaa9f": {
+          "_character_id": "b58fe64e-987a-48cc-8873-72e3e5bcaa9f",
+          "_character_data_name": "characters/velociraptor_01.001",
+          "_position": [
+            35.343113,
+            1.8504491,
+            52.034016
+          ],
+          "_rotation": [
+            0.0,
+            4.712389,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      },
+      "_items": {
+        "wood_3aaa7182-a016-464d-909f-81c43b2b40fc": {
+          "_item_id": "3aaa7182-a016-464d-909f-81c43b2b40fc",
+          "_item_data_name": "items/wood",
+          "_position": [
+            -1.2123122,
+            3.077273,
+            -1.9603271
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_velocity": [
+            0.0,
+            -0.2980199,
+            0.0
+          ],
+          "_pickup_delay": -0.000057603465
+        },
+        "rock.001_848a515c-6336-4c84-a441-6add5dc941b3": {
+          "_item_id": "848a515c-6336-4c84-a441-6add5dc941b3",
+          "_item_data_name": "items/rock",
+          "_position": [
+            -4.3852997,
+            4.275399,
+            -1.0395302
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_velocity": [
+            0.0,
+            -0.2980199,
+            0.0
+          ],
+          "_pickup_delay": -0.000057603465
+        },
+        "rock_d740bf1a-7de8-4ef9-a3f4-2eb152210fc6": {
+          "_item_id": "d740bf1a-7de8-4ef9-a3f4-2eb152210fc6",
+          "_item_data_name": "items/rock",
+          "_position": [
+            -9.965494,
+            2.387761,
+            34.63098
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_velocity": [
+            0.0,
+            -0.2980199,
+            0.0
+          ],
+          "_pickup_delay": -0.000057603465
+        },
+        "meat_b8a58458-4599-43a3-a665-ff15f8b33c26": {
+          "_item_id": "b8a58458-4599-43a3-a665-ff15f8b33c26",
+          "_item_data_name": "items/meat",
+          "_position": [
+            -0.90523434,
+            3.3173814,
+            -1.1110077
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_velocity": [
+            0.0,
+            -0.2980199,
+            0.0
+          ],
+          "_pickup_delay": -0.000057603465
+        },
+        "meat.004_62159cb0-1b55-4f16-97d7-4cb38b1eca35": {
+          "_item_id": "62159cb0-1b55-4f16-97d7-4cb38b1eca35",
+          "_item_data_name": "items/meat",
+          "_position": [
+            30.949596,
+            2.255083,
+            42.544575
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_velocity": [
+            0.0,
+            -0.2980199,
+            0.0
+          ],
+          "_pickup_delay": -0.000057603465
+        },
+        "meat.001_4dff965c-9210-4dbf-950c-bcc2be0015d6": {
+          "_item_id": "4dff965c-9210-4dbf-950c-bcc2be0015d6",
+          "_item_data_name": "items/meat",
+          "_position": [
+            4.7469125,
+            2.1178055,
+            0.51039124
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_velocity": [
+            0.0,
+            -0.2980199,
+            0.0
+          ],
+          "_pickup_delay": -0.000057603465
+        },
+        "meat.002_3a753d45-2b09-4491-b89b-eb9025938110": {
+          "_item_id": "3a753d45-2b09-4491-b89b-eb9025938110",
+          "_item_data_name": "items/meat",
+          "_position": [
+            9.28624,
+            2.612568,
+            0.01055336
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_velocity": [
+            0.0,
+            -0.2980199,
+            0.0
+          ],
+          "_pickup_delay": -0.000057603465
+        },
+        "wood.001_7de1817a-997c-4f44-b019-b49f7d0b1a29": {
+          "_item_id": "7de1817a-997c-4f44-b019-b49f7d0b1a29",
+          "_item_data_name": "items/wood",
+          "_position": [
+            -1.1313238,
+            2.8447824,
+            -2.9169827
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_velocity": [
+            0.0,
+            -0.2980199,
+            0.0
+          ],
+          "_pickup_delay": -0.000057603465
+        },
+        "meat.006_10a280c7-9f47-4ad3-9210-d7c26418caa1": {
+          "_item_id": "10a280c7-9f47-4ad3-9210-d7c26418caa1",
+          "_item_data_name": "items/meat",
+          "_position": [
+            25.486906,
+            2.770659,
+            41.755154
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_velocity": [
+            0.0,
+            -0.2980199,
+            0.0
+          ],
+          "_pickup_delay": -0.000057603465
+        },
+        "meat.003_2421658b-78a4-4f1f-931c-f79d80228c6d": {
+          "_item_id": "2421658b-78a4-4f1f-931c-f79d80228c6d",
+          "_item_data_name": "items/meat",
+          "_position": [
+            16.598572,
+            1.8386703,
+            -4.6602325
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_velocity": [
+            0.0,
+            -0.2980199,
+            0.0
+          ],
+          "_pickup_delay": -0.000057603465
+        },
+        "meat.005_4ded6810-53d6-4f47-9fed-7fadad7f62e7": {
+          "_item_id": "4ded6810-53d6-4f47-9fed-7fadad7f62e7",
+          "_item_data_name": "items/meat",
+          "_position": [
+            -17.21999,
+            1.3184128,
+            29.936523
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_velocity": [
+            0.0,
+            -0.2980199,
+            0.0
+          ],
+          "_pickup_delay": -0.000057603465
+        },
+        "spirit_ball_9d56ce6b-158f-48ee-8ef1-a8e752d8497d": {
+          "_item_id": "9d56ce6b-158f-48ee-8ef1-a8e752d8497d",
+          "_item_data_name": "items/spirit_ball",
+          "_position": [
+            -9.243526,
+            3.4714997,
+            -3.9941
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_velocity": [
+            0.0,
+            -7.357473,
+            0.0
+          ],
+          "_pickup_delay": -0.000057603465
+        }
+      },
+      "_player": {},
+      "_props": {
+        "mushroom_orange_00.001_f70f62dd-8c24-427c-bc02-339948693587": {
+          "_prop_id": "f70f62dd-8c24-427c-bc02-339948693587",
+          "_prop_data_name": "props/mushroom_orange_00",
+          "_position": [
+            -13.352641,
+            3.1511145,
+            -4.2857842
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        "twigs_c4f98772-9380-452f-a796-6a27a4f55b99": {
+          "_prop_id": "c4f98772-9380-452f-a796-6a27a4f55b99",
+          "_prop_data_name": "props/twigs",
+          "_position": [
+            -7.9971066,
+            3.141096,
+            -6.228842
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        "crystal_b63ae647-1fbf-4903-b2ad-2ba4919f3220": {
+          "_prop_id": "b63ae647-1fbf-4903-b2ad-2ba4919f3220",
+          "_prop_data_name": "props/crystal",
+          "_position": [
+            24.261171,
+            2.9258718,
+            4.534128
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        "stump.001_6d06d86d-d57d-4b08-8e4a-f60dc4de5dcf": {
+          "_prop_id": "6d06d86d-d57d-4b08-8e4a-f60dc4de5dcf",
+          "_prop_data_name": "props/stump",
+          "_position": [
+            7.0824184,
+            2.0774765,
+            -0.36681938
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        "birch_tree_00_193fc380-dda8-4d56-8bdb-e3d9342d66da": {
+          "_prop_id": "193fc380-dda8-4d56-8bdb-e3d9342d66da",
+          "_prop_data_name": "props/birch_tree_00",
+          "_position": [
+            -15.030642,
+            2.9165401,
+            -6.2501564
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        "stump_61df2153-b642-418b-8b2c-ef36597e2213": {
+          "_prop_id": "61df2153-b642-418b-8b2c-ef36597e2213",
+          "_prop_data_name": "props/stump",
+          "_position": [
+            30.403534,
+            2.4228504,
+            1.5163765
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        "log_85ef50e9-c8cd-43ea-93f5-9589169d476a": {
+          "_prop_id": "85ef50e9-c8cd-43ea-93f5-9589169d476a",
+          "_prop_data_name": "props/log",
+          "_position": [
+            22.108147,
+            1.8905151,
+            -1.4572954
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        "mushroom_orange_00_64968ec2-0e23-404b-874f-01431d8f3757": {
+          "_prop_id": "64968ec2-0e23-404b-874f-01431d8f3757",
+          "_prop_data_name": "props/mushroom_orange_00",
+          "_position": [
+            -1.2456341,
+            3.3987198,
+            -0.16088772
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        "rock.002_11b663db-9f23-45a8-9f78-0bc1328b04b6": {
+          "_prop_id": "11b663db-9f23-45a8-9f78-0bc1328b04b6",
+          "_prop_data_name": "props/rock",
+          "_position": [
+            -3.268334,
+            2.6095562,
+            -4.5323505
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            0.39150882,
+            0.39150882,
+            0.39150882
+          ],
+          "_instance_parameters": {}
+        },
+        "mushroom_orange_00.002_d474d5ba-2574-4cba-9dfd-2d50493adb5a": {
+          "_prop_id": "d474d5ba-2574-4cba-9dfd-2d50493adb5a",
+          "_prop_data_name": "props/mushroom_orange_00",
+          "_position": [
+            -10.600762,
+            3.1523066,
+            -6.307625
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        "gate_abe82788-6a16-472b-ab4a-46e2fab45a96": {
+          "_prop_id": "abe82788-6a16-472b-ab4a-46e2fab45a96",
+          "_prop_data_name": "props/gate",
+          "_position": [
+            -14.916275,
+            4.0613956,
+            2.7315347
+          ],
+          "_rotation": [
+            0.0,
+            2.785695,
+            0.0
+          ],
+          "_scale": [
+            1.9024445,
+            1.9024445,
+            1.9024445
+          ],
+          "_instance_parameters": {
+            "_linked_gate": "gate_stage_01",
+            "_linked_stage": "game_scenes/world_map"
+          }
+        }
+      },
+      "_scene": {
+        "_sea_height": 0.0,
+        "_cameras": {},
+        "_directional_lights": {},
+        "_point_lights": {},
+        "_effects": {},
+        "_static_objects": {},
+        "_skeletal_objects": {}
+      }
+    },
+    "game_scenes/intro_stage": {
+      "_characters": {
+        "koa_2bee2d92-5246-46dc-a5a7-b52d46cbe6be": {
+          "_character_id": "2bee2d92-5246-46dc-a5a7-b52d46cbe6be",
+          "_character_data_name": "characters/family/koa",
+          "_position": [
+            19.492327,
+            1.8545201,
+            10.535668
+          ],
+          "_rotation": [
+            0.0,
+            4.712389,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "ewa_e02330de-213f-44ef-9f01-bc6de071e111": {
+          "_character_id": "e02330de-213f-44ef-9f01-bc6de071e111",
+          "_character_data_name": "characters/family/ewa",
+          "_position": [
+            16.927547,
+            1.9221909,
+            10.01448
+          ],
+          "_rotation": [
+            0.0,
+            4.712389,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      },
+      "_items": {
+        "meat.002_99bf2a17-a226-4d61-8ac0-9ff7b955a8c0": {
+          "_item_id": "99bf2a17-a226-4d61-8ac0-9ff7b955a8c0",
+          "_item_data_name": "items/meat",
+          "_position": [
+            9.28624,
+            0.97105986,
+            0.01055336
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_velocity": [
+            0.0,
+            -7.717183,
+            0.0
+          ],
+          "_pickup_delay": -0.0039733574
+        },
+        "spirit_ball_8ff68397-eba5-40d5-8bc8-ecd0dc98a5bf": {
+          "_item_id": "8ff68397-eba5-40d5-8bc8-ecd0dc98a5bf",
+          "_item_data_name": "items/spirit_ball",
+          "_position": [
+            -9.539126,
+            1.0677496,
+            -3.6414423
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_velocity": [
+            0.0,
+            -7.73664,
+            0.0
+          ],
+          "_pickup_delay": -0.0039733574
+        },
+        "meat.001_6a9a8fbc-26ad-4ab0-9638-860ed66522b9": {
+          "_item_id": "6a9a8fbc-26ad-4ab0-9638-860ed66522b9",
+          "_item_data_name": "items/meat",
+          "_position": [
+            4.7469125,
+            -0.028402478,
+            0.51039124
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_velocity": [
+            0.0,
+            -3.957042,
+            0.0
+          ],
+          "_pickup_delay": -0.0039733574
+        },
+        "meat.005_f829b443-bffb-42b0-ab37-409da4bae5e6": {
+          "_item_id": "f829b443-bffb-42b0-ab37-409da4bae5e6",
+          "_item_data_name": "items/meat",
+          "_position": [
+            -17.21999,
+            1.6756021,
+            29.936523
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_velocity": [
+            0.0,
+            -3.957042,
+            0.0
+          ],
+          "_pickup_delay": -0.0039733574
+        },
+        "meat_5bc676f9-b1d8-4560-907a-b72ab217e57a": {
+          "_item_id": "5bc676f9-b1d8-4560-907a-b72ab217e57a",
+          "_item_data_name": "items/meat",
+          "_position": [
+            -11.612084,
+            1.4535803,
+            -9.405914
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_velocity": [
+            0.0,
+            -3.957042,
+            0.0
+          ],
+          "_pickup_delay": -0.0039733574
+        },
+        "meat.006_1ed44f3d-1320-4858-96cf-a704e1de098b": {
+          "_item_id": "1ed44f3d-1320-4858-96cf-a704e1de098b",
+          "_item_data_name": "items/meat",
+          "_position": [
+            25.486906,
+            -0.38103667,
+            41.755154
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_velocity": [
+            0.0,
+            -3.957042,
+            0.0
+          ],
+          "_pickup_delay": -0.0039733574
+        },
+        "wood_f575da39-8ea5-4afd-8cae-41eafedf3688": {
+          "_item_id": "f575da39-8ea5-4afd-8cae-41eafedf3688",
+          "_item_data_name": "items/wood",
+          "_position": [
+            7.641684,
+            1.059428,
+            4.851573
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_velocity": [
+            0.0,
+            -5.372197,
+            0.0
+          ],
+          "_pickup_delay": -0.0039733574
+        },
+        "meat.004_3cef8736-eab9-4454-8987-d470a8e867ab": {
+          "_item_id": "3cef8736-eab9-4454-8987-d470a8e867ab",
+          "_item_data_name": "items/meat",
+          "_position": [
+            30.949596,
+            1.202881,
+            42.544575
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_velocity": [
+            0.0,
+            -3.957042,
+            0.0
+          ],
+          "_pickup_delay": -0.0039733574
+        },
+        "wood.001_d7306c06-f8c8-4443-bca3-e8cd3ef3f2fb": {
+          "_item_id": "d7306c06-f8c8-4443-bca3-e8cd3ef3f2fb",
+          "_item_data_name": "items/wood",
+          "_position": [
+            2.2551498,
+            1.1275921,
+            6.424775
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_velocity": [
+            0.0,
+            -3.957042,
+            0.0
+          ],
+          "_pickup_delay": -0.0039733574
+        },
+        "meat.003_d1df8382-1cc6-4c3a-bc73-ef9f0c183d60": {
+          "_item_id": "d1df8382-1cc6-4c3a-bc73-ef9f0c183d60",
+          "_item_data_name": "items/meat",
+          "_position": [
+            16.598572,
+            0.20104465,
+            -4.6602325
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_velocity": [
+            0.0,
+            -3.957042,
+            0.0
+          ],
+          "_pickup_delay": -0.0039733574
+        },
+        "rock.001_9a40f378-b996-409e-868b-5a9166b4dcd8": {
+          "_item_id": "9a40f378-b996-409e-868b-5a9166b4dcd8",
+          "_item_data_name": "items/rock",
+          "_position": [
+            -4.3317842,
+            -0.3849405,
+            -0.68951035
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_velocity": [
+            0.0,
+            -3.957042,
+            0.0
+          ],
+          "_pickup_delay": -0.0039733574
+        },
+        "rock_a5025a86-d8c8-402d-9ec7-218b5ec8aef1": {
+          "_item_id": "a5025a86-d8c8-402d-9ec7-218b5ec8aef1",
+          "_item_data_name": "items/rock",
+          "_position": [
+            4.9712925,
+            2.4006197,
+            21.731153
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_velocity": [
+            0.0,
+            -3.957042,
+            0.0
+          ],
+          "_pickup_delay": -0.0039733574
+        },
+        "wooden_club_17d720f8-6310-4fe6-99d5-df996924a4e3": {
+          "_item_id": "17d720f8-6310-4fe6-99d5-df996924a4e3",
+          "_item_data_name": "items/wooden_club",
+          "_position": [
+            11.932209,
+            2.680415,
+            11.956837
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_velocity": [
+            0.0,
+            -3.957042,
+            0.0
+          ],
+          "_pickup_delay": -0.0039733574
+        }
+      },
+      "_player": {},
+      "_props": {
+        "monolith_053aa05c-7317-42bd-a030-3426edefd970": {
+          "_prop_id": "053aa05c-7317-42bd-a030-3426edefd970",
+          "_prop_data_name": "props/monolith",
+          "_position": [
+            29.432234,
+            0.41265446,
+            8.876251
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        "birch_tree_00_981d0d81-224f-4ede-afa5-2a52a4f229b5": {
+          "_prop_id": "981d0d81-224f-4ede-afa5-2a52a4f229b5",
+          "_prop_data_name": "props/birch_tree_00",
+          "_position": [
+            -15.404129,
+            1.3121221,
+            -5.305456
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        "mushroom_orange_00.007_7b51dea1-9631-442e-8ff4-1514e4131292": {
+          "_prop_id": "7b51dea1-9631-442e-8ff4-1514e4131292",
+          "_prop_data_name": "props/mushroom_orange_00",
+          "_position": [
+            41.467354,
+            1.311728,
+            43.255547
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        "mushroom_orange_00.002_a73eab54-f0ac-4341-bc7e-a238aba9351b": {
+          "_prop_id": "a73eab54-f0ac-4341-bc7e-a238aba9351b",
+          "_prop_data_name": "props/mushroom_orange_00",
+          "_position": [
+            -11.260959,
+            1.0974548,
+            -5.967165
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        "stump.002_e78c64b4-a763-4fdc-bbc7-7f60c8cb9e49": {
+          "_prop_id": "e78c64b4-a763-4fdc-bbc7-7f60c8cb9e49",
+          "_prop_data_name": "props/stump",
+          "_position": [
+            13.50058,
+            0.7658582,
+            -1.2878094
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        "rock.002_9fcd312e-59e4-430b-9b7c-07679fcbf625": {
+          "_prop_id": "9fcd312e-59e4-430b-9b7c-07679fcbf625",
+          "_prop_data_name": "props/rock",
+          "_position": [
+            -3.1605387,
+            -1.0,
+            -4.780817
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            0.39150882,
+            0.39150882,
+            0.39150882
+          ],
+          "_instance_parameters": {}
+        },
+        "mushroom_orange_00.004_adbe2680-28a8-48ce-bfdb-65db10c8e16b": {
+          "_prop_id": "adbe2680-28a8-48ce-bfdb-65db10c8e16b",
+          "_prop_data_name": "props/mushroom_orange_00",
+          "_position": [
+            20.387344,
+            2.4789133,
+            24.923893
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        "mushroom_orange_00.003_6f4830eb-1102-4711-8125-b9899b155a70": {
+          "_prop_id": "6f4830eb-1102-4711-8125-b9899b155a70",
+          "_prop_data_name": "props/mushroom_orange_00",
+          "_position": [
+            21.321821,
+            1.4810977,
+            8.120051
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        "stump_35a12fe8-7191-4d7a-98c7-38a1075ac1d0": {
+          "_prop_id": "35a12fe8-7191-4d7a-98c7-38a1075ac1d0",
+          "_prop_data_name": "props/stump",
+          "_position": [
+            30.966705,
+            1.0637441,
+            2.4446087
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        "mushroom_orange_00.001_3a363f51-ceb4-4a20-8c2a-9505e1f28902": {
+          "_prop_id": "3a363f51-ceb4-4a20-8c2a-9505e1f28902",
+          "_prop_data_name": "props/mushroom_orange_00",
+          "_position": [
+            -13.352641,
+            1.3161278,
+            -4.2857842
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        "bed_for_ewa_e5b3b79c-f4cf-488a-b261-877b368653ae": {
+          "_prop_id": "e5b3b79c-f4cf-488a-b261-877b368653ae",
+          "_prop_data_name": "props/bed",
+          "_position": [
+            16.917131,
+            1.934268,
+            10.097185
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        "mushroom_orange_00_c7e65626-b30f-4c80-8d0d-bcbcb84ed81a": {
+          "_prop_id": "c7e65626-b30f-4c80-8d0d-bcbcb84ed81a",
+          "_prop_data_name": "props/mushroom_orange_00",
+          "_position": [
+            -1.5161715,
+            -0.97237605,
+            0.56155014
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        "stump.003_4ad22629-1375-4318-8059-e67e54edbaec": {
+          "_prop_id": "4ad22629-1375-4318-8059-e67e54edbaec",
+          "_prop_data_name": "props/stump",
+          "_position": [
+            24.520283,
+            1.8524711,
+            20.930777
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        "crystal.001_6c1174a5-b0fc-435a-82b4-f649cf660d68": {
+          "_prop_id": "6c1174a5-b0fc-435a-82b4-f649cf660d68",
+          "_prop_data_name": "props/crystal",
+          "_position": [
+            1.0876551,
+            1.3100855,
+            21.878225
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        "cactus_3ac8b894-4461-4ae6-99bd-a671ce5acaf8": {
+          "_prop_id": "3ac8b894-4461-4ae6-99bd-a671ce5acaf8",
+          "_prop_data_name": "props/cactus",
+          "_position": [
+            -16.884579,
+            1.06126,
+            -1.5476742
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            0.46801007,
+            0.46801007,
+            0.46801007
+          ],
+          "_instance_parameters": {}
+        },
+        "stump.001_982d3d03-3f66-4049-95ad-5088e32d2b6d": {
+          "_prop_id": "982d3d03-3f66-4049-95ad-5088e32d2b6d",
+          "_prop_data_name": "props/stump",
+          "_position": [
+            12.550931,
+            1.2360542,
+            -9.092487
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        "mushroom_orange_00.005_39e05f34-3e3e-4ee3-8198-1c475dbaa9fd": {
+          "_prop_id": "39e05f34-3e3e-4ee3-8198-1c475dbaa9fd",
+          "_prop_data_name": "props/mushroom_orange_00",
+          "_position": [
+            17.52111,
+            2.735724,
+            22.275253
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        "twigs_66a08ef0-45e3-4a85-9a65-a71f55bbd8a4": {
+          "_prop_id": "66a08ef0-45e3-4a85-9a65-a71f55bbd8a4",
+          "_prop_data_name": "props/twigs",
+          "_position": [
+            -7.9971066,
+            -0.0624187,
+            -6.228842
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        "gate_d902a6c6-6ae8-4893-83d3-4b9a8e2b5b76": {
+          "_prop_id": "d902a6c6-6ae8-4893-83d3-4b9a8e2b5b76",
+          "_prop_data_name": "props/gate",
+          "_position": [
+            20.280346,
+            2.4644034,
+            23.52963
+          ],
+          "_rotation": [
+            0.0,
+            3.0786493,
+            0.0
+          ],
+          "_scale": [
+            1.9024445,
+            1.9024445,
+            1.9024445
+          ],
+          "_instance_parameters": {
+            "_linked_gate": "gate_intro_stage",
+            "_linked_stage": "game_scenes/world_map"
+          }
+        },
+        "log_3a25ff8b-0b46-486b-a52f-9b3c3426bbca": {
+          "_prop_id": "3a25ff8b-0b46-486b-a52f-9b3c3426bbca",
+          "_prop_data_name": "props/log",
+          "_position": [
+            22.396164,
+            -0.9980582,
+            -2.9903507
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        "twigs.002_8d4a6403-e627-4031-b04b-e1478f7712a8": {
+          "_prop_id": "8d4a6403-e627-4031-b04b-e1478f7712a8",
+          "_prop_data_name": "props/twigs",
+          "_position": [
+            21.32206,
+            1.3036137,
+            -19.26637
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        "birch_tree_00.001_89287ac5-300b-4b7c-be90-517d70808381": {
+          "_prop_id": "89287ac5-300b-4b7c-be90-517d70808381",
+          "_prop_data_name": "props/birch_tree_00",
+          "_position": [
+            12.542185,
+            2.383971,
+            21.717415
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        "bed_for_koa_cd7dff1a-0529-4a9f-ba45-3b4da2ce0ef0": {
+          "_prop_id": "cd7dff1a-0529-4a9f-ba45-3b4da2ce0ef0",
+          "_prop_data_name": "props/bed",
+          "_position": [
+            19.45322,
+            1.8658686,
+            10.609284
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        "table_b290f55d-916f-4dc3-9631-3864b26a0c2a": {
+          "_prop_id": "b290f55d-916f-4dc3-9631-3864b26a0c2a",
+          "_prop_data_name": "props/table",
+          "_position": [
+            23.249563,
+            1.5397471,
+            15.186357
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        "log.001_05e5aeec-8226-49ed-8bff-4b4fd926ba45": {
+          "_prop_id": "05e5aeec-8226-49ed-8bff-4b4fd926ba45",
+          "_prop_data_name": "props/log",
+          "_position": [
+            -12.883425,
+            1.1384335,
+            -1.4116411
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        "bed_for_aru_d62ba03f-bb62-499d-87f9-a82c0d22e355": {
+          "_prop_id": "d62ba03f-bb62-499d-87f9-a82c0d22e355",
+          "_prop_data_name": "props/bed",
+          "_position": [
+            21.401073,
+            1.8113737,
+            11.705606
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        "twigs.001_f5443d90-aca9-477d-8b34-2da2ebb648e8": {
+          "_prop_id": "f5443d90-aca9-477d-8b34-2da2ebb648e8",
+          "_prop_data_name": "props/twigs",
+          "_position": [
+            17.207697,
+            1.3103237,
+            -21.115088
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        "mushroom_orange_00.006_3e24a11f-aa9a-4be5-ad04-1fa5ecc6e052": {
+          "_prop_id": "3e24a11f-aa9a-4be5-ad04-1fa5ecc6e052",
+          "_prop_data_name": "props/mushroom_orange_00",
+          "_position": [
+            32.696667,
+            0.9671619,
+            45.50673
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        },
+        "crystal_a1e6671c-1ebf-4565-88e9-1c81f2810251": {
+          "_prop_id": "a1e6671c-1ebf-4565-88e9-1c81f2810251",
+          "_prop_data_name": "props/crystal",
+          "_position": [
+            24.387077,
+            1.1574199,
+            5.4557953
+          ],
+          "_rotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "_instance_parameters": {}
+        }
+      },
+      "_scene": {
+        "_sea_height": 0.0,
+        "_cameras": {},
+        "_directional_lights": {},
+        "_point_lights": {},
+        "_effects": {},
+        "_static_objects": {},
+        "_skeletal_objects": {}
+      }
+    },
+    "game_scenes/stage_ufo": {
+      "_characters": {
+        "koa_d5b18a35-bfd7-416d-b54e-1f03965e2a18": {
+          "_character_id": "d5b18a35-bfd7-416d-b54e-1f03965e2a18",
+          "_character_data_name": "characters/family/koa",
+          "_position": [
+            3.25959,
+            11.277571,
+            0.606866
+          ],
+          "_rotation": [
+            0.0,
+            4.712389,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "monkey_ewa_fa49a05e-9dc3-4a0c-9761-5b7abb2a6226": {
+          "_character_id": "fa49a05e-9dc3-4a0c-9761-5b7abb2a6226",
+          "_character_data_name": "characters/family/monkey_ewa",
+          "_position": [
+            3.95474,
+            11.277571,
+            -0.420444
+          ],
+          "_rotation": [
+            0.0,
+            4.712389,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "alien_beta_2e0adb7a-00a0-49d2-b39a-7e47e591dee1": {
+          "_character_id": "2e0adb7a-00a0-49d2-b39a-7e47e591dee1",
+          "_character_data_name": "characters/alien",
+          "_position": [
+            -0.25001526,
+            11.0,
+            2.9653382
+          ],
+          "_rotation": [
+            0.0,
+            -0.7693285,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "alien_alpha_53c6d78e-48f0-403b-9d70-899ce504a32c": {
+          "_character_id": "53c6d78e-48f0-403b-9d70-899ce504a32c",
+          "_character_data_name": "characters/alien",
+          "_position": [
+            -1.2043171,
+            11.0,
+            -0.037096858
+          ],
+          "_rotation": [
+            0.0,
+            4.5982733,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "aru_73289a07-e7e8-4717-a32f-87a2982de222": {
+          "_character_id": "73289a07-e7e8-4717-a32f-87a2982de222",
+          "_character_data_name": "characters/family/aru",
+          "_position": [
+            2.27165,
+            11.277571,
+            0.361297
+          ],
+          "_rotation": [
+            0.0,
+            4.712389,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "monkey_koa_c97802fc-9bca-45c6-ad22-39234125929f": {
+          "_character_id": "c97802fc-9bca-45c6-ad22-39234125929f",
+          "_character_data_name": "characters/family/monkey_koa",
+          "_position": [
+            3.25959,
+            11.277571,
+            0.606866
+          ],
+          "_rotation": [
+            0.0,
+            4.712389,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "ewa_4e4fca36-5ee9-4df0-ba1f-445f481a33af": {
+          "_character_id": "4e4fca36-5ee9-4df0-ba1f-445f481a33af",
+          "_character_data_name": "characters/family/ewa",
+          "_position": [
+            3.95474,
+            11.277571,
+            -0.420444
+          ],
+          "_rotation": [
+            0.0,
+            4.712389,
+            0.0
+          ],
+          "_scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      },
+      "_items": {},
+      "_player": {},
+      "_props": {},
+      "_scene": {
+        "_sea_height": 0.0,
+        "_cameras": {},
+        "_directional_lights": {},
+        "_point_lights": {},
+        "_effects": {},
+        "_static_objects": {},
+        "_skeletal_objects": {}
+      }
+    },
+    "": {
+      "_characters": {},
+      "_items": {},
+      "_player": {},
+      "_props": {},
+      "_scene": {
+        "_sea_height": 0.0,
+        "_cameras": {},
+        "_directional_lights": {},
+        "_point_lights": {},
+        "_effects": {},
+        "_static_objects": {},
+        "_skeletal_objects": {}
+      }
+    }
+  },
+  "_game_scenarios": [],
+  "_completed_game_scenarios": [
+    "ScenarioIntro_Ufo",
+    "ScenarioIntro_DayOne",
+    "ScenarioWrapUpTheDay",
+    "ScenarioIntro_Intro",
+    "ScenarioIntro_Revolution"
+  ]
+}

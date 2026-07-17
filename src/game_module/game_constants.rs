@@ -43,6 +43,14 @@ pub const TEMPERATURE_MAX: f32 = 32.0;
 pub const SLEEP_TIMER: f32 = 1.5;
 pub const CHARACTER_INTERACTION_TIME: f32 = 3.0;
 
+// character
+pub const CHARACTER_NAME_ARU: &str = "aru";
+pub const CHARACTER_DATA_NAME_ARU: &str = "family/aru";
+pub const CHARACTER_NAME_EWA: &str = "ewa";
+pub const CHARACTER_DATA_NAME_EWA: &str = "family/aru";
+pub const CHARACTER_NAME_KOA: &str = "koa";
+pub const CHARACTER_DATA_NAME_KOA: &str = "family/koa";
+
 // player
 pub const GRAVITY: f32 = 30.0;
 pub const MOVE_LIMIT: f32 = 2.0;

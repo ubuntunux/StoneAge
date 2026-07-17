@@ -1,7 +1,7 @@
 {
     "_characters": {
         "alien_alpha": {
-            "_character_data_name": "characters/family/alien",
+            "_character_data_name": "characters/alien",
             "_position": [
                 -1.2043170928955078,
                 11.0,
@@ -19,7 +19,7 @@
             ]
         },
         "alien_beta": {
-            "_character_data_name": "characters/family/alien",
+            "_character_data_name": "characters/alien",
             "_position": [
                 -0.2500152587890625,
                 11.0,

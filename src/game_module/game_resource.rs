@@ -194,24 +194,22 @@ impl<'a> GameResources<'a> {
         self._game_save_data_map.get(resource_name).is_some()
     }
 
-    pub fn get_or_create_game_save_data(&mut self, resource_name: &str) -> &RcRefCell<GameSaveData> {
-        if !self._game_save_data_map.contains_key(resource_name) {
-            self._game_save_data_map.insert(resource_name.to_string(), newRcRefCell(GameSaveData::default()));
-        }
+    pub fn get_game_save_data(&mut self, resource_name: &str) -> &RcRefCell<GameSaveData> {
         self._game_save_data_map.get(resource_name).as_ref().unwrap()
     }
 
-    pub fn save_game_save_data(&mut self, game_save_data_name: &str) {
-        let game_save_data = self.get_or_create_game_save_data(game_save_data_name);
+    pub fn save_game_save_data(&mut self, game_save_data_name: &str, game_save_data: &GameSaveData) {
+        if !self._game_save_data_map.contains_key(game_save_data_name) {
+            self._game_save_data_map.insert(game_save_data_name.to_string(), newRcRefCell(game_save_data.clone()));
+        }
 
-        // save game save data
         let mut game_save_data_filepath = PathBuf::from(APPLICATION_RESOURCE_PATH);
         game_save_data_filepath.push(GAME_DATA_DIRECTORY);
         game_save_data_filepath.push(game_save_data_name);
         game_save_data_filepath.set_extension(EXT_GAME_DATA);
         let mut write_file = File::create(&game_save_data_filepath).expect("Failed to create file");
         let write_contents: String =
-            serde_json::to_string_pretty(&game_save_data.borrow().clone()).expect("Failed to serialize.");
+            serde_json::to_string_pretty(game_save_data).expect("Failed to serialize.");
         write_file.write_all(write_contents.as_bytes()).expect("Failed to write");
     }
 

@@ -9,7 +9,6 @@ use std::collections::{HashMap, HashSet};
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[serde(default)]
 pub struct GameSaveData {
-    pub _game_save_data_name: String,
     pub _player: (String, CharacterCreateInfo),
     pub _camera: CameraCreateInfo,
     pub _time_of_day: f32,

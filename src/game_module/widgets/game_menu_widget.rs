@@ -189,7 +189,9 @@ impl<'a> GameMenuWidget<'a> {
         let game_client = ptr_as_mut(self._game_client);
         match selected_menu_item {
             GameMenuType::Resume => {}
-            GameMenuType::NewGame => {}
+            GameMenuType::NewGame => {
+                game_client.request_new_game();
+            }
             GameMenuType::LoadGame => {
                 game_client.request_load_game(DEFAULT_GAME_SAVE_DATA);
             }

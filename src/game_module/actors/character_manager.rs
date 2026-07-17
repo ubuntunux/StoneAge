@@ -191,6 +191,7 @@ impl<'a> CharacterManager<'a> {
 
     pub fn remove_character(&mut self, character_ref: &RcRefCell<Character<'a>>) {
         let mut character = character_ref.borrow_mut();
+
         character.destroy_character();
         self._characters.remove(&character._character_id);
         if let Some(target) = self._character_name_map.get(character._character_name.as_str())

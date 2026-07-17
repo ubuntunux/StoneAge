@@ -5,12 +5,13 @@ use crate::game_module::game_constants::{
 };
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
-use crate::game_module::scenario::scenario::{ScenarioBase, ScenarioDataCreateInfo, ScenarioType};
+use crate::game_module::scenario::scenario::{GameScenarioCreateInfo, ScenarioBase, ScenarioDataCreateInfo, ScenarioType};
 use crate::game_module::scenario::scenario_track::ScenarioTrack;
+use serde::{Deserialize, Serialize};
 use crate::game_module::widgets::text_box_widget::{TextBoxContent, TextBoxLayerType};
 use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop};
-use rust_engine_3d::utilities::system::{RcRefCell, State, newRcRefCell, ptr_as_mut, ptr_as_ref};
+use rust_engine_3d::utilities::system::{RcRefCell, State, newRcRefCell, ptr_as_mut};
 use std::str::FromStr;
 use strum::IntoEnumIterator;
 use strum_macros::{Display, EnumCount, EnumIter, EnumString};
@@ -25,6 +26,12 @@ pub enum ScenarioPhase {
     End,
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+struct ScenarioRevolutionSaveData {
+    pub _position_timer: f32,
+    pub _position_y: f32,
+}
+
 fn update_actor_position(actor: &mut Character, position_y: f32) {
     actor.set_position(&Vector3::new(
         actor.get_position().x,
@@ -34,8 +41,8 @@ fn update_actor_position(actor: &mut Character, position_y: f32) {
 }
 
 pub struct ScenarioRevolution<'a> {
-    _is_load_completed: bool,
     _scenario_type: ScenarioType,
+    _scenario_create_info: ScenarioDataCreateInfo,
     _game_scene_manager: *const GameSceneManager<'a>,
     _alien_alpha: Option<RcRefCell<Character<'a>>>,
     _alien_beta: Option<RcRefCell<Character<'a>>>,
@@ -58,11 +65,11 @@ impl<'a> ScenarioRevolution<'a> {
         game_scene_manager: *const GameSceneManager<'a>,
         _game_resources: *const GameResources<'a>,
         scenario_type: ScenarioType,
-        _scenario_create_info: &ScenarioDataCreateInfo,
+        scenario_create_info: &ScenarioDataCreateInfo,
     ) -> RcRefCell<ScenarioRevolution<'a>> {
         newRcRefCell(ScenarioRevolution {
-            _is_load_completed: false,
             _scenario_type: scenario_type,
+            _scenario_create_info: scenario_create_info.clone(),
             _game_scene_manager: game_scene_manager,
             _alien_alpha: None,
             _alien_beta: None,
@@ -98,11 +105,29 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
     }
 
     fn set_scenario_phase_as_string(&mut self, scenario_phase: &String) {
-        self._scenario_track._scenario_phase = ScenarioPhase::from_str(scenario_phase.as_str()).unwrap();
+        self._scenario_track._scenario_phase = ScenarioPhase::from_str(scenario_phase.as_str()).unwrap_or(ScenarioPhase::None);
     }
 
-    fn is_load_completed(&self) -> bool {
-        self._is_load_completed
+    fn load_scenario_save_data(&mut self, scenario_save_data: &GameScenarioCreateInfo) {
+        self._scenario_create_info = scenario_save_data._scenario_create_info.clone();
+        self._scenario_track.load_scenario_track_data(&scenario_save_data._scenario_track_create_info);
+        if let Ok(data) = serde_json::from_str::<ScenarioRevolutionSaveData>(&scenario_save_data._scenario_data) {
+            self._position_timer = data._position_timer;
+            self._position_y = data._position_y;
+        }
+    }
+
+    fn get_scenario_save_data(&self) -> GameScenarioCreateInfo {
+        let save_data = ScenarioRevolutionSaveData {
+            _position_timer: self._position_timer,
+            _position_y: self._position_y,
+        };
+        GameScenarioCreateInfo {
+            _scenario_type: self.get_scenario_type(),
+            _scenario_create_info: self._scenario_create_info.clone(),
+            _scenario_track_create_info: self._scenario_track.save_scenario_track_data(),
+            _scenario_data: serde_json::to_string(&save_data).unwrap_or_default(),
+        }
     }
 
     fn is_play_scenario_mode(&self) -> bool {
@@ -115,48 +140,67 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
 
     fn destroy_game_scenario(&mut self) {}
 
-    fn on_close_game_scene(&mut self, _game_scene_data_name: &str) {
-        self._is_load_completed = false;
-    }
+    fn on_close_game_scene(&mut self, _game_scene_data_name: &str) {}
 
-    fn on_open_game_scene(&mut self, _game_scene_data_name: &str) {
-        let game_scene_manager = ptr_as_ref(self._game_scene_manager);
-        self._alien_alpha = Some(game_scene_manager.get_actor_by_name("alien_alpha").unwrap().clone());
-        self._alien_beta = Some(game_scene_manager.get_actor_by_name("alien_beta").unwrap().clone());
-        self._monkey_aru = Some(game_scene_manager.get_actor_by_name("monkey_aru").unwrap().clone());
-        self._monkey_ewa = Some(game_scene_manager.get_actor_by_name("monkey_ewa").unwrap().clone());
-        self._monkey_koa = Some(game_scene_manager.get_actor_by_name("monkey_koa").unwrap().clone());
-        self._actor_aru = Some(game_scene_manager.get_actor_by_name("aru").unwrap().clone());
-        self._actor_ewa = Some(game_scene_manager.get_actor_by_name("ewa").unwrap().clone());
-        self._actor_koa = Some(game_scene_manager.get_actor_by_name("koa").unwrap().clone());
+    fn on_open_game_scene(&mut self, game_scene_data_name: &str) {
+        let game_scene_manager = ptr_as_mut(self._game_scene_manager);
+        if self._scenario_create_info.get_game_scene_data_name() == game_scene_data_name {
+            game_scene_manager.spawn_game_scenario_objects(&self._scenario_create_info);
+            self._scenario_create_info.reset();
+        }
 
-        self._alien_alpha.as_ref().unwrap().borrow_mut().set_behavior_none();
-        self._alien_beta.as_ref().unwrap().borrow_mut().set_behavior_none();
-        self._monkey_aru.as_ref().unwrap().borrow_mut().set_action_sleep_no_snoring();
-        self._monkey_aru.as_ref().unwrap().borrow_mut()._controller.set_flying_mode(true);
-        self._monkey_ewa.as_ref().unwrap().borrow_mut().set_behavior_none();
-        self._monkey_ewa.as_ref().unwrap().borrow_mut().set_action_sleep_no_snoring();
-        self._monkey_ewa.as_ref().unwrap().borrow_mut()._controller.set_flying_mode(true);
-        self._monkey_koa.as_ref().unwrap().borrow_mut().set_behavior_none();
-        self._monkey_koa.as_ref().unwrap().borrow_mut().set_action_sleep_no_snoring();
-        self._monkey_koa.as_ref().unwrap().borrow_mut()._controller.set_flying_mode(true);
+        self._alien_alpha = game_scene_manager.get_actor_by_name("alien_alpha").cloned();
+        self._alien_beta = game_scene_manager.get_actor_by_name("alien_beta").cloned();
+        self._monkey_aru = game_scene_manager.get_actor_by_name("monkey_aru").cloned();
+        self._monkey_ewa = game_scene_manager.get_actor_by_name("monkey_ewa").cloned();
+        self._monkey_koa = game_scene_manager.get_actor_by_name("monkey_koa").cloned();
+        self._actor_aru = game_scene_manager.get_actor_by_name("aru").cloned();
+        self._actor_ewa = game_scene_manager.get_actor_by_name("ewa").cloned();
+        self._actor_koa = game_scene_manager.get_actor_by_name("koa").cloned();
 
-        self._actor_aru.as_ref().unwrap().borrow_mut()._render_object.borrow_mut().set_visible(false);
-        self._actor_aru.as_ref().unwrap().borrow_mut().set_behavior_none();
-        self._actor_aru.as_ref().unwrap().borrow_mut().set_action_sleep_no_snoring();
-        self._actor_aru.as_ref().unwrap().borrow_mut()._controller.set_flying_mode(true);
-        self._actor_ewa.as_ref().unwrap().borrow_mut()._render_object.borrow_mut().set_visible(false);
-        self._actor_ewa.as_ref().unwrap().borrow_mut().set_behavior_none();
-        self._actor_ewa.as_ref().unwrap().borrow_mut().set_action_sleep_no_snoring();
-        self._actor_ewa.as_ref().unwrap().borrow_mut()._controller.set_flying_mode(true);
-        self._actor_koa.as_ref().unwrap().borrow_mut()._render_object.borrow_mut().set_visible(false);
-        self._actor_koa.as_ref().unwrap().borrow_mut().set_behavior_none();
-        self._actor_koa.as_ref().unwrap().borrow_mut().set_action_sleep_no_snoring();
-        self._actor_koa.as_ref().unwrap().borrow_mut()._controller.set_flying_mode(true);
+        if let Some(actor) = &self._alien_alpha {
+            actor.borrow_mut().set_behavior_none();
+        }
+        if let Some(actor) = &self._alien_beta {
+            actor.borrow_mut().set_behavior_none();
+        }
+        if let Some(actor) = &self._monkey_aru {
+            actor.borrow_mut().set_action_sleep_no_snoring();
+            actor.borrow_mut()._controller.set_flying_mode(true);
+        }
+        if let Some(actor) = &self._monkey_ewa {
+            actor.borrow_mut().set_behavior_none();
+            actor.borrow_mut().set_action_sleep_no_snoring();
+            actor.borrow_mut()._controller.set_flying_mode(true);
+        }
+        if let Some(actor) = &self._monkey_koa {
+            actor.borrow_mut().set_behavior_none();
+            actor.borrow_mut().set_action_sleep_no_snoring();
+            actor.borrow_mut()._controller.set_flying_mode(true);
+        }
 
-        self._position_y = self._monkey_aru.as_ref().unwrap().borrow().get_position().y;
+        if let Some(actor) = &self._actor_aru {
+            actor.borrow_mut()._render_object.borrow_mut().set_visible(false);
+            actor.borrow_mut().set_behavior_none();
+            actor.borrow_mut().set_action_sleep_no_snoring();
+            actor.borrow_mut()._controller.set_flying_mode(true);
+        }
+        if let Some(actor) = &self._actor_ewa {
+            actor.borrow_mut()._render_object.borrow_mut().set_visible(false);
+            actor.borrow_mut().set_behavior_none();
+            actor.borrow_mut().set_action_sleep_no_snoring();
+            actor.borrow_mut()._controller.set_flying_mode(true);
+        }
+        if let Some(actor) = &self._actor_koa {
+            actor.borrow_mut()._render_object.borrow_mut().set_visible(false);
+            actor.borrow_mut().set_behavior_none();
+            actor.borrow_mut().set_action_sleep_no_snoring();
+            actor.borrow_mut()._controller.set_flying_mode(true);
+        }
 
-        self._is_load_completed = true;
+        if let Some(actor) = &self._monkey_aru {
+            self._position_y = actor.borrow().get_position().y;
+        }
     }
 
     fn update_game_scenario(&mut self, _any_key_hold: bool, _any_key_pressed: bool, delta_time: f64) {
@@ -212,28 +256,26 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
                 ScenarioPhase::Discussion => match state {
                     State::Begin => {
                         let contents = vec![TextBoxContent::MaterialInstance(String::from(MATERIAL_EMOJI_GOOD))];
-                        game_ui_manager.add_text_box_item(
-                            TextBoxLayerType::InteractionLayer,
-                            ActorWrapper::Character(self._alien_alpha.as_ref().unwrap().clone()),
-                            &contents,
-                            Some(CHARACTER_INTERACTION_TIME),
-                        );
-                        game_ui_manager.add_text_box_item(
-                            TextBoxLayerType::InteractionLayer,
-                            ActorWrapper::Character(self._alien_beta.as_ref().unwrap().clone()),
-                            &contents,
-                            Some(CHARACTER_INTERACTION_TIME),
-                        );
-                        self._alien_alpha
-                            .as_ref()
-                            .unwrap()
-                            .borrow_mut()
-                            .look_at(self._alien_beta.as_ref().unwrap().borrow().get_position());
-                        self._alien_beta
-                            .as_ref()
-                            .unwrap()
-                            .borrow_mut()
-                            .look_at(self._alien_alpha.as_ref().unwrap().borrow().get_position());
+                        if let Some(alpha) = &self._alien_alpha {
+                            game_ui_manager.add_text_box_item(
+                                TextBoxLayerType::InteractionLayer,
+                                ActorWrapper::Character(alpha.clone()),
+                                &contents,
+                                Some(CHARACTER_INTERACTION_TIME),
+                            );
+                        }
+                        if let Some(beta) = &self._alien_beta {
+                            game_ui_manager.add_text_box_item(
+                                TextBoxLayerType::InteractionLayer,
+                                ActorWrapper::Character(beta.clone()),
+                                &contents,
+                                Some(CHARACTER_INTERACTION_TIME),
+                            );
+                        }
+                        if let (Some(alpha), Some(beta)) = (&self._alien_alpha, &self._alien_beta) {
+                            alpha.borrow_mut().look_at(beta.borrow().get_position());
+                            beta.borrow_mut().look_at(alpha.borrow().get_position());
+                        }
                     }
                     State::Update => {
                         if phase_time == 0.0 {
@@ -258,16 +300,15 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
                 },
                 ScenarioPhase::Revolution => match state {
                     State::Begin => {
-                        self._alien_alpha
-                            .as_ref()
-                            .unwrap()
-                            .borrow_mut()
-                            .look_at(self._actor_aru.as_ref().unwrap().borrow().get_position());
-                        self._alien_beta
-                            .as_ref()
-                            .unwrap()
-                            .borrow_mut()
-                            .look_at(self._actor_aru.as_ref().unwrap().borrow().get_position());
+                        if let Some(aru) = &self._actor_aru {
+                            let aru_pos = aru.borrow().get_position().clone();
+                            if let Some(alpha) = &self._alien_alpha {
+                                alpha.borrow_mut().look_at(&aru_pos);
+                            }
+                            if let Some(beta) = &self._alien_beta {
+                                beta.borrow_mut().look_at(&aru_pos);
+                            }
+                        }
                         game_scene_manager.get_scene_manager().play_audio_options(
                             AUDIO_UFO_EXPERIMENT,
                             AudioLoop::ONCE,
@@ -280,48 +321,24 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
                         } else {
                             false
                         };
-                        self._monkey_aru
-                            .as_ref()
-                            .unwrap()
-                            .borrow()
-                            ._render_object
-                            .borrow_mut()
-                            .set_visible(visible_monkey);
-                        self._monkey_ewa
-                            .as_ref()
-                            .unwrap()
-                            .borrow()
-                            ._render_object
-                            .borrow_mut()
-                            .set_visible(visible_monkey);
-                        self._monkey_koa
-                            .as_ref()
-                            .unwrap()
-                            .borrow()
-                            ._render_object
-                            .borrow_mut()
-                            .set_visible(visible_monkey);
-                        self._actor_aru
-                            .as_ref()
-                            .unwrap()
-                            .borrow()
-                            ._render_object
-                            .borrow_mut()
-                            .set_visible(!visible_monkey);
-                        self._actor_ewa
-                            .as_ref()
-                            .unwrap()
-                            .borrow()
-                            ._render_object
-                            .borrow_mut()
-                            .set_visible(!visible_monkey);
-                        self._actor_koa
-                            .as_ref()
-                            .unwrap()
-                            .borrow()
-                            ._render_object
-                            .borrow_mut()
-                            .set_visible(!visible_monkey);
+                        if let Some(m) = &self._monkey_aru {
+                            m.borrow()._render_object.borrow_mut().set_visible(visible_monkey);
+                        }
+                        if let Some(m) = &self._monkey_ewa {
+                            m.borrow()._render_object.borrow_mut().set_visible(visible_monkey);
+                        }
+                        if let Some(m) = &self._monkey_koa {
+                            m.borrow()._render_object.borrow_mut().set_visible(visible_monkey);
+                        }
+                        if let Some(a) = &self._actor_aru {
+                            a.borrow()._render_object.borrow_mut().set_visible(!visible_monkey);
+                        }
+                        if let Some(a) = &self._actor_ewa {
+                            a.borrow()._render_object.borrow_mut().set_visible(!visible_monkey);
+                        }
+                        if let Some(a) = &self._actor_koa {
+                            a.borrow()._render_object.borrow_mut().set_visible(!visible_monkey);
+                        }
                         if 1.0 <= phase_ratio {
                             if game_ui_manager.is_done_manual_fade_out() {
                                 self._scenario_track.set_next_scenario_phase(ScenarioPhase::End, None);
@@ -339,7 +356,7 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
                         }
                         self._audio_ufo_laboratory = None;
                         game_ui_manager.set_auto_fade_inout(true);
-                        game_scene_manager.request_open_game_scenario(ScenarioType::ScenarioDayOne, false);
+                        game_scene_manager.request_open_game_scenario(ScenarioType::ScenarioIntro_DayOne);
                     }
                 }
             }
@@ -352,12 +369,24 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
         if self._monkey_aru.is_some() {
             self._position_timer += delta_time as f32;
             let position_y = self._position_y + (self._position_timer.sin() * 0.5 + 0.5);
-            update_actor_position(&mut self._monkey_aru.as_ref().unwrap().borrow_mut(), position_y);
-            update_actor_position(&mut self._monkey_ewa.as_ref().unwrap().borrow_mut(), position_y);
-            update_actor_position(&mut self._monkey_koa.as_ref().unwrap().borrow_mut(), position_y);
-            update_actor_position(&mut self._actor_aru.as_ref().unwrap().borrow_mut(), position_y);
-            update_actor_position(&mut self._actor_ewa.as_ref().unwrap().borrow_mut(), position_y);
-            update_actor_position(&mut self._actor_koa.as_ref().unwrap().borrow_mut(), position_y);
+            if let Some(actor) = &self._monkey_aru {
+                update_actor_position(&mut actor.borrow_mut(), position_y);
+            }
+            if let Some(actor) = &self._monkey_ewa {
+                update_actor_position(&mut actor.borrow_mut(), position_y);
+            }
+            if let Some(actor) = &self._monkey_koa {
+                update_actor_position(&mut actor.borrow_mut(), position_y);
+            }
+            if let Some(actor) = &self._actor_aru {
+                update_actor_position(&mut actor.borrow_mut(), position_y);
+            }
+            if let Some(actor) = &self._actor_ewa {
+                update_actor_position(&mut actor.borrow_mut(), position_y);
+            }
+            if let Some(actor) = &self._actor_koa {
+                update_actor_position(&mut actor.borrow_mut(), position_y);
+            }
         }
     }
 }
