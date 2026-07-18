@@ -8311,16 +8311,6 @@
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/game_data/scenario/scenario_intro/day_one.blend": [
-        {
-            "asset_type": "GAME_SCENARIO",
-            "asset_path": "scenario_intro/day_one",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/scenario/scenario_intro/day_one.blend",
-            "guid": "",
-            "mtime": 1784216342.4170547,
-            "data": {}
-        }
-    ],
     "/mnt/Workspace/StoneAge/resources/externals/game_data/scenario/scenario_intro/intro.blend": [
         {
             "asset_type": "GAME_SCENARIO",
@@ -8347,7 +8337,17 @@
             "asset_path": "scenario_intro/revolution",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/scenario/scenario_intro/revolution.blend",
             "guid": "",
-            "mtime": 1784307179.639959,
+            "mtime": 1784398778.3184493,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/scenario/scenario_intro/day_one.blend": [
+        {
+            "asset_type": "GAME_SCENARIO",
+            "asset_path": "scenario_intro/day_one",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/scenario/scenario_intro/day_one.blend",
+            "guid": "",
+            "mtime": 1784399221.4173536,
             "data": {}
         }
     ],

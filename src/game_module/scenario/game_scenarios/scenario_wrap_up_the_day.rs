@@ -46,7 +46,7 @@ pub struct ScenarioWrapUpTheDay<'a> {
     _scenario_create_info: ScenarioDataCreateInfo,
     _game_scene_manager: *const GameSceneManager<'a>,
     _sleep_timer: f32,
-    _actor_aru: Option<RcRefCell<Character<'a>>>,
+    _player: Option<RcRefCell<Character<'a>>>,
     _actor_ewa: Option<RcRefCell<Character<'a>>>,
     _actor_koa: Option<RcRefCell<Character<'a>>>,
     _prop_table: Option<RcRefCell<Prop<'a>>>,
@@ -70,7 +70,7 @@ impl<'a> ScenarioWrapUpTheDay<'a> {
             _scenario_create_info: scenario_create_info.clone(),
             _game_scene_manager: game_scene_manager,
             _sleep_timer: 0.0,
-            _actor_aru: None,
+            _player: None,
             _actor_ewa: None,
             _actor_koa: None,
             _prop_table: None,
@@ -180,10 +180,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
 
     fn on_open_game_scene(&mut self, _game_scene_data_name: &str) {
         let game_scene_manager = ptr_as_ref(self._game_scene_manager);
-        self._actor_aru = game_scene_manager
-            .get_actor_by_name("monkey_aru")
-            .cloned()
-            .or_else(|| game_scene_manager.get_actor_by_name("aru").cloned());
+        self._player = game_scene_manager.get_maybe_player().clone();
         self._actor_ewa = game_scene_manager
             .get_actor_by_name("monkey_ewa")
             .cloned()
@@ -229,7 +226,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                 }
                 ScenarioPhase::Begin => {
                     if state == State::Update {
-                        if let Some(actor) = &self._actor_aru {
+                        if let Some(actor) = &self._player {
                             actor.borrow_mut().set_behavior_none();
                             actor.borrow_mut().set_action_none();
                         }
@@ -261,7 +258,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
 
                             dance_around_the_table(
                                 game_scene_manager.get_scene_manager(),
-                                &self._actor_aru,
+                                &self._player,
                                 &self._prop_table,
                                 &Vector3::new(1.0, 0.0, 0.0),
                             );
@@ -295,7 +292,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                                 AudioLoop::ONCE,
                                 None,
                             );
-                            if let Some(actor) = &self._actor_aru {
+                            if let Some(actor) = &self._player {
                                 actor.borrow_mut().set_action_none();
                             }
                             if let Some(actor) = &self._actor_ewa {
@@ -310,12 +307,12 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                 }
                 ScenarioPhase::GoToSleep => {
                     if state == State::Update && 3.0 < phase_time {
-                        go_to_sleep(&self._actor_aru, &self._prop_bed_for_aru);
+                        go_to_sleep(&self._player, &self._prop_bed_for_aru);
                         go_to_sleep(&self._actor_ewa, &self._prop_bed_for_ewa);
                         go_to_sleep(&self._actor_koa, &self._prop_bed_for_koa);
 
                         let aru_is_sleeping = self
-                            ._actor_aru
+                            ._player
                             .as_ref()
                             .map_or(false, |actor| actor.borrow().is_action(ActionAnimationState::Sleep));
                         if aru_is_sleeping {
@@ -341,7 +338,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                                 self._skip_wakeup = false;
                             } else {
                                 game_scene_manager.get_scene_manager().play_audio_bank(AUDIO_ROOSTER);
-                                if let Some(actor) = &self._actor_aru {
+                                if let Some(actor) = &self._player {
                                     actor.borrow_mut().set_action_wake_up();
                                 }
                                 if let Some(actor) = &self._actor_ewa {

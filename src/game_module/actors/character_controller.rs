@@ -345,6 +345,7 @@ impl<'a> CharacterController<'a> {
         self._position.x += self._velocity.x * delta_time;
         self._position.y += self._velocity.y * delta_time;
         self._position.z += self._velocity.z * delta_time;
+        self._falling_height = self._position.y;
 
         // update rotation
         self.rotate_to_direction(&move_direction, delta_time);

@@ -35,7 +35,7 @@ pub struct ScenarioUfo<'a> {
     _scenario_create_info: ScenarioDataCreateInfo,
     _game_scene_manager: *const GameSceneManager<'a>,
     _actor_ufo: Option<RcRefCell<Character<'a>>>,
-    _actor_aru: Option<RcRefCell<Character<'a>>>,
+    _player: Option<RcRefCell<Character<'a>>>,
     _actor_ewa: Option<RcRefCell<Character<'a>>>,
     _actor_koa: Option<RcRefCell<Character<'a>>>,
     _audio_ufo_flying: Option<RcRefCell<AudioInstance>>,
@@ -55,7 +55,7 @@ impl<'a> ScenarioUfo<'a> {
             _scenario_create_info: scenario_create_info.clone(),
             _game_scene_manager: game_scene_manager,
             _actor_ufo: None,
-            _actor_aru: None,
+            _player: None,
             _actor_ewa: None,
             _actor_koa: None,
             _audio_ufo_flying: None,
@@ -102,7 +102,7 @@ impl<'a> ScenarioUfo<'a> {
     }
 
     pub fn update_be_abducted(&mut self, delta_time: f64) -> bool {
-        let aru = self._actor_aru.clone();
+        let aru = self._player.clone();
         let ewa = self._actor_ewa.clone();
         let koa = self._actor_koa.clone();
 
@@ -168,7 +168,7 @@ impl<'a> ScenarioBase<'a> for ScenarioUfo<'a> {
 
         if game_scene_data_name == Stages::Home.get_stage_data_name() {
             self._actor_ufo = game_scene_manager.get_actor_by_name("ufo").cloned();
-            self._actor_aru = game_scene_manager.get_actor_by_name("monkey_aru").cloned();
+            self._player = game_scene_manager.get_maybe_player().clone();
             self._actor_ewa = game_scene_manager.get_actor_by_name("monkey_ewa").cloned();
             self._actor_koa = game_scene_manager.get_actor_by_name("monkey_koa").cloned();
         }
@@ -229,7 +229,7 @@ impl<'a> ScenarioBase<'a> for ScenarioUfo<'a> {
                         let main_camera = game_scene_manager.get_scene_manager().get_main_camera_mut();
                         main_camera._transform_object.set_position(&Vector3::new(13.48, 26.56, -5.02));
                         main_camera._transform_object.set_rotation(&Vector3::new(0.76, 0.33, 0.0));
-                        if let Some(actor) = &self._actor_aru {
+                        if let Some(actor) = &self._player {
                             actor.borrow_mut().set_action_sleep_no_snoring();
                         }
                     }
@@ -242,7 +242,7 @@ impl<'a> ScenarioBase<'a> for ScenarioUfo<'a> {
                 },
                 ScenarioPhase::BeAbducted => match state {
                     State::Begin => {
-                        if let Some(actor) = &self._actor_aru {
+                        if let Some(actor) = &self._player {
                             actor.borrow_mut()._controller.set_flying_mode(true);
                         }
                         if let Some(actor) = &self._actor_ewa {

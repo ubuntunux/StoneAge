@@ -44,7 +44,7 @@ pub struct ScenarioDayOne<'a> {
     _around_start_rotation: Vector3<f32>,
     _around_end_rotation: Vector3<f32>,
     _actor_ufo: Option<RcRefCell<Character<'a>>>,
-    _actor_aru: Option<RcRefCell<Character<'a>>>,
+    _player: Option<RcRefCell<Character<'a>>>,
     _actor_ewa: Option<RcRefCell<Character<'a>>>,
     _actor_koa: Option<RcRefCell<Character<'a>>>,
     _prop_bed_for_aru: Option<RcRefCell<Prop<'a>>>,
@@ -72,7 +72,7 @@ impl<'a> ScenarioDayOne<'a> {
             _around_start_rotation: Vector3::new(0.4, 0.0, 0.0),
             _around_end_rotation: Vector3::new(0.35, 0.0, 0.0),
             _actor_ufo: None,
-            _actor_aru: None,
+            _player: None,
             _actor_ewa: None,
             _actor_koa: None,
             _prop_bed_for_aru: None,
@@ -113,17 +113,17 @@ impl<'a> ScenarioDayOne<'a> {
     }
 
     pub fn update_release_family(&mut self, delta_time: f64) -> bool {
-        let actor_aru = self._actor_aru.clone();
+        let player = self._player.clone();
         let bed_aru = self._prop_bed_for_aru.clone();
         let actor_ewa = self._actor_ewa.clone();
         let bed_ewa = self._prop_bed_for_ewa.clone();
         let actor_koa = self._actor_koa.clone();
         let bed_koa = self._prop_bed_for_koa.clone();
 
-        if let (Some(actor_aru), Some(bed_aru), Some(actor_ewa), Some(bed_ewa), Some(actor_koa), Some(bed_koa)) =
-            (actor_aru, bed_aru, actor_ewa, bed_ewa, actor_koa, bed_koa)
+        if let (Some(player), Some(bed_aru), Some(actor_ewa), Some(bed_ewa), Some(actor_koa), Some(bed_koa)) =
+            (player, bed_aru, actor_ewa, bed_ewa, actor_koa, bed_koa)
         {
-            let arrived_aru = self.update_release_actor(actor_aru, bed_aru, delta_time);
+            let arrived_aru = self.update_release_actor(player, bed_aru, delta_time);
             let arrived_ewa = self.update_release_actor(actor_ewa, bed_ewa, delta_time);
             let arrived_koa = self.update_release_actor(actor_koa, bed_koa, delta_time);
             arrived_aru && arrived_ewa && arrived_koa
@@ -199,11 +199,9 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
             game_scene_manager.spawn_game_scenario_objects(&self._scenario_create_info);
             self._scenario_create_info.reset();
         }
-
-        if let Some(actor) = game_scene_manager.get_actor_by_name("monkey_aru").cloned() {
-            log::info!("remove monkey_aru");
-            game_scene_manager.get_character_manager_mut().remove_character(&actor);
-        }
+        // if let Some(actor) = game_scene_manager.get_actor_by_name("monkey_aru").cloned() {
+        //     game_scene_manager.get_character_manager_mut().remove_character(&actor);
+        // }
         if let Some(actor) = game_scene_manager.get_actor_by_name("monkey_ewa").cloned() {
             game_scene_manager.get_character_manager_mut().remove_character(&actor);
         }
@@ -212,7 +210,7 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
         }
 
         self._actor_ufo = game_scene_manager.get_actor_by_name("ufo").cloned();
-        self._actor_aru = game_scene_manager.get_actor_by_name("aru").cloned();
+        self._player = game_scene_manager.get_maybe_player().clone();
         self._actor_ewa = game_scene_manager.get_actor_by_name("ewa").cloned();
         self._actor_koa = game_scene_manager.get_actor_by_name("koa").cloned();
         self._prop_bed_for_aru = game_scene_manager.get_prop_manager().get_prop_by_name("bed_for_aru").cloned();
@@ -221,7 +219,7 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
         self._prop_monolith = game_scene_manager.get_prop_manager().get_prop_by_name("monolith").cloned();
 
         if let Some(ufo) = &self._actor_ufo {
-            if let Some(actor) = &self._actor_aru {
+            if let Some(actor) = &self._player {
                 actor.borrow_mut()._controller.set_flying_mode(true);
                 actor.borrow_mut().set_behavior_none();
                 actor.borrow_mut().set_action_sleep_no_snoring();
@@ -247,7 +245,7 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
         main_camera._transform_object.set_position(&Vector3::new(13.48, 26.56, -5.02));
         main_camera._transform_object.set_rotation(&Vector3::new(0.76, 0.33, 0.0));
 
-        let pivot = if let Some(actor) = &self._actor_aru {
+        let pivot = if let Some(actor) = &self._player {
             *actor.borrow().get_center()
         } else {
             Vector3::zeros()
@@ -387,7 +385,7 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
                         let main_camera = game_scene_manager.get_scene_manager().get_main_camera_mut();
                         main_camera._transform_object.set_position(&self._around_start_position);
                         main_camera._transform_object.set_rotation(&self._around_start_rotation);
-                        if let Some(actor) = &self._actor_aru {
+                        if let Some(actor) = &self._player {
                             actor.borrow_mut().set_action_sleep();
                         }
                     }
@@ -404,7 +402,7 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
                             game_scene_manager.get_character_manager_mut().remove_character(ufo);
                         }
 
-                        if let Some(actor) = &self._actor_aru {
+                        if let Some(actor) = &self._player {
                             actor.borrow_mut()._controller.set_flying_mode(false);
                             if let Some(bed) = &self._prop_bed_for_aru {
                                 actor.borrow_mut().set_position(bed.borrow().get_position());
@@ -430,7 +428,7 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
                     }
                     State::Update => {
                         let main_camera = game_scene_manager.get_scene_manager().get_main_camera_mut();
-                        let pivot = if let Some(actor) = &self._actor_aru {
+                        let pivot = if let Some(actor) = &self._player {
                             *actor.borrow().get_center() + Vector3::new(0.0, CAMERA_OFFSET_Y, 0.0)
                         } else {
                             Vector3::zeros()

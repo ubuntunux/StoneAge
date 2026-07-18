@@ -51,7 +51,7 @@ pub struct ScenarioRevolution<'a> {
     _actor_aru: Option<RcRefCell<Character<'a>>>,
     _actor_ewa: Option<RcRefCell<Character<'a>>>,
     _actor_koa: Option<RcRefCell<Character<'a>>>,
-    _monkey_aru: Option<RcRefCell<Character<'a>>>,
+    _player: Option<RcRefCell<Character<'a>>>,
     _monkey_ewa: Option<RcRefCell<Character<'a>>>,
     _monkey_koa: Option<RcRefCell<Character<'a>>>,
     _position_timer: f32,
@@ -78,7 +78,7 @@ impl<'a> ScenarioRevolution<'a> {
             _actor_aru: None,
             _actor_ewa: None,
             _actor_koa: None,
-            _monkey_aru: None,
+            _player: None,
             _monkey_ewa: None,
             _monkey_koa: None,
             _position_timer: 0.0,
@@ -154,7 +154,7 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
 
         self._alien_alpha = game_scene_manager.get_actor_by_name("alien_alpha").cloned();
         self._alien_beta = game_scene_manager.get_actor_by_name("alien_beta").cloned();
-        self._monkey_aru = game_scene_manager.get_actor_by_name("monkey_aru").cloned();
+        self._player = game_scene_manager.get_maybe_player().clone();
         self._monkey_ewa = game_scene_manager.get_actor_by_name("monkey_ewa").cloned();
         self._monkey_koa = game_scene_manager.get_actor_by_name("monkey_koa").cloned();
         self._actor_aru = game_scene_manager.get_actor_by_name("aru").cloned();
@@ -167,7 +167,7 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
         if let Some(actor) = &self._alien_beta {
             actor.borrow_mut().set_behavior_none();
         }
-        if let Some(actor) = &self._monkey_aru {
+        if let Some(actor) = &self._player {
             actor.borrow_mut().set_action_sleep_no_snoring();
             actor.borrow_mut()._controller.set_flying_mode(true);
         }
@@ -181,7 +181,6 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
             actor.borrow_mut().set_action_sleep_no_snoring();
             actor.borrow_mut()._controller.set_flying_mode(true);
         }
-
         if let Some(actor) = &self._actor_aru {
             actor.borrow_mut()._render_object.borrow_mut().set_visible(false);
             actor.borrow_mut().set_behavior_none();
@@ -201,7 +200,7 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
             actor.borrow_mut()._controller.set_flying_mode(true);
         }
 
-        if let Some(actor) = &self._monkey_aru {
+        if let Some(actor) = &self._player {
             self._position_y = actor.borrow().get_position().y;
         }
     }
@@ -324,7 +323,7 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
                         } else {
                             false
                         };
-                        if let Some(m) = &self._monkey_aru {
+                        if let Some(m) = &self._player {
                             m.borrow()._render_object.borrow_mut().set_visible(visible_monkey);
                         }
                         if let Some(m) = &self._monkey_ewa {
@@ -369,10 +368,10 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
             }
         }
 
-        if self._monkey_aru.is_some() {
+        if self._player.is_some() {
             self._position_timer += delta_time as f32;
             let position_y = self._position_y + (self._position_timer.sin() * 0.5 + 0.5);
-            if let Some(actor) = &self._monkey_aru {
+            if let Some(actor) = &self._player {
                 update_actor_position(&mut actor.borrow_mut(), position_y);
             }
             if let Some(actor) = &self._monkey_ewa {

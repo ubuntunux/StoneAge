@@ -268,8 +268,7 @@ impl<'a> Character<'a> {
 
         self.set_move_idle();
         self.set_action_none();
-        self.update_transform();
-        self.update_render_object();
+        self.initialize_transform(position, rotation, scale);
     }
 
     pub fn initialize_transform(&mut self, position: &Vector3<f32>, rotation: &Vector3<f32>, scale: &Vector3<f32>) {
@@ -1453,7 +1452,7 @@ impl<'a> Character<'a> {
                             &animation_info,
                             AnimationLayer::ActionLayer,
                         );
-                        if self._is_player {
+                        if self._is_player && update_action_animation_state == ActionAnimationState::Sleep {
                             if let Some(audio_instance) = self._audio_snoring.as_ref() {
                                 self.get_character_manager().get_scene_manager().stop_audio_instance(audio_instance)
                             }

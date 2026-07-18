@@ -69,7 +69,7 @@ pub struct ScenarioIntro<'a> {
     _scenario_type: ScenarioType,
     _scenario_create_info: ScenarioDataCreateInfo,
     _game_scene_manager: *const GameSceneManager<'a>,
-    _actor_aru: Option<RcRefCell<Character<'a>>>,
+    _player: Option<RcRefCell<Character<'a>>>,
     _actor_ewa: Option<RcRefCell<Character<'a>>>,
     _actor_koa: Option<RcRefCell<Character<'a>>>,
     _prop_gate: Option<RcRefCell<Prop<'a>>>,
@@ -109,7 +109,7 @@ impl<'a> ScenarioIntro<'a> {
             _scenario_type: scenario_type,
             _scenario_create_info: scenario_create_info.clone(),
             _game_scene_manager: game_scene_manager,
-            _actor_aru: None,
+            _player: None,
             _actor_ewa: None,
             _actor_koa: None,
             _prop_gate: None,
@@ -282,7 +282,7 @@ impl<'a> ScenarioIntro<'a> {
         self.remove_give_food_to_koa_text_box(game_scene_manager);
         self.remove_wrap_up_the_day_text_box(game_scene_manager);
 
-        self._actor_aru = None;
+        self._player = None;
         self._actor_ewa = None;
         self._actor_koa = None;
         self._prop_gate = None;
@@ -374,7 +374,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
             self._scenario_create_info.reset();
         }
 
-        self._actor_aru = game_scene_manager.get_actor_by_name("monkey_aru").cloned();
+        self._player = game_scene_manager.get_maybe_player().clone();
         self._actor_ewa = game_scene_manager.get_actor_by_name("monkey_ewa").cloned();
         self._actor_koa = game_scene_manager.get_actor_by_name("monkey_koa").cloned();
         self._prop_gate = game_scene_manager.get_prop_manager().get_prop_by_name(DEFAULT_GATE_NAME).cloned();
@@ -389,7 +389,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
         match self._scenario_track._scenario_phase {
             ScenarioPhase::None | ScenarioPhase::Begin => {
                 let mut pivot = Vector3::new(0.0, CAMERA_OFFSET_Y, 0.0);
-                if let Some(actor) = self._actor_aru.as_ref() {
+                if let Some(actor) = self._player.as_ref() {
                     pivot += *actor.borrow().get_center();
                 };
                 let start_rotation_matrix = math::make_rotation_matrix(
@@ -494,7 +494,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                         if let Some(actor) = &self._actor_koa {
                             actor.borrow_mut().set_behavior_none();
                         }
-                        if let Some(actor) = &self._actor_aru {
+                        if let Some(actor) = &self._player {
                             actor.borrow_mut().set_move_direction(&Vector3::new(1.0, 0.0, 0.0), true);
                         }
                         if let Some(actor) = &self._actor_ewa {
@@ -527,7 +527,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                 },
                 ScenarioPhase::Morning => match state {
                     State::Begin => {
-                        if let Some(actor) = &self._actor_aru {
+                        if let Some(actor) = &self._player {
                             actor.borrow_mut().set_action_sleep();
                         }
                         if let Some(actor) = &self._actor_ewa {
@@ -570,7 +570,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                         self._wakeup_delay_koa -= delta_time as f32;
 
                         if 0.0 <= prev_wakeup_delay_aru && self._wakeup_delay_aru < 0.0 {
-                            if let Some(actor) = &self._actor_aru {
+                            if let Some(actor) = &self._player {
                                 actor.borrow_mut().set_action_wake_up();
                             }
                         }
@@ -588,7 +588,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                         }
 
                         let aru_none = self
-                            ._actor_aru
+                            ._player
                             .as_ref()
                             .map_or(true, |actor| actor.borrow_mut().is_action(ActionAnimationState::None));
                         let ewa_none = self
@@ -617,7 +617,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                         let mut done = true;
 
                         if let (Some(actor_aru), Some(actor_ewa), Some(actor_koa)) =
-                            (&self._actor_aru, &self._actor_ewa, &self._actor_koa)
+                            (&self._player, &self._actor_ewa, &self._actor_koa)
                         {
                             if self.update_assemble(actor_ewa, actor_aru) {
                                 self.emoji_hungry(game_ui_manager, actor_ewa);
@@ -645,7 +645,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                         game_scene_manager.get_scene_manager().play_audio_bank(AUDIO_STOMACH_GROWLING);
 
                         if let (Some(actor_aru), Some(actor_ewa), Some(actor_koa)) =
-                            (&self._actor_aru, &self._actor_ewa, &self._actor_koa)
+                            (&self._player, &self._actor_ewa, &self._actor_koa)
                         {
                             actor_aru.borrow_mut().look_at(actor_koa.borrow().get_position());
                             actor_ewa.borrow_mut().look_at(actor_aru.borrow().get_position());

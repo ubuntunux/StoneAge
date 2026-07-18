@@ -29,7 +29,7 @@ pub type CharacterID = Uuid;
 pub type CharacterMap<'a> = HashMap<CharacterID, RcRefCell<Character<'a>>>;
 pub type CharacterNameMap<'a> = HashMap<String, RcRefCell<Character<'a>>>;
 
-#[derive(Serialize, Deserialize, Default, Debug, Clone, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(default)]
 pub struct CharacterCreateInfo {
     pub _character_id: CharacterID,
@@ -37,6 +37,18 @@ pub struct CharacterCreateInfo {
     pub _position: Vector3<f32>,
     pub _rotation: Vector3<f32>,
     pub _scale: Vector3<f32>,
+}
+
+impl Default for CharacterCreateInfo {
+    fn default() -> Self {
+        CharacterCreateInfo {
+            _character_id: Default::default(),
+            _character_data_name: "".to_string(),
+            _position: Default::default(),
+            _rotation: Default::default(),
+            _scale: Vector3::new(1.0, 1.0, 1.0)
+        }
+    }
 }
 
 pub struct CharacterManager<'a> {
@@ -183,7 +195,7 @@ impl<'a> CharacterManager<'a> {
         }
 
         self._characters.insert(character_id, character.clone());
-        if !self._character_name_map.contains_key(character_name.as_str()) {
+        if !is_player && !self._character_name_map.contains_key(character_name.as_str()) {
             self._character_name_map.insert(character_name.clone(), character.clone());
         }
         character

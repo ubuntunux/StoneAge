@@ -171,6 +171,10 @@ impl<'a> GameSceneManager<'a> {
         self.get_character_manager().get_character_by_name(actor_name)
     }
 
+    pub fn get_maybe_player(&self) -> &Option<RcRefCell<Character<'a>>> {
+        self.get_character_manager().get_maybe_player()
+    }
+
     pub fn get_prop_manager(&self) -> &PropManager<'a> {
         self._prop_manager.as_ref()
     }
@@ -469,9 +473,7 @@ impl<'a> GameSceneManager<'a> {
         self.open_game_scene_data(game_scene_data_name);
     }
 
-    pub fn spawn_game_scene_objects(&mut self, game_scene_data: &RcRefCell<GameSceneDataCreateInfo>) {
-        let game_scene_data = game_scene_data.borrow();
-
+    pub fn spawn_game_scene_objects(&mut self, game_scene_data: &GameSceneDataCreateInfo) {
         // items
         for (item_data_name, item_create_info) in game_scene_data._items.iter() {
             self._item_manager.create_item(item_data_name, item_create_info, None);
@@ -505,11 +507,9 @@ impl<'a> GameSceneManager<'a> {
         }
 
         // player
-        for (character_name, character_create_info) in scenario_create_info._player.iter() {
-            if let Some(character) = self._character_manager.get_character_by_name(character_name) {
+        for (_character_name, character_create_info) in scenario_create_info._player.iter() {
+            if let Some(character) = self._character_manager.get_maybe_player() {
                 character.borrow_mut().update_characters_save_data(character_create_info);
-            } else {
-                self._character_manager.create_character(character_name, character_create_info, true);
             }
         }
 
@@ -653,22 +653,18 @@ impl<'a> GameSceneManager<'a> {
             GameSceneState::Loading => {
                 if self.get_scene_manager().is_load_complete() {
                     let game_save_data = ptr_as_ref(self._game_client).get_game_save_data().borrow();
-                    if let Some(game_scene_save_data) =
-                        game_save_data._game_scenes.get(&self._current_game_scene_data_name).as_ref()
-                    {
-                        self._character_manager.create_characters(&game_scene_save_data._characters);
-                        self._item_manager.create_items(&game_scene_save_data._items);
-                        self._prop_manager.create_props(&game_scene_save_data._props);
-                        self.get_character_manager_mut().create_character(
-                            game_save_data._player.0.as_str(),
-                            &game_save_data._player.1,
-                            true,
-                        );
-                    } else {
-                        if let Some(game_scene_data) = self._current_game_scene_data.clone() {
-                            self.spawn_game_scene_objects(&game_scene_data);
-                        }
+                    if let Some(game_scene_save_data) = game_save_data._game_scenes.get(&self._current_game_scene_data_name).as_ref() {
+                        self.spawn_game_scene_objects(game_scene_save_data);
+                    } else if let Some(game_scene_data) = self._current_game_scene_data.clone() {
+                        self.spawn_game_scene_objects(&game_scene_data.borrow());
                     }
+
+                    // player
+                    self.get_character_manager_mut().create_character(
+                        game_save_data._player.0.as_str(),
+                        &game_save_data._player.1,
+                        true,
+                    );
 
                     // post process after loading
                     self._character_manager.post_process_after_characters_loading();
