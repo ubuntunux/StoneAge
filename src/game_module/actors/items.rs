@@ -45,6 +45,12 @@ pub struct ItemCreateInfo {
     pub _pickup_delay: f32,
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
+#[serde(default)]
+pub struct ItemSaveData {
+    pub _item_create_info: ItemCreateInfo,
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(default)]
 pub struct ItemData {

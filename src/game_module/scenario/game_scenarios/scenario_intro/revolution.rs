@@ -1,7 +1,7 @@
 use crate::game_module::actors::character::{ActorWrapper, Character};
 use crate::game_module::game_constants::{
-    AUDIO_ALIEN_TALK, AUDIO_UFO_EXPERIMENT, AUDIO_UFO_LABORATORY, CHARACTER_INTERACTION_TIME, DEFAULT_FADE_TIME,
-    MATERIAL_EMOJI_GOOD, MATERIAL_UI_NONE, TIME_OF_NOON,
+    AUDIO_ALIEN_TALK, AUDIO_UFO_EXPERIMENT, AUDIO_UFO_LABORATORY, CHARACTER_DATA_NAME_ARU, CHARACTER_INTERACTION_TIME,
+    DEFAULT_FADE_TIME, MATERIAL_EMOJI_GOOD, MATERIAL_UI_NONE, TIME_OF_NOON,
 };
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
@@ -353,6 +353,12 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
                 },
                 ScenarioPhase::End => {
                     if state == State::Begin {
+                        if let Some(player) = self._player.as_ref() {
+                            game_scene_manager
+                                .get_character_manager_mut()
+                                .change_character_data(player, CHARACTER_DATA_NAME_ARU);
+                        }
+
                         if let Some(audio_instance) = self._audio_ufo_laboratory.as_ref() {
                             game_scene_manager.get_scene_manager().stop_audio_instance(audio_instance);
                         }

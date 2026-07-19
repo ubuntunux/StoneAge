@@ -363,7 +363,7 @@ impl<'a> GameController<'a> {
         mouse_input_data: &MouseInputData,
         _mouse_delta: &Vector2<f32>,
         main_camera: &mut CameraObjectData,
-        player: &RcRefCell<Character>,
+        player: &RcRefCell<Character<'a>>,
     ) {
         let delta_time: f32 = time_data._delta_time_with_scale as f32;
         let is_attack: bool =
@@ -490,7 +490,7 @@ impl<'a> GameController<'a> {
         };
 
         // set action & move
-        let mut player_mut = player.borrow_mut();
+        let mut player_mut = ptr_as_mut(player.as_ptr());
         {
             let mut move_direction: Vector3<f32> = Vector3::zeros();
 

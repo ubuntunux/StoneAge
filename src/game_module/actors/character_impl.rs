@@ -1,7 +1,9 @@
 use crate::game_module::actors::character::{Character, CharacterAnimationState, CharacterStats};
 use crate::game_module::actors::character_controller::CharacterController;
 use crate::game_module::actors::character_data::{ActionAnimationState, CharacterData, MoveAnimationState};
-use crate::game_module::actors::character_manager::{CharacterCreateInfo, CharacterID, CharacterManager};
+use crate::game_module::actors::character_manager::{
+    CharacterCreateInfo, CharacterID, CharacterManager, CharacterSaveData,
+};
 use crate::game_module::actors::interaction_object::InteractionObject;
 use crate::game_module::actors::items::Item;
 use crate::game_module::actors::items::{ItemDataType, ItemManager};
@@ -263,7 +265,7 @@ impl<'a> Character<'a> {
 
     pub fn initialize_character(&mut self, position: &Vector3<f32>, rotation: &Vector3<f32>, scale: &Vector3<f32>) {
         self._character_stats.initialize_character_stats(&self._character_data.borrow());
-        self._controller.initialize_controller(&self._character_data.borrow(), position, rotation, scale);
+        self._controller.initialize_controller(position, rotation, scale);
         self._behavior.initialize_behavior(position);
 
         self.set_move_idle();
@@ -294,6 +296,11 @@ impl<'a> Character<'a> {
         self.stop_animations(true);
     }
 
+    pub fn change_character_model(&mut self, render_object: &RcRefCell<RenderObjectData<'a>>) {
+        self._render_object = render_object.clone();
+        self._render_object.borrow_mut().update_render_object_data(0.0);
+    }
+
     pub fn update_characters_save_data(&mut self, character_create_info: &CharacterCreateInfo) {
         self.initialize_transform(
             &character_create_info._position,
@@ -302,15 +309,19 @@ impl<'a> Character<'a> {
         )
     }
 
-    pub fn get_character_save_data(&self) -> (String, CharacterCreateInfo) {
+    pub fn load_character_save_data(&mut self, _character_save_data_: &CharacterSaveData) {}
+
+    pub fn get_character_save_data(&self) -> (String, CharacterSaveData) {
         (
             format_name_with_uuid(self._character_name.as_str(), self.get_character_id()),
-            CharacterCreateInfo {
-                _character_id: self.get_character_id(),
-                _character_data_name: self._character_data_name.clone(),
-                _position: *self.get_position(),
-                _rotation: *self.get_rotation(),
-                _scale: *self.get_scale(),
+            CharacterSaveData {
+                _character_create_info: CharacterCreateInfo {
+                    _character_id: self.get_character_id(),
+                    _character_data_name: self._character_data_name.clone(),
+                    _position: *self.get_position(),
+                    _rotation: *self.get_rotation(),
+                    _scale: *self.get_scale(),
+                },
             },
         )
     }

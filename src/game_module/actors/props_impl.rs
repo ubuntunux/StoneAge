@@ -3,14 +3,14 @@ use crate::game_module::actors::character_data::ActionAnimationState;
 use crate::game_module::actors::interaction_object::InteractionObject;
 use crate::game_module::actors::items::ItemCreateInfo;
 use crate::game_module::actors::props::{
-    Prop, PropCreateInfo, PropData, PropDataType, PropID, PropManager, PropMap, PropStats,
+    Prop, PropCreateInfo, PropData, PropDataType, PropID, PropManager, PropMap, PropSaveData, PropStats,
 };
 use crate::game_module::game_client::GameClient;
 use crate::game_module::game_constants::{
     AUDIO_HIT, CHARACTER_INTERACTION_DISTANCE, EFFECT_HIT, GAME_VIEW_MODE, GameViewMode, NPC_ATTACK_HIT_RANGE,
 };
 use crate::game_module::game_resource::GameResources;
-use crate::game_module::game_scene_manager::{GameSceneManager, PropCreateInfoMap};
+use crate::game_module::game_scene_manager::{GameSceneManager, PropCreateInfoMap, PropSaveDataMap};
 use nalgebra::Vector3;
 use rand;
 use rust_engine_3d::audio::audio_manager::{AudioLoop, AudioManager};
@@ -97,16 +97,20 @@ impl<'a> Prop<'a> {
         self.update_transform();
     }
 
-    pub fn get_prop_save_data(&self) -> (String, PropCreateInfo) {
+    pub fn load_prop_save_date(&mut self, _prop_save_data: &PropSaveData) {}
+
+    pub fn get_prop_save_data(&self) -> (String, PropSaveData) {
         (
             format_name_with_uuid(self._prop_name.as_str(), self.get_prop_id()),
-            PropCreateInfo {
-                _prop_id: self.get_prop_id(),
-                _prop_data_name: self._prop_data_name.clone(),
-                _position: self._prop_stats._position,
-                _rotation: self._prop_stats._rotation,
-                _scale: self._prop_stats._scale,
-                _instance_parameters: self._instance_parameters.clone(),
+            PropSaveData {
+                _prop_create_info: PropCreateInfo {
+                    _prop_id: self.get_prop_id(),
+                    _prop_data_name: self._prop_data_name.clone(),
+                    _position: self._prop_stats._position,
+                    _rotation: self._prop_stats._rotation,
+                    _scale: self._prop_stats._scale,
+                    _instance_parameters: self._instance_parameters.clone(),
+                },
             },
         )
     }
@@ -382,7 +386,18 @@ impl<'a> PropManager<'a> {
         }
     }
 
-    pub fn get_props_save_data(&self) -> PropCreateInfoMap {
+    pub fn load_prop_save_data(&mut self, prop_name: &str, prop_save_data: &PropSaveData) {
+        let prop = self.create_prop(prop_name, &prop_save_data._prop_create_info);
+        prop.borrow_mut().load_prop_save_date(&prop_save_data);
+    }
+
+    pub fn load_props_save_data(&mut self, props_save_data: &PropSaveDataMap) {
+        for (prop_name, prop_save_data) in props_save_data.iter() {
+            self.load_prop_save_data(prop_name.as_str(), prop_save_data);
+        }
+    }
+
+    pub fn get_props_save_data(&self) -> PropSaveDataMap {
         self._props.values().map(|prop| prop.borrow().get_prop_save_data()).collect()
     }
 

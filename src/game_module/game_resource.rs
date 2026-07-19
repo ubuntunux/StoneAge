@@ -199,9 +199,7 @@ impl<'a> GameResources<'a> {
     }
 
     pub fn save_game_save_data(&mut self, game_save_data_name: &str, game_save_data: &GameSaveData) {
-        if !self._game_save_data_map.contains_key(game_save_data_name) {
-            self._game_save_data_map.insert(game_save_data_name.to_string(), newRcRefCell(game_save_data.clone()));
-        }
+        self._game_save_data_map.insert(game_save_data_name.to_string(), newRcRefCell(game_save_data.clone()));
 
         let mut game_save_data_filepath = PathBuf::from(APPLICATION_RESOURCE_PATH);
         game_save_data_filepath.push(GAME_DATA_DIRECTORY);

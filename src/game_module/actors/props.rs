@@ -41,6 +41,12 @@ pub struct PropCreateInfo {
     pub _instance_parameters: serde_json::Map<String, serde_json::Value>,
 }
 
+#[derive(Serialize, Deserialize, Default, Debug, Clone, PartialEq)]
+#[serde(default)]
+pub struct PropSaveData {
+    pub _prop_create_info: PropCreateInfo,
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(default)]
 pub struct PropData {

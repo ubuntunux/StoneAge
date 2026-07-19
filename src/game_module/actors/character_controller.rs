@@ -72,13 +72,7 @@ impl<'a> CharacterController<'a> {
         }
     }
 
-    pub fn initialize_controller(
-        &mut self,
-        _character_data: &CharacterData,
-        position: &Vector3<f32>,
-        rotation: &Vector3<f32>,
-        scale: &Vector3<f32>,
-    ) {
+    pub fn initialize_controller(&mut self, position: &Vector3<f32>, rotation: &Vector3<f32>, scale: &Vector3<f32>) {
         self._prev_position = *position;
         self._position = *position;
         self._rotation = *rotation;

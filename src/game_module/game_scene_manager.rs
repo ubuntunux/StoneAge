@@ -1,8 +1,10 @@
 use crate::application::application::Application;
 use crate::game_module::actors::character::Character;
-use crate::game_module::actors::character_manager::{CharacterCreateInfo, CharacterID, CharacterManager};
-use crate::game_module::actors::items::{ItemCreateInfo, ItemManager};
-use crate::game_module::actors::props::{PropCreateInfo, PropManager};
+use crate::game_module::actors::character_manager::{
+    CharacterCreateInfo, CharacterID, CharacterManager, CharacterSaveData,
+};
+use crate::game_module::actors::items::{ItemCreateInfo, ItemManager, ItemSaveData};
+use crate::game_module::actors::props::{PropCreateInfo, PropManager, PropSaveData};
 use crate::game_module::game_client::GameClient;
 use crate::game_module::game_constants::{
     GAME_VIEW_MODE, GameViewMode, TEMPERATURE_MAX, TEMPERATURE_MIN, TIME_OF_DAWN, TIME_OF_DAY_SPEED, TIME_OF_MORNING,
@@ -24,8 +26,11 @@ use std::collections::{HashMap, HashSet};
 use strum_macros::{Display, EnumString};
 
 pub type CharacterCreateInfoMap = HashMap<String, CharacterCreateInfo>;
+pub type CharacterSaveDataMap = HashMap<String, CharacterSaveData>;
 pub type ItemCreateInfoMap = HashMap<String, ItemCreateInfo>;
+pub type ItemSaveDataMap = HashMap<String, ItemSaveData>;
 pub type PropCreateInfoMap = HashMap<String, PropCreateInfo>;
+pub type PropSaveDataMap = HashMap<String, PropSaveData>;
 pub type ScenarioMap<'a> = HashMap<ScenarioType, RcRefCell<dyn ScenarioBase<'a> + 'a>>;
 
 #[derive(Clone, PartialEq, Eq, Hash, Debug, Display, EnumString, Copy)]
@@ -96,6 +101,14 @@ pub struct GameSceneDataCreateInfo {
     pub _player: CharacterCreateInfoMap,
     pub _props: PropCreateInfoMap,
     pub _scene: SceneDataCreateInfo,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[serde(default)]
+pub struct GameSceneSaveData {
+    pub _characters: CharacterSaveDataMap,
+    pub _items: ItemSaveDataMap,
+    pub _props: PropSaveDataMap,
 }
 
 pub struct GameSceneManager<'a> {
@@ -340,12 +353,11 @@ impl<'a> GameSceneManager<'a> {
             self._scenarios.values().map(|scenario| scenario.borrow().get_scenario_save_data()).collect();
     }
 
-    pub fn get_game_scene_save_data(&self) -> GameSceneDataCreateInfo {
-        GameSceneDataCreateInfo {
+    pub fn get_game_scene_save_data(&self) -> GameSceneSaveData {
+        GameSceneSaveData {
             _characters: self.get_character_manager().get_characters_save_data(),
             _items: self._item_manager.get_items_save_data(),
             _props: self._prop_manager.get_props_save_data(),
-            ..Default::default()
         }
     }
 
@@ -471,6 +483,12 @@ impl<'a> GameSceneManager<'a> {
     pub fn goto_game_scene(&mut self, game_scene_data_name: &str) {
         self.get_game_client().save_game(false);
         self.open_game_scene_data(game_scene_data_name);
+    }
+
+    pub fn spawn_game_scene_save_data_objects(&mut self, game_scene_save_data: &GameSceneSaveData) {
+        self._character_manager.load_characters_save_data(&game_scene_save_data._characters);
+        self._item_manager.load_items_save_data(&game_scene_save_data._items);
+        self._prop_manager.load_props_save_data(&game_scene_save_data._props);
     }
 
     pub fn spawn_game_scene_objects(&mut self, game_scene_data: &GameSceneDataCreateInfo) {
@@ -653,14 +671,16 @@ impl<'a> GameSceneManager<'a> {
             GameSceneState::Loading => {
                 if self.get_scene_manager().is_load_complete() {
                     let game_save_data = ptr_as_ref(self._game_client).get_game_save_data().borrow();
-                    if let Some(game_scene_save_data) = game_save_data._game_scenes.get(&self._current_game_scene_data_name).as_ref() {
-                        self.spawn_game_scene_objects(game_scene_save_data);
+                    if let Some(game_scene_save_data) =
+                        game_save_data._game_scenes.get(&self._current_game_scene_data_name).as_ref()
+                    {
+                        self.spawn_game_scene_save_data_objects(game_scene_save_data);
                     } else if let Some(game_scene_data) = self._current_game_scene_data.clone() {
                         self.spawn_game_scene_objects(&game_scene_data.borrow());
                     }
 
                     // player
-                    self.get_character_manager_mut().create_character(
+                    self.get_character_manager_mut().load_character_save_data(
                         game_save_data._player.0.as_str(),
                         &game_save_data._player.1,
                         true,

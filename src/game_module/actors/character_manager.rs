@@ -9,7 +9,7 @@ use crate::game_module::game_constants::{
     ITEM_HAND, ITEM_SPIRIT_BALL, MATERIAL_EMOJI_GOOD, MATERIAL_EMOJI_HUNGRY, NPC_ATTACK_HIT_RANGE,
 };
 use crate::game_module::game_resource::GameResources;
-use crate::game_module::game_scene_manager::{CharacterCreateInfoMap, GameSceneManager};
+use crate::game_module::game_scene_manager::{CharacterCreateInfoMap, CharacterSaveDataMap, GameSceneManager};
 use crate::game_module::game_ui_manager::GameUIManager;
 use crate::game_module::widgets::text_box_widget::TextBoxContent;
 use crate::game_module::widgets::text_box_widget::TextBoxLayerType;
@@ -46,9 +46,15 @@ impl Default for CharacterCreateInfo {
             _character_data_name: "".to_string(),
             _position: Default::default(),
             _rotation: Default::default(),
-            _scale: Vector3::new(1.0, 1.0, 1.0)
+            _scale: Vector3::new(1.0, 1.0, 1.0),
         }
     }
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
+#[serde(default)]
+pub struct CharacterSaveData {
+    pub _character_create_info: CharacterCreateInfo,
 }
 
 pub struct CharacterManager<'a> {
@@ -233,7 +239,24 @@ impl<'a> CharacterManager<'a> {
         }
     }
 
-    pub fn get_characters_save_data(&self) -> CharacterCreateInfoMap {
+    pub fn load_character_save_data(
+        &mut self,
+        character_name: &str,
+        character_save_data: &CharacterSaveData,
+        is_player: bool,
+    ) -> RcRefCell<Character<'a>> {
+        let character = self.create_character(character_name, &character_save_data._character_create_info, is_player);
+        character.borrow_mut().load_character_save_data(&character_save_data);
+        character
+    }
+
+    pub fn load_characters_save_data(&mut self, character_save_data_map: &CharacterSaveDataMap) {
+        for (character_name, character_save_data) in character_save_data_map.iter() {
+            self.load_character_save_data(&character_name, character_save_data, false);
+        }
+    }
+
+    pub fn get_characters_save_data(&self) -> CharacterSaveDataMap {
         self._characters
             .values()
             .filter(|character| !character.borrow().is_player())
@@ -244,6 +267,35 @@ impl<'a> CharacterManager<'a> {
         for character in self._characters.values() {
             character.borrow_mut().post_process_after_character_loading();
         }
+    }
+    pub fn change_character_data(&mut self, character: &RcRefCell<Character<'a>>, character_data_name: &str) {
+        let mut character_save_data = character.borrow().get_character_save_data();
+        character_save_data.1._character_create_info._character_data_name = character_data_name.to_string();
+        self.remove_character(character);
+        self.load_character_save_data(
+            character_save_data.0.as_str(),
+            &character_save_data.1,
+            character.borrow()._is_player,
+        );
+    }
+    pub fn change_character_model(&self, character: &RcRefCell<Character<'a>>, model_data_name: &str) {
+        let mut character = character.borrow_mut();
+        self.get_scene_manager_mut().remove_skeletal_render_object(character._render_object.borrow()._object_id);
+
+        let render_object_create_info = RenderObjectCreateInfo {
+            _scene_object_type: SceneObjectType::Default,
+            _model_data_name: model_data_name.to_string(),
+            _position: character.get_position().clone(),
+            _rotation: character.get_rotation().clone(),
+            _scale: character.get_scale().clone(),
+        };
+
+        let render_object_data = self
+            .get_scene_manager_mut()
+            .add_skeletal_render_object(character.get_character_name(), &render_object_create_info);
+
+        render_object_data.borrow_mut().copy_render_object_date(&character._render_object.borrow());
+        character.change_character_model(&render_object_data);
     }
     pub fn is_valid_player(&self) -> bool {
         self._player.is_some()

@@ -2,14 +2,14 @@ use crate::application::application::Application;
 use crate::game_module::actors::character::Character;
 use crate::game_module::actors::item_updater::create_item_updater;
 use crate::game_module::actors::items::{
-    Item, ItemCreateInfo, ItemData, ItemDataType, ItemID, ItemManager, ItemProperties,
+    Item, ItemCreateInfo, ItemData, ItemDataType, ItemID, ItemManager, ItemProperties, ItemSaveData,
 };
 use crate::game_module::game_client::GameClient;
 use crate::game_module::game_constants::{
     AUDIO_ITEM_INVENTORY, AUDIO_PICKUP_ITEM, EAT_ITEM_DISTANCE, WEAPON_SOCKET_NAME,
 };
 use crate::game_module::game_resource::GameResources;
-use crate::game_module::game_scene_manager::{GameSceneManager, ItemCreateInfoMap};
+use crate::game_module::game_scene_manager::{GameSceneManager, ItemCreateInfoMap, ItemSaveDataMap};
 use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::{AudioLoop, AudioManager};
 use rust_engine_3d::core::engine_core::EngineCore;
@@ -102,21 +102,23 @@ impl<'a> Item<'a> {
         item
     }
 
-    pub fn update_item_save_data(&mut self, _item_create_info: &ItemCreateInfo) {}
+    pub fn load_item_save_data(&mut self, _item_create_info: &ItemSaveData) {}
 
     pub fn post_process_after_item_loading(&mut self) {}
 
-    pub fn get_item_save_data(&self) -> (String, ItemCreateInfo) {
+    pub fn get_item_save_data(&self) -> (String, ItemSaveData) {
         (
             format_name_with_uuid(self._item_name.as_str(), self.get_item_id()),
-            ItemCreateInfo {
-                _item_id: self.get_item_id(),
-                _item_data_name: self._item_data_name.clone(),
-                _position: self._item_properties._position,
-                _rotation: self._item_properties._rotation,
-                _scale: self._item_properties._scale,
-                _velocity: self._item_properties._velocity,
-                _pickup_delay: self._item_properties._pickup_delay,
+            ItemSaveData {
+                _item_create_info: ItemCreateInfo {
+                    _item_id: self.get_item_id(),
+                    _item_data_name: self._item_data_name.clone(),
+                    _position: self._item_properties._position,
+                    _rotation: self._item_properties._rotation,
+                    _scale: self._item_properties._scale,
+                    _velocity: self._item_properties._velocity,
+                    _pickup_delay: self._item_properties._pickup_delay,
+                },
             },
         )
     }
@@ -325,12 +327,22 @@ impl<'a> ItemManager<'a> {
 
     pub fn create_items(&mut self, item_create_infos: &ItemCreateInfoMap) {
         for (item_name, item_create_info) in item_create_infos.iter() {
-            let item = self.create_item(item_name, item_create_info, None);
-            item.borrow_mut().update_item_save_data(item_create_info);
+            self.create_item(item_name, item_create_info, None);
         }
     }
 
-    pub fn get_items_save_data(&self) -> ItemCreateInfoMap {
+    pub fn load_item_save_data(&mut self, item_name: &str, item_save_data: &ItemSaveData) {
+        let item = self.create_item(item_name, &item_save_data._item_create_info, None);
+        item.borrow_mut().load_item_save_data(item_save_data);
+    }
+
+    pub fn load_items_save_data(&mut self, item_save_data_map: &ItemSaveDataMap) {
+        for (item_name, item_save_data) in item_save_data_map.iter() {
+            self.load_item_save_data(item_name, item_save_data);
+        }
+    }
+
+    pub fn get_items_save_data(&self) -> ItemSaveDataMap {
         self._items.values().map(|item| item.borrow().get_item_save_data()).collect()
     }
 
