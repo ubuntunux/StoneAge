@@ -7,7 +7,8 @@ use crate::game_module::actors::items::{ItemCreateInfo, ItemManager, ItemSaveDat
 use crate::game_module::actors::props::{PropCreateInfo, PropManager, PropSaveData};
 use crate::game_module::game_client::GameClient;
 use crate::game_module::game_constants::{
-    GAME_VIEW_MODE, GameViewMode, TEMPERATURE_MAX, TEMPERATURE_MIN, TIME_OF_DAWN, TIME_OF_DAY_SPEED, TIME_OF_MORNING,
+    CHARACTER_DATA_NAME_MONKEY_ARU, GAME_VIEW_MODE, GameViewMode, TEMPERATURE_MAX, TEMPERATURE_MIN, TIME_OF_DAWN,
+    TIME_OF_DAY_SPEED, TIME_OF_MORNING,
 };
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_ui_manager::GameUIManager;
@@ -333,17 +334,27 @@ impl<'a> GameSceneManager<'a> {
             );
             opened_scenario.borrow_mut().load_scenario_save_data(&game_scenario_create_info);
         }
+
+        self.get_game_ui_manager_mut().clear_inventory_items();
+        for create_infos in game_save_data._inventory_item_create_info_list.values() {
+            for item_create_info in create_infos.iter() {
+                self.get_game_ui_manager_mut().add_item(item_create_info._item_data_name.as_str(), item_create_info._item_count);
+            }
+        }
     }
 
     pub fn update_game_save_data(&self, game_save_data: &mut GameSaveData) {
         if self.get_character_manager().is_valid_player() {
             game_save_data._player =
-                self.get_character_manager().get_player().as_ref().borrow().get_character_save_data();
+                Some(self.get_character_manager().get_player().as_ref().borrow().get_character_save_data())
         }
         game_save_data._time_of_day = self.get_time_of_day();
         game_save_data._temperature = self.temperature();
         game_save_data._date = self.get_date();
         game_save_data._last_game_scene_data_name = self.get_current_game_scene_data_name().clone();
+        game_save_data._inventory_item_create_info_list = self.get_game_ui_manager().get_inventory_item_create_infos();
+        game_save_data._selected_inventory_item_index = self.get_game_ui_manager().get_selected_inventory_item_index();
+
         game_save_data._game_scenes.insert(
             self.get_current_game_scene_data_name().clone(),
             self.get_game_scene_save_data(),
@@ -489,6 +500,8 @@ impl<'a> GameSceneManager<'a> {
         self._character_manager.load_characters_save_data(&game_scene_save_data._characters);
         self._item_manager.load_items_save_data(&game_scene_save_data._items);
         self._prop_manager.load_props_save_data(&game_scene_save_data._props);
+        let game_scene_manager = ptr_as_ref(self as *const GameSceneManager);
+        self._character_manager.post_process_after_characters_loading(game_scene_manager);
     }
 
     pub fn spawn_game_scene_objects(&mut self, game_scene_data: &GameSceneDataCreateInfo) {
@@ -680,16 +693,26 @@ impl<'a> GameSceneManager<'a> {
                     }
 
                     // player
-                    self.get_character_manager_mut().load_character_save_data(
-                        game_save_data._player.0.as_str(),
-                        &game_save_data._player.1,
-                        true,
-                    );
+                    if let Some(player_save_data) = game_save_data._player.as_ref() {
+                        self._character_manager.load_character_save_data(
+                            player_save_data.0.as_str(),
+                            &player_save_data.1,
+                            true,
+                        );
+                    } else {
+                        let character_create_info = CharacterCreateInfo {
+                            _character_data_name: CHARACTER_DATA_NAME_MONKEY_ARU.to_string(),
+                            ..Default::default()
+                        };
+                        self._character_manager.create_character("player", &character_create_info, true);
+                    };
 
                     // post process after loading
-                    self._character_manager.post_process_after_characters_loading();
+                    let game_scene_manager = ptr_as_ref(self as *const GameSceneManager);
+                    self._character_manager.post_process_after_characters_loading(game_scene_manager);
                     self._item_manager.post_process_after_item_loading();
                     self._prop_manager.post_process_after_prop_loading();
+                    self.get_game_ui_manager_mut().select_item(game_save_data._selected_inventory_item_index);
 
                     for scenario in self._scenarios.values() {
                         scenario.borrow_mut().on_open_game_scene(self._current_game_scene_data_name.as_str());

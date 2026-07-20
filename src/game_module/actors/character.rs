@@ -9,6 +9,9 @@ use rust_engine_3d::scene::render_object::RenderObjectData;
 use rust_engine_3d::utilities::system::RcRefCell;
 use std::ffi::c_void;
 
+use crate::game_module::actors::items::ItemID;
+use serde::{Deserialize, Serialize};
+
 #[derive(Clone)]
 pub enum ActorWrapper<'a> {
     Prop(RcRefCell<Prop<'a>>),
@@ -24,6 +27,25 @@ impl<'a> ActorWrapper<'a> {
             ActorWrapper::RenderObject(render_object) => render_object.as_ptr() as *const c_void,
         }
     }
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq)]
+#[serde(default)]
+pub struct CharacterStatsSaveData {
+    pub _is_alive: bool,
+    pub _hp: i32,
+    pub _max_hp: i32,
+    pub _max_hp_data: i32,
+    pub _stamina_recovery_delay_time: f32,
+    pub _prev_stamina: f32,
+    pub _stamina: f32,
+    pub _max_stamina: f32,
+    pub _max_stamina_data: f32,
+    pub _hunger: f32,
+    pub _tired: f32,
+    pub _happiness: f32,
+    pub _invincibility: bool,
+    pub _is_stat_displayed: bool,
 }
 
 #[derive(Default)]
@@ -44,7 +66,8 @@ pub struct CharacterStats {
     pub _is_stat_displayed: bool,
 }
 
-#[derive(Default)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq)]
+#[serde(default)]
 pub struct CharacterAnimationState {
     pub _move_animation_state: MoveAnimationState,
     pub _prev_move_animation_state: MoveAnimationState,
@@ -71,5 +94,6 @@ pub struct Character<'a> {
     pub _behavior: Box<dyn BehaviorBase<'a> + 'a>,
     pub _animation_state: Box<CharacterAnimationState>,
     pub _attached_item: Option<RcRefCell<Item<'a>>>,
+    pub _attached_item_id: Option<ItemID>,
     pub _audio_snoring: Option<RcRefCell<AudioInstance>>,
 }

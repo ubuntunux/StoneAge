@@ -8,7 +8,7 @@ use crate::game_module::widgets::controller_help::ControllerHelpWidget;
 use crate::game_module::widgets::cross_hair_widget::CrossHairWidget;
 use crate::game_module::widgets::game_menu_widget::GameMenuWidget;
 use crate::game_module::widgets::image_widget::ImageLayout;
-use crate::game_module::widgets::item_bar_widget::ItemBarWidget;
+use crate::game_module::widgets::item_bar_widget::{InventoryItemCreateInfoList, ItemBarWidget};
 use crate::game_module::widgets::key_binding_widget::KeyBindingWidgetManager;
 use crate::game_module::widgets::player_hud::PlayerHud;
 use crate::game_module::widgets::quest_widgets::quest_title::QuestTitle;
@@ -420,6 +420,20 @@ impl<'a> GameUIManager<'a> {
     // item bar
     pub fn add_item(&mut self, item_data_name: &str, item_count: usize) -> bool {
         self._item_bar_widget.as_mut().unwrap().add_item(item_data_name, item_count)
+    }
+
+    pub fn get_inventory_item_create_infos(&self) -> InventoryItemCreateInfoList {
+        if let Some(item_bar_widget) = self._item_bar_widget.as_ref() {
+            item_bar_widget.get_inventory_item_create_infos()
+        } else {
+            Default::default()
+        }
+    }
+
+    pub fn clear_inventory_items(&mut self) {
+        if let Some(item_bar_widget) = self._item_bar_widget.as_mut() {
+            item_bar_widget.clear_item_bar_widget();
+        }
     }
 
     pub fn remove_item(&mut self, item_data_name: &str, item_count: usize) -> bool {

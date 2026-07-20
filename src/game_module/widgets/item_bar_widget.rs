@@ -483,6 +483,34 @@ impl<'a> ItemBarWidget<'a> {
         self._selected_item_widget.get_item_index()
     }
 
+    pub fn get_inventory_item_create_infos(&self) -> InventoryItemCreateInfoList {
+        let mut inventory_item_create_info_list = InventoryItemCreateInfoList::new();
+        let mut create_infos = Vec::new();
+        for item_widget in self._item_widgets.iter() {
+            if 0 < item_widget._item_count && item_widget._item_data_name != ITEM_NONE {
+                create_infos.push(InventoryItemCreateInfo {
+                    _item_data_name: item_widget._item_data_name.clone(),
+                    _item_name: item_widget._item_name.clone(),
+                    _item_data_type: item_widget._item_data_type,
+                    _item_index: item_widget._item_index,
+                    _item_count: item_widget._item_count,
+                });
+            }
+        }
+        if !create_infos.is_empty() {
+            inventory_item_create_info_list.insert(0, create_infos);
+        }
+        inventory_item_create_info_list
+    }
+
+    pub fn clear_item_bar_widget(&mut self) {
+        for item_widget in self._item_widgets.iter_mut() {
+            item_widget.set_item_data(ITEM_NONE, ITEM_NONE, ItemDataType::None, None, 0);
+        }
+        self._item_count = 0;
+        self.select_item(INVALID_ITEM_INDEX);
+    }
+
     pub fn add_item(&mut self, item_data_name: &str, item_count: usize) -> bool {
         if item_data_name != ITEM_NONE && self._item_count < self._max_item_count {
             let was_empty_item = self.get_selected_item_data_name() == ITEM_NONE;

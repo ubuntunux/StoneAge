@@ -1,4 +1,4 @@
-use crate::game_module::actors::character::{Character, CharacterAnimationState, CharacterStats};
+use crate::game_module::actors::character::{Character, CharacterAnimationState, CharacterStats, CharacterStatsSaveData};
 use crate::game_module::actors::character_controller::CharacterController;
 use crate::game_module::actors::character_data::{ActionAnimationState, CharacterData, MoveAnimationState};
 use crate::game_module::actors::character_manager::{
@@ -10,6 +10,7 @@ use crate::game_module::actors::items::{ItemDataType, ItemManager};
 use crate::game_module::behavior::behavior_base::{BehaviorState, create_character_behavior};
 use crate::game_module::game_client::GamePhase;
 use crate::game_module::game_constants::*;
+use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::scenario::scenario::ScenarioType;
 use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
@@ -226,6 +227,42 @@ impl CharacterStats {
             self.update_stamina(owner, delta_time);
         }
     }
+
+    pub fn get_character_stats_save_data(&self) -> CharacterStatsSaveData {
+        CharacterStatsSaveData {
+            _is_alive: self._is_alive,
+            _hp: self._hp,
+            _max_hp: self._max_hp,
+            _max_hp_data: self._max_hp_data,
+            _stamina_recovery_delay_time: self._stamina_recovery_delay_time,
+            _prev_stamina: self._prev_stamina,
+            _stamina: self._stamina,
+            _max_stamina: self._max_stamina,
+            _max_stamina_data: self._max_stamina_data,
+            _hunger: self._hunger,
+            _tired: self._tired,
+            _happiness: self._happiness,
+            _invincibility: self._invincibility,
+            _is_stat_displayed: self._is_stat_displayed,
+        }
+    }
+
+    pub fn load_character_stats_save_data(&mut self, save_data: &CharacterStatsSaveData) {
+        self._is_alive = save_data._is_alive;
+        self._hp = save_data._hp;
+        self._max_hp = save_data._max_hp;
+        self._max_hp_data = save_data._max_hp_data;
+        self._stamina_recovery_delay_time = save_data._stamina_recovery_delay_time;
+        self._prev_stamina = save_data._prev_stamina;
+        self._stamina = save_data._stamina;
+        self._max_stamina = save_data._max_stamina;
+        self._max_stamina_data = save_data._max_stamina_data;
+        self._hunger = save_data._hunger;
+        self._tired = save_data._tired;
+        self._happiness = save_data._happiness;
+        self._invincibility = save_data._invincibility;
+        self._is_stat_displayed = save_data._is_stat_displayed;
+    }
 }
 
 impl<'a> Character<'a> {
@@ -256,6 +293,7 @@ impl<'a> Character<'a> {
             _controller: Box::new(CharacterController::create_character_controller()),
             _behavior: create_character_behavior(character_data.borrow()._character_type),
             _attached_item: None,
+            _attached_item_id: None,
             _audio_snoring: None,
         };
 
@@ -309,7 +347,15 @@ impl<'a> Character<'a> {
         )
     }
 
-    pub fn load_character_save_data(&mut self, _character_save_data_: &CharacterSaveData) {}
+    pub fn load_character_save_data(&mut self, character_save_data: &CharacterSaveData) {
+        self.update_characters_save_data(&character_save_data._character_create_info);
+        self._controller.load_controller_save_data(&character_save_data._character_controller_save_data);
+        self._render_object.borrow_mut().load_render_object_save_data(&character_save_data._render_object_save_data);
+        self._character_stats.load_character_stats_save_data(&character_save_data._character_stats);
+        self._behavior.load_behavior_save_data(&character_save_data._behavior);
+        *self._animation_state = character_save_data._animation_state.clone();
+        self._attached_item_id = character_save_data._attached_item;
+    }
 
     pub fn get_character_save_data(&self) -> (String, CharacterSaveData) {
         (
@@ -322,11 +368,176 @@ impl<'a> Character<'a> {
                     _rotation: *self.get_rotation(),
                     _scale: *self.get_scale(),
                 },
+                _character_controller_save_data: self._controller.get_controller_save_data(),
+                _render_object_save_data: self._render_object.borrow().get_render_object_save_data(),
+                _character_stats: self._character_stats.get_character_stats_save_data(),
+                _behavior: self._behavior.get_behavior_save_data(),
+                _animation_state: *self._animation_state.clone(),
+                _attached_item: self._attached_item.as_ref().map(|item| item.borrow().get_item_id()),
             },
         )
     }
 
-    pub fn post_process_after_character_loading(&mut self) {}
+    pub fn post_process_after_character_loading(&mut self, game_scene_manager: &GameSceneManager<'a>) {
+        if let Some(item_id) = self._attached_item_id.take() {
+            if let Some(item) = game_scene_manager.get_item_manager().get_item(item_id) {
+                self.attach_item(item.clone());
+            }
+        }
+
+        self.post_process_restore_animation();
+
+        if !self._is_player && self.is_alive() {
+            let maybe_player = game_scene_manager.get_character_manager().get_maybe_player();
+            let player_ref = maybe_player.as_ref().map(|p| p.borrow());
+            let target = player_ref.as_deref();
+            self._behavior.update_behavior(ptr_as_mut(self), target, 0.0);
+        }
+    }
+
+    pub fn post_process_restore_animation(&mut self) {
+        let character_data = ptr_as_ref(self._character_data.as_ptr());
+        let animation_data = &character_data._animation_data;
+        let render_object = ptr_as_mut(self._render_object.as_ptr());
+
+        // Restore move animation mesh
+        let move_state = self._animation_state._move_animation_state;
+        let next_move_speed = self._animation_state._next_move_animation_speed;
+
+        let (move_mesh, move_speed, move_loop) = match move_state {
+            MoveAnimationState::None | MoveAnimationState::Idle => (
+                Some(&animation_data._idle_animation),
+                animation_data._idle_animation_speed * next_move_speed,
+                true,
+            ),
+            MoveAnimationState::Walk => (
+                Some(&animation_data._walk_animation),
+                animation_data._walk_animation_speed * next_move_speed,
+                true,
+            ),
+            MoveAnimationState::Run => (
+                Some(&animation_data._run_animation),
+                animation_data._run_animation_speed * next_move_speed,
+                true,
+            ),
+            MoveAnimationState::Jump => (
+                Some(&animation_data._jump_animation),
+                animation_data._jump_animation_speed * next_move_speed,
+                false,
+            ),
+            MoveAnimationState::Roll => (
+                Some(&animation_data._roll_animation),
+                animation_data._roll_animation_speed * next_move_speed,
+                false,
+            ),
+            MoveAnimationState::RunningJump => (
+                Some(&animation_data._running_jump_animation),
+                animation_data._running_jump_animation_speed * next_move_speed,
+                false,
+            ),
+            MoveAnimationState::SitDownLoop => (
+                Some(&animation_data._sit_down_loop_animation),
+                next_move_speed,
+                true,
+            ),
+        };
+
+        if let Some(mesh) = move_mesh {
+            let animation_info = AnimationPlayArgs {
+                _animation_speed: move_speed,
+                _animation_loop: move_loop,
+                _reset_animation_time: false,
+                _force_animation_setting: true,
+                ..Default::default()
+            };
+            render_object.set_animation(mesh, &animation_info, AnimationLayer::BaseLayer);
+        } else {
+            render_object.set_animation_none(AnimationLayer::BaseLayer);
+        }
+
+        // Restore action animation mesh
+        let action_state = self._animation_state._action_animation_state;
+        let next_action_speed = self._animation_state._next_action_animation_speed;
+
+        let (action_mesh, action_speed, action_loop) = match action_state {
+            ActionAnimationState::None => (None, 1.0, false),
+            ActionAnimationState::Attack => (
+                Some(&animation_data._attack_animation),
+                animation_data._attack_animation_speed * next_action_speed,
+                false,
+            ),
+            ActionAnimationState::Dance => (
+                Some(&animation_data._dance_animation),
+                next_action_speed,
+                true,
+            ),
+            ActionAnimationState::Dead => (
+                Some(&animation_data._dead_animation),
+                animation_data._dead_animation_speed * next_action_speed,
+                false,
+            ),
+            ActionAnimationState::Eating => (
+                Some(&animation_data._eating_animation),
+                next_action_speed,
+                false,
+            ),
+            ActionAnimationState::Hit => (
+                Some(&animation_data._hit_animation),
+                animation_data._hit_animation_speed * next_action_speed,
+                false,
+            ),
+            ActionAnimationState::Hungry => (
+                Some(&animation_data._hungry_animation),
+                next_action_speed,
+                true,
+            ),
+            ActionAnimationState::Kick => (
+                Some(&animation_data._kick_animation),
+                animation_data._kick_animation_speed * next_action_speed,
+                false,
+            ),
+            ActionAnimationState::LayingDown => (
+                Some(&animation_data._laying_down_animation),
+                next_action_speed,
+                false,
+            ),
+            ActionAnimationState::Pickup => (
+                Some(&animation_data._pickup_animation),
+                next_action_speed,
+                false,
+            ),
+            ActionAnimationState::PowerAttack => (
+                Some(&animation_data._power_attack_animation),
+                animation_data._power_attack_animation_speed * next_action_speed,
+                false,
+            ),
+            ActionAnimationState::Sleep | ActionAnimationState::SleepNoSnoring => (
+                Some(&animation_data._sleep_animation),
+                next_action_speed,
+                true,
+            ),
+            ActionAnimationState::WakeUp => (
+                Some(&animation_data._wake_up_animation),
+                next_action_speed,
+                false,
+            ),
+        };
+
+        if let Some(mesh) = action_mesh {
+            let animation_info = AnimationPlayArgs {
+                _animation_speed: action_speed,
+                _animation_loop: action_loop,
+                _reset_animation_time: false,
+                _force_animation_setting: true,
+                ..Default::default()
+            };
+            render_object.set_animation(mesh, &animation_info, AnimationLayer::ActionLayer);
+        } else {
+            render_object.set_animation_none(AnimationLayer::ActionLayer);
+        }
+
+        self.update_animation_layers();
+    }
 
     pub fn attach_item(&mut self, attach_item: RcRefCell<Item<'a>>) {
         self._attached_item = Some(attach_item);
@@ -1306,11 +1517,13 @@ impl<'a> Character<'a> {
                         // respawn
                         let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
                         if self._is_player && animation_play_info._is_animation_end {
-                            // self.initialize_character(
-                            //     &self.get_character_manager().get_game_scene_manager().get_spawn_point().clone(),
-                            //     &self._controller._rotation.clone(),
-                            //     &self._controller._scale.clone(),
-                            // );
+                            if let Some(bed_for_aru) = ptr_as_ref(self._character_manager).get_game_scene_manager().get_prop_manager().get_prop_by_name("bed_for_aru").as_ref() {
+                                self.initialize_character(
+                                    &bed_for_aru.borrow().get_position(),
+                                    &self._controller._rotation.clone(),
+                                    &self._controller._scale.clone(),
+                                );
+                            }
                         }
                     }
                     _ => {}

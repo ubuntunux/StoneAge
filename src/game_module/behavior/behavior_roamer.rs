@@ -1,5 +1,5 @@
 use crate::game_module::actors::character::Character;
-use crate::game_module::behavior::behavior_base::{BehaviorBase, BehaviorData, BehaviorState};
+use crate::game_module::behavior::behavior_base::{BehaviorBase, BehaviorData, BehaviorSaveData, BehaviorState};
 use crate::game_module::game_constants::{
     ARRIVAL_DISTANCE_THRESHOLD, GAME_VIEW_MODE, GameViewMode, NPC_ATTACK_RANGE, NPC_ATTACK_TERM_MAX,
     NPC_ATTACK_TERM_MIN, NPC_AVAILABLE_MOVING_ATTACK, NPC_IDLE_TERM_MAX, NPC_IDLE_TERM_MIN, NPC_ROAMING_RADIUS,
@@ -203,5 +203,13 @@ impl<'a> BehaviorBase<'a> for BehaviorRoamer<'a> {
                 self._behavior_data.update_behavior_time(delta_time);
             }
         }
+    }
+
+    fn get_behavior_save_data(&self) -> BehaviorSaveData {
+        self._behavior_data.get_behavior_save_data()
+    }
+
+    fn load_behavior_save_data(&mut self, save_data: &BehaviorSaveData) {
+        self._behavior_data.load_behavior_save_data(save_data);
     }
 }

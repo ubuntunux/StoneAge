@@ -6,7 +6,7 @@ use rust_engine_3d::scene::mesh::MeshData;
 use rust_engine_3d::utilities::system::RcRefCell;
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ActionAnimationState {
     None,
     Attack,
@@ -24,7 +24,7 @@ pub enum ActionAnimationState {
     WakeUp,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq)]
 pub enum MoveAnimationState {
     None,
     Idle,

@@ -1,6 +1,6 @@
 use crate::game_module::actors::character::Character;
 use crate::game_module::actors::character_data::ActionAnimationState;
-use crate::game_module::behavior::behavior_base::{BehaviorBase, BehaviorData, BehaviorState};
+use crate::game_module::behavior::behavior_base::{BehaviorBase, BehaviorData, BehaviorSaveData, BehaviorState};
 use crate::game_module::game_constants::{
     ARRIVAL_DISTANCE_THRESHOLD, CHARACTER_INTERACTION_TIME, GAME_VIEW_MODE, GameViewMode, NPC_IDLE_TERM_MAX,
     NPC_IDLE_TERM_MIN, NPC_ROAMING_RADIUS, NPC_ROAMING_TIME,
@@ -174,5 +174,13 @@ impl<'a> BehaviorBase<'a> for BehaviorCivilian<'a> {
                 self._behavior_data.update_behavior_time(delta_time);
             }
         }
+    }
+
+    fn get_behavior_save_data(&self) -> BehaviorSaveData {
+        self._behavior_data.get_behavior_save_data()
+    }
+
+    fn load_behavior_save_data(&mut self, save_data: &BehaviorSaveData) {
+        self._behavior_data.load_behavior_save_data(save_data);
     }
 }

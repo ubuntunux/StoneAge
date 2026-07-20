@@ -10,8 +10,37 @@ use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::math::HALF_PI;
 use rust_engine_3d::utilities::system::ptr_as_ref;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::ffi::c_void;
+
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
+#[serde(default)]
+pub struct CharacterControllerSaveData {
+    pub _prev_position: Vector3<f32>,
+    pub _position: Vector3<f32>,
+    pub _rotation: Vector3<f32>,
+    pub _scale: Vector3<f32>,
+    pub _falling_height: f32,
+    pub _last_ground_normal: Vector3<f32>,
+    pub _face_direction: Vector3<f32>,
+    pub _move_direction: Vector3<f32>,
+    pub _final_velocity: Vector3<f32>,
+    pub _velocity: Vector3<f32>,
+    pub _slop_velocity: Vector3<f32>,
+    pub _hit_velocity: Vector3<f32>,
+    pub _move_speed: f32,
+    pub _fall_time: f32,
+    pub _roll_delay: f32,
+    pub _is_falling: bool,
+    pub _is_ground: bool,
+    pub _is_running: bool,
+    pub _is_jump_start: bool,
+    pub _is_jump: bool,
+    pub _is_cliff: bool,
+    pub _is_blocked: bool,
+    pub _is_flying_mode: bool,
+}
 
 pub struct CharacterController<'a> {
     pub _prev_position: Vector3<f32>,
@@ -649,5 +678,59 @@ impl<'a> CharacterController<'a> {
         }
 
         self._final_velocity = (self._position - self._prev_position) / delta_time.max(0.001f32);
+    }
+
+    pub fn get_controller_save_data(&self) -> CharacterControllerSaveData {
+        CharacterControllerSaveData {
+            _prev_position: self._prev_position,
+            _position: self._position,
+            _rotation: self._rotation,
+            _scale: self._scale,
+            _falling_height: self._falling_height,
+            _last_ground_normal: self._last_ground_normal,
+            _face_direction: self._face_direction,
+            _move_direction: self._move_direction,
+            _final_velocity: self._final_velocity,
+            _velocity: self._velocity,
+            _slop_velocity: self._slop_velocity,
+            _hit_velocity: self._hit_velocity,
+            _move_speed: self._move_speed,
+            _fall_time: self._fall_time,
+            _roll_delay: self._roll_delay,
+            _is_falling: self._is_falling,
+            _is_ground: self._is_ground,
+            _is_running: self._is_running,
+            _is_jump_start: self._is_jump_start,
+            _is_jump: self._is_jump,
+            _is_cliff: self._is_cliff,
+            _is_blocked: self._is_blocked,
+            _is_flying_mode: self._is_flying_mode,
+        }
+    }
+
+    pub fn load_controller_save_data(&mut self, controller_save_data: &CharacterControllerSaveData) {
+        self._prev_position = controller_save_data._prev_position;
+        self._position = controller_save_data._position;
+        self._rotation = controller_save_data._rotation;
+        self._scale = controller_save_data._scale;
+        self._falling_height = controller_save_data._falling_height;
+        self._last_ground_normal = controller_save_data._last_ground_normal;
+        self._face_direction = controller_save_data._face_direction;
+        self._move_direction = controller_save_data._move_direction;
+        self._final_velocity = controller_save_data._final_velocity;
+        self._velocity = controller_save_data._velocity;
+        self._slop_velocity = controller_save_data._slop_velocity;
+        self._hit_velocity = controller_save_data._hit_velocity;
+        self._move_speed = controller_save_data._move_speed;
+        self._fall_time = controller_save_data._fall_time;
+        self._roll_delay = controller_save_data._roll_delay;
+        self._is_falling = controller_save_data._is_falling;
+        self._is_ground = controller_save_data._is_ground;
+        self._is_running = controller_save_data._is_running;
+        self._is_jump_start = controller_save_data._is_jump_start;
+        self._is_jump = controller_save_data._is_jump;
+        self._is_cliff = controller_save_data._is_cliff;
+        self._is_blocked = controller_save_data._is_blocked;
+        self._is_flying_mode = controller_save_data._is_flying_mode;
     }
 }

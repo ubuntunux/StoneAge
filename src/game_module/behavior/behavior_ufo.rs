@@ -1,5 +1,5 @@
 use crate::game_module::actors::character::Character;
-use crate::game_module::behavior::behavior_base::{BehaviorBase, BehaviorData, BehaviorState};
+use crate::game_module::behavior::behavior_base::{BehaviorBase, BehaviorData, BehaviorSaveData, BehaviorState};
 use nalgebra::Vector3;
 use rust_engine_3d::utilities::system::State;
 use strum::IntoEnumIterator;
@@ -50,5 +50,13 @@ impl<'a> BehaviorBase<'a> for BehaviorUfo<'a> {
                 self._behavior_data.update_behavior_time(delta_time);
             }
         }
+    }
+
+    fn get_behavior_save_data(&self) -> BehaviorSaveData {
+        self._behavior_data.get_behavior_save_data()
+    }
+
+    fn load_behavior_save_data(&mut self, save_data: &BehaviorSaveData) {
+        self._behavior_data.load_behavior_save_data(save_data);
     }
 }

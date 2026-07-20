@@ -7,7 +7,10 @@ use crate::game_module::behavior::behavior_ufo::BehaviorUfo;
 use nalgebra::Vector3;
 use rust_engine_3d::utilities::system::RcRefCell;
 
-#[derive(Clone, PartialEq, Eq, Hash, Debug, Copy, Default)]
+use crate::game_module::actors::character_manager::CharacterID;
+use serde::{Deserialize, Serialize};
+
+#[derive(Serialize, Deserialize, Clone, PartialEq, Eq, Hash, Debug, Copy, Default)]
 pub enum BehaviorState {
     #[default]
     None,
@@ -19,6 +22,19 @@ pub enum BehaviorState {
     Attack,
     Sleep,
     WakeUp,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq)]
+#[serde(default)]
+pub struct BehaviorSaveData {
+    pub _behavior_time: f32,
+    pub _behavior_state: BehaviorState,
+    pub _next_behavior_state: BehaviorState,
+    pub _is_force: bool,
+    pub _move_direction: Vector3<f32>,
+    pub _spawn_point: Vector3<f32>,
+    pub _target_point: Vector3<f32>,
+    pub _behavior_target_id: Option<CharacterID>,
 }
 
 pub struct BehaviorData<'a> {
@@ -92,12 +108,37 @@ impl<'a> BehaviorData<'a> {
     pub fn set_behavior_target(&mut self, behavior_target: Option<RcRefCell<Character<'a>>>) {
         self._behavior_target = behavior_target;
     }
+
+    pub fn get_behavior_save_data(&self) -> BehaviorSaveData {
+        BehaviorSaveData {
+            _behavior_time: self._behavior_time,
+            _behavior_state: self._behavior_state,
+            _next_behavior_state: self._next_behavior_state,
+            _is_force: self._is_force,
+            _move_direction: self._move_direction,
+            _spawn_point: self._spawn_point,
+            _target_point: self._target_point,
+            _behavior_target_id: self._behavior_target.as_ref().map(|target| target.borrow().get_character_id()),
+        }
+    }
+
+    pub fn load_behavior_save_data(&mut self, save_data: &BehaviorSaveData) {
+        self._behavior_time = save_data._behavior_time;
+        self._behavior_state = save_data._behavior_state;
+        self._next_behavior_state = save_data._next_behavior_state;
+        self._is_force = save_data._is_force;
+        self._move_direction = save_data._move_direction;
+        self._spawn_point = save_data._spawn_point;
+        self._target_point = save_data._target_point;
+    }
 }
 
 pub trait BehaviorBase<'a> {
     fn initialize_behavior(&mut self, position: &Vector3<f32>);
     fn set_next_behavior(&mut self, next_behavior_state: BehaviorState, is_force: bool);
     fn update_behavior(&mut self, owner: &mut Character<'a>, behavior_target: Option<&Character<'a>>, delta_time: f32);
+    fn get_behavior_save_data(&self) -> BehaviorSaveData;
+    fn load_behavior_save_data(&mut self, save_data: &BehaviorSaveData);
 }
 
 pub fn create_character_behavior<'a>(character_type: CharacterDataType) -> Box<dyn BehaviorBase<'a> + 'a> {

@@ -412,7 +412,9 @@ impl<'a> ItemManager<'a> {
 
     pub fn attach_item(&mut self, character: &mut Character<'a>, item_data_name: &str) {
         if let Some(attached_item) = character.get_attached_item() {
-            if *attached_item.borrow().get_item_data_name() == item_data_name {
+            if *attached_item.borrow().get_item_data_name() == item_data_name
+                && attached_item.borrow()._attach_socket.is_some()
+            {
                 return;
             } else {
                 self.remove_item(attached_item);

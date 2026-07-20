@@ -1,8 +1,12 @@
 use crate::application::application::Application;
-use crate::game_module::actors::character::{ActorWrapper, Character};
+use crate::game_module::actors::character::{
+    ActorWrapper, Character, CharacterAnimationState, CharacterStatsSaveData,
+};
+use crate::game_module::actors::character_controller::CharacterControllerSaveData;
 use crate::game_module::actors::interaction_object::InteractionObject;
-use crate::game_module::actors::items::ItemCreateInfo;
+use crate::game_module::actors::items::{ItemCreateInfo, ItemID};
 use crate::game_module::actors::items::ItemManager;
+use crate::game_module::behavior::behavior_base::BehaviorSaveData;
 use crate::game_module::game_client::GameClient;
 use crate::game_module::game_constants::{
     AUDIO_STOMACH_GROWLING, CHARACTER_INTERACTION_DISTANCE, CHARACTER_INTERACTION_TIME, GAME_VIEW_MODE, GameViewMode,
@@ -16,7 +20,7 @@ use crate::game_module::widgets::text_box_widget::TextBoxLayerType;
 use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::AudioManager;
 use rust_engine_3d::core::engine_core::EngineCore;
-use rust_engine_3d::scene::render_object::{RenderObjectCreateInfo, SceneObjectType};
+use rust_engine_3d::scene::render_object::{RenderObjectCreateInfo, RenderObjectSaveData, SceneObjectType};
 use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{RcRefCell, extract_name_and_uuid, newRcRefCell, ptr_as_mut, ptr_as_ref};
@@ -51,10 +55,16 @@ impl Default for CharacterCreateInfo {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[serde(default)]
 pub struct CharacterSaveData {
     pub _character_create_info: CharacterCreateInfo,
+    pub _character_controller_save_data: CharacterControllerSaveData,
+    pub _render_object_save_data: RenderObjectSaveData,
+    pub _character_stats: CharacterStatsSaveData,
+    pub _behavior: BehaviorSaveData,
+    pub _animation_state: CharacterAnimationState,
+    pub _attached_item: Option<ItemID>,
 }
 
 pub struct CharacterManager<'a> {
@@ -263,9 +273,9 @@ impl<'a> CharacterManager<'a> {
             .map(|character| character.borrow().get_character_save_data())
             .collect()
     }
-    pub fn post_process_after_characters_loading(&mut self) {
+    pub fn post_process_after_characters_loading(&mut self, game_scene_manager: &GameSceneManager<'a>) {
         for character in self._characters.values() {
-            character.borrow_mut().post_process_after_character_loading();
+            character.borrow_mut().post_process_after_character_loading(game_scene_manager);
         }
     }
     pub fn change_character_data(&mut self, character: &RcRefCell<Character<'a>>, character_data_name: &str) {
