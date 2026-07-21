@@ -376,6 +376,12 @@ impl<'a> GameSceneManager<'a> {
     pub fn is_teleport_mode(&self) -> bool {
         self._teleport_stage.is_some() || self._teleport_gate.is_some()
     }
+    pub fn is_teleport_stage(&self) -> bool {
+        if let Some(teleport_stage) = self._teleport_stage.as_ref() {
+            return self.get_current_game_scene_data_name() != teleport_stage;
+        }
+        false
+    }
     pub fn set_teleport_stage(&mut self, teleport_stage: &str, teleport_gate: &str) {
         self._teleport_stage = Some(String::from(teleport_stage));
         self._teleport_gate = Some(String::from(teleport_gate));

@@ -430,9 +430,12 @@ impl<'a> GameClient<'a> {
                         if game_ui_manager.is_done_manual_fade_out() || game_ui_manager.is_done_game_image_progress() {
                             game_ui_manager.set_text_box_visible(true);
                             game_ui_manager.set_cross_hair_visible(false);
-                            game_ui_manager.set_auto_fade_inout(true);
                             game_ui_manager.unset_selected_world_map_stage();
                             game_ui_manager.close_world_map();
+                            // note: Pay attention to the order of operations. is_teleport_stage -> update_teleport
+                            if !game_scene_manager.is_teleport_stage() {
+                                game_ui_manager.set_auto_fade_inout(true);
+                            }
                             game_scene_manager.update_teleport(character_manager);
                             self.set_next_game_phase(GamePhase::GamePlay);
                         }
