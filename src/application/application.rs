@@ -306,7 +306,7 @@ pub fn run_application() {
         #[cfg(not(target_os = "android"))]
         {
             constants::VULKAN_API_VERSION = vk::make_api_version(0, 1, 3, 0);
-            constants::ENABLE_IMMEDIATE_MODE = false;
+            constants::ENABLE_IMMEDIATE_MODE = true;
             //constants::TARGET_FRAME_RATE = 25; // Set e.g. 15, 20, 30 to test low frame rate (0 = unlimited / VSync default)
             constants::IS_CONCURRENT_MODE = true;
         }
