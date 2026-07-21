@@ -90,6 +90,8 @@ impl<'a> ToolboxWidget<'a> {
         ui_component.set_valign(VerticalAlign::TOP);
         ui_component.set_pos_hint_x(PosHintX::Center(0.5));
         ui_component.set_pos_hint_y(PosHintY::Center(0.5));
+        ui_component.set_size_hint_x(Some(0.5));
+        ui_component.set_size_hint_y(Some(0.5));
         ui_component.set_color(get_color32(50, 50, 50, 128));
         ui_component.set_border_color(get_color32(0, 0, 0, 255));
         ui_component.set_round(5.0);
@@ -102,11 +104,7 @@ impl<'a> ToolboxWidget<'a> {
             _is_opened_toolbox: false,
         }
     }
-    pub fn changed_window_size(&mut self, _window_size: &Vector2<i32>) {
-        let ui_component = ptr_as_mut(self._layer.as_ref()).get_ui_component_mut();
-        ui_component.set_size_hint_x(Some(0.5));
-        ui_component.set_size_hint_y(Some(0.5));
-    }
+    pub fn changed_window_size(&mut self, _window_size: &Vector2<i32>) {}
     pub fn is_opened_toolbox(&self) -> bool {
         self._is_opened_toolbox
     }

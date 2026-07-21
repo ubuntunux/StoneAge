@@ -32,6 +32,10 @@ impl<'a> PlayerHud<'a> {
         ui_component.set_round(10.0);
         ui_component.set_padding(hud_layer_padding);
         ui_component.set_color(get_color32(0, 0, 0, 128));
+        ui_component.set_pos_hint_x(rust_engine_3d::scene::ui::PosHintX::Left(0.0));
+        ui_component.set_pos_hint_y(rust_engine_3d::scene::ui::PosHintY::Bottom(1.0));
+        ui_component.set_margin_left(10.0);
+        ui_component.set_margin_bottom(10.0);
         root_widget.add_widget(&player_widget);
 
         PlayerHud {
@@ -41,11 +45,7 @@ impl<'a> PlayerHud<'a> {
         }
     }
 
-    pub fn changed_window_size(&mut self, window_size: &Vector2<i32>) {
-        let ui_component = ptr_as_mut(self._widget).get_ui_component_mut();
-        ui_component.set_pos_x(10.0);
-        ui_component.set_pos_y(window_size.y as f32 - ui_component.get_ui_size().y - 10.0);
-    }
+    pub fn changed_window_size(&mut self, _window_size: &Vector2<i32>) {}
 
     pub fn update_status_widget(&mut self, player: &Character<'a>, delta_time: f64) {
         self._hp_widget.update_status_widget(

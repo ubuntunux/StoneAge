@@ -122,6 +122,8 @@ impl<'a> GameMenuWidget<'a> {
         ui_component.set_valign(VerticalAlign::TOP);
         ui_component.set_pos_hint_x(PosHintX::Center(0.5));
         ui_component.set_pos_hint_y(PosHintY::Center(0.5));
+        ui_component.set_size_hint_x(Some(0.5));
+        ui_component.set_size_hint_y(Some(0.5));
         ui_component.set_expandable(true);
         ui_component.set_padding(10.0);
         ui_component.set_color(get_color32(50, 50, 50, 128));
@@ -151,11 +153,7 @@ impl<'a> GameMenuWidget<'a> {
         game_menu_widget.as_mut()._menu_items = menu_items;
         game_menu_widget
     }
-    pub fn changed_window_size(&mut self, _window_size: &Vector2<i32>) {
-        let ui_component = ptr_as_mut(self._layer.as_ref()).get_ui_component_mut();
-        ui_component.set_size_hint_x(Some(0.5));
-        ui_component.set_size_hint_y(Some(0.5));
-    }
+    pub fn changed_window_size(&mut self, _window_size: &Vector2<i32>) {}
     pub fn is_opened_game_menu(&self) -> bool {
         self._is_opened_game_menu
     }

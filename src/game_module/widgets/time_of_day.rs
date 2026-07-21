@@ -40,6 +40,7 @@ impl<'a> TimeOfDayWidget<'a> {
         ui_component.set_pos_hint_x(PosHintX::Right(1.0));
         ui_component.set_pos_hint_y(PosHintY::Top(0.0));
         ui_component.set_margin_top(30.0);
+        ui_component.set_margin_right(30.0);
         ui_component.set_round(15.0);
         ui_component.set_expandable(true);
         ui_component.set_color(get_color32(0, 0, 0, 0));

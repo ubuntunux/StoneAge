@@ -169,6 +169,10 @@ impl<'a> ControllerHelpWidget<'a> {
         ui_component.set_round(15.0);
         ui_component.set_size(MAIN_LAYOUT_SIZE.0, MAIN_LAYOUT_SIZE.1);
         ui_component.set_color(get_color32(0, 0, 0, 128));
+        ui_component.set_pos_hint_x(rust_engine_3d::scene::ui::PosHintX::Right(1.0));
+        ui_component.set_pos_hint_y(rust_engine_3d::scene::ui::PosHintY::Bottom(1.0));
+        ui_component.set_margin_right(MAIN_LAYOUT_MARGIN * 2.0);
+        ui_component.set_margin_bottom(MAIN_LAYOUT_MARGIN * 2.0);
         root_widget.add_widget(&player_controller_help_widget);
 
         let mut player_controller_help_widget = ControllerHelpWidget {
@@ -302,8 +306,6 @@ impl<'a> ControllerHelpWidget<'a> {
         let ui_component = ptr_as_mut(self._player_controller_help_widget).get_ui_component_mut();
         ui_component
             .set_size_y(ui_component.get_num_children() as f32 * KEY_BINDING_UI_SIZE + MAIN_LAYOUT_PADDING * 2.0);
-        ui_component.set_pos_x(window_size.x as f32 - ui_component.get_ui_size().x - MAIN_LAYOUT_MARGIN * 2.0);
-        ui_component.set_pos_y(window_size.y as f32 - ui_component.get_ui_size().y - MAIN_LAYOUT_MARGIN * 2.0);
     }
 
     pub fn update_interaction_widget(&mut self, game_scene_manager: &GameSceneManager) {

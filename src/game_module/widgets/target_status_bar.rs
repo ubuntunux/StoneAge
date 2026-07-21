@@ -29,6 +29,9 @@ impl<'a> TargetStatusWidget<'a> {
         ui_component.set_round(10.0);
         ui_component.set_padding(10.0);
         ui_component.set_color(get_color32(0, 0, 0, 128));
+        ui_component.set_pos_hint_x(rust_engine_3d::scene::ui::PosHintX::Center(0.5));
+        ui_component.set_pos_hint_y(rust_engine_3d::scene::ui::PosHintY::Top(0.0));
+        ui_component.set_margin_top(50.0);
         root_widget.add_widget(&target_status_widget);
 
         let target_name_widget = UIManager::create_widget("target_name_widget", UIWidgetTypes::Default);
@@ -54,11 +57,7 @@ impl<'a> TargetStatusWidget<'a> {
             _fade_time: 0.0,
         }
     }
-    pub fn changed_window_size(&mut self, window_size: &Vector2<i32>) {
-        let ui_component = ptr_as_mut(self._widget).get_ui_component_mut();
-        ui_component.set_center_x(window_size.x as f32 * 0.5);
-        ui_component.set_pos_y(50.0);
-    }
+    pub fn changed_window_size(&mut self, _window_size: &Vector2<i32>) {}
     pub fn update_status_widget(&mut self, target: &Character<'a>, delta_time: f64) {
         let mut smooth_update: bool = true;
         if self._target != target {
