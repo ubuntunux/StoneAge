@@ -155,7 +155,7 @@ impl<'a> EditorUIManager<'a> {
             widget
                 ._ui_component
                 .set_text(format!("[{:.1}, {:.1}, {:.1}]", position.x, position.y, position.z).as_str());
-            widget._ui_component.set_pos(screen_position.x, screen_position.y);
+            widget._ui_component.set_pos_with_dpi(screen_position.x, screen_position.y);
         }
     }
 }
@@ -542,8 +542,9 @@ impl<'a> GameUIManager<'a> {
         self._target_status_bar.as_mut().unwrap().changed_window_size(window_size);
         self._time_of_day.as_mut().unwrap().changed_window_size(window_size);
         self._item_bar_widget.as_mut().unwrap().changed_window_size(window_size);
-        self._toolbox_widget.as_mut().unwrap().changed_window_size(window_size);
-        self._world_map_widget.as_mut().unwrap().changed_window_size(window_size);
+        if let Some(game_menu_widget) = self._game_menu_widget.as_mut() {
+            game_menu_widget.changed_window_size(window_size);
+        }
     }
 
     pub fn update_game_ui(&mut self, delta_time: f64) {

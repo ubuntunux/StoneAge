@@ -38,7 +38,6 @@ impl<'a> CrossHairWidget<'a> {
     pub fn update_cross_hair(&mut self, pos: &Vector2<i32>) {
         let cross_hair_widget = ptr_as_mut(self._widget);
         let ui_component = cross_hair_widget.get_ui_component_mut();
-        ui_component.set_pos_x(pos.x as f32);
-        ui_component.set_pos_y(pos.y as f32);
+        ui_component.set_pos_with_dpi(pos.x as f32, pos.y as f32);
     }
 }
