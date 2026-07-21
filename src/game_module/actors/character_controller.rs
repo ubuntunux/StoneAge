@@ -545,6 +545,14 @@ impl<'a> CharacterController<'a> {
         begin_block!("Check Ground & Slope");
         {
             let ground_height = height_map_data.get_height_bilinear(&self._position, 0);
+
+            if _was_on_ground && !self._is_jump && self._velocity.y <= 0.0 {
+                let max_step_down = (self._move_speed * delta_time * 2.0).max(0.5);
+                if self._position.y > ground_height && self._position.y <= ground_height + max_step_down {
+                    self._position.y = ground_height;
+                }
+            }
+
             if self._position.y <= ground_height && self._velocity.y <= 0.0 {
                 let ground_normal = height_map_data.get_normal_bilinear(&self._prev_position);
 
