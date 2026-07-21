@@ -336,6 +336,7 @@ impl<'a> Character<'a> {
 
     pub fn respawn_character(&mut self, position: &Vector3<f32>, rotation: &Vector3<f32>, scale: &Vector3<f32>) {
         self.initialize_character(position, rotation, scale);
+        self.set_action_wake_up();
     }
 
     pub fn change_character_model(&mut self, render_object: &RcRefCell<RenderObjectData<'a>>) {
@@ -1524,6 +1525,7 @@ impl<'a> Character<'a> {
                             let game_scene_manager = ptr_as_mut(self._character_manager).get_game_scene_manager_mut();
                             if !game_scene_manager.is_teleport_mode() {
                                 game_scene_manager.set_teleport_spawn_point(Stages::Home.get_stage_data_name(), BED_FOR_ARU);
+                                self.get_character_manager().get_game_client_mut().set_next_game_phase(GamePhase::Respawn);
                             }
                         }
                     }

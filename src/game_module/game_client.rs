@@ -28,6 +28,7 @@ pub enum GamePhase {
     GamePlay,
     PlayGameScenario,
     Teleport,
+    Respawn,
     OpenToolbox,
     WorldMapOpen,
     WorldMapUpdate,
@@ -344,7 +345,7 @@ impl<'a> GameClient<'a> {
                 },
                 GamePhase::Teleport => match state {
                     State::Begin => {
-                        if character_manager.is_valid_player() {
+                        if character_manager.is_valid_player() && character_manager.get_player().borrow().is_alive() {
                             character_manager.get_player().borrow_mut().set_action_none();
                             character_manager.get_player().borrow_mut().set_move_idle();
                         }
@@ -360,10 +361,26 @@ impl<'a> GameClient<'a> {
                     }
                     State::End => {
                         game_ui_manager.set_auto_fade_inout(true);
-                        if character_manager.is_valid_player() {
+                        if character_manager.is_valid_player() && character_manager.get_player().borrow().is_alive() {
                             character_manager.get_player().borrow_mut().set_action_none();
                             character_manager.get_player().borrow_mut().set_move_idle();
                         }
+                    }
+                },
+                GamePhase::Respawn => match state {
+                    State::Begin => {
+                        game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, DEFAULT_FADE_TIME);
+                    }
+                    State::Update => {
+                        if game_ui_manager.is_done_manual_fade_out() {
+                            game_scene_manager.update_teleport(character_manager);
+                            if !game_scene_manager.is_teleport_mode() {
+                                self.set_next_game_phase(GamePhase::GamePlay);
+                            }
+                        }
+                    }
+                    State::End => {
+                        game_ui_manager.set_auto_fade_inout(true);
                     }
                 },
                 GamePhase::OpenToolbox => match state {
