@@ -46,6 +46,7 @@ pub const CHARACTER_INTERACTION_TIME: f32 = 3.0;
 // character
 pub const CHARACTER_DATA_NAME_ARU: &str = "characters/family/aru";
 pub const CHARACTER_DATA_NAME_MONKEY_ARU: &str = "characters/family/monkey_aru";
+pub const BED_FOR_ARU: &str = "bed_for_aru";
 
 // player
 pub const GRAVITY: f32 = 30.0;

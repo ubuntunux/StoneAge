@@ -131,6 +131,7 @@ pub struct GameSceneManager<'a> {
     pub _ambient_sound: Option<RcRefCell<AudioInstance>>,
     pub _teleport_stage: Option<String>,
     pub _teleport_gate: Option<String>,
+    pub _teleport_spawn_point: Option<String>,
     pub _is_sleep_mode: bool,
     pub _time_of_day: f32,
     pub _time_of_day_speed: f32,
@@ -225,6 +226,7 @@ impl<'a> GameSceneManager<'a> {
             _ambient_sound: None,
             _teleport_stage: None,
             _teleport_gate: None,
+            _teleport_spawn_point: None,
             _is_sleep_mode: false,
             _time_of_day: TIME_OF_MORNING,
             _time_of_day_speed: 1.0,
@@ -374,7 +376,7 @@ impl<'a> GameSceneManager<'a> {
 
     // update teleport
     pub fn is_teleport_mode(&self) -> bool {
-        self._teleport_stage.is_some() || self._teleport_gate.is_some()
+        self._teleport_stage.is_some() || self._teleport_gate.is_some() || self._teleport_spawn_point.is_some()
     }
     pub fn is_teleport_stage(&self) -> bool {
         if let Some(teleport_stage) = self._teleport_stage.as_ref() {
@@ -385,6 +387,10 @@ impl<'a> GameSceneManager<'a> {
     pub fn set_teleport_stage(&mut self, teleport_stage: &str, teleport_gate: &str) {
         self._teleport_stage = Some(String::from(teleport_stage));
         self._teleport_gate = Some(String::from(teleport_gate));
+    }
+    pub fn set_teleport_spawn_point(&mut self, teleport_stage: &str, spawn_point_name: &str) {
+        self._teleport_stage = Some(String::from(teleport_stage));
+        self._teleport_spawn_point = Some(String::from(spawn_point_name));
     }
     pub fn update_teleport(&mut self, character_manager: &CharacterManager<'a>) {
         // teleport
@@ -417,6 +423,29 @@ impl<'a> GameSceneManager<'a> {
                 }
             }
             self._teleport_gate = None;
+        }
+
+        // goto spawn point prop (e.g., bed_for_aru)
+        if self.is_game_scene_state(GameSceneState::LoadCompleted)
+            && self._teleport_stage.is_none()
+            && self._teleport_spawn_point.is_some()
+        {
+            if character_manager.is_valid_player() {
+                let spawn_point_name = self._teleport_spawn_point.as_ref().unwrap().clone();
+                if let Some(prop) = self.get_prop_manager().get_prop_by_name(&spawn_point_name) {
+                    let spawn_position = prop.borrow().get_position().clone();
+                    let player = character_manager.get_player();
+                    let rotation = player.borrow().get_rotation().clone();
+                    let scale = player.borrow().get_scale().clone();
+                    // respawn
+                    player.borrow_mut().respawn_character(
+                        &spawn_position,
+                        &rotation,
+                        &scale,
+                    );
+                }
+            }
+            self._teleport_spawn_point = None;
         }
     }
 

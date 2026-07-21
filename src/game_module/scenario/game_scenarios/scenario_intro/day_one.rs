@@ -1,9 +1,7 @@
 use crate::game_module::actors::character::Character;
 use crate::game_module::actors::props::Prop;
 use crate::game_module::behavior::behavior_base::BehaviorState;
-use crate::game_module::game_constants::{
-    AUDIO_UFO_BEAM, AUDIO_UFO_FLYING, CAMERA_DISTANCE_MAX, CAMERA_OFFSET_Y, TIME_OF_EARLY_MORNING,
-};
+use crate::game_module::game_constants::{AUDIO_UFO_BEAM, AUDIO_UFO_FLYING, BED_FOR_ARU, CAMERA_DISTANCE_MAX, CAMERA_OFFSET_Y, TIME_OF_EARLY_MORNING};
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::scenario::scenario::{
@@ -213,7 +211,7 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
         self._player = game_scene_manager.get_maybe_player().clone();
         self._actor_ewa = game_scene_manager.get_actor_by_name("ewa").cloned();
         self._actor_koa = game_scene_manager.get_actor_by_name("koa").cloned();
-        self._prop_bed_for_aru = game_scene_manager.get_prop_manager().get_prop_by_name("bed_for_aru").cloned();
+        self._prop_bed_for_aru = game_scene_manager.get_prop_manager().get_prop_by_name(BED_FOR_ARU).cloned();
         self._prop_bed_for_ewa = game_scene_manager.get_prop_manager().get_prop_by_name("bed_for_ewa").cloned();
         self._prop_bed_for_koa = game_scene_manager.get_prop_manager().get_prop_by_name("bed_for_koa").cloned();
         self._prop_monolith = game_scene_manager.get_prop_manager().get_prop_by_name("monolith").cloned();

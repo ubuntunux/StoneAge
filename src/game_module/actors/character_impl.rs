@@ -10,7 +10,7 @@ use crate::game_module::actors::items::{ItemDataType, ItemManager};
 use crate::game_module::behavior::behavior_base::{BehaviorState, create_character_behavior};
 use crate::game_module::game_client::GamePhase;
 use crate::game_module::game_constants::*;
-use crate::game_module::game_scene_manager::GameSceneManager;
+use crate::game_module::game_scene_manager::{GameSceneManager, Stages};
 use crate::game_module::scenario::scenario::ScenarioType;
 use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
@@ -332,6 +332,10 @@ impl<'a> Character<'a> {
 
     pub fn destroy_character(&mut self) {
         self.stop_animations(true);
+    }
+
+    pub fn respawn_character(&mut self, position: &Vector3<f32>, rotation: &Vector3<f32>, scale: &Vector3<f32>) {
+        self.initialize_character(position, rotation, scale);
     }
 
     pub fn change_character_model(&mut self, render_object: &RcRefCell<RenderObjectData<'a>>) {
@@ -1517,12 +1521,9 @@ impl<'a> Character<'a> {
                         // respawn
                         let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
                         if self._is_player && animation_play_info._is_animation_end {
-                            if let Some(bed_for_aru) = ptr_as_ref(self._character_manager).get_game_scene_manager().get_prop_manager().get_prop_by_name("bed_for_aru").as_ref() {
-                                self.initialize_character(
-                                    &bed_for_aru.borrow().get_position(),
-                                    &self._controller._rotation.clone(),
-                                    &self._controller._scale.clone(),
-                                );
+                            let game_scene_manager = ptr_as_mut(self._character_manager).get_game_scene_manager_mut();
+                            if !game_scene_manager.is_teleport_mode() {
+                                game_scene_manager.set_teleport_spawn_point(Stages::Home.get_stage_data_name(), BED_FOR_ARU);
                             }
                         }
                     }

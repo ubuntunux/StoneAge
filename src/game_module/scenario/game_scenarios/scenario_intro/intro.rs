@@ -379,7 +379,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
         self._actor_koa = game_scene_manager.get_actor_by_name("monkey_koa").cloned();
         self._prop_gate = game_scene_manager.get_prop_manager().get_prop_by_name(DEFAULT_GATE_NAME).cloned();
         self._prop_table = game_scene_manager.get_prop_manager().get_prop_by_name("table").cloned();
-        self._prop_bed_for_aru = game_scene_manager.get_prop_manager().get_prop_by_name("bed_for_aru").cloned();
+        self._prop_bed_for_aru = game_scene_manager.get_prop_manager().get_prop_by_name(BED_FOR_ARU).cloned();
         self._prop_bed_for_ewa = game_scene_manager.get_prop_manager().get_prop_by_name("bed_for_ewa").cloned();
         self._prop_bed_for_koa = game_scene_manager.get_prop_manager().get_prop_by_name("bed_for_koa").cloned();
         self._prop_tree = game_scene_manager.get_prop_manager().get_prop_by_name("birch_tree_00").cloned();
