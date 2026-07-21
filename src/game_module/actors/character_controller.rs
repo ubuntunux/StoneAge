@@ -32,6 +32,7 @@ pub struct CharacterControllerSaveData {
     pub _move_speed: f32,
     pub _fall_time: f32,
     pub _roll_delay: f32,
+    pub _slope_ratio: f32,
     pub _is_falling: bool,
     pub _is_ground: bool,
     pub _is_running: bool,
@@ -58,6 +59,7 @@ pub struct CharacterController<'a> {
     pub _move_speed: f32,
     pub _fall_time: f32,
     pub _roll_delay: f32,
+    pub _slope_ratio: f32,
     pub _is_falling: bool,
     pub _is_ground: bool,
     pub _is_running: bool,
@@ -88,6 +90,7 @@ impl<'a> CharacterController<'a> {
             _move_speed: 0.0,
             _roll_delay: 0.0,
             _fall_time: 0.0,
+            _slope_ratio: 1.0,
             _is_falling: false,
             _is_ground: false,
             _is_running: false,
@@ -116,6 +119,7 @@ impl<'a> CharacterController<'a> {
         self._hit_velocity = Vector3::zeros();
         self._move_speed = 0.0;
         self._fall_time = 0.0;
+        self._slope_ratio = 1.0;
         self._is_falling = false;
         self._is_jump_start = false;
         self._is_jump = false;
@@ -435,8 +439,9 @@ impl<'a> CharacterController<'a> {
 
         if move_direction.x != 0.0 || move_direction.z != 0.0 {
             move_direction.normalize_mut();
-            self._velocity.x = move_direction.x * self._move_speed;
-            self._velocity.z = move_direction.z * self._move_speed;
+            let air_speed_factor = if !self._is_ground { self._slope_ratio } else { 1.0 };
+            self._velocity.x = move_direction.x * self._move_speed * air_speed_factor;
+            self._velocity.z = move_direction.z * self._move_speed * air_speed_factor;
         } else {
             self._velocity.x = 0.0;
             self._velocity.z = 0.0;
@@ -495,7 +500,7 @@ impl<'a> CharacterController<'a> {
         if self._is_jump_start {
             let not_enough_stamina = owner.get_stats().get_stamina() < 0.0;
             let jump_speed = character_data._stat_data._jump_speed * if not_enough_stamina { 0.5 } else { 1.0 };
-            self._velocity.y = jump_speed;
+            self._velocity.y = jump_speed * self._slope_ratio;
 
             // let ground_normal = math::safe_normalize(&Vector3::new(self._last_ground_normal.x, self._last_ground_normal.y.abs(), self._last_ground_normal.z));
             // let slop_speed = SLOPE_SPEED.max(self._move_speed);
@@ -554,30 +559,34 @@ impl<'a> CharacterController<'a> {
             }
 
             if self._position.y <= ground_height && self._velocity.y <= 0.0 {
-                let ground_normal = height_map_data.get_normal_bilinear(&self._prev_position);
+                let ground_normal_prev = height_map_data.get_normal_bilinear(&self._prev_position);
+                let ground_normal_curr = height_map_data.get_normal_bilinear(&self._position);
+                let ground_normal = if ground_normal_curr.y < ground_normal_prev.y {
+                    ground_normal_curr
+                } else {
+                    ground_normal_prev
+                };
 
                 let move_delta = self._position - self._prev_position;
-                let (move_dir, move_distance) = math::make_normalize_with_norm(&move_delta);
+                let (_move_dir, move_distance) = math::make_normalize_with_norm(&move_delta);
                 let new_move_dir = math::safe_normalize(
                     &(Vector3::new(self._position.x, ground_height, self._position.z) - self._prev_position),
                 );
-                self._position = self._prev_position + new_move_dir * move_distance;
 
-                if 0.0 < move_distance && SLOPE_ANGLE <= new_move_dir.y
-                    || ground_normal.y < SLOPE_ANGLE && ground_normal.dot(&move_dir) < 0.0
-                {
-                    let slop_speed = SLOPE_SPEED.max(self._move_speed);
-                    if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
-                        self._slop_velocity.x += ground_normal.x * slop_speed;
-                        self._slop_velocity.z = 0.0;
-                    } else {
-                        self._slop_velocity += math::make_normalize_xz(&ground_normal) * slop_speed;
-                    }
+                let min_slope_normal_y = SLOPE_ANGLE * 0.5;
+                let is_moving_uphill = 0.0 < new_move_dir.y;
+                let slope_ratio = if is_moving_uphill && ground_normal.y < SLOPE_ANGLE {
+                    ((ground_normal.y - min_slope_normal_y) / (SLOPE_ANGLE - min_slope_normal_y)).clamp(0.0, 1.0)
+                } else {
+                    1.0
+                };
+                self._slope_ratio = slope_ratio;
 
-                    let (slope_move_dir, slope_move_distance) = math::make_normalize_with_norm(&self._slop_velocity);
-                    self._slop_velocity = slope_move_dir * slope_move_distance.min(slop_speed);
-                    self._position += self._slop_velocity * delta_time;
+                let actual_move_distance = move_distance * slope_ratio;
+                self._position = self._prev_position + new_move_dir * actual_move_distance;
+                self._slop_velocity = Vector3::zeros();
 
+                if slope_ratio < 1.0 {
                     self._is_blocked = true;
                 }
                 self.set_on_ground(self._position.y, &ground_normal);
@@ -705,6 +714,7 @@ impl<'a> CharacterController<'a> {
             _move_speed: self._move_speed,
             _fall_time: self._fall_time,
             _roll_delay: self._roll_delay,
+            _slope_ratio: self._slope_ratio,
             _is_falling: self._is_falling,
             _is_ground: self._is_ground,
             _is_running: self._is_running,
@@ -732,6 +742,7 @@ impl<'a> CharacterController<'a> {
         self._move_speed = controller_save_data._move_speed;
         self._fall_time = controller_save_data._fall_time;
         self._roll_delay = controller_save_data._roll_delay;
+        self._slope_ratio = controller_save_data._slope_ratio;
         self._is_falling = controller_save_data._is_falling;
         self._is_ground = controller_save_data._is_ground;
         self._is_running = controller_save_data._is_running;
