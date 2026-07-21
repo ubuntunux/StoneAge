@@ -218,7 +218,8 @@ impl<'a> GameMenuWidget<'a> {
             || joystick_input_data._btn_down == ButtonState::Pressed;
         let press_game_menu = keyboard_input_data.get_key_pressed(KeyCode::Enter)
             || keyboard_input_data.get_key_pressed(KeyCode::Space)
-            || joystick_input_data._btn_x == ButtonState::Pressed;
+            || joystick_input_data._btn_x == ButtonState::Pressed
+            || joystick_input_data._btn_a == ButtonState::Pressed;
         let close_game_menu =
             keyboard_input_data.get_key_pressed(KeyCode::Escape) || joystick_input_data._btn_b == ButtonState::Pressed;
 

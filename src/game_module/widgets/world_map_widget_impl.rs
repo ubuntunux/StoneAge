@@ -572,7 +572,8 @@ impl<'a> WorldMapWidget<'a> {
         let is_interaction = keyboard_input_data.get_key_pressed(KeyCode::KeyF)
             || keyboard_input_data.get_key_pressed(KeyCode::Space)
             || keyboard_input_data.get_key_pressed(KeyCode::Enter)
-            || joystick_input_data._btn_x == ButtonState::Pressed;
+            || joystick_input_data._btn_x == ButtonState::Pressed
+            || joystick_input_data._btn_a == ButtonState::Pressed;
 
         let joystick_sensitivity: f32 = 0.1 / 32767.0;
         let _stick_left_direction = Vector2::<f32>::new(
