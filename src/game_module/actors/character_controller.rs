@@ -499,15 +499,7 @@ impl<'a> CharacterController<'a> {
         // jump
         if self._is_jump_start {
             let not_enough_stamina = owner.get_stats().get_stamina() < 0.0;
-            let jump_speed = character_data._stat_data._jump_speed * if not_enough_stamina { 0.5 } else { 1.0 };
-            self._velocity.y = jump_speed * self._slope_ratio;
-
-            // let ground_normal = math::safe_normalize(&Vector3::new(self._last_ground_normal.x, self._last_ground_normal.y.abs(), self._last_ground_normal.z));
-            // let slop_speed = SLOPE_SPEED.max(self._move_speed);
-            // self._slop_velocity += Vector3::new(ground_normal.x, 0.0, ground_normal.z) * jump_speed * (1.0 - ground_normal.y);
-            // let (slope_move_dir, slope_move_distance) = math::make_normalize_with_norm(&self._slop_velocity);
-            // self._slop_velocity = slope_move_dir * slope_move_distance.min(slop_speed);
-
+            self._velocity.y = character_data._stat_data._jump_speed * if not_enough_stamina { 0.5 } else { 1.0 };
             self._is_ground = false;
             self._is_jump = true;
         }
