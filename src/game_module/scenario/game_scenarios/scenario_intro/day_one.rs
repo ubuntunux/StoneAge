@@ -1,7 +1,9 @@
 use crate::game_module::actors::character::Character;
 use crate::game_module::actors::props::Prop;
 use crate::game_module::behavior::behavior_base::BehaviorState;
-use crate::game_module::game_constants::{AUDIO_UFO_BEAM, AUDIO_UFO_FLYING, BED_FOR_ARU, CAMERA_DISTANCE_MAX, CAMERA_OFFSET_Y, TIME_OF_EARLY_MORNING};
+use crate::game_module::game_constants::{
+    AUDIO_UFO_BEAM, AUDIO_UFO_FLYING, BED_FOR_ARU, CAMERA_DISTANCE_MAX, CAMERA_OFFSET_Y, TIME_OF_EARLY_MORNING,
+};
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::scenario::scenario::{

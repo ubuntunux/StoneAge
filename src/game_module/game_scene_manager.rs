@@ -340,7 +340,8 @@ impl<'a> GameSceneManager<'a> {
         self.get_game_ui_manager_mut().clear_inventory_items();
         for create_infos in game_save_data._inventory_item_create_info_list.values() {
             for item_create_info in create_infos.iter() {
-                self.get_game_ui_manager_mut().add_item(item_create_info._item_data_name.as_str(), item_create_info._item_count);
+                self.get_game_ui_manager_mut()
+                    .add_item(item_create_info._item_data_name.as_str(), item_create_info._item_count);
             }
         }
     }
@@ -438,11 +439,7 @@ impl<'a> GameSceneManager<'a> {
                     let rotation = player.borrow().get_rotation().clone();
                     let scale = player.borrow().get_scale().clone();
                     // respawn
-                    player.borrow_mut().respawn_character(
-                        &spawn_position,
-                        &rotation,
-                        &scale,
-                    );
+                    player.borrow_mut().respawn_character(&spawn_position, &rotation, &scale);
                 }
             }
             self._teleport_spawn_point = None;

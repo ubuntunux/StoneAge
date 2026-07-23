@@ -1,4 +1,6 @@
-use crate::game_module::actors::character::{Character, CharacterAnimationState, CharacterStats, CharacterStatsSaveData};
+use crate::game_module::actors::character::{
+    Character, CharacterAnimationState, CharacterStats, CharacterStatsSaveData,
+};
 use crate::game_module::actors::character_controller::CharacterController;
 use crate::game_module::actors::character_data::{ActionAnimationState, CharacterData, MoveAnimationState};
 use crate::game_module::actors::character_manager::{
@@ -440,11 +442,7 @@ impl<'a> Character<'a> {
                 animation_data._running_jump_animation_speed * next_move_speed,
                 false,
             ),
-            MoveAnimationState::SitDownLoop => (
-                Some(&animation_data._sit_down_loop_animation),
-                next_move_speed,
-                true,
-            ),
+            MoveAnimationState::SitDownLoop => (Some(&animation_data._sit_down_loop_animation), next_move_speed, true),
         };
 
         if let Some(mesh) = move_mesh {
@@ -471,61 +469,37 @@ impl<'a> Character<'a> {
                 animation_data._attack_animation_speed * next_action_speed,
                 false,
             ),
-            ActionAnimationState::Dance => (
-                Some(&animation_data._dance_animation),
-                next_action_speed,
-                true,
-            ),
+            ActionAnimationState::Dance => (Some(&animation_data._dance_animation), next_action_speed, true),
             ActionAnimationState::Dead => (
                 Some(&animation_data._dead_animation),
                 animation_data._dead_animation_speed * next_action_speed,
                 false,
             ),
-            ActionAnimationState::Eating => (
-                Some(&animation_data._eating_animation),
-                next_action_speed,
-                false,
-            ),
+            ActionAnimationState::Eating => (Some(&animation_data._eating_animation), next_action_speed, false),
             ActionAnimationState::Hit => (
                 Some(&animation_data._hit_animation),
                 animation_data._hit_animation_speed * next_action_speed,
                 false,
             ),
-            ActionAnimationState::Hungry => (
-                Some(&animation_data._hungry_animation),
-                next_action_speed,
-                true,
-            ),
+            ActionAnimationState::Hungry => (Some(&animation_data._hungry_animation), next_action_speed, true),
             ActionAnimationState::Kick => (
                 Some(&animation_data._kick_animation),
                 animation_data._kick_animation_speed * next_action_speed,
                 false,
             ),
-            ActionAnimationState::LayingDown => (
-                Some(&animation_data._laying_down_animation),
-                next_action_speed,
-                false,
-            ),
-            ActionAnimationState::Pickup => (
-                Some(&animation_data._pickup_animation),
-                next_action_speed,
-                false,
-            ),
+            ActionAnimationState::LayingDown => {
+                (Some(&animation_data._laying_down_animation), next_action_speed, false)
+            }
+            ActionAnimationState::Pickup => (Some(&animation_data._pickup_animation), next_action_speed, false),
             ActionAnimationState::PowerAttack => (
                 Some(&animation_data._power_attack_animation),
                 animation_data._power_attack_animation_speed * next_action_speed,
                 false,
             ),
-            ActionAnimationState::Sleep | ActionAnimationState::SleepNoSnoring => (
-                Some(&animation_data._sleep_animation),
-                next_action_speed,
-                true,
-            ),
-            ActionAnimationState::WakeUp => (
-                Some(&animation_data._wake_up_animation),
-                next_action_speed,
-                false,
-            ),
+            ActionAnimationState::Sleep | ActionAnimationState::SleepNoSnoring => {
+                (Some(&animation_data._sleep_animation), next_action_speed, true)
+            }
+            ActionAnimationState::WakeUp => (Some(&animation_data._wake_up_animation), next_action_speed, false),
         };
 
         if let Some(mesh) = action_mesh {
@@ -1524,8 +1498,11 @@ impl<'a> Character<'a> {
                         if self._is_player && animation_play_info._is_animation_end {
                             let game_scene_manager = ptr_as_mut(self._character_manager).get_game_scene_manager_mut();
                             if !game_scene_manager.is_teleport_mode() {
-                                game_scene_manager.set_teleport_spawn_point(Stages::Home.get_stage_data_name(), BED_FOR_ARU);
-                                self.get_character_manager().get_game_client_mut().set_next_game_phase(GamePhase::Respawn);
+                                game_scene_manager
+                                    .set_teleport_spawn_point(Stages::Home.get_stage_data_name(), BED_FOR_ARU);
+                                self.get_character_manager()
+                                    .get_game_client_mut()
+                                    .set_next_game_phase(GamePhase::Respawn);
                             }
                         }
                     }
