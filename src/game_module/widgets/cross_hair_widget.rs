@@ -19,6 +19,7 @@ impl<'a> CrossHairWidget<'a> {
         let cross_hair_widget_ptr = ptr_as_mut(cross_hair_widget.as_ref());
         let ui_component = ptr_as_mut(cross_hair_widget.as_ref()).get_ui_component_mut();
         ui_component.set_material_instance(Some(material_instance.clone()));
+        ui_component.set_enable_dpi_scale(false);
         ui_component.set_size(100.0, 100.0);
         root_widget.add_widget(&cross_hair_widget);
 
@@ -38,6 +39,6 @@ impl<'a> CrossHairWidget<'a> {
     pub fn update_cross_hair(&mut self, pos: &Vector2<i32>) {
         let cross_hair_widget = ptr_as_mut(self._widget);
         let ui_component = cross_hair_widget.get_ui_component_mut();
-        ui_component.set_pos_with_dpi(pos.x as f32, pos.y as f32);
+        ui_component.set_pos(pos.x as f32, pos.y as f32);
     }
 }

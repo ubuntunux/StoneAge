@@ -137,6 +137,7 @@ impl<'a> EditorUIManager<'a> {
                 let ui_layout = UIManager::create_widget("actor position", UIWidgetTypes::Default);
                 let ui_layout_mut: &mut WidgetDefault = ptr_as_mut(ui_layout.as_ref());
                 let ui_component: &mut UIComponentInstance = ui_layout_mut.get_ui_component_mut();
+                ui_component.set_enable_dpi_scale(false);
                 ui_component.set_expandable(true);
                 ui_component.set_size_y(20.0);
                 ui_component.set_halign(HorizontalAlign::CENTER);
@@ -155,7 +156,7 @@ impl<'a> EditorUIManager<'a> {
             widget
                 ._ui_component
                 .set_text(format!("[{:.1}, {:.1}, {:.1}]", position.x, position.y, position.z).as_str());
-            widget._ui_component.set_pos_with_dpi(screen_position.x, screen_position.y);
+            widget._ui_component.set_pos(screen_position.x, screen_position.y);
         }
     }
 }

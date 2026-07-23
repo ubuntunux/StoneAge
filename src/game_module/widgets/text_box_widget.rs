@@ -70,6 +70,7 @@ impl<'a> TextBoxItem<'a> {
     ) -> TextBoxItem<'a> {
         let layout_widget = UIManager::create_widget("layout_widget", UIWidgetTypes::Default);
         let ui_component = ptr_as_mut(layout_widget.as_ref()).get_ui_component_mut();
+        ui_component.set_enable_dpi_scale(false);
         ui_component.set_layout_type(UILayoutType::BoxLayout);
         ui_component.set_layout_orientation(Orientation::VERTICAL);
         ui_component.set_halign(HorizontalAlign::CENTER);
@@ -283,7 +284,7 @@ impl<'a> TextBoxWidget<'a> {
                 screen_position.y = 0f32.max((main_camera._window_size.y as f32 - ui_size.y).min(screen_position.y));
 
                 let ui_component = &mut ptr_as_mut(text_box_item._layout_widget)._ui_component;
-                ui_component.set_pos_with_dpi(screen_position.x, screen_position.y);
+                ui_component.set_pos(screen_position.x, screen_position.y);
 
                 match text_box_item._animation_state {
                     TextBoxAnimationState::None => {
