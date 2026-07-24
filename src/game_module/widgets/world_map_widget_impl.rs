@@ -268,6 +268,7 @@ impl<'a> WorldMapWidget<'a> {
         audio_manager: &AudioManager<'a>,
         game_resources: &GameResources<'a>,
         root_widget: &mut WidgetDefault<'a>,
+        window_size: &Vector2<i32>,
     ) -> Box<WorldMapWidget<'a>> {
         let background_layout = UIManager::create_widget("background image layout", UIWidgetTypes::Default);
         let background_layout_mut = ptr_as_mut(background_layout.as_ref());
@@ -363,6 +364,8 @@ impl<'a> WorldMapWidget<'a> {
             bridge_layer_widget_mut,
             image_aspect,
         );
+
+        world_map_widget.changed_window_size(window_size);
 
         world_map_widget
     }

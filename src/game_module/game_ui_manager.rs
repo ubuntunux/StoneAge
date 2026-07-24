@@ -137,7 +137,6 @@ impl<'a> EditorUIManager<'a> {
                 let ui_layout = UIManager::create_widget("actor position", UIWidgetTypes::Default);
                 let ui_layout_mut: &mut WidgetDefault = ptr_as_mut(ui_layout.as_ref());
                 let ui_component: &mut UIComponentInstance = ui_layout_mut.get_ui_component_mut();
-                ui_component.set_enable_dpi_scale(false);
                 ui_component.set_expandable(true);
                 ui_component.set_size_y(20.0);
                 ui_component.set_halign(HorizontalAlign::CENTER);
@@ -152,11 +151,12 @@ impl<'a> EditorUIManager<'a> {
             let character = character.1.borrow();
             let position = character.get_position();
             let screen_position = main_camera.convert_world_to_screen(position, true);
+            let dpi_scale = rust_engine_3d::scene::ui::get_global_dpi_scale();
             let widget = ptr_as_mut(self._actor_positions[i]);
             widget
                 ._ui_component
                 .set_text(format!("[{:.1}, {:.1}, {:.1}]", position.x, position.y, position.z).as_str());
-            widget._ui_component.set_pos(screen_position.x, screen_position.y);
+            widget._ui_component.set_pos(screen_position.x / dpi_scale, screen_position.y / dpi_scale);
         }
     }
 }
@@ -245,11 +245,6 @@ impl<'a> GameUIManager<'a> {
         root_widget.add_widget(&game_ui_layout);
         self._game_ui_layout = game_ui_layout.as_ref();
         self._key_binding_widget_manager = Some(Box::new(KeyBindingWidgetManager::default()));
-        self._game_menu_widget = Some(GameMenuWidget::create_game_menu_widget(
-            game_client,
-            game_resources,
-            root_widget,
-        ));
         self._player_hud = Some(Box::new(PlayerHud::create_player_hud(game_ui_layout_mut)));
         self._item_bar_widget = Some(Box::new(ItemBarWidget::create_item_bar_widget(
             game_resources,
@@ -272,6 +267,7 @@ impl<'a> GameUIManager<'a> {
             audio_manager,
             game_resources,
             game_ui_layout_mut,
+            window_size,
         ));
         self._time_of_day = Some(Box::new(TimeOfDayWidget::create_time_of_day_widget(
             game_ui_layout_mut,
@@ -294,6 +290,11 @@ impl<'a> GameUIManager<'a> {
             engine_resources,
             root_widget,
         )));
+        self._game_menu_widget = Some(GameMenuWidget::create_game_menu_widget(
+            game_client,
+            game_resources,
+            root_widget,
+        ));
         self._cross_hair = Some(Box::new(CrossHairWidget::create_cross_hair(
             root_widget,
             game_resources,

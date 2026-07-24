@@ -7,7 +7,7 @@ use rust_engine_3d::resource::resource::EngineResources;
 use rust_engine_3d::scene::ui::{
     HorizontalAlign, Orientation, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault,
 };
-use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
+use rust_engine_3d::utilities::system::ptr_as_mut;
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use std::collections::HashMap;
 use std::ffi::c_void;
@@ -70,7 +70,6 @@ impl<'a> TextBoxItem<'a> {
     ) -> TextBoxItem<'a> {
         let layout_widget = UIManager::create_widget("layout_widget", UIWidgetTypes::Default);
         let ui_component = ptr_as_mut(layout_widget.as_ref()).get_ui_component_mut();
-        ui_component.set_enable_dpi_scale(false);
         ui_component.set_layout_type(UILayoutType::BoxLayout);
         ui_component.set_layout_orientation(Orientation::VERTICAL);
         ui_component.set_halign(HorizontalAlign::CENTER);
@@ -80,7 +79,7 @@ impl<'a> TextBoxItem<'a> {
         ui_component.set_border(2.0);
         ui_component.set_border_color(get_color32(0, 0, 0, 128));
         ui_component.set_padding(ITEM_PADDING);
-        ui_component.set_expandable_x(true);
+        ui_component.set_expandable(true);
         ui_component.set_opacity(0.0);
         parent_widget.add_widget(&layout_widget);
 
@@ -115,9 +114,10 @@ impl<'a> TextBoxItem<'a> {
             } else {
                 let binding_widget = UIManager::create_widget("binding_widget", UIWidgetTypes::Default);
                 let ui_component = ptr_as_mut(binding_widget.as_ref()).get_ui_component_mut();
-                ui_component.set_halign(HorizontalAlign::LEFT);
+                ui_component.set_halign(HorizontalAlign::CENTER);
                 ui_component.set_valign(VerticalAlign::CENTER);
-                ui_component.set_expandable_x(true);
+                ui_component.set_size(0.0, 0.0);
+                ui_component.set_expandable(true);
                 match content {
                     TextBoxContent::MaterialInstance(material_name) => {
                         let material_instance = ptr_as_mut(engine_resources).get_material_instance_data(material_name);
@@ -180,7 +180,7 @@ impl<'a> TextBoxWidget<'a> {
             let ui_component = ptr_as_mut(text_box_widget_layout.as_ref()).get_ui_component_mut();
             ui_component.set_size_hint_x(Some(1.0));
             ui_component.set_size_hint_y(Some(1.0));
-            ui_component.set_color(get_color32(0, 0, 0, 0));
+            ui_component.set_renderable(false);
             ptr_as_mut(text_box_root_widget.as_ref()).add_widget(&text_box_widget_layout);
             layers.push(text_box_widget_layout.as_ref())
         }
@@ -276,15 +276,14 @@ impl<'a> TextBoxWidget<'a> {
 
             if is_enable_text_box {
                 let main_camera = game_scene_manager.get_scene_manager().get_main_camera();
-                let ui_size = ptr_as_ref(text_box_item._layout_widget).get_ui_component().get_ui_size();
-                let mut screen_position = main_camera.convert_world_to_screen(&position, true);
-                screen_position.x -= ui_size.x * 0.5;
-                screen_position.y -= ui_size.y * 0.5;
-                screen_position.x = 0f32.max((main_camera._window_size.x as f32 - ui_size.x).min(screen_position.x));
-                screen_position.y = 0f32.max((main_camera._window_size.y as f32 - ui_size.y).min(screen_position.y));
-
                 let ui_component = &mut ptr_as_mut(text_box_item._layout_widget)._ui_component;
-                ui_component.set_pos(screen_position.x, screen_position.y);
+                let ui_size = ui_component.get_ui_size();
+                let max_x = (main_camera._window_size.x as f32 - ui_size.x).max(0.0);
+                let max_y = (main_camera._window_size.y as f32 - ui_size.y).max(0.0);
+                let screen_pos = main_camera.convert_world_to_screen(&position, true) - ui_size * 0.5;
+                let clamped_pos = Vector2::new(screen_pos.x.clamp(0.0, max_x), screen_pos.y.clamp(0.0, max_y));
+                let dpi_scale = rust_engine_3d::scene::ui::get_global_dpi_scale();
+                ui_component.set_pos(clamped_pos.x / dpi_scale, clamped_pos.y / dpi_scale);
 
                 match text_box_item._animation_state {
                     TextBoxAnimationState::None => {

@@ -118,12 +118,12 @@ impl<'a> GameMenuWidget<'a> {
         let ui_component = layer_mut.get_ui_component_mut();
         ui_component.set_layout_type(UILayoutType::BoxLayout);
         ui_component.set_layout_orientation(Orientation::VERTICAL);
-        ui_component.set_halign(HorizontalAlign::LEFT);
-        ui_component.set_valign(VerticalAlign::TOP);
+        ui_component.set_halign(HorizontalAlign::CENTER);
+        ui_component.set_valign(VerticalAlign::CENTER);
         ui_component.set_pos_hint_x(PosHintX::Center(0.5));
         ui_component.set_pos_hint_y(PosHintY::Center(0.5));
-        ui_component.set_size_hint_x(Some(0.5));
-        ui_component.set_size_hint_y(Some(0.5));
+        // ui_component.set_size_hint_x(Some(0.5));
+        // ui_component.set_size_hint_y(Some(0.5));
         ui_component.set_expandable(true);
         ui_component.set_padding(10.0);
         ui_component.set_color(get_color32(50, 50, 50, 128));
