@@ -68,7 +68,7 @@ impl<'a> TextBoxItem<'a> {
         contents: &Vec<TextBoxContent>,
         duration: Option<f32>,
     ) -> TextBoxItem<'a> {
-        let layout_widget = UIManager::create_widget("layout_widget", UIWidgetTypes::Default);
+        let layout_widget = UIManager::create_widget("TextBoxItem", UIWidgetTypes::Default);
         let ui_component = ptr_as_mut(layout_widget.as_ref()).get_ui_component_mut();
         ui_component.set_layout_type(UILayoutType::BoxLayout);
         ui_component.set_layout_orientation(Orientation::VERTICAL);
@@ -112,11 +112,10 @@ impl<'a> TextBoxItem<'a> {
             if let TextBoxContent::Audio(audio_name) = content {
                 ptr_as_mut(audio_manager).play_audio_bank(audio_name, AudioLoop::ONCE, None);
             } else {
-                let binding_widget = UIManager::create_widget("binding_widget", UIWidgetTypes::Default);
+                let binding_widget = UIManager::create_widget("TextBoxItemContent", UIWidgetTypes::Default);
                 let ui_component = ptr_as_mut(binding_widget.as_ref()).get_ui_component_mut();
                 ui_component.set_halign(HorizontalAlign::CENTER);
                 ui_component.set_valign(VerticalAlign::CENTER);
-                ui_component.set_size(0.0, 0.0);
                 ui_component.set_expandable(true);
                 match content {
                     TextBoxContent::MaterialInstance(material_name) => {
@@ -127,7 +126,7 @@ impl<'a> TextBoxItem<'a> {
                         ui_component.set_material_instance(Some(material_instance.clone()));
                     }
                     TextBoxContent::StatWidget((text, ratio)) => {
-                        ui_component.set_size_hint_x(Some(1.0));
+                        ui_component.set_size_x(ITEM_HEIGHT);
                         ui_component.set_size_y(ITEM_HEIGHT);
                         ui_component.set_color(get_color32(255, 255, 255, 0));
                         ui_component.set_font_color(get_color32(0, 0, 0, 255));
@@ -135,7 +134,7 @@ impl<'a> TextBoxItem<'a> {
                         ui_component.set_text(&format!("{}: {:.1}%", text, ratio));
                     }
                     TextBoxContent::Text(text) => {
-                        ui_component.set_size_hint_x(Some(1.0));
+                        ui_component.set_size_x(ITEM_HEIGHT);
                         ui_component.set_size_y(ITEM_HEIGHT);
                         ui_component.set_color(get_color32(255, 255, 255, 0));
                         ui_component.set_font_color(get_color32(0, 0, 0, 255));
@@ -168,9 +167,8 @@ impl<'a> TextBoxWidget<'a> {
     ) -> TextBoxWidget<'a> {
         let text_box_root_widget = UIManager::create_widget("TextBoxRootWidget", UIWidgetTypes::Default);
         let ui_component = ptr_as_mut(text_box_root_widget.as_ref()).get_ui_component_mut();
-        ui_component.set_size_hint_x(Some(1.0));
-        ui_component.set_size_hint_y(Some(1.0));
         ui_component.set_renderable(false);
+        ui_component.set_expandable(true);
         root_widget.add_widget(&text_box_root_widget);
 
         let mut layers: Vec<*const WidgetDefault<'a>> = Vec::new();
@@ -178,8 +176,6 @@ impl<'a> TextBoxWidget<'a> {
             let text_box_widget_layout =
                 UIManager::create_widget(layer_type.to_string().as_str(), UIWidgetTypes::Default);
             let ui_component = ptr_as_mut(text_box_widget_layout.as_ref()).get_ui_component_mut();
-            ui_component.set_size_hint_x(Some(1.0));
-            ui_component.set_size_hint_y(Some(1.0));
             ui_component.set_renderable(false);
             ptr_as_mut(text_box_root_widget.as_ref()).add_widget(&text_box_widget_layout);
             layers.push(text_box_widget_layout.as_ref())
