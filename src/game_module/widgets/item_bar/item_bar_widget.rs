@@ -502,25 +502,27 @@ impl<'a> ItemBarWidget<'a> {
         let inventory_key_binding_widget_map = ptr_as_mut(self._inventory_key_binding_widget_map.as_ref());
         let game_scene_manager = ptr_as_ref(self._game_scene_manager);
         let selected_item_index = game_scene_manager.get_game_ui_manager().get_selected_inventory_item_index();
+        let dpi_scale = rust_engine_3d::scene::ui::get_global_dpi_scale();
+        let reference_window_size = Vector2::new(self._window_size.x as f32, self._window_size.y as f32) / dpi_scale;
 
         if self._selected_item_index != selected_item_index || force_update {
             let _item_name = game_scene_manager.get_game_ui_manager().get_selected_inventory_item_name();
             let pos_x =
-                self._window_size.x as f32 * 0.5 + ItemBarWidget::get_selected_item_pos_left(selected_item_index);
+                reference_window_size.x * 0.5 + ItemBarWidget::get_selected_item_pos_left(selected_item_index);
 
             let key_binding_widget = inventory_key_binding_widget_map.get_key_binding_widget(KeyBindingType::UseItem);
             let ui_component = ptr_as_mut(key_binding_widget._layout_widget).get_ui_component_mut();
             ui_component.set_pos_x(pos_x);
             ui_component.set_pos_y(
-                self._window_size.y as f32 - (ItemBarWidget::get_item_bar_pos_top() + ui_component.get_ui_size().y),
+                reference_window_size.y - (ItemBarWidget::get_item_bar_pos_top() + ui_component.get_ui_size().y / dpi_scale),
             );
 
             let key_binding_widget = inventory_key_binding_widget_map.get_key_binding_widget(KeyBindingType::DropItem);
             let ui_component = ptr_as_mut(key_binding_widget._layout_widget).get_ui_component_mut();
             ui_component.set_pos_x(pos_x);
             ui_component.set_pos_y(
-                self._window_size.y as f32
-                    - (ItemBarWidget::get_item_bar_pos_top() + ui_component.get_ui_size().y * 2.0),
+                reference_window_size.y
+                    - (ItemBarWidget::get_item_bar_pos_top() + ui_component.get_ui_size().y / dpi_scale * 2.0),
             );
 
             self._selected_item_index = selected_item_index;
@@ -530,28 +532,29 @@ impl<'a> ItemBarWidget<'a> {
             inventory_key_binding_widget_map.get_key_binding_widget(KeyBindingType::SelectPrevItem);
         let ui_component = ptr_as_mut(key_binding_widget._layout_widget).get_ui_component_mut();
         ui_component.set_pos_x(
-            (self._window_size.x as f32 - ItemBarWidget::get_item_bar_width()) * 0.5
-                - ui_component.get_ui_size().x
+            (reference_window_size.x - ItemBarWidget::get_item_bar_width()) * 0.5
+                - ui_component.get_ui_size().x / dpi_scale
                 - KEY_BINDING_TEXT_MARGIN,
         );
         ui_component.set_pos_y(
-            self._window_size.y as f32 - (ItemBarWidget::get_item_bar_center_y() + ui_component.get_ui_size().y * 0.5),
+            reference_window_size.y - (ItemBarWidget::get_item_bar_center_y() + ui_component.get_ui_size().y / dpi_scale* 0.5),
         );
 
         let key_binding_widget =
             inventory_key_binding_widget_map.get_key_binding_widget(KeyBindingType::SelectNextItem);
         let ui_component = ptr_as_mut(key_binding_widget._layout_widget).get_ui_component_mut();
         ui_component.set_pos_x(
-            (self._window_size.x as f32 + ItemBarWidget::get_item_bar_width()) * 0.5 + KEY_BINDING_TEXT_MARGIN,
+            (reference_window_size.x + ItemBarWidget::get_item_bar_width()) * 0.5 + KEY_BINDING_TEXT_MARGIN,
         );
         ui_component.set_pos_y(
-            self._window_size.y as f32 - (ItemBarWidget::get_item_bar_center_y() + ui_component.get_ui_size().y * 0.5),
+            reference_window_size.y - (ItemBarWidget::get_item_bar_center_y() + ui_component.get_ui_size().y / dpi_scale* 0.5),
         );
     }
 
     pub fn changed_window_size(&mut self, window_size: &Vector2<i32>) {
         self._window_size = *window_size;
         self.update_selected_item_helper_widget(true);
+        self.select_item(self.get_selected_item_index());
     }
 
     pub fn update_item_bar_widget(&mut self) {
