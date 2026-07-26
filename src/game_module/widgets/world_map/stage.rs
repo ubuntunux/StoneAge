@@ -48,7 +48,7 @@ impl<'a> WorldMapStage<'a> {
 
         const STAGE_SIZE: f32 = 100.0;
         ui_component.set_size(STAGE_SIZE, STAGE_SIZE);
-        ui_component.set_pivot_vec(rust_engine_3d::scene::ui::PIVOT_CENTER);
+        ui_component.set_pivot_preset(rust_engine_3d::scene::ui::PIVOT_CENTER);
         root_layout.add_widget(&world_map_stage);
 
         let world_map_stage = Rc::new(WorldMapStage {

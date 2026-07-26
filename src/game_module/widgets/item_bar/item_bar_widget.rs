@@ -13,7 +13,8 @@ use rust_engine_3d::resource::resource::EngineResources;
 use rust_engine_3d::scene::material_instance::MaterialInstanceData;
 use rust_engine_3d::scene::ui::{
     HorizontalAlign, Orientation, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign,
-    WidgetDefault, PIVOT_TOP_CENTER, PIVOT_BOTTOM_CENTER,
+    WidgetDefault, PIVOT_TOP_CENTER, PIVOT_BOTTOM_CENTER, PIVOT_CENTER_LEFT, PIVOT_CENTER_RIGHT,
+    PIVOT_BOTTOM_LEFT,
 };
 use rust_engine_3d::utilities::system::{RcRefCell, ptr_as_mut, ptr_as_ref};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
@@ -90,7 +91,7 @@ fn create_quick_slot_key_binding_widget<'a>(
     let ui_component = ptr_as_mut(layout_widget.as_ref()).get_ui_component_mut();
     ui_component.set_layout_type(UILayoutType::BoxLayout);
     ui_component.set_layout_orientation(Orientation::HORIZONTAL);
-    ui_component.set_pivot_vec(PIVOT_TOP_CENTER);
+    ui_component.set_pivot_preset(PIVOT_TOP_CENTER);
     ui_component.set_pos_hint(Some(0.5), Some(1.0));
     ui_component.set_size_x(KEY_BINDING_UI_SIZE);
     ui_component.set_size_y(KEY_BINDING_UI_SIZE);
@@ -138,7 +139,7 @@ impl<'a> ItemBarWidget<'a> {
         ui_component.set_round(5.0);
         ui_component.set_border(2.0);
         ui_component.set_expandable(true);
-        ui_component.set_pivot_vec(PIVOT_BOTTOM_CENTER);
+        ui_component.set_pivot_preset(PIVOT_BOTTOM_CENTER);
         ui_component.set_pos_hint(Some(0.5), Some(1.0));
         ui_component.set_margin_bottom(ITEM_BAR_WIDGET_POS_Y_FROM_BOTTOM);
         parent_widget.add_widget(&layer);
@@ -203,38 +204,54 @@ impl<'a> ItemBarWidget<'a> {
 
         // inventory
         let inventory_key_binding_widget_map = ptr_as_mut(self._inventory_key_binding_widget_map.as_ref());
-        inventory_key_binding_widget_map.register_key_binding_widget(create_inventory_key_binding_widget(
+
+        let select_prev_widget = create_inventory_key_binding_widget(
             ptr_as_mut(self._parent_widget),
             KeyBindingType::SelectPrevItem,
             "select_prev_item_key_binding",
             "Previous Item",
             vec![engine_resources.get_material_instance_data("ui/controller/keycode_q").clone()],
             vec![engine_resources.get_material_instance_data("ui/controller/joystick_left").clone()],
-        ));
-        inventory_key_binding_widget_map.register_key_binding_widget(create_inventory_key_binding_widget(
+        );
+        let ui_component = ptr_as_mut(select_prev_widget._layout_widget).get_ui_component_mut();
+        ui_component.set_pivot_preset(PIVOT_CENTER_RIGHT);
+        inventory_key_binding_widget_map.register_key_binding_widget(select_prev_widget);
+
+        let select_next_widget = create_inventory_key_binding_widget(
             ptr_as_mut(self._parent_widget),
             KeyBindingType::SelectNextItem,
             "select_next_item_key_binding",
             "Next Item",
             vec![engine_resources.get_material_instance_data("ui/controller/keycode_e").clone()],
             vec![engine_resources.get_material_instance_data("ui/controller/joystick_right").clone()],
-        ));
-        inventory_key_binding_widget_map.register_key_binding_widget(create_inventory_key_binding_widget(
+        );
+        let ui_component = ptr_as_mut(select_next_widget._layout_widget).get_ui_component_mut();
+        ui_component.set_pivot_preset(PIVOT_CENTER_LEFT);
+        inventory_key_binding_widget_map.register_key_binding_widget(select_next_widget);
+
+        let drop_item_widget = create_inventory_key_binding_widget(
             ptr_as_mut(self._parent_widget),
             KeyBindingType::DropItem,
             "drop_item_key_binding",
             "Drop Item",
             vec![engine_resources.get_material_instance_data("ui/controller/keycode_f").clone()],
             vec![engine_resources.get_material_instance_data("ui/controller/joystick_x").clone()],
-        ));
-        inventory_key_binding_widget_map.register_key_binding_widget(create_inventory_key_binding_widget(
+        );
+        let ui_component = ptr_as_mut(drop_item_widget._layout_widget).get_ui_component_mut();
+        ui_component.set_pivot_preset(PIVOT_BOTTOM_LEFT);
+        inventory_key_binding_widget_map.register_key_binding_widget(drop_item_widget);
+
+        let use_item_widget = create_inventory_key_binding_widget(
             ptr_as_mut(self._parent_widget),
             KeyBindingType::UseItem,
             "use_item_key_binding",
             "Use Item",
             vec![engine_resources.get_material_instance_data("ui/controller/keycode_c").clone()],
             vec![engine_resources.get_material_instance_data("ui/controller/joystick_y").clone()],
-        ));
+        );
+        let ui_component = ptr_as_mut(use_item_widget._layout_widget).get_ui_component_mut();
+        ui_component.set_pivot_preset(PIVOT_BOTTOM_LEFT);
+        inventory_key_binding_widget_map.register_key_binding_widget(use_item_widget);
 
         // quick slot
         let quick_slot_key_binding_widget_map = ptr_as_mut(self._quick_slot_key_binding_widget_map.as_ref());
@@ -506,24 +523,16 @@ impl<'a> ItemBarWidget<'a> {
         let reference_window_size = Vector2::new(self._window_size.x as f32, self._window_size.y as f32) / dpi_scale;
 
         if self._selected_item_index != selected_item_index || force_update {
-            let _item_name = game_scene_manager.get_game_ui_manager().get_selected_inventory_item_name();
-            let pos_x =
-                reference_window_size.x * 0.5 + ItemBarWidget::get_selected_item_pos_left(selected_item_index);
+            let pos_x = reference_window_size.x * 0.5 + ItemBarWidget::get_selected_item_pos_left(selected_item_index);
+            let pos_y = reference_window_size.y - ItemBarWidget::get_item_bar_pos_top();
 
             let key_binding_widget = inventory_key_binding_widget_map.get_key_binding_widget(KeyBindingType::UseItem);
             let ui_component = ptr_as_mut(key_binding_widget._layout_widget).get_ui_component_mut();
-            ui_component.set_pos_x(pos_x);
-            ui_component.set_pos_y(
-                reference_window_size.y - (ItemBarWidget::get_item_bar_pos_top() + ui_component.get_ui_size().y / dpi_scale),
-            );
+            ui_component.set_pos(pos_x, pos_y);
 
             let key_binding_widget = inventory_key_binding_widget_map.get_key_binding_widget(KeyBindingType::DropItem);
             let ui_component = ptr_as_mut(key_binding_widget._layout_widget).get_ui_component_mut();
-            ui_component.set_pos_x(pos_x);
-            ui_component.set_pos_y(
-                reference_window_size.y
-                    - (ItemBarWidget::get_item_bar_pos_top() + ui_component.get_ui_size().y / dpi_scale * 2.0),
-            );
+            ui_component.set_pos(pos_x, pos_y - KEY_BINDING_UI_SIZE);
 
             self._selected_item_index = selected_item_index;
         }
@@ -531,23 +540,17 @@ impl<'a> ItemBarWidget<'a> {
         let key_binding_widget =
             inventory_key_binding_widget_map.get_key_binding_widget(KeyBindingType::SelectPrevItem);
         let ui_component = ptr_as_mut(key_binding_widget._layout_widget).get_ui_component_mut();
-        ui_component.set_pos_x(
-            (reference_window_size.x - ItemBarWidget::get_item_bar_width()) * 0.5
-                - ui_component.get_ui_size().x / dpi_scale
-                - KEY_BINDING_TEXT_MARGIN,
-        );
-        ui_component.set_pos_y(
-            reference_window_size.y - (ItemBarWidget::get_item_bar_center_y() + ui_component.get_ui_size().y / dpi_scale* 0.5),
+        ui_component.set_pos(
+            (reference_window_size.x - ItemBarWidget::get_item_bar_width()) * 0.5 - KEY_BINDING_TEXT_MARGIN,
+            reference_window_size.y - ItemBarWidget::get_item_bar_center_y(),
         );
 
         let key_binding_widget =
             inventory_key_binding_widget_map.get_key_binding_widget(KeyBindingType::SelectNextItem);
         let ui_component = ptr_as_mut(key_binding_widget._layout_widget).get_ui_component_mut();
-        ui_component.set_pos_x(
+        ui_component.set_pos(
             (reference_window_size.x + ItemBarWidget::get_item_bar_width()) * 0.5 + KEY_BINDING_TEXT_MARGIN,
-        );
-        ui_component.set_pos_y(
-            reference_window_size.y - (ItemBarWidget::get_item_bar_center_y() + ui_component.get_ui_size().y / dpi_scale* 0.5),
+            reference_window_size.y - ItemBarWidget::get_item_bar_center_y(),
         );
     }
 

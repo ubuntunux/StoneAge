@@ -169,7 +169,7 @@ impl<'a> ControllerHelpWidget<'a> {
         ui_component.set_round(15.0);
         ui_component.set_size(MAIN_LAYOUT_SIZE.0, MAIN_LAYOUT_SIZE.1);
         ui_component.set_color(get_color32(0, 0, 0, 128));
-        ui_component.set_pivot_vec(rust_engine_3d::scene::ui::PIVOT_BOTTOM_RIGHT);
+        ui_component.set_pivot_preset(rust_engine_3d::scene::ui::PIVOT_BOTTOM_RIGHT);
         ui_component.set_pos_hint(Some(1.0), Some(1.0));
         ui_component.set_margin_right(MAIN_LAYOUT_MARGIN * 2.0);
         ui_component.set_margin_bottom(MAIN_LAYOUT_MARGIN * 2.0);

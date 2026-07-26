@@ -37,7 +37,7 @@ impl<'a> TimeOfDayWidget<'a> {
         ui_component.set_layout_orientation(Orientation::VERTICAL);
         ui_component.set_halign(HorizontalAlign::CENTER);
         ui_component.set_valign(VerticalAlign::CENTER);
-        ui_component.set_pivot_vec(PIVOT_TOP_RIGHT);
+        ui_component.set_pivot_preset(PIVOT_TOP_RIGHT);
         ui_component.set_pos_hint(Some(1.0), Some(0.0));
         ui_component.set_margin_top(30.0);
         ui_component.set_margin_right(30.0);
@@ -127,7 +127,7 @@ impl<'a> TimeOfDayWidget<'a> {
         let ui_component = ptr_as_mut(stage_widget.as_ref()).get_ui_component_mut();
         ui_component.set_halign(HorizontalAlign::CENTER);
         ui_component.set_valign(VerticalAlign::CENTER);
-        ui_component.set_pivot_vec(PIVOT_TOP_CENTER);
+        ui_component.set_pivot_preset(PIVOT_TOP_CENTER);
         ui_component.set_pos_hint(Some(0.5), Some(0.0));
         ui_component.set_size_hint_x(Some(0.5));
         ui_component.set_expandable(true);

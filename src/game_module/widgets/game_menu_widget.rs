@@ -120,7 +120,7 @@ impl<'a> GameMenuWidget<'a> {
         ui_component.set_layout_orientation(Orientation::VERTICAL);
         ui_component.set_halign(HorizontalAlign::CENTER);
         ui_component.set_valign(VerticalAlign::CENTER);
-        ui_component.set_pivot_vec(PIVOT_CENTER);
+        ui_component.set_pivot_preset(PIVOT_CENTER);
         ui_component.set_pos_hint(Some(0.5), Some(0.5));
         // ui_component.set_size_hint_x(Some(0.5));
         // ui_component.set_size_hint_y(Some(0.5));

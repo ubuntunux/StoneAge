@@ -28,7 +28,7 @@ impl<'a> WorldMapPlayer<'a> {
 
         const PLAYER_SIZE: f32 = 100.0;
         ui_component.set_size(PLAYER_SIZE, PLAYER_SIZE);
-        ui_component.set_pivot_vec(rust_engine_3d::scene::ui::PIVOT_CENTER);
+        ui_component.set_pivot_preset(rust_engine_3d::scene::ui::PIVOT_CENTER);
         ui_component.set_pos(0.0, 0.0);
         root_layout.add_widget(&player_icon);
 

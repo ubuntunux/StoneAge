@@ -29,7 +29,7 @@ impl<'a> TargetStatusWidget<'a> {
         ui_component.set_round(10.0);
         ui_component.set_padding(10.0);
         ui_component.set_color(get_color32(0, 0, 0, 128));
-        ui_component.set_pivot_vec(rust_engine_3d::scene::ui::PIVOT_TOP_CENTER);
+        ui_component.set_pivot_preset(rust_engine_3d::scene::ui::PIVOT_TOP_CENTER);
         ui_component.set_pos_hint(Some(0.5), Some(0.0));
         ui_component.set_margin_top(50.0);
         root_widget.add_widget(&target_status_widget);

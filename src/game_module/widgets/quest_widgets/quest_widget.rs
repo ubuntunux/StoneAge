@@ -81,7 +81,7 @@ impl<'a> QuestWidget<'a> {
         ui_component.set_layout_orientation(Orientation::VERTICAL);
         ui_component.set_halign(HorizontalAlign::LEFT);
         ui_component.set_valign(VerticalAlign::TOP);
-        ui_component.set_pivot_vec(PIVOT_CENTER_LEFT);
+        ui_component.set_pivot_preset(PIVOT_CENTER_LEFT);
         ui_component.set_pos_hint(Some(0.0), Some(0.5));
         ui_component.set_margin_left(ITEM_MARGIN);
         ui_component.set_margin_right(ITEM_MARGIN);

@@ -44,7 +44,7 @@ impl<'a> WorldMapWidget<'a> {
         ui_component.set_layout_type(UILayoutType::FloatLayout);
         ui_component.set_size_hint_x(Some(1.0));
         ui_component.set_size_hint_y(Some(1.0));
-        ui_component.set_pivot_vec(PIVOT_CENTER);
+        ui_component.set_pivot_preset(PIVOT_CENTER);
         ui_component.set_pos_hint(Some(0.5), Some(0.5));
         ui_component.set_color(get_color32(80, 80, 180, 255));
         ui_component.set_enable(false);
@@ -69,7 +69,7 @@ impl<'a> WorldMapWidget<'a> {
         let ui_component = world_map_widget_mut.get_ui_component_mut();
         ui_component.set_layout_type(UILayoutType::FloatLayout);
         ui_component.set_size(map_size.x, map_size.y);
-        ui_component.set_pivot_vec(PIVOT_CENTER);
+        ui_component.set_pivot_preset(PIVOT_CENTER);
         ui_component.set_pos_hint(Some(0.5), Some(0.5));
         ui_component.set_material_instance(Some(world_map_material_instance.clone()));
         background_layout_mut.add_widget(&world_map_widget);
