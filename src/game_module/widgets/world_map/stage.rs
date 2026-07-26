@@ -48,6 +48,7 @@ impl<'a> WorldMapStage<'a> {
 
         const STAGE_SIZE: f32 = 100.0;
         ui_component.set_size(STAGE_SIZE, STAGE_SIZE);
+        ui_component.set_pivot_vec(rust_engine_3d::scene::ui::PIVOT_CENTER);
         root_layout.add_widget(&world_map_stage);
 
         let world_map_stage = Rc::new(WorldMapStage {
@@ -92,12 +93,12 @@ impl<'a> WorldMapStage<'a> {
 
     pub fn get_center_pos(&self) -> Vector2<f32> {
         let ui_component = ptr_as_mut(self._world_map_stage.as_ref()).get_ui_component_mut();
-        ui_component.get_center()
+        *ui_component.get_pos()
     }
 
     pub fn set_center_pos(&mut self, center_x: f32, center_y: f32) {
         let ui_component = ptr_as_mut(self._world_map_stage.as_ref()).get_ui_component_mut();
-        ui_component.set_center(center_x, center_y);
+        ui_component.set_pos(center_x, center_y);
     }
 
     pub fn get_stage_data_name(&self) -> &String {

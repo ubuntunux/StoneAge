@@ -12,8 +12,8 @@ use nalgebra::Vector2;
 use rust_engine_3d::resource::resource::EngineResources;
 use rust_engine_3d::scene::material_instance::MaterialInstanceData;
 use rust_engine_3d::scene::ui::{
-    HorizontalAlign, Orientation, PosHintX, PosHintY, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign,
-    WidgetDefault,
+    HorizontalAlign, Orientation, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign,
+    WidgetDefault, PIVOT_TOP_CENTER, PIVOT_BOTTOM_CENTER,
 };
 use rust_engine_3d::utilities::system::{RcRefCell, ptr_as_mut, ptr_as_ref};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
@@ -90,8 +90,8 @@ fn create_quick_slot_key_binding_widget<'a>(
     let ui_component = ptr_as_mut(layout_widget.as_ref()).get_ui_component_mut();
     ui_component.set_layout_type(UILayoutType::BoxLayout);
     ui_component.set_layout_orientation(Orientation::HORIZONTAL);
-    ui_component.set_pos_hint_x(PosHintX::Center(0.5));
-    ui_component.set_pos_hint_y(PosHintY::Top(1.0));
+    ui_component.set_pivot_vec(PIVOT_TOP_CENTER);
+    ui_component.set_pos_hint(Some(0.5), Some(1.0));
     ui_component.set_size_x(KEY_BINDING_UI_SIZE);
     ui_component.set_size_y(KEY_BINDING_UI_SIZE);
     ui_component.set_round(10.0);
@@ -138,8 +138,8 @@ impl<'a> ItemBarWidget<'a> {
         ui_component.set_round(5.0);
         ui_component.set_border(2.0);
         ui_component.set_expandable(true);
-        ui_component.set_pos_hint_x(PosHintX::Center(0.5));
-        ui_component.set_pos_hint_y(PosHintY::Bottom(1.0));
+        ui_component.set_pivot_vec(PIVOT_BOTTOM_CENTER);
+        ui_component.set_pos_hint(Some(0.5), Some(1.0));
         ui_component.set_margin_bottom(ITEM_BAR_WIDGET_POS_Y_FROM_BOTTOM);
         parent_widget.add_widget(&layer);
 

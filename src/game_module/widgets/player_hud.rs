@@ -32,8 +32,8 @@ impl<'a> PlayerHud<'a> {
         ui_component.set_round(10.0);
         ui_component.set_padding(hud_layer_padding);
         ui_component.set_color(get_color32(0, 0, 0, 128));
-        ui_component.set_pos_hint_x(rust_engine_3d::scene::ui::PosHintX::Left(0.0));
-        ui_component.set_pos_hint_y(rust_engine_3d::scene::ui::PosHintY::Bottom(1.0));
+        ui_component.set_pivot_vec(rust_engine_3d::scene::ui::PIVOT_BOTTOM_LEFT);
+        ui_component.set_pos_hint(Some(0.0), Some(1.0));
         ui_component.set_margin_left(10.0);
         ui_component.set_margin_bottom(10.0);
         root_widget.add_widget(&player_widget);

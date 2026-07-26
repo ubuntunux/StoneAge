@@ -5,8 +5,8 @@ use crate::game_module::game_ui_manager::GameUIManager;
 use ash::vk;
 use nalgebra::Vector2;
 use rust_engine_3d::scene::ui::{
-    HorizontalAlign, Orientation, PosHintX, PosHintY, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign,
-    WidgetDefault,
+    HorizontalAlign, Orientation, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign,
+    WidgetDefault, PIVOT_TOP_RIGHT, PIVOT_TOP_CENTER,
 };
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
@@ -37,8 +37,8 @@ impl<'a> TimeOfDayWidget<'a> {
         ui_component.set_layout_orientation(Orientation::VERTICAL);
         ui_component.set_halign(HorizontalAlign::CENTER);
         ui_component.set_valign(VerticalAlign::CENTER);
-        ui_component.set_pos_hint_x(PosHintX::Right(1.0));
-        ui_component.set_pos_hint_y(PosHintY::Top(0.0));
+        ui_component.set_pivot_vec(PIVOT_TOP_RIGHT);
+        ui_component.set_pos_hint(Some(1.0), Some(0.0));
         ui_component.set_margin_top(30.0);
         ui_component.set_margin_right(30.0);
         ui_component.set_round(15.0);
@@ -127,8 +127,8 @@ impl<'a> TimeOfDayWidget<'a> {
         let ui_component = ptr_as_mut(stage_widget.as_ref()).get_ui_component_mut();
         ui_component.set_halign(HorizontalAlign::CENTER);
         ui_component.set_valign(VerticalAlign::CENTER);
-        ui_component.set_pos_hint_x(PosHintX::Center(0.5));
-        ui_component.set_pos_hint_y(PosHintY::Top(0.0));
+        ui_component.set_pivot_vec(PIVOT_TOP_CENTER);
+        ui_component.set_pos_hint(Some(0.5), Some(0.0));
         ui_component.set_size_hint_x(Some(0.5));
         ui_component.set_expandable(true);
         ui_component.set_size_y(50.0);

@@ -27,7 +27,8 @@ impl<'a> ItemSelectionWidget<'a> {
             let relative_center_x = (center_x_scaled - parent_contents_area.x) / dpi_scale;
             let relative_center_y = (center_y_scaled - parent_contents_area.y) / dpi_scale;
 
-            ui_component.set_center(relative_center_x, relative_center_y);
+            ui_component.set_pivot_vec(rust_engine_3d::scene::ui::PIVOT_CENTER);
+            ui_component.set_pos(relative_center_x, relative_center_y);
             ui_component.set_visible(true);
         } else {
             ui_component.set_visible(false);

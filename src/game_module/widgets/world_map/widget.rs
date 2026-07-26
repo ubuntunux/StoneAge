@@ -7,7 +7,7 @@ use crate::game_module::widgets::world_map::layout_trait::WorldMapLayout;
 use nalgebra::Vector2;
 use rust_engine_3d::audio::audio_manager::{AudioLoop, AudioManager};
 use rust_engine_3d::core::input::{ButtonState, JoystickInputData, KeyboardInputData};
-use rust_engine_3d::scene::ui::{PosHintX, PosHintY, UILayoutType, UIManager, UIWidgetTypes, WidgetDefault};
+use rust_engine_3d::scene::ui::{UILayoutType, UIManager, UIWidgetTypes, WidgetDefault, PIVOT_CENTER};
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use std::collections::HashMap;
@@ -44,8 +44,8 @@ impl<'a> WorldMapWidget<'a> {
         ui_component.set_layout_type(UILayoutType::FloatLayout);
         ui_component.set_size_hint_x(Some(1.0));
         ui_component.set_size_hint_y(Some(1.0));
-        ui_component.set_pos_hint_x(PosHintX::Center(0.5));
-        ui_component.set_pos_hint_y(PosHintY::Center(0.5));
+        ui_component.set_pivot_vec(PIVOT_CENTER);
+        ui_component.set_pos_hint(Some(0.5), Some(0.5));
         ui_component.set_color(get_color32(80, 80, 180, 255));
         ui_component.set_enable(false);
         root_widget.add_widget(&background_layout);
@@ -69,8 +69,8 @@ impl<'a> WorldMapWidget<'a> {
         let ui_component = world_map_widget_mut.get_ui_component_mut();
         ui_component.set_layout_type(UILayoutType::FloatLayout);
         ui_component.set_size(map_size.x, map_size.y);
-        ui_component.set_pos_hint_x(PosHintX::Center(0.5));
-        ui_component.set_pos_hint_y(PosHintY::Center(0.5));
+        ui_component.set_pivot_vec(PIVOT_CENTER);
+        ui_component.set_pos_hint(Some(0.5), Some(0.5));
         ui_component.set_material_instance(Some(world_map_material_instance.clone()));
         background_layout_mut.add_widget(&world_map_widget);
 

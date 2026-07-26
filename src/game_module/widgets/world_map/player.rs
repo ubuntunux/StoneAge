@@ -28,7 +28,8 @@ impl<'a> WorldMapPlayer<'a> {
 
         const PLAYER_SIZE: f32 = 100.0;
         ui_component.set_size(PLAYER_SIZE, PLAYER_SIZE);
-        ui_component.set_center(0.0, 0.0);
+        ui_component.set_pivot_vec(rust_engine_3d::scene::ui::PIVOT_CENTER);
+        ui_component.set_pos(0.0, 0.0);
         root_layout.add_widget(&player_icon);
 
         Box::new(WorldMapPlayer {
@@ -39,6 +40,6 @@ impl<'a> WorldMapPlayer<'a> {
 
     pub fn set_center_pos(&mut self, center_x: f32, center_y: f32) {
         let ui_component = ptr_as_mut(self._player_icon.as_ref()).get_ui_component_mut();
-        ui_component.set_center(center_x, center_y);
+        ui_component.set_pos(center_x, center_y);
     }
 }

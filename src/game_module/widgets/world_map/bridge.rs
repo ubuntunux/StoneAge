@@ -35,7 +35,8 @@ impl<'a> WorldMapBridge<'a> {
         } else {
             ui_component.set_size(BRIDGE_THICKNESS, diff_y);
         }
-        ui_component.set_center(center.x, center.y);
+        ui_component.set_pivot_vec(rust_engine_3d::scene::ui::PIVOT_CENTER);
+        ui_component.set_pos(center.x, center.y);
 
         root_layout.add_widget(&world_map_bridge);
 
