@@ -216,6 +216,7 @@ impl<'a> ItemBarWidget<'a> {
         let ui_component = ptr_as_mut(select_prev_widget._layout_widget).get_ui_component_mut();
         ui_component.set_pivot_preset(PIVOT_CENTER_RIGHT);
         ui_component.set_pos_hint(Some(0.5), Some(1.0));
+        ui_component.set_pos_x(-ItemBarWidget::get_item_bar_width() * 0.5 - KEY_BINDING_TEXT_MARGIN);
         ui_component.set_pos_y(-ItemBarWidget::get_item_bar_center_y());
         inventory_key_binding_widget_map.register_key_binding_widget(select_prev_widget);
 
@@ -230,6 +231,7 @@ impl<'a> ItemBarWidget<'a> {
         let ui_component = ptr_as_mut(select_next_widget._layout_widget).get_ui_component_mut();
         ui_component.set_pivot_preset(PIVOT_CENTER_LEFT);
         ui_component.set_pos_hint(Some(0.5), Some(1.0));
+        ui_component.set_pos_x(ItemBarWidget::get_item_bar_width() * 0.5 + KEY_BINDING_TEXT_MARGIN);
         ui_component.set_pos_y(-ItemBarWidget::get_item_bar_center_y());
         inventory_key_binding_widget_map.register_key_binding_widget(select_next_widget);
 
@@ -258,6 +260,7 @@ impl<'a> ItemBarWidget<'a> {
         let ui_component = ptr_as_mut(use_item_widget._layout_widget).get_ui_component_mut();
         ui_component.set_pivot_preset(PIVOT_BOTTOM_LEFT);
         ui_component.set_pos_hint(Some(0.5), Some(1.0));
+        ui_component.set_pos_x(ItemBarWidget::get_selected_item_pos_left(0));
         ui_component.set_pos_y(-ItemBarWidget::get_item_bar_pos_top());
         inventory_key_binding_widget_map.register_key_binding_widget(use_item_widget);
 
@@ -541,16 +544,6 @@ impl<'a> ItemBarWidget<'a> {
 
             self._selected_item_index = selected_item_index;
         }
-
-        let key_binding_widget =
-            inventory_key_binding_widget_map.get_key_binding_widget(KeyBindingType::SelectPrevItem);
-        let ui_component = ptr_as_mut(key_binding_widget._layout_widget).get_ui_component_mut();
-        ui_component.set_pos_x(-ItemBarWidget::get_item_bar_width() * 0.5 - KEY_BINDING_TEXT_MARGIN);
-
-        let key_binding_widget =
-            inventory_key_binding_widget_map.get_key_binding_widget(KeyBindingType::SelectNextItem);
-        let ui_component = ptr_as_mut(key_binding_widget._layout_widget).get_ui_component_mut();
-        ui_component.set_pos_x(ItemBarWidget::get_item_bar_width() * 0.5 + KEY_BINDING_TEXT_MARGIN);
     }
 
     pub fn changed_window_size(&mut self, window_size: &Vector2<i32>) {
