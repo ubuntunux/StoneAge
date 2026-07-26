@@ -215,6 +215,8 @@ impl<'a> ItemBarWidget<'a> {
         );
         let ui_component = ptr_as_mut(select_prev_widget._layout_widget).get_ui_component_mut();
         ui_component.set_pivot_preset(PIVOT_CENTER_RIGHT);
+        ui_component.set_pos_hint(Some(0.5), Some(1.0));
+        ui_component.set_pos_y(-ItemBarWidget::get_item_bar_center_y());
         inventory_key_binding_widget_map.register_key_binding_widget(select_prev_widget);
 
         let select_next_widget = create_inventory_key_binding_widget(
@@ -227,6 +229,8 @@ impl<'a> ItemBarWidget<'a> {
         );
         let ui_component = ptr_as_mut(select_next_widget._layout_widget).get_ui_component_mut();
         ui_component.set_pivot_preset(PIVOT_CENTER_LEFT);
+        ui_component.set_pos_hint(Some(0.5), Some(1.0));
+        ui_component.set_pos_y(-ItemBarWidget::get_item_bar_center_y());
         inventory_key_binding_widget_map.register_key_binding_widget(select_next_widget);
 
         let drop_item_widget = create_inventory_key_binding_widget(
@@ -239,6 +243,8 @@ impl<'a> ItemBarWidget<'a> {
         );
         let ui_component = ptr_as_mut(drop_item_widget._layout_widget).get_ui_component_mut();
         ui_component.set_pivot_preset(PIVOT_BOTTOM_LEFT);
+        ui_component.set_pos_hint(Some(0.5), Some(1.0));
+        ui_component.set_pos_y(-ItemBarWidget::get_item_bar_pos_top() - KEY_BINDING_UI_SIZE - ITEM_WIDGET_UI_MARGIN);
         inventory_key_binding_widget_map.register_key_binding_widget(drop_item_widget);
 
         let use_item_widget = create_inventory_key_binding_widget(
@@ -251,6 +257,8 @@ impl<'a> ItemBarWidget<'a> {
         );
         let ui_component = ptr_as_mut(use_item_widget._layout_widget).get_ui_component_mut();
         ui_component.set_pivot_preset(PIVOT_BOTTOM_LEFT);
+        ui_component.set_pos_hint(Some(0.5), Some(1.0));
+        ui_component.set_pos_y(-ItemBarWidget::get_item_bar_pos_top());
         inventory_key_binding_widget_map.register_key_binding_widget(use_item_widget);
 
         // quick slot
@@ -289,7 +297,7 @@ impl<'a> ItemBarWidget<'a> {
     }
 
     pub fn get_item_bar_pos_top() -> f32 {
-        ITEM_BAR_WIDGET_POS_Y_FROM_BOTTOM + ITEM_UI_SIZE + ITEM_WIDGET_UI_MARGIN * 2.0
+        ITEM_BAR_WIDGET_POS_Y_FROM_BOTTOM + ITEM_UI_SIZE + ITEM_WIDGET_UI_MARGIN * 3.0
     }
 
     pub fn get_item_bar_center_y() -> f32 {
@@ -519,20 +527,17 @@ impl<'a> ItemBarWidget<'a> {
         let inventory_key_binding_widget_map = ptr_as_mut(self._inventory_key_binding_widget_map.as_ref());
         let game_scene_manager = ptr_as_ref(self._game_scene_manager);
         let selected_item_index = game_scene_manager.get_game_ui_manager().get_selected_inventory_item_index();
-        let dpi_scale = rust_engine_3d::scene::ui::get_global_dpi_scale();
-        let reference_window_size = Vector2::new(self._window_size.x as f32, self._window_size.y as f32) / dpi_scale;
 
         if self._selected_item_index != selected_item_index || force_update {
-            let pos_x = reference_window_size.x * 0.5 + ItemBarWidget::get_selected_item_pos_left(selected_item_index);
-            let pos_y = reference_window_size.y - ItemBarWidget::get_item_bar_pos_top();
+            let pos_x = ItemBarWidget::get_selected_item_pos_left(selected_item_index);
 
             let key_binding_widget = inventory_key_binding_widget_map.get_key_binding_widget(KeyBindingType::UseItem);
             let ui_component = ptr_as_mut(key_binding_widget._layout_widget).get_ui_component_mut();
-            ui_component.set_pos(pos_x, pos_y);
+            ui_component.set_pos_x(pos_x);
 
             let key_binding_widget = inventory_key_binding_widget_map.get_key_binding_widget(KeyBindingType::DropItem);
             let ui_component = ptr_as_mut(key_binding_widget._layout_widget).get_ui_component_mut();
-            ui_component.set_pos(pos_x, pos_y - KEY_BINDING_UI_SIZE);
+            ui_component.set_pos_x(pos_x);
 
             self._selected_item_index = selected_item_index;
         }
@@ -540,18 +545,12 @@ impl<'a> ItemBarWidget<'a> {
         let key_binding_widget =
             inventory_key_binding_widget_map.get_key_binding_widget(KeyBindingType::SelectPrevItem);
         let ui_component = ptr_as_mut(key_binding_widget._layout_widget).get_ui_component_mut();
-        ui_component.set_pos(
-            (reference_window_size.x - ItemBarWidget::get_item_bar_width()) * 0.5 - KEY_BINDING_TEXT_MARGIN,
-            reference_window_size.y - ItemBarWidget::get_item_bar_center_y(),
-        );
+        ui_component.set_pos_x(-ItemBarWidget::get_item_bar_width() * 0.5 - KEY_BINDING_TEXT_MARGIN);
 
         let key_binding_widget =
             inventory_key_binding_widget_map.get_key_binding_widget(KeyBindingType::SelectNextItem);
         let ui_component = ptr_as_mut(key_binding_widget._layout_widget).get_ui_component_mut();
-        ui_component.set_pos(
-            (reference_window_size.x + ItemBarWidget::get_item_bar_width()) * 0.5 + KEY_BINDING_TEXT_MARGIN,
-            reference_window_size.y - ItemBarWidget::get_item_bar_center_y(),
-        );
+        ui_component.set_pos_x(ItemBarWidget::get_item_bar_width() * 0.5 + KEY_BINDING_TEXT_MARGIN);
     }
 
     pub fn changed_window_size(&mut self, window_size: &Vector2<i32>) {
