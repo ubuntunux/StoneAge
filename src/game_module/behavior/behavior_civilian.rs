@@ -1,5 +1,5 @@
+use crate::game_module::actors::character::ActionAnimationState;
 use crate::game_module::actors::character::Character;
-use crate::game_module::actors::character_data::ActionAnimationState;
 use crate::game_module::behavior::behavior_base::{BehaviorBase, BehaviorData, BehaviorSaveData, BehaviorState};
 use crate::game_module::game_constants::{
     ARRIVAL_DISTANCE_THRESHOLD, CHARACTER_INTERACTION_TIME, GAME_VIEW_MODE, GameViewMode, NPC_IDLE_TERM_MAX,

@@ -1,246 +1,36 @@
-use crate::game_module::game_constants::{
-    AUDIO_PICKUP_ITEM, DEFAULT_GATE_NAME, MATERIAL_PORTRAIT_MONKEY_ARU, MATERIAL_WORLDMAP,
-};
+use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, DEFAULT_GATE_NAME, MATERIAL_WORLDMAP};
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::{GameSceneManager, Stages};
-use crate::game_module::widgets::world_map_widget::{
-    WorldMapBridge, WorldMapDirection, WorldMapPlayer, WorldMapStage, WorldMapWidget,
-};
+use crate::game_module::widgets::world_map::api::{WorldMapDirection, WorldMapPlayer, WorldMapStage, WorldMapWidget};
+use crate::game_module::widgets::world_map::control_trait::WorldMapControl;
+use crate::game_module::widgets::world_map::layout_trait::WorldMapLayout;
 use nalgebra::Vector2;
 use rust_engine_3d::audio::audio_manager::{AudioLoop, AudioManager};
 use rust_engine_3d::core::input::{ButtonState, JoystickInputData, KeyboardInputData};
-use rust_engine_3d::scene::ui::{
-    HorizontalAlign, PosHintX, PosHintY, UIComponentInstance, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign,
-    WidgetDefault,
-};
+use rust_engine_3d::scene::ui::{PosHintX, PosHintY, UILayoutType, UIManager, UIWidgetTypes, WidgetDefault};
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use std::collections::HashMap;
-use std::ffi::c_void;
 use std::rc::Rc;
 use winit::keyboard::KeyCode;
 
-impl WorldMapDirection {
-    pub fn get_opposite_direction(&self) -> WorldMapDirection {
-        if *self == WorldMapDirection::LEFT {
-            return WorldMapDirection::RIGHT;
-        } else if *self == WorldMapDirection::RIGHT {
-            return WorldMapDirection::LEFT;
-        } else if *self == WorldMapDirection::UP {
-            return WorldMapDirection::DOWN;
-        } else if *self == WorldMapDirection::DOWN {
-            return WorldMapDirection::UP;
-        }
-        WorldMapDirection::COUNT
-    }
-}
-
-impl<'a> WorldMapBridge<'a> {
-    pub fn create_world_map_bridge(
-        _game_resources: &GameResources<'a>,
-        root_layout: &mut WidgetDefault<'a>,
-        pos_a: &Vector2<f32>,
-        pos_b: &Vector2<f32>,
-    ) -> Rc<WidgetDefault<'a>> {
-        let world_map_bridge = UIManager::create_widget("world_map_bridge", UIWidgetTypes::Default);
-        let diff_x = (pos_a.x - pos_b.x).abs();
-        let diff_y = (pos_a.y - pos_b.y).abs();
-        let center = (pos_a + pos_b) * 0.5;
-
-        let ui_component = ptr_as_mut(world_map_bridge.as_ref()).get_ui_component_mut();
-        ui_component.set_layout_type(UILayoutType::FloatLayout);
-        ui_component.set_border(4.0);
-        ui_component.set_round(10.0);
-        ui_component.set_color(get_color32(32, 32, 0, 255));
-        ui_component.set_border_color(get_color32(255, 255, 128, 255));
-        ui_component.set_halign(HorizontalAlign::CENTER);
-        ui_component.set_valign(VerticalAlign::CENTER);
-
-        const BRIDGE_THICKNESS: f32 = 24.0;
-        if diff_y < diff_x {
-            ui_component.set_size(diff_x, BRIDGE_THICKNESS);
-        } else {
-            ui_component.set_size(BRIDGE_THICKNESS, diff_y);
-        }
-        ui_component.set_center(center.x, center.y);
-
-        root_layout.add_widget(&world_map_bridge);
-
-        world_map_bridge
-    }
-}
-
-impl<'a> WorldMapStage<'a> {
-    pub fn callback_touch_down(
-        ui_component: &UIComponentInstance<'a>,
-        _touched_pos: &Vector2<f32>,
-        _touched_pos_delta: &Vector2<f32>,
-    ) -> bool {
-        if !ui_component.get_user_data().is_null() {
-            let world_map_stage = ptr_as_ref(ui_component.get_user_data() as *const WorldMapStage<'a>);
-            world_map_stage
-                .get_world_map_widget_mut()
-                .set_selected_world_map_stage(world_map_stage.get_stage_data_name());
-        }
-        true
-    }
-
-    pub fn create_world_map_stage(
-        world_map_stages: &mut HashMap<String, Rc<WorldMapStage<'a>>>,
-        world_map_widget: &WorldMapWidget<'a>,
-        _game_resources: &GameResources<'a>,
-        root_layout: &mut WidgetDefault<'a>,
-        stage: Stages,
-    ) -> Rc<WorldMapStage<'a>> {
-        let world_map_stage = UIManager::create_widget("world_map_stage", UIWidgetTypes::Default);
-        let ui_component = ptr_as_mut(world_map_stage.as_ref()).get_ui_component_mut();
-        ui_component.set_layout_type(UILayoutType::FloatLayout);
-        ui_component.set_border(4.0);
-        ui_component.set_border_color(get_color32(128, 128, 128, 255));
-        ui_component.set_round(10.0);
-        ui_component.set_halign(HorizontalAlign::CENTER);
-        ui_component.set_valign(VerticalAlign::CENTER);
-        ui_component.set_text(stage.get_stage_display_name());
-        ui_component.set_font_size(32.0);
-        ui_component.set_font_color(get_color32(0, 0, 0, 255));
-        ui_component.set_color(get_color32(255, 255, 255, 255));
-
-        const STAGE_SIZE: f32 = 100.0;
-        ui_component.set_size(STAGE_SIZE, STAGE_SIZE);
-        root_layout.add_widget(&world_map_stage);
-
-        let world_map_stage = Rc::new(WorldMapStage {
-            _world_map_widget: world_map_widget,
-            _stage_data_name: String::from(stage.get_stage_data_name()),
-            _selected: false,
-            _world_map_stage: world_map_stage,
-            _linked_stages: [None, None, None, None, None],
-            _linked_bridges: [None, None, None, None, None],
-        });
-
-        // set callback event
-        ui_component.set_touchable(true);
-        ui_component.set_callback_touch_down(Some(Box::new(WorldMapStage::callback_touch_down)));
-        ui_component.set_user_data(world_map_stage.as_ref() as *const WorldMapStage<'a> as *const c_void);
-
-        world_map_stages.insert(String::from(stage.get_stage_data_name()), world_map_stage.clone());
-
-        world_map_stage
-    }
-
-    pub fn get_world_map_widget(&self) -> &WorldMapWidget<'a> {
-        ptr_as_ref(self._world_map_widget)
-    }
-
-    pub fn get_world_map_widget_mut(&self) -> &mut WorldMapWidget<'a> {
-        ptr_as_mut(self._world_map_widget)
-    }
-
-    pub fn get_selected(&self) -> bool {
-        self._selected
-    }
-
-    pub fn set_selected(&mut self, selected: bool) {
-        let ui_component = ptr_as_mut(self._world_map_stage.as_ref()).get_ui_component_mut();
-        ui_component.set_color(if selected {
-            get_color32(255, 255, 0, 255)
-        } else {
-            get_color32(255, 255, 255, 255)
-        });
-        self._selected = selected;
-    }
-
-    pub fn get_center_pos(&self) -> Vector2<f32> {
-        let ui_component = ptr_as_mut(self._world_map_stage.as_ref()).get_ui_component_mut();
-        ui_component.get_center()
-    }
-
-    pub fn set_center_pos(&mut self, center_x: f32, center_y: f32) {
-        let ui_component = ptr_as_mut(self._world_map_stage.as_ref()).get_ui_component_mut();
-        ui_component.set_center(center_x, center_y);
-    }
-
-    pub fn get_stage_data_name(&self) -> &String {
-        &self._stage_data_name
-    }
-
-    pub fn get_linked_stage(&self, direction: WorldMapDirection) -> &Option<Rc<WorldMapStage<'a>>> {
-        &self._linked_stages[direction as usize]
-    }
-
-    pub fn set_linked_stage(
-        &mut self,
-        game_resources: &GameResources<'a>,
-        bridge_layer: &mut WidgetDefault<'a>,
-        direction: WorldMapDirection,
-        linked_stage: &Rc<WorldMapStage<'a>>,
-        map_size: &Vector2<f32>,
-        make_bridge: bool,
-    ) {
-        let linked_stage_mut = ptr_as_mut(linked_stage.as_ref());
-        let pos_step_x = map_size.x * 0.15;
-        let pos_step_y = map_size.y * 0.15;
-        let pos = self.get_center_pos();
-        if direction == WorldMapDirection::LEFT {
-            linked_stage_mut.set_center_pos(pos.x - pos_step_x, pos.y);
-        } else if direction == WorldMapDirection::RIGHT {
-            linked_stage_mut.set_center_pos(pos.x + pos_step_x, pos.y);
-        } else if direction == WorldMapDirection::UP {
-            linked_stage_mut.set_center_pos(pos.x, pos.y - pos_step_y);
-        } else if direction == WorldMapDirection::DOWN {
-            linked_stage_mut.set_center_pos(pos.x, pos.y + pos_step_y);
-        }
-        self._linked_stages[direction as usize] = Some(linked_stage.clone());
-
-        if make_bridge {
-            let bridge_widget = WorldMapBridge::create_world_map_bridge(
-                game_resources,
-                bridge_layer,
-                &pos,
-                &linked_stage_mut.get_center_pos(),
-            );
-            self._linked_bridges[direction as usize] = Some(bridge_widget);
-        }
-    }
-}
-
-impl<'a> WorldMapPlayer<'a> {
-    pub fn create_world_map_player(
-        world_map_widget: &WorldMapWidget<'a>,
-        game_resources: &GameResources<'a>,
-        root_layout: &mut WidgetDefault<'a>,
-    ) -> Box<WorldMapPlayer<'a>> {
-        let material_instance =
-            game_resources.get_engine_resources().get_material_instance_data(MATERIAL_PORTRAIT_MONKEY_ARU);
-
-        let player_icon = UIManager::create_widget("player_icon", UIWidgetTypes::Default);
-        let ui_component = ptr_as_mut(player_icon.as_ref()).get_ui_component_mut();
-        ui_component.set_layout_type(UILayoutType::FloatLayout);
-        ui_component.set_border(4.0);
-        ui_component.set_round(10.0);
-        ui_component.set_border_color(get_color32(255, 255, 255, 255));
-        ui_component.set_halign(HorizontalAlign::CENTER);
-        ui_component.set_valign(VerticalAlign::CENTER);
-        ui_component.set_material_instance(Some(material_instance.clone()));
-
-        const PLAYER_SIZE: f32 = 100.0;
-        ui_component.set_size(PLAYER_SIZE, PLAYER_SIZE);
-        ui_component.set_center(0.0, 0.0);
-        root_layout.add_widget(&player_icon);
-
-        Box::new(WorldMapPlayer {
-            _world_map_widget: world_map_widget,
-            _player_icon: player_icon,
-        })
-    }
-
-    pub fn set_center_pos(&mut self, center_x: f32, center_y: f32) {
-        let ui_component = ptr_as_mut(self._player_icon.as_ref()).get_ui_component_mut();
-        ui_component.set_center(center_x, center_y);
-    }
-}
-
 impl<'a> WorldMapWidget<'a> {
+    pub fn new(
+        game_scene_manager: &GameSceneManager<'a>,
+        audio_manager: &AudioManager<'a>,
+        game_resources: &GameResources<'a>,
+        root_widget: &mut WidgetDefault<'a>,
+        window_size: &Vector2<i32>,
+    ) -> Box<WorldMapWidget<'a>> {
+        Self::create_world_map_widget(
+            game_scene_manager,
+            audio_manager,
+            game_resources,
+            root_widget,
+            window_size,
+        )
+    }
+
     pub fn create_world_map_widget(
         game_scene_manager: &GameSceneManager<'a>,
         audio_manager: &AudioManager<'a>,
@@ -333,7 +123,7 @@ impl<'a> WorldMapWidget<'a> {
             game_resources,
             player_layer_widget_mut,
         ));
-        world_map_widget.as_mut()._world_map_stages = WorldMapWidget::create_world_map_stages(
+        world_map_widget.as_mut()._world_map_stages = <Self as WorldMapLayout>::create_world_map_stages(
             world_map_widget.as_ref(),
             game_resources,
             stage_layer_widget_mut,
@@ -344,14 +134,72 @@ impl<'a> WorldMapWidget<'a> {
         world_map_widget
     }
 
-    pub fn create_world_map_stages(
+    pub fn get_audio_manager(&self) -> &AudioManager<'a> {
+        ptr_as_ref(self._audio_manager)
+    }
+
+    pub fn get_audio_manager_mut(&self) -> &mut AudioManager<'a> {
+        ptr_as_mut(self._audio_manager)
+    }
+
+    // Direct methods forwarding to trait implementations for convenience
+    pub fn is_opened_world_map(&self) -> bool {
+        <Self as WorldMapControl>::is_opened_world_map(self)
+    }
+
+    pub fn open_world_map(&mut self) {
+        <Self as WorldMapControl>::open_world_map(self)
+    }
+
+    pub fn close_world_map(&mut self) {
+        <Self as WorldMapControl>::close_world_map(self)
+    }
+
+    pub fn is_requested_close_world_map(&self) -> bool {
+        <Self as WorldMapControl>::is_requested_close_world_map(self)
+    }
+
+    pub fn request_close_world_map(&mut self) {
+        <Self as WorldMapControl>::request_close_world_map(self)
+    }
+
+    pub fn changed_window_size(&mut self, window_size: &Vector2<i32>) {
+        <Self as WorldMapControl>::changed_window_size(self, window_size)
+    }
+
+    pub fn teleport_selected_world_map_stage(&mut self) {
+        <Self as WorldMapControl>::teleport_selected_world_map_stage(self)
+    }
+
+    pub fn get_selected_world_map_stage_data_name(&self) -> &String {
+        <Self as WorldMapControl>::get_selected_world_map_stage_data_name(self)
+    }
+
+    pub fn set_selected_world_map_stage(&mut self, selected_stage_name: &String) {
+        <Self as WorldMapControl>::set_selected_world_map_stage(self, selected_stage_name)
+    }
+
+    pub fn change_selected_world_map_stage(&mut self, direction: WorldMapDirection) {
+        <Self as WorldMapControl>::change_selected_world_map_stage(self, direction)
+    }
+
+    pub fn update_world_map(
+        &mut self,
+        joystick_input_data: &JoystickInputData,
+        keyboard_input_data: &KeyboardInputData,
+    ) {
+        <Self as WorldMapControl>::update_world_map(self, joystick_input_data, keyboard_input_data)
+    }
+}
+
+impl<'a> WorldMapLayout<'a> for WorldMapWidget<'a> {
+    fn create_world_map_stages(
         world_map_widget: &WorldMapWidget<'a>,
         game_resources: &GameResources<'a>,
         stage_layer: &mut WidgetDefault<'a>,
         bridge_layer: &mut WidgetDefault<'a>,
         map_size: &Vector2<f32>,
     ) -> HashMap<String, Rc<WorldMapStage<'a>>> {
-        // create stages
         let mut world_map_stages = HashMap::new();
         let world_map_stage_home = WorldMapStage::create_world_map_stage(
             &mut world_map_stages,
@@ -382,10 +230,9 @@ impl<'a> WorldMapWidget<'a> {
             Stages::Ufo,
         );
 
-        // link stages
         let map_center = map_size * 0.5;
         ptr_as_mut(world_map_stage_home.as_ref()).set_center_pos(map_center.x, map_center.y);
-        WorldMapWidget::set_linked_stage(
+        Self::set_linked_stage(
             game_resources,
             bridge_layer,
             &world_map_stage_home,
@@ -393,7 +240,7 @@ impl<'a> WorldMapWidget<'a> {
             WorldMapDirection::RIGHT,
             map_size,
         );
-        WorldMapWidget::set_linked_stage(
+        Self::set_linked_stage(
             game_resources,
             bridge_layer,
             &world_map_stage_home,
@@ -401,7 +248,7 @@ impl<'a> WorldMapWidget<'a> {
             WorldMapDirection::DOWN,
             map_size,
         );
-        WorldMapWidget::set_linked_stage(
+        Self::set_linked_stage(
             game_resources,
             bridge_layer,
             &world_map_stage_home,
@@ -413,7 +260,7 @@ impl<'a> WorldMapWidget<'a> {
         world_map_stages
     }
 
-    pub fn set_linked_stage(
+    fn set_linked_stage(
         game_resources: &GameResources<'a>,
         bridge_layer: &mut WidgetDefault<'a>,
         stage: &Rc<WorldMapStage<'a>>,
@@ -438,19 +285,14 @@ impl<'a> WorldMapWidget<'a> {
             false,
         );
     }
+}
 
-    pub fn get_audio_manager(&self) -> &AudioManager<'a> {
-        ptr_as_ref(self._audio_manager)
-    }
-
-    pub fn get_audio_manager_mut(&self) -> &mut AudioManager<'a> {
-        ptr_as_mut(self._audio_manager)
-    }
-
-    pub fn is_opened_world_map(&self) -> bool {
+impl<'a> WorldMapControl<'a> for WorldMapWidget<'a> {
+    fn is_opened_world_map(&self) -> bool {
         self._is_opened_world_map
     }
-    pub fn open_world_map(&mut self) {
+
+    fn open_world_map(&mut self) {
         if !self._is_opened_world_map {
             self.get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
             ptr_as_mut(self._background_layout.as_ref()).get_ui_component_mut().set_enable(true);
@@ -458,30 +300,34 @@ impl<'a> WorldMapWidget<'a> {
             self._is_opened_world_map = true;
         }
     }
-    pub fn close_world_map(&mut self) {
+
+    fn close_world_map(&mut self) {
         if self._is_opened_world_map {
             ptr_as_mut(self._background_layout.as_ref()).get_ui_component_mut().set_enable(false);
             self._is_opened_world_map = false;
         }
     }
-    pub fn is_requested_close_world_map(&self) -> bool {
+
+    fn is_requested_close_world_map(&self) -> bool {
         self._request_close_world_map
     }
-    pub fn request_close_world_map(&mut self) {
+
+    fn request_close_world_map(&mut self) {
         self.get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
         self._request_close_world_map = true;
     }
-    pub fn changed_window_size(&mut self, _window_size: &Vector2<i32>) {}
 
-    pub fn teleport_selected_world_map_stage(&mut self) {
+    fn changed_window_size(&mut self, _window_size: &Vector2<i32>) {}
+
+    fn teleport_selected_world_map_stage(&mut self) {
         self.set_selected_world_map_stage(&self._selected_stage_name.clone());
     }
 
-    pub fn get_selected_world_map_stage_data_name(&self) -> &String {
+    fn get_selected_world_map_stage_data_name(&self) -> &String {
         &self._selected_stage_name
     }
 
-    pub fn set_selected_world_map_stage(&mut self, selected_stage_name: &String) {
+    fn set_selected_world_map_stage(&mut self, selected_stage_name: &String) {
         if !self._selected_stage_name.is_empty() && !selected_stage_name.is_empty() {
             self.get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
         }
@@ -506,7 +352,7 @@ impl<'a> WorldMapWidget<'a> {
         }
     }
 
-    pub fn change_selected_world_map_stage(&mut self, direction: WorldMapDirection) {
+    fn change_selected_world_map_stage(&mut self, direction: WorldMapDirection) {
         if let Some(selected_stage) = self._world_map_stages.get_mut(&self._selected_stage_name)
             && let Some(linked_stage) = ptr_as_ref(selected_stage.as_ref()).get_linked_stage(direction).as_ref()
         {
@@ -514,11 +360,7 @@ impl<'a> WorldMapWidget<'a> {
         }
     }
 
-    pub fn update_world_map(
-        &mut self,
-        joystick_input_data: &JoystickInputData,
-        keyboard_input_data: &KeyboardInputData,
-    ) {
+    fn update_world_map(&mut self, joystick_input_data: &JoystickInputData, keyboard_input_data: &KeyboardInputData) {
         let is_left = keyboard_input_data.get_key_pressed(KeyCode::KeyA)
             || keyboard_input_data.get_key_pressed(KeyCode::ArrowLeft)
             || joystick_input_data._btn_left == ButtonState::Pressed;
@@ -570,5 +412,28 @@ impl<'a> WorldMapWidget<'a> {
         if is_interaction {
             self.teleport_selected_world_map_stage();
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_world_map_direction_opposite() {
+        assert_eq!(
+            WorldMapDirection::LEFT.get_opposite_direction(),
+            WorldMapDirection::RIGHT
+        );
+        assert_eq!(
+            WorldMapDirection::RIGHT.get_opposite_direction(),
+            WorldMapDirection::LEFT
+        );
+        assert_eq!(WorldMapDirection::UP.get_opposite_direction(), WorldMapDirection::DOWN);
+        assert_eq!(WorldMapDirection::DOWN.get_opposite_direction(), WorldMapDirection::UP);
+        assert_eq!(
+            WorldMapDirection::COUNT.get_opposite_direction(),
+            WorldMapDirection::COUNT
+        );
     }
 }

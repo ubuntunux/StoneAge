@@ -1,9 +1,9 @@
 use crate::application::application::Application;
 use crate::game_module::actors::character::Character;
-use crate::game_module::actors::item_updater::create_item_updater;
-use crate::game_module::actors::items::{
+use crate::game_module::actors::items::api::{
     Item, ItemCreateInfo, ItemData, ItemDataType, ItemID, ItemManager, ItemProperties, ItemSaveData,
 };
+use crate::game_module::actors::items::updater::create_item_updater;
 use crate::game_module::game_client::GameClient;
 use crate::game_module::game_constants::{
     AUDIO_ITEM_INVENTORY, AUDIO_PICKUP_ITEM, EAT_ITEM_DISTANCE, WEAPON_SOCKET_NAME,
@@ -463,7 +463,6 @@ impl<'a> ItemManager<'a> {
                 let check_height = item_ref._render_object.borrow()._bounding_box._min.y <= player_bound_box._max.y
                     && player_bound_box._min.y <= item_ref._render_object.borrow()._bounding_box._max.y;
                 if check_height && math::get_norm_xz(&diff) <= EAT_ITEM_DISTANCE && item_ref.pickable_item() {
-                    // pick item
                     let item_count = 1;
                     let success = self.pick_item(item_ref._item_data_name.as_str(), item_count);
                     if success {

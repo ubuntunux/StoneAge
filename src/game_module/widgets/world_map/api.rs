@@ -14,6 +14,18 @@ pub enum WorldMapDirection {
     COUNT = 4,
 }
 
+impl WorldMapDirection {
+    pub fn get_opposite_direction(&self) -> WorldMapDirection {
+        match *self {
+            WorldMapDirection::LEFT => WorldMapDirection::RIGHT,
+            WorldMapDirection::RIGHT => WorldMapDirection::LEFT,
+            WorldMapDirection::UP => WorldMapDirection::DOWN,
+            WorldMapDirection::DOWN => WorldMapDirection::UP,
+            WorldMapDirection::COUNT => WorldMapDirection::COUNT,
+        }
+    }
+}
+
 pub struct WorldMapBridge<'a> {
     pub _bridge_widget: Rc<WidgetDefault<'a>>,
 }

@@ -1,16 +1,11 @@
-use crate::game_module::actors::character_controller::CharacterController;
-use crate::game_module::actors::character_data::{ActionAnimationState, CharacterData, MoveAnimationState};
-use crate::game_module::actors::character_manager::{CharacterID, CharacterManager};
-use crate::game_module::actors::items::{Item, ItemManager};
+use crate::game_module::actors::character::data::{ActionAnimationState, MoveAnimationState};
 use crate::game_module::actors::props::Prop;
-use crate::game_module::behavior::behavior_base::BehaviorBase;
-use rust_engine_3d::audio::audio_manager::AudioInstance;
 use rust_engine_3d::scene::render_object::RenderObjectData;
 use rust_engine_3d::utilities::system::RcRefCell;
+use serde::{Deserialize, Serialize};
 use std::ffi::c_void;
 
-use crate::game_module::actors::items::ItemID;
-use serde::{Deserialize, Serialize};
+use super::character::Character;
 
 #[derive(Clone)]
 pub enum ActorWrapper<'a> {
@@ -78,22 +73,4 @@ pub struct CharacterAnimationState {
     pub _prev_action_animation_state: ActionAnimationState,
     pub _next_action_animation_state: ActionAnimationState,
     pub _next_action_animation_speed: f32,
-}
-
-pub struct Character<'a> {
-    pub _character_manager: *const CharacterManager<'a>,
-    pub _item_manager: *const ItemManager<'a>,
-    pub _character_name: String,
-    pub _character_id: CharacterID,
-    pub _is_player: bool,
-    pub _character_data_name: String,
-    pub _character_data: RcRefCell<CharacterData>,
-    pub _render_object: RcRefCell<RenderObjectData<'a>>,
-    pub _character_stats: Box<CharacterStats>,
-    pub _controller: Box<CharacterController<'a>>,
-    pub _behavior: Box<dyn BehaviorBase<'a> + 'a>,
-    pub _animation_state: Box<CharacterAnimationState>,
-    pub _attached_item: Option<RcRefCell<Item<'a>>>,
-    pub _attached_item_id: Option<ItemID>,
-    pub _audio_snoring: Option<RcRefCell<AudioInstance>>,
 }

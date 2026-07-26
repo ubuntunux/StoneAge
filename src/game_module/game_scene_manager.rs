@@ -1,8 +1,6 @@
 use crate::application::application::Application;
 use crate::game_module::actors::character::Character;
-use crate::game_module::actors::character_manager::{
-    CharacterCreateInfo, CharacterID, CharacterManager, CharacterSaveData,
-};
+use crate::game_module::actors::character::{CharacterCreateInfo, CharacterID, CharacterManager, CharacterSaveData};
 use crate::game_module::actors::items::{ItemCreateInfo, ItemManager, ItemSaveData};
 use crate::game_module::actors::props::{PropCreateInfo, PropManager, PropSaveData};
 use crate::game_module::game_client::GameClient;

@@ -1,5 +1,5 @@
+use crate::game_module::actors::character::ActionAnimationState;
 use crate::game_module::actors::character::Character;
-use crate::game_module::actors::character_data::ActionAnimationState;
 use crate::game_module::actors::props::Prop;
 use crate::game_module::behavior::behavior_base::BehaviorState;
 use crate::game_module::game_constants::{

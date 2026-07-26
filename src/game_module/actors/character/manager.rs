@@ -1,6 +1,8 @@
 use crate::application::application::Application;
-use crate::game_module::actors::character::{ActorWrapper, Character, CharacterAnimationState, CharacterStatsSaveData};
-use crate::game_module::actors::character_controller::CharacterControllerSaveData;
+use crate::game_module::actors::character::character::Character;
+use crate::game_module::actors::character::controller::CharacterControllerSaveData;
+
+use crate::game_module::actors::character::stats::*;
 use crate::game_module::actors::interaction_object::InteractionObject;
 use crate::game_module::actors::items::ItemManager;
 use crate::game_module::actors::items::{ItemCreateInfo, ItemID};

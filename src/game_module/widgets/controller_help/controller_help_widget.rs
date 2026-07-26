@@ -1,4 +1,4 @@
-use crate::game_module::actors::character_data::ActionAnimationState;
+use crate::game_module::actors::character::ActionAnimationState;
 use crate::game_module::actors::interaction_object::InteractionObject;
 use crate::game_module::game_controller::KeyBindingType;
 use crate::game_module::game_scene_manager::GameSceneManager;

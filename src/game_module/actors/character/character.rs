@@ -1,13 +1,31 @@
-use crate::game_module::actors::character::{
-    Character, CharacterAnimationState, CharacterStats, CharacterStatsSaveData,
-};
-use crate::game_module::actors::character_controller::CharacterController;
-use crate::game_module::actors::character_data::{ActionAnimationState, CharacterData, MoveAnimationState};
-use crate::game_module::actors::character_manager::{
+use crate::game_module::actors::character::controller::CharacterController;
+use crate::game_module::actors::character::data::*;
+use crate::game_module::actors::character::manager::{
     CharacterCreateInfo, CharacterID, CharacterManager, CharacterSaveData,
 };
+use crate::game_module::actors::character::stats::*;
+use crate::game_module::actors::items::{Item, ItemID};
+use rust_engine_3d::audio::audio_manager::AudioInstance;
+
+pub struct Character<'a> {
+    pub _character_manager: *const CharacterManager<'a>,
+    pub _item_manager: *const ItemManager<'a>,
+    pub _character_name: String,
+    pub _character_id: CharacterID,
+    pub _is_player: bool,
+    pub _character_data_name: String,
+    pub _character_data: RcRefCell<CharacterData>,
+    pub _render_object: RcRefCell<RenderObjectData<'a>>,
+    pub _character_stats: Box<CharacterStats>,
+    pub _controller: Box<CharacterController<'a>>,
+    pub _behavior: Box<dyn crate::game_module::behavior::behavior_base::BehaviorBase<'a> + 'a>,
+    pub _animation_state: Box<CharacterAnimationState>,
+    pub _attached_item: Option<RcRefCell<Item<'a>>>,
+    pub _attached_item_id: Option<ItemID>,
+    pub _audio_snoring: Option<RcRefCell<AudioInstance>>,
+}
 use crate::game_module::actors::interaction_object::InteractionObject;
-use crate::game_module::actors::items::Item;
+
 use crate::game_module::actors::items::{ItemDataType, ItemManager};
 use crate::game_module::behavior::behavior_base::{BehaviorState, create_character_behavior};
 use crate::game_module::game_client::GamePhase;

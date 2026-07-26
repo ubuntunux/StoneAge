@@ -1,5 +1,5 @@
 use crate::application::application::Application;
-use crate::game_module::actors::character_manager::CharacterManager;
+use crate::game_module::actors::character::CharacterManager;
 use crate::game_module::game_constants::{
     AMBIENT_SOUND, CAMERA_DISTANCE_MAX, DEFAULT_BGM_VOLUME, DEFAULT_FADE_TIME, DEFAULT_GAME_SAVE_DATA,
     DEFAULT_GATE_NAME, GAME_MUSIC, GAME_VIEW_MODE, GameViewMode, MATERIAL_INTRO_IMAGE, MATERIAL_UI_NONE,

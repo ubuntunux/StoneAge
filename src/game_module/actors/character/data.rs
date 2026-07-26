@@ -1,11 +1,46 @@
-use crate::game_module::actors::character_data::*;
+use crate::game_module::actors::weapons::WeaponCreateInfo;
 use crate::game_module::game_resource::GameResources;
-use rust_engine_3d::resource::resource::EngineResources;
+use nalgebra::Vector3;
+use rust_engine_3d::resource::resource::{EngineResources, ResourceData};
+use rust_engine_3d::scene::animation::AnimationLayerData;
+use rust_engine_3d::scene::mesh::MeshData;
+use rust_engine_3d::utilities::system::RcRefCell;
+use serde::{Deserialize, Serialize};
+
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq)]
+pub enum ActionAnimationState {
+    None,
+    Attack,
+    Dance,
+    Dead,
+    Eating,
+    Hit,
+    Hungry,
+    Kick,
+    LayingDown,
+    Pickup,
+    PowerAttack,
+    Sleep,
+    SleepNoSnoring,
+    WakeUp,
+}
 
 impl Default for ActionAnimationState {
     fn default() -> Self {
         ActionAnimationState::None
     }
+}
+
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq)]
+pub enum MoveAnimationState {
+    None,
+    Idle,
+    Jump,
+    Roll,
+    Run,
+    RunningJump,
+    SitDownLoop,
+    Walk,
 }
 
 impl Default for MoveAnimationState {
@@ -14,10 +49,95 @@ impl Default for MoveAnimationState {
     }
 }
 
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub enum SpawnPointType {
+    None,
+    Player(SpawnPointData),
+    NonPlayer(SpawnPointData),
+}
+
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq)]
+pub enum CharacterDataType {
+    None,
+    Player,
+    Civilian,
+    Roamer,
+    Guardian,
+    Stalker,
+    Invader,
+    Ufo,
+}
+
 impl Default for CharacterDataType {
     fn default() -> Self {
         CharacterDataType::None
     }
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[serde(default)]
+pub struct SpawnPointData {
+    pub _character_data_name: String,
+    pub _position: Vector3<f32>,
+    pub _rotation: Vector3<f32>,
+}
+
+#[derive(Serialize, Deserialize, Default, Debug, Clone, PartialEq)]
+#[serde(default)]
+pub struct CharacterDataCreateInfo {
+    pub _character_type: CharacterDataType,
+    pub _model_data_name: String,
+    pub _name: String,
+    pub _character_animation_data: CharacterAnimationDataCreateInfo,
+    pub _character_audio_data: CharacterAudioDataCreateInfo,
+    pub _character_stat_data: CharacterStatData,
+    pub _weapon_create_info: WeaponCreateInfo,
+}
+
+#[derive(Serialize, Deserialize, Default, Debug, Clone, PartialEq)]
+#[serde(default)]
+pub struct CharacterAudioDataCreateInfo {
+    pub _audio_dead: String,
+    pub _audio_growl: String,
+    pub _audio_pain: String,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[serde(default)]
+pub struct CharacterAnimationDataCreateInfo {
+    pub _attack_animation: String,
+    pub _attack_animation_speed: f32,
+    pub _dance_animation: String,
+    pub _dead_animation: String,
+    pub _dead_animation_speed: f32,
+    pub _eating_animation: String,
+    pub _hungry_animation: String,
+    pub _idle_animation: String,
+    pub _idle_animation_speed: f32,
+    pub _hit_animation: String,
+    pub _hit_animation_speed: f32,
+    pub _jump_animation: String,
+    pub _jump_animation_speed: f32,
+    pub _kick_animation: String,
+    pub _kick_animation_speed: f32,
+    pub _laying_down_animation: String,
+    pub _pickup_animation: String,
+    pub _power_attack_animation: String,
+    pub _power_attack_animation_speed: f32,
+    pub _roll_animation: String,
+    pub _roll_animation_speed: f32,
+    pub _run_animation: String,
+    pub _run_animation_speed: f32,
+    pub _running_jump_animation: String,
+    pub _running_jump_animation_speed: f32,
+    pub _sit_down_animation: String,
+    pub _sit_down_loop_animation: String,
+    pub _sleep_animation: String,
+    pub _stand_up_animation: String,
+    pub _upper_animation_layer: String,
+    pub _wake_up_animation: String,
+    pub _walk_animation: String,
+    pub _walk_animation_speed: f32,
 }
 
 impl Default for CharacterAnimationDataCreateInfo {
@@ -60,6 +180,16 @@ impl Default for CharacterAnimationDataCreateInfo {
     }
 }
 
+pub struct CharacterData {
+    pub _character_type: CharacterDataType,
+    pub _model_data_name: String,
+    pub _name: String,
+    pub _audio_data: CharacterAudioData,
+    pub _animation_data: CharacterAnimationData,
+    pub _stat_data: CharacterStatData,
+    pub _weapon_create_info: WeaponCreateInfo,
+}
+
 impl CharacterData {
     pub fn create_character_data(
         character_data_create_info: &CharacterDataCreateInfo,
@@ -87,6 +217,12 @@ impl CharacterData {
     }
 }
 
+pub struct CharacterAudioData {
+    pub _audio_dead: ResourceData,
+    pub _audio_growl: ResourceData,
+    pub _audio_pain: ResourceData,
+}
+
 impl CharacterAudioData {
     pub fn create_character_audio_data(
         audio_data_create_info: &CharacterAudioDataCreateInfo,
@@ -98,6 +234,40 @@ impl CharacterAudioData {
             _audio_pain: engine_resources.get_audio_bank_data(&audio_data_create_info._audio_pain).clone(),
         }
     }
+}
+
+pub struct CharacterAnimationData {
+    pub _attack_animation: RcRefCell<MeshData>,
+    pub _attack_animation_speed: f32,
+    pub _dance_animation: RcRefCell<MeshData>,
+    pub _dead_animation: RcRefCell<MeshData>,
+    pub _dead_animation_speed: f32,
+    pub _eating_animation: RcRefCell<MeshData>,
+    pub _hit_animation: RcRefCell<MeshData>,
+    pub _hit_animation_speed: f32,
+    pub _hungry_animation: RcRefCell<MeshData>,
+    pub _idle_animation: RcRefCell<MeshData>,
+    pub _idle_animation_speed: f32,
+    pub _jump_animation: RcRefCell<MeshData>,
+    pub _jump_animation_speed: f32,
+    pub _kick_animation: RcRefCell<MeshData>,
+    pub _kick_animation_speed: f32,
+    pub _laying_down_animation: RcRefCell<MeshData>,
+    pub _pickup_animation: RcRefCell<MeshData>,
+    pub _power_attack_animation: RcRefCell<MeshData>,
+    pub _power_attack_animation_speed: f32,
+    pub _roll_animation: RcRefCell<MeshData>,
+    pub _roll_animation_speed: f32,
+    pub _run_animation: RcRefCell<MeshData>,
+    pub _run_animation_speed: f32,
+    pub _running_jump_animation: RcRefCell<MeshData>,
+    pub _running_jump_animation_speed: f32,
+    pub _sit_down_loop_animation: RcRefCell<MeshData>,
+    pub _sleep_animation: RcRefCell<MeshData>,
+    pub _wake_up_animation: RcRefCell<MeshData>,
+    pub _walk_animation: RcRefCell<MeshData>,
+    pub _walk_animation_speed: f32,
+    pub _upper_animation_layer: RcRefCell<AnimationLayerData>,
 }
 
 impl CharacterAnimationData {
@@ -149,6 +319,25 @@ impl CharacterAnimationData {
                 .clone(),
         }
     }
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[serde(default)]
+pub struct CharacterStatData {
+    pub _max_hp: i32,
+    pub _attack_damage: i32,
+    pub _attack_event_time: f32,
+    pub _attack_range: f32,
+    pub _power_attack_damage: i32,
+    pub _power_attack_event_time: f32,
+    pub _power_attack_range: f32,
+    pub _kick_damage: i32,
+    pub _kick_event_time: f32,
+    pub _kick_range: f32,
+    pub _jump_speed: f32,
+    pub _roll_speed: f32,
+    pub _run_speed: f32,
+    pub _walk_speed: f32,
 }
 
 impl Default for CharacterStatData {

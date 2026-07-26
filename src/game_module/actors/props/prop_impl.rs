@@ -1,8 +1,8 @@
 use crate::application::application::Application;
-use crate::game_module::actors::character_data::ActionAnimationState;
+use crate::game_module::actors::character::ActionAnimationState;
 use crate::game_module::actors::interaction_object::InteractionObject;
 use crate::game_module::actors::items::ItemCreateInfo;
-use crate::game_module::actors::props::{
+use crate::game_module::actors::props::api::{
     Prop, PropCreateInfo, PropData, PropDataType, PropID, PropManager, PropMap, PropSaveData, PropStats,
 };
 use crate::game_module::game_client::GameClient;
@@ -90,6 +90,7 @@ impl<'a> Prop<'a> {
         prop.initialize_prop();
         prop
     }
+
     pub fn initialize_prop(&mut self) {
         self._prop_stats._is_alive = true;
         self._prop_stats._item_regenerate_time = 0.0;
@@ -245,7 +246,6 @@ impl<'a> Prop<'a> {
     }
 }
 
-// PropManager
 impl<'a> PropManager<'a> {
     pub fn create_prop_manager() -> Box<PropManager<'a>> {
         Box::new(PropManager {
@@ -306,7 +306,6 @@ impl<'a> PropManager<'a> {
         let game_resources = ptr_as_ref(self._game_resources);
         let prop_data = game_resources.get_prop_data(prop_create_info._prop_data_name.as_str());
 
-        // create prop render objects
         let render_object_create_info = RenderObjectCreateInfo {
             _model_data_name: prop_data.borrow()._model_data_name.clone(),
             _position: prop_create_info._position,
@@ -320,7 +319,6 @@ impl<'a> PropManager<'a> {
             None,
         );
 
-        // create item render objects
         let mut item_render_objects: Vec<RcRefCell<RenderObjectData<'a>>> = Vec::new();
         for (_, socket) in render_object_data.borrow()._sockets.iter() {
             let item_data = game_resources.get_item_data(prop_data.borrow()._item_data_name.as_str());
@@ -537,19 +535,6 @@ impl<'a> PropManager<'a> {
                             } else {
                                 bounding_box.collide_point(player.get_center())
                             };
-
-                            // if is_in_player_range {
-                            //     if GAME_VIEW_MODE == GameViewMode::GameViewMode3D {
-                            //         let linked_gate = prop.get_instance_parameters("_linked_gate");
-                            //         let linked_stage = prop.get_instance_parameters("_linked_stage");
-                            //         if linked_stage.is_some() && linked_gate.is_some() {
-                            //             self.get_game_scene_manager_mut().set_teleport_stage(
-                            //                 linked_stage.unwrap().as_str().unwrap(),
-                            //                 linked_gate.unwrap().as_str().unwrap(),
-                            //             );
-                            //         }
-                            //     }
-                            // }
 
                             if !is_interaction_object && is_in_player_range {
                                 player

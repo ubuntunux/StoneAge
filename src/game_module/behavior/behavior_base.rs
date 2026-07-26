@@ -1,5 +1,6 @@
 use crate::game_module::actors::character::Character;
-use crate::game_module::actors::character_data::CharacterDataType;
+use crate::game_module::actors::character::CharacterDataType;
+use crate::game_module::actors::character::CharacterID;
 use crate::game_module::behavior::behavior_civilian::BehaviorCivilian;
 use crate::game_module::behavior::behavior_default::BehaviorDefault;
 use crate::game_module::behavior::behavior_roamer::BehaviorRoamer;
@@ -7,7 +8,6 @@ use crate::game_module::behavior::behavior_ufo::BehaviorUfo;
 use nalgebra::Vector3;
 use rust_engine_3d::utilities::system::RcRefCell;
 
-use crate::game_module::actors::character_manager::CharacterID;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, PartialEq, Eq, Hash, Debug, Copy, Default)]

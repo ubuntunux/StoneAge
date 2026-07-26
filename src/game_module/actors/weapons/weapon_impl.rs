@@ -1,4 +1,6 @@
-use crate::game_module::actors::weapons::{Weapon, WeaponCreateInfo, WeaponData, WeaponDataCreateInfo, WeaponDataType};
+use crate::game_module::actors::weapons::api::{
+    Weapon, WeaponCreateInfo, WeaponData, WeaponDataCreateInfo, WeaponDataType,
+};
 use nalgebra::{Matrix4, Vector3};
 use rust_engine_3d::scene::model::ModelData;
 use rust_engine_3d::scene::render_object::RenderObjectData;

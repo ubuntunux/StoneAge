@@ -1,4 +1,4 @@
-use crate::game_module::actors::items::{Item, ItemDataType};
+use crate::game_module::actors::items::api::{Item, ItemDataType};
 use crate::game_module::game_constants::GRAVITY;
 use nalgebra::Vector3;
 use rust_engine_3d::scene::height_map::HeightMapData;

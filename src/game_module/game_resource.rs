@@ -2,7 +2,7 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 
-use crate::game_module::actors::character_data::{CharacterData, CharacterDataCreateInfo};
+use crate::game_module::actors::character::{CharacterData, CharacterDataCreateInfo};
 use crate::game_module::actors::items::ItemData;
 use crate::game_module::actors::props::PropData;
 use crate::game_module::actors::weapons::WeaponData;

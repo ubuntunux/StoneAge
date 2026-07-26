@@ -1,5 +1,5 @@
-use crate::game_module::actors::character::Character;
-use crate::game_module::actors::character_data::{CharacterData, MoveAnimationState};
+use crate::game_module::actors::character::character::Character;
+use crate::game_module::actors::character::data::*;
 use crate::game_module::actors::interaction_object::InteractionObject;
 use crate::game_module::game_constants::*;
 use nalgebra::Vector3;

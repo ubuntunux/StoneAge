@@ -1,11 +1,10 @@
-use std::collections::HashMap;
-
 use nalgebra::{Matrix4, Vector3};
 use rust_engine_3d::scene::model::ModelData;
 use rust_engine_3d::scene::render_object::RenderObjectData;
 use rust_engine_3d::scene::socket::Socket;
 use rust_engine_3d::utilities::system::RcRefCell;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use strum_macros::{Display, EnumIter};
 
 #[derive(Copy, Clone, Debug, Default, Hash, Eq, PartialEq)]
