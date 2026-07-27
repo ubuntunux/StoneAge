@@ -68,7 +68,7 @@ impl<'a> GameClient<'a> {
             _next_game_phase: GamePhase::Start,
             _game_save_data_name: DEFAULT_GAME_SAVE_DATA.to_string(),
             _game_save_data: newBoxRefCell(GameSaveData::default()),
-            _request_load_game_save_data: false,
+            _request_load_game_save_data: true,
             _request_new_game: false,
         })
     }

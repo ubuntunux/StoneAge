@@ -70,7 +70,6 @@ pub struct CharacterAnimationState {
     pub _next_move_animation_speed: f32,
     pub _action_event: ActionAnimationState,
     pub _action_animation_state: ActionAnimationState,
-    pub _prev_action_animation_state: ActionAnimationState,
-    pub _next_action_animation_state: ActionAnimationState,
+    pub _next_action_animation_state: Option<ActionAnimationState>,
     pub _next_action_animation_speed: f32,
 }

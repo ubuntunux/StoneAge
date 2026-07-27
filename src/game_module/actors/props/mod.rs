@@ -1,4 +1,4 @@
 pub mod api;
-pub mod prop_impl;
+pub mod prop;
 
 pub use api::*;

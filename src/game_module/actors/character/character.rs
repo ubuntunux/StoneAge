@@ -555,6 +555,12 @@ impl<'a> Character<'a> {
         self._attached_item = None;
     }
 
+    pub fn set_weapon_visible(&self, visible: bool) {
+        if let Some(attached_item) = self._attached_item.as_ref() {
+            attached_item.borrow()._render_object.borrow_mut().set_visible(visible);
+        }
+    }
+
     pub fn get_character_manager(&self) -> &CharacterManager<'a> {
         ptr_as_ref(self._character_manager)
     }
@@ -1094,7 +1100,7 @@ impl<'a> Character<'a> {
     }
 
     pub fn set_next_action_animation(&mut self, action_animation_state: ActionAnimationState, animation_speed: f32) {
-        self._animation_state._next_action_animation_state = action_animation_state;
+        self._animation_state._next_action_animation_state = Some(action_animation_state);
         self._animation_state._next_action_animation_speed = animation_speed;
     }
 
@@ -1422,25 +1428,28 @@ impl<'a> Character<'a> {
 
         let current_action_animation_state = self._animation_state._action_animation_state;
         let next_action_animation_state = self._animation_state._next_action_animation_state;
+        self._animation_state._next_action_animation_state = None;
         let next_action_animation_speed = self._animation_state._next_action_animation_speed;
         let character_data = ptr_as_ref(self._character_data.as_ptr());
         let animation_data = &character_data._animation_data;
         let render_object = ptr_as_mut(self._render_object.as_ptr());
 
         for state in State::iter() {
-            if current_action_animation_state == next_action_animation_state
-                && (state == State::End || state == State::Begin)
-            {
+            if next_action_animation_state.is_none() && (state == State::End || state == State::Begin) {
                 continue;
             }
 
             let update_action_animation_state: ActionAnimationState = match state {
                 State::End => current_action_animation_state,
                 State::Begin => {
-                    self._animation_state._action_animation_state = next_action_animation_state;
-                    next_action_animation_state
+                    if let Some(next_action) = next_action_animation_state {
+                        self._animation_state._action_animation_state = next_action;
+                        next_action
+                    } else {
+                        current_action_animation_state
+                    }
                 }
-                State::Update => next_action_animation_state,
+                State::Update => self._animation_state._action_animation_state,
             };
 
             match update_action_animation_state {
@@ -1464,6 +1473,7 @@ impl<'a> Character<'a> {
                             &animation_info,
                             AnimationLayer::ActionLayer,
                         );
+                        self.set_weapon_visible(true);
                     }
                     State::Update => {
                         let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
@@ -1478,8 +1488,8 @@ impl<'a> Character<'a> {
                     }
                     _ => {}
                 },
-                ActionAnimationState::Dance => {
-                    if state == State::Begin {
+                ActionAnimationState::Dance => match state {
+                    State::Begin => {
                         let mut animation_info = AnimationPlayArgs {
                             _animation_loop: true,
                             _force_animation_setting: true,
@@ -1492,8 +1502,13 @@ impl<'a> Character<'a> {
                             &animation_info,
                             AnimationLayer::ActionLayer,
                         );
+                        self.set_weapon_visible(false);
                     }
-                }
+                    State::End => {
+                        self.set_weapon_visible(true);
+                    }
+                    _ => {}
+                },
                 ActionAnimationState::Dead => match state {
                     State::Begin => {
                         let mut animation_info = AnimationPlayArgs {
@@ -1509,6 +1524,7 @@ impl<'a> Character<'a> {
                             &animation_info,
                             AnimationLayer::ActionLayer,
                         );
+                        self.set_weapon_visible(false);
                     }
                     State::Update => {
                         // respawn
@@ -1524,7 +1540,9 @@ impl<'a> Character<'a> {
                             }
                         }
                     }
-                    _ => {}
+                    State::End => {
+                        self.set_weapon_visible(true);
+                    }
                 },
                 ActionAnimationState::Hit => match state {
                     State::Begin => {
@@ -1594,6 +1612,7 @@ impl<'a> Character<'a> {
                             &animation_info,
                             AnimationLayer::ActionLayer,
                         );
+                        self.set_weapon_visible(false);
                     }
                     State::Update => {
                         let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
@@ -1601,7 +1620,9 @@ impl<'a> Character<'a> {
                             self.set_action_sleep();
                         }
                     }
-                    _ => {}
+                    State::End => {
+                        self.set_weapon_visible(true);
+                    }
                 },
                 ActionAnimationState::Pickup => match state {
                     State::Begin => {
@@ -1617,6 +1638,7 @@ impl<'a> Character<'a> {
                             &animation_info,
                             AnimationLayer::ActionLayer,
                         );
+                        self.set_weapon_visible(false);
                     }
                     State::Update => {
                         let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
@@ -1628,7 +1650,9 @@ impl<'a> Character<'a> {
                             self.set_action_none();
                         }
                     }
-                    _ => {}
+                    State::End => {
+                        self.set_weapon_visible(true);
+                    }
                 },
                 ActionAnimationState::PowerAttack => match state {
                     State::Begin => {
@@ -1645,6 +1669,7 @@ impl<'a> Character<'a> {
                             &animation_info,
                             AnimationLayer::ActionLayer,
                         );
+                        self.set_weapon_visible(true);
                     }
                     State::Update => {
                         let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
@@ -1684,6 +1709,7 @@ impl<'a> Character<'a> {
                                 Some(1.0),
                             );
                         }
+                        self.set_weapon_visible(false);
                     }
                     State::End => {
                         if self._is_player
@@ -1691,6 +1717,7 @@ impl<'a> Character<'a> {
                         {
                             self.get_character_manager().get_scene_manager().stop_audio_instance(audio_instance)
                         }
+                        self.set_weapon_visible(true);
                     }
                     _ => {}
                 },
@@ -1768,6 +1795,7 @@ impl<'a> Character<'a> {
                             &animation_info,
                             AnimationLayer::ActionLayer,
                         );
+                        self.set_weapon_visible(false);
                     }
                     State::Update => {
                         let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
@@ -1775,7 +1803,9 @@ impl<'a> Character<'a> {
                             self.set_action_none();
                         }
                     }
-                    _ => {}
+                    State::End => {
+                        self.set_weapon_visible(true);
+                    }
                 },
             }
         }

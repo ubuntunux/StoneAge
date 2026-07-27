@@ -1,5 +1,5 @@
 pub mod api;
-pub mod item_impl;
+pub mod item;
 pub mod updater;
 
 pub use api::*;
