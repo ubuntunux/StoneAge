@@ -3,7 +3,9 @@ use crate::game_module::game_constants;
 use crate::game_module::game_controller::GameController;
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
+use crate::game_module::game_service_locator;
 use crate::game_module::game_ui_manager::{EditorUIManager, GameUIManager};
+
 use crate::render_pass;
 use ash::vk;
 use log::LevelFilter;
@@ -53,6 +55,19 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
         self.get_game_scene_manager_mut().initialize_game_scene_manager(application, engine_core, window_size);
         self.get_editor_ui_manager_mut().initialize_editor_ui_manager(engine_core, application);
 
+        // register game service locator
+        game_service_locator::register_game_service_locator(
+            self.get_game_client(),
+            self.get_game_scene_manager(),
+            self.get_game_scene_manager().get_character_manager(),
+            self.get_game_scene_manager().get_item_manager(),
+            self.get_game_scene_manager().get_prop_manager(),
+            self.get_game_resources(),
+            self.get_game_ui_manager(),
+            self.get_editor_ui_manager(),
+            self.get_game_controller(),
+        );
+
         // start game
         self.get_game_ui_manager_mut().build_game_ui(window_size);
         self.get_editor_ui_manager_mut().build_editor_ui(window_size);
@@ -68,7 +83,11 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
         self._game_client.destroy_game_client();
         self._game_scene_manager.destroy_game_scene_manager();
         self._game_resources.destroy_game_resources();
+
+        // clear game service locator
+        game_service_locator::clear_game_service_locator();
     }
+
 
     fn get_render_pass_create_info_callback(&self) -> *const CallbackLoadRenderPassCreateInfo {
         static CALLBACK: CallbackLoadRenderPassCreateInfo = render_pass::render_pass::get_render_pass_data_create_infos;
@@ -93,7 +112,7 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
                 && joystick_input_data._btn_left_shoulder == ButtonState::Hold
                 && joystick_input_data._btn_right_shoulder == ButtonState::Hold;
 
-            if engine_core._keyboard_input_data.get_key_pressed(KeyCode::Tab) || is_toggle_game_mode_by_joystick {
+            if engine_core._keyboard_input_data.get_key_pressed(KeyCode::Backquote) || is_toggle_game_mode_by_joystick {
                 self.toggle_game_mode();
             }
         }

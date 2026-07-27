@@ -23,6 +23,7 @@ use rust_engine_3d::utilities::system::{RcRefCell, ptr_as_mut, ptr_as_ref};
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use strum_macros::{Display, EnumString};
+use crate::game_module::game_weather::Weather;
 
 pub type CharacterCreateInfoMap = HashMap<String, CharacterCreateInfo>;
 pub type CharacterSaveDataMap = HashMap<String, CharacterSaveData>;
@@ -137,6 +138,7 @@ pub struct GameSceneManager<'a> {
     pub _date: u32,
     pub _game_scene_state: GameSceneState,
     pub _next_game_scene_state: GameSceneState,
+    pub _weather: Weather,
 }
 
 impl<'a> GameSceneManager<'a> {
@@ -232,6 +234,7 @@ impl<'a> GameSceneManager<'a> {
             _date: 1,
             _game_scene_state: GameSceneState::None,
             _next_game_scene_state: GameSceneState::None,
+            _weather: Default::default(),
         })
     }
 
@@ -282,6 +285,7 @@ impl<'a> GameSceneManager<'a> {
     }
 
     pub fn play_ambient_sound(&mut self, audio_name: &str, volume: Option<f32>) {
+        self.stop_ambient_sound();
         self._ambient_sound = ptr_as_mut(self._audio_manager).play_audio_bank(audio_name, AudioLoop::LOOP, volume);
     }
 
@@ -507,6 +511,8 @@ impl<'a> GameSceneManager<'a> {
     }
 
     pub fn close_game_scene_data(&mut self) {
+        self._weather.clear_weather_rain();
+
         if self.has_scenarios() {
             self._scenarios.values_mut().for_each(|scenario| {
                 scenario.borrow_mut().on_close_game_scene(self._current_game_scene_data_name.as_str());
@@ -613,6 +619,8 @@ impl<'a> GameSceneManager<'a> {
     pub fn set_time(&mut self, time: f32, minute: f32) {
         self.set_time_of_day(time + minute / 60.0f32)
     }
+
+
 
     pub fn update_time_of_day(&mut self, delta_time: f64) {
         self._time_of_day += self._time_of_day_speed * TIME_OF_DAY_SPEED * delta_time as f32;
@@ -752,6 +760,7 @@ impl<'a> GameSceneManager<'a> {
                 }
             }
             GameSceneState::None | GameSceneState::LoadCompleted => {
+                self._weather.update_weather(delta_time);
                 self.update_time_of_day(delta_time);
                 self._prop_manager.update_prop_manager(delta_time);
                 self._item_manager.update_item_manager(delta_time);

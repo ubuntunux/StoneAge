@@ -15,6 +15,7 @@ use std::rc::Rc;
 use strum::EnumCount;
 use strum_macros::{Display, EnumCount, EnumIter, EnumString, FromRepr};
 use winit::keyboard::KeyCode;
+use crate::game_module::game_service_locator::{get_game_scene_manager_mut};
 
 const ITEM_WIDTH: f32 = 250.0;
 const ITEM_HEIGHT: f32 = 60.0;
@@ -22,6 +23,7 @@ const ITEM_HEIGHT: f32 = 60.0;
 #[derive(Clone, PartialEq, Eq, Hash, Debug, Display, FromRepr, EnumCount, EnumIter, EnumString, Copy)]
 #[repr(usize)]
 pub enum GameMenuType {
+    Test,
     Resume,
     NewGame,
     LoadGame,
@@ -143,6 +145,7 @@ impl<'a> GameMenuWidget<'a> {
         });
 
         let menu_items = vec![
+            GameMenuItem::create_game_menu_item(game_menu_widget.as_ref(), layer_mut, GameMenuType::Test),
             GameMenuItem::create_game_menu_item(game_menu_widget.as_ref(), layer_mut, GameMenuType::Resume),
             GameMenuItem::create_game_menu_item(game_menu_widget.as_ref(), layer_mut, GameMenuType::NewGame),
             GameMenuItem::create_game_menu_item(game_menu_widget.as_ref(), layer_mut, GameMenuType::LoadGame),
@@ -186,6 +189,9 @@ impl<'a> GameMenuWidget<'a> {
     pub fn press_game_menu(&mut self, selected_menu_item: GameMenuType) {
         let game_client = ptr_as_mut(self._game_client);
         match selected_menu_item {
+            GameMenuType::Test => {
+                get_game_scene_manager_mut()._weather.set_weather_rainy(!get_game_scene_manager_mut()._weather.is_weather_rainy());
+            }
             GameMenuType::Resume => {}
             GameMenuType::NewGame => {
                 game_client.request_new_game();

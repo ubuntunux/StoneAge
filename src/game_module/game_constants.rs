@@ -120,6 +120,7 @@ pub const AUDIO_UFO_EXPERIMENT: &str = "ufo/ufo_experiment";
 // music
 pub const DEFAULT_BGM_VOLUME: Option<f32> = Some(0.5);
 pub const AMBIENT_SOUND: &str = "ambient_sound";
+pub const AMBIENT_SOUND_RAIN: &str = "rain";
 pub const GAME_MUSIC: &str = "game_music";
 pub const AUDIO_WRAP_UP_THE_DAY: &str = "wrap_up_the_day_music";
 
@@ -153,6 +154,7 @@ pub const MATERIAL_EMOJI_LOVE: &str = "ui/emoji/love";
 // EFFECT DATA
 pub const EFFECT_HIT: &str = "effect_test";
 pub const EFFECT_FALLING_WATER: &str = "effect_falling_water";
+pub const EFFECT_RAIN: &str = "rain";
 
 // Items
 pub const ITEM_NONE: &str = "";
