@@ -34,6 +34,7 @@ use crate::game_module::game_scene_manager::{GameSceneManager, Stages};
 use crate::game_module::scenario::scenario::ScenarioType;
 use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
+use rust_engine_3d::core::engine_service_locator::{get_audio_manager, get_audio_manager_mut};
 use rust_engine_3d::effect::effect_data::EffectCreateInfo;
 use rust_engine_3d::scene::animation::{AnimationPlayArgs, AnimationPlayInfo};
 use rust_engine_3d::scene::bounding_box::BoundingBox;
@@ -832,18 +833,21 @@ impl<'a> Character<'a> {
 
     pub fn set_damage(&mut self, damage: i32) {
         if 0 < damage && self.is_alive() {
-            let character_manager = ptr_as_ref(self._character_manager);
             let hp = self._character_stats.get_hp() - damage;
             self._character_stats.set_hp(hp);
             if hp <= 0 {
-                character_manager
-                    .get_scene_manager()
-                    .play_audio(&self._character_data.borrow()._audio_data._audio_dead);
+                get_audio_manager_mut().play_audio_resource_data(
+                    &self._character_data.borrow()._audio_data._audio_dead,
+                    AudioLoop::ONCE,
+                    None,
+                );
                 self.set_dead();
             } else {
-                character_manager
-                    .get_scene_manager()
-                    .play_audio(&self._character_data.borrow()._audio_data._audio_pain);
+                get_audio_manager_mut().play_audio_resource_data(
+                    &self._character_data.borrow()._audio_data._audio_pain,
+                    AudioLoop::ONCE,
+                    None,
+                );
                 if self._is_player && !self.is_move_state(MoveAnimationState::Roll) {
                     self.set_action_hit();
                 }
@@ -863,7 +867,7 @@ impl<'a> Character<'a> {
             };
             let character_manager = ptr_as_ref(self._character_manager);
             character_manager.get_scene_manager_mut().add_effect(EFFECT_FALLING_WATER, &effect_create_info);
-            character_manager.get_scene_manager().play_audio_bank(AUDIO_FALLING_WATER);
+            get_audio_manager_mut().play_audio_bank(&AUDIO_FALLING_WATER, AudioLoop::ONCE, None);
             return true;
         }
         false
@@ -893,7 +897,7 @@ impl<'a> Character<'a> {
 
             let character_manager = ptr_as_ref(self._character_manager);
             character_manager.get_scene_manager_mut().add_effect(EFFECT_HIT, &effect_create_info);
-            character_manager.get_scene_manager().play_audio_bank(AUDIO_HIT);
+            get_audio_manager_mut().play_audio_bank(&AUDIO_HIT, AudioLoop::ONCE, None);
         }
     }
 
@@ -1318,11 +1322,7 @@ impl<'a> Character<'a> {
                             && (animation_play_info.check_animation_event_time(0.2)
                                 || animation_play_info.check_animation_event_time(0.9))
                         {
-                            self.get_character_manager().get_scene_manager().play_audio_options(
-                                AUDIO_FOOTSTEP,
-                                AudioLoop::ONCE,
-                                Some(0.5),
-                            );
+                            get_audio_manager_mut().play_audio_bank(&AUDIO_FOOTSTEP, AudioLoop::ONCE, Some(0.5));
                         }
                     }
                     _ => {}
@@ -1344,11 +1344,7 @@ impl<'a> Character<'a> {
                             && (animation_play_info.check_animation_event_time(0.1)
                                 || animation_play_info.check_animation_event_time(0.5))
                         {
-                            self.get_character_manager().get_scene_manager().play_audio_options(
-                                AUDIO_FOOTSTEP,
-                                AudioLoop::ONCE,
-                                Some(0.5),
-                            );
+                            get_audio_manager_mut().play_audio_bank(&AUDIO_FOOTSTEP, AudioLoop::ONCE, Some(0.5));
                         }
                     }
                     _ => {}
@@ -1364,7 +1360,7 @@ impl<'a> Character<'a> {
                             &animation_info,
                             AnimationLayer::BaseLayer,
                         );
-                        self.get_character_manager().get_scene_manager().play_audio_bank(AUDIO_JUMP);
+                        get_audio_manager_mut().play_audio_bank(&AUDIO_JUMP, AudioLoop::ONCE, None);
                     }
                 }
                 MoveAnimationState::Roll => match state {
@@ -1383,7 +1379,7 @@ impl<'a> Character<'a> {
                     State::Update => {
                         let animation_play_info = render_object.get_animation_play_info(AnimationLayer::BaseLayer);
                         if self._is_player && animation_play_info.check_animation_event_time(0.2) {
-                            self.get_character_manager().get_scene_manager().play_audio_bank(AUDIO_ROLL);
+                            get_audio_manager_mut().play_audio_bank(&AUDIO_ROLL, AudioLoop::ONCE, None);
                         } else if animation_play_info._is_animation_end {
                             self.set_move_idle();
                         }
@@ -1404,7 +1400,7 @@ impl<'a> Character<'a> {
                             &animation_info,
                             AnimationLayer::BaseLayer,
                         );
-                        self.get_character_manager().get_scene_manager().play_audio_bank(AUDIO_JUMP);
+                        get_audio_manager_mut().play_audio_bank(&AUDIO_JUMP, AudioLoop::ONCE, None);
                     }
                 }
                 MoveAnimationState::SitDownLoop => {
@@ -1480,7 +1476,7 @@ impl<'a> Character<'a> {
                         if animation_play_info.check_animation_event_time(character_data._stat_data._attack_event_time)
                         {
                             self._animation_state.set_action_event(ActionAnimationState::Attack);
-                            self.get_character_manager().get_scene_manager().play_audio_bank(AUDIO_ATTACK);
+                            get_audio_manager_mut().play_audio_bank(&AUDIO_ATTACK, AudioLoop::ONCE, None);
                         }
                         if animation_play_info._is_animation_end {
                             self.set_action_none();
@@ -1588,7 +1584,7 @@ impl<'a> Character<'a> {
                         let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
                         if animation_play_info.check_animation_event_time(character_data._stat_data._kick_event_time) {
                             self._animation_state.set_action_event(ActionAnimationState::Kick);
-                            self.get_character_manager().get_scene_manager().play_audio_bank(AUDIO_ATTACK);
+                            get_audio_manager_mut().play_audio_bank(&AUDIO_ATTACK, AudioLoop::ONCE, None);
                         }
                         if animation_play_info._is_animation_end {
                             self.set_action_none();
@@ -1643,7 +1639,7 @@ impl<'a> Character<'a> {
                     State::Update => {
                         let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
                         if animation_play_info.check_animation_event_time(PICKUP_EVENT_TIME) {
-                            self.get_character_manager().get_scene_manager().play_audio_bank(AUDIO_ATTACK);
+                            get_audio_manager_mut().play_audio_bank(&AUDIO_ATTACK, AudioLoop::ONCE, None);
                             self._animation_state.set_action_event(ActionAnimationState::Pickup);
                         }
                         if animation_play_info._is_animation_end {
@@ -1676,7 +1672,7 @@ impl<'a> Character<'a> {
                         if animation_play_info
                             .check_animation_event_time(character_data._stat_data._power_attack_event_time)
                         {
-                            self.get_character_manager().get_scene_manager().play_audio_bank(AUDIO_ATTACK);
+                            get_audio_manager_mut().play_audio_bank(&AUDIO_ATTACK, AudioLoop::ONCE, None);
                             self._animation_state.set_action_event(ActionAnimationState::PowerAttack);
                         }
                         if animation_play_info._is_animation_end {
@@ -1701,13 +1697,10 @@ impl<'a> Character<'a> {
                         );
                         if self._is_player && update_action_animation_state == ActionAnimationState::Sleep {
                             if let Some(audio_instance) = self._audio_snoring.as_ref() {
-                                self.get_character_manager().get_scene_manager().stop_audio_instance(audio_instance)
+                                get_audio_manager().stop_audio_instance(audio_instance)
                             }
-                            self._audio_snoring = self.get_character_manager().get_scene_manager().play_audio_options(
-                                AUDIO_SNORING,
-                                AudioLoop::LOOP,
-                                Some(1.0),
-                            );
+                            self._audio_snoring =
+                                get_audio_manager_mut().play_audio(AUDIO_SNORING, AudioLoop::LOOP, Some(1.0));
                         }
                         self.set_weapon_visible(false);
                     }
@@ -1715,7 +1708,7 @@ impl<'a> Character<'a> {
                         if self._is_player
                             && let Some(audio_instance) = self._audio_snoring.as_ref()
                         {
-                            self.get_character_manager().get_scene_manager().stop_audio_instance(audio_instance)
+                            get_audio_manager().stop_audio_instance(audio_instance)
                         }
                         self.set_weapon_visible(true);
                     }
@@ -1735,7 +1728,7 @@ impl<'a> Character<'a> {
                             &animation_info,
                             AnimationLayer::ActionLayer,
                         );
-                        self.get_character_manager().get_scene_manager().play_audio_bank(AUDIO_EATING);
+                        get_audio_manager_mut().play_audio_bank(AUDIO_EATING, AudioLoop::ONCE, None);
                     }
                     State::Update => {
                         let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);

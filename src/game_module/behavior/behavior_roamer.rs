@@ -6,6 +6,8 @@ use crate::game_module::game_constants::{
     NPC_ROAMING_TIME, NPC_TRACKING_RANGE,
 };
 use nalgebra::Vector3;
+use rust_engine_3d::audio::audio_manager::AudioLoop;
+use rust_engine_3d::core::engine_service_locator::get_audio_manager_mut;
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::math::lerp;
 use rust_engine_3d::utilities::system::State;
@@ -165,10 +167,11 @@ impl<'a> BehaviorBase<'a> for BehaviorRoamer<'a> {
                             self._attack_time = lerp(NPC_ATTACK_TERM_MIN, NPC_ATTACK_TERM_MAX, rand::random::<f32>());
 
                             // growl
-                            owner
-                                .get_character_manager()
-                                .get_scene_manager()
-                                .play_audio(&owner._character_data.borrow()._audio_data._audio_growl);
+                            get_audio_manager_mut().play_audio_resource_data(
+                                &owner._character_data.borrow()._audio_data._audio_growl,
+                                AudioLoop::ONCE,
+                                None,
+                            );
                         }
                         State::Update => {
                             let mut do_idle: bool = true;
