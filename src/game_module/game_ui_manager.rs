@@ -3,7 +3,6 @@ use crate::game_module::actors::character::{ActorWrapper, Character};
 use crate::game_module::actors::items::ItemDataType;
 use crate::game_module::game_client::GameClient;
 use crate::game_module::game_constants::MATERIAL_INTRO_IMAGE;
-use crate::game_module::game_resource::GameResources;
 use crate::game_module::widgets::controller_help::ControllerHelpWidget;
 use crate::game_module::widgets::cross_hair_widget::CrossHairWidget;
 use crate::game_module::widgets::game_menu_widget::GameMenuWidget;
@@ -33,7 +32,6 @@ pub type QuestItem<'a> = RcRefCell<dyn QuestItemBase<'a> + 'a>;
 pub struct EditorUIManager<'a> {
     pub _ui_manager: *const UIManager<'a>,
     pub _game_client: *const GameClient<'a>,
-    pub _game_resources: *const GameResources<'a>,
     pub _root_widget: *const WidgetDefault<'a>,
     pub _editor_ui_layout: *const WidgetDefault<'a>,
     pub _actor_positions: Vec<*const WidgetDefault<'a>>,
@@ -44,7 +42,6 @@ pub struct EditorUIManager<'a> {
 pub struct GameUIManager<'a> {
     pub _ui_manager: *const UIManager<'a>,
     pub _game_client: *const GameClient<'a>,
-    pub _game_resources: *const GameResources<'a>,
     pub _root_widget: *const WidgetDefault<'a>,
     pub _game_ui_layout: *const WidgetDefault<'a>,
     pub _game_image: Option<Box<ImageLayout<'a>>>,
@@ -69,7 +66,6 @@ impl<'a> EditorUIManager<'a> {
         Box::new(EditorUIManager {
             _ui_manager: std::ptr::null(),
             _game_client: std::ptr::null(),
-            _game_resources: std::ptr::null(),
             _root_widget: std::ptr::null(),
             _editor_ui_layout: std::ptr::null(),
             _actor_positions: Vec::new(),
@@ -81,7 +77,6 @@ impl<'a> EditorUIManager<'a> {
     pub fn initialize_editor_ui_manager(&mut self, engine_core: &EngineCore<'a>, application: &Application<'a>) {
         log::info!("initialize_editor_ui_manager");
         self._game_client = application.get_game_client();
-        self._game_resources = ptr_as_ref(self._game_client).get_game_resources();
         self._ui_manager = engine_core.get_ui_manager();
         self._root_widget = ptr_as_ref(self._ui_manager).get_root_ptr();
         self._actor_positions.clear();
@@ -166,7 +161,6 @@ impl<'a> GameUIManager<'a> {
         Box::new(GameUIManager {
             _ui_manager: std::ptr::null(),
             _game_client: std::ptr::null(),
-            _game_resources: std::ptr::null(),
             _root_widget: std::ptr::null(),
             _game_ui_layout: std::ptr::null(),
             _game_image: None,
@@ -190,7 +184,6 @@ impl<'a> GameUIManager<'a> {
     pub fn initialize_game_ui_manager(&mut self, engine_core: &EngineCore<'a>, application: &Application<'a>) {
         log::info!("initialize_game_ui_manager");
         self._game_client = application.get_game_client();
-        self._game_resources = ptr_as_ref(self._game_client).get_game_resources();
         self._ui_manager = engine_core.get_ui_manager();
         self._root_widget = ptr_as_ref(self._ui_manager).get_root_ptr();
     }
@@ -229,9 +222,6 @@ impl<'a> GameUIManager<'a> {
         log::info!("build_game_ui");
         let game_client = ptr_as_ref(self._game_client);
         let game_scene_manager = ptr_as_ref(game_client._game_scene_manager);
-        let audio_manager = ptr_as_ref(game_client.get_game_scene_manager()._audio_manager);
-        let game_resources = game_client.get_game_resources();
-        let engine_resources = game_resources.get_engine_resources();
         let item_manager = game_scene_manager.get_item_manager();
         let root_widget = ptr_as_mut(self._root_widget);
 
@@ -247,8 +237,6 @@ impl<'a> GameUIManager<'a> {
         self._key_binding_widget_manager = Some(Box::new(KeyBindingWidgetManager::default()));
         self._player_hud = Some(Box::new(PlayerHud::create_player_hud(game_ui_layout_mut)));
         self._item_bar_widget = Some(Box::new(ItemBarWidget::create_item_bar_widget(
-            game_resources,
-            engine_resources,
             game_scene_manager,
             item_manager,
             self._key_binding_widget_manager.as_ref().unwrap().as_ref(),
@@ -258,47 +246,28 @@ impl<'a> GameUIManager<'a> {
         self._target_status_bar = Some(Box::new(TargetStatusWidget::create_target_status_widget(
             game_ui_layout_mut,
         )));
-        self._toolbox_widget = Some(Box::new(ToolboxWidget::create_toolbox_widget(
-            engine_resources,
-            game_ui_layout_mut,
-        )));
+        self._toolbox_widget = Some(Box::new(ToolboxWidget::create_toolbox_widget(game_ui_layout_mut)));
         self._world_map_widget = Some(WorldMapWidget::create_world_map_widget(
             game_scene_manager,
-            audio_manager,
-            game_resources,
             game_ui_layout_mut,
             window_size,
         ));
         self._time_of_day = Some(Box::new(TimeOfDayWidget::create_time_of_day_widget(
             game_ui_layout_mut,
-            game_resources,
             self,
         )));
         self._controller_help_widget = Some(Box::new(ControllerHelpWidget::create_controller_help_widget(
-            engine_resources,
             self._key_binding_widget_manager.as_ref().unwrap().as_ref(),
             game_ui_layout_mut,
             window_size,
         )));
         self._quest_widget = Some(Box::new(QuestWidget::create_quest_widget(
             game_scene_manager,
-            game_resources,
             game_ui_layout_mut,
         )));
-        self._text_box_widget = Some(Box::new(TextBoxWidget::create_text_box_widget(
-            audio_manager,
-            engine_resources,
-            root_widget,
-        )));
-        self._game_menu_widget = Some(GameMenuWidget::create_game_menu_widget(
-            game_client,
-            game_resources,
-            root_widget,
-        ));
-        self._cross_hair = Some(Box::new(CrossHairWidget::create_cross_hair(
-            root_widget,
-            game_resources,
-        )));
+        self._text_box_widget = Some(Box::new(TextBoxWidget::create_text_box_widget(root_widget)));
+        self._game_menu_widget = Some(GameMenuWidget::create_game_menu_widget(game_client, root_widget));
+        self._cross_hair = Some(Box::new(CrossHairWidget::create_cross_hair(root_widget)));
         self._game_image = Some(ImageLayout::create_image_layout(
             root_widget,
             window_size,
@@ -343,20 +312,19 @@ impl<'a> GameUIManager<'a> {
     }
 
     pub fn set_game_image(&mut self, material_instance_name: &str, fadeout_time: f32, auto_fade_inout: bool) {
-        let game_resources = ptr_as_ref(self._game_resources);
-        let material_instance =
-            if game_resources.get_engine_resources().has_material_instance_data(material_instance_name) {
-                Some(game_resources.get_engine_resources().get_material_instance_data(material_instance_name).clone())
-            } else {
-                None
-            };
+        let material_instance = if rust_engine_3d::core::engine_service_locator::get_engine_resources()
+            .has_material_instance_data(material_instance_name)
+        {
+            Some(
+                rust_engine_3d::core::engine_service_locator::get_engine_resources()
+                    .get_material_instance_data(material_instance_name)
+                    .clone(),
+            )
+        } else {
+            None
+        };
 
-        self._game_image.as_mut().unwrap().set_game_image(
-            game_resources,
-            material_instance,
-            fadeout_time,
-            auto_fade_inout,
-        );
+        self._game_image.as_mut().unwrap().set_game_image(material_instance, fadeout_time, auto_fade_inout);
     }
 
     pub fn set_game_image_fade_speed(&mut self, fade_speed: f32) {

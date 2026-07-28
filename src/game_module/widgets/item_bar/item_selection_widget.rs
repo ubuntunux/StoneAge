@@ -1,5 +1,5 @@
-use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
 use crate::game_module::widgets::item_bar::{ItemSelectionWidget, ItemWidget};
+use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
 
 impl<'a> ItemSelectionWidget<'a> {
     pub fn get_item_index(&self) -> usize {

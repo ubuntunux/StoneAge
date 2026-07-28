@@ -6,7 +6,6 @@ use crate::game_module::game_constants::{
     MATERIAL_WORLDMAP_FADE_TIME,
 };
 use crate::game_module::game_controller::GameController;
-use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::{GameSceneManager, GameSceneState};
 use crate::game_module::game_ui_manager::{EditorUIManager, GameUIManager};
 use crate::game_module::save_data::save_data::GameSaveData;
@@ -41,7 +40,6 @@ pub struct GameClient<'a> {
     pub _application: *const Application<'a>,
     pub _character_manager: *const CharacterManager<'a>,
     pub _game_scene_manager: *const GameSceneManager<'a>,
-    pub _game_resources: *const GameResources<'a>,
     pub _game_controller: *const GameController<'a>,
     pub _game_ui_manager: *const GameUIManager<'a>,
     pub _editor_ui_manager: *const EditorUIManager<'a>,
@@ -60,7 +58,6 @@ impl<'a> GameClient<'a> {
             _application: std::ptr::null(),
             _character_manager: std::ptr::null(),
             _game_scene_manager: std::ptr::null(),
-            _game_resources: std::ptr::null(),
             _game_controller: std::ptr::null(),
             _game_ui_manager: std::ptr::null(),
             _editor_ui_manager: std::ptr::null(),
@@ -79,7 +76,6 @@ impl<'a> GameClient<'a> {
         self._application = application;
         self._game_controller = application.get_game_controller();
         self._game_scene_manager = application.get_game_scene_manager();
-        self._game_resources = application.get_game_resources();
         self._game_ui_manager = application.get_game_ui_manager();
         self._editor_ui_manager = application.get_editor_ui_manager();
     }
@@ -110,12 +106,7 @@ impl<'a> GameClient<'a> {
     pub fn get_game_scene_manager_mut(&self) -> &mut GameSceneManager<'a> {
         ptr_as_mut(self._game_scene_manager)
     }
-    pub fn get_game_resources(&self) -> &GameResources<'a> {
-        ptr_as_ref(self._game_resources)
-    }
-    pub fn get_game_resources_mut(&self) -> &mut GameResources<'a> {
-        ptr_as_mut(self._game_resources)
-    }
+
     pub fn get_game_controller(&self) -> &GameController<'a> {
         ptr_as_ref(self._game_controller)
     }
@@ -177,15 +168,16 @@ impl<'a> GameClient<'a> {
         self.get_game_scene_manager_mut().request_open_game_scenario(ScenarioType::ScenarioIntro_Intro);
     }
     fn load_game(&mut self) {
-        let game_save_data =
-            self.get_game_resources_mut().get_game_save_data(self._game_save_data_name.as_str()).clone();
+        let game_save_data = crate::game_module::game_service_locator::get_game_resources_mut()
+            .get_game_save_data(self._game_save_data_name.as_str())
+            .clone();
         self._game_save_data = newBoxRefCell(game_save_data.borrow().clone());
         self.get_game_scene_manager_mut().load_game_save_data(&mut self._game_save_data.borrow_mut());
     }
     pub fn save_game(&self, save_file: bool) {
         self.get_game_scene_manager().update_game_save_data(&mut self._game_save_data.borrow_mut());
         if save_file {
-            self.get_game_resources_mut()
+            crate::game_module::game_service_locator::get_game_resources_mut()
                 .save_game_save_data(self._game_save_data_name.as_str(), &self._game_save_data.borrow());
         }
     }
@@ -237,7 +229,9 @@ impl<'a> GameClient<'a> {
                     if state == State::Update {
                         game_ui_manager.set_image_auto_fade_inout(MATERIAL_INTRO_IMAGE, 0.0);
                         game_scene_manager.play_bgm(GAME_MUSIC, DEFAULT_BGM_VOLUME);
+                        log::info!("play_ambient_sound: {:?}", AMBIENT_SOUND);
                         game_scene_manager.play_ambient_sound(AMBIENT_SOUND, None);
+                        log::info!("done_ambient_sound: {:?}", AMBIENT_SOUND);
                         self.set_next_game_phase(GamePhase::TitleScreen);
                     }
                 }

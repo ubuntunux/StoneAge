@@ -16,7 +16,6 @@ pub struct GameServiceLocator {
     pub _character_manager: *const CharacterManager<'static>,
     pub _item_manager: *const ItemManager<'static>,
     pub _prop_manager: *const PropManager<'static>,
-    pub _game_resources: *const GameResources<'static>,
     pub _game_ui_manager: *const GameUIManager<'static>,
     pub _editor_ui_manager: *const EditorUIManager<'static>,
     pub _game_controller: *const GameController<'static>,
@@ -30,7 +29,6 @@ impl Default for GameServiceLocator {
             _character_manager: ptr::null(),
             _item_manager: ptr::null(),
             _prop_manager: ptr::null(),
-            _game_resources: ptr::null(),
             _game_ui_manager: ptr::null(),
             _editor_ui_manager: ptr::null(),
             _game_controller: ptr::null(),
@@ -44,11 +42,18 @@ static mut GAME_SERVICE_LOCATOR: GameServiceLocator = GameServiceLocator {
     _character_manager: ptr::null(),
     _item_manager: ptr::null(),
     _prop_manager: ptr::null(),
-    _game_resources: ptr::null(),
     _game_ui_manager: ptr::null(),
     _editor_ui_manager: ptr::null(),
     _game_controller: ptr::null(),
 };
+
+static mut GAME_RESOURCES: *mut GameResources<'static> = ptr::null_mut();
+
+pub fn set_game_resources(game_resources: *mut GameResources<'static>) {
+    unsafe {
+        GAME_RESOURCES = game_resources;
+    }
+}
 
 pub fn get_game_service_locator() -> &'static GameServiceLocator {
     ptr_as_ref(std::ptr::addr_of!(GAME_SERVICE_LOCATOR))
@@ -64,7 +69,6 @@ pub fn register_game_service_locator<'a>(
     character_manager: *const CharacterManager<'a>,
     item_manager: *const ItemManager<'a>,
     prop_manager: *const PropManager<'a>,
-    game_resources: *const GameResources<'a>,
     game_ui_manager: *const GameUIManager<'a>,
     editor_ui_manager: *const EditorUIManager<'a>,
     game_controller: *const GameController<'a>,
@@ -75,7 +79,6 @@ pub fn register_game_service_locator<'a>(
     locator._character_manager = character_manager as *const CharacterManager<'static>;
     locator._item_manager = item_manager as *const ItemManager<'static>;
     locator._prop_manager = prop_manager as *const PropManager<'static>;
-    locator._game_resources = game_resources as *const GameResources<'static>;
     locator._game_ui_manager = game_ui_manager as *const GameUIManager<'static>;
     locator._editor_ui_manager = editor_ui_manager as *const EditorUIManager<'static>;
     locator._game_controller = game_controller as *const GameController<'static>;
@@ -128,11 +131,11 @@ pub fn get_prop_manager_mut<'a>() -> &'a mut PropManager<'a> {
 }
 
 pub fn get_game_resources<'a>() -> &'a GameResources<'a> {
-    ptr_as_ref(get_game_service_locator()._game_resources as *const GameResources<'a>)
+    ptr_as_ref(unsafe { GAME_RESOURCES } as *const GameResources<'a>)
 }
 
 pub fn get_game_resources_mut<'a>() -> &'a mut GameResources<'a> {
-    ptr_as_mut(get_game_service_locator()._game_resources as *const GameResources<'a>)
+    ptr_as_mut(unsafe { GAME_RESOURCES } as *const GameResources<'a>)
 }
 
 pub fn get_game_ui_manager<'a>() -> &'a GameUIManager<'a> {

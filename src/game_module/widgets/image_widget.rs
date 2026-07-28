@@ -1,4 +1,3 @@
-use crate::game_module::game_resource::GameResources;
 use nalgebra::Vector2;
 use rust_engine_3d::scene::material_instance::MaterialInstanceData;
 use rust_engine_3d::scene::ui::{
@@ -92,7 +91,6 @@ impl<'a> ImageLayout<'a> {
 
     pub fn set_game_image(
         &mut self,
-        game_resources: &GameResources<'a>,
         material_instance: Option<RcRefCell<MaterialInstanceData<'a>>>,
         fade_time: f32,
         auto_fade_inout: bool,
@@ -102,7 +100,8 @@ impl<'a> ImageLayout<'a> {
             let material_instance_ref = material_instance_refcell.borrow();
             let texture_parameter = material_instance_ref._material_parameters.get("texture_color").unwrap();
             let texture_name = texture_parameter.as_str().unwrap();
-            let texture = game_resources.get_engine_resources().get_texture_data(texture_name);
+            let texture =
+                rust_engine_3d::core::engine_service_locator::get_engine_resources().get_texture_data(texture_name);
             self._next_image_aspect = texture.borrow()._image_width as f32 / texture.borrow()._image_height as f32;
             self._fadeout_opacity = 1.0;
             self._fadeout_image_brightness = 0.0;

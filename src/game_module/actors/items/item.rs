@@ -8,10 +8,9 @@ use crate::game_module::game_client::GameClient;
 use crate::game_module::game_constants::{
     AUDIO_ITEM_INVENTORY, AUDIO_PICKUP_ITEM, EAT_ITEM_DISTANCE, WEAPON_SOCKET_NAME,
 };
-use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::{GameSceneManager, ItemCreateInfoMap, ItemSaveDataMap};
 use nalgebra::Vector3;
-use rust_engine_3d::audio::audio_manager::{AudioLoop, AudioManager};
+use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::core::engine_core::EngineCore;
 use rust_engine_3d::scene::collision::CollisionType;
 use rust_engine_3d::scene::height_map::HeightMapData;
@@ -193,8 +192,6 @@ impl<'a> ItemManager<'a> {
         Box::new(ItemManager {
             _game_client: std::ptr::null(),
             _game_scene_manager: std::ptr::null(),
-            _game_resources: std::ptr::null(),
-            _audio_manager: std::ptr::null(),
             _scene_manager: std::ptr::null(),
             _items: HashMap::new(),
             _item_name_map: HashMap::new(),
@@ -203,16 +200,12 @@ impl<'a> ItemManager<'a> {
 
     pub fn initialize_item_manager(&mut self, engine_core: &EngineCore<'a>, application: &Application<'a>) {
         log::info!("initialize_item_manager");
-        self._audio_manager = application.get_audio_manager();
         self._scene_manager = engine_core.get_scene_manager();
-        self._game_resources = application.get_game_resources();
         self._game_scene_manager = application.get_game_scene_manager();
         self._game_client = application.get_game_client();
     }
     pub fn destroy_item_manager(&mut self) {}
-    pub fn get_game_resources(&self) -> &GameResources<'a> {
-        ptr_as_ref(self._game_resources)
-    }
+
     pub fn get_game_client(&self) -> &GameClient<'a> {
         ptr_as_ref(self._game_client)
     }
@@ -222,9 +215,7 @@ impl<'a> ItemManager<'a> {
     pub fn get_game_scene_manager_mut(&self) -> &mut GameSceneManager<'a> {
         ptr_as_mut(self._game_scene_manager)
     }
-    pub fn get_audio_manager_mut(&self) -> &mut AudioManager<'a> {
-        ptr_as_mut(self._audio_manager)
-    }
+
     pub fn get_scene_manager(&self) -> &SceneManager<'a> {
         ptr_as_ref(self._scene_manager)
     }
@@ -251,9 +242,10 @@ impl<'a> ItemManager<'a> {
         spawn_point.y =
             spawn_point.y.max(self.get_scene_manager().get_height_map_data().get_height_bilinear(&spawn_point, 0));
 
-        let game_resource = ptr_as_ref(self._game_resources);
+        let game_resource = crate::game_module::game_service_locator::get_game_resources();
         let item_data = game_resource.get_item_data(item_create_info._item_data_name.as_str());
-        let item_model_data = game_resource.get_engine_resources().get_model_data(&item_data.borrow()._model_data_name);
+        let item_model_data = rust_engine_3d::core::engine_service_locator::get_engine_resources()
+            .get_model_data(&item_data.borrow()._model_data_name);
         let render_object_create_info = RenderObjectCreateInfo {
             _model_data_name: item_data.borrow()._model_data_name.clone(),
             ..Default::default()
@@ -355,7 +347,11 @@ impl<'a> ItemManager<'a> {
     pub fn pick_item(&self, item_data_name: &str, item_count: usize) -> bool {
         let success = self.get_game_client().get_game_ui_manager_mut().add_item(item_data_name, item_count);
         if success {
-            self.get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
+            rust_engine_3d::core::engine_service_locator::get_audio_manager_mut().play_audio_bank(
+                AUDIO_PICKUP_ITEM,
+                AudioLoop::ONCE,
+                None,
+            );
         }
         success
     }
@@ -363,7 +359,11 @@ impl<'a> ItemManager<'a> {
     pub fn remove_inventory_item(&mut self, item_data_name: &str, item_count: usize) -> bool {
         let success = self.get_game_client().get_game_ui_manager_mut().remove_item(item_data_name, item_count);
         if success {
-            self.get_audio_manager_mut().play_audio_bank(AUDIO_ITEM_INVENTORY, AudioLoop::ONCE, None);
+            rust_engine_3d::core::engine_service_locator::get_audio_manager_mut().play_audio_bank(
+                AUDIO_ITEM_INVENTORY,
+                AudioLoop::ONCE,
+                None,
+            );
         }
         success
     }

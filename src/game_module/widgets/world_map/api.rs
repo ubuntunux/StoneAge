@@ -1,5 +1,4 @@
 use crate::game_module::game_scene_manager::GameSceneManager;
-use rust_engine_3d::audio::audio_manager::AudioManager;
 use rust_engine_3d::scene::ui::WidgetDefault;
 use std::collections::HashMap;
 use std::rc::Rc;
@@ -46,7 +45,6 @@ pub struct WorldMapPlayer<'a> {
 
 pub struct WorldMapWidget<'a> {
     pub _game_scene_manager: *const GameSceneManager<'a>,
-    pub _audio_manager: *const AudioManager<'a>,
     pub _root_widget: *const WidgetDefault<'a>,
     pub _background_layout: Rc<WidgetDefault<'a>>,
     pub _world_map_widget: Rc<WidgetDefault<'a>>,

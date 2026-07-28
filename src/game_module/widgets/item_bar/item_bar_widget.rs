@@ -2,24 +2,26 @@ use crate::game_module::actors::items::ItemDataType;
 use crate::game_module::actors::items::ItemManager;
 use crate::game_module::game_constants::ITEM_NONE;
 use crate::game_module::game_controller::KeyBindingType;
-use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
+use crate::game_module::game_service_locator::get_game_resources;
+use crate::game_module::widgets::item_bar::{
+    INVALID_ITEM_INDEX, ITEM_BAR_WIDGET_POS_Y_FROM_BOTTOM, ITEM_UI_SIZE, ITEM_WIDGET_UI_MARGIN,
+    InventoryItemCreateInfo, InventoryItemCreateInfoList, ItemBarWidget, ItemSelectionWidget, ItemWidget,
+    MAX_ITEM_COUNT,
+};
 use crate::game_module::widgets::key_binding_widget::{
     KEY_BINDING_FONT_SIZE, KEY_BINDING_ICON_MARGIN, KEY_BINDING_TEXT_MARGIN, KEY_BINDING_UI_SIZE, KeyBindingWidget,
     KeyBindingWidgetManager, KeyBindingWidgetMap,
 };
 use nalgebra::Vector2;
-use rust_engine_3d::resource::resource::EngineResources;
 use rust_engine_3d::scene::material_instance::MaterialInstanceData;
 use rust_engine_3d::scene::ui::{
-    HorizontalAlign, Orientation, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign,
-    WidgetDefault, PIVOT_TOP_CENTER, PIVOT_BOTTOM_CENTER, PIVOT_CENTER_LEFT, PIVOT_CENTER_RIGHT,
-    PIVOT_BOTTOM_LEFT,
+    HorizontalAlign, Orientation, PIVOT_BOTTOM_CENTER, PIVOT_BOTTOM_LEFT, PIVOT_CENTER_LEFT, PIVOT_CENTER_RIGHT,
+    PIVOT_TOP_CENTER, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault,
 };
 use rust_engine_3d::utilities::system::{RcRefCell, ptr_as_mut, ptr_as_ref};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use std::rc::Rc;
-use crate::game_module::widgets::item_bar::{ItemBarWidget, ITEM_BAR_WIDGET_POS_Y_FROM_BOTTOM, ITEM_UI_SIZE, ItemSelectionWidget, INVALID_ITEM_INDEX, MAX_ITEM_COUNT, ItemWidget, ITEM_WIDGET_UI_MARGIN, InventoryItemCreateInfoList, InventoryItemCreateInfo};
 
 fn create_inventory_key_binding_widget<'a>(
     parent_widget: &mut WidgetDefault<'a>,
@@ -120,8 +122,6 @@ fn create_quick_slot_key_binding_widget<'a>(
 
 impl<'a> ItemBarWidget<'a> {
     pub fn create_item_bar_widget(
-        game_resources: *const GameResources<'a>,
-        engine_resources: *const EngineResources<'a>,
         game_scene_manager: *const GameSceneManager<'a>,
         item_manager: *const ItemManager<'a>,
         key_binding_widget_manager: *const KeyBindingWidgetManager<'a>,
@@ -155,8 +155,6 @@ impl<'a> ItemBarWidget<'a> {
         parent_widget.add_widget(&selected_item_widget);
 
         let mut item_bar_widget = ItemBarWidget {
-            _game_resources: game_resources,
-            _engine_resources: engine_resources,
             _game_scene_manager: game_scene_manager,
             _item_manager: item_manager,
             _parent_widget: parent_widget,
@@ -196,7 +194,7 @@ impl<'a> ItemBarWidget<'a> {
         &mut self,
         key_binding_widget_manager: *const KeyBindingWidgetManager<'a>,
     ) {
-        let engine_resources = ptr_as_ref(self._engine_resources);
+        let engine_resources = rust_engine_3d::core::engine_service_locator::get_engine_resources();
 
         let key_binding_widget_manager = ptr_as_mut(key_binding_widget_manager);
         key_binding_widget_manager.register_key_binding_widget_map(&self._inventory_key_binding_widget_map);
@@ -406,8 +404,8 @@ impl<'a> ItemBarWidget<'a> {
             } else {
                 for item_widget in self._item_widgets.iter_mut() {
                     if item_widget._item_data_name == ITEM_NONE {
-                        let item_data = ptr_as_ref(self._game_resources).get_item_data(item_data_name).borrow();
-                        let material = ptr_as_ref(self._engine_resources)
+                        let item_data = get_game_resources().get_item_data(item_data_name).borrow();
+                        let material = rust_engine_3d::core::engine_service_locator::get_engine_resources()
                             .get_material_instance_data(item_data._ui_material_instance.as_str());
                         item_widget.set_item_data(
                             item_data._name.as_ref(),

@@ -2,8 +2,7 @@ use crate::game_module::actors::character::ActorWrapper;
 use crate::game_module::game_controller::GameController;
 use crate::game_module::game_scene_manager::GameSceneManager;
 use nalgebra::Vector2;
-use rust_engine_3d::audio::audio_manager::{AudioLoop, AudioManager};
-use rust_engine_3d::resource::resource::EngineResources;
+use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::scene::ui::{
     HorizontalAlign, Orientation, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault,
 };
@@ -44,8 +43,6 @@ pub enum TextBoxContent {
 }
 
 pub struct TextBoxWidget<'a> {
-    pub _audio_manager: *const AudioManager<'a>,
-    pub _engine_resources: *const EngineResources<'a>,
     pub _root_widget: *const WidgetDefault<'a>,
     pub _layers: Vec<*const WidgetDefault<'a>>,
     pub _text_box_items: HashMap<*const c_void, TextBoxItem<'a>>,
@@ -61,8 +58,6 @@ pub struct TextBoxItem<'a> {
 
 impl<'a> TextBoxItem<'a> {
     pub fn create_text_box_item(
-        audio_manager: *const AudioManager<'a>,
-        engine_resources: *const EngineResources<'a>,
         parent_widget: &mut WidgetDefault<'a>,
         actor: ActorWrapper<'a>,
         contents: &Vec<TextBoxContent>,
@@ -91,18 +86,12 @@ impl<'a> TextBoxItem<'a> {
             _animation_timer: 0.0,
         };
 
-        item.update_text_box_item(audio_manager, engine_resources, contents, duration, true);
+        item.update_text_box_item(contents, duration, true);
         item
     }
 
-    pub fn update_text_box_item(
-        &mut self,
-        audio_manager: *const AudioManager<'a>,
-        engine_resources: *const EngineResources<'a>,
-        contents: &Vec<TextBoxContent>,
-        duration: Option<f32>,
-        clear_widgets: bool,
-    ) {
+    pub fn update_text_box_item(&mut self, contents: &Vec<TextBoxContent>, duration: Option<f32>, clear_widgets: bool) {
+        let engine_resources = rust_engine_3d::core::engine_service_locator::get_engine_resources();
         if clear_widgets {
             ptr_as_mut(self._layout_widget).clear_widgets();
         }
@@ -110,7 +99,11 @@ impl<'a> TextBoxItem<'a> {
         let mut widget_height = 0.0;
         for content in contents.iter() {
             if let TextBoxContent::Audio(audio_name) = content {
-                ptr_as_mut(audio_manager).play_audio_bank(audio_name, AudioLoop::ONCE, None);
+                rust_engine_3d::core::engine_service_locator::get_audio_manager_mut().play_audio_bank(
+                    audio_name,
+                    AudioLoop::ONCE,
+                    None,
+                );
             } else {
                 let binding_widget = UIManager::create_widget("TextBoxItemContent", UIWidgetTypes::Default);
                 let ui_component = ptr_as_mut(binding_widget.as_ref()).get_ui_component_mut();
@@ -160,11 +153,7 @@ impl<'a> TextBoxItem<'a> {
 }
 
 impl<'a> TextBoxWidget<'a> {
-    pub fn create_text_box_widget(
-        audio_manager: *const AudioManager<'a>,
-        engine_resources: &EngineResources<'a>,
-        root_widget: &mut WidgetDefault<'a>,
-    ) -> TextBoxWidget<'a> {
+    pub fn create_text_box_widget(root_widget: &mut WidgetDefault<'a>) -> TextBoxWidget<'a> {
         let text_box_root_widget = UIManager::create_widget("TextBoxRootWidget", UIWidgetTypes::Default);
         let ui_component = ptr_as_mut(text_box_root_widget.as_ref()).get_ui_component_mut();
         ui_component.set_renderable(false);
@@ -182,8 +171,6 @@ impl<'a> TextBoxWidget<'a> {
         }
 
         TextBoxWidget {
-            _audio_manager: audio_manager,
-            _engine_resources: engine_resources,
             _root_widget: text_box_root_widget.as_ref(),
             _layers: layers,
             _text_box_items: HashMap::new(),
@@ -212,14 +199,12 @@ impl<'a> TextBoxWidget<'a> {
         duration: Option<f32>,
     ) {
         if let Some(item) = self._text_box_items.get_mut(&actor.get_key()) {
-            item.update_text_box_item(self._audio_manager, self._engine_resources, contents, duration, true);
+            item.update_text_box_item(contents, duration, true);
             item.set_animation_state(TextBoxAnimationState::None);
         } else {
             self._text_box_items.insert(
                 actor.get_key(),
                 TextBoxItem::create_text_box_item(
-                    self._audio_manager,
-                    self._engine_resources,
                     ptr_as_mut(self._layers[layer_type as usize]),
                     actor,
                     contents,

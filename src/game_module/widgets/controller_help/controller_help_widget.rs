@@ -8,7 +8,6 @@ use crate::game_module::widgets::key_binding_widget::{
 };
 use crate::game_module::widgets::key_binding_widget::{KEY_BINDING_UI_SIZE, KeyBindingWidget};
 use nalgebra::Vector2;
-use rust_engine_3d::resource::resource::EngineResources;
 use rust_engine_3d::scene::material_instance::MaterialInstanceData;
 use rust_engine_3d::scene::ui::{
     HorizontalAlign, Orientation, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault,
@@ -151,7 +150,6 @@ pub struct ControllerHelpWidget<'a> {
 
 impl<'a> ControllerHelpWidget<'a> {
     pub fn create_controller_help_widget(
-        engine_resources: &EngineResources<'a>,
         key_binding_widget_manager: *const KeyBindingWidgetManager<'a>,
         root_widget: &mut WidgetDefault<'a>,
         window_size: &Vector2<i32>,
@@ -184,15 +182,12 @@ impl<'a> ControllerHelpWidget<'a> {
             _window_size: *window_size,
         };
 
-        player_controller_help_widget.register_key_binding_widgets(engine_resources, key_binding_widget_manager);
+        player_controller_help_widget.register_key_binding_widgets(key_binding_widget_manager);
         player_controller_help_widget
     }
 
-    pub fn register_key_binding_widgets(
-        &mut self,
-        engine_resources: &EngineResources<'a>,
-        key_binding_widget_manager: *const KeyBindingWidgetManager<'a>,
-    ) {
+    pub fn register_key_binding_widgets(&mut self, key_binding_widget_manager: *const KeyBindingWidgetManager<'a>) {
+        let engine_resources = rust_engine_3d::core::engine_service_locator::get_engine_resources();
         let key_binding_widget_manager = ptr_as_mut(key_binding_widget_manager);
         key_binding_widget_manager.register_key_binding_widget_map(&self._player_control_key_binding_widget_map);
         key_binding_widget_manager.register_key_binding_widget_map(&self._interaction_key_binding_widget_map);

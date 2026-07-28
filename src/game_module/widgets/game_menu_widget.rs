@@ -1,12 +1,12 @@
 use crate::game_module::game_client::GameClient;
 use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, DEFAULT_GAME_SAVE_DATA};
-use crate::game_module::game_resource::GameResources;
+use crate::game_module::game_service_locator::get_game_scene_manager_mut;
 use nalgebra::Vector2;
-use rust_engine_3d::audio::audio_manager::{AudioLoop, AudioManager};
+use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::core::input::{ButtonState, JoystickInputData, KeyboardInputData};
 use rust_engine_3d::scene::ui::{
-    HorizontalAlign, Orientation, UIComponentInstance, UILayoutType, UIManager, UIWidgetTypes,
-    VerticalAlign, WidgetDefault, PIVOT_CENTER,
+    HorizontalAlign, Orientation, PIVOT_CENTER, UIComponentInstance, UILayoutType, UIManager, UIWidgetTypes,
+    VerticalAlign, WidgetDefault,
 };
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
@@ -15,7 +15,6 @@ use std::rc::Rc;
 use strum::EnumCount;
 use strum_macros::{Display, EnumCount, EnumIter, EnumString, FromRepr};
 use winit::keyboard::KeyCode;
-use crate::game_module::game_service_locator::{get_game_scene_manager_mut};
 
 const ITEM_WIDTH: f32 = 250.0;
 const ITEM_HEIGHT: f32 = 60.0;
@@ -79,7 +78,6 @@ impl<'a> GameMenuItem<'a> {
 
 pub struct GameMenuWidget<'a> {
     pub _game_client: *const GameClient<'a>,
-    pub _audio_manager: *const AudioManager<'a>,
     pub _parent_widget: *const WidgetDefault<'a>,
     pub _layer: Rc<WidgetDefault<'a>>,
     pub _menu_items: Vec<Box<GameMenuItem<'a>>>,
@@ -112,7 +110,6 @@ impl<'a> GameMenuWidget<'a> {
 
     pub fn create_game_menu_widget(
         game_client: &GameClient<'a>,
-        _game_resources: &GameResources<'a>,
         parent_widget: &mut WidgetDefault<'a>,
     ) -> Box<GameMenuWidget<'a>> {
         let layer = UIManager::create_widget("game_menu_widget", UIWidgetTypes::Default);
@@ -136,7 +133,6 @@ impl<'a> GameMenuWidget<'a> {
 
         let mut game_menu_widget = Box::new(GameMenuWidget {
             _game_client: game_client,
-            _audio_manager: ptr_as_ref(game_client).get_game_scene_manager().get_audio_manager(),
             _parent_widget: parent_widget,
             _layer: layer,
             _menu_items: Vec::new(),
@@ -169,7 +165,11 @@ impl<'a> GameMenuWidget<'a> {
     }
     pub fn close_game_menu(&mut self) {
         if self._is_opened_game_menu {
-            ptr_as_mut(self._audio_manager).play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
+            rust_engine_3d::core::engine_service_locator::get_audio_manager_mut().play_audio_bank(
+                AUDIO_PICKUP_ITEM,
+                AudioLoop::ONCE,
+                None,
+            );
             ptr_as_mut(self._layer.as_ref()).get_ui_component_mut().set_enable(false);
             self._is_opened_game_menu = false;
         }
@@ -180,7 +180,11 @@ impl<'a> GameMenuWidget<'a> {
             let curr_menu_item = &self._menu_items[selected_menu_item as usize];
             ptr_as_mut(prev_menu_item._item_widget.as_ref()).get_ui_component_mut().set_selected(false);
             ptr_as_mut(curr_menu_item._item_widget.as_ref()).get_ui_component_mut().set_selected(true);
-            ptr_as_mut(self._audio_manager).play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
+            rust_engine_3d::core::engine_service_locator::get_audio_manager_mut().play_audio_bank(
+                AUDIO_PICKUP_ITEM,
+                AudioLoop::ONCE,
+                None,
+            );
             self._selected_menu_item = selected_menu_item;
             return true;
         }
@@ -190,7 +194,9 @@ impl<'a> GameMenuWidget<'a> {
         let game_client = ptr_as_mut(self._game_client);
         match selected_menu_item {
             GameMenuType::Test => {
-                get_game_scene_manager_mut()._weather.set_weather_rainy(!get_game_scene_manager_mut()._weather.is_weather_rainy());
+                get_game_scene_manager_mut()
+                    ._weather
+                    .set_weather_rainy(!get_game_scene_manager_mut()._weather.is_weather_rainy());
             }
             GameMenuType::Resume => {}
             GameMenuType::NewGame => {

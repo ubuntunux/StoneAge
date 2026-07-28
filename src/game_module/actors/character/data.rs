@@ -1,7 +1,6 @@
 use crate::game_module::actors::weapons::WeaponCreateInfo;
-use crate::game_module::game_resource::GameResources;
 use nalgebra::Vector3;
-use rust_engine_3d::resource::resource::{EngineResources, ResourceData};
+use rust_engine_3d::resource::resource::ResourceData;
 use rust_engine_3d::scene::animation::AnimationLayerData;
 use rust_engine_3d::scene::mesh::MeshData;
 use rust_engine_3d::utilities::system::RcRefCell;
@@ -191,21 +190,16 @@ pub struct CharacterData {
 }
 
 impl CharacterData {
-    pub fn create_character_data(
-        character_data_create_info: &CharacterDataCreateInfo,
-        game_resources: &GameResources,
-    ) -> CharacterData {
+    pub fn create_character_data(character_data_create_info: &CharacterDataCreateInfo) -> CharacterData {
         CharacterData {
             _character_type: character_data_create_info._character_type,
             _model_data_name: character_data_create_info._model_data_name.clone(),
             _name: character_data_create_info._name.clone(),
             _animation_data: CharacterAnimationData::create_character_animation_data(
                 &character_data_create_info._character_animation_data,
-                game_resources.get_engine_resources(),
             ),
             _audio_data: CharacterAudioData::create_character_audio_data(
                 &character_data_create_info._character_audio_data,
-                game_resources.get_engine_resources_mut(),
             ),
             _stat_data: character_data_create_info._character_stat_data.clone(),
             _weapon_create_info: character_data_create_info._weapon_create_info.clone(),
@@ -224,10 +218,8 @@ pub struct CharacterAudioData {
 }
 
 impl CharacterAudioData {
-    pub fn create_character_audio_data(
-        audio_data_create_info: &CharacterAudioDataCreateInfo,
-        engine_resources: &mut EngineResources,
-    ) -> CharacterAudioData {
+    pub fn create_character_audio_data(audio_data_create_info: &CharacterAudioDataCreateInfo) -> CharacterAudioData {
+        let engine_resources = rust_engine_3d::core::engine_service_locator::get_engine_resources_mut();
         CharacterAudioData {
             _audio_dead: engine_resources.get_audio_bank_data(&audio_data_create_info._audio_dead).clone(),
             _audio_growl: engine_resources.get_audio_bank_data(&audio_data_create_info._audio_growl).clone(),
@@ -273,8 +265,8 @@ pub struct CharacterAnimationData {
 impl CharacterAnimationData {
     pub fn create_character_animation_data(
         animation_data_create_info: &CharacterAnimationDataCreateInfo,
-        engine_resources: &EngineResources,
     ) -> CharacterAnimationData {
+        let engine_resources = rust_engine_3d::core::engine_service_locator::get_engine_resources();
         CharacterAnimationData {
             _attack_animation: engine_resources.get_mesh_data(&animation_data_create_info._attack_animation).clone(),
             _attack_animation_speed: animation_data_create_info._attack_animation_speed,

@@ -1,10 +1,10 @@
-use rust_engine_3d::scene::material_instance::MaterialInstanceData;
-use rust_engine_3d::scene::ui::{HorizontalAlign, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault};
-use rust_engine_3d::utilities::system::{ptr_as_mut, RcRefCell};
-use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use crate::game_module::actors::items::ItemDataType;
 use crate::game_module::game_constants::ITEM_NONE;
-use crate::game_module::widgets::item_bar::{ItemWidget, ITEM_UI_SIZE, ITEM_WIDGET_UI_MARGIN};
+use crate::game_module::widgets::item_bar::{ITEM_UI_SIZE, ITEM_WIDGET_UI_MARGIN, ItemWidget};
+use rust_engine_3d::scene::material_instance::MaterialInstanceData;
+use rust_engine_3d::scene::ui::{HorizontalAlign, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault};
+use rust_engine_3d::utilities::system::{RcRefCell, ptr_as_mut};
+use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 
 impl<'a> ItemWidget<'a> {
     pub fn create_item_widget(parent_widget: &mut WidgetDefault<'a>, item_index: usize) -> ItemWidget<'a> {

@@ -11,9 +11,9 @@ use crate::game_module::game_scene_manager::GameSceneDataCreateInfo;
 use crate::game_module::save_data::save_data::GameSaveData;
 use crate::game_module::scenario::scenario::ScenarioDataCreateInfo;
 use rust_engine_3d::resource::resource::{
-    APPLICATION_RESOURCE_PATH, EngineResources, ResourceDataContainer, get_resource_data_must, get_unique_resource_name,
+    APPLICATION_RESOURCE_PATH, ResourceDataContainer, get_resource_data_must, get_unique_resource_name,
 };
-use rust_engine_3d::utilities::system::{self, RcRefCell, newRcRefCell, ptr_as_mut, ptr_as_ref};
+use rust_engine_3d::utilities::system::{self, RcRefCell, newRcRefCell};
 use serde_json::{self};
 
 pub const GAME_DATA_DIRECTORY: &str = "game_data";
@@ -39,7 +39,6 @@ pub type WeaponDataMap<'a> = ResourceDataContainer<WeaponData<'a>>;
 
 #[derive(Clone)]
 pub struct GameResources<'a> {
-    _engine_resources: *const EngineResources<'a>,
     _scenario_data_create_info_map: ScenarioDataCreateInfoMap,
     _game_scene_data_create_info_map: GameSceneDataCreateInfoMap,
     _game_save_data_map: GameSaveDataMap,
@@ -50,9 +49,8 @@ pub struct GameResources<'a> {
 }
 
 impl<'a> GameResources<'a> {
-    pub fn create_game_resources() -> Box<GameResources<'a>> {
-        Box::new(GameResources {
-            _engine_resources: std::ptr::null(),
+    pub fn create_game_resources() {
+        let game_resources = GameResources {
             _scenario_data_create_info_map: ScenarioDataCreateInfoMap::new(),
             _game_scene_data_create_info_map: GameSceneDataCreateInfoMap::new(),
             _game_save_data_map: GameSaveDataMap::new(),
@@ -60,20 +58,15 @@ impl<'a> GameResources<'a> {
             _item_data_map: ItemDataMap::new(),
             _prop_data_map: PropDataMap::new(),
             _weapon_data_map: WeaponDataMap::new(),
-        })
-    }
-    pub fn get_engine_resources(&self) -> &EngineResources<'a> {
-        ptr_as_ref(self._engine_resources)
-    }
-    pub fn get_engine_resources_mut(&self) -> &mut EngineResources<'a> {
-        ptr_as_mut(self._engine_resources)
+        };
+        let game_resources_box = Box::new(game_resources);
+        let game_resources_ptr = Box::into_raw(game_resources_box) as *mut GameResources<'static>;
+        crate::game_module::game_service_locator::set_game_resources(game_resources_ptr);
     }
     pub fn collect_resources(&self, dir: &Path, extensions: &[&str]) -> Vec<PathBuf> {
-        self.get_engine_resources().collect_resources(dir, extensions)
+        rust_engine_3d::core::engine_service_locator::get_engine_resources().collect_resources(dir, extensions)
     }
-    pub fn initialize_game_resources(&mut self, engine_resources: &EngineResources<'a>) {
-        self._engine_resources = engine_resources;
-    }
+    pub fn initialize_game_resources(&mut self) {}
 
     pub fn load_game_resources(&mut self) {
         self.load_game_data();
@@ -268,8 +261,8 @@ impl<'a> GameResources<'a> {
             let loaded_contents = system::load(&game_data_file);
             let weapon_data_create_info: WeaponDataCreateInfo =
                 serde_json::from_reader(loaded_contents).expect("Failed to deserialize.");
-            let weapon_model_data =
-                self.get_engine_resources().get_model_data(&weapon_data_create_info._model_data_name);
+            let weapon_model_data = rust_engine_3d::core::engine_service_locator::get_engine_resources()
+                .get_model_data(&weapon_data_create_info._model_data_name);
             let weapon_data = WeaponData::create_weapon_data(&weapon_data_create_info, weapon_model_data);
             self._weapon_data_map.insert(weapon_data_name.clone(), newRcRefCell(weapon_data));
         }
@@ -300,7 +293,7 @@ impl<'a> GameResources<'a> {
             let loaded_contents = system::load(&game_data_file);
             let character_data_create_info: CharacterDataCreateInfo =
                 serde_json::from_reader(loaded_contents).expect("Failed to deserialize.");
-            let character_data = CharacterData::create_character_data(&character_data_create_info, self);
+            let character_data = CharacterData::create_character_data(&character_data_create_info);
             self._character_data_map.insert(character_data_name.clone(), newRcRefCell(character_data));
         }
     }

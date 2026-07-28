@@ -12,13 +12,12 @@ use crate::game_module::game_constants::{
     AUDIO_STOMACH_GROWLING, CHARACTER_INTERACTION_DISTANCE, CHARACTER_INTERACTION_TIME, GAME_VIEW_MODE, GameViewMode,
     ITEM_HAND, ITEM_SPIRIT_BALL, MATERIAL_EMOJI_GOOD, MATERIAL_EMOJI_HUNGRY, NPC_ATTACK_HIT_RANGE,
 };
-use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::{CharacterCreateInfoMap, CharacterSaveDataMap, GameSceneManager};
 use crate::game_module::game_ui_manager::GameUIManager;
 use crate::game_module::widgets::text_box_widget::TextBoxContent;
 use crate::game_module::widgets::text_box_widget::TextBoxLayerType;
 use nalgebra::Vector3;
-use rust_engine_3d::audio::audio_manager::AudioManager;
+
 use rust_engine_3d::core::engine_core::EngineCore;
 use rust_engine_3d::scene::render_object::{RenderObjectCreateInfo, RenderObjectSaveData, SceneObjectType};
 use rust_engine_3d::scene::scene_manager::SceneManager;
@@ -70,8 +69,6 @@ pub struct CharacterSaveData {
 pub struct CharacterManager<'a> {
     pub _game_client: *const GameClient<'a>,
     pub _game_scene_manager: *const GameSceneManager<'a>,
-    pub _game_resources: *const GameResources<'a>,
-    pub _audio_manager: *const AudioManager<'a>,
     pub _scene_manager: *const SceneManager<'a>,
     pub _game_ui_manager: *const GameUIManager<'a>,
     pub _player: Option<RcRefCell<Character<'a>>>,
@@ -86,8 +83,6 @@ impl<'a> CharacterManager<'a> {
         Box::new(CharacterManager {
             _game_client: std::ptr::null(),
             _game_scene_manager: std::ptr::null(),
-            _game_resources: std::ptr::null(),
-            _audio_manager: std::ptr::null(),
             _scene_manager: std::ptr::null(),
             _game_ui_manager: std::ptr::null(),
             _player: None,
@@ -103,8 +98,6 @@ impl<'a> CharacterManager<'a> {
         self._game_client = application.get_game_client();
         self._game_scene_manager = application.get_game_scene_manager();
         self._game_ui_manager = application.get_game_ui_manager();
-        self._game_resources = application.get_game_resources();
-        self._audio_manager = application.get_audio_manager();
         self._scene_manager = engine_core.get_scene_manager();
     }
     pub fn destroy_character_manager(&mut self) {}
@@ -120,12 +113,7 @@ impl<'a> CharacterManager<'a> {
     pub fn get_game_scene_manager_mut(&self) -> &mut GameSceneManager<'a> {
         ptr_as_mut(self._game_scene_manager)
     }
-    pub fn get_audio_manager(&self) -> &AudioManager<'a> {
-        ptr_as_ref(self._audio_manager)
-    }
-    pub fn get_audio_manager_mut(&self) -> &mut AudioManager<'a> {
-        ptr_as_mut(self._audio_manager)
-    }
+
     pub fn get_scene_manager(&self) -> &SceneManager<'a> {
         ptr_as_ref(self._scene_manager)
     }
@@ -151,7 +139,7 @@ impl<'a> CharacterManager<'a> {
         is_player: bool,
     ) -> RcRefCell<Character<'a>> {
         let (character_name, uuid) = extract_name_and_uuid(character_name);
-        let game_resources = ptr_as_ref(self._game_resources);
+        let game_resources = crate::game_module::game_service_locator::get_game_resources();
 
         // check height map
         let mut spawn_point = character_create_info._position;

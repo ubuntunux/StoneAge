@@ -1,5 +1,4 @@
 use crate::game_module::game_controller::GameController;
-use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::game_ui_manager::QuestItem;
 use crate::game_module::widgets::quest_widgets::quest_widget::{
@@ -14,7 +13,6 @@ use std::rc::Rc;
 
 pub struct QuestTitle<'a> {
     pub _game_scene_manager: *const GameSceneManager<'a>,
-    pub _game_resources: *const GameResources<'a>,
     pub _layout_widget: Rc<WidgetDefault<'a>>,
     pub _text_widget: Option<Rc<WidgetDefault<'a>>>,
     pub _quest_title: Option<String>,
@@ -24,13 +22,11 @@ pub struct QuestTitle<'a> {
 impl<'a> QuestTitle<'a> {
     pub fn create_quest_title(
         game_scene_manager: *const GameSceneManager<'a>,
-        game_resources: *const GameResources<'a>,
         parent_widget: &mut WidgetDefault<'a>,
         title: Option<String>,
     ) -> RcRefCell<QuestTitle<'a>> {
         let item = newRcRefCell(QuestTitle {
             _game_scene_manager: game_scene_manager,
-            _game_resources: game_resources,
             _layout_widget: create_quest_item_layout(parent_widget),
             _text_widget: if title.is_some() {
                 Some(UIManager::create_widget("text_widget", UIWidgetTypes::Default))
@@ -82,7 +78,6 @@ impl<'a> QuestTitle<'a> {
     pub fn add_quest_item(&mut self, content: QuestCreateInfo) -> QuestItem<'a> {
         let quest_item = create_quest_item(
             self._game_scene_manager,
-            self._game_resources,
             ptr_as_mut(self._layout_widget.as_ref()),
             content,
         );

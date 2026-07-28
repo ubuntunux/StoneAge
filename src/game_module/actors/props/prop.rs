@@ -9,11 +9,10 @@ use crate::game_module::game_client::GameClient;
 use crate::game_module::game_constants::{
     AUDIO_HIT, CHARACTER_INTERACTION_DISTANCE, EFFECT_HIT, GAME_VIEW_MODE, GameViewMode, NPC_ATTACK_HIT_RANGE,
 };
-use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::{GameSceneManager, PropCreateInfoMap, PropSaveDataMap};
 use nalgebra::Vector3;
 use rand;
-use rust_engine_3d::audio::audio_manager::{AudioLoop, AudioManager};
+use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::core::engine_core::EngineCore;
 use rust_engine_3d::effect::effect_data::EffectCreateInfo;
 use rust_engine_3d::scene::bounding_box::BoundingBox;
@@ -163,7 +162,11 @@ impl<'a> Prop<'a> {
             ..Default::default()
         };
         self.get_prop_manager().get_scene_manager_mut().add_effect(EFFECT_HIT, &effect_create_info);
-        self.get_prop_manager().get_audio_manager_mut().play_audio_bank(AUDIO_HIT, AudioLoop::ONCE, None);
+        rust_engine_3d::core::engine_service_locator::get_audio_manager_mut().play_audio_bank(
+            AUDIO_HIT,
+            AudioLoop::ONCE,
+            None,
+        );
     }
     pub fn update_generate_item(&mut self, delta_time: f64) {
         if self._prop_data.borrow()._prop_type == PropDataType::Harvestable
@@ -251,8 +254,6 @@ impl<'a> PropManager<'a> {
         Box::new(PropManager {
             _game_client: std::ptr::null(),
             _game_scene_manager: std::ptr::null(),
-            _game_resources: std::ptr::null(),
-            _audio_manager: std::ptr::null(),
             _scene_manager: std::ptr::null(),
             _props: HashMap::new(),
             _prop_name_map: HashMap::new(),
@@ -263,14 +264,10 @@ impl<'a> PropManager<'a> {
         log::info!("initialize_prop_manager");
         self._game_client = application.get_game_client();
         self._game_scene_manager = application.get_game_scene_manager();
-        self._game_resources = application.get_game_resources();
-        self._audio_manager = application.get_audio_manager();
         self._scene_manager = engine_core.get_scene_manager();
     }
     pub fn destroy_prop_manager(&mut self) {}
-    pub fn get_game_resources(&self) -> &GameResources<'a> {
-        ptr_as_ref(self._game_resources)
-    }
+
     pub fn get_game_client(&self) -> &GameClient<'a> {
         ptr_as_ref(self._game_client)
     }
@@ -283,9 +280,7 @@ impl<'a> PropManager<'a> {
     pub fn get_game_scene_manager_mut(&self) -> &mut GameSceneManager<'a> {
         ptr_as_mut(self._game_scene_manager)
     }
-    pub fn get_audio_manager_mut(&self) -> &mut AudioManager<'a> {
-        ptr_as_mut(self._audio_manager)
-    }
+
     pub fn get_scene_manager_mut(&self) -> &mut SceneManager<'a> {
         ptr_as_mut(self._scene_manager)
     }
@@ -303,7 +298,7 @@ impl<'a> PropManager<'a> {
     }
     pub fn create_prop(&mut self, prop_name: &str, prop_create_info: &PropCreateInfo) -> RcRefCell<Prop<'a>> {
         let (prop_name, uuid) = extract_name_and_uuid(prop_name);
-        let game_resources = ptr_as_ref(self._game_resources);
+        let game_resources = crate::game_module::game_service_locator::get_game_resources();
         let prop_data = game_resources.get_prop_data(prop_create_info._prop_data_name.as_str());
 
         let render_object_create_info = RenderObjectCreateInfo {

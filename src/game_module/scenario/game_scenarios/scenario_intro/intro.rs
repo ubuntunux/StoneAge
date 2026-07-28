@@ -3,7 +3,6 @@ use crate::game_module::actors::character::{ActorWrapper, Character};
 use crate::game_module::actors::props::Prop;
 use crate::game_module::behavior::behavior_base::BehaviorState;
 use crate::game_module::game_constants::*;
-use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::game_scene_manager::Stages;
 use crate::game_module::game_ui_manager::{GameUIManager, QuestItem};
@@ -18,6 +17,8 @@ use crate::game_module::widgets::quest_widgets::quest_title::QuestTitle;
 use crate::game_module::widgets::quest_widgets::quest_widget::QuestCreateInfo;
 use crate::game_module::widgets::text_box_widget::{TextBoxContent, TextBoxLayerType};
 use nalgebra::Vector3;
+use rust_engine_3d::audio::audio_manager::AudioLoop;
+use rust_engine_3d::core::engine_service_locator::get_audio_manager_mut;
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{RcRefCell, State, newRcRefCell, ptr_as_mut, ptr_as_ref};
 use serde::{Deserialize, Serialize};
@@ -101,7 +102,6 @@ pub struct ScenarioIntro<'a> {
 impl<'a> ScenarioIntro<'a> {
     pub fn create_game_scenario(
         game_scene_manager: *const GameSceneManager<'a>,
-        _game_resources: *const GameResources<'a>,
         scenario_type: ScenarioType,
         scenario_create_info: &ScenarioDataCreateInfo,
     ) -> RcRefCell<ScenarioIntro<'a>> {
@@ -553,7 +553,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                 },
                 ScenarioPhase::WakeUp => match state {
                     State::Begin => {
-                        game_scene_manager.get_scene_manager().play_audio_bank(AUDIO_ROOSTER);
+                        get_audio_manager_mut().play_audio_bank(AUDIO_ROOSTER, AudioLoop::ONCE, None);
                     }
                     State::Update => {
                         let time_of_day_ratio = phase_time * 0.2;
@@ -642,7 +642,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                 }
                 ScenarioPhase::IamHungry => match state {
                     State::Begin => {
-                        game_scene_manager.get_scene_manager().play_audio_bank(AUDIO_STOMACH_GROWLING);
+                        get_audio_manager_mut().play_audio_bank(AUDIO_STOMACH_GROWLING, AudioLoop::ONCE, None);
 
                         if let (Some(actor_aru), Some(actor_ewa), Some(actor_koa)) =
                             (&self._player, &self._actor_ewa, &self._actor_koa)
@@ -672,7 +672,8 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                             actor.borrow_mut().set_next_behavior(BehaviorState::Idle, true);
                         }
 
-                        let item_coconut = game_scene_manager.get_game_resources().get_item_data(ITEM_COCONUT);
+                        let item_coconut =
+                            crate::game_module::game_service_locator::get_game_resources().get_item_data(ITEM_COCONUT);
                         self._quest =
                             Some(game_ui_manager.add_quest(Some(String::from("Gather food for the hungry family."))));
                         if let Some(quest) = &self._quest {

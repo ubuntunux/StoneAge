@@ -1,14 +1,15 @@
 use crate::game_module::actors::items::ItemData;
 use crate::game_module::game_constants::AUDIO_QUEST_COMPLETE;
 use crate::game_module::game_controller::GameController;
-use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::game_ui_manager::QuestItem;
 use crate::game_module::widgets::quest_widgets::quest_widget::{
     FONT_SIZE, ITEM_MARGIN, ITEM_SIZE, QUEST_COMPLETE_OPACITY, QuestItemBase, create_quest_item_layout,
 };
+use rust_engine_3d::audio::audio_manager::AudioLoop;
+use rust_engine_3d::core::engine_service_locator::get_audio_manager_mut;
 use rust_engine_3d::scene::ui::{HorizontalAlign, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault};
-use rust_engine_3d::utilities::system::{RcRefCell, newRcRefCell, ptr_as_mut, ptr_as_ref};
+use rust_engine_3d::utilities::system::{RcRefCell, newRcRefCell, ptr_as_mut};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use std::rc::Rc;
 
@@ -20,7 +21,6 @@ pub struct GatherItemData {
 
 pub struct QuestItemGatherItem<'a> {
     pub _game_scene_manager: *const GameSceneManager<'a>,
-    pub _game_resources: *const GameResources<'a>,
     pub _layout_widget: Rc<WidgetDefault<'a>>,
     pub _is_complete_widget: Rc<WidgetDefault<'a>>,
     pub _icon_widget: Rc<WidgetDefault<'a>>,
@@ -33,13 +33,11 @@ pub struct QuestItemGatherItem<'a> {
 impl<'a> QuestItemGatherItem<'a> {
     pub fn create_quest_item(
         game_scene_manager: *const GameSceneManager<'a>,
-        game_resources: *const GameResources<'a>,
         parent_widget: &mut WidgetDefault<'a>,
         content: GatherItemData,
     ) -> QuestItem<'a> {
         let item = newRcRefCell(QuestItemGatherItem {
             _game_scene_manager: game_scene_manager,
-            _game_resources: game_resources,
             _layout_widget: create_quest_item_layout(parent_widget),
             _is_complete_widget: UIManager::create_widget("is_complete_widget", UIWidgetTypes::Default),
             _icon_widget: UIManager::create_widget("icon_widget", UIWidgetTypes::Default),
@@ -75,8 +73,7 @@ impl<'a> QuestItemGatherItem<'a> {
 
 impl<'a> QuestItemBase<'a> for QuestItemGatherItem<'a> {
     fn initialize_quest_item(&mut self) {
-        let game_resources = ptr_as_ref(self._game_resources);
-        let engine_resources = game_resources.get_engine_resources();
+        let engine_resources = rust_engine_3d::core::engine_service_locator::get_engine_resources();
         let item_material_instance = engine_resources
             .get_material_instance_data(self._item_data._item_data.borrow()._ui_material_instance.as_str())
             .clone();
@@ -129,7 +126,7 @@ impl<'a> QuestItemBase<'a> for QuestItemGatherItem<'a> {
     fn set_completed_quest(&mut self) {
         if !self._is_completed_quest {
             self._item_count = self._item_data._gather_item_count;
-            ptr_as_ref(self._game_scene_manager).get_scene_manager().play_audio_bank(AUDIO_QUEST_COMPLETE);
+            get_audio_manager_mut().play_audio_bank(AUDIO_QUEST_COMPLETE, AudioLoop::ONCE, None);
             self._is_completed_quest = true;
         }
     }

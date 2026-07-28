@@ -1,13 +1,15 @@
+use crate::game_module::game_constants::{
+    AMBIENT_SOUND, AMBIENT_SOUND_RAIN, DEFAULT_BGM_VOLUME, EFFECT_RAIN, GAME_MUSIC,
+};
+use crate::game_module::game_service_locator::get_game_scene_manager_mut;
 use nalgebra::Vector3;
 use rust_engine_3d::core::engine_service_locator::{get_audio_manager_mut, get_scene_manager, get_scene_manager_mut};
 use rust_engine_3d::effect::effect_data::EffectCreateInfo;
-use crate::game_module::game_service_locator::get_game_scene_manager_mut;
-use crate::game_module::game_constants::{AMBIENT_SOUND, AMBIENT_SOUND_RAIN, DEFAULT_BGM_VOLUME, EFFECT_RAIN, GAME_MUSIC};
 
 pub struct Weather {
     pub _is_rain: bool,
     pub _rain_effect: Option<uuid::Uuid>,
-    pub _sun_light_color: Vector3<f32>
+    pub _sun_light_color: Vector3<f32>,
 }
 
 impl Default for Weather {
@@ -34,7 +36,6 @@ impl Weather {
             if let Some(effect) = get_scene_manager().get_effect(rain_effect_id) {
                 effect.borrow_mut().set_dead();
             }
-
             get_audio_manager_mut().play_bgm(GAME_MUSIC, DEFAULT_BGM_VOLUME);
             get_game_scene_manager_mut().play_ambient_sound(AMBIENT_SOUND, None);
             get_scene_manager().get_main_light().borrow_mut()._light_data._light_color = self._sun_light_color.clone();
@@ -54,8 +55,10 @@ impl Weather {
 
                 get_game_scene_manager_mut().stop_bgm();
                 get_game_scene_manager_mut().play_ambient_sound(AMBIENT_SOUND_RAIN, None);
-                self._sun_light_color = get_scene_manager().get_main_light().borrow_mut()._light_data._light_color.clone();
-                get_scene_manager().get_main_light().borrow_mut()._light_data._light_color = Vector3::new(0.1, 0.1, 0.1);
+                self._sun_light_color =
+                    get_scene_manager().get_main_light().borrow_mut()._light_data._light_color.clone();
+                get_scene_manager().get_main_light().borrow_mut()._light_data._light_color =
+                    Vector3::new(0.1, 0.1, 0.1);
             }
 
             if let Some(rain_effect_id) = &self._rain_effect {
@@ -67,6 +70,7 @@ impl Weather {
         } else {
             self.clear_weather_rain();
         }
-    }
 
+        log::info!("done update_weather");
+    }
 }

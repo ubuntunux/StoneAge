@@ -1,13 +1,11 @@
-use std::collections::HashMap;
-use std::rc::Rc;
-use nalgebra::Vector2;
-use rust_engine_3d::resource::resource::EngineResources;
-use rust_engine_3d::scene::ui::WidgetDefault;
-use serde::{Deserialize, Serialize};
 use crate::game_module::actors::items::{ItemDataType, ItemManager};
-use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::widgets::key_binding_widget::KeyBindingWidgetMap;
+use nalgebra::Vector2;
+use rust_engine_3d::scene::ui::WidgetDefault;
+use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
+use std::rc::Rc;
 
 pub type InventoryItemCreateInfoList = HashMap<usize, Vec<InventoryItemCreateInfo>>;
 
@@ -27,7 +25,6 @@ pub struct InventoryItemCreateInfo {
     pub _item_count: usize,
 }
 
-
 pub struct ItemWidget<'a> {
     pub _item_data_name: String,
     pub _item_name: String,
@@ -43,8 +40,6 @@ pub struct ItemSelectionWidget<'a> {
 }
 
 pub struct ItemBarWidget<'a> {
-    pub _game_resources: *const GameResources<'a>,
-    pub _engine_resources: *const EngineResources<'a>,
     pub _game_scene_manager: *const GameSceneManager<'a>,
     pub _item_manager: *const ItemManager<'a>,
     pub _parent_widget: *const WidgetDefault<'a>,

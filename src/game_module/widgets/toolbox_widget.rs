@@ -2,10 +2,8 @@ use crate::game_module::actors::character::Character;
 use nalgebra::Vector2;
 use rust_engine_3d::core::engine_core::TimeData;
 use rust_engine_3d::core::input::{ButtonState, JoystickInputData, KeyboardInputData, MouseInputData, MouseMoveData};
-use rust_engine_3d::resource::resource::EngineResources;
 use rust_engine_3d::scene::ui::{
-    HorizontalAlign, Orientation, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign,
-    WidgetDefault, PIVOT_CENTER,
+    HorizontalAlign, Orientation, PIVOT_CENTER, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault,
 };
 use rust_engine_3d::utilities::system::{RcRefCell, ptr_as_mut};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
@@ -77,10 +75,7 @@ pub struct ToolboxWidget<'a> {
 }
 
 impl<'a> ToolboxWidget<'a> {
-    pub fn create_toolbox_widget(
-        _engine_resources: &EngineResources<'a>,
-        parent_widget: &mut WidgetDefault<'a>,
-    ) -> ToolboxWidget<'a> {
+    pub fn create_toolbox_widget(parent_widget: &mut WidgetDefault<'a>) -> ToolboxWidget<'a> {
         let layer = UIManager::create_widget("toolbox_widget", UIWidgetTypes::Default);
         let layer_mut = ptr_as_mut(layer.as_ref());
         let ui_component = layer_mut.get_ui_component_mut();

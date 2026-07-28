@@ -10,7 +10,6 @@ use crate::render_pass;
 use ash::vk;
 use log::LevelFilter;
 use nalgebra::Vector2;
-use rust_engine_3d::audio::audio_manager::AudioManager;
 use rust_engine_3d::constants;
 use rust_engine_3d::constants::DEVELOPMENT;
 use rust_engine_3d::core::engine_core::{self, ApplicationBase, EngineCore, WindowMode};
@@ -24,10 +23,8 @@ use winit::keyboard::KeyCode;
 
 pub struct Application<'a> {
     pub _engine_core: *const EngineCore<'a>,
-    pub _audio_manager: *const AudioManager<'a>,
     pub _effect_manager: *const EffectManager<'a>,
     pub _renderer_data: *const RendererData<'a>,
-    pub _game_resources: Box<GameResources<'a>>,
     pub _game_scene_manager: Box<GameSceneManager<'a>>,
     pub _game_ui_manager: Box<GameUIManager<'a>>,
     pub _editor_ui_manager: Box<EditorUIManager<'a>>,
@@ -41,14 +38,13 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
     fn initialize_application(&'a mut self, engine_core: &EngineCore<'a>, window_size: &Vector2<i32>) {
         // engine managers
         self._engine_core = engine_core;
-        self._audio_manager = engine_core.get_audio_manager();
         self._effect_manager = engine_core.get_effect_manager();
         self._renderer_data = engine_core.get_renderer_context().get_renderer_data();
 
         // initialize project managers
         let application = ptr_as_ref(self);
-        self.get_game_resources_mut().initialize_game_resources(engine_core.get_engine_resources());
-        self.get_game_resources_mut().load_game_resources();
+        game_service_locator::get_game_resources_mut().initialize_game_resources();
+        game_service_locator::get_game_resources_mut().load_game_resources();
         self.get_game_client_mut().initialize_game_client(engine_core, application);
         self.get_game_controller_mut().initialize_game_controller(application);
         self.get_game_ui_manager_mut().initialize_game_ui_manager(engine_core, application);
@@ -62,7 +58,6 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
             self.get_game_scene_manager().get_character_manager(),
             self.get_game_scene_manager().get_item_manager(),
             self.get_game_scene_manager().get_prop_manager(),
-            self.get_game_resources(),
             self.get_game_ui_manager(),
             self.get_editor_ui_manager(),
             self.get_game_controller(),
@@ -82,12 +77,11 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
         self._game_scene_manager.close_game_scene_data();
         self._game_client.destroy_game_client();
         self._game_scene_manager.destroy_game_scene_manager();
-        self._game_resources.destroy_game_resources();
+        game_service_locator::get_game_resources_mut().destroy_game_resources();
 
         // clear game service locator
         game_service_locator::clear_game_service_locator();
     }
-
 
     fn get_render_pass_create_info_callback(&self) -> *const CallbackLoadRenderPassCreateInfo {
         static CALLBACK: CallbackLoadRenderPassCreateInfo = render_pass::render_pass::get_render_pass_data_create_infos;
@@ -246,12 +240,7 @@ impl<'a> Application<'a> {
     pub fn get_effect_manager_mut(&self) -> &mut EffectManager<'a> {
         ptr_as_mut(self._effect_manager)
     }
-    pub fn get_game_resources(&self) -> &GameResources<'a> {
-        ptr_as_ref(self._game_resources.as_ref())
-    }
-    pub fn get_game_resources_mut(&self) -> &mut GameResources<'a> {
-        ptr_as_mut(self._game_resources.as_ref())
-    }
+
     pub fn get_game_scene_manager(&self) -> &GameSceneManager<'a> {
         self._game_scene_manager.as_ref()
     }
@@ -276,12 +265,7 @@ impl<'a> Application<'a> {
     pub fn get_game_ui_manager_mut(&self) -> &mut GameUIManager<'a> {
         ptr_as_mut(self._game_ui_manager.as_ref())
     }
-    pub fn get_audio_manager(&self) -> &AudioManager<'a> {
-        ptr_as_ref(self._audio_manager)
-    }
-    pub fn get_audio_manager_mut(&self) -> &mut AudioManager<'a> {
-        ptr_as_mut(self._audio_manager)
-    }
+
     pub fn get_game_controller(&self) -> &GameController<'a> {
         self._game_controller.as_ref()
     }
@@ -389,7 +373,7 @@ pub fn run_application() {
     });
 
     // create project application & managers
-    let game_resources = GameResources::create_game_resources();
+    GameResources::create_game_resources();
     let game_scene_manager = GameSceneManager::create_game_scene_manager();
     let game_ui_manager = GameUIManager::create_game_ui_manager();
     let editor_ui_manager = EditorUIManager::create_editor_ui_manager();
@@ -399,8 +383,6 @@ pub fn run_application() {
         _engine_core: std::ptr::null(),
         _renderer_data: std::ptr::null(),
         _effect_manager: std::ptr::null(),
-        _audio_manager: std::ptr::null(),
-        _game_resources: game_resources,
         _game_scene_manager: game_scene_manager,
         _game_ui_manager: game_ui_manager,
         _editor_ui_manager: editor_ui_manager,

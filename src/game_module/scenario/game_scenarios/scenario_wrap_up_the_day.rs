@@ -6,7 +6,6 @@ use crate::game_module::game_constants::{
     AUDIO_QUEST_COMPLETE, AUDIO_ROOSTER, AUDIO_WRAP_UP_THE_DAY, BED_FOR_ARU, DEFAULT_BGM_VOLUME, DEFAULT_FADE_TIME,
     GAME_MUSIC, MATERIAL_UI_NONE, SLEEP_TIMER,
 };
-use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::scenario::scenario::{
     GameScenarioCreateInfo, ScenarioBase, ScenarioDataCreateInfo, ScenarioType,
@@ -14,6 +13,7 @@ use crate::game_module::scenario::scenario::{
 use crate::game_module::scenario::scenario_track::ScenarioTrack;
 use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop};
+use rust_engine_3d::core::engine_service_locator::get_audio_manager_mut;
 use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{RcRefCell, State, newRcRefCell, ptr_as_mut, ptr_as_ref};
@@ -61,7 +61,6 @@ pub struct ScenarioWrapUpTheDay<'a> {
 impl<'a> ScenarioWrapUpTheDay<'a> {
     pub fn create_game_scenario(
         game_scene_manager: *const GameSceneManager<'a>,
-        _game_resources: *const GameResources<'a>,
         scenario_type: ScenarioType,
         scenario_create_info: &ScenarioDataCreateInfo,
     ) -> RcRefCell<ScenarioWrapUpTheDay<'a>> {
@@ -246,11 +245,8 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                     if state == State::Update {
                         if game_ui_manager.is_done_manual_fade_out() {
                             game_scene_manager.stop_bgm();
-                            self._audio_bgm = game_scene_manager.get_audio_manager_mut().play_audio_bank(
-                                AUDIO_WRAP_UP_THE_DAY,
-                                AudioLoop::SOME(4),
-                                None,
-                            );
+                            self._audio_bgm = rust_engine_3d::core::engine_service_locator::get_audio_manager_mut()
+                                .play_audio_bank(AUDIO_WRAP_UP_THE_DAY, AudioLoop::SOME(4), None);
 
                             let main_camera = game_scene_manager.get_scene_manager().get_main_camera_mut();
                             main_camera._transform_object.set_position(&Vector3::from(TABLE_SCENE_CAMERA_POSITION));
@@ -278,16 +274,18 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                         }
 
                         let is_playing = if let Some(audio_bgm) = &self._audio_bgm {
-                            game_scene_manager.get_audio_manager().is_playing_audio_instance(audio_bgm)
+                            rust_engine_3d::core::engine_service_locator::get_audio_manager()
+                                .is_playing_audio_instance(audio_bgm)
                         } else {
                             false
                         };
 
                         if (self._audio_bgm.is_some() && !is_playing) || 1.0 <= phase_ratio {
                             if let Some(audio_bgm) = &self._audio_bgm {
-                                game_scene_manager.get_audio_manager_mut().stop_audio_instance(audio_bgm);
+                                rust_engine_3d::core::engine_service_locator::get_audio_manager_mut()
+                                    .stop_audio_instance(audio_bgm);
                             }
-                            game_scene_manager.get_audio_manager_mut().play_audio_bank(
+                            rust_engine_3d::core::engine_service_locator::get_audio_manager_mut().play_audio_bank(
                                 AUDIO_QUEST_COMPLETE,
                                 AudioLoop::ONCE,
                                 None,
@@ -337,7 +335,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                             if self._skip_wakeup {
                                 self._skip_wakeup = false;
                             } else {
-                                game_scene_manager.get_scene_manager().play_audio_bank(AUDIO_ROOSTER);
+                                get_audio_manager_mut().play_audio_bank(AUDIO_ROOSTER, AudioLoop::ONCE, None);
                                 if let Some(actor) = &self._player {
                                     actor.borrow_mut().set_action_wake_up();
                                 }

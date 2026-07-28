@@ -3,7 +3,6 @@ use crate::game_module::game_constants::{
     AUDIO_ALIEN_TALK, AUDIO_UFO_EXPERIMENT, AUDIO_UFO_LABORATORY, CHARACTER_DATA_NAME_ARU, CHARACTER_INTERACTION_TIME,
     DEFAULT_FADE_TIME, MATERIAL_EMOJI_GOOD, MATERIAL_UI_NONE, TIME_OF_NOON,
 };
-use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::scenario::scenario::{
     GameScenarioCreateInfo, ScenarioBase, ScenarioDataCreateInfo, ScenarioType,
@@ -12,6 +11,7 @@ use crate::game_module::scenario::scenario_track::ScenarioTrack;
 use crate::game_module::widgets::text_box_widget::{TextBoxContent, TextBoxLayerType};
 use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop};
+use rust_engine_3d::core::engine_service_locator::{get_audio_manager, get_audio_manager_mut};
 use rust_engine_3d::utilities::system::{RcRefCell, State, newRcRefCell, ptr_as_mut};
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
@@ -65,7 +65,6 @@ pub struct ScenarioRevolution<'a> {
 impl<'a> ScenarioRevolution<'a> {
     pub fn create_game_scenario(
         game_scene_manager: *const GameSceneManager<'a>,
-        _game_resources: *const GameResources<'a>,
         scenario_type: ScenarioType,
         scenario_create_info: &ScenarioDataCreateInfo,
     ) -> RcRefCell<ScenarioRevolution<'a>> {
@@ -242,11 +241,8 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
                 }
                 ScenarioPhase::Investigate => match state {
                     State::Begin => {
-                        self._audio_ufo_laboratory = game_scene_manager.get_scene_manager().play_audio_options(
-                            AUDIO_UFO_LABORATORY,
-                            AudioLoop::LOOP,
-                            Some(0.2),
-                        );
+                        self._audio_ufo_laboratory =
+                            get_audio_manager_mut().play_audio(AUDIO_UFO_LABORATORY, AudioLoop::LOOP, Some(0.2));
                     }
                     State::Update => {
                         if 1.0 <= phase_ratio {
@@ -281,17 +277,9 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
                     }
                     State::Update => {
                         if phase_time == 0.0 {
-                            game_scene_manager.get_scene_manager().play_audio_options(
-                                AUDIO_ALIEN_TALK,
-                                AudioLoop::ONCE,
-                                Some(1.0),
-                            );
+                            get_audio_manager_mut().play_audio(AUDIO_ALIEN_TALK, AudioLoop::ONCE, Some(1.0));
                         } else if phase_time <= 2.0 && 2.0 < (phase_time + delta_time as f32) {
-                            game_scene_manager.get_scene_manager().play_audio_options(
-                                AUDIO_ALIEN_TALK,
-                                AudioLoop::ONCE,
-                                Some(1.0),
-                            );
+                            get_audio_manager_mut().play_audio(AUDIO_ALIEN_TALK, AudioLoop::ONCE, Some(1.0));
                         }
 
                         if 1.0 <= phase_ratio {
@@ -311,11 +299,7 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
                                 beta.borrow_mut().look_at(&aru_pos);
                             }
                         }
-                        game_scene_manager.get_scene_manager().play_audio_options(
-                            AUDIO_UFO_EXPERIMENT,
-                            AudioLoop::ONCE,
-                            Some(1.0),
-                        );
+                        get_audio_manager_mut().play_audio(AUDIO_UFO_EXPERIMENT, AudioLoop::ONCE, Some(1.0));
                     }
                     State::Update => {
                         let visible_monkey = if phase_ratio < 0.9 {
@@ -360,7 +344,7 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
                         }
 
                         if let Some(audio_instance) = self._audio_ufo_laboratory.as_ref() {
-                            game_scene_manager.get_scene_manager().stop_audio_instance(audio_instance);
+                            get_audio_manager().stop_audio_instance(audio_instance);
                         }
                         self._audio_ufo_laboratory = None;
                         game_ui_manager.set_auto_fade_inout(true);

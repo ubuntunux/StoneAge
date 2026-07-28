@@ -8,12 +8,13 @@ use crate::game_module::game_constants::{
     CHARACTER_DATA_NAME_MONKEY_ARU, GAME_VIEW_MODE, GameViewMode, TEMPERATURE_MAX, TEMPERATURE_MIN, TIME_OF_DAWN,
     TIME_OF_DAY_SPEED, TIME_OF_MORNING,
 };
-use crate::game_module::game_resource::GameResources;
+use crate::game_module::game_service_locator::get_game_resources;
 use crate::game_module::game_ui_manager::GameUIManager;
+use crate::game_module::game_weather::Weather;
 use crate::game_module::save_data::save_data::GameSaveData;
 use crate::game_module::scenario::scenario::{ScenarioBase, ScenarioDataCreateInfo, ScenarioType, create_scenario};
 use nalgebra::Vector2;
-use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop, AudioManager};
+use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop};
 use rust_engine_3d::begin_block;
 use rust_engine_3d::core::engine_core::EngineCore;
 use rust_engine_3d::effect::effect_manager::EffectManager;
@@ -23,7 +24,6 @@ use rust_engine_3d::utilities::system::{RcRefCell, ptr_as_mut, ptr_as_ref};
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use strum_macros::{Display, EnumString};
-use crate::game_module::game_weather::Weather;
 
 pub type CharacterCreateInfoMap = HashMap<String, CharacterCreateInfo>;
 pub type CharacterSaveDataMap = HashMap<String, CharacterSaveData>;
@@ -113,10 +113,8 @@ pub struct GameSceneSaveData {
 
 pub struct GameSceneManager<'a> {
     pub _game_client: *const GameClient<'a>,
-    pub _audio_manager: *const AudioManager<'a>,
     pub _effect_manager: *const EffectManager<'a>,
     pub _scene_manager: *const SceneManager<'a>,
-    pub _game_resources: *const GameResources<'a>,
     pub _game_ui_manager: *const GameUIManager<'a>,
     pub _character_manager: Box<CharacterManager<'a>>,
     pub _item_manager: Box<ItemManager<'a>>,
@@ -142,14 +140,6 @@ pub struct GameSceneManager<'a> {
 }
 
 impl<'a> GameSceneManager<'a> {
-    pub fn get_game_resources(&self) -> &GameResources<'a> {
-        ptr_as_ref(self._game_resources)
-    }
-
-    pub fn get_game_resources_mut(&self) -> &mut GameResources<'a> {
-        ptr_as_mut(self._game_resources)
-    }
-
     pub fn get_scene_manager(&self) -> &SceneManager<'a> {
         ptr_as_ref(self._scene_manager)
     }
@@ -209,10 +199,8 @@ impl<'a> GameSceneManager<'a> {
     pub fn create_game_scene_manager() -> Box<GameSceneManager<'a>> {
         Box::new(GameSceneManager {
             _game_client: std::ptr::null(),
-            _audio_manager: std::ptr::null(),
             _effect_manager: std::ptr::null(),
             _scene_manager: std::ptr::null(),
-            _game_resources: std::ptr::null(),
             _game_ui_manager: std::ptr::null(),
             _current_game_scene_data_name: Default::default(),
             _current_game_scene_data: None,
@@ -246,19 +234,15 @@ impl<'a> GameSceneManager<'a> {
     ) {
         log::info!("initialize_game_scene_manager");
         self._game_client = application.get_game_client();
-        self._audio_manager = engine_core.get_audio_manager();
         self._scene_manager = engine_core.get_scene_manager();
         self._effect_manager = engine_core.get_effect_manager();
         self._game_ui_manager = application.get_game_ui_manager();
         engine_core.get_scene_manager_mut().initialize_scene_manager(
             engine_core.get_renderer_context(),
-            engine_core.get_audio_manager(),
             engine_core.get_effect_manager(),
-            engine_core.get_engine_resources(),
             window_size,
         );
 
-        self._game_resources = application.get_game_resources();
         self._character_manager.initialize_character_manager(engine_core, application);
         self._item_manager.initialize_item_manager(engine_core, application);
         self._prop_manager.initialize_prop_manager(engine_core, application);
@@ -272,30 +256,27 @@ impl<'a> GameSceneManager<'a> {
         ptr_as_mut(self._game_client)
     }
 
-    pub fn get_audio_manager(&self) -> &AudioManager<'a> {
-        ptr_as_ref(self._audio_manager)
-    }
-
-    pub fn get_audio_manager_mut(&self) -> &mut AudioManager<'a> {
-        ptr_as_mut(self._audio_manager)
-    }
-
     pub fn play_bgm(&mut self, audio_name: &str, volume: Option<f32>) {
-        ptr_as_mut(self._audio_manager).play_bgm(audio_name, volume);
+        rust_engine_3d::core::engine_service_locator::get_audio_manager_mut().play_bgm(audio_name, volume);
     }
 
     pub fn play_ambient_sound(&mut self, audio_name: &str, volume: Option<f32>) {
         self.stop_ambient_sound();
-        self._ambient_sound = ptr_as_mut(self._audio_manager).play_audio_bank(audio_name, AudioLoop::LOOP, volume);
+        self._ambient_sound = rust_engine_3d::core::engine_service_locator::get_audio_manager_mut().play_audio_bank(
+            audio_name,
+            AudioLoop::LOOP,
+            volume,
+        );
     }
 
     pub fn stop_bgm(&self) {
-        ptr_as_mut(self._audio_manager).stop_bgm();
+        rust_engine_3d::core::engine_service_locator::get_audio_manager_mut().stop_bgm();
     }
 
     pub fn stop_ambient_sound(&mut self) {
         if let Some(audio_instance_refcell) = self._ambient_sound.as_ref() {
-            ptr_as_mut(self._audio_manager).stop_audio_instance(audio_instance_refcell);
+            rust_engine_3d::core::engine_service_locator::get_audio_manager_mut()
+                .stop_audio_instance(audio_instance_refcell);
         }
         self._ambient_sound = None;
     }
@@ -469,7 +450,7 @@ impl<'a> GameSceneManager<'a> {
     ) -> &RcRefCell<dyn ScenarioBase<'a> + 'a> {
         self._scenarios.insert(
             scenario_type,
-            create_scenario(self, self._game_resources, scenario_type, &scenario_data_create_info),
+            create_scenario(self, scenario_type, &scenario_data_create_info),
         );
 
         if open_game_scene {
@@ -499,7 +480,8 @@ impl<'a> GameSceneManager<'a> {
         self.close_game_scene_data();
 
         // open game scene data
-        let game_scene_data = self.get_game_resources().get_game_scene_data(game_scene_data_name);
+        let game_scene_data =
+            crate::game_module::game_service_locator::get_game_resources().get_game_scene_data(game_scene_data_name);
         self._current_game_scene_data = Some(game_scene_data.clone());
         self._current_game_scene_data_name = String::from(game_scene_data_name);
         if let Some(game_scene_data) = self._current_game_scene_data.as_ref() {
@@ -620,8 +602,6 @@ impl<'a> GameSceneManager<'a> {
         self.set_time_of_day(time + minute / 60.0f32)
     }
 
-
-
     pub fn update_time_of_day(&mut self, delta_time: f64) {
         self._time_of_day += self._time_of_day_speed * TIME_OF_DAY_SPEED * delta_time as f32;
 
@@ -673,13 +653,12 @@ impl<'a> GameSceneManager<'a> {
     }
 
     pub fn update_game_scenarios(&mut self, any_key_hold: bool, any_key_pressed: bool, delta_time: f64) {
-        let game_resources = ptr_as_ref(self._game_resources);
         let current_game_scene_data_name = self._current_game_scene_data_name.clone();
         if !self._reservation_scenarios.is_empty() {
             let current_game_scene_state = self._game_scene_state.clone();
             for scenario_type in self._reservation_scenarios.clone().iter() {
                 let scenario_data_create_info =
-                    game_resources.get_scenario_data(scenario_type.get_scenario_data_name());
+                    get_game_resources().get_scenario_data(scenario_type.get_scenario_data_name());
                 let scenario = self.open_game_scenario_data(*scenario_type, &scenario_data_create_info.borrow(), true);
                 if current_game_scene_state == GameSceneState::LoadCompleted {
                     let game_scene_data_name = scenario_data_create_info.borrow().get_game_scene_data_name();

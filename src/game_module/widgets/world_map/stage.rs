@@ -1,4 +1,3 @@
-use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::Stages;
 use crate::game_module::widgets::world_map::api::{WorldMapBridge, WorldMapDirection, WorldMapStage, WorldMapWidget};
 use nalgebra::Vector2;
@@ -29,7 +28,6 @@ impl<'a> WorldMapStage<'a> {
     pub fn create_world_map_stage(
         world_map_stages: &mut HashMap<String, Rc<WorldMapStage<'a>>>,
         world_map_widget: &WorldMapWidget<'a>,
-        _game_resources: &GameResources<'a>,
         root_layout: &mut WidgetDefault<'a>,
         stage: Stages,
     ) -> Rc<WorldMapStage<'a>> {
@@ -111,7 +109,6 @@ impl<'a> WorldMapStage<'a> {
 
     pub fn set_linked_stage(
         &mut self,
-        game_resources: &GameResources<'a>,
         bridge_layer: &mut WidgetDefault<'a>,
         direction: WorldMapDirection,
         linked_stage: &Rc<WorldMapStage<'a>>,
@@ -134,12 +131,8 @@ impl<'a> WorldMapStage<'a> {
         self._linked_stages[direction as usize] = Some(linked_stage.clone());
 
         if make_bridge {
-            let bridge_widget = WorldMapBridge::create_world_map_bridge(
-                game_resources,
-                bridge_layer,
-                &pos,
-                &linked_stage_mut.get_center_pos(),
-            );
+            let bridge_widget =
+                WorldMapBridge::create_world_map_bridge(bridge_layer, &pos, &linked_stage_mut.get_center_pos());
             self._linked_bridges[direction as usize] = Some(bridge_widget);
         }
     }

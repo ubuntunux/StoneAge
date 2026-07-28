@@ -1,9 +1,7 @@
 use crate::game_module::actors::items::updater::ItemUpdaterBase;
 use crate::game_module::game_client::GameClient;
-use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
 use nalgebra::Vector3;
-use rust_engine_3d::audio::audio_manager::AudioManager;
 use rust_engine_3d::scene::render_object::RenderObjectData;
 use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::scene::socket::Socket;
@@ -85,8 +83,6 @@ pub struct Item<'a> {
 pub struct ItemManager<'a> {
     pub _game_client: *const GameClient<'a>,
     pub _game_scene_manager: *const GameSceneManager<'a>,
-    pub _game_resources: *const GameResources<'a>,
-    pub _audio_manager: *const AudioManager<'a>,
     pub _scene_manager: *const SceneManager<'a>,
     pub _items: ItemMap<'a>,
     pub _item_name_map: ItemNameMap<'a>,

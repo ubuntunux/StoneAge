@@ -4,7 +4,6 @@ use crate::game_module::behavior::behavior_base::BehaviorState;
 use crate::game_module::game_constants::{
     AUDIO_UFO_BEAM, AUDIO_UFO_FLYING, BED_FOR_ARU, CAMERA_DISTANCE_MAX, CAMERA_OFFSET_Y, TIME_OF_EARLY_MORNING,
 };
-use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::scenario::scenario::{
     GameScenarioCreateInfo, ScenarioBase, ScenarioDataCreateInfo, ScenarioType,
@@ -12,6 +11,7 @@ use crate::game_module::scenario::scenario::{
 use crate::game_module::scenario::scenario_track::ScenarioTrack;
 use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop};
+use rust_engine_3d::core::engine_service_locator::{get_audio_manager, get_audio_manager_mut};
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{RcRefCell, State, newRcRefCell, ptr_as_mut};
 use serde::{Deserialize, Serialize};
@@ -59,7 +59,6 @@ pub struct ScenarioDayOne<'a> {
 impl<'a> ScenarioDayOne<'a> {
     pub fn create_game_scenario(
         game_scene_manager: *const GameSceneManager<'a>,
-        _game_resources: *const GameResources<'a>,
         scenario_type: ScenarioType,
         scenario_create_info: &ScenarioDataCreateInfo,
     ) -> RcRefCell<ScenarioDayOne<'a>> {
@@ -299,16 +298,9 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
                 }
                 ScenarioPhase::ReleaseFamily => match state {
                     State::Begin => {
-                        self._audio_ufo_flying = game_scene_manager.get_scene_manager().play_audio_options(
-                            AUDIO_UFO_FLYING,
-                            AudioLoop::LOOP,
-                            Some(1.0),
-                        );
-                        game_scene_manager.get_scene_manager().play_audio_options(
-                            AUDIO_UFO_BEAM,
-                            AudioLoop::ONCE,
-                            Some(1.0),
-                        );
+                        self._audio_ufo_flying =
+                            get_audio_manager_mut().play_audio(AUDIO_UFO_FLYING, AudioLoop::LOOP, Some(1.0));
+                        get_audio_manager_mut().play_audio(AUDIO_UFO_BEAM, AudioLoop::ONCE, Some(1.0));
                     }
                     State::Update => {
                         let complete = self.update_release_family(delta_time);
@@ -350,11 +342,7 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
                                         prop.borrow_mut().set_position(ufo.borrow().get_position());
                                     }
                                 }
-                                game_scene_manager.get_scene_manager().play_audio_options(
-                                    AUDIO_UFO_BEAM,
-                                    AudioLoop::ONCE,
-                                    Some(1.0),
-                                );
+                                get_audio_manager_mut().play_audio(AUDIO_UFO_BEAM, AudioLoop::ONCE, Some(1.0));
                             }
                             drop_completed = self.drop_monolith(delta_time);
                         }
@@ -375,7 +363,7 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
                     }
                     State::End => {
                         if let Some(audio_instance) = self._audio_ufo_flying.as_ref() {
-                            game_scene_manager.get_scene_manager().stop_audio_instance(audio_instance)
+                            get_audio_manager().stop_audio_instance(audio_instance)
                         }
                     }
                     _ => {}

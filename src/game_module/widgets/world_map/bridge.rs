@@ -1,4 +1,3 @@
-use crate::game_module::game_resource::GameResources;
 use crate::game_module::widgets::world_map::api::WorldMapBridge;
 use nalgebra::Vector2;
 use rust_engine_3d::scene::ui::{
@@ -10,7 +9,6 @@ use std::rc::Rc;
 
 impl<'a> WorldMapBridge<'a> {
     pub fn create_world_map_bridge(
-        _game_resources: &GameResources<'a>,
         root_layout: &mut WidgetDefault<'a>,
         pos_a: &Vector2<f32>,
         pos_b: &Vector2<f32>,
