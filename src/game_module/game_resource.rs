@@ -49,7 +49,7 @@ pub struct GameResources<'a> {
 }
 
 impl<'a> GameResources<'a> {
-    pub fn create_game_resources() {
+    pub fn create_game_resources() -> Box<GameResources<'a>> {
         let game_resources = GameResources {
             _scenario_data_create_info_map: ScenarioDataCreateInfoMap::new(),
             _game_scene_data_create_info_map: GameSceneDataCreateInfoMap::new(),
@@ -59,9 +59,7 @@ impl<'a> GameResources<'a> {
             _prop_data_map: PropDataMap::new(),
             _weapon_data_map: WeaponDataMap::new(),
         };
-        let game_resources_box = Box::new(game_resources);
-        let game_resources_ptr = Box::into_raw(game_resources_box) as *mut GameResources<'static>;
-        crate::game_module::game_service_locator::set_game_resources(game_resources_ptr);
+        Box::new(game_resources)
     }
     pub fn collect_resources(&self, dir: &Path, extensions: &[&str]) -> Vec<PathBuf> {
         rust_engine_3d::core::engine_service_locator::get_engine_resources().collect_resources(dir, extensions)

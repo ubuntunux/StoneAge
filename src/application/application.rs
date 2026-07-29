@@ -25,6 +25,7 @@ pub struct Application<'a> {
     pub _engine_core: *const EngineCore<'a>,
     pub _effect_manager: *const EffectManager<'a>,
     pub _renderer_data: *const RendererData<'a>,
+    pub _game_resources: Box<GameResources<'a>>,
     pub _game_scene_manager: Box<GameSceneManager<'a>>,
     pub _game_ui_manager: Box<GameUIManager<'a>>,
     pub _editor_ui_manager: Box<EditorUIManager<'a>>,
@@ -43,25 +44,13 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
 
         // initialize project managers
         let application = ptr_as_ref(self);
-        game_service_locator::get_game_resources_mut().initialize_game_resources();
-        game_service_locator::get_game_resources_mut().load_game_resources();
+        self.get_game_resources_mut().initialize_game_resources();
+        self.get_game_resources_mut().load_game_resources();
         self.get_game_client_mut().initialize_game_client(engine_core, application);
         self.get_game_controller_mut().initialize_game_controller(application);
         self.get_game_ui_manager_mut().initialize_game_ui_manager(engine_core, application);
         self.get_game_scene_manager_mut().initialize_game_scene_manager(application, engine_core, window_size);
         self.get_editor_ui_manager_mut().initialize_editor_ui_manager(engine_core, application);
-
-        // register game service locator
-        game_service_locator::register_game_service_locator(
-            self.get_game_client(),
-            self.get_game_scene_manager(),
-            self.get_game_scene_manager().get_character_manager(),
-            self.get_game_scene_manager().get_item_manager(),
-            self.get_game_scene_manager().get_prop_manager(),
-            self.get_game_ui_manager(),
-            self.get_editor_ui_manager(),
-            self.get_game_controller(),
-        );
 
         // start game
         self.get_game_ui_manager_mut().build_game_ui(window_size);
@@ -77,10 +66,7 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
         self._game_scene_manager.close_game_scene_data();
         self._game_client.destroy_game_client();
         self._game_scene_manager.destroy_game_scene_manager();
-        game_service_locator::get_game_resources_mut().destroy_game_resources();
-
-        // clear game service locator
-        game_service_locator::clear_game_service_locator();
+        self._game_resources.destroy_game_resources();
     }
 
     fn get_render_pass_create_info_callback(&self) -> *const CallbackLoadRenderPassCreateInfo {
@@ -234,13 +220,18 @@ impl<'a> Application<'a> {
     pub fn get_engine_core_mut(&self) -> &mut EngineCore<'a> {
         ptr_as_mut(self._engine_core)
     }
+    pub fn get_game_resources(&self) -> &GameResources<'a> {
+        self._game_resources.as_ref()
+    }
+    pub fn get_game_resources_mut(&mut self) -> &mut GameResources<'a> {
+        self._game_resources.as_mut()
+    }
     pub fn get_effect_manager(&self) -> &EffectManager<'a> {
         ptr_as_ref(self._effect_manager)
     }
     pub fn get_effect_manager_mut(&self) -> &mut EffectManager<'a> {
         ptr_as_mut(self._effect_manager)
     }
-
     pub fn get_game_scene_manager(&self) -> &GameSceneManager<'a> {
         self._game_scene_manager.as_ref()
     }
@@ -373,16 +364,31 @@ pub fn run_application() {
     });
 
     // create project application & managers
-    GameResources::create_game_resources();
+    let game_resources = GameResources::create_game_resources();
     let game_scene_manager = GameSceneManager::create_game_scene_manager();
     let game_ui_manager = GameUIManager::create_game_ui_manager();
     let editor_ui_manager = EditorUIManager::create_editor_ui_manager();
     let game_controller = GameController::create_game_controller();
     let game_client = GameClient::create_game_client();
+
+    // register game service locator
+    game_service_locator::register_game_service_locator(
+        game_client.as_ref(),
+        game_resources.as_ref(),
+        game_scene_manager.as_ref(),
+        game_scene_manager._character_manager.as_ref(),
+        game_scene_manager._item_manager.as_ref(),
+        game_scene_manager._prop_manager.as_ref(),
+        game_ui_manager.as_ref(),
+        editor_ui_manager.as_ref(),
+        game_controller.as_ref(),
+    );
+
     let application = Application {
         _engine_core: std::ptr::null(),
         _renderer_data: std::ptr::null(),
         _effect_manager: std::ptr::null(),
+        _game_resources: game_resources,
         _game_scene_manager: game_scene_manager,
         _game_ui_manager: game_ui_manager,
         _editor_ui_manager: editor_ui_manager,

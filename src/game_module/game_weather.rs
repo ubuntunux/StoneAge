@@ -70,7 +70,5 @@ impl Weather {
         } else {
             self.clear_weather_rain();
         }
-
-        log::info!("done update_weather");
     }
 }
