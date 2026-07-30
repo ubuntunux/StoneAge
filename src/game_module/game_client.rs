@@ -11,9 +11,7 @@ use crate::game_module::game_service_locator::{
 use crate::game_module::save_data::save_data::GameSaveData;
 use crate::game_module::scenario::scenario::ScenarioType;
 use nalgebra::{Vector2, Vector3};
-use rust_engine_3d::core::engine_service_locator::{
-    get_audio_manager_mut, get_engine_core, get_scene_manager, get_scene_manager_mut,
-};
+use rust_engine_3d::core::engine_service_locator::{get_audio_manager_mut, get_engine_core, get_scene_manager, get_scene_manager_mut, is_engine_core_valid};
 use rust_engine_3d::utilities::system::{BoxRefCell, State, newBoxRefCell};
 use std::cmp::PartialEq;
 use strum::IntoEnumIterator;
@@ -127,6 +125,10 @@ impl<'a> GameClient<'a> {
         }
     }
     pub fn update_game_mode(&mut self, delta_time: f64) {
+        if !is_engine_core_valid() {
+            return
+        }
+
         let engine_core = get_engine_core();
         let audio_manager = get_audio_manager_mut();
         let game_scene_manager = get_game_scene_manager_mut();

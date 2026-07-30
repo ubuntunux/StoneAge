@@ -1,7 +1,7 @@
 use crate::game_module::actors::character::{ActorWrapper, Character};
 use crate::game_module::actors::items::ItemDataType;
 use crate::game_module::game_constants::MATERIAL_INTRO_IMAGE;
-use crate::game_module::game_service_locator::{get_character_manager, get_game_controller, get_game_scene_manager};
+use crate::game_module::game_service_locator::{get_character_manager, get_game_scene_manager};
 use crate::game_module::widgets::controller_help::ControllerHelpWidget;
 use crate::game_module::widgets::cross_hair_widget::CrossHairWidget;
 use crate::game_module::widgets::game_menu_widget::GameMenuWidget;
@@ -469,11 +469,9 @@ impl<'a> GameUIManager<'a> {
     }
 
     pub fn update_game_ui(&mut self, delta_time: f64) {
-        let _game_scene_manager = get_game_scene_manager();
         let ui_manager = get_ui_manager();
         let engine_core = get_engine_core();
         let mouse_pos = &engine_core._mouse_move_data._mouse_pos;
-        let _game_controller = get_game_controller();
 
         // changed window size
         if self._need_to_refresh || self._window_size != ui_manager._window_size {
