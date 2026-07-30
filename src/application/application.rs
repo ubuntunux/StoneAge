@@ -22,9 +22,6 @@ use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
 use winit::keyboard::KeyCode;
 
 pub struct Application<'a> {
-    pub _engine_core: *const EngineCore<'a>,
-    pub _effect_manager: *const EffectManager<'a>,
-    pub _renderer_data: *const RendererData<'a>,
     pub _game_resources: Box<GameResources<'a>>,
     pub _game_scene_manager: Box<GameSceneManager<'a>>,
     pub _game_ui_manager: Box<GameUIManager<'a>>,
@@ -37,20 +34,13 @@ pub struct Application<'a> {
 
 impl<'a> ApplicationBase<'a> for Application<'a> {
     fn initialize_application(&'a mut self, engine_core: &EngineCore<'a>, window_size: &Vector2<i32>) {
-        // engine managers
-        self._engine_core = engine_core;
-        self._effect_manager = engine_core.get_effect_manager();
-        self._renderer_data = engine_core.get_renderer_context().get_renderer_data();
-
-        // initialize project managers
-        let application = ptr_as_ref(self);
         self.get_game_resources_mut().initialize_game_resources();
         self.get_game_resources_mut().load_game_resources();
-        self.get_game_client_mut().initialize_game_client(engine_core, application);
-        self.get_game_controller_mut().initialize_game_controller(application);
-        self.get_game_ui_manager_mut().initialize_game_ui_manager(engine_core, application);
-        self.get_game_scene_manager_mut().initialize_game_scene_manager(application, engine_core, window_size);
-        self.get_editor_ui_manager_mut().initialize_editor_ui_manager(engine_core, application);
+        self.get_game_client_mut().initialize_game_client();
+        self.get_game_controller_mut().initialize_game_controller();
+        self.get_game_ui_manager_mut().initialize_game_ui_manager();
+        self.get_game_scene_manager_mut().initialize_game_scene_manager(engine_core, window_size);
+        self.get_editor_ui_manager_mut().initialize_editor_ui_manager();
 
         // start game
         self.get_game_ui_manager_mut().build_game_ui(window_size);
@@ -79,7 +69,7 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
     }
 
     fn update_event(&mut self) {
-        let engine_core = ptr_as_ref(self._engine_core);
+        let engine_core = rust_engine_3d::core::engine_service_locator::get_engine_core();
         let time_data = &engine_core._time_data;
         let mouse_move_data = &engine_core._mouse_move_data;
         let mouse_input_data = &engine_core._mouse_input_data;
@@ -194,8 +184,7 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
     }
 
     fn update_application(&mut self, delta_time: f64) {
-        let engine_core = ptr_as_ref(self._engine_core);
-        let font_manager = engine_core.get_font_manager_mut();
+        let font_manager = rust_engine_3d::core::engine_service_locator::get_font_manager_mut();
         font_manager.clear_logs();
 
         // update managers
@@ -215,10 +204,10 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
 
 impl<'a> Application<'a> {
     pub fn get_engine_core(&self) -> &EngineCore<'a> {
-        ptr_as_ref(self._engine_core)
+        rust_engine_3d::core::engine_service_locator::get_engine_core()
     }
-    pub fn get_engine_core_mut(&self) -> &mut EngineCore<'a> {
-        ptr_as_mut(self._engine_core)
+    pub fn get_engine_core_mut(&self) -> &'a mut EngineCore<'a> {
+        rust_engine_3d::core::engine_service_locator::get_engine_core_mut()
     }
     pub fn get_game_resources(&self) -> &GameResources<'a> {
         self._game_resources.as_ref()
@@ -227,10 +216,10 @@ impl<'a> Application<'a> {
         self._game_resources.as_mut()
     }
     pub fn get_effect_manager(&self) -> &EffectManager<'a> {
-        ptr_as_ref(self._effect_manager)
+        rust_engine_3d::core::engine_service_locator::get_effect_manager()
     }
     pub fn get_effect_manager_mut(&self) -> &mut EffectManager<'a> {
-        ptr_as_mut(self._effect_manager)
+        rust_engine_3d::core::engine_service_locator::get_effect_manager_mut()
     }
     pub fn get_game_scene_manager(&self) -> &GameSceneManager<'a> {
         self._game_scene_manager.as_ref()
@@ -239,10 +228,10 @@ impl<'a> Application<'a> {
         self._game_scene_manager.as_mut()
     }
     pub fn get_renderer_data(&self) -> &RendererData<'a> {
-        ptr_as_ref(self._renderer_data)
+        rust_engine_3d::core::engine_service_locator::get_renderer_data()
     }
     pub fn get_renderer_data_mut(&self) -> &mut RendererData<'a> {
-        ptr_as_mut(self._renderer_data)
+        rust_engine_3d::core::engine_service_locator::get_renderer_data_mut()
     }
     pub fn get_editor_ui_manager(&self) -> &EditorUIManager<'a> {
         ptr_as_ref(self._editor_ui_manager.as_ref())
@@ -372,9 +361,6 @@ pub fn run_application() {
     let game_client = GameClient::create_game_client();
 
     let application = Application {
-        _engine_core: std::ptr::null(),
-        _renderer_data: std::ptr::null(),
-        _effect_manager: std::ptr::null(),
         _game_resources: game_resources,
         _game_scene_manager: game_scene_manager,
         _game_ui_manager: game_ui_manager,

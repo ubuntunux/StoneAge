@@ -30,9 +30,6 @@ use std::ffi::c_void;
 pub type QuestItem<'a> = RcRefCell<dyn QuestItemBase<'a> + 'a>;
 
 pub struct EditorUIManager<'a> {
-    pub _ui_manager: *const UIManager<'a>,
-    pub _game_client: *const GameClient<'a>,
-    pub _root_widget: *const WidgetDefault<'a>,
     pub _editor_ui_layout: *const WidgetDefault<'a>,
     pub _actor_positions: Vec<*const WidgetDefault<'a>>,
     pub _window_size: Vector2<i32>,
@@ -40,9 +37,6 @@ pub struct EditorUIManager<'a> {
 }
 
 pub struct GameUIManager<'a> {
-    pub _ui_manager: *const UIManager<'a>,
-    pub _game_client: *const GameClient<'a>,
-    pub _root_widget: *const WidgetDefault<'a>,
     pub _game_ui_layout: *const WidgetDefault<'a>,
     pub _game_image: Option<Box<ImageLayout<'a>>>,
     pub _key_binding_widget_manager: Option<Box<KeyBindingWidgetManager<'a>>>,
@@ -64,9 +58,6 @@ pub struct GameUIManager<'a> {
 impl<'a> EditorUIManager<'a> {
     pub fn create_editor_ui_manager() -> Box<EditorUIManager<'a>> {
         Box::new(EditorUIManager {
-            _ui_manager: std::ptr::null(),
-            _game_client: std::ptr::null(),
-            _root_widget: std::ptr::null(),
             _editor_ui_layout: std::ptr::null(),
             _actor_positions: Vec::new(),
             _window_size: Vector2::new(1024, 768),
@@ -74,11 +65,8 @@ impl<'a> EditorUIManager<'a> {
         })
     }
 
-    pub fn initialize_editor_ui_manager(&mut self, engine_core: &EngineCore<'a>, application: &Application<'a>) {
+    pub fn initialize_editor_ui_manager(&mut self) {
         log::info!("initialize_editor_ui_manager");
-        self._game_client = application.get_game_client();
-        self._ui_manager = engine_core.get_ui_manager();
-        self._root_widget = ptr_as_ref(self._ui_manager).get_root_ptr();
         self._actor_positions.clear();
     }
 
@@ -105,7 +93,8 @@ impl<'a> EditorUIManager<'a> {
         ui_component.set_size_hint_x(Some(1.0));
         ui_component.set_size_hint_y(Some(1.0));
         ui_component.set_renderable(false);
-        ptr_as_mut(self._root_widget).add_widget(&editor_ui_layout);
+        let root_widget = rust_engine_3d::core::engine_service_locator::get_ui_manager().get_root_ptr();
+        ptr_as_mut(root_widget).add_widget(&editor_ui_layout);
         self._editor_ui_layout = editor_ui_layout.as_ref();
     }
 
@@ -115,9 +104,9 @@ impl<'a> EditorUIManager<'a> {
     }
 
     pub fn update_editor_ui(&mut self, _delta_time: f64) {
-        let game_client = ptr_as_ref(self._game_client);
+        let game_client = crate::game_module::game_service_locator::get_game_client();
         let game_scene_manager = game_client.get_game_scene_manager();
-        let ui_manager = ptr_as_ref(self._ui_manager);
+        let ui_manager = rust_engine_3d::core::engine_service_locator::get_ui_manager();
         let main_camera = game_scene_manager.get_scene_manager().get_main_camera();
         let characters = game_scene_manager.get_character_manager().get_characters();
 
@@ -159,9 +148,6 @@ impl<'a> EditorUIManager<'a> {
 impl<'a> GameUIManager<'a> {
     pub fn create_game_ui_manager() -> Box<GameUIManager<'a>> {
         Box::new(GameUIManager {
-            _ui_manager: std::ptr::null(),
-            _game_client: std::ptr::null(),
-            _root_widget: std::ptr::null(),
             _game_ui_layout: std::ptr::null(),
             _game_image: None,
             _key_binding_widget_manager: None,
@@ -181,37 +167,34 @@ impl<'a> GameUIManager<'a> {
         })
     }
 
-    pub fn initialize_game_ui_manager(&mut self, engine_core: &EngineCore<'a>, application: &Application<'a>) {
+    pub fn initialize_game_ui_manager(&mut self) {
         log::info!("initialize_game_ui_manager");
-        self._game_client = application.get_game_client();
-        self._ui_manager = engine_core.get_ui_manager();
-        self._root_widget = ptr_as_ref(self._ui_manager).get_root_ptr();
     }
 
     pub fn destroy_game_ui_manager(&mut self) {}
 
     pub fn get_game_client(&self) -> &GameClient<'a> {
-        ptr_as_ref(self._game_client)
+        crate::game_module::game_service_locator::get_game_client()
     }
 
     pub fn get_game_client_mut(&self) -> &mut GameClient<'a> {
-        ptr_as_mut(self._game_client)
+        crate::game_module::game_service_locator::get_game_client_mut()
     }
 
     pub fn get_ui_manager(&self) -> &UIManager<'a> {
-        ptr_as_ref(self._ui_manager)
+        rust_engine_3d::core::engine_service_locator::get_ui_manager()
     }
 
     pub fn get_ui_manager_mut(&self) -> &mut UIManager<'a> {
-        ptr_as_mut(self._ui_manager)
+        rust_engine_3d::core::engine_service_locator::get_ui_manager_mut()
     }
 
     pub fn get_root_widget(&self) -> &WidgetDefault<'a> {
-        ptr_as_ref(self._root_widget)
+        ptr_as_ref(rust_engine_3d::core::engine_service_locator::get_ui_manager().get_root_ptr())
     }
 
     pub fn get_root_widget_mut(&self) -> &mut WidgetDefault<'a> {
-        ptr_as_mut(self._root_widget)
+        ptr_as_mut(rust_engine_3d::core::engine_service_locator::get_ui_manager().get_root_ptr())
     }
 
     pub fn get_item_bar_widget(&self) -> &ItemBarWidget<'a> {
@@ -220,10 +203,10 @@ impl<'a> GameUIManager<'a> {
 
     pub fn build_game_ui(&mut self, window_size: &Vector2<i32>) {
         log::info!("build_game_ui");
-        let game_client = ptr_as_ref(self._game_client);
-        let game_scene_manager = ptr_as_ref(game_client._game_scene_manager);
+        let game_client = crate::game_module::game_service_locator::get_game_client();
+        let game_scene_manager = game_client.get_game_scene_manager();
         let item_manager = game_scene_manager.get_item_manager();
-        let root_widget = ptr_as_mut(self._root_widget);
+        let root_widget = ptr_as_mut(rust_engine_3d::core::engine_service_locator::get_ui_manager().get_root_ptr());
 
         // create layout
         let game_ui_layout = UIManager::create_widget("game ui layout", UIWidgetTypes::Default);
@@ -518,12 +501,12 @@ impl<'a> GameUIManager<'a> {
     }
 
     pub fn update_game_ui(&mut self, delta_time: f64) {
-        let game_client = ptr_as_ref(self._game_client);
+        let game_client = crate::game_module::game_service_locator::get_game_client();
         let game_scene_manager = game_client.get_game_scene_manager();
-        let ui_manager = ptr_as_ref(self._ui_manager);
-        let engine_core = ptr_as_ref(game_client._engine_core);
+        let ui_manager = rust_engine_3d::core::engine_service_locator::get_ui_manager();
+        let engine_core = rust_engine_3d::core::engine_service_locator::get_engine_core();
         let mouse_pos = &engine_core._mouse_move_data._mouse_pos;
-        let game_controller = game_client.get_game_controller();
+        let game_controller = crate::game_module::game_service_locator::get_game_controller();
 
         // changed window size
         if self._need_to_refresh || self._window_size != ui_manager._window_size {

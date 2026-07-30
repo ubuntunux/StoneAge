@@ -1,4 +1,3 @@
-use crate::application::application::Application;
 use crate::game_module::actors::character::character::Character;
 use crate::game_module::actors::character::controller::CharacterControllerSaveData;
 
@@ -18,7 +17,6 @@ use crate::game_module::widgets::text_box_widget::TextBoxContent;
 use crate::game_module::widgets::text_box_widget::TextBoxLayerType;
 use nalgebra::Vector3;
 
-use rust_engine_3d::core::engine_core::EngineCore;
 use rust_engine_3d::scene::render_object::{RenderObjectCreateInfo, RenderObjectSaveData, SceneObjectType};
 use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::math;
@@ -67,10 +65,6 @@ pub struct CharacterSaveData {
 }
 
 pub struct CharacterManager<'a> {
-    pub _game_client: *const GameClient<'a>,
-    pub _game_scene_manager: *const GameSceneManager<'a>,
-    pub _scene_manager: *const SceneManager<'a>,
-    pub _game_ui_manager: *const GameUIManager<'a>,
     pub _player: Option<RcRefCell<Character<'a>>>,
     pub _target_character: Option<RcRefCell<Character<'a>>>,
     pub _target_focus_time: f64,
@@ -81,10 +75,6 @@ pub struct CharacterManager<'a> {
 impl<'a> CharacterManager<'a> {
     pub fn create_character_manager() -> Box<CharacterManager<'a>> {
         Box::new(CharacterManager {
-            _game_client: std::ptr::null(),
-            _game_scene_manager: std::ptr::null(),
-            _scene_manager: std::ptr::null(),
-            _game_ui_manager: std::ptr::null(),
             _player: None,
             _target_character: None,
             _target_focus_time: 0.0,
@@ -93,32 +83,28 @@ impl<'a> CharacterManager<'a> {
         })
     }
 
-    pub fn initialize_character_manager(&mut self, engine_core: &EngineCore<'a>, application: &Application<'a>) {
+    pub fn initialize_character_manager(&mut self) {
         log::info!("initialize_character_manager");
-        self._game_client = application.get_game_client();
-        self._game_scene_manager = application.get_game_scene_manager();
-        self._game_ui_manager = application.get_game_ui_manager();
-        self._scene_manager = engine_core.get_scene_manager();
     }
     pub fn destroy_character_manager(&mut self) {}
     pub fn get_game_client(&self) -> &GameClient<'a> {
-        ptr_as_ref(self._game_client)
+        crate::game_module::game_service_locator::get_game_client()
     }
     pub fn get_game_client_mut(&self) -> &mut GameClient<'a> {
-        ptr_as_mut(self._game_client)
+        crate::game_module::game_service_locator::get_game_client_mut()
     }
     pub fn get_game_scene_manager(&self) -> &GameSceneManager<'a> {
-        ptr_as_ref(self._game_scene_manager)
+        crate::game_module::game_service_locator::get_game_scene_manager()
     }
     pub fn get_game_scene_manager_mut(&self) -> &mut GameSceneManager<'a> {
-        ptr_as_mut(self._game_scene_manager)
+        crate::game_module::game_service_locator::get_game_scene_manager_mut()
     }
 
     pub fn get_scene_manager(&self) -> &SceneManager<'a> {
-        ptr_as_ref(self._scene_manager)
+        rust_engine_3d::core::engine_service_locator::get_scene_manager()
     }
     pub fn get_scene_manager_mut(&self) -> &mut SceneManager<'a> {
-        ptr_as_mut(self._scene_manager)
+        rust_engine_3d::core::engine_service_locator::get_scene_manager_mut()
     }
     pub fn generate_id(&self) -> CharacterID {
         Uuid::new_v4()
@@ -167,7 +153,7 @@ impl<'a> CharacterManager<'a> {
             _scale: character_create_info._scale,
         };
 
-        let item_manager: *const ItemManager<'a> = ptr_as_ref(self._game_scene_manager)._item_manager.as_ref();
+        let item_manager: *const ItemManager<'a> = self.get_game_scene_manager()._item_manager.as_ref();
         let render_object_data = self
             .get_scene_manager_mut()
             .add_skeletal_render_object(character_name.as_str(), &render_object_create_info);
@@ -361,7 +347,7 @@ impl<'a> CharacterManager<'a> {
             return;
         }
 
-        let game_ui_manager = ptr_as_mut(self._game_ui_manager);
+        let game_ui_manager = crate::game_module::game_service_locator::get_game_ui_manager_mut();
         let player = ptr_as_mut(self._player.as_ref().unwrap().as_ptr());
         let mut dead_characters: Vec<RcRefCell<Character>> = Vec::new();
         let mut register_target_character: Option<RcRefCell<Character<'a>>> = None;

@@ -252,37 +252,32 @@ impl<'a> Prop<'a> {
 impl<'a> PropManager<'a> {
     pub fn create_prop_manager() -> Box<PropManager<'a>> {
         Box::new(PropManager {
-            _game_client: std::ptr::null(),
-            _game_scene_manager: std::ptr::null(),
-            _scene_manager: std::ptr::null(),
             _props: HashMap::new(),
             _prop_name_map: HashMap::new(),
+            _marker: std::marker::PhantomData,
         })
     }
 
-    pub fn initialize_prop_manager(&mut self, engine_core: &EngineCore<'a>, application: &Application<'a>) {
+    pub fn initialize_prop_manager(&mut self) {
         log::info!("initialize_prop_manager");
-        self._game_client = application.get_game_client();
-        self._game_scene_manager = application.get_game_scene_manager();
-        self._scene_manager = engine_core.get_scene_manager();
     }
     pub fn destroy_prop_manager(&mut self) {}
 
     pub fn get_game_client(&self) -> &GameClient<'a> {
-        ptr_as_ref(self._game_client)
+        crate::game_module::game_service_locator::get_game_client()
     }
     pub fn get_game_client_mut(&self) -> &mut GameClient<'a> {
-        ptr_as_mut(self._game_client)
+        crate::game_module::game_service_locator::get_game_client_mut()
     }
     pub fn get_game_scene_manager(&self) -> &GameSceneManager<'a> {
-        ptr_as_ref(self._game_scene_manager)
+        crate::game_module::game_service_locator::get_game_scene_manager()
     }
     pub fn get_game_scene_manager_mut(&self) -> &mut GameSceneManager<'a> {
-        ptr_as_mut(self._game_scene_manager)
+        crate::game_module::game_service_locator::get_game_scene_manager_mut()
     }
 
     pub fn get_scene_manager_mut(&self) -> &mut SceneManager<'a> {
-        ptr_as_mut(self._scene_manager)
+        rust_engine_3d::core::engine_service_locator::get_scene_manager_mut()
     }
     pub fn generate_id(&self) -> Uuid {
         Uuid::new_v4()

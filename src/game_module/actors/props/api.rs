@@ -1,9 +1,6 @@
 use crate::game_module::actors::items::ItemID;
-use crate::game_module::game_client::GameClient;
-use crate::game_module::game_scene_manager::GameSceneManager;
 use nalgebra::Vector3;
 use rust_engine_3d::scene::render_object::RenderObjectData;
-use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::system::RcRefCell;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -83,9 +80,7 @@ pub struct Prop<'a> {
 }
 
 pub struct PropManager<'a> {
-    pub _game_client: *const GameClient<'a>,
-    pub _game_scene_manager: *const GameSceneManager<'a>,
-    pub _scene_manager: *const SceneManager<'a>,
     pub _props: PropMap<'a>,
     pub _prop_name_map: PropNameMap<'a>,
+    pub _marker: std::marker::PhantomData<&'a ()>,
 }

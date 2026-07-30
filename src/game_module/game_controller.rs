@@ -44,8 +44,6 @@ pub enum KeyBindingType {
 }
 
 pub struct GameController<'a> {
-    pub _game_client: *const GameClient<'a>,
-    pub _game_ui_manager: *const GameUIManager<'a>,
     pub _camera_distance: f32,
     pub _camera_goal_distance: f32,
     pub _camera_goal_pitch: f32,
@@ -55,13 +53,12 @@ pub struct GameController<'a> {
     pub _camera_position: Vector3<f32>,
     pub _camera_blend_ratio: f32,
     pub _is_game_camera_auto_blend_mode: bool,
+    pub _marker: std::marker::PhantomData<&'a ()>,
 }
 
 impl<'a> GameController<'a> {
     pub fn create_game_controller() -> Box<GameController<'a>> {
         Box::new(GameController {
-            _game_client: std::ptr::null(),
-            _game_ui_manager: std::ptr::null(),
             _camera_goal_distance: CAMERA_DISTANCE_MAX,
             _camera_distance: CAMERA_DISTANCE_MAX,
             _camera_goal_pitch: 0.0,
@@ -71,25 +68,24 @@ impl<'a> GameController<'a> {
             _camera_position: Vector3::zeros(),
             _camera_blend_ratio: 0.0,
             _is_game_camera_auto_blend_mode: false,
+            _marker: std::marker::PhantomData,
         })
     }
 
-    pub fn initialize_game_controller(&mut self, application: &Application<'a>) {
+    pub fn initialize_game_controller(&mut self) {
         log::info!("initialize_game_controller");
-        self._game_client = application.get_game_client();
-        self._game_ui_manager = application.get_game_ui_manager();
     }
     pub fn get_game_client(&self) -> &GameClient<'a> {
-        ptr_as_ref(self._game_client)
+        crate::game_module::game_service_locator::get_game_client()
     }
     pub fn get_game_client_mut(&self) -> &mut GameClient<'a> {
-        ptr_as_mut(self._game_client)
+        crate::game_module::game_service_locator::get_game_client_mut()
     }
     pub fn get_game_ui_manager(&self) -> &GameUIManager<'a> {
-        ptr_as_ref(self._game_ui_manager)
+        crate::game_module::game_service_locator::get_game_ui_manager()
     }
     pub fn get_game_ui_manager_mut(&self) -> &mut GameUIManager<'a> {
-        ptr_as_mut(self._game_ui_manager)
+        crate::game_module::game_service_locator::get_game_ui_manager_mut()
     }
     pub fn get_main_camera(&self) -> &CameraObjectData {
         self.get_game_client().get_game_scene_manager().get_scene_manager().get_main_camera()

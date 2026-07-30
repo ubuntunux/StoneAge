@@ -112,10 +112,6 @@ pub struct GameSceneSaveData {
 }
 
 pub struct GameSceneManager<'a> {
-    pub _game_client: *const GameClient<'a>,
-    pub _effect_manager: *const EffectManager<'a>,
-    pub _scene_manager: *const SceneManager<'a>,
-    pub _game_ui_manager: *const GameUIManager<'a>,
     pub _character_manager: Box<CharacterManager<'a>>,
     pub _item_manager: Box<ItemManager<'a>>,
     pub _prop_manager: Box<PropManager<'a>>,
@@ -141,23 +137,23 @@ pub struct GameSceneManager<'a> {
 
 impl<'a> GameSceneManager<'a> {
     pub fn get_scene_manager(&self) -> &SceneManager<'a> {
-        ptr_as_ref(self._scene_manager)
+        rust_engine_3d::core::engine_service_locator::get_scene_manager()
     }
 
     pub fn get_scene_manager_ptr(&self) -> *const SceneManager<'a> {
-        self._scene_manager
+        rust_engine_3d::core::engine_service_locator::get_scene_manager() as *const SceneManager<'a>
     }
 
     pub fn get_scene_manager_mut(&self) -> &mut SceneManager<'a> {
-        ptr_as_mut(self._scene_manager)
+        rust_engine_3d::core::engine_service_locator::get_scene_manager_mut()
     }
 
     pub fn get_game_ui_manager(&self) -> &GameUIManager<'a> {
-        ptr_as_ref(self._game_ui_manager)
+        crate::game_module::game_service_locator::get_game_ui_manager()
     }
 
     pub fn get_game_ui_manager_mut(&self) -> &mut GameUIManager<'a> {
-        ptr_as_mut(self._game_ui_manager)
+        crate::game_module::game_service_locator::get_game_ui_manager_mut()
     }
 
     pub fn get_character_manager(&self) -> &CharacterManager<'a> {
@@ -198,10 +194,6 @@ impl<'a> GameSceneManager<'a> {
 
     pub fn create_game_scene_manager() -> Box<GameSceneManager<'a>> {
         Box::new(GameSceneManager {
-            _game_client: std::ptr::null(),
-            _effect_manager: std::ptr::null(),
-            _scene_manager: std::ptr::null(),
-            _game_ui_manager: std::ptr::null(),
             _current_game_scene_data_name: Default::default(),
             _current_game_scene_data: None,
             _character_manager: CharacterManager::create_character_manager(),
@@ -228,32 +220,27 @@ impl<'a> GameSceneManager<'a> {
 
     pub fn initialize_game_scene_manager(
         &mut self,
-        application: &Application<'a>,
         engine_core: &EngineCore<'a>,
         window_size: &Vector2<i32>,
     ) {
         log::info!("initialize_game_scene_manager");
-        self._game_client = application.get_game_client();
-        self._scene_manager = engine_core.get_scene_manager();
-        self._effect_manager = engine_core.get_effect_manager();
-        self._game_ui_manager = application.get_game_ui_manager();
         engine_core.get_scene_manager_mut().initialize_scene_manager(
             engine_core.get_renderer_context(),
-            engine_core.get_effect_manager(),
+            engine_core._effect_manager.as_ref(),
             window_size,
         );
 
-        self._character_manager.initialize_character_manager(engine_core, application);
-        self._item_manager.initialize_item_manager(engine_core, application);
-        self._prop_manager.initialize_prop_manager(engine_core, application);
+        self._character_manager.initialize_character_manager();
+        self._item_manager.initialize_item_manager();
+        self._prop_manager.initialize_prop_manager();
     }
 
     pub fn get_game_client(&self) -> &GameClient<'a> {
-        ptr_as_ref(self._game_client)
+        crate::game_module::game_service_locator::get_game_client()
     }
 
     pub fn get_game_client_mut(&self) -> &mut GameClient<'a> {
-        ptr_as_mut(self._game_client)
+        crate::game_module::game_service_locator::get_game_client_mut()
     }
 
     pub fn play_bgm(&mut self, audio_name: &str, volume: Option<f32>) {
@@ -485,7 +472,7 @@ impl<'a> GameSceneManager<'a> {
         self._current_game_scene_data = Some(game_scene_data.clone());
         self._current_game_scene_data_name = String::from(game_scene_data_name);
         if let Some(game_scene_data) = self._current_game_scene_data.as_ref() {
-            let scene_manager = ptr_as_mut(self._scene_manager);
+            let scene_manager = self.get_scene_manager_mut();
             scene_manager.create_scene_data(&game_scene_data.borrow()._scene);
         }
 
@@ -700,7 +687,7 @@ impl<'a> GameSceneManager<'a> {
         match self._game_scene_state {
             GameSceneState::Loading => {
                 if self.get_scene_manager().is_load_complete() {
-                    let game_save_data = ptr_as_ref(self._game_client).get_game_save_data().borrow();
+                    let game_save_data = crate::game_module::game_service_locator::get_game_client().get_game_save_data().borrow();
                     if let Some(game_scene_save_data) =
                         game_save_data._game_scenes.get(&self._current_game_scene_data_name).as_ref()
                     {

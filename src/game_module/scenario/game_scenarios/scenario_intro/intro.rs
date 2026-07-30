@@ -451,7 +451,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
 
     fn update_game_scenario(&mut self, _any_key_hold: bool, any_key_pressed: bool, delta_time: f64) {
         let game_scene_manager = ptr_as_mut(self._game_scene_manager);
-        let game_ui_manager = ptr_as_mut(game_scene_manager._game_ui_manager);
+        let game_ui_manager = crate::game_module::game_service_locator::get_game_ui_manager_mut();
 
         if TIME_OF_MORNING <= game_scene_manager.get_time_of_day() {
             game_scene_manager.set_time_of_day_speed(1.0);

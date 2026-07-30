@@ -1,4 +1,3 @@
-use crate::application::application::Application;
 use crate::game_module::actors::character::Character;
 use crate::game_module::actors::items::api::{
     Item, ItemCreateInfo, ItemData, ItemDataType, ItemID, ItemManager, ItemProperties, ItemSaveData,
@@ -11,7 +10,6 @@ use crate::game_module::game_constants::{
 use crate::game_module::game_scene_manager::{GameSceneManager, ItemCreateInfoMap, ItemSaveDataMap};
 use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
-use rust_engine_3d::core::engine_core::EngineCore;
 use rust_engine_3d::scene::collision::CollisionType;
 use rust_engine_3d::scene::height_map::HeightMapData;
 use rust_engine_3d::scene::render_object::{RenderObjectCreateInfo, RenderObjectData};
@@ -190,37 +188,32 @@ impl<'a> Item<'a> {
 impl<'a> ItemManager<'a> {
     pub fn create_item_manager() -> Box<ItemManager<'a>> {
         Box::new(ItemManager {
-            _game_client: std::ptr::null(),
-            _game_scene_manager: std::ptr::null(),
-            _scene_manager: std::ptr::null(),
             _items: HashMap::new(),
             _item_name_map: HashMap::new(),
+            _marker: std::marker::PhantomData,
         })
     }
 
-    pub fn initialize_item_manager(&mut self, engine_core: &EngineCore<'a>, application: &Application<'a>) {
+    pub fn initialize_item_manager(&mut self) {
         log::info!("initialize_item_manager");
-        self._scene_manager = engine_core.get_scene_manager();
-        self._game_scene_manager = application.get_game_scene_manager();
-        self._game_client = application.get_game_client();
     }
     pub fn destroy_item_manager(&mut self) {}
 
     pub fn get_game_client(&self) -> &GameClient<'a> {
-        ptr_as_ref(self._game_client)
+        crate::game_module::game_service_locator::get_game_client()
     }
     pub fn get_game_scene_manager(&self) -> &GameSceneManager<'a> {
-        ptr_as_ref(self._game_scene_manager)
+        crate::game_module::game_service_locator::get_game_scene_manager()
     }
     pub fn get_game_scene_manager_mut(&self) -> &mut GameSceneManager<'a> {
-        ptr_as_mut(self._game_scene_manager)
+        crate::game_module::game_service_locator::get_game_scene_manager_mut()
     }
 
     pub fn get_scene_manager(&self) -> &SceneManager<'a> {
-        ptr_as_ref(self._scene_manager)
+        rust_engine_3d::core::engine_service_locator::get_scene_manager()
     }
     pub fn get_scene_manager_mut(&self) -> &mut SceneManager<'a> {
-        ptr_as_mut(self._scene_manager)
+        rust_engine_3d::core::engine_service_locator::get_scene_manager_mut()
     }
     pub fn generate_id(&self) -> Uuid {
         Uuid::new_v4()
@@ -440,8 +433,8 @@ impl<'a> ItemManager<'a> {
     }
 
     pub fn update_item_manager(&mut self, delta_time: f64) {
-        let game_scene_manager = ptr_as_ref(self._game_scene_manager);
-        let scene_manager = ptr_as_ref(self._scene_manager);
+        let game_scene_manager = self.get_game_scene_manager();
+        let scene_manager = self.get_scene_manager();
 
         if !game_scene_manager.get_character_manager().is_valid_player() {
             return;

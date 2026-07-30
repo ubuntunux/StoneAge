@@ -36,51 +36,33 @@ pub enum GamePhase {
 }
 
 pub struct GameClient<'a> {
-    pub _engine_core: *const EngineCore<'a>,
-    pub _application: *const Application<'a>,
-    pub _character_manager: *const CharacterManager<'a>,
-    pub _game_scene_manager: *const GameSceneManager<'a>,
-    pub _game_controller: *const GameController<'a>,
-    pub _game_ui_manager: *const GameUIManager<'a>,
-    pub _editor_ui_manager: *const EditorUIManager<'a>,
     pub _game_phase: GamePhase,
     pub _next_game_phase: GamePhase,
     pub _game_save_data_name: String,
     pub _game_save_data: BoxRefCell<GameSaveData>,
     pub _request_load_game_save_data: bool,
     pub _request_new_game: bool,
+    pub _marker: std::marker::PhantomData<&'a ()>,
 }
 
 impl<'a> GameClient<'a> {
     pub fn create_game_client() -> Box<GameClient<'a>> {
         Box::new(GameClient {
-            _engine_core: std::ptr::null(),
-            _application: std::ptr::null(),
-            _character_manager: std::ptr::null(),
-            _game_scene_manager: std::ptr::null(),
-            _game_controller: std::ptr::null(),
-            _game_ui_manager: std::ptr::null(),
-            _editor_ui_manager: std::ptr::null(),
             _game_phase: GamePhase::None,
             _next_game_phase: GamePhase::Start,
             _game_save_data_name: DEFAULT_GAME_SAVE_DATA.to_string(),
             _game_save_data: newBoxRefCell(GameSaveData::default()),
             _request_load_game_save_data: true,
             _request_new_game: false,
+            _marker: std::marker::PhantomData,
         })
     }
 
-    pub fn initialize_game_client(&mut self, engine_core: *const EngineCore<'a>, application: &Application<'a>) {
+    pub fn initialize_game_client(&mut self) {
         log::info!("initialize_game_client");
-        self._engine_core = engine_core;
-        self._application = application;
-        self._game_controller = application.get_game_controller();
-        self._game_scene_manager = application.get_game_scene_manager();
-        self._game_ui_manager = application.get_game_ui_manager();
-        self._editor_ui_manager = application.get_editor_ui_manager();
     }
     pub fn destroy_game_client(&mut self) {
-        ptr_as_mut(self._game_ui_manager).destroy_game_ui_manager();
+        self.get_game_ui_manager_mut().destroy_game_ui_manager();
     }
     pub fn is_game_over(&self) -> bool {
         self.is_game_phase(GamePhase::ExitGame)
@@ -89,41 +71,41 @@ impl<'a> GameClient<'a> {
         self.set_next_game_phase(GamePhase::ExitGame);
     }
     pub fn get_engine_core(&self) -> &EngineCore<'a> {
-        ptr_as_ref(self._engine_core)
+        rust_engine_3d::core::engine_service_locator::get_engine_core()
     }
-    pub fn get_engine_core_mut(&self) -> &EngineCore<'a> {
-        ptr_as_mut(self._engine_core)
+    pub fn get_engine_core_mut(&self) -> &'a mut EngineCore<'a> {
+        rust_engine_3d::core::engine_service_locator::get_engine_core_mut()
     }
     pub fn get_application(&self) -> &Application<'a> {
-        ptr_as_ref(self._application)
+        crate::game_module::game_service_locator::get_application()
     }
     pub fn get_application_mut(&self) -> &mut Application<'a> {
-        ptr_as_mut(self._application)
+        crate::game_module::game_service_locator::get_application_mut()
     }
     pub fn get_game_scene_manager(&self) -> &GameSceneManager<'a> {
-        ptr_as_ref(self._game_scene_manager)
+        crate::game_module::game_service_locator::get_game_scene_manager()
     }
     pub fn get_game_scene_manager_mut(&self) -> &mut GameSceneManager<'a> {
-        ptr_as_mut(self._game_scene_manager)
+        crate::game_module::game_service_locator::get_game_scene_manager_mut()
     }
 
     pub fn get_game_controller(&self) -> &GameController<'a> {
-        ptr_as_ref(self._game_controller)
+        crate::game_module::game_service_locator::get_game_controller()
     }
     pub fn get_game_controller_mut(&self) -> &mut GameController<'a> {
-        ptr_as_mut(self._game_controller)
+        crate::game_module::game_service_locator::get_game_controller_mut()
     }
     pub fn get_game_ui_manager(&self) -> &GameUIManager<'a> {
-        ptr_as_ref(self._game_ui_manager)
+        crate::game_module::game_service_locator::get_game_ui_manager()
     }
     pub fn get_game_ui_manager_mut(&self) -> &mut GameUIManager<'a> {
-        ptr_as_mut(self._game_ui_manager)
+        crate::game_module::game_service_locator::get_game_ui_manager_mut()
     }
     pub fn get_editor_ui_manager(&self) -> &EditorUIManager<'a> {
-        ptr_as_ref(self._editor_ui_manager)
+        crate::game_module::game_service_locator::get_editor_ui_manager()
     }
     pub fn get_editor_ui_manager_mut(&self) -> &mut EditorUIManager<'a> {
-        ptr_as_mut(self._editor_ui_manager)
+        crate::game_module::game_service_locator::get_editor_ui_manager_mut()
     }
     pub fn set_game_mode(&mut self, is_game_mode: bool) {
         self.get_editor_ui_manager_mut().show_editor_ui(!is_game_mode);
@@ -182,12 +164,12 @@ impl<'a> GameClient<'a> {
         }
     }
     pub fn update_game_mode(&mut self, delta_time: f64) {
-        let engine_core = ptr_as_ref(self._engine_core);
-        let game_scene_manager = ptr_as_mut(self._game_scene_manager);
-        let scene_manager = ptr_as_mut(game_scene_manager._scene_manager);
-        let character_manager = ptr_as_mut(game_scene_manager._character_manager.as_ref());
-        let game_ui_manager = ptr_as_mut(self._game_ui_manager);
-        let game_controller = ptr_as_mut(self._game_controller);
+        let engine_core = rust_engine_3d::core::engine_service_locator::get_engine_core();
+        let game_scene_manager = crate::game_module::game_service_locator::get_game_scene_manager_mut();
+        let scene_manager = rust_engine_3d::core::engine_service_locator::get_scene_manager_mut();
+        let character_manager = crate::game_module::game_service_locator::get_character_manager_mut();
+        let game_ui_manager = crate::game_module::game_service_locator::get_game_ui_manager_mut();
+        let game_controller = crate::game_module::game_service_locator::get_game_controller_mut();
 
         let time_data = &engine_core._time_data;
         let mouse_move_data = &engine_core._mouse_move_data;
