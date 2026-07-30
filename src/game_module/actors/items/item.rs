@@ -163,20 +163,19 @@ impl<'a> Item<'a> {
     }
 
     pub fn update_item_attach_transform(&mut self) {
-        let mut render_object_mut = self._render_object.borrow_mut();
-        if render_object_mut.has_animation() {
-            let skeleton_transform = render_object_mut._mesh_data.borrow()._skeleton_data_list[0]._transform;
+        let render_object_ref = self._render_object.borrow();
+        let transform = render_object_ref.get_transform_object_data_mut();
+        if render_object_ref.has_animation() {
+            let skeleton_transform = render_object_ref._mesh_data.borrow()._skeleton_data_list[0]._transform;
             let final_transform = self._attach_socket.as_ref().unwrap().borrow()._transform * skeleton_transform;
-            render_object_mut._transform_object.set_transform(&final_transform);
+            transform.set_transform(&final_transform);
         } else {
-            render_object_mut
-                ._transform_object
-                .set_transform(&self._attach_socket.as_ref().unwrap().borrow()._transform);
+            transform.set_transform(&self._attach_socket.as_ref().unwrap().borrow()._transform);
         }
     }
 
     pub fn update_item_transform(&mut self) {
-        self._render_object.borrow_mut()._transform_object.set_position_rotation_scale(
+        self._render_object.borrow().get_transform_object_data_mut().set_position_rotation_scale(
             &self._item_properties._position,
             &self._item_properties._rotation,
             &self._item_properties._scale,

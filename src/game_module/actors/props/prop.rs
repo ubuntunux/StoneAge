@@ -193,8 +193,8 @@ impl<'a> Prop<'a> {
             {
                 match self._prop_data.borrow()._prop_type {
                     PropDataType::Harvestable => {
-                        position = item_render_object.borrow()._transform_object._position;
-                        let mut to_item = item_render_object.borrow()._transform_object._position - self.get_position();
+                        position = item_render_object.borrow().get_transform_object_data()._position;
+                        let mut to_item = item_render_object.borrow().get_transform_object_data()._position - self.get_position();
                         to_item = math::make_normalize_xz(&to_item);
                         velocity = Vector3::new(to_item.x, 1.0, to_item.z) * 2.0;
                     }
@@ -228,7 +228,7 @@ impl<'a> Prop<'a> {
         }
     }
     pub fn update_transform(&mut self) {
-        self._render_object.borrow_mut()._transform_object.set_position_rotation_scale(
+        self._render_object.borrow().get_transform_object_data_mut().set_position_rotation_scale(
             &self._prop_stats._position,
             &self._prop_stats._rotation,
             &self._prop_stats._scale,

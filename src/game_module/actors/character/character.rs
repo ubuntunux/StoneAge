@@ -577,8 +577,12 @@ impl<'a> Character<'a> {
         &ptr_as_ref(self._render_object.as_ptr())._bounding_box
     }
 
+    pub fn get_entity_id(&self) -> rust_engine_3d::ecs::EntityId {
+        ptr_as_ref(self._render_object.as_ptr()).get_entity_id()
+    }
+
     pub fn get_transform(&self) -> &TransformObjectData {
-        &ptr_as_ref(self._render_object.as_ptr())._transform_object
+        ptr_as_ref(self._render_object.as_ptr()).get_transform_object_data()
     }
 
     pub fn get_collision(&self) -> &CollisionData {
@@ -1791,10 +1795,11 @@ impl<'a> Character<'a> {
     }
 
     pub fn update_transform(&mut self) {
-        let mut render_object = self._render_object.borrow_mut();
-        render_object._transform_object.set_position(&self._controller._position);
-        render_object._transform_object.set_rotation(&self._controller._rotation);
-        render_object._transform_object.set_scale(&self._controller._scale);
+        let render_object = self._render_object.borrow();
+        let transform = render_object.get_transform_object_data_mut();
+        transform.set_position(&self._controller._position);
+        transform.set_rotation(&self._controller._rotation);
+        transform.set_scale(&self._controller._scale);
     }
 
     pub fn update_render_object(&mut self) {
