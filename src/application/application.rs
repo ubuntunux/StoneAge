@@ -371,19 +371,6 @@ pub fn run_application() {
     let game_controller = GameController::create_game_controller();
     let game_client = GameClient::create_game_client();
 
-    // register game service locator
-    game_service_locator::register_game_service_locator(
-        game_client.as_ref(),
-        game_resources.as_ref(),
-        game_scene_manager.as_ref(),
-        game_scene_manager._character_manager.as_ref(),
-        game_scene_manager._item_manager.as_ref(),
-        game_scene_manager._prop_manager.as_ref(),
-        game_ui_manager.as_ref(),
-        editor_ui_manager.as_ref(),
-        game_controller.as_ref(),
-    );
-
     let application = Application {
         _engine_core: std::ptr::null(),
         _renderer_data: std::ptr::null(),
@@ -397,6 +384,9 @@ pub fn run_application() {
         _is_game_mode: false,
         _will_terminate_application: false,
     };
+
+    // register game service locator
+    game_service_locator::set_application(&application);
 
     // run
     engine_core::run_application(
