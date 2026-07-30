@@ -1,27 +1,25 @@
-use crate::application::application::Application;
 use crate::game_module::actors::character::ActionAnimationState;
 use crate::game_module::actors::interaction_object::InteractionObject;
 use crate::game_module::actors::items::ItemCreateInfo;
 use crate::game_module::actors::props::api::{
     Prop, PropCreateInfo, PropData, PropDataType, PropID, PropManager, PropMap, PropSaveData, PropStats,
 };
-use crate::game_module::game_client::GameClient;
 use crate::game_module::game_constants::{
     AUDIO_HIT, CHARACTER_INTERACTION_DISTANCE, EFFECT_HIT, GAME_VIEW_MODE, GameViewMode, NPC_ATTACK_HIT_RANGE,
 };
-use crate::game_module::game_scene_manager::{GameSceneManager, PropCreateInfoMap, PropSaveDataMap};
+use crate::game_module::game_scene_manager::{PropCreateInfoMap, PropSaveDataMap};
+use crate::game_module::game_service_locator::{get_character_manager, get_game_resources, get_item_manager_mut};
 use nalgebra::Vector3;
 use rand;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
-use rust_engine_3d::core::engine_core::EngineCore;
+use rust_engine_3d::core::engine_service_locator::{get_audio_manager_mut, get_scene_manager, get_scene_manager_mut};
 use rust_engine_3d::effect::effect_data::EffectCreateInfo;
 use rust_engine_3d::scene::bounding_box::BoundingBox;
 use rust_engine_3d::scene::collision::{CollisionData, CollisionType};
 use rust_engine_3d::scene::render_object::{RenderObjectCreateInfo, RenderObjectData};
-use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{
-    RcRefCell, extract_name_and_uuid, format_name_with_uuid, newRcRefCell, ptr_as_mut, ptr_as_ref,
+    RcRefCell, extract_name_and_uuid, format_name_with_uuid, newRcRefCell, ptr_as_ref,
 };
 use std::collections::HashMap;
 use std::ffi::c_void;
@@ -161,12 +159,8 @@ impl<'a> Prop<'a> {
             _effect_data_name: String::from(EFFECT_HIT),
             ..Default::default()
         };
-        self.get_prop_manager().get_scene_manager_mut().add_effect(EFFECT_HIT, &effect_create_info);
-        rust_engine_3d::core::engine_service_locator::get_audio_manager_mut().play_audio_bank(
-            AUDIO_HIT,
-            AudioLoop::ONCE,
-            None,
-        );
+        get_scene_manager_mut().add_effect(EFFECT_HIT, &effect_create_info);
+        get_audio_manager_mut().play_audio_bank(AUDIO_HIT, AudioLoop::ONCE, None);
     }
     pub fn update_generate_item(&mut self, delta_time: f64) {
         if self._prop_data.borrow()._prop_type == PropDataType::Harvestable
@@ -263,22 +257,6 @@ impl<'a> PropManager<'a> {
     }
     pub fn destroy_prop_manager(&mut self) {}
 
-    pub fn get_game_client(&self) -> &GameClient<'a> {
-        crate::game_module::game_service_locator::get_game_client()
-    }
-    pub fn get_game_client_mut(&self) -> &mut GameClient<'a> {
-        crate::game_module::game_service_locator::get_game_client_mut()
-    }
-    pub fn get_game_scene_manager(&self) -> &GameSceneManager<'a> {
-        crate::game_module::game_service_locator::get_game_scene_manager()
-    }
-    pub fn get_game_scene_manager_mut(&self) -> &mut GameSceneManager<'a> {
-        crate::game_module::game_service_locator::get_game_scene_manager_mut()
-    }
-
-    pub fn get_scene_manager_mut(&self) -> &mut SceneManager<'a> {
-        rust_engine_3d::core::engine_service_locator::get_scene_manager_mut()
-    }
     pub fn generate_id(&self) -> Uuid {
         Uuid::new_v4()
     }
@@ -293,7 +271,7 @@ impl<'a> PropManager<'a> {
     }
     pub fn create_prop(&mut self, prop_name: &str, prop_create_info: &PropCreateInfo) -> RcRefCell<Prop<'a>> {
         let (prop_name, uuid) = extract_name_and_uuid(prop_name);
-        let game_resources = crate::game_module::game_service_locator::get_game_resources();
+        let game_resources = get_game_resources();
         let prop_data = game_resources.get_prop_data(prop_create_info._prop_data_name.as_str());
 
         let render_object_create_info = RenderObjectCreateInfo {
@@ -303,11 +281,8 @@ impl<'a> PropManager<'a> {
             _scale: prop_create_info._scale,
             ..Default::default()
         };
-        let render_object_data = self.get_scene_manager_mut().add_dynamic_render_object(
-            prop_name.as_str(),
-            &render_object_create_info,
-            None,
-        );
+        let render_object_data =
+            get_scene_manager_mut().add_dynamic_render_object(prop_name.as_str(), &render_object_create_info, None);
 
         let mut item_render_objects: Vec<RcRefCell<RenderObjectData<'a>>> = Vec::new();
         for (_, socket) in render_object_data.borrow()._sockets.iter() {
@@ -319,7 +294,7 @@ impl<'a> PropManager<'a> {
                 _scale: math::extract_scale(&socket.borrow()._transform),
                 ..Default::default()
             };
-            let render_object_data = self.get_scene_manager_mut().add_dynamic_render_object(
+            let render_object_data = get_scene_manager_mut().add_dynamic_render_object(
                 render_object_create_info._model_data_name.as_str(),
                 &render_object_create_info,
                 None,
@@ -358,7 +333,7 @@ impl<'a> PropManager<'a> {
         {
             self._prop_name_map.remove(prop._prop_name.as_str());
         }
-        self.get_scene_manager_mut().remove_static_render_object(prop._render_object.borrow()._object_id);
+        get_scene_manager_mut().remove_static_render_object(prop._render_object.borrow()._object_id);
     }
 
     pub fn clear_props(&mut self) {
@@ -402,19 +377,15 @@ impl<'a> PropManager<'a> {
             let prop_bounding_box = prop.get_bounding_box();
             let mut teleport_point =
                 prop.get_position() + prop_bounding_box.get_orientation().column(2) * (prop_bounding_box._mag_xz + 1.0);
-            teleport_point.y = teleport_point.y.max(
-                self.get_game_scene_manager()
-                    .get_scene_manager()
-                    .get_height_map_data()
-                    .get_height_bilinear(&teleport_point, 0),
-            );
+            teleport_point.y =
+                teleport_point.y.max(get_scene_manager().get_height_map_data().get_height_bilinear(&teleport_point, 0));
             return Some(teleport_point);
         }
         None
     }
 
     pub fn update_prop_manager(&mut self, delta_time: f64) {
-        if !self.get_game_scene_manager().get_character_manager().is_valid_player() {
+        if !get_character_manager().is_valid_player() {
             return;
         }
 
@@ -422,7 +393,7 @@ impl<'a> PropManager<'a> {
             prop.borrow_mut().update_prop(delta_time);
         }
 
-        let player_refcell = self.get_game_scene_manager().get_character_manager().get_player().clone();
+        let player_refcell = get_character_manager().get_player().clone();
         let mut player = player_refcell.borrow_mut();
 
         let mut dead_props: Vec<RcRefCell<Prop>> = Vec::new();
@@ -469,7 +440,7 @@ impl<'a> PropManager<'a> {
                                     for item_create_info in
                                         prop.drop_items(drop_count, player.get_position()).iter_mut()
                                     {
-                                        self.get_game_scene_manager().get_item_manager_mut().create_item(
+                                        get_item_manager_mut().create_item(
                                             item_create_info._item_data_name.as_str(),
                                             item_create_info,
                                             None,
@@ -501,7 +472,7 @@ impl<'a> PropManager<'a> {
                                 prop.set_hit_damage(0);
                                 let drop_count = 1;
                                 for item_create_info in prop.drop_items(drop_count, player.get_position()).iter_mut() {
-                                    self.get_game_scene_manager().get_item_manager_mut().create_item(
+                                    get_item_manager_mut().create_item(
                                         item_create_info._item_data_name.as_str(),
                                         item_create_info,
                                         None,
@@ -549,10 +520,7 @@ impl<'a> PropManager<'a> {
                                 let mut pickup_items: bool = false;
                                 let drop_count = prop._prop_stats._item_count;
                                 for item_create_info in prop.drop_items(drop_count, player.get_position()).iter() {
-                                    pickup_items |= self
-                                        .get_game_scene_manager()
-                                        .get_item_manager_mut()
-                                        .instance_pickup_item(item_create_info);
+                                    pickup_items |= get_item_manager_mut().instance_pickup_item(item_create_info);
                                 }
 
                                 if pickup_items {

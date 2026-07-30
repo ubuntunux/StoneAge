@@ -1,13 +1,14 @@
 use crate::game_module::actors::character::ActionAnimationState;
 use crate::game_module::actors::interaction_object::InteractionObject;
 use crate::game_module::game_controller::KeyBindingType;
-use crate::game_module::game_scene_manager::GameSceneManager;
+use crate::game_module::game_service_locator::get_character_manager;
 use crate::game_module::widgets::key_binding_widget::{
     KEY_BINDING_FONT_SIZE, KEY_BINDING_ICON_MARGIN, KEY_BINDING_TEXT_MARGIN, KeyBindingWidgetManager,
     KeyBindingWidgetMap,
 };
 use crate::game_module::widgets::key_binding_widget::{KEY_BINDING_UI_SIZE, KeyBindingWidget};
 use nalgebra::Vector2;
+use rust_engine_3d::core::engine_service_locator::{get_engine_resources, get_scene_manager};
 use rust_engine_3d::scene::material_instance::MaterialInstanceData;
 use rust_engine_3d::scene::ui::{
     HorizontalAlign, Orientation, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault,
@@ -187,7 +188,7 @@ impl<'a> ControllerHelpWidget<'a> {
     }
 
     pub fn register_key_binding_widgets(&mut self, key_binding_widget_manager: *const KeyBindingWidgetManager<'a>) {
-        let engine_resources = rust_engine_3d::core::engine_service_locator::get_engine_resources();
+        let engine_resources = get_engine_resources();
         let key_binding_widget_manager = ptr_as_mut(key_binding_widget_manager);
         key_binding_widget_manager.register_key_binding_widget_map(&self._player_control_key_binding_widget_map);
         key_binding_widget_manager.register_key_binding_widget_map(&self._interaction_key_binding_widget_map);
@@ -303,11 +304,11 @@ impl<'a> ControllerHelpWidget<'a> {
             .set_size_y(ui_component.get_num_children() as f32 * KEY_BINDING_UI_SIZE + MAIN_LAYOUT_PADDING * 2.0);
     }
 
-    pub fn update_interaction_widget(&mut self, game_scene_manager: &GameSceneManager) {
+    pub fn update_interaction_widget(&mut self) {
         let interaction_key_binding_widget_map = ptr_as_mut(self._interaction_key_binding_widget_map.as_ref());
         let mut matched_key_binding_type = KeyBindingType::None;
         let mut interaction_name: String = String::new();
-        let character_manager = game_scene_manager.get_character_manager();
+        let character_manager = get_character_manager();
         if character_manager.is_valid_player() {
             let player = character_manager.get_player().borrow();
             if player.is_in_interaction_range() {
@@ -384,7 +385,7 @@ impl<'a> ControllerHelpWidget<'a> {
                 let player = character_manager.get_player().borrow();
                 let interaction_object = player.get_nearest_interaction_object();
                 let position = interaction_object.get_position();
-                let main_camera = game_scene_manager.get_scene_manager().get_main_camera();
+                let main_camera = get_scene_manager().get_main_camera();
                 let screen_position = main_camera.convert_world_to_screen(&position, true);
                 let dpi_scale = rust_engine_3d::scene::ui::get_global_dpi_scale();
                 interaction_widget._ui_component.set_pos(screen_position.x / dpi_scale, screen_position.y / dpi_scale);
@@ -399,7 +400,7 @@ impl<'a> ControllerHelpWidget<'a> {
         }
     }
 
-    pub fn update_controller_help_widget(&mut self, game_scene_manager: &GameSceneManager) {
-        self.update_interaction_widget(game_scene_manager);
+    pub fn update_controller_help_widget(&mut self) {
+        self.update_interaction_widget();
     }
 }

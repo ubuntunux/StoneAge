@@ -1,9 +1,9 @@
 use crate::game_module::actors::items::ItemDataType;
-use crate::game_module::actors::items::ItemManager;
 use crate::game_module::game_constants::ITEM_NONE;
 use crate::game_module::game_controller::KeyBindingType;
-use crate::game_module::game_scene_manager::GameSceneManager;
-use crate::game_module::game_service_locator::get_game_resources;
+use crate::game_module::game_service_locator::{
+    get_character_manager, get_game_resources, get_game_ui_manager, get_item_manager_mut,
+};
 use crate::game_module::widgets::item_bar::{
     INVALID_ITEM_INDEX, ITEM_BAR_WIDGET_POS_Y_FROM_BOTTOM, ITEM_UI_SIZE, ITEM_WIDGET_UI_MARGIN,
     InventoryItemCreateInfo, InventoryItemCreateInfoList, ItemBarWidget, ItemSelectionWidget, ItemWidget,
@@ -14,12 +14,13 @@ use crate::game_module::widgets::key_binding_widget::{
     KeyBindingWidgetManager, KeyBindingWidgetMap,
 };
 use nalgebra::Vector2;
+use rust_engine_3d::core::engine_service_locator::get_engine_resources;
 use rust_engine_3d::scene::material_instance::MaterialInstanceData;
 use rust_engine_3d::scene::ui::{
     HorizontalAlign, Orientation, PIVOT_BOTTOM_CENTER, PIVOT_BOTTOM_LEFT, PIVOT_CENTER_LEFT, PIVOT_CENTER_RIGHT,
     PIVOT_TOP_CENTER, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault,
 };
-use rust_engine_3d::utilities::system::{RcRefCell, ptr_as_mut, ptr_as_ref};
+use rust_engine_3d::utilities::system::{RcRefCell, ptr_as_mut};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use std::rc::Rc;
 
@@ -122,8 +123,6 @@ fn create_quick_slot_key_binding_widget<'a>(
 
 impl<'a> ItemBarWidget<'a> {
     pub fn create_item_bar_widget(
-        game_scene_manager: *const GameSceneManager<'a>,
-        item_manager: *const ItemManager<'a>,
         key_binding_widget_manager: *const KeyBindingWidgetManager<'a>,
         parent_widget: &mut WidgetDefault<'a>,
         window_size: &Vector2<i32>,
@@ -155,8 +154,6 @@ impl<'a> ItemBarWidget<'a> {
         parent_widget.add_widget(&selected_item_widget);
 
         let mut item_bar_widget = ItemBarWidget {
-            _game_scene_manager: game_scene_manager,
-            _item_manager: item_manager,
             _parent_widget: parent_widget,
             _layer: layer.as_ref(),
             _item_widgets: Vec::new(),
@@ -194,7 +191,7 @@ impl<'a> ItemBarWidget<'a> {
         &mut self,
         key_binding_widget_manager: *const KeyBindingWidgetManager<'a>,
     ) {
-        let engine_resources = rust_engine_3d::core::engine_service_locator::get_engine_resources();
+        let engine_resources = get_engine_resources();
 
         let key_binding_widget_manager = ptr_as_mut(key_binding_widget_manager);
         key_binding_widget_manager.register_key_binding_widget_map(&self._inventory_key_binding_widget_map);
@@ -405,8 +402,8 @@ impl<'a> ItemBarWidget<'a> {
                 for item_widget in self._item_widgets.iter_mut() {
                     if item_widget._item_data_name == ITEM_NONE {
                         let item_data = get_game_resources().get_item_data(item_data_name).borrow();
-                        let material = rust_engine_3d::core::engine_service_locator::get_engine_resources()
-                            .get_material_instance_data(item_data._ui_material_instance.as_str());
+                        let material =
+                            get_engine_resources().get_material_instance_data(item_data._ui_material_instance.as_str());
                         item_widget.set_item_data(
                             item_data._name.as_ref(),
                             item_data_name,
@@ -442,9 +439,8 @@ impl<'a> ItemBarWidget<'a> {
                 item_widget.set_item_data(ITEM_NONE, ITEM_NONE, ItemDataType::None, None, 0);
                 self._item_count -= 1;
 
-                let player =
-                    ptr_as_mut(ptr_as_ref(self._game_scene_manager).get_character_manager().get_player().as_ptr());
-                ptr_as_mut(self._item_manager).detach_item(player);
+                let player = ptr_as_mut(get_character_manager().get_player().as_ptr());
+                get_item_manager_mut().detach_item(player);
                 //self.select_previous_item();
             } else {
                 let item_index = self.get_selected_item_index();
@@ -456,15 +452,15 @@ impl<'a> ItemBarWidget<'a> {
     }
 
     pub fn select_item(&mut self, item_index: usize) {
-        if let Some(player) = ptr_as_ref(self._game_scene_manager).get_character_manager().get_maybe_player() {
+        if let Some(player) = get_character_manager().get_maybe_player() {
             let player = ptr_as_mut(player.as_ptr());
             if item_index < self._item_widgets.len() && self._item_widgets[item_index]._item_data_name != ITEM_NONE {
                 let item_widget = &self._item_widgets[item_index];
                 self._selected_item_widget.update_selected_item_widget(item_index, Some(item_widget));
-                ptr_as_mut(self._item_manager).attach_item(player, self.get_selected_item_data_name());
+                get_item_manager_mut().attach_item(player, self.get_selected_item_data_name());
             } else {
                 self._selected_item_widget.update_selected_item_widget(INVALID_ITEM_INDEX, None);
-                ptr_as_mut(self._item_manager).detach_item(player);
+                get_item_manager_mut().detach_item(player);
             }
         }
     }
@@ -526,8 +522,7 @@ impl<'a> ItemBarWidget<'a> {
 
     pub fn update_selected_item_helper_widget(&mut self, force_update: bool) {
         let inventory_key_binding_widget_map = ptr_as_mut(self._inventory_key_binding_widget_map.as_ref());
-        let game_scene_manager = ptr_as_ref(self._game_scene_manager);
-        let selected_item_index = game_scene_manager.get_game_ui_manager().get_selected_inventory_item_index();
+        let selected_item_index = get_game_ui_manager().get_selected_inventory_item_index();
 
         if self._selected_item_index != selected_item_index || force_update {
             let pos_x = ItemBarWidget::get_selected_item_pos_left(selected_item_index);

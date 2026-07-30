@@ -1,10 +1,12 @@
 use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, DEFAULT_GATE_NAME, MATERIAL_WORLDMAP};
-use crate::game_module::game_scene_manager::{GameSceneManager, Stages};
+use crate::game_module::game_scene_manager::Stages;
+use crate::game_module::game_service_locator::get_game_scene_manager_mut;
 use crate::game_module::widgets::world_map::api::{WorldMapDirection, WorldMapPlayer, WorldMapStage, WorldMapWidget};
 use crate::game_module::widgets::world_map::control_trait::WorldMapControl;
 use crate::game_module::widgets::world_map::layout_trait::WorldMapLayout;
 use nalgebra::Vector2;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
+use rust_engine_3d::core::engine_service_locator::{get_audio_manager_mut, get_engine_resources};
 use rust_engine_3d::core::input::{ButtonState, JoystickInputData, KeyboardInputData};
 use rust_engine_3d::scene::ui::{PIVOT_CENTER, UILayoutType, UIManager, UIWidgetTypes, WidgetDefault};
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
@@ -14,16 +16,11 @@ use std::rc::Rc;
 use winit::keyboard::KeyCode;
 
 impl<'a> WorldMapWidget<'a> {
-    pub fn new(
-        game_scene_manager: &GameSceneManager<'a>,
-        root_widget: &mut WidgetDefault<'a>,
-        window_size: &Vector2<i32>,
-    ) -> Box<WorldMapWidget<'a>> {
-        Self::create_world_map_widget(game_scene_manager, root_widget, window_size)
+    pub fn new(root_widget: &mut WidgetDefault<'a>, window_size: &Vector2<i32>) -> Box<WorldMapWidget<'a>> {
+        Self::create_world_map_widget(root_widget, window_size)
     }
 
     pub fn create_world_map_widget(
-        game_scene_manager: &GameSceneManager<'a>,
         root_widget: &mut WidgetDefault<'a>,
         _window_size: &Vector2<i32>,
     ) -> Box<WorldMapWidget<'a>> {
@@ -39,13 +36,11 @@ impl<'a> WorldMapWidget<'a> {
         ui_component.set_enable(false);
         root_widget.add_widget(&background_layout);
 
-        let world_map_material_instance = rust_engine_3d::core::engine_service_locator::get_engine_resources()
-            .get_material_instance_data(MATERIAL_WORLDMAP);
+        let world_map_material_instance = get_engine_resources().get_material_instance_data(MATERIAL_WORLDMAP);
         let texture_parameter =
             world_map_material_instance.borrow()._material_parameters.get("texture_color").unwrap().clone();
         let texture_name = texture_parameter.as_str().unwrap();
-        let texture =
-            rust_engine_3d::core::engine_service_locator::get_engine_resources().get_texture_data(texture_name);
+        let texture = get_engine_resources().get_texture_data(texture_name);
         let image_width = texture.borrow()._image_width as f32;
         let image_height = texture.borrow()._image_height as f32;
         let image_aspect = image_width / image_height;
@@ -92,7 +87,6 @@ impl<'a> WorldMapWidget<'a> {
         world_map_widget_mut.add_widget(&player_layer_widget);
 
         let mut world_map_widget = Box::new(WorldMapWidget {
-            _game_scene_manager: game_scene_manager,
             _root_widget: root_widget,
             _background_layout: background_layout.clone(),
             _world_map_widget: world_map_widget.clone(),
@@ -240,11 +234,7 @@ impl<'a> WorldMapControl<'a> for WorldMapWidget<'a> {
 
     fn open_world_map(&mut self) {
         if !self._is_opened_world_map {
-            rust_engine_3d::core::engine_service_locator::get_audio_manager_mut().play_audio_bank(
-                AUDIO_PICKUP_ITEM,
-                AudioLoop::ONCE,
-                None,
-            );
+            get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
             ptr_as_mut(self._background_layout.as_ref()).get_ui_component_mut().set_enable(true);
             self._request_close_world_map = false;
             self._is_opened_world_map = true;
@@ -263,11 +253,7 @@ impl<'a> WorldMapControl<'a> for WorldMapWidget<'a> {
     }
 
     fn request_close_world_map(&mut self) {
-        rust_engine_3d::core::engine_service_locator::get_audio_manager_mut().play_audio_bank(
-            AUDIO_PICKUP_ITEM,
-            AudioLoop::ONCE,
-            None,
-        );
+        get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
         self._request_close_world_map = true;
     }
 
@@ -283,17 +269,13 @@ impl<'a> WorldMapControl<'a> for WorldMapWidget<'a> {
 
     fn set_selected_world_map_stage(&mut self, selected_stage_name: &String) {
         if !self._selected_stage_name.is_empty() && !selected_stage_name.is_empty() {
-            rust_engine_3d::core::engine_service_locator::get_audio_manager_mut().play_audio_bank(
-                AUDIO_PICKUP_ITEM,
-                AudioLoop::ONCE,
-                None,
-            );
+            get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
         }
 
         if self._selected_stage_name == *selected_stage_name {
             if let Some(selected_stage) = self._world_map_stages.get_mut(selected_stage_name) {
                 let teleport_stage: &String = ptr_as_ref(selected_stage.as_ref()).get_stage_data_name();
-                ptr_as_mut(self._game_scene_manager).set_teleport_stage(teleport_stage, DEFAULT_GATE_NAME);
+                get_game_scene_manager_mut().set_teleport_stage(teleport_stage, DEFAULT_GATE_NAME);
             }
         } else {
             if let Some(prev_selected_stage) = self._world_map_stages.get_mut(&self._selected_stage_name) {

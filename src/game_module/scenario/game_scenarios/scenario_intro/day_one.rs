@@ -4,16 +4,16 @@ use crate::game_module::behavior::behavior_base::BehaviorState;
 use crate::game_module::game_constants::{
     AUDIO_UFO_BEAM, AUDIO_UFO_FLYING, BED_FOR_ARU, CAMERA_DISTANCE_MAX, CAMERA_OFFSET_Y, TIME_OF_EARLY_MORNING,
 };
-use crate::game_module::game_scene_manager::GameSceneManager;
+use crate::game_module::game_service_locator::{get_character_manager_mut, get_game_scene_manager_mut};
 use crate::game_module::scenario::scenario::{
     GameScenarioCreateInfo, ScenarioBase, ScenarioDataCreateInfo, ScenarioType,
 };
 use crate::game_module::scenario::scenario_track::ScenarioTrack;
 use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop};
-use rust_engine_3d::core::engine_service_locator::{get_audio_manager, get_audio_manager_mut};
+use rust_engine_3d::core::engine_service_locator::{get_audio_manager, get_audio_manager_mut, get_scene_manager};
 use rust_engine_3d::utilities::math;
-use rust_engine_3d::utilities::system::{RcRefCell, State, newRcRefCell, ptr_as_mut};
+use rust_engine_3d::utilities::system::{RcRefCell, State, newRcRefCell};
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 use strum::IntoEnumIterator;
@@ -38,7 +38,7 @@ struct ScenarioDayOneSaveData {}
 pub struct ScenarioDayOne<'a> {
     _scenario_type: ScenarioType,
     _scenario_create_info: ScenarioDataCreateInfo,
-    _game_scene_manager: *const GameSceneManager<'a>,
+
     _around_start_position: Vector3<f32>,
     _around_end_position: Vector3<f32>,
     _around_start_rotation: Vector3<f32>,
@@ -58,14 +58,12 @@ pub struct ScenarioDayOne<'a> {
 
 impl<'a> ScenarioDayOne<'a> {
     pub fn create_game_scenario(
-        game_scene_manager: *const GameSceneManager<'a>,
         scenario_type: ScenarioType,
         scenario_create_info: &ScenarioDataCreateInfo,
     ) -> RcRefCell<ScenarioDayOne<'a>> {
         newRcRefCell(ScenarioDayOne {
             _scenario_type: scenario_type,
             _scenario_create_info: scenario_create_info.clone(),
-            _game_scene_manager: game_scene_manager,
             _around_start_position: Vector3::zeros(),
             _around_end_position: Vector3::zeros(),
             _around_start_rotation: Vector3::new(0.4, 0.0, 0.0),
@@ -193,19 +191,19 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
     fn on_close_game_scene(&mut self, _game_scene_data_name: &str) {}
 
     fn on_open_game_scene(&mut self, game_scene_data_name: &str) {
-        let game_scene_manager = ptr_as_mut(self._game_scene_manager);
+        let game_scene_manager = get_game_scene_manager_mut();
         if self._scenario_create_info.get_game_scene_data_name() == game_scene_data_name {
             game_scene_manager.spawn_game_scenario_objects(&self._scenario_create_info);
             self._scenario_create_info.reset();
         }
         // if let Some(actor) = game_scene_manager.get_actor_by_name("monkey_aru").cloned() {
-        //     game_scene_manager.get_character_manager_mut().remove_character(&actor);
+        //     get_character_manager_mut().remove_character(&actor);
         // }
         if let Some(actor) = game_scene_manager.get_actor_by_name("monkey_ewa").cloned() {
-            game_scene_manager.get_character_manager_mut().remove_character(&actor);
+            get_character_manager_mut().remove_character(&actor);
         }
         if let Some(actor) = game_scene_manager.get_actor_by_name("monkey_koa").cloned() {
-            game_scene_manager.get_character_manager_mut().remove_character(&actor);
+            get_character_manager_mut().remove_character(&actor);
         }
 
         self._actor_ufo = game_scene_manager.get_actor_by_name("ufo").cloned();
@@ -240,7 +238,7 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
             }
         }
 
-        let main_camera = game_scene_manager.get_scene_manager().get_main_camera_mut();
+        let main_camera = get_scene_manager().get_main_camera_mut();
         main_camera._transform_object.set_position(&Vector3::new(13.48, 26.56, -5.02));
         main_camera._transform_object.set_rotation(&Vector3::new(0.76, 0.33, 0.0));
 
@@ -263,8 +261,7 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
     }
 
     fn update_game_scenario(&mut self, _any_key_hold: bool, _any_key_pressed: bool, delta_time: f64) {
-        let game_scene_manager = ptr_as_mut(self._game_scene_manager);
-        let _game_ui_manager = game_scene_manager.get_game_ui_manager_mut();
+        let game_scene_manager = get_game_scene_manager_mut();
 
         let prev_scenario_phase = self._scenario_track._scenario_phase;
         let next_scenario_phase = self._scenario_track._next_scenario_phase;
@@ -299,8 +296,8 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
                 ScenarioPhase::ReleaseFamily => match state {
                     State::Begin => {
                         self._audio_ufo_flying =
-                            get_audio_manager_mut().play_audio(AUDIO_UFO_FLYING, AudioLoop::LOOP, Some(1.0));
-                        get_audio_manager_mut().play_audio(AUDIO_UFO_BEAM, AudioLoop::ONCE, Some(1.0));
+                            get_audio_manager_mut().play_audio_bank(AUDIO_UFO_FLYING, AudioLoop::LOOP, Some(1.0));
+                        get_audio_manager_mut().play_audio_bank(AUDIO_UFO_BEAM, AudioLoop::ONCE, Some(1.0));
                     }
                     State::Update => {
                         let complete = self.update_release_family(delta_time);
@@ -342,7 +339,7 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
                                         prop.borrow_mut().set_position(ufo.borrow().get_position());
                                     }
                                 }
-                                get_audio_manager_mut().play_audio(AUDIO_UFO_BEAM, AudioLoop::ONCE, Some(1.0));
+                                get_audio_manager_mut().play_audio_bank(AUDIO_UFO_BEAM, AudioLoop::ONCE, Some(1.0));
                             }
                             drop_completed = self.drop_monolith(delta_time);
                         }
@@ -370,7 +367,7 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
                 },
                 ScenarioPhase::CloseUpShot => match state {
                     State::Begin => {
-                        let main_camera = game_scene_manager.get_scene_manager().get_main_camera_mut();
+                        let main_camera = get_scene_manager().get_main_camera_mut();
                         main_camera._transform_object.set_position(&self._around_start_position);
                         main_camera._transform_object.set_rotation(&self._around_start_rotation);
                         if let Some(actor) = &self._player {
@@ -387,7 +384,7 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
                 ScenarioPhase::Awake => match state {
                     State::Begin => {
                         if let Some(ufo) = &self._actor_ufo {
-                            game_scene_manager.get_character_manager_mut().remove_character(ufo);
+                            get_character_manager_mut().remove_character(ufo);
                         }
 
                         if let Some(actor) = &self._player {
@@ -415,7 +412,7 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
                         }
                     }
                     State::Update => {
-                        let main_camera = game_scene_manager.get_scene_manager().get_main_camera_mut();
+                        let main_camera = get_scene_manager().get_main_camera_mut();
                         let pivot = if let Some(actor) = &self._player {
                             *actor.borrow().get_center() + Vector3::new(0.0, CAMERA_OFFSET_Y, 0.0)
                         } else {

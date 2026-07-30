@@ -1,5 +1,5 @@
 use crate::game_module::game_controller::GameController;
-use crate::game_module::game_scene_manager::GameSceneManager;
+use crate::game_module::game_service_locator::get_game_controller;
 use crate::game_module::game_ui_manager::QuestItem;
 use crate::game_module::widgets::quest_widgets::quest_item_default::{DefaultQuestData, QuestItemDefault};
 use crate::game_module::widgets::quest_widgets::quest_item_gather_item::{GatherItemData, QuestItemGatherItem};
@@ -34,22 +34,17 @@ pub trait QuestItemBase<'a> {
 }
 
 pub struct QuestWidget<'a> {
-    pub _game_scene_manager: *const GameSceneManager<'a>,
     pub _root_widget: Rc<WidgetDefault<'a>>,
     pub _quests: Vec<RcRefCell<QuestTitle<'a>>>,
 }
 
-pub fn create_quest_item<'a>(
-    game_scene_manager: *const GameSceneManager<'a>,
-    parent_widget: &mut WidgetDefault<'a>,
-    quest_type: QuestCreateInfo,
-) -> QuestItem<'a> {
+pub fn create_quest_item<'a>(parent_widget: &mut WidgetDefault<'a>, quest_type: QuestCreateInfo) -> QuestItem<'a> {
     match quest_type {
         QuestCreateInfo::DefaultQuest(default_quest_data) => {
-            QuestItemDefault::create_quest_item(game_scene_manager, parent_widget, default_quest_data)
+            QuestItemDefault::create_quest_item(parent_widget, default_quest_data)
         }
         QuestCreateInfo::GatherItem(gather_item_data) => {
-            QuestItemGatherItem::create_quest_item(game_scene_manager, parent_widget, gather_item_data)
+            QuestItemGatherItem::create_quest_item(parent_widget, gather_item_data)
         }
     }
 }
@@ -67,10 +62,7 @@ pub fn create_quest_item_layout<'a>(parent_widget: &mut WidgetDefault<'a>) -> Rc
 }
 
 impl<'a> QuestWidget<'a> {
-    pub fn create_quest_widget(
-        game_scene_manager: *const GameSceneManager<'a>,
-        root_widget: &mut WidgetDefault<'a>,
-    ) -> QuestWidget<'a> {
+    pub fn create_quest_widget(root_widget: &mut WidgetDefault<'a>) -> QuestWidget<'a> {
         let layout_widget = UIManager::create_widget("layout_widget", UIWidgetTypes::Default);
         let ui_component = ptr_as_mut(layout_widget.as_ref()).get_ui_component_mut();
         ui_component.set_layout_type(UILayoutType::BoxLayout);
@@ -91,7 +83,6 @@ impl<'a> QuestWidget<'a> {
         root_widget.add_widget(&layout_widget);
 
         QuestWidget {
-            _game_scene_manager: game_scene_manager,
             _root_widget: layout_widget,
             _quests: Vec::new(),
         }
@@ -101,13 +92,13 @@ impl<'a> QuestWidget<'a> {
 
     pub fn add_quest(&mut self, title: Option<String>) -> RcRefCell<QuestTitle<'a>> {
         ptr_as_mut(self._root_widget.as_ref()).get_ui_component_mut().set_visible(true);
-        let quest =
-            QuestTitle::create_quest_title(self._game_scene_manager, ptr_as_mut(self._root_widget.as_ref()), title);
+        let quest = QuestTitle::create_quest_title(ptr_as_mut(self._root_widget.as_ref()), title);
         self._quests.push(quest.clone());
         quest.clone()
     }
 
-    pub fn update_quest_widget(&mut self, game_controller: &GameController, delta_time: f32) {
+    pub fn update_quest_widget(&mut self, delta_time: f32) {
+        let game_controller = get_game_controller();
         let item_count = self._quests.len();
         let mut index = 0;
         for _ in 0..item_count {

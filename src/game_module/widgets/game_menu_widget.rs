@@ -1,8 +1,8 @@
-use crate::game_module::game_client::GameClient;
 use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, DEFAULT_GAME_SAVE_DATA};
-use crate::game_module::game_service_locator::get_game_scene_manager_mut;
+use crate::game_module::game_service_locator::{get_game_client_mut, get_game_scene_manager_mut};
 use nalgebra::Vector2;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
+use rust_engine_3d::core::engine_service_locator::get_audio_manager_mut;
 use rust_engine_3d::core::input::{ButtonState, JoystickInputData, KeyboardInputData};
 use rust_engine_3d::scene::ui::{
     HorizontalAlign, Orientation, PIVOT_CENTER, UIComponentInstance, UILayoutType, UIManager, UIWidgetTypes,
@@ -77,7 +77,6 @@ impl<'a> GameMenuItem<'a> {
 }
 
 pub struct GameMenuWidget<'a> {
-    pub _game_client: *const GameClient<'a>,
     pub _parent_widget: *const WidgetDefault<'a>,
     pub _layer: Rc<WidgetDefault<'a>>,
     pub _menu_items: Vec<Box<GameMenuItem<'a>>>,
@@ -108,10 +107,7 @@ impl<'a> GameMenuWidget<'a> {
         true
     }
 
-    pub fn create_game_menu_widget(
-        game_client: &GameClient<'a>,
-        parent_widget: &mut WidgetDefault<'a>,
-    ) -> Box<GameMenuWidget<'a>> {
+    pub fn create_game_menu_widget(parent_widget: &mut WidgetDefault<'a>) -> Box<GameMenuWidget<'a>> {
         let layer = UIManager::create_widget("game_menu_widget", UIWidgetTypes::Default);
         let layer_mut = ptr_as_mut(layer.as_ref());
         let ui_component = layer_mut.get_ui_component_mut();
@@ -132,7 +128,6 @@ impl<'a> GameMenuWidget<'a> {
         parent_widget.add_widget(&layer);
 
         let mut game_menu_widget = Box::new(GameMenuWidget {
-            _game_client: game_client,
             _parent_widget: parent_widget,
             _layer: layer,
             _menu_items: Vec::new(),
@@ -165,11 +160,7 @@ impl<'a> GameMenuWidget<'a> {
     }
     pub fn close_game_menu(&mut self) {
         if self._is_opened_game_menu {
-            rust_engine_3d::core::engine_service_locator::get_audio_manager_mut().play_audio_bank(
-                AUDIO_PICKUP_ITEM,
-                AudioLoop::ONCE,
-                None,
-            );
+            get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
             ptr_as_mut(self._layer.as_ref()).get_ui_component_mut().set_enable(false);
             self._is_opened_game_menu = false;
         }
@@ -180,18 +171,14 @@ impl<'a> GameMenuWidget<'a> {
             let curr_menu_item = &self._menu_items[selected_menu_item as usize];
             ptr_as_mut(prev_menu_item._item_widget.as_ref()).get_ui_component_mut().set_selected(false);
             ptr_as_mut(curr_menu_item._item_widget.as_ref()).get_ui_component_mut().set_selected(true);
-            rust_engine_3d::core::engine_service_locator::get_audio_manager_mut().play_audio_bank(
-                AUDIO_PICKUP_ITEM,
-                AudioLoop::ONCE,
-                None,
-            );
+            get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
             self._selected_menu_item = selected_menu_item;
             return true;
         }
         false
     }
     pub fn press_game_menu(&mut self, selected_menu_item: GameMenuType) {
-        let game_client = ptr_as_mut(self._game_client);
+        let game_client = get_game_client_mut();
         match selected_menu_item {
             GameMenuType::Test => {
                 get_game_scene_manager_mut()

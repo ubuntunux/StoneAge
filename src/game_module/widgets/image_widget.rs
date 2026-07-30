@@ -1,4 +1,5 @@
 use nalgebra::Vector2;
+use rust_engine_3d::core::engine_service_locator::get_engine_resources;
 use rust_engine_3d::scene::material_instance::MaterialInstanceData;
 use rust_engine_3d::scene::ui::{
     HorizontalAlign, Orientation, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault,
@@ -100,8 +101,7 @@ impl<'a> ImageLayout<'a> {
             let material_instance_ref = material_instance_refcell.borrow();
             let texture_parameter = material_instance_ref._material_parameters.get("texture_color").unwrap();
             let texture_name = texture_parameter.as_str().unwrap();
-            let texture =
-                rust_engine_3d::core::engine_service_locator::get_engine_resources().get_texture_data(texture_name);
+            let texture = get_engine_resources().get_texture_data(texture_name);
             self._next_image_aspect = texture.borrow()._image_width as f32 / texture.borrow()._image_height as f32;
             self._fadeout_opacity = 1.0;
             self._fadeout_image_brightness = 0.0;

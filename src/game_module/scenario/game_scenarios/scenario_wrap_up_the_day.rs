@@ -6,17 +6,19 @@ use crate::game_module::game_constants::{
     AUDIO_QUEST_COMPLETE, AUDIO_ROOSTER, AUDIO_WRAP_UP_THE_DAY, BED_FOR_ARU, DEFAULT_BGM_VOLUME, DEFAULT_FADE_TIME,
     GAME_MUSIC, MATERIAL_UI_NONE, SLEEP_TIMER,
 };
-use crate::game_module::game_scene_manager::GameSceneManager;
+use crate::game_module::game_service_locator::{
+    get_game_scene_manager, get_game_scene_manager_mut, get_game_ui_manager_mut,
+};
 use crate::game_module::scenario::scenario::{
     GameScenarioCreateInfo, ScenarioBase, ScenarioDataCreateInfo, ScenarioType,
 };
 use crate::game_module::scenario::scenario_track::ScenarioTrack;
 use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop};
-use rust_engine_3d::core::engine_service_locator::get_audio_manager_mut;
+use rust_engine_3d::core::engine_service_locator::{get_audio_manager, get_audio_manager_mut, get_scene_manager};
 use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::math;
-use rust_engine_3d::utilities::system::{RcRefCell, State, newRcRefCell, ptr_as_mut, ptr_as_ref};
+use rust_engine_3d::utilities::system::{RcRefCell, State, newRcRefCell};
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 use strum::IntoEnumIterator;
@@ -44,7 +46,7 @@ struct ScenarioWrapUpTheDaySaveData {
 pub struct ScenarioWrapUpTheDay<'a> {
     _scenario_type: ScenarioType,
     _scenario_create_info: ScenarioDataCreateInfo,
-    _game_scene_manager: *const GameSceneManager<'a>,
+
     _sleep_timer: f32,
     _player: Option<RcRefCell<Character<'a>>>,
     _actor_ewa: Option<RcRefCell<Character<'a>>>,
@@ -60,14 +62,12 @@ pub struct ScenarioWrapUpTheDay<'a> {
 
 impl<'a> ScenarioWrapUpTheDay<'a> {
     pub fn create_game_scenario(
-        game_scene_manager: *const GameSceneManager<'a>,
         scenario_type: ScenarioType,
         scenario_create_info: &ScenarioDataCreateInfo,
     ) -> RcRefCell<ScenarioWrapUpTheDay<'a>> {
         newRcRefCell(ScenarioWrapUpTheDay {
             _scenario_type: scenario_type,
             _scenario_create_info: scenario_create_info.clone(),
-            _game_scene_manager: game_scene_manager,
             _sleep_timer: 0.0,
             _player: None,
             _actor_ewa: None,
@@ -178,7 +178,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
     fn on_close_game_scene(&mut self, _game_scene_data_name: &str) {}
 
     fn on_open_game_scene(&mut self, _game_scene_data_name: &str) {
-        let game_scene_manager = ptr_as_ref(self._game_scene_manager);
+        let game_scene_manager = get_game_scene_manager();
         self._player = game_scene_manager.get_maybe_player().clone();
         self._actor_ewa = game_scene_manager
             .get_actor_by_name("monkey_ewa")
@@ -195,8 +195,9 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
     }
 
     fn update_game_scenario(&mut self, _any_key_hold: bool, _any_key_pressed: bool, delta_time: f64) {
-        let game_scene_manager = ptr_as_mut(self._game_scene_manager);
-        let game_ui_manager = crate::game_module::game_service_locator::get_game_ui_manager_mut();
+        let game_scene_manager = get_game_scene_manager_mut();
+        let audio_manager = get_audio_manager_mut();
+        let game_ui_manager = get_game_ui_manager_mut();
 
         let prev_scenario_phase = self._scenario_track._scenario_phase;
         let next_scenario_phase = self._scenario_track._next_scenario_phase;
@@ -244,28 +245,31 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                 ScenarioPhase::Performance => {
                     if state == State::Update {
                         if game_ui_manager.is_done_manual_fade_out() {
-                            game_scene_manager.stop_bgm();
-                            self._audio_bgm = rust_engine_3d::core::engine_service_locator::get_audio_manager_mut()
-                                .play_audio_bank(AUDIO_WRAP_UP_THE_DAY, AudioLoop::SOME(4), None);
+                            audio_manager.stop_bgm();
+                            self._audio_bgm = get_audio_manager_mut().play_audio_bank(
+                                AUDIO_WRAP_UP_THE_DAY,
+                                AudioLoop::SOME(4),
+                                None,
+                            );
 
-                            let main_camera = game_scene_manager.get_scene_manager().get_main_camera_mut();
+                            let main_camera = get_scene_manager().get_main_camera_mut();
                             main_camera._transform_object.set_position(&Vector3::from(TABLE_SCENE_CAMERA_POSITION));
                             main_camera._transform_object.set_rotation(&Vector3::from(TABLE_SCENE_CAMERA_ROTATION));
 
                             dance_around_the_table(
-                                game_scene_manager.get_scene_manager(),
+                                get_scene_manager(),
                                 &self._player,
                                 &self._prop_table,
                                 &Vector3::new(1.0, 0.0, 0.0),
                             );
                             dance_around_the_table(
-                                game_scene_manager.get_scene_manager(),
+                                get_scene_manager(),
                                 &self._actor_ewa,
                                 &self._prop_table,
                                 &Vector3::new(0.0, 0.0, 1.0),
                             );
                             dance_around_the_table(
-                                game_scene_manager.get_scene_manager(),
+                                get_scene_manager(),
                                 &self._actor_koa,
                                 &self._prop_table,
                                 &Vector3::new(-1.0, 0.0, 0.0),
@@ -274,22 +278,16 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                         }
 
                         let is_playing = if let Some(audio_bgm) = &self._audio_bgm {
-                            rust_engine_3d::core::engine_service_locator::get_audio_manager()
-                                .is_playing_audio_instance(audio_bgm)
+                            get_audio_manager().is_playing_audio_instance(audio_bgm)
                         } else {
                             false
                         };
 
                         if (self._audio_bgm.is_some() && !is_playing) || 1.0 <= phase_ratio {
                             if let Some(audio_bgm) = &self._audio_bgm {
-                                rust_engine_3d::core::engine_service_locator::get_audio_manager_mut()
-                                    .stop_audio_instance(audio_bgm);
+                                get_audio_manager_mut().stop_audio_instance(audio_bgm);
                             }
-                            rust_engine_3d::core::engine_service_locator::get_audio_manager_mut().play_audio_bank(
-                                AUDIO_QUEST_COMPLETE,
-                                AudioLoop::ONCE,
-                                None,
-                            );
+                            get_audio_manager_mut().play_audio_bank(AUDIO_QUEST_COMPLETE, AudioLoop::ONCE, None);
                             if let Some(actor) = &self._player {
                                 actor.borrow_mut().set_action_none();
                             }
@@ -321,7 +319,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                 ScenarioPhase::Sleep => match state {
                     State::Begin => {
                         self._sleep_timer = 0.0;
-                        game_scene_manager.play_bgm(GAME_MUSIC, DEFAULT_BGM_VOLUME);
+                        audio_manager.play_bgm(GAME_MUSIC, DEFAULT_BGM_VOLUME);
                         game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, DEFAULT_FADE_TIME);
                     }
                     State::Update => {

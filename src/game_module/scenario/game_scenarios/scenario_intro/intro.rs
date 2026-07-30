@@ -3,8 +3,10 @@ use crate::game_module::actors::character::{ActorWrapper, Character};
 use crate::game_module::actors::props::Prop;
 use crate::game_module::behavior::behavior_base::BehaviorState;
 use crate::game_module::game_constants::*;
-use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::game_scene_manager::Stages;
+use crate::game_module::game_service_locator::{
+    get_game_resources, get_game_scene_manager_mut, get_game_ui_manager_mut,
+};
 use crate::game_module::game_ui_manager::{GameUIManager, QuestItem};
 use crate::game_module::scenario::game_scenarios::scenario_wrap_up_the_day::ScenarioWrapUpTheDay;
 use crate::game_module::scenario::scenario::{
@@ -18,9 +20,9 @@ use crate::game_module::widgets::quest_widgets::quest_widget::QuestCreateInfo;
 use crate::game_module::widgets::text_box_widget::{TextBoxContent, TextBoxLayerType};
 use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
-use rust_engine_3d::core::engine_service_locator::get_audio_manager_mut;
+use rust_engine_3d::core::engine_service_locator::{get_audio_manager_mut, get_scene_manager};
 use rust_engine_3d::utilities::math;
-use rust_engine_3d::utilities::system::{RcRefCell, State, newRcRefCell, ptr_as_mut, ptr_as_ref};
+use rust_engine_3d::utilities::system::{RcRefCell, State, newRcRefCell, ptr_as_mut};
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 use strum::IntoEnumIterator;
@@ -69,7 +71,7 @@ struct ScenarioIntroSaveData {
 pub struct ScenarioIntro<'a> {
     _scenario_type: ScenarioType,
     _scenario_create_info: ScenarioDataCreateInfo,
-    _game_scene_manager: *const GameSceneManager<'a>,
+
     _player: Option<RcRefCell<Character<'a>>>,
     _actor_ewa: Option<RcRefCell<Character<'a>>>,
     _actor_koa: Option<RcRefCell<Character<'a>>>,
@@ -101,14 +103,12 @@ pub struct ScenarioIntro<'a> {
 
 impl<'a> ScenarioIntro<'a> {
     pub fn create_game_scenario(
-        game_scene_manager: *const GameSceneManager<'a>,
         scenario_type: ScenarioType,
         scenario_create_info: &ScenarioDataCreateInfo,
     ) -> RcRefCell<ScenarioIntro<'a>> {
         newRcRefCell(ScenarioIntro {
             _scenario_type: scenario_type,
             _scenario_create_info: scenario_create_info.clone(),
-            _game_scene_manager: game_scene_manager,
             _player: None,
             _actor_ewa: None,
             _actor_koa: None,
@@ -177,33 +177,28 @@ impl<'a> ScenarioIntro<'a> {
         actor.borrow_mut().set_move_idle();
     }
 
-    pub fn create_move_to_tutorial_stage_text_box(&self, game_scene_manager: &GameSceneManager<'a>) {
+    pub fn create_move_to_tutorial_stage_text_box(&self) {
         if let Some(prop) = self._prop_gate.as_ref() {
             let wrapper = ActorWrapper::Prop(prop.clone());
             let contents = vec![TextBoxContent::Text(String::from(
                 "\"Move to the Forest to find Food!\"",
             ))];
-            game_scene_manager.get_game_ui_manager_mut().add_text_box_item(
-                TextBoxLayerType::GamePlayLayer,
-                wrapper,
-                &contents,
-                None,
-            );
+            get_game_ui_manager_mut().add_text_box_item(TextBoxLayerType::GamePlayLayer, wrapper, &contents, None);
         }
     }
 
-    pub fn remove_move_to_tutorial_stage_text_box(&self, game_scene_manager: &GameSceneManager<'a>) {
+    pub fn remove_move_to_tutorial_stage_text_box(&self) {
         if let Some(prop) = self._prop_gate.as_ref() {
             let wrapper = ActorWrapper::Prop(prop.clone());
-            game_scene_manager.get_game_ui_manager_mut().remove_text_box_item(wrapper.get_key());
+            get_game_ui_manager_mut().remove_text_box_item(wrapper.get_key());
         }
     }
 
-    pub fn create_hit_this_tree_text_box(&self, game_scene_manager: &GameSceneManager<'a>) {
+    pub fn create_hit_this_tree_text_box(&self) {
         if let Some(prop_tree) = self._prop_tree.as_ref() {
             let actor_wrapper = ActorWrapper::Prop(prop_tree.clone());
             let contents = vec![TextBoxContent::Text(String::from("\"Hit this tree to get food.\""))];
-            game_scene_manager.get_game_ui_manager_mut().add_text_box_item(
+            get_game_ui_manager_mut().add_text_box_item(
                 TextBoxLayerType::GamePlayLayer,
                 actor_wrapper,
                 &contents,
@@ -212,75 +207,64 @@ impl<'a> ScenarioIntro<'a> {
         }
     }
 
-    pub fn remove_hit_this_tree_text_box(&self, game_scene_manager: &GameSceneManager<'a>) {
+    pub fn remove_hit_this_tree_text_box(&self) {
         if let Some(prop_tree) = self._prop_tree.as_ref() {
             let actor_wrapper = ActorWrapper::Prop(prop_tree.clone());
-            game_scene_manager.get_game_ui_manager_mut().remove_text_box_item(actor_wrapper.get_key());
+            get_game_ui_manager_mut().remove_text_box_item(actor_wrapper.get_key());
         }
     }
 
-    pub fn create_return_home_text_box(&self, game_scene_manager: &GameSceneManager<'a>) {
+    pub fn create_return_home_text_box(&self) {
         if let Some(prop) = self._prop_gate_stage01.as_ref() {
             let wrapper = ActorWrapper::Prop(prop.clone());
             let contents = vec![TextBoxContent::Text(String::from("\"Return home.\""))];
-            game_scene_manager.get_game_ui_manager_mut().add_text_box_item(
-                TextBoxLayerType::GamePlayLayer,
-                wrapper,
-                &contents,
-                None,
-            );
+            get_game_ui_manager_mut().add_text_box_item(TextBoxLayerType::GamePlayLayer, wrapper, &contents, None);
         }
     }
 
-    pub fn remove_return_home_text_box(&self, game_scene_manager: &GameSceneManager<'a>) {
+    pub fn remove_return_home_text_box(&self) {
         if let Some(prop) = self._prop_gate_stage01.as_ref() {
             let wrapper = ActorWrapper::Prop(prop.clone());
-            game_scene_manager.get_game_ui_manager_mut().remove_text_box_item(wrapper.get_key());
+            get_game_ui_manager_mut().remove_text_box_item(wrapper.get_key());
         }
     }
 
-    pub fn remove_give_food_to_ewa_text_box(&self, game_scene_manager: &GameSceneManager<'a>) {
+    pub fn remove_give_food_to_ewa_text_box(&self) {
         if let Some(actor) = self._actor_ewa.as_ref() {
             let actor_wrapper = ActorWrapper::Character(actor.clone());
-            game_scene_manager.get_game_ui_manager_mut().remove_text_box_item(actor_wrapper.get_key());
+            get_game_ui_manager_mut().remove_text_box_item(actor_wrapper.get_key());
         }
     }
 
-    pub fn remove_give_food_to_koa_text_box(&self, game_scene_manager: &GameSceneManager<'a>) {
+    pub fn remove_give_food_to_koa_text_box(&self) {
         if let Some(actor) = self._actor_koa.as_ref() {
             let actor_wrapper = ActorWrapper::Character(actor.clone());
-            game_scene_manager.get_game_ui_manager_mut().remove_text_box_item(actor_wrapper.get_key());
+            get_game_ui_manager_mut().remove_text_box_item(actor_wrapper.get_key());
         }
     }
 
-    pub fn create_wrap_up_the_day_text_box(&self, game_scene_manager: &GameSceneManager<'a>) {
+    pub fn create_wrap_up_the_day_text_box(&self) {
         if let Some(prop) = self._prop_table.as_ref() {
             let wrapper = ActorWrapper::Prop(prop.clone());
             let contents = vec![TextBoxContent::Text(String::from("\"Wrap up the day.\""))];
-            game_scene_manager.get_game_ui_manager_mut().add_text_box_item(
-                TextBoxLayerType::GamePlayLayer,
-                wrapper,
-                &contents,
-                None,
-            );
+            get_game_ui_manager_mut().add_text_box_item(TextBoxLayerType::GamePlayLayer, wrapper, &contents, None);
         }
     }
 
-    pub fn remove_wrap_up_the_day_text_box(&self, game_scene_manager: &GameSceneManager<'a>) {
+    pub fn remove_wrap_up_the_day_text_box(&self) {
         if let Some(prop) = self._prop_table.as_ref() {
             let wrapper = ActorWrapper::Prop(prop.clone());
-            game_scene_manager.get_game_ui_manager_mut().remove_text_box_item(wrapper.get_key());
+            get_game_ui_manager_mut().remove_text_box_item(wrapper.get_key());
         }
     }
 
     pub fn clear_all(&mut self) {
-        let game_scene_manager = ptr_as_ref(self._game_scene_manager);
-        self.remove_move_to_tutorial_stage_text_box(game_scene_manager);
-        self.remove_hit_this_tree_text_box(game_scene_manager);
-        self.remove_return_home_text_box(game_scene_manager);
-        self.remove_give_food_to_ewa_text_box(game_scene_manager);
-        self.remove_give_food_to_koa_text_box(game_scene_manager);
-        self.remove_wrap_up_the_day_text_box(game_scene_manager);
+        self.remove_move_to_tutorial_stage_text_box();
+        self.remove_hit_this_tree_text_box();
+        self.remove_return_home_text_box();
+        self.remove_give_food_to_ewa_text_box();
+        self.remove_give_food_to_koa_text_box();
+        self.remove_wrap_up_the_day_text_box();
 
         self._player = None;
         self._actor_ewa = None;
@@ -368,7 +352,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
     }
 
     fn on_open_game_scene(&mut self, game_scene_data_name: &str) {
-        let game_scene_manager = ptr_as_mut(self._game_scene_manager);
+        let game_scene_manager = get_game_scene_manager_mut();
         if self._scenario_create_info.get_game_scene_data_name() == game_scene_data_name {
             game_scene_manager.spawn_game_scenario_objects(&self._scenario_create_info);
             self._scenario_create_info.reset();
@@ -407,7 +391,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                 );
                 self._around_end_position = pivot - end_rotation_matrix.column(2).xyz() * CAMERA_DISTANCE_MIN;
 
-                let main_camera = game_scene_manager.get_scene_manager().get_main_camera_mut();
+                let main_camera = get_scene_manager().get_main_camera_mut();
                 main_camera._transform_object.set_position(&self._around_start_position);
                 main_camera._transform_object.set_rotation(&self._around_start_rotation);
 
@@ -415,18 +399,18 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
             }
             ScenarioPhase::MoveToTutorialStage => {
                 if game_scene_data_name == Stages::Home.get_stage_data_name() {
-                    self.create_move_to_tutorial_stage_text_box(game_scene_manager);
+                    self.create_move_to_tutorial_stage_text_box();
                 }
             }
             ScenarioPhase::GatheringFood => {
                 if game_scene_data_name == Stages::Home.get_stage_data_name() {
                     if let Some(quest) = &self._sub_quest_gather_food {
                         if !quest.borrow_mut().is_completed_quest() {
-                            self.create_move_to_tutorial_stage_text_box(game_scene_manager);
+                            self.create_move_to_tutorial_stage_text_box();
                         }
                     }
                 } else if game_scene_data_name == Stages::Forest.get_stage_data_name() {
-                    self.create_hit_this_tree_text_box(game_scene_manager);
+                    self.create_hit_this_tree_text_box();
                 }
             }
             ScenarioPhase::BackHome => {
@@ -441,7 +425,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                     let back_home_not_completed =
                         self._sub_quest_back_home.as_ref().map_or(true, |q| !q.borrow().is_completed_quest());
                     if back_home_not_completed {
-                        self.create_return_home_text_box(game_scene_manager);
+                        self.create_return_home_text_box();
                     }
                 }
             }
@@ -450,8 +434,8 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
     }
 
     fn update_game_scenario(&mut self, _any_key_hold: bool, any_key_pressed: bool, delta_time: f64) {
-        let game_scene_manager = ptr_as_mut(self._game_scene_manager);
-        let game_ui_manager = crate::game_module::game_service_locator::get_game_ui_manager_mut();
+        let game_scene_manager = get_game_scene_manager_mut();
+        let game_ui_manager = get_game_ui_manager_mut();
 
         if TIME_OF_MORNING <= game_scene_manager.get_time_of_day() {
             game_scene_manager.set_time_of_day_speed(1.0);
@@ -538,7 +522,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                         }
                     }
                     State::Update => {
-                        let main_camera = game_scene_manager.get_scene_manager().get_main_camera_mut();
+                        let main_camera = get_scene_manager().get_main_camera_mut();
                         let progress = 1.0 - (phase_ratio * -5.0).exp2();
                         let position = self._around_start_position.lerp(&self._around_end_position, progress);
                         let rotation = self._around_start_rotation.lerp(&self._around_end_rotation, progress);
@@ -672,8 +656,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                             actor.borrow_mut().set_next_behavior(BehaviorState::Idle, true);
                         }
 
-                        let item_coconut =
-                            crate::game_module::game_service_locator::get_game_resources().get_item_data(ITEM_COCONUT);
+                        let item_coconut = get_game_resources().get_item_data(ITEM_COCONUT);
                         self._quest =
                             Some(game_ui_manager.add_quest(Some(String::from("Gather food for the hungry family."))));
                         if let Some(quest) = &self._quest {
@@ -704,7 +687,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                             ));
                         }
 
-                        self.create_move_to_tutorial_stage_text_box(game_scene_manager);
+                        self.create_move_to_tutorial_stage_text_box();
                     }
                     State::Update => {
                         if game_scene_manager.get_current_game_scene_data_name() == Stages::Forest.get_stage_data_name()
@@ -719,7 +702,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                 },
                 ScenarioPhase::GatheringFood => match state {
                     State::Begin => {
-                        self.create_hit_this_tree_text_box(game_scene_manager);
+                        self.create_hit_this_tree_text_box();
                     }
                     State::Update => {
                         let completed =
@@ -727,9 +710,9 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                         if game_scene_manager.get_current_game_scene_data_name() == Stages::Forest.get_stage_data_name()
                             && completed
                         {
-                            self.remove_move_to_tutorial_stage_text_box(game_scene_manager);
-                            self.remove_hit_this_tree_text_box(game_scene_manager);
-                            self.create_return_home_text_box(game_scene_manager);
+                            self.remove_move_to_tutorial_stage_text_box();
+                            self.remove_hit_this_tree_text_box();
+                            self.create_return_home_text_box();
                             self._scenario_track.set_next_scenario_phase(ScenarioPhase::BackHome, None);
                         }
                     }
@@ -742,13 +725,13 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                         if let Some(q) = &self._sub_quest_back_home {
                             q.borrow_mut().set_completed_quest();
                         }
-                        self.remove_return_home_text_box(game_scene_manager);
+                        self.remove_return_home_text_box();
                         self._scenario_track.set_next_scenario_phase(ScenarioPhase::WrapUpTheDay, None);
                     }
                 }
                 ScenarioPhase::WrapUpTheDay => {
                     if state == State::Begin {
-                        self.create_wrap_up_the_day_text_box(game_scene_manager);
+                        self.create_wrap_up_the_day_text_box();
                     }
                 }
                 ScenarioPhase::Sleeping => {

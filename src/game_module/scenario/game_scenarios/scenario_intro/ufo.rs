@@ -2,16 +2,17 @@ use crate::game_module::actors::character::Character;
 use crate::game_module::game_constants::{
     AUDIO_UFO_BEAM, AUDIO_UFO_FLYING, DEFAULT_FADE_TIME, MATERIAL_UI_NONE, TIME_OF_DAWN,
 };
-use crate::game_module::game_scene_manager::{GameSceneManager, Stages};
+use crate::game_module::game_scene_manager::Stages;
+use crate::game_module::game_service_locator::{get_game_scene_manager_mut, get_game_ui_manager_mut};
 use crate::game_module::scenario::scenario::{
     GameScenarioCreateInfo, ScenarioBase, ScenarioDataCreateInfo, ScenarioType,
 };
 use crate::game_module::scenario::scenario_track::ScenarioTrack;
 use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop};
-use rust_engine_3d::core::engine_service_locator::{get_audio_manager, get_audio_manager_mut};
+use rust_engine_3d::core::engine_service_locator::{get_audio_manager, get_audio_manager_mut, get_scene_manager};
 use rust_engine_3d::utilities::math;
-use rust_engine_3d::utilities::system::{RcRefCell, State, newRcRefCell, ptr_as_mut};
+use rust_engine_3d::utilities::system::{RcRefCell, State, newRcRefCell};
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 use strum::IntoEnumIterator;
@@ -33,7 +34,7 @@ struct ScenarioUfoSaveData {}
 pub struct ScenarioUfo<'a> {
     _scenario_type: ScenarioType,
     _scenario_create_info: ScenarioDataCreateInfo,
-    _game_scene_manager: *const GameSceneManager<'a>,
+
     _actor_ufo: Option<RcRefCell<Character<'a>>>,
     _player: Option<RcRefCell<Character<'a>>>,
     _actor_ewa: Option<RcRefCell<Character<'a>>>,
@@ -45,14 +46,12 @@ pub struct ScenarioUfo<'a> {
 
 impl<'a> ScenarioUfo<'a> {
     pub fn create_game_scenario(
-        game_scene_manager: *const GameSceneManager<'a>,
         scenario_type: ScenarioType,
         scenario_create_info: &ScenarioDataCreateInfo,
     ) -> RcRefCell<ScenarioUfo<'a>> {
         newRcRefCell(ScenarioUfo {
             _scenario_type: scenario_type,
             _scenario_create_info: scenario_create_info.clone(),
-            _game_scene_manager: game_scene_manager,
             _actor_ufo: None,
             _player: None,
             _actor_ewa: None,
@@ -159,7 +158,7 @@ impl<'a> ScenarioBase<'a> for ScenarioUfo<'a> {
     fn on_close_game_scene(&mut self, _game_scene_data_name: &str) {}
 
     fn on_open_game_scene(&mut self, game_scene_data_name: &str) {
-        let game_scene_manager = ptr_as_mut(self._game_scene_manager);
+        let game_scene_manager = get_game_scene_manager_mut();
         if self._scenario_create_info.get_game_scene_data_name() == game_scene_data_name {
             game_scene_manager.spawn_game_scenario_objects(&self._scenario_create_info);
             self._scenario_create_info.reset();
@@ -174,8 +173,8 @@ impl<'a> ScenarioBase<'a> for ScenarioUfo<'a> {
     }
 
     fn update_game_scenario(&mut self, _any_key_hold: bool, _any_key_pressed: bool, delta_time: f64) {
-        let game_scene_manager = ptr_as_mut(self._game_scene_manager);
-        let game_ui_manager = crate::game_module::game_service_locator::get_game_ui_manager_mut();
+        let game_scene_manager = get_game_scene_manager_mut();
+        let game_ui_manager = get_game_ui_manager_mut();
 
         let prev_scenario_phase = self._scenario_track._scenario_phase;
         let next_scenario_phase = self._scenario_track._next_scenario_phase;
@@ -210,7 +209,7 @@ impl<'a> ScenarioBase<'a> for ScenarioUfo<'a> {
                 ScenarioPhase::AppearUfo => match state {
                     State::Begin => {
                         self._audio_ufo_flying =
-                            get_audio_manager_mut().play_audio(AUDIO_UFO_FLYING, AudioLoop::LOOP, Some(1.0));
+                            get_audio_manager_mut().play_audio_bank(AUDIO_UFO_FLYING, AudioLoop::LOOP, Some(1.0));
                     }
                     State::Update => {
                         self.update_ufo_movement();
@@ -222,7 +221,7 @@ impl<'a> ScenarioBase<'a> for ScenarioUfo<'a> {
                 },
                 ScenarioPhase::UfoLongShot => match state {
                     State::Begin => {
-                        let main_camera = game_scene_manager.get_scene_manager().get_main_camera_mut();
+                        let main_camera = get_scene_manager().get_main_camera_mut();
                         main_camera._transform_object.set_position(&Vector3::new(13.48, 26.56, -5.02));
                         main_camera._transform_object.set_rotation(&Vector3::new(0.76, 0.33, 0.0));
                         if let Some(actor) = &self._player {
@@ -248,7 +247,7 @@ impl<'a> ScenarioBase<'a> for ScenarioUfo<'a> {
                             actor.borrow_mut()._controller.set_flying_mode(true);
                         }
                         self._audio_ufo_beam =
-                            get_audio_manager_mut().play_audio(AUDIO_UFO_BEAM, AudioLoop::ONCE, Some(1.0));
+                            get_audio_manager_mut().play_audio_bank(AUDIO_UFO_BEAM, AudioLoop::ONCE, Some(1.0));
                     }
                     State::Update => {
                         if self.update_be_abducted(delta_time) {

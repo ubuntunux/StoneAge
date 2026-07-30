@@ -3,21 +3,25 @@ use crate::game_module::actors::items::api::{
     Item, ItemCreateInfo, ItemData, ItemDataType, ItemID, ItemManager, ItemProperties, ItemSaveData,
 };
 use crate::game_module::actors::items::updater::create_item_updater;
-use crate::game_module::game_client::GameClient;
 use crate::game_module::game_constants::{
     AUDIO_ITEM_INVENTORY, AUDIO_PICKUP_ITEM, EAT_ITEM_DISTANCE, WEAPON_SOCKET_NAME,
 };
-use crate::game_module::game_scene_manager::{GameSceneManager, ItemCreateInfoMap, ItemSaveDataMap};
+use crate::game_module::game_scene_manager::{ItemCreateInfoMap, ItemSaveDataMap};
+use crate::game_module::game_service_locator::{
+    get_character_manager, get_character_manager_mut, get_game_resources, get_game_ui_manager_mut,
+};
 use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
+use rust_engine_3d::core::engine_service_locator::{
+    get_audio_manager_mut, get_engine_resources, get_scene_manager, get_scene_manager_mut,
+};
 use rust_engine_3d::scene::collision::CollisionType;
 use rust_engine_3d::scene::height_map::HeightMapData;
 use rust_engine_3d::scene::render_object::{RenderObjectCreateInfo, RenderObjectData};
-use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::scene::socket::Socket;
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{
-    RcRefCell, extract_name_and_uuid, format_name_with_uuid, newRcRefCell, ptr_as_mut, ptr_as_ref,
+    RcRefCell, extract_name_and_uuid, format_name_with_uuid, newRcRefCell, ptr_as_mut,
 };
 use std::collections::HashMap;
 use uuid::Uuid;
@@ -198,23 +202,6 @@ impl<'a> ItemManager<'a> {
         log::info!("initialize_item_manager");
     }
     pub fn destroy_item_manager(&mut self) {}
-
-    pub fn get_game_client(&self) -> &GameClient<'a> {
-        crate::game_module::game_service_locator::get_game_client()
-    }
-    pub fn get_game_scene_manager(&self) -> &GameSceneManager<'a> {
-        crate::game_module::game_service_locator::get_game_scene_manager()
-    }
-    pub fn get_game_scene_manager_mut(&self) -> &mut GameSceneManager<'a> {
-        crate::game_module::game_service_locator::get_game_scene_manager_mut()
-    }
-
-    pub fn get_scene_manager(&self) -> &SceneManager<'a> {
-        rust_engine_3d::core::engine_service_locator::get_scene_manager()
-    }
-    pub fn get_scene_manager_mut(&self) -> &mut SceneManager<'a> {
-        rust_engine_3d::core::engine_service_locator::get_scene_manager_mut()
-    }
     pub fn generate_id(&self) -> Uuid {
         Uuid::new_v4()
     }
@@ -233,22 +220,21 @@ impl<'a> ItemManager<'a> {
         let (item_name, uuid) = extract_name_and_uuid(item_name);
         let mut spawn_point = item_create_info._position;
         spawn_point.y =
-            spawn_point.y.max(self.get_scene_manager().get_height_map_data().get_height_bilinear(&spawn_point, 0));
+            spawn_point.y.max(get_scene_manager().get_height_map_data().get_height_bilinear(&spawn_point, 0));
 
-        let game_resource = crate::game_module::game_service_locator::get_game_resources();
+        let game_resource = get_game_resources();
         let item_data = game_resource.get_item_data(item_create_info._item_data_name.as_str());
-        let item_model_data = rust_engine_3d::core::engine_service_locator::get_engine_resources()
-            .get_model_data(&item_data.borrow()._model_data_name);
+        let item_model_data = get_engine_resources().get_model_data(&item_data.borrow()._model_data_name);
         let render_object_create_info = RenderObjectCreateInfo {
             _model_data_name: item_data.borrow()._model_data_name.clone(),
             ..Default::default()
         };
 
         let render_object_data = if item_model_data.borrow()._mesh_data.borrow().has_animation_data() {
-            self.get_scene_manager_mut()
+            get_scene_manager_mut()
                 .add_skeletal_render_object(item_create_info._item_data_name.as_str(), &render_object_create_info)
         } else {
-            self.get_scene_manager_mut().add_dynamic_render_object(
+            get_scene_manager_mut().add_dynamic_render_object(
                 item_create_info._item_data_name.as_str(),
                 &render_object_create_info,
                 Some(CollisionType::NONE),
@@ -297,9 +283,9 @@ impl<'a> ItemManager<'a> {
         }
 
         if item._render_object.borrow().has_animation() {
-            self.get_scene_manager_mut().remove_skeletal_render_object(item._render_object.borrow().get_object_id());
+            get_scene_manager_mut().remove_skeletal_render_object(item._render_object.borrow().get_object_id());
         } else {
-            self.get_scene_manager_mut().remove_static_render_object(item._render_object.borrow().get_object_id());
+            get_scene_manager_mut().remove_static_render_object(item._render_object.borrow().get_object_id());
         }
     }
 
@@ -338,25 +324,17 @@ impl<'a> ItemManager<'a> {
     }
 
     pub fn pick_item(&self, item_data_name: &str, item_count: usize) -> bool {
-        let success = self.get_game_client().get_game_ui_manager_mut().add_item(item_data_name, item_count);
+        let success = get_game_ui_manager_mut().add_item(item_data_name, item_count);
         if success {
-            rust_engine_3d::core::engine_service_locator::get_audio_manager_mut().play_audio_bank(
-                AUDIO_PICKUP_ITEM,
-                AudioLoop::ONCE,
-                None,
-            );
+            get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
         }
         success
     }
 
     pub fn remove_inventory_item(&mut self, item_data_name: &str, item_count: usize) -> bool {
-        let success = self.get_game_client().get_game_ui_manager_mut().remove_item(item_data_name, item_count);
+        let success = get_game_ui_manager_mut().remove_item(item_data_name, item_count);
         if success {
-            rust_engine_3d::core::engine_service_locator::get_audio_manager_mut().play_audio_bank(
-                AUDIO_ITEM_INVENTORY,
-                AudioLoop::ONCE,
-                None,
-            );
+            get_audio_manager_mut().play_audio_bank(AUDIO_ITEM_INVENTORY, AudioLoop::ONCE, None);
         }
         success
     }
@@ -364,8 +342,7 @@ impl<'a> ItemManager<'a> {
     pub fn drop_inventory_item(&mut self, item_data_name: &str, item_count: usize) -> bool {
         let success = self.remove_inventory_item(item_data_name, item_count);
         if success {
-            let player =
-                ptr_as_ref(self.get_game_scene_manager_mut().get_character_manager_mut().get_player().as_ptr());
+            let player = get_character_manager_mut().get_player().borrow();
             let yaw = player.get_rotation().y + (rand::random::<f32>() - 0.5) * std::f32::consts::PI * 0.5;
             let drop_speed = 2.0 + rand::random::<f32>() * 2.0;
             let velocity = Vector3::new(-yaw.sin(), 1.0, -yaw.cos()) * drop_speed + player.get_final_velocity();
@@ -381,26 +358,6 @@ impl<'a> ItemManager<'a> {
             self.create_item(item_data_name, &item_create_info, None);
         }
         success
-    }
-
-    pub fn get_selected_inventory_item_data_name(&self) -> &str {
-        self.get_game_client().get_game_ui_manager().get_selected_inventory_item_data_name()
-    }
-
-    pub fn get_selected_inventory_item_data_type(&self) -> ItemDataType {
-        self.get_game_client().get_game_ui_manager().get_selected_inventory_item_data_type()
-    }
-
-    pub fn select_next_item(&mut self) {
-        self.get_game_client().get_game_ui_manager_mut().select_next_item();
-    }
-
-    pub fn select_previous_item(&mut self) {
-        self.get_game_client().get_game_ui_manager_mut().select_previous_item();
-    }
-
-    pub fn select_item(&mut self, item_index: usize) {
-        self.get_game_client().get_game_ui_manager_mut().select_item(item_index);
     }
 
     pub fn attach_item(&mut self, character: &mut Character<'a>, item_data_name: &str) {
@@ -433,10 +390,10 @@ impl<'a> ItemManager<'a> {
     }
 
     pub fn update_item_manager(&mut self, delta_time: f64) {
-        let game_scene_manager = self.get_game_scene_manager();
-        let scene_manager = self.get_scene_manager();
+        let character_manager = get_character_manager();
+        let scene_manager = get_scene_manager();
 
-        if !game_scene_manager.get_character_manager().is_valid_player() {
+        if !character_manager.is_valid_player() {
             return;
         }
 
@@ -446,7 +403,7 @@ impl<'a> ItemManager<'a> {
 
         let mut pick_items: Vec<RcRefCell<Item>> = Vec::new();
         {
-            let player = game_scene_manager.get_character_manager().get_player();
+            let player = character_manager.get_player();
             let player_mut = player.borrow_mut();
             let player_position = player_mut.get_position();
             let player_bound_box = player_mut.get_bounding_box();

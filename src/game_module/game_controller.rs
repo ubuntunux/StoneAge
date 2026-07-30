@@ -1,10 +1,12 @@
-use crate::application::application::Application;
 use crate::game_module::actors::character::Character;
-use crate::game_module::game_client::{GameClient, GamePhase};
+use crate::game_module::game_client::GamePhase;
 use crate::game_module::game_constants::*;
-use crate::game_module::game_ui_manager::GameUIManager;
+use crate::game_module::game_service_locator::{
+    get_character_manager, get_game_client_mut, get_game_ui_manager, get_game_ui_manager_mut, get_item_manager_mut,
+};
 use nalgebra::{Matrix4, Vector2, Vector3};
 use rust_engine_3d::core::engine_core::TimeData;
+use rust_engine_3d::core::engine_service_locator::get_scene_manager;
 use rust_engine_3d::core::input::{ButtonState, JoystickInputData, KeyboardInputData, MouseInputData, MouseMoveData};
 use rust_engine_3d::scene::camera::CameraObjectData;
 use rust_engine_3d::scene::collision::{CollisionCreateInfo, CollisionData, CollisionType};
@@ -74,24 +76,6 @@ impl<'a> GameController<'a> {
 
     pub fn initialize_game_controller(&mut self) {
         log::info!("initialize_game_controller");
-    }
-    pub fn get_game_client(&self) -> &GameClient<'a> {
-        crate::game_module::game_service_locator::get_game_client()
-    }
-    pub fn get_game_client_mut(&self) -> &mut GameClient<'a> {
-        crate::game_module::game_service_locator::get_game_client_mut()
-    }
-    pub fn get_game_ui_manager(&self) -> &GameUIManager<'a> {
-        crate::game_module::game_service_locator::get_game_ui_manager()
-    }
-    pub fn get_game_ui_manager_mut(&self) -> &mut GameUIManager<'a> {
-        crate::game_module::game_service_locator::get_game_ui_manager_mut()
-    }
-    pub fn get_main_camera(&self) -> &CameraObjectData {
-        self.get_game_client().get_game_scene_manager().get_scene_manager().get_main_camera()
-    }
-    pub fn get_main_camera_mut(&self) -> &mut CameraObjectData {
-        self.get_game_client().get_game_scene_manager().get_scene_manager().get_main_camera_mut()
     }
 
     pub fn is_game_camera_auto_blend_mode(&self) -> bool {
@@ -176,7 +160,7 @@ impl<'a> GameController<'a> {
 
     pub fn update_current_game_camera_transform(&mut self) {
         let (pitch, yaw, position) = {
-            let main_camera = self.get_main_camera();
+            let main_camera = get_scene_manager().get_main_camera();
             (
                 main_camera._transform_object.get_pitch(),
                 main_camera._transform_object.get_yaw(),
@@ -187,9 +171,7 @@ impl<'a> GameController<'a> {
         self._camera_yaw = yaw;
         self._camera_position = position;
 
-        let calculated_distance = if let Some(player) =
-            self.get_game_client().get_game_scene_manager().get_character_manager().get_maybe_player()
-        {
+        let calculated_distance = if let Some(player) = get_character_manager().get_maybe_player() {
             let pivot = player.borrow().get_bounding_box()._center + Vector3::new(0.0, CAMERA_OFFSET_Y, 0.0);
             Some((pivot - self._camera_position).magnitude())
         } else {
@@ -278,7 +260,7 @@ impl<'a> GameController<'a> {
         let mut prev_camera_position = self._camera_position;
         let mut camera_position = pivot + camera_dir * self._camera_distance;
         let camera_move_delta = self._camera_position - prev_camera_position;
-        let scene_manager = ptr_as_ref(self.get_game_client().get_game_scene_manager().get_scene_manager_ptr());
+        let scene_manager = get_scene_manager();
 
         // check collide with block
         {
@@ -420,17 +402,17 @@ impl<'a> GameController<'a> {
         if keyboard_input_data.get_key_pressed(KeyCode::Escape)
             || joystick_input_data._btn_start == ButtonState::Pressed
         {
-            self.get_game_client_mut().set_next_game_phase(GamePhase::GameMenu);
+            get_game_client_mut().set_next_game_phase(GamePhase::GameMenu);
         }
 
         // item control
         let selectable_item = player.borrow().is_available_move() && player.borrow().is_idle_action();
         if selectable_item {
-            let item_manager = self.get_game_client().get_game_scene_manager().get_item_manager_mut();
+            let game_ui_manager = get_game_ui_manager_mut();
             if is_previous_item {
-                item_manager.select_previous_item();
+                game_ui_manager.select_previous_item();
             } else if is_next_item {
-                item_manager.select_next_item();
+                game_ui_manager.select_next_item();
             } else if keyboard_input_data.is_any_key_pressed() {
                 const NUMPAD_KEY_MAP: [KeyCode; 10] = [
                     KeyCode::Digit1,
@@ -447,7 +429,7 @@ impl<'a> GameController<'a> {
 
                 for (item_index, numpad_key) in NUMPAD_KEY_MAP.iter().enumerate() {
                     if keyboard_input_data.get_key_pressed(*numpad_key) {
-                        item_manager.select_item(item_index);
+                        game_ui_manager.select_item(item_index);
                         break;
                     }
                 }
@@ -556,9 +538,10 @@ impl<'a> GameController<'a> {
             if player_mut.is_in_interaction_range() {
                 player_mut.set_action_interaction();
             } else if selectable_item {
-                let item_manager = self.get_game_client().get_game_scene_manager().get_item_manager_mut();
-                if item_manager.get_selected_inventory_item_data_type().is_droppable() {
-                    let item_data_name = String::from(item_manager.get_selected_inventory_item_data_name());
+                let item_manager = get_item_manager_mut();
+                let game_ui_manager = get_game_ui_manager();
+                if game_ui_manager.get_selected_inventory_item_data_type().is_droppable() {
+                    let item_data_name = String::from(game_ui_manager.get_selected_inventory_item_data_name());
                     item_manager.drop_inventory_item(item_data_name.as_str(), 1);
                 }
             }

@@ -1,7 +1,3 @@
-use std::fs::File;
-use std::io::prelude::*;
-use std::path::{Path, PathBuf};
-
 use crate::game_module::actors::character::{CharacterData, CharacterDataCreateInfo};
 use crate::game_module::actors::items::ItemData;
 use crate::game_module::actors::props::PropData;
@@ -10,11 +6,15 @@ use crate::game_module::actors::weapons::WeaponDataCreateInfo;
 use crate::game_module::game_scene_manager::GameSceneDataCreateInfo;
 use crate::game_module::save_data::save_data::GameSaveData;
 use crate::game_module::scenario::scenario::ScenarioDataCreateInfo;
+use rust_engine_3d::core::engine_service_locator::get_engine_resources;
 use rust_engine_3d::resource::resource::{
     APPLICATION_RESOURCE_PATH, ResourceDataContainer, get_resource_data_must, get_unique_resource_name,
 };
 use rust_engine_3d::utilities::system::{self, RcRefCell, newRcRefCell};
 use serde_json::{self};
+use std::fs::File;
+use std::io::prelude::*;
+use std::path::{Path, PathBuf};
 
 pub const GAME_DATA_DIRECTORY: &str = "game_data";
 pub const CHARACTER_DATA_FILE_PATH: &str = "game_data/characters";
@@ -62,7 +62,7 @@ impl<'a> GameResources<'a> {
         Box::new(game_resources)
     }
     pub fn collect_resources(&self, dir: &Path, extensions: &[&str]) -> Vec<PathBuf> {
-        rust_engine_3d::core::engine_service_locator::get_engine_resources().collect_resources(dir, extensions)
+        get_engine_resources().collect_resources(dir, extensions)
     }
     pub fn initialize_game_resources(&mut self) {}
 
@@ -259,8 +259,7 @@ impl<'a> GameResources<'a> {
             let loaded_contents = system::load(&game_data_file);
             let weapon_data_create_info: WeaponDataCreateInfo =
                 serde_json::from_reader(loaded_contents).expect("Failed to deserialize.");
-            let weapon_model_data = rust_engine_3d::core::engine_service_locator::get_engine_resources()
-                .get_model_data(&weapon_data_create_info._model_data_name);
+            let weapon_model_data = get_engine_resources().get_model_data(&weapon_data_create_info._model_data_name);
             let weapon_data = WeaponData::create_weapon_data(&weapon_data_create_info, weapon_model_data);
             self._weapon_data_map.insert(weapon_data_name.clone(), newRcRefCell(weapon_data));
         }

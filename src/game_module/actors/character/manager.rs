@@ -3,22 +3,20 @@ use crate::game_module::actors::character::controller::CharacterControllerSaveDa
 
 use crate::game_module::actors::character::stats::*;
 use crate::game_module::actors::interaction_object::InteractionObject;
-use crate::game_module::actors::items::ItemManager;
 use crate::game_module::actors::items::{ItemCreateInfo, ItemID};
 use crate::game_module::behavior::behavior_base::BehaviorSaveData;
-use crate::game_module::game_client::GameClient;
 use crate::game_module::game_constants::{
     AUDIO_STOMACH_GROWLING, CHARACTER_INTERACTION_DISTANCE, CHARACTER_INTERACTION_TIME, GAME_VIEW_MODE, GameViewMode,
     ITEM_HAND, ITEM_SPIRIT_BALL, MATERIAL_EMOJI_GOOD, MATERIAL_EMOJI_HUNGRY, NPC_ATTACK_HIT_RANGE,
 };
-use crate::game_module::game_scene_manager::{CharacterCreateInfoMap, CharacterSaveDataMap, GameSceneManager};
-use crate::game_module::game_ui_manager::GameUIManager;
+use crate::game_module::game_scene_manager::{CharacterCreateInfoMap, CharacterSaveDataMap};
 use crate::game_module::widgets::text_box_widget::TextBoxContent;
 use crate::game_module::widgets::text_box_widget::TextBoxLayerType;
 use nalgebra::Vector3;
 
+use crate::game_module::game_service_locator::{get_game_resources, get_game_scene_manager, get_game_ui_manager_mut};
+use rust_engine_3d::core::engine_service_locator::{get_scene_manager, get_scene_manager_mut};
 use rust_engine_3d::scene::render_object::{RenderObjectCreateInfo, RenderObjectSaveData, SceneObjectType};
-use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{RcRefCell, extract_name_and_uuid, newRcRefCell, ptr_as_mut, ptr_as_ref};
 use serde::{Deserialize, Serialize};
@@ -87,25 +85,7 @@ impl<'a> CharacterManager<'a> {
         log::info!("initialize_character_manager");
     }
     pub fn destroy_character_manager(&mut self) {}
-    pub fn get_game_client(&self) -> &GameClient<'a> {
-        crate::game_module::game_service_locator::get_game_client()
-    }
-    pub fn get_game_client_mut(&self) -> &mut GameClient<'a> {
-        crate::game_module::game_service_locator::get_game_client_mut()
-    }
-    pub fn get_game_scene_manager(&self) -> &GameSceneManager<'a> {
-        crate::game_module::game_service_locator::get_game_scene_manager()
-    }
-    pub fn get_game_scene_manager_mut(&self) -> &mut GameSceneManager<'a> {
-        crate::game_module::game_service_locator::get_game_scene_manager_mut()
-    }
 
-    pub fn get_scene_manager(&self) -> &SceneManager<'a> {
-        rust_engine_3d::core::engine_service_locator::get_scene_manager()
-    }
-    pub fn get_scene_manager_mut(&self) -> &mut SceneManager<'a> {
-        rust_engine_3d::core::engine_service_locator::get_scene_manager_mut()
-    }
     pub fn generate_id(&self) -> CharacterID {
         Uuid::new_v4()
     }
@@ -125,15 +105,15 @@ impl<'a> CharacterManager<'a> {
         is_player: bool,
     ) -> RcRefCell<Character<'a>> {
         let (character_name, uuid) = extract_name_and_uuid(character_name);
-        let game_resources = crate::game_module::game_service_locator::get_game_resources();
+        let game_resources = get_game_resources();
 
         // check height map
         let mut spawn_point = character_create_info._position;
         spawn_point.y =
-            spawn_point.y.max(self.get_scene_manager().get_height_map_data().get_height_bilinear(&spawn_point, 0));
+            spawn_point.y.max(get_scene_manager().get_height_map_data().get_height_bilinear(&spawn_point, 0));
 
         // check collision objects
-        let collision_objects = self.get_scene_manager().collect_collision_objects(&spawn_point, &spawn_point);
+        let collision_objects = get_scene_manager().collect_collision_objects(&spawn_point, &spawn_point);
         for collision_object in collision_objects.values() {
             let block_render_object = ptr_as_ref(collision_object.as_ptr());
             let block_bound_box = &block_render_object._collision._bounding_box;
@@ -153,11 +133,8 @@ impl<'a> CharacterManager<'a> {
             _scale: character_create_info._scale,
         };
 
-        let item_manager: *const ItemManager<'a> = self.get_game_scene_manager()._item_manager.as_ref();
-        let render_object_data = self
-            .get_scene_manager_mut()
-            .add_skeletal_render_object(character_name.as_str(), &render_object_create_info);
-
+        let render_object_data =
+            get_scene_manager_mut().add_skeletal_render_object(character_name.as_str(), &render_object_create_info);
         let character_id = if character_create_info._character_id.is_nil() {
             self.generate_id()
         } else {
@@ -166,8 +143,6 @@ impl<'a> CharacterManager<'a> {
         };
 
         let character = newRcRefCell(Character::create_character_instance(
-            self,
-            item_manager,
             character_name.as_str(),
             character_id,
             is_player,
@@ -180,7 +155,10 @@ impl<'a> CharacterManager<'a> {
         ));
 
         if is_player {
-            self.get_game_scene_manager().get_game_ui_manager_mut().add_item(ITEM_HAND, 1);
+            let game_ui_manager = get_game_ui_manager_mut();
+            if game_ui_manager.get_item_count(ITEM_HAND) == 0 {
+                game_ui_manager.add_item(ITEM_HAND, 1);
+            }
             self._player = Some(character.clone());
         }
 
@@ -202,7 +180,7 @@ impl<'a> CharacterManager<'a> {
             self._character_name_map.remove(character._character_name.as_str());
         }
 
-        self.get_scene_manager_mut().remove_skeletal_render_object(character._render_object.borrow()._object_id);
+        get_scene_manager_mut().remove_skeletal_render_object(character._render_object.borrow()._object_id);
     }
     pub fn clear_characters(&mut self, clear_player: bool) {
         let characters = self._characters.values().cloned().collect::<Vec<RcRefCell<Character>>>();
@@ -247,9 +225,9 @@ impl<'a> CharacterManager<'a> {
             .map(|character| character.borrow().get_character_save_data())
             .collect()
     }
-    pub fn post_process_after_characters_loading(&mut self, game_scene_manager: &GameSceneManager<'a>) {
+    pub fn post_process_after_characters_loading(&mut self) {
         for character in self._characters.values() {
-            character.borrow_mut().post_process_after_character_loading(game_scene_manager);
+            character.borrow_mut().post_process_after_character_loading();
         }
     }
     pub fn change_character_data(&mut self, character: &RcRefCell<Character<'a>>, character_data_name: &str) {
@@ -264,7 +242,7 @@ impl<'a> CharacterManager<'a> {
     }
     pub fn change_character_model(&self, character: &RcRefCell<Character<'a>>, model_data_name: &str) {
         let mut character = character.borrow_mut();
-        self.get_scene_manager_mut().remove_skeletal_render_object(character._render_object.borrow()._object_id);
+        get_scene_manager_mut().remove_skeletal_render_object(character._render_object.borrow()._object_id);
 
         let render_object_create_info = RenderObjectCreateInfo {
             _scene_object_type: SceneObjectType::Default,
@@ -274,8 +252,7 @@ impl<'a> CharacterManager<'a> {
             _scale: character.get_scale().clone(),
         };
 
-        let render_object_data = self
-            .get_scene_manager_mut()
+        let render_object_data = get_scene_manager_mut()
             .add_skeletal_render_object(character.get_character_name(), &render_object_create_info);
 
         render_object_data.borrow_mut().copy_render_object_date(&character._render_object.borrow());
@@ -300,11 +277,7 @@ impl<'a> CharacterManager<'a> {
         self._target_character = target_character;
     }
 
-    pub fn update_character_text_box(
-        &self,
-        game_ui_manager: &mut GameUIManager<'a>,
-        refcell_character: &RcRefCell<Character<'a>>,
-    ) {
+    pub fn update_character_text_box(&self, refcell_character: &RcRefCell<Character<'a>>) {
         let mut character = refcell_character.borrow_mut();
         if character._character_stats.get_is_stat_displayed() {
             let mut contents = vec![];
@@ -315,7 +288,7 @@ impl<'a> CharacterManager<'a> {
                 contents.push(TextBoxContent::MaterialInstance(String::from(MATERIAL_EMOJI_GOOD)));
             }
 
-            game_ui_manager.add_text_box_item(
+            get_game_ui_manager_mut().add_text_box_item(
                 TextBoxLayerType::InteractionLayer,
                 ActorWrapper::Character(refcell_character.clone()),
                 &contents,
@@ -347,14 +320,13 @@ impl<'a> CharacterManager<'a> {
             return;
         }
 
-        let game_ui_manager = crate::game_module::game_service_locator::get_game_ui_manager_mut();
         let player = ptr_as_mut(self._player.as_ref().unwrap().as_ptr());
         let mut dead_characters: Vec<RcRefCell<Character>> = Vec::new();
         let mut register_target_character: Option<RcRefCell<Character<'a>>> = None;
         for character in self._characters.values() {
             // update character
             let character_mut = ptr_as_mut(character.as_ptr());
-            character_mut.update_character(self.get_scene_manager(), player, delta_time as f32);
+            character_mut.update_character(get_scene_manager(), player, delta_time as f32);
 
             if !character_mut.is_alive() {
                 continue;
@@ -376,7 +348,7 @@ impl<'a> CharacterManager<'a> {
 
             // update interaction ui
             if !character_mut.is_player() {
-                self.update_character_text_box(game_ui_manager, character);
+                self.update_character_text_box(character);
                 self.update_interaction_ui(player, character, to_player_distance);
             }
 
@@ -416,7 +388,7 @@ impl<'a> CharacterManager<'a> {
                                     _position: *target_position,
                                     ..Default::default()
                                 };
-                                self.get_game_scene_manager().get_item_manager_mut().create_item(
+                                get_game_scene_manager().get_item_manager_mut().create_item(
                                     item_create_info._item_data_name.as_str(),
                                     &item_create_info,
                                     None,
@@ -440,6 +412,7 @@ impl<'a> CharacterManager<'a> {
         }
 
         // remove characters
+        let game_ui_manager = get_game_ui_manager_mut();
         for character in dead_characters.iter() {
             character.borrow_mut()._character_stats.set_is_stat_displayed(false);
             player._controller.remove_interaction_object(InteractionObject::Npc(character.clone()));

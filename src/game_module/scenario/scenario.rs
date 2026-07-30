@@ -1,6 +1,4 @@
-use crate::game_module::game_scene_manager::{
-    CharacterCreateInfoMap, GameSceneManager, ItemCreateInfoMap, PropCreateInfoMap,
-};
+use crate::game_module::game_scene_manager::{CharacterCreateInfoMap, ItemCreateInfoMap, PropCreateInfoMap};
 use crate::game_module::scenario::game_scenarios::scenario_intro::day_one::ScenarioDayOne;
 use crate::game_module::scenario::game_scenarios::scenario_intro::intro::ScenarioIntro;
 use crate::game_module::scenario::game_scenarios::scenario_intro::revolution::ScenarioRevolution;
@@ -41,25 +39,18 @@ impl ScenarioType {
 }
 
 pub fn create_scenario<'a>(
-    game_scene_manager: *const GameSceneManager<'a>,
     scenario_type: ScenarioType,
     scenario_create_info: &ScenarioDataCreateInfo,
 ) -> RcRefCell<dyn ScenarioBase<'a> + 'a> {
     match scenario_type {
-        ScenarioType::ScenarioIntro_Intro => {
-            ScenarioIntro::create_game_scenario(game_scene_manager, scenario_type, scenario_create_info)
-        }
-        ScenarioType::ScenarioIntro_Ufo => {
-            ScenarioUfo::create_game_scenario(game_scene_manager, scenario_type, scenario_create_info)
-        }
+        ScenarioType::ScenarioIntro_Intro => ScenarioIntro::create_game_scenario(scenario_type, scenario_create_info),
+        ScenarioType::ScenarioIntro_Ufo => ScenarioUfo::create_game_scenario(scenario_type, scenario_create_info),
         ScenarioType::ScenarioIntro_Revolution => {
-            ScenarioRevolution::create_game_scenario(game_scene_manager, scenario_type, scenario_create_info)
+            ScenarioRevolution::create_game_scenario(scenario_type, scenario_create_info)
         }
-        ScenarioType::ScenarioIntro_DayOne => {
-            ScenarioDayOne::create_game_scenario(game_scene_manager, scenario_type, scenario_create_info)
-        }
+        ScenarioType::ScenarioIntro_DayOne => ScenarioDayOne::create_game_scenario(scenario_type, scenario_create_info),
         ScenarioType::ScenarioWrapUpTheDay => {
-            ScenarioWrapUpTheDay::create_game_scenario(game_scene_manager, scenario_type, scenario_create_info)
+            ScenarioWrapUpTheDay::create_game_scenario(scenario_type, scenario_create_info)
         }
     }
 }

@@ -1,5 +1,6 @@
 use crate::game_module::game_constants::MATERIAL_MOUSE_DEFAULT;
 use nalgebra::Vector2;
+use rust_engine_3d::core::engine_service_locator::get_engine_resources;
 use rust_engine_3d::scene::ui::{UIManager, UIWidgetTypes, WidgetDefault};
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
 
@@ -9,8 +10,7 @@ pub struct CrossHairWidget<'a> {
 
 impl<'a> CrossHairWidget<'a> {
     pub fn create_cross_hair(root_widget: &mut WidgetDefault<'a>) -> CrossHairWidget<'a> {
-        let material_instance = rust_engine_3d::core::engine_service_locator::get_engine_resources()
-            .get_material_instance_data(MATERIAL_MOUSE_DEFAULT);
+        let material_instance = get_engine_resources().get_material_instance_data(MATERIAL_MOUSE_DEFAULT);
         let cross_hair_widget = UIManager::create_widget("cross_hair_widget", UIWidgetTypes::Default);
         let cross_hair_widget_ptr = ptr_as_mut(cross_hair_widget.as_ref());
         let ui_component = ptr_as_mut(cross_hair_widget.as_ref()).get_ui_component_mut();

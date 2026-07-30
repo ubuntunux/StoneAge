@@ -53,7 +53,7 @@ impl Weather {
                 let effect_id = get_scene_manager_mut().add_effect(EFFECT_RAIN, &effect_create_info);
                 self._rain_effect = Some(effect_id);
 
-                get_game_scene_manager_mut().stop_bgm();
+                get_audio_manager_mut().stop_bgm();
                 get_game_scene_manager_mut().play_ambient_sound(AMBIENT_SOUND_RAIN, None);
                 self._sun_light_color =
                     get_scene_manager().get_main_light().borrow_mut()._light_data._light_color.clone();

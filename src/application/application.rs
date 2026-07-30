@@ -6,19 +6,21 @@ use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::game_service_locator;
 use crate::game_module::game_ui_manager::{EditorUIManager, GameUIManager};
 
+use crate::game_module::game_service_locator::{get_editor_ui_manager_mut, get_game_ui_manager_mut};
 use crate::render_pass;
 use ash::vk;
 use log::LevelFilter;
 use nalgebra::Vector2;
 use rust_engine_3d::constants;
 use rust_engine_3d::constants::DEVELOPMENT;
-use rust_engine_3d::core::engine_core::{self, ApplicationBase, EngineCore, WindowMode};
+use rust_engine_3d::core::engine_core::{self, ApplicationBase, WindowMode};
+use rust_engine_3d::core::engine_service_locator::{
+    get_engine_core_mut, get_font_manager_mut, get_renderer_data_mut, get_scene_manager, get_ui_manager_mut,
+};
 use rust_engine_3d::core::input::ButtonState;
-use rust_engine_3d::effect::effect_manager::EffectManager;
-use rust_engine_3d::renderer::renderer_data::{RenderOption, RenderQualityLevel, RendererData};
+use rust_engine_3d::renderer::renderer_data::{RenderOption, RenderQualityLevel};
 use rust_engine_3d::resource::resource::CallbackLoadRenderPassCreateInfo;
 use rust_engine_3d::utilities::logger;
-use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
 use winit::keyboard::KeyCode;
 
 pub struct Application<'a> {
@@ -33,18 +35,18 @@ pub struct Application<'a> {
 }
 
 impl<'a> ApplicationBase<'a> for Application<'a> {
-    fn initialize_application(&'a mut self, engine_core: &EngineCore<'a>, window_size: &Vector2<i32>) {
-        self.get_game_resources_mut().initialize_game_resources();
-        self.get_game_resources_mut().load_game_resources();
-        self.get_game_client_mut().initialize_game_client();
-        self.get_game_controller_mut().initialize_game_controller();
-        self.get_game_ui_manager_mut().initialize_game_ui_manager();
-        self.get_game_scene_manager_mut().initialize_game_scene_manager(engine_core, window_size);
-        self.get_editor_ui_manager_mut().initialize_editor_ui_manager();
+    fn initialize_application(&'a mut self, window_size: &Vector2<i32>) {
+        self._game_resources.initialize_game_resources();
+        self._game_resources.load_game_resources();
+        self._game_client.initialize_game_client();
+        self._game_controller.initialize_game_controller();
+        self._game_ui_manager.initialize_game_ui_manager();
+        self._game_scene_manager.initialize_game_scene_manager(window_size);
+        self._editor_ui_manager.initialize_editor_ui_manager();
 
         // start game
-        self.get_game_ui_manager_mut().build_game_ui(window_size);
-        self.get_editor_ui_manager_mut().build_editor_ui(window_size);
+        self._game_ui_manager.build_game_ui(window_size);
+        self._editor_ui_manager.build_editor_ui(window_size);
         self.set_game_mode(true);
     }
 
@@ -69,18 +71,14 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
     }
 
     fn update_event(&mut self) {
-        let engine_core = rust_engine_3d::core::engine_service_locator::get_engine_core();
-        let time_data = &engine_core._time_data;
-        let mouse_move_data = &engine_core._mouse_move_data;
-        let mouse_input_data = &engine_core._mouse_input_data;
-        let keyboard_input_data = &engine_core._keyboard_input_data;
-        let joystick_input_data = &engine_core._joystick_input_data;
+        let engine_core = get_engine_core_mut();
 
         if unsafe { DEVELOPMENT } {
-            let is_toggle_game_mode_by_joystick = joystick_input_data._btn_left_trigger == ButtonState::Hold
-                && joystick_input_data._btn_right_trigger == ButtonState::Hold
-                && joystick_input_data._btn_left_shoulder == ButtonState::Hold
-                && joystick_input_data._btn_right_shoulder == ButtonState::Hold;
+            let is_toggle_game_mode_by_joystick = engine_core._joystick_input_data._btn_left_trigger
+                == ButtonState::Hold
+                && engine_core._joystick_input_data._btn_right_trigger == ButtonState::Hold
+                && engine_core._joystick_input_data._btn_left_shoulder == ButtonState::Hold
+                && engine_core._joystick_input_data._btn_right_shoulder == ButtonState::Hold;
 
             if engine_core._keyboard_input_data.get_key_pressed(KeyCode::Backquote) || is_toggle_game_mode_by_joystick {
                 self.toggle_game_mode();
@@ -89,58 +87,60 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
 
         if !self._is_game_mode {
             const MOUSE_DELTA_RATIO: f32 = 500.0;
-            let delta_time = time_data._delta_time_with_scale;
-            let _mouse_pos = &mouse_move_data._mouse_pos;
-            let mouse_delta_x =
-                mouse_move_data._mouse_pos_delta.x as f32 / engine_core._window_size.x as f32 * MOUSE_DELTA_RATIO;
-            let mouse_delta_y =
-                mouse_move_data._mouse_pos_delta.y as f32 / engine_core._window_size.y as f32 * MOUSE_DELTA_RATIO;
-            let btn_left: bool = mouse_input_data._btn_l_hold;
-            let btn_right: bool = mouse_input_data._btn_r_hold;
-            let btn_r_pressed: bool = mouse_input_data._btn_r_pressed;
-            let btn_r_released: bool = mouse_input_data._btn_r_released;
-            let _btn_middle: bool = mouse_input_data._btn_m_hold;
+            let delta_time = engine_core._time_data._delta_time_with_scale;
+            let mouse_delta_x = engine_core._mouse_move_data._mouse_pos_delta.x as f32
+                / engine_core._window_size.x as f32
+                * MOUSE_DELTA_RATIO;
+            let mouse_delta_y = engine_core._mouse_move_data._mouse_pos_delta.y as f32
+                / engine_core._window_size.y as f32
+                * MOUSE_DELTA_RATIO;
+            let btn_left: bool = engine_core._mouse_input_data._btn_l_hold;
+            let btn_right: bool = engine_core._mouse_input_data._btn_r_hold;
+            let btn_r_pressed: bool = engine_core._mouse_input_data._btn_r_pressed;
+            let btn_r_released: bool = engine_core._mouse_input_data._btn_r_released;
+            let _btn_middle: bool = engine_core._mouse_input_data._btn_m_hold;
 
             if btn_r_pressed {
-                self.get_engine_core_mut().set_grab_mode(true);
+                engine_core.set_grab_mode(true);
             } else if btn_r_released {
-                self.get_engine_core_mut().set_grab_mode(false);
+                engine_core.set_grab_mode(false);
             }
 
-            let pressed_key_a = keyboard_input_data.get_key_hold(KeyCode::KeyA);
-            let pressed_key_d = keyboard_input_data.get_key_hold(KeyCode::KeyD);
-            let pressed_key_w = keyboard_input_data.get_key_hold(KeyCode::KeyW);
-            let pressed_key_s = keyboard_input_data.get_key_hold(KeyCode::KeyS);
-            let pressed_key_q = keyboard_input_data.get_key_hold(KeyCode::KeyQ);
-            let pressed_key_e = keyboard_input_data.get_key_hold(KeyCode::KeyE);
-            let pressed_key_z = keyboard_input_data.get_key_hold(KeyCode::KeyZ);
-            let pressed_key_c = keyboard_input_data.get_key_hold(KeyCode::KeyC);
-            let pressed_key_comma = keyboard_input_data.get_key_hold(KeyCode::Comma);
-            let pressed_key_period = keyboard_input_data.get_key_hold(KeyCode::Period);
-            let released_key_left_bracket = keyboard_input_data.get_key_released(KeyCode::BracketLeft);
-            let released_key_right_bracket = keyboard_input_data.get_key_released(KeyCode::BracketRight);
-            let released_key_subtract = keyboard_input_data.get_key_released(KeyCode::Minus);
-            let released_key_equals = keyboard_input_data.get_key_released(KeyCode::Equal);
-            let modifier_keys_shift = keyboard_input_data.get_key_hold(KeyCode::ShiftLeft);
-            let scene_manager = self.get_game_scene_manager().get_scene_manager();
+            let pressed_key_a = engine_core._keyboard_input_data.get_key_hold(KeyCode::KeyA);
+            let pressed_key_d = engine_core._keyboard_input_data.get_key_hold(KeyCode::KeyD);
+            let pressed_key_w = engine_core._keyboard_input_data.get_key_hold(KeyCode::KeyW);
+            let pressed_key_s = engine_core._keyboard_input_data.get_key_hold(KeyCode::KeyS);
+            let pressed_key_q = engine_core._keyboard_input_data.get_key_hold(KeyCode::KeyQ);
+            let pressed_key_e = engine_core._keyboard_input_data.get_key_hold(KeyCode::KeyE);
+            let pressed_key_z = engine_core._keyboard_input_data.get_key_hold(KeyCode::KeyZ);
+            let pressed_key_c = engine_core._keyboard_input_data.get_key_hold(KeyCode::KeyC);
+            let pressed_key_comma = engine_core._keyboard_input_data.get_key_hold(KeyCode::Comma);
+            let pressed_key_period = engine_core._keyboard_input_data.get_key_hold(KeyCode::Period);
+            let released_key_left_bracket = engine_core._keyboard_input_data.get_key_released(KeyCode::BracketLeft);
+            let released_key_right_bracket = engine_core._keyboard_input_data.get_key_released(KeyCode::BracketRight);
+            let released_key_subtract = engine_core._keyboard_input_data.get_key_released(KeyCode::Minus);
+            let released_key_equals = engine_core._keyboard_input_data.get_key_released(KeyCode::Equal);
+            let modifier_keys_shift = engine_core._keyboard_input_data.get_key_hold(KeyCode::ShiftLeft);
+            let scene_manager = get_scene_manager();
             let main_camera = scene_manager.get_main_camera_mut();
-            let main_light = ptr_as_mut(scene_manager.get_main_light().as_ptr());
+            let mut main_light = scene_manager.get_main_light().borrow_mut();
             let camera_move_speed_multiplier = if modifier_keys_shift { 10.0 } else { 1.0 };
             let move_speed: f32 =
                 game_constants::EDITOR_CAMERA_MOVE_SPEED * camera_move_speed_multiplier * delta_time as f32;
             let pan_speed = game_constants::EDITOR_CAMERA_PAN_SPEED * camera_move_speed_multiplier;
             let rotation_speed = game_constants::EDITOR_CAMERA_ROTATION_SPEED;
+            let renderer_data = get_renderer_data_mut();
 
             if released_key_left_bracket {
-                self.get_renderer_data_mut().prev_debug_render_target();
+                renderer_data.prev_debug_render_target();
             } else if released_key_right_bracket {
-                self.get_renderer_data_mut().next_debug_render_target();
+                renderer_data.next_debug_render_target();
             }
 
             if released_key_subtract {
-                self.get_renderer_data_mut().prev_debug_render_target_miplevel();
+                renderer_data.prev_debug_render_target_miplevel();
             } else if released_key_equals {
-                self.get_renderer_data_mut().next_debug_render_target_miplevel();
+                renderer_data.next_debug_render_target_miplevel();
             }
 
             if pressed_key_comma {
@@ -184,80 +184,24 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
     }
 
     fn update_application(&mut self, delta_time: f64) {
-        let font_manager = rust_engine_3d::core::engine_service_locator::get_font_manager_mut();
-        font_manager.clear_logs();
+        get_font_manager_mut().clear_logs();
 
         // update managers
         if self._is_game_mode {
             // delta time threshold: 0.1 sec
             let game_delta_time = 0.1_f64.min(delta_time);
             self._game_client.update_game_mode(game_delta_time);
-            self.get_game_ui_manager_mut().update_game_ui(delta_time);
+            get_game_ui_manager_mut().update_game_ui(delta_time);
             if self._game_client.is_game_over() {
                 self.set_will_terminate_application();
             }
         } else {
-            self.get_editor_ui_manager_mut().update_editor_ui(delta_time);
+            get_editor_ui_manager_mut().update_editor_ui(delta_time);
         }
     }
 }
 
 impl<'a> Application<'a> {
-    pub fn get_engine_core(&self) -> &EngineCore<'a> {
-        rust_engine_3d::core::engine_service_locator::get_engine_core()
-    }
-    pub fn get_engine_core_mut(&self) -> &'a mut EngineCore<'a> {
-        rust_engine_3d::core::engine_service_locator::get_engine_core_mut()
-    }
-    pub fn get_game_resources(&self) -> &GameResources<'a> {
-        self._game_resources.as_ref()
-    }
-    pub fn get_game_resources_mut(&mut self) -> &mut GameResources<'a> {
-        self._game_resources.as_mut()
-    }
-    pub fn get_effect_manager(&self) -> &EffectManager<'a> {
-        rust_engine_3d::core::engine_service_locator::get_effect_manager()
-    }
-    pub fn get_effect_manager_mut(&self) -> &mut EffectManager<'a> {
-        rust_engine_3d::core::engine_service_locator::get_effect_manager_mut()
-    }
-    pub fn get_game_scene_manager(&self) -> &GameSceneManager<'a> {
-        self._game_scene_manager.as_ref()
-    }
-    pub fn get_game_scene_manager_mut(&mut self) -> &mut GameSceneManager<'a> {
-        self._game_scene_manager.as_mut()
-    }
-    pub fn get_renderer_data(&self) -> &RendererData<'a> {
-        rust_engine_3d::core::engine_service_locator::get_renderer_data()
-    }
-    pub fn get_renderer_data_mut(&self) -> &mut RendererData<'a> {
-        rust_engine_3d::core::engine_service_locator::get_renderer_data_mut()
-    }
-    pub fn get_editor_ui_manager(&self) -> &EditorUIManager<'a> {
-        ptr_as_ref(self._editor_ui_manager.as_ref())
-    }
-    pub fn get_editor_ui_manager_mut(&self) -> &mut EditorUIManager<'a> {
-        ptr_as_mut(self._editor_ui_manager.as_ref())
-    }
-    pub fn get_game_ui_manager(&self) -> &GameUIManager<'a> {
-        ptr_as_ref(self._game_ui_manager.as_ref())
-    }
-    pub fn get_game_ui_manager_mut(&self) -> &mut GameUIManager<'a> {
-        ptr_as_mut(self._game_ui_manager.as_ref())
-    }
-
-    pub fn get_game_controller(&self) -> &GameController<'a> {
-        self._game_controller.as_ref()
-    }
-    pub fn get_game_controller_mut(&self) -> &mut GameController<'a> {
-        ptr_as_mut(self._game_controller.as_ref())
-    }
-    pub fn get_game_client(&self) -> &GameClient<'a> {
-        self._game_client.as_ref()
-    }
-    pub fn get_game_client_mut(&self) -> &mut GameClient<'a> {
-        ptr_as_mut(self._game_client.as_ref())
-    }
     pub fn set_will_terminate_application(&mut self) {
         self._will_terminate_application = true;
     }
@@ -266,9 +210,9 @@ impl<'a> Application<'a> {
     }
     pub fn set_game_mode(&mut self, is_game_mode: bool) {
         self._is_game_mode = is_game_mode;
-        self.get_game_client_mut().set_game_mode(is_game_mode);
-        self.get_engine_core_mut().set_grab_mode(is_game_mode);
-        self.get_engine_core_mut().get_ui_manager_mut().set_visible_world_axis(!is_game_mode);
+        self._game_client.set_game_mode(is_game_mode);
+        get_engine_core_mut().set_grab_mode(is_game_mode);
+        get_ui_manager_mut().set_visible_world_axis(!is_game_mode);
     }
 }
 

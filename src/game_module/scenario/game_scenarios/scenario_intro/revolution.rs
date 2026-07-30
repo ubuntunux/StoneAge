@@ -3,7 +3,7 @@ use crate::game_module::game_constants::{
     AUDIO_ALIEN_TALK, AUDIO_UFO_EXPERIMENT, AUDIO_UFO_LABORATORY, CHARACTER_DATA_NAME_ARU, CHARACTER_INTERACTION_TIME,
     DEFAULT_FADE_TIME, MATERIAL_EMOJI_GOOD, MATERIAL_UI_NONE, TIME_OF_NOON,
 };
-use crate::game_module::game_scene_manager::GameSceneManager;
+use crate::game_module::game_service_locator::{get_game_scene_manager_mut, get_game_ui_manager_mut};
 use crate::game_module::scenario::scenario::{
     GameScenarioCreateInfo, ScenarioBase, ScenarioDataCreateInfo, ScenarioType,
 };
@@ -12,7 +12,7 @@ use crate::game_module::widgets::text_box_widget::{TextBoxContent, TextBoxLayerT
 use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop};
 use rust_engine_3d::core::engine_service_locator::{get_audio_manager, get_audio_manager_mut};
-use rust_engine_3d::utilities::system::{RcRefCell, State, newRcRefCell, ptr_as_mut};
+use rust_engine_3d::utilities::system::{RcRefCell, State, newRcRefCell};
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 use strum::IntoEnumIterator;
@@ -45,7 +45,7 @@ fn update_actor_position(actor: &mut Character, position_y: f32) {
 pub struct ScenarioRevolution<'a> {
     _scenario_type: ScenarioType,
     _scenario_create_info: ScenarioDataCreateInfo,
-    _game_scene_manager: *const GameSceneManager<'a>,
+
     _alien_alpha: Option<RcRefCell<Character<'a>>>,
     _alien_beta: Option<RcRefCell<Character<'a>>>,
     _actor_aru: Option<RcRefCell<Character<'a>>>,
@@ -64,14 +64,12 @@ pub struct ScenarioRevolution<'a> {
 
 impl<'a> ScenarioRevolution<'a> {
     pub fn create_game_scenario(
-        game_scene_manager: *const GameSceneManager<'a>,
         scenario_type: ScenarioType,
         scenario_create_info: &ScenarioDataCreateInfo,
     ) -> RcRefCell<ScenarioRevolution<'a>> {
         newRcRefCell(ScenarioRevolution {
             _scenario_type: scenario_type,
             _scenario_create_info: scenario_create_info.clone(),
-            _game_scene_manager: game_scene_manager,
             _alien_alpha: None,
             _alien_beta: None,
             _actor_aru: None,
@@ -145,7 +143,7 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
     fn on_close_game_scene(&mut self, _game_scene_data_name: &str) {}
 
     fn on_open_game_scene(&mut self, game_scene_data_name: &str) {
-        let game_scene_manager = ptr_as_mut(self._game_scene_manager);
+        let game_scene_manager = get_game_scene_manager_mut();
         if self._scenario_create_info.get_game_scene_data_name() == game_scene_data_name {
             game_scene_manager.spawn_game_scenario_objects(&self._scenario_create_info);
             self._scenario_create_info.reset();
@@ -205,8 +203,8 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
     }
 
     fn update_game_scenario(&mut self, _any_key_hold: bool, _any_key_pressed: bool, delta_time: f64) {
-        let game_scene_manager = ptr_as_mut(self._game_scene_manager);
-        let game_ui_manager = crate::game_module::game_service_locator::get_game_ui_manager_mut();
+        let game_scene_manager = get_game_scene_manager_mut();
+        let game_ui_manager = get_game_ui_manager_mut();
 
         let prev_scenario_phase = self._scenario_track._scenario_phase;
         let next_scenario_phase = self._scenario_track._next_scenario_phase;
@@ -242,7 +240,7 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
                 ScenarioPhase::Investigate => match state {
                     State::Begin => {
                         self._audio_ufo_laboratory =
-                            get_audio_manager_mut().play_audio(AUDIO_UFO_LABORATORY, AudioLoop::LOOP, Some(0.2));
+                            get_audio_manager_mut().play_audio_bank(AUDIO_UFO_LABORATORY, AudioLoop::LOOP, Some(0.2));
                     }
                     State::Update => {
                         if 1.0 <= phase_ratio {
@@ -277,9 +275,9 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
                     }
                     State::Update => {
                         if phase_time == 0.0 {
-                            get_audio_manager_mut().play_audio(AUDIO_ALIEN_TALK, AudioLoop::ONCE, Some(1.0));
+                            get_audio_manager_mut().play_audio_bank(AUDIO_ALIEN_TALK, AudioLoop::ONCE, Some(1.0));
                         } else if phase_time <= 2.0 && 2.0 < (phase_time + delta_time as f32) {
-                            get_audio_manager_mut().play_audio(AUDIO_ALIEN_TALK, AudioLoop::ONCE, Some(1.0));
+                            get_audio_manager_mut().play_audio_bank(AUDIO_ALIEN_TALK, AudioLoop::ONCE, Some(1.0));
                         }
 
                         if 1.0 <= phase_ratio {
@@ -299,7 +297,7 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
                                 beta.borrow_mut().look_at(&aru_pos);
                             }
                         }
-                        get_audio_manager_mut().play_audio(AUDIO_UFO_EXPERIMENT, AudioLoop::ONCE, Some(1.0));
+                        get_audio_manager_mut().play_audio_bank(AUDIO_UFO_EXPERIMENT, AudioLoop::ONCE, Some(1.0));
                     }
                     State::Update => {
                         let visible_monkey = if phase_ratio < 0.9 {

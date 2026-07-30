@@ -1,8 +1,7 @@
 use crate::game_module::actors::character::ActorWrapper;
-use crate::game_module::game_controller::GameController;
-use crate::game_module::game_scene_manager::GameSceneManager;
 use nalgebra::Vector2;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
+use rust_engine_3d::core::engine_service_locator::{get_audio_manager_mut, get_engine_resources, get_scene_manager};
 use rust_engine_3d::scene::ui::{
     HorizontalAlign, Orientation, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault,
 };
@@ -91,7 +90,7 @@ impl<'a> TextBoxItem<'a> {
     }
 
     pub fn update_text_box_item(&mut self, contents: &Vec<TextBoxContent>, duration: Option<f32>, clear_widgets: bool) {
-        let engine_resources = rust_engine_3d::core::engine_service_locator::get_engine_resources();
+        let engine_resources = get_engine_resources();
         if clear_widgets {
             ptr_as_mut(self._layout_widget).clear_widgets();
         }
@@ -99,11 +98,7 @@ impl<'a> TextBoxItem<'a> {
         let mut widget_height = 0.0;
         for content in contents.iter() {
             if let TextBoxContent::Audio(audio_name) = content {
-                rust_engine_3d::core::engine_service_locator::get_audio_manager_mut().play_audio_bank(
-                    audio_name,
-                    AudioLoop::ONCE,
-                    None,
-                );
+                get_audio_manager_mut().play_audio_bank(audio_name, AudioLoop::ONCE, None);
             } else {
                 let binding_widget = UIManager::create_widget("TextBoxItemContent", UIWidgetTypes::Default);
                 let ui_component = ptr_as_mut(binding_widget.as_ref()).get_ui_component_mut();
@@ -112,7 +107,7 @@ impl<'a> TextBoxItem<'a> {
                 ui_component.set_expandable(true);
                 match content {
                     TextBoxContent::MaterialInstance(material_name) => {
-                        let material_instance = ptr_as_mut(engine_resources).get_material_instance_data(material_name);
+                        let material_instance = engine_resources.get_material_instance_data(material_name);
                         ui_component.set_size_x(ICON_SIZE);
                         ui_component.set_size_y(ICON_SIZE);
                         ui_component.set_color(get_color32(255, 255, 255, 255));
@@ -220,12 +215,7 @@ impl<'a> TextBoxWidget<'a> {
         }
     }
 
-    pub fn update_text_box_widget(
-        &mut self,
-        game_scene_manager: &GameSceneManager,
-        _game_controller: &GameController,
-        delta_time: f32,
-    ) {
+    pub fn update_text_box_widget(&mut self, delta_time: f32) {
         let mut remove_items: Vec<*const c_void> = Vec::new();
         for (_, text_box_item) in self._text_box_items.iter_mut() {
             let mut is_enable_text_box = false;
@@ -256,7 +246,7 @@ impl<'a> TextBoxWidget<'a> {
             }
 
             if is_enable_text_box {
-                let main_camera = game_scene_manager.get_scene_manager().get_main_camera();
+                let main_camera = get_scene_manager().get_main_camera();
                 let ui_component = &mut ptr_as_mut(text_box_item._layout_widget)._ui_component;
                 let ui_size = ui_component.get_ui_size();
                 let max_x = (main_camera._window_size.x as f32 - ui_size.x).max(0.0);

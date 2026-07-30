@@ -1,18 +1,20 @@
-use crate::application::application::Application;
-use crate::game_module::actors::character::CharacterManager;
 use crate::game_module::game_constants::{
     AMBIENT_SOUND, CAMERA_DISTANCE_MAX, DEFAULT_BGM_VOLUME, DEFAULT_FADE_TIME, DEFAULT_GAME_SAVE_DATA,
     DEFAULT_GATE_NAME, GAME_MUSIC, GAME_VIEW_MODE, GameViewMode, MATERIAL_INTRO_IMAGE, MATERIAL_UI_NONE,
     MATERIAL_WORLDMAP_FADE_TIME,
 };
-use crate::game_module::game_controller::GameController;
-use crate::game_module::game_scene_manager::{GameSceneManager, GameSceneState};
-use crate::game_module::game_ui_manager::{EditorUIManager, GameUIManager};
+use crate::game_module::game_scene_manager::GameSceneState;
+use crate::game_module::game_service_locator::{
+    get_character_manager, get_character_manager_mut, get_editor_ui_manager_mut, get_game_controller_mut,
+    get_game_resources_mut, get_game_scene_manager, get_game_scene_manager_mut, get_game_ui_manager_mut,
+};
 use crate::game_module::save_data::save_data::GameSaveData;
 use crate::game_module::scenario::scenario::ScenarioType;
 use nalgebra::{Vector2, Vector3};
-use rust_engine_3d::core::engine_core::EngineCore;
-use rust_engine_3d::utilities::system::{BoxRefCell, State, newBoxRefCell, ptr_as_mut, ptr_as_ref};
+use rust_engine_3d::core::engine_service_locator::{
+    get_audio_manager_mut, get_engine_core, get_scene_manager, get_scene_manager_mut,
+};
+use rust_engine_3d::utilities::system::{BoxRefCell, State, newBoxRefCell};
 use std::cmp::PartialEq;
 use strum::IntoEnumIterator;
 
@@ -62,7 +64,7 @@ impl<'a> GameClient<'a> {
         log::info!("initialize_game_client");
     }
     pub fn destroy_game_client(&mut self) {
-        self.get_game_ui_manager_mut().destroy_game_ui_manager();
+        get_game_ui_manager_mut().destroy_game_ui_manager();
     }
     pub fn is_game_over(&self) -> bool {
         self.is_game_phase(GamePhase::ExitGame)
@@ -70,49 +72,12 @@ impl<'a> GameClient<'a> {
     pub fn exit_game(&mut self) {
         self.set_next_game_phase(GamePhase::ExitGame);
     }
-    pub fn get_engine_core(&self) -> &EngineCore<'a> {
-        rust_engine_3d::core::engine_service_locator::get_engine_core()
-    }
-    pub fn get_engine_core_mut(&self) -> &'a mut EngineCore<'a> {
-        rust_engine_3d::core::engine_service_locator::get_engine_core_mut()
-    }
-    pub fn get_application(&self) -> &Application<'a> {
-        crate::game_module::game_service_locator::get_application()
-    }
-    pub fn get_application_mut(&self) -> &mut Application<'a> {
-        crate::game_module::game_service_locator::get_application_mut()
-    }
-    pub fn get_game_scene_manager(&self) -> &GameSceneManager<'a> {
-        crate::game_module::game_service_locator::get_game_scene_manager()
-    }
-    pub fn get_game_scene_manager_mut(&self) -> &mut GameSceneManager<'a> {
-        crate::game_module::game_service_locator::get_game_scene_manager_mut()
-    }
-
-    pub fn get_game_controller(&self) -> &GameController<'a> {
-        crate::game_module::game_service_locator::get_game_controller()
-    }
-    pub fn get_game_controller_mut(&self) -> &mut GameController<'a> {
-        crate::game_module::game_service_locator::get_game_controller_mut()
-    }
-    pub fn get_game_ui_manager(&self) -> &GameUIManager<'a> {
-        crate::game_module::game_service_locator::get_game_ui_manager()
-    }
-    pub fn get_game_ui_manager_mut(&self) -> &mut GameUIManager<'a> {
-        crate::game_module::game_service_locator::get_game_ui_manager_mut()
-    }
-    pub fn get_editor_ui_manager(&self) -> &EditorUIManager<'a> {
-        crate::game_module::game_service_locator::get_editor_ui_manager()
-    }
-    pub fn get_editor_ui_manager_mut(&self) -> &mut EditorUIManager<'a> {
-        crate::game_module::game_service_locator::get_editor_ui_manager_mut()
-    }
     pub fn set_game_mode(&mut self, is_game_mode: bool) {
-        self.get_editor_ui_manager_mut().show_editor_ui(!is_game_mode);
-        self.get_game_ui_manager_mut().show_game_ui(is_game_mode);
-        if is_game_mode && self.get_game_scene_manager().get_character_manager().is_valid_player() {
-            let main_camera = self.get_game_controller().get_main_camera();
-            let player = self.get_game_scene_manager().get_character_manager().get_player();
+        get_editor_ui_manager_mut().show_editor_ui(!is_game_mode);
+        get_game_ui_manager_mut().show_game_ui(is_game_mode);
+        if is_game_mode && get_character_manager().is_valid_player() {
+            let main_camera = get_scene_manager().get_main_camera();
+            let player = get_character_manager().get_player();
             let mut player_position =
                 main_camera.get_camera_position() + CAMERA_DISTANCE_MAX * main_camera.get_camera_front();
             if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
@@ -146,30 +111,29 @@ impl<'a> GameClient<'a> {
     }
     fn new_game(&mut self) {
         self._game_save_data = newBoxRefCell(GameSaveData::default());
-        self.get_game_scene_manager_mut().close_game_scene_data();
-        self.get_game_scene_manager_mut().request_open_game_scenario(ScenarioType::ScenarioIntro_Intro);
+        get_game_scene_manager_mut().close_game_scene_data();
+        get_game_scene_manager_mut().request_open_game_scenario(ScenarioType::ScenarioIntro_Intro);
     }
     fn load_game(&mut self) {
-        let game_save_data = crate::game_module::game_service_locator::get_game_resources_mut()
-            .get_game_save_data(self._game_save_data_name.as_str())
-            .clone();
+        let game_save_data = get_game_resources_mut().get_game_save_data(self._game_save_data_name.as_str()).clone();
         self._game_save_data = newBoxRefCell(game_save_data.borrow().clone());
-        self.get_game_scene_manager_mut().load_game_save_data(&mut self._game_save_data.borrow_mut());
+        get_game_scene_manager_mut().load_game_save_data(&mut self._game_save_data.borrow_mut());
     }
     pub fn save_game(&self, save_file: bool) {
-        self.get_game_scene_manager().update_game_save_data(&mut self._game_save_data.borrow_mut());
+        get_game_scene_manager().update_game_save_data(&mut self._game_save_data.borrow_mut());
         if save_file {
-            crate::game_module::game_service_locator::get_game_resources_mut()
+            get_game_resources_mut()
                 .save_game_save_data(self._game_save_data_name.as_str(), &self._game_save_data.borrow());
         }
     }
     pub fn update_game_mode(&mut self, delta_time: f64) {
-        let engine_core = rust_engine_3d::core::engine_service_locator::get_engine_core();
-        let game_scene_manager = crate::game_module::game_service_locator::get_game_scene_manager_mut();
-        let scene_manager = rust_engine_3d::core::engine_service_locator::get_scene_manager_mut();
-        let character_manager = crate::game_module::game_service_locator::get_character_manager_mut();
-        let game_ui_manager = crate::game_module::game_service_locator::get_game_ui_manager_mut();
-        let game_controller = crate::game_module::game_service_locator::get_game_controller_mut();
+        let engine_core = get_engine_core();
+        let audio_manager = get_audio_manager_mut();
+        let game_scene_manager = get_game_scene_manager_mut();
+        let scene_manager = get_scene_manager_mut();
+        let character_manager = get_character_manager_mut();
+        let game_ui_manager = get_game_ui_manager_mut();
+        let game_controller = get_game_controller_mut();
 
         let time_data = &engine_core._time_data;
         let mouse_move_data = &engine_core._mouse_move_data;
@@ -210,10 +174,8 @@ impl<'a> GameClient<'a> {
                 GamePhase::Start => {
                     if state == State::Update {
                         game_ui_manager.set_image_auto_fade_inout(MATERIAL_INTRO_IMAGE, 0.0);
-                        game_scene_manager.play_bgm(GAME_MUSIC, DEFAULT_BGM_VOLUME);
-                        log::info!("play_ambient_sound: {:?}", AMBIENT_SOUND);
+                        audio_manager.play_bgm(GAME_MUSIC, DEFAULT_BGM_VOLUME);
                         game_scene_manager.play_ambient_sound(AMBIENT_SOUND, None);
-                        log::info!("done_ambient_sound: {:?}", AMBIENT_SOUND);
                         self.set_next_game_phase(GamePhase::TitleScreen);
                     }
                 }
@@ -393,7 +355,7 @@ impl<'a> GameClient<'a> {
                             game_ui_manager.set_auto_fade_inout(true);
                             game_ui_manager.open_world_map();
                             game_ui_manager.set_selected_world_map_stage(
-                                self.get_game_scene_manager().get_current_game_scene_data_name(),
+                                get_game_scene_manager().get_current_game_scene_data_name(),
                             );
                             self.set_next_game_phase(GamePhase::WorldMapUpdate);
                         }
@@ -408,8 +370,8 @@ impl<'a> GameClient<'a> {
                         if game_scene_manager.is_teleport_mode() {
                             self.set_next_game_phase(GamePhase::WorldMapClose);
                         } else if game_ui_manager.is_requested_close_world_map() {
-                            self.get_game_scene_manager_mut().set_teleport_stage(
-                                self.get_game_scene_manager().get_current_game_scene_data_name(),
+                            get_game_scene_manager_mut().set_teleport_stage(
+                                get_game_scene_manager().get_current_game_scene_data_name(),
                                 DEFAULT_GATE_NAME,
                             );
                             self.set_next_game_phase(GamePhase::WorldMapClose);

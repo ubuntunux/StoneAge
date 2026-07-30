@@ -1,8 +1,7 @@
-use crate::application::application::Application;
 use crate::game_module::actors::character::{ActorWrapper, Character};
 use crate::game_module::actors::items::ItemDataType;
-use crate::game_module::game_client::GameClient;
 use crate::game_module::game_constants::MATERIAL_INTRO_IMAGE;
+use crate::game_module::game_service_locator::{get_character_manager, get_game_controller, get_game_scene_manager};
 use crate::game_module::widgets::controller_help::ControllerHelpWidget;
 use crate::game_module::widgets::cross_hair_widget::CrossHairWidget;
 use crate::game_module::widgets::game_menu_widget::GameMenuWidget;
@@ -18,7 +17,10 @@ use crate::game_module::widgets::time_of_day::TimeOfDayWidget;
 use crate::game_module::widgets::toolbox_widget::ToolboxWidget;
 use crate::game_module::widgets::world_map::WorldMapWidget;
 use nalgebra::Vector2;
-use rust_engine_3d::core::engine_core::{EngineCore, TimeData};
+use rust_engine_3d::core::engine_core::TimeData;
+use rust_engine_3d::core::engine_service_locator::{
+    get_engine_core, get_engine_resources, get_scene_manager, get_ui_manager,
+};
 use rust_engine_3d::core::input::{JoystickInputData, KeyboardInputData, MouseInputData, MouseMoveData};
 use rust_engine_3d::scene::ui::{
     HorizontalAlign, UIComponentInstance, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault,
@@ -93,7 +95,7 @@ impl<'a> EditorUIManager<'a> {
         ui_component.set_size_hint_x(Some(1.0));
         ui_component.set_size_hint_y(Some(1.0));
         ui_component.set_renderable(false);
-        let root_widget = rust_engine_3d::core::engine_service_locator::get_ui_manager().get_root_ptr();
+        let root_widget = get_ui_manager().get_root_ptr();
         ptr_as_mut(root_widget).add_widget(&editor_ui_layout);
         self._editor_ui_layout = editor_ui_layout.as_ref();
     }
@@ -104,11 +106,9 @@ impl<'a> EditorUIManager<'a> {
     }
 
     pub fn update_editor_ui(&mut self, _delta_time: f64) {
-        let game_client = crate::game_module::game_service_locator::get_game_client();
-        let game_scene_manager = game_client.get_game_scene_manager();
-        let ui_manager = rust_engine_3d::core::engine_service_locator::get_ui_manager();
-        let main_camera = game_scene_manager.get_scene_manager().get_main_camera();
-        let characters = game_scene_manager.get_character_manager().get_characters();
+        let main_camera = get_scene_manager().get_main_camera();
+        let characters = get_character_manager().get_characters();
+        let ui_manager = get_ui_manager();
 
         if self._need_to_refresh || self._window_size != ui_manager._window_size {
             self._window_size = ui_manager._window_size;
@@ -173,28 +173,12 @@ impl<'a> GameUIManager<'a> {
 
     pub fn destroy_game_ui_manager(&mut self) {}
 
-    pub fn get_game_client(&self) -> &GameClient<'a> {
-        crate::game_module::game_service_locator::get_game_client()
-    }
-
-    pub fn get_game_client_mut(&self) -> &mut GameClient<'a> {
-        crate::game_module::game_service_locator::get_game_client_mut()
-    }
-
-    pub fn get_ui_manager(&self) -> &UIManager<'a> {
-        rust_engine_3d::core::engine_service_locator::get_ui_manager()
-    }
-
-    pub fn get_ui_manager_mut(&self) -> &mut UIManager<'a> {
-        rust_engine_3d::core::engine_service_locator::get_ui_manager_mut()
-    }
-
     pub fn get_root_widget(&self) -> &WidgetDefault<'a> {
-        ptr_as_ref(rust_engine_3d::core::engine_service_locator::get_ui_manager().get_root_ptr())
+        ptr_as_ref(get_ui_manager().get_root_ptr())
     }
 
     pub fn get_root_widget_mut(&self) -> &mut WidgetDefault<'a> {
-        ptr_as_mut(rust_engine_3d::core::engine_service_locator::get_ui_manager().get_root_ptr())
+        ptr_as_mut(get_ui_manager().get_root_ptr())
     }
 
     pub fn get_item_bar_widget(&self) -> &ItemBarWidget<'a> {
@@ -203,10 +187,8 @@ impl<'a> GameUIManager<'a> {
 
     pub fn build_game_ui(&mut self, window_size: &Vector2<i32>) {
         log::info!("build_game_ui");
-        let game_client = crate::game_module::game_service_locator::get_game_client();
-        let game_scene_manager = game_client.get_game_scene_manager();
-        let item_manager = game_scene_manager.get_item_manager();
-        let root_widget = ptr_as_mut(rust_engine_3d::core::engine_service_locator::get_ui_manager().get_root_ptr());
+        let _game_scene_manager = get_game_scene_manager();
+        let root_widget = ptr_as_mut(get_ui_manager().get_root_ptr());
 
         // create layout
         let game_ui_layout = UIManager::create_widget("game ui layout", UIWidgetTypes::Default);
@@ -220,8 +202,6 @@ impl<'a> GameUIManager<'a> {
         self._key_binding_widget_manager = Some(Box::new(KeyBindingWidgetManager::default()));
         self._player_hud = Some(Box::new(PlayerHud::create_player_hud(game_ui_layout_mut)));
         self._item_bar_widget = Some(Box::new(ItemBarWidget::create_item_bar_widget(
-            game_scene_manager,
-            item_manager,
             self._key_binding_widget_manager.as_ref().unwrap().as_ref(),
             game_ui_layout_mut,
             window_size,
@@ -230,26 +210,16 @@ impl<'a> GameUIManager<'a> {
             game_ui_layout_mut,
         )));
         self._toolbox_widget = Some(Box::new(ToolboxWidget::create_toolbox_widget(game_ui_layout_mut)));
-        self._world_map_widget = Some(WorldMapWidget::create_world_map_widget(
-            game_scene_manager,
-            game_ui_layout_mut,
-            window_size,
-        ));
-        self._time_of_day = Some(Box::new(TimeOfDayWidget::create_time_of_day_widget(
-            game_ui_layout_mut,
-            self,
-        )));
+        self._world_map_widget = Some(WorldMapWidget::create_world_map_widget(game_ui_layout_mut, window_size));
+        self._time_of_day = Some(Box::new(TimeOfDayWidget::create_time_of_day_widget(game_ui_layout_mut)));
         self._controller_help_widget = Some(Box::new(ControllerHelpWidget::create_controller_help_widget(
             self._key_binding_widget_manager.as_ref().unwrap().as_ref(),
             game_ui_layout_mut,
             window_size,
         )));
-        self._quest_widget = Some(Box::new(QuestWidget::create_quest_widget(
-            game_scene_manager,
-            game_ui_layout_mut,
-        )));
+        self._quest_widget = Some(Box::new(QuestWidget::create_quest_widget(game_ui_layout_mut)));
         self._text_box_widget = Some(Box::new(TextBoxWidget::create_text_box_widget(root_widget)));
-        self._game_menu_widget = Some(GameMenuWidget::create_game_menu_widget(game_client, root_widget));
+        self._game_menu_widget = Some(GameMenuWidget::create_game_menu_widget(root_widget));
         self._cross_hair = Some(Box::new(CrossHairWidget::create_cross_hair(root_widget)));
         self._game_image = Some(ImageLayout::create_image_layout(
             root_widget,
@@ -295,14 +265,8 @@ impl<'a> GameUIManager<'a> {
     }
 
     pub fn set_game_image(&mut self, material_instance_name: &str, fadeout_time: f32, auto_fade_inout: bool) {
-        let material_instance = if rust_engine_3d::core::engine_service_locator::get_engine_resources()
-            .has_material_instance_data(material_instance_name)
-        {
-            Some(
-                rust_engine_3d::core::engine_service_locator::get_engine_resources()
-                    .get_material_instance_data(material_instance_name)
-                    .clone(),
-            )
+        let material_instance = if get_engine_resources().has_material_instance_data(material_instance_name) {
+            Some(get_engine_resources().get_material_instance_data(material_instance_name).clone())
         } else {
             None
         };
@@ -371,6 +335,10 @@ impl<'a> GameUIManager<'a> {
     }
 
     // item bar
+    pub fn get_item_count(&self, item_data_name: &str) -> usize {
+        self._item_bar_widget.as_ref().unwrap().get_item_count(item_data_name)
+    }
+
     pub fn add_item(&mut self, item_data_name: &str, item_count: usize) -> bool {
         self._item_bar_widget.as_mut().unwrap().add_item(item_data_name, item_count)
     }
@@ -501,12 +469,11 @@ impl<'a> GameUIManager<'a> {
     }
 
     pub fn update_game_ui(&mut self, delta_time: f64) {
-        let game_client = crate::game_module::game_service_locator::get_game_client();
-        let game_scene_manager = game_client.get_game_scene_manager();
-        let ui_manager = rust_engine_3d::core::engine_service_locator::get_ui_manager();
-        let engine_core = rust_engine_3d::core::engine_service_locator::get_engine_core();
+        let _game_scene_manager = get_game_scene_manager();
+        let ui_manager = get_ui_manager();
+        let engine_core = get_engine_core();
         let mouse_pos = &engine_core._mouse_move_data._mouse_pos;
-        let game_controller = crate::game_module::game_service_locator::get_game_controller();
+        let _game_controller = get_game_controller();
 
         // changed window size
         if self._need_to_refresh || self._window_size != ui_manager._window_size {
@@ -530,15 +497,15 @@ impl<'a> GameUIManager<'a> {
         }
 
         if let Some(player_hud) = self._player_hud.as_mut()
-            && game_scene_manager.get_character_manager().is_valid_player()
+            && get_character_manager().is_valid_player()
         {
-            let player = game_scene_manager.get_character_manager().get_player().borrow();
+            let player = get_character_manager().get_player().borrow();
             player_hud.update_status_widget(&player, delta_time);
         }
 
         if let Some(target_status_bar) = self._target_status_bar.as_mut() {
-            if game_scene_manager.get_character_manager().is_valid_target_character() {
-                let target = game_scene_manager.get_character_manager().get_target_character().borrow();
+            if get_character_manager().is_valid_target_character() {
+                let target = get_character_manager().get_target_character().borrow();
                 target_status_bar.update_status_widget(&target, delta_time);
             } else {
                 target_status_bar.fade_out_status_widget();
@@ -546,7 +513,7 @@ impl<'a> GameUIManager<'a> {
         }
 
         if let Some(controller_help_widget) = self._controller_help_widget.as_mut() {
-            controller_help_widget.update_controller_help_widget(game_scene_manager);
+            controller_help_widget.update_controller_help_widget();
         }
 
         if let Some(item_bar_widget) = self._item_bar_widget.as_mut() {
@@ -554,15 +521,15 @@ impl<'a> GameUIManager<'a> {
         }
 
         if let Some(text_box_widget) = self._text_box_widget.as_mut() {
-            text_box_widget.update_text_box_widget(game_scene_manager, game_controller, delta_time as f32);
+            text_box_widget.update_text_box_widget(delta_time as f32);
         }
 
         if let Some(time_of_day) = self._time_of_day.as_mut() {
-            time_of_day.update_time_of_day_widget(game_scene_manager);
+            time_of_day.update_time_of_day_widget();
         }
 
         if let Some(quest_widget) = self._quest_widget.as_mut() {
-            quest_widget.update_quest_widget(game_controller, delta_time as f32);
+            quest_widget.update_quest_widget(delta_time as f32);
         }
     }
 }

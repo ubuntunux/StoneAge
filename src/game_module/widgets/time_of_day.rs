@@ -1,17 +1,17 @@
 use crate::game_module::game_constants::MATERIAL_TIME_OF_DAY;
-use crate::game_module::game_scene_manager::{GameSceneManager, Stages};
-use crate::game_module::game_ui_manager::GameUIManager;
+use crate::game_module::game_scene_manager::Stages;
+use crate::game_module::game_service_locator::{get_game_scene_manager, get_game_ui_manager};
 use ash::vk;
 use nalgebra::Vector2;
+use rust_engine_3d::core::engine_service_locator::get_engine_resources;
 use rust_engine_3d::scene::ui::{
     HorizontalAlign, Orientation, PIVOT_TOP_CENTER, PIVOT_TOP_RIGHT, UILayoutType, UIManager, UIWidgetTypes,
     VerticalAlign, WidgetDefault,
 };
-use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
+use rust_engine_3d::utilities::system::ptr_as_mut;
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 
 pub struct TimeOfDayWidget<'a> {
-    pub _game_ui_manager: *const GameUIManager<'a>,
     pub _time_of_day_widget: *const WidgetDefault<'a>,
     pub _date_widget: *const WidgetDefault<'a>,
     pub _time_widget: *const WidgetDefault<'a>,
@@ -21,10 +21,7 @@ pub struct TimeOfDayWidget<'a> {
 
 // TimeOfDayWidget
 impl<'a> TimeOfDayWidget<'a> {
-    pub fn create_time_of_day_widget(
-        root_widget: &mut WidgetDefault<'a>,
-        game_ui_manager: &GameUIManager<'a>,
-    ) -> TimeOfDayWidget<'a> {
+    pub fn create_time_of_day_widget(root_widget: &mut WidgetDefault<'a>) -> TimeOfDayWidget<'a> {
         let background_color = get_color32(0, 0, 0, 200);
 
         let parent_layer = UIManager::create_widget("time_of_day_widget", UIWidgetTypes::Default);
@@ -57,8 +54,7 @@ impl<'a> TimeOfDayWidget<'a> {
         ui_component.set_color(background_color);
         parent_layer_ptr.add_widget(&top_widget);
 
-        let tod_material_instance = rust_engine_3d::core::engine_service_locator::get_engine_resources()
-            .get_material_instance_data(MATERIAL_TIME_OF_DAY);
+        let tod_material_instance = get_engine_resources().get_material_instance_data(MATERIAL_TIME_OF_DAY);
         let time_of_day_widget = UIManager::create_widget("tod_widget", UIWidgetTypes::Default);
         let time_of_day_widget_ptr = ptr_as_mut(time_of_day_widget.as_ref());
         let ui_component = time_of_day_widget_ptr.get_ui_component_mut();
@@ -139,7 +135,6 @@ impl<'a> TimeOfDayWidget<'a> {
         root_widget.add_widget(&stage_widget);
 
         TimeOfDayWidget {
-            _game_ui_manager: game_ui_manager,
             _time_of_day_widget: time_of_day_widget_ptr,
             _date_widget: date_widget_ptr,
             _time_widget: time_widget_ptr,
@@ -150,9 +145,10 @@ impl<'a> TimeOfDayWidget<'a> {
 
     pub fn changed_window_size(&mut self, _window_size: &Vector2<i32>) {}
 
-    pub fn update_time_of_day_widget(&mut self, game_scene_manager: &GameSceneManager) {
+    pub fn update_time_of_day_widget(&mut self) {
+        let game_ui_manager = get_game_ui_manager();
+        let game_scene_manager = get_game_scene_manager();
         let time_of_day = game_scene_manager.get_time_of_day();
-        let game_ui_manager = ptr_as_ref(self._game_ui_manager);
 
         let tod_ui_component = ptr_as_mut(self._time_of_day_widget).get_ui_component_mut();
         let tod_to_angle = (time_of_day - 12.0) / 24.0 * 360.0;

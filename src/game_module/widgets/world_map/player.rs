@@ -1,5 +1,6 @@
 use crate::game_module::game_constants::MATERIAL_PORTRAIT_MONKEY_ARU;
 use crate::game_module::widgets::world_map::api::{WorldMapPlayer, WorldMapWidget};
+use rust_engine_3d::core::engine_service_locator::get_engine_resources;
 use rust_engine_3d::scene::ui::{
     HorizontalAlign, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault,
 };
@@ -11,8 +12,7 @@ impl<'a> WorldMapPlayer<'a> {
         world_map_widget: &WorldMapWidget<'a>,
         root_layout: &mut WidgetDefault<'a>,
     ) -> Box<WorldMapPlayer<'a>> {
-        let material_instance = rust_engine_3d::core::engine_service_locator::get_engine_resources()
-            .get_material_instance_data(MATERIAL_PORTRAIT_MONKEY_ARU);
+        let material_instance = get_engine_resources().get_material_instance_data(MATERIAL_PORTRAIT_MONKEY_ARU);
 
         let player_icon = UIManager::create_widget("player_icon", UIWidgetTypes::Default);
         let ui_component = ptr_as_mut(player_icon.as_ref()).get_ui_component_mut();

@@ -1,15 +1,11 @@
 use crate::game_module::actors::character::controller::CharacterController;
 use crate::game_module::actors::character::data::*;
-use crate::game_module::actors::character::manager::{
-    CharacterCreateInfo, CharacterID, CharacterManager, CharacterSaveData,
-};
+use crate::game_module::actors::character::manager::{CharacterCreateInfo, CharacterID, CharacterSaveData};
 use crate::game_module::actors::character::stats::*;
 use crate::game_module::actors::items::{Item, ItemID};
 use rust_engine_3d::audio::audio_manager::AudioInstance;
 
 pub struct Character<'a> {
-    pub _character_manager: *const CharacterManager<'a>,
-    pub _item_manager: *const ItemManager<'a>,
     pub _character_name: String,
     pub _character_id: CharacterID,
     pub _is_player: bool,
@@ -26,15 +22,20 @@ pub struct Character<'a> {
 }
 use crate::game_module::actors::interaction_object::InteractionObject;
 
-use crate::game_module::actors::items::{ItemDataType, ItemManager};
+use crate::game_module::actors::items::ItemDataType;
 use crate::game_module::behavior::behavior_base::{BehaviorState, create_character_behavior};
 use crate::game_module::game_client::GamePhase;
 use crate::game_module::game_constants::*;
-use crate::game_module::game_scene_manager::{GameSceneManager, Stages};
+use crate::game_module::game_scene_manager::Stages;
+use crate::game_module::game_service_locator::{
+    get_character_manager, get_game_client_mut, get_game_scene_manager, get_game_scene_manager_mut, get_item_manager,
+};
 use crate::game_module::scenario::scenario::ScenarioType;
 use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
-use rust_engine_3d::core::engine_service_locator::{get_audio_manager, get_audio_manager_mut};
+use rust_engine_3d::core::engine_service_locator::{
+    get_audio_manager, get_audio_manager_mut, get_scene_manager, get_scene_manager_mut,
+};
 use rust_engine_3d::effect::effect_data::EffectCreateInfo;
 use rust_engine_3d::scene::animation::{AnimationPlayArgs, AnimationPlayInfo};
 use rust_engine_3d::scene::bounding_box::BoundingBox;
@@ -288,8 +289,6 @@ impl CharacterStats {
 
 impl<'a> Character<'a> {
     pub fn create_character_instance(
-        character_manager: *const CharacterManager<'a>,
-        item_manager: *const ItemManager<'a>,
         character_name: &str,
         character_id: CharacterID,
         is_player: bool,
@@ -301,8 +300,6 @@ impl<'a> Character<'a> {
         scale: &Vector3<f32>,
     ) -> Character<'a> {
         let mut character = Character {
-            _character_manager: character_manager,
-            _item_manager: item_manager,
             _character_name: String::from(character_name),
             _character_id: character_id,
             _is_player: is_player,
@@ -334,9 +331,11 @@ impl<'a> Character<'a> {
 
     pub fn initialize_transform(&mut self, position: &Vector3<f32>, rotation: &Vector3<f32>, scale: &Vector3<f32>) {
         self._controller._position = *position;
-        self._controller._position.y = self._controller._position.y.max(
-            self.get_character_manager().get_scene_manager().get_height_map_data().get_height_bilinear(position, 0),
-        );
+        self._controller._position.y = self
+            ._controller
+            ._position
+            .y
+            .max(get_scene_manager().get_height_map_data().get_height_bilinear(position, 0));
         self._controller._rotation = *rotation;
         self._controller._scale = *scale;
         let direction: Vector3<f32> = make_rotation_matrix(
@@ -404,9 +403,9 @@ impl<'a> Character<'a> {
         )
     }
 
-    pub fn post_process_after_character_loading(&mut self, game_scene_manager: &GameSceneManager<'a>) {
+    pub fn post_process_after_character_loading(&mut self) {
         if let Some(item_id) = self._attached_item_id.take() {
-            if let Some(item) = game_scene_manager.get_item_manager().get_item(item_id) {
+            if let Some(item) = get_item_manager().get_item(item_id) {
                 self.attach_item(item.clone());
             }
         }
@@ -414,7 +413,7 @@ impl<'a> Character<'a> {
         self.post_process_restore_animation();
 
         if !self._is_player && self.is_alive() {
-            let maybe_player = game_scene_manager.get_character_manager().get_maybe_player();
+            let maybe_player = get_character_manager().get_maybe_player();
             let player_ref = maybe_player.as_ref().map(|p| p.borrow());
             let target = player_ref.as_deref();
             self._behavior.update_behavior(ptr_as_mut(self), target, 0.0);
@@ -560,14 +559,6 @@ impl<'a> Character<'a> {
         if let Some(attached_item) = self._attached_item.as_ref() {
             attached_item.borrow()._render_object.borrow_mut().set_visible(visible);
         }
-    }
-
-    pub fn get_character_manager(&self) -> &CharacterManager<'a> {
-        ptr_as_ref(self._character_manager)
-    }
-
-    pub fn get_character_manager_mut(&self) -> &mut CharacterManager<'a> {
-        ptr_as_mut(self._character_manager)
     }
 
     pub fn get_character_name(&self) -> &String {
@@ -856,7 +847,7 @@ impl<'a> Character<'a> {
     }
 
     pub fn check_falling_in_water_damage(&mut self) -> bool {
-        let dead_zone_height = self.get_character_manager().get_scene_manager().get_dead_zone_height();
+        let dead_zone_height = get_scene_manager().get_dead_zone_height();
         if self.get_position().y <= dead_zone_height {
             self.set_damage(self._character_stats.get_hp());
 
@@ -865,8 +856,7 @@ impl<'a> Character<'a> {
                 _effect_data_name: String::from(EFFECT_FALLING_WATER),
                 ..Default::default()
             };
-            let character_manager = ptr_as_ref(self._character_manager);
-            character_manager.get_scene_manager_mut().add_effect(EFFECT_FALLING_WATER, &effect_create_info);
+            get_scene_manager_mut().add_effect(EFFECT_FALLING_WATER, &effect_create_info);
             get_audio_manager_mut().play_audio_bank(&AUDIO_FALLING_WATER, AudioLoop::ONCE, None);
             return true;
         }
@@ -895,8 +885,7 @@ impl<'a> Character<'a> {
                 ..Default::default()
             };
 
-            let character_manager = ptr_as_ref(self._character_manager);
-            character_manager.get_scene_manager_mut().add_effect(EFFECT_HIT, &effect_create_info);
+            get_scene_manager_mut().add_effect(EFFECT_HIT, &effect_create_info);
             get_audio_manager_mut().play_audio_bank(&AUDIO_HIT, AudioLoop::ONCE, None);
         }
     }
@@ -981,17 +970,16 @@ impl<'a> Character<'a> {
 
     pub fn set_action_interaction(&mut self) {
         if self._controller.is_on_ground() && self.is_available_move() && self.is_idle_action() {
+            let item_manager = get_game_scene_manager().get_item_manager_mut();
             match self._controller._nearest_interaction_object.clone() {
                 InteractionObject::PropBed(_) => {
-                    self.get_character_manager()
-                        .get_game_scene_manager_mut()
-                        .request_open_game_scenario(ScenarioType::ScenarioWrapUpTheDay);
+                    get_game_scene_manager_mut().request_open_game_scenario(ScenarioType::ScenarioWrapUpTheDay);
                 }
                 InteractionObject::PropPickup(_) => {
                     self.set_next_action_animation(ActionAnimationState::Pickup, 2.0);
                 }
                 InteractionObject::PropMonolith(_) => {
-                    self.get_character_manager().get_game_client_mut().set_next_game_phase(GamePhase::OpenToolbox);
+                    get_game_client_mut().set_next_game_phase(GamePhase::OpenToolbox);
                     self.set_move_idle();
                 }
                 InteractionObject::PropTable(prop) => {
@@ -1015,9 +1003,8 @@ impl<'a> Character<'a> {
                     {
                         give_item = true;
                         let item_data_name = attached_item.borrow()._item_data_name.clone();
-                        ptr_as_mut(self._item_manager).remove_inventory_item(item_data_name.as_str(), 1);
-                        ptr_as_mut(self._item_manager)
-                            .attach_item(&mut character.borrow_mut(), item_data_name.as_str());
+                        item_manager.remove_inventory_item(item_data_name.as_str(), 1);
+                        item_manager.attach_item(&mut character.borrow_mut(), item_data_name.as_str());
                     }
 
                     if !give_item {
@@ -1030,7 +1017,7 @@ impl<'a> Character<'a> {
     }
     pub fn callback_changed_interaction_object(&mut self) {
         if let InteractionObject::PropGate(_) = self._controller._nearest_interaction_object.clone() {
-            self.get_character_manager().get_game_client_mut().set_next_game_phase(GamePhase::WorldMapOpen);
+            get_game_client_mut().set_next_game_phase(GamePhase::WorldMapOpen);
             self.set_move_idle();
         }
     }
@@ -1429,6 +1416,7 @@ impl<'a> Character<'a> {
         let character_data = ptr_as_ref(self._character_data.as_ptr());
         let animation_data = &character_data._animation_data;
         let render_object = ptr_as_mut(self._render_object.as_ptr());
+        let item_manager = get_game_scene_manager().get_item_manager_mut();
 
         for state in State::iter() {
             if next_action_animation_state.is_none() && (state == State::End || state == State::Begin) {
@@ -1526,13 +1514,11 @@ impl<'a> Character<'a> {
                         // respawn
                         let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
                         if self._is_player && animation_play_info._is_animation_end {
-                            let game_scene_manager = ptr_as_mut(self._character_manager).get_game_scene_manager_mut();
+                            let game_scene_manager = get_game_scene_manager_mut();
                             if !game_scene_manager.is_teleport_mode() {
                                 game_scene_manager
                                     .set_teleport_spawn_point(Stages::Home.get_stage_data_name(), BED_FOR_ARU);
-                                self.get_character_manager()
-                                    .get_game_client_mut()
-                                    .set_next_game_phase(GamePhase::Respawn);
+                                get_game_client_mut().set_next_game_phase(GamePhase::Respawn);
                             }
                         }
                     }
@@ -1700,7 +1686,7 @@ impl<'a> Character<'a> {
                                 get_audio_manager().stop_audio_instance(audio_instance)
                             }
                             self._audio_snoring =
-                                get_audio_manager_mut().play_audio(AUDIO_SNORING, AudioLoop::LOOP, Some(1.0));
+                                get_audio_manager_mut().play_audio_bank(AUDIO_SNORING, AudioLoop::LOOP, Some(1.0));
                         }
                         self.set_weapon_visible(false);
                     }
@@ -1743,10 +1729,9 @@ impl<'a> Character<'a> {
                             self.get_stats_mut().add_stamina(10.0);
 
                             if self._is_player {
-                                ptr_as_mut(self._item_manager)
-                                    .remove_inventory_item(attached_item.borrow()._item_data_name.as_str(), 1);
+                                item_manager.remove_inventory_item(attached_item.borrow()._item_data_name.as_str(), 1);
                             } else {
-                                ptr_as_mut(self._item_manager).detach_item(self);
+                                item_manager.detach_item(self);
                             }
                         }
                     }

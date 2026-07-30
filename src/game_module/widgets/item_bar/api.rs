@@ -1,5 +1,4 @@
-use crate::game_module::actors::items::{ItemDataType, ItemManager};
-use crate::game_module::game_scene_manager::GameSceneManager;
+use crate::game_module::actors::items::ItemDataType;
 use crate::game_module::widgets::key_binding_widget::KeyBindingWidgetMap;
 use nalgebra::Vector2;
 use rust_engine_3d::scene::ui::WidgetDefault;
@@ -40,8 +39,6 @@ pub struct ItemSelectionWidget<'a> {
 }
 
 pub struct ItemBarWidget<'a> {
-    pub _game_scene_manager: *const GameSceneManager<'a>,
-    pub _item_manager: *const ItemManager<'a>,
     pub _parent_widget: *const WidgetDefault<'a>,
     pub _layer: *const WidgetDefault<'a>,
     pub _item_widgets: Vec<ItemWidget<'a>>,
