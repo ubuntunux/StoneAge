@@ -101,7 +101,7 @@ impl<'a> BehaviorData<'a> {
     }
 
     pub fn set_behavior_state(&mut self, behavior_state: BehaviorState) {
-        self._next_behavior_state = behavior_state;
+        self._behavior_state = behavior_state;
         self._behavior_time = 0.0;
     }
 

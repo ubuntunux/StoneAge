@@ -6,9 +6,7 @@ use crate::game_module::game_constants::{
     CHARACTER_DATA_NAME_MONKEY_ARU, GAME_VIEW_MODE, GameViewMode, TEMPERATURE_MAX, TEMPERATURE_MIN, TIME_OF_DAWN,
     TIME_OF_DAY_SPEED, TIME_OF_MORNING,
 };
-use crate::game_module::game_service_locator::{
-    get_game_client, get_game_client_mut, get_game_resources, get_game_ui_manager, get_game_ui_manager_mut,
-};
+use crate::game_module::game_service_locator::{get_game_client, get_game_client_mut, get_game_resources, get_game_ui_manager, get_game_ui_manager_mut};
 use crate::game_module::game_weather::Weather;
 use crate::game_module::save_data::save_data::GameSaveData;
 use crate::game_module::scenario::scenario::{ScenarioBase, ScenarioDataCreateInfo, ScenarioType, create_scenario};
@@ -236,7 +234,13 @@ impl<'a> GameSceneManager<'a> {
         &self._current_game_scene_data_name
     }
 
-    pub fn load_game_save_data(&mut self, game_save_data: &GameSaveData) {
+    pub fn new_game_scene(&mut self) {
+        get_game_ui_manager_mut().clear_inventory_items();
+        self.close_game_scene_data();
+        self.request_open_game_scenario(ScenarioType::ScenarioIntro_Intro);
+    }
+
+    pub fn load_game_scene_save_data(&mut self, game_save_data: &GameSaveData) {
         self.clear_all_game_scenario();
 
         // loading
@@ -264,7 +268,7 @@ impl<'a> GameSceneManager<'a> {
         }
     }
 
-    pub fn update_game_save_data(&self, game_save_data: &mut GameSaveData) {
+    pub fn update_game_scene_save_data(&self, game_save_data: &mut GameSaveData) {
         if self.get_character_manager().is_valid_player() {
             game_save_data._player =
                 Some(self.get_character_manager().get_player().as_ref().borrow().get_character_save_data())
@@ -435,8 +439,6 @@ impl<'a> GameSceneManager<'a> {
         }
         self.clear_game_object_data();
         get_scene_manager_mut().close_scene_data();
-
-        get_game_ui_manager_mut().clear_inventory_items();
 
         self._game_scene_state = GameSceneState::None;
         self._next_game_scene_state = GameSceneState::None;

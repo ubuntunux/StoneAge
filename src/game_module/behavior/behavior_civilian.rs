@@ -18,6 +18,7 @@ pub struct BehaviorCivilian<'a> {
 impl<'a> BehaviorBase<'a> for BehaviorCivilian<'a> {
     fn initialize_behavior(&mut self, position: &Vector3<f32>) {
         self._behavior_data.initialize_behavior_data(position);
+        self.set_next_behavior(BehaviorState::Idle, true);
     }
 
     fn set_next_behavior(&mut self, next_behavior_state: BehaviorState, is_force: bool) {
@@ -158,7 +159,9 @@ impl<'a> BehaviorBase<'a> for BehaviorCivilian<'a> {
                 }
                 BehaviorState::WakeUp => {
                     match state {
-                        State::Begin => {}
+                        State::Begin => {
+                            owner.set_action_wake_up();
+                        }
                         State::Update => {
                             if !owner.is_action(ActionAnimationState::WakeUp) {
                                 self.set_next_behavior(BehaviorState::Idle, false);

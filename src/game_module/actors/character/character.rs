@@ -4,22 +4,6 @@ use crate::game_module::actors::character::manager::{CharacterCreateInfo, Charac
 use crate::game_module::actors::character::stats::*;
 use crate::game_module::actors::items::{Item, ItemID};
 use rust_engine_3d::audio::audio_manager::AudioInstance;
-
-pub struct Character<'a> {
-    pub _character_name: String,
-    pub _character_id: CharacterID,
-    pub _is_player: bool,
-    pub _character_data_name: String,
-    pub _character_data: RcRefCell<CharacterData>,
-    pub _render_object: RcRefCell<RenderObjectData<'a>>,
-    pub _character_stats: Box<CharacterStats>,
-    pub _controller: Box<CharacterController<'a>>,
-    pub _behavior: Box<dyn crate::game_module::behavior::behavior_base::BehaviorBase<'a> + 'a>,
-    pub _animation_state: Box<CharacterAnimationState>,
-    pub _attached_item: Option<RcRefCell<Item<'a>>>,
-    pub _attached_item_id: Option<ItemID>,
-    pub _audio_snoring: Option<RcRefCell<AudioInstance>>,
-}
 use crate::game_module::actors::interaction_object::InteractionObject;
 
 use crate::game_module::actors::items::ItemDataType;
@@ -47,6 +31,22 @@ use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::math::make_rotation_matrix;
 use rust_engine_3d::utilities::system::{RcRefCell, State, format_name_with_uuid, ptr_as_mut, ptr_as_ref};
 use strum::IntoEnumIterator;
+
+pub struct Character<'a> {
+    pub _character_name: String,
+    pub _character_id: CharacterID,
+    pub _is_player: bool,
+    pub _character_data_name: String,
+    pub _character_data: RcRefCell<CharacterData>,
+    pub _render_object: RcRefCell<RenderObjectData<'a>>,
+    pub _character_stats: Box<CharacterStats>,
+    pub _controller: Box<CharacterController<'a>>,
+    pub _behavior: Box<dyn crate::game_module::behavior::behavior_base::BehaviorBase<'a> + 'a>,
+    pub _animation_state: Box<CharacterAnimationState>,
+    pub _attached_item: Option<RcRefCell<Item<'a>>>,
+    pub _attached_item_id: Option<ItemID>,
+    pub _audio_snoring: Option<RcRefCell<AudioInstance>>,
+}
 
 impl CharacterAnimationState {
     pub fn is_attack_event(&self) -> bool {

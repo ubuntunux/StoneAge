@@ -9,7 +9,6 @@ use crate::game_module::game_service_locator::{
     get_game_resources_mut, get_game_scene_manager, get_game_scene_manager_mut, get_game_ui_manager_mut,
 };
 use crate::game_module::save_data::save_data::GameSaveData;
-use crate::game_module::scenario::scenario::ScenarioType;
 use nalgebra::{Vector2, Vector3};
 use rust_engine_3d::core::engine_service_locator::{get_audio_manager_mut, get_engine_core, get_scene_manager, get_scene_manager_mut, is_engine_core_valid};
 use rust_engine_3d::utilities::system::{BoxRefCell, State, newBoxRefCell};
@@ -109,16 +108,15 @@ impl<'a> GameClient<'a> {
     }
     fn new_game(&mut self) {
         self._game_save_data = newBoxRefCell(GameSaveData::default());
-        get_game_scene_manager_mut().close_game_scene_data();
-        get_game_scene_manager_mut().request_open_game_scenario(ScenarioType::ScenarioIntro_Intro);
+        get_game_scene_manager_mut().new_game_scene();
     }
     fn load_game(&mut self) {
         let game_save_data = get_game_resources_mut().get_game_save_data(self._game_save_data_name.as_str()).clone();
         self._game_save_data = newBoxRefCell(game_save_data.borrow().clone());
-        get_game_scene_manager_mut().load_game_save_data(&mut self._game_save_data.borrow_mut());
+        get_game_scene_manager_mut().load_game_scene_save_data(&mut self._game_save_data.borrow_mut());
     }
     pub fn save_game(&self, save_file: bool) {
-        get_game_scene_manager().update_game_save_data(&mut self._game_save_data.borrow_mut());
+        get_game_scene_manager().update_game_scene_save_data(&mut self._game_save_data.borrow_mut());
         if save_file {
             get_game_resources_mut()
                 .save_game_save_data(self._game_save_data_name.as_str(), &self._game_save_data.borrow());
