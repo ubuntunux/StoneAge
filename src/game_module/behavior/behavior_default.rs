@@ -21,14 +21,18 @@ impl<'a> BehaviorBase<'a> for BehaviorDefault<'a> {
         self.set_next_behavior(BehaviorState::Idle, true);
     }
 
-    fn set_next_behavior(&mut self, next_behavior_state: BehaviorState, is_force: bool) {
-        self._behavior_data.set_next_behavior_state(next_behavior_state, is_force);
+    fn get_behavior_data(&self) -> &BehaviorData<'a> {
+        &self._behavior_data
+    }
+
+    fn get_behavior_data_mut(&mut self) -> &mut BehaviorData<'a> {
+        &mut self._behavior_data
     }
 
     fn update_behavior(&mut self, owner: &mut Character<'a>, _target: Option<&Character<'a>>, delta_time: f32) {
         let prev_behavior_state = self._behavior_data.get_behavior_state();
         let next_behavior_state = self._behavior_data.get_next_behavior_state();
-        let is_force = self._behavior_data.is_force_behavior_state_changed();
+        let is_force = self._behavior_data.is_force_behavior_state_changed_and_reset();
 
         for state in State::iter() {
             if !is_force && prev_behavior_state == next_behavior_state && (state == State::End || state == State::Begin)

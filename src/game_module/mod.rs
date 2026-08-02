@@ -7,8 +7,7 @@ pub mod game_resource;
 pub mod game_scene_manager;
 pub mod game_service_locator;
 pub mod game_ui_manager;
-
-mod game_weather;
+pub mod game_weather;
 pub mod save_data;
 pub mod scenario;
 pub mod widgets;

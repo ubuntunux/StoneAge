@@ -19,21 +19,20 @@ use crate::game_module::widgets::world_map::WorldMapWidget;
 use nalgebra::Vector2;
 use rust_engine_3d::core::engine_core::TimeData;
 use rust_engine_3d::core::engine_service_locator::{
-    get_engine_core, get_engine_resources, get_scene_manager, get_ui_manager,
+    get_engine_core, get_engine_resources, get_ui_manager,
 };
 use rust_engine_3d::core::input::{JoystickInputData, KeyboardInputData, MouseInputData, MouseMoveData};
 use rust_engine_3d::scene::ui::{
-    HorizontalAlign, UIComponentInstance, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault,
+    UIComponentInstance, UIManager, UIWidgetTypes, WidgetDefault,
 };
 use rust_engine_3d::utilities::system::{RcRefCell, ptr_as_mut, ptr_as_ref};
-use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use std::ffi::c_void;
+use crate::game_module::widgets::debug_ui_widget::DebugUIWidget;
 
 pub type QuestItem<'a> = RcRefCell<dyn QuestItemBase<'a> + 'a>;
 
 pub struct EditorUIManager<'a> {
     pub _editor_ui_layout: *const WidgetDefault<'a>,
-    pub _actor_positions: Vec<*const WidgetDefault<'a>>,
     pub _window_size: Vector2<i32>,
     pub _need_to_refresh: bool,
 }
@@ -53,6 +52,7 @@ pub struct GameUIManager<'a> {
     pub _toolbox_widget: Option<Box<ToolboxWidget<'a>>>,
     pub _quest_widget: Option<Box<QuestWidget<'a>>>,
     pub _world_map_widget: Option<Box<WorldMapWidget<'a>>>,
+    pub _debug_ui_widget: Option<Box<DebugUIWidget<'a>>>,
     pub _window_size: Vector2<i32>,
     pub _need_to_refresh: bool,
 }
@@ -61,7 +61,6 @@ impl<'a> EditorUIManager<'a> {
     pub fn create_editor_ui_manager() -> Box<EditorUIManager<'a>> {
         Box::new(EditorUIManager {
             _editor_ui_layout: std::ptr::null(),
-            _actor_positions: Vec::new(),
             _window_size: Vector2::new(1024, 768),
             _need_to_refresh: true,
         })
@@ -69,11 +68,9 @@ impl<'a> EditorUIManager<'a> {
 
     pub fn initialize_editor_ui_manager(&mut self) {
         log::info!("initialize_editor_ui_manager");
-        self._actor_positions.clear();
     }
 
-    pub fn destroy_game_ui_manager(&mut self) {
-        self._actor_positions.clear();
+    pub fn destroy_editor_ui_manager(&mut self) {
     }
 
     pub fn get_editor_ui_layout(&self) -> *const WidgetDefault<'a> {
@@ -106,41 +103,11 @@ impl<'a> EditorUIManager<'a> {
     }
 
     pub fn update_editor_ui(&mut self, _delta_time: f64) {
-        let main_camera = get_scene_manager().get_main_camera();
-        let characters = get_character_manager().get_characters();
         let ui_manager = get_ui_manager();
-
         if self._need_to_refresh || self._window_size != ui_manager._window_size {
             self._window_size = ui_manager._window_size;
             self.changed_window_size(&ui_manager._window_size);
             self._need_to_refresh = false;
-        }
-
-        for (i, character) in characters.iter().enumerate() {
-            if self._actor_positions.len() <= i {
-                let ui_layout = UIManager::create_widget("actor position", UIWidgetTypes::Default);
-                let ui_layout_mut: &mut WidgetDefault = ptr_as_mut(ui_layout.as_ref());
-                let ui_component: &mut UIComponentInstance = ui_layout_mut.get_ui_component_mut();
-                ui_component.set_expandable(true);
-                ui_component.set_size_y(20.0);
-                ui_component.set_halign(HorizontalAlign::CENTER);
-                ui_component.set_valign(VerticalAlign::CENTER);
-                ui_component.set_font_color(get_color32(255, 255, 255, 255));
-                ui_component.set_color(get_color32(255, 255, 255, 0));
-                ptr_as_mut(self._editor_ui_layout).add_widget(&ui_layout);
-                self._actor_positions.push(ui_layout.as_ref());
-            }
-
-            // update position
-            let character = character.1.borrow();
-            let position = character.get_position();
-            let screen_position = main_camera.convert_world_to_screen(position, true);
-            let dpi_scale = rust_engine_3d::scene::ui::get_global_dpi_scale();
-            let widget = ptr_as_mut(self._actor_positions[i]);
-            widget
-                ._ui_component
-                .set_text(format!("[{:.1}, {:.1}, {:.1}]", position.x, position.y, position.z).as_str());
-            widget._ui_component.set_pos(screen_position.x / dpi_scale, screen_position.y / dpi_scale);
         }
     }
 }
@@ -162,6 +129,7 @@ impl<'a> GameUIManager<'a> {
             _toolbox_widget: None,
             _quest_widget: None,
             _world_map_widget: None,
+            _debug_ui_widget: None,
             _window_size: Vector2::new(0, 0),
             _need_to_refresh: true,
         })
@@ -226,6 +194,8 @@ impl<'a> GameUIManager<'a> {
             window_size,
             MATERIAL_INTRO_IMAGE,
         ));
+
+        self._debug_ui_widget = Some(DebugUIWidget::create_debug_ui_widget(root_widget));
 
         self.set_cross_hair_visible(false);
     }
@@ -528,6 +498,10 @@ impl<'a> GameUIManager<'a> {
 
         if let Some(quest_widget) = self._quest_widget.as_mut() {
             quest_widget.update_quest_widget(delta_time as f32);
+        }
+
+        if let Some(debug_ui_widget) = self._debug_ui_widget.as_mut() {
+            debug_ui_widget.update_debug_ui_widget();
         }
     }
 }

@@ -72,6 +72,10 @@ impl<'a> BehaviorData<'a> {
         self._behavior_time <= 0.0
     }
 
+    pub fn get_behavior_time(&self) -> f32 {
+        self._behavior_time
+    }
+
     pub fn set_behavior_time(&mut self, behavior_time: f32) {
         self._behavior_time = behavior_time
     }
@@ -83,8 +87,10 @@ impl<'a> BehaviorData<'a> {
         }
     }
 
-    pub fn is_force_behavior_state_changed(&self) -> bool {
-        self._is_force
+    pub fn is_force_behavior_state_changed_and_reset(&mut self) -> bool {
+        let is_force = self._is_force;
+        self._is_force = false;
+        is_force
     }
 
     pub fn get_behavior_state(&self) -> BehaviorState {
@@ -135,7 +141,14 @@ impl<'a> BehaviorData<'a> {
 
 pub trait BehaviorBase<'a> {
     fn initialize_behavior(&mut self, position: &Vector3<f32>);
-    fn set_next_behavior(&mut self, next_behavior_state: BehaviorState, is_force: bool);
+    fn get_behavior_data(&self) -> &BehaviorData<'a>;
+    fn get_behavior_data_mut(&mut self) -> &mut BehaviorData<'a>;
+    fn get_behavior_state(&self) -> BehaviorState {
+        self.get_behavior_data().get_behavior_state()
+    }
+    fn set_next_behavior(&mut self, next_behavior_state: BehaviorState, is_force: bool) {
+        self.get_behavior_data_mut().set_next_behavior_state(next_behavior_state, is_force);
+    }
     fn update_behavior(&mut self, owner: &mut Character<'a>, behavior_target: Option<&Character<'a>>, delta_time: f32);
     fn get_behavior_save_data(&self) -> BehaviorSaveData;
     fn load_behavior_save_data(&mut self, save_data: &BehaviorSaveData);

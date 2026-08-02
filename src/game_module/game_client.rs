@@ -366,7 +366,6 @@ impl<'a> GameClient<'a> {
                     State::Begin => {}
                     State::Update => {
                         game_ui_manager.update_world_map_widget(joystick_input_data, keyboard_input_data);
-
                         if game_scene_manager.is_teleport_mode() {
                             self.set_next_game_phase(GamePhase::WorldMapClose);
                         } else if game_ui_manager.is_requested_close_world_map() {
@@ -400,6 +399,10 @@ impl<'a> GameClient<'a> {
             }
         }
 
-        game_scene_manager.update_game_scene_manager(any_key_hold, any_key_pressed, delta_time);
+        if self._game_phase == GamePhase::GamePlay ||
+            self._game_phase == GamePhase::PlayGameScenario ||
+            self._game_phase == GamePhase::LoadingProgress {
+            game_scene_manager.update_game_scene_manager(any_key_hold, any_key_pressed, delta_time);
+        }
     }
 }

@@ -7,7 +7,7 @@ use rust_engine_3d::audio::audio_manager::AudioInstance;
 use crate::game_module::actors::interaction_object::InteractionObject;
 
 use crate::game_module::actors::items::ItemDataType;
-use crate::game_module::behavior::behavior_base::{BehaviorState, create_character_behavior};
+use crate::game_module::behavior::behavior_base::{create_character_behavior, BehaviorBase, BehaviorState};
 use crate::game_module::game_client::GamePhase;
 use crate::game_module::game_constants::*;
 use crate::game_module::game_scene_manager::Stages;
@@ -41,7 +41,7 @@ pub struct Character<'a> {
     pub _render_object: RcRefCell<RenderObjectData<'a>>,
     pub _character_stats: Box<CharacterStats>,
     pub _controller: Box<CharacterController<'a>>,
-    pub _behavior: Box<dyn crate::game_module::behavior::behavior_base::BehaviorBase<'a> + 'a>,
+    pub _behavior: Box<dyn BehaviorBase<'a> + 'a>,
     pub _animation_state: Box<CharacterAnimationState>,
     pub _attached_item: Option<RcRefCell<Item<'a>>>,
     pub _attached_item_id: Option<ItemID>,
@@ -352,6 +352,18 @@ impl<'a> Character<'a> {
 
     pub fn destroy_character(&mut self) {
         self.stop_animations(true);
+    }
+
+    pub fn get_debug_info(&self) -> String {
+        let position = self.get_position();
+        format!(
+            "Behavior: {:?}({:.1})\nHP: {:?}/{:?}\nHunger: {:?}/{:?}\nPosition: [{:.1}, {:.1}, {:.1}]",
+            self._behavior.get_behavior_state(),
+            self._behavior.get_behavior_data().get_behavior_time(),
+            self._character_stats._hp, self._character_stats._max_hp,
+            self._character_stats.get_hunger(), MAX_HUNGER,
+            position.x, position.y, position.z
+        )
     }
 
     pub fn respawn_character(&mut self, position: &Vector3<f32>, rotation: &Vector3<f32>, scale: &Vector3<f32>) {
