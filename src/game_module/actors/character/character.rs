@@ -50,17 +50,17 @@ pub struct Character<'a> {
 
 impl CharacterAnimationState {
     pub fn is_attack_event(&self) -> bool {
-        self._action_event == ActionAnimationState::Attack
-            || self._action_event == ActionAnimationState::PowerAttack
-            || self._action_event == ActionAnimationState::Kick
+        self._action_event == ActionEvent::Attack
+            || self._action_event == ActionEvent::PowerAttack
+            || self._action_event == ActionEvent::Kick
     }
-    pub fn is_action_event(&self, action_event: ActionAnimationState) -> bool {
+    pub fn is_action_event(&self, action_event: ActionEvent) -> bool {
         self._action_event == action_event
     }
-    pub fn get_action_event(&self) -> ActionAnimationState {
+    pub fn get_action_event(&self) -> ActionEvent {
         self._action_event
     }
-    pub fn set_action_event(&mut self, action_event: ActionAnimationState) {
+    pub fn set_action_event(&mut self, action_event: ActionEvent) {
         self._action_event = action_event;
     }
 }
@@ -829,11 +829,11 @@ impl<'a> Character<'a> {
         self._controller.check_arrival_with_radius(target_position, radius, ignore_y_axis)
     }
 
-    pub fn get_power(&self, attack_event: ActionAnimationState) -> i32 {
+    pub fn get_power(&self, attack_event: ActionEvent) -> i32 {
         match attack_event {
-            ActionAnimationState::Attack => self.get_character_data()._stat_data._attack_damage,
-            ActionAnimationState::PowerAttack => self.get_character_data()._stat_data._power_attack_damage,
-            ActionAnimationState::Kick => self.get_character_data()._stat_data._kick_damage,
+            ActionEvent::Attack => self.get_character_data()._stat_data._attack_damage,
+            ActionEvent::PowerAttack => self.get_character_data()._stat_data._power_attack_damage,
+            ActionEvent::Kick => self.get_character_data()._stat_data._kick_damage,
             _ => panic!("get_power not implemented: {:?}", attack_event),
         }
     }
@@ -973,15 +973,11 @@ impl<'a> Character<'a> {
     }
 
     pub fn set_action_hungry(&mut self) {
-        if self.is_action(ActionAnimationState::None) {
-            self.set_next_action_animation(ActionAnimationState::Hungry, 1.0);
-        }
+        self.set_next_action_animation(ActionAnimationState::Hungry, 1.0);
     }
 
     pub fn set_action_eating(&mut self) {
-        if self.is_idle_action() {
-            self.set_next_action_animation(ActionAnimationState::Eating, 1.0);
-        }
+        self.set_next_action_animation(ActionAnimationState::Eating, 1.0);
     }
 
     pub fn set_action_interaction(&mut self) {
@@ -989,6 +985,7 @@ impl<'a> Character<'a> {
             let item_manager = get_game_scene_manager().get_item_manager_mut();
             match self._controller._nearest_interaction_object.clone() {
                 InteractionObject::PropBed(_) => {
+                    self.set_move_idle();
                     get_game_scene_manager_mut().request_open_game_scenario(ScenarioType::ScenarioWrapUpTheDay);
                 }
                 InteractionObject::PropPickup(_) => {
@@ -1423,7 +1420,7 @@ impl<'a> Character<'a> {
     }
 
     pub fn update_action_keyframe_event(&mut self) {
-        self._animation_state.set_action_event(ActionAnimationState::None);
+        self._animation_state.set_action_event(ActionEvent::None);
 
         let current_action_animation_state = self._animation_state._action_animation_state;
         let next_action_animation_state = self._animation_state._next_action_animation_state;
@@ -1479,7 +1476,7 @@ impl<'a> Character<'a> {
                         let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
                         if animation_play_info.check_animation_event_time(character_data._stat_data._attack_event_time)
                         {
-                            self._animation_state.set_action_event(ActionAnimationState::Attack);
+                            self._animation_state.set_action_event(ActionEvent::Attack);
                             get_audio_manager_mut().play_audio_bank(&AUDIO_ATTACK, AudioLoop::ONCE, None);
                         }
                         if animation_play_info._is_animation_end {
@@ -1585,7 +1582,7 @@ impl<'a> Character<'a> {
                     State::Update => {
                         let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
                         if animation_play_info.check_animation_event_time(character_data._stat_data._kick_event_time) {
-                            self._animation_state.set_action_event(ActionAnimationState::Kick);
+                            self._animation_state.set_action_event(ActionEvent::Kick);
                             get_audio_manager_mut().play_audio_bank(&AUDIO_ATTACK, AudioLoop::ONCE, None);
                         }
                         if animation_play_info._is_animation_end {
@@ -1642,7 +1639,7 @@ impl<'a> Character<'a> {
                         let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
                         if animation_play_info.check_animation_event_time(PICKUP_EVENT_TIME) {
                             get_audio_manager_mut().play_audio_bank(&AUDIO_ATTACK, AudioLoop::ONCE, None);
-                            self._animation_state.set_action_event(ActionAnimationState::Pickup);
+                            self._animation_state.set_action_event(ActionEvent::Pickup);
                         }
                         if animation_play_info._is_animation_end {
                             self.set_action_none();
@@ -1675,7 +1672,7 @@ impl<'a> Character<'a> {
                             .check_animation_event_time(character_data._stat_data._power_attack_event_time)
                         {
                             get_audio_manager_mut().play_audio_bank(&AUDIO_ATTACK, AudioLoop::ONCE, None);
-                            self._animation_state.set_action_event(ActionAnimationState::PowerAttack);
+                            self._animation_state.set_action_event(ActionEvent::PowerAttack);
                         }
                         if animation_play_info._is_animation_end {
                             self.set_action_none();

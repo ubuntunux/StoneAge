@@ -49,6 +49,8 @@ impl<'a> BehaviorBase<'a> for BehaviorCivilian<'a> {
                 State::Update => next_behavior_state,
             };
 
+            let is_first_update_behavior_state = prev_behavior_state != next_behavior_state && state == State::Update;
+
             match update_behavior_state {
                 BehaviorState::Idle => {
                     match state {
@@ -68,10 +70,10 @@ impl<'a> BehaviorBase<'a> for BehaviorCivilian<'a> {
                         }
                         State::Update => {
                             if owner.get_attached_item_data_type().is_eatable() {
-                                self.set_next_behavior(BehaviorState::Eating, false);
+                                self.set_next_behavior(BehaviorState::Eating, true);
                             } else {
                                 if !owner.get_stats().is_hungry() && self._behavior_data.is_end_behavior_time() {
-                                    self.set_next_behavior(BehaviorState::Roaming, false);
+                                    self.set_next_behavior(BehaviorState::Roaming, true);
                                 }
                             }
                         }
@@ -81,14 +83,14 @@ impl<'a> BehaviorBase<'a> for BehaviorCivilian<'a> {
                 BehaviorState::Eating => {
                     match state {
                         State::Begin => {
-                            owner.set_action_eating();
                             if !owner.is_move_stop() {
                                 owner.set_move_idle();
                             }
+                            owner.set_action_eating();
                             self._behavior_data.set_behavior_time(NPC_IDLE_TERM_MIN);
                         }
                         State::Update => {
-                            if !owner.is_action(ActionAnimationState::Eating) {
+                            if !is_first_update_behavior_state && !owner.is_action(ActionAnimationState::Eating) {
                                 self.set_next_behavior(BehaviorState::Idle, false);
                             }
                         }
@@ -167,7 +169,7 @@ impl<'a> BehaviorBase<'a> for BehaviorCivilian<'a> {
                             owner.set_action_wake_up();
                         }
                         State::Update => {
-                            if !owner.is_action(ActionAnimationState::WakeUp) {
+                            if !is_first_update_behavior_state && !owner.is_action(ActionAnimationState::WakeUp) {
                                 self.set_next_behavior(BehaviorState::Idle, false);
                             }
                         }
@@ -178,6 +180,7 @@ impl<'a> BehaviorBase<'a> for BehaviorCivilian<'a> {
             }
 
             if state == State::Update {
+                owner._character_stats.add_hunger(0.02 * delta_time);
                 self._behavior_data.update_behavior_time(delta_time);
             }
         }

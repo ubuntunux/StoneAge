@@ -4,7 +4,7 @@ use rust_engine_3d::scene::render_object::RenderObjectData;
 use rust_engine_3d::utilities::system::RcRefCell;
 use serde::{Deserialize, Serialize};
 use std::ffi::c_void;
-
+use crate::game_module::actors::character::ActionEvent;
 use super::character::Character;
 
 #[derive(Clone)]
@@ -68,7 +68,7 @@ pub struct CharacterAnimationState {
     pub _prev_move_animation_state: MoveAnimationState,
     pub _next_move_animation_state: MoveAnimationState,
     pub _next_move_animation_speed: f32,
-    pub _action_event: ActionAnimationState,
+    pub _action_event: ActionEvent,
     pub _action_animation_state: ActionAnimationState,
     pub _next_action_animation_state: Option<ActionAnimationState>,
     pub _next_action_animation_speed: f32,

@@ -1,4 +1,4 @@
-use crate::game_module::actors::character::ActionAnimationState;
+use crate::game_module::actors::character::ActionEvent;
 use crate::game_module::actors::interaction_object::InteractionObject;
 use crate::game_module::actors::items::ItemCreateInfo;
 use crate::game_module::actors::props::api::{
@@ -515,7 +515,7 @@ impl<'a> PropManager<'a> {
                             };
 
                             if is_in_player_range
-                                && player._animation_state.is_action_event(ActionAnimationState::Pickup)
+                                && player._animation_state.is_action_event(ActionEvent::Pickup)
                             {
                                 let mut pickup_items: bool = false;
                                 let drop_count = prop._prop_stats._item_count;

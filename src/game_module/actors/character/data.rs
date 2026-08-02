@@ -7,8 +7,9 @@ use rust_engine_3d::scene::mesh::MeshData;
 use rust_engine_3d::utilities::system::RcRefCell;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq, Default)]
 pub enum ActionAnimationState {
+    #[default]
     None,
     Attack,
     Dance,
@@ -25,10 +26,23 @@ pub enum ActionAnimationState {
     WakeUp,
 }
 
-impl Default for ActionAnimationState {
-    fn default() -> Self {
-        ActionAnimationState::None
-    }
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq, Default)]
+pub enum ActionEvent {
+    #[default]
+    None,
+    Attack,
+    Dance,
+    Dead,
+    Eating,
+    Hit,
+    Hungry,
+    Kick,
+    LayingDown,
+    Pickup,
+    PowerAttack,
+    Sleep,
+    SleepNoSnoring,
+    WakeUp,
 }
 
 #[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq)]
