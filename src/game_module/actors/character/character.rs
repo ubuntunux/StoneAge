@@ -2,12 +2,12 @@ use crate::game_module::actors::character::controller::CharacterController;
 use crate::game_module::actors::character::data::*;
 use crate::game_module::actors::character::manager::{CharacterCreateInfo, CharacterID, CharacterSaveData};
 use crate::game_module::actors::character::stats::*;
+use crate::game_module::actors::interaction_object::InteractionObject;
 use crate::game_module::actors::items::{Item, ItemID};
 use rust_engine_3d::audio::audio_manager::AudioInstance;
-use crate::game_module::actors::interaction_object::InteractionObject;
 
 use crate::game_module::actors::items::ItemDataType;
-use crate::game_module::behavior::behavior_base::{create_character_behavior, BehaviorBase, BehaviorState};
+use crate::game_module::behavior::behavior_base::{BehaviorBase, BehaviorState, create_character_behavior};
 use crate::game_module::game_client::GamePhase;
 use crate::game_module::game_constants::*;
 use crate::game_module::game_scene_manager::Stages;
@@ -360,9 +360,13 @@ impl<'a> Character<'a> {
             "Behavior: {:?}({:.1})\nHP: {:?}/{:?}\nHunger: {:?}/{:?}\nPosition: [{:.1}, {:.1}, {:.1}]",
             self._behavior.get_behavior_state(),
             self._behavior.get_behavior_data().get_behavior_time(),
-            self._character_stats._hp, self._character_stats._max_hp,
-            self._character_stats.get_hunger(), MAX_HUNGER,
-            position.x, position.y, position.z
+            self._character_stats._hp,
+            self._character_stats._max_hp,
+            self._character_stats.get_hunger(),
+            MAX_HUNGER,
+            position.x,
+            position.y,
+            position.z
         )
     }
 

@@ -4,6 +4,7 @@ use crate::game_module::game_constants::MATERIAL_INTRO_IMAGE;
 use crate::game_module::game_service_locator::{get_character_manager, get_game_scene_manager};
 use crate::game_module::widgets::controller_help::ControllerHelpWidget;
 use crate::game_module::widgets::cross_hair_widget::CrossHairWidget;
+use crate::game_module::widgets::debug_ui_widget::DebugUIWidget;
 use crate::game_module::widgets::game_menu_widget::GameMenuWidget;
 use crate::game_module::widgets::image_widget::ImageLayout;
 use crate::game_module::widgets::item_bar::{InventoryItemCreateInfoList, ItemBarWidget};
@@ -18,16 +19,11 @@ use crate::game_module::widgets::toolbox_widget::ToolboxWidget;
 use crate::game_module::widgets::world_map::WorldMapWidget;
 use nalgebra::Vector2;
 use rust_engine_3d::core::engine_core::TimeData;
-use rust_engine_3d::core::engine_service_locator::{
-    get_engine_core, get_engine_resources, get_ui_manager,
-};
+use rust_engine_3d::core::engine_service_locator::{get_engine_core, get_engine_resources, get_ui_manager};
 use rust_engine_3d::core::input::{JoystickInputData, KeyboardInputData, MouseInputData, MouseMoveData};
-use rust_engine_3d::scene::ui::{
-    UIComponentInstance, UIManager, UIWidgetTypes, WidgetDefault,
-};
+use rust_engine_3d::scene::ui::{UIComponentInstance, UIManager, UIWidgetTypes, WidgetDefault};
 use rust_engine_3d::utilities::system::{RcRefCell, ptr_as_mut, ptr_as_ref};
 use std::ffi::c_void;
-use crate::game_module::widgets::debug_ui_widget::DebugUIWidget;
 
 pub type QuestItem<'a> = RcRefCell<dyn QuestItemBase<'a> + 'a>;
 
@@ -70,8 +66,7 @@ impl<'a> EditorUIManager<'a> {
         log::info!("initialize_editor_ui_manager");
     }
 
-    pub fn destroy_editor_ui_manager(&mut self) {
-    }
+    pub fn destroy_editor_ui_manager(&mut self) {}
 
     pub fn get_editor_ui_layout(&self) -> *const WidgetDefault<'a> {
         self._editor_ui_layout

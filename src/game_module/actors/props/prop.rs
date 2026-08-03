@@ -194,7 +194,8 @@ impl<'a> Prop<'a> {
                 match self._prop_data.borrow()._prop_type {
                     PropDataType::Harvestable => {
                         position = item_render_object.borrow().get_transform_object_data()._position;
-                        let mut to_item = item_render_object.borrow().get_transform_object_data()._position - self.get_position();
+                        let mut to_item =
+                            item_render_object.borrow().get_transform_object_data()._position - self.get_position();
                         to_item = math::make_normalize_xz(&to_item);
                         velocity = Vector3::new(to_item.x, 1.0, to_item.z) * 2.0;
                     }
@@ -514,9 +515,7 @@ impl<'a> PropManager<'a> {
                                 player.get_bounding_box().collide_bound_box(&bounding_box._min, &bounding_box._max)
                             };
 
-                            if is_in_player_range
-                                && player._animation_state.is_action_event(ActionEvent::Pickup)
-                            {
+                            if is_in_player_range && player._animation_state.is_action_event(ActionEvent::Pickup) {
                                 let mut pickup_items: bool = false;
                                 let drop_count = prop._prop_stats._item_count;
                                 for item_create_info in prop.drop_items(drop_count, player.get_position()).iter() {

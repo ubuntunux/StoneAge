@@ -3,8 +3,8 @@ use crate::game_module::actors::character::Character;
 use crate::game_module::actors::props::Prop;
 use crate::game_module::behavior::behavior_base::BehaviorState;
 use crate::game_module::game_constants::{
-    AUDIO_QUEST_COMPLETE, AUDIO_ROOSTER, AUDIO_WRAP_UP_THE_DAY, BED_FOR_ARU, DEFAULT_BGM_VOLUME, DEFAULT_FADE_TIME,
-    GAME_MUSIC, MATERIAL_UI_NONE, SLEEP_TIMER,
+    AUDIO_QUEST_COMPLETE, AUDIO_ROOSTER, AUDIO_WRAP_UP_THE_DAY, BED_FOR_ARU, DEFAULT_FADE_TIME, MATERIAL_UI_NONE,
+    SLEEP_TIMER,
 };
 use crate::game_module::game_service_locator::{
     get_game_scene_manager, get_game_scene_manager_mut, get_game_ui_manager_mut,
@@ -196,7 +196,6 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
 
     fn update_game_scenario(&mut self, _any_key_hold: bool, _any_key_pressed: bool, delta_time: f64) {
         let game_scene_manager = get_game_scene_manager_mut();
-        let audio_manager = get_audio_manager_mut();
         let game_ui_manager = get_game_ui_manager_mut();
 
         let prev_scenario_phase = self._scenario_track._scenario_phase;
@@ -245,7 +244,6 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                 ScenarioPhase::Performance => {
                     if state == State::Update {
                         if game_ui_manager.is_done_manual_fade_out() {
-                            audio_manager.stop_bgm();
                             self._audio_bgm = get_audio_manager_mut().play_audio_bank(
                                 AUDIO_WRAP_UP_THE_DAY,
                                 AudioLoop::SOME(4),
@@ -319,7 +317,6 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                 ScenarioPhase::Sleep => match state {
                     State::Begin => {
                         self._sleep_timer = 0.0;
-                        audio_manager.play_bgm(GAME_MUSIC, DEFAULT_BGM_VOLUME);
                         game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, DEFAULT_FADE_TIME);
                     }
                     State::Update => {

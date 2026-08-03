@@ -2,18 +2,20 @@ use crate::game_module::actors::character::Character;
 use crate::game_module::actors::character::{CharacterCreateInfo, CharacterID, CharacterManager, CharacterSaveData};
 use crate::game_module::actors::items::{ItemCreateInfo, ItemManager, ItemSaveData};
 use crate::game_module::actors::props::{PropCreateInfo, PropManager, PropSaveData};
+use crate::game_module::game_audio_manager::GameAudioManager;
 use crate::game_module::game_constants::{
     CHARACTER_DATA_NAME_MONKEY_ARU, GAME_VIEW_MODE, GameViewMode, TEMPERATURE_MAX, TEMPERATURE_MIN, TIME_OF_DAWN,
     TIME_OF_DAY_SPEED, TIME_OF_MORNING,
 };
-use crate::game_module::game_service_locator::{get_game_client, get_game_client_mut, get_game_resources, get_game_ui_manager, get_game_ui_manager_mut};
+use crate::game_module::game_service_locator::{
+    get_game_client, get_game_client_mut, get_game_resources, get_game_ui_manager, get_game_ui_manager_mut,
+};
 use crate::game_module::game_weather::Weather;
 use crate::game_module::save_data::save_data::GameSaveData;
 use crate::game_module::scenario::scenario::{ScenarioBase, ScenarioDataCreateInfo, ScenarioType, create_scenario};
 use nalgebra::Vector2;
-use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop};
 use rust_engine_3d::begin_block;
-use rust_engine_3d::core::engine_service_locator::{get_audio_manager_mut, get_scene_manager, get_scene_manager_mut};
+use rust_engine_3d::core::engine_service_locator::{get_scene_manager, get_scene_manager_mut};
 use rust_engine_3d::scene::scene_manager::SceneDataCreateInfo;
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{RcRefCell, ptr_as_mut, ptr_as_ref};
@@ -117,7 +119,6 @@ pub struct GameSceneManager<'a> {
     pub _is_play_scenario_mode: bool,
     pub _current_game_scene_data_name: String,
     pub _current_game_scene_data: Option<RcRefCell<GameSceneDataCreateInfo>>,
-    pub _ambient_sound: Option<RcRefCell<AudioInstance>>,
     pub _teleport_stage: Option<String>,
     pub _teleport_gate: Option<String>,
     pub _teleport_spawn_point: Option<String>,
@@ -128,7 +129,8 @@ pub struct GameSceneManager<'a> {
     pub _date: u32,
     pub _game_scene_state: GameSceneState,
     pub _next_game_scene_state: GameSceneState,
-    pub _weather: Weather,
+    pub _weather: Box<Weather>,
+    pub _game_audio_manager: Box<GameAudioManager>,
 }
 
 impl<'a> GameSceneManager<'a> {
@@ -179,7 +181,6 @@ impl<'a> GameSceneManager<'a> {
             _scenarios: Default::default(),
             _completed_game_scenarios: Default::default(),
             _is_play_scenario_mode: false,
-            _ambient_sound: None,
             _teleport_stage: None,
             _teleport_gate: None,
             _teleport_spawn_point: None,
@@ -190,7 +191,8 @@ impl<'a> GameSceneManager<'a> {
             _date: 1,
             _game_scene_state: GameSceneState::None,
             _next_game_scene_state: GameSceneState::None,
-            _weather: Default::default(),
+            _weather: Box::new(Weather::default()),
+            _game_audio_manager: Box::new(GameAudioManager::default()),
         })
     }
 
@@ -200,18 +202,6 @@ impl<'a> GameSceneManager<'a> {
         self._character_manager.initialize_character_manager();
         self._item_manager.initialize_item_manager();
         self._prop_manager.initialize_prop_manager();
-    }
-
-    pub fn play_ambient_sound(&mut self, audio_name: &str, volume: Option<f32>) {
-        self.stop_ambient_sound();
-        self._ambient_sound = get_audio_manager_mut().play_audio_bank(audio_name, AudioLoop::LOOP, volume);
-    }
-
-    pub fn stop_ambient_sound(&mut self) {
-        if let Some(audio_instance_refcell) = self._ambient_sound.as_ref() {
-            get_audio_manager_mut().stop_audio_instance(audio_instance_refcell);
-        }
-        self._ambient_sound = None;
     }
 
     pub fn get_time_of_day(&self) -> f32 {
@@ -430,7 +420,7 @@ impl<'a> GameSceneManager<'a> {
     }
 
     pub fn close_game_scene_data(&mut self) {
-        self._weather.clear_weather_rain();
+        self._weather.clear_weather();
 
         if self.has_scenarios() {
             self._scenarios.values_mut().for_each(|scenario| {
@@ -683,5 +673,7 @@ impl<'a> GameSceneManager<'a> {
                 self.update_game_scenarios(any_key_hold, any_key_pressed, delta_time);
             }
         }
+
+        self._game_audio_manager.update_game_sound();
     }
 }

@@ -1,9 +1,11 @@
-use std::rc::Rc;
+use crate::game_module::game_service_locator::get_character_manager;
 use rust_engine_3d::core::engine_service_locator::get_scene_manager;
-use rust_engine_3d::scene::ui::{HorizontalAlign, UIComponentInstance, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault};
+use rust_engine_3d::scene::ui::{
+    HorizontalAlign, UIComponentInstance, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault,
+};
 use rust_engine_3d::utilities::system::ptr_as_mut;
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
-use crate::game_module::game_service_locator::get_character_manager;
+use std::rc::Rc;
 
 pub struct DebugUIWidget<'a> {
     pub _layer: Rc<WidgetDefault<'a>>,
@@ -51,7 +53,7 @@ impl<'a> DebugUIWidget<'a> {
                 ui_component.set_valign(VerticalAlign::TOP);
                 ui_component.set_font_color(get_color32(255, 255, 255, 255));
                 ui_component.set_color(get_color32(255, 255, 255, 0));
-                ptr_as_mut(self._layer.as_ref()) .add_widget(&ui_layout);
+                ptr_as_mut(self._layer.as_ref()).add_widget(&ui_layout);
                 self._debug_ui_widgets.push(ui_layout.as_ref());
             }
         } else {
@@ -64,7 +66,8 @@ impl<'a> DebugUIWidget<'a> {
         for (i, character) in characters.iter().enumerate() {
             let character = character.1.borrow();
             let position = character.get_position();
-            let screen_position = main_camera.convert_world_to_screen(position, true) / rust_engine_3d::scene::ui::get_global_dpi_scale();
+            let screen_position =
+                main_camera.convert_world_to_screen(position, true) / rust_engine_3d::scene::ui::get_global_dpi_scale();
             let ui_component = ptr_as_mut(self._debug_ui_widgets[i]).get_ui_component_mut();
             let debug_info = character.get_debug_info();
             ui_component.set_text(debug_info.as_str());

@@ -1,7 +1,6 @@
 use crate::game_module::game_constants::{
-    AMBIENT_SOUND, CAMERA_DISTANCE_MAX, DEFAULT_BGM_VOLUME, DEFAULT_FADE_TIME, DEFAULT_GAME_SAVE_DATA,
-    DEFAULT_GATE_NAME, GAME_MUSIC, GAME_VIEW_MODE, GameViewMode, MATERIAL_INTRO_IMAGE, MATERIAL_UI_NONE,
-    MATERIAL_WORLDMAP_FADE_TIME,
+    CAMERA_DISTANCE_MAX, DEFAULT_FADE_TIME, DEFAULT_GAME_SAVE_DATA, DEFAULT_GATE_NAME, GAME_VIEW_MODE, GameViewMode,
+    MATERIAL_INTRO_IMAGE, MATERIAL_UI_NONE, MATERIAL_WORLDMAP_FADE_TIME,
 };
 use crate::game_module::game_scene_manager::GameSceneState;
 use crate::game_module::game_service_locator::{
@@ -10,7 +9,9 @@ use crate::game_module::game_service_locator::{
 };
 use crate::game_module::save_data::save_data::GameSaveData;
 use nalgebra::{Vector2, Vector3};
-use rust_engine_3d::core::engine_service_locator::{get_audio_manager_mut, get_engine_core, get_scene_manager, get_scene_manager_mut, is_engine_core_valid};
+use rust_engine_3d::core::engine_service_locator::{
+    get_engine_core, get_scene_manager, get_scene_manager_mut, is_engine_core_valid,
+};
 use rust_engine_3d::utilities::system::{BoxRefCell, State, newBoxRefCell};
 use std::cmp::PartialEq;
 use strum::IntoEnumIterator;
@@ -124,11 +125,10 @@ impl<'a> GameClient<'a> {
     }
     pub fn update_game_mode(&mut self, delta_time: f64) {
         if !is_engine_core_valid() {
-            return
+            return;
         }
 
         let engine_core = get_engine_core();
-        let audio_manager = get_audio_manager_mut();
         let game_scene_manager = get_game_scene_manager_mut();
         let scene_manager = get_scene_manager_mut();
         let character_manager = get_character_manager_mut();
@@ -174,8 +174,6 @@ impl<'a> GameClient<'a> {
                 GamePhase::Start => {
                     if state == State::Update {
                         game_ui_manager.set_image_auto_fade_inout(MATERIAL_INTRO_IMAGE, 0.0);
-                        audio_manager.play_bgm(GAME_MUSIC, DEFAULT_BGM_VOLUME);
-                        game_scene_manager.play_ambient_sound(AMBIENT_SOUND, None);
                         self.set_next_game_phase(GamePhase::TitleScreen);
                     }
                 }
@@ -399,9 +397,10 @@ impl<'a> GameClient<'a> {
             }
         }
 
-        if self._game_phase == GamePhase::GamePlay ||
-            self._game_phase == GamePhase::PlayGameScenario ||
-            self._game_phase == GamePhase::LoadingProgress {
+        if self._game_phase == GamePhase::GamePlay
+            || self._game_phase == GamePhase::PlayGameScenario
+            || self._game_phase == GamePhase::LoadingProgress
+        {
             game_scene_manager.update_game_scene_manager(any_key_hold, any_key_pressed, delta_time);
         }
     }

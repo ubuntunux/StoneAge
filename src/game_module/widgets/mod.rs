@@ -1,6 +1,7 @@
 pub mod controller_help;
 pub mod cross_hair_widget;
 pub mod debug_ui_widget;
+pub mod game_audio_manager;
 pub mod game_menu_widget;
 pub mod image_widget;
 pub mod item_bar;

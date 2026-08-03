@@ -1,5 +1,6 @@
 pub mod actors;
 pub mod behavior;
+pub mod game_audio_manager;
 pub mod game_client;
 pub mod game_constants;
 pub mod game_controller;

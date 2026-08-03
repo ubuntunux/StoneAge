@@ -252,7 +252,8 @@ impl<'a> TextBoxWidget<'a> {
                 let max_x = (main_camera._window_size.x as f32 - ui_size.x).max(0.0);
                 let max_y = (main_camera._window_size.y as f32 - ui_size.y).max(0.0);
                 let screen_pos = main_camera.convert_world_to_screen(&position, true) - ui_size * 0.5;
-                let clamped_pos = Vector2::new(screen_pos.x.clamp(0.0, max_x), screen_pos.y.clamp(0.0, max_y)) / rust_engine_3d::scene::ui::get_global_dpi_scale();
+                let clamped_pos = Vector2::new(screen_pos.x.clamp(0.0, max_x), screen_pos.y.clamp(0.0, max_y))
+                    / rust_engine_3d::scene::ui::get_global_dpi_scale();
                 ui_component.set_pos(clamped_pos.x, clamped_pos.y);
 
                 match text_box_item._animation_state {
