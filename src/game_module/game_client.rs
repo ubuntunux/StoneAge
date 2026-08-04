@@ -400,6 +400,7 @@ impl<'a> GameClient<'a> {
         if self._game_phase == GamePhase::GamePlay
             || self._game_phase == GamePhase::PlayGameScenario
             || self._game_phase == GamePhase::LoadingProgress
+            || self._game_phase == GamePhase::Respawn
         {
             game_scene_manager.update_game_scene_manager(any_key_hold, any_key_pressed, delta_time);
         }
