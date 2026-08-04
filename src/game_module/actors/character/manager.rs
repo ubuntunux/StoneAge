@@ -267,6 +267,12 @@ impl<'a> CharacterManager<'a> {
     pub fn get_player(&self) -> &RcRefCell<Character<'a>> {
         self._player.as_ref().unwrap()
     }
+    pub fn is_player_alive(&self) -> bool {
+        if let Some(player) = self._player.as_ref() {
+            return player.borrow().is_alive();
+        }
+        false
+    }
     pub fn is_valid_target_character(&self) -> bool {
         self._target_character.is_some()
     }

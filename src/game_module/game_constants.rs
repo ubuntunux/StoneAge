@@ -118,9 +118,11 @@ pub const AUDIO_UFO_LABORATORY: &str = "ufo/ufo_laboratory";
 pub const AUDIO_UFO_EXPERIMENT: &str = "ufo/ufo_experiment";
 
 // music
-pub const DEFAULT_BGM_VOLUME: Option<f32> = Some(0.5);
+pub const DEFAULT_BGM_VOLUME: Option<f32> = Some(1.0);
 pub const AMBIENT_SOUND: &str = "ambient_sound";
+pub const AMBIENT_SOUND_NIGHT: &str = "ambient_night";
 pub const AMBIENT_SOUND_RAIN: &str = "rain";
+pub const AMBIENT_SOUND_THUNDER: &str = "thunder";
 pub const GAME_MUSIC: &str = "game_music";
 pub const AUDIO_WRAP_UP_THE_DAY: &str = "wrap_up_the_day_music";
 
