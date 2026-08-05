@@ -1,4 +1,4 @@
-use crate::game_module::actors::character::Character;
+use crate::game_module::actors::character::{ActionAnimationState, Character};
 use crate::game_module::game_client::GamePhase;
 use crate::game_module::game_constants::*;
 use crate::game_module::game_service_locator::{
@@ -398,8 +398,9 @@ impl<'a> GameController<'a> {
         ) * JOYSTICK_SENSITIVITY;
 
         // game menu
-        if keyboard_input_data.get_key_pressed(KeyCode::Escape)
-            || joystick_input_data._btn_start == ButtonState::Pressed
+        if (keyboard_input_data.get_key_pressed(KeyCode::Escape)
+            || joystick_input_data._btn_start == ButtonState::Pressed)
+            && !player.borrow().is_action(ActionAnimationState::FishingLoop)
         {
             get_game_client_mut().set_next_game_phase(GamePhase::GameMenu);
         }
@@ -529,8 +530,26 @@ impl<'a> GameController<'a> {
             player_mut.set_roll();
         }
 
-        if is_attack {
+        let is_fishing = player_mut.get_attached_item_data_type().is_fishing_item_type();
+
+        if is_attack && !is_fishing {
             player_mut.set_action_attack();
+        }
+
+        if is_power_attack && !is_fishing {
+            if player_mut.get_attached_item_data_type().is_weapon_item_type() {
+                player_mut.set_action_power_attack();
+            } else {
+                player_mut.set_action_kick();
+            }
+        }
+
+        if is_fishing && (is_attack || is_power_attack || is_roll || is_jump) {
+            if player_mut.is_action(ActionAnimationState::FishingLoop) {
+                player_mut.set_action_fishing_end();
+            } else if is_attack || is_power_attack {
+                player_mut.set_action_fishing_begin();
+            }
         }
 
         if is_interaction {
@@ -543,14 +562,6 @@ impl<'a> GameController<'a> {
                     let item_data_name = String::from(game_ui_manager.get_selected_inventory_item_data_name());
                     item_manager.drop_inventory_item(item_data_name.as_str(), 1);
                 }
-            }
-        }
-
-        if is_power_attack {
-            if player_mut.get_attached_item_data_type().is_weapon_item_type() {
-                player_mut.set_action_power_attack();
-            } else {
-                player_mut.set_action_kick();
             }
         }
 

@@ -357,9 +357,11 @@ impl<'a> Character<'a> {
     pub fn get_debug_info(&self) -> String {
         let position = self.get_position();
         format!(
-            "Behavior: {:?}({:.1})\nHP: {:?}/{:?}\nHunger: {:?}/{:?}\nPosition: [{:.1}, {:.1}, {:.1}]",
+            "Behavior: {:?}({:.1})\nAnimation: {:?}/{:?}\nHP: {:?}/{:?}\nHunger: {:?}/{:?}\nPosition: [{:.1}, {:.1}, {:.1}]",
             self._behavior.get_behavior_state(),
             self._behavior.get_behavior_data().get_behavior_time(),
+            self._animation_state._action_animation_state,
+            self._animation_state._move_animation_state,
             self._character_stats._hp,
             self._character_stats._max_hp,
             self._character_stats.get_hunger(),
@@ -534,6 +536,21 @@ impl<'a> Character<'a> {
                 (Some(&animation_data._sleep_animation), next_action_speed, true)
             }
             ActionAnimationState::WakeUp => (Some(&animation_data._wake_up_animation), next_action_speed, false),
+            ActionAnimationState::FishingBegin => (
+                Some(&animation_data._fishing_begin_animation),
+                next_action_speed,
+                false,
+            ),
+            ActionAnimationState::FishingLoop => (
+                Some(&animation_data._fishing_loop_animation),
+                next_action_speed,
+                true,
+            ),
+            ActionAnimationState::FishingEnd => (
+                Some(&animation_data._fishing_end_animation),
+                next_action_speed,
+                false,
+            ),
         };
 
         if let Some(mesh) = action_mesh {
@@ -715,6 +732,9 @@ impl<'a> Character<'a> {
             && !self.is_action(ActionAnimationState::Sleep)
             && !self.is_action(ActionAnimationState::SleepNoSnoring)
             && !self.is_action(ActionAnimationState::WakeUp)
+            && !self.is_action(ActionAnimationState::FishingBegin)
+            && !self.is_action(ActionAnimationState::FishingLoop)
+            && !self.is_action(ActionAnimationState::FishingEnd)
     }
 
     pub fn is_available_jump(&self) -> bool {
@@ -1091,6 +1111,18 @@ impl<'a> Character<'a> {
             self.set_move_idle();
             self.set_next_action_animation(ActionAnimationState::Kick, animation_speed);
         }
+    }
+
+    pub fn set_action_fishing_begin(&mut self) {
+        if self.is_available_attack() {
+            self.set_next_action_animation(ActionAnimationState::FishingBegin, 1.0);
+            self.set_move_idle();
+        }
+    }
+
+    pub fn set_action_fishing_end(&mut self) {
+        self.set_next_action_animation(ActionAnimationState::FishingEnd, 1.0);
+        self.set_move_idle();
     }
 
     pub fn set_action_hit(&mut self) {
@@ -1478,11 +1510,11 @@ impl<'a> Character<'a> {
                     }
                     State::Update => {
                         let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
-                        if animation_play_info.check_animation_event_time(character_data._stat_data._attack_event_time)
-                        {
+                        if animation_play_info.check_animation_event_time(character_data._stat_data._attack_event_time) {
                             self._animation_state.set_action_event(ActionEvent::Attack);
                             get_audio_manager_mut().play_audio_bank(&AUDIO_ATTACK, AudioLoop::ONCE, None);
                         }
+
                         if animation_play_info._is_animation_end {
                             self.set_action_none();
                         }
@@ -1801,6 +1833,87 @@ impl<'a> Character<'a> {
                     State::End => {
                         self.set_weapon_visible(true);
                     }
+                },
+                ActionAnimationState::FishingBegin => match state {
+                    State::Begin => {
+                        let mut animation_info = AnimationPlayArgs {
+                            _animation_loop: false,
+                            _force_animation_setting: true,
+                            _animation_fade_out_time: 0.1,
+                            ..Default::default()
+                        };
+                        animation_info._animation_speed = next_action_animation_speed;
+                        render_object.set_animation(
+                            &animation_data._fishing_begin_animation,
+                            &animation_info,
+                            AnimationLayer::ActionLayer,
+                        );
+                        get_audio_manager_mut().play_audio_bank(&AUDIO_ATTACK, AudioLoop::ONCE, None);
+                        self.set_weapon_visible(true);
+                    }
+                    State::Update => {
+                        let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
+                        if animation_play_info._is_animation_end {
+                            let fishing_distance = 2.0;
+                            let check_pos = self.get_position() + self.get_face_direction() * fishing_distance;
+                            let height_map_data = get_scene_manager().get_height_map_data();
+                            let height = height_map_data.get_height_bilinear(&check_pos, 0);
+                            let sea_height = get_scene_manager().get_sea_height();
+                            if height < sea_height {
+                                self.set_next_action_animation(ActionAnimationState::FishingLoop, 1.0);
+                            } else {
+                                self.set_action_none();
+                            }
+                        }
+                    }
+                    _ => {}
+                },
+                ActionAnimationState::FishingLoop => match state {
+                    State::Begin => {
+                        let mut animation_info = AnimationPlayArgs {
+                            _animation_loop: true,
+                            _force_animation_setting: true,
+                            _animation_fade_out_time: 0.1,
+                            ..Default::default()
+                        };
+                        animation_info._animation_speed = next_action_animation_speed;
+                        render_object.set_animation(
+                            &animation_data._fishing_loop_animation,
+                            &animation_info,
+                            AnimationLayer::ActionLayer,
+                        );
+                        self.set_weapon_visible(true);
+                    }
+                    _ => {}
+                },
+                ActionAnimationState::FishingEnd => match state {
+                    State::Begin => {
+                        let mut animation_info = AnimationPlayArgs {
+                            _animation_loop: false,
+                            _force_animation_setting: true,
+                            _animation_fade_out_time: 0.1,
+                            ..Default::default()
+                        };
+                        animation_info._animation_speed = next_action_animation_speed;
+                        render_object.set_animation(
+                            &animation_data._fishing_end_animation,
+                            &animation_info,
+                            AnimationLayer::ActionLayer,
+                        );
+                        get_audio_manager_mut().play_audio_bank(&AUDIO_ATTACK, AudioLoop::ONCE, None);
+                        self.set_weapon_visible(true);
+
+                        if self._is_player {
+                            item_manager.pick_item(ITEM_COCONUT, 1);
+                        }
+                    }
+                    State::Update => {
+                        let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
+                        if animation_play_info._is_animation_end {
+                            self.set_action_none();
+                        }
+                    }
+                    _ => {}
                 },
             }
         }

@@ -24,6 +24,9 @@ pub enum ActionAnimationState {
     Sleep,
     SleepNoSnoring,
     WakeUp,
+    FishingBegin,
+    FishingLoop,
+    FishingEnd,
 }
 
 #[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq, Default)]
@@ -43,6 +46,7 @@ pub enum ActionEvent {
     Sleep,
     SleepNoSnoring,
     WakeUp,
+    Fishing,
 }
 
 #[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq)]
@@ -152,6 +156,9 @@ pub struct CharacterAnimationDataCreateInfo {
     pub _wake_up_animation: String,
     pub _walk_animation: String,
     pub _walk_animation_speed: f32,
+    pub _fishing_begin_animation: String,
+    pub _fishing_loop_animation: String,
+    pub _fishing_end_animation: String,
 }
 
 impl Default for CharacterAnimationDataCreateInfo {
@@ -190,6 +197,9 @@ impl Default for CharacterAnimationDataCreateInfo {
             _wake_up_animation: String::default(),
             _walk_animation: String::default(),
             _walk_animation_speed: 1.0,
+            _fishing_begin_animation: String::default(),
+            _fishing_loop_animation: String::default(),
+            _fishing_end_animation: String::default(),
         }
     }
 }
@@ -274,6 +284,9 @@ pub struct CharacterAnimationData {
     pub _wake_up_animation: RcRefCell<MeshData>,
     pub _walk_animation: RcRefCell<MeshData>,
     pub _walk_animation_speed: f32,
+    pub _fishing_begin_animation: RcRefCell<MeshData>,
+    pub _fishing_loop_animation: RcRefCell<MeshData>,
+    pub _fishing_end_animation: RcRefCell<MeshData>,
     pub _upper_animation_layer: RcRefCell<AnimationLayerData>,
 }
 
@@ -321,6 +334,15 @@ impl CharacterAnimationData {
             _wake_up_animation: engine_resources.get_mesh_data(&animation_data_create_info._wake_up_animation).clone(),
             _walk_animation: engine_resources.get_mesh_data(&animation_data_create_info._walk_animation).clone(),
             _walk_animation_speed: animation_data_create_info._walk_animation_speed,
+            _fishing_begin_animation: engine_resources
+                .get_mesh_data(&animation_data_create_info._fishing_begin_animation)
+                .clone(),
+            _fishing_loop_animation: engine_resources
+                .get_mesh_data(&animation_data_create_info._fishing_loop_animation)
+                .clone(),
+            _fishing_end_animation: engine_resources
+                .get_mesh_data(&animation_data_create_info._fishing_end_animation)
+                .clone(),
             _upper_animation_layer: engine_resources
                 .get_animation_layer_data(&animation_data_create_info._upper_animation_layer)
                 .clone(),
