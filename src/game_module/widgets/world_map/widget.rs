@@ -1,4 +1,4 @@
-use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, DEFAULT_GATE_NAME, MATERIAL_WORLDMAP};
+use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, DEFAULT_GATE_NAME, JOYSTICK_SENSITIVITY, MATERIAL_WORLDMAP};
 use crate::game_module::game_scene_manager::Stages;
 use crate::game_module::game_service_locator::get_game_scene_manager_mut;
 use crate::game_module::widgets::world_map::api::{WorldMapDirection, WorldMapPlayer, WorldMapStage, WorldMapWidget};
@@ -319,15 +319,14 @@ impl<'a> WorldMapControl<'a> for WorldMapWidget<'a> {
             || joystick_input_data._btn_x == ButtonState::Pressed
             || joystick_input_data._btn_a == ButtonState::Pressed;
 
-        let joystick_sensitivity: f32 = 0.1 / 32767.0;
-        let _stick_left_direction = Vector2::<f32>::new(
+        let stick_left_direction = Vector2::<f32>::new(
             joystick_input_data._stick_left_direction.x as f32,
             joystick_input_data._stick_left_direction.y as f32,
-        ) * joystick_sensitivity;
+        ) * JOYSTICK_SENSITIVITY;
         let _stick_right_direction = Vector2::<f32>::new(
             joystick_input_data._stick_right_direction.x as f32,
             joystick_input_data._stick_right_direction.y as f32,
-        ) * joystick_sensitivity;
+        ) * JOYSTICK_SENSITIVITY;
 
         if keyboard_input_data.get_key_pressed(KeyCode::Escape)
             || joystick_input_data._btn_start == ButtonState::Pressed
@@ -336,13 +335,13 @@ impl<'a> WorldMapControl<'a> for WorldMapWidget<'a> {
             self.request_close_world_map();
         }
 
-        let world_map_direction = if is_left {
+        let world_map_direction = if is_left || stick_left_direction.x < 0.0 {
             WorldMapDirection::LEFT
-        } else if is_right {
+        } else if is_right || 0.0 < stick_left_direction.x {
             WorldMapDirection::RIGHT
-        } else if is_up {
+        } else if is_up || 0.0 < stick_left_direction.y {
             WorldMapDirection::UP
-        } else if is_down {
+        } else if is_down || stick_left_direction.y < 0.0 {
             WorldMapDirection::DOWN
         } else {
             WorldMapDirection::COUNT
