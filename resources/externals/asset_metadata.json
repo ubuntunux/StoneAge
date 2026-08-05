@@ -3257,6 +3257,16 @@
             "data": {}
         }
     ],
+    "/mnt/Workspace/StoneAge/resources/externals/models/weapons/fishing_rod.blend": [
+        {
+            "asset_type": "MODEL",
+            "asset_path": "weapons/fishing_rod",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/weapons/fishing_rod.blend",
+            "guid": "",
+            "mtime": 1785946418.5008066,
+            "data": {}
+        }
+    ],
     "/mnt/Workspace/StoneAge/resources/externals/meshes/environments/bush_01.blend": [
         {
             "asset_type": "MATERIAL_INSTANCE",
@@ -3553,21 +3563,21 @@
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/meshes/weapons/wooden_club.blend": [
+    "/mnt/Workspace/StoneAge/resources/externals/meshes/weapons/fishing_rod.blend": [
         {
             "asset_type": "MATERIAL_INSTANCE",
             "asset_path": "weapons/wooden_club",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/weapons/wooden_club.blend",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/weapons/fishing_rod.blend",
             "guid": "",
-            "mtime": 1776424302.232387,
+            "mtime": 1785946361.5382564,
             "data": {}
         },
         {
             "asset_type": "MESH",
-            "asset_path": "weapons/wooden_club",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/weapons/wooden_club.blend",
+            "asset_path": "weapons/fishing_rod",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/weapons/fishing_rod.blend",
             "guid": "",
-            "mtime": 1776424302.232387,
+            "mtime": 1785946361.5382564,
             "data": {}
         }
     ],
@@ -4378,6 +4388,16 @@
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/alien/alien.blend",
             "guid": "",
             "mtime": 1780931037.4819286,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/meshes/weapons/wooden_club.blend": [
+        {
+            "asset_type": "MESH",
+            "asset_path": "weapons/wooden_club",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/weapons/wooden_club.blend",
+            "guid": "",
+            "mtime": 1776424302.232387,
             "data": {}
         }
     ],
@@ -8061,16 +8081,6 @@
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/intro_stage.blend": [
-        {
-            "asset_type": "GAME_SCENE",
-            "asset_path": "intro_stage",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/intro_stage.blend",
-            "guid": "",
-            "mtime": 1781709119.0966709,
-            "data": {}
-        }
-    ],
     "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/stage_01.blend": [
         {
             "asset_type": "GAME_SCENE",
@@ -8088,6 +8098,16 @@
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/stage_cave.blend",
             "guid": "",
             "mtime": 1782231122.1454797,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/intro_stage.blend": [
+        {
+            "asset_type": "GAME_SCENE",
+            "asset_path": "intro_stage",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/intro_stage.blend",
+            "guid": "",
+            "mtime": 1785946622.3525243,
             "data": {}
         }
     ],
@@ -8168,6 +8188,16 @@
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/props/spirit_ball.blend",
             "guid": "",
             "mtime": 1776250259.9075058,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/items/fishing_rod.blend": [
+        {
+            "asset_type": "GAME_ITEM",
+            "asset_path": "fishing_rod",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/items/fishing_rod.blend",
+            "guid": "",
+            "mtime": 1785946669.5948298,
             "data": {}
         }
     ],

@@ -25,6 +25,7 @@ pub enum ItemDataType {
     MeleeWeapon,
     Spear,
     Wood,
+    FishingRod,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]

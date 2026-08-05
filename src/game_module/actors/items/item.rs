@@ -65,6 +65,10 @@ impl ItemDataType {
     pub fn is_weapon_item_type(&self) -> bool {
         *self == ItemDataType::Bow || *self == ItemDataType::MeleeWeapon || *self == ItemDataType::Spear
     }
+
+    pub fn is_fishing_item_type(&self) -> bool {
+        *self == ItemDataType::FishingRod
+    }
 }
 
 impl<'a> Item<'a> {

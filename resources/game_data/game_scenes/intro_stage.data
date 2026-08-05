@@ -1,6 +1,24 @@
 {
     "_characters": {},
     "_items": {
+        "fishing_rod": {
+            "_item_data_name": "items/fishing_rod",
+            "_position": [
+                14.515647888183594,
+                2.2093887329101562,
+                11.569135665893555
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
         "meat": {
             "_item_data_name": "items/meat",
             "_position": [
