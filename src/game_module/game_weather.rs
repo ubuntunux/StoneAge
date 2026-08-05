@@ -90,7 +90,7 @@ impl Weather {
                         };
                         self._rain_effect = Some(get_scene_manager_mut().add_effect(EFFECT_RAIN, &effect_create_info));
                         get_scene_manager().get_main_light().borrow_mut()._light_data._light_color = self._rainy_light_color.clone();
-                        self._thunder_timer = rand::random_range(5.0..=10.0);
+                        self._thunder_timer = rand::random_range(10.0..=120.0);
                         self._thunder_fade_timer = 0.0;
                     }
                     State::Update => {
