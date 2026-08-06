@@ -1139,6 +1139,24 @@ impl<'a> Character<'a> {
         self._fishing_state._fishing_cast_distance = FISHING_CAST_DISTANCE_MIN + self._fishing_state._fishing_gauge * FISHING_CAST_DISTANCE_RANGE;
     }
 
+    pub fn is_fishing_spot(&self) -> bool {
+        let check_pos = self.get_position() + self.get_face_direction() * self._fishing_state._fishing_cast_distance;
+        let height_map_data = get_scene_manager().get_height_map_data();
+        let height = height_map_data.get_height_bilinear(&check_pos, 0);
+        let sea_height = get_scene_manager().get_sea_height();
+        height < sea_height
+    }
+    pub fn update_fishing(&mut self, delta_time: f32) {
+        self._fishing_state._fishing_gauge += self._fishing_state._fishing_gauge_dir * FISHING_GAUGE_SPEED * delta_time;
+        if self._fishing_state._fishing_gauge >= 1.0 {
+            self._fishing_state._fishing_gauge = 1.0;
+            self._fishing_state._fishing_gauge_dir = -1.0;
+        } else if self._fishing_state._fishing_gauge <= 0.0 {
+            self._fishing_state._fishing_gauge = 0.0;
+            self._fishing_state._fishing_gauge_dir = 1.0;
+        }
+    }
+
     pub fn set_action_fishing_end(&mut self) {
         self.set_next_action_animation(ActionAnimationState::FishingEnd, 1.0);
         self.set_move_idle();
@@ -1877,25 +1895,14 @@ impl<'a> Character<'a> {
                         };
 
                         if self._fishing_state._is_fishing_button_held {
+                            self.update_fishing(delta_time);
                             render_object.get_animation_play_info_mut(AnimationLayer::ActionLayer)._animation_speed = (1.0 - (anim_play_time / (animation_length * 0.5)).min(1.0)).powf(2.0);
-                            self._fishing_state._fishing_gauge += self._fishing_state._fishing_gauge_dir * FISHING_GAUGE_SPEED * delta_time;
-                            if self._fishing_state._fishing_gauge >= 1.0 {
-                                self._fishing_state._fishing_gauge = 1.0;
-                                self._fishing_state._fishing_gauge_dir = -1.0;
-                            } else if self._fishing_state._fishing_gauge <= 0.0 {
-                                self._fishing_state._fishing_gauge = 0.0;
-                                self._fishing_state._fishing_gauge_dir = 1.0;
-                            }
                         } else {
                             render_object.get_animation_play_info_mut(AnimationLayer::ActionLayer)._animation_speed = 1.0;
                         }
 
                         if is_anim_end {
-                            let check_pos = self.get_position() + self.get_face_direction() * self._fishing_state._fishing_cast_distance;
-                            let height_map_data = get_scene_manager().get_height_map_data();
-                            let height = height_map_data.get_height_bilinear(&check_pos, 0);
-                            let sea_height = get_scene_manager().get_sea_height();
-                            if height < sea_height {
+                            if self.is_fishing_spot() {
                                 self.set_next_action_animation(ActionAnimationState::FishingLoop, 1.0);
                             } else {
                                 self.set_action_none();
