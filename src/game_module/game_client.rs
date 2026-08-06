@@ -1,3 +1,4 @@
+use crate::game_module::actors::character::data::ActionAnimationState;
 use crate::game_module::game_constants::{
     CAMERA_DISTANCE_MAX, DEFAULT_FADE_TIME, DEFAULT_GAME_SAVE_DATA, DEFAULT_GATE_NAME, GAME_VIEW_MODE, GameViewMode,
     MATERIAL_INTRO_IMAGE, MATERIAL_UI_NONE, MATERIAL_WORLDMAP_FADE_TIME,
@@ -25,6 +26,7 @@ pub enum GamePhase {
     LoadingProgress,
     GameMenu,
     GamePlay,
+    Fishing,
     PlayGameScenario,
     Teleport,
     Respawn,
@@ -114,7 +116,7 @@ impl<'a> GameClient<'a> {
     fn load_game(&mut self) {
         let game_save_data = get_game_resources_mut().get_game_save_data(self._game_save_data_name.as_str()).clone();
         self._game_save_data = newBoxRefCell(game_save_data.borrow().clone());
-        get_game_scene_manager_mut().load_game_scene_save_data(&mut self._game_save_data.borrow_mut());
+        get_game_scene_manager_mut().load_game_scene_save_data(&self._game_save_data.borrow_mut());
     }
     pub fn save_game(&self, save_file: bool) {
         get_game_scene_manager().update_game_scene_save_data(&mut self._game_save_data.borrow_mut());
@@ -261,6 +263,38 @@ impl<'a> GameClient<'a> {
                                         character_manager.get_player(),
                                     );
                                 }
+                            }
+                        }
+                    }
+                    State::End => {}
+                },
+                GamePhase::Fishing => match state {
+                    State::Begin => {
+                        game_ui_manager.show_game_ui(true);
+                    }
+                    State::Update => {
+                        if game_scene_manager.is_game_scene_state(GameSceneState::LoadCompleted)
+                            && character_manager.is_valid_player()
+                        {
+                            let player_ptr = character_manager.get_player();
+                            let is_fishing_active = {
+                                let player_ref = player_ptr.borrow();
+                                player_ref.is_fishing_gauge_active()
+                                    || player_ref.is_action(ActionAnimationState::FishingEnd)
+                            };
+                            if !is_fishing_active {
+                                self.set_next_game_phase(GamePhase::GamePlay);
+                            } else {
+                                game_controller.update_game_controller_fishing(
+                                    time_data,
+                                    joystick_input_data,
+                                    keyboard_input_data,
+                                    mouse_move_data,
+                                    mouse_input_data,
+                                    &mouse_delta,
+                                    scene_manager.get_main_camera_mut(),
+                                    player_ptr,
+                                );
                             }
                         }
                     }

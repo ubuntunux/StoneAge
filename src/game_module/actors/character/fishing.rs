@@ -1,5 +1,7 @@
 use crate::game_module::actors::character::Character;
 use crate::game_module::actors::character::data::ActionAnimationState;
+use crate::game_module::game_client::GamePhase;
+use crate::game_module::game_service_locator::get_game_client_mut;
 use rust_engine_3d::core::engine_service_locator::get_scene_manager;
 
 // Fishing Cast & Gauge Constants
@@ -44,6 +46,7 @@ impl<'a> Character<'a> {
             self._fishing_state._fishing_cast_distance = FISHING_CAST_DISTANCE_MIN;
             self.set_next_action_animation(ActionAnimationState::FishingBegin, 1.0);
             self.set_move_idle();
+            get_game_client_mut().set_next_game_phase(GamePhase::Fishing);
         }
     }
 
@@ -57,7 +60,8 @@ impl<'a> Character<'a> {
 
     pub fn release_fishing_cast(&mut self) {
         self._fishing_state._is_fishing_button_held = false;
-        self._fishing_state._fishing_cast_distance = FISHING_CAST_DISTANCE_MIN + self._fishing_state._fishing_gauge * FISHING_CAST_DISTANCE_RANGE;
+        self._fishing_state._fishing_cast_distance =
+            FISHING_CAST_DISTANCE_MIN + self._fishing_state._fishing_gauge * FISHING_CAST_DISTANCE_RANGE;
     }
 
     pub fn is_fishing_spot(&self) -> bool {
@@ -107,7 +111,8 @@ impl<'a> Character<'a> {
                 self._fishing_state._player_angle = 0.0;
             } else {
                 let distance_ratio = (current_angle.abs() / 90.0).clamp(0.0, 1.0);
-                let speed_factor = FISHING_PLAYER_RETURN_MIN_FACTOR + (1.0 - FISHING_PLAYER_RETURN_MIN_FACTOR) * distance_ratio;
+                let speed_factor =
+                    FISHING_PLAYER_RETURN_MIN_FACTOR + (1.0 - FISHING_PLAYER_RETURN_MIN_FACTOR) * distance_ratio;
                 let return_speed = FISHING_PLAYER_RETURN_SPEED * speed_factor;
                 let step = return_speed * delta_time;
 
@@ -162,7 +167,8 @@ impl<'a> Character<'a> {
         self._fishing_state._fish_change_timer -= delta_time;
         let reached_target = (self._fishing_state._fish_target_angle - self._fishing_state._fish_angle).abs() <= 0.5;
         if reached_target || self._fishing_state._fish_change_timer <= 0.0 {
-            self._fishing_state._fish_change_timer = FISHING_MINIGAME_CHANGE_TIMER_MIN + rand::random::<f32>() * FISHING_MINIGAME_CHANGE_TIMER_RANGE;
+            self._fishing_state._fish_change_timer =
+                FISHING_MINIGAME_CHANGE_TIMER_MIN + rand::random::<f32>() * FISHING_MINIGAME_CHANGE_TIMER_RANGE;
             let angle_range = self._fishing_state._difficulty_angle_range;
             self._fishing_state._fish_target_angle = (rand::random::<f32>() * 2.0 - 1.0) * angle_range;
         }
@@ -205,5 +211,6 @@ impl<'a> Character<'a> {
     pub fn set_action_fishing_end(&mut self) {
         self.set_next_action_animation(ActionAnimationState::FishingEnd, 1.0);
         self.set_move_idle();
+        get_game_client_mut().set_next_game_phase(GamePhase::GamePlay);
     }
 }

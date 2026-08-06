@@ -352,7 +352,7 @@ impl<'a> PropManager<'a> {
 
     pub fn load_prop_save_data(&mut self, prop_name: &str, prop_save_data: &PropSaveData) {
         let prop = self.create_prop(prop_name, &prop_save_data._prop_create_info);
-        prop.borrow_mut().load_prop_save_date(&prop_save_data);
+        prop.borrow_mut().load_prop_save_date(prop_save_data);
     }
 
     pub fn load_props_save_data(&mut self, props_save_data: &PropSaveDataMap) {

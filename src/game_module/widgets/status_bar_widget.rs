@@ -111,13 +111,7 @@ impl<'a> StatusBarWidget<'a> {
         }
     }
 
-    pub fn update_vertical_status_widget(
-        &self,
-        status: f32,
-        max_status: f32,
-        _delta_time: f64,
-        _smooth_update: bool,
-    ) {
+    pub fn update_vertical_status_widget(&self, status: f32, max_status: f32, _delta_time: f64, _smooth_update: bool) {
         let status_ratio = 0f32.max(1.0f32.min(status / max_status));
         let status_bar = ptr_as_mut(self._status_bar).get_ui_component_mut();
         status_bar.set_size_hint_y(Some(status_ratio));

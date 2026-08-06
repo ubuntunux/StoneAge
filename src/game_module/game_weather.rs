@@ -1,8 +1,8 @@
-use crate::game_module::game_constants::{EFFECT_RAIN, AMBIENT_SOUND_THUNDER};
+use crate::game_module::game_constants::{AMBIENT_SOUND_THUNDER, EFFECT_RAIN};
 use crate::game_module::game_service_locator::get_character_manager;
 use nalgebra::Vector3;
-use rust_engine_3d::core::engine_service_locator::{get_scene_manager, get_scene_manager_mut, get_audio_manager_mut};
 use rust_engine_3d::audio::audio_manager::AudioLoop;
+use rust_engine_3d::core::engine_service_locator::{get_audio_manager_mut, get_scene_manager, get_scene_manager_mut};
 use rust_engine_3d::effect::effect_data::EffectCreateInfo;
 use rust_engine_3d::utilities::system::State;
 use std::cmp::PartialEq;
@@ -54,7 +54,7 @@ impl Weather {
             if let Some(effect) = get_scene_manager().get_effect(rain_effect_id) {
                 effect.borrow_mut().set_dead();
             }
-            get_scene_manager().get_main_light().borrow_mut()._light_data._light_color = self._sun_light_color.clone();
+            get_scene_manager().get_main_light().borrow_mut()._light_data._light_color = self._sun_light_color;
             self._weather_type = WeatherType::None;
         }
     }
@@ -76,11 +76,8 @@ impl Weather {
                 State::Update => next_weather_type,
             };
             match update_weather_type {
-                WeatherType::None => match state {
-                    State::Begin => {
-                        self.clear_weather();
-                    }
-                    _ => {}
+                WeatherType::None => if state == State::Begin {
+                    self.clear_weather();
                 },
                 WeatherType::Rain => match state {
                     State::Begin => {
@@ -89,18 +86,17 @@ impl Weather {
                             ..Default::default()
                         };
                         self._rain_effect = Some(get_scene_manager_mut().add_effect(EFFECT_RAIN, &effect_create_info));
-                        get_scene_manager().get_main_light().borrow_mut()._light_data._light_color = self._rainy_light_color.clone();
+                        get_scene_manager().get_main_light().borrow_mut()._light_data._light_color =
+                            self._rainy_light_color;
                         self._thunder_timer = rand::random_range(10.0..=120.0);
                         self._thunder_fade_timer = 0.0;
                     }
                     State::Update => {
-                        if let Some(player) = get_character_manager().get_maybe_player() {
-                            if let Some(rain_effect_id) = &self._rain_effect {
-                                if let Some(effect) = get_scene_manager().get_effect(*rain_effect_id) {
-                                    effect.borrow_mut()._effect_transform.set_position(&player.borrow().get_center());
+                        if let Some(player) = get_character_manager().get_maybe_player()
+                            && let Some(rain_effect_id) = &self._rain_effect
+                                && let Some(effect) = get_scene_manager().get_effect(*rain_effect_id) {
+                                    effect.borrow_mut()._effect_transform.set_position(player.borrow().get_center());
                                 }
-                            }
-                        }
 
                         const THUNDER_FADE_TIME: f32 = 1.5;
                         self._thunder_timer -= _delta_time as f32;
@@ -108,12 +104,8 @@ impl Weather {
                             self._thunder_timer = rand::random_range(5.0..=60.0);
                             self._thunder_fade_timer = THUNDER_FADE_TIME;
                             get_scene_manager().get_main_light().borrow_mut()._light_data._light_color =
-                                self._thunder_light_color.clone();
-                            get_audio_manager_mut().play_audio_bank(
-                                AMBIENT_SOUND_THUNDER,
-                                AudioLoop::ONCE,
-                                None,
-                            );
+                                self._thunder_light_color;
+                            get_audio_manager_mut().play_audio_bank(AMBIENT_SOUND_THUNDER, AudioLoop::ONCE, None);
                         }
 
                         if self._thunder_fade_timer > 0.0 {

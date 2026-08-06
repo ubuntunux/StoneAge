@@ -404,11 +404,10 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
             }
             ScenarioPhase::GatheringFood => {
                 if game_scene_data_name == Stages::Home.get_stage_data_name() {
-                    if let Some(quest) = &self._sub_quest_gather_food {
-                        if !quest.borrow_mut().is_completed_quest() {
+                    if let Some(quest) = &self._sub_quest_gather_food
+                        && !quest.borrow_mut().is_completed_quest() {
                             self.create_move_to_tutorial_stage_text_box();
                         }
-                    }
                 } else if game_scene_data_name == Stages::Forest.get_stage_data_name() {
                     self.create_hit_this_tree_text_box();
                 }
@@ -423,7 +422,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                     }
                 } else if game_scene_data_name == Stages::Forest.get_stage_data_name() {
                     let back_home_not_completed =
-                        self._sub_quest_back_home.as_ref().map_or(true, |q| !q.borrow().is_completed_quest());
+                        self._sub_quest_back_home.as_ref().is_none_or(|q| !q.borrow().is_completed_quest());
                     if back_home_not_completed {
                         self.create_return_home_text_box();
                     }
@@ -553,36 +552,33 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                         self._wakeup_delay_ewa -= delta_time as f32;
                         self._wakeup_delay_koa -= delta_time as f32;
 
-                        if 0.0 <= prev_wakeup_delay_aru && self._wakeup_delay_aru < 0.0 {
-                            if let Some(actor) = &self._player {
+                        if 0.0 <= prev_wakeup_delay_aru && self._wakeup_delay_aru < 0.0
+                            && let Some(actor) = &self._player {
                                 actor.borrow_mut().set_action_wake_up();
                             }
-                        }
 
-                        if 0.0 <= prev_wakeup_delay_ewa && self._wakeup_delay_ewa < 0.0 {
-                            if let Some(actor) = &self._actor_ewa {
+                        if 0.0 <= prev_wakeup_delay_ewa && self._wakeup_delay_ewa < 0.0
+                            && let Some(actor) = &self._actor_ewa {
                                 actor.borrow_mut().set_action_wake_up();
                             }
-                        }
 
-                        if 0.0 <= prev_wakeup_delay_koa && self._wakeup_delay_koa < 0.0 {
-                            if let Some(actor) = &self._actor_koa {
+                        if 0.0 <= prev_wakeup_delay_koa && self._wakeup_delay_koa < 0.0
+                            && let Some(actor) = &self._actor_koa {
                                 actor.borrow_mut().set_action_wake_up();
                             }
-                        }
 
                         let aru_none = self
                             ._player
                             .as_ref()
-                            .map_or(true, |actor| actor.borrow_mut().is_action(ActionAnimationState::None));
+                            .is_none_or(|actor| actor.borrow_mut().is_action(ActionAnimationState::None));
                         let ewa_none = self
                             ._actor_ewa
                             .as_ref()
-                            .map_or(true, |actor| actor.borrow_mut().is_action(ActionAnimationState::None));
+                            .is_none_or(|actor| actor.borrow_mut().is_action(ActionAnimationState::None));
                         let koa_none = self
                             ._actor_koa
                             .as_ref()
-                            .map_or(true, |actor| actor.borrow_mut().is_action(ActionAnimationState::None));
+                            .is_none_or(|actor| actor.borrow_mut().is_action(ActionAnimationState::None));
 
                         if self._wakeup_delay_koa < 0.0
                             && self._wakeup_delay_ewa < 0.0
@@ -706,7 +702,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                     }
                     State::Update => {
                         let completed =
-                            self._sub_quest_gather_food.as_ref().map_or(false, |q| q.borrow().is_completed_quest());
+                            self._sub_quest_gather_food.as_ref().is_some_and(|q| q.borrow().is_completed_quest());
                         if game_scene_manager.get_current_game_scene_data_name() == Stages::Forest.get_stage_data_name()
                             && completed
                         {
@@ -751,7 +747,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
             }
         }
 
-        let sleep_not_completed = self._sub_quest_sleep.as_ref().map_or(false, |q| !q.borrow().is_completed_quest());
+        let sleep_not_completed = self._sub_quest_sleep.as_ref().is_some_and(|q| !q.borrow().is_completed_quest());
         if self._sub_quest_sleep.is_some()
             && sleep_not_completed
             && let Some(scenario_wrap_up_the_day) =

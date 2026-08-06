@@ -289,7 +289,7 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
                 ScenarioPhase::Revolution => match state {
                     State::Begin => {
                         if let Some(aru) = &self._actor_aru {
-                            let aru_pos = aru.borrow().get_position().clone();
+                            let aru_pos = *aru.borrow().get_position();
                             if let Some(alpha) = &self._alien_alpha {
                                 alpha.borrow_mut().look_at(&aru_pos);
                             }

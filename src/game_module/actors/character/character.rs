@@ -424,11 +424,10 @@ impl<'a> Character<'a> {
     }
 
     pub fn post_process_after_character_loading(&mut self) {
-        if let Some(item_id) = self._attached_item_id.take() {
-            if let Some(item) = get_item_manager().get_item(item_id) {
+        if let Some(item_id) = self._attached_item_id.take()
+            && let Some(item) = get_item_manager().get_item(item_id) {
                 self.attach_item(item.clone());
             }
-        }
 
         self.post_process_restore_animation();
 
@@ -538,21 +537,15 @@ impl<'a> Character<'a> {
                 (Some(&animation_data._sleep_animation), next_action_speed, true)
             }
             ActionAnimationState::WakeUp => (Some(&animation_data._wake_up_animation), next_action_speed, false),
-            ActionAnimationState::FishingBegin => (
-                Some(&animation_data._fishing_begin_animation),
-                next_action_speed,
-                false,
-            ),
-            ActionAnimationState::FishingLoop => (
-                Some(&animation_data._fishing_loop_animation),
-                next_action_speed,
-                true,
-            ),
-            ActionAnimationState::FishingEnd => (
-                Some(&animation_data._fishing_end_animation),
-                next_action_speed,
-                false,
-            ),
+            ActionAnimationState::FishingBegin => {
+                (Some(&animation_data._fishing_begin_animation), next_action_speed, false)
+            }
+            ActionAnimationState::FishingLoop => {
+                (Some(&animation_data._fishing_loop_animation), next_action_speed, true)
+            }
+            ActionAnimationState::FishingEnd => {
+                (Some(&animation_data._fishing_end_animation), next_action_speed, false)
+            }
         };
 
         if let Some(mesh) = action_mesh {
@@ -899,7 +892,7 @@ impl<'a> Character<'a> {
                 ..Default::default()
             };
             get_scene_manager_mut().add_effect(EFFECT_FALLING_WATER, &effect_create_info);
-            get_audio_manager_mut().play_audio_bank(&AUDIO_FALLING_WATER, AudioLoop::ONCE, None);
+            get_audio_manager_mut().play_audio_bank(AUDIO_FALLING_WATER, AudioLoop::ONCE, None);
             return true;
         }
         false
@@ -928,7 +921,7 @@ impl<'a> Character<'a> {
             };
 
             get_scene_manager_mut().add_effect(EFFECT_HIT, &effect_create_info);
-            get_audio_manager_mut().play_audio_bank(&AUDIO_HIT, AudioLoop::ONCE, None);
+            get_audio_manager_mut().play_audio_bank(AUDIO_HIT, AudioLoop::ONCE, None);
         }
     }
 
@@ -1114,8 +1107,6 @@ impl<'a> Character<'a> {
             self.set_next_action_animation(ActionAnimationState::Kick, animation_speed);
         }
     }
-
-
 
     pub fn set_action_hit(&mut self) {
         self.set_next_action_animation(ActionAnimationState::Hit, 1.0);
@@ -1350,7 +1341,7 @@ impl<'a> Character<'a> {
                             && (animation_play_info.check_animation_event_time(0.2)
                                 || animation_play_info.check_animation_event_time(0.9))
                         {
-                            get_audio_manager_mut().play_audio_bank(&AUDIO_FOOTSTEP, AudioLoop::ONCE, Some(0.5));
+                            get_audio_manager_mut().play_audio_bank(AUDIO_FOOTSTEP, AudioLoop::ONCE, Some(0.5));
                         }
                     }
                     _ => {}
@@ -1372,7 +1363,7 @@ impl<'a> Character<'a> {
                             && (animation_play_info.check_animation_event_time(0.1)
                                 || animation_play_info.check_animation_event_time(0.5))
                         {
-                            get_audio_manager_mut().play_audio_bank(&AUDIO_FOOTSTEP, AudioLoop::ONCE, Some(0.5));
+                            get_audio_manager_mut().play_audio_bank(AUDIO_FOOTSTEP, AudioLoop::ONCE, Some(0.5));
                         }
                     }
                     _ => {}
@@ -1388,7 +1379,7 @@ impl<'a> Character<'a> {
                             &animation_info,
                             AnimationLayer::BaseLayer,
                         );
-                        get_audio_manager_mut().play_audio_bank(&AUDIO_JUMP, AudioLoop::ONCE, None);
+                        get_audio_manager_mut().play_audio_bank(AUDIO_JUMP, AudioLoop::ONCE, None);
                     }
                 }
                 MoveAnimationState::Roll => match state {
@@ -1407,7 +1398,7 @@ impl<'a> Character<'a> {
                     State::Update => {
                         let animation_play_info = render_object.get_animation_play_info(AnimationLayer::BaseLayer);
                         if self._is_player && animation_play_info.check_animation_event_time(0.2) {
-                            get_audio_manager_mut().play_audio_bank(&AUDIO_ROLL, AudioLoop::ONCE, None);
+                            get_audio_manager_mut().play_audio_bank(AUDIO_ROLL, AudioLoop::ONCE, None);
                         } else if animation_play_info._is_animation_end {
                             self.set_move_idle();
                         }
@@ -1428,7 +1419,7 @@ impl<'a> Character<'a> {
                             &animation_info,
                             AnimationLayer::BaseLayer,
                         );
-                        get_audio_manager_mut().play_audio_bank(&AUDIO_JUMP, AudioLoop::ONCE, None);
+                        get_audio_manager_mut().play_audio_bank(AUDIO_JUMP, AudioLoop::ONCE, None);
                     }
                 }
                 MoveAnimationState::SitDownLoop => {
@@ -1502,9 +1493,10 @@ impl<'a> Character<'a> {
                     }
                     State::Update => {
                         let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
-                        if animation_play_info.check_animation_event_time(character_data._stat_data._attack_event_time) {
+                        if animation_play_info.check_animation_event_time(character_data._stat_data._attack_event_time)
+                        {
                             self._animation_state.set_action_event(ActionEvent::Attack);
-                            get_audio_manager_mut().play_audio_bank(&AUDIO_ATTACK, AudioLoop::ONCE, None);
+                            get_audio_manager_mut().play_audio_bank(AUDIO_ATTACK, AudioLoop::ONCE, None);
                         }
 
                         if animation_play_info._is_animation_end {
@@ -1611,7 +1603,7 @@ impl<'a> Character<'a> {
                         let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
                         if animation_play_info.check_animation_event_time(character_data._stat_data._kick_event_time) {
                             self._animation_state.set_action_event(ActionEvent::Kick);
-                            get_audio_manager_mut().play_audio_bank(&AUDIO_ATTACK, AudioLoop::ONCE, None);
+                            get_audio_manager_mut().play_audio_bank(AUDIO_ATTACK, AudioLoop::ONCE, None);
                         }
                         if animation_play_info._is_animation_end {
                             self.set_action_none();
@@ -1666,7 +1658,7 @@ impl<'a> Character<'a> {
                     State::Update => {
                         let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
                         if animation_play_info.check_animation_event_time(PICKUP_EVENT_TIME) {
-                            get_audio_manager_mut().play_audio_bank(&AUDIO_ATTACK, AudioLoop::ONCE, None);
+                            get_audio_manager_mut().play_audio_bank(AUDIO_ATTACK, AudioLoop::ONCE, None);
                             self._animation_state.set_action_event(ActionEvent::Pickup);
                         }
                         if animation_play_info._is_animation_end {
@@ -1699,7 +1691,7 @@ impl<'a> Character<'a> {
                         if animation_play_info
                             .check_animation_event_time(character_data._stat_data._power_attack_event_time)
                         {
-                            get_audio_manager_mut().play_audio_bank(&AUDIO_ATTACK, AudioLoop::ONCE, None);
+                            get_audio_manager_mut().play_audio_bank(AUDIO_ATTACK, AudioLoop::ONCE, None);
                             self._animation_state.set_action_event(ActionEvent::PowerAttack);
                         }
                         if animation_play_info._is_animation_end {
@@ -1840,20 +1832,26 @@ impl<'a> Character<'a> {
                             &animation_info,
                             AnimationLayer::ActionLayer,
                         );
-                        get_audio_manager_mut().play_audio_bank(&AUDIO_ATTACK, AudioLoop::ONCE, None);
+                        get_audio_manager_mut().play_audio_bank(AUDIO_ATTACK, AudioLoop::ONCE, None);
                         self.set_weapon_visible(true);
                     }
                     State::Update => {
                         let (anim_play_time, animation_length, is_anim_end) = {
                             let anim_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
-                            (anim_info._animation_play_time, anim_info.get_animation_length(), anim_info._is_animation_end)
+                            (
+                                anim_info._animation_play_time,
+                                anim_info.get_animation_length(),
+                                anim_info._is_animation_end,
+                            )
                         };
 
                         if self._fishing_state._is_fishing_button_held {
                             self.update_fishing(delta_time);
-                            render_object.get_animation_play_info_mut(AnimationLayer::ActionLayer)._animation_speed = (1.0 - (anim_play_time / (animation_length * 0.5)).min(1.0)).powf(2.0);
+                            render_object.get_animation_play_info_mut(AnimationLayer::ActionLayer)._animation_speed =
+                                (1.0 - (anim_play_time / (animation_length * 0.5)).min(1.0)).powf(2.0);
                         } else {
-                            render_object.get_animation_play_info_mut(AnimationLayer::ActionLayer)._animation_speed = 1.0;
+                            render_object.get_animation_play_info_mut(AnimationLayer::ActionLayer)._animation_speed =
+                                1.0;
                         }
 
                         if is_anim_end {
@@ -1902,7 +1900,7 @@ impl<'a> Character<'a> {
                             &animation_info,
                             AnimationLayer::ActionLayer,
                         );
-                        get_audio_manager_mut().play_audio_bank(&AUDIO_ATTACK, AudioLoop::ONCE, None);
+                        get_audio_manager_mut().play_audio_bank(AUDIO_ATTACK, AudioLoop::ONCE, None);
                         self.set_weapon_visible(true);
 
                         if self._is_player && self._fishing_state._minigame_success == Some(true) {

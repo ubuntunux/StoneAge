@@ -1,6 +1,7 @@
 pub mod controller_help;
 pub mod cross_hair_widget;
 pub mod debug_ui_widget;
+pub mod fishing_gauge_widget;
 pub mod game_audio_manager;
 pub mod game_menu_widget;
 pub mod image_widget;
@@ -13,5 +14,4 @@ pub mod target_status_bar;
 pub mod text_box_widget;
 pub mod time_of_day;
 pub mod toolbox_widget;
-pub mod fishing_gauge_widget;
 pub mod world_map;

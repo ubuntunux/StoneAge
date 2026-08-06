@@ -1,12 +1,11 @@
-use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop};
-use rust_engine_3d::core::engine_service_locator::{get_audio_manager, get_audio_manager_mut};
-use rust_engine_3d::utilities::system::RcRefCell;
 use crate::game_module::game_constants::{
-    AMBIENT_SOUND, AMBIENT_SOUND_NIGHT, AMBIENT_SOUND_RAIN, DEFAULT_BGM_VOLUME, GAME_MUSIC,
-    TIME_OF_DAWN, TIME_OF_NIGHT,
+    AMBIENT_SOUND, AMBIENT_SOUND_NIGHT, AMBIENT_SOUND_RAIN, DEFAULT_BGM_VOLUME, GAME_MUSIC, TIME_OF_DAWN, TIME_OF_NIGHT,
 };
 use crate::game_module::game_service_locator::get_game_scene_manager;
 use crate::game_module::game_weather::WeatherType;
+use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop};
+use rust_engine_3d::core::engine_service_locator::{get_audio_manager, get_audio_manager_mut};
+use rust_engine_3d::utilities::system::RcRefCell;
 
 pub struct GameAudioManager {
     pub _ambient_sound_name: String,
@@ -49,7 +48,7 @@ impl GameAudioManager {
         // control ambient sound
         let target_ambient_sound = if weather_type == WeatherType::Rain {
             AMBIENT_SOUND_RAIN
-        } else if time_of_day >= TIME_OF_NIGHT || time_of_day < TIME_OF_DAWN {
+        } else if !(TIME_OF_DAWN..TIME_OF_NIGHT).contains(&time_of_day) {
             AMBIENT_SOUND_NIGHT
         } else {
             AMBIENT_SOUND
@@ -71,11 +70,10 @@ impl GameAudioManager {
             if audio_manager.is_playing_bgm() {
                 audio_manager.stop_bgm();
             }
-        } else if target_ambient_sound == AMBIENT_SOUND {
-            if !audio_manager.is_playing_bgm() {
+        } else if target_ambient_sound == AMBIENT_SOUND
+            && !audio_manager.is_playing_bgm() {
                 audio_manager.play_bgm(GAME_MUSIC, Some(self._bgm_volume));
             }
-        }
 
         // let is_play_scenario_mode = game_scene_manager.is_play_scenario_mode();
         // if is_play_scenario_mode != self._was_play_scenario_mode {

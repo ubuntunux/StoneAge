@@ -93,7 +93,9 @@ impl Default for CharacterFishingState {
 }
 
 #[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Default)]
 pub enum MoveAnimationState {
+    #[default]
     None,
     Idle,
     Jump,
@@ -104,11 +106,6 @@ pub enum MoveAnimationState {
     Walk,
 }
 
-impl Default for MoveAnimationState {
-    fn default() -> Self {
-        MoveAnimationState::None
-    }
-}
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum SpawnPointType {
@@ -118,7 +115,9 @@ pub enum SpawnPointType {
 }
 
 #[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq)]
+#[derive(Default)]
 pub enum CharacterDataType {
+    #[default]
     None,
     Player,
     Civilian,
@@ -129,11 +128,6 @@ pub enum CharacterDataType {
     Ufo,
 }
 
-impl Default for CharacterDataType {
-    fn default() -> Self {
-        CharacterDataType::None
-    }
-}
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[serde(default)]

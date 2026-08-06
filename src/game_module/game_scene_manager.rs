@@ -246,7 +246,7 @@ impl<'a> GameSceneManager<'a> {
                 &game_scenario_create_info._scenario_create_info,
                 false,
             );
-            opened_scenario.borrow_mut().load_scenario_save_data(&game_scenario_create_info);
+            opened_scenario.borrow_mut().load_scenario_save_data(game_scenario_create_info);
         }
 
         let game_ui_manager = get_game_ui_manager_mut();
@@ -346,10 +346,10 @@ impl<'a> GameSceneManager<'a> {
             if character_manager.is_valid_player() {
                 let spawn_point_name = self._teleport_spawn_point.as_ref().unwrap().clone();
                 if let Some(prop) = self.get_prop_manager().get_prop_by_name(&spawn_point_name) {
-                    let spawn_position = prop.borrow().get_position().clone();
+                    let spawn_position = *prop.borrow().get_position();
                     let player = character_manager.get_player();
-                    let rotation = player.borrow().get_rotation().clone();
-                    let scale = player.borrow().get_scale().clone();
+                    let rotation = *player.borrow().get_rotation();
+                    let scale = *player.borrow().get_scale();
                     // respawn
                     player.borrow_mut().respawn_character(&spawn_position, &rotation, &scale);
                 }
@@ -379,7 +379,7 @@ impl<'a> GameSceneManager<'a> {
     ) -> &RcRefCell<dyn ScenarioBase<'a> + 'a> {
         self._scenarios.insert(
             scenario_type,
-            create_scenario(scenario_type, &scenario_data_create_info),
+            create_scenario(scenario_type, scenario_data_create_info),
         );
 
         if open_game_scene {
@@ -581,7 +581,7 @@ impl<'a> GameSceneManager<'a> {
     pub fn update_game_scenarios(&mut self, any_key_hold: bool, any_key_pressed: bool, delta_time: f64) {
         let current_game_scene_data_name = self._current_game_scene_data_name.clone();
         if !self._reservation_scenarios.is_empty() {
-            let current_game_scene_state = self._game_scene_state.clone();
+            let current_game_scene_state = self._game_scene_state;
             for scenario_type in self._reservation_scenarios.clone().iter() {
                 let scenario_data_create_info =
                     get_game_resources().get_scenario_data(scenario_type.get_scenario_data_name());

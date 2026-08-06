@@ -308,7 +308,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                         let aru_is_sleeping = self
                             ._player
                             .as_ref()
-                            .map_or(false, |actor| actor.borrow().is_action(ActionAnimationState::Sleep));
+                            .is_some_and(|actor| actor.borrow().is_action(ActionAnimationState::Sleep));
                         if aru_is_sleeping {
                             self._scenario_track.set_next_scenario_phase(ScenarioPhase::Sleep, None);
                         }

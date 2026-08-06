@@ -1,4 +1,6 @@
-use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, DEFAULT_GATE_NAME, JOYSTICK_SENSITIVITY, MATERIAL_WORLDMAP};
+use crate::game_module::game_constants::{
+    AUDIO_PICKUP_ITEM, DEFAULT_GATE_NAME, JOYSTICK_SENSITIVITY, MATERIAL_WORLDMAP,
+};
 use crate::game_module::game_scene_manager::Stages;
 use crate::game_module::game_service_locator::get_game_scene_manager_mut;
 use crate::game_module::widgets::world_map::api::{WorldMapDirection, WorldMapPlayer, WorldMapStage, WorldMapWidget};

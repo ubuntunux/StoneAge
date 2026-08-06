@@ -208,13 +208,13 @@ impl<'a> CharacterManager<'a> {
         is_player: bool,
     ) -> RcRefCell<Character<'a>> {
         let character = self.create_character(character_name, &character_save_data._character_create_info, is_player);
-        character.borrow_mut().load_character_save_data(&character_save_data);
+        character.borrow_mut().load_character_save_data(character_save_data);
         character
     }
 
     pub fn load_characters_save_data(&mut self, character_save_data_map: &CharacterSaveDataMap) {
         for (character_name, character_save_data) in character_save_data_map.iter() {
-            self.load_character_save_data(&character_name, character_save_data, false);
+            self.load_character_save_data(character_name, character_save_data, false);
         }
     }
 
@@ -247,9 +247,9 @@ impl<'a> CharacterManager<'a> {
         let render_object_create_info = RenderObjectCreateInfo {
             _scene_object_type: SceneObjectType::Default,
             _model_data_name: model_data_name.to_string(),
-            _position: character.get_position().clone(),
-            _rotation: character.get_rotation().clone(),
-            _scale: character.get_scale().clone(),
+            _position: *character.get_position(),
+            _rotation: *character.get_rotation(),
+            _scale: *character.get_scale(),
         };
 
         let render_object_data = get_scene_manager_mut()
