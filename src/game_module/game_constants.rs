@@ -86,11 +86,6 @@ pub const STAMINA_JUMP: f32 = 25.0;
 pub const STAMINA_ROLL: f32 = 25.0;
 pub const ANIMATION_SPEED_BY_STAMINA: f32 = 1.0;
 
-// fishing
-pub const FISHING_CAST_DISTANCE_MIN: f32 = 2.0;
-pub const FISHING_CAST_DISTANCE_RANGE: f32 = 6.0;
-pub const FISHING_GAUGE_SPEED: f32 = 2.0;
-
 // npc
 pub const NPC_IDLE_TERM_MIN: f32 = 1.0;
 pub const NPC_IDLE_TERM_MAX: f32 = 3.0;

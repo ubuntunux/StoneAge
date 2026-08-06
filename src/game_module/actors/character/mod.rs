@@ -1,6 +1,7 @@
 pub mod character;
 pub mod controller;
 pub mod data;
+pub mod fishing;
 pub mod manager;
 pub mod stats;
 

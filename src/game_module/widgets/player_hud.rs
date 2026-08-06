@@ -70,8 +70,7 @@ impl<'a> PlayerHud<'a> {
         if player.is_fishing_gauge_active() {
             self._fishing_gauge_widget.set_visible_fishing_gauge(true);
             self._fishing_gauge_widget.update_fishing_gauge_widget(
-                player.get_fishing_gauge(),
-                1.0,
+                player,
                 delta_time,
             );
         } else {

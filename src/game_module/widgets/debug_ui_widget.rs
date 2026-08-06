@@ -20,7 +20,7 @@ impl<'a> DebugUIWidget<'a> {
         ui_component.set_size_hint_x(Some(1.0));
         ui_component.set_size_hint_y(Some(1.0));
         ui_component.set_renderable(false);
-        //ui_component.set_enable(false);
+        ui_component.set_enable(false);
         root_widget.add_widget(&ui_layout);
 
         Box::new(DebugUIWidget {

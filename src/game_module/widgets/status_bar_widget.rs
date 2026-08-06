@@ -63,6 +63,25 @@ impl<'a> StatusBarWidget<'a> {
         }
     }
 
+    pub fn create_vertical_status_widget(
+        parent_widget: &mut WidgetDefault<'a>,
+        color: u32,
+        width: f32,
+        height: f32,
+    ) -> StatusBarWidget<'a> {
+        let status_layer = create_vertical_status_layer_widget(parent_widget, width, height);
+        let (status_bar, max_status_bar) = create_vertical_status_bar_widget(ptr_as_mut(status_layer), color);
+        StatusBarWidget {
+            _status_layer: status_layer,
+            _max_status_bar: max_status_bar,
+            _status_bar: status_bar,
+        }
+    }
+
+    pub fn set_bar_color(&self, color: u32) {
+        ptr_as_mut(self._status_bar).get_ui_component_mut().set_color(color);
+    }
+
     pub fn update_status_widget(
         &self,
         status: f32,
@@ -91,4 +110,60 @@ impl<'a> StatusBarWidget<'a> {
             max_status_bar.set_size_hint_x(Some(max_status_ratio));
         }
     }
+
+    pub fn update_vertical_status_widget(
+        &self,
+        status: f32,
+        max_status: f32,
+        _delta_time: f64,
+        _smooth_update: bool,
+    ) {
+        let status_ratio = 0f32.max(1.0f32.min(status / max_status));
+        let status_bar = ptr_as_mut(self._status_bar).get_ui_component_mut();
+        status_bar.set_size_hint_y(Some(status_ratio));
+    }
+}
+
+fn create_vertical_status_layer_widget<'a>(
+    parent_widget: &mut WidgetDefault<'a>,
+    width: f32,
+    height: f32,
+) -> *const WidgetDefault<'a> {
+    let status_layer = UIManager::create_widget("vertical_status_layer", UIWidgetTypes::Default);
+    let ui_component = ptr_as_mut(status_layer.as_ref()).get_ui_component_mut();
+    ui_component.set_layout_type(UILayoutType::FloatLayout);
+    ui_component.set_size(width, height);
+    ui_component.set_color(get_color32(0, 0, 0, 180));
+    ui_component.set_border_color(get_color32(0, 0, 0, 255));
+    ui_component.set_round(10.0);
+    ui_component.set_border(3.0);
+    ui_component.set_margin(WIDGET_UI_MARGIN);
+    ui_component.set_padding(WIDGET_UI_PADDING);
+    parent_widget.add_widget(&status_layer);
+    status_layer.as_ref()
+}
+
+fn create_vertical_status_bar_widget<'a>(
+    parent_widget: &mut WidgetDefault<'a>,
+    color: u32,
+) -> (*const WidgetDefault<'a>, *const WidgetDefault<'a>) {
+    let max_status_bar = UIManager::create_widget("max_status_bar", UIWidgetTypes::Default);
+    let ui_component = ptr_as_mut(max_status_bar.as_ref()).get_ui_component_mut();
+    ui_component.set_size_hint_x(Some(1.0));
+    ui_component.set_size_hint_y(Some(1.0));
+    ui_component.set_enable_renderable_area(true);
+    ui_component.set_color(get_color32(50, 50, 50, 255));
+    parent_widget.add_widget(&max_status_bar);
+
+    let status_bar = UIManager::create_widget("status_bar", UIWidgetTypes::Default);
+    let ui_component = ptr_as_mut(status_bar.as_ref()).get_ui_component_mut();
+    ui_component.set_size_hint_x(Some(1.0));
+    ui_component.set_size_hint_y(Some(1.0));
+    ui_component.set_pivot_preset(rust_engine_3d::scene::ui::PIVOT_BOTTOM_LEFT);
+    ui_component.set_pos_hint(Some(0.0), Some(1.0));
+    ui_component.set_valign(rust_engine_3d::scene::ui::VerticalAlign::BOTTOM);
+    ui_component.set_enable_renderable_area(true);
+    ui_component.set_color(color);
+    parent_widget.add_widget(&status_bar);
+    (status_bar.as_ref(), max_status_bar.as_ref())
 }

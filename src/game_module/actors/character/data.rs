@@ -55,6 +55,18 @@ pub struct CharacterFishingState {
     pub _fishing_gauge_dir: f32,
     pub _is_fishing_button_held: bool,
     pub _fishing_cast_distance: f32,
+    pub _fish_gauge: f32,
+    pub _fish_angle: f32,
+    pub _fish_target_angle: f32,
+    pub _fish_change_timer: f32,
+    pub _player_angle: f32,
+    pub _direction_dot: f32,
+    pub _is_pulling: bool,
+    pub _is_direction_matched: bool,
+    pub _is_minigame_active: bool,
+    pub _wait_timer: f32,
+    pub _minigame_success: Option<bool>,
+    pub _difficulty_angle_range: f32,
 }
 
 impl Default for CharacterFishingState {
@@ -64,6 +76,18 @@ impl Default for CharacterFishingState {
             _fishing_gauge_dir: 1.0,
             _is_fishing_button_held: false,
             _fishing_cast_distance: 2.0,
+            _fish_gauge: 0.5,
+            _fish_angle: 0.0,
+            _fish_target_angle: 0.0,
+            _fish_change_timer: 0.0,
+            _player_angle: 0.0,
+            _direction_dot: 1.0,
+            _is_pulling: false,
+            _is_direction_matched: false,
+            _is_minigame_active: false,
+            _wait_timer: 0.0,
+            _minigame_success: None,
+            _difficulty_angle_range: 70.0,
         }
     }
 }

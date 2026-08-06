@@ -1115,52 +1115,7 @@ impl<'a> Character<'a> {
         }
     }
 
-    pub fn set_action_fishing_begin(&mut self) {
-        if self.is_available_attack() {
-            self._fishing_state._fishing_gauge = 0.0;
-            self._fishing_state._fishing_gauge_dir = 1.0;
-            self._fishing_state._is_fishing_button_held = true;
-            self._fishing_state._fishing_cast_distance = FISHING_CAST_DISTANCE_MIN;
-            self.set_next_action_animation(ActionAnimationState::FishingBegin, 1.0);
-            self.set_move_idle();
-        }
-    }
 
-    pub fn get_fishing_gauge(&self) -> f32 {
-        self._fishing_state._fishing_gauge
-    }
-
-    pub fn is_fishing_gauge_active(&self) -> bool {
-        self.is_action(ActionAnimationState::FishingBegin)
-    }
-
-    pub fn release_fishing_cast(&mut self) {
-        self._fishing_state._is_fishing_button_held = false;
-        self._fishing_state._fishing_cast_distance = FISHING_CAST_DISTANCE_MIN + self._fishing_state._fishing_gauge * FISHING_CAST_DISTANCE_RANGE;
-    }
-
-    pub fn is_fishing_spot(&self) -> bool {
-        let check_pos = self.get_position() + self.get_face_direction() * self._fishing_state._fishing_cast_distance;
-        let height_map_data = get_scene_manager().get_height_map_data();
-        let height = height_map_data.get_height_bilinear(&check_pos, 0);
-        let sea_height = get_scene_manager().get_sea_height();
-        height < sea_height
-    }
-    pub fn update_fishing(&mut self, delta_time: f32) {
-        self._fishing_state._fishing_gauge += self._fishing_state._fishing_gauge_dir * FISHING_GAUGE_SPEED * delta_time;
-        if self._fishing_state._fishing_gauge >= 1.0 {
-            self._fishing_state._fishing_gauge = 1.0;
-            self._fishing_state._fishing_gauge_dir = -1.0;
-        } else if self._fishing_state._fishing_gauge <= 0.0 {
-            self._fishing_state._fishing_gauge = 0.0;
-            self._fishing_state._fishing_gauge_dir = 1.0;
-        }
-    }
-
-    pub fn set_action_fishing_end(&mut self) {
-        self.set_next_action_animation(ActionAnimationState::FishingEnd, 1.0);
-        self.set_move_idle();
-    }
 
     pub fn set_action_hit(&mut self) {
         self.set_next_action_animation(ActionAnimationState::Hit, 1.0);
@@ -1926,6 +1881,10 @@ impl<'a> Character<'a> {
                             AnimationLayer::ActionLayer,
                         );
                         self.set_weapon_visible(true);
+                        self.start_fishing_minigame();
+                    }
+                    State::Update => {
+                        self.update_fishing_minigame(delta_time);
                     }
                     _ => {}
                 },
@@ -1946,7 +1905,7 @@ impl<'a> Character<'a> {
                         get_audio_manager_mut().play_audio_bank(&AUDIO_ATTACK, AudioLoop::ONCE, None);
                         self.set_weapon_visible(true);
 
-                        if self._is_player {
+                        if self._is_player && self._fishing_state._minigame_success == Some(true) {
                             item_manager.pick_item(ITEM_COCONUT, 1);
                         }
                     }

@@ -553,8 +553,22 @@ impl<'a> GameController<'a> {
 
         if is_fishing {
             if player_mut.is_action(ActionAnimationState::FishingLoop) {
-                if is_attack || is_power_attack || is_roll || is_jump || is_cancel {
+                if is_cancel || is_roll {
                     player_mut.set_action_fishing_end();
+                } else {
+                    if is_left {
+                        player_mut.rotate_player_angle(-1.0, delta_time);
+                    } else if is_right {
+                        player_mut.rotate_player_angle(1.0, delta_time);
+                    } else {
+                        player_mut.rotate_player_angle(0.0, delta_time);
+                    }
+                    let is_pull_pressed = is_attack || keyboard_input_data.get_key_pressed(KeyCode::Space);
+                    if is_pull_pressed {
+                        player_mut.on_pull_press();
+                    }
+                    let is_pulling = is_attack_hold || is_jump || keyboard_input_data.get_key_hold(KeyCode::Space);
+                    player_mut.set_pulling(is_pulling);
                 }
             } else if player_mut.is_action(ActionAnimationState::FishingBegin) {
                 if !is_attack_hold || is_attack_released {
