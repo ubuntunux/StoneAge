@@ -49,6 +49,25 @@ pub enum ActionEvent {
     Fishing,
 }
 
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct CharacterFishingState {
+    pub _fishing_gauge: f32,
+    pub _fishing_gauge_dir: f32,
+    pub _is_fishing_button_held: bool,
+    pub _fishing_cast_distance: f32,
+}
+
+impl Default for CharacterFishingState {
+    fn default() -> CharacterFishingState {
+        CharacterFishingState {
+            _fishing_gauge: 0.0,
+            _fishing_gauge_dir: 1.0,
+            _is_fishing_button_held: false,
+            _fishing_cast_distance: 2.0,
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq)]
 pub enum MoveAnimationState {
     None,

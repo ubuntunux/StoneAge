@@ -348,6 +348,13 @@ impl<'a> GameController<'a> {
             mouse_input_data._btn_l_pressed || joystick_input_data._btn_right_shoulder == ButtonState::Pressed;
         let is_power_attack: bool =
             mouse_input_data._btn_r_pressed || joystick_input_data._btn_right_trigger == ButtonState::Pressed;
+        let is_attack_hold: bool =
+            mouse_input_data._btn_l_hold || joystick_input_data._btn_right_shoulder == ButtonState::Hold;
+        let is_attack_released: bool =
+            mouse_input_data._btn_l_released || joystick_input_data._btn_right_shoulder == ButtonState::Released;
+        let is_cancel = keyboard_input_data.get_key_pressed(KeyCode::KeyB)
+            || keyboard_input_data.get_key_pressed(KeyCode::Escape)
+            || joystick_input_data._btn_b == ButtonState::Pressed;
         let is_left =
             keyboard_input_data.get_key_hold(KeyCode::KeyA) || joystick_input_data._stick_left_direction.x < 0;
         let is_right =
@@ -544,10 +551,16 @@ impl<'a> GameController<'a> {
             }
         }
 
-        if is_fishing && (is_attack || is_power_attack || is_roll || is_jump) {
+        if is_fishing {
             if player_mut.is_action(ActionAnimationState::FishingLoop) {
-                player_mut.set_action_fishing_end();
-            } else if is_attack || is_power_attack {
+                if is_attack || is_power_attack || is_roll || is_jump || is_cancel {
+                    player_mut.set_action_fishing_end();
+                }
+            } else if player_mut.is_action(ActionAnimationState::FishingBegin) {
+                if !is_attack_hold || is_attack_released {
+                    player_mut.release_fishing_cast();
+                }
+            } else if (is_attack || is_power_attack) && !player_mut.is_action(ActionAnimationState::FishingEnd) {
                 player_mut.set_action_fishing_begin();
             }
         }

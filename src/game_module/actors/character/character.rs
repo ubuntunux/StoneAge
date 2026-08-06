@@ -46,6 +46,7 @@ pub struct Character<'a> {
     pub _attached_item: Option<RcRefCell<Item<'a>>>,
     pub _attached_item_id: Option<ItemID>,
     pub _audio_snoring: Option<RcRefCell<AudioInstance>>,
+    pub _fishing_state: Box<CharacterFishingState>,
 }
 
 impl CharacterAnimationState {
@@ -313,6 +314,7 @@ impl<'a> Character<'a> {
             _attached_item: None,
             _attached_item_id: None,
             _audio_snoring: None,
+            _fishing_state: Box::new(CharacterFishingState::default()),
         };
 
         character.initialize_character(position, rotation, scale);
@@ -1115,9 +1117,26 @@ impl<'a> Character<'a> {
 
     pub fn set_action_fishing_begin(&mut self) {
         if self.is_available_attack() {
+            self._fishing_state._fishing_gauge = 0.0;
+            self._fishing_state._fishing_gauge_dir = 1.0;
+            self._fishing_state._is_fishing_button_held = true;
+            self._fishing_state._fishing_cast_distance = FISHING_CAST_DISTANCE_MIN;
             self.set_next_action_animation(ActionAnimationState::FishingBegin, 1.0);
             self.set_move_idle();
         }
+    }
+
+    pub fn get_fishing_gauge(&self) -> f32 {
+        self._fishing_state._fishing_gauge
+    }
+
+    pub fn is_fishing_gauge_active(&self) -> bool {
+        self.is_action(ActionAnimationState::FishingBegin)
+    }
+
+    pub fn release_fishing_cast(&mut self) {
+        self._fishing_state._is_fishing_button_held = false;
+        self._fishing_state._fishing_cast_distance = FISHING_CAST_DISTANCE_MIN + self._fishing_state._fishing_gauge * FISHING_CAST_DISTANCE_RANGE;
     }
 
     pub fn set_action_fishing_end(&mut self) {
@@ -1192,7 +1211,7 @@ impl<'a> Character<'a> {
         self.set_run(false);
         self.set_move_speed(0.0);
         if apply_immediately {
-            self.update_action_keyframe_event();
+            self.update_action_keyframe_event(0.0);
             self.update_move_keyframe_event();
         }
     }
@@ -1455,7 +1474,7 @@ impl<'a> Character<'a> {
         self.update_animation_layers();
     }
 
-    pub fn update_action_keyframe_event(&mut self) {
+    pub fn update_action_keyframe_event(&mut self, delta_time: f32) {
         self._animation_state.set_action_event(ActionEvent::None);
 
         let current_action_animation_state = self._animation_state._action_animation_state;
@@ -1852,10 +1871,27 @@ impl<'a> Character<'a> {
                         self.set_weapon_visible(true);
                     }
                     State::Update => {
-                        let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
-                        if animation_play_info._is_animation_end {
-                            let fishing_distance = 2.0;
-                            let check_pos = self.get_position() + self.get_face_direction() * fishing_distance;
+                        let (anim_play_time, animation_length, is_anim_end) = {
+                            let anim_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
+                            (anim_info._animation_play_time, anim_info.get_animation_length(), anim_info._is_animation_end)
+                        };
+
+                        if self._fishing_state._is_fishing_button_held {
+                            render_object.get_animation_play_info_mut(AnimationLayer::ActionLayer)._animation_speed = (1.0 - (anim_play_time / (animation_length * 0.5)).min(1.0)).powf(2.0);
+                            self._fishing_state._fishing_gauge += self._fishing_state._fishing_gauge_dir * FISHING_GAUGE_SPEED * delta_time;
+                            if self._fishing_state._fishing_gauge >= 1.0 {
+                                self._fishing_state._fishing_gauge = 1.0;
+                                self._fishing_state._fishing_gauge_dir = -1.0;
+                            } else if self._fishing_state._fishing_gauge <= 0.0 {
+                                self._fishing_state._fishing_gauge = 0.0;
+                                self._fishing_state._fishing_gauge_dir = 1.0;
+                            }
+                        } else {
+                            render_object.get_animation_play_info_mut(AnimationLayer::ActionLayer)._animation_speed = 1.0;
+                        }
+
+                        if is_anim_end {
+                            let check_pos = self.get_position() + self.get_face_direction() * self._fishing_state._fishing_cast_distance;
                             let height_map_data = get_scene_manager().get_height_map_data();
                             let height = height_map_data.get_height_bilinear(&check_pos, 0);
                             let sea_height = get_scene_manager().get_sea_height();
@@ -1954,7 +1990,7 @@ impl<'a> Character<'a> {
 
         // update animation key frames
         self.update_move_keyframe_event();
-        self.update_action_keyframe_event();
+        self.update_action_keyframe_event(delta_time);
 
         // behavior
         if !self._is_player && self.is_alive() {

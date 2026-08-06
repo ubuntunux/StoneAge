@@ -1,4 +1,5 @@
 use crate::game_module::actors::character::Character;
+use crate::game_module::widgets::fishing_gauge_widget::FishingGaugeWidget;
 use crate::game_module::widgets::status_bar_widget::StatusBarWidget;
 use nalgebra::Vector2;
 use rust_engine_3d::scene::ui::{
@@ -11,6 +12,7 @@ pub struct PlayerHud<'a> {
     pub _widget: *const WidgetDefault<'a>,
     pub _hp_widget: StatusBarWidget<'a>,
     pub _stamina_widget: StatusBarWidget<'a>,
+    pub _fishing_gauge_widget: FishingGaugeWidget<'a>,
 }
 
 // PlayerHud
@@ -42,6 +44,7 @@ impl<'a> PlayerHud<'a> {
             _widget: player_widget_ptr,
             _hp_widget: StatusBarWidget::create_status_widget(player_widget_ptr, get_color32(255, 64, 0, 128)),
             _stamina_widget: StatusBarWidget::create_status_widget(player_widget_ptr, get_color32(128, 128, 255, 128)),
+            _fishing_gauge_widget: FishingGaugeWidget::create_fishing_gauge_widget(root_widget),
         }
     }
 
@@ -55,6 +58,7 @@ impl<'a> PlayerHud<'a> {
             delta_time,
             true,
         );
+
         self._stamina_widget.update_status_widget(
             player.get_stats().get_stamina(),
             player.get_stats().get_max_stamina(),
@@ -62,5 +66,16 @@ impl<'a> PlayerHud<'a> {
             delta_time,
             true,
         );
+
+        if player.is_fishing_gauge_active() {
+            self._fishing_gauge_widget.set_visible_fishing_gauge(true);
+            self._fishing_gauge_widget.update_fishing_gauge_widget(
+                player.get_fishing_gauge(),
+                1.0,
+                delta_time,
+            );
+        } else {
+            self._fishing_gauge_widget.set_visible_fishing_gauge(false);
+        }
     }
 }
