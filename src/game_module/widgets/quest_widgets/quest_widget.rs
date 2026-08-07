@@ -12,6 +12,7 @@ use rust_engine_3d::scene::ui::{
 };
 use rust_engine_3d::utilities::system::{RcRefCell, ptr_as_mut};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
+use serde::{Deserialize, Serialize};
 use std::rc::Rc;
 
 pub const FONT_SIZE: f32 = 30.0;
@@ -19,6 +20,11 @@ pub const ITEM_SIZE: f32 = 50.0;
 pub const ITEM_MARGIN: f32 = 20.0;
 pub const ITEM_PADDING: f32 = 8.0;
 pub const QUEST_COMPLETE_OPACITY: f32 = 0.3;
+
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+pub struct QuestItemSaveData {
+    pub _is_completed: bool,
+}
 
 pub enum QuestCreateInfo {
     DefaultQuest(DefaultQuestData),
@@ -32,6 +38,18 @@ pub trait QuestItemBase<'a> {
     fn set_completed_quest(&mut self);
     fn load_completed_quest(&mut self);
     fn update_quest_item(&mut self, game_controller: &GameController, delta_time: f32);
+
+    fn get_quest_item_save_data(&self) -> QuestItemSaveData {
+        QuestItemSaveData {
+            _is_completed: self.is_completed_quest(),
+        }
+    }
+
+    fn load_quest_item_save_data(&mut self, save_data: &QuestItemSaveData) {
+        if save_data._is_completed {
+            self.load_completed_quest();
+        }
+    }
 }
 
 pub struct QuestWidget<'a> {
