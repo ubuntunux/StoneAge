@@ -18,13 +18,13 @@ use crate::game_module::widgets::time_of_day::TimeOfDayWidget;
 use crate::game_module::widgets::toolbox_widget::ToolboxWidget;
 use crate::game_module::widgets::world_map::WorldMapWidget;
 use nalgebra::Vector2;
+use rust_engine_3d::constants::DEVELOPMENT;
 use rust_engine_3d::core::engine_core::TimeData;
 use rust_engine_3d::core::engine_service_locator::{get_engine_core, get_engine_resources, get_ui_manager};
 use rust_engine_3d::core::input::{JoystickInputData, KeyboardInputData, MouseInputData, MouseMoveData};
 use rust_engine_3d::scene::ui::{UIComponentInstance, UIManager, UIWidgetTypes, WidgetDefault};
 use rust_engine_3d::utilities::system::{RcRefCell, ptr_as_mut, ptr_as_ref};
 use std::ffi::c_void;
-use rust_engine_3d::constants::DEVELOPMENT;
 
 pub type QuestItem<'a> = RcRefCell<dyn QuestItemBase<'a> + 'a>;
 
@@ -191,12 +191,11 @@ impl<'a> GameUIManager<'a> {
             MATERIAL_INTRO_IMAGE,
         ));
 
-        unsafe  {
+        unsafe {
             if DEVELOPMENT {
                 //self._debug_ui_widget = Some(DebugUIWidget::create_debug_ui_widget(root_widget));
             }
         }
-
 
         self.set_cross_hair_visible(false);
     }

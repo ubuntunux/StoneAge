@@ -12,7 +12,8 @@ use crate::game_module::game_client::GamePhase;
 use crate::game_module::game_constants::*;
 use crate::game_module::game_scene_manager::Stages;
 use crate::game_module::game_service_locator::{
-    get_character_manager, get_character_manager_mut, get_game_client_mut, get_game_scene_manager, get_game_scene_manager_mut, get_item_manager,
+    get_character_manager, get_character_manager_mut, get_game_client_mut, get_game_scene_manager,
+    get_game_scene_manager_mut, get_item_manager,
 };
 use crate::game_module::scenario::scenario::ScenarioType;
 use nalgebra::Vector3;
@@ -436,9 +437,10 @@ impl<'a> Character<'a> {
 
     pub fn post_process_after_character_loading(&mut self) {
         if let Some(item_id) = self._attached_item_id.take()
-            && let Some(item) = get_item_manager().get_item(item_id) {
-                self.attach_item(item.clone());
-            }
+            && let Some(item) = get_item_manager().get_item(item_id)
+        {
+            self.attach_item(item.clone());
+        }
 
         self.post_process_restore_animation();
 
@@ -919,10 +921,8 @@ impl<'a> Character<'a> {
                         self.set_action_hit();
                     }
                 }
-            } else if !self.is_tamed() {
-                if 0 < self._character_stats._corpse_hit_count {
-                    self._character_stats._corpse_hit_count -= 1;
-                }
+            } else if !self.is_tamed() && 0 < self._character_stats._corpse_hit_count {
+                self._character_stats._corpse_hit_count -= 1;
             }
         }
     }
@@ -956,7 +956,9 @@ impl<'a> Character<'a> {
         if 0 < damage {
             self.set_damage(damage);
 
-            if self.is_alive() && let Some(attack_dir) = attack_dir {
+            if self.is_alive()
+                && let Some(attack_dir) = attack_dir
+            {
                 self._controller.set_hit_direction(attack_dir);
             }
 
@@ -1114,11 +1116,7 @@ impl<'a> Character<'a> {
                         _pickup_delay: 0.5,
                         ..Default::default()
                     };
-                    item_manager.create_item(
-                        item_create_info._item_data_name.as_str(),
-                        &item_create_info,
-                        None,
-                    );
+                    item_manager.create_item(item_create_info._item_data_name.as_str(), &item_create_info, None);
 
                     character.borrow_mut().tame();
 
@@ -1130,7 +1128,7 @@ impl<'a> Character<'a> {
                     let face_dir = self.get_face_direction();
                     let is_destroyed = {
                         let mut corpse = character.borrow_mut();
-                        corpse.set_hit_damage(1, Some(&face_dir));
+                        corpse.set_hit_damage(1, Some(face_dir));
                         corpse.get_corpse_hit_count() <= 0
                     };
                     if is_destroyed {
@@ -1637,7 +1635,7 @@ impl<'a> Character<'a> {
                         );
                         self.set_weapon_visible(false);
                         self.set_invincibility(true);
-                        self.set_is_dead_loop(true);
+                        self.set_is_dead_loop(false);
                     }
                     State::Update => {
                         // respawn
@@ -1655,7 +1653,6 @@ impl<'a> Character<'a> {
                                 }
                             }
                         }
-
                     }
                     State::End => {
                         self.set_weapon_visible(true);
@@ -1952,7 +1949,11 @@ impl<'a> Character<'a> {
                         if self._fishing_state._is_fishing_button_held {
                             self.update_fishing(delta_time);
                             render_object.get_animation_play_info_mut(AnimationLayer::ActionLayer)._animation_speed =
-                                if 0.0 < animation_length { (1.0 - (anim_play_time / (animation_length * 0.5)).min(1.0)).powf(2.0) } else { 1.0 };
+                                if 0.0 < animation_length {
+                                    (1.0 - (anim_play_time / (animation_length * 0.5)).min(1.0)).powf(2.0)
+                                } else {
+                                    1.0
+                                };
                         } else {
                             render_object.get_animation_play_info_mut(AnimationLayer::ActionLayer)._animation_speed =
                                 1.0;

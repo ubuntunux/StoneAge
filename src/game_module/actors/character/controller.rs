@@ -9,7 +9,7 @@ use rust_engine_3d::scene::render_object::RenderObjectData;
 use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::math::HALF_PI;
-use rust_engine_3d::utilities::system::ptr_as_ref;
+use rust_engine_3d::utilities::system::{RcRefCell, ptr_as_ref};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::ffi::c_void;
@@ -210,6 +210,11 @@ impl<'a> CharacterController<'a> {
     }
     pub fn remove_interaction_object(&mut self, object: InteractionObject<'a>) -> Option<InteractionObject<'a>> {
         self._interaction_objects.remove(&object.get_key())
+    }
+    pub fn remove_character_interaction_objects(&mut self, character: &RcRefCell<Character<'a>>) {
+        self.remove_interaction_object(InteractionObject::Taming(character.clone()));
+        self.remove_interaction_object(InteractionObject::Farming(character.clone()));
+        self.remove_interaction_object(InteractionObject::Npc(character.clone()));
     }
     pub fn check_arrival_with_radius(&self, target_position: &Vector3<f32>, radius: f32, ignore_y_axis: bool) -> bool {
         math::check_arrival_with_radius(

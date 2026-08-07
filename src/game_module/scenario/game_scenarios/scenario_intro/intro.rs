@@ -311,25 +311,25 @@ impl<'a> ScenarioIntro<'a> {
                         _quest_description: Some(String::from("Move to the FOREST to find food.")),
                     }),
                 ));
-                self._sub_quest_gather_food = Some(quest.borrow_mut().add_quest_item(
-                    QuestCreateInfo::GatherItem(GatherItemData {
+                self._sub_quest_gather_food = Some(quest.borrow_mut().add_quest_item(QuestCreateInfo::GatherItem(
+                    GatherItemData {
                         _item_data_name: String::from(ITEM_COCONUT),
                         _item_data: item_coconut.clone(),
                         _gather_item_count: 3,
-                    }),
-                ));
-                self._sub_quest_back_home = Some(quest.borrow_mut().add_quest_item(
-                    QuestCreateInfo::DefaultQuest(DefaultQuestData {
+                    },
+                )));
+                self._sub_quest_back_home = Some(quest.borrow_mut().add_quest_item(QuestCreateInfo::DefaultQuest(
+                    DefaultQuestData {
                         _quest_icon_name: None,
                         _quest_description: Some(String::from("Return home.")),
-                    }),
-                ));
-                self._sub_quest_sleep = Some(quest.borrow_mut().add_quest_item(
-                    QuestCreateInfo::DefaultQuest(DefaultQuestData {
+                    },
+                )));
+                self._sub_quest_sleep = Some(quest.borrow_mut().add_quest_item(QuestCreateInfo::DefaultQuest(
+                    DefaultQuestData {
                         _quest_icon_name: None,
                         _quest_description: Some(String::from("Wrap up the day.")),
-                    }),
-                ));
+                    },
+                )));
             }
         }
     }
@@ -353,18 +353,9 @@ impl<'a> ScenarioIntro<'a> {
                 ._sub_quest_move_to_tutorial_stage
                 .as_ref()
                 .map(|q| q.borrow().get_quest_item_save_data()),
-            _sub_quest_gather_food: self
-                ._sub_quest_gather_food
-                .as_ref()
-                .map(|q| q.borrow().get_quest_item_save_data()),
-            _sub_quest_back_home: self
-                ._sub_quest_back_home
-                .as_ref()
-                .map(|q| q.borrow().get_quest_item_save_data()),
-            _sub_quest_sleep: self
-                ._sub_quest_sleep
-                .as_ref()
-                .map(|q| q.borrow().get_quest_item_save_data()),
+            _sub_quest_gather_food: self._sub_quest_gather_food.as_ref().map(|q| q.borrow().get_quest_item_save_data()),
+            _sub_quest_back_home: self._sub_quest_back_home.as_ref().map(|q| q.borrow().get_quest_item_save_data()),
+            _sub_quest_sleep: self._sub_quest_sleep.as_ref().map(|q| q.borrow().get_quest_item_save_data()),
         }
     }
 
@@ -373,25 +364,25 @@ impl<'a> ScenarioIntro<'a> {
             self.destroy_quest();
             self.create_quests();
 
-            if let Some(save_data) = &quest_save_data._sub_quest_move_to_tutorial_stage {
-                if let Some(q) = &self._sub_quest_move_to_tutorial_stage {
-                    q.borrow_mut().load_quest_item_save_data(save_data);
-                }
+            if let Some(save_data) = &quest_save_data._sub_quest_move_to_tutorial_stage
+                && let Some(q) = &self._sub_quest_move_to_tutorial_stage
+            {
+                q.borrow_mut().load_quest_item_save_data(save_data);
             }
-            if let Some(save_data) = &quest_save_data._sub_quest_gather_food {
-                if let Some(q) = &self._sub_quest_gather_food {
-                    q.borrow_mut().load_quest_item_save_data(save_data);
-                }
+            if let Some(save_data) = &quest_save_data._sub_quest_gather_food
+                && let Some(q) = &self._sub_quest_gather_food
+            {
+                q.borrow_mut().load_quest_item_save_data(save_data);
             }
-            if let Some(save_data) = &quest_save_data._sub_quest_back_home {
-                if let Some(q) = &self._sub_quest_back_home {
-                    q.borrow_mut().load_quest_item_save_data(save_data);
-                }
+            if let Some(save_data) = &quest_save_data._sub_quest_back_home
+                && let Some(q) = &self._sub_quest_back_home
+            {
+                q.borrow_mut().load_quest_item_save_data(save_data);
             }
-            if let Some(save_data) = &quest_save_data._sub_quest_sleep {
-                if let Some(q) = &self._sub_quest_sleep {
-                    q.borrow_mut().load_quest_item_save_data(save_data);
-                }
+            if let Some(save_data) = &quest_save_data._sub_quest_sleep
+                && let Some(q) = &self._sub_quest_sleep
+            {
+                q.borrow_mut().load_quest_item_save_data(save_data);
             }
         }
     }
@@ -523,9 +514,10 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
             ScenarioPhase::GatheringFood => {
                 if game_scene_data_name == Stages::Home.get_stage_data_name() {
                     if let Some(quest) = &self._sub_quest_gather_food
-                        && !quest.borrow_mut().is_completed_quest() {
-                            self.create_move_to_tutorial_stage_text_box();
-                        }
+                        && !quest.borrow_mut().is_completed_quest()
+                    {
+                        self.create_move_to_tutorial_stage_text_box();
+                    }
                 } else if game_scene_data_name == Stages::Forest.get_stage_data_name() {
                     self.create_hit_this_tree_text_box();
                 }
@@ -670,20 +662,26 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                         self._wakeup_delay_ewa -= delta_time as f32;
                         self._wakeup_delay_koa -= delta_time as f32;
 
-                        if 0.0 <= prev_wakeup_delay_aru && self._wakeup_delay_aru < 0.0
-                            && let Some(actor) = &self._player {
-                                actor.borrow_mut().set_action_wake_up();
-                            }
+                        if 0.0 <= prev_wakeup_delay_aru
+                            && self._wakeup_delay_aru < 0.0
+                            && let Some(actor) = &self._player
+                        {
+                            actor.borrow_mut().set_action_wake_up();
+                        }
 
-                        if 0.0 <= prev_wakeup_delay_ewa && self._wakeup_delay_ewa < 0.0
-                            && let Some(actor) = &self._actor_ewa {
-                                actor.borrow_mut().set_action_wake_up();
-                            }
+                        if 0.0 <= prev_wakeup_delay_ewa
+                            && self._wakeup_delay_ewa < 0.0
+                            && let Some(actor) = &self._actor_ewa
+                        {
+                            actor.borrow_mut().set_action_wake_up();
+                        }
 
-                        if 0.0 <= prev_wakeup_delay_koa && self._wakeup_delay_koa < 0.0
-                            && let Some(actor) = &self._actor_koa {
-                                actor.borrow_mut().set_action_wake_up();
-                            }
+                        if 0.0 <= prev_wakeup_delay_koa
+                            && self._wakeup_delay_koa < 0.0
+                            && let Some(actor) = &self._actor_koa
+                        {
+                            actor.borrow_mut().set_action_wake_up();
+                        }
 
                         let aru_none = self
                             ._player

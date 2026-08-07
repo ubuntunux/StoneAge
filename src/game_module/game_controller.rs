@@ -640,19 +640,21 @@ impl<'a> GameController<'a> {
                     player_mut.rotate_player_angle(0.0, delta_time);
                 }
 
-                let is_pull_pressed = is_attack || is_power_attack || keyboard_input_data.get_key_pressed(KeyCode::Space);
+                let is_pull_pressed =
+                    is_attack || is_power_attack || keyboard_input_data.get_key_pressed(KeyCode::Space);
                 if is_pull_pressed {
                     player_mut.on_pull_press();
                 }
 
-                let is_pulling = is_attack_hold || is_power_attack_hold || is_jump || keyboard_input_data.get_key_hold(KeyCode::Space);
+                let is_pulling = is_attack_hold
+                    || is_power_attack_hold
+                    || is_jump
+                    || keyboard_input_data.get_key_hold(KeyCode::Space);
                 player_mut.set_pulling(is_pulling);
             }
-        } else if player_mut.is_action(ActionAnimationState::FishingBegin)
-            && !is_attack_hold
-            && !is_power_attack_hold {
-                player_mut.release_fishing_cast();
-            }
+        } else if player_mut.is_action(ActionAnimationState::FishingBegin) && !is_attack_hold && !is_power_attack_hold {
+            player_mut.release_fishing_cast();
+        }
 
         self.process_camera_inputs(
             joystick_input_data,

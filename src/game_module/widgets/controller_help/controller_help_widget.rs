@@ -341,7 +341,9 @@ impl<'a> ControllerHelpWidget<'a> {
                             KeyBindingType::Interaction,
                             format!("Pick up a {}", prop.borrow()._prop_data.borrow()._name.as_str()),
                         ),
-                        InteractionObject::PropMonolith(_) => (KeyBindingType::Interaction, String::from("Open Toolbox")),
+                        InteractionObject::PropMonolith(_) => {
+                            (KeyBindingType::Interaction, String::from("Open Toolbox"))
+                        }
                         InteractionObject::PropTable(_) => (KeyBindingType::Interaction, String::from("Sit Down")),
                         InteractionObject::Npc(npc) => {
                             if player.get_attached_item_data_type().is_eatable() {
@@ -407,7 +409,10 @@ impl<'a> ControllerHelpWidget<'a> {
                 interaction_key_binding_widget_map.get_key_binding_widget(*key_binding_type);
             let interaction_widget = ptr_as_mut(interaction_key_binding_widget._layout_widget);
 
-            if enable_interaction && is_corpse_interaction && (*key_binding_type == KeyBindingType::Taming || *key_binding_type == KeyBindingType::Farming) {
+            if enable_interaction
+                && is_corpse_interaction
+                && (*key_binding_type == KeyBindingType::Taming || *key_binding_type == KeyBindingType::Farming)
+            {
                 let player = character_manager.get_player().borrow();
                 let corpse_obj = player._controller._interaction_objects.values().find(|obj| {
                     matches!(obj, InteractionObject::Taming(_)) || matches!(obj, InteractionObject::Farming(_))
@@ -417,13 +422,19 @@ impl<'a> ControllerHelpWidget<'a> {
                     let main_camera = get_scene_manager().get_main_camera();
                     let screen_position = main_camera.convert_world_to_screen(&position, true)
                         / rust_engine_3d::scene::ui::get_global_dpi_scale();
-                    let offset_y = if *key_binding_type == KeyBindingType::Taming { -25.0 } else { 25.0 };
+                    let offset_y = if *key_binding_type == KeyBindingType::Taming {
+                        -25.0
+                    } else {
+                        25.0
+                    };
                     interaction_widget._ui_component.set_pos(screen_position.x, screen_position.y + offset_y);
                     interaction_widget._ui_component.set_visible(true);
-                    let label = if *key_binding_type == KeyBindingType::Taming { "Taming" } else { "Farming" };
-                    ptr_as_mut(interaction_key_binding_widget._binding_name_widget)
-                        ._ui_component
-                        .set_text(label);
+                    let label = if *key_binding_type == KeyBindingType::Taming {
+                        "Taming"
+                    } else {
+                        "Farming"
+                    };
+                    ptr_as_mut(interaction_key_binding_widget._binding_name_widget)._ui_component.set_text(label);
                     self._last_interaction_object_key = corpse_obj.get_key();
                 }
             } else if enable_interaction && !is_corpse_interaction && *key_binding_type == matched_key_binding_type {

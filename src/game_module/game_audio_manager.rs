@@ -70,10 +70,9 @@ impl GameAudioManager {
             if audio_manager.is_playing_bgm() {
                 audio_manager.stop_bgm();
             }
-        } else if target_ambient_sound == AMBIENT_SOUND
-            && !audio_manager.is_playing_bgm() {
-                audio_manager.play_bgm(GAME_MUSIC, Some(self._bgm_volume));
-            }
+        } else if target_ambient_sound == AMBIENT_SOUND && !audio_manager.is_playing_bgm() {
+            audio_manager.play_bgm(GAME_MUSIC, Some(self._bgm_volume));
+        }
 
         // let is_play_scenario_mode = game_scene_manager.is_play_scenario_mode();
         // if is_play_scenario_mode != self._was_play_scenario_mode {

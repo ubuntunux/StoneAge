@@ -381,10 +381,7 @@ impl<'a> GameSceneManager<'a> {
         scenario_data_create_info: &ScenarioDataCreateInfo,
         open_game_scene: bool,
     ) -> &RcRefCell<dyn ScenarioBase<'a> + 'a> {
-        self._scenarios.insert(
-            scenario_type,
-            create_scenario(scenario_type, scenario_data_create_info),
-        );
+        self._scenarios.insert(scenario_type, create_scenario(scenario_type, scenario_data_create_info));
 
         if open_game_scene {
             let game_scene_data_name = scenario_data_create_info.get_game_scene_data_name();

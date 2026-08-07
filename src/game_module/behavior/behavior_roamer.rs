@@ -1,7 +1,11 @@
 use crate::game_module::actors::character::ActionAnimationState;
 use crate::game_module::actors::character::Character;
 use crate::game_module::behavior::behavior_base::{BehaviorBase, BehaviorData, BehaviorSaveData, BehaviorState};
-use crate::game_module::game_constants::{GameViewMode, ARRIVAL_DISTANCE_THRESHOLD, CHARACTER_INTERACTION_TIME, GAME_VIEW_MODE, NPC_ATTACK_RANGE, NPC_ATTACK_TERM_MAX, NPC_ATTACK_TERM_MIN, NPC_AVAILABLE_MOVING_ATTACK, NPC_IDLE_TERM_MAX, NPC_IDLE_TERM_MIN, NPC_ROAMING_RADIUS, NPC_ROAMING_TIME, NPC_TRACKING_RANGE};
+use crate::game_module::game_constants::{
+    ARRIVAL_DISTANCE_THRESHOLD, CHARACTER_INTERACTION_TIME, GAME_VIEW_MODE, GameViewMode, NPC_ATTACK_RANGE,
+    NPC_ATTACK_TERM_MAX, NPC_ATTACK_TERM_MIN, NPC_AVAILABLE_MOVING_ATTACK, NPC_IDLE_TERM_MAX, NPC_IDLE_TERM_MIN,
+    NPC_ROAMING_RADIUS, NPC_ROAMING_TIME, NPC_TRACKING_RANGE,
+};
 use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::core::engine_service_locator::get_audio_manager_mut;
@@ -244,26 +248,21 @@ impl<'a> BehaviorBase<'a> for BehaviorRoamer<'a> {
                     }
                 }
                 BehaviorState::Dead => {
-                    match state {
-                        State::Begin => {
-                            owner.set_action_dead();
-                        }
-                        _ => {}
+                    if state == State::Begin {
+                        owner.set_action_dead();
                     }
                 }
-                BehaviorState::WakeUp => {
-                    match state {
-                        State::Begin => {
-                            owner.set_action_wake_up();
-                        }
-                        State::Update => {
-                            if !is_first_update_behavior_state && !owner.is_action(ActionAnimationState::WakeUp) {
-                                self.set_next_behavior(BehaviorState::Idle, false);
-                            }
-                        }
-                        State::End => {}
+                BehaviorState::WakeUp => match state {
+                    State::Begin => {
+                        owner.set_action_wake_up();
                     }
-                }
+                    State::Update => {
+                        if !is_first_update_behavior_state && !owner.is_action(ActionAnimationState::WakeUp) {
+                            self.set_next_behavior(BehaviorState::Idle, false);
+                        }
+                    }
+                    State::End => {}
+                },
                 _ => {}
             }
 

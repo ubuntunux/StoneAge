@@ -79,9 +79,11 @@ impl Weather {
                 State::Update => next_weather_type,
             };
             match update_weather_type {
-                WeatherType::None => if state == State::Begin {
-                    self.clear_weather();
-                },
+                WeatherType::None => {
+                    if state == State::Begin {
+                        self.clear_weather();
+                    }
+                }
                 WeatherType::Rain => match state {
                     State::Begin => {
                         let effect_create_info = EffectCreateInfo {
@@ -97,9 +99,10 @@ impl Weather {
                     State::Update => {
                         if let Some(player) = get_character_manager().get_maybe_player()
                             && let Some(rain_effect_id) = &self._rain_effect
-                                && let Some(effect) = get_scene_manager().get_effect(*rain_effect_id) {
-                                    effect.borrow_mut()._effect_transform.set_position(player.borrow().get_center());
-                                }
+                            && let Some(effect) = get_scene_manager().get_effect(*rain_effect_id)
+                        {
+                            effect.borrow_mut()._effect_transform.set_position(player.borrow().get_center());
+                        }
 
                         const THUNDER_FADE_TIME: f32 = 1.5;
                         self._thunder_timer -= _delta_time as f32;

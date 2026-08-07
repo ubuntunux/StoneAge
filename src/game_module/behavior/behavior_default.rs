@@ -111,29 +111,25 @@ impl<'a> BehaviorBase<'a> for BehaviorDefault<'a> {
                     }
                     State::End => {}
                 },
-                BehaviorState::Dead => {
-                    match state {
-                        State::Begin => {
-                            owner.set_action_dead();
-                            owner.set_move_idle();
-                        }
-                        State::Update => {}
-                        State::End => {}
+                BehaviorState::Dead => match state {
+                    State::Begin => {
+                        owner.set_action_dead();
+                        owner.set_move_idle();
                     }
-                }
-                BehaviorState::WakeUp => {
-                    match state {
-                        State::Begin => {
-                            owner.set_action_wake_up();
-                        }
-                        State::Update => {
-                            if !is_first_update_behavior_state && !owner.is_action(ActionAnimationState::WakeUp) {
-                                self.set_next_behavior(BehaviorState::Idle, false);
-                            }
-                        }
-                        State::End => {}
+                    State::Update => {}
+                    State::End => {}
+                },
+                BehaviorState::WakeUp => match state {
+                    State::Begin => {
+                        owner.set_action_wake_up();
                     }
-                }
+                    State::Update => {
+                        if !is_first_update_behavior_state && !owner.is_action(ActionAnimationState::WakeUp) {
+                            self.set_next_behavior(BehaviorState::Idle, false);
+                        }
+                    }
+                    State::End => {}
+                },
                 _ => {}
             }
 

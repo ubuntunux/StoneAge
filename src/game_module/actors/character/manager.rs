@@ -5,7 +5,11 @@ use crate::game_module::actors::character::stats::*;
 use crate::game_module::actors::interaction_object::InteractionObject;
 use crate::game_module::actors::items::{ItemCreateInfo, ItemID};
 use crate::game_module::behavior::behavior_base::BehaviorSaveData;
-use crate::game_module::game_constants::{AUDIO_STOMACH_GROWLING, CHARACTER_INTERACTION_DISTANCE, CHARACTER_INTERACTION_TIME, CORPSE_AUTO_REMOVE_TIME, FARM_MEAT_COUNT, GAME_VIEW_MODE, GameViewMode, ITEM_HAND, ITEM_MEAT, MATERIAL_EMOJI_GOOD, MATERIAL_EMOJI_HUNGRY, NPC_ATTACK_HIT_RANGE, ITEM_SPIRIT_BALL};
+use crate::game_module::game_constants::{
+    AUDIO_STOMACH_GROWLING, CHARACTER_INTERACTION_DISTANCE, CHARACTER_INTERACTION_TIME, CORPSE_AUTO_REMOVE_TIME,
+    FARM_MEAT_COUNT, GAME_VIEW_MODE, GameViewMode, ITEM_HAND, ITEM_MEAT, ITEM_SPIRIT_BALL, MATERIAL_EMOJI_GOOD,
+    MATERIAL_EMOJI_HUNGRY, NPC_ATTACK_HIT_RANGE,
+};
 use crate::game_module::game_scene_manager::{CharacterCreateInfoMap, CharacterSaveDataMap};
 use crate::game_module::widgets::text_box_widget::TextBoxContent;
 use crate::game_module::widgets::text_box_widget::TextBoxLayerType;
@@ -318,7 +322,11 @@ impl<'a> CharacterManager<'a> {
         for i in 0..FARM_MEAT_COUNT {
             let angle = (i as f32) * (std::f32::consts::TAU / 3.0) + rand::random::<f32>() * 0.5;
             let speed = 1.5 + rand::random::<f32>() * 2.0;
-            let velocity = Vector3::new(angle.cos() * speed, 3.0 + rand::random::<f32>() * 2.0, angle.sin() * speed);
+            let velocity = Vector3::new(
+                angle.cos() * speed,
+                3.0 + rand::random::<f32>() * 2.0,
+                angle.sin() * speed,
+            );
             let meat_info = ItemCreateInfo {
                 _item_data_name: String::from(ITEM_MEAT),
                 _position: pos,
@@ -331,10 +339,7 @@ impl<'a> CharacterManager<'a> {
 
         // Remove corpse & interaction UI
         if let Some(player) = self._player.as_ref() {
-            let mut player_mut = player.borrow_mut();
-            player_mut._controller.remove_interaction_object(InteractionObject::Taming(character.clone()));
-            player_mut._controller.remove_interaction_object(InteractionObject::Farming(character.clone()));
-            player_mut._controller.remove_interaction_object(InteractionObject::Npc(character.clone()));
+            player.borrow_mut()._controller.remove_character_interaction_objects(character);
         }
         self.remove_character(character);
     }
@@ -502,10 +507,7 @@ impl<'a> CharacterManager<'a> {
         // process expired dead characters (auto remove after 5s for non-civilians)
         for character in expired_dead_characters.iter() {
             if let Some(player) = self._player.as_ref() {
-                let mut player_mut = player.borrow_mut();
-                player_mut._controller.remove_interaction_object(InteractionObject::Taming(character.clone()));
-                player_mut._controller.remove_interaction_object(InteractionObject::Farming(character.clone()));
-                player_mut._controller.remove_interaction_object(InteractionObject::Npc(character.clone()));
+                player.borrow_mut()._controller.remove_character_interaction_objects(character);
             }
             self.remove_character(character);
         }
