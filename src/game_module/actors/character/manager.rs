@@ -379,12 +379,17 @@ impl<'a> CharacterManager<'a> {
                 player._controller.remove_interaction_object(farming_obj);
             }
 
-            if character_ref.is_alive() {
+            if character_ref.is_alive() && (character_ref.is_civilian() || character_ref.is_tamed()) {
                 let npc_obj = InteractionObject::Npc(character.clone());
                 let was_npc = player._controller.is_interaction_object(npc_obj.get_key());
                 if !was_npc && is_in_player_range {
                     player._controller.add_interaction_object(npc_obj);
                 } else if was_npc && !is_in_player_range {
+                    player._controller.remove_interaction_object(npc_obj);
+                }
+            } else {
+                let npc_obj = InteractionObject::Npc(character.clone());
+                if player._controller.is_interaction_object(npc_obj.get_key()) {
                     player._controller.remove_interaction_object(npc_obj);
                 }
             }
