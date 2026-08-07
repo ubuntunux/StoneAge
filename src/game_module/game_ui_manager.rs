@@ -1,7 +1,7 @@
 use crate::game_module::actors::character::{ActorWrapper, Character};
 use crate::game_module::actors::items::ItemDataType;
 use crate::game_module::game_constants::MATERIAL_INTRO_IMAGE;
-use crate::game_module::game_service_locator::{get_character_manager, get_game_scene_manager, get_game_ui_manager_mut};
+use crate::game_module::game_service_locator::{get_character_manager, get_game_scene_manager};
 use crate::game_module::widgets::controller_help::ControllerHelpWidget;
 use crate::game_module::widgets::cross_hair_widget::CrossHairWidget;
 use crate::game_module::widgets::debug_ui_widget::DebugUIWidget;
@@ -368,6 +368,10 @@ impl<'a> GameUIManager<'a> {
 
     pub fn add_quest(&mut self, title: Option<String>) -> RcRefCell<QuestTitle<'a>> {
         self._quest_widget.as_mut().unwrap().add_quest(title)
+    }
+
+    pub fn load_quest(&mut self, title: Option<String>) -> RcRefCell<QuestTitle<'a>> {
+        self._quest_widget.as_mut().unwrap().load_quest(title)
     }
 
     // text box

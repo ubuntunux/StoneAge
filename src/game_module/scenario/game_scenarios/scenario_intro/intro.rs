@@ -66,6 +66,18 @@ struct ScenarioIntroSaveData {
     pub _wakeup_delay_aru: f32,
     pub _wakeup_delay_ewa: f32,
     pub _wakeup_delay_koa: f32,
+    #[serde(default)]
+    pub _has_quest: bool,
+    #[serde(default)]
+    pub _quest_title: Option<String>,
+    #[serde(default)]
+    pub _sub_quest_move_to_tutorial_stage: Option<bool>,
+    #[serde(default)]
+    pub _sub_quest_gather_food: Option<bool>,
+    #[serde(default)]
+    pub _sub_quest_back_home: Option<bool>,
+    #[serde(default)]
+    pub _sub_quest_sleep: Option<bool>,
 }
 
 pub struct ScenarioIntro<'a> {
@@ -300,6 +312,75 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
             self._wakeup_delay_aru = data._wakeup_delay_aru;
             self._wakeup_delay_ewa = data._wakeup_delay_ewa;
             self._wakeup_delay_koa = data._wakeup_delay_koa;
+
+            let has_any_quest = data._has_quest
+                || data._sub_quest_move_to_tutorial_stage.is_some()
+                || data._sub_quest_gather_food.is_some()
+                || data._sub_quest_back_home.is_some()
+                || data._sub_quest_sleep.is_some();
+
+            if has_any_quest {
+                let game_ui_manager = get_game_ui_manager_mut();
+                let item_coconut = get_game_resources().get_item_data(ITEM_COCONUT);
+
+                if let Some(quest) = &self._quest {
+                    quest.borrow_mut().destroy_quest();
+                }
+                self._quest = None;
+                self._sub_quest_move_to_tutorial_stage = None;
+                self._sub_quest_gather_food = None;
+                self._sub_quest_back_home = None;
+                self._sub_quest_sleep = None;
+
+                let quest_title = data
+                    ._quest_title
+                    .clone()
+                    .unwrap_or_else(|| String::from("Gather food for the hungry family."));
+                let quest = game_ui_manager.load_quest(Some(quest_title));
+
+                if let Some(is_completed) = data._sub_quest_move_to_tutorial_stage {
+                    self._sub_quest_move_to_tutorial_stage = Some(quest.borrow_mut().load_quest_item(
+                        QuestCreateInfo::DefaultQuest(DefaultQuestData {
+                            _quest_icon_name: None,
+                            _quest_description: Some(String::from("Move to the FOREST to find food.")),
+                        }),
+                        is_completed,
+                    ));
+                }
+
+                if let Some(is_completed) = data._sub_quest_gather_food {
+                    self._sub_quest_gather_food = Some(quest.borrow_mut().load_quest_item(
+                        QuestCreateInfo::GatherItem(GatherItemData {
+                            _item_data_name: String::from(ITEM_COCONUT),
+                            _item_data: item_coconut.clone(),
+                            _gather_item_count: 3,
+                        }),
+                        is_completed,
+                    ));
+                }
+
+                if let Some(is_completed) = data._sub_quest_back_home {
+                    self._sub_quest_back_home = Some(quest.borrow_mut().load_quest_item(
+                        QuestCreateInfo::DefaultQuest(DefaultQuestData {
+                            _quest_icon_name: None,
+                            _quest_description: Some(String::from("Return home.")),
+                        }),
+                        is_completed,
+                    ));
+                }
+
+                if let Some(is_completed) = data._sub_quest_sleep {
+                    self._sub_quest_sleep = Some(quest.borrow_mut().load_quest_item(
+                        QuestCreateInfo::DefaultQuest(DefaultQuestData {
+                            _quest_icon_name: None,
+                            _quest_description: Some(String::from("Wrap up the day.")),
+                        }),
+                        is_completed,
+                    ));
+                }
+
+                self._quest = Some(quest);
+            }
         }
     }
 
@@ -315,6 +396,24 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
             _wakeup_delay_aru: self._wakeup_delay_aru,
             _wakeup_delay_ewa: self._wakeup_delay_ewa,
             _wakeup_delay_koa: self._wakeup_delay_koa,
+            _has_quest: self._quest.is_some(),
+            _quest_title: self._quest.as_ref().and_then(|q| q.borrow()._quest_title.clone()),
+            _sub_quest_move_to_tutorial_stage: self
+                ._sub_quest_move_to_tutorial_stage
+                .as_ref()
+                .map(|q| q.borrow().is_completed_quest()),
+            _sub_quest_gather_food: self
+                ._sub_quest_gather_food
+                .as_ref()
+                .map(|q| q.borrow().is_completed_quest()),
+            _sub_quest_back_home: self
+                ._sub_quest_back_home
+                .as_ref()
+                .map(|q| q.borrow().is_completed_quest()),
+            _sub_quest_sleep: self
+                ._sub_quest_sleep
+                .as_ref()
+                .map(|q| q.borrow().is_completed_quest()),
         };
 
         GameScenarioCreateInfo {
@@ -345,6 +444,11 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
         if let Some(quest) = &self._quest {
             quest.borrow_mut().destroy_quest();
         }
+        self._quest = None;
+        self._sub_quest_move_to_tutorial_stage = None;
+        self._sub_quest_gather_food = None;
+        self._sub_quest_back_home = None;
+        self._sub_quest_sleep = None;
     }
 
     fn on_close_game_scene(&mut self, _game_scene_data_name: &str) {
@@ -652,35 +756,37 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                             actor.borrow_mut().set_next_behavior(BehaviorState::Idle, true);
                         }
 
-                        let item_coconut = get_game_resources().get_item_data(ITEM_COCONUT);
-                        self._quest =
-                            Some(game_ui_manager.add_quest(Some(String::from("Gather food for the hungry family."))));
-                        if let Some(quest) = &self._quest {
-                            self._sub_quest_move_to_tutorial_stage = Some(quest.borrow_mut().add_quest_item(
-                                QuestCreateInfo::DefaultQuest(DefaultQuestData {
-                                    _quest_icon_name: None,
-                                    _quest_description: Some(String::from("Move to the FOREST to find food.")),
-                                }),
-                            ));
-                            self._sub_quest_gather_food = Some(quest.borrow_mut().add_quest_item(
-                                QuestCreateInfo::GatherItem(GatherItemData {
-                                    _item_data_name: String::from(ITEM_COCONUT),
-                                    _item_data: item_coconut.clone(),
-                                    _gather_item_count: 3,
-                                }),
-                            ));
-                            self._sub_quest_back_home = Some(quest.borrow_mut().add_quest_item(
-                                QuestCreateInfo::DefaultQuest(DefaultQuestData {
-                                    _quest_icon_name: None,
-                                    _quest_description: Some(String::from("Return home.")),
-                                }),
-                            ));
-                            self._sub_quest_sleep = Some(quest.borrow_mut().add_quest_item(
-                                QuestCreateInfo::DefaultQuest(DefaultQuestData {
-                                    _quest_icon_name: None,
-                                    _quest_description: Some(String::from("Wrap up the day.")),
-                                }),
-                            ));
+                        if self._quest.is_none() {
+                            let item_coconut = get_game_resources().get_item_data(ITEM_COCONUT);
+                            self._quest =
+                                Some(game_ui_manager.add_quest(Some(String::from("Gather food for the hungry family."))));
+                            if let Some(quest) = &self._quest {
+                                self._sub_quest_move_to_tutorial_stage = Some(quest.borrow_mut().add_quest_item(
+                                    QuestCreateInfo::DefaultQuest(DefaultQuestData {
+                                        _quest_icon_name: None,
+                                        _quest_description: Some(String::from("Move to the FOREST to find food.")),
+                                    }),
+                                ));
+                                self._sub_quest_gather_food = Some(quest.borrow_mut().add_quest_item(
+                                    QuestCreateInfo::GatherItem(GatherItemData {
+                                        _item_data_name: String::from(ITEM_COCONUT),
+                                        _item_data: item_coconut.clone(),
+                                        _gather_item_count: 3,
+                                    }),
+                                ));
+                                self._sub_quest_back_home = Some(quest.borrow_mut().add_quest_item(
+                                    QuestCreateInfo::DefaultQuest(DefaultQuestData {
+                                        _quest_icon_name: None,
+                                        _quest_description: Some(String::from("Return home.")),
+                                    }),
+                                ));
+                                self._sub_quest_sleep = Some(quest.borrow_mut().add_quest_item(
+                                    QuestCreateInfo::DefaultQuest(DefaultQuestData {
+                                        _quest_icon_name: None,
+                                        _quest_description: Some(String::from("Wrap up the day.")),
+                                    }),
+                                ));
+                            }
                         }
 
                         self.create_move_to_tutorial_stage_text_box();

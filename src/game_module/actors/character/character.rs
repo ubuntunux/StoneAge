@@ -1848,7 +1848,7 @@ impl<'a> Character<'a> {
                         if self._fishing_state._is_fishing_button_held {
                             self.update_fishing(delta_time);
                             render_object.get_animation_play_info_mut(AnimationLayer::ActionLayer)._animation_speed =
-                                (1.0 - (anim_play_time / (animation_length * 0.5)).min(1.0)).powf(2.0);
+                                if 0.0 < animation_length { (1.0 - (anim_play_time / (animation_length * 0.5)).min(1.0)).powf(2.0) } else { 1.0 };
                         } else {
                             render_object.get_animation_play_info_mut(AnimationLayer::ActionLayer)._animation_speed =
                                 1.0;

@@ -77,6 +77,15 @@ impl<'a> QuestTitle<'a> {
         quest_item.clone()
     }
 
+    pub fn load_quest_item(&mut self, content: QuestCreateInfo, is_completed: bool) -> QuestItem<'a> {
+        let quest_item = create_quest_item(ptr_as_mut(self._layout_widget.as_ref()), content);
+        if is_completed {
+            quest_item.borrow_mut().load_completed_quest();
+        }
+        self._quest_items.push(quest_item.clone());
+        quest_item
+    }
+
     pub fn is_completed_quest(&self) -> bool {
         for quest_item in self._quest_items.iter() {
             if !quest_item.borrow().is_completed_quest() {

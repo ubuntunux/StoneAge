@@ -125,6 +125,12 @@ impl<'a> QuestItemBase<'a> for QuestItemGatherItem<'a> {
         }
     }
 
+    fn load_completed_quest(&mut self) {
+        self._is_completed_quest = true;
+        self._item_count = self._item_data._gather_item_count;
+        self.update_ui_widgets();
+    }
+
     fn update_quest_item(&mut self, _game_controller: &GameController, _delta_time: f32) {
         let item_bar_widget = get_game_ui_manager().get_item_bar_widget();
         let item_count = item_bar_widget.get_item_count(self._item_data._item_data_name.as_str());

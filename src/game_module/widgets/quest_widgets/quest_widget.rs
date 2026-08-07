@@ -30,6 +30,7 @@ pub trait QuestItemBase<'a> {
     fn destroy_quest_item(&mut self);
     fn is_completed_quest(&self) -> bool;
     fn set_completed_quest(&mut self);
+    fn load_completed_quest(&mut self);
     fn update_quest_item(&mut self, game_controller: &GameController, delta_time: f32);
 }
 
@@ -102,6 +103,10 @@ impl<'a> QuestWidget<'a> {
         let quest = QuestTitle::create_quest_title(ptr_as_mut(self._root_widget.as_ref()), title);
         self._quests.push(quest.clone());
         quest.clone()
+    }
+
+    pub fn load_quest(&mut self, title: Option<String>) -> RcRefCell<QuestTitle<'a>> {
+        self.add_quest(title)
     }
 
     pub fn update_quest_widget(&mut self, delta_time: f32) {
