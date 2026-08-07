@@ -1,5 +1,6 @@
 use crate::game_module::actors::character::CharacterSaveData;
 use crate::game_module::game_scene_manager::GameSceneSaveData;
+use crate::game_module::game_weather::WeatherType;
 use crate::game_module::scenario::scenario::{GameScenarioCreateInfo, ScenarioType};
 use crate::game_module::widgets::item_bar::InventoryItemCreateInfoList;
 use rust_engine_3d::scene::camera::CameraCreateInfo;
@@ -14,6 +15,7 @@ pub struct GameSaveData {
     pub _time_of_day: f32,
     pub _temperature: f32,
     pub _date: u32,
+    pub _weather_type: WeatherType,
     pub _inventory_item_create_info_list: InventoryItemCreateInfoList,
     pub _selected_inventory_item_index: usize,
     pub _last_game_scene_data_name: String,
@@ -30,6 +32,7 @@ impl Default for GameSaveData {
             _time_of_day: 0.0,
             _temperature: 0.0,
             _date: 0,
+            _weather_type: WeatherType::None,
             _inventory_item_create_info_list: Default::default(),
             _selected_inventory_item_index: 0,
             _last_game_scene_data_name: "".to_string(),

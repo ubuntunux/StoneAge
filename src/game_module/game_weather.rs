@@ -5,11 +5,13 @@ use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::core::engine_service_locator::{get_audio_manager_mut, get_scene_manager, get_scene_manager_mut};
 use rust_engine_3d::effect::effect_data::EffectCreateInfo;
 use rust_engine_3d::utilities::system::State;
+use serde::{Deserialize, Serialize};
 use std::cmp::PartialEq;
 use strum::IntoEnumIterator;
 
-#[derive(PartialEq, Copy, Clone)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Copy, Clone, Default)]
 pub enum WeatherType {
+    #[default]
     None,
     Rain,
 }
@@ -55,8 +57,9 @@ impl Weather {
                 effect.borrow_mut().set_dead();
             }
             get_scene_manager().get_main_light().borrow_mut()._light_data._light_color = self._sun_light_color;
-            self._weather_type = WeatherType::None;
         }
+        self._weather_type = WeatherType::None;
+        self._next_weather_type = WeatherType::None;
     }
 
     pub fn update_weather(&mut self, _delta_time: f64) {

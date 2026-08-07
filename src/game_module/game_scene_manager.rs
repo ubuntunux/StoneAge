@@ -227,18 +227,21 @@ impl<'a> GameSceneManager<'a> {
     pub fn new_game_scene(&mut self) {
         get_game_ui_manager_mut().clear_game_ui();
         self.close_game_scene_data();
+        self._weather.clear_weather();
         self.request_open_game_scenario(ScenarioType::ScenarioIntro_Intro);
     }
 
     pub fn load_game_scene_save_data(&mut self, game_save_data: &GameSaveData) {
         get_game_ui_manager_mut().clear_game_ui();
         self.clear_all_game_scenario();
+        self._weather.clear_weather();
 
         // loading
         self.open_game_scene_data(&game_save_data._last_game_scene_data_name);
         self.set_temperature(game_save_data._temperature);
         self._date = game_save_data._date;
         self.set_time_of_day(game_save_data._time_of_day);
+        self._weather.set_next_weather(game_save_data._weather_type);
 
         self._completed_game_scenarios = game_save_data._completed_game_scenarios.clone();
         for game_scenario_create_info in game_save_data._game_scenarios.iter() {
@@ -266,6 +269,7 @@ impl<'a> GameSceneManager<'a> {
         game_save_data._time_of_day = self.get_time_of_day();
         game_save_data._temperature = self.temperature();
         game_save_data._date = self.get_date();
+        game_save_data._weather_type = self._weather.get_weather_type();
         game_save_data._last_game_scene_data_name = self.get_current_game_scene_data_name().clone();
         game_save_data._inventory_item_create_info_list = get_game_ui_manager().get_inventory_item_create_infos();
         game_save_data._selected_inventory_item_index = get_game_ui_manager().get_selected_inventory_item_index();
