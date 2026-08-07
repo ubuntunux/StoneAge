@@ -610,6 +610,10 @@ impl<'a> GameController<'a> {
             mouse_input_data._btn_l_pressed || joystick_input_data._btn_right_shoulder == ButtonState::Pressed;
         let is_attack_hold: bool =
             mouse_input_data._btn_l_hold || joystick_input_data._btn_right_shoulder == ButtonState::Hold;
+        let is_power_attack: bool =
+            mouse_input_data._btn_r_pressed || joystick_input_data._btn_right_trigger == ButtonState::Pressed;
+        let is_power_attack_hold: bool =
+            mouse_input_data._btn_r_hold || joystick_input_data._btn_right_trigger == ButtonState::Hold;
         let is_cancel = keyboard_input_data.get_key_pressed(KeyCode::KeyB)
             || keyboard_input_data.get_key_pressed(KeyCode::Escape)
             || joystick_input_data._btn_b == ButtonState::Pressed;
@@ -634,16 +638,17 @@ impl<'a> GameController<'a> {
                     player_mut.rotate_player_angle(0.0, delta_time);
                 }
 
-                let is_pull_pressed = is_attack || keyboard_input_data.get_key_pressed(KeyCode::Space);
+                let is_pull_pressed = is_attack || is_power_attack || keyboard_input_data.get_key_pressed(KeyCode::Space);
                 if is_pull_pressed {
                     player_mut.on_pull_press();
                 }
 
-                let is_pulling = is_attack_hold || is_jump || keyboard_input_data.get_key_hold(KeyCode::Space);
+                let is_pulling = is_attack_hold || is_power_attack_hold || is_jump || keyboard_input_data.get_key_hold(KeyCode::Space);
                 player_mut.set_pulling(is_pulling);
             }
         } else if player_mut.is_action(ActionAnimationState::FishingBegin)
-            && !is_attack_hold {
+            && !is_attack_hold
+            && !is_power_attack_hold {
                 player_mut.release_fishing_cast();
             }
 
