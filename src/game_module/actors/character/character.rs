@@ -13,8 +13,9 @@ use crate::game_module::game_constants::*;
 use crate::game_module::game_scene_manager::Stages;
 use crate::game_module::game_service_locator::{
     get_character_manager, get_character_manager_mut, get_game_client_mut, get_game_scene_manager,
-    get_game_scene_manager_mut, get_item_manager,
+    get_game_scene_manager_mut, get_game_ui_manager_mut, get_item_manager,
 };
+use std::ffi::c_void;
 use crate::game_module::scenario::scenario::ScenarioType;
 use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
@@ -366,6 +367,8 @@ impl<'a> Character<'a> {
 
     pub fn destroy_character(&mut self) {
         self.stop_animations(true);
+        self._character_stats.set_is_stat_displayed(false);
+        get_game_ui_manager_mut().remove_text_box_item((self as *const Self) as *const c_void);
     }
 
     pub fn get_debug_info(&self) -> String {
@@ -1013,6 +1016,8 @@ impl<'a> Character<'a> {
         self._character_stats._is_alive = false;
         self._character_stats._corpse_hit_count = MAX_CORPSE_HIT_COUNT;
         self._dead_time = 0.0;
+        self._character_stats.set_is_stat_displayed(false);
+        get_game_ui_manager_mut().remove_text_box_item((self as *const Self) as *const c_void);
         self.set_action_dead();
         self.set_next_behavior(BehaviorState::Dead, true);
     }
@@ -2053,7 +2058,7 @@ impl<'a> Character<'a> {
         }
     }
 
-    pub fn update_character(&mut self, scene_manager: &SceneManager<'a>, player: &Character<'a>, delta_time: f32) {
+    pub fn update_character(&mut self, scene_manager: &SceneManager<'a>, target: Option<&Character<'a>>, delta_time: f32) {
         let was_on_ground = self.is_on_ground();
         let falling_height = self._controller.get_falling_height();
 
@@ -2063,7 +2068,7 @@ impl<'a> Character<'a> {
 
         // behavior
         if !self._is_player {
-            self._behavior.update_behavior(ptr_as_mut(self), Some(player), delta_time);
+            self._behavior.update_behavior(ptr_as_mut(self), target, delta_time);
         }
 
         // update stats - stamina

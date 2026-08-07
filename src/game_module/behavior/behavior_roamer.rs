@@ -30,9 +30,6 @@ impl<'a> Default for BehaviorRoamer<'a> {
 
 impl<'a> BehaviorRoamer<'a> {
     fn is_enemy_in_range(&self, owner: &Character, target: Option<&Character>) -> bool {
-        if owner.is_tamed() {
-            return false;
-        }
         if let Some(target) = target.as_ref()
             && target.is_alive()
         {
