@@ -87,6 +87,7 @@ impl CharacterStats {
             _hunger: 0.0,
             _tired: 0.0,
             _happiness: 1.0,
+            _intimacy: 0.0,
             _invincibility: false,
             _is_stat_displayed: false,
         }
@@ -165,6 +166,15 @@ impl CharacterStats {
     }
     pub fn set_happiness(&mut self, happiness: f32) {
         self._happiness = happiness;
+    }
+    pub fn get_intimacy(&self) -> f32 {
+        self._intimacy
+    }
+    pub fn set_intimacy(&mut self, intimacy: f32) {
+        self._intimacy = intimacy;
+    }
+    pub fn add_intimacy(&mut self, intimacy: f32) {
+        self._intimacy += intimacy;
     }
 
     pub fn get_stamina(&self) -> f32 {
@@ -274,6 +284,7 @@ impl CharacterStats {
             _hunger: self._hunger,
             _tired: self._tired,
             _happiness: self._happiness,
+            _intimacy: self._intimacy,
             _invincibility: self._invincibility,
             _is_stat_displayed: self._is_stat_displayed,
         }
@@ -295,6 +306,7 @@ impl CharacterStats {
         self._hunger = save_data._hunger;
         self._tired = save_data._tired;
         self._happiness = save_data._happiness;
+        self._intimacy = save_data._intimacy;
         self._invincibility = save_data._invincibility;
         self._is_stat_displayed = save_data._is_stat_displayed;
     }
@@ -374,15 +386,17 @@ impl<'a> Character<'a> {
     pub fn get_debug_info(&self) -> String {
         let position = self.get_position();
         format!(
-            "Behavior: {:?}({:.1})\nAnimation: {:?}/{:?}\nHP: {:?}/{:?}\nIs hunger({:?}): {:.1}\nPosition: [{:.1}, {:.1}, {:.1}]",
+            "Behavior: {:?}({:.1})\nAnimation: {:?}/{:?}\nHP: {:?}/{:?}\nIs hunger({:?}): {:.1}\nHappiness: {:?}\nIntimacy: {:?}\nPosition: [{:.1}, {:.1}, {:.1}]",
             self._behavior.get_behavior_state(),
             self._behavior.get_behavior_data().get_behavior_time(),
             self._animation_state._action_animation_state,
             self._animation_state._move_animation_state,
             self._character_stats._hp,
             self._character_stats._max_hp,
-            self.get_stats().is_hungry(),
+            self._character_stats.is_hungry(),
             self._character_stats.get_hunger(),
+            self._character_stats._happiness,
+            self._character_stats._intimacy,
             position.x,
             position.y,
             position.z
@@ -669,6 +683,22 @@ impl<'a> Character<'a> {
 
     pub fn is_corpse(&self) -> bool {
         !self.is_alive() && !self.is_tamed() && !self.is_civilian() && self._character_stats._is_dead_loop
+    }
+
+    pub fn get_intimacy(&self) -> f32 {
+        self._character_stats.get_intimacy()
+    }
+
+    pub fn set_intimacy(&mut self, intimacy: f32) {
+        self._character_stats.set_intimacy(intimacy);
+    }
+
+    pub fn add_intimacy(&mut self, intimacy: f32) {
+        self._character_stats.add_intimacy(intimacy);
+    }
+
+    pub fn is_following_intimacy(&self) -> bool {
+        self.is_alive() && self._character_stats.get_intimacy() >= INTIMACY_FOLLOW_THRESHOLD
     }
 
     pub fn set_tamed(&mut self, is_tamed: bool) {
@@ -1105,6 +1135,14 @@ impl<'a> Character<'a> {
                         item_manager.remove_inventory_item(item_data_name.as_str(), 1);
                         item_manager.attach_item(&mut character.borrow_mut(), item_data_name.as_str());
                     }
+
+                    // increase intimacy (2x multiplier if fed food)
+                    let intimacy_add = if give_item {
+                        INTIMACY_INTERACTION_ADD * INTIMACY_FEEDING_MULTIPLIER
+                    } else {
+                        INTIMACY_INTERACTION_ADD
+                    };
+                    character.borrow_mut().add_intimacy(intimacy_add);
 
                     if !give_item {
                         character.borrow_mut().set_is_stat_displayed(true);

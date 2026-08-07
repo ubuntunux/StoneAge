@@ -2,8 +2,8 @@ use crate::game_module::actors::character::ActionAnimationState;
 use crate::game_module::actors::character::Character;
 use crate::game_module::behavior::behavior_base::{BehaviorBase, BehaviorData, BehaviorSaveData, BehaviorState};
 use crate::game_module::game_constants::{
-    ARRIVAL_DISTANCE_THRESHOLD, GAME_VIEW_MODE, GameViewMode, NPC_IDLE_TERM_MAX, NPC_IDLE_TERM_MIN, NPC_ROAMING_RADIUS,
-    NPC_ROAMING_TIME,
+    ARRIVAL_DISTANCE_THRESHOLD, GAME_VIEW_MODE, GameViewMode, INTIMACY_ARRIVE_RANGE, INTIMACY_FOLLOW_RANGE,
+    INTIMACY_ROAMING_RADIUS, NPC_IDLE_TERM_MAX, NPC_IDLE_TERM_MIN, NPC_ROAMING_RADIUS, NPC_ROAMING_TIME,
 };
 use nalgebra::Vector3;
 use rust_engine_3d::utilities::math;
@@ -30,7 +30,7 @@ impl<'a> BehaviorBase<'a> for BehaviorDefault<'a> {
         &mut self._behavior_data
     }
 
-    fn update_behavior(&mut self, owner: &mut Character<'a>, _target: Option<&Character<'a>>, delta_time: f32) {
+    fn update_behavior(&mut self, owner: &mut Character<'a>, target: Option<&Character<'a>>, delta_time: f32) {
         let prev_behavior_state = self._behavior_data.get_behavior_state();
         let next_behavior_state = self._behavior_data.get_next_behavior_state();
         let is_force = self._behavior_data.is_force_behavior_state_changed_and_reset();
@@ -64,7 +64,13 @@ impl<'a> BehaviorBase<'a> for BehaviorDefault<'a> {
                             ));
                         }
                         State::Update => {
-                            if self._behavior_data.is_end_behavior_time() {
+                            if owner.is_following_intimacy()
+                                && let Some(target_ref) = target
+                                && target_ref.is_alive()
+                                && (target_ref.get_position() - owner.get_position()).norm() > INTIMACY_FOLLOW_RANGE
+                            {
+                                self.set_next_behavior(BehaviorState::Follow, false);
+                            } else if self._behavior_data.is_end_behavior_time() {
                                 self.set_next_behavior(BehaviorState::Roaming, false);
                             }
                         }
@@ -73,16 +79,38 @@ impl<'a> BehaviorBase<'a> for BehaviorDefault<'a> {
                 }
                 BehaviorState::Roaming => match state {
                     State::Begin => {
-                        let move_area = math::safe_normalize(&Vector3::new(
-                            rand::random::<f32>() - 0.5,
+                        let mut is_intimate_following = false;
+                        if owner.is_following_intimacy()
+                            && let Some(target_ref) = target
+                            && target_ref.is_alive()
+                            && (target_ref.get_position() - owner.get_position()).norm() <= INTIMACY_FOLLOW_RANGE
+                        {
+                            is_intimate_following = true;
+                        }
+
+                        let roam_radius = if is_intimate_following {
+                            INTIMACY_ROAMING_RADIUS
+                        } else {
+                            NPC_ROAMING_RADIUS
+                        };
+
+                        let move_area = Vector3::new(
+                            (rand::random::<f32>() - 0.5) * 2.0,
                             0.0,
                             if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
                                 0.0
                             } else {
-                                rand::random::<f32>() - 0.5
+                                (rand::random::<f32>() - 0.5) * 2.0
                             },
-                        )) * NPC_ROAMING_RADIUS;
-                        self._behavior_data._target_point = self._behavior_data._spawn_point + move_area;
+                        ) * roam_radius;
+
+                        let center_point = if is_intimate_following {
+                            *target.as_ref().unwrap().get_position()
+                        } else {
+                            self._behavior_data._spawn_point
+                        };
+
+                        self._behavior_data._target_point = center_point + move_area;
                         self._behavior_data._move_direction =
                             math::safe_normalize(&(self._behavior_data._target_point - owner.get_position()));
                         owner.set_move(&self._behavior_data._move_direction);
@@ -90,23 +118,32 @@ impl<'a> BehaviorBase<'a> for BehaviorDefault<'a> {
                         self._behavior_data.set_behavior_time(NPC_ROAMING_TIME);
                     }
                     State::Update => {
-                        let mut do_idle: bool = false;
-                        if self._behavior_data.is_end_behavior_time() {
-                            do_idle = true;
+                        if owner.is_following_intimacy()
+                            && let Some(target_ref) = target
+                            && target_ref.is_alive()
+                            && (target_ref.get_position() - owner.get_position()).norm() > INTIMACY_FOLLOW_RANGE
+                        {
+                            // Player moved too far -> chase to close the gap
+                            self.set_next_behavior(BehaviorState::Follow, false);
                         } else {
-                            let offset = self._behavior_data._target_point - owner.get_position();
-                            let dist = offset.x * offset.x + offset.z * offset.z;
-                            if dist < ARRIVAL_DISTANCE_THRESHOLD {
+                            let mut do_idle: bool = false;
+                            if self._behavior_data.is_end_behavior_time() {
                                 do_idle = true;
-                            } else if (owner._controller._is_blocked || owner._controller._is_cliff)
-                                && !owner.is_falling()
-                            {
-                                do_idle = true;
+                            } else {
+                                let offset = self._behavior_data._target_point - owner.get_position();
+                                let dist = offset.x * offset.x + offset.z * offset.z;
+                                if dist < ARRIVAL_DISTANCE_THRESHOLD {
+                                    do_idle = true;
+                                } else if (owner._controller._is_blocked || owner._controller._is_cliff)
+                                    && !owner.is_falling()
+                                {
+                                    do_idle = true;
+                                }
                             }
-                        }
 
-                        if do_idle {
-                            self.set_next_behavior(BehaviorState::Idle, false);
+                            if do_idle {
+                                self.set_next_behavior(BehaviorState::Idle, false);
+                            }
                         }
                     }
                     State::End => {}
@@ -125,6 +162,28 @@ impl<'a> BehaviorBase<'a> for BehaviorDefault<'a> {
                     }
                     State::Update => {
                         if !is_first_update_behavior_state && !owner.is_action(ActionAnimationState::WakeUp) {
+                            self.set_next_behavior(BehaviorState::Idle, false);
+                        }
+                    }
+                    State::End => {}
+                },
+                BehaviorState::Follow => match state {
+                    State::Begin => {}
+                    State::Update => {
+                        if owner.is_following_intimacy()
+                            && let Some(target_ref) = target
+                            && target_ref.is_alive()
+                        {
+                            let to_target = target_ref.get_position() - owner.get_position();
+                            let dist = (to_target.x * to_target.x + to_target.z * to_target.z).sqrt();
+                            if dist <= INTIMACY_ARRIVE_RANGE {
+                                // Close enough -> roam around player
+                                self.set_next_behavior(BehaviorState::Roaming, false);
+                            } else {
+                                owner.set_move(&to_target);
+                                owner.set_run(true);
+                            }
+                        } else {
                             self.set_next_behavior(BehaviorState::Idle, false);
                         }
                     }

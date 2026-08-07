@@ -42,6 +42,7 @@ pub struct CharacterStatsSaveData {
     pub _hunger: f32,
     pub _tired: f32,
     pub _happiness: f32,
+    pub _intimacy: f32,
     pub _invincibility: bool,
     pub _is_stat_displayed: bool,
 }
@@ -63,6 +64,7 @@ pub struct CharacterStats {
     pub _hunger: f32,
     pub _tired: f32,
     pub _happiness: f32,
+    pub _intimacy: f32,
     pub _invincibility: bool,
     pub _is_stat_displayed: bool,
 }

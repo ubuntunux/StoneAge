@@ -412,7 +412,7 @@ impl<'a> CharacterManager<'a> {
             let ai_target: Option<&Character<'a>> = if character_mut.is_player() {
                 None
             } else if character_mut.is_tamed() {
-                // Tamed monster: targets nearest alive untamed monster within tracking range
+                // Tamed monster: targets nearest alive untamed monster within tracking range; fallback to player if intimate
                 let mut min_dist = f32::MAX;
                 let mut target_ref: Option<&Character<'a>> = None;
                 for other in self._characters.values() {
@@ -425,7 +425,15 @@ impl<'a> CharacterManager<'a> {
                         }
                     }
                 }
-                target_ref
+                if target_ref.is_some() {
+                    target_ref
+                } else if character_mut.is_following_intimacy() {
+                    Some(player)
+                } else {
+                    None
+                }
+            } else if character_mut.is_following_intimacy() {
+                Some(player)
             } else {
                 // Wild monster: targets player OR nearest alive tamed monster within tracking range
                 let mut min_dist = f32::MAX;
@@ -447,7 +455,7 @@ impl<'a> CharacterManager<'a> {
                         }
                     }
                 }
-                target_ref.or(Some(player))
+                target_ref
             };
 
             character_mut.update_character(get_scene_manager(), ai_target, delta_time as f32);

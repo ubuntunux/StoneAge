@@ -24,6 +24,7 @@ pub enum BehaviorState {
     Sleep,
     WakeUp,
     Dead,
+    Follow,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq)]
