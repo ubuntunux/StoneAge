@@ -24,6 +24,7 @@ use rust_engine_3d::core::input::{JoystickInputData, KeyboardInputData, MouseInp
 use rust_engine_3d::scene::ui::{UIComponentInstance, UIManager, UIWidgetTypes, WidgetDefault};
 use rust_engine_3d::utilities::system::{RcRefCell, ptr_as_mut, ptr_as_ref};
 use std::ffi::c_void;
+use rust_engine_3d::constants::DEVELOPMENT;
 
 pub type QuestItem<'a> = RcRefCell<dyn QuestItemBase<'a> + 'a>;
 
@@ -190,7 +191,12 @@ impl<'a> GameUIManager<'a> {
             MATERIAL_INTRO_IMAGE,
         ));
 
-        self._debug_ui_widget = Some(DebugUIWidget::create_debug_ui_widget(root_widget));
+        unsafe  {
+            if DEVELOPMENT {
+                self._debug_ui_widget = Some(DebugUIWidget::create_debug_ui_widget(root_widget));
+            }
+        }
+
 
         self.set_cross_hair_visible(false);
     }
