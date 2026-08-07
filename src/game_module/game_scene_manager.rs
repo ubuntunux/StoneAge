@@ -225,12 +225,13 @@ impl<'a> GameSceneManager<'a> {
     }
 
     pub fn new_game_scene(&mut self) {
-        get_game_ui_manager_mut().clear_inventory_items();
+        get_game_ui_manager_mut().clear_game_ui();
         self.close_game_scene_data();
         self.request_open_game_scenario(ScenarioType::ScenarioIntro_Intro);
     }
 
     pub fn load_game_scene_save_data(&mut self, game_save_data: &GameSaveData) {
+        get_game_ui_manager_mut().clear_game_ui();
         self.clear_all_game_scenario();
 
         // loading
@@ -250,7 +251,6 @@ impl<'a> GameSceneManager<'a> {
         }
 
         let game_ui_manager = get_game_ui_manager_mut();
-        game_ui_manager.clear_inventory_items();
         for create_infos in game_save_data._inventory_item_create_info_list.values() {
             for item_create_info in create_infos.iter() {
                 game_ui_manager.add_item(item_create_info._item_data_name.as_str(), item_create_info._item_count);

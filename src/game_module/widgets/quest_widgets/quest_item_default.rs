@@ -104,7 +104,7 @@ impl<'a> QuestItemBase<'a> for QuestItemDefault<'a> {
         }
     }
 
-    fn destroy(&mut self) {
+    fn destroy_quest_item(&mut self) {
         if let Some(parent) = self._layout_widget.as_ref()._parent {
             ptr_as_mut(parent).remove_widget(self._layout_widget.as_ref());
         }

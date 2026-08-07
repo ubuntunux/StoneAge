@@ -107,7 +107,7 @@ impl<'a> QuestItemBase<'a> for QuestItemGatherItem<'a> {
         ptr_as_mut(self._layout_widget.as_ref()).add_widget(&self._text_widget);
     }
 
-    fn destroy(&mut self) {
+    fn destroy_quest_item(&mut self) {
         if let Some(parent) = self._layout_widget.as_ref()._parent {
             ptr_as_mut(parent).remove_widget(self._layout_widget.as_ref());
         }

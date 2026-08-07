@@ -27,7 +27,7 @@ pub enum QuestCreateInfo {
 
 pub trait QuestItemBase<'a> {
     fn initialize_quest_item(&mut self);
-    fn destroy(&mut self);
+    fn destroy_quest_item(&mut self);
     fn is_completed_quest(&self) -> bool;
     fn set_completed_quest(&mut self);
     fn update_quest_item(&mut self, game_controller: &GameController, delta_time: f32);
@@ -88,6 +88,13 @@ impl<'a> QuestWidget<'a> {
         }
     }
 
+    pub fn clear_quests(&mut self) {
+        for quest in self._quests.iter_mut() {
+            quest.borrow_mut().destroy_quest();
+        }
+        self._quests.clear();
+    }
+
     pub fn changed_window_size(&mut self, _window_size: &Vector2<i32>) {}
 
     pub fn add_quest(&mut self, title: Option<String>) -> RcRefCell<QuestTitle<'a>> {
@@ -105,10 +112,10 @@ impl<'a> QuestWidget<'a> {
             let mut remove = false;
             begin_block!("Update Quest Item");
             {
-                let mut quest_item = self._quests[index].borrow_mut();
-                quest_item.update_quest_item(game_controller, delta_time);
-                if quest_item.is_completed_quest() {
-                    quest_item.destroy();
+                let mut quest = self._quests[index].borrow_mut();
+                quest.update_quest(game_controller, delta_time);
+                if quest.is_completed_quest() {
+                    quest.destroy_quest();
                     remove = true;
                 }
             }

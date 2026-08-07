@@ -343,7 +343,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
         self.clear_all();
 
         if let Some(quest) = &self._quest {
-            quest.borrow_mut().destroy();
+            quest.borrow_mut().destroy_quest();
         }
     }
 

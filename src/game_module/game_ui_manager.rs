@@ -1,7 +1,7 @@
 use crate::game_module::actors::character::{ActorWrapper, Character};
 use crate::game_module::actors::items::ItemDataType;
 use crate::game_module::game_constants::MATERIAL_INTRO_IMAGE;
-use crate::game_module::game_service_locator::{get_character_manager, get_game_scene_manager};
+use crate::game_module::game_service_locator::{get_character_manager, get_game_scene_manager, get_game_ui_manager_mut};
 use crate::game_module::widgets::controller_help::ControllerHelpWidget;
 use crate::game_module::widgets::cross_hair_widget::CrossHairWidget;
 use crate::game_module::widgets::debug_ui_widget::DebugUIWidget;
@@ -195,6 +195,11 @@ impl<'a> GameUIManager<'a> {
         self.set_cross_hair_visible(false);
     }
 
+    pub fn clear_game_ui(&mut self) {
+        self.clear_inventory_items();
+        self.clear_quests();
+    }
+
     pub fn get_game_ui_layout(&self) -> *const WidgetDefault<'a> {
         self._game_ui_layout
     }
@@ -355,6 +360,12 @@ impl<'a> GameUIManager<'a> {
     }
 
     // quest
+    pub fn clear_quests(&mut self) {
+        if let Some(quest_widget) = self._quest_widget.as_mut() {
+            quest_widget.clear_quests();
+        }
+    }
+
     pub fn add_quest(&mut self, title: Option<String>) -> RcRefCell<QuestTitle<'a>> {
         self._quest_widget.as_mut().unwrap().add_quest(title)
     }
