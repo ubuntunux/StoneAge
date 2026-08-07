@@ -1,13 +1,12 @@
-use crate::game_module::actors::character::ActionAnimationState;
 use crate::game_module::actors::character::Character;
 use crate::game_module::behavior::behavior_base::{BehaviorBase, BehaviorData, BehaviorSaveData, BehaviorState};
-use crate::game_module::game_constants::{
-    ARRIVAL_DISTANCE_THRESHOLD, CHARACTER_INTERACTION_TIME, CIVILIAN_DEAD_TIME, GAME_VIEW_MODE, GameViewMode,
-    INTIMACY_ARRIVE_RANGE, INTIMACY_FOLLOW_RANGE, INTIMACY_ROAMING_RADIUS, NPC_IDLE_TERM_MAX, NPC_IDLE_TERM_MIN,
-    NPC_ROAMING_RADIUS, NPC_ROAMING_TIME,
+use crate::game_module::behavior::behavior_common::{
+    IntimacyFollowResult, begin_eating, begin_idle, begin_interaction, begin_roaming, begin_wake_up,
+    is_player_too_far_for_intimacy, should_roaming_go_idle, update_eating_should_idle, update_interaction_should_idle,
+    update_intimacy_follow, update_wake_up_should_idle,
 };
+use crate::game_module::game_constants::CIVILIAN_DEAD_TIME;
 use nalgebra::Vector3;
-use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::State;
 use strum::IntoEnumIterator;
 
@@ -50,219 +49,106 @@ impl<'a> BehaviorBase<'a> for BehaviorCivilian<'a> {
                 State::Update => next_behavior_state,
             };
 
-            let is_first_update_behavior_state = prev_behavior_state != next_behavior_state && state == State::Update;
+            let is_first_update = prev_behavior_state != next_behavior_state && state == State::Update;
 
             match update_behavior_state {
-                BehaviorState::Idle => {
-                    match state {
-                        State::Begin => {
-                            owner.set_action_none();
-                            owner.set_move_idle();
-
-                            self._behavior_data.set_behavior_time(math::lerp(
-                                NPC_IDLE_TERM_MIN,
-                                NPC_IDLE_TERM_MAX,
-                                rand::random::<f32>(),
-                            ));
-                        }
-                        State::Update => {
-                            if owner.is_following_intimacy()
-                                && let Some(target_ref) = target
-                                && target_ref.is_alive()
-                                && (target_ref.get_position() - owner.get_position()).norm() > INTIMACY_FOLLOW_RANGE
-                            {
-                                self.set_next_behavior(BehaviorState::Follow, false);
-                            } else if owner.get_attached_item_data_type().is_eatable() {
-                                self.set_next_behavior(BehaviorState::Eating, true);
-                            } else if owner.get_stats().is_hungry() {
-                                self.set_next_behavior(BehaviorState::Hunger, true);
-                            } else if self._behavior_data.is_end_behavior_time() {
-                                self.set_next_behavior(BehaviorState::Roaming, true);
-                            }
-                        }
-                        State::End => {}
-                    };
-                }
-                BehaviorState::Hunger => {
-                    match state {
-                        State::Begin => {
-                            owner.set_action_hungry();
-                            owner.set_sit_down();
-                        }
-                        State::Update => {
-                            if !owner.get_stats().is_hungry() {
-                                self.set_next_behavior(BehaviorState::Idle, true);
-                            }
-                        }
-                        State::End => {}
-                    };
-                }
-                BehaviorState::Eating => {
-                    match state {
-                        State::Begin => {
-                            if !owner.is_move_stop() {
-                                owner.set_move_idle();
-                            }
-                            owner.set_action_eating();
-                            self._behavior_data.set_behavior_time(NPC_IDLE_TERM_MIN);
-                        }
-                        State::Update => {
-                            if !is_first_update_behavior_state && !owner.is_action(ActionAnimationState::Eating) {
-                                self.set_next_behavior(BehaviorState::Idle, false);
-                            }
-                        }
-                        State::End => {}
-                    };
-                }
-                BehaviorState::Roaming => {
-                    match state {
-                        State::Begin => {
-                            let mut is_intimate_following = false;
-                            if owner.is_following_intimacy()
-                                && let Some(target_ref) = target
-                                && target_ref.is_alive()
-                                && (target_ref.get_position() - owner.get_position()).norm() <= INTIMACY_FOLLOW_RANGE
-                            {
-                                is_intimate_following = true;
-                            }
-
-                            let roam_radius = if is_intimate_following {
-                                INTIMACY_ROAMING_RADIUS
-                            } else {
-                                NPC_ROAMING_RADIUS
-                            };
-
-                            let move_area = Vector3::new(
-                                (rand::random::<f32>() - 0.5) * 2.0,
-                                0.0,
-                                if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
-                                    0.0
-                                } else {
-                                    (rand::random::<f32>() - 0.5) * 2.0
-                                },
-                            ) * roam_radius;
-
-                            let center_point = if is_intimate_following {
-                                *target.as_ref().unwrap().get_position()
-                            } else {
-                                self._behavior_data._spawn_point
-                            };
-
-                            self._behavior_data._target_point = center_point + move_area;
-                            self._behavior_data._move_direction =
-                                math::make_normalize_xz(&(self._behavior_data._target_point - owner.get_position()));
-                            owner.set_move(&self._behavior_data._move_direction);
-                            owner.set_run(false);
-                            self._behavior_data.set_behavior_time(NPC_ROAMING_TIME);
-                        }
-                        State::Update => {
-                            if owner.is_following_intimacy()
-                                && let Some(target_ref) = target
-                                && target_ref.is_alive()
-                                && (target_ref.get_position() - owner.get_position()).norm() > INTIMACY_FOLLOW_RANGE
-                            {
-                                // Player moved too far -> chase to close the gap
-                                self.set_next_behavior(BehaviorState::Follow, false);
-                            } else if owner.get_attached_item_data_type().is_eatable() {
-                                self.set_next_behavior(BehaviorState::Eating, false);
-                            } else {
-                                let mut do_idle: bool = false;
-                                if self._behavior_data.is_end_behavior_time() {
-                                    do_idle = true;
-                                } else {
-                                    let offset = self._behavior_data._target_point - owner.get_position();
-                                    let dist = offset.x * offset.x + offset.z * offset.z;
-                                    if dist < ARRIVAL_DISTANCE_THRESHOLD {
-                                        do_idle = true;
-                                    } else if (owner._controller._is_blocked || owner._controller._is_cliff)
-                                        && !owner.is_falling()
-                                    {
-                                        do_idle = true;
-                                    }
-                                }
-
-                                if do_idle {
-                                    self.set_next_behavior(BehaviorState::Idle, false);
-                                }
-                            }
-                        }
-                        State::End => {}
-                    };
-                }
-                BehaviorState::Interaction => {
-                    match state {
-                        State::Begin => {
-                            if !owner.is_move_stop() {
-                                owner.set_move_idle();
-                            }
-                            self._behavior_data.set_behavior_time(CHARACTER_INTERACTION_TIME);
-                        }
-                        State::Update => {
-                            if self._behavior_data.is_end_behavior_time() {
-                                self.set_next_behavior(BehaviorState::Idle, false);
-                            } else {
-                                if let Some(target_actor) = target.as_ref() {
-                                    owner.look_at(target_actor.get_position());
-                                }
-                            }
-                        }
-                        State::End => {}
-                    };
-                }
-                BehaviorState::Dead => {
-                    match state {
-                        State::Begin => {
-                            owner.set_action_dead();
-                            self._behavior_data.set_behavior_time(CIVILIAN_DEAD_TIME);
-                        }
-                        State::Update => {
-                            if self._behavior_data.is_end_behavior_time() {
-                                self.set_next_behavior(BehaviorState::WakeUp, true);
-                            }
-                        }
-                        State::End => {}
-                    };
-                }
-                BehaviorState::WakeUp => {
-                    match state {
-                        State::Begin => {
-                            owner.set_action_wake_up();
-                            owner._character_stats._is_alive = true;
-                            let max_hp = owner._character_stats.get_max_hp();
-                            owner._character_stats.set_hp(max_hp);
-                        }
-                        State::Update => {
-                            if !is_first_update_behavior_state && !owner.is_action(ActionAnimationState::WakeUp) {
-                                self.set_next_behavior(BehaviorState::Idle, false);
-                            }
-                        }
-                        State::End => {}
-                    };
-                }
-                BehaviorState::Follow => {
-                    match state {
-                        State::Begin => {}
-                        State::Update => {
-                            if owner.is_following_intimacy()
-                                && let Some(target_ref) = target
-                                && target_ref.is_alive()
-                            {
-                                let to_target = target_ref.get_position() - owner.get_position();
-                                let dist = (to_target.x * to_target.x + to_target.z * to_target.z).sqrt();
-                                if dist <= INTIMACY_ARRIVE_RANGE {
-                                    // Close enough -> roam around player
-                                    self.set_next_behavior(BehaviorState::Roaming, false);
-                                } else {
-                                    owner.set_move(&to_target);
-                                    owner.set_run(true);
-                                }
-                            } else {
-                                self.set_next_behavior(BehaviorState::Idle, false);
-                            }
-                        }
-                        State::End => {}
+                BehaviorState::Idle => match state {
+                    State::Begin => {
+                        owner.set_action_none();
+                        begin_idle(&mut self._behavior_data, owner);
                     }
-                }
+                    State::Update => {
+                        if is_player_too_far_for_intimacy(owner, target) {
+                            self.set_next_behavior(BehaviorState::Follow, false);
+                        } else if owner.get_attached_item_data_type().is_eatable() {
+                            self.set_next_behavior(BehaviorState::Eating, true);
+                        } else if owner.get_stats().is_hungry() {
+                            self.set_next_behavior(BehaviorState::Hunger, true);
+                        } else if self._behavior_data.is_end_behavior_time() {
+                            self.set_next_behavior(BehaviorState::Roaming, true);
+                        }
+                    }
+                    State::End => {}
+                },
+                BehaviorState::Hunger => match state {
+                    State::Begin => {
+                        owner.set_action_hungry();
+                        owner.set_sit_down();
+                    }
+                    State::Update => {
+                        if !owner.get_stats().is_hungry() {
+                            self.set_next_behavior(BehaviorState::Idle, true);
+                        }
+                    }
+                    State::End => {}
+                },
+                BehaviorState::Eating => match state {
+                    State::Begin => begin_eating(&mut self._behavior_data, owner),
+                    State::Update => {
+                        if update_eating_should_idle(is_first_update, owner) {
+                            self.set_next_behavior(BehaviorState::Idle, false);
+                        }
+                    }
+                    State::End => {}
+                },
+                BehaviorState::Roaming => match state {
+                    State::Begin => begin_roaming(&mut self._behavior_data, owner, target),
+                    State::Update => {
+                        if is_player_too_far_for_intimacy(owner, target) {
+                            self.set_next_behavior(BehaviorState::Follow, false);
+                        } else if owner.get_attached_item_data_type().is_eatable() {
+                            self.set_next_behavior(BehaviorState::Eating, false);
+                        } else if should_roaming_go_idle(&self._behavior_data, owner) {
+                            self.set_next_behavior(BehaviorState::Idle, false);
+                        }
+                    }
+                    State::End => {}
+                },
+                BehaviorState::Interaction => match state {
+                    State::Begin => begin_interaction(&mut self._behavior_data, owner),
+                    State::Update => {
+                        if update_interaction_should_idle(&self._behavior_data, owner, target) {
+                            self.set_next_behavior(BehaviorState::Idle, false);
+                        }
+                    }
+                    State::End => {}
+                },
+                BehaviorState::Dead => match state {
+                    State::Begin => {
+                        owner.set_action_dead();
+                        self._behavior_data.set_behavior_time(CIVILIAN_DEAD_TIME);
+                    }
+                    State::Update => {
+                        if self._behavior_data.is_end_behavior_time() {
+                            self.set_next_behavior(BehaviorState::WakeUp, true);
+                        }
+                    }
+                    State::End => {}
+                },
+                BehaviorState::WakeUp => match state {
+                    State::Begin => {
+                        begin_wake_up(owner);
+                        // Civilian 전용: 부활 처리
+                        owner._character_stats._is_alive = true;
+                        let max_hp = owner._character_stats.get_max_hp();
+                        owner._character_stats.set_hp(max_hp);
+                    }
+                    State::Update => {
+                        if update_wake_up_should_idle(is_first_update, owner) {
+                            self.set_next_behavior(BehaviorState::Idle, false);
+                        }
+                    }
+                    State::End => {}
+                },
+                BehaviorState::Follow => match state {
+                    State::Begin => {}
+                    State::Update => match update_intimacy_follow(owner, target) {
+                        IntimacyFollowResult::Arrived => self.set_next_behavior(BehaviorState::Roaming, false),
+                        IntimacyFollowResult::Moving => {}
+                        IntimacyFollowResult::NotFollowing => self.set_next_behavior(BehaviorState::Idle, false),
+                    },
+                    State::End => {}
+                },
                 _ => {}
             }
 

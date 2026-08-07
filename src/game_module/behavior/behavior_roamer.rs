@@ -1,11 +1,12 @@
-use crate::game_module::actors::character::ActionAnimationState;
 use crate::game_module::actors::character::Character;
 use crate::game_module::behavior::behavior_base::{BehaviorBase, BehaviorData, BehaviorSaveData, BehaviorState};
+use crate::game_module::behavior::behavior_common::{
+    IntimacyFollowResult, begin_eating, begin_idle, begin_interaction, begin_roaming, begin_wake_up,
+    is_player_too_far_for_intimacy, should_roaming_go_idle, update_eating_should_idle, update_interaction_should_idle,
+    update_intimacy_follow, update_wake_up_should_idle,
+};
 use crate::game_module::game_constants::{
-    ARRIVAL_DISTANCE_THRESHOLD, CHARACTER_INTERACTION_DISTANCE, CHARACTER_INTERACTION_TIME, GAME_VIEW_MODE,
-    GameViewMode, INTIMACY_ARRIVE_RANGE, INTIMACY_FOLLOW_RANGE, INTIMACY_ROAMING_RADIUS, NPC_ATTACK_RANGE, 
-    NPC_ATTACK_TERM_MAX, NPC_ATTACK_TERM_MIN, NPC_AVAILABLE_MOVING_ATTACK, NPC_IDLE_TERM_MAX, NPC_IDLE_TERM_MIN, 
-    NPC_ROAMING_RADIUS, NPC_ROAMING_TIME, NPC_TRACKING_RANGE,
+    NPC_ATTACK_RANGE, NPC_ATTACK_TERM_MAX, NPC_ATTACK_TERM_MIN, NPC_AVAILABLE_MOVING_ATTACK, NPC_TRACKING_RANGE,
 };
 use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
@@ -30,10 +31,10 @@ impl<'a> Default for BehaviorRoamer<'a> {
 }
 
 impl<'a> BehaviorRoamer<'a> {
+    /// Player is excluded from enemy detection for tamed or intimacy-following characters.
     fn is_enemy_in_range(&self, owner: &Character, target: Option<&Character>) -> bool {
         if let Some(target) = target.as_ref()
             && target.is_alive()
-            // 플레이어는 tamed 몬스터나 친밀도 추종 캐릭터의 적 감지 대상에서 제외
             && !(target._is_player && (owner.is_tamed() || owner.is_following_intimacy()))
         {
             return owner.check_in_range(target.get_collision(), NPC_TRACKING_RANGE, false);
@@ -76,27 +77,15 @@ impl<'a> BehaviorBase<'a> for BehaviorRoamer<'a> {
                 State::Update => next_behavior_state,
             };
 
-            let is_first_update_behavior_state = prev_behavior_state != next_behavior_state && state == State::Update;
+            let is_first_update = prev_behavior_state != next_behavior_state && state == State::Update;
 
             match update_behavior_state {
                 BehaviorState::Idle => match state {
-                    State::Begin => {
-                        owner.set_move_idle();
-                        self._behavior_data.set_behavior_time(lerp(
-                            NPC_IDLE_TERM_MIN,
-                            NPC_IDLE_TERM_MAX,
-                            rand::random::<f32>(),
-                        ));
-                    }
+                    State::Begin => begin_idle(&mut self._behavior_data, owner),
                     State::Update => {
                         if self.is_enemy_in_range(owner, target) {
                             self.set_next_behavior(BehaviorState::Chase, false);
-                        } else if owner.is_following_intimacy()
-                            && let Some(target_ref) = target
-                            && target_ref.is_alive()
-                            && target_ref._is_player
-                            && (target_ref.get_position() - owner.get_position()).norm() > INTIMACY_FOLLOW_RANGE
-                        {
+                        } else if is_player_too_far_for_intimacy(owner, target) {
                             self.set_next_behavior(BehaviorState::Chase, false);
                         } else if self._behavior_data.is_end_behavior_time() {
                             self.set_next_behavior(BehaviorState::Roaming, false);
@@ -104,113 +93,33 @@ impl<'a> BehaviorBase<'a> for BehaviorRoamer<'a> {
                     }
                     State::End => {}
                 },
-                BehaviorState::Eating => {
-                    match state {
-                        State::Begin => {
-                            if !owner.is_move_stop() {
-                                owner.set_move_idle();
-                            }
-                            owner.set_action_eating();
-                            self._behavior_data.set_behavior_time(NPC_IDLE_TERM_MIN);
+                BehaviorState::Eating => match state {
+                    State::Begin => begin_eating(&mut self._behavior_data, owner),
+                    State::Update => {
+                        if update_eating_should_idle(is_first_update, owner) {
+                            self.set_next_behavior(BehaviorState::Idle, false);
                         }
-                        State::Update => {
-                            if !is_first_update_behavior_state && !owner.is_action(ActionAnimationState::Eating) {
-                                self.set_next_behavior(BehaviorState::Idle, false);
-                            }
-                        }
-                        State::End => {}
-                    };
-                }
-                BehaviorState::Interaction => {
-                    match state {
-                        State::Begin => {
-                            if !owner.is_move_stop() {
-                                owner.set_move_idle();
-                            }
-                            self._behavior_data.set_behavior_time(CHARACTER_INTERACTION_TIME);
-                        }
-                        State::Update => {
-                            if self._behavior_data.is_end_behavior_time() {
-                                self.set_next_behavior(BehaviorState::Idle, false);
-                            } else {
-                                if let Some(target_actor) = target.as_ref() {
-                                    owner.look_at(target_actor.get_position());
-                                }
-                            }
-                        }
-                        State::End => {}
-                    };
-                }
-                BehaviorState::Roaming => match state {
-                    State::Begin => {
-                        let mut is_intimate_following = false;
-                        if owner.is_following_intimacy()
-                            && let Some(target_ref) = target
-                            && target_ref.is_alive()
-                            && (target_ref.get_position() - owner.get_position()).norm() <= INTIMACY_FOLLOW_RANGE
-                        {
-                            is_intimate_following = true;
-                        }
-
-                        let roam_radius = if is_intimate_following {
-                            INTIMACY_ROAMING_RADIUS
-                        } else {
-                            NPC_ROAMING_RADIUS
-                        };
-
-                        let move_area = Vector3::new(
-                            (rand::random::<f32>() - 0.5) * 2.0,
-                            0.0,
-                            if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
-                                0.0
-                            } else {
-                                (rand::random::<f32>() - 0.5) * 2.0
-                            },
-                        ) * roam_radius;
-
-                        let center_point = if is_intimate_following {
-                            *target.as_ref().unwrap().get_position()
-                        } else {
-                            self._behavior_data._spawn_point
-                        };
-
-                        self._behavior_data._target_point = center_point + move_area;
-                        self._behavior_data._move_direction =
-                            math::safe_normalize(&(self._behavior_data._target_point - owner.get_position()));
-                        self._behavior_data.set_behavior_time(NPC_ROAMING_TIME);
-                        owner.set_move(&self._behavior_data._move_direction);
-                        owner.set_run(false);
                     }
+                    State::End => {}
+                },
+                BehaviorState::Interaction => match state {
+                    State::Begin => begin_interaction(&mut self._behavior_data, owner),
+                    State::Update => {
+                        if update_interaction_should_idle(&self._behavior_data, owner, target) {
+                            self.set_next_behavior(BehaviorState::Idle, false);
+                        }
+                    }
+                    State::End => {}
+                },
+                BehaviorState::Roaming => match state {
+                    State::Begin => begin_roaming(&mut self._behavior_data, owner, target),
                     State::Update => {
                         if self.is_enemy_in_range(owner, target) {
                             self.set_next_behavior(BehaviorState::Chase, false);
-                        } else if owner.is_following_intimacy()
-                            && let Some(target_ref) = target
-                            && target_ref.is_alive()
-                            && target_ref._is_player
-                            && (target_ref.get_position() - owner.get_position()).norm() > INTIMACY_FOLLOW_RANGE
-                        {
-                            // Player moved too far -> chase to close the gap
+                        } else if is_player_too_far_for_intimacy(owner, target) {
                             self.set_next_behavior(BehaviorState::Chase, false);
-                        } else {
-                            let mut do_idle: bool = false;
-                            if self._behavior_data.is_end_behavior_time() {
-                                do_idle = true;
-                            } else {
-                                let offset = self._behavior_data._target_point - owner.get_position();
-                                let dist = offset.x * offset.x + offset.z * offset.z;
-                                if dist < ARRIVAL_DISTANCE_THRESHOLD {
-                                    do_idle = true;
-                                } else if (owner._controller._is_blocked || owner._controller._is_cliff)
-                                    && !owner.is_falling()
-                                {
-                                    do_idle = true;
-                                }
-                            }
-
-                            if do_idle {
-                                self.set_next_behavior(BehaviorState::Idle, false);
-                            }
+                        } else if should_roaming_go_idle(&self._behavior_data, owner) {
+                            self.set_next_behavior(BehaviorState::Idle, false);
                         }
                     }
                     State::End => {}
@@ -218,125 +127,86 @@ impl<'a> BehaviorBase<'a> for BehaviorRoamer<'a> {
                 BehaviorState::Chase => match state {
                     State::Begin => {}
                     State::Update => {
-                        let mut do_idle: bool = true;
+                        let mut do_idle = true;
                         if let Some(target_ref) = target
                             && target_ref.is_alive()
                         {
-                            // target이 플레이어면 친밀도 추종(거리 기반), 아니면 전투 우선
                             if owner.is_following_intimacy() && target_ref._is_player {
-                                let dist = (target_ref.get_position() - owner.get_position()).norm();
-                                if dist <= INTIMACY_ARRIVE_RANGE {
-                                    // 충분히 가까워짐 -> 플레이어 주변 roaming
-                                    self.set_next_behavior(BehaviorState::Roaming, false);
-                                } else {
-                                    let to_target: Vector3<f32> = target_ref.get_position() - owner.get_position();
-                                    owner.set_move(&to_target);
-                                    owner.set_run(true);
+                                match update_intimacy_follow(owner, target) {
+                                    IntimacyFollowResult::Arrived => {
+                                        self.set_next_behavior(BehaviorState::Roaming, false);
+                                    }
+                                    IntimacyFollowResult::Moving | IntimacyFollowResult::NotFollowing => {}
                                 }
                                 do_idle = false;
                             } else if owner.check_in_range(target_ref.get_collision(), NPC_TRACKING_RANGE, false) {
-                                // 전투 대상(야생 몬스터 또는 플레이어) - 공격 우선
                                 if owner.check_in_range(target_ref.get_collision(), NPC_ATTACK_RANGE, false) {
                                     self.set_next_behavior(BehaviorState::Attack, false);
                                 } else {
-                                    let to_target: Vector3<f32> = target_ref.get_position() - owner.get_position();
+                                    let to_target = target_ref.get_position() - owner.get_position();
                                     owner.set_move(&to_target);
                                     owner.set_run(true);
                                 }
                                 do_idle = false;
                             }
                         }
-
                         if do_idle {
                             self.set_next_behavior(BehaviorState::Idle, false);
                         }
                     }
                     State::End => {}
                 },
-                BehaviorState::Attack => {
-                    match state {
-                        State::Begin => {
-                            let to_target_direction =
-                                math::safe_normalize(&(target.as_ref().unwrap().get_position() - owner.get_position()));
-                            owner.set_move_direction(&to_target_direction, false);
-                            if !NPC_AVAILABLE_MOVING_ATTACK {
-                                owner.set_move_idle();
-                            }
-                            owner.set_action_attack();
-                            self._attack_time = lerp(NPC_ATTACK_TERM_MIN, NPC_ATTACK_TERM_MAX, rand::random::<f32>());
-
-                            // growl
-                            get_audio_manager_mut().play_audio_resource_data(
-                                &owner._character_data.borrow()._audio_data._audio_growl,
-                                AudioLoop::ONCE,
-                                None,
-                            );
+                BehaviorState::Attack => match state {
+                    State::Begin => {
+                        let to_dir =
+                            math::safe_normalize(&(target.as_ref().unwrap().get_position() - owner.get_position()));
+                        owner.set_move_direction(&to_dir, false);
+                        if !NPC_AVAILABLE_MOVING_ATTACK {
+                            owner.set_move_idle();
                         }
-                        State::Update => {
-                            if let Some(target_ref) = target
-                                && target_ref.is_alive()
-                                && 0.0 < self._attack_time
-                            {
-                                if owner.is_attack_animation() {
-                                    if !owner.is_available_move()
-                                        || (NPC_AVAILABLE_MOVING_ATTACK || !owner.is_attack_animation())
-                                    {
-                                        owner.set_move_idle();
-                                    }
-                                } else {
-                                    owner.set_move_idle();
-                                    self._attack_time -= delta_time;
-                                }
-                            } else if let Some(target_ref) = target
-                                && target_ref.is_alive()
-                                && owner.check_in_range(target_ref.get_collision(), NPC_TRACKING_RANGE, false)
-                            {
-                                // attack cooldown expired but target still in range -> chase again
-                                self.set_next_behavior(BehaviorState::Chase, false);
-                            } else {
-                                self.set_next_behavior(BehaviorState::Idle, false);
-                            }
-                        }
-                        State::End => {}
+                        owner.set_action_attack();
+                        self._attack_time = lerp(NPC_ATTACK_TERM_MIN, NPC_ATTACK_TERM_MAX, rand::random::<f32>());
+                        get_audio_manager_mut().play_audio_resource_data(
+                            &owner._character_data.borrow()._audio_data._audio_growl,
+                            AudioLoop::ONCE,
+                            None,
+                        );
                     }
-                }
+                    State::Update => {
+                        if let Some(target_ref) = target
+                            && target_ref.is_alive()
+                            && 0.0 < self._attack_time
+                        {
+                            if owner.is_attack_animation() {
+                                if !owner.is_available_move()
+                                    || (NPC_AVAILABLE_MOVING_ATTACK || !owner.is_attack_animation())
+                                {
+                                    owner.set_move_idle();
+                                }
+                            } else {
+                                owner.set_move_idle();
+                                self._attack_time -= delta_time;
+                            }
+                        } else if let Some(target_ref) = target
+                            && target_ref.is_alive()
+                            && owner.check_in_range(target_ref.get_collision(), NPC_TRACKING_RANGE, false)
+                        {
+                            self.set_next_behavior(BehaviorState::Chase, false);
+                        } else {
+                            self.set_next_behavior(BehaviorState::Idle, false);
+                        }
+                    }
+                    State::End => {}
+                },
                 BehaviorState::Dead => {
                     if state == State::Begin {
                         owner.set_action_dead();
                     }
                 }
                 BehaviorState::WakeUp => match state {
-                    State::Begin => {
-                        owner.set_action_wake_up();
-                    }
+                    State::Begin => begin_wake_up(owner),
                     State::Update => {
-                        if !is_first_update_behavior_state && !owner.is_action(ActionAnimationState::WakeUp) {
-                            self.set_next_behavior(BehaviorState::Idle, false);
-                        }
-                    }
-                    State::End => {}
-                },
-                BehaviorState::Follow => match state {
-                    State::Begin => {}
-                    State::Update => {
-                        let mut do_idle = true;
-                        if owner.is_following_intimacy() {
-                            if let Some(target_ref) = target
-                                && target_ref.is_alive()
-                            {
-                                let to_target = target_ref.get_position() - owner.get_position();
-                                let dist = (to_target.x * to_target.x + to_target.z * to_target.z).sqrt();
-                                if dist > CHARACTER_INTERACTION_DISTANCE {
-                                    owner.set_move(&to_target);
-                                    owner.set_run(dist > NPC_ROAMING_RADIUS);
-                                } else {
-                                    owner.set_move_idle();
-                                    owner.look_at(target_ref.get_position());
-                                }
-                                do_idle = false;
-                            }
-                        }
-                        if do_idle {
+                        if update_wake_up_should_idle(is_first_update, owner) {
                             self.set_next_behavior(BehaviorState::Idle, false);
                         }
                     }

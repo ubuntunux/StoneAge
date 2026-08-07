@@ -15,7 +15,6 @@ use crate::game_module::game_service_locator::{
     get_character_manager, get_character_manager_mut, get_game_client_mut, get_game_scene_manager,
     get_game_scene_manager_mut, get_game_ui_manager_mut, get_item_manager,
 };
-use std::ffi::c_void;
 use crate::game_module::scenario::scenario::ScenarioType;
 use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
@@ -32,6 +31,7 @@ use rust_engine_3d::scene::transform_object::TransformObjectData;
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::math::make_rotation_matrix;
 use rust_engine_3d::utilities::system::{RcRefCell, State, format_name_with_uuid, ptr_as_mut, ptr_as_ref};
+use std::ffi::c_void;
 use strum::IntoEnumIterator;
 
 pub struct Character<'a> {
@@ -2096,7 +2096,12 @@ impl<'a> Character<'a> {
         }
     }
 
-    pub fn update_character(&mut self, scene_manager: &SceneManager<'a>, target: Option<&Character<'a>>, delta_time: f32) {
+    pub fn update_character(
+        &mut self,
+        scene_manager: &SceneManager<'a>,
+        target: Option<&Character<'a>>,
+        delta_time: f32,
+    ) {
         let was_on_ground = self.is_on_ground();
         let falling_height = self._controller.get_falling_height();
 

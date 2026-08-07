@@ -108,8 +108,8 @@ pub const NPC_AVAILABLE_MOVING_ATTACK: bool = false;
 pub const INTIMACY_INTERACTION_ADD: f32 = 10.0;
 pub const INTIMACY_FEEDING_MULTIPLIER: f32 = 2.0;
 pub const INTIMACY_FOLLOW_THRESHOLD: f32 = 50.0;
-pub const INTIMACY_FOLLOW_RANGE: f32 = 8.0;   // 이 거리 초과시 Chase 시작
-pub const INTIMACY_ARRIVE_RANGE: f32 = 4.0;   // 이 거리 이내 진입시 Roaming 전환 (hysteresis)
+pub const INTIMACY_FOLLOW_RANGE: f32 = 8.0;
+pub const INTIMACY_ARRIVE_RANGE: f32 = 4.0;
 pub const INTIMACY_ROAMING_RADIUS: f32 = 2.5;
 
 // AUDIO DATA
