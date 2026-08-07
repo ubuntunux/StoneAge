@@ -29,6 +29,7 @@ impl<'a> ActorWrapper<'a> {
 pub struct CharacterStatsSaveData {
     pub _is_alive: bool,
     pub _is_tamed: bool,
+    pub _is_dead_loop: bool,
     pub _corpse_hit_count: i32,
     pub _hp: i32,
     pub _max_hp: i32,
@@ -49,6 +50,7 @@ pub struct CharacterStatsSaveData {
 pub struct CharacterStats {
     pub _is_alive: bool,
     pub _is_tamed: bool,
+    pub _is_dead_loop: bool,
     pub _corpse_hit_count: i32,
     pub _hp: i32,
     pub _max_hp: i32,

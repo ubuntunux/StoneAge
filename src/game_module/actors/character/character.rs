@@ -72,6 +72,7 @@ impl CharacterStats {
         CharacterStats {
             _is_alive: true,
             _is_tamed: false,
+            _is_dead_loop: false,
             _corpse_hit_count: MAX_CORPSE_HIT_COUNT,
             _hp: 100,
             _max_hp: 100,
@@ -258,6 +259,7 @@ impl CharacterStats {
         CharacterStatsSaveData {
             _is_alive: self._is_alive,
             _is_tamed: self._is_tamed,
+            _is_dead_loop: self._is_dead_loop,
             _corpse_hit_count: self._corpse_hit_count,
             _hp: self._hp,
             _max_hp: self._max_hp,
@@ -278,6 +280,7 @@ impl CharacterStats {
     pub fn load_character_stats_save_data(&mut self, save_data: &CharacterStatsSaveData) {
         self._is_alive = save_data._is_alive;
         self._is_tamed = save_data._is_tamed;
+        self._is_dead_loop = save_data._is_dead_loop;
         self._corpse_hit_count = save_data._corpse_hit_count;
         self._hp = save_data._hp;
         self._max_hp = save_data._max_hp;
@@ -659,6 +662,10 @@ impl<'a> Character<'a> {
         self._character_data.borrow()._character_type == CharacterDataType::Civilian
     }
 
+    pub fn is_corpse(&self) -> bool {
+        !self.is_alive() && !self.is_tamed() && !self.is_civilian() && self._character_stats._is_dead_loop
+    }
+
     pub fn set_tamed(&mut self, is_tamed: bool) {
         self._character_stats._is_tamed = is_tamed;
     }
@@ -980,6 +987,10 @@ impl<'a> Character<'a> {
         self._character_stats._invincibility = invincibility;
     }
 
+    pub fn set_is_dead_loop(&mut self, is_corpse: bool) {
+        self._character_stats._is_dead_loop = is_corpse;
+    }
+
     pub fn get_is_stat_displayed(&self) -> bool {
         self._character_stats._is_stat_displayed
     }
@@ -1097,7 +1108,7 @@ impl<'a> Character<'a> {
                     let target_position = *character.borrow().get_position();
 
                     let item_create_info = ItemCreateInfo {
-                        _item_data_name: String::from(ITEM_SPIRIT_BALL),
+                        _item_data_name: String::from(ITEM_ENERGY_BALL),
                         _position: target_position,
                         _velocity: Vector3::new(0.0, 3.0, 0.0),
                         _pickup_delay: 0.5,
@@ -1626,12 +1637,14 @@ impl<'a> Character<'a> {
                         );
                         self.set_weapon_visible(false);
                         self.set_invincibility(true);
+                        self.set_is_dead_loop(true);
                     }
                     State::Update => {
                         // respawn
                         let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
                         if animation_play_info._is_animation_end {
                             self.set_invincibility(false);
+                            self.set_is_dead_loop(true);
 
                             if self._is_player {
                                 let game_scene_manager = get_game_scene_manager_mut();
@@ -1647,6 +1660,7 @@ impl<'a> Character<'a> {
                     State::End => {
                         self.set_weapon_visible(true);
                         self.set_invincibility(false);
+                        self.set_is_dead_loop(false);
                     }
                 },
                 ActionAnimationState::Hit => match state {
@@ -2047,7 +2061,7 @@ impl<'a> Character<'a> {
         self.update_action_keyframe_event(delta_time);
 
         // behavior
-        if !self._is_player && self.is_alive() {
+        if !self._is_player {
             self._behavior.update_behavior(ptr_as_mut(self), Some(player), delta_time);
         }
 

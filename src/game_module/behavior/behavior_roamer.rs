@@ -1,11 +1,7 @@
 use crate::game_module::actors::character::ActionAnimationState;
 use crate::game_module::actors::character::Character;
 use crate::game_module::behavior::behavior_base::{BehaviorBase, BehaviorData, BehaviorSaveData, BehaviorState};
-use crate::game_module::game_constants::{
-    ARRIVAL_DISTANCE_THRESHOLD, GAME_VIEW_MODE, GameViewMode, NPC_ATTACK_RANGE, NPC_ATTACK_TERM_MAX,
-    NPC_ATTACK_TERM_MIN, NPC_AVAILABLE_MOVING_ATTACK, NPC_IDLE_TERM_MAX, NPC_IDLE_TERM_MIN, NPC_ROAMING_RADIUS,
-    NPC_ROAMING_TIME, NPC_TRACKING_RANGE,
-};
+use crate::game_module::game_constants::{GameViewMode, ARRIVAL_DISTANCE_THRESHOLD, CHARACTER_INTERACTION_TIME, GAME_VIEW_MODE, NPC_ATTACK_RANGE, NPC_ATTACK_TERM_MAX, NPC_ATTACK_TERM_MIN, NPC_AVAILABLE_MOVING_ATTACK, NPC_IDLE_TERM_MAX, NPC_IDLE_TERM_MIN, NPC_ROAMING_RADIUS, NPC_ROAMING_TIME, NPC_TRACKING_RANGE};
 use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::core::engine_service_locator::get_audio_manager_mut;
@@ -97,6 +93,43 @@ impl<'a> BehaviorBase<'a> for BehaviorRoamer<'a> {
                     }
                     State::End => {}
                 },
+                BehaviorState::Eating => {
+                    match state {
+                        State::Begin => {
+                            if !owner.is_move_stop() {
+                                owner.set_move_idle();
+                            }
+                            owner.set_action_eating();
+                            self._behavior_data.set_behavior_time(NPC_IDLE_TERM_MIN);
+                        }
+                        State::Update => {
+                            if !is_first_update_behavior_state && !owner.is_action(ActionAnimationState::Eating) {
+                                self.set_next_behavior(BehaviorState::Idle, false);
+                            }
+                        }
+                        State::End => {}
+                    };
+                }
+                BehaviorState::Interaction => {
+                    match state {
+                        State::Begin => {
+                            if !owner.is_move_stop() {
+                                owner.set_move_idle();
+                            }
+                            self._behavior_data.set_behavior_time(CHARACTER_INTERACTION_TIME);
+                        }
+                        State::Update => {
+                            if self._behavior_data.is_end_behavior_time() {
+                                self.set_next_behavior(BehaviorState::Idle, false);
+                            } else {
+                                if let Some(target_actor) = target.as_ref() {
+                                    owner.look_at(target_actor.get_position());
+                                }
+                            }
+                        }
+                        State::End => {}
+                    };
+                }
                 BehaviorState::Roaming => match state {
                     State::Begin => {
                         let move_area = math::safe_normalize(&Vector3::new(

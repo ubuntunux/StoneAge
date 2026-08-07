@@ -5,11 +5,7 @@ use crate::game_module::actors::character::stats::*;
 use crate::game_module::actors::interaction_object::InteractionObject;
 use crate::game_module::actors::items::{ItemCreateInfo, ItemID};
 use crate::game_module::behavior::behavior_base::BehaviorSaveData;
-use crate::game_module::game_constants::{
-    AUDIO_STOMACH_GROWLING, CHARACTER_INTERACTION_DISTANCE, CHARACTER_INTERACTION_TIME, CORPSE_AUTO_REMOVE_TIME,
-    FARM_MEAT_COUNT, GAME_VIEW_MODE, GameViewMode, ITEM_HAND, ITEM_MEAT, ITEM_ENERGY_BALL, MATERIAL_EMOJI_GOOD,
-    MATERIAL_EMOJI_HUNGRY, NPC_ATTACK_HIT_RANGE,
-};
+use crate::game_module::game_constants::{AUDIO_STOMACH_GROWLING, CHARACTER_INTERACTION_DISTANCE, CHARACTER_INTERACTION_TIME, CORPSE_AUTO_REMOVE_TIME, FARM_MEAT_COUNT, GAME_VIEW_MODE, GameViewMode, ITEM_HAND, ITEM_MEAT, MATERIAL_EMOJI_GOOD, MATERIAL_EMOJI_HUNGRY, NPC_ATTACK_HIT_RANGE, ITEM_SPIRIT_BALL};
 use crate::game_module::game_scene_manager::{CharacterCreateInfoMap, CharacterSaveDataMap};
 use crate::game_module::widgets::text_box_widget::TextBoxContent;
 use crate::game_module::widgets::text_box_widget::TextBoxLayerType;
@@ -310,17 +306,15 @@ impl<'a> CharacterManager<'a> {
         let pos = *character.borrow().get_position();
         let item_manager = get_game_scene_manager().get_item_manager_mut();
 
-        // 1x Red Orb (ITEM_ENERGY_BALL)
-        let red_orb_info = ItemCreateInfo {
-            _item_data_name: String::from(ITEM_ENERGY_BALL),
+        let item_create_info = ItemCreateInfo {
+            _item_data_name: String::from(ITEM_SPIRIT_BALL),
             _position: pos,
             _velocity: Vector3::new(0.0, 4.0, 0.0),
             _pickup_delay: 0.3,
             ..Default::default()
         };
-        item_manager.create_item(ITEM_ENERGY_BALL, &red_orb_info, None);
+        item_manager.create_item(item_create_info._item_data_name.as_str(), &item_create_info, None);
 
-        // Meat items (ITEM_MEAT)
         for i in 0..FARM_MEAT_COUNT {
             let angle = (i as f32) * (std::f32::consts::TAU / 3.0) + rand::random::<f32>() * 0.5;
             let speed = 1.5 + rand::random::<f32>() * 2.0;
@@ -354,7 +348,7 @@ impl<'a> CharacterManager<'a> {
         let is_in_player_range = to_player_distance <= CHARACTER_INTERACTION_DISTANCE;
         let character_ref = character.borrow();
 
-        if !character_ref.is_alive() && !character_ref.is_tamed() {
+        if character_ref.is_corpse() {
             // Corpse: show Taming & Farming widgets
             let taming_obj = InteractionObject::Taming(character.clone());
             let farming_obj = InteractionObject::Farming(character.clone());
@@ -372,7 +366,7 @@ impl<'a> CharacterManager<'a> {
                 player._controller.remove_interaction_object(taming_obj);
                 player._controller.remove_interaction_object(farming_obj);
             }
-        } else if character_ref.is_alive() {
+        } else {
             let taming_obj = InteractionObject::Taming(character.clone());
             let farming_obj = InteractionObject::Farming(character.clone());
             if player._controller.is_interaction_object(taming_obj.get_key()) {
@@ -380,12 +374,14 @@ impl<'a> CharacterManager<'a> {
                 player._controller.remove_interaction_object(farming_obj);
             }
 
-            let npc_obj = InteractionObject::Npc(character.clone());
-            let was_npc = player._controller.is_interaction_object(npc_obj.get_key());
-            if !was_npc && is_in_player_range {
-                player._controller.add_interaction_object(npc_obj);
-            } else if was_npc && !is_in_player_range {
-                player._controller.remove_interaction_object(npc_obj);
+            if character_ref.is_alive() {
+                let npc_obj = InteractionObject::Npc(character.clone());
+                let was_npc = player._controller.is_interaction_object(npc_obj.get_key());
+                if !was_npc && is_in_player_range {
+                    player._controller.add_interaction_object(npc_obj);
+                } else if was_npc && !is_in_player_range {
+                    player._controller.remove_interaction_object(npc_obj);
+                }
             }
         }
     }
@@ -462,8 +458,8 @@ impl<'a> CharacterManager<'a> {
                                 if !target_character_mut.is_alive() {
                                     dead_characters.push(target_character.clone());
                                 }
-                            } else {
-                                // hit dead corpse -> set_hit_damage plays hit sound & effect and decrements _corpse_hit_count
+                            } else if target_character_mut.is_corpse() {
+                                // hit dead corpse (monsters only) -> set_hit_damage plays hit sound & effect and decrements _corpse_hit_count
                                 target_character_mut.set_hit_damage(
                                     character_mut.get_power(character_mut._animation_state.get_action_event()),
                                     Some(character_mut.get_face_direction()),
