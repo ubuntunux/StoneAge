@@ -1,3 +1,4 @@
+use crate::game_module::actors::character::ActionAnimationState;
 use crate::game_module::actors::character::Character;
 use crate::game_module::behavior::behavior_base::{BehaviorBase, BehaviorData, BehaviorSaveData, BehaviorState};
 use crate::game_module::game_constants::{
@@ -29,6 +30,9 @@ impl<'a> Default for BehaviorRoamer<'a> {
 
 impl<'a> BehaviorRoamer<'a> {
     fn is_enemy_in_range(&self, owner: &Character, target: Option<&Character>) -> bool {
+        if owner.is_tamed() {
+            return false;
+        }
         if let Some(target) = target.as_ref()
             && target.is_alive()
         {
@@ -71,6 +75,8 @@ impl<'a> BehaviorBase<'a> for BehaviorRoamer<'a> {
                 }
                 State::Update => next_behavior_state,
             };
+
+            let is_first_update_behavior_state = prev_behavior_state != next_behavior_state && state == State::Update;
 
             match update_behavior_state {
                 BehaviorState::Idle => match state {
@@ -198,6 +204,27 @@ impl<'a> BehaviorBase<'a> for BehaviorRoamer<'a> {
                             }
 
                             if do_idle {
+                                self.set_next_behavior(BehaviorState::Idle, false);
+                            }
+                        }
+                        State::End => {}
+                    }
+                }
+                BehaviorState::Dead => {
+                    match state {
+                        State::Begin => {
+                            owner.set_action_dead();
+                        }
+                        _ => {}
+                    }
+                }
+                BehaviorState::WakeUp => {
+                    match state {
+                        State::Begin => {
+                            owner.set_action_wake_up();
+                        }
+                        State::Update => {
+                            if !is_first_update_behavior_state && !owner.is_action(ActionAnimationState::WakeUp) {
                                 self.set_next_behavior(BehaviorState::Idle, false);
                             }
                         }

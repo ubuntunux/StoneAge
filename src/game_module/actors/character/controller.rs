@@ -286,7 +286,11 @@ impl<'a> CharacterController<'a> {
         let mut nearest_interaction_object = InteractionObject::None;
         for interaction_object in self._interaction_objects.values() {
             let dist = (interaction_object.get_position() - self._position).norm_squared();
-            if dist_min > dist {
+            let is_higher_priority = match (interaction_object, &nearest_interaction_object) {
+                (InteractionObject::Taming(_), InteractionObject::Farming(_)) => true,
+                _ => false,
+            };
+            if dist < dist_min || ((dist - dist_min).abs() < 1e-4 && is_higher_priority) {
                 dist_min = dist;
                 nearest_interaction_object = interaction_object.clone();
             }

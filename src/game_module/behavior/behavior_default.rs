@@ -1,3 +1,4 @@
+use crate::game_module::actors::character::ActionAnimationState;
 use crate::game_module::actors::character::Character;
 use crate::game_module::behavior::behavior_base::{BehaviorBase, BehaviorData, BehaviorSaveData, BehaviorState};
 use crate::game_module::game_constants::{
@@ -48,6 +49,8 @@ impl<'a> BehaviorBase<'a> for BehaviorDefault<'a> {
                 }
                 State::Update => next_behavior_state,
             };
+
+            let is_first_update_behavior_state = prev_behavior_state != next_behavior_state && state == State::Update;
 
             match update_behavior_state {
                 BehaviorState::Idle => {
@@ -108,6 +111,29 @@ impl<'a> BehaviorBase<'a> for BehaviorDefault<'a> {
                     }
                     State::End => {}
                 },
+                BehaviorState::Dead => {
+                    match state {
+                        State::Begin => {
+                            owner.set_action_dead();
+                            owner.set_move_idle();
+                        }
+                        State::Update => {}
+                        State::End => {}
+                    }
+                }
+                BehaviorState::WakeUp => {
+                    match state {
+                        State::Begin => {
+                            owner.set_action_wake_up();
+                        }
+                        State::Update => {
+                            if !is_first_update_behavior_state && !owner.is_action(ActionAnimationState::WakeUp) {
+                                self.set_next_behavior(BehaviorState::Idle, false);
+                            }
+                        }
+                        State::End => {}
+                    }
+                }
                 _ => {}
             }
 

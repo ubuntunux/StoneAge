@@ -294,6 +294,22 @@ impl<'a> ControllerHelpWidget<'a> {
             vec![engine_resources.get_material_instance_data("ui/controller/mouse_l").clone()],
             vec![engine_resources.get_material_instance_data("ui/controller/joystick_rb").clone()],
         ));
+        interaction_key_binding_widget_map.register_key_binding_widget(create_interaction_key_binding_widget(
+            ptr_as_mut(self._root_widget),
+            KeyBindingType::Taming,
+            "taming_key_binding",
+            "Taming",
+            vec![engine_resources.get_material_instance_data("ui/controller/keycode_f").clone()],
+            vec![engine_resources.get_material_instance_data("ui/controller/joystick_x").clone()],
+        ));
+        interaction_key_binding_widget_map.register_key_binding_widget(create_interaction_key_binding_widget(
+            ptr_as_mut(self._root_widget),
+            KeyBindingType::Farming,
+            "farming_key_binding",
+            "Farming",
+            vec![engine_resources.get_material_instance_data("ui/controller/mouse_l").clone()],
+            vec![engine_resources.get_material_instance_data("ui/controller/joystick_rb").clone()],
+        ));
     }
 
     pub fn changed_window_size(&mut self, window_size: &Vector2<i32>) {
@@ -308,61 +324,70 @@ impl<'a> ControllerHelpWidget<'a> {
         let interaction_key_binding_widget_map = ptr_as_mut(self._interaction_key_binding_widget_map.as_ref());
         let mut matched_key_binding_type = KeyBindingType::None;
         let mut interaction_name: String = String::new();
+        let mut is_corpse_interaction = false;
         let character_manager = get_character_manager();
         if character_manager.is_valid_player() {
             let player = character_manager.get_player().borrow();
             if player.is_in_interaction_range() {
-                let interaction_object = player.get_nearest_interaction_object();
-                (matched_key_binding_type, interaction_name) = match interaction_object {
-                    InteractionObject::PropBed(_) => (KeyBindingType::Interaction, String::from("Wrap up the day")),
-                    InteractionObject::PropPickup(prop) => (
-                        KeyBindingType::Interaction,
-                        format!("Pick up a {}", prop.borrow()._prop_data.borrow()._name.as_str()),
-                    ),
-                    InteractionObject::PropMonolith(_) => (KeyBindingType::Interaction, String::from("Open Toolbox")),
-                    InteractionObject::PropTable(_) => (KeyBindingType::Interaction, String::from("Sit Down")),
-                    InteractionObject::Npc(npc) => {
-                        if player.get_attached_item_data_type().is_eatable() {
-                            (
-                                KeyBindingType::Interaction,
-                                format!(
-                                    "Give a {} to {}",
-                                    player
-                                        .get_attached_item()
-                                        .as_ref()
-                                        .unwrap()
-                                        .borrow()
-                                        ._item_data
-                                        .borrow()
-                                        ._name
-                                        .as_str(),
-                                    npc.borrow()._character_data.borrow()._name.as_str()
-                                ),
-                            )
-                        } else {
-                            (
-                                KeyBindingType::Interaction,
-                                format!(
-                                    "Interaction with {}",
-                                    npc.borrow()._character_data.borrow()._name.as_str()
-                                ),
-                            )
+                is_corpse_interaction = player._controller._interaction_objects.values().any(|obj| {
+                    matches!(obj, InteractionObject::Taming(_)) || matches!(obj, InteractionObject::Farming(_))
+                });
+
+                if !is_corpse_interaction {
+                    let interaction_object = player.get_nearest_interaction_object();
+                    (matched_key_binding_type, interaction_name) = match interaction_object {
+                        InteractionObject::PropBed(_) => (KeyBindingType::Interaction, String::from("Wrap up the day")),
+                        InteractionObject::PropPickup(prop) => (
+                            KeyBindingType::Interaction,
+                            format!("Pick up a {}", prop.borrow()._prop_data.borrow()._name.as_str()),
+                        ),
+                        InteractionObject::PropMonolith(_) => (KeyBindingType::Interaction, String::from("Open Toolbox")),
+                        InteractionObject::PropTable(_) => (KeyBindingType::Interaction, String::from("Sit Down")),
+                        InteractionObject::Npc(npc) => {
+                            if player.get_attached_item_data_type().is_eatable() {
+                                (
+                                    KeyBindingType::Interaction,
+                                    format!(
+                                        "Give a {} to {}",
+                                        player
+                                            .get_attached_item()
+                                            .as_ref()
+                                            .unwrap()
+                                            .borrow()
+                                            ._item_data
+                                            .borrow()
+                                            ._name
+                                            .as_str(),
+                                        npc.borrow()._character_data.borrow()._name.as_str()
+                                    ),
+                                )
+                            } else {
+                                (
+                                    KeyBindingType::Interaction,
+                                    format!(
+                                        "Interaction with {}",
+                                        npc.borrow()._character_data.borrow()._name.as_str()
+                                    ),
+                                )
+                            }
                         }
-                    }
-                    InteractionObject::PropGate(_) => (KeyBindingType::None, String::from("Enter Gate")),
-                    InteractionObject::PropGathering(prop) => (
-                        KeyBindingType::Gathering,
-                        format!("Hit the {}", prop.borrow()._prop_data.borrow()._name.as_str()),
-                    ),
-                    _ => (KeyBindingType::Interaction, String::from("interaction")),
-                };
+                        InteractionObject::PropGate(_) => (KeyBindingType::None, String::from("Enter Gate")),
+                        InteractionObject::PropGathering(prop) => (
+                            KeyBindingType::Gathering,
+                            format!("Hit the {}", prop.borrow()._prop_data.borrow()._name.as_str()),
+                        ),
+                        _ => (KeyBindingType::Interaction, String::from("interaction")),
+                    };
+                }
             }
         }
 
-        const INTERACTION_WIDGETS: [KeyBindingType; 3] = [
+        const INTERACTION_WIDGETS: [KeyBindingType; 5] = [
             KeyBindingType::Interaction,
             KeyBindingType::EnterGate,
             KeyBindingType::Gathering,
+            KeyBindingType::Taming,
+            KeyBindingType::Farming,
         ];
         for key_binding_type in INTERACTION_WIDGETS.iter() {
             let mut enable_interaction = true;
@@ -381,7 +406,27 @@ impl<'a> ControllerHelpWidget<'a> {
             let interaction_key_binding_widget =
                 interaction_key_binding_widget_map.get_key_binding_widget(*key_binding_type);
             let interaction_widget = ptr_as_mut(interaction_key_binding_widget._layout_widget);
-            if enable_interaction && *key_binding_type == matched_key_binding_type {
+
+            if enable_interaction && is_corpse_interaction && (*key_binding_type == KeyBindingType::Taming || *key_binding_type == KeyBindingType::Farming) {
+                let player = character_manager.get_player().borrow();
+                let corpse_obj = player._controller._interaction_objects.values().find(|obj| {
+                    matches!(obj, InteractionObject::Taming(_)) || matches!(obj, InteractionObject::Farming(_))
+                });
+                if let Some(corpse_obj) = corpse_obj {
+                    let position = corpse_obj.get_position();
+                    let main_camera = get_scene_manager().get_main_camera();
+                    let screen_position = main_camera.convert_world_to_screen(&position, true)
+                        / rust_engine_3d::scene::ui::get_global_dpi_scale();
+                    let offset_y = if *key_binding_type == KeyBindingType::Taming { -25.0 } else { 25.0 };
+                    interaction_widget._ui_component.set_pos(screen_position.x, screen_position.y + offset_y);
+                    interaction_widget._ui_component.set_visible(true);
+                    let label = if *key_binding_type == KeyBindingType::Taming { "Taming" } else { "Farming" };
+                    ptr_as_mut(interaction_key_binding_widget._binding_name_widget)
+                        ._ui_component
+                        .set_text(label);
+                    self._last_interaction_object_key = corpse_obj.get_key();
+                }
+            } else if enable_interaction && !is_corpse_interaction && *key_binding_type == matched_key_binding_type {
                 let player = character_manager.get_player().borrow();
                 let interaction_object = player.get_nearest_interaction_object();
                 let position = interaction_object.get_position();

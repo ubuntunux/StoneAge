@@ -2,8 +2,8 @@ use crate::game_module::actors::character::ActionAnimationState;
 use crate::game_module::actors::character::Character;
 use crate::game_module::behavior::behavior_base::{BehaviorBase, BehaviorData, BehaviorSaveData, BehaviorState};
 use crate::game_module::game_constants::{
-    ARRIVAL_DISTANCE_THRESHOLD, CHARACTER_INTERACTION_TIME, GAME_VIEW_MODE, GameViewMode, NPC_IDLE_TERM_MAX,
-    NPC_IDLE_TERM_MIN, NPC_ROAMING_RADIUS, NPC_ROAMING_TIME,
+    ARRIVAL_DISTANCE_THRESHOLD, CHARACTER_INTERACTION_TIME, CIVILIAN_DEAD_TIME, GAME_VIEW_MODE, GameViewMode,
+    NPC_IDLE_TERM_MAX, NPC_IDLE_TERM_MIN, NPC_ROAMING_RADIUS, NPC_ROAMING_TIME,
 };
 use nalgebra::Vector3;
 use rust_engine_3d::utilities::math;
@@ -173,10 +173,27 @@ impl<'a> BehaviorBase<'a> for BehaviorCivilian<'a> {
                         State::End => {}
                     };
                 }
+                BehaviorState::Dead => {
+                    match state {
+                        State::Begin => {
+                            owner.set_action_dead();
+                            self._behavior_data.set_behavior_time(CIVILIAN_DEAD_TIME);
+                        }
+                        State::Update => {
+                            if self._behavior_data.is_end_behavior_time() {
+                                self.set_next_behavior(BehaviorState::WakeUp, true);
+                            }
+                        }
+                        State::End => {}
+                    };
+                }
                 BehaviorState::WakeUp => {
                     match state {
                         State::Begin => {
                             owner.set_action_wake_up();
+                            owner._character_stats._is_alive = true;
+                            let max_hp = owner._character_stats.get_max_hp();
+                            owner._character_stats.set_hp(max_hp);
                         }
                         State::Update => {
                             if !is_first_update_behavior_state && !owner.is_action(ActionAnimationState::WakeUp) {

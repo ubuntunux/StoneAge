@@ -3,7 +3,7 @@ use crate::game_module::actors::character::data::*;
 use crate::game_module::actors::character::manager::{CharacterCreateInfo, CharacterID, CharacterSaveData};
 use crate::game_module::actors::character::stats::*;
 use crate::game_module::actors::interaction_object::InteractionObject;
-use crate::game_module::actors::items::{Item, ItemID};
+use crate::game_module::actors::items::{Item, ItemCreateInfo, ItemID};
 use rust_engine_3d::audio::audio_manager::AudioInstance;
 
 use crate::game_module::actors::items::ItemDataType;
@@ -12,7 +12,7 @@ use crate::game_module::game_client::GamePhase;
 use crate::game_module::game_constants::*;
 use crate::game_module::game_scene_manager::Stages;
 use crate::game_module::game_service_locator::{
-    get_character_manager, get_game_client_mut, get_game_scene_manager, get_game_scene_manager_mut, get_item_manager,
+    get_character_manager, get_character_manager_mut, get_game_client_mut, get_game_scene_manager, get_game_scene_manager_mut, get_item_manager,
 };
 use crate::game_module::scenario::scenario::ScenarioType;
 use nalgebra::Vector3;
@@ -47,6 +47,7 @@ pub struct Character<'a> {
     pub _attached_item_id: Option<ItemID>,
     pub _audio_snoring: Option<RcRefCell<AudioInstance>>,
     pub _fishing_state: Box<CharacterFishingState>,
+    pub _dead_time: f32,
 }
 
 impl CharacterAnimationState {
@@ -70,6 +71,8 @@ impl CharacterStats {
     pub fn create_character_stats() -> CharacterStats {
         CharacterStats {
             _is_alive: true,
+            _is_tamed: false,
+            _corpse_hit_count: MAX_CORPSE_HIT_COUNT,
             _hp: 100,
             _max_hp: 100,
             _max_hp_data: 100,
@@ -254,6 +257,8 @@ impl CharacterStats {
     pub fn get_character_stats_save_data(&self) -> CharacterStatsSaveData {
         CharacterStatsSaveData {
             _is_alive: self._is_alive,
+            _is_tamed: self._is_tamed,
+            _corpse_hit_count: self._corpse_hit_count,
             _hp: self._hp,
             _max_hp: self._max_hp,
             _max_hp_data: self._max_hp_data,
@@ -272,6 +277,8 @@ impl CharacterStats {
 
     pub fn load_character_stats_save_data(&mut self, save_data: &CharacterStatsSaveData) {
         self._is_alive = save_data._is_alive;
+        self._is_tamed = save_data._is_tamed;
+        self._corpse_hit_count = save_data._corpse_hit_count;
         self._hp = save_data._hp;
         self._max_hp = save_data._max_hp;
         self._max_hp_data = save_data._max_hp_data;
@@ -315,6 +322,7 @@ impl<'a> Character<'a> {
             _attached_item_id: None,
             _audio_snoring: None,
             _fishing_state: Box::new(CharacterFishingState::default()),
+            _dead_time: 0.0,
         };
 
         character.initialize_character(position, rotation, scale);
@@ -643,6 +651,31 @@ impl<'a> Character<'a> {
         self._character_stats._is_alive
     }
 
+    pub fn is_tamed(&self) -> bool {
+        self._character_stats._is_tamed
+    }
+
+    pub fn is_civilian(&self) -> bool {
+        self._character_data.borrow()._character_type == CharacterDataType::Civilian
+    }
+
+    pub fn set_tamed(&mut self, is_tamed: bool) {
+        self._character_stats._is_tamed = is_tamed;
+    }
+
+    pub fn get_corpse_hit_count(&self) -> i32 {
+        self._character_stats._corpse_hit_count
+    }
+
+    pub fn tame(&mut self) {
+        self._character_stats._is_tamed = true;
+        self._character_stats._is_alive = true;
+        self._character_stats._corpse_hit_count = MAX_CORPSE_HIT_COUNT;
+        let max_hp = self._character_stats.get_max_hp();
+        self._character_stats.set_hp(max_hp);
+        self.set_next_behavior(BehaviorState::WakeUp, true);
+    }
+
     pub fn is_on_ground(&self) -> bool {
         self._controller.is_on_ground()
     }
@@ -858,24 +891,30 @@ impl<'a> Character<'a> {
     }
 
     pub fn set_damage(&mut self, damage: i32) {
-        if 0 < damage && self.is_alive() {
-            let hp = self._character_stats.get_hp() - damage;
-            self._character_stats.set_hp(hp);
-            if hp <= 0 {
-                get_audio_manager_mut().play_audio_resource_data(
-                    &self._character_data.borrow()._audio_data._audio_dead,
-                    AudioLoop::ONCE,
-                    None,
-                );
-                self.set_dead();
-            } else {
-                get_audio_manager_mut().play_audio_resource_data(
-                    &self._character_data.borrow()._audio_data._audio_pain,
-                    AudioLoop::ONCE,
-                    None,
-                );
-                if self._is_player && !self.is_move_state(MoveAnimationState::Roll) {
-                    self.set_action_hit();
+        if 0 < damage {
+            if self.is_alive() {
+                let hp = self._character_stats.get_hp() - damage;
+                self._character_stats.set_hp(hp);
+                if hp <= 0 {
+                    get_audio_manager_mut().play_audio_resource_data(
+                        &self._character_data.borrow()._audio_data._audio_dead,
+                        AudioLoop::ONCE,
+                        None,
+                    );
+                    self.set_dead();
+                } else {
+                    get_audio_manager_mut().play_audio_resource_data(
+                        &self._character_data.borrow()._audio_data._audio_pain,
+                        AudioLoop::ONCE,
+                        None,
+                    );
+                    if self._is_player && !self.is_move_state(MoveAnimationState::Roll) {
+                        self.set_action_hit();
+                    }
+                }
+            } else if !self.is_tamed() {
+                if 0 < self._character_stats._corpse_hit_count {
+                    self._character_stats._corpse_hit_count -= 1;
                 }
             }
         }
@@ -910,7 +949,7 @@ impl<'a> Character<'a> {
         if 0 < damage {
             self.set_damage(damage);
 
-            if let Some(attack_dir) = attack_dir {
+            if self.is_alive() && let Some(attack_dir) = attack_dir {
                 self._controller.set_hit_direction(attack_dir);
             }
 
@@ -959,7 +998,10 @@ impl<'a> Character<'a> {
 
     pub fn set_dead(&mut self) {
         self._character_stats._is_alive = false;
+        self._character_stats._corpse_hit_count = MAX_CORPSE_HIT_COUNT;
+        self._dead_time = 0.0;
         self.set_action_dead();
+        self.set_next_behavior(BehaviorState::Dead, true);
     }
 
     pub fn set_action_none(&mut self) {
@@ -1002,7 +1044,14 @@ impl<'a> Character<'a> {
     pub fn set_action_interaction(&mut self) {
         if self._controller.is_on_ground() && self.is_available_move() && self.is_idle_action() {
             let item_manager = get_game_scene_manager().get_item_manager_mut();
-            match self._controller._nearest_interaction_object.clone() {
+            let target_interaction = self
+                ._controller
+                ._interaction_objects
+                .values()
+                .find(|obj| matches!(obj, InteractionObject::Taming(_)))
+                .cloned()
+                .unwrap_or_else(|| self._controller._nearest_interaction_object.clone());
+            match target_interaction {
                 InteractionObject::PropBed(_) => {
                     self.set_move_idle();
                     get_game_scene_manager_mut().request_open_game_scenario(ScenarioType::ScenarioWrapUpTheDay);
@@ -1041,6 +1090,40 @@ impl<'a> Character<'a> {
 
                     if !give_item {
                         character.borrow_mut().set_is_stat_displayed(true);
+                    }
+                }
+                InteractionObject::Taming(character) => {
+                    self.set_next_action_animation(ActionAnimationState::Pickup, 2.0);
+                    let target_position = *character.borrow().get_position();
+
+                    let item_create_info = ItemCreateInfo {
+                        _item_data_name: String::from(ITEM_SPIRIT_BALL),
+                        _position: target_position,
+                        _velocity: Vector3::new(0.0, 3.0, 0.0),
+                        _pickup_delay: 0.5,
+                        ..Default::default()
+                    };
+                    item_manager.create_item(
+                        item_create_info._item_data_name.as_str(),
+                        &item_create_info,
+                        None,
+                    );
+
+                    character.borrow_mut().tame();
+
+                    self._controller.remove_interaction_object(InteractionObject::Taming(character.clone()));
+                    self._controller.remove_interaction_object(InteractionObject::Farming(character.clone()));
+                }
+                InteractionObject::Farming(character) => {
+                    self.set_next_action_animation(ActionAnimationState::Pickup, 2.0);
+                    let face_dir = self.get_face_direction();
+                    let is_destroyed = {
+                        let mut corpse = character.borrow_mut();
+                        corpse.set_hit_damage(1, Some(&face_dir));
+                        corpse.get_corpse_hit_count() <= 0
+                    };
+                    if is_destroyed {
+                        get_character_manager_mut().farm_character(&character);
                     }
                 }
                 _ => {}
@@ -1542,21 +1625,28 @@ impl<'a> Character<'a> {
                             AnimationLayer::ActionLayer,
                         );
                         self.set_weapon_visible(false);
+                        self.set_invincibility(true);
                     }
                     State::Update => {
                         // respawn
                         let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
-                        if self._is_player && animation_play_info._is_animation_end {
-                            let game_scene_manager = get_game_scene_manager_mut();
-                            if !game_scene_manager.is_teleport_mode() {
-                                game_scene_manager
-                                    .set_teleport_spawn_point(Stages::Home.get_stage_data_name(), BED_FOR_ARU);
-                                get_game_client_mut().set_next_game_phase(GamePhase::Respawn);
+                        if animation_play_info._is_animation_end {
+                            self.set_invincibility(false);
+
+                            if self._is_player {
+                                let game_scene_manager = get_game_scene_manager_mut();
+                                if !game_scene_manager.is_teleport_mode() {
+                                    game_scene_manager
+                                        .set_teleport_spawn_point(Stages::Home.get_stage_data_name(), BED_FOR_ARU);
+                                    get_game_client_mut().set_next_game_phase(GamePhase::Respawn);
+                                }
                             }
                         }
+
                     }
                     State::End => {
                         self.set_weapon_visible(true);
+                        self.set_invincibility(false);
                     }
                 },
                 ActionAnimationState::Hit => match state {

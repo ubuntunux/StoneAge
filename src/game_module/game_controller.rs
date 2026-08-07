@@ -23,6 +23,8 @@ pub enum KeyBindingType {
     Interaction,
     EnterGate,
     Gathering,
+    Taming,
+    Farming,
     CameraRotation,
     Zoom,
     Move,

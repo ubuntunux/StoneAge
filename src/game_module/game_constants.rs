@@ -86,6 +86,12 @@ pub const STAMINA_JUMP: f32 = 25.0;
 pub const STAMINA_ROLL: f32 = 25.0;
 pub const ANIMATION_SPEED_BY_STAMINA: f32 = 1.0;
 
+// dead, taming
+pub const MAX_CORPSE_HIT_COUNT: i32 = 3;
+pub const CORPSE_AUTO_REMOVE_TIME: f32 = 10.0;
+pub const CIVILIAN_DEAD_TIME: f32 = 5.0;
+pub const FARM_MEAT_COUNT: usize = 3;
+
 // npc
 pub const NPC_IDLE_TERM_MIN: f32 = 1.0;
 pub const NPC_IDLE_TERM_MAX: f32 = 3.0;
@@ -165,6 +171,8 @@ pub const ITEM_NONE: &str = "";
 pub const ITEM_COCONUT: &str = "items/coconut";
 pub const ITEM_HAND: &str = "items/hand";
 pub const ITEM_SPIRIT_BALL: &str = "items/spirit_ball";
+pub const ITEM_ENERGY_BALL: &str = "items/energy_ball";
+pub const ITEM_MEAT: &str = "items/meat";
 
 // props
 pub const DEFAULT_GATE_NAME: &str = "gate";

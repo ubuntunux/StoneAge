@@ -379,8 +379,8 @@ impl<'a> ItemManager<'a> {
             _item_data_name: String::from(item_data_name),
             ..Default::default()
         };
-        let attach_socket =
-            Some(character._render_object.borrow()._sockets.get(&String::from(WEAPON_SOCKET_NAME)).unwrap().clone());
+
+        let attach_socket = character._render_object.borrow()._sockets.get(&String::from(WEAPON_SOCKET_NAME)).cloned();
         let attached_item = self.create_item(item_data_name, &item_create_info, attach_socket);
         character.attach_item(attached_item);
     }

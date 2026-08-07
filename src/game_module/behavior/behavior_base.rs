@@ -23,6 +23,7 @@ pub enum BehaviorState {
     Attack,
     Sleep,
     WakeUp,
+    Dead,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq)]

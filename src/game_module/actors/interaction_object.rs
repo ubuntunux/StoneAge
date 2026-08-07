@@ -14,6 +14,8 @@ pub enum InteractionObject<'a> {
     PropMonolith(RcRefCell<Prop<'a>>),
     PropTable(RcRefCell<Prop<'a>>),
     Npc(RcRefCell<Character<'a>>),
+    Taming(RcRefCell<Character<'a>>),
+    Farming(RcRefCell<Character<'a>>),
 }
 
 impl<'a> InteractionObject<'a> {
@@ -27,6 +29,17 @@ impl<'a> InteractionObject<'a> {
             | InteractionObject::PropMonolith(prop)
             | InteractionObject::PropTable(prop) => prop.as_ptr() as *const c_void,
             InteractionObject::Npc(character) => character.as_ptr() as *const c_void,
+            InteractionObject::Taming(character) => ((character.as_ptr() as usize) | 1) as *const c_void,
+            InteractionObject::Farming(character) => ((character.as_ptr() as usize) | 2) as *const c_void,
+        }
+    }
+
+    pub fn get_character(&self) -> Option<&RcRefCell<Character<'a>>> {
+        match self {
+            InteractionObject::Npc(character)
+            | InteractionObject::Taming(character)
+            | InteractionObject::Farming(character) => Some(character),
+            _ => None,
         }
     }
 
@@ -46,7 +59,9 @@ impl<'a> InteractionObject<'a> {
                     bounding_box._center.z,
                 )
             }
-            InteractionObject::Npc(character) => {
+            InteractionObject::Npc(character)
+            | InteractionObject::Taming(character)
+            | InteractionObject::Farming(character) => {
                 let bounding_box = ptr_as_ref(character.as_ptr()).get_bounding_box();
                 Vector3::new(
                     bounding_box._center.x,
