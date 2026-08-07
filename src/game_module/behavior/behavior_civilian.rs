@@ -55,13 +55,9 @@ impl<'a> BehaviorBase<'a> for BehaviorCivilian<'a> {
                 BehaviorState::Idle => {
                     match state {
                         State::Begin => {
-                            if owner.get_stats().is_hungry() {
-                                owner.set_action_hungry();
-                                owner.set_sit_down();
-                            } else {
-                                owner.set_action_none();
-                                owner.set_move_idle();
-                            }
+                            owner.set_action_none();
+                            owner.set_move_idle();
+
                             self._behavior_data.set_behavior_time(math::lerp(
                                 NPC_IDLE_TERM_MIN,
                                 NPC_IDLE_TERM_MAX,
@@ -71,10 +67,24 @@ impl<'a> BehaviorBase<'a> for BehaviorCivilian<'a> {
                         State::Update => {
                             if owner.get_attached_item_data_type().is_eatable() {
                                 self.set_next_behavior(BehaviorState::Eating, true);
-                            } else {
-                                if !owner.get_stats().is_hungry() && self._behavior_data.is_end_behavior_time() {
-                                    self.set_next_behavior(BehaviorState::Roaming, true);
-                                }
+                            } else if owner.get_stats().is_hungry() {
+                                self.set_next_behavior(BehaviorState::Hunger, true);
+                            } else if self._behavior_data.is_end_behavior_time() {
+                                self.set_next_behavior(BehaviorState::Roaming, true);
+                            }
+                        }
+                        State::End => {}
+                    };
+                }
+                BehaviorState::Hunger => {
+                    match state {
+                        State::Begin => {
+                            owner.set_action_hungry();
+                            owner.set_sit_down();
+                        }
+                        State::Update => {
+                            if !owner.get_stats().is_hungry() {
+                                self.set_next_behavior(BehaviorState::Idle, true);
                             }
                         }
                         State::End => {}

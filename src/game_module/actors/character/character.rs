@@ -359,15 +359,15 @@ impl<'a> Character<'a> {
     pub fn get_debug_info(&self) -> String {
         let position = self.get_position();
         format!(
-            "Behavior: {:?}({:.1})\nAnimation: {:?}/{:?}\nHP: {:?}/{:?}\nHunger: {:?}/{:?}\nPosition: [{:.1}, {:.1}, {:.1}]",
+            "Behavior: {:?}({:.1})\nAnimation: {:?}/{:?}\nHP: {:?}/{:?}\nIs hunger({:?}): {:.1}\nPosition: [{:.1}, {:.1}, {:.1}]",
             self._behavior.get_behavior_state(),
             self._behavior.get_behavior_data().get_behavior_time(),
             self._animation_state._action_animation_state,
             self._animation_state._move_animation_state,
             self._character_stats._hp,
             self._character_stats._max_hp,
+            self.get_stats().is_hungry(),
             self._character_stats.get_hunger(),
-            MAX_HUNGER,
             position.x,
             position.y,
             position.z

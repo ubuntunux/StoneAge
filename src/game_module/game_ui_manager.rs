@@ -193,7 +193,7 @@ impl<'a> GameUIManager<'a> {
 
         unsafe  {
             if DEVELOPMENT {
-                self._debug_ui_widget = Some(DebugUIWidget::create_debug_ui_widget(root_widget));
+                //self._debug_ui_widget = Some(DebugUIWidget::create_debug_ui_widget(root_widget));
             }
         }
 
