@@ -58,14 +58,14 @@ impl<'a> BehaviorBase<'a> for BehaviorCivilian<'a> {
                         begin_idle(&mut self._behavior_data, owner);
                     }
                     State::Update => {
-                        if is_player_too_far_for_intimacy(owner, target) {
-                            self.set_next_behavior(BehaviorState::Follow, false);
-                        } else if owner.get_attached_item_data_type().is_eatable() {
+                        if owner.get_attached_item_data_type().is_eatable() {
                             self.set_next_behavior(BehaviorState::Eating, true);
                         } else if owner.get_stats().is_hungry() {
                             self.set_next_behavior(BehaviorState::Hunger, true);
                         } else if self._behavior_data.is_end_behavior_time() {
                             self.set_next_behavior(BehaviorState::Roaming, true);
+                        } else if is_player_too_far_for_intimacy(owner, target) {
+                            self.set_next_behavior(BehaviorState::Follow, false);
                         }
                     }
                     State::End => {}
@@ -107,7 +107,9 @@ impl<'a> BehaviorBase<'a> for BehaviorCivilian<'a> {
                 BehaviorState::Interaction => match state {
                     State::Begin => begin_interaction(&mut self._behavior_data, owner),
                     State::Update => {
-                        if update_interaction_should_idle(&self._behavior_data, owner, target) {
+                        if owner.get_attached_item_data_type().is_eatable() {
+                            self.set_next_behavior(BehaviorState::Eating, true);
+                        } else if update_interaction_should_idle(&self._behavior_data, owner, target) {
                             self.set_next_behavior(BehaviorState::Idle, false);
                         }
                     }
