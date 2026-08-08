@@ -158,7 +158,7 @@ impl<'a> CharacterManager<'a> {
         if is_player {
             let game_ui_manager = get_game_ui_manager_mut();
             if game_ui_manager.get_item_count(ITEM_HAND) == 0 {
-                game_ui_manager.add_item(ITEM_HAND, 1);
+                game_ui_manager.add_item(ITEM_HAND, 1, false);
             }
             self._player = Some(character.clone());
         }

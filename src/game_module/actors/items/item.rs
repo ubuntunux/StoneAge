@@ -327,7 +327,7 @@ impl<'a> ItemManager<'a> {
     }
 
     pub fn pick_item(&self, item_data_name: &str, item_count: usize) -> bool {
-        let success = get_game_ui_manager_mut().add_item(item_data_name, item_count);
+        let success = get_game_ui_manager_mut().add_item(item_data_name, item_count, true);
         if success {
             get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
         }

@@ -1,10 +1,9 @@
 use crate::game_module::actors::character::{ActionAnimationState, Character};
 use crate::game_module::game_client::GamePhase;
 use crate::game_module::game_constants::*;
-use crate::game_module::game_service_locator::{
-    get_character_manager, get_game_client_mut, get_game_ui_manager, get_game_ui_manager_mut, get_item_manager_mut,
-};
+use crate::game_module::game_service_locator::{get_character_manager, get_game_client_mut, get_game_ui_manager, get_game_ui_manager_mut, get_item_manager_mut};
 use nalgebra::{Matrix4, Vector2, Vector3};
+use rust_engine_3d::constants::DEVELOPMENT;
 use rust_engine_3d::core::engine_core::TimeData;
 use rust_engine_3d::core::engine_service_locator::get_scene_manager;
 use rust_engine_3d::core::input::{ButtonState, JoystickInputData, KeyboardInputData, MouseInputData, MouseMoveData};
@@ -392,6 +391,18 @@ impl<'a> GameController<'a> {
             && !player.borrow().is_action(ActionAnimationState::FishingLoop)
         {
             get_game_client_mut().set_next_game_phase(GamePhase::GameMenu);
+        }
+
+        if unsafe { DEVELOPMENT } {
+            let is_toggle_game_mode_by_joystick = joystick_input_data._btn_left_trigger
+                == ButtonState::Hold
+                && joystick_input_data._btn_right_trigger == ButtonState::Hold
+                && joystick_input_data._btn_left_shoulder == ButtonState::Hold
+                && joystick_input_data._btn_right_shoulder == ButtonState::Hold;
+
+            if keyboard_input_data.get_key_pressed(KeyCode::Backquote) || is_toggle_game_mode_by_joystick {
+                get_game_client_mut().set_next_game_phase(GamePhase::GameDebugMenu);
+            }
         }
 
         // item control

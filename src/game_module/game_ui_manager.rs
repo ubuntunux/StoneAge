@@ -7,6 +7,7 @@ use crate::game_module::widgets::cross_hair_widget::CrossHairWidget;
 use crate::game_module::widgets::debug_ui_widget::DebugUIWidget;
 use crate::game_module::widgets::game_menu_widget::GameMenuWidget;
 use crate::game_module::widgets::image_widget::ImageLayout;
+use crate::game_module::widgets::item_acquire_notification::ItemAcquireNotificationWidget;
 use crate::game_module::widgets::item_bar::{InventoryItemCreateInfoList, ItemBarWidget};
 use crate::game_module::widgets::key_binding_widget::KeyBindingWidgetManager;
 use crate::game_module::widgets::player_hud::PlayerHud;
@@ -25,6 +26,7 @@ use rust_engine_3d::core::input::{JoystickInputData, KeyboardInputData, MouseInp
 use rust_engine_3d::scene::ui::{UIComponentInstance, UIManager, UIWidgetTypes, WidgetDefault};
 use rust_engine_3d::utilities::system::{RcRefCell, ptr_as_mut, ptr_as_ref};
 use std::ffi::c_void;
+use crate::game_module::widgets::game_debug_menu_widget::GameDebugMenuWidget;
 
 pub type QuestItem<'a> = RcRefCell<dyn QuestItemBase<'a> + 'a>;
 
@@ -39,6 +41,7 @@ pub struct GameUIManager<'a> {
     pub _game_image: Option<Box<ImageLayout<'a>>>,
     pub _key_binding_widget_manager: Option<Box<KeyBindingWidgetManager<'a>>>,
     pub _cross_hair: Option<Box<CrossHairWidget<'a>>>,
+    pub _game_debug_menu_widget: Option<Box<GameDebugMenuWidget<'a>>>,
     pub _game_menu_widget: Option<Box<GameMenuWidget<'a>>>,
     pub _player_hud: Option<Box<PlayerHud<'a>>>,
     pub _text_box_widget: Option<Box<TextBoxWidget<'a>>>,
@@ -46,6 +49,7 @@ pub struct GameUIManager<'a> {
     pub _target_status_bar: Option<Box<TargetStatusWidget<'a>>>,
     pub _time_of_day: Option<Box<TimeOfDayWidget<'a>>>,
     pub _item_bar_widget: Option<Box<ItemBarWidget<'a>>>,
+    pub _item_acquire_notification_widget: Option<Box<ItemAcquireNotificationWidget<'a>>>,
     pub _toolbox_widget: Option<Box<ToolboxWidget<'a>>>,
     pub _quest_widget: Option<Box<QuestWidget<'a>>>,
     pub _world_map_widget: Option<Box<WorldMapWidget<'a>>>,
@@ -115,11 +119,13 @@ impl<'a> GameUIManager<'a> {
             _game_image: None,
             _key_binding_widget_manager: None,
             _cross_hair: None,
+            _game_debug_menu_widget: None,
             _game_menu_widget: None,
             _text_box_widget: None,
             _target_status_bar: None,
             _time_of_day: None,
             _item_bar_widget: None,
+            _item_acquire_notification_widget: None,
             _player_hud: None,
             _controller_help_widget: None,
             _toolbox_widget: None,
@@ -181,8 +187,15 @@ impl<'a> GameUIManager<'a> {
             game_ui_layout_mut,
             window_size,
         )));
+        self._item_acquire_notification_widget =
+            Some(ItemAcquireNotificationWidget::create(game_ui_layout_mut));
         self._quest_widget = Some(Box::new(QuestWidget::create_quest_widget(game_ui_layout_mut)));
         self._text_box_widget = Some(Box::new(TextBoxWidget::create_text_box_widget(root_widget)));
+        self._game_debug_menu_widget = unsafe { if DEVELOPMENT {
+            Some(GameDebugMenuWidget::create_game_debug_menu_widget(root_widget))
+        } else {
+            None
+        } };
         self._game_menu_widget = Some(GameMenuWidget::create_game_menu_widget(root_widget));
         self._cross_hair = Some(Box::new(CrossHairWidget::create_cross_hair(root_widget)));
         self._game_image = Some(ImageLayout::create_image_layout(
@@ -194,6 +207,7 @@ impl<'a> GameUIManager<'a> {
         unsafe {
             if DEVELOPMENT {
                 self._debug_ui_widget = Some(DebugUIWidget::create_debug_ui_widget(root_widget));
+                self._debug_ui_widget.as_mut().unwrap().set_enable(false);
             }
         }
 
@@ -251,6 +265,28 @@ impl<'a> GameUIManager<'a> {
 
     pub fn set_game_image_fade_speed(&mut self, fade_speed: f32) {
         self._game_image.as_mut().unwrap().set_game_image_fade_speed(fade_speed);
+    }
+
+    // debug text
+    pub fn show_debug_ui(&mut self, enable: bool) {
+        self._debug_ui_widget.as_mut().unwrap().set_enable(enable);
+    }
+
+    // game menu
+    pub fn is_opened_game_debug_menu(&self) -> bool {
+        self._game_debug_menu_widget.as_ref().unwrap().is_opened_game_debug_menu()
+    }
+    pub fn open_game_debug_menu(&mut self) {
+        self._game_debug_menu_widget.as_mut().unwrap().open_game_debug_menu();
+    }
+    pub fn update_game_debug_menu_widget(
+        &mut self,
+        joystick_input_data: &JoystickInputData,
+        keyboard_input_data: &KeyboardInputData,
+    ) {
+        if let Some(game_debug_menu_widget) = self._game_debug_menu_widget.as_mut() {
+            game_debug_menu_widget.update_game_debug_menu_widget(joystick_input_data, keyboard_input_data);
+        }
     }
 
     // game menu
@@ -314,8 +350,20 @@ impl<'a> GameUIManager<'a> {
         self._item_bar_widget.as_ref().unwrap().get_item_count(item_data_name)
     }
 
-    pub fn add_item(&mut self, item_data_name: &str, item_count: usize) -> bool {
-        self._item_bar_widget.as_mut().unwrap().add_item(item_data_name, item_count)
+    pub fn add_item(&mut self, item_data_name: &str, item_count: usize, show_notification: bool) -> bool {
+        let result = self._item_bar_widget.as_mut().unwrap().add_item(item_data_name, item_count);
+        if result && show_notification {
+            if let Some(notification_widget) = self._item_acquire_notification_widget.as_mut() {
+                notification_widget.notify_item_acquired(item_data_name);
+            }
+        }
+        result
+    }
+
+    pub fn notify_item_acquired(&mut self, item_data_name: &str) {
+        if let Some(notification_widget) = self._item_acquire_notification_widget.as_mut() {
+            notification_widget.notify_item_acquired(item_data_name);
+        }
     }
 
     pub fn get_inventory_item_create_infos(&self) -> InventoryItemCreateInfoList {
@@ -448,8 +496,10 @@ impl<'a> GameUIManager<'a> {
         self._target_status_bar.as_mut().unwrap().changed_window_size(window_size);
         self._time_of_day.as_mut().unwrap().changed_window_size(window_size);
         self._item_bar_widget.as_mut().unwrap().changed_window_size(window_size);
-        if let Some(game_menu_widget) = self._game_menu_widget.as_mut() {
-            game_menu_widget.changed_window_size(window_size);
+        self._game_menu_widget.as_mut().unwrap().changed_window_size(window_size);
+
+        if let Some(game_debug_menu_widget) = self._game_debug_menu_widget.as_mut() {
+            game_debug_menu_widget.changed_window_size(window_size);
         }
     }
 
@@ -501,6 +551,10 @@ impl<'a> GameUIManager<'a> {
 
         if let Some(item_bar_widget) = self._item_bar_widget.as_mut() {
             item_bar_widget.update_item_bar_widget();
+        }
+
+        if let Some(notification_widget) = self._item_acquire_notification_widget.as_mut() {
+            notification_widget.update(delta_time as f32);
         }
 
         if let Some(text_box_widget) = self._text_box_widget.as_mut() {

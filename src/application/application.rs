@@ -81,7 +81,7 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
                 && engine_core._joystick_input_data._btn_right_shoulder == ButtonState::Hold;
 
             if engine_core._keyboard_input_data.get_key_pressed(KeyCode::Backquote) || is_toggle_game_mode_by_joystick {
-                self.toggle_game_mode();
+                self.set_game_mode(true);
             }
         }
 
