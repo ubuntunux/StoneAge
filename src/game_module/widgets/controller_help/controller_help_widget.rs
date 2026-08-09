@@ -19,7 +19,6 @@ use std::ffi::c_void;
 use std::rc::Rc;
 
 const MAIN_LAYOUT_MARGIN: f32 = 10.0;
-const MAIN_LAYOUT_SIZE: (f32, f32) = (100.0, 100.0);
 
 pub fn create_player_control_key_binding_widget<'a>(
     parent_widget: &mut WidgetDefault<'a>,
@@ -165,7 +164,7 @@ impl<'a> ControllerHelpWidget<'a> {
         ui_component.set_expandable(true);
         ui_component.set_padding(10.0);
         ui_component.set_round(15.0);
-        ui_component.set_size(MAIN_LAYOUT_SIZE.0, MAIN_LAYOUT_SIZE.1);
+        ui_component.set_size(KEY_BINDING_UI_SIZE, KEY_BINDING_UI_SIZE);
         ui_component.set_color(get_color32(0, 0, 0, 128));
         ui_component.set_pivot_preset(rust_engine_3d::scene::ui::PIVOT_BOTTOM_RIGHT);
         ui_component.set_pos_hint(Some(1.0), Some(1.0));
