@@ -133,10 +133,10 @@ impl<'a> ItemBarWidget<'a> {
         ui_component.set_layout_orientation(Orientation::HORIZONTAL);
         ui_component.set_halign(HorizontalAlign::CENTER);
         ui_component.set_valign(VerticalAlign::CENTER);
-        ui_component.set_color(get_color32(50, 50, 50, 128));
-        ui_component.set_border_color(get_color32(0, 0, 0, 255));
+        ui_component.set_color(get_color32(0, 0, 0, 128));
         ui_component.set_round(5.0);
-        ui_component.set_border(2.0);
+        //ui_component.set_border(2.0);
+        //ui_component.set_border_color(get_color32(0, 0, 0, 255));
         ui_component.set_expandable(true);
         ui_component.set_pivot_preset(PIVOT_BOTTOM_CENTER);
         ui_component.set_pos_hint(Some(0.5), Some(1.0));
@@ -204,7 +204,7 @@ impl<'a> ItemBarWidget<'a> {
             ptr_as_mut(self._parent_widget),
             KeyBindingType::SelectPrevItem,
             "select_prev_item_key_binding",
-            "Previous Item",
+            "Prev",
             vec![engine_resources.get_material_instance_data("ui/controller/keycode_q").clone()],
             vec![engine_resources.get_material_instance_data("ui/controller/joystick_left").clone()],
         );
@@ -219,7 +219,7 @@ impl<'a> ItemBarWidget<'a> {
             ptr_as_mut(self._parent_widget),
             KeyBindingType::SelectNextItem,
             "select_next_item_key_binding",
-            "Next Item",
+            "Next",
             vec![engine_resources.get_material_instance_data("ui/controller/keycode_e").clone()],
             vec![engine_resources.get_material_instance_data("ui/controller/joystick_right").clone()],
         );

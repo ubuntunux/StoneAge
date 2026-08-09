@@ -217,6 +217,7 @@ impl<'a> GameUIManager<'a> {
     pub fn clear_game_ui(&mut self) {
         self.clear_inventory_items();
         self.clear_quests();
+        self.clear_text_box_widgets();
     }
 
     pub fn get_game_ui_layout(&self) -> *const WidgetDefault<'a> {
@@ -228,7 +229,6 @@ impl<'a> GameUIManager<'a> {
             let game_ui_layout_mut = ptr_as_mut(self._game_ui_layout);
             game_ui_layout_mut.get_ui_component_mut().set_visible(show);
         }
-
         self._text_box_widget.as_mut().unwrap().set_text_box_layer_visible(TextBoxLayerType::GamePlayLayer, show);
     }
 
@@ -448,6 +448,12 @@ impl<'a> GameUIManager<'a> {
 
     pub fn remove_text_box_item(&mut self, key: *const c_void) {
         self._text_box_widget.as_mut().unwrap().remove_text_box_item(key);
+    }
+
+    pub fn clear_text_box_widgets(&mut self) {
+        if let Some(text_box_widget) = self._text_box_widget.as_mut() {
+            text_box_widget.clear_text_box_widget();
+        }
     }
 
     // toolbox

@@ -5,7 +5,7 @@ use rust_engine_3d::core::engine_service_locator::{get_audio_manager_mut, get_en
 use rust_engine_3d::scene::ui::{
     HorizontalAlign, Orientation, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault,
 };
-use rust_engine_3d::utilities::system::ptr_as_mut;
+use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use std::collections::HashMap;
 use std::ffi::c_void;
@@ -20,7 +20,7 @@ const TEXT_BOX_ANIMATION_DURATION: f32 = 0.25;
 const MAX_TEXT_BOX_HEIGHT: f32 = 2.0;
 
 #[repr(u8)]
-#[derive(PartialEq, Debug, Display, EnumCount, EnumIter, FromRepr)]
+#[derive(PartialEq, Debug, Display, EnumCount, EnumIter, FromRepr, Copy, Clone)]
 pub enum TextBoxLayerType {
     InteractionLayer,
     GamePlayLayer,
@@ -48,6 +48,7 @@ pub struct TextBoxWidget<'a> {
 }
 
 pub struct TextBoxItem<'a> {
+    pub _layer_type: TextBoxLayerType,
     pub _actor: ActorWrapper<'a>,
     pub _layout_widget: *const WidgetDefault<'a>,
     pub _duration: Option<f32>,
@@ -57,6 +58,7 @@ pub struct TextBoxItem<'a> {
 
 impl<'a> TextBoxItem<'a> {
     pub fn create_text_box_item(
+        layer_type: TextBoxLayerType,
         parent_widget: &mut WidgetDefault<'a>,
         actor: ActorWrapper<'a>,
         contents: &Vec<TextBoxContent>,
@@ -78,6 +80,7 @@ impl<'a> TextBoxItem<'a> {
         parent_widget.add_widget(&layout_widget);
 
         let mut item = TextBoxItem {
+            _layer_type: layer_type,
             _actor: actor,
             _layout_widget: layout_widget.as_ref(),
             _duration: duration,
@@ -87,6 +90,10 @@ impl<'a> TextBoxItem<'a> {
 
         item.update_text_box_item(contents, duration, true);
         item
+    }
+
+    pub fn destroy_text_box_item(&mut self) {
+        ptr_as_mut(self._layout_widget).clear_widgets();
     }
 
     pub fn update_text_box_item(&mut self, contents: &Vec<TextBoxContent>, duration: Option<f32>, clear_widgets: bool) {
@@ -172,6 +179,13 @@ impl<'a> TextBoxWidget<'a> {
         }
     }
 
+    pub fn clear_text_box_widget(&mut self) {
+        for layer in self._layers.iter() {
+            ptr_as_mut(*layer).clear_widgets();
+        }
+        self._text_box_items.clear();
+    }
+
     pub fn changed_window_size(&mut self, _window_size: &Vector2<i32>) {}
 
     pub fn set_text_box_visible(&mut self, visible: bool) {
@@ -200,6 +214,7 @@ impl<'a> TextBoxWidget<'a> {
             self._text_box_items.insert(
                 actor.get_key(),
                 TextBoxItem::create_text_box_item(
+                    layer_type,
                     ptr_as_mut(self._layers[layer_type as usize]),
                     actor,
                     contents,
@@ -296,7 +311,9 @@ impl<'a> TextBoxWidget<'a> {
 
         for character_name in remove_items {
             if let Some(item) = self._text_box_items.remove(&character_name) {
-                ptr_as_mut(self._root_widget).remove_widget(item._layout_widget);
+                if let Some(parent_widget) = ptr_as_ref(item._layout_widget)._parent {
+                    ptr_as_mut(parent_widget).remove_widget(item._layout_widget);
+                }
             }
         }
     }

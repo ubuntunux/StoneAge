@@ -5,8 +5,8 @@ use rust_engine_3d::utilities::system::{RcRefCell, ptr_as_mut};
 use std::collections::HashMap;
 use std::rc::Rc;
 
-pub const KEY_BINDING_UI_SIZE: f32 = 50.0;
-pub const KEY_BINDING_FONT_SIZE: f32 = 30.0;
+pub const KEY_BINDING_UI_SIZE: f32 = 40.0;
+pub const KEY_BINDING_FONT_SIZE: f32 = 25.0;
 pub const KEY_BINDING_TEXT_MARGIN: f32 = 20.0;
 pub const KEY_BINDING_ICON_MARGIN: f32 = -14.0;
 
