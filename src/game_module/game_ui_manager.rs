@@ -1,7 +1,7 @@
 use crate::game_module::actors::character::{ActorWrapper, Character};
 use crate::game_module::actors::items::ItemDataType;
 use crate::game_module::game_constants::MATERIAL_INTRO_IMAGE;
-use crate::game_module::game_service_locator::{get_character_manager, get_game_scene_manager};
+use crate::game_module::game_service_locator::{get_character_manager, get_game_scene_manager, get_game_ui_manager_mut};
 use crate::game_module::widgets::controller_help::ControllerHelpWidget;
 use crate::game_module::widgets::cross_hair_widget::CrossHairWidget;
 use crate::game_module::widgets::debug_ui_widget::DebugUIWidget;
@@ -219,6 +219,7 @@ impl<'a> GameUIManager<'a> {
         self.clear_inventory_items();
         self.clear_quests();
         self.clear_text_box_widgets();
+        self.set_controls_visibility(true);
     }
 
     pub fn get_game_ui_layout(&self) -> *const WidgetDefault<'a> {
@@ -493,6 +494,20 @@ impl<'a> GameUIManager<'a> {
     }
 
     // controller help widget
+    pub fn get_controls_visibility(&self) -> bool {
+        if let Some(controller_help_widget) = self._controller_help_widget.as_ref() {
+            controller_help_widget.get_controls_visibility()
+        } else {
+            true
+        }
+    }
+
+    pub fn set_controls_visibility(&mut self, is_visible: bool) {
+        if let Some(controller_help_widget) = self._controller_help_widget.as_mut() {
+            controller_help_widget.set_controls_visibility(is_visible);
+        }
+    }
+
     pub fn toggle_controls_visibility(&mut self) {
         if let Some(controller_help_widget) = self._controller_help_widget.as_mut() {
             controller_help_widget.toggle_controls_visibility();

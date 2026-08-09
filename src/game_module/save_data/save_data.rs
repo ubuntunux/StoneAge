@@ -22,6 +22,7 @@ pub struct GameSaveData {
     pub _game_scenes: HashMap<String, GameSceneSaveData>,
     pub _game_scenarios: Vec<GameScenarioCreateInfo>,
     pub _completed_game_scenarios: HashSet<ScenarioType>,
+    pub _is_controls_visible: bool,
 }
 
 impl Default for GameSaveData {
@@ -39,6 +40,7 @@ impl Default for GameSaveData {
             _game_scenes: Default::default(),
             _game_scenarios: vec![],
             _completed_game_scenarios: Default::default(),
+            _is_controls_visible: true,
         }
     }
 }

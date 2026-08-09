@@ -254,6 +254,7 @@ impl<'a> GameSceneManager<'a> {
         }
 
         let game_ui_manager = get_game_ui_manager_mut();
+        game_ui_manager.set_controls_visibility(game_save_data._is_controls_visible);
         for create_infos in game_save_data._inventory_item_create_info_list.values() {
             for item_create_info in create_infos.iter() {
                 game_ui_manager.add_item(
@@ -277,6 +278,7 @@ impl<'a> GameSceneManager<'a> {
         game_save_data._last_game_scene_data_name = self.get_current_game_scene_data_name().clone();
         game_save_data._inventory_item_create_info_list = get_game_ui_manager().get_inventory_item_create_infos();
         game_save_data._selected_inventory_item_index = get_game_ui_manager().get_selected_inventory_item_index();
+        game_save_data._is_controls_visible = get_game_ui_manager().get_controls_visibility();
 
         game_save_data._game_scenes.insert(
             self.get_current_game_scene_data_name().clone(),

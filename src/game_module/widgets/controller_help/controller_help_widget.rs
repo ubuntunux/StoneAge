@@ -318,14 +318,22 @@ impl<'a> ControllerHelpWidget<'a> {
         ));
     }
 
-    pub fn toggle_controls_visibility(&mut self) {
-        self._is_controls_visible = !self._is_controls_visible;
+    pub fn get_controls_visibility(&self) -> bool {
+        self._is_controls_visible
+    }
+
+    pub fn set_controls_visibility(&mut self, is_visible: bool) {
+        self._is_controls_visible = is_visible;
         let widget_map = ptr_as_mut(self._player_control_key_binding_widget_map.as_ref());
         for (key_binding_type, key_binding_widget) in widget_map._key_binding_widget_map.iter_mut() {
             if *key_binding_type != KeyBindingType::Help {
                 ptr_as_mut(key_binding_widget._layout_widget)._ui_component.set_enable(self._is_controls_visible);
             }
         }
+    }
+
+    pub fn toggle_controls_visibility(&mut self) {
+        self.set_controls_visibility(!self._is_controls_visible);
     }
 
     pub fn changed_window_size(&mut self, _window_size: &Vector2<i32>) {
