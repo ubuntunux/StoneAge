@@ -5,6 +5,7 @@ use crate::game_module::game_service_locator::{get_character_manager, get_game_s
 use crate::game_module::widgets::controller_help::ControllerHelpWidget;
 use crate::game_module::widgets::cross_hair_widget::CrossHairWidget;
 use crate::game_module::widgets::debug_ui_widget::DebugUIWidget;
+use crate::game_module::widgets::game_debug_menu_widget::GameDebugMenuWidget;
 use crate::game_module::widgets::game_menu_widget::GameMenuWidget;
 use crate::game_module::widgets::image_widget::ImageLayout;
 use crate::game_module::widgets::item_acquire_notification::ItemAcquireNotificationWidget;
@@ -26,7 +27,6 @@ use rust_engine_3d::core::input::{JoystickInputData, KeyboardInputData, MouseInp
 use rust_engine_3d::scene::ui::{UIComponentInstance, UIManager, UIWidgetTypes, WidgetDefault};
 use rust_engine_3d::utilities::system::{RcRefCell, ptr_as_mut, ptr_as_ref};
 use std::ffi::c_void;
-use crate::game_module::widgets::game_debug_menu_widget::GameDebugMenuWidget;
 
 pub type QuestItem<'a> = RcRefCell<dyn QuestItemBase<'a> + 'a>;
 
@@ -187,15 +187,16 @@ impl<'a> GameUIManager<'a> {
             game_ui_layout_mut,
             window_size,
         )));
-        self._item_acquire_notification_widget =
-            Some(ItemAcquireNotificationWidget::create(game_ui_layout_mut));
+        self._item_acquire_notification_widget = Some(ItemAcquireNotificationWidget::create(game_ui_layout_mut));
         self._quest_widget = Some(Box::new(QuestWidget::create_quest_widget(game_ui_layout_mut)));
         self._text_box_widget = Some(Box::new(TextBoxWidget::create_text_box_widget(root_widget)));
-        self._game_debug_menu_widget = unsafe { if DEVELOPMENT {
-            Some(GameDebugMenuWidget::create_game_debug_menu_widget(root_widget))
-        } else {
-            None
-        } };
+        self._game_debug_menu_widget = unsafe {
+            if DEVELOPMENT {
+                Some(GameDebugMenuWidget::create_game_debug_menu_widget(root_widget))
+            } else {
+                None
+            }
+        };
         self._game_menu_widget = Some(GameMenuWidget::create_game_menu_widget(root_widget));
         self._cross_hair = Some(Box::new(CrossHairWidget::create_cross_hair(root_widget)));
         self._game_image = Some(ImageLayout::create_image_layout(
@@ -488,6 +489,13 @@ impl<'a> GameUIManager<'a> {
                 mouse_delta,
                 player,
             );
+        }
+    }
+
+    // controller help widget
+    pub fn toggle_controls_visibility(&mut self) {
+        if let Some(controller_help_widget) = self._controller_help_widget.as_mut() {
+            controller_help_widget.toggle_controls_visibility();
         }
     }
 

@@ -1,7 +1,9 @@
 use crate::game_module::actors::character::{ActionAnimationState, Character};
 use crate::game_module::game_client::GamePhase;
 use crate::game_module::game_constants::*;
-use crate::game_module::game_service_locator::{get_character_manager, get_game_client_mut, get_game_ui_manager, get_game_ui_manager_mut, get_item_manager_mut};
+use crate::game_module::game_service_locator::{
+    get_character_manager, get_game_client_mut, get_game_ui_manager, get_game_ui_manager_mut, get_item_manager_mut,
+};
 use nalgebra::{Matrix4, Vector2, Vector3};
 use rust_engine_3d::constants::DEVELOPMENT;
 use rust_engine_3d::core::engine_core::TimeData;
@@ -17,6 +19,7 @@ use winit::keyboard::KeyCode;
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Debug, Display, EnumIter, EnumString, EnumCount)]
 pub enum KeyBindingType {
     None,
+    Help,
     Attack,
     PowerAttack,
     Interaction,
@@ -379,6 +382,8 @@ impl<'a> GameController<'a> {
         let is_next_item = keyboard_input_data.get_key_pressed(KeyCode::ArrowRight)
             || keyboard_input_data.get_key_pressed(KeyCode::KeyE)
             || joystick_input_data._btn_right == ButtonState::Pressed;
+        let is_help =
+            keyboard_input_data.get_key_pressed(KeyCode::F1) || joystick_input_data._btn_back == ButtonState::Pressed;
 
         let stick_left_direction = Vector2::<f32>::new(
             joystick_input_data._stick_left_direction.x as f32,
@@ -394,8 +399,7 @@ impl<'a> GameController<'a> {
         }
 
         if unsafe { DEVELOPMENT } {
-            let is_toggle_game_mode_by_joystick = joystick_input_data._btn_left_trigger
-                == ButtonState::Hold
+            let is_toggle_game_mode_by_joystick = joystick_input_data._btn_left_trigger == ButtonState::Hold
                 && joystick_input_data._btn_right_trigger == ButtonState::Hold
                 && joystick_input_data._btn_left_shoulder == ButtonState::Hold
                 && joystick_input_data._btn_right_shoulder == ButtonState::Hold;
@@ -403,6 +407,10 @@ impl<'a> GameController<'a> {
             if keyboard_input_data.get_key_pressed(KeyCode::Backquote) || is_toggle_game_mode_by_joystick {
                 get_game_client_mut().set_next_game_phase(GamePhase::GameDebugMenu);
             }
+        }
+
+        if is_help {
+            get_game_ui_manager_mut().toggle_controls_visibility();
         }
 
         // item control

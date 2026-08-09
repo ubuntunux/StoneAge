@@ -1,9 +1,11 @@
-use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM};
-use crate::game_module::game_service_locator::{get_application_mut, get_game_scene_manager, get_game_scene_manager_mut};
+use crate::game_module::game_constants::AUDIO_PICKUP_ITEM;
+use crate::game_module::game_service_locator::{
+    get_application_mut, get_game_scene_manager, get_game_scene_manager_mut,
+};
 use crate::game_module::game_weather::WeatherType;
 use nalgebra::Vector2;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
-use rust_engine_3d::constants::{SHOW_DEBUG_TEXT};
+use rust_engine_3d::constants::SHOW_DEBUG_TEXT;
 use rust_engine_3d::core::engine_service_locator::get_audio_manager_mut;
 use rust_engine_3d::core::input::{ButtonState, JoystickInputData, KeyboardInputData};
 use rust_engine_3d::scene::ui::{
@@ -136,10 +138,26 @@ impl<'a> GameDebugMenuWidget<'a> {
         });
 
         let menu_items = vec![
-            GameDebugMenuItem::create_game_debug_menu_item(game_debug_menu_widget.as_ref(), layer_mut, GameDebugMenuType::ToggleGameMode),
-            GameDebugMenuItem::create_game_debug_menu_item(game_debug_menu_widget.as_ref(), layer_mut, GameDebugMenuType::DebugText),
-            GameDebugMenuItem::create_game_debug_menu_item(game_debug_menu_widget.as_ref(), layer_mut, GameDebugMenuType::RainTest),
-            GameDebugMenuItem::create_game_debug_menu_item(game_debug_menu_widget.as_ref(), layer_mut, GameDebugMenuType::TimeTest),
+            GameDebugMenuItem::create_game_debug_menu_item(
+                game_debug_menu_widget.as_ref(),
+                layer_mut,
+                GameDebugMenuType::ToggleGameMode,
+            ),
+            GameDebugMenuItem::create_game_debug_menu_item(
+                game_debug_menu_widget.as_ref(),
+                layer_mut,
+                GameDebugMenuType::DebugText,
+            ),
+            GameDebugMenuItem::create_game_debug_menu_item(
+                game_debug_menu_widget.as_ref(),
+                layer_mut,
+                GameDebugMenuType::RainTest,
+            ),
+            GameDebugMenuItem::create_game_debug_menu_item(
+                game_debug_menu_widget.as_ref(),
+                layer_mut,
+                GameDebugMenuType::TimeTest,
+            ),
         ];
 
         game_debug_menu_widget.as_mut()._menu_items = menu_items;
@@ -213,8 +231,7 @@ impl<'a> GameDebugMenuWidget<'a> {
             || joystick_input_data._btn_x == ButtonState::Pressed
             || joystick_input_data._btn_a == ButtonState::Pressed;
 
-        let is_close_game_debug_menu = (joystick_input_data._btn_left_trigger
-            == ButtonState::Hold
+        let is_close_game_debug_menu = (joystick_input_data._btn_left_trigger == ButtonState::Hold
             && joystick_input_data._btn_right_trigger == ButtonState::Hold
             && joystick_input_data._btn_left_shoulder == ButtonState::Hold
             && joystick_input_data._btn_right_shoulder == ButtonState::Hold)

@@ -507,7 +507,10 @@ impl<'a> CharacterManager<'a> {
                         {
                             register_target_character = Some(target_character.clone());
 
-                            if target_character_mut.is_alive() {
+                            if target_character_mut.is_alive()
+                                && !target_character_mut.is_tamed()
+                                && !target_character_mut.is_civilian()
+                            {
                                 // hit living monster..
                                 target_character_mut.set_hit_damage(
                                     character_mut.get_power(character_mut._animation_state.get_action_event()),

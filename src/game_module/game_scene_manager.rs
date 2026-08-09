@@ -256,7 +256,11 @@ impl<'a> GameSceneManager<'a> {
         let game_ui_manager = get_game_ui_manager_mut();
         for create_infos in game_save_data._inventory_item_create_info_list.values() {
             for item_create_info in create_infos.iter() {
-                game_ui_manager.add_item(item_create_info._item_data_name.as_str(), item_create_info._item_count, false);
+                game_ui_manager.add_item(
+                    item_create_info._item_data_name.as_str(),
+                    item_create_info._item_count,
+                    false,
+                );
             }
         }
     }

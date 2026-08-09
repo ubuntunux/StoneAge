@@ -216,9 +216,9 @@ impl<'a> FishingGaugeWidget<'a> {
             }
         } else {
             // Misaligned -> Linear flashing RED based on dot alignment
-            let mismatch_factor =
-                ((FISHING_ALIGNMENT_MATCH_DOT - dot) / FISHING_ALIGNMENT_MATCH_DOT).clamp(0.0, 1.0);
-            self._blink_time += (FISHING_UI_BLINK_SPEED_BASE + mismatch_factor * FISHING_UI_BLINK_SPEED_SCALE) as f64 * delta_time;
+            let mismatch_factor = ((FISHING_ALIGNMENT_MATCH_DOT - dot) / FISHING_ALIGNMENT_MATCH_DOT).clamp(0.0, 1.0);
+            self._blink_time +=
+                (FISHING_UI_BLINK_SPEED_BASE + mismatch_factor * FISHING_UI_BLINK_SPEED_SCALE) as f64 * delta_time;
             let blink = 1.0 - (self._blink_time.sin() * 0.5 + 0.5).clamp(0.0, 1.0) as f32 * mismatch_factor * 0.5;
             color_r = (color_r as f32 * blink) as u32;
             color_g = (color_g as f32 * blink) as u32;

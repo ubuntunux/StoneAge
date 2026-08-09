@@ -1,9 +1,13 @@
 use crate::game_module::game_service_locator::get_game_resources;
-use crate::game_module::widgets::item_acquire_notification::{ItemAcquireEntry, ItemAcquireNotificationWidget, ItemAcquireSlot, MAX_NOTIFICATION_SLOTS, NOTIFICATION_DISPLAY_DURATION, NOTIFICATION_FADE_DURATION, NOTIFICATION_FONT_SIZE, NOTIFICATION_ICON_SIZE, NOTIFICATION_ICON_TEXT_MARGIN, NOTIFICATION_LAYOUT_WIDTH, NOTIFICATION_MARGIN_LEFT, NOTIFICATION_MARGIN_TOP, NOTIFICATION_ROW_MARGIN};
+use crate::game_module::widgets::item_acquire_notification::{
+    ItemAcquireEntry, ItemAcquireNotificationWidget, ItemAcquireSlot, MAX_NOTIFICATION_SLOTS,
+    NOTIFICATION_DISPLAY_DURATION, NOTIFICATION_FADE_DURATION, NOTIFICATION_FONT_SIZE, NOTIFICATION_ICON_SIZE,
+    NOTIFICATION_ICON_TEXT_MARGIN, NOTIFICATION_LAYOUT_WIDTH, NOTIFICATION_MARGIN_LEFT, NOTIFICATION_MARGIN_TOP,
+    NOTIFICATION_ROW_MARGIN,
+};
 use rust_engine_3d::core::engine_service_locator::get_engine_resources;
 use rust_engine_3d::scene::ui::{
-    HorizontalAlign, Orientation, PIVOT_TOP_LEFT, UILayoutType, UIManager, UIWidgetTypes,
-    VerticalAlign, WidgetDefault,
+    HorizontalAlign, Orientation, PIVOT_TOP_LEFT, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault,
 };
 use rust_engine_3d::utilities::system::ptr_as_mut;
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
@@ -107,9 +111,8 @@ impl<'a> ItemAcquireNotificationWidget<'a> {
             let game_resources = get_game_resources();
             let item_data = game_resources.get_item_data(item_data_name).borrow();
             let name = item_data._name.clone();
-            let material = get_engine_resources()
-                .get_material_instance_data(item_data._ui_material_instance.as_str())
-                .clone();
+            let material =
+                get_engine_resources().get_material_instance_data(item_data._ui_material_instance.as_str()).clone();
             (name, material)
         };
 

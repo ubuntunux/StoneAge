@@ -19,8 +19,7 @@ use std::ffi::c_void;
 use std::rc::Rc;
 
 const MAIN_LAYOUT_MARGIN: f32 = 10.0;
-const MAIN_LAYOUT_PADDING: f32 = 10.0;
-const MAIN_LAYOUT_SIZE: (f32, f32) = (280.0, 460.0);
+const MAIN_LAYOUT_SIZE: (f32, f32) = (100.0, 100.0);
 
 pub fn create_player_control_key_binding_widget<'a>(
     parent_widget: &mut WidgetDefault<'a>,
@@ -146,14 +145,14 @@ pub struct ControllerHelpWidget<'a> {
     pub _player_control_key_binding_widget_map: Rc<KeyBindingWidgetMap<'a>>,
     pub _interaction_key_binding_widget_map: Rc<KeyBindingWidgetMap<'a>>,
     pub _last_interaction_object_key: *const c_void,
-    pub _window_size: Vector2<i32>,
+    pub _is_controls_visible: bool,
 }
 
 impl<'a> ControllerHelpWidget<'a> {
     pub fn create_controller_help_widget(
         key_binding_widget_manager: *const KeyBindingWidgetManager<'a>,
         root_widget: &mut WidgetDefault<'a>,
-        window_size: &Vector2<i32>,
+        _3window_size: &Vector2<i32>,
     ) -> ControllerHelpWidget<'a> {
         let player_controller_help_widget =
             UIManager::create_widget("player_controller_help_widget", UIWidgetTypes::Default);
@@ -180,7 +179,7 @@ impl<'a> ControllerHelpWidget<'a> {
             _player_control_key_binding_widget_map: Rc::new(KeyBindingWidgetMap::default()),
             _interaction_key_binding_widget_map: Rc::new(KeyBindingWidgetMap::default()),
             _last_interaction_object_key: std::ptr::null(),
-            _window_size: *window_size,
+            _is_controls_visible: true,
         };
 
         player_controller_help_widget.register_key_binding_widgets(key_binding_widget_manager);
@@ -231,7 +230,7 @@ impl<'a> ControllerHelpWidget<'a> {
             ptr_as_mut(self._player_controller_help_widget),
             KeyBindingType::Attack,
             "attack_key_binding",
-            "Attack",
+            "Attack / Use Item",
             vec![engine_resources.get_material_instance_data("ui/controller/mouse_l").clone()],
             vec![engine_resources.get_material_instance_data("ui/controller/joystick_rb").clone()],
         ));
@@ -239,7 +238,7 @@ impl<'a> ControllerHelpWidget<'a> {
             ptr_as_mut(self._player_controller_help_widget),
             KeyBindingType::PowerAttack,
             "power_attack_key_binding",
-            "Power Attack",
+            "Power Attack / Interaction",
             vec![engine_resources.get_material_instance_data("ui/controller/mouse_r").clone()],
             vec![engine_resources.get_material_instance_data("ui/controller/joystick_rt").clone()],
         ));
@@ -266,6 +265,14 @@ impl<'a> ControllerHelpWidget<'a> {
             "Roll",
             vec![engine_resources.get_material_instance_data("ui/controller/keycode_alt").clone()],
             vec![engine_resources.get_material_instance_data("ui/controller/joystick_b").clone()],
+        ));
+        player_control_key_binding_widget_map.register_key_binding_widget(create_player_control_key_binding_widget(
+            ptr_as_mut(self._player_controller_help_widget),
+            KeyBindingType::Help,
+            "help_key_binding",
+            "Help",
+            vec![engine_resources.get_material_instance_data("ui/controller/keycode_f").clone()], // TODO: replace with keycode_f1 when resource is available
+            vec![engine_resources.get_material_instance_data("ui/controller/joystick_lt").clone()],
         ));
 
         // interaction
@@ -312,12 +319,17 @@ impl<'a> ControllerHelpWidget<'a> {
         ));
     }
 
-    pub fn changed_window_size(&mut self, window_size: &Vector2<i32>) {
-        self._window_size = *window_size;
+    pub fn toggle_controls_visibility(&mut self) {
+        self._is_controls_visible = !self._is_controls_visible;
+        let widget_map = ptr_as_mut(self._player_control_key_binding_widget_map.as_ref());
+        for (key_binding_type, key_binding_widget) in widget_map._key_binding_widget_map.iter_mut() {
+            if *key_binding_type != KeyBindingType::Help {
+                ptr_as_mut(key_binding_widget._layout_widget)._ui_component.set_enable(self._is_controls_visible);
+            }
+        }
+    }
 
-        let ui_component = ptr_as_mut(self._player_controller_help_widget).get_ui_component_mut();
-        ui_component
-            .set_size_y(ui_component.get_num_children() as f32 * KEY_BINDING_UI_SIZE + MAIN_LAYOUT_PADDING * 2.0);
+    pub fn changed_window_size(&mut self, _window_size: &Vector2<i32>) {
     }
 
     pub fn update_interaction_widget(&mut self) {

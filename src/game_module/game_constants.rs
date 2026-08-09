@@ -102,7 +102,7 @@ pub const NPC_ATTACK_HIT_RANGE: f32 = 2.0;
 pub const NPC_TRACKING_RANGE: f32 = 6.0;
 pub const NPC_ROAMING_RADIUS: f32 = 5.0;
 pub const NPC_ROAMING_TIME: f32 = 5.0;
-pub const NPC_AVAILABLE_MOVING_ATTACK: bool = false;
+pub const NPC_AVAILABLE_MOVING_ATTACK: bool = true;
 
 // intimacy
 pub const INTIMACY_INTERACTION_ADD: f32 = 10.0;

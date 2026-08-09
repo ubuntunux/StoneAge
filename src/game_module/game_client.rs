@@ -4,7 +4,10 @@ use crate::game_module::game_constants::{
     MATERIAL_INTRO_IMAGE, MATERIAL_UI_NONE, MATERIAL_WORLDMAP_FADE_TIME,
 };
 use crate::game_module::game_scene_manager::GameSceneState;
-use crate::game_module::game_service_locator::{get_character_manager, get_character_manager_mut, get_editor_ui_manager_mut, get_game_controller_mut, get_game_resources_mut, get_game_scene_manager, get_game_scene_manager_mut, get_game_ui_manager_mut};
+use crate::game_module::game_service_locator::{
+    get_character_manager, get_character_manager_mut, get_editor_ui_manager_mut, get_game_controller_mut,
+    get_game_resources_mut, get_game_scene_manager, get_game_scene_manager_mut, get_game_ui_manager_mut,
+};
 use crate::game_module::save_data::save_data::GameSaveData;
 use nalgebra::{Vector2, Vector3};
 use rust_engine_3d::core::engine_service_locator::{
