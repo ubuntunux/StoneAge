@@ -19,8 +19,9 @@ pub const FISHING_UI_VERTICAL_GAUGE_WIDTH: f32 = 35.0;
 pub const FISHING_UI_VERTICAL_GAUGE_HEIGHT: f32 = 170.0;
 
 // UI Color & Animation Tuning Constants
-pub const FISHING_UI_BLINK_SPEED_BASE: f32 = 6.0;
-pub const FISHING_UI_BLINK_SPEED_SCALE: f32 = 14.0;
+pub const FISHING_UI_BLINK_SPEED_BASE: f32 = 10.0;
+pub const FISHING_UI_BLINK_SPEED_SCALE: f32 = 60.0;
+pub const SHOW_FISH_ICON: bool = true;
 
 pub struct FishingGaugeWidget<'a> {
     pub _main_layer: *const WidgetDefault<'a>,
@@ -31,6 +32,7 @@ pub struct FishingGaugeWidget<'a> {
     pub _status_text: *const WidgetDefault<'a>,
     pub _vertical_gauge: StatusBarWidget<'a>,
     pub _cast_gauge: StatusBarWidget<'a>,
+    pub _blink_time: f64,
 }
 
 impl<'a> FishingGaugeWidget<'a> {
@@ -87,7 +89,7 @@ impl<'a> FishingGaugeWidget<'a> {
         ui.set_font_size(14.0);
         ui.set_font_color(get_color32(20, 20, 20, 255));
         ui.set_text("Fish");
-        //ui.set_renderable(false);
+        ui.set_renderable(SHOW_FISH_ICON);
         direction_panel_ptr.add_widget(&fish_icon_widget);
 
         // Player needle widget (rotates with player angle input)
@@ -142,6 +144,7 @@ impl<'a> FishingGaugeWidget<'a> {
             _status_text: status_text_ptr,
             _vertical_gauge: vertical_gauge,
             _cast_gauge: cast_gauge,
+            _blink_time: 0.0,
         }
     }
 
@@ -152,7 +155,7 @@ impl<'a> FishingGaugeWidget<'a> {
         }
     }
 
-    pub fn update_fishing_gauge_widget(&self, player: &Character<'a>, delta_time: f64) {
+    pub fn update_fishing_gauge_widget(&mut self, player: &Character<'a>, delta_time: f64) {
         if player.is_action(crate::game_module::actors::character::ActionAnimationState::FishingBegin) {
             ptr_as_mut(self._main_layer).get_ui_component_mut().set_visible(false);
             ptr_as_mut(self._cast_gauge._status_layer).get_ui_component_mut().set_visible(true);
@@ -173,7 +176,7 @@ impl<'a> FishingGaugeWidget<'a> {
         if !fishing_state._is_minigame_active {
             ptr_as_mut(self._status_text).get_ui_component_mut().set_text("Waiting...\nFish Bite");
             self._vertical_gauge.set_bar_color(get_color32(0, 200, 255, 230));
-            self._vertical_gauge.update_vertical_status_widget(0.5, 1.0, delta_time, false);
+            self._vertical_gauge.update_vertical_status_widget(0.5, delta_time, false);
             return;
         }
 
@@ -198,11 +201,14 @@ impl<'a> FishingGaugeWidget<'a> {
         // Linear color & text feedback based on dot product alignment
         let dot = fishing_state._direction_dot;
 
+        const COLOR_MIN: u32 = 32;
+        const COLOR_MAX: u32 = 255;
+        let color_gauge = fishing_state._fish_gauge;
+        let mut color_r = COLOR_MAX;
+        let mut color_g = (COLOR_MIN as f32 * color_gauge + COLOR_MAX as f32 * (1.0 - color_gauge)) as u32;
+        let mut color_b = COLOR_MIN;
+        const ALPHA: u32 = 240;
         if dot >= FISHING_ALIGNMENT_MATCH_DOT {
-            // High alignment -> Solid Blue
-            let blue_intensity =
-                (180.0 + 75.0 * ((dot - FISHING_ALIGNMENT_MATCH_DOT) / (1.0 - FISHING_ALIGNMENT_MATCH_DOT))) as u32;
-            self._vertical_gauge.set_bar_color(get_color32(0, blue_intensity, 255, 230));
             if fishing_state._is_pulling {
                 ptr_as_mut(self._status_text).get_ui_component_mut().set_text("MATCH!\nPULLING!");
             } else {
@@ -211,17 +217,12 @@ impl<'a> FishingGaugeWidget<'a> {
         } else {
             // Misaligned -> Linear flashing RED based on dot alignment
             let mismatch_factor =
-                ((FISHING_ALIGNMENT_MATCH_DOT - dot) / (1.0 + FISHING_ALIGNMENT_MATCH_DOT)).clamp(0.0, 1.0);
-            let time_sec =
-                std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap_or_default().as_secs_f32();
-            let blink =
-                (time_sec * (FISHING_UI_BLINK_SPEED_BASE + mismatch_factor * FISHING_UI_BLINK_SPEED_SCALE)).sin() * 0.5
-                    + 0.5;
-
-            let red = (120.0 + (135.0 * mismatch_factor) * blink) as u32;
-            let green_blue = ((1.0 - mismatch_factor) * 120.0 * (1.0 - blink)) as u32;
-
-            self._vertical_gauge.set_bar_color(get_color32(red, green_blue, green_blue, 240));
+                ((FISHING_ALIGNMENT_MATCH_DOT - dot) / FISHING_ALIGNMENT_MATCH_DOT).clamp(0.0, 1.0);
+            self._blink_time += (FISHING_UI_BLINK_SPEED_BASE + mismatch_factor * FISHING_UI_BLINK_SPEED_SCALE) as f64 * delta_time;
+            let blink = 1.0 - (self._blink_time.sin() * 0.5 + 0.5).clamp(0.0, 1.0) as f32 * mismatch_factor * 0.5;
+            color_r = (color_r as f32 * blink) as u32;
+            color_g = (color_g as f32 * blink) as u32;
+            color_b = (color_b as f32 * blink) as u32;
 
             if fishing_state._is_pulling {
                 ptr_as_mut(self._status_text).get_ui_component_mut().set_text("MISMATCH!\nDANGER!");
@@ -229,7 +230,8 @@ impl<'a> FishingGaugeWidget<'a> {
                 ptr_as_mut(self._status_text).get_ui_component_mut().set_text("ALIGN DIR!\nA / D");
             }
         }
+        self._vertical_gauge.set_bar_color(get_color32(color_r, color_g, color_b, ALPHA));
 
-        self._vertical_gauge.update_vertical_status_widget(fishing_state._fish_gauge, 1.0, delta_time, false);
+        self._vertical_gauge.update_vertical_status_widget(fishing_state._fish_gauge, delta_time, false);
     }
 }

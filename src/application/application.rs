@@ -74,13 +74,15 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
         let engine_core = get_engine_core_mut();
 
         if unsafe { DEVELOPMENT } {
-            let is_toggle_game_mode_by_joystick = engine_core._joystick_input_data._btn_left_trigger
+            let is_toggle_game_mode = (engine_core._joystick_input_data._btn_left_trigger
                 == ButtonState::Hold
                 && engine_core._joystick_input_data._btn_right_trigger == ButtonState::Hold
                 && engine_core._joystick_input_data._btn_left_shoulder == ButtonState::Hold
-                && engine_core._joystick_input_data._btn_right_shoulder == ButtonState::Hold;
+                && engine_core._joystick_input_data._btn_right_shoulder == ButtonState::Hold)
+                || engine_core._keyboard_input_data.get_key_pressed(KeyCode::Backquote)
+                || engine_core._keyboard_input_data.get_key_pressed(KeyCode::Escape);
 
-            if engine_core._keyboard_input_data.get_key_pressed(KeyCode::Backquote) || is_toggle_game_mode_by_joystick {
+            if  is_toggle_game_mode {
                 self.set_game_mode(true);
             }
         }

@@ -21,7 +21,7 @@ pub const FISHING_PLAYER_RETURN_MIN_FACTOR: f32 = 0.20;
 pub const FISHING_FISH_BASE_TURN_SPEED: f32 = 75.0;
 pub const FISHING_FISH_TURN_MIN_FACTOR: f32 = 0.25;
 pub const FISHING_FISH_TURN_SPEED: f32 = FISHING_FISH_BASE_TURN_SPEED;
-pub const FISHING_ALIGNMENT_MATCH_DOT: f32 = 0.85;
+pub const FISHING_ALIGNMENT_MATCH_DOT: f32 = 0.95;
 pub const FISHING_PULL_DECREASE_MAX: f32 = 0.30;
 pub const FISHING_PULL_FAIL_INCREASE_MAX: f32 = 0.38;
 pub const FISHING_IDLE_INCREASE_SPEED: f32 = 0.18;
@@ -136,11 +136,9 @@ impl<'a> Character<'a> {
 
         let dot = self._fishing_state._direction_dot;
         let impulse = if dot >= FISHING_ALIGNMENT_MATCH_DOT {
-            let t = (dot - FISHING_ALIGNMENT_MATCH_DOT) / (1.0 - FISHING_ALIGNMENT_MATCH_DOT);
-            -FISHING_PRESS_BONUS_MAX * t
+            -FISHING_PRESS_BONUS_MAX
         } else {
-            let t = (FISHING_ALIGNMENT_MATCH_DOT - dot) / (1.0 + FISHING_ALIGNMENT_MATCH_DOT);
-            FISHING_PRESS_PENALTY_MAX * t
+            FISHING_PRESS_PENALTY_MAX
         };
 
         self._fishing_state._fish_gauge += impulse;

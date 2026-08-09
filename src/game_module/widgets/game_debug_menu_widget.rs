@@ -1,9 +1,9 @@
 use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM};
-use crate::game_module::game_service_locator::{get_application_mut, get_game_client_mut, get_game_scene_manager, get_game_scene_manager_mut};
+use crate::game_module::game_service_locator::{get_application_mut, get_game_scene_manager, get_game_scene_manager_mut};
 use crate::game_module::game_weather::WeatherType;
 use nalgebra::Vector2;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
-use rust_engine_3d::constants::{DEVELOPMENT, SHOW_DEBUG_TEXT};
+use rust_engine_3d::constants::{SHOW_DEBUG_TEXT};
 use rust_engine_3d::core::engine_service_locator::get_audio_manager_mut;
 use rust_engine_3d::core::input::{ButtonState, JoystickInputData, KeyboardInputData};
 use rust_engine_3d::scene::ui::{
@@ -17,7 +17,6 @@ use std::rc::Rc;
 use strum::EnumCount;
 use strum_macros::{Display, EnumCount, EnumIter, EnumString, FromRepr};
 use winit::keyboard::KeyCode;
-use crate::game_module::game_client::GamePhase;
 
 const ITEM_WIDTH: f32 = 250.0;
 const ITEM_HEIGHT: f32 = 60.0;
@@ -214,11 +213,13 @@ impl<'a> GameDebugMenuWidget<'a> {
             || joystick_input_data._btn_x == ButtonState::Pressed
             || joystick_input_data._btn_a == ButtonState::Pressed;
 
-        let is_toggle_game_mode_by_joystick = joystick_input_data._btn_left_trigger
+        let is_close_game_debug_menu = (joystick_input_data._btn_left_trigger
             == ButtonState::Hold
             && joystick_input_data._btn_right_trigger == ButtonState::Hold
             && joystick_input_data._btn_left_shoulder == ButtonState::Hold
-            && joystick_input_data._btn_right_shoulder == ButtonState::Hold;
+            && joystick_input_data._btn_right_shoulder == ButtonState::Hold)
+            || keyboard_input_data.get_key_pressed(KeyCode::Backquote)
+            || keyboard_input_data.get_key_pressed(KeyCode::Escape);
 
         if move_menu_up {
             let selected_menu_item: usize = if self._selected_menu_item as usize == 0 {
@@ -238,7 +239,7 @@ impl<'a> GameDebugMenuWidget<'a> {
 
         if press_game_debug_menu {
             self.press_game_debug_menu(self._selected_menu_item);
-        } else if keyboard_input_data.get_key_pressed(KeyCode::Backquote) || is_toggle_game_mode_by_joystick {
+        } else if is_close_game_debug_menu {
             self.close_game_debug_menu();
         }
     }
