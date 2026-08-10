@@ -366,6 +366,25 @@ impl<'a> ItemBarWidget<'a> {
         &self._inventory_slots[slot_index]
     }
 
+    pub fn swap_inventory_slots(&mut self, src_slot_index: usize, dst_slot_index: usize) -> bool {
+        if src_slot_index < TOTAL_INVENTORY_SLOTS
+            && dst_slot_index < TOTAL_INVENTORY_SLOTS
+            && src_slot_index != dst_slot_index
+        {
+            self._inventory_slots.swap(src_slot_index, dst_slot_index);
+
+            if self._selected_inventory_slot_index == src_slot_index {
+                self._selected_inventory_slot_index = dst_slot_index;
+            } else if self._selected_inventory_slot_index == dst_slot_index {
+                self._selected_inventory_slot_index = src_slot_index;
+            }
+
+            self.update_quick_slot_widgets();
+            return true;
+        }
+        false
+    }
+
     pub fn get_selected_inventory_slot_index(&self) -> usize {
         self._selected_inventory_slot_index
     }
@@ -541,6 +560,9 @@ impl<'a> ItemBarWidget<'a> {
     pub fn select_item(&mut self, slot_index: usize) {
         if let Some(player) = get_character_manager().get_maybe_player() {
             let player = ptr_as_mut(player.as_ptr());
+            if slot_index < TOTAL_INVENTORY_SLOTS {
+                self._active_row_index = slot_index / SLOTS_PER_ROW;
+            }
             if slot_index < TOTAL_INVENTORY_SLOTS
                 && self._inventory_slots[slot_index]._item_data_name != ITEM_NONE
                 && self._inventory_slots[slot_index]._item_count > 0

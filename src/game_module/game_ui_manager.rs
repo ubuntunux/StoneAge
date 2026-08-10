@@ -204,7 +204,7 @@ impl<'a> GameUIManager<'a> {
         ui_component.set_renderable(false);
         root_widget.add_widget(&game_menu_layout);
 
-        self._inventory_widget = Some(Box::new(InventoryWidget::create_inventory_widget(game_menu_layout_mut)));
+        self._inventory_widget = Some(InventoryWidget::create_inventory_widget(game_menu_layout_mut));
         self._game_menu_widget = Some(GameMenuWidget::create_game_menu_widget(game_menu_layout_mut));
 
         // root layer
@@ -456,6 +456,18 @@ impl<'a> GameUIManager<'a> {
         if let Some(inventory_widget) = self._inventory_widget.as_mut() {
             inventory_widget.refresh_inventory_widget();
         }
+    }
+
+    pub fn swap_inventory_slots(&mut self, src_slot_index: usize, dst_slot_index: usize) -> bool {
+        let result = if let Some(item_bar_widget) = self._item_bar_widget.as_mut() {
+            item_bar_widget.swap_inventory_slots(src_slot_index, dst_slot_index)
+        } else {
+            false
+        };
+        if let Some(inventory_widget) = self._inventory_widget.as_mut() {
+            inventory_widget.refresh_inventory_widget();
+        }
+        result
     }
 
     // inventory
