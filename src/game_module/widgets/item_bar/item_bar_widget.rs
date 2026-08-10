@@ -459,6 +459,8 @@ impl<'a> ItemBarWidget<'a> {
                         _item_name: slot._item_name.clone(),
                         _item_data_type: slot._item_data_type,
                         _item_index: slot_idx,
+                        _row: row,
+                        _column: col,
                         _item_count: slot._item_count,
                     });
                 }
@@ -468,6 +470,32 @@ impl<'a> ItemBarWidget<'a> {
             }
         }
         inventory_item_create_info_list
+    }
+
+    pub fn get_selected_quick_slot_row_col(&self) -> Option<(usize, usize)> {
+        let selected_slot = self._selected_inventory_slot_index;
+        if selected_slot != INVALID_ITEM_INDEX && selected_slot < TOTAL_INVENTORY_SLOTS {
+            Some((selected_slot / SLOTS_PER_ROW, selected_slot % SLOTS_PER_ROW))
+        } else {
+            None
+        }
+    }
+
+    pub fn add_item_at_slot(&mut self, slot_index: usize, item_data_name: &str, item_count: usize) -> bool {
+        if slot_index < TOTAL_INVENTORY_SLOTS && item_data_name != ITEM_NONE {
+            let item_data = get_game_resources().get_item_data(item_data_name).borrow();
+            let material = get_engine_resources().get_material_instance_data(item_data._ui_material_instance.as_str());
+            let slot = &mut self._inventory_slots[slot_index];
+            slot._item_name = item_data._name.clone();
+            slot._item_data_name = item_data_name.to_string();
+            slot._item_data_type = item_data._item_type;
+            slot._material_instance = Some(material.clone());
+            slot._item_count = item_count;
+            self._item_count += 1;
+            self.update_quick_slot_widgets();
+            return true;
+        }
+        false
     }
 
     pub fn clear_item_bar_widget(&mut self) {

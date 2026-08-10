@@ -458,6 +458,26 @@ impl<'a> GameUIManager<'a> {
         }
     }
 
+    pub fn add_item_at_slot(&mut self, slot_index: usize, item_data_name: &str, item_count: usize) -> bool {
+        if let Some(item_bar) = self._item_bar_widget.as_mut() {
+            let result = item_bar.add_item_at_slot(slot_index, item_data_name, item_count);
+            if let Some(inventory_widget) = self._inventory_widget.as_mut() {
+                inventory_widget.refresh_inventory_widget();
+            }
+            result
+        } else {
+            false
+        }
+    }
+
+    pub fn get_selected_quick_slot_row_col(&self) -> Option<(usize, usize)> {
+        if let Some(item_bar) = self._item_bar_widget.as_ref() {
+            item_bar.get_selected_quick_slot_row_col()
+        } else {
+            None
+        }
+    }
+
     pub fn swap_inventory_slots(&mut self, src_slot_index: usize, dst_slot_index: usize) -> bool {
         let result = if let Some(item_bar_widget) = self._item_bar_widget.as_mut() {
             item_bar_widget.swap_inventory_slots(src_slot_index, dst_slot_index)

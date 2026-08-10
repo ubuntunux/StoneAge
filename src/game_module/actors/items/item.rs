@@ -404,30 +404,45 @@ impl<'a> ItemManager<'a> {
             item.borrow_mut().update_item(scene_manager.get_height_map_data(), delta_time);
         }
 
-        let mut pick_items: Vec<RcRefCell<Item>> = Vec::new();
-        {
-            let player = character_manager.get_player();
-            let player_mut = player.borrow_mut();
-            let player_position = player_mut.get_position();
-            let player_bound_box = player_mut.get_bounding_box();
-            for (_key, item) in self._items.iter() {
+        let (player_position, player_bound_box) = {
+            let player = character_manager.get_player().borrow();
+            (*player.get_position(), player.get_bounding_box().clone())
+        };
+
+        let mut items_to_pick: Vec<(String, RcRefCell<Item>)> = Vec::new();
+        let mut items_to_remove: Vec<RcRefCell<Item>> = Vec::new();
+
+        for item in self._items.values() {
+            let (item_pos, item_min_y, item_max_y, item_data_name, is_pickable) = {
                 let item_ref = item.borrow();
-                let diff = item_ref._item_properties._position - player_position;
-                let check_height = item_ref._render_object.borrow()._bounding_box._min.y <= player_bound_box._max.y
-                    && player_bound_box._min.y <= item_ref._render_object.borrow()._bounding_box._max.y;
-                if check_height && math::get_norm_xz(&diff) <= EAT_ITEM_DISTANCE && item_ref.pickable_item() {
-                    let item_count = 1;
-                    let success = self.pick_item(item_ref._item_data_name.as_str(), item_count);
-                    if success {
-                        pick_items.push(item.clone());
-                    }
-                } else if item_ref._item_properties._position.y < scene_manager.get_dead_zone_height() {
-                    pick_items.push(item.clone());
-                }
+                let render_obj = item_ref._render_object.borrow();
+                (
+                    item_ref._item_properties._position,
+                    render_obj._bounding_box._min.y,
+                    render_obj._bounding_box._max.y,
+                    item_ref._item_data_name.clone(),
+                    item_ref.pickable_item(),
+                )
+            };
+
+            let diff = item_pos - player_position;
+            let check_height = item_min_y <= player_bound_box._max.y && player_bound_box._min.y <= item_max_y;
+
+            if check_height && math::get_norm_xz(&diff) <= EAT_ITEM_DISTANCE && is_pickable {
+                items_to_pick.push((item_data_name, item.clone()));
+            } else if item_pos.y < scene_manager.get_dead_zone_height() {
+                items_to_remove.push(item.clone());
             }
         }
 
-        for item in pick_items.iter() {
+        for (item_data_name, item) in items_to_pick {
+            let success = self.pick_item(item_data_name.as_str(), 1);
+            if success {
+                items_to_remove.push(item);
+            }
+        }
+
+        for item in items_to_remove.iter() {
             self.remove_item(item);
         }
     }

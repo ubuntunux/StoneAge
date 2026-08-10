@@ -47,6 +47,8 @@ pub struct InventoryItemCreateInfo {
     pub _item_name: String,
     pub _item_data_type: ItemDataType,
     pub _item_index: usize,
+    pub _row: usize,
+    pub _column: usize,
     pub _item_count: usize,
 }
 
