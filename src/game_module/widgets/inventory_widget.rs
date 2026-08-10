@@ -133,7 +133,6 @@ impl<'a> InventoryWidget<'a> {
         ui_component.set_enable(false);
         parent_widget.add_widget(&layer);
 
-        // Title & Header Layout
         let header_layout = UIManager::create_widget("header", UIWidgetTypes::Default);
         let header_layout_mut = ptr_as_mut(header_layout.as_ref());
         let ui_component = header_layout_mut.get_ui_component_mut();
@@ -141,7 +140,7 @@ impl<'a> InventoryWidget<'a> {
         ui_component.set_layout_orientation(Orientation::HORIZONTAL);
         ui_component.set_halign(HorizontalAlign::RIGHT);
         ui_component.set_valign(VerticalAlign::CENTER);
-        ui_component.set_size_x(800.0);
+        ui_component.set_size_hint_x(Some(1.0));
         ui_component.set_size_y(0.0);
         ui_component.set_round(5.0);
         ui_component.set_margin(10.0);
@@ -196,7 +195,8 @@ impl<'a> InventoryWidget<'a> {
         ui_component.set_color(get_color32(160, 140, 100, 200));
         ui_component.set_round(5.0);
         ui_component.set_margin(10.0);
-        ui_component.set_size(0.0, 0.0);
+        ui_component.set_size_hint_x(Some(1.0));
+        ui_component.set_size_y(0.0);
         ui_component.set_expandable(true);
         inventory_widget.add_widget(&row_layout);
         row_layout
