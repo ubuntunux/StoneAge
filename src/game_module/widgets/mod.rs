@@ -6,6 +6,7 @@ pub mod game_audio_manager;
 pub mod game_debug_menu_widget;
 pub mod game_menu_widget;
 pub mod image_widget;
+pub mod inventory_widget;
 pub mod item_acquire_notification;
 pub mod item_bar;
 pub mod key_binding_widget;

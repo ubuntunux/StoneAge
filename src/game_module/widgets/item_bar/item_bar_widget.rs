@@ -6,8 +6,8 @@ use crate::game_module::game_service_locator::{
 };
 use crate::game_module::widgets::item_bar::{
     INVALID_ITEM_INDEX, ITEM_BAR_WIDGET_POS_Y_FROM_BOTTOM, ITEM_UI_SIZE, ITEM_WIDGET_UI_MARGIN,
-    InventoryItemCreateInfo, InventoryItemCreateInfoList, ItemBarWidget, ItemSelectionWidget, ItemWidget,
-    MAX_ITEM_COUNT,
+    InventoryItemCreateInfo, InventoryItemCreateInfoList, InventorySlotData, ItemBarWidget, ItemSelectionWidget, ItemWidget,
+    MAX_INVENTORY_ROWS, MAX_ITEM_COUNT, SLOTS_PER_ROW, TOTAL_INVENTORY_SLOTS,
 };
 use crate::game_module::widgets::key_binding_widget::{
     KEY_BINDING_FONT_SIZE, KEY_BINDING_ICON_MARGIN, KEY_BINDING_TEXT_MARGIN, KEY_BINDING_UI_SIZE, KeyBindingWidget,
@@ -135,8 +135,6 @@ impl<'a> ItemBarWidget<'a> {
         ui_component.set_valign(VerticalAlign::CENTER);
         ui_component.set_color(get_color32(0, 0, 0, 128));
         ui_component.set_round(5.0);
-        //ui_component.set_border(2.0);
-        //ui_component.set_border_color(get_color32(0, 0, 0, 255));
         ui_component.set_expandable(true);
         ui_component.set_pivot_preset(PIVOT_BOTTOM_CENTER);
         ui_component.set_pos_hint(Some(0.5), Some(1.0));
@@ -153,17 +151,24 @@ impl<'a> ItemBarWidget<'a> {
         ui_component.set_visible(false);
         parent_widget.add_widget(&selected_item_widget);
 
+        let mut inventory_slots = Vec::with_capacity(TOTAL_INVENTORY_SLOTS);
+        for _ in 0..TOTAL_INVENTORY_SLOTS {
+            inventory_slots.push(InventorySlotData::default());
+        }
+
         let mut item_bar_widget = ItemBarWidget {
             _parent_widget: parent_widget,
             _layer: layer.as_ref(),
             _item_widgets: Vec::new(),
+            _inventory_slots: inventory_slots,
+            _active_row_index: 0,
             _selected_item_widget: ItemSelectionWidget {
                 _item_index: INVALID_ITEM_INDEX,
                 _widget: selected_item_widget.as_ref(),
             },
-            _selected_item_index: usize::MAX,
+            _selected_inventory_slot_index: INVALID_ITEM_INDEX,
             _item_count: 0,
-            _max_item_count: MAX_ITEM_COUNT,
+            _max_item_count: TOTAL_INVENTORY_SLOTS,
             _inventory_key_binding_widget_map: Rc::new(KeyBindingWidgetMap::default()),
             _quick_slot_key_binding_widget_map: Rc::new(KeyBindingWidgetMap::default()),
             _window_size: *window_size,
@@ -313,6 +318,56 @@ impl<'a> ItemBarWidget<'a> {
     pub fn update_item_bar_widget_layout(&mut self) {
         let ui_component = ptr_as_mut(self._layer).get_ui_component_mut();
         ui_component.set_size_y(ITEM_UI_SIZE);
+        self.update_quick_slot_widgets();
+    }
+
+    pub fn update_quick_slot_widgets(&mut self) {
+        let start_slot = self._active_row_index * SLOTS_PER_ROW;
+        for i in 0..SLOTS_PER_ROW {
+            let slot_idx = start_slot + i;
+            let slot_data = &self._inventory_slots[slot_idx];
+            self._item_widgets[i].set_item_data(
+                &slot_data._item_name,
+                &slot_data._item_data_name,
+                slot_data._item_data_type,
+                slot_data._material_instance.clone(),
+                slot_data._item_count,
+            );
+        }
+
+        let selected_slot = self._selected_inventory_slot_index;
+        if selected_slot != INVALID_ITEM_INDEX
+            && selected_slot >= start_slot
+            && selected_slot < start_slot + SLOTS_PER_ROW
+        {
+            let quick_idx = selected_slot - start_slot;
+            self._selected_item_widget.update_selected_item_widget(quick_idx, Some(&self._item_widgets[quick_idx]));
+        } else {
+            self._selected_item_widget.update_selected_item_widget(INVALID_ITEM_INDEX, None);
+        }
+    }
+
+    pub fn switch_active_row(&mut self) -> usize {
+        self._active_row_index = (self._active_row_index + 1) % MAX_INVENTORY_ROWS;
+        self.update_quick_slot_widgets();
+        self._active_row_index
+    }
+
+    pub fn set_active_row_index(&mut self, row_index: usize) {
+        self._active_row_index = row_index % MAX_INVENTORY_ROWS;
+        self.update_quick_slot_widgets();
+    }
+
+    pub fn get_active_row_index(&self) -> usize {
+        self._active_row_index
+    }
+
+    pub fn get_inventory_slot_data(&self, slot_index: usize) -> &InventorySlotData<'a> {
+        &self._inventory_slots[slot_index]
+    }
+
+    pub fn get_selected_inventory_slot_index(&self) -> usize {
+        self._selected_inventory_slot_index
     }
 
     pub fn get_item_widget(&self, index: usize) -> &ItemWidget<'a> {
@@ -332,98 +387,120 @@ impl<'a> ItemBarWidget<'a> {
     }
 
     pub fn get_item_count(&self, item_data_name: &str) -> usize {
-        if let Some(item_widget) = self.find_item_widget(item_data_name) {
-            return item_widget.get_item_count();
+        let mut total = 0;
+        for slot in self._inventory_slots.iter() {
+            if slot._item_data_name == item_data_name {
+                total += slot._item_count;
+            }
         }
-        0
+        total
     }
 
     pub fn get_selected_item_data_name(&self) -> &str {
-        if self.get_selected_item_index() != INVALID_ITEM_INDEX {
-            return self._item_widgets[self.get_selected_item_index()]._item_data_name.as_str();
+        if self._selected_inventory_slot_index != INVALID_ITEM_INDEX
+            && self._selected_inventory_slot_index < TOTAL_INVENTORY_SLOTS
+        {
+            return self._inventory_slots[self._selected_inventory_slot_index]._item_data_name.as_str();
         }
         ITEM_NONE
     }
 
     pub fn get_selected_item_name(&self) -> &str {
-        if self.get_selected_item_index() != INVALID_ITEM_INDEX {
-            return self._item_widgets[self.get_selected_item_index()]._item_name.as_str();
+        if self._selected_inventory_slot_index != INVALID_ITEM_INDEX
+            && self._selected_inventory_slot_index < TOTAL_INVENTORY_SLOTS
+        {
+            return self._inventory_slots[self._selected_inventory_slot_index]._item_name.as_str();
         }
         ITEM_NONE
     }
 
     pub fn get_selected_item_data_type(&self) -> ItemDataType {
-        if self.get_selected_item_index() != INVALID_ITEM_INDEX {
-            return self._item_widgets[self.get_selected_item_index()]._item_data_type;
+        if self._selected_inventory_slot_index != INVALID_ITEM_INDEX
+            && self._selected_inventory_slot_index < TOTAL_INVENTORY_SLOTS
+        {
+            return self._inventory_slots[self._selected_inventory_slot_index]._item_data_type;
         }
         ItemDataType::None
     }
 
     pub fn get_selected_item_index(&self) -> usize {
-        self._selected_item_widget.get_item_index()
+        self._selected_inventory_slot_index
     }
 
     pub fn get_inventory_item_create_infos(&self) -> InventoryItemCreateInfoList {
         let mut inventory_item_create_info_list = InventoryItemCreateInfoList::new();
-        let mut create_infos = Vec::new();
-        for item_widget in self._item_widgets.iter() {
-            if 0 < item_widget._item_count && item_widget._item_data_name != ITEM_NONE {
-                create_infos.push(InventoryItemCreateInfo {
-                    _item_data_name: item_widget._item_data_name.clone(),
-                    _item_name: item_widget._item_name.clone(),
-                    _item_data_type: item_widget._item_data_type,
-                    _item_index: item_widget._item_index,
-                    _item_count: item_widget._item_count,
-                });
+        for row in 0..MAX_INVENTORY_ROWS {
+            let mut create_infos = Vec::new();
+            for col in 0..SLOTS_PER_ROW {
+                let slot_idx = row * SLOTS_PER_ROW + col;
+                let slot = &self._inventory_slots[slot_idx];
+                if 0 < slot._item_count && slot._item_data_name != ITEM_NONE {
+                    create_infos.push(InventoryItemCreateInfo {
+                        _item_data_name: slot._item_data_name.clone(),
+                        _item_name: slot._item_name.clone(),
+                        _item_data_type: slot._item_data_type,
+                        _item_index: slot_idx,
+                        _item_count: slot._item_count,
+                    });
+                }
             }
-        }
-        if !create_infos.is_empty() {
-            inventory_item_create_info_list.insert(0, create_infos);
+            if !create_infos.is_empty() {
+                inventory_item_create_info_list.insert(row, create_infos);
+            }
         }
         inventory_item_create_info_list
     }
 
     pub fn clear_item_bar_widget(&mut self) {
-        for item_widget in self._item_widgets.iter_mut() {
-            item_widget.set_item_data(ITEM_NONE, ITEM_NONE, ItemDataType::None, None, 0);
+        for slot in self._inventory_slots.iter_mut() {
+            slot._item_data_name = String::from(ITEM_NONE);
+            slot._item_name = String::from(ITEM_NONE);
+            slot._item_data_type = ItemDataType::None;
+            slot._material_instance = None;
+            slot._item_count = 0;
         }
         self._item_count = 0;
         self.select_item(INVALID_ITEM_INDEX);
     }
 
     pub fn add_item(&mut self, item_data_name: &str, item_count: usize) -> bool {
-        if item_data_name != ITEM_NONE && self._item_count < self._max_item_count {
+        if item_data_name != ITEM_NONE {
             let was_empty_item = self.get_selected_item_data_name() == ITEM_NONE;
-            let mut item_index = 0;
+            let mut target_slot_index = INVALID_ITEM_INDEX;
 
-            if let Some(item_widget) = self.find_item_widget_mut(item_data_name) {
-                item_widget.add_item_count(item_count);
-            } else {
-                for item_widget in self._item_widgets.iter_mut() {
-                    if item_widget._item_data_name == ITEM_NONE {
+            for (idx, slot) in self._inventory_slots.iter_mut().enumerate() {
+                if slot._item_data_name == item_data_name && slot._item_count > 0 {
+                    slot._item_count += item_count;
+                    target_slot_index = idx;
+                    break;
+                }
+            }
+
+            if target_slot_index == INVALID_ITEM_INDEX {
+                for (idx, slot) in self._inventory_slots.iter_mut().enumerate() {
+                    if slot._item_count == 0 || slot._item_data_name == ITEM_NONE || slot._item_data_name.is_empty() {
                         let item_data = get_game_resources().get_item_data(item_data_name).borrow();
                         let material =
                             get_engine_resources().get_material_instance_data(item_data._ui_material_instance.as_str());
-                        item_widget.set_item_data(
-                            item_data._name.as_ref(),
-                            item_data_name,
-                            item_data._item_type,
-                            Some(material.clone()),
-                            item_count,
-                        );
-                        item_index = item_widget._item_index;
+                        slot._item_name = item_data._name.clone();
+                        slot._item_data_name = item_data_name.to_string();
+                        slot._item_data_type = item_data._item_type;
+                        slot._material_instance = Some(material.clone());
+                        slot._item_count = item_count;
+                        target_slot_index = idx;
                         self._item_count += 1;
                         break;
                     }
                 }
             }
 
-            if was_empty_item {
-                self.select_item(item_index);
+            if target_slot_index != INVALID_ITEM_INDEX {
+                if was_empty_item {
+                    self.select_item(target_slot_index);
+                }
+                self.update_quick_slot_widgets();
+                return true;
             }
-
-            self.update_item_bar_widget_layout();
-            return true;
         }
         false
     }
@@ -433,99 +510,122 @@ impl<'a> ItemBarWidget<'a> {
             return false;
         }
 
-        if let Some(item_widget) = self.find_item_widget_mut(item_data_name) {
-            let item_count = item_widget.remove_item_count(item_count);
-            if item_count == 0 {
-                item_widget.set_item_data(ITEM_NONE, ITEM_NONE, ItemDataType::None, None, 0);
-                self._item_count -= 1;
+        for (idx, slot) in self._inventory_slots.iter_mut().enumerate() {
+            if slot._item_data_name == item_data_name && slot._item_count > 0 {
+                if item_count <= slot._item_count {
+                    slot._item_count -= item_count;
+                } else {
+                    slot._item_count = 0;
+                }
 
-                let player = ptr_as_mut(get_character_manager().get_player().as_ptr());
-                get_item_manager_mut().detach_item(player);
-                //self.select_previous_item();
-            } else {
-                let item_index = self.get_selected_item_index();
-                self.select_item(item_index);
+                if slot._item_count == 0 {
+                    slot._item_data_name = String::from(ITEM_NONE);
+                    slot._item_name = String::from(ITEM_NONE);
+                    slot._item_data_type = ItemDataType::None;
+                    slot._material_instance = None;
+                    self._item_count = self._item_count.saturating_sub(1);
+
+                    if self._selected_inventory_slot_index == idx {
+                        let player = ptr_as_mut(get_character_manager().get_player().as_ptr());
+                        get_item_manager_mut().detach_item(player);
+                        self._selected_inventory_slot_index = INVALID_ITEM_INDEX;
+                    }
+                }
+                self.update_quick_slot_widgets();
+                return true;
             }
-            return true;
         }
         false
     }
 
-    pub fn select_item(&mut self, item_index: usize) {
+    pub fn select_item(&mut self, slot_index: usize) {
         if let Some(player) = get_character_manager().get_maybe_player() {
             let player = ptr_as_mut(player.as_ptr());
-            if item_index < self._item_widgets.len() && self._item_widgets[item_index]._item_data_name != ITEM_NONE {
-                let item_widget = &self._item_widgets[item_index];
-                self._selected_item_widget.update_selected_item_widget(item_index, Some(item_widget));
+            if slot_index < TOTAL_INVENTORY_SLOTS
+                && self._inventory_slots[slot_index]._item_data_name != ITEM_NONE
+                && self._inventory_slots[slot_index]._item_count > 0
+            {
+                self._selected_inventory_slot_index = slot_index;
                 get_item_manager_mut().attach_item(player, self.get_selected_item_data_name());
             } else {
-                self._selected_item_widget.update_selected_item_widget(INVALID_ITEM_INDEX, None);
+                self._selected_inventory_slot_index = INVALID_ITEM_INDEX;
                 get_item_manager_mut().detach_item(player);
             }
+            self.update_quick_slot_widgets();
+        }
+    }
+
+    pub fn select_quick_slot(&mut self, quick_index: usize) {
+        if quick_index < SLOTS_PER_ROW {
+            let slot_index = self._active_row_index * SLOTS_PER_ROW + quick_index;
+            self.select_item(slot_index);
         }
     }
 
     pub fn select_next_item(&mut self) {
-        let mut item_index = INVALID_ITEM_INDEX;
+        let mut slot_index = INVALID_ITEM_INDEX;
 
         if 0 < self._item_count {
-            item_index = if self._selected_item_widget.get_item_index() == INVALID_ITEM_INDEX
-                || self._selected_item_widget.get_item_index() == (self._item_widgets.len() - 1)
-            {
+            let start = if self._selected_inventory_slot_index == INVALID_ITEM_INDEX {
                 0
             } else {
-                self._selected_item_widget.get_item_index() + 1
+                (self._selected_inventory_slot_index + 1) % TOTAL_INVENTORY_SLOTS
             };
 
-            for _ in 0..self._item_widgets.len() {
-                if self._item_widgets[item_index]._item_data_name != ITEM_NONE {
+            slot_index = start;
+            for _ in 0..TOTAL_INVENTORY_SLOTS {
+                if self._inventory_slots[slot_index]._item_data_name != ITEM_NONE
+                    && self._inventory_slots[slot_index]._item_count > 0
+                {
                     break;
                 }
-
-                item_index += 1;
-                if self._item_widgets.len() <= item_index {
-                    item_index -= self._item_widgets.len();
-                }
+                slot_index = (slot_index + 1) % TOTAL_INVENTORY_SLOTS;
             }
         }
 
-        self.select_item(item_index);
+        self.select_item(slot_index);
     }
 
     pub fn select_previous_item(&mut self) {
-        let mut item_index = INVALID_ITEM_INDEX;
+        let mut slot_index = INVALID_ITEM_INDEX;
 
         if 0 < self._item_count {
-            item_index = if self._selected_item_widget.get_item_index() == INVALID_ITEM_INDEX
-                || 0 == self._selected_item_widget.get_item_index()
-            {
-                self._item_widgets.len() - 1
+            let start = if self._selected_inventory_slot_index == INVALID_ITEM_INDEX || self._selected_inventory_slot_index == 0 {
+                TOTAL_INVENTORY_SLOTS - 1
             } else {
-                self._selected_item_widget.get_item_index() - 1
+                self._selected_inventory_slot_index - 1
             };
 
-            for _ in 0..self._item_widgets.len() {
-                if self._item_widgets[item_index]._item_data_name != ITEM_NONE {
+            slot_index = start;
+            for _ in 0..TOTAL_INVENTORY_SLOTS {
+                if self._inventory_slots[slot_index]._item_data_name != ITEM_NONE
+                    && self._inventory_slots[slot_index]._item_count > 0
+                {
                     break;
                 }
-
-                if item_index == 0 {
-                    item_index = self._item_widgets.len() - 1;
+                if slot_index == 0 {
+                    slot_index = TOTAL_INVENTORY_SLOTS - 1;
                 } else {
-                    item_index -= 1;
+                    slot_index -= 1;
                 }
             }
         }
 
-        self.select_item(item_index);
+        self.select_item(slot_index);
     }
 
     pub fn update_selected_item_helper_widget(&mut self, force_update: bool) {
         let inventory_key_binding_widget_map = ptr_as_mut(self._inventory_key_binding_widget_map.as_ref());
         let selected_item_index = get_game_ui_manager().get_selected_inventory_item_index();
 
-        if self._selected_item_index != selected_item_index || force_update {
-            let pos_x = ItemBarWidget::get_selected_item_pos_left(selected_item_index);
+        if self._selected_inventory_slot_index != selected_item_index || force_update {
+            let start_slot = self._active_row_index * SLOTS_PER_ROW;
+            let display_index = if selected_item_index >= start_slot && selected_item_index < start_slot + SLOTS_PER_ROW {
+                selected_item_index - start_slot
+            } else {
+                0
+            };
+            let pos_x = ItemBarWidget::get_selected_item_pos_left(display_index);
 
             let key_binding_widget = inventory_key_binding_widget_map.get_key_binding_widget(KeyBindingType::UseItem);
             let ui_component = ptr_as_mut(key_binding_widget._layout_widget).get_ui_component_mut();
@@ -535,7 +635,7 @@ impl<'a> ItemBarWidget<'a> {
             let ui_component = ptr_as_mut(key_binding_widget._layout_widget).get_ui_component_mut();
             ui_component.set_pos_x(pos_x);
 
-            self._selected_item_index = selected_item_index;
+            self._selected_inventory_slot_index = selected_item_index;
         }
     }
 

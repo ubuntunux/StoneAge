@@ -32,6 +32,7 @@ pub enum GamePhase {
     Teleport,
     Respawn,
     OpenToolbox,
+    Inventory,
     WorldMapOpen,
     WorldMapUpdate,
     WorldMapClose,
@@ -390,6 +391,31 @@ impl<'a> GameClient<'a> {
                     }
                     State::End => {
                         game_ui_manager.close_toolbox();
+                    }
+                },
+                GamePhase::Inventory => match state {
+                    State::Begin => {
+                        game_ui_manager.set_cross_hair_visible(true);
+                        game_ui_manager.open_inventory();
+                    }
+                    State::Update => {
+                        if game_ui_manager.is_opened_inventory() {
+                            game_ui_manager.update_inventory_widget(
+                                time_data,
+                                joystick_input_data,
+                                keyboard_input_data,
+                                mouse_move_data,
+                                mouse_input_data,
+                                &mouse_delta,
+                                character_manager.get_player(),
+                            );
+                        } else {
+                            self.set_next_game_phase(GamePhase::GamePlay);
+                        }
+                    }
+                    State::End => {
+                        game_ui_manager.close_inventory();
+                        game_ui_manager.set_cross_hair_visible(false);
                     }
                 },
                 GamePhase::WorldMapOpen => match state {

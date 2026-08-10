@@ -413,6 +413,14 @@ impl<'a> GameController<'a> {
             get_game_ui_manager_mut().toggle_controls_visibility();
         }
 
+        if keyboard_input_data.get_key_pressed(KeyCode::KeyI) {
+            get_game_client_mut().set_next_game_phase(GamePhase::Inventory);
+        }
+
+        if keyboard_input_data.get_key_pressed(KeyCode::Tab) {
+            get_game_ui_manager_mut().switch_quick_slot_row();
+        }
+
         // item control
         let selectable_item = player.borrow().is_available_move() && player.borrow().is_idle_action();
         if selectable_item {
@@ -437,7 +445,7 @@ impl<'a> GameController<'a> {
 
                 for (item_index, numpad_key) in NUMPAD_KEY_MAP.iter().enumerate() {
                     if keyboard_input_data.get_key_pressed(*numpad_key) {
-                        game_ui_manager.select_item(item_index);
+                        game_ui_manager.select_quick_slot(item_index);
                         break;
                     }
                 }

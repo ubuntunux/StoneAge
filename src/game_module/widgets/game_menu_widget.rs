@@ -116,11 +116,9 @@ impl<'a> GameMenuWidget<'a> {
         ui_component.set_valign(VerticalAlign::CENTER);
         ui_component.set_pivot_preset(PIVOT_CENTER);
         ui_component.set_pos_hint(Some(0.5), Some(0.5));
-        // ui_component.set_size_hint_x(Some(0.5));
-        // ui_component.set_size_hint_y(Some(0.5));
         ui_component.set_expandable(true);
         ui_component.set_padding(10.0);
-        ui_component.set_color(get_color32(50, 50, 50, 128));
+        ui_component.set_color(get_color32(100, 100, 100, 200));
         ui_component.set_border_color(get_color32(0, 0, 0, 255));
         ui_component.set_round(5.0);
         ui_component.set_enable(false);

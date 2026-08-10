@@ -1,0 +1,336 @@
+use crate::game_module::actors::character::Character;
+use crate::game_module::actors::items::ItemDataType;
+use crate::game_module::game_constants::ITEM_NONE;
+use crate::game_module::game_service_locator::{get_game_ui_manager, get_game_ui_manager_mut};
+use crate::game_module::widgets::item_bar::{
+    INVALID_ITEM_INDEX, ITEM_UI_SIZE, ITEM_WIDGET_UI_MARGIN, MAX_INVENTORY_ROWS, SLOTS_PER_ROW,
+};
+use nalgebra::Vector2;
+use rust_engine_3d::core::engine_core::TimeData;
+use rust_engine_3d::core::input::{ButtonState, JoystickInputData, KeyboardInputData, MouseInputData, MouseMoveData};
+use rust_engine_3d::scene::material_instance::MaterialInstanceData;
+use rust_engine_3d::scene::ui::{
+    HorizontalAlign, Orientation, PIVOT_CENTER, UIComponentInstance, UILayoutType, UIManager, UIWidgetTypes,
+    VerticalAlign, WidgetDefault,
+};
+use rust_engine_3d::utilities::system::{RcRefCell, ptr_as_mut, ptr_as_ref};
+use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
+use std::ffi::c_void;
+use std::rc::Rc;
+use winit::keyboard::KeyCode;
+
+pub struct InventorySlotWidget<'a> {
+    pub _inventory_widget: *const InventoryWidget<'a>,
+    pub _slot_index: usize,
+    pub _widget: Rc<WidgetDefault<'a>>,
+    pub _item_data_name: String,
+    pub _item_name: String,
+    pub _item_data_type: ItemDataType,
+    pub _item_count: usize,
+}
+
+impl<'a> InventorySlotWidget<'a> {
+    pub fn create(
+        inventory_widget: &InventoryWidget<'a>,
+        parent_widget: &mut WidgetDefault<'a>,
+        slot_index: usize,
+    ) -> Box<InventorySlotWidget<'a>> {
+        let slot_widget = UIManager::create_widget(&format!("inv_slot_{}", slot_index), UIWidgetTypes::Default);
+        let slot_widget_mut = ptr_as_mut(slot_widget.as_ref());
+        let ui_component = slot_widget_mut.get_ui_component_mut();
+        ui_component.set_size(ITEM_UI_SIZE, ITEM_UI_SIZE);
+        ui_component.set_margin(ITEM_WIDGET_UI_MARGIN);
+        ui_component.set_round(5.0);
+        ui_component.set_color(get_color32(40, 40, 50, 230));
+        ui_component.set_border(2.0);
+        ui_component.set_border_color(get_color32(100, 100, 120, 255));
+        ui_component.set_font_size(24.0);
+        ui_component.set_font_color(get_color32(255, 255, 255, 255));
+        ui_component.set_halign(HorizontalAlign::CENTER);
+        ui_component.set_valign(VerticalAlign::CENTER);
+        ui_component.set_touchable(true);
+
+        parent_widget.add_widget(&slot_widget);
+
+        let inv_slot = Box::new(InventorySlotWidget {
+            _inventory_widget: inventory_widget,
+            _slot_index: slot_index,
+            _widget: slot_widget,
+            _item_data_name: String::new(),
+            _item_name: String::new(),
+            _item_data_type: ItemDataType::None,
+            _item_count: 0,
+        });
+
+        let ui_component = ptr_as_mut(inv_slot._widget.as_ref()).get_ui_component_mut();
+        ui_component.set_callback_touch_down(Some(Box::new(InventoryWidget::callback_slot_click)));
+        ui_component.set_user_data(inv_slot.as_ref() as *const InventorySlotWidget<'a> as *const c_void);
+
+        inv_slot
+    }
+
+    pub fn set_data(
+        &mut self,
+        item_name: &str,
+        item_data_name: &str,
+        item_data_type: ItemDataType,
+        material_instance: Option<RcRefCell<MaterialInstanceData<'a>>>,
+        item_count: usize,
+        is_active_quick_row: bool,
+        is_selected_item: bool,
+    ) {
+        self._item_name = item_name.to_string();
+        self._item_data_name = item_data_name.to_string();
+        self._item_data_type = item_data_type;
+        self._item_count = item_count;
+
+        let ui_component = ptr_as_mut(self._widget.as_ref()).get_ui_component_mut();
+        ui_component.set_material_instance(material_instance);
+
+        if is_selected_item {
+            ui_component.set_border_color(get_color32(255, 255, 0, 255));
+            ui_component.set_color(get_color32(80, 80, 40, 255));
+        } else if is_active_quick_row {
+            ui_component.set_border_color(get_color32(50, 220, 100, 255));
+            ui_component.set_color(get_color32(30, 60, 40, 230));
+        } else {
+            ui_component.set_border_color(get_color32(80, 80, 100, 255));
+            ui_component.set_color(get_color32(40, 40, 50, 230));
+        }
+
+        if item_count > 0 && item_data_name != ITEM_NONE {
+            ui_component.set_text(&format!("{}", item_count));
+        } else {
+            ui_component.set_text("");
+        }
+    }
+}
+
+pub struct InventoryWidget<'a> {
+    pub _parent_widget: *const WidgetDefault<'a>,
+    pub _layer: Rc<WidgetDefault<'a>>,
+    pub _slot_widgets: Vec<Box<InventorySlotWidget<'a>>>,
+    pub _focused_slot_index: usize,
+    pub _is_opened_inventory: bool,
+}
+
+impl<'a> InventoryWidget<'a> {
+    pub fn create_inventory_widget(parent_widget: &mut WidgetDefault<'a>) -> InventoryWidget<'a> {
+        let layer = UIManager::create_widget("inventory_widget", UIWidgetTypes::Default);
+        let layer_mut = ptr_as_mut(layer.as_ref());
+        let ui_component = layer_mut.get_ui_component_mut();
+        ui_component.set_layout_type(UILayoutType::BoxLayout);
+        ui_component.set_layout_orientation(Orientation::VERTICAL);
+        ui_component.set_halign(HorizontalAlign::CENTER);
+        ui_component.set_valign(VerticalAlign::CENTER);
+        ui_component.set_pivot_preset(PIVOT_CENTER);
+        ui_component.set_pos_hint(Some(0.5), Some(0.5));
+        ui_component.set_expandable(true);
+        ui_component.set_padding(10.0);
+        ui_component.set_color(get_color32(220, 200, 160, 200));
+        ui_component.set_border_color(get_color32(0, 0, 0, 255));
+        ui_component.set_round(5.0);
+        ui_component.set_enable(false);
+        parent_widget.add_widget(&layer);
+
+        // Title & Header Layout
+        let header_layout = UIManager::create_widget("header", UIWidgetTypes::Default);
+        let header_layout_mut = ptr_as_mut(header_layout.as_ref());
+        let ui_component = header_layout_mut.get_ui_component_mut();
+        ui_component.set_layout_type(UILayoutType::BoxLayout);
+        ui_component.set_layout_orientation(Orientation::HORIZONTAL);
+        ui_component.set_halign(HorizontalAlign::RIGHT);
+        ui_component.set_valign(VerticalAlign::CENTER);
+        ui_component.set_size_x(800.0);
+        ui_component.set_size_y(0.0);
+        ui_component.set_round(5.0);
+        ui_component.set_margin(10.0);
+        ui_component.set_expandable(true);
+        ui_component.set_color(get_color32(0, 0, 0, 128));
+        layer_mut.add_widget(&header_layout);
+
+        let close_btn = UIManager::create_widget("close_btn", UIWidgetTypes::Default);
+        let ui_component = ptr_as_mut(close_btn.as_ref()).get_ui_component_mut();
+        ui_component.set_halign(HorizontalAlign::CENTER);
+        ui_component.set_valign(VerticalAlign::CENTER);
+        ui_component.set_text("X");
+        ui_component.set_size(35.0, 35.0);
+        ui_component.set_font_size(30.0);
+        ui_component.set_font_color(get_color32(255, 255, 255, 255));
+        ui_component.set_round(5.0);
+        ui_component.set_color(get_color32(50, 50, 50, 255));
+        ui_component.set_margin(10.0);
+        ui_component.set_touchable(true);
+        ui_component.set_callback_touch_down(Some(Box::new(InventoryWidget::callback_close_click)));
+        header_layout_mut.add_widget(&close_btn);
+
+        let mut inventory_widget = InventoryWidget {
+            _parent_widget: parent_widget,
+            _layer: layer,
+            _slot_widgets: Vec::new(),
+            _focused_slot_index: 0,
+            _is_opened_inventory: false,
+        };
+
+        // Grid Layout: 2 Rows x 10 Slots
+        for row in 0..MAX_INVENTORY_ROWS {
+            let row_layout = InventoryWidget::create_inventory_row(ptr_as_mut(inventory_widget._layer.as_ref()), row);
+            for column in 0..SLOTS_PER_ROW {
+                let slot_idx = row * SLOTS_PER_ROW + column;
+                let slot_item = InventorySlotWidget::create(&inventory_widget, ptr_as_mut(row_layout.as_ref()), slot_idx);
+                inventory_widget._slot_widgets.push(slot_item);
+            }
+        }
+
+        inventory_widget
+    }
+
+    pub fn create_inventory_row(inventory_widget: &mut WidgetDefault<'a>, row: usize) -> Rc<WidgetDefault<'a>> {
+        let row_layout = UIManager::create_widget(&format!("inventory_row_{}", row), UIWidgetTypes::Default);
+        let row_layout_mut = ptr_as_mut(row_layout.as_ref());
+        let ui_component = row_layout_mut.get_ui_component_mut();
+        ui_component.set_layout_type(UILayoutType::BoxLayout);
+        ui_component.set_layout_orientation(Orientation::HORIZONTAL);
+        ui_component.set_halign(HorizontalAlign::CENTER);
+        ui_component.set_valign(VerticalAlign::CENTER);
+        ui_component.set_color(get_color32(160, 140, 100, 200));
+        ui_component.set_round(5.0);
+        ui_component.set_margin(10.0);
+        ui_component.set_size(0.0, 0.0);
+        ui_component.set_expandable(true);
+        inventory_widget.add_widget(&row_layout);
+        row_layout
+    }
+
+    pub fn callback_close_click(
+        _ui_component: &UIComponentInstance<'a>,
+        _touched_pos: &Vector2<f32>,
+        _touched_pos_delta: &Vector2<f32>,
+    ) -> bool {
+        get_game_ui_manager_mut().close_inventory();
+        true
+    }
+
+    pub fn callback_slot_click(
+        ui_component: &UIComponentInstance<'a>,
+        _touched_pos: &Vector2<f32>,
+        _touched_pos_delta: &Vector2<f32>,
+    ) -> bool {
+        let slot_item = ptr_as_ref(ui_component.get_user_data() as *const InventorySlotWidget<'a>);
+        let inventory_widget = ptr_as_mut(slot_item._inventory_widget);
+        inventory_widget._focused_slot_index = slot_item._slot_index;
+        get_game_ui_manager_mut().select_item(slot_item._slot_index);
+        true
+    }
+
+    pub fn open_inventory(&mut self) {
+        self._is_opened_inventory = true;
+        let selected_slot = get_game_ui_manager_mut().get_selected_inventory_item_index();
+        if selected_slot != INVALID_ITEM_INDEX {
+            self._focused_slot_index = selected_slot;
+        } else {
+            self._focused_slot_index = 0;
+        }
+        let layer_mut = ptr_as_mut(self._layer.as_ref());
+        layer_mut.get_ui_component_mut().set_enable(true);
+        self.refresh_inventory_widget();
+    }
+
+    pub fn close_inventory(&mut self) {
+        self._is_opened_inventory = false;
+        let layer_mut = ptr_as_mut(self._layer.as_ref());
+        layer_mut.get_ui_component_mut().set_enable(false);
+    }
+
+    pub fn is_opened_inventory(&self) -> bool {
+        self._is_opened_inventory
+    }
+
+    pub fn refresh_inventory_widget(&mut self) {
+        let item_bar = get_game_ui_manager().get_item_bar_widget();
+        let active_row = item_bar.get_active_row_index();
+        let selected_slot = item_bar.get_selected_inventory_slot_index();
+
+        for (slot_idx, slot_widget) in self._slot_widgets.iter_mut().enumerate() {
+            let slot_row = slot_idx / SLOTS_PER_ROW;
+            let slot_data = item_bar.get_inventory_slot_data(slot_idx);
+            let is_active_quick_row = slot_row == active_row;
+            let is_selected_item = slot_idx == selected_slot || slot_idx == self._focused_slot_index;
+
+            slot_widget.set_data(
+                &slot_data._item_name,
+                &slot_data._item_data_name,
+                slot_data._item_data_type,
+                slot_data._material_instance.clone(),
+                slot_data._item_count,
+                is_active_quick_row,
+                is_selected_item,
+            );
+        }
+    }
+
+    pub fn update_inventory_widget(
+        &mut self,
+        _time_data: &TimeData,
+        joystick_input_data: &JoystickInputData,
+        keyboard_input_data: &KeyboardInputData,
+        _mouse_move_data: &MouseMoveData,
+        _mouse_input_data: &MouseInputData,
+        _mouse_delta: &Vector2<f32>,
+        _player: &RcRefCell<Character>,
+    ) {
+        if keyboard_input_data.get_key_pressed(KeyCode::KeyI)
+            || keyboard_input_data.get_key_pressed(KeyCode::Escape)
+            || joystick_input_data._btn_b == ButtonState::Pressed
+        {
+            self.close_inventory();
+            return;
+        }
+
+        if keyboard_input_data.get_key_pressed(KeyCode::Tab) {
+            get_game_ui_manager_mut().switch_quick_slot_row();
+            self.refresh_inventory_widget();
+        }
+
+        // WASD & Arrow Key Navigation
+        let is_left = keyboard_input_data.get_key_pressed(KeyCode::ArrowLeft)
+            || keyboard_input_data.get_key_pressed(KeyCode::KeyA)
+            || joystick_input_data._btn_left == ButtonState::Pressed;
+        let is_right = keyboard_input_data.get_key_pressed(KeyCode::ArrowRight)
+            || keyboard_input_data.get_key_pressed(KeyCode::KeyD)
+            || joystick_input_data._btn_right == ButtonState::Pressed;
+        let is_up = keyboard_input_data.get_key_pressed(KeyCode::ArrowUp)
+            || keyboard_input_data.get_key_pressed(KeyCode::KeyW)
+            || joystick_input_data._btn_up == ButtonState::Pressed;
+        let is_down = keyboard_input_data.get_key_pressed(KeyCode::ArrowDown)
+            || keyboard_input_data.get_key_pressed(KeyCode::KeyS)
+            || joystick_input_data._btn_down == ButtonState::Pressed;
+
+        if is_left || is_right || is_up || is_down {
+            let mut r = self._focused_slot_index / SLOTS_PER_ROW;
+            let mut c = self._focused_slot_index % SLOTS_PER_ROW;
+
+            if is_left {
+                c = (c + SLOTS_PER_ROW - 1) % SLOTS_PER_ROW;
+            } else if is_right {
+                c = (c + 1) % SLOTS_PER_ROW;
+            }
+
+            if is_up {
+                r = (r + MAX_INVENTORY_ROWS - 1) % MAX_INVENTORY_ROWS;
+            } else if is_down {
+                r = (r + 1) % MAX_INVENTORY_ROWS;
+            }
+
+            self._focused_slot_index = r * SLOTS_PER_ROW + c;
+            get_game_ui_manager_mut().select_item(self._focused_slot_index);
+            self.refresh_inventory_widget();
+        }
+
+        self.refresh_inventory_widget();
+    }
+
+    pub fn changed_window_size(&mut self, _window_size: &Vector2<i32>) {
+        self.refresh_inventory_widget();
+    }
+}
