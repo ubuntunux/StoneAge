@@ -159,7 +159,7 @@ impl<'a> FishingGaugeWidget<'a> {
         if player.is_action(crate::game_module::actors::character::ActionAnimationState::FishingBegin) {
             ptr_as_mut(self._main_layer).get_ui_component_mut().set_visible(false);
             ptr_as_mut(self._cast_gauge._status_layer).get_ui_component_mut().set_visible(true);
-            self._cast_gauge.update_status_widget(player.get_fishing_gauge(), 1.0, 1.0, delta_time, false);
+            self._cast_gauge.update_status_widget(player.get_fishing_gauge(), 1.0, 1.0, delta_time, false, None);
             return;
         }
 

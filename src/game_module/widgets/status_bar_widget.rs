@@ -15,6 +15,7 @@ pub struct StatusBarWidget<'a> {
     pub _status_bar: *const WidgetDefault<'a>,
     pub _default_color: Cell<u32>,
     pub _warning_timer: Cell<f32>,
+    pub _accum_flash_time: Cell<f32>,
 }
 
 // Implementation
@@ -65,6 +66,7 @@ impl<'a> StatusBarWidget<'a> {
             _status_bar: status_bar,
             _default_color: Cell::new(color),
             _warning_timer: Cell::new(0.0),
+            _accum_flash_time: Cell::new(0.0),
         }
     }
 
@@ -82,6 +84,7 @@ impl<'a> StatusBarWidget<'a> {
             _status_bar: status_bar,
             _default_color: Cell::new(color),
             _warning_timer: Cell::new(0.0),
+            _accum_flash_time: Cell::new(0.0),
         }
     }
 
@@ -104,23 +107,55 @@ impl<'a> StatusBarWidget<'a> {
         max_status_data: f32,
         delta_time: f64,
         smooth_update: bool,
+        low_status_warning_threshold: Option<f32>,
     ) {
         let default_bg_color = get_color32(50, 50, 50, 255);
         let mut warning_timer = self._warning_timer.get();
+
+        let current_ratio = if max_status > 0.0 {
+            0.0f32.max(1.0f32.min(status / max_status))
+        } else {
+            0.0
+        };
+
         if warning_timer > 0.0 {
             warning_timer = (warning_timer - delta_time as f32).max(0.0);
             self._warning_timer.set(warning_timer);
             let elapsed = 1.0 - warning_timer;
             let flash_phase = (elapsed * 5.0 * std::f32::consts::TAU).sin();
             if flash_phase > 0.0 {
-                //self.set_bar_color(get_color32(255, 30, 30, 230));
+                self.set_bar_color(get_color32(255, 30, 30, 230));
                 self.set_bg_color(get_color32(120, 30, 30, 255));
             } else {
-                //self.set_bar_color(self._default_color.get());
+                self.set_bar_color(self._default_color.get());
+                self.set_bg_color(default_bg_color);
+            }
+        } else if 0.0 < current_ratio && let Some(threshold) = low_status_warning_threshold {
+            if current_ratio < threshold {
+                let proximity = (threshold - current_ratio).max(0.0) / threshold;
+                let speed_mult = 1.0 + proximity; // 1.0x to 2.0x faster
+                let base_freq = 3.0;
+                let freq = base_freq * speed_mult;
+
+                let current_accum = self._accum_flash_time.get() + delta_time as f32 * freq;
+                self._accum_flash_time.set(current_accum);
+                let flash_phase = (current_accum * std::f32::consts::TAU).sin();
+
+                if flash_phase > 0.0 {
+                    self.set_bar_color(get_color32(255, 30, 30, 230));
+                    self.set_bg_color(get_color32(120, 30, 30, 255));
+                } else {
+                    self.set_bar_color(self._default_color.get());
+                    self.set_bg_color(default_bg_color);
+                }
+            } else {
+                self._accum_flash_time.set(0.0);
+                self.set_bar_color(self._default_color.get());
                 self.set_bg_color(default_bg_color);
             }
         } else {
-            //self.set_bar_color(self._default_color.get());
+            self._accum_flash_time.set(0.0);
+            self.set_bar_color(self._default_color.get());
             self.set_bg_color(default_bg_color);
         }
 

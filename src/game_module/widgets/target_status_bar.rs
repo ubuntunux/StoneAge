@@ -70,7 +70,7 @@ impl<'a> TargetStatusWidget<'a> {
         let hp = target.get_stats().get_hp() as f32;
         let max_hp = target.get_stats().get_max_hp() as f32;
         let max_hp_data = target.get_character_data()._stat_data._max_hp as f32;
-        self._hp_widget.update_status_widget(hp, max_hp, max_hp_data, delta_time, smooth_update);
+        self._hp_widget.update_status_widget(hp, max_hp, max_hp_data, delta_time, smooth_update, None);
     }
     pub fn fade_out_status_widget(&mut self) {
         ptr_as_mut(self._widget).get_ui_component_mut().set_visible(false);

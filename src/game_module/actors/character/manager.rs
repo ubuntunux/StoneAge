@@ -5,11 +5,7 @@ use crate::game_module::actors::character::stats::*;
 use crate::game_module::actors::interaction_object::InteractionObject;
 use crate::game_module::actors::items::{ItemCreateInfo, ItemID};
 use crate::game_module::behavior::behavior_base::BehaviorSaveData;
-use crate::game_module::game_constants::{
-    AUDIO_STOMACH_GROWLING, CHARACTER_INTERACTION_DISTANCE, CHARACTER_INTERACTION_TIME, CORPSE_AUTO_REMOVE_TIME,
-    FARM_MEAT_COUNT, GAME_VIEW_MODE, GameViewMode, ITEM_MEAT, ITEM_SPIRIT_BALL, MATERIAL_EMOJI_GOOD,
-    MATERIAL_EMOJI_HUNGRY, NPC_ATTACK_HIT_RANGE, NPC_TRACKING_RANGE,
-};
+use crate::game_module::game_constants::{GameViewMode, AUDIO_STOMACH_GROWLING, CHARACTER_INTERACTION_DISTANCE, CHARACTER_INTERACTION_TIME, CORPSE_AUTO_REMOVE_TIME, FARM_MEAT_COUNT, GAME_VIEW_MODE, ITEM_HAND, ITEM_MEAT, ITEM_SPIRIT_BALL, MATERIAL_EMOJI_GOOD, MATERIAL_EMOJI_HUNGRY, NPC_ATTACK_HIT_RANGE, NPC_TRACKING_RANGE};
 use crate::game_module::game_scene_manager::{CharacterCreateInfoMap, CharacterSaveDataMap};
 use crate::game_module::widgets::text_box_widget::TextBoxContent;
 use crate::game_module::widgets::text_box_widget::TextBoxLayerType;
@@ -157,10 +153,10 @@ impl<'a> CharacterManager<'a> {
 
         if is_player {
             // add hand item
-            // let game_ui_manager = get_game_ui_manager_mut();
-            // if game_ui_manager.get_item_count(ITEM_HAND) == 0 {
-            //     game_ui_manager.add_item(ITEM_HAND, 1, false);
-            // }
+            let game_ui_manager = get_game_ui_manager_mut();
+            if game_ui_manager.get_item_count(ITEM_HAND) == 0 {
+                game_ui_manager.add_item(ITEM_HAND, 1, false);
+            }
             self._player = Some(character.clone());
         }
 

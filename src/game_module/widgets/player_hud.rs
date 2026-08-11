@@ -7,6 +7,7 @@ use rust_engine_3d::scene::ui::{
 };
 use rust_engine_3d::utilities::system::ptr_as_mut;
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
+use crate::game_module::game_constants::HP_WARNING_RATIO;
 
 pub struct PlayerHud<'a> {
     pub _widget: *const WidgetDefault<'a>,
@@ -61,6 +62,7 @@ impl<'a> PlayerHud<'a> {
             player.get_stats().get_max_hp_data() as f32,
             delta_time,
             true,
+            Some(HP_WARNING_RATIO),
         );
 
         self._stamina_widget.update_status_widget(
@@ -69,6 +71,7 @@ impl<'a> PlayerHud<'a> {
             player.get_stats().get_max_stamina_data(),
             delta_time,
             true,
+            None,
         );
 
         if player.is_fishing_gauge_active() {
