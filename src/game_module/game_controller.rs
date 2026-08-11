@@ -16,6 +16,71 @@ use rust_engine_3d::utilities::system::{RcRefCell, ptr_as_mut, ptr_as_ref};
 use strum_macros::{Display, EnumCount, EnumIter, EnumString};
 use winit::keyboard::KeyCode;
 
+// Hold Repeat Navigation Utility
+pub const NAV_INITIAL_DELAY: f32 = 0.3;
+pub const NAV_REPEAT_INTERVAL: f32 = 0.05;
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum QuickSlotNavDirection {
+    Previous,
+    Next,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct HoldRepeatController<T: PartialEq + Copy> {
+    pub _initial_delay: f32,
+    pub _repeat_interval: f32,
+    pub _timer: f32,
+    pub _is_repeating: bool,
+    pub _last_state: Option<T>,
+}
+
+impl<T: PartialEq + Copy> HoldRepeatController<T> {
+    pub fn new(initial_delay: f32, repeat_interval: f32) -> Self {
+        Self {
+            _initial_delay: initial_delay,
+            _repeat_interval: repeat_interval,
+            _timer: 0.0,
+            _is_repeating: false,
+            _last_state: None,
+        }
+    }
+
+    pub fn reset(&mut self) {
+        self._timer = 0.0;
+        self._is_repeating = false;
+        self._last_state = None;
+    }
+
+    pub fn update(&mut self, current_state: Option<T>, delta_time: f32) -> (bool, Option<T>) {
+        if let Some(state) = current_state {
+            if Some(state) != self._last_state {
+                self._last_state = Some(state);
+                self._timer = self._initial_delay;
+                self._is_repeating = false;
+                (true, Some(state))
+            } else {
+                self._timer -= delta_time;
+                if self._timer <= 0.0 {
+                    if !self._is_repeating {
+                        self._is_repeating = true;
+                        self._timer = self._repeat_interval;
+                    } else {
+                        self._timer += self._repeat_interval;
+                    }
+                    (true, Some(state))
+                } else {
+                    (false, None)
+                }
+            }
+        } else {
+            self.reset();
+            (false, None)
+        }
+    }
+}
+
+
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Debug, Display, EnumIter, EnumString, EnumCount)]
 pub enum KeyBindingType {
     None,
@@ -57,6 +122,7 @@ pub struct GameController<'a> {
     pub _camera_position: Vector3<f32>,
     pub _camera_blend_ratio: f32,
     pub _is_game_camera_auto_blend_mode: bool,
+    pub _quick_slot_repeat_controller: HoldRepeatController<QuickSlotNavDirection>,
     pub _marker: std::marker::PhantomData<&'a ()>,
 }
 
@@ -72,6 +138,7 @@ impl<'a> GameController<'a> {
             _camera_position: Vector3::zeros(),
             _camera_blend_ratio: 0.0,
             _is_game_camera_auto_blend_mode: false,
+            _quick_slot_repeat_controller: HoldRepeatController::new(NAV_INITIAL_DELAY, NAV_REPEAT_INTERVAL),
             _marker: std::marker::PhantomData,
         })
     }
@@ -369,26 +436,30 @@ impl<'a> GameController<'a> {
         let is_interaction =
             keyboard_input_data.get_key_pressed(KeyCode::KeyF) || joystick_input_data._btn_x == ButtonState::Pressed;
         let is_previous_item = keyboard_input_data.get_key_pressed(KeyCode::ArrowLeft)
+            || keyboard_input_data.get_key_hold(KeyCode::ArrowLeft)
             || keyboard_input_data.get_key_pressed(KeyCode::KeyQ)
-            || joystick_input_data._btn_left == ButtonState::Pressed;
+            || keyboard_input_data.get_key_hold(KeyCode::KeyQ)
+            || joystick_input_data._btn_left == ButtonState::Pressed
+            || joystick_input_data._btn_left == ButtonState::Hold;
         let is_next_item = keyboard_input_data.get_key_pressed(KeyCode::ArrowRight)
+            || keyboard_input_data.get_key_hold(KeyCode::ArrowRight)
             || keyboard_input_data.get_key_pressed(KeyCode::KeyE)
-            || joystick_input_data._btn_right == ButtonState::Pressed;
+            || keyboard_input_data.get_key_hold(KeyCode::KeyE)
+            || joystick_input_data._btn_right == ButtonState::Pressed
+            || joystick_input_data._btn_right == ButtonState::Hold;
         let is_help =
             keyboard_input_data.get_key_pressed(KeyCode::F1) || joystick_input_data._btn_back == ButtonState::Pressed;
+        let open_inventory =
+            keyboard_input_data.get_key_pressed(KeyCode::KeyI) || joystick_input_data._btn_start == ButtonState::Pressed;
+        let open_menu =
+            keyboard_input_data.get_key_pressed(KeyCode::Escape) || joystick_input_data._btn_start == ButtonState::Pressed;
+        let prev_quick_slot_row = joystick_input_data._btn_up == ButtonState::Pressed;
+        let next_quick_slot_row = keyboard_input_data.get_key_pressed(KeyCode::Tab) || joystick_input_data._btn_down == ButtonState::Pressed;
 
         let stick_left_direction = Vector2::<f32>::new(
             joystick_input_data._stick_left_direction.x as f32,
             joystick_input_data._stick_left_direction.y as f32,
         ) * JOYSTICK_SENSITIVITY;
-
-        // game menu
-        if (keyboard_input_data.get_key_pressed(KeyCode::Escape)
-            || joystick_input_data._btn_start == ButtonState::Pressed)
-            && !player.borrow().is_action(ActionAnimationState::FishingLoop)
-        {
-            get_game_client_mut().set_next_game_phase(GamePhase::GameMenu);
-        }
 
         if unsafe { DEVELOPMENT } {
             let is_toggle_game_mode_by_joystick = joystick_input_data._btn_left_trigger == ButtonState::Hold
@@ -405,22 +476,40 @@ impl<'a> GameController<'a> {
             get_game_ui_manager_mut().toggle_controls_visibility();
         }
 
-        if keyboard_input_data.get_key_pressed(KeyCode::KeyI) {
+        // game menu, inventory, quick slot
+        if open_menu {
+            get_game_client_mut().set_next_game_phase(GamePhase::GameMenu);
+        } else if open_inventory {
             get_game_client_mut().set_next_game_phase(GamePhase::Inventory);
-        }
-
-        if keyboard_input_data.get_key_pressed(KeyCode::Tab) {
+        } else if prev_quick_slot_row || next_quick_slot_row {
             get_game_ui_manager_mut().switch_quick_slot_row();
         }
 
         // item control
+        let quick_nav_state = if is_previous_item {
+            Some(QuickSlotNavDirection::Previous)
+        } else if is_next_item {
+            Some(QuickSlotNavDirection::Next)
+        } else {
+            None
+        };
+
+        let (should_move_quick_slot, quick_nav_dir) =
+            self._quick_slot_repeat_controller.update(quick_nav_state, delta_time);
+
         let selectable_item = player.borrow().is_available_move() && player.borrow().is_idle_action();
         if selectable_item {
             let game_ui_manager = get_game_ui_manager_mut();
-            if is_previous_item {
-                game_ui_manager.select_previous_item();
-            } else if is_next_item {
-                game_ui_manager.select_next_item();
+            if should_move_quick_slot {
+                match quick_nav_dir {
+                    Some(QuickSlotNavDirection::Previous) => {
+                        game_ui_manager.select_previous_item();
+                    }
+                    Some(QuickSlotNavDirection::Next) => {
+                        game_ui_manager.select_next_item();
+                    }
+                    None => {}
+                }
             } else if keyboard_input_data.is_any_key_pressed() {
                 const NUMPAD_KEY_MAP: [KeyCode; 10] = [
                     KeyCode::Digit1,

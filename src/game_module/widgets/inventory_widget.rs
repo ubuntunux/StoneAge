@@ -18,6 +18,7 @@ use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use std::ffi::c_void;
 use std::rc::Rc;
 use winit::keyboard::KeyCode;
+use crate::game_module::game_controller::{HoldRepeatController, NAV_INITIAL_DELAY, NAV_REPEAT_INTERVAL};
 
 pub struct InventorySlotWidget<'a> {
     pub _inventory_widget: *const InventoryWidget<'a>,
@@ -116,6 +117,7 @@ pub struct InventoryWidget<'a> {
     pub _focused_slot_index: usize,
     pub _drag_source_slot_index: usize,
     pub _is_opened_inventory: bool,
+    pub _nav_repeat_controller: HoldRepeatController<(i32, i32)>,
 }
 
 impl<'a> InventoryWidget<'a> {
@@ -187,6 +189,7 @@ impl<'a> InventoryWidget<'a> {
             _focused_slot_index: 0,
             _drag_source_slot_index: INVALID_ITEM_INDEX,
             _is_opened_inventory: false,
+            _nav_repeat_controller: HoldRepeatController::new(NAV_INITIAL_DELAY, NAV_REPEAT_INTERVAL),
         });
 
         // Grid Layout: 2 Rows x 10 Slots
@@ -296,6 +299,7 @@ impl<'a> InventoryWidget<'a> {
 
     pub fn close_inventory(&mut self) {
         self._is_opened_inventory = false;
+        self._nav_repeat_controller.reset();
         if self._drag_source_slot_index != INVALID_ITEM_INDEX {
             self._drag_source_slot_index = INVALID_ITEM_INDEX;
             let drag_ui = ptr_as_mut(self._drag_widget.as_ref()).get_ui_component_mut();
@@ -366,33 +370,62 @@ impl<'a> InventoryWidget<'a> {
             );
         }
 
-        // WASD & Arrow Key Navigation
-        let is_left = keyboard_input_data.get_key_pressed(KeyCode::ArrowLeft)
-            || keyboard_input_data.get_key_pressed(KeyCode::KeyA)
-            || joystick_input_data._btn_left == ButtonState::Pressed;
-        let is_right = keyboard_input_data.get_key_pressed(KeyCode::ArrowRight)
-            || keyboard_input_data.get_key_pressed(KeyCode::KeyD)
-            || joystick_input_data._btn_right == ButtonState::Pressed;
-        let is_up = keyboard_input_data.get_key_pressed(KeyCode::ArrowUp)
-            || keyboard_input_data.get_key_pressed(KeyCode::KeyW)
-            || joystick_input_data._btn_up == ButtonState::Pressed;
-        let is_down = keyboard_input_data.get_key_pressed(KeyCode::ArrowDown)
-            || keyboard_input_data.get_key_pressed(KeyCode::KeyS)
-            || joystick_input_data._btn_down == ButtonState::Pressed;
+        let delta_time: f32 = _time_data._delta_time_with_scale as f32;
 
-        if is_left || is_right || is_up || is_down {
+        // WASD & Arrow Key Navigation (Supports Hold Repeat)
+        let is_left = keyboard_input_data.get_key_pressed(KeyCode::ArrowLeft)
+            || keyboard_input_data.get_key_hold(KeyCode::ArrowLeft)
+            || keyboard_input_data.get_key_pressed(KeyCode::KeyA)
+            || keyboard_input_data.get_key_hold(KeyCode::KeyA)
+            || joystick_input_data._btn_left == ButtonState::Pressed
+            || joystick_input_data._btn_left == ButtonState::Hold;
+        let is_right = keyboard_input_data.get_key_pressed(KeyCode::ArrowRight)
+            || keyboard_input_data.get_key_hold(KeyCode::ArrowRight)
+            || keyboard_input_data.get_key_pressed(KeyCode::KeyD)
+            || keyboard_input_data.get_key_hold(KeyCode::KeyD)
+            || joystick_input_data._btn_right == ButtonState::Pressed
+            || joystick_input_data._btn_right == ButtonState::Hold;
+        let is_up = keyboard_input_data.get_key_pressed(KeyCode::ArrowUp)
+            || keyboard_input_data.get_key_hold(KeyCode::ArrowUp)
+            || keyboard_input_data.get_key_pressed(KeyCode::KeyW)
+            || keyboard_input_data.get_key_hold(KeyCode::KeyW)
+            || joystick_input_data._btn_up == ButtonState::Pressed
+            || joystick_input_data._btn_up == ButtonState::Hold;
+        let is_down = keyboard_input_data.get_key_pressed(KeyCode::ArrowDown)
+            || keyboard_input_data.get_key_hold(KeyCode::ArrowDown)
+            || keyboard_input_data.get_key_pressed(KeyCode::KeyS)
+            || keyboard_input_data.get_key_hold(KeyCode::KeyS)
+            || joystick_input_data._btn_down == ButtonState::Pressed
+            || joystick_input_data._btn_down == ButtonState::Hold;
+
+        let current_dir: Option<(i32, i32)> = if is_left {
+            Some((-1, 0))
+        } else if is_right {
+            Some((1, 0))
+        } else if is_up {
+            Some((0, -1))
+        } else if is_down {
+            Some((0, 1))
+        } else {
+            None
+        };
+
+        let (should_move_slot, dir_opt) = self._nav_repeat_controller.update(current_dir, delta_time);
+
+        if should_move_slot {
+            let (dir_x, dir_y) = dir_opt.unwrap();
             let mut r = self._focused_slot_index / SLOTS_PER_ROW;
             let mut c = self._focused_slot_index % SLOTS_PER_ROW;
 
-            if is_left {
+            if dir_x < 0 {
                 c = (c + SLOTS_PER_ROW - 1) % SLOTS_PER_ROW;
-            } else if is_right {
+            } else if dir_x > 0 {
                 c = (c + 1) % SLOTS_PER_ROW;
             }
 
-            if is_up {
+            if dir_y < 0 {
                 r = (r + MAX_INVENTORY_ROWS - 1) % MAX_INVENTORY_ROWS;
-            } else if is_down {
+            } else if dir_y > 0 {
                 r = (r + 1) % MAX_INVENTORY_ROWS;
             }
 
