@@ -482,10 +482,11 @@ impl<'a> ItemBarWidget<'a> {
     }
 
     pub fn add_item(&mut self, item_data_name: &str, item_count: usize) -> bool {
-        if item_data_name != ITEM_NONE {
+        if item_data_name != ITEM_NONE && item_count > 0 {
             let was_empty_item = self.get_selected_item_data_name() == ITEM_NONE;
             let mut target_slot_index = INVALID_ITEM_INDEX;
 
+            // 1. If item already exists in inventory, stack count to existing slot
             for (idx, slot) in self._inventory_slots.iter_mut().enumerate() {
                 if slot._item_data_name == item_data_name && slot._item_count > 0 {
                     slot._item_count += item_count;
@@ -494,21 +495,39 @@ impl<'a> ItemBarWidget<'a> {
                 }
             }
 
+            // 2. If new item, search empty slot in current quick slot row first, then anywhere in inventory
             if target_slot_index == INVALID_ITEM_INDEX {
-                for (idx, slot) in self._inventory_slots.iter_mut().enumerate() {
+                let current_row_start = self._active_row_index * SLOTS_PER_ROW;
+                let current_row_end = current_row_start + SLOTS_PER_ROW;
+
+                for idx in current_row_start..current_row_end {
+                    let slot = &self._inventory_slots[idx];
                     if slot._item_count == 0 || slot._item_data_name == ITEM_NONE || slot._item_data_name.is_empty() {
-                        let item_data = get_game_resources().get_item_data(item_data_name).borrow();
-                        let material =
-                            get_engine_resources().get_material_instance_data(item_data._ui_material_instance.as_str());
-                        slot._item_name = item_data._name.clone();
-                        slot._item_data_name = item_data_name.to_string();
-                        slot._item_data_type = item_data._item_type;
-                        slot._material_instance = Some(material.clone());
-                        slot._item_count = item_count;
                         target_slot_index = idx;
-                        self._item_count += 1;
                         break;
                     }
+                }
+
+                if target_slot_index == INVALID_ITEM_INDEX {
+                    for (idx, slot) in self._inventory_slots.iter().enumerate() {
+                        if slot._item_count == 0 || slot._item_data_name == ITEM_NONE || slot._item_data_name.is_empty() {
+                            target_slot_index = idx;
+                            break;
+                        }
+                    }
+                }
+
+                if target_slot_index != INVALID_ITEM_INDEX {
+                    let item_data = get_game_resources().get_item_data(item_data_name).borrow();
+                    let material =
+                        get_engine_resources().get_material_instance_data(item_data._ui_material_instance.as_str());
+                    let slot = &mut self._inventory_slots[target_slot_index];
+                    slot._item_name = item_data._name.clone();
+                    slot._item_data_name = item_data_name.to_string();
+                    slot._item_data_type = item_data._item_type;
+                    slot._material_instance = Some(material.clone());
+                    slot._item_count = item_count;
+                    self._item_count += 1;
                 }
             }
 
@@ -584,55 +603,69 @@ impl<'a> ItemBarWidget<'a> {
     }
 
     pub fn select_next_item(&mut self) {
-        let mut slot_index = INVALID_ITEM_INDEX;
+        let row_start = self._active_row_index * SLOTS_PER_ROW;
+        let mut target_slot = INVALID_ITEM_INDEX;
 
-        if 0 < self._item_count {
-            let start = if self._selected_inventory_slot_index == INVALID_ITEM_INDEX {
-                0
-            } else {
-                (self._selected_inventory_slot_index + 1) % TOTAL_INVENTORY_SLOTS
-            };
+        let curr_rel = if self._selected_inventory_slot_index >= row_start
+            && self._selected_inventory_slot_index < row_start + SLOTS_PER_ROW
+        {
+            self._selected_inventory_slot_index - row_start
+        } else {
+            SLOTS_PER_ROW - 1
+        };
 
-            slot_index = start;
-            for _ in 0..TOTAL_INVENTORY_SLOTS {
-                if self._inventory_slots[slot_index]._item_data_name != ITEM_NONE
-                    && self._inventory_slots[slot_index]._item_count > 0
-                {
-                    break;
-                }
-                slot_index = (slot_index + 1) % TOTAL_INVENTORY_SLOTS;
+        let start_rel = (curr_rel + 1) % SLOTS_PER_ROW;
+        let mut rel_idx = start_rel;
+
+        for _ in 0..SLOTS_PER_ROW {
+            let slot_idx = row_start + rel_idx;
+            if self._inventory_slots[slot_idx]._item_data_name != ITEM_NONE
+                && self._inventory_slots[slot_idx]._item_count > 0
+            {
+                target_slot = slot_idx;
+                break;
             }
+            rel_idx = (rel_idx + 1) % SLOTS_PER_ROW;
         }
 
-        self.select_item(slot_index);
+        if target_slot == INVALID_ITEM_INDEX {
+            target_slot = row_start + start_rel;
+        }
+
+        self.select_item(target_slot);
     }
 
     pub fn select_previous_item(&mut self) {
-        let mut slot_index = INVALID_ITEM_INDEX;
+        let row_start = self._active_row_index * SLOTS_PER_ROW;
+        let mut target_slot = INVALID_ITEM_INDEX;
 
-        if 0 < self._item_count {
-            let start = if self._selected_inventory_slot_index == INVALID_ITEM_INDEX || self._selected_inventory_slot_index == 0 {
-                TOTAL_INVENTORY_SLOTS - 1
-            } else {
-                self._selected_inventory_slot_index - 1
-            };
+        let curr_rel = if self._selected_inventory_slot_index >= row_start
+            && self._selected_inventory_slot_index < row_start + SLOTS_PER_ROW
+        {
+            self._selected_inventory_slot_index - row_start
+        } else {
+            0
+        };
 
-            slot_index = start;
-            for _ in 0..TOTAL_INVENTORY_SLOTS {
-                if self._inventory_slots[slot_index]._item_data_name != ITEM_NONE
-                    && self._inventory_slots[slot_index]._item_count > 0
-                {
-                    break;
-                }
-                if slot_index == 0 {
-                    slot_index = TOTAL_INVENTORY_SLOTS - 1;
-                } else {
-                    slot_index -= 1;
-                }
+        let start_rel = (curr_rel + SLOTS_PER_ROW - 1) % SLOTS_PER_ROW;
+        let mut rel_idx = start_rel;
+
+        for _ in 0..SLOTS_PER_ROW {
+            let slot_idx = row_start + rel_idx;
+            if self._inventory_slots[slot_idx]._item_data_name != ITEM_NONE
+                && self._inventory_slots[slot_idx]._item_count > 0
+            {
+                target_slot = slot_idx;
+                break;
             }
+            rel_idx = (rel_idx + SLOTS_PER_ROW - 1) % SLOTS_PER_ROW;
         }
 
-        self.select_item(slot_index);
+        if target_slot == INVALID_ITEM_INDEX {
+            target_slot = row_start + start_rel;
+        }
+
+        self.select_item(target_slot);
     }
 
     pub fn update_selected_item_helper_widget(&mut self, force_update: bool) {

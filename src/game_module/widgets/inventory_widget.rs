@@ -1,9 +1,9 @@
 use crate::game_module::actors::character::Character;
 use crate::game_module::actors::items::ItemDataType;
 use crate::game_module::game_constants::ITEM_NONE;
-use crate::game_module::game_service_locator::{get_game_ui_manager, get_game_ui_manager_mut};
+use crate::game_module::game_service_locator::{get_game_ui_manager, get_game_ui_manager_mut, get_item_manager_mut};
 use crate::game_module::widgets::item_bar::{
-    INVALID_ITEM_INDEX, ITEM_UI_SIZE, ITEM_WIDGET_UI_MARGIN, MAX_INVENTORY_ROWS, SLOTS_PER_ROW,
+    INVALID_ITEM_INDEX, ITEM_UI_SIZE, ITEM_WIDGET_UI_MARGIN, MAX_INVENTORY_ROWS, SLOTS_PER_ROW, TOTAL_INVENTORY_SLOTS,
 };
 use nalgebra::Vector2;
 use rust_engine_3d::core::engine_core::TimeData;
@@ -239,11 +239,10 @@ impl<'a> InventoryWidget<'a> {
         let clicked_slot = slot_item._slot_index;
 
         if inventory_widget._drag_source_slot_index == INVALID_ITEM_INDEX {
-            let current_selected = inventory_widget._focused_slot_index;
-
-            if clicked_slot == current_selected && slot_item._item_count > 0 && slot_item._item_data_name != ITEM_NONE {
-                // Clicked an already selected item -> start dragging!
+            // First click: Pick up / detach item for dragging if slot is not empty
+            if slot_item._item_count > 0 && slot_item._item_data_name != ITEM_NONE {
                 inventory_widget._drag_source_slot_index = clicked_slot;
+                inventory_widget._focused_slot_index = clicked_slot;
 
                 let item_bar = get_game_ui_manager().get_item_bar_widget();
                 let slot_data = item_bar.get_inventory_slot_data(clicked_slot);
@@ -259,13 +258,13 @@ impl<'a> InventoryWidget<'a> {
                     touched_pos.x / dpi_scale - ITEM_UI_SIZE * 0.5,
                     touched_pos.y / dpi_scale - ITEM_UI_SIZE * 0.5,
                 );
-            } else {
-                // First click: select the slot
+
                 inventory_widget._focused_slot_index = clicked_slot;
-                get_game_ui_manager_mut().select_item(clicked_slot);
+            } else {
+                inventory_widget._focused_slot_index = clicked_slot;
             }
         } else {
-            // Place down / attach dragged item to clicked target slot
+            // Second click: Attach / swap dragged item to target slot
             let src_slot = inventory_widget._drag_source_slot_index;
             if src_slot != clicked_slot {
                 get_game_ui_manager_mut().swap_inventory_slots(src_slot, clicked_slot);
@@ -276,8 +275,6 @@ impl<'a> InventoryWidget<'a> {
             let drag_ui = ptr_as_mut(inventory_widget._drag_widget.as_ref()).get_ui_component_mut();
             drag_ui.set_draggable(false);
             drag_ui.set_visible(false);
-
-            get_game_ui_manager_mut().select_item(clicked_slot);
         }
 
         inventory_widget.refresh_inventory_widget();
@@ -316,13 +313,12 @@ impl<'a> InventoryWidget<'a> {
     pub fn refresh_inventory_widget(&mut self) {
         let item_bar = get_game_ui_manager().get_item_bar_widget();
         let active_row = item_bar.get_active_row_index();
-        let selected_slot = item_bar.get_selected_inventory_slot_index();
 
         for (slot_idx, slot_widget) in self._slot_widgets.iter_mut().enumerate() {
             let slot_row = slot_idx / SLOTS_PER_ROW;
             let slot_data = item_bar.get_inventory_slot_data(slot_idx);
             let is_active_quick_row = slot_row == active_row;
-            let is_selected_item = slot_idx == selected_slot || slot_idx == self._focused_slot_index;
+            let is_selected_item = slot_idx == self._focused_slot_index;
 
             if slot_idx == self._drag_source_slot_index {
                 slot_widget.set_data("", ITEM_NONE, ItemDataType::None, None, 0, is_active_quick_row, is_selected_item);
@@ -352,15 +348,11 @@ impl<'a> InventoryWidget<'a> {
     ) {
         if keyboard_input_data.get_key_pressed(KeyCode::KeyI)
             || keyboard_input_data.get_key_pressed(KeyCode::Escape)
-            || joystick_input_data._btn_b == ButtonState::Pressed
+            || joystick_input_data._btn_start == ButtonState::Pressed
+            || joystick_input_data._btn_back == ButtonState::Pressed
         {
             self.close_inventory();
             return;
-        }
-
-        if keyboard_input_data.get_key_pressed(KeyCode::Tab) {
-            get_game_ui_manager_mut().switch_quick_slot_row();
-            self.refresh_inventory_widget();
         }
 
         if self._drag_source_slot_index != INVALID_ITEM_INDEX {
@@ -418,7 +410,67 @@ impl<'a> InventoryWidget<'a> {
             }
 
             self._focused_slot_index = new_focused_slot;
-            get_game_ui_manager_mut().select_item(self._focused_slot_index);
+        }
+
+        // Mouse Right Click OR Keyboard/Joystick Drop Input
+        let is_mouse_drop = _mouse_input_data._btn_r_pressed;
+        let is_controller_drop = joystick_input_data._btn_b == ButtonState::Pressed
+            || keyboard_input_data.get_key_pressed(KeyCode::KeyF)
+            || keyboard_input_data.get_key_pressed(KeyCode::Delete);
+
+        if is_mouse_drop {
+            let engine_core = rust_engine_3d::core::engine_service_locator::get_engine_core();
+            let mouse_pos = &engine_core._mouse_move_data._mouse_pos;
+            let mouse_pos_f32 = Vector2::new(mouse_pos.x as f32, mouse_pos.y as f32);
+
+            let mut hovered_slot = INVALID_ITEM_INDEX;
+            for slot_widget in self._slot_widgets.iter() {
+                let ui_comp = slot_widget._widget.get_ui_component();
+                if ui_comp.check_collide(&mouse_pos_f32) {
+                    hovered_slot = slot_widget._slot_index;
+                    break;
+                }
+            }
+
+            // Only proceed if mouse pointer is directly over a valid slot
+            if hovered_slot != INVALID_ITEM_INDEX && hovered_slot < TOTAL_INVENTORY_SLOTS {
+                // Focus the slot under mouse pointer
+                self._focused_slot_index = hovered_slot;
+
+                // Drop item if slot is not empty and is droppable
+                let game_ui_manager = get_game_ui_manager();
+                let item_bar = game_ui_manager.get_item_bar_widget();
+                let slot_data = item_bar.get_inventory_slot_data(hovered_slot);
+                if slot_data._item_count > 0 && slot_data._item_data_name != ITEM_NONE && slot_data._item_data_type.is_droppable() {
+                    let item_data_name = slot_data._item_data_name.clone();
+                    get_item_manager_mut().drop_inventory_item(&item_data_name, 1);
+
+                    if self._drag_source_slot_index == hovered_slot {
+                        self._drag_source_slot_index = INVALID_ITEM_INDEX;
+                        let drag_ui = ptr_as_mut(self._drag_widget.as_ref()).get_ui_component_mut();
+                        drag_ui.set_draggable(false);
+                        drag_ui.set_visible(false);
+                    }
+                }
+            }
+        } else if is_controller_drop {
+            let target_slot = self._focused_slot_index;
+            if target_slot != INVALID_ITEM_INDEX && target_slot < TOTAL_INVENTORY_SLOTS {
+                let game_ui_manager = get_game_ui_manager();
+                let item_bar = game_ui_manager.get_item_bar_widget();
+                let slot_data = item_bar.get_inventory_slot_data(target_slot);
+                if slot_data._item_count > 0 && slot_data._item_data_name != ITEM_NONE && slot_data._item_data_type.is_droppable() {
+                    let item_data_name = slot_data._item_data_name.clone();
+                    get_item_manager_mut().drop_inventory_item(&item_data_name, 1);
+
+                    if self._drag_source_slot_index == target_slot {
+                        self._drag_source_slot_index = INVALID_ITEM_INDEX;
+                        let drag_ui = ptr_as_mut(self._drag_widget.as_ref()).get_ui_component_mut();
+                        drag_ui.set_draggable(false);
+                        drag_ui.set_visible(false);
+                    }
+                }
+            }
         }
 
         self.refresh_inventory_widget();

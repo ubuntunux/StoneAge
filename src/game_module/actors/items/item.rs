@@ -343,6 +343,11 @@ impl<'a> ItemManager<'a> {
     }
 
     pub fn drop_inventory_item(&mut self, item_data_name: &str, item_count: usize) -> bool {
+        let item_data = get_game_resources().get_item_data(item_data_name).borrow();
+        if !item_data._item_type.is_droppable() {
+            return false;
+        }
+
         let success = self.remove_inventory_item(item_data_name, item_count);
         if success {
             let player = get_character_manager_mut().get_player().borrow();
