@@ -727,4 +727,10 @@ impl<'a> GameUIManager<'a> {
             debug_ui_widget.update_debug_ui_widget();
         }
     }
+
+    pub fn trigger_stamina_warning(&mut self) {
+        if let Some(player_hud) = self._player_hud.as_mut() {
+            player_hud.trigger_stamina_warning();
+        }
+    }
 }

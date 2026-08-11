@@ -84,7 +84,7 @@ pub const STAMINA_POWER_ATTACK: f32 = 10.0;
 pub const STAMINA_RUN: f32 = 20.0;
 pub const STAMINA_JUMP: f32 = 25.0;
 pub const STAMINA_ROLL: f32 = 25.0;
-pub const ANIMATION_SPEED_BY_STAMINA: f32 = 1.0;
+pub const ANIMATION_SPEED_BY_STAMINA: f32 = 1.0 / 1.5;
 
 // dead, taming
 pub const MAX_CORPSE_HIT_COUNT: i32 = 3;

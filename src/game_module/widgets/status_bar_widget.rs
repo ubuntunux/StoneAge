@@ -1,3 +1,4 @@
+use std::cell::Cell;
 use rust_engine_3d::scene::ui::{UILayoutType, UIManager, UIWidgetTypes, WidgetDefault};
 use rust_engine_3d::utilities::system::ptr_as_mut;
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
@@ -12,6 +13,8 @@ pub struct StatusBarWidget<'a> {
     pub _status_layer: *const WidgetDefault<'a>,
     pub _max_status_bar: *const WidgetDefault<'a>,
     pub _status_bar: *const WidgetDefault<'a>,
+    pub _default_color: Cell<u32>,
+    pub _warning_timer: Cell<f32>,
 }
 
 // Implementation
@@ -60,6 +63,8 @@ impl<'a> StatusBarWidget<'a> {
             _status_layer: status_layer,
             _max_status_bar: max_status_bar,
             _status_bar: status_bar,
+            _default_color: Cell::new(color),
+            _warning_timer: Cell::new(0.0),
         }
     }
 
@@ -75,11 +80,21 @@ impl<'a> StatusBarWidget<'a> {
             _status_layer: status_layer,
             _max_status_bar: max_status_bar,
             _status_bar: status_bar,
+            _default_color: Cell::new(color),
+            _warning_timer: Cell::new(0.0),
         }
+    }
+
+    pub fn trigger_warning(&self) {
+        self._warning_timer.set(1.0);
     }
 
     pub fn set_bar_color(&self, color: u32) {
         ptr_as_mut(self._status_bar).get_ui_component_mut().set_color(color);
+    }
+
+    pub fn set_bg_color(&self, color: u32) {
+        ptr_as_mut(self._max_status_bar).get_ui_component_mut().set_color(color);
     }
 
     pub fn update_status_widget(
@@ -90,6 +105,25 @@ impl<'a> StatusBarWidget<'a> {
         delta_time: f64,
         smooth_update: bool,
     ) {
+        let default_bg_color = get_color32(50, 50, 50, 255);
+        let mut warning_timer = self._warning_timer.get();
+        if warning_timer > 0.0 {
+            warning_timer = (warning_timer - delta_time as f32).max(0.0);
+            self._warning_timer.set(warning_timer);
+            let elapsed = 1.0 - warning_timer;
+            let flash_phase = (elapsed * 5.0 * std::f32::consts::TAU).sin();
+            if flash_phase > 0.0 {
+                //self.set_bar_color(get_color32(255, 30, 30, 230));
+                self.set_bg_color(get_color32(120, 30, 30, 255));
+            } else {
+                //self.set_bar_color(self._default_color.get());
+                self.set_bg_color(default_bg_color);
+            }
+        } else {
+            //self.set_bar_color(self._default_color.get());
+            self.set_bg_color(default_bg_color);
+        }
+
         let status_ratio = 0f32.max(1.0f32.min(status / max_status_data));
         let status_bar = ptr_as_mut(self._status_bar).get_ui_component_mut();
         let mut status = status_bar.get_size_hint_x().unwrap_or(1.0);

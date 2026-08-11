@@ -1191,15 +1191,14 @@ impl<'a> Character<'a> {
     pub fn set_action_attack(&mut self) {
         let mut animation_speed: f32 = 1.0;
         if self._is_player {
-            let render_object = self._render_object.borrow();
-            let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
-            if self._character_stats._stamina < STAMINA_ATTACK && !animation_play_info._is_animation_end {
-                return;
+            if self._character_stats._stamina < STAMINA_ATTACK {
+                get_game_ui_manager_mut().trigger_stamina_warning();
+                animation_speed = ANIMATION_SPEED_BY_STAMINA;
             }
 
             self._character_stats._stamina -= STAMINA_ATTACK;
             if self._character_stats._stamina < 0.0 {
-                animation_speed = ANIMATION_SPEED_BY_STAMINA;
+                self._character_stats._stamina = 0.0;
             }
         }
         self.set_next_action_animation(ActionAnimationState::Attack, animation_speed);
@@ -1208,15 +1207,14 @@ impl<'a> Character<'a> {
     pub fn set_action_power_attack(&mut self) {
         let mut animation_speed: f32 = 1.0;
         if self._is_player {
-            let render_object = self._render_object.borrow();
-            let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
-            if self._character_stats._stamina < STAMINA_POWER_ATTACK && !animation_play_info._is_animation_end {
-                return;
+            if self._character_stats._stamina < STAMINA_POWER_ATTACK {
+                get_game_ui_manager_mut().trigger_stamina_warning();
+                animation_speed = ANIMATION_SPEED_BY_STAMINA;
             }
 
             self._character_stats._stamina -= STAMINA_POWER_ATTACK;
             if self._character_stats._stamina < 0.0 {
-                animation_speed = ANIMATION_SPEED_BY_STAMINA;
+                self._character_stats._stamina = 0.0;
             }
         }
         self.set_next_action_animation(ActionAnimationState::PowerAttack, animation_speed);
@@ -1224,15 +1222,17 @@ impl<'a> Character<'a> {
 
     pub fn set_action_kick(&mut self) {
         if self.is_available_attack() {
-            let animation_speed: f32 = 1.0;
+            let mut animation_speed: f32 = 1.0;
             if self._is_player {
-                let render_object = self._render_object.borrow();
-                let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
-                if self._character_stats._stamina < STAMINA_ATTACK && !animation_play_info._is_animation_end {
-                    return;
+                if self._character_stats._stamina < STAMINA_ATTACK {
+                    get_game_ui_manager_mut().trigger_stamina_warning();
+                    animation_speed = ANIMATION_SPEED_BY_STAMINA;
                 }
 
                 self._character_stats._stamina -= STAMINA_ATTACK;
+                if self._character_stats._stamina < 0.0 {
+                    self._character_stats._stamina = 0.0;
+                }
             }
             self.set_move_idle();
             self.set_next_action_animation(ActionAnimationState::Kick, animation_speed);
@@ -1263,6 +1263,9 @@ impl<'a> Character<'a> {
     }
 
     pub fn toggle_run(&mut self) {
+        if self._is_player && self._character_stats._stamina < STAMINA_RUN {
+            get_game_ui_manager_mut().trigger_stamina_warning();
+        }
         if self.is_move_state(MoveAnimationState::Run) || self.is_move_state(MoveAnimationState::Walk) {
             self._controller.toggle_run();
         }
@@ -1378,6 +1381,9 @@ impl<'a> Character<'a> {
     }
 
     pub fn set_jump(&mut self) {
+        if self._is_player && self._character_stats._stamina < STAMINA_JUMP {
+            get_game_ui_manager_mut().trigger_stamina_warning();
+        }
         if self.is_available_jump() {
             let mut not_enough_stamina = false;
             if self._is_player {
@@ -1396,6 +1402,9 @@ impl<'a> Character<'a> {
     }
 
     pub fn set_roll(&mut self) {
+        if self._is_player && self._character_stats._stamina < STAMINA_ROLL {
+            get_game_ui_manager_mut().trigger_stamina_warning();
+        }
         if self.is_available_roll() {
             if self._is_player {
                 self._character_stats._stamina -= STAMINA_ROLL;

@@ -7,7 +7,7 @@ use crate::game_module::actors::items::{ItemCreateInfo, ItemID};
 use crate::game_module::behavior::behavior_base::BehaviorSaveData;
 use crate::game_module::game_constants::{
     AUDIO_STOMACH_GROWLING, CHARACTER_INTERACTION_DISTANCE, CHARACTER_INTERACTION_TIME, CORPSE_AUTO_REMOVE_TIME,
-    FARM_MEAT_COUNT, GAME_VIEW_MODE, GameViewMode, ITEM_HAND, ITEM_MEAT, ITEM_SPIRIT_BALL, MATERIAL_EMOJI_GOOD,
+    FARM_MEAT_COUNT, GAME_VIEW_MODE, GameViewMode, ITEM_MEAT, ITEM_SPIRIT_BALL, MATERIAL_EMOJI_GOOD,
     MATERIAL_EMOJI_HUNGRY, NPC_ATTACK_HIT_RANGE, NPC_TRACKING_RANGE,
 };
 use crate::game_module::game_scene_manager::{CharacterCreateInfoMap, CharacterSaveDataMap};

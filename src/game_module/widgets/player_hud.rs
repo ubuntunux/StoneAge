@@ -50,6 +50,10 @@ impl<'a> PlayerHud<'a> {
 
     pub fn changed_window_size(&mut self, _window_size: &Vector2<i32>) {}
 
+    pub fn trigger_stamina_warning(&self) {
+        self._stamina_widget.trigger_warning();
+    }
+
     pub fn update_status_widget(&mut self, player: &Character<'a>, delta_time: f64) {
         self._hp_widget.update_status_widget(
             player.get_stats().get_hp() as f32,
