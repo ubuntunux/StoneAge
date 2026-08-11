@@ -21,7 +21,7 @@ const ITEM_HEIGHT: f32 = 60.0;
 
 #[derive(Clone, PartialEq, Eq, Hash, Debug, Display, FromRepr, EnumCount, EnumIter, EnumString, Copy)]
 #[repr(usize)]
-pub enum GameMenuType {
+pub enum SaveLoadType {
     Resume,
     NewGame,
     LoadGame,
@@ -29,19 +29,19 @@ pub enum GameMenuType {
     Exit,
 }
 
-pub struct GameMenuItem<'a> {
-    pub _game_menu_widget: *const GameMenuWidget<'a>,
-    pub _game_menu_type: GameMenuType,
+pub struct SaveLoadMenuItem<'a> {
+    pub _save_load_widget: *const SaveLoadWidget<'a>,
+    pub _save_load_type: SaveLoadType,
     pub _item_widget: Rc<WidgetDefault<'a>>,
 }
 
-impl<'a> GameMenuItem<'a> {
-    pub fn create_game_menu_item(
-        game_menu_widget: &GameMenuWidget<'a>,
+impl<'a> SaveLoadMenuItem<'a> {
+    pub fn create_save_load_menu_item(
+        save_load_widget: &SaveLoadWidget<'a>,
         parent_widget: &mut WidgetDefault<'a>,
-        game_menu_type: GameMenuType,
-    ) -> Box<GameMenuItem<'a>> {
-        let item_widget = UIManager::create_widget("game_menu_item", UIWidgetTypes::Default);
+        save_load_type: SaveLoadType,
+    ) -> Box<SaveLoadMenuItem<'a>> {
+        let item_widget = UIManager::create_widget("save_load_menu_item", UIWidgetTypes::Default);
         let item_widget_mut = ptr_as_mut(item_widget.as_ref());
         let ui_component = item_widget_mut.get_ui_component_mut();
         ui_component.set_layout_type(UILayoutType::BoxLayout);
@@ -55,43 +55,43 @@ impl<'a> GameMenuItem<'a> {
         ui_component.set_border_color(get_color32(0, 0, 0, 255));
         ui_component.set_margin(10.0);
         ui_component.set_round(5.0);
-        ui_component.set_text(game_menu_type.to_string().as_str());
+        ui_component.set_text(save_load_type.to_string().as_str());
         ui_component.set_font_size(40.0);
         ui_component.set_font_color(get_color32(255, 255, 255, 255));
         parent_widget.add_widget(&item_widget);
 
-        let game_menu_item = Box::new(GameMenuItem {
-            _game_menu_widget: game_menu_widget,
-            _game_menu_type: game_menu_type,
+        let save_load_menu_item = Box::new(SaveLoadMenuItem {
+            _save_load_widget: save_load_widget,
+            _save_load_type: save_load_type,
             _item_widget: item_widget,
         });
 
         ui_component.set_touchable(true);
-        ui_component.set_callback_touch_over(Some(Box::new(GameMenuWidget::callback_touch_over)));
-        ui_component.set_callback_touch_down(Some(Box::new(GameMenuWidget::callback_touch_down)));
-        ui_component.set_user_data(game_menu_item.as_ref() as *const GameMenuItem<'a> as *const c_void);
+        ui_component.set_callback_touch_over(Some(Box::new(SaveLoadWidget::callback_touch_over)));
+        ui_component.set_callback_touch_down(Some(Box::new(SaveLoadWidget::callback_touch_down)));
+        ui_component.set_user_data(save_load_menu_item.as_ref() as *const SaveLoadMenuItem<'a> as *const c_void);
 
-        game_menu_item
+        save_load_menu_item
     }
 }
 
-pub struct GameMenuWidget<'a> {
+pub struct SaveLoadWidget<'a> {
     pub _parent_widget: *const WidgetDefault<'a>,
     pub _layer: Rc<WidgetDefault<'a>>,
-    pub _menu_items: Vec<Box<GameMenuItem<'a>>>,
-    pub _selected_menu_item: GameMenuType,
-    pub _is_opened_game_menu: bool,
+    pub _menu_items: Vec<Box<SaveLoadMenuItem<'a>>>,
+    pub _selected_menu_item: SaveLoadType,
+    pub _is_opened_save_load_widget: bool,
 }
 
-impl<'a> GameMenuWidget<'a> {
+impl<'a> SaveLoadWidget<'a> {
     pub fn callback_touch_over(
         ui_component: &UIComponentInstance<'a>,
         _touched_pos: &Vector2<f32>,
         _touched_pos_delta: &Vector2<f32>,
     ) -> bool {
-        let game_menu_item = ptr_as_ref(ui_component.get_user_data() as *const GameMenuItem<'a>);
-        let game_menu_widget = ptr_as_mut(game_menu_item._game_menu_widget);
-        game_menu_widget.set_selected_menu_item(game_menu_item._game_menu_type, false);
+        let save_load_menu_item = ptr_as_ref(ui_component.get_user_data() as *const SaveLoadMenuItem<'a>);
+        let save_load_widget = ptr_as_mut(save_load_menu_item._save_load_widget);
+        save_load_widget.set_selected_menu_item(save_load_menu_item._save_load_type, false);
         true
     }
 
@@ -100,14 +100,14 @@ impl<'a> GameMenuWidget<'a> {
         _touched_pos: &Vector2<f32>,
         _touched_pos_delta: &Vector2<f32>,
     ) -> bool {
-        let game_menu_item = ptr_as_ref(ui_component.get_user_data() as *const GameMenuItem<'a>);
-        let game_menu_widget = ptr_as_mut(game_menu_item._game_menu_widget);
-        game_menu_widget.press_game_menu(game_menu_item._game_menu_type);
+        let save_load_menu_item = ptr_as_ref(ui_component.get_user_data() as *const SaveLoadMenuItem<'a>);
+        let save_load_widget = ptr_as_mut(save_load_menu_item._save_load_widget);
+        save_load_widget.press_save_load_menu(save_load_menu_item._save_load_type);
         true
     }
 
-    pub fn create_game_menu_widget(parent_widget: &mut WidgetDefault<'a>) -> Box<GameMenuWidget<'a>> {
-        let layer = UIManager::create_widget("game_menu_widget", UIWidgetTypes::Default);
+    pub fn create_save_load_widget(parent_widget: &mut WidgetDefault<'a>) -> Box<SaveLoadWidget<'a>> {
+        let layer = UIManager::create_widget("save_load_widget", UIWidgetTypes::Default);
         let layer_mut = ptr_as_mut(layer.as_ref());
         let ui_component = layer_mut.get_ui_component_mut();
         ui_component.set_layout_type(UILayoutType::BoxLayout);
@@ -124,44 +124,51 @@ impl<'a> GameMenuWidget<'a> {
         ui_component.set_enable(false);
         parent_widget.add_widget(&layer);
 
-        let mut game_menu_widget = Box::new(GameMenuWidget {
+        let mut save_load_widget = Box::new(SaveLoadWidget {
             _parent_widget: parent_widget,
             _layer: layer,
             _menu_items: Vec::new(),
-            _selected_menu_item: GameMenuType::Resume,
-            _is_opened_game_menu: false,
+            _selected_menu_item: SaveLoadType::Resume,
+            _is_opened_save_load_widget: false,
         });
 
         let menu_items = vec![
-            GameMenuItem::create_game_menu_item(game_menu_widget.as_ref(), layer_mut, GameMenuType::Resume),
-            GameMenuItem::create_game_menu_item(game_menu_widget.as_ref(), layer_mut, GameMenuType::NewGame),
-            GameMenuItem::create_game_menu_item(game_menu_widget.as_ref(), layer_mut, GameMenuType::LoadGame),
-            GameMenuItem::create_game_menu_item(game_menu_widget.as_ref(), layer_mut, GameMenuType::SaveGame),
-            GameMenuItem::create_game_menu_item(game_menu_widget.as_ref(), layer_mut, GameMenuType::Exit),
+            SaveLoadMenuItem::create_save_load_menu_item(save_load_widget.as_ref(), layer_mut, SaveLoadType::Resume),
+            SaveLoadMenuItem::create_save_load_menu_item(save_load_widget.as_ref(), layer_mut, SaveLoadType::NewGame),
+            SaveLoadMenuItem::create_save_load_menu_item(save_load_widget.as_ref(), layer_mut, SaveLoadType::LoadGame),
+            SaveLoadMenuItem::create_save_load_menu_item(save_load_widget.as_ref(), layer_mut, SaveLoadType::SaveGame),
+            SaveLoadMenuItem::create_save_load_menu_item(save_load_widget.as_ref(), layer_mut, SaveLoadType::Exit),
         ];
 
-        game_menu_widget.as_mut()._menu_items = menu_items;
-        game_menu_widget
+        save_load_widget.as_mut()._menu_items = menu_items;
+        save_load_widget
     }
+
     pub fn changed_window_size(&mut self, _window_size: &Vector2<i32>) {}
-    pub fn is_opened_game_menu(&self) -> bool {
-        self._is_opened_game_menu
+
+    pub fn is_opened_save_load_widget(&self) -> bool {
+        self._is_opened_save_load_widget
     }
-    pub fn open_game_menu(&mut self) {
-        if !self._is_opened_game_menu {
+
+    pub fn open_save_load_widget(&mut self) {
+        if !self._is_opened_save_load_widget {
             ptr_as_mut(self._layer.as_ref()).get_ui_component_mut().set_enable(true);
+            ptr_as_mut(self._layer.as_ref()).get_ui_component_mut().set_visible(true);
             self.set_selected_menu_item(self._selected_menu_item, true);
-            self._is_opened_game_menu = true;
+            self._is_opened_save_load_widget = true;
         }
     }
-    pub fn close_game_menu(&mut self) {
-        if self._is_opened_game_menu {
+
+    pub fn close_save_load_widget(&mut self) {
+        if self._is_opened_save_load_widget {
             get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
             ptr_as_mut(self._layer.as_ref()).get_ui_component_mut().set_enable(false);
-            self._is_opened_game_menu = false;
+            ptr_as_mut(self._layer.as_ref()).get_ui_component_mut().set_visible(false);
+            self._is_opened_save_load_widget = false;
         }
     }
-    pub fn set_selected_menu_item(&mut self, selected_menu_item: GameMenuType, force: bool) -> bool {
+
+    pub fn set_selected_menu_item(&mut self, selected_menu_item: SaveLoadType, force: bool) -> bool {
         if self._selected_menu_item != selected_menu_item || force {
             let prev_menu_item = &self._menu_items[self._selected_menu_item as usize];
             let curr_menu_item = &self._menu_items[selected_menu_item as usize];
@@ -173,27 +180,29 @@ impl<'a> GameMenuWidget<'a> {
         }
         false
     }
-    pub fn press_game_menu(&mut self, selected_menu_item: GameMenuType) {
+
+    pub fn press_save_load_menu(&mut self, selected_menu_item: SaveLoadType) {
         let game_client = get_game_client_mut();
         match selected_menu_item {
-            GameMenuType::Resume => {}
-            GameMenuType::NewGame => {
+            SaveLoadType::Resume => {}
+            SaveLoadType::NewGame => {
                 game_client.request_new_game();
             }
-            GameMenuType::LoadGame => {
+            SaveLoadType::LoadGame => {
                 game_client.request_load_game(DEFAULT_GAME_SAVE_DATA);
             }
-            GameMenuType::SaveGame => {
+            SaveLoadType::SaveGame => {
                 game_client.save_game(true);
             }
-            GameMenuType::Exit => {
+            SaveLoadType::Exit => {
                 game_client.exit_game();
             }
         }
         self.set_selected_menu_item(selected_menu_item, false);
-        self.close_game_menu();
+        self.close_save_load_widget();
     }
-    pub fn update_game_menu_widget(
+
+    pub fn update_save_load_widget(
         &mut self,
         joystick_input_data: &JoystickInputData,
         keyboard_input_data: &KeyboardInputData,
@@ -208,29 +217,25 @@ impl<'a> GameMenuWidget<'a> {
             || keyboard_input_data.get_key_pressed(KeyCode::Space)
             || joystick_input_data._btn_x == ButtonState::Pressed
             || joystick_input_data._btn_a == ButtonState::Pressed;
-        let close_game_menu =
-            keyboard_input_data.get_key_pressed(KeyCode::Escape) || joystick_input_data._btn_b == ButtonState::Pressed;
 
         if move_menu_up {
             let selected_menu_item: usize = if self._selected_menu_item as usize == 0 {
-                GameMenuType::COUNT - 1
+                SaveLoadType::COUNT - 1
             } else {
                 self._selected_menu_item as usize - 1
             };
-            self.set_selected_menu_item(GameMenuType::from_repr(selected_menu_item).unwrap(), false);
+            self.set_selected_menu_item(SaveLoadType::from_repr(selected_menu_item).unwrap(), false);
         } else if move_menu_down {
-            let selected_menu_item: usize = if self._selected_menu_item as usize == (GameMenuType::COUNT - 1) {
+            let selected_menu_item: usize = if self._selected_menu_item as usize == (SaveLoadType::COUNT - 1) {
                 0
             } else {
                 self._selected_menu_item as usize + 1
             };
-            self.set_selected_menu_item(GameMenuType::from_repr(selected_menu_item).unwrap(), false);
+            self.set_selected_menu_item(SaveLoadType::from_repr(selected_menu_item).unwrap(), false);
         }
 
         if press_game_menu {
-            self.press_game_menu(self._selected_menu_item);
-        } else if close_game_menu {
-            self.close_game_menu();
+            self.press_save_load_menu(self._selected_menu_item);
         }
     }
 }

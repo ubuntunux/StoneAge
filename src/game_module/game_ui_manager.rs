@@ -5,10 +5,8 @@ use crate::game_module::game_service_locator::{get_character_manager, get_game_s
 use crate::game_module::widgets::controller_help::ControllerHelpWidget;
 use crate::game_module::widgets::cross_hair_widget::CrossHairWidget;
 use crate::game_module::widgets::debug_ui_widget::DebugUIWidget;
-use crate::game_module::widgets::game_debug_menu_widget::GameDebugMenuWidget;
-use crate::game_module::widgets::game_menu_widget::GameMenuWidget;
+use crate::game_module::widgets::game_menu_widget::{GameMenuTab, GameMenuWidget, InventoryWidget};
 use crate::game_module::widgets::image_widget::ImageLayout;
-use crate::game_module::widgets::inventory_widget::InventoryWidget;
 use crate::game_module::widgets::item_acquire_notification::ItemAcquireNotificationWidget;
 use crate::game_module::widgets::item_bar::{InventoryItemCreateInfoList, ItemBarWidget};
 use crate::game_module::widgets::key_binding_widget::KeyBindingWidgetManager;
@@ -42,7 +40,6 @@ pub struct GameUIManager<'a> {
     pub _game_image: Option<Box<ImageLayout<'a>>>,
     pub _key_binding_widget_manager: Option<Box<KeyBindingWidgetManager<'a>>>,
     pub _cross_hair: Option<Box<CrossHairWidget<'a>>>,
-    pub _game_debug_menu_widget: Option<Box<GameDebugMenuWidget<'a>>>,
     pub _game_menu_widget: Option<Box<GameMenuWidget<'a>>>,
     pub _player_hud: Option<Box<PlayerHud<'a>>>,
     pub _text_box_widget: Option<Box<TextBoxWidget<'a>>>,
@@ -50,7 +47,6 @@ pub struct GameUIManager<'a> {
     pub _target_status_bar: Option<Box<TargetStatusWidget<'a>>>,
     pub _time_of_day: Option<Box<TimeOfDayWidget<'a>>>,
     pub _item_bar_widget: Option<Box<ItemBarWidget<'a>>>,
-    pub _inventory_widget: Option<Box<InventoryWidget<'a>>>,
     pub _item_acquire_notification_widget: Option<Box<ItemAcquireNotificationWidget<'a>>>,
     pub _toolbox_widget: Option<Box<ToolboxWidget<'a>>>,
     pub _quest_widget: Option<Box<QuestWidget<'a>>>,
@@ -121,13 +117,11 @@ impl<'a> GameUIManager<'a> {
             _game_image: None,
             _key_binding_widget_manager: None,
             _cross_hair: None,
-            _game_debug_menu_widget: None,
             _game_menu_widget: None,
             _text_box_widget: None,
             _target_status_bar: None,
             _time_of_day: None,
             _item_bar_widget: None,
-            _inventory_widget: None,
             _item_acquire_notification_widget: None,
             _player_hud: None,
             _controller_help_widget: None,
@@ -204,17 +198,9 @@ impl<'a> GameUIManager<'a> {
         ui_component.set_renderable(false);
         root_widget.add_widget(&game_menu_layout);
 
-        self._inventory_widget = Some(InventoryWidget::create_inventory_widget(game_menu_layout_mut));
         self._game_menu_widget = Some(GameMenuWidget::create_game_menu_widget(game_menu_layout_mut));
 
         // root layer
-        self._game_debug_menu_widget = unsafe {
-            if DEVELOPMENT {
-                Some(GameDebugMenuWidget::create_game_debug_menu_widget(root_widget))
-            } else {
-                None
-            }
-        };
         self._cross_hair = Some(Box::new(CrossHairWidget::create_cross_hair(root_widget)));
         self._game_image = Some(ImageLayout::create_image_layout(
             root_widget,
@@ -292,35 +278,65 @@ impl<'a> GameUIManager<'a> {
 
     // game menu
     pub fn is_opened_game_debug_menu(&self) -> bool {
-        self._game_debug_menu_widget.as_ref().unwrap().is_opened_game_debug_menu()
+        if let Some(game_menu_widget) = self._game_menu_widget.as_ref() {
+            game_menu_widget.is_opened_game_menu() && game_menu_widget.get_active_tab() == GameMenuTab::DebugMenu
+        } else {
+            false
+        }
     }
     pub fn open_game_debug_menu(&mut self) {
-        self._game_debug_menu_widget.as_mut().unwrap().open_game_debug_menu();
+        self.open_game_menu(GameMenuTab::DebugMenu);
     }
     pub fn update_game_debug_menu_widget(
         &mut self,
-        joystick_input_data: &JoystickInputData,
-        keyboard_input_data: &KeyboardInputData,
+        _joystick_input_data: &JoystickInputData,
+        _keyboard_input_data: &KeyboardInputData,
     ) {
-        if let Some(game_debug_menu_widget) = self._game_debug_menu_widget.as_mut() {
-            game_debug_menu_widget.update_game_debug_menu_widget(joystick_input_data, keyboard_input_data);
-        }
     }
 
     // game menu
-    pub fn is_opened_game_menu(&self) -> bool {
-        self._game_menu_widget.as_ref().unwrap().is_opened_game_menu()
+    pub fn get_inventory_widget_mut(&mut self) -> Option<&mut InventoryWidget<'a>> {
+        self._game_menu_widget.as_mut().map(|menu| menu._inventory_widget.as_mut())
     }
-    pub fn open_game_menu(&mut self) {
-        self._game_menu_widget.as_mut().unwrap().open_game_menu();
+    pub fn is_opened_game_menu(&self) -> bool {
+        if let Some(game_menu_widget) = self._game_menu_widget.as_ref() {
+            game_menu_widget.is_opened_game_menu()
+        } else {
+            false
+        }
+    }
+    pub fn open_game_menu(&mut self, tab: GameMenuTab) {
+        if let Some(game_menu_widget) = self._game_menu_widget.as_mut() {
+            game_menu_widget.open_game_menu(tab);
+        }
+        self.set_cross_hair_visible(true);
+    }
+    pub fn close_game_menu(&mut self) {
+        if let Some(game_menu_widget) = self._game_menu_widget.as_mut() {
+            game_menu_widget.close_game_menu();
+        }
+        self.set_cross_hair_visible(false);
     }
     pub fn update_game_menu_widget(
         &mut self,
+        time_data: &TimeData,
         joystick_input_data: &JoystickInputData,
         keyboard_input_data: &KeyboardInputData,
+        mouse_move_data: &MouseMoveData,
+        mouse_input_data: &MouseInputData,
+        mouse_delta: &Vector2<f32>,
+        player: &RcRefCell<Character>,
     ) {
         if let Some(game_menu_widget) = self._game_menu_widget.as_mut() {
-            game_menu_widget.update_game_menu_widget(joystick_input_data, keyboard_input_data);
+            game_menu_widget.update_game_menu_widget(
+                time_data,
+                joystick_input_data,
+                keyboard_input_data,
+                mouse_move_data,
+                mouse_input_data,
+                mouse_delta,
+                player,
+            );
         }
     }
 
@@ -435,7 +451,7 @@ impl<'a> GameUIManager<'a> {
 
     pub fn select_item(&mut self, item_index: usize) {
         self._item_bar_widget.as_mut().unwrap().select_item(item_index);
-        if let Some(inventory_widget) = self._inventory_widget.as_mut() {
+        if let Some(inventory_widget) = self.get_inventory_widget_mut() {
             inventory_widget.refresh_inventory_widget();
         }
     }
@@ -444,7 +460,7 @@ impl<'a> GameUIManager<'a> {
         if let Some(item_bar_widget) = self._item_bar_widget.as_mut() {
             item_bar_widget.select_quick_slot(quick_index);
         }
-        if let Some(inventory_widget) = self._inventory_widget.as_mut() {
+        if let Some(inventory_widget) = self.get_inventory_widget_mut() {
             inventory_widget.refresh_inventory_widget();
         }
     }
@@ -453,7 +469,7 @@ impl<'a> GameUIManager<'a> {
         if let Some(item_bar_widget) = self._item_bar_widget.as_mut() {
             item_bar_widget.switch_active_row();
         }
-        if let Some(inventory_widget) = self._inventory_widget.as_mut() {
+        if let Some(inventory_widget) = self.get_inventory_widget_mut() {
             inventory_widget.refresh_inventory_widget();
         }
     }
@@ -461,7 +477,7 @@ impl<'a> GameUIManager<'a> {
     pub fn add_item_at_slot(&mut self, slot_index: usize, item_data_name: &str, item_count: usize) -> bool {
         if let Some(item_bar) = self._item_bar_widget.as_mut() {
             let result = item_bar.add_item_at_slot(slot_index, item_data_name, item_count);
-            if let Some(inventory_widget) = self._inventory_widget.as_mut() {
+            if let Some(inventory_widget) = self.get_inventory_widget_mut() {
                 inventory_widget.refresh_inventory_widget();
             }
             result
@@ -484,7 +500,7 @@ impl<'a> GameUIManager<'a> {
         } else {
             false
         };
-        if let Some(inventory_widget) = self._inventory_widget.as_mut() {
+        if let Some(inventory_widget) = self.get_inventory_widget_mut() {
             inventory_widget.refresh_inventory_widget();
         }
         result
@@ -492,47 +508,18 @@ impl<'a> GameUIManager<'a> {
 
     // inventory
     pub fn open_inventory(&mut self) {
-        if let Some(inventory_widget) = self._inventory_widget.as_mut() {
-            inventory_widget.open_inventory();
-        }
-        self.set_cross_hair_visible(true);
+        self.open_game_menu(GameMenuTab::Inventory);
     }
 
     pub fn close_inventory(&mut self) {
-        self.set_cross_hair_visible(false);
-        if let Some(inventory_widget) = self._inventory_widget.as_mut() {
-            inventory_widget.close_inventory();
-        }
+        self.close_game_menu();
     }
 
     pub fn is_opened_inventory(&self) -> bool {
-        if let Some(inventory_widget) = self._inventory_widget.as_ref() {
-            inventory_widget.is_opened_inventory()
+        if let Some(game_menu_widget) = self._game_menu_widget.as_ref() {
+            game_menu_widget.is_opened_game_menu() && game_menu_widget.get_active_tab() == GameMenuTab::Inventory
         } else {
             false
-        }
-    }
-
-    pub fn update_inventory_widget(
-        &mut self,
-        time_data: &TimeData,
-        joystick_input_data: &JoystickInputData,
-        keyboard_input_data: &KeyboardInputData,
-        mouse_move_data: &MouseMoveData,
-        mouse_input_data: &MouseInputData,
-        mouse_delta: &Vector2<f32>,
-        player: &RcRefCell<Character>,
-    ) {
-        if let Some(inventory_widget) = self._inventory_widget.as_mut() {
-            inventory_widget.update_inventory_widget(
-                time_data,
-                joystick_input_data,
-                keyboard_input_data,
-                mouse_move_data,
-                mouse_input_data,
-                mouse_delta,
-                player,
-            );
         }
     }
 
@@ -647,14 +634,7 @@ impl<'a> GameUIManager<'a> {
         self._target_status_bar.as_mut().unwrap().changed_window_size(window_size);
         self._time_of_day.as_mut().unwrap().changed_window_size(window_size);
         self._item_bar_widget.as_mut().unwrap().changed_window_size(window_size);
-        if let Some(inventory_widget) = self._inventory_widget.as_mut() {
-            inventory_widget.changed_window_size(window_size);
-        }
         self._game_menu_widget.as_mut().unwrap().changed_window_size(window_size);
-
-        if let Some(game_debug_menu_widget) = self._game_debug_menu_widget.as_mut() {
-            game_debug_menu_widget.changed_window_size(window_size);
-        }
     }
 
     pub fn update_game_ui(&mut self, delta_time: f64) {

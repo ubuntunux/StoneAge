@@ -119,8 +119,6 @@ impl<'a> GameDebugMenuWidget<'a> {
         ui_component.set_valign(VerticalAlign::CENTER);
         ui_component.set_pivot_preset(PIVOT_CENTER);
         ui_component.set_pos_hint(Some(0.5), Some(0.5));
-        // ui_component.set_size_hint_x(Some(0.5));
-        // ui_component.set_size_hint_y(Some(0.5));
         ui_component.set_expandable(true);
         ui_component.set_padding(10.0);
         ui_component.set_color(get_color32(50, 50, 50, 128));
@@ -170,6 +168,7 @@ impl<'a> GameDebugMenuWidget<'a> {
     pub fn open_game_debug_menu(&mut self) {
         if !self._is_opened_game_debug_menu {
             ptr_as_mut(self._layer.as_ref()).get_ui_component_mut().set_enable(true);
+            ptr_as_mut(self._layer.as_ref()).get_ui_component_mut().set_visible(true);
             self.set_selected_menu_item(self._selected_menu_item, true);
             self._is_opened_game_debug_menu = true;
         }
@@ -178,6 +177,7 @@ impl<'a> GameDebugMenuWidget<'a> {
         if self._is_opened_game_debug_menu {
             get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
             ptr_as_mut(self._layer.as_ref()).get_ui_component_mut().set_enable(false);
+            ptr_as_mut(self._layer.as_ref()).get_ui_component_mut().set_visible(false);
             self._is_opened_game_debug_menu = false;
         }
     }
@@ -231,13 +231,6 @@ impl<'a> GameDebugMenuWidget<'a> {
             || joystick_input_data._btn_x == ButtonState::Pressed
             || joystick_input_data._btn_a == ButtonState::Pressed;
 
-        let is_close_game_debug_menu = (joystick_input_data._btn_left_trigger == ButtonState::Hold
-            && joystick_input_data._btn_right_trigger == ButtonState::Hold
-            && joystick_input_data._btn_left_shoulder == ButtonState::Hold
-            && joystick_input_data._btn_right_shoulder == ButtonState::Hold)
-            || keyboard_input_data.get_key_pressed(KeyCode::Backquote)
-            || keyboard_input_data.get_key_pressed(KeyCode::Escape);
-
         if move_menu_up {
             let selected_menu_item: usize = if self._selected_menu_item as usize == 0 {
                 GameDebugMenuType::COUNT - 1
@@ -256,8 +249,6 @@ impl<'a> GameDebugMenuWidget<'a> {
 
         if press_game_debug_menu {
             self.press_game_debug_menu(self._selected_menu_item);
-        } else if is_close_game_debug_menu {
-            self.close_game_debug_menu();
         }
     }
 }

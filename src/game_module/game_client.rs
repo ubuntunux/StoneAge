@@ -237,15 +237,23 @@ impl<'a> GameClient<'a> {
                 GamePhase::GameMenu => match state {
                     State::Begin => {
                         game_ui_manager.set_cross_hair_visible(true);
-                        game_ui_manager.open_game_menu();
                     }
                     State::Update => {
                         if !game_ui_manager.is_opened_game_menu() {
                             self.set_next_game_phase(GamePhase::GamePlay);
                         }
-                        game_ui_manager.update_game_menu_widget(joystick_input_data, keyboard_input_data);
+                        game_ui_manager.update_game_menu_widget(
+                            time_data,
+                            joystick_input_data,
+                            keyboard_input_data,
+                            mouse_move_data,
+                            mouse_input_data,
+                            &mouse_delta,
+                            character_manager.get_player(),
+                        );
                     }
                     State::End => {
+                        game_ui_manager.close_game_menu();
                         game_ui_manager.set_cross_hair_visible(false);
                     }
                 },
@@ -372,6 +380,7 @@ impl<'a> GameClient<'a> {
                 },
                 GamePhase::OpenToolbox => match state {
                     State::Begin => {
+                        game_ui_manager.set_cross_hair_visible(true);
                         game_ui_manager.open_toolbox();
                     }
                     State::Update => {
@@ -391,32 +400,15 @@ impl<'a> GameClient<'a> {
                     }
                     State::End => {
                         game_ui_manager.close_toolbox();
+                        game_ui_manager.set_cross_hair_visible(false);
                     }
                 },
                 GamePhase::Inventory => match state {
                     State::Begin => {
-                        game_ui_manager.set_cross_hair_visible(true);
-                        game_ui_manager.open_inventory();
+                        self.set_next_game_phase(GamePhase::GameMenu);
                     }
-                    State::Update => {
-                        if game_ui_manager.is_opened_inventory() {
-                            game_ui_manager.update_inventory_widget(
-                                time_data,
-                                joystick_input_data,
-                                keyboard_input_data,
-                                mouse_move_data,
-                                mouse_input_data,
-                                &mouse_delta,
-                                character_manager.get_player(),
-                            );
-                        } else {
-                            self.set_next_game_phase(GamePhase::GamePlay);
-                        }
-                    }
-                    State::End => {
-                        game_ui_manager.close_inventory();
-                        game_ui_manager.set_cross_hair_visible(false);
-                    }
+                    State::Update => {}
+                    State::End => {}
                 },
                 GamePhase::WorldMapOpen => match state {
                     State::Begin => {

@@ -1,6 +1,7 @@
 use crate::game_module::actors::character::Character;
 use crate::game_module::actors::items::ItemDataType;
 use crate::game_module::game_constants::ITEM_NONE;
+use crate::game_module::game_controller::{HoldRepeatController, NAV_INITIAL_DELAY, NAV_REPEAT_INTERVAL};
 use crate::game_module::game_service_locator::{get_game_ui_manager, get_game_ui_manager_mut, get_item_manager_mut};
 use crate::game_module::widgets::item_bar::{
     INVALID_ITEM_INDEX, ITEM_UI_SIZE, ITEM_WIDGET_UI_MARGIN, MAX_INVENTORY_ROWS, SLOTS_PER_ROW, TOTAL_INVENTORY_SLOTS,
@@ -18,7 +19,6 @@ use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use std::ffi::c_void;
 use std::rc::Rc;
 use winit::keyboard::KeyCode;
-use crate::game_module::game_controller::{HoldRepeatController, NAV_INITIAL_DELAY, NAV_REPEAT_INTERVAL};
 
 pub struct InventorySlotWidget<'a> {
     pub _inventory_widget: *const InventoryWidget<'a>,
@@ -138,36 +138,6 @@ impl<'a> InventoryWidget<'a> {
         ui_component.set_round(5.0);
         ui_component.set_enable(false);
         parent_widget.add_widget(&layer);
-
-        let header_layout = UIManager::create_widget("header", UIWidgetTypes::Default);
-        let header_layout_mut = ptr_as_mut(header_layout.as_ref());
-        let ui_component = header_layout_mut.get_ui_component_mut();
-        ui_component.set_layout_type(UILayoutType::BoxLayout);
-        ui_component.set_layout_orientation(Orientation::HORIZONTAL);
-        ui_component.set_halign(HorizontalAlign::RIGHT);
-        ui_component.set_valign(VerticalAlign::CENTER);
-        ui_component.set_size_hint_x(Some(1.0));
-        ui_component.set_size_y(0.0);
-        ui_component.set_round(5.0);
-        ui_component.set_margin(10.0);
-        ui_component.set_expandable(true);
-        ui_component.set_color(get_color32(0, 0, 0, 128));
-        layer_mut.add_widget(&header_layout);
-
-        let close_btn = UIManager::create_widget("close_btn", UIWidgetTypes::Default);
-        let ui_component = ptr_as_mut(close_btn.as_ref()).get_ui_component_mut();
-        ui_component.set_halign(HorizontalAlign::CENTER);
-        ui_component.set_valign(VerticalAlign::CENTER);
-        ui_component.set_text("X");
-        ui_component.set_size(35.0, 35.0);
-        ui_component.set_font_size(30.0);
-        ui_component.set_font_color(get_color32(255, 255, 255, 255));
-        ui_component.set_round(5.0);
-        ui_component.set_color(get_color32(50, 50, 50, 255));
-        ui_component.set_margin(10.0);
-        ui_component.set_touchable(true);
-        ui_component.set_callback_touch_down(Some(Box::new(InventoryWidget::callback_close_click)));
-        header_layout_mut.add_widget(&close_btn);
 
         let drag_widget = UIManager::create_widget("inv_drag_widget", UIWidgetTypes::Default);
         let ui_component = ptr_as_mut(drag_widget.as_ref()).get_ui_component_mut();
@@ -294,6 +264,7 @@ impl<'a> InventoryWidget<'a> {
         }
         let layer_mut = ptr_as_mut(self._layer.as_ref());
         layer_mut.get_ui_component_mut().set_enable(true);
+        layer_mut.get_ui_component_mut().set_visible(true);
         self.refresh_inventory_widget();
     }
 
@@ -308,6 +279,7 @@ impl<'a> InventoryWidget<'a> {
         }
         let layer_mut = ptr_as_mut(self._layer.as_ref());
         layer_mut.get_ui_component_mut().set_enable(false);
+        layer_mut.get_ui_component_mut().set_visible(false);
     }
 
     pub fn is_opened_inventory(&self) -> bool {
@@ -350,15 +322,6 @@ impl<'a> InventoryWidget<'a> {
         _mouse_delta: &Vector2<f32>,
         _player: &RcRefCell<Character>,
     ) {
-        if keyboard_input_data.get_key_pressed(KeyCode::KeyI)
-            || keyboard_input_data.get_key_pressed(KeyCode::Escape)
-            || joystick_input_data._btn_start == ButtonState::Pressed
-            || joystick_input_data._btn_back == ButtonState::Pressed
-        {
-            self.close_inventory();
-            return;
-        }
-
         if self._drag_source_slot_index != INVALID_ITEM_INDEX {
             let engine_core = rust_engine_3d::core::engine_service_locator::get_engine_core();
             let mouse_pos = &engine_core._mouse_move_data._mouse_pos;

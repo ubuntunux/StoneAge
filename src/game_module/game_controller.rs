@@ -1,11 +1,11 @@
 use crate::game_module::actors::character::{ActionAnimationState, Character};
 use crate::game_module::game_client::GamePhase;
 use crate::game_module::game_constants::*;
+use crate::game_module::widgets::game_menu_widget::GameMenuTab;
 use crate::game_module::game_service_locator::{
     get_character_manager, get_game_client_mut, get_game_ui_manager_mut,
 };
 use nalgebra::{Matrix4, Vector2, Vector3};
-use rust_engine_3d::constants::DEVELOPMENT;
 use rust_engine_3d::core::engine_core::TimeData;
 use rust_engine_3d::core::engine_service_locator::get_scene_manager;
 use rust_engine_3d::core::input::{ButtonState, JoystickInputData, KeyboardInputData, MouseInputData, MouseMoveData};
@@ -461,26 +461,17 @@ impl<'a> GameController<'a> {
             joystick_input_data._stick_left_direction.y as f32,
         ) * JOYSTICK_SENSITIVITY;
 
-        if unsafe { DEVELOPMENT } {
-            let is_toggle_game_mode_by_joystick = joystick_input_data._btn_left_trigger == ButtonState::Hold
-                && joystick_input_data._btn_right_trigger == ButtonState::Hold
-                && joystick_input_data._btn_left_shoulder == ButtonState::Hold
-                && joystick_input_data._btn_right_shoulder == ButtonState::Hold;
-
-            if keyboard_input_data.get_key_pressed(KeyCode::Backquote) || is_toggle_game_mode_by_joystick {
-                get_game_client_mut().set_next_game_phase(GamePhase::GameDebugMenu);
-            }
-        }
-
         if is_help {
             get_game_ui_manager_mut().toggle_controls_visibility();
         }
 
         // game menu, inventory, quick slot
         if open_menu {
+            get_game_ui_manager_mut().open_game_menu(GameMenuTab::SaveLoad);
             get_game_client_mut().set_next_game_phase(GamePhase::GameMenu);
         } else if open_inventory {
-            get_game_client_mut().set_next_game_phase(GamePhase::Inventory);
+            get_game_ui_manager_mut().open_game_menu(GameMenuTab::Inventory);
+            get_game_client_mut().set_next_game_phase(GamePhase::GameMenu);
         } else if prev_quick_slot_row || next_quick_slot_row {
             get_game_ui_manager_mut().switch_quick_slot_row();
         }
