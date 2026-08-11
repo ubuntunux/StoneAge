@@ -17,7 +17,7 @@ use nalgebra::Vector2;
 use rust_engine_3d::core::engine_service_locator::get_engine_resources;
 use rust_engine_3d::scene::material_instance::MaterialInstanceData;
 use rust_engine_3d::scene::ui::{
-    HorizontalAlign, Orientation, PIVOT_BOTTOM_CENTER, PIVOT_BOTTOM_LEFT, PIVOT_CENTER_LEFT, PIVOT_CENTER_RIGHT,
+    HorizontalAlign, Orientation, PIVOT_BOTTOM_CENTER, PIVOT_CENTER_LEFT, PIVOT_CENTER_RIGHT,
     PIVOT_TOP_CENTER, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault,
 };
 use rust_engine_3d::utilities::system::{RcRefCell, ptr_as_mut};
@@ -234,35 +234,6 @@ impl<'a> ItemBarWidget<'a> {
         ui_component.set_pos_x(ItemBarWidget::get_item_bar_width() * 0.5 + KEY_BINDING_TEXT_MARGIN);
         ui_component.set_pos_y(-ItemBarWidget::get_item_bar_center_y());
         inventory_key_binding_widget_map.register_key_binding_widget(select_next_widget);
-
-        let drop_item_widget = create_inventory_key_binding_widget(
-            ptr_as_mut(self._parent_widget),
-            KeyBindingType::DropItem,
-            "drop_item_key_binding",
-            "Drop Item",
-            vec![engine_resources.get_material_instance_data("ui/controller/keycode_f").clone()],
-            vec![engine_resources.get_material_instance_data("ui/controller/joystick_x").clone()],
-        );
-        let ui_component = ptr_as_mut(drop_item_widget._layout_widget).get_ui_component_mut();
-        ui_component.set_pivot_preset(PIVOT_BOTTOM_LEFT);
-        ui_component.set_pos_hint(Some(0.5), Some(1.0));
-        ui_component.set_pos_y(-ItemBarWidget::get_item_bar_pos_top() - KEY_BINDING_UI_SIZE - ITEM_WIDGET_UI_MARGIN);
-        inventory_key_binding_widget_map.register_key_binding_widget(drop_item_widget);
-
-        let use_item_widget = create_inventory_key_binding_widget(
-            ptr_as_mut(self._parent_widget),
-            KeyBindingType::UseItem,
-            "use_item_key_binding",
-            "Use Item",
-            vec![engine_resources.get_material_instance_data("ui/controller/keycode_c").clone()],
-            vec![engine_resources.get_material_instance_data("ui/controller/joystick_y").clone()],
-        );
-        let ui_component = ptr_as_mut(use_item_widget._layout_widget).get_ui_component_mut();
-        ui_component.set_pivot_preset(PIVOT_BOTTOM_LEFT);
-        ui_component.set_pos_hint(Some(0.5), Some(1.0));
-        ui_component.set_pos_x(ItemBarWidget::get_selected_item_pos_left(0));
-        ui_component.set_pos_y(-ItemBarWidget::get_item_bar_pos_top());
-        inventory_key_binding_widget_map.register_key_binding_widget(use_item_widget);
 
         // quick slot
         let quick_slot_key_binding_widget_map = ptr_as_mut(self._quick_slot_key_binding_widget_map.as_ref());
@@ -665,26 +636,8 @@ impl<'a> ItemBarWidget<'a> {
     }
 
     pub fn update_selected_item_helper_widget(&mut self, force_update: bool) {
-        let inventory_key_binding_widget_map = ptr_as_mut(self._inventory_key_binding_widget_map.as_ref());
         let selected_item_index = get_game_ui_manager().get_selected_inventory_item_index();
-
         if self._selected_inventory_slot_index != selected_item_index || force_update {
-            let start_slot = self._active_row_index * SLOTS_PER_ROW;
-            let display_index = if selected_item_index >= start_slot && selected_item_index < start_slot + SLOTS_PER_ROW {
-                selected_item_index - start_slot
-            } else {
-                0
-            };
-            let pos_x = ItemBarWidget::get_selected_item_pos_left(display_index);
-
-            let key_binding_widget = inventory_key_binding_widget_map.get_key_binding_widget(KeyBindingType::UseItem);
-            let ui_component = ptr_as_mut(key_binding_widget._layout_widget).get_ui_component_mut();
-            ui_component.set_pos_x(pos_x);
-
-            let key_binding_widget = inventory_key_binding_widget_map.get_key_binding_widget(KeyBindingType::DropItem);
-            let ui_component = ptr_as_mut(key_binding_widget._layout_widget).get_ui_component_mut();
-            ui_component.set_pos_x(pos_x);
-
             self._selected_inventory_slot_index = selected_item_index;
         }
     }

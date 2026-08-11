@@ -164,7 +164,11 @@ impl<'a> BehaviorBase<'a> for BehaviorRoamer<'a> {
                         if !NPC_AVAILABLE_MOVING_ATTACK {
                             owner.set_move_idle();
                         }
-                        owner.set_action_attack();
+
+                        if owner.is_available_attack() {
+                            owner.set_action_attack();
+                        }
+
                         self._attack_time = lerp(NPC_ATTACK_TERM_MIN, NPC_ATTACK_TERM_MAX, rand::random::<f32>());
                         get_audio_manager_mut().play_audio_resource_data(
                             &owner._character_data.borrow()._audio_data._audio_growl,

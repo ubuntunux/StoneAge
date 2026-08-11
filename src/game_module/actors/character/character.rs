@@ -1189,41 +1189,37 @@ impl<'a> Character<'a> {
         }
     }
     pub fn set_action_attack(&mut self) {
-        if self.is_available_attack() {
-            let mut animation_speed: f32 = 1.0;
-            if self._is_player {
-                let render_object = self._render_object.borrow();
-                let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
-                if self._character_stats._stamina < STAMINA_ATTACK && !animation_play_info._is_animation_end {
-                    return;
-                }
-
-                self._character_stats._stamina -= STAMINA_ATTACK;
-                if self._character_stats._stamina < 0.0 {
-                    animation_speed = ANIMATION_SPEED_BY_STAMINA;
-                }
+        let mut animation_speed: f32 = 1.0;
+        if self._is_player {
+            let render_object = self._render_object.borrow();
+            let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
+            if self._character_stats._stamina < STAMINA_ATTACK && !animation_play_info._is_animation_end {
+                return;
             }
-            self.set_next_action_animation(ActionAnimationState::Attack, animation_speed);
+
+            self._character_stats._stamina -= STAMINA_ATTACK;
+            if self._character_stats._stamina < 0.0 {
+                animation_speed = ANIMATION_SPEED_BY_STAMINA;
+            }
         }
+        self.set_next_action_animation(ActionAnimationState::Attack, animation_speed);
     }
 
     pub fn set_action_power_attack(&mut self) {
-        if self.is_available_attack() {
-            let mut animation_speed: f32 = 1.0;
-            if self._is_player {
-                let render_object = self._render_object.borrow();
-                let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
-                if self._character_stats._stamina < STAMINA_POWER_ATTACK && !animation_play_info._is_animation_end {
-                    return;
-                }
-
-                self._character_stats._stamina -= STAMINA_POWER_ATTACK;
-                if self._character_stats._stamina < 0.0 {
-                    animation_speed = ANIMATION_SPEED_BY_STAMINA;
-                }
+        let mut animation_speed: f32 = 1.0;
+        if self._is_player {
+            let render_object = self._render_object.borrow();
+            let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
+            if self._character_stats._stamina < STAMINA_POWER_ATTACK && !animation_play_info._is_animation_end {
+                return;
             }
-            self.set_next_action_animation(ActionAnimationState::PowerAttack, animation_speed);
+
+            self._character_stats._stamina -= STAMINA_POWER_ATTACK;
+            if self._character_stats._stamina < 0.0 {
+                animation_speed = ANIMATION_SPEED_BY_STAMINA;
+            }
         }
+        self.set_next_action_animation(ActionAnimationState::PowerAttack, animation_speed);
     }
 
     pub fn set_action_kick(&mut self) {

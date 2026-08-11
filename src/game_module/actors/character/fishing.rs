@@ -39,15 +39,13 @@ impl<'a> Character<'a> {
     }
 
     pub fn set_action_fishing_begin(&mut self) {
-        if self.is_available_attack() {
-            self._fishing_state._fishing_gauge = 0.0;
-            self._fishing_state._fishing_gauge_dir = 1.0;
-            self._fishing_state._is_fishing_button_held = true;
-            self._fishing_state._fishing_cast_distance = FISHING_CAST_DISTANCE_MIN;
-            self.set_next_action_animation(ActionAnimationState::FishingBegin, 1.0);
-            self.set_move_idle();
-            get_game_client_mut().set_next_game_phase(GamePhase::Fishing);
-        }
+        self._fishing_state._fishing_gauge = 0.0;
+        self._fishing_state._fishing_gauge_dir = 1.0;
+        self._fishing_state._is_fishing_button_held = true;
+        self._fishing_state._fishing_cast_distance = FISHING_CAST_DISTANCE_MIN;
+        self.set_next_action_animation(ActionAnimationState::FishingBegin, 1.0);
+        self.set_move_idle();
+        get_game_client_mut().set_next_game_phase(GamePhase::Fishing);
     }
 
     pub fn get_fishing_gauge(&self) -> f32 {
