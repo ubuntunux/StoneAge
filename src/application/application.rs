@@ -246,6 +246,7 @@ pub fn run_application() {
         }
 
         if DEVELOPMENT {
+            constants::SHOW_DEBUG_TEXT = true;
             constants::DEBUG_MESSAGE_LEVEL = vk::DebugUtilsMessageSeverityFlagsEXT::WARNING;
             constants::REQUIRED_INSTANCE_LAYERS = vec![
                 "VK_LAYER_KHRONOS_validation".to_string(),
