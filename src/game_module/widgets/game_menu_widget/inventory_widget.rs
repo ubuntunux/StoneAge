@@ -112,6 +112,7 @@ impl<'a> InventorySlotWidget<'a> {
 pub struct InventoryWidget<'a> {
     pub _parent_widget: *const WidgetDefault<'a>,
     pub _layer: Rc<WidgetDefault<'a>>,
+    pub _inventory_bg: Rc<WidgetDefault<'a>>,
     pub _drag_widget: Rc<WidgetDefault<'a>>,
     pub _slot_widgets: Vec<Box<InventorySlotWidget<'a>>>,
     pub _focused_slot_index: usize,
@@ -122,9 +123,20 @@ pub struct InventoryWidget<'a> {
 
 impl<'a> InventoryWidget<'a> {
     pub fn create_inventory_widget(parent_widget: &mut WidgetDefault<'a>) -> Box<InventoryWidget<'a>> {
-        let layer = UIManager::create_widget("inventory_widget", UIWidgetTypes::Default);
+        let layer = UIManager::create_widget("inventory_widget_root", UIWidgetTypes::Default);
         let layer_mut = ptr_as_mut(layer.as_ref());
         let ui_component = layer_mut.get_ui_component_mut();
+        ui_component.set_layout_type(UILayoutType::FloatLayout);
+        ui_component.set_expandable(true);
+        ui_component.set_size_hint_x(Some(1.0));
+        ui_component.set_size_hint_y(Some(1.0));
+        ui_component.set_renderable(false);
+        ui_component.set_enable(false);
+        parent_widget.add_widget(&layer);
+
+        let inventory_bg = UIManager::create_widget("inventory_bg", UIWidgetTypes::Default);
+        let inventory_bg_mut = ptr_as_mut(inventory_bg.as_ref());
+        let ui_component = inventory_bg_mut.get_ui_component_mut();
         ui_component.set_layout_type(UILayoutType::BoxLayout);
         ui_component.set_layout_orientation(Orientation::VERTICAL);
         ui_component.set_halign(HorizontalAlign::CENTER);
@@ -136,8 +148,7 @@ impl<'a> InventoryWidget<'a> {
         ui_component.set_color(get_color32(220, 200, 160, 200));
         ui_component.set_border_color(get_color32(0, 0, 0, 255));
         ui_component.set_round(5.0);
-        ui_component.set_enable(false);
-        parent_widget.add_widget(&layer);
+        layer_mut.add_widget(&inventory_bg);
 
         let drag_widget = UIManager::create_widget("inv_drag_widget", UIWidgetTypes::Default);
         let ui_component = ptr_as_mut(drag_widget.as_ref()).get_ui_component_mut();
@@ -149,11 +160,12 @@ impl<'a> InventoryWidget<'a> {
         ui_component.set_draggable(false);
         ui_component.set_touchable(false);
         ui_component.set_visible(false);
-        parent_widget.add_widget(&drag_widget);
+        layer_mut.add_widget(&drag_widget);
 
         let mut inventory_widget = Box::new(InventoryWidget {
             _parent_widget: parent_widget,
             _layer: layer,
+            _inventory_bg: inventory_bg,
             _drag_widget: drag_widget,
             _slot_widgets: Vec::new(),
             _focused_slot_index: 0,
@@ -164,7 +176,7 @@ impl<'a> InventoryWidget<'a> {
 
         // Grid Layout: 2 Rows x 10 Slots
         for row in 0..MAX_INVENTORY_ROWS {
-            let row_layout = InventoryWidget::create_inventory_row(ptr_as_mut(inventory_widget._layer.as_ref()), row);
+            let row_layout = InventoryWidget::create_inventory_row(ptr_as_mut(inventory_widget._inventory_bg.as_ref()), row);
             for column in 0..SLOTS_PER_ROW {
                 let slot_idx = row * SLOTS_PER_ROW + column;
                 let slot_item = InventorySlotWidget::create(inventory_widget.as_ref(), ptr_as_mut(row_layout.as_ref()), slot_idx);
@@ -227,9 +239,10 @@ impl<'a> InventoryWidget<'a> {
                 drag_ui.set_visible(true);
 
                 let dpi_scale = rust_engine_3d::scene::ui::get_global_dpi_scale();
+                let parent_area = ptr_as_ref(inventory_widget._layer.as_ref()).get_ui_component().get_ui_area();
                 drag_ui.set_pos(
-                    touched_pos.x / dpi_scale - ITEM_UI_SIZE * 0.5,
-                    touched_pos.y / dpi_scale - ITEM_UI_SIZE * 0.5,
+                    (touched_pos.x - parent_area.x) / dpi_scale - ITEM_UI_SIZE * 0.5,
+                    (touched_pos.y - parent_area.y) / dpi_scale - ITEM_UI_SIZE * 0.5,
                 );
 
                 inventory_widget._focused_slot_index = clicked_slot;
@@ -327,9 +340,10 @@ impl<'a> InventoryWidget<'a> {
             let mouse_pos = &engine_core._mouse_move_data._mouse_pos;
             let dpi_scale = rust_engine_3d::scene::ui::get_global_dpi_scale();
             let drag_ui = ptr_as_mut(self._drag_widget.as_ref()).get_ui_component_mut();
+            let parent_area = ptr_as_ref(self._layer.as_ref()).get_ui_component().get_ui_area();
             drag_ui.set_pos(
-                mouse_pos.x as f32 / dpi_scale - ITEM_UI_SIZE * 0.5,
-                mouse_pos.y as f32 / dpi_scale - ITEM_UI_SIZE * 0.5,
+                (mouse_pos.x as f32 - parent_area.x) / dpi_scale - ITEM_UI_SIZE * 0.5,
+                (mouse_pos.y as f32 - parent_area.y) / dpi_scale - ITEM_UI_SIZE * 0.5,
             );
         }
 

@@ -175,9 +175,9 @@ impl<'a> GameMenuWidget<'a> {
         ui_component.set_callback_touch_down(Some(Box::new(GameMenuWidget::callback_close)));
         header_layout_mut.add_widget(&close_btn);
 
-        let header_layout = UIManager::create_widget("menu_header", UIWidgetTypes::Default);
-        let header_layout_mut = ptr_as_mut(header_layout.as_ref());
-        let ui_component = header_layout_mut.get_ui_component_mut();
+        let content_layout = UIManager::create_widget("menu_content", UIWidgetTypes::Default);
+        let content_layout_mut = ptr_as_mut(content_layout.as_ref());
+        let ui_component = content_layout_mut.get_ui_component_mut();
         ui_component.set_layout_type(UILayoutType::BoxLayout);
         ui_component.set_layout_orientation(Orientation::HORIZONTAL);
         ui_component.set_halign(HorizontalAlign::CENTER);
@@ -189,13 +189,13 @@ impl<'a> GameMenuWidget<'a> {
         ui_component.set_padding(5.0);
         ui_component.set_color(get_color32(0, 0, 0, 128));
         ui_component.set_round(5.0);
-        layer_mut.add_widget(&header_layout);
+        layer_mut.add_widget(&content_layout);
 
 
         // Create 3 sub-widgets
-        let inventory_widget = InventoryWidget::create_inventory_widget(header_layout_mut);
-        let save_load_widget = SaveLoadWidget::create_save_load_widget(header_layout_mut);
-        let game_debug_menu_widget = GameDebugMenuWidget::create_game_debug_menu_widget(header_layout_mut);
+        let inventory_widget = InventoryWidget::create_inventory_widget(content_layout_mut);
+        let save_load_widget = SaveLoadWidget::create_save_load_widget(content_layout_mut);
+        let game_debug_menu_widget = GameDebugMenuWidget::create_game_debug_menu_widget(content_layout_mut);
 
         let game_menu_widget = Box::new(GameMenuWidget {
             _parent_widget: parent_widget,
