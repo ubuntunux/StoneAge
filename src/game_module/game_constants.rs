@@ -21,8 +21,8 @@ pub const ARRIVAL_DISTANCE_THRESHOLD: f32 = 1.0;
 
 // camera shake
 pub const CAMERA_SHAKE_INTENSITY: f32 = 0.05;
-pub const CAMERA_SHAKE_SPEED_X: f32 = 60.0;
-pub const CAMERA_SHAKE_SPEED_Y: f32 = 80.0;
+pub const CAMERA_SHAKE_SPEED_X: f32 = 100.0;
+pub const CAMERA_SHAKE_SPEED_Y: f32 = 130.0;
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub enum GameViewMode {
@@ -78,11 +78,6 @@ pub const CHARACTER_INTERACTION_DISTANCE: f32 = 1.0;
 pub const HP_WARNING_RATIO: f32 = 0.50;
 pub const WEAPON_SOCKET_NAME: &str = "SOCKET_WEAPON";
 
-// hit blink
-pub const HIT_BLINK_TIME: f32 = 0.5;
-pub const HIT_BLINK_SPEED: f32 = 25.0;
-pub const HIT_BLINK_INTENSITY: f32 = 3.0;
-
 // stats
 pub const MAX_HUNGER: f32 = 1.0;
 pub const MAX_STAMINA: f32 = 100.0;
@@ -102,6 +97,16 @@ pub const MAX_CORPSE_HIT_COUNT: i32 = 3;
 pub const CORPSE_AUTO_REMOVE_TIME: f32 = 10.0;
 pub const CIVILIAN_DEAD_TIME: f32 = 5.0;
 pub const FARM_MEAT_COUNT: usize = 3;
+
+// object shake
+pub const OBJECT_SHAKE_INTENSITY: f32 = 0.05;
+pub const OBJECT_SHAKE_SPEED_X: f32 = 100.0;
+pub const OBJECT_SHAKE_SPEED_Z: f32 = 130.0;
+
+// hit blink
+pub const HIT_BLINK_TIME: f32 = 0.3;
+pub const HIT_BLINK_SPEED: f32 = 50.0;
+pub const HIT_BLINK_INTENSITY: f32 = 3.0;
 
 // npc
 pub const NPC_IDLE_TERM_MIN: f32 = 1.0;

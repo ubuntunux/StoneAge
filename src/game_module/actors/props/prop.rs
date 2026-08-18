@@ -6,7 +6,8 @@ use crate::game_module::actors::props::api::{
 };
 use crate::game_module::game_constants::{
     AUDIO_HIT, CHARACTER_INTERACTION_DISTANCE, EFFECT_HIT, GAME_VIEW_MODE, GameViewMode, HIT_BLINK_INTENSITY,
-    HIT_BLINK_SPEED, HIT_BLINK_TIME, NPC_ATTACK_HIT_RANGE,
+    HIT_BLINK_SPEED, HIT_BLINK_TIME, NPC_ATTACK_HIT_RANGE, OBJECT_SHAKE_INTENSITY, OBJECT_SHAKE_SPEED_X,
+    OBJECT_SHAKE_SPEED_Z,
 };
 use crate::game_module::game_scene_manager::{PropCreateInfoMap, PropSaveDataMap};
 use crate::game_module::game_service_locator::{get_character_manager, get_game_resources, get_item_manager_mut};
@@ -235,8 +236,19 @@ impl<'a> Prop<'a> {
         }
     }
     pub fn update_transform(&mut self) {
+        let hit_blink_time = self._prop_stats._hit_blink_time;
+        let position = if 0.0 < hit_blink_time {
+            let shake_ratio = hit_blink_time / HIT_BLINK_TIME;
+            let shake_amount = shake_ratio * OBJECT_SHAKE_INTENSITY;
+            let shake_x = (hit_blink_time * OBJECT_SHAKE_SPEED_X).sin() * shake_amount;
+            let shake_z = (hit_blink_time * OBJECT_SHAKE_SPEED_Z).cos() * shake_amount;
+            self._prop_stats._position + Vector3::new(shake_x, 0.0, shake_z)
+        } else {
+            self._prop_stats._position
+        };
+
         self._render_object.borrow().get_transform_object_data_mut().set_position_rotation_scale(
-            &self._prop_stats._position,
+            &position,
             &self._prop_stats._rotation,
             &self._prop_stats._scale,
         );

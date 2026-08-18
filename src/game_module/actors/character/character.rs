@@ -2080,7 +2080,19 @@ impl<'a> Character<'a> {
     pub fn update_transform(&mut self) {
         let render_object = self._render_object.borrow();
         let transform = render_object.get_transform_object_data_mut();
-        transform.set_position(&self._controller._position);
+
+        let hit_blink_time = self._character_stats._hit_blink_time;
+        let position = if 0.0 < hit_blink_time {
+            let shake_ratio = hit_blink_time / HIT_BLINK_TIME;
+            let shake_amount = shake_ratio * OBJECT_SHAKE_INTENSITY;
+            let shake_x = (hit_blink_time * OBJECT_SHAKE_SPEED_X).sin() * shake_amount;
+            let shake_z = (hit_blink_time * OBJECT_SHAKE_SPEED_Z).cos() * shake_amount;
+            self._controller._position + Vector3::new(shake_x, 0.0, shake_z)
+        } else {
+            self._controller._position
+        };
+
+        transform.set_position(&position);
         transform.set_rotation(&self._controller._rotation);
         transform.set_scale(&self._controller._scale);
     }
