@@ -1,6 +1,6 @@
 use crate::game_module::actors::character::Character;
 use crate::game_module::actors::items::ItemDataType;
-use crate::game_module::game_constants::ITEM_NONE;
+use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, ITEM_NONE};
 use crate::game_module::game_controller::{HoldRepeatController, NAV_INITIAL_DELAY, NAV_REPEAT_INTERVAL};
 use crate::game_module::game_service_locator::{get_game_ui_manager, get_game_ui_manager_mut, get_item_manager_mut};
 use crate::game_module::widgets::item_bar::{
@@ -18,6 +18,8 @@ use rust_engine_3d::utilities::system::{RcRefCell, ptr_as_mut, ptr_as_ref};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use std::ffi::c_void;
 use std::rc::Rc;
+use rust_engine_3d::audio::audio_manager::AudioLoop;
+use rust_engine_3d::core::engine_service_locator::get_audio_manager_mut;
 use winit::keyboard::KeyCode;
 
 pub struct InventorySlotWidget<'a> {
@@ -217,6 +219,8 @@ impl<'a> InventoryWidget<'a> {
         touched_pos: &Vector2<f32>,
         _touched_pos_delta: &Vector2<f32>,
     ) -> bool {
+        get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
+
         let slot_item = ptr_as_ref(ui_component.get_user_data() as *const InventorySlotWidget<'a>);
         let inventory_widget = ptr_as_mut(slot_item._inventory_widget);
         let clicked_slot = slot_item._slot_index;

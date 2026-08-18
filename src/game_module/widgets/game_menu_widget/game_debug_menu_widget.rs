@@ -1,7 +1,5 @@
 use crate::game_module::game_constants::AUDIO_PICKUP_ITEM;
-use crate::game_module::game_service_locator::{
-    get_application_mut, get_game_scene_manager, get_game_scene_manager_mut,
-};
+use crate::game_module::game_service_locator::{get_application_mut, get_game_scene_manager, get_game_scene_manager_mut, get_game_ui_manager_mut};
 use crate::game_module::game_weather::WeatherType;
 use nalgebra::Vector2;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
@@ -212,6 +210,7 @@ impl<'a> GameDebugMenuWidget<'a> {
         }
         self.set_selected_menu_item(selected_menu_item, false);
         self.close_game_debug_menu();
+        get_game_ui_manager_mut().close_game_menu();
     }
     pub fn update_game_debug_menu_widget(
         &mut self,

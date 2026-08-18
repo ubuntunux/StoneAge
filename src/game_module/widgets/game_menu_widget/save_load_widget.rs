@@ -1,5 +1,5 @@
 use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, DEFAULT_GAME_SAVE_DATA};
-use crate::game_module::game_service_locator::get_game_client_mut;
+use crate::game_module::game_service_locator::{get_game_client_mut, get_game_ui_manager, get_game_ui_manager_mut};
 use nalgebra::Vector2;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::core::engine_service_locator::get_audio_manager_mut;
@@ -199,6 +199,7 @@ impl<'a> SaveLoadWidget<'a> {
         }
         self.set_selected_menu_item(selected_menu_item, false);
         self.close_save_load_widget();
+        get_game_ui_manager_mut().close_game_menu();
     }
 
     pub fn update_save_load_widget(

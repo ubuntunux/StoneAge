@@ -184,6 +184,8 @@ impl<'a> GameMenuWidget<'a> {
 
         let close_btn = UIManager::create_widget("close_btn", UIWidgetTypes::Default);
         let ui_component = ptr_as_mut(close_btn.as_ref()).get_ui_component_mut();
+        ui_component.set_halign(HorizontalAlign::CENTER);
+        ui_component.set_valign(VerticalAlign::CENTER);
         ui_component.set_size(35.0, 35.0);
         ui_component.set_margin(5.0);
         ui_component.set_text("X");
@@ -306,13 +308,14 @@ impl<'a> GameMenuWidget<'a> {
         }
     }
 
-    pub fn open_game_menu(&mut self, tab: GameMenuTab) {
+    pub fn open_game_menu(&mut self, tab: Option<GameMenuTab>) {
+        let target_tab = tab.unwrap_or(self._active_tab);
         if !self._is_opened_game_menu {
             ptr_as_mut(self._layer.as_ref()).get_ui_component_mut().set_enable(true);
             self._is_opened_game_menu = true;
-            self.set_active_tab(tab);
-        } else if self._active_tab != tab {
-            self.set_active_tab(tab);
+            self.set_active_tab(target_tab);
+        } else if self._active_tab != target_tab {
+            self.set_active_tab(target_tab);
         }
     }
 

@@ -285,7 +285,7 @@ impl<'a> GameUIManager<'a> {
         }
     }
     pub fn open_game_debug_menu(&mut self) {
-        self.open_game_menu(GameMenuTab::DebugMenu);
+        self.open_game_menu(Some(GameMenuTab::DebugMenu));
     }
     pub fn update_game_debug_menu_widget(
         &mut self,
@@ -305,7 +305,7 @@ impl<'a> GameUIManager<'a> {
             false
         }
     }
-    pub fn open_game_menu(&mut self, tab: GameMenuTab) {
+    pub fn open_game_menu(&mut self, tab: Option<GameMenuTab>) {
         if let Some(game_menu_widget) = self._game_menu_widget.as_mut() {
             game_menu_widget.open_game_menu(tab);
         }
@@ -508,7 +508,7 @@ impl<'a> GameUIManager<'a> {
 
     // inventory
     pub fn open_inventory(&mut self) {
-        self.open_game_menu(GameMenuTab::Inventory);
+        self.open_game_menu(Some(GameMenuTab::Inventory));
     }
 
     pub fn close_inventory(&mut self) {
@@ -525,7 +525,7 @@ impl<'a> GameUIManager<'a> {
 
     // taming
     pub fn open_taming_menu(&mut self) {
-        self.open_game_menu(GameMenuTab::TamingList);
+        self.open_game_menu(Some(GameMenuTab::TamingList));
     }
 
     pub fn close_taming_menu(&mut self) {

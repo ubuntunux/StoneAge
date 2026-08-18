@@ -467,10 +467,10 @@ impl<'a> GameController<'a> {
 
         // game menu, inventory, quick slot
         if open_menu {
-            get_game_ui_manager_mut().open_game_menu(GameMenuTab::SaveLoad);
+            get_game_ui_manager_mut().open_game_menu(None);
             get_game_client_mut().set_next_game_phase(GamePhase::GameMenu);
         } else if open_inventory {
-            get_game_ui_manager_mut().open_game_menu(GameMenuTab::Inventory);
+            get_game_ui_manager_mut().open_game_menu(Some(GameMenuTab::Inventory));
             get_game_client_mut().set_next_game_phase(GamePhase::GameMenu);
         } else if prev_quick_slot_row || next_quick_slot_row {
             get_game_ui_manager_mut().switch_quick_slot_row();
