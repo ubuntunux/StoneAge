@@ -318,6 +318,16 @@ impl<'a> GameController<'a> {
         }
     }
 
+    pub fn update_camera_shake(&self, main_camera: &CameraObjectData, hit_blink_time: f32) -> Vector3<f32> {
+        let shake_ratio = hit_blink_time / HIT_BLINK_TIME;
+        let shake_amount = shake_ratio * CAMERA_SHAKE_INTENSITY;
+        let shake_x = (hit_blink_time * CAMERA_SHAKE_SPEED_X).sin() * shake_amount;
+        let shake_y = (hit_blink_time * CAMERA_SHAKE_SPEED_Y).cos() * shake_amount;
+        let camera_right = *main_camera._transform_object.get_right();
+        let camera_up = *main_camera._transform_object.get_up();
+        camera_right * shake_x + camera_up * shake_y
+    }
+
     pub fn apply_game_camera_transform(&mut self, main_camera: &mut CameraObjectData, player: &mut Character) {
         main_camera._transform_object.set_pitch(self._camera_pitch);
         main_camera._transform_object.set_yaw(self._camera_yaw);
@@ -397,6 +407,11 @@ impl<'a> GameController<'a> {
             &mut camera_position,
         ) {
             self._camera_position = camera_position;
+        }
+
+        // apply hit camera shake
+        if 0.0 < player._character_stats._hit_blink_time {
+            self._camera_position += self.update_camera_shake(main_camera, player._character_stats._hit_blink_time);
         }
         main_camera._transform_object.set_position(&self._camera_position);
     }

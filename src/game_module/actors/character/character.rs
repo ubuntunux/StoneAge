@@ -997,7 +997,7 @@ impl<'a> Character<'a> {
                 self._controller.set_hit_direction(attack_dir);
             }
 
-            self._character_stats._hit_blink_time = 0.3;
+            self._character_stats._hit_blink_time = HIT_BLINK_TIME;
 
             let effect_create_info = EffectCreateInfo {
                 _effect_position: *self.get_bounding_box().get_center(),
@@ -2111,11 +2111,11 @@ impl<'a> Character<'a> {
             self._character_stats._hit_blink_time = 0.0;
         }
 
-        let blink_phase = 0.5 - (self._character_stats._hit_blink_time * 25.0).cos() * 0.5;
+        let blink_phase = 0.5 - (self._character_stats._hit_blink_time * HIT_BLINK_SPEED).cos() * 0.5;
         let hit_color = Vector4::new(
-            1.0 + blink_phase * 3.0,
-            1.0 + blink_phase * 3.0,
-            1.0 + blink_phase * 3.0,
+            1.0 + blink_phase * HIT_BLINK_INTENSITY,
+            1.0 + blink_phase * HIT_BLINK_INTENSITY,
+            1.0 + blink_phase * HIT_BLINK_INTENSITY,
             1.0
         );
 

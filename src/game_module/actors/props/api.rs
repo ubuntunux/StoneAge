@@ -64,6 +64,7 @@ pub struct PropStats {
     pub _position: Vector3<f32>,
     pub _rotation: Vector3<f32>,
     pub _scale: Vector3<f32>,
+    pub _hit_blink_time: f32,
 }
 
 pub struct Prop<'a> {

@@ -5,14 +5,16 @@ use crate::game_module::actors::props::api::{
     Prop, PropCreateInfo, PropData, PropDataType, PropID, PropManager, PropMap, PropSaveData, PropStats,
 };
 use crate::game_module::game_constants::{
-    AUDIO_HIT, CHARACTER_INTERACTION_DISTANCE, EFFECT_HIT, GAME_VIEW_MODE, GameViewMode, NPC_ATTACK_HIT_RANGE,
+    AUDIO_HIT, CHARACTER_INTERACTION_DISTANCE, EFFECT_HIT, GAME_VIEW_MODE, GameViewMode, HIT_BLINK_INTENSITY,
+    HIT_BLINK_SPEED, HIT_BLINK_TIME, NPC_ATTACK_HIT_RANGE,
 };
 use crate::game_module::game_scene_manager::{PropCreateInfoMap, PropSaveDataMap};
 use crate::game_module::game_service_locator::{get_character_manager, get_game_resources, get_item_manager_mut};
-use nalgebra::Vector3;
+use nalgebra::{Vector3, Vector4};
 use rand;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::core::engine_service_locator::{get_audio_manager_mut, get_scene_manager, get_scene_manager_mut};
+use rust_engine_3d::renderer::push_constants::PushConstantParameter;
 use rust_engine_3d::effect::effect_data::EffectCreateInfo;
 use rust_engine_3d::scene::bounding_box::BoundingBox;
 use rust_engine_3d::scene::collision::{CollisionData, CollisionType};
@@ -76,6 +78,7 @@ impl<'a> Prop<'a> {
                 _position: prop_create_info._position,
                 _rotation: prop_create_info._rotation,
                 _scale: prop_create_info._scale,
+                _hit_blink_time: 0.0,
             }),
             _instance_parameters: prop_create_info._instance_parameters.clone(),
         };
@@ -91,6 +94,7 @@ impl<'a> Prop<'a> {
     pub fn initialize_prop(&mut self) {
         self._prop_stats._is_alive = true;
         self._prop_stats._item_regenerate_time = 0.0;
+        self._prop_stats._hit_blink_time = 0.0;
         self.update_item_visible();
         self.update_transform();
     }
@@ -153,6 +157,8 @@ impl<'a> Prop<'a> {
                 self.set_dead();
             }
         }
+
+        self._prop_stats._hit_blink_time = HIT_BLINK_TIME;
 
         let effect_create_info = EffectCreateInfo {
             _effect_position: *self.get_bounding_box().get_center(),
@@ -238,7 +244,29 @@ impl<'a> Prop<'a> {
     pub fn update_render_object(&mut self) {
         self._render_object.borrow_mut().update_render_object_data(0.0);
     }
+    fn update_hit_blink_color(&mut self, delta_time: f32) {
+        self._prop_stats._hit_blink_time -= delta_time;
+        if self._prop_stats._hit_blink_time <= 0.0 {
+            self._prop_stats._hit_blink_time = 0.0;
+        }
+
+        let blink_phase = 0.5 - (self._prop_stats._hit_blink_time * HIT_BLINK_SPEED).cos() * 0.5;
+        let hit_color = Vector4::new(
+            1.0 + blink_phase * HIT_BLINK_INTENSITY,
+            1.0 + blink_phase * HIT_BLINK_INTENSITY,
+            1.0 + blink_phase * HIT_BLINK_INTENSITY,
+            1.0,
+        );
+
+        self._render_object.borrow_mut().set_push_constant_parameter(
+            "_color",
+            &PushConstantParameter::Float4(hit_color),
+        );
+    }
     pub fn update_prop(&mut self, delta_time: f64) {
+        if 0.0 < self._prop_stats._hit_blink_time {
+            self.update_hit_blink_color(delta_time as f32);
+        }
         self.update_generate_item(delta_time);
         self.update_transform();
     }

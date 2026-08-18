@@ -1,5 +1,5 @@
 use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, DEFAULT_GAME_SAVE_DATA};
-use crate::game_module::game_service_locator::{get_game_client_mut, get_game_ui_manager, get_game_ui_manager_mut};
+use crate::game_module::game_service_locator::{get_game_client_mut, get_game_ui_manager_mut};
 use nalgebra::Vector2;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::core::engine_service_locator::get_audio_manager_mut;
