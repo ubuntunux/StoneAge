@@ -55,6 +55,7 @@ impl<'a> GameDebugMenuItem<'a> {
         ui_component.set_size_y(ITEM_HEIGHT);
         ui_component.set_color(get_color32(50, 50, 50, 255));
         ui_component.set_border_color(get_color32(0, 0, 0, 255));
+        ui_component.set_margin(10.0);
         ui_component.set_round(5.0);
         ui_component.set_text(game_debug_menu_type.to_string().as_str());
         ui_component.set_font_size(40.0);
@@ -171,7 +172,6 @@ impl<'a> GameDebugMenuWidget<'a> {
     }
     pub fn close_game_debug_menu(&mut self) {
         if self._is_opened_game_debug_menu {
-            get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
             let parent_mut = ptr_as_mut(self._parent_widget);
             parent_mut.remove_widget(self._layer.as_ref());
             self._is_opened_game_debug_menu = false;
@@ -183,7 +183,9 @@ impl<'a> GameDebugMenuWidget<'a> {
             let curr_menu_item = &self._menu_items[selected_menu_item as usize];
             ptr_as_mut(prev_menu_item._item_widget.as_ref()).get_ui_component_mut().set_selected(false);
             ptr_as_mut(curr_menu_item._item_widget.as_ref()).get_ui_component_mut().set_selected(true);
-            get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
+            if !force {
+                get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
+            }
             self._selected_menu_item = selected_menu_item;
         }
         false

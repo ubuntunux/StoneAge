@@ -57,7 +57,7 @@ impl<'a> TamingListWidget<'a> {
         ui_component.set_size_hint_x(Some(1.0));
         ui_component.set_size_hint_y(Some(1.0));
         ui_component.set_color(get_color32(0, 0, 0, 128));
-        ui_component.set_padding(5.0);
+        //ui_component.set_padding(5.0);
         layer_mut.add_widget(&list_container);
 
         Box::new(TamingListWidget {

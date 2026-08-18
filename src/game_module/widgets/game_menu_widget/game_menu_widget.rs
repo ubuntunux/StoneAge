@@ -259,6 +259,8 @@ impl<'a> GameMenuWidget<'a> {
     }
 
     pub fn set_active_tab(&mut self, tab: GameMenuTab) {
+        get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
+
         self._active_tab = tab;
 
         let inv_tab_ui = ptr_as_mut(self._inventory_tab_btn.as_ref()).get_ui_component_mut();
