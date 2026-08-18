@@ -540,6 +540,23 @@ impl<'a> GameUIManager<'a> {
         }
     }
 
+    // friendly npc
+    pub fn open_friendly_npc_menu(&mut self) {
+        self.open_game_menu(Some(GameMenuTab::FriendlyNpcList));
+    }
+
+    pub fn close_friendly_npc_menu(&mut self) {
+        self.close_game_menu();
+    }
+
+    pub fn is_opened_friendly_npc_menu(&self) -> bool {
+        if let Some(game_menu_widget) = self._game_menu_widget.as_ref() {
+            game_menu_widget.is_opened_game_menu() && game_menu_widget.get_active_tab() == GameMenuTab::FriendlyNpcList
+        } else {
+            false
+        }
+    }
+
     // quest
     pub fn clear_quests(&mut self) {
         if let Some(quest_widget) = self._quest_widget.as_mut() {

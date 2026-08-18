@@ -1,5 +1,6 @@
 use crate::game_module::actors::character::Character;
 use crate::game_module::game_constants::AUDIO_PICKUP_ITEM;
+use crate::game_module::widgets::game_menu_widget::friendly_npc_list_widget::FriendlyNpcListWidget;
 use crate::game_module::widgets::game_menu_widget::game_debug_menu_widget::GameDebugMenuWidget;
 use crate::game_module::widgets::game_menu_widget::inventory_widget::InventoryWidget;
 use crate::game_module::widgets::game_menu_widget::save_load_widget::SaveLoadWidget;
@@ -25,6 +26,7 @@ const TAB_BUTTON_COLOR_INACTIVE: u32 = get_color32(50, 50, 50, 255);
 pub enum GameMenuTab {
     Inventory,
     TamingList,
+    FriendlyNpcList,
     SaveLoad,
     DebugMenu,
 }
@@ -34,10 +36,12 @@ pub struct GameMenuWidget<'a> {
     pub _layer: Rc<WidgetDefault<'a>>,
     pub _inventory_tab_btn: Rc<WidgetDefault<'a>>,
     pub _taming_tab_btn: Rc<WidgetDefault<'a>>,
+    pub _friendly_npc_tab_btn: Rc<WidgetDefault<'a>>,
     pub _saveload_tab_btn: Rc<WidgetDefault<'a>>,
     pub _debug_tab_btn: Rc<WidgetDefault<'a>>,
     pub _inventory_widget: Box<InventoryWidget<'a>>,
     pub _taming_list_widget: Box<TamingListWidget<'a>>,
+    pub _friendly_npc_list_widget: Box<FriendlyNpcListWidget<'a>>,
     pub _save_load_widget: Box<SaveLoadWidget<'a>>,
     pub _game_debug_menu_widget: Box<GameDebugMenuWidget<'a>>,
     pub _active_tab: GameMenuTab,
@@ -62,6 +66,16 @@ impl<'a> GameMenuWidget<'a> {
     ) -> bool {
         let game_menu_widget = ptr_as_mut(ui_component.get_user_data() as *const GameMenuWidget<'a>);
         game_menu_widget.set_active_tab(GameMenuTab::TamingList);
+        true
+    }
+
+    pub fn callback_tab_friendly_npc(
+        ui_component: &UIComponentInstance<'a>,
+        _touched_pos: &Vector2<f32>,
+        _touched_pos_delta: &Vector2<f32>,
+    ) -> bool {
+        let game_menu_widget = ptr_as_mut(ui_component.get_user_data() as *const GameMenuWidget<'a>);
+        game_menu_widget.set_active_tab(GameMenuTab::FriendlyNpcList);
         true
     }
 
@@ -168,6 +182,13 @@ impl<'a> GameMenuWidget<'a> {
             header_layout_mut,
         );
 
+        let friendly_npc_tab_btn = Self::create_tab_button(
+            "friendly_npc_tab_btn",
+            "NPC Friends",
+            GameMenuWidget::callback_tab_friendly_npc,
+            header_layout_mut,
+        );
+
         let saveload_tab_btn = Self::create_tab_button(
             "saveload_tab_btn",
             "Save / Load",
@@ -216,6 +237,7 @@ impl<'a> GameMenuWidget<'a> {
         // Create sub-widgets
         let inventory_widget = InventoryWidget::create_inventory_widget(content_layout_mut);
         let taming_list_widget = TamingListWidget::create_taming_list_widget(content_layout_mut);
+        let friendly_npc_list_widget = FriendlyNpcListWidget::create_friendly_npc_list_widget(content_layout_mut);
         let save_load_widget = SaveLoadWidget::create_save_load_widget(content_layout_mut);
         let game_debug_menu_widget = GameDebugMenuWidget::create_game_debug_menu_widget(content_layout_mut);
 
@@ -224,10 +246,12 @@ impl<'a> GameMenuWidget<'a> {
             _layer: layer,
             _inventory_tab_btn: inventory_tab_btn,
             _taming_tab_btn: taming_tab_btn,
+            _friendly_npc_tab_btn: friendly_npc_tab_btn,
             _saveload_tab_btn: saveload_tab_btn,
             _debug_tab_btn: debug_tab_btn,
             _inventory_widget: inventory_widget,
             _taming_list_widget: taming_list_widget,
+            _friendly_npc_list_widget: friendly_npc_list_widget,
             _save_load_widget: save_load_widget,
             _game_debug_menu_widget: game_debug_menu_widget,
             _active_tab: GameMenuTab::SaveLoad,
@@ -238,6 +262,7 @@ impl<'a> GameMenuWidget<'a> {
         let ptr_self = game_menu_widget.as_ref() as *const GameMenuWidget<'a> as *const c_void;
         ptr_as_mut(game_menu_widget._inventory_tab_btn.as_ref()).get_ui_component_mut().set_user_data(ptr_self);
         ptr_as_mut(game_menu_widget._taming_tab_btn.as_ref()).get_ui_component_mut().set_user_data(ptr_self);
+        ptr_as_mut(game_menu_widget._friendly_npc_tab_btn.as_ref()).get_ui_component_mut().set_user_data(ptr_self);
         ptr_as_mut(game_menu_widget._saveload_tab_btn.as_ref()).get_ui_component_mut().set_user_data(ptr_self);
         ptr_as_mut(game_menu_widget._debug_tab_btn.as_ref()).get_ui_component_mut().set_user_data(ptr_self);
         ptr_as_mut(close_btn.as_ref()).get_ui_component_mut().set_user_data(ptr_self);
@@ -248,6 +273,7 @@ impl<'a> GameMenuWidget<'a> {
     pub fn changed_window_size(&mut self, window_size: &Vector2<i32>) {
         self._inventory_widget.changed_window_size(window_size);
         self._taming_list_widget.changed_window_size(window_size);
+        self._friendly_npc_list_widget.changed_window_size(window_size);
         self._save_load_widget.changed_window_size(window_size);
         self._game_debug_menu_widget.changed_window_size(window_size);
     }
@@ -267,12 +293,14 @@ impl<'a> GameMenuWidget<'a> {
 
         let inv_tab_ui = ptr_as_mut(self._inventory_tab_btn.as_ref()).get_ui_component_mut();
         let taming_tab_ui = ptr_as_mut(self._taming_tab_btn.as_ref()).get_ui_component_mut();
+        let friendly_npc_tab_ui = ptr_as_mut(self._friendly_npc_tab_btn.as_ref()).get_ui_component_mut();
         let saveload_tab_ui = ptr_as_mut(self._saveload_tab_btn.as_ref()).get_ui_component_mut();
         let debug_tab_ui = ptr_as_mut(self._debug_tab_btn.as_ref()).get_ui_component_mut();
 
         // Close all sub-widgets first
         self._inventory_widget.close_inventory();
         self._taming_list_widget.close_taming_list_widget();
+        self._friendly_npc_list_widget.close_friendly_npc_list_widget();
         self._save_load_widget.close_save_load_widget();
         self._game_debug_menu_widget.close_game_debug_menu();
 
@@ -280,6 +308,7 @@ impl<'a> GameMenuWidget<'a> {
             GameMenuTab::Inventory => {
                 inv_tab_ui.set_color(TAB_BUTTON_COLOR_ACTIVE);
                 taming_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
+                friendly_npc_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
                 saveload_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
                 debug_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
                 self._inventory_widget.open_inventory();
@@ -287,13 +316,23 @@ impl<'a> GameMenuWidget<'a> {
             GameMenuTab::TamingList => {
                 inv_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
                 taming_tab_ui.set_color(TAB_BUTTON_COLOR_ACTIVE);
+                friendly_npc_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
                 saveload_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
                 debug_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
                 self._taming_list_widget.open_taming_list_widget();
             }
+            GameMenuTab::FriendlyNpcList => {
+                inv_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
+                taming_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
+                friendly_npc_tab_ui.set_color(TAB_BUTTON_COLOR_ACTIVE);
+                saveload_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
+                debug_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
+                self._friendly_npc_list_widget.open_friendly_npc_list_widget();
+            }
             GameMenuTab::SaveLoad => {
                 inv_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
                 taming_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
+                friendly_npc_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
                 saveload_tab_ui.set_color(TAB_BUTTON_COLOR_ACTIVE);
                 debug_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
                 self._save_load_widget.open_save_load_widget();
@@ -301,6 +340,7 @@ impl<'a> GameMenuWidget<'a> {
             GameMenuTab::DebugMenu => {
                 inv_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
                 taming_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
+                friendly_npc_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
                 saveload_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
                 debug_tab_ui.set_color(TAB_BUTTON_COLOR_ACTIVE);
                 self._game_debug_menu_widget.open_game_debug_menu();
@@ -324,6 +364,7 @@ impl<'a> GameMenuWidget<'a> {
             get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
             self._inventory_widget.close_inventory();
             self._taming_list_widget.close_taming_list_widget();
+            self._friendly_npc_list_widget.close_friendly_npc_list_widget();
             self._save_load_widget.close_save_load_widget();
             self._game_debug_menu_widget.close_game_debug_menu();
             ptr_as_mut(self._layer.as_ref()).get_ui_component_mut().set_enable(false);
@@ -349,7 +390,8 @@ impl<'a> GameMenuWidget<'a> {
         if switch_tab_next {
             let next_tab = match self._active_tab {
                 GameMenuTab::Inventory => GameMenuTab::TamingList,
-                GameMenuTab::TamingList => GameMenuTab::SaveLoad,
+                GameMenuTab::TamingList => GameMenuTab::FriendlyNpcList,
+                GameMenuTab::FriendlyNpcList => GameMenuTab::SaveLoad,
                 GameMenuTab::SaveLoad => GameMenuTab::DebugMenu,
                 GameMenuTab::DebugMenu => GameMenuTab::Inventory,
             };
@@ -358,7 +400,8 @@ impl<'a> GameMenuWidget<'a> {
             let prev_tab = match self._active_tab {
                 GameMenuTab::Inventory => GameMenuTab::DebugMenu,
                 GameMenuTab::TamingList => GameMenuTab::Inventory,
-                GameMenuTab::SaveLoad => GameMenuTab::TamingList,
+                GameMenuTab::FriendlyNpcList => GameMenuTab::TamingList,
+                GameMenuTab::SaveLoad => GameMenuTab::FriendlyNpcList,
                 GameMenuTab::DebugMenu => GameMenuTab::SaveLoad,
             };
             self.set_active_tab(prev_tab);
@@ -367,6 +410,15 @@ impl<'a> GameMenuWidget<'a> {
         match self._active_tab {
             GameMenuTab::TamingList => {
                 self._taming_list_widget.update_taming_list_widget(joystick_input_data, keyboard_input_data);
+                let close_game_menu = keyboard_input_data.get_key_pressed(KeyCode::Escape)
+                    || joystick_input_data._btn_b == ButtonState::Pressed;
+                if close_game_menu {
+                    self.close_game_menu();
+                }
+            }
+            GameMenuTab::FriendlyNpcList => {
+                self._friendly_npc_list_widget
+                    .update_friendly_npc_list_widget(joystick_input_data, keyboard_input_data);
                 let close_game_menu = keyboard_input_data.get_key_pressed(KeyCode::Escape)
                     || joystick_input_data._btn_b == ButtonState::Pressed;
                 if close_game_menu {

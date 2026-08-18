@@ -12,6 +12,7 @@ use crate::game_module::widgets::text_box_widget::TextBoxLayerType;
 use nalgebra::Vector3;
 
 use crate::game_module::game_service_locator::{get_game_resources, get_game_scene_manager, get_game_ui_manager_mut};
+use crate::game_module::widgets::game_menu_widget::character_list_helper::{get_affinity_tier, AffinityTier};
 use rust_engine_3d::core::engine_service_locator::{get_scene_manager, get_scene_manager_mut};
 use rust_engine_3d::scene::render_object::{RenderObjectCreateInfo, RenderObjectSaveData, SceneObjectType};
 use rust_engine_3d::utilities::math;
@@ -409,16 +410,18 @@ impl<'a> CharacterManager<'a> {
             let ai_target: Option<&Character<'a>> = if character_mut.is_player() {
                 None
             } else if character_mut.is_tamed() {
-                // Tamed monster: targets nearest alive untamed monster within tracking range; fallback to player if intimate
-                let mut min_dist = f32::MAX;
+                // Tamed monster: targets nearest alive untamed monster within tracking range ONLY IF AffinityTier >= Friend
                 let mut target_ref: Option<&Character<'a>> = None;
-                for other in self._characters.values() {
-                    let other_mut = ptr_as_mut(other.as_ptr());
-                    if !other_mut.is_player() && !other_mut.is_tamed() && other_mut.is_alive() {
-                        let dist = (other_mut.get_position() - character_mut.get_position()).norm();
-                        if dist <= NPC_TRACKING_RANGE && dist < min_dist {
-                            min_dist = dist;
-                            target_ref = Some(other_mut);
+                if get_affinity_tier(character_mut.get_intimacy()) >= AffinityTier::CloseFriend {
+                    let mut min_dist = f32::MAX;
+                    for other in self._characters.values() {
+                        let other_mut = ptr_as_mut(other.as_ptr());
+                        if !other_mut.is_player() && !other_mut.is_tamed() && other_mut.is_alive() {
+                            let dist = (other_mut.get_position() - character_mut.get_position()).norm();
+                            if dist <= NPC_TRACKING_RANGE && dist < min_dist {
+                                min_dist = dist;
+                                target_ref = Some(other_mut);
+                            }
                         }
                     }
                 }
@@ -432,7 +435,7 @@ impl<'a> CharacterManager<'a> {
             } else if character_mut.is_following_intimacy() {
                 Some(player)
             } else {
-                // Wild monster: targets player OR nearest alive tamed monster within tracking range
+                // Wild monster: targets player OR nearest alive tamed monster (AffinityTier >= Friend) within tracking range
                 let mut min_dist = f32::MAX;
                 let mut target_ref: Option<&Character<'a>> = None;
                 if player.is_alive() {
@@ -444,7 +447,10 @@ impl<'a> CharacterManager<'a> {
                 }
                 for other in self._characters.values() {
                     let other_mut = ptr_as_mut(other.as_ptr());
-                    if other_mut.is_tamed() && other_mut.is_alive() {
+                    if other_mut.is_tamed()
+                        && other_mut.is_alive()
+                        && get_affinity_tier(other_mut.get_intimacy()) >= AffinityTier::CloseFriend
+                    {
                         let dist = (other_mut.get_position() - character_mut.get_position()).norm();
                         if dist <= NPC_TRACKING_RANGE && dist < min_dist {
                             min_dist = dist;
@@ -531,31 +537,33 @@ impl<'a> CharacterManager<'a> {
                         }
                     }
                 } else if character_mut.is_tamed() {
-                    // tamed monster attack to wild untamed monster
-                    for target_character in self._characters.values() {
-                        let target_character_mut = ptr_as_mut(target_character.as_ptr());
-                        if !target_character_mut._is_player
-                            && !target_character_mut.is_tamed()
-                            && target_character_mut.is_alive()
-                            && !target_character_mut._character_stats._invincibility
-                            && character_mut.check_in_range(
-                                target_character_mut.get_collision(),
-                                NPC_ATTACK_HIT_RANGE,
-                                check_direction,
-                            )
-                        {
-                            target_character_mut.set_hit_damage(
-                                character_mut.get_power(character_mut._animation_state.get_action_event()),
-                                Some(character_mut.get_face_direction()),
-                            );
+                    // tamed monster (AffinityTier >= Friend) attack to wild untamed monster
+                    if get_affinity_tier(character_mut.get_intimacy()) >= AffinityTier::CloseFriend {
+                        for target_character in self._characters.values() {
+                            let target_character_mut = ptr_as_mut(target_character.as_ptr());
+                            if !target_character_mut._is_player
+                                && !target_character_mut.is_tamed()
+                                && target_character_mut.is_alive()
+                                && !target_character_mut._character_stats._invincibility
+                                && character_mut.check_in_range(
+                                    target_character_mut.get_collision(),
+                                    NPC_ATTACK_HIT_RANGE,
+                                    check_direction,
+                                )
+                            {
+                                target_character_mut.set_hit_damage(
+                                    character_mut.get_power(character_mut._animation_state.get_action_event()),
+                                    Some(character_mut.get_face_direction()),
+                                );
 
-                            if !target_character_mut.is_alive() {
-                                dead_characters.push(target_character.clone());
+                                if !target_character_mut.is_alive() {
+                                    dead_characters.push(target_character.clone());
+                                }
                             }
                         }
                     }
                 } else {
-                    // wild monster attack to player OR tamed monster
+                    // wild monster attack to player OR tamed monster (AffinityTier >= Friend)
                     if player.is_alive()
                         && !player._character_stats._invincibility
                         && character_mut.check_in_range(player.get_collision(), NPC_ATTACK_HIT_RANGE, check_direction)
@@ -569,6 +577,7 @@ impl<'a> CharacterManager<'a> {
                     for target_character in self._characters.values() {
                         let target_character_mut = ptr_as_mut(target_character.as_ptr());
                         if target_character_mut.is_tamed()
+                            && get_affinity_tier(target_character_mut.get_intimacy()) >= AffinityTier::CloseFriend
                             && target_character_mut.is_alive()
                             && !target_character_mut._character_stats._invincibility
                             && character_mut.check_in_range(

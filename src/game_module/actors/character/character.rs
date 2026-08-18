@@ -16,6 +16,7 @@ use crate::game_module::game_service_locator::{
     get_game_scene_manager_mut, get_game_ui_manager_mut, get_item_manager,
 };
 use crate::game_module::scenario::scenario::ScenarioType;
+use crate::game_module::widgets::game_menu_widget::character_list_helper::{get_affinity_tier, AffinityTier};
 use nalgebra::{Vector3, Vector4};
 use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::core::engine_service_locator::{
@@ -700,7 +701,7 @@ impl<'a> Character<'a> {
     }
 
     pub fn is_following_intimacy(&self) -> bool {
-        self.is_alive() && self._character_stats.get_intimacy() >= INTIMACY_FOLLOW_THRESHOLD
+        self.is_alive() && get_affinity_tier(self._character_stats.get_intimacy()) >= AffinityTier::CloseFriend
     }
 
     pub fn set_tamed(&mut self, is_tamed: bool) {
