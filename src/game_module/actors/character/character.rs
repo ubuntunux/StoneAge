@@ -16,11 +16,12 @@ use crate::game_module::game_service_locator::{
     get_game_scene_manager_mut, get_game_ui_manager_mut, get_item_manager,
 };
 use crate::game_module::scenario::scenario::ScenarioType;
-use nalgebra::Vector3;
+use nalgebra::{Vector3, Vector4};
 use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::core::engine_service_locator::{
     get_audio_manager, get_audio_manager_mut, get_scene_manager, get_scene_manager_mut,
 };
+use rust_engine_3d::renderer::push_constants::PushConstantParameter;
 use rust_engine_3d::effect::effect_data::EffectCreateInfo;
 use rust_engine_3d::scene::animation::{AnimationPlayArgs, AnimationPlayInfo};
 use rust_engine_3d::scene::bounding_box::BoundingBox;
@@ -90,6 +91,7 @@ impl CharacterStats {
             _intimacy: 0.0,
             _invincibility: false,
             _is_stat_displayed: false,
+            _hit_blink_time: 0.0,
         }
     }
 
@@ -994,6 +996,8 @@ impl<'a> Character<'a> {
             {
                 self._controller.set_hit_direction(attack_dir);
             }
+
+            self._character_stats._hit_blink_time = 0.3;
 
             let effect_create_info = EffectCreateInfo {
                 _effect_position: *self.get_bounding_box().get_center(),
@@ -2101,6 +2105,27 @@ impl<'a> Character<'a> {
         }
     }
 
+    fn update_hit_blink_color(&mut self, delta_time: f32) {
+        self._character_stats._hit_blink_time -= delta_time;
+        if self._character_stats._hit_blink_time <= 0.0 {
+            self._character_stats._hit_blink_time = 0.0;
+        }
+
+        let blink_phase = 0.5 - (self._character_stats._hit_blink_time * 25.0).cos() * 0.5;
+        let hit_color = Vector4::new(
+            1.0 + blink_phase * 3.0,
+            1.0 + blink_phase * 3.0,
+            1.0 + blink_phase * 3.0,
+            1.0
+        );
+
+        self._render_object.borrow_mut().set_push_constant_parameter(
+            "_color",
+            &PushConstantParameter::Float4(hit_color),
+        );
+
+    }
+
     pub fn update_character(
         &mut self,
         scene_manager: &SceneManager<'a>,
@@ -2113,6 +2138,11 @@ impl<'a> Character<'a> {
         // update animation key frames
         self.update_move_keyframe_event();
         self.update_action_keyframe_event(delta_time);
+
+        // update hit blink color
+        if 0.0 < self._character_stats._hit_blink_time {
+            self.update_hit_blink_color(delta_time);
+        }
 
         // behavior
         if !self._is_player {
