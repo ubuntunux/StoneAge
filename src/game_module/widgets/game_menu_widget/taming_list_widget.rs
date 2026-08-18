@@ -32,8 +32,6 @@ impl<'a> TamingListWidget<'a> {
         ui_component.set_color(get_color32(40, 40, 50, 220));
         ui_component.set_border_color(get_color32(0, 0, 0, 255));
         ui_component.set_round(5.0);
-        ui_component.set_enable(false);
-        parent_widget.add_widget(&layer);
 
         // Title Header
         let title_widget = UIManager::create_widget("taming_title", UIWidgetTypes::Default);
@@ -78,8 +76,8 @@ impl<'a> TamingListWidget<'a> {
 
     pub fn open_taming_list_widget(&mut self) {
         if !self._is_opened_taming_list_widget {
-            ptr_as_mut(self._layer.as_ref()).get_ui_component_mut().set_enable(true);
-            ptr_as_mut(self._layer.as_ref()).get_ui_component_mut().set_visible(true);
+            let parent_mut = ptr_as_mut(self._parent_widget);
+            parent_mut.add_widget(&self._layer);
             self._is_opened_taming_list_widget = true;
             self.refresh_taming_list();
         }
@@ -87,8 +85,8 @@ impl<'a> TamingListWidget<'a> {
 
     pub fn close_taming_list_widget(&mut self) {
         if self._is_opened_taming_list_widget {
-            ptr_as_mut(self._layer.as_ref()).get_ui_component_mut().set_enable(false);
-            ptr_as_mut(self._layer.as_ref()).get_ui_component_mut().set_visible(false);
+            let parent_mut = ptr_as_mut(self._parent_widget);
+            parent_mut.remove_widget(self._layer.as_ref());
             self._is_opened_taming_list_widget = false;
         }
     }

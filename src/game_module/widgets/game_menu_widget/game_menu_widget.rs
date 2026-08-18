@@ -9,10 +9,7 @@ use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::core::engine_core::TimeData;
 use rust_engine_3d::core::engine_service_locator::get_audio_manager_mut;
 use rust_engine_3d::core::input::{ButtonState, JoystickInputData, KeyboardInputData, MouseInputData, MouseMoveData};
-use rust_engine_3d::scene::ui::{
-    HorizontalAlign, Orientation, PIVOT_CENTER, UIComponentInstance, UILayoutType, UIManager, UIWidgetTypes,
-    VerticalAlign, WidgetDefault,
-};
+use rust_engine_3d::scene::ui::{HorizontalAlign, Orientation, UIComponentInstance, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault, PIVOT_TOP_CENTER};
 use rust_engine_3d::utilities::system::{RcRefCell, ptr_as_mut};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use std::ffi::c_void;
@@ -106,6 +103,8 @@ impl<'a> GameMenuWidget<'a> {
     ) -> Rc<WidgetDefault<'a>> {
         let tab_btn = UIManager::create_widget(widget_name, UIWidgetTypes::Default);
         let ui_component = ptr_as_mut(tab_btn.as_ref()).get_ui_component_mut();
+        ui_component.set_valign(VerticalAlign::CENTER);
+        ui_component.set_halign(HorizontalAlign::CENTER);
         ui_component.set_size(TAB_BUTTON_WIDTH, TAB_BUTTON_HEIGHT);
         ui_component.set_margin(5.0);
         ui_component.set_text(text);
@@ -126,10 +125,10 @@ impl<'a> GameMenuWidget<'a> {
         ui_component.set_layout_type(UILayoutType::BoxLayout);
         ui_component.set_layout_orientation(Orientation::VERTICAL);
         ui_component.set_halign(HorizontalAlign::CENTER);
-        ui_component.set_valign(VerticalAlign::CENTER);
-        ui_component.set_pivot_preset(PIVOT_CENTER);
+        ui_component.set_valign(VerticalAlign::TOP);
+        ui_component.set_pivot_preset(PIVOT_TOP_CENTER);
         ui_component.set_pos_hint_x(Some(0.5));
-        ui_component.set_pos_hint_y(Some(0.5));
+        ui_component.set_pos_y(300.0);
         ui_component.set_expandable(true);
         ui_component.set_padding(10.0);
         ui_component.set_color(get_color32(100, 100, 100, 220));

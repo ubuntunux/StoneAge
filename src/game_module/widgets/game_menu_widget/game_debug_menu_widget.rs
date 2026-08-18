@@ -51,12 +51,10 @@ impl<'a> GameDebugMenuItem<'a> {
         ui_component.set_layout_orientation(Orientation::HORIZONTAL);
         ui_component.set_halign(HorizontalAlign::CENTER);
         ui_component.set_valign(VerticalAlign::CENTER);
-        ui_component.set_size_hint_x(Some(1.0));
         ui_component.set_size_x(ITEM_WIDTH);
         ui_component.set_size_y(ITEM_HEIGHT);
         ui_component.set_color(get_color32(50, 50, 50, 255));
         ui_component.set_border_color(get_color32(0, 0, 0, 255));
-        ui_component.set_margin(10.0);
         ui_component.set_round(5.0);
         ui_component.set_text(game_debug_menu_type.to_string().as_str());
         ui_component.set_font_size(40.0);
@@ -124,8 +122,6 @@ impl<'a> GameDebugMenuWidget<'a> {
         ui_component.set_color(get_color32(50, 50, 50, 128));
         ui_component.set_border_color(get_color32(0, 0, 0, 255));
         ui_component.set_round(5.0);
-        ui_component.set_enable(false);
-        parent_widget.add_widget(&layer);
 
         let mut game_debug_menu_widget = Box::new(GameDebugMenuWidget {
             _parent_widget: parent_widget,
@@ -167,8 +163,8 @@ impl<'a> GameDebugMenuWidget<'a> {
     }
     pub fn open_game_debug_menu(&mut self) {
         if !self._is_opened_game_debug_menu {
-            ptr_as_mut(self._layer.as_ref()).get_ui_component_mut().set_enable(true);
-            ptr_as_mut(self._layer.as_ref()).get_ui_component_mut().set_visible(true);
+            let parent_mut = ptr_as_mut(self._parent_widget);
+            parent_mut.add_widget(&self._layer);
             self.set_selected_menu_item(self._selected_menu_item, true);
             self._is_opened_game_debug_menu = true;
         }
@@ -176,8 +172,8 @@ impl<'a> GameDebugMenuWidget<'a> {
     pub fn close_game_debug_menu(&mut self) {
         if self._is_opened_game_debug_menu {
             get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
-            ptr_as_mut(self._layer.as_ref()).get_ui_component_mut().set_enable(false);
-            ptr_as_mut(self._layer.as_ref()).get_ui_component_mut().set_visible(false);
+            let parent_mut = ptr_as_mut(self._parent_widget);
+            parent_mut.remove_widget(self._layer.as_ref());
             self._is_opened_game_debug_menu = false;
         }
     }

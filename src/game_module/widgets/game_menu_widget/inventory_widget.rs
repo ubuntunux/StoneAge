@@ -131,8 +131,6 @@ impl<'a> InventoryWidget<'a> {
         ui_component.set_size_hint_x(Some(1.0));
         ui_component.set_size_hint_y(Some(1.0));
         ui_component.set_renderable(false);
-        ui_component.set_enable(false);
-        parent_widget.add_widget(&layer);
 
         let inventory_bg = UIManager::create_widget("inventory_bg", UIWidgetTypes::Default);
         let inventory_bg_mut = ptr_as_mut(inventory_bg.as_ref());
@@ -268,31 +266,33 @@ impl<'a> InventoryWidget<'a> {
     }
 
     pub fn open_inventory(&mut self) {
-        self._is_opened_inventory = true;
-        let selected_slot = get_game_ui_manager().get_selected_inventory_item_index();
-        if selected_slot != INVALID_ITEM_INDEX {
-            self._focused_slot_index = selected_slot;
-        } else {
-            self._focused_slot_index = 0;
+        if !self._is_opened_inventory {
+            self._is_opened_inventory = true;
+            let selected_slot = get_game_ui_manager().get_selected_inventory_item_index();
+            if selected_slot != INVALID_ITEM_INDEX {
+                self._focused_slot_index = selected_slot;
+            } else {
+                self._focused_slot_index = 0;
+            }
+            let parent_mut = ptr_as_mut(self._parent_widget);
+            parent_mut.add_widget(&self._layer);
+            self.refresh_inventory_widget();
         }
-        let layer_mut = ptr_as_mut(self._layer.as_ref());
-        layer_mut.get_ui_component_mut().set_enable(true);
-        layer_mut.get_ui_component_mut().set_visible(true);
-        self.refresh_inventory_widget();
     }
 
     pub fn close_inventory(&mut self) {
-        self._is_opened_inventory = false;
-        self._nav_repeat_controller.reset();
-        if self._drag_source_slot_index != INVALID_ITEM_INDEX {
-            self._drag_source_slot_index = INVALID_ITEM_INDEX;
-            let drag_ui = ptr_as_mut(self._drag_widget.as_ref()).get_ui_component_mut();
-            drag_ui.set_draggable(false);
-            drag_ui.set_visible(false);
+        if self._is_opened_inventory {
+            self._is_opened_inventory = false;
+            self._nav_repeat_controller.reset();
+            if self._drag_source_slot_index != INVALID_ITEM_INDEX {
+                self._drag_source_slot_index = INVALID_ITEM_INDEX;
+                let drag_ui = ptr_as_mut(self._drag_widget.as_ref()).get_ui_component_mut();
+                drag_ui.set_draggable(false);
+                drag_ui.set_visible(false);
+            }
+            let parent_mut = ptr_as_mut(self._parent_widget);
+            parent_mut.remove_widget(self._layer.as_ref());
         }
-        let layer_mut = ptr_as_mut(self._layer.as_ref());
-        layer_mut.get_ui_component_mut().set_enable(false);
-        layer_mut.get_ui_component_mut().set_visible(false);
     }
 
     pub fn is_opened_inventory(&self) -> bool {
