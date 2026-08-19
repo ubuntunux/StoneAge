@@ -187,7 +187,9 @@ impl<'a> GameUIManager<'a> {
         )));
         self._item_acquire_notification_widget = Some(ItemAcquireNotificationWidget::create(game_ui_layout_mut));
         self._quest_widget = Some(Box::new(QuestWidget::create_quest_widget(game_ui_layout_mut)));
-        self._text_box_widget = Some(Box::new(TextBoxWidget::create_text_box_widget(game_ui_layout_mut)));
+
+        // test box
+        self._text_box_widget = Some(Box::new(TextBoxWidget::create_text_box_widget(root_widget)));
 
         // game menu layer
         let game_menu_layout = UIManager::create_widget("game menu layout", UIWidgetTypes::Default);
