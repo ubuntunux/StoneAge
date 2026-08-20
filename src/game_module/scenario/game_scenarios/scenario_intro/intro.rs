@@ -157,24 +157,7 @@ impl<'a> ScenarioIntro<'a> {
         actor.borrow_mut().set_move_idle();
     }
 
-    pub fn create_wrap_up_the_day_text_box(&self) {
-        if let Some(prop) = self._prop_table.as_ref() {
-            let wrapper = ActorWrapper::Prop(prop.clone());
-            let contents = vec![TextBoxContent::Text(String::from("\"Wrap up the day.\""))];
-            get_game_ui_manager_mut().add_text_box_item(TextBoxLayerType::GamePlayLayer, wrapper, &contents, None);
-        }
-    }
-
-    pub fn remove_wrap_up_the_day_text_box(&self) {
-        if let Some(prop) = self._prop_table.as_ref() {
-            let wrapper = ActorWrapper::Prop(prop.clone());
-            get_game_ui_manager_mut().remove_text_box_item(wrapper.get_key());
-        }
-    }
-
     pub fn clear_all(&mut self) {
-        self.remove_wrap_up_the_day_text_box();
-
         self._player = None;
         self._actor_ewa = None;
         self._actor_koa = None;
@@ -527,7 +510,11 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                         if let Some(actor) = &self._actor_koa {
                             actor.borrow_mut().set_next_behavior(BehaviorState::Idle, true);
                         }
-                        self.create_wrap_up_the_day_text_box();
+                    } else if state == State::Update {
+                        if let Some(scenario_wrap_up_the_day) = game_scene_manager.get_game_scenario(ScenarioType::ScenarioWrapUpTheDay).as_ref() {
+                            ptr_as_mut(scenario_wrap_up_the_day.as_ptr() as *const ScenarioWrapUpTheDay).set_skip_wakeup(true);
+                            self._scenario_track.set_next_scenario_phase(ScenarioPhase::Sleeping, None);
+                        }
                     }
                 }
                 ScenarioPhase::Sleeping => match state {
@@ -554,15 +541,6 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
             if state == State::Update {
                 self._scenario_track.update_scenario_phase_time(delta_time as f32);
             }
-        }
-
-        if self._scenario_track._scenario_phase == ScenarioPhase::WrapUpTheDay
-            && let Some(scenario_wrap_up_the_day) =
-                game_scene_manager.get_game_scenario(ScenarioType::ScenarioWrapUpTheDay).as_ref()
-        {
-            ptr_as_mut(scenario_wrap_up_the_day.as_ptr() as *const ScenarioWrapUpTheDay).set_skip_wakeup(true);
-            self.remove_wrap_up_the_day_text_box();
-            self._scenario_track.set_next_scenario_phase(ScenarioPhase::Sleeping, None);
         }
     }
 }
