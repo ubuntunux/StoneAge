@@ -1,5 +1,204 @@
 {
-    "_characters": {},
+    "_characters": {
+        "brachiosaurus": {
+            "_character_data_name": "characters/brachiosaurus",
+            "_position": [
+                0.5044803619384766,
+                0.42087066173553467,
+                4.449338912963867
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "iguanodon": {
+            "_character_data_name": "characters/iguanodon",
+            "_position": [
+                3.6042327880859375,
+                -0.7738401889801025,
+                -3.0963497161865234
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "iguanodon.001": {
+            "_character_data_name": "characters/iguanodon",
+            "_position": [
+                -5.275843620300293,
+                1.2611122131347656,
+                19.622516632080078
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "pachycephalosaurus": {
+            "_character_data_name": "characters/pachycephalosaurus",
+            "_position": [
+                33.16495895385742,
+                1.9268219470977783,
+                33.13392639160156
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "parasaurolophus": {
+            "_character_data_name": "characters/parasaurolophus",
+            "_position": [
+                48.91442108154297,
+                0.9703242778778076,
+                11.674619674682617
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "stegosaurus_green": {
+            "_character_data_name": "characters/stegosaurus_green",
+            "_position": [
+                35.90874099731445,
+                -1.0,
+                -7.111368179321289
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "trex": {
+            "_character_data_name": "characters/trex",
+            "_position": [
+                -7.443539619445801,
+                0.11702024936676025,
+                -15.781824111938477
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "trex_02": {
+            "_character_data_name": "characters/trex_02",
+            "_position": [
+                7.344351768493652,
+                6.018443584442139,
+                -20.247772216796875
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "triceratops": {
+            "_character_data_name": "characters/triceratops",
+            "_position": [
+                22.180519104003906,
+                0.8478267192840576,
+                -17.949438095092773
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "velociraptor": {
+            "_character_data_name": "characters/velociraptor",
+            "_position": [
+                25.7932071685791,
+                -0.9998233914375305,
+                -10.001520156860352
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "velociraptor_01.001": {
+            "_character_data_name": "characters/velociraptor_01.001",
+            "_position": [
+                53.24965286254883,
+                1.3111748695373535,
+                10.229543685913086
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        }
+    },
     "_items": {
         "fishing_rod": {
             "_item_data_name": "items/fishing_rod",
@@ -312,9 +511,9 @@
         },
         "birch_tree_00": {
             "_position": [
-                -15.404129028320312,
-                1.312122106552124,
-                -5.305456161499023
+                12.542184829711914,
+                2.3839709758758545,
+                21.71741485595703
             ],
             "_prop_data_name": "props/birch_tree_00",
             "_rotation": [
@@ -328,11 +527,11 @@
                 1.0
             ]
         },
-        "birch_tree_00.001": {
+        "birch_tree_01": {
             "_position": [
-                12.542184829711914,
-                2.3839709758758545,
-                21.71741485595703
+                -15.404129028320312,
+                1.312122106552124,
+                -5.305456161499023
             ],
             "_prop_data_name": "props/birch_tree_00",
             "_rotation": [

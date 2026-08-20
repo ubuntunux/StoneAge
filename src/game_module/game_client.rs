@@ -4,10 +4,7 @@ use crate::game_module::game_constants::{
     MATERIAL_INTRO_IMAGE, MATERIAL_UI_NONE, MATERIAL_WORLDMAP_FADE_TIME,
 };
 use crate::game_module::game_scene_manager::GameSceneState;
-use crate::game_module::game_service_locator::{
-    get_character_manager, get_character_manager_mut, get_editor_ui_manager_mut, get_game_controller_mut,
-    get_game_resources_mut, get_game_scene_manager, get_game_scene_manager_mut, get_game_ui_manager_mut,
-};
+use crate::game_module::game_service_locator::{get_character_manager, get_character_manager_mut, get_editor_ui_manager_mut, get_game_controller_mut, get_game_resources, get_game_resources_mut, get_game_scene_manager, get_game_scene_manager_mut, get_game_ui_manager_mut};
 use crate::game_module::save_data::save_data::GameSaveData;
 use nalgebra::{Vector2, Vector3};
 use rust_engine_3d::core::engine_service_locator::{
@@ -116,9 +113,13 @@ impl<'a> GameClient<'a> {
         get_game_scene_manager_mut().new_game_scene();
     }
     fn load_game(&mut self) {
-        let game_save_data = get_game_resources_mut().get_game_save_data(self._game_save_data_name.as_str()).clone();
-        self._game_save_data = newBoxRefCell(game_save_data.borrow().clone());
-        get_game_scene_manager_mut().load_game_scene_save_data(&self._game_save_data.borrow_mut());
+        if get_game_resources().has_game_save_data(self._game_save_data_name.as_str()) {
+            let game_save_data = get_game_resources_mut().get_game_save_data(self._game_save_data_name.as_str()).clone();
+            self._game_save_data = newBoxRefCell(game_save_data.borrow().clone());
+            get_game_scene_manager_mut().load_game_scene_save_data(&self._game_save_data.borrow_mut());
+        } else {
+            self.new_game();
+        }
     }
     pub fn save_game(&self, save_file: bool) {
         get_game_scene_manager().update_game_scene_save_data(&mut self._game_save_data.borrow_mut());
