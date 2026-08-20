@@ -19,5 +19,6 @@ Cargo.lock
 # meta files
 *.meta
 
+resources/game_data/save_data/*.data
 resources.txt
 .log
