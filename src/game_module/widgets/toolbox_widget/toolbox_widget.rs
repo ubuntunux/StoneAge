@@ -1,4 +1,5 @@
 use crate::game_module::actors::character::Character;
+use crate::game_module::game_constants::AUDIO_ITEM_INVENTORY;
 use crate::game_module::widgets::toolbox_widget::item_tab_widget::{
     ToolboxIconType, ToolboxItemData, ToolboxItemState, ToolboxTabWidget,
 };
@@ -19,7 +20,6 @@ use std::collections::HashSet;
 use std::ffi::c_void;
 use std::rc::Rc;
 use winit::keyboard::KeyCode;
-use crate::game_module::game_constants::AUDIO_PICKUP_ITEM;
 
 const TAB_BUTTON_WIDTH: f32 = 50.0;
 const TAB_BUTTON_HEIGHT: f32 = 40.0;
@@ -38,6 +38,35 @@ pub enum ToolboxTab {
     Vehicle,
     Weapon,
     Defense,
+    Npc,
+}
+
+impl ToolboxTab {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            ToolboxTab::Skill => "Skill",
+            ToolboxTab::Architecture => "Architecture",
+            ToolboxTab::Cooking => "Cooking",
+            ToolboxTab::ItemCraft => "ItemCraft",
+            ToolboxTab::Vehicle => "Vehicle",
+            ToolboxTab::Weapon => "Weapon",
+            ToolboxTab::Defense => "Defense",
+            ToolboxTab::Npc => "Npc",
+        }
+    }
+
+    pub fn from_str(s: &str) -> Self {
+        match s {
+            "Architecture" => ToolboxTab::Architecture,
+            "Cooking" => ToolboxTab::Cooking,
+            "ItemCraft" => ToolboxTab::ItemCraft,
+            "Vehicle" => ToolboxTab::Vehicle,
+            "Weapon" => ToolboxTab::Weapon,
+            "Defense" => ToolboxTab::Defense,
+            "Npc" => ToolboxTab::Npc,
+            _ => ToolboxTab::Skill,
+        }
+    }
 }
 
 // ────────────────────────────────────────────────────────────────
@@ -56,6 +85,7 @@ pub struct ToolboxWidget<'a> {
     pub _tab_btn_vehicle: Rc<WidgetDefault<'a>>,
     pub _tab_btn_weapon: Rc<WidgetDefault<'a>>,
     pub _tab_btn_defense: Rc<WidgetDefault<'a>>,
+    pub _tab_btn_npc: Rc<WidgetDefault<'a>>,
 
     // Content panes
     pub _skill_tab: Box<ToolboxTabWidget<'a>>,
@@ -65,8 +95,10 @@ pub struct ToolboxWidget<'a> {
     pub _vehicle_tab: Box<ToolboxTabWidget<'a>>,
     pub _weapon_tab: Box<ToolboxTabWidget<'a>>,
     pub _defense_tab: Box<ToolboxTabWidget<'a>>,
+    pub _npc_tab: Box<ToolboxTabWidget<'a>>,
 
     pub _active_tab: ToolboxTab,
+    pub _last_opened_tab: ToolboxTab,
     pub _selected_item_index: usize,
     pub _last_lstick_y: i16,
 }
@@ -137,6 +169,15 @@ impl<'a> ToolboxWidget<'a> {
             .set_active_tab(ToolboxTab::Defense);
         true
     }
+    pub fn callback_tab_npc(
+        ui: &UIComponentInstance<'a>,
+        _pos: &Vector2<f32>,
+        _delta: &Vector2<f32>,
+    ) -> bool {
+        ptr_as_mut(ui.get_user_data() as *const ToolboxWidget<'a>)
+            .set_active_tab(ToolboxTab::Npc);
+        true
+    }
 
     // ── Tab button helper ─────────────────────────────────────────
 
@@ -178,8 +219,8 @@ impl<'a> ToolboxWidget<'a> {
         ui.set_valign(VerticalAlign::TOP);
         ui.set_pivot_preset(PIVOT_CENTER);
         ui.set_pos_hint(Some(0.5), Some(0.5));
-        ui.set_size_x(800.0);
-        ui.set_size_y(600.0);
+        ui.set_size_hint_x(Some(0.6));
+        ui.set_size_hint_y(Some(0.65));
         ui.set_color(get_color32(35, 35, 35, 230));
         ui.set_border_color(get_color32(90, 90, 90, 255));
         ui.set_border(2.0);
@@ -268,6 +309,8 @@ impl<'a> ToolboxWidget<'a> {
             Self::create_tab_button("tb_weapon", "Weapon", Self::callback_tab_weapon, header_mut);
         let tab_btn_defense =
             Self::create_tab_button("tb_defense", "Defense", Self::callback_tab_defense, header_mut);
+        let tab_btn_npc =
+            Self::create_tab_button("tb_npc", "NPC", Self::callback_tab_npc, header_mut);
 
         // ── Content area (Dark gray) ────────────────────────────────
         let content = UIManager::create_widget("toolbox_content", UIWidgetTypes::Default);
@@ -418,6 +461,37 @@ impl<'a> ToolboxWidget<'a> {
                 },
             ],
         );
+        let npc_tab = ToolboxTabWidget::create(
+            "npc",
+            "NPC Recruitment",
+            content_mut,
+            vec![
+                ToolboxItemData {
+                    id: "npc_gatherer".to_string(),
+                    icon_type: ToolboxIconType::NpcGatherer,
+                    description: "Collects wood and wild plants for the village".to_string(),
+                    energy_cost: 2,
+                },
+                ToolboxItemData {
+                    id: "npc_crafter".to_string(),
+                    icon_type: ToolboxIconType::NpcCrafter,
+                    description: "Crafts tools and building items automatically".to_string(),
+                    energy_cost: 3,
+                },
+                ToolboxItemData {
+                    id: "npc_guard".to_string(),
+                    icon_type: ToolboxIconType::NpcGuard,
+                    description: "Defends the base against wild beasts and threats".to_string(),
+                    energy_cost: 4,
+                },
+                ToolboxItemData {
+                    id: "npc_hunter".to_string(),
+                    icon_type: ToolboxIconType::NpcHunter,
+                    description: "Hunts animals and gathers meat and leather".to_string(),
+                    energy_cost: 3,
+                },
+            ],
+        );
 
         let widget = ToolboxWidget {
             _parent_widget: parent_widget,
@@ -430,6 +504,7 @@ impl<'a> ToolboxWidget<'a> {
             _tab_btn_vehicle: tab_btn_vehicle,
             _tab_btn_weapon: tab_btn_weapon,
             _tab_btn_defense: tab_btn_defense,
+            _tab_btn_npc: tab_btn_npc,
             _skill_tab: skill_tab,
             _architecture_tab: architecture_tab,
             _cooking_tab: cooking_tab,
@@ -437,7 +512,9 @@ impl<'a> ToolboxWidget<'a> {
             _vehicle_tab: vehicle_tab,
             _weapon_tab: weapon_tab,
             _defense_tab: defense_tab,
+            _npc_tab: npc_tab,
             _active_tab: ToolboxTab::Skill,
+            _last_opened_tab: ToolboxTab::Skill,
             _selected_item_index: 0,
             _last_lstick_y: 0,
         };
@@ -452,13 +529,14 @@ impl<'a> ToolboxWidget<'a> {
         ptr_as_mut(widget._tab_btn_vehicle.as_ref()).get_ui_component_mut().set_user_data(self_ptr);
         ptr_as_mut(widget._tab_btn_weapon.as_ref()).get_ui_component_mut().set_user_data(self_ptr);
         ptr_as_mut(widget._tab_btn_defense.as_ref()).get_ui_component_mut().set_user_data(self_ptr);
+        ptr_as_mut(widget._tab_btn_npc.as_ref()).get_ui_component_mut().set_user_data(self_ptr);
 
         widget
     }
 
     // ── Tab switching ─────────────────────────────────────────────
 
-    fn all_tab_buttons(&self) -> [&Rc<WidgetDefault<'a>>; 7] {
+    fn all_tab_buttons(&self) -> [&Rc<WidgetDefault<'a>>; 8] {
         [
             &self._tab_btn_skill,
             &self._tab_btn_architecture,
@@ -467,11 +545,13 @@ impl<'a> ToolboxWidget<'a> {
             &self._tab_btn_vehicle,
             &self._tab_btn_weapon,
             &self._tab_btn_defense,
+            &self._tab_btn_npc,
         ]
     }
 
     pub fn set_active_tab(&mut self, tab: ToolboxTab) {
         self._active_tab = tab;
+        self._last_opened_tab = tab;
 
         // Reset all buttons to inactive colour
         for btn in self.all_tab_buttons() {
@@ -488,6 +568,7 @@ impl<'a> ToolboxWidget<'a> {
         self._vehicle_tab.close();
         self._weapon_tab.close();
         self._defense_tab.close();
+        self._npc_tab.close();
 
         // Activate selected tab
         let (active_btn, open_fn): (&Rc<WidgetDefault<'a>>, Box<dyn FnOnce(&mut ToolboxWidget<'a>)>) =
@@ -520,6 +601,10 @@ impl<'a> ToolboxWidget<'a> {
                     &self._tab_btn_defense,
                     Box::new(|w: &mut ToolboxWidget<'a>| w._defense_tab.open()),
                 ),
+                ToolboxTab::Npc => (
+                    &self._tab_btn_npc,
+                    Box::new(|w: &mut ToolboxWidget<'a>| w._npc_tab.open()),
+                ),
             };
 
         ptr_as_mut(active_btn.as_ref())
@@ -540,6 +625,7 @@ impl<'a> ToolboxWidget<'a> {
             ToolboxTab::Vehicle => &mut self._vehicle_tab,
             ToolboxTab::Weapon => &mut self._weapon_tab,
             ToolboxTab::Defense => &mut self._defense_tab,
+            ToolboxTab::Npc => &mut self._npc_tab,
         }
     }
 
@@ -586,9 +672,11 @@ impl<'a> ToolboxWidget<'a> {
             ptr_as_mut(self._tab_btn_vehicle.as_ref()).get_ui_component_mut().set_user_data(self_ptr);
             ptr_as_mut(self._tab_btn_weapon.as_ref()).get_ui_component_mut().set_user_data(self_ptr);
             ptr_as_mut(self._tab_btn_defense.as_ref()).get_ui_component_mut().set_user_data(self_ptr);
+            ptr_as_mut(self._tab_btn_npc.as_ref()).get_ui_component_mut().set_user_data(self_ptr);
 
-            // Default to Skill tab
-            self.set_active_tab(ToolboxTab::Skill);
+            // Restore last opened tab
+            let last_tab = self._last_opened_tab;
+            self.set_active_tab(last_tab);
         }
     }
 
@@ -633,18 +721,20 @@ impl<'a> ToolboxWidget<'a> {
                 ToolboxTab::ItemCraft => ToolboxTab::Vehicle,
                 ToolboxTab::Vehicle => ToolboxTab::Weapon,
                 ToolboxTab::Weapon => ToolboxTab::Defense,
-                ToolboxTab::Defense => ToolboxTab::Skill,
+                ToolboxTab::Defense => ToolboxTab::Npc,
+                ToolboxTab::Npc => ToolboxTab::Skill,
             };
             self.set_active_tab(next_tab);
         } else if switch_tab_prev {
             let prev_tab = match self._active_tab {
-                ToolboxTab::Skill => ToolboxTab::Defense,
+                ToolboxTab::Skill => ToolboxTab::Npc,
                 ToolboxTab::Architecture => ToolboxTab::Skill,
                 ToolboxTab::Cooking => ToolboxTab::Architecture,
                 ToolboxTab::ItemCraft => ToolboxTab::Cooking,
                 ToolboxTab::Vehicle => ToolboxTab::ItemCraft,
                 ToolboxTab::Weapon => ToolboxTab::Vehicle,
                 ToolboxTab::Defense => ToolboxTab::Weapon,
+                ToolboxTab::Npc => ToolboxTab::Defense,
             };
             self.set_active_tab(prev_tab);
         }
@@ -670,7 +760,7 @@ impl<'a> ToolboxWidget<'a> {
                 } else {
                     self._selected_item_index -= 1;
                 }
-                get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
+                get_audio_manager_mut().play_audio_bank(AUDIO_ITEM_INVENTORY, AudioLoop::ONCE, None);
                 self.update_item_selection();
             } else if move_down {
                 if self._selected_item_index + 1 >= item_count {
@@ -678,7 +768,7 @@ impl<'a> ToolboxWidget<'a> {
                 } else {
                     self._selected_item_index += 1;
                 }
-                get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
+                get_audio_manager_mut().play_audio_bank(AUDIO_ITEM_INVENTORY, AudioLoop::ONCE, None);
                 self.update_item_selection();
             }
         }
@@ -715,6 +805,7 @@ impl<'a> ToolboxWidget<'a> {
             &self._vehicle_tab,
             &self._weapon_tab,
             &self._defense_tab,
+            &self._npc_tab,
         ];
         for tab in tabs {
             for item in &tab._items {
@@ -735,6 +826,7 @@ impl<'a> ToolboxWidget<'a> {
             &mut self._vehicle_tab,
             &mut self._weapon_tab,
             &mut self._defense_tab,
+            &mut self._npc_tab,
         ];
         for tab in tabs {
             for item in &mut tab._items {
@@ -744,5 +836,13 @@ impl<'a> ToolboxWidget<'a> {
                 }
             }
         }
+    }
+
+    pub fn get_last_opened_tab(&self) -> String {
+        self._last_opened_tab.as_str().to_string()
+    }
+
+    pub fn set_last_opened_tab(&mut self, tab_name: &str) {
+        self._last_opened_tab = ToolboxTab::from_str(tab_name);
     }
 }

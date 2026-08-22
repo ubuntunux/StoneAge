@@ -628,6 +628,18 @@ impl<'a> GameUIManager<'a> {
             toolbox_widget.load_unlocked_items(unlocked_set);
         }
     }
+    pub fn get_last_opened_toolbox_tab(&self) -> String {
+        if let Some(toolbox_widget) = self._toolbox_widget.as_ref() {
+            toolbox_widget.get_last_opened_tab()
+        } else {
+            "".to_string()
+        }
+    }
+    pub fn set_last_opened_toolbox_tab(&mut self, tab_name: &str) {
+        if let Some(toolbox_widget) = self._toolbox_widget.as_mut() {
+            toolbox_widget.set_last_opened_tab(tab_name);
+        }
+    }
     pub fn update_toolbox_widget(
         &mut self,
         time_data: &TimeData,

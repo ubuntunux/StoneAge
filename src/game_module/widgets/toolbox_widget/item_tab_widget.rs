@@ -1,5 +1,10 @@
-use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, AUDIO_QUEST_COMPLETE, ITEM_ENERGY_BALL};
-use crate::game_module::game_service_locator::{get_game_ui_manager, get_game_ui_manager_mut};
+use crate::game_module::actors::character::CharacterCreateInfo;
+use crate::game_module::game_constants::{AUDIO_ITEM_INVENTORY, AUDIO_QUEST_COMPLETE, ITEM_ENERGY_BALL};
+use crate::game_module::game_service_locator::{
+    get_character_manager, get_character_manager_mut, get_game_scene_manager, get_game_ui_manager,
+    get_game_ui_manager_mut,
+};
+use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::core::engine_service_locator::get_audio_manager_mut;
 use rust_engine_3d::scene::ui::{
@@ -15,6 +20,36 @@ const ITEM_ROW_HEIGHT: f32 = 90.0;
 const ITEM_ICON_SIZE: f32 = 70.0;
 const ACTION_BUTTON_WIDTH: f32 = 130.0;
 const ACTION_BUTTON_HEIGHT: f32 = 40.0;
+
+fn spawn_npc_near_monolith(character_data_name: &str, offset: Vector3<f32>) {
+    let monolith_pos = if let Some(monolith) =
+        get_game_scene_manager().get_prop_manager().get_prop_by_name("monolith")
+    {
+        *monolith.borrow().get_position()
+    } else if get_character_manager().is_valid_player() {
+        *get_character_manager().get_player().borrow().get_position()
+    } else {
+        Vector3::zeros()
+    };
+
+    let spawn_pos = monolith_pos + offset;
+
+    let character_create_info = CharacterCreateInfo {
+        _character_id: Default::default(),
+        _character_data_name: character_data_name.to_string(),
+        _position: spawn_pos,
+        _rotation: Vector3::zeros(),
+        _scale: Vector3::new(1.0, 1.0, 1.0),
+    };
+
+    let character_name = format!("npc_{}", character_data_name.replace('/', "_"));
+    get_character_manager_mut().create_character(&character_name, &character_create_info, false);
+    log::info!(
+        "[Toolbox] Spawned NPC {} near Monolith at {:?}",
+        character_name,
+        spawn_pos
+    );
+}
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum ToolboxIconType {
@@ -32,6 +67,10 @@ pub enum ToolboxIconType {
     HuntingBow,
     LeatherArmor,
     BoneShield,
+    NpcGatherer,
+    NpcCrafter,
+    NpcGuard,
+    NpcHunter,
 }
 
 impl ToolboxIconType {
@@ -51,6 +90,10 @@ impl ToolboxIconType {
             ToolboxIconType::HuntingBow => "Hunting Bow",
             ToolboxIconType::LeatherArmor => "Leather Armor",
             ToolboxIconType::BoneShield => "Bone Shield",
+            ToolboxIconType::NpcGatherer => "Gatherer NPC",
+            ToolboxIconType::NpcCrafter => "Crafter NPC",
+            ToolboxIconType::NpcGuard => "Guard NPC",
+            ToolboxIconType::NpcHunter => "Hunter NPC",
         }
     }
 
@@ -70,6 +113,20 @@ impl ToolboxIconType {
             ToolboxIconType::HuntingBow => "[BOW]",
             ToolboxIconType::LeatherArmor => "[ARMOR]",
             ToolboxIconType::BoneShield => "[SHIELD]",
+            ToolboxIconType::NpcGatherer => "[GATHERER]",
+            ToolboxIconType::NpcCrafter => "[CRAFTER]",
+            ToolboxIconType::NpcGuard => "[GUARD]",
+            ToolboxIconType::NpcHunter => "[HUNTER]",
+        }
+    }
+
+    pub fn npc_character_info(&self) -> Option<(&'static str, Vector3<f32>)> {
+        match self {
+            ToolboxIconType::NpcGatherer => Some(("characters/villager_00", Vector3::new(3.0, 0.0, 3.0))),
+            ToolboxIconType::NpcCrafter => Some(("characters/jack", Vector3::new(-3.0, 0.0, 3.0))),
+            ToolboxIconType::NpcGuard => Some(("characters/neanderthal", Vector3::new(3.0, 0.0, -3.0))),
+            ToolboxIconType::NpcHunter => Some(("characters/family/aru", Vector3::new(-3.0, 0.0, -3.0))),
+            _ => None,
         }
     }
 }
@@ -114,7 +171,7 @@ impl<'a> ToolboxItemWidget<'a> {
         _touched_pos: &nalgebra::Vector2<f32>,
         _touched_pos_delta: &nalgebra::Vector2<f32>,
     ) -> bool {
-        get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
+        get_audio_manager_mut().play_audio_bank(AUDIO_ITEM_INVENTORY, AudioLoop::ONCE, None);
         true
     }
 
@@ -123,7 +180,7 @@ impl<'a> ToolboxItemWidget<'a> {
         _touched_pos: &nalgebra::Vector2<f32>,
         _touched_pos_delta: &nalgebra::Vector2<f32>,
     ) -> bool {
-        get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
+        get_audio_manager_mut().play_audio_bank(AUDIO_ITEM_INVENTORY, AudioLoop::ONCE, None);
         true
     }
 
@@ -155,6 +212,9 @@ impl<'a> ToolboxItemWidget<'a> {
                                 AudioLoop::ONCE,
                                 None,
                             );
+                            if let Some((char_data_name, offset)) = self._data.icon_type.npc_character_info() {
+                                spawn_npc_near_monolith(char_data_name, offset);
+                            }
                             log::info!(
                                 "[Toolbox] Unlocked item: {} (Consumed {} EnergyBall(s))",
                                 self._data.icon_type.as_str(),
@@ -166,7 +226,7 @@ impl<'a> ToolboxItemWidget<'a> {
                         }
                     } else {
                         get_audio_manager_mut().play_audio_bank(
-                            AUDIO_PICKUP_ITEM,
+                            AUDIO_ITEM_INVENTORY,
                             AudioLoop::ONCE,
                             None,
                         );
@@ -190,6 +250,9 @@ impl<'a> ToolboxItemWidget<'a> {
                         AudioLoop::ONCE,
                         None,
                     );
+                    if let Some((char_data_name, offset)) = self._data.icon_type.npc_character_info() {
+                        spawn_npc_near_monolith(char_data_name, offset);
+                    }
                     log::info!(
                         "[Toolbox] Unlocked free item: {}",
                         self._data.icon_type.as_str()
