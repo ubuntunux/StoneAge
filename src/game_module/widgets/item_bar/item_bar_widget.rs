@@ -6,8 +6,8 @@ use crate::game_module::game_service_locator::{
 };
 use crate::game_module::widgets::item_bar::{
     INVALID_ITEM_INDEX, ITEM_BAR_WIDGET_POS_Y_FROM_BOTTOM, ITEM_UI_SIZE, ITEM_WIDGET_UI_MARGIN,
-    InventoryItemCreateInfo, InventoryItemCreateInfoList, InventorySlotData, ItemBarWidget, ItemSelectionWidget, ItemWidget,
-    MAX_INVENTORY_ROWS, MAX_ITEM_COUNT, SLOTS_PER_ROW, TOTAL_INVENTORY_SLOTS,
+    InventoryItemCreateInfo, InventoryItemCreateInfoList, InventorySlotData, ItemBarWidget, ItemSelectionWidget,
+    ItemWidget, MAX_INVENTORY_ROWS, MAX_ITEM_COUNT, SLOTS_PER_ROW, TOTAL_INVENTORY_SLOTS,
 };
 use crate::game_module::widgets::key_binding_widget::{
     KEY_BINDING_FONT_SIZE, KEY_BINDING_ICON_MARGIN, KEY_BINDING_TEXT_MARGIN, KEY_BINDING_UI_SIZE, KeyBindingWidget,
@@ -17,8 +17,8 @@ use nalgebra::Vector2;
 use rust_engine_3d::core::engine_service_locator::get_engine_resources;
 use rust_engine_3d::scene::material_instance::MaterialInstanceData;
 use rust_engine_3d::scene::ui::{
-    HorizontalAlign, Orientation, PIVOT_BOTTOM_CENTER, PIVOT_CENTER_LEFT, PIVOT_CENTER_RIGHT,
-    PIVOT_TOP_CENTER, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault,
+    HorizontalAlign, Orientation, PIVOT_BOTTOM_CENTER, PIVOT_CENTER_LEFT, PIVOT_CENTER_RIGHT, PIVOT_TOP_CENTER,
+    UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault,
 };
 use rust_engine_3d::utilities::system::{RcRefCell, ptr_as_mut};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
@@ -510,7 +510,8 @@ impl<'a> ItemBarWidget<'a> {
 
                 if target_slot_index == INVALID_ITEM_INDEX {
                     for (idx, slot) in self._inventory_slots.iter().enumerate() {
-                        if slot._item_count == 0 || slot._item_data_name == ITEM_NONE || slot._item_data_name.is_empty() {
+                        if slot._item_count == 0 || slot._item_data_name == ITEM_NONE || slot._item_data_name.is_empty()
+                        {
                             target_slot_index = idx;
                             break;
                         }

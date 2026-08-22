@@ -10,7 +10,10 @@ use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::core::engine_core::TimeData;
 use rust_engine_3d::core::engine_service_locator::get_audio_manager_mut;
 use rust_engine_3d::core::input::{ButtonState, JoystickInputData, KeyboardInputData, MouseInputData, MouseMoveData};
-use rust_engine_3d::scene::ui::{HorizontalAlign, Orientation, UIComponentInstance, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault, PIVOT_TOP_CENTER};
+use rust_engine_3d::scene::ui::{
+    HorizontalAlign, Orientation, PIVOT_TOP_CENTER, UIComponentInstance, UILayoutType, UIManager, UIWidgetTypes,
+    VerticalAlign, WidgetDefault,
+};
 use rust_engine_3d::utilities::system::{RcRefCell, ptr_as_mut};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use std::ffi::c_void;

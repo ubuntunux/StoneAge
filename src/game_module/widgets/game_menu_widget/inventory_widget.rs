@@ -7,7 +7,9 @@ use crate::game_module::widgets::item_bar::{
     INVALID_ITEM_INDEX, ITEM_UI_SIZE, ITEM_WIDGET_UI_MARGIN, MAX_INVENTORY_ROWS, SLOTS_PER_ROW, TOTAL_INVENTORY_SLOTS,
 };
 use nalgebra::Vector2;
+use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::core::engine_core::TimeData;
+use rust_engine_3d::core::engine_service_locator::get_audio_manager_mut;
 use rust_engine_3d::core::input::{ButtonState, JoystickInputData, KeyboardInputData, MouseInputData, MouseMoveData};
 use rust_engine_3d::scene::material_instance::MaterialInstanceData;
 use rust_engine_3d::scene::ui::{
@@ -18,8 +20,6 @@ use rust_engine_3d::utilities::system::{RcRefCell, ptr_as_mut, ptr_as_ref};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use std::ffi::c_void;
 use std::rc::Rc;
-use rust_engine_3d::audio::audio_manager::AudioLoop;
-use rust_engine_3d::core::engine_service_locator::get_audio_manager_mut;
 use winit::keyboard::KeyCode;
 
 pub struct InventorySlotWidget<'a> {
@@ -176,10 +176,12 @@ impl<'a> InventoryWidget<'a> {
 
         // Grid Layout: 2 Rows x 10 Slots
         for row in 0..MAX_INVENTORY_ROWS {
-            let row_layout = InventoryWidget::create_inventory_row(ptr_as_mut(inventory_widget._inventory_bg.as_ref()), row);
+            let row_layout =
+                InventoryWidget::create_inventory_row(ptr_as_mut(inventory_widget._inventory_bg.as_ref()), row);
             for column in 0..SLOTS_PER_ROW {
                 let slot_idx = row * SLOTS_PER_ROW + column;
-                let slot_item = InventorySlotWidget::create(inventory_widget.as_ref(), ptr_as_mut(row_layout.as_ref()), slot_idx);
+                let slot_item =
+                    InventorySlotWidget::create(inventory_widget.as_ref(), ptr_as_mut(row_layout.as_ref()), slot_idx);
                 inventory_widget._slot_widgets.push(slot_item);
             }
         }
@@ -314,7 +316,15 @@ impl<'a> InventoryWidget<'a> {
             let is_selected_item = slot_idx == self._focused_slot_index;
 
             if slot_idx == self._drag_source_slot_index {
-                slot_widget.set_data("", ITEM_NONE, ItemDataType::None, None, 0, is_active_quick_row, is_selected_item);
+                slot_widget.set_data(
+                    "",
+                    ITEM_NONE,
+                    ItemDataType::None,
+                    None,
+                    0,
+                    is_active_quick_row,
+                    is_selected_item,
+                );
             } else {
                 slot_widget.set_data(
                     &slot_data._item_name,
@@ -455,7 +465,10 @@ impl<'a> InventoryWidget<'a> {
                 let game_ui_manager = get_game_ui_manager();
                 let item_bar = game_ui_manager.get_item_bar_widget();
                 let slot_data = item_bar.get_inventory_slot_data(hovered_slot);
-                if slot_data._item_count > 0 && slot_data._item_data_name != ITEM_NONE && slot_data._item_data_type.is_droppable() {
+                if slot_data._item_count > 0
+                    && slot_data._item_data_name != ITEM_NONE
+                    && slot_data._item_data_type.is_droppable()
+                {
                     let item_data_name = slot_data._item_data_name.clone();
                     get_item_manager_mut().drop_inventory_item(&item_data_name, 1);
 
@@ -473,7 +486,10 @@ impl<'a> InventoryWidget<'a> {
                 let game_ui_manager = get_game_ui_manager();
                 let item_bar = game_ui_manager.get_item_bar_widget();
                 let slot_data = item_bar.get_inventory_slot_data(target_slot);
-                if slot_data._item_count > 0 && slot_data._item_data_name != ITEM_NONE && slot_data._item_data_type.is_droppable() {
+                if slot_data._item_count > 0
+                    && slot_data._item_data_name != ITEM_NONE
+                    && slot_data._item_data_type.is_droppable()
+                {
                     let item_data_name = slot_data._item_data_name.clone();
                     get_item_manager_mut().drop_inventory_item(&item_data_name, 1);
 

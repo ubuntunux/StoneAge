@@ -8,8 +8,8 @@ use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::core::engine_service_locator::get_audio_manager_mut;
 use rust_engine_3d::scene::ui::{
-    HorizontalAlign, Orientation, UIComponentInstance, UILayoutType, UIManager, UIWidgetTypes,
-    VerticalAlign, WidgetDefault,
+    HorizontalAlign, Orientation, UIComponentInstance, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign,
+    WidgetDefault,
 };
 use rust_engine_3d::utilities::system::ptr_as_mut;
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
@@ -22,8 +22,7 @@ const ACTION_BUTTON_WIDTH: f32 = 130.0;
 const ACTION_BUTTON_HEIGHT: f32 = 40.0;
 
 fn spawn_npc_near_monolith(character_data_name: &str, offset: Vector3<f32>) {
-    let monolith_pos = if let Some(monolith) =
-        get_game_scene_manager().get_prop_manager().get_prop_by_name("monolith")
+    let monolith_pos = if let Some(monolith) = get_game_scene_manager().get_prop_manager().get_prop_by_name("monolith")
     {
         *monolith.borrow().get_position()
     } else if get_character_manager().is_valid_player() {
@@ -207,11 +206,7 @@ impl<'a> ToolboxItemWidget<'a> {
                     if current_energy_balls >= cost {
                         if get_game_ui_manager_mut().remove_item(ITEM_ENERGY_BALL, cost) {
                             self._state = ToolboxItemState::Unlocked;
-                            get_audio_manager_mut().play_audio_bank(
-                                AUDIO_QUEST_COMPLETE,
-                                AudioLoop::ONCE,
-                                None,
-                            );
+                            get_audio_manager_mut().play_audio_bank(AUDIO_QUEST_COMPLETE, AudioLoop::ONCE, None);
                             if let Some((char_data_name, offset)) = self._data.icon_type.npc_character_info() {
                                 spawn_npc_near_monolith(char_data_name, offset);
                             }
@@ -225,11 +220,7 @@ impl<'a> ToolboxItemWidget<'a> {
                             log::warn!("[Toolbox] Failed to remove EnergyBall from inventory");
                         }
                     } else {
-                        get_audio_manager_mut().play_audio_bank(
-                            AUDIO_ITEM_INVENTORY,
-                            AudioLoop::ONCE,
-                            None,
-                        );
+                        get_audio_manager_mut().play_audio_bank(AUDIO_ITEM_INVENTORY, AudioLoop::ONCE, None);
                         log::warn!(
                             "[Toolbox] Cannot unlock {}: Needs {} EnergyBall(s), but only have {}",
                             self._data.icon_type.as_str(),
@@ -237,26 +228,16 @@ impl<'a> ToolboxItemWidget<'a> {
                             current_energy_balls
                         );
                         let status_ui = ptr_as_mut(self._status_label.as_ref()).get_ui_component_mut();
-                        status_ui.set_text(&format!(
-                            "Need {} EnergyBall (Have {})",
-                            cost, current_energy_balls
-                        ));
+                        status_ui.set_text(&format!("Need {} EnergyBall (Have {})", cost, current_energy_balls));
                         status_ui.set_font_color(get_color32(230, 80, 80, 255));
                     }
                 } else {
                     self._state = ToolboxItemState::Unlocked;
-                    get_audio_manager_mut().play_audio_bank(
-                        AUDIO_QUEST_COMPLETE,
-                        AudioLoop::ONCE,
-                        None,
-                    );
+                    get_audio_manager_mut().play_audio_bank(AUDIO_QUEST_COMPLETE, AudioLoop::ONCE, None);
                     if let Some((char_data_name, offset)) = self._data.icon_type.npc_character_info() {
                         spawn_npc_near_monolith(char_data_name, offset);
                     }
-                    log::info!(
-                        "[Toolbox] Unlocked free item: {}",
-                        self._data.icon_type.as_str()
-                    );
+                    log::info!("[Toolbox] Unlocked free item: {}", self._data.icon_type.as_str());
                     self.update_ui();
                 }
             }
@@ -293,15 +274,9 @@ impl<'a> ToolboxItemWidget<'a> {
         }
     }
 
-    pub fn create(
-        parent_widget: &mut WidgetDefault<'a>,
-        data: ToolboxItemData,
-    ) -> Box<ToolboxItemWidget<'a>> {
+    pub fn create(parent_widget: &mut WidgetDefault<'a>, data: ToolboxItemData) -> Box<ToolboxItemWidget<'a>> {
         // Main row container (Neutral dark gray)
-        let layout = UIManager::create_widget(
-            &format!("item_row_{}", data.id),
-            UIWidgetTypes::Default,
-        );
+        let layout = UIManager::create_widget(&format!("item_row_{}", data.id), UIWidgetTypes::Default);
         let layout_mut = ptr_as_mut(layout.as_ref());
         let ui = layout_mut.get_ui_component_mut();
         ui.set_layout_type(UILayoutType::BoxLayout);
@@ -322,10 +297,7 @@ impl<'a> ToolboxItemWidget<'a> {
         parent_widget.add_widget(&layout);
 
         // Icon display (Gray tone)
-        let icon = UIManager::create_widget(
-            &format!("item_icon_{}", data.id),
-            UIWidgetTypes::Default,
-        );
+        let icon = UIManager::create_widget(&format!("item_icon_{}", data.id), UIWidgetTypes::Default);
         let ui = ptr_as_mut(icon.as_ref()).get_ui_component_mut();
         ui.set_size(ITEM_ICON_SIZE, ITEM_ICON_SIZE);
         ui.set_halign(HorizontalAlign::CENTER);
@@ -341,10 +313,7 @@ impl<'a> ToolboxItemWidget<'a> {
         layout_mut.add_widget(&icon);
 
         // Info container (Vertical layout: Name, Description, Status Label)
-        let info = UIManager::create_widget(
-            &format!("item_info_{}", data.id),
-            UIWidgetTypes::Default,
-        );
+        let info = UIManager::create_widget(&format!("item_info_{}", data.id), UIWidgetTypes::Default);
         let info_mut = ptr_as_mut(info.as_ref());
         let ui = info_mut.get_ui_component_mut();
         ui.set_layout_type(UILayoutType::BoxLayout);
@@ -358,10 +327,7 @@ impl<'a> ToolboxItemWidget<'a> {
         layout_mut.add_widget(&info);
 
         // Name label
-        let name_label = UIManager::create_widget(
-            &format!("item_name_{}", data.id),
-            UIWidgetTypes::Default,
-        );
+        let name_label = UIManager::create_widget(&format!("item_name_{}", data.id), UIWidgetTypes::Default);
         let ui = ptr_as_mut(name_label.as_ref()).get_ui_component_mut();
         ui.set_halign(HorizontalAlign::LEFT);
         ui.set_valign(VerticalAlign::CENTER);
@@ -374,10 +340,7 @@ impl<'a> ToolboxItemWidget<'a> {
         info_mut.add_widget(&name_label);
 
         // Description label
-        let desc_label = UIManager::create_widget(
-            &format!("item_desc_{}", data.id),
-            UIWidgetTypes::Default,
-        );
+        let desc_label = UIManager::create_widget(&format!("item_desc_{}", data.id), UIWidgetTypes::Default);
         let ui = ptr_as_mut(desc_label.as_ref()).get_ui_component_mut();
         ui.set_halign(HorizontalAlign::LEFT);
         ui.set_valign(VerticalAlign::CENTER);
@@ -390,10 +353,7 @@ impl<'a> ToolboxItemWidget<'a> {
         info_mut.add_widget(&desc_label);
 
         // Status label
-        let status_label = UIManager::create_widget(
-            &format!("item_status_{}", data.id),
-            UIWidgetTypes::Default,
-        );
+        let status_label = UIManager::create_widget(&format!("item_status_{}", data.id), UIWidgetTypes::Default);
         let ui = ptr_as_mut(status_label.as_ref()).get_ui_component_mut();
         ui.set_halign(HorizontalAlign::LEFT);
         ui.set_valign(VerticalAlign::CENTER);
@@ -406,10 +366,7 @@ impl<'a> ToolboxItemWidget<'a> {
         info_mut.add_widget(&status_label);
 
         // Action button (Unlock)
-        let action_btn = UIManager::create_widget(
-            &format!("item_action_{}", data.id),
-            UIWidgetTypes::Default,
-        );
+        let action_btn = UIManager::create_widget(&format!("item_action_{}", data.id), UIWidgetTypes::Default);
         let ui = ptr_as_mut(action_btn.as_ref()).get_ui_component_mut();
         ui.set_size(ACTION_BUTTON_WIDTH, ACTION_BUTTON_HEIGHT);
         ui.set_halign(HorizontalAlign::CENTER);
@@ -456,10 +413,7 @@ impl<'a> ToolboxTabWidget<'a> {
         item_list: Vec<ToolboxItemData>,
     ) -> Box<ToolboxTabWidget<'a>> {
         // Pane layout container (Neutral dark gray)
-        let layout = UIManager::create_widget(
-            &format!("{}_tab_layout", tab_id),
-            UIWidgetTypes::Default,
-        );
+        let layout = UIManager::create_widget(&format!("{}_tab_layout", tab_id), UIWidgetTypes::Default);
         let layout_mut = ptr_as_mut(layout.as_ref());
         let ui = layout_mut.get_ui_component_mut();
         ui.set_layout_type(UILayoutType::BoxLayout);
@@ -475,10 +429,7 @@ impl<'a> ToolboxTabWidget<'a> {
         parent_widget.add_widget(&layout);
 
         // Section header label
-        let section_label = UIManager::create_widget(
-            &format!("{}_section_label", tab_id),
-            UIWidgetTypes::Default,
-        );
+        let section_label = UIManager::create_widget(&format!("{}_section_label", tab_id), UIWidgetTypes::Default);
         let ui = ptr_as_mut(section_label.as_ref()).get_ui_component_mut();
         ui.set_size_hint_x(Some(1.0));
         ui.set_size_y(36.0);
@@ -492,10 +443,7 @@ impl<'a> ToolboxTabWidget<'a> {
         layout_mut.add_widget(&section_label);
 
         // Separator line
-        let separator = UIManager::create_widget(
-            &format!("{}_separator", tab_id),
-            UIWidgetTypes::Default,
-        );
+        let separator = UIManager::create_widget(&format!("{}_separator", tab_id), UIWidgetTypes::Default);
         let ui = ptr_as_mut(separator.as_ref()).get_ui_component_mut();
         ui.set_size_hint_x(Some(1.0));
         ui.set_size_y(2.0);
@@ -511,10 +459,7 @@ impl<'a> ToolboxTabWidget<'a> {
 
         // Add items to the tab pane
         for item_data in item_list {
-            let item_widget = ToolboxItemWidget::create(
-                ptr_as_mut(tab_widget._layout.as_ref()),
-                item_data,
-            );
+            let item_widget = ToolboxItemWidget::create(ptr_as_mut(tab_widget._layout.as_ref()), item_data);
             tab_widget._items.push(item_widget);
         }
 
@@ -525,25 +470,17 @@ impl<'a> ToolboxTabWidget<'a> {
         if !self._is_visible {
             for item in self._items.iter_mut() {
                 let item_ptr = item.as_ref() as *const ToolboxItemWidget<'a> as *const c_void;
-                ptr_as_mut(item._action_btn.as_ref())
-                    .get_ui_component_mut()
-                    .set_user_data(item_ptr);
-                ptr_as_mut(item._layout.as_ref())
-                    .get_ui_component_mut()
-                    .set_user_data(item_ptr);
+                ptr_as_mut(item._action_btn.as_ref()).get_ui_component_mut().set_user_data(item_ptr);
+                ptr_as_mut(item._layout.as_ref()).get_ui_component_mut().set_user_data(item_ptr);
             }
-            ptr_as_mut(self._layout.as_ref())
-                .get_ui_component_mut()
-                .set_enable(true);
+            ptr_as_mut(self._layout.as_ref()).get_ui_component_mut().set_enable(true);
             self._is_visible = true;
         }
     }
 
     pub fn close(&mut self) {
         if self._is_visible {
-            ptr_as_mut(self._layout.as_ref())
-                .get_ui_component_mut()
-                .set_enable(false);
+            ptr_as_mut(self._layout.as_ref()).get_ui_component_mut().set_enable(false);
             self._is_visible = false;
         }
     }

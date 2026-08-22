@@ -16,14 +16,14 @@ use crate::game_module::game_service_locator::{
     get_game_scene_manager_mut, get_game_ui_manager_mut, get_item_manager,
 };
 use crate::game_module::scenario::scenario::ScenarioType;
-use crate::game_module::widgets::game_menu_widget::character_list_helper::{get_affinity_tier, AffinityTier};
+use crate::game_module::widgets::game_menu_widget::character_list_helper::{AffinityTier, get_affinity_tier};
 use nalgebra::{Vector3, Vector4};
 use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::core::engine_service_locator::{
     get_audio_manager, get_audio_manager_mut, get_scene_manager, get_scene_manager_mut,
 };
-use rust_engine_3d::renderer::push_constants::PushConstantParameter;
 use rust_engine_3d::effect::effect_data::EffectCreateInfo;
+use rust_engine_3d::renderer::push_constants::PushConstantParameter;
 use rust_engine_3d::scene::animation::{AnimationPlayArgs, AnimationPlayInfo};
 use rust_engine_3d::scene::bounding_box::BoundingBox;
 use rust_engine_3d::scene::collision::CollisionData;
@@ -2129,14 +2129,12 @@ impl<'a> Character<'a> {
             1.0 + blink_phase * HIT_BLINK_INTENSITY,
             1.0 + blink_phase * HIT_BLINK_INTENSITY,
             1.0 + blink_phase * HIT_BLINK_INTENSITY,
-            1.0
+            1.0,
         );
 
-        self._render_object.borrow_mut().set_push_constant_parameter(
-            "_color",
-            &PushConstantParameter::Float4(hit_color),
-        );
-
+        self._render_object
+            .borrow_mut()
+            .set_push_constant_parameter("_color", &PushConstantParameter::Float4(hit_color));
     }
 
     pub fn update_character(

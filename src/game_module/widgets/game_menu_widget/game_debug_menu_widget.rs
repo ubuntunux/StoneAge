@@ -1,5 +1,7 @@
 use crate::game_module::game_constants::AUDIO_PICKUP_ITEM;
-use crate::game_module::game_service_locator::{get_application_mut, get_game_scene_manager, get_game_scene_manager_mut, get_game_ui_manager_mut};
+use crate::game_module::game_service_locator::{
+    get_application_mut, get_game_scene_manager, get_game_scene_manager_mut, get_game_ui_manager_mut,
+};
 use crate::game_module::game_weather::WeatherType;
 use nalgebra::Vector2;
 use rust_engine_3d::audio::audio_manager::AudioLoop;

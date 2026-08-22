@@ -136,7 +136,8 @@ pub fn collect_all_characters() -> Vec<DisplayCharacterInfo> {
 
             let data_name = &char_save._character_create_info._character_data_name;
             let is_civilian = if game_resources.has_character_data(data_name.as_str()) {
-                game_resources.get_character_data(data_name.as_str()).borrow()._character_type == CharacterDataType::Civilian
+                game_resources.get_character_data(data_name.as_str()).borrow()._character_type
+                    == CharacterDataType::Civilian
             } else {
                 false
             };

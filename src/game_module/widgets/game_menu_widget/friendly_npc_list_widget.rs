@@ -1,11 +1,8 @@
-use crate::game_module::widgets::game_menu_widget::character_list_helper::{
-    collect_all_characters, get_affinity_tier,
-};
+use crate::game_module::widgets::game_menu_widget::character_list_helper::{collect_all_characters, get_affinity_tier};
 use nalgebra::Vector2;
 use rust_engine_3d::core::input::{JoystickInputData, KeyboardInputData};
 use rust_engine_3d::scene::ui::{
-    HorizontalAlign, Orientation, PIVOT_CENTER, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign,
-    WidgetDefault,
+    HorizontalAlign, Orientation, PIVOT_CENTER, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault,
 };
 use rust_engine_3d::utilities::system::ptr_as_mut;
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
@@ -97,17 +94,11 @@ impl<'a> FriendlyNpcListWidget<'a> {
         container_mut.clear_widgets();
 
         let all_characters = collect_all_characters();
-        let mut npc_list: Vec<_> = all_characters
-            .into_iter()
-            .filter(|c| c.is_civilian)
-            .collect();
+        let mut npc_list: Vec<_> = all_characters.into_iter().filter(|c| c.is_civilian).collect();
 
         // Sort by intimacy descending, then by name
         npc_list.sort_by(|a, b| {
-            b.intimacy
-                .partial_cmp(&a.intimacy)
-                .unwrap_or(std::cmp::Ordering::Equal)
-                .then_with(|| a.name.cmp(&b.name))
+            b.intimacy.partial_cmp(&a.intimacy).unwrap_or(std::cmp::Ordering::Equal).then_with(|| a.name.cmp(&b.name))
         });
 
         let npc_count = npc_list.len();

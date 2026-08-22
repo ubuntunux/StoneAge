@@ -336,8 +336,7 @@ impl<'a> ControllerHelpWidget<'a> {
         self.set_controls_visibility(!self._is_controls_visible);
     }
 
-    pub fn changed_window_size(&mut self, _window_size: &Vector2<i32>) {
-    }
+    pub fn changed_window_size(&mut self, _window_size: &Vector2<i32>) {}
 
     pub fn update_interaction_widget(&mut self) {
         let interaction_key_binding_widget_map = ptr_as_mut(self._interaction_key_binding_widget_map.as_ref());

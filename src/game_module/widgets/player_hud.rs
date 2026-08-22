@@ -1,4 +1,5 @@
 use crate::game_module::actors::character::Character;
+use crate::game_module::game_constants::HP_WARNING_RATIO;
 use crate::game_module::widgets::fishing_gauge_widget::FishingGaugeWidget;
 use crate::game_module::widgets::status_bar_widget::StatusBarWidget;
 use nalgebra::Vector2;
@@ -7,7 +8,6 @@ use rust_engine_3d::scene::ui::{
 };
 use rust_engine_3d::utilities::system::ptr_as_mut;
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
-use crate::game_module::game_constants::HP_WARNING_RATIO;
 
 pub struct PlayerHud<'a> {
     pub _widget: *const WidgetDefault<'a>,

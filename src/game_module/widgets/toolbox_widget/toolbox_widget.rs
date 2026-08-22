@@ -7,12 +7,10 @@ use nalgebra::Vector2;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::core::engine_core::TimeData;
 use rust_engine_3d::core::engine_service_locator::get_audio_manager_mut;
-use rust_engine_3d::core::input::{
-    ButtonState, JoystickInputData, KeyboardInputData, MouseInputData, MouseMoveData,
-};
+use rust_engine_3d::core::input::{ButtonState, JoystickInputData, KeyboardInputData, MouseInputData, MouseMoveData};
 use rust_engine_3d::scene::ui::{
-    HorizontalAlign, Orientation, PIVOT_CENTER, UIComponentInstance, UILayoutType, UIManager,
-    UIWidgetTypes, VerticalAlign, WidgetDefault,
+    HorizontalAlign, Orientation, PIVOT_CENTER, UIComponentInstance, UILayoutType, UIManager, UIWidgetTypes,
+    VerticalAlign, WidgetDefault,
 };
 use rust_engine_3d::utilities::system::{RcRefCell, ptr_as_mut};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
@@ -106,76 +104,36 @@ pub struct ToolboxWidget<'a> {
 impl<'a> ToolboxWidget<'a> {
     // ── Tab-button callbacks ──────────────────────────────────────
 
-    pub fn callback_tab_skill(
-        ui: &UIComponentInstance<'a>,
-        _pos: &Vector2<f32>,
-        _delta: &Vector2<f32>,
-    ) -> bool {
-        ptr_as_mut(ui.get_user_data() as *const ToolboxWidget<'a>)
-            .set_active_tab(ToolboxTab::Skill);
+    pub fn callback_tab_skill(ui: &UIComponentInstance<'a>, _pos: &Vector2<f32>, _delta: &Vector2<f32>) -> bool {
+        ptr_as_mut(ui.get_user_data() as *const ToolboxWidget<'a>).set_active_tab(ToolboxTab::Skill);
         true
     }
-    pub fn callback_tab_architecture(
-        ui: &UIComponentInstance<'a>,
-        _pos: &Vector2<f32>,
-        _delta: &Vector2<f32>,
-    ) -> bool {
-        ptr_as_mut(ui.get_user_data() as *const ToolboxWidget<'a>)
-            .set_active_tab(ToolboxTab::Architecture);
+    pub fn callback_tab_architecture(ui: &UIComponentInstance<'a>, _pos: &Vector2<f32>, _delta: &Vector2<f32>) -> bool {
+        ptr_as_mut(ui.get_user_data() as *const ToolboxWidget<'a>).set_active_tab(ToolboxTab::Architecture);
         true
     }
-    pub fn callback_tab_cooking(
-        ui: &UIComponentInstance<'a>,
-        _pos: &Vector2<f32>,
-        _delta: &Vector2<f32>,
-    ) -> bool {
-        ptr_as_mut(ui.get_user_data() as *const ToolboxWidget<'a>)
-            .set_active_tab(ToolboxTab::Cooking);
+    pub fn callback_tab_cooking(ui: &UIComponentInstance<'a>, _pos: &Vector2<f32>, _delta: &Vector2<f32>) -> bool {
+        ptr_as_mut(ui.get_user_data() as *const ToolboxWidget<'a>).set_active_tab(ToolboxTab::Cooking);
         true
     }
-    pub fn callback_tab_item_craft(
-        ui: &UIComponentInstance<'a>,
-        _pos: &Vector2<f32>,
-        _delta: &Vector2<f32>,
-    ) -> bool {
-        ptr_as_mut(ui.get_user_data() as *const ToolboxWidget<'a>)
-            .set_active_tab(ToolboxTab::ItemCraft);
+    pub fn callback_tab_item_craft(ui: &UIComponentInstance<'a>, _pos: &Vector2<f32>, _delta: &Vector2<f32>) -> bool {
+        ptr_as_mut(ui.get_user_data() as *const ToolboxWidget<'a>).set_active_tab(ToolboxTab::ItemCraft);
         true
     }
-    pub fn callback_tab_vehicle(
-        ui: &UIComponentInstance<'a>,
-        _pos: &Vector2<f32>,
-        _delta: &Vector2<f32>,
-    ) -> bool {
-        ptr_as_mut(ui.get_user_data() as *const ToolboxWidget<'a>)
-            .set_active_tab(ToolboxTab::Vehicle);
+    pub fn callback_tab_vehicle(ui: &UIComponentInstance<'a>, _pos: &Vector2<f32>, _delta: &Vector2<f32>) -> bool {
+        ptr_as_mut(ui.get_user_data() as *const ToolboxWidget<'a>).set_active_tab(ToolboxTab::Vehicle);
         true
     }
-    pub fn callback_tab_weapon(
-        ui: &UIComponentInstance<'a>,
-        _pos: &Vector2<f32>,
-        _delta: &Vector2<f32>,
-    ) -> bool {
-        ptr_as_mut(ui.get_user_data() as *const ToolboxWidget<'a>)
-            .set_active_tab(ToolboxTab::Weapon);
+    pub fn callback_tab_weapon(ui: &UIComponentInstance<'a>, _pos: &Vector2<f32>, _delta: &Vector2<f32>) -> bool {
+        ptr_as_mut(ui.get_user_data() as *const ToolboxWidget<'a>).set_active_tab(ToolboxTab::Weapon);
         true
     }
-    pub fn callback_tab_defense(
-        ui: &UIComponentInstance<'a>,
-        _pos: &Vector2<f32>,
-        _delta: &Vector2<f32>,
-    ) -> bool {
-        ptr_as_mut(ui.get_user_data() as *const ToolboxWidget<'a>)
-            .set_active_tab(ToolboxTab::Defense);
+    pub fn callback_tab_defense(ui: &UIComponentInstance<'a>, _pos: &Vector2<f32>, _delta: &Vector2<f32>) -> bool {
+        ptr_as_mut(ui.get_user_data() as *const ToolboxWidget<'a>).set_active_tab(ToolboxTab::Defense);
         true
     }
-    pub fn callback_tab_npc(
-        ui: &UIComponentInstance<'a>,
-        _pos: &Vector2<f32>,
-        _delta: &Vector2<f32>,
-    ) -> bool {
-        ptr_as_mut(ui.get_user_data() as *const ToolboxWidget<'a>)
-            .set_active_tab(ToolboxTab::Npc);
+    pub fn callback_tab_npc(ui: &UIComponentInstance<'a>, _pos: &Vector2<f32>, _delta: &Vector2<f32>) -> bool {
+        ptr_as_mut(ui.get_user_data() as *const ToolboxWidget<'a>).set_active_tab(ToolboxTab::Npc);
         true
     }
 
@@ -206,9 +164,7 @@ impl<'a> ToolboxWidget<'a> {
 
     // ── Constructor ───────────────────────────────────────────────
 
-    pub fn create_toolbox_widget(
-        parent_widget: &mut WidgetDefault<'a>,
-    ) -> ToolboxWidget<'a> {
+    pub fn create_toolbox_widget(parent_widget: &mut WidgetDefault<'a>) -> ToolboxWidget<'a> {
         // ── Root layer (Neutral dark gray) ──────────────────────────
         let layer = UIManager::create_widget("toolbox_widget", UIWidgetTypes::Default);
         let layer_mut = ptr_as_mut(layer.as_ref());
@@ -287,30 +243,16 @@ impl<'a> ToolboxWidget<'a> {
         ui.set_padding(4.0);
         body_mut.add_widget(&header);
 
-        let tab_btn_skill =
-            Self::create_tab_button("tb_skill", "Skill", Self::callback_tab_skill, header_mut);
-        let tab_btn_architecture = Self::create_tab_button(
-            "tb_architecture",
-            "Arch",
-            Self::callback_tab_architecture,
-            header_mut,
-        );
-        let tab_btn_cooking =
-            Self::create_tab_button("tb_cooking", "Cook", Self::callback_tab_cooking, header_mut);
-        let tab_btn_item_craft = Self::create_tab_button(
-            "tb_item_craft",
-            "Craft",
-            Self::callback_tab_item_craft,
-            header_mut,
-        );
-        let tab_btn_vehicle =
-            Self::create_tab_button("tb_vehicle", "Vehicle", Self::callback_tab_vehicle, header_mut);
-        let tab_btn_weapon =
-            Self::create_tab_button("tb_weapon", "Weapon", Self::callback_tab_weapon, header_mut);
-        let tab_btn_defense =
-            Self::create_tab_button("tb_defense", "Defense", Self::callback_tab_defense, header_mut);
-        let tab_btn_npc =
-            Self::create_tab_button("tb_npc", "NPC", Self::callback_tab_npc, header_mut);
+        let tab_btn_skill = Self::create_tab_button("tb_skill", "Skill", Self::callback_tab_skill, header_mut);
+        let tab_btn_architecture =
+            Self::create_tab_button("tb_architecture", "Arch", Self::callback_tab_architecture, header_mut);
+        let tab_btn_cooking = Self::create_tab_button("tb_cooking", "Cook", Self::callback_tab_cooking, header_mut);
+        let tab_btn_item_craft =
+            Self::create_tab_button("tb_item_craft", "Craft", Self::callback_tab_item_craft, header_mut);
+        let tab_btn_vehicle = Self::create_tab_button("tb_vehicle", "Vehicle", Self::callback_tab_vehicle, header_mut);
+        let tab_btn_weapon = Self::create_tab_button("tb_weapon", "Weapon", Self::callback_tab_weapon, header_mut);
+        let tab_btn_defense = Self::create_tab_button("tb_defense", "Defense", Self::callback_tab_defense, header_mut);
+        let tab_btn_npc = Self::create_tab_button("tb_npc", "NPC", Self::callback_tab_npc, header_mut);
 
         // ── Content area (Dark gray) ────────────────────────────────
         let content = UIManager::create_widget("toolbox_content", UIWidgetTypes::Default);
@@ -555,9 +497,7 @@ impl<'a> ToolboxWidget<'a> {
 
         // Reset all buttons to inactive colour
         for btn in self.all_tab_buttons() {
-            ptr_as_mut(btn.as_ref())
-                .get_ui_component_mut()
-                .set_color(TAB_INACTIVE_COLOR);
+            ptr_as_mut(btn.as_ref()).get_ui_component_mut().set_color(TAB_INACTIVE_COLOR);
         }
 
         // Close all panes
@@ -571,45 +511,42 @@ impl<'a> ToolboxWidget<'a> {
         self._npc_tab.close();
 
         // Activate selected tab
-        let (active_btn, open_fn): (&Rc<WidgetDefault<'a>>, Box<dyn FnOnce(&mut ToolboxWidget<'a>)>) =
-            match tab {
-                ToolboxTab::Skill => (
-                    &self._tab_btn_skill,
-                    Box::new(|w: &mut ToolboxWidget<'a>| w._skill_tab.open()),
-                ),
-                ToolboxTab::Architecture => (
-                    &self._tab_btn_architecture,
-                    Box::new(|w: &mut ToolboxWidget<'a>| w._architecture_tab.open()),
-                ),
-                ToolboxTab::Cooking => (
-                    &self._tab_btn_cooking,
-                    Box::new(|w: &mut ToolboxWidget<'a>| w._cooking_tab.open()),
-                ),
-                ToolboxTab::ItemCraft => (
-                    &self._tab_btn_item_craft,
-                    Box::new(|w: &mut ToolboxWidget<'a>| w._item_craft_tab.open()),
-                ),
-                ToolboxTab::Vehicle => (
-                    &self._tab_btn_vehicle,
-                    Box::new(|w: &mut ToolboxWidget<'a>| w._vehicle_tab.open()),
-                ),
-                ToolboxTab::Weapon => (
-                    &self._tab_btn_weapon,
-                    Box::new(|w: &mut ToolboxWidget<'a>| w._weapon_tab.open()),
-                ),
-                ToolboxTab::Defense => (
-                    &self._tab_btn_defense,
-                    Box::new(|w: &mut ToolboxWidget<'a>| w._defense_tab.open()),
-                ),
-                ToolboxTab::Npc => (
-                    &self._tab_btn_npc,
-                    Box::new(|w: &mut ToolboxWidget<'a>| w._npc_tab.open()),
-                ),
-            };
+        let (active_btn, open_fn): (&Rc<WidgetDefault<'a>>, Box<dyn FnOnce(&mut ToolboxWidget<'a>)>) = match tab {
+            ToolboxTab::Skill => (
+                &self._tab_btn_skill,
+                Box::new(|w: &mut ToolboxWidget<'a>| w._skill_tab.open()),
+            ),
+            ToolboxTab::Architecture => (
+                &self._tab_btn_architecture,
+                Box::new(|w: &mut ToolboxWidget<'a>| w._architecture_tab.open()),
+            ),
+            ToolboxTab::Cooking => (
+                &self._tab_btn_cooking,
+                Box::new(|w: &mut ToolboxWidget<'a>| w._cooking_tab.open()),
+            ),
+            ToolboxTab::ItemCraft => (
+                &self._tab_btn_item_craft,
+                Box::new(|w: &mut ToolboxWidget<'a>| w._item_craft_tab.open()),
+            ),
+            ToolboxTab::Vehicle => (
+                &self._tab_btn_vehicle,
+                Box::new(|w: &mut ToolboxWidget<'a>| w._vehicle_tab.open()),
+            ),
+            ToolboxTab::Weapon => (
+                &self._tab_btn_weapon,
+                Box::new(|w: &mut ToolboxWidget<'a>| w._weapon_tab.open()),
+            ),
+            ToolboxTab::Defense => (
+                &self._tab_btn_defense,
+                Box::new(|w: &mut ToolboxWidget<'a>| w._defense_tab.open()),
+            ),
+            ToolboxTab::Npc => (
+                &self._tab_btn_npc,
+                Box::new(|w: &mut ToolboxWidget<'a>| w._npc_tab.open()),
+            ),
+        };
 
-        ptr_as_mut(active_btn.as_ref())
-            .get_ui_component_mut()
-            .set_color(TAB_ACTIVE_COLOR);
+        ptr_as_mut(active_btn.as_ref()).get_ui_component_mut().set_color(TAB_ACTIVE_COLOR);
         open_fn(self);
 
         self._selected_item_index = 0;
@@ -708,10 +645,10 @@ impl<'a> ToolboxWidget<'a> {
         let is_shift = keyboard_input_data.get_key_hold(KeyCode::ShiftLeft)
             || keyboard_input_data.get_key_hold(KeyCode::ShiftRight);
 
-        let switch_tab_next = (tab_pressed && !is_shift)
-            || joystick_input_data._btn_right_shoulder == ButtonState::Pressed;
-        let switch_tab_prev = (tab_pressed && is_shift)
-            || joystick_input_data._btn_left_shoulder == ButtonState::Pressed;
+        let switch_tab_next =
+            (tab_pressed && !is_shift) || joystick_input_data._btn_right_shoulder == ButtonState::Pressed;
+        let switch_tab_prev =
+            (tab_pressed && is_shift) || joystick_input_data._btn_left_shoulder == ButtonState::Pressed;
 
         if switch_tab_next {
             let next_tab = match self._active_tab {
@@ -787,8 +724,8 @@ impl<'a> ToolboxWidget<'a> {
             }
         }
 
-        let close = keyboard_input_data.get_key_pressed(KeyCode::Escape)
-            || joystick_input_data._btn_b == ButtonState::Pressed;
+        let close =
+            keyboard_input_data.get_key_pressed(KeyCode::Escape) || joystick_input_data._btn_b == ButtonState::Pressed;
 
         if close {
             self.close_toolbox();

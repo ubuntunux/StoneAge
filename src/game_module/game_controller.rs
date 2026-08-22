@@ -1,10 +1,8 @@
 use crate::game_module::actors::character::{ActionAnimationState, Character};
 use crate::game_module::game_client::GamePhase;
 use crate::game_module::game_constants::*;
+use crate::game_module::game_service_locator::{get_character_manager, get_game_client_mut, get_game_ui_manager_mut};
 use crate::game_module::widgets::game_menu_widget::GameMenuTab;
-use crate::game_module::game_service_locator::{
-    get_character_manager, get_game_client_mut, get_game_ui_manager_mut,
-};
 use nalgebra::{Matrix4, Vector2, Vector3};
 use rust_engine_3d::core::engine_core::TimeData;
 use rust_engine_3d::core::engine_service_locator::get_scene_manager;
@@ -79,7 +77,6 @@ impl<T: PartialEq + Copy> HoldRepeatController<T> {
         }
     }
 }
-
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Debug, Display, EnumIter, EnumString, EnumCount)]
 pub enum KeyBindingType {
@@ -464,12 +461,13 @@ impl<'a> GameController<'a> {
             || joystick_input_data._btn_right == ButtonState::Hold;
         let is_help =
             keyboard_input_data.get_key_pressed(KeyCode::F1) || joystick_input_data._btn_back == ButtonState::Pressed;
-        let open_inventory =
-            keyboard_input_data.get_key_pressed(KeyCode::KeyI) || joystick_input_data._btn_start == ButtonState::Pressed;
-        let open_menu =
-            keyboard_input_data.get_key_pressed(KeyCode::Escape) || joystick_input_data._btn_start == ButtonState::Pressed;
+        let open_inventory = keyboard_input_data.get_key_pressed(KeyCode::KeyI)
+            || joystick_input_data._btn_start == ButtonState::Pressed;
+        let open_menu = keyboard_input_data.get_key_pressed(KeyCode::Escape)
+            || joystick_input_data._btn_start == ButtonState::Pressed;
         let prev_quick_slot_row = joystick_input_data._btn_up == ButtonState::Pressed;
-        let next_quick_slot_row = keyboard_input_data.get_key_pressed(KeyCode::Tab) || joystick_input_data._btn_down == ButtonState::Pressed;
+        let next_quick_slot_row =
+            keyboard_input_data.get_key_pressed(KeyCode::Tab) || joystick_input_data._btn_down == ButtonState::Pressed;
 
         let stick_left_direction = Vector2::<f32>::new(
             joystick_input_data._stick_left_direction.x as f32,

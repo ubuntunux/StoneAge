@@ -15,8 +15,8 @@ use nalgebra::{Vector3, Vector4};
 use rand;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::core::engine_service_locator::{get_audio_manager_mut, get_scene_manager, get_scene_manager_mut};
-use rust_engine_3d::renderer::push_constants::PushConstantParameter;
 use rust_engine_3d::effect::effect_data::EffectCreateInfo;
+use rust_engine_3d::renderer::push_constants::PushConstantParameter;
 use rust_engine_3d::scene::bounding_box::BoundingBox;
 use rust_engine_3d::scene::collision::{CollisionData, CollisionType};
 use rust_engine_3d::scene::render_object::{RenderObjectCreateInfo, RenderObjectData};
@@ -270,10 +270,9 @@ impl<'a> Prop<'a> {
             1.0,
         );
 
-        self._render_object.borrow_mut().set_push_constant_parameter(
-            "_color",
-            &PushConstantParameter::Float4(hit_color),
-        );
+        self._render_object
+            .borrow_mut()
+            .set_push_constant_parameter("_color", &PushConstantParameter::Float4(hit_color));
     }
     pub fn update_prop(&mut self, delta_time: f64) {
         if 0.0 < self._prop_stats._hit_blink_time {

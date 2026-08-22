@@ -6,7 +6,9 @@ use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::game_service_locator;
 use crate::game_module::game_ui_manager::{EditorUIManager, GameUIManager};
 
-use crate::game_module::game_service_locator::{get_editor_ui_manager_mut, get_game_ui_manager, get_game_ui_manager_mut};
+use crate::game_module::game_service_locator::{
+    get_editor_ui_manager_mut, get_game_ui_manager, get_game_ui_manager_mut,
+};
 use crate::render_pass;
 use ash::vk;
 use log::LevelFilter;

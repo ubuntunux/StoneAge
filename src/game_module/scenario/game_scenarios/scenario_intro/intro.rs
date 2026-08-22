@@ -3,9 +3,7 @@ use crate::game_module::actors::character::{ActorWrapper, Character};
 use crate::game_module::actors::props::Prop;
 use crate::game_module::behavior::behavior_base::BehaviorState;
 use crate::game_module::game_constants::*;
-use crate::game_module::game_service_locator::{
-    get_game_scene_manager_mut, get_game_ui_manager_mut,
-};
+use crate::game_module::game_service_locator::{get_game_scene_manager_mut, get_game_ui_manager_mut};
 use crate::game_module::game_ui_manager::GameUIManager;
 use crate::game_module::scenario::game_scenarios::scenario_wrap_up_the_day::ScenarioWrapUpTheDay;
 use crate::game_module::scenario::scenario::{
@@ -17,7 +15,7 @@ use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::core::engine_service_locator::{get_audio_manager_mut, get_scene_manager};
 use rust_engine_3d::utilities::math;
-use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, RcRefCell, State};
+use rust_engine_3d::utilities::system::{RcRefCell, State, newRcRefCell, ptr_as_mut};
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 use strum::IntoEnumIterator;
@@ -511,8 +509,11 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                             actor.borrow_mut().set_next_behavior(BehaviorState::Idle, true);
                         }
                     } else if state == State::Update {
-                        if let Some(scenario_wrap_up_the_day) = game_scene_manager.get_game_scenario(ScenarioType::ScenarioWrapUpTheDay).as_ref() {
-                            ptr_as_mut(scenario_wrap_up_the_day.as_ptr() as *const ScenarioWrapUpTheDay).set_skip_wakeup(true);
+                        if let Some(scenario_wrap_up_the_day) =
+                            game_scene_manager.get_game_scenario(ScenarioType::ScenarioWrapUpTheDay).as_ref()
+                        {
+                            ptr_as_mut(scenario_wrap_up_the_day.as_ptr() as *const ScenarioWrapUpTheDay)
+                                .set_skip_wakeup(true);
                             self._scenario_track.set_next_scenario_phase(ScenarioPhase::Sleeping, None);
                         }
                     }

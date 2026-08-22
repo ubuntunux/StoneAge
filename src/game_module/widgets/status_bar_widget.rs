@@ -1,7 +1,7 @@
-use std::cell::Cell;
 use rust_engine_3d::scene::ui::{UILayoutType, UIManager, UIWidgetTypes, WidgetDefault};
 use rust_engine_3d::utilities::system::ptr_as_mut;
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
+use std::cell::Cell;
 
 const WIDGET_UI_WIDTH: f32 = 300.0;
 const WIDGET_UI_HEIGHT: f32 = 40.0;
@@ -130,7 +130,9 @@ impl<'a> StatusBarWidget<'a> {
                 self.set_bar_color(self._default_color.get());
                 self.set_bg_color(default_bg_color);
             }
-        } else if 0.0 < current_ratio && let Some(threshold) = low_status_warning_threshold {
+        } else if 0.0 < current_ratio
+            && let Some(threshold) = low_status_warning_threshold
+        {
             if current_ratio < threshold {
                 let proximity = (threshold - current_ratio).max(0.0) / threshold;
                 let speed_mult = 1.0 + proximity; // 1.0x to 2.0x faster
