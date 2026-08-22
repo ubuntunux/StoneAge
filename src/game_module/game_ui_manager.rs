@@ -25,6 +25,7 @@ use rust_engine_3d::core::engine_service_locator::{get_engine_core, get_engine_r
 use rust_engine_3d::core::input::{JoystickInputData, KeyboardInputData, MouseInputData, MouseMoveData};
 use rust_engine_3d::scene::ui::{UIComponentInstance, UIManager, UIWidgetTypes, WidgetDefault};
 use rust_engine_3d::utilities::system::{RcRefCell, ptr_as_mut, ptr_as_ref};
+use std::collections::HashSet;
 use std::ffi::c_void;
 
 pub type QuestItem<'a> = RcRefCell<dyn QuestItemBase<'a> + 'a>;
@@ -614,6 +615,18 @@ impl<'a> GameUIManager<'a> {
     }
     pub fn is_opened_toolbox(&self) -> bool {
         self._toolbox_widget.as_ref().unwrap().is_opened_toolbox()
+    }
+    pub fn get_unlocked_toolbox_items(&self) -> HashSet<String> {
+        if let Some(toolbox_widget) = self._toolbox_widget.as_ref() {
+            toolbox_widget.get_unlocked_items()
+        } else {
+            HashSet::new()
+        }
+    }
+    pub fn load_unlocked_toolbox_items(&mut self, unlocked_set: &HashSet<String>) {
+        if let Some(toolbox_widget) = self._toolbox_widget.as_mut() {
+            toolbox_widget.load_unlocked_items(unlocked_set);
+        }
     }
     pub fn update_toolbox_widget(
         &mut self,

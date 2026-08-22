@@ -256,6 +256,7 @@ impl<'a> GameSceneManager<'a> {
 
         let game_ui_manager = get_game_ui_manager_mut();
         game_ui_manager.set_controls_visibility(game_save_data._is_controls_visible);
+        game_ui_manager.load_unlocked_toolbox_items(&game_save_data._unlocked_toolbox_items);
         for create_infos in game_save_data._inventory_item_create_info_list.values() {
             for item_create_info in create_infos.iter() {
                 let slot_index = item_create_info._row * SLOTS_PER_ROW + item_create_info._column;
@@ -296,6 +297,7 @@ impl<'a> GameSceneManager<'a> {
         game_save_data._selected_inventory_item_index = get_game_ui_manager().get_selected_inventory_item_index();
         game_save_data._selected_quick_slot = get_game_ui_manager().get_selected_quick_slot_row_col();
         game_save_data._is_controls_visible = get_game_ui_manager().get_controls_visibility();
+        game_save_data._unlocked_toolbox_items = get_game_ui_manager().get_unlocked_toolbox_items();
 
         game_save_data._game_scenes.insert(
             self.get_current_game_scene_data_name().clone(),

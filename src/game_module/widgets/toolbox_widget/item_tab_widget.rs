@@ -1,5 +1,7 @@
-use crate::game_module::game_constants::ITEM_ENERGY_BALL;
+use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, AUDIO_QUEST_COMPLETE, ITEM_ENERGY_BALL};
 use crate::game_module::game_service_locator::{get_game_ui_manager, get_game_ui_manager_mut};
+use rust_engine_3d::audio::audio_manager::AudioLoop;
+use rust_engine_3d::core::engine_service_locator::get_audio_manager_mut;
 use rust_engine_3d::scene::ui::{
     HorizontalAlign, Orientation, UIComponentInstance, UILayoutType, UIManager, UIWidgetTypes,
     VerticalAlign, WidgetDefault,
@@ -74,9 +76,8 @@ impl ToolboxIconType {
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum ToolboxItemState {
-    Unpurchased,
-    Purchased,
-    Active,
+    Locked,
+    Unlocked,
 }
 
 #[derive(Clone, Debug)]
@@ -108,6 +109,24 @@ pub struct ToolboxItemWidget<'a> {
 }
 
 impl<'a> ToolboxItemWidget<'a> {
+    pub fn callback_item_touch_over(
+        _ui_component: &UIComponentInstance<'a>,
+        _touched_pos: &nalgebra::Vector2<f32>,
+        _touched_pos_delta: &nalgebra::Vector2<f32>,
+    ) -> bool {
+        get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
+        true
+    }
+
+    pub fn callback_item_select(
+        _ui_component: &UIComponentInstance<'a>,
+        _touched_pos: &nalgebra::Vector2<f32>,
+        _touched_pos_delta: &nalgebra::Vector2<f32>,
+    ) -> bool {
+        get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
+        true
+    }
+
     pub fn callback_item_action(
         ui_component: &UIComponentInstance<'a>,
         _touched_pos: &nalgebra::Vector2<f32>,
@@ -124,15 +143,20 @@ impl<'a> ToolboxItemWidget<'a> {
 
     pub fn toggle_state(&mut self) {
         match self._state {
-            ToolboxItemState::Unpurchased => {
+            ToolboxItemState::Locked => {
                 let cost = self._data.energy_cost;
                 if cost > 0 {
                     let current_energy_balls = get_game_ui_manager().get_item_count(ITEM_ENERGY_BALL);
                     if current_energy_balls >= cost {
                         if get_game_ui_manager_mut().remove_item(ITEM_ENERGY_BALL, cost) {
-                            self._state = ToolboxItemState::Purchased;
+                            self._state = ToolboxItemState::Unlocked;
+                            get_audio_manager_mut().play_audio_bank(
+                                AUDIO_QUEST_COMPLETE,
+                                AudioLoop::ONCE,
+                                None,
+                            );
                             log::info!(
-                                "[Toolbox] Purchased item: {} (Consumed {} EnergyBall(s))",
+                                "[Toolbox] Unlocked item: {} (Consumed {} EnergyBall(s))",
                                 self._data.icon_type.as_str(),
                                 cost
                             );
@@ -141,8 +165,13 @@ impl<'a> ToolboxItemWidget<'a> {
                             log::warn!("[Toolbox] Failed to remove EnergyBall from inventory");
                         }
                     } else {
+                        get_audio_manager_mut().play_audio_bank(
+                            AUDIO_PICKUP_ITEM,
+                            AudioLoop::ONCE,
+                            None,
+                        );
                         log::warn!(
-                            "[Toolbox] Cannot purchase {}: Needs {} EnergyBall(s), but only have {}",
+                            "[Toolbox] Cannot unlock {}: Needs {} EnergyBall(s), but only have {}",
                             self._data.icon_type.as_str(),
                             cost,
                             current_energy_balls
@@ -155,29 +184,21 @@ impl<'a> ToolboxItemWidget<'a> {
                         status_ui.set_font_color(get_color32(230, 80, 80, 255));
                     }
                 } else {
-                    self._state = ToolboxItemState::Purchased;
+                    self._state = ToolboxItemState::Unlocked;
+                    get_audio_manager_mut().play_audio_bank(
+                        AUDIO_QUEST_COMPLETE,
+                        AudioLoop::ONCE,
+                        None,
+                    );
                     log::info!(
-                        "[Toolbox] Purchased free item: {}",
+                        "[Toolbox] Unlocked free item: {}",
                         self._data.icon_type.as_str()
                     );
                     self.update_ui();
                 }
             }
-            ToolboxItemState::Purchased => {
-                self._state = ToolboxItemState::Active;
-                log::info!(
-                    "[Toolbox] Activated/Used item: {}",
-                    self._data.icon_type.as_str()
-                );
-                self.update_ui();
-            }
-            ToolboxItemState::Active => {
-                self._state = ToolboxItemState::Purchased;
-                log::info!(
-                    "[Toolbox] Deactivated item: {}",
-                    self._data.icon_type.as_str()
-                );
-                self.update_ui();
+            ToolboxItemState::Unlocked => {
+                // Item is already unlocked
             }
         }
     }
@@ -187,29 +208,24 @@ impl<'a> ToolboxItemWidget<'a> {
         let btn_ui = ptr_as_mut(self._action_btn.as_ref()).get_ui_component_mut();
 
         match self._state {
-            ToolboxItemState::Unpurchased => {
-                status_ui.set_text("Status: Not Owned");
+            ToolboxItemState::Locked => {
+                status_ui.set_text("Status: Locked");
                 status_ui.set_font_color(get_color32(150, 150, 150, 255));
 
-                btn_ui.set_text(&format!("Buy ({})", self._data.cost_label()));
+                btn_ui.set_text(&format!("Unlock ({})", self._data.cost_label()));
                 btn_ui.set_color(get_color32(65, 65, 65, 255)); // Dark Gray
                 btn_ui.set_border_color(get_color32(100, 100, 100, 255));
+                btn_ui.set_renderable(true);
+                btn_ui.set_touchable(true);
+                btn_ui.set_enable(true);
             }
-            ToolboxItemState::Purchased => {
-                status_ui.set_text("Status: Owned");
-                status_ui.set_font_color(get_color32(190, 190, 190, 255));
+            ToolboxItemState::Unlocked => {
+                status_ui.set_text("Status: Unlocked");
+                status_ui.set_font_color(get_color32(100, 210, 120, 255));
 
-                btn_ui.set_text("Use");
-                btn_ui.set_color(get_color32(100, 100, 100, 255)); // Medium Gray
-                btn_ui.set_border_color(get_color32(140, 140, 140, 255));
-            }
-            ToolboxItemState::Active => {
-                status_ui.set_text("Status: Active");
-                status_ui.set_font_color(get_color32(230, 230, 230, 255));
-
-                btn_ui.set_text("In Use");
-                btn_ui.set_color(get_color32(145, 145, 145, 255)); // Light Gray Highlight
-                btn_ui.set_border_color(get_color32(185, 185, 185, 255));
+                btn_ui.set_renderable(false);
+                btn_ui.set_touchable(false);
+                btn_ui.set_enable(false);
             }
         }
     }
@@ -237,6 +253,9 @@ impl<'a> ToolboxItemWidget<'a> {
         ui.set_border(1.0);
         ui.set_round(8.0);
         ui.set_margin(5.0);
+        ui.set_touchable(true);
+        ui.set_callback_touch_over(Some(Box::new(Self::callback_item_touch_over)));
+        ui.set_callback_touch_down(Some(Box::new(Self::callback_item_select)));
         parent_widget.add_widget(&layout);
 
         // Icon display (Gray tone)
@@ -317,13 +336,13 @@ impl<'a> ToolboxItemWidget<'a> {
         ui.set_valign(VerticalAlign::CENTER);
         ui.set_size_hint_x(Some(1.0));
         ui.set_size_y(20.0);
-        ui.set_text("Status: Not Owned");
+        ui.set_text("Status: Locked");
         ui.set_font_size(14.0);
         ui.set_font_color(get_color32(150, 150, 150, 255));
         ui.set_renderable(false);
         info_mut.add_widget(&status_label);
 
-        // Action button (Buy / Use)
+        // Action button (Unlock)
         let action_btn = UIManager::create_widget(
             &format!("item_action_{}", data.id),
             UIWidgetTypes::Default,
@@ -337,10 +356,11 @@ impl<'a> ToolboxItemWidget<'a> {
         ui.set_border(2.0);
         ui.set_round(6.0);
         ui.set_margin(10.0);
-        ui.set_text(&format!("Buy ({})", data.cost_label()));
+        ui.set_text(&format!("Unlock ({})", data.cost_label()));
         ui.set_font_size(18.0);
         ui.set_font_color(get_color32(230, 230, 230, 255));
         ui.set_touchable(true);
+        ui.set_callback_touch_over(Some(Box::new(Self::callback_item_touch_over)));
         ui.set_callback_touch_down(Some(Box::new(Self::callback_item_action)));
         layout_mut.add_widget(&action_btn);
 
@@ -348,7 +368,7 @@ impl<'a> ToolboxItemWidget<'a> {
             _layout: layout,
             _status_label: status_label,
             _action_btn: action_btn,
-            _state: ToolboxItemState::Unpurchased,
+            _state: ToolboxItemState::Locked,
             _data: data,
         });
 
@@ -443,6 +463,9 @@ impl<'a> ToolboxTabWidget<'a> {
             for item in self._items.iter_mut() {
                 let item_ptr = item.as_ref() as *const ToolboxItemWidget<'a> as *const c_void;
                 ptr_as_mut(item._action_btn.as_ref())
+                    .get_ui_component_mut()
+                    .set_user_data(item_ptr);
+                ptr_as_mut(item._layout.as_ref())
                     .get_ui_component_mut()
                     .set_user_data(item_ptr);
             }
