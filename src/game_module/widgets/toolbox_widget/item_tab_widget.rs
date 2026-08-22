@@ -1,3 +1,5 @@
+use crate::game_module::game_constants::ITEM_ENERGY_BALL;
+use crate::game_module::game_service_locator::{get_game_ui_manager, get_game_ui_manager_mut};
 use rust_engine_3d::scene::ui::{
     HorizontalAlign, Orientation, UIComponentInstance, UILayoutType, UIManager, UIWidgetTypes,
     VerticalAlign, WidgetDefault,
@@ -9,7 +11,7 @@ use std::rc::Rc;
 
 const ITEM_ROW_HEIGHT: f32 = 90.0;
 const ITEM_ICON_SIZE: f32 = 70.0;
-const ACTION_BUTTON_WIDTH: f32 = 120.0;
+const ACTION_BUTTON_WIDTH: f32 = 130.0;
 const ACTION_BUTTON_HEIGHT: f32 = 40.0;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
@@ -82,7 +84,19 @@ pub struct ToolboxItemData {
     pub id: String,
     pub icon_type: ToolboxIconType,
     pub description: String,
-    pub cost: String,
+    pub energy_cost: usize,
+}
+
+impl ToolboxItemData {
+    pub fn cost_label(&self) -> String {
+        if self.energy_cost == 0 {
+            "Free".to_string()
+        } else if self.energy_cost == 1 {
+            "1 Energy".to_string()
+        } else {
+            format!("{} Energy", self.energy_cost)
+        }
+    }
 }
 
 pub struct ToolboxItemWidget<'a> {
@@ -111,12 +125,43 @@ impl<'a> ToolboxItemWidget<'a> {
     pub fn toggle_state(&mut self) {
         match self._state {
             ToolboxItemState::Unpurchased => {
-                self._state = ToolboxItemState::Purchased;
-                log::info!(
-                    "[Toolbox] Purchased item: {} ({})",
-                    self._data.icon_type.as_str(),
-                    self._data.cost
-                );
+                let cost = self._data.energy_cost;
+                if cost > 0 {
+                    let current_energy_balls = get_game_ui_manager().get_item_count(ITEM_ENERGY_BALL);
+                    if current_energy_balls >= cost {
+                        if get_game_ui_manager_mut().remove_item(ITEM_ENERGY_BALL, cost) {
+                            self._state = ToolboxItemState::Purchased;
+                            log::info!(
+                                "[Toolbox] Purchased item: {} (Consumed {} EnergyBall(s))",
+                                self._data.icon_type.as_str(),
+                                cost
+                            );
+                            self.update_ui();
+                        } else {
+                            log::warn!("[Toolbox] Failed to remove EnergyBall from inventory");
+                        }
+                    } else {
+                        log::warn!(
+                            "[Toolbox] Cannot purchase {}: Needs {} EnergyBall(s), but only have {}",
+                            self._data.icon_type.as_str(),
+                            cost,
+                            current_energy_balls
+                        );
+                        let status_ui = ptr_as_mut(self._status_label.as_ref()).get_ui_component_mut();
+                        status_ui.set_text(&format!(
+                            "Need {} EnergyBall (Have {})",
+                            cost, current_energy_balls
+                        ));
+                        status_ui.set_font_color(get_color32(230, 80, 80, 255));
+                    }
+                } else {
+                    self._state = ToolboxItemState::Purchased;
+                    log::info!(
+                        "[Toolbox] Purchased free item: {}",
+                        self._data.icon_type.as_str()
+                    );
+                    self.update_ui();
+                }
             }
             ToolboxItemState::Purchased => {
                 self._state = ToolboxItemState::Active;
@@ -124,6 +169,7 @@ impl<'a> ToolboxItemWidget<'a> {
                     "[Toolbox] Activated/Used item: {}",
                     self._data.icon_type.as_str()
                 );
+                self.update_ui();
             }
             ToolboxItemState::Active => {
                 self._state = ToolboxItemState::Purchased;
@@ -131,9 +177,9 @@ impl<'a> ToolboxItemWidget<'a> {
                     "[Toolbox] Deactivated item: {}",
                     self._data.icon_type.as_str()
                 );
+                self.update_ui();
             }
         }
-        self.update_ui();
     }
 
     pub fn update_ui(&mut self) {
@@ -145,7 +191,7 @@ impl<'a> ToolboxItemWidget<'a> {
                 status_ui.set_text("Status: Not Owned");
                 status_ui.set_font_color(get_color32(150, 150, 150, 255));
 
-                btn_ui.set_text(&format!("Buy ({})", self._data.cost));
+                btn_ui.set_text(&format!("Buy ({})", self._data.cost_label()));
                 btn_ui.set_color(get_color32(65, 65, 65, 255)); // Dark Gray
                 btn_ui.set_border_color(get_color32(100, 100, 100, 255));
             }
@@ -291,7 +337,7 @@ impl<'a> ToolboxItemWidget<'a> {
         ui.set_border(2.0);
         ui.set_round(6.0);
         ui.set_margin(10.0);
-        ui.set_text(&format!("Buy ({})", data.cost));
+        ui.set_text(&format!("Buy ({})", data.cost_label()));
         ui.set_font_size(18.0);
         ui.set_font_color(get_color32(230, 230, 230, 255));
         ui.set_touchable(true);

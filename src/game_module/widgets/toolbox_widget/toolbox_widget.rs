@@ -265,7 +265,7 @@ impl<'a> ToolboxWidget<'a> {
         ui.set_margin(4.0);
         layer_mut.add_widget(&content);
 
-        // Build content panes for each tab with items using ToolboxIconType enum
+        // Build content panes for each tab with items requiring EnergyBall
         let skill_tab = ToolboxTabWidget::create(
             "skill",
             "Skill List",
@@ -275,13 +275,13 @@ impl<'a> ToolboxWidget<'a> {
                     id: "skill_hand".to_string(),
                     icon_type: ToolboxIconType::HandSkill,
                     description: "Passive hand-based crafting skill".to_string(),
-                    cost: "Free".to_string(),
+                    energy_cost: 0,
                 },
                 ToolboxItemData {
                     id: "skill_gather".to_string(),
                     icon_type: ToolboxIconType::QuickGather,
                     description: "Increases resource gathering speed".to_string(),
-                    cost: "100 Gold".to_string(),
+                    energy_cost: 1,
                 },
             ],
         );
@@ -294,13 +294,13 @@ impl<'a> ToolboxWidget<'a> {
                     id: "arch_shelter".to_string(),
                     icon_type: ToolboxIconType::StoneShelter,
                     description: "Basic stone shelter structure for protection".to_string(),
-                    cost: "200 Gold".to_string(),
+                    energy_cost: 2,
                 },
                 ToolboxItemData {
                     id: "arch_tower".to_string(),
                     icon_type: ToolboxIconType::Watchtower,
                     description: "Provides high elevation view of surrounding area".to_string(),
-                    cost: "500 Gold".to_string(),
+                    energy_cost: 3,
                 },
             ],
         );
@@ -313,13 +313,13 @@ impl<'a> ToolboxWidget<'a> {
                     id: "cook_roast".to_string(),
                     icon_type: ToolboxIconType::RoastMeat,
                     description: "Restores HP and Stamina when consumed".to_string(),
-                    cost: "50 Gold".to_string(),
+                    energy_cost: 1,
                 },
                 ToolboxItemData {
                     id: "cook_soup".to_string(),
                     icon_type: ToolboxIconType::FishSoup,
                     description: "Nutritious soup offering temporary stat buff".to_string(),
-                    cost: "80 Gold".to_string(),
+                    energy_cost: 1,
                 },
             ],
         );
@@ -332,13 +332,13 @@ impl<'a> ToolboxWidget<'a> {
                     id: "craft_axe".to_string(),
                     icon_type: ToolboxIconType::StoneAxe,
                     description: "Essential harvesting tool for wood and stone".to_string(),
-                    cost: "150 Gold".to_string(),
+                    energy_cost: 1,
                 },
                 ToolboxItemData {
                     id: "craft_table".to_string(),
                     icon_type: ToolboxIconType::Worktable,
                     description: "Unlocks advanced recipe crafting".to_string(),
-                    cost: "300 Gold".to_string(),
+                    energy_cost: 2,
                 },
             ],
         );
@@ -351,13 +351,13 @@ impl<'a> ToolboxWidget<'a> {
                     id: "vehicle_cart".to_string(),
                     icon_type: ToolboxIconType::WoodenCart,
                     description: "Transport vehicle that increases movement speed".to_string(),
-                    cost: "300 Gold".to_string(),
+                    energy_cost: 2,
                 },
                 ToolboxItemData {
                     id: "vehicle_mammoth".to_string(),
                     icon_type: ToolboxIconType::RidingMammoth,
                     description: "Heavy mount capable of carrying large loads".to_string(),
-                    cost: "1000 Gold".to_string(),
+                    energy_cost: 5,
                 },
             ],
         );
@@ -370,13 +370,13 @@ impl<'a> ToolboxWidget<'a> {
                     id: "weapon_spear".to_string(),
                     icon_type: ToolboxIconType::FlintSpear,
                     description: "Sharp melee weapon for hunting and battle".to_string(),
-                    cost: "250 Gold".to_string(),
+                    energy_cost: 2,
                 },
                 ToolboxItemData {
                     id: "weapon_bow".to_string(),
                     icon_type: ToolboxIconType::HuntingBow,
                     description: "Ranged weapon for distant targets".to_string(),
-                    cost: "400 Gold".to_string(),
+                    energy_cost: 3,
                 },
             ],
         );
@@ -389,13 +389,13 @@ impl<'a> ToolboxWidget<'a> {
                     id: "defense_armor".to_string(),
                     icon_type: ToolboxIconType::LeatherArmor,
                     description: "Protective armor that increases defense stat".to_string(),
-                    cost: "180 Gold".to_string(),
+                    energy_cost: 2,
                 },
                 ToolboxItemData {
                     id: "defense_shield".to_string(),
                     icon_type: ToolboxIconType::BoneShield,
                     description: "Sturdy shield for blocking physical attacks".to_string(),
-                    cost: "220 Gold".to_string(),
+                    energy_cost: 2,
                 },
             ],
         );
