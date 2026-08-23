@@ -1,5 +1,5 @@
 use crate::game_module::actors::character::CharacterCreateInfo;
-use crate::game_module::game_constants::{AUDIO_ITEM_INVENTORY, AUDIO_QUEST_COMPLETE, ITEM_ENERGY_BALL};
+use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, AUDIO_QUEST_COMPLETE, ITEM_ENERGY_BALL};
 use crate::game_module::game_service_locator::{
     get_character_manager, get_character_manager_mut, get_game_scene_manager, get_game_ui_manager,
     get_game_ui_manager_mut,
@@ -170,7 +170,7 @@ impl<'a> ToolboxItemWidget<'a> {
         _touched_pos: &nalgebra::Vector2<f32>,
         _touched_pos_delta: &nalgebra::Vector2<f32>,
     ) -> bool {
-        get_audio_manager_mut().play_audio_bank(AUDIO_ITEM_INVENTORY, AudioLoop::ONCE, None);
+        get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
         true
     }
 
@@ -179,7 +179,7 @@ impl<'a> ToolboxItemWidget<'a> {
         _touched_pos: &nalgebra::Vector2<f32>,
         _touched_pos_delta: &nalgebra::Vector2<f32>,
     ) -> bool {
-        get_audio_manager_mut().play_audio_bank(AUDIO_ITEM_INVENTORY, AudioLoop::ONCE, None);
+        get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
         true
     }
 
@@ -220,7 +220,7 @@ impl<'a> ToolboxItemWidget<'a> {
                             log::warn!("[Toolbox] Failed to remove EnergyBall from inventory");
                         }
                     } else {
-                        get_audio_manager_mut().play_audio_bank(AUDIO_ITEM_INVENTORY, AudioLoop::ONCE, None);
+                        get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
                         log::warn!(
                             "[Toolbox] Cannot unlock {}: Needs {} EnergyBall(s), but only have {}",
                             self._data.icon_type.as_str(),

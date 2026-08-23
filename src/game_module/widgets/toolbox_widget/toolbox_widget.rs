@@ -1,5 +1,5 @@
 use crate::game_module::actors::character::Character;
-use crate::game_module::game_constants::AUDIO_ITEM_INVENTORY;
+use crate::game_module::game_constants::AUDIO_PICKUP_ITEM;
 use crate::game_module::widgets::toolbox_widget::item_tab_widget::{
     ToolboxIconType, ToolboxItemData, ToolboxItemState, ToolboxTabWidget,
 };
@@ -697,7 +697,7 @@ impl<'a> ToolboxWidget<'a> {
                 } else {
                     self._selected_item_index -= 1;
                 }
-                get_audio_manager_mut().play_audio_bank(AUDIO_ITEM_INVENTORY, AudioLoop::ONCE, None);
+                get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
                 self.update_item_selection();
             } else if move_down {
                 if self._selected_item_index + 1 >= item_count {
@@ -705,7 +705,7 @@ impl<'a> ToolboxWidget<'a> {
                 } else {
                     self._selected_item_index += 1;
                 }
-                get_audio_manager_mut().play_audio_bank(AUDIO_ITEM_INVENTORY, AudioLoop::ONCE, None);
+                get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
                 self.update_item_selection();
             }
         }
