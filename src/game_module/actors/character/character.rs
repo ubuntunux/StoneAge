@@ -697,7 +697,12 @@ impl<'a> Character<'a> {
     }
 
     pub fn add_intimacy(&mut self, intimacy: f32) {
+        let old_tier = get_affinity_tier(self.get_intimacy());
         self._character_stats.add_intimacy(intimacy);
+        let new_tier = get_affinity_tier(self.get_intimacy());
+        if old_tier < AffinityTier::Friend && new_tier >= AffinityTier::Friend {
+            get_game_ui_manager_mut().notify_friend_made();
+        }
     }
 
     pub fn is_following_intimacy(&self) -> bool {
@@ -1048,6 +1053,9 @@ impl<'a> Character<'a> {
     }
 
     pub fn set_dead(&mut self) {
+        if self._is_player {
+            get_game_ui_manager_mut().notify_player_died();
+        }
         self._character_stats._is_alive = false;
         self._character_stats._corpse_hit_count = MAX_CORPSE_HIT_COUNT;
         self._dead_time = 0.0;
@@ -1167,6 +1175,7 @@ impl<'a> Character<'a> {
                     item_manager.create_item(item_create_info._item_data_name.as_str(), &item_create_info, None);
 
                     character.borrow_mut().tame();
+                    get_game_ui_manager_mut().notify_tamed();
 
                     self._controller.remove_interaction_object(InteractionObject::Taming(character.clone()));
                     self._controller.remove_interaction_object(InteractionObject::Farming(character.clone()));

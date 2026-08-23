@@ -199,3 +199,8 @@ pub const ITEM_MEAT: &str = "items/meat";
 
 // props
 pub const DEFAULT_GATE_NAME: &str = "gate";
+
+// Record Constants
+pub const RECORD_DEFAULT_INCREMENT: u32 = 1;
+pub const RECORD_ITEM_TYPES_PER_ROW: usize = 3;
+pub const RECORD_MONSTER_KILLS_PER_ROW: usize = 2;

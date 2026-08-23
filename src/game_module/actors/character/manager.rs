@@ -525,6 +525,8 @@ impl<'a> CharacterManager<'a> {
                                 );
 
                                 if !target_character_mut.is_alive() {
+                                    let char_name = target_character_mut._character_data_name.clone();
+                                    get_game_ui_manager_mut().notify_monster_killed(&char_name);
                                     dead_characters.push(target_character.clone());
                                 }
                             } else if target_character_mut.is_corpse() {
@@ -561,6 +563,8 @@ impl<'a> CharacterManager<'a> {
                                 );
 
                                 if !target_character_mut.is_alive() {
+                                    let char_name = target_character_mut._character_data_name.clone();
+                                    get_game_ui_manager_mut().notify_monster_killed(&char_name);
                                     dead_characters.push(target_character.clone());
                                 }
                             }

@@ -255,6 +255,7 @@ impl<'a> GameSceneManager<'a> {
         }
 
         let game_ui_manager = get_game_ui_manager_mut();
+        game_ui_manager._player_records = game_save_data._player_records.clone();
         game_ui_manager.set_controls_visibility(game_save_data._is_controls_visible);
         game_ui_manager.load_unlocked_toolbox_items(&game_save_data._unlocked_toolbox_items);
         game_ui_manager.set_last_opened_toolbox_tab(&game_save_data._last_opened_toolbox_tab);
@@ -300,6 +301,7 @@ impl<'a> GameSceneManager<'a> {
         game_save_data._is_controls_visible = get_game_ui_manager().get_controls_visibility();
         game_save_data._unlocked_toolbox_items = get_game_ui_manager().get_unlocked_toolbox_items();
         game_save_data._last_opened_toolbox_tab = get_game_ui_manager().get_last_opened_toolbox_tab();
+        game_save_data._player_records = get_game_ui_manager()._player_records.clone();
 
         game_save_data._game_scenes.insert(
             self.get_current_game_scene_data_name().clone(),
@@ -443,6 +445,8 @@ impl<'a> GameSceneManager<'a> {
         if let Some(game_scene_data) = self._current_game_scene_data.as_ref() {
             get_scene_manager_mut().create_scene_data(&game_scene_data.borrow()._scene);
         }
+
+        get_game_ui_manager_mut().notify_map_visited(game_scene_data_name);
 
         self.set_next_game_scene_state(GameSceneState::Loading);
     }

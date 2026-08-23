@@ -1,7 +1,10 @@
 use crate::game_module::actors::character::{ActorWrapper, Character};
 use crate::game_module::actors::items::ItemDataType;
-use crate::game_module::game_constants::MATERIAL_INTRO_IMAGE;
-use crate::game_module::game_service_locator::{get_character_manager, get_game_scene_manager};
+use crate::game_module::game_constants::{
+    ITEM_ENERGY_BALL, ITEM_SPIRIT_BALL, MATERIAL_INTRO_IMAGE, RECORD_DEFAULT_INCREMENT,
+};
+use crate::game_module::game_service_locator::{get_character_manager, get_game_resources, get_game_scene_manager};
+use crate::game_module::save_data::save_data::PlayerRecords;
 use crate::game_module::widgets::controller_help::ControllerHelpWidget;
 use crate::game_module::widgets::cross_hair_widget::CrossHairWidget;
 use crate::game_module::widgets::debug_ui_widget::DebugUIWidget;
@@ -55,6 +58,7 @@ pub struct GameUIManager<'a> {
     pub _debug_ui_widget: Option<Box<DebugUIWidget<'a>>>,
     pub _window_size: Vector2<i32>,
     pub _need_to_refresh: bool,
+    pub _player_records: PlayerRecords,
 }
 
 impl<'a> EditorUIManager<'a> {
@@ -132,6 +136,7 @@ impl<'a> GameUIManager<'a> {
             _debug_ui_widget: None,
             _window_size: Vector2::new(0, 0),
             _need_to_refresh: true,
+            _player_records: PlayerRecords::default(),
         })
     }
 
@@ -220,11 +225,16 @@ impl<'a> GameUIManager<'a> {
         self.set_cross_hair_visible(false);
     }
 
+    pub fn clear_player_records(&mut self) {
+        self._player_records.reset();
+    }
+
     pub fn clear_game_ui(&mut self) {
         self.clear_inventory_items();
         self.clear_quests();
         self.clear_text_box_widgets();
         self.set_controls_visibility(true);
+        self.clear_player_records();
     }
 
     pub fn get_game_ui_layout(&self) -> *const WidgetDefault<'a> {
@@ -396,18 +406,65 @@ impl<'a> GameUIManager<'a> {
 
     pub fn add_item(&mut self, item_data_name: &str, item_count: usize, show_notification: bool) -> bool {
         let result = self._item_bar_widget.as_mut().unwrap().add_item(item_data_name, item_count);
-        if result && show_notification {
-            if let Some(notification_widget) = self._item_acquire_notification_widget.as_mut() {
-                notification_widget.notify_item_acquired(item_data_name);
-            }
+        if result {
+            self.notify_item_acquired(item_data_name, item_count as u32, show_notification);
         }
         result
     }
 
-    pub fn notify_item_acquired(&mut self, item_data_name: &str) {
-        if let Some(notification_widget) = self._item_acquire_notification_widget.as_mut() {
-            notification_widget.notify_item_acquired(item_data_name);
+    pub fn get_player_records(&self) -> &PlayerRecords {
+        &self._player_records
+    }
+
+    pub fn get_player_records_mut(&mut self) -> &mut PlayerRecords {
+        &mut self._player_records
+    }
+
+    pub fn notify_item_acquired(&mut self, item_data_name: &str, amount: u32, show_notification: bool) {
+        self._player_records.add_item_count(amount);
+
+        let game_resources = get_game_resources();
+        if game_resources.has_item_data(item_data_name) {
+            let item_type = game_resources.get_item_data(item_data_name).borrow()._item_type;
+            let item_type_str = format!("{:?}", item_type);
+            self._player_records.add_item_type_count(&item_type_str, amount);
         }
+
+        if item_data_name.contains("energy_ball") || item_data_name == ITEM_ENERGY_BALL {
+            self._player_records.add_energy_balls(amount);
+        } else if item_data_name.contains("spirit_ball") || item_data_name == ITEM_SPIRIT_BALL {
+            self._player_records.add_spirit_balls(amount);
+        }
+
+        if show_notification {
+            if let Some(notification_widget) = self._item_acquire_notification_widget.as_mut() {
+                notification_widget.notify_item_acquired(item_data_name);
+            }
+        }
+    }
+
+    pub fn notify_item_crafted(&mut self) {
+        self._player_records.add_craft_count(RECORD_DEFAULT_INCREMENT);
+    }
+
+    pub fn notify_player_died(&mut self) {
+        self._player_records.add_death_count(RECORD_DEFAULT_INCREMENT);
+    }
+
+    pub fn notify_monster_killed(&mut self, monster_data_name: &str) {
+        self._player_records.add_monster_kill(monster_data_name);
+    }
+
+    pub fn notify_tamed(&mut self) {
+        self._player_records.add_taming_count(RECORD_DEFAULT_INCREMENT);
+    }
+
+    pub fn notify_friend_made(&mut self) {
+        self._player_records.add_friend_count(RECORD_DEFAULT_INCREMENT);
+    }
+
+    pub fn notify_map_visited(&mut self, map_name: &str) {
+        self._player_records.record_map_visit(map_name);
     }
 
     pub fn get_inventory_item_create_infos(&self) -> InventoryItemCreateInfoList {
