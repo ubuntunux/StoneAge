@@ -344,6 +344,12 @@ impl<'a> ToolboxWidget<'a> {
                     description: "Unlocks advanced recipe crafting".to_string(),
                     energy_cost: 2,
                 },
+                ToolboxItemData {
+                    id: "craft_campfire".to_string(),
+                    icon_type: ToolboxIconType::Campfire,
+                    description: "Provides light, warmth, and cooking capability".to_string(),
+                    energy_cost: 1,
+                },
             ],
         );
         let vehicle_tab = ToolboxTabWidget::create(
