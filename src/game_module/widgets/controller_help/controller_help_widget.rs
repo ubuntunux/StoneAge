@@ -7,7 +7,7 @@ use crate::game_module::widgets::key_binding_widget::{
     KeyBindingWidgetMap,
 };
 use crate::game_module::widgets::key_binding_widget::{KEY_BINDING_UI_SIZE, KeyBindingWidget};
-use nalgebra::Vector2;
+use nalgebra::{Vector2, Vector3};
 use rust_engine_3d::core::engine_service_locator::{get_engine_resources, get_scene_manager};
 use rust_engine_3d::scene::material_instance::MaterialInstanceData;
 use rust_engine_3d::scene::ui::{
@@ -19,6 +19,15 @@ use std::ffi::c_void;
 use std::rc::Rc;
 
 const MAIN_LAYOUT_MARGIN: f32 = 10.0;
+
+struct ActiveInteractionContext {
+    is_corpse: bool,
+    primary_type: KeyBindingType,
+    primary_text: String,
+    request_text: Option<String>,
+    position: Vector3<f32>,
+    object_key: *const c_void,
+}
 
 pub fn create_player_control_key_binding_widget<'a>(
     parent_widget: &mut WidgetDefault<'a>,
@@ -346,77 +355,112 @@ impl<'a> ControllerHelpWidget<'a> {
 
     pub fn changed_window_size(&mut self, _window_size: &Vector2<i32>) {}
 
-    pub fn update_interaction_widget(&mut self) {
-        let interaction_key_binding_widget_map = ptr_as_mut(self._interaction_key_binding_widget_map.as_ref());
-        let mut matched_key_binding_type = KeyBindingType::None;
-        let mut interaction_name: String = String::new();
-        let mut request_name: String = String::new();
-        let mut is_request_enabled = false;
-        let mut is_corpse_interaction = false;
-        let character_manager = get_character_manager();
-        if character_manager.is_valid_player() {
-            let player = character_manager.get_player().borrow();
-            if player.is_in_interaction_range() {
-                is_corpse_interaction = player._controller._interaction_objects.values().any(|obj| {
-                    matches!(obj, InteractionObject::Taming(_)) || matches!(obj, InteractionObject::Farming(_))
-                });
+    fn is_player_interaction_disabled(player: &crate::game_module::actors::character::Character) -> bool {
+        !player.is_alive()
+            || player.is_action(ActionAnimationState::Sleep)
+            || player.is_action(ActionAnimationState::SleepNoSnoring)
+            || player.is_action(ActionAnimationState::LayingDown)
+            || player.is_action(ActionAnimationState::WakeUp)
+    }
 
-                if !is_corpse_interaction {
-                    let interaction_object = player.get_nearest_interaction_object();
-                    (matched_key_binding_type, interaction_name) = match interaction_object {
-                        InteractionObject::PropBed(_) => (KeyBindingType::Interaction, String::from("Wrap up the day")),
-                        InteractionObject::PropPickup(prop) => (
-                            KeyBindingType::Interaction,
-                            format!("Pick up a {}", prop.borrow()._prop_data.borrow()._name.as_str()),
-                        ),
-                        InteractionObject::PropMonolith(_) => {
-                            (KeyBindingType::Interaction, String::from("Open Toolbox"))
-                        }
-                        InteractionObject::PropTable(_) => (KeyBindingType::Interaction, String::from("Sit Down")),
-                        InteractionObject::Npc(npc) => {
-                            let npc_borrow = npc.borrow();
-                            if let Some(req_str) = npc_borrow.get_request_name() {
-                                is_request_enabled = true;
-                                request_name = String::from(req_str);
-                            }
+    fn evaluate_interaction_context(
+        &self,
+        player: &crate::game_module::actors::character::Character<'a>,
+    ) -> Option<ActiveInteractionContext> {
+        let is_corpse = player._controller._interaction_objects.values().any(|obj| {
+            matches!(obj, InteractionObject::Taming(_)) || matches!(obj, InteractionObject::Farming(_))
+        });
 
-                            if player.get_attached_item_data_type().is_eatable() {
-                                (
-                                    KeyBindingType::Interaction,
-                                    format!(
-                                        "Give a {} to {}",
-                                        player
-                                            .get_attached_item()
-                                            .as_ref()
-                                            .unwrap()
-                                            .borrow()
-                                            ._item_data
-                                            .borrow()
-                                            ._name
-                                            .as_str(),
-                                        npc_borrow._character_data.borrow()._name.as_str()
-                                    ),
-                                )
-                            } else {
-                                (
-                                    KeyBindingType::Interaction,
-                                    format!(
-                                        "Interaction with {}",
-                                        npc_borrow._character_data.borrow()._name.as_str()
-                                    ),
-                                )
-                            }
-                        }
-                        InteractionObject::PropGate(_) => (KeyBindingType::None, String::from("Enter Gate")),
-                        InteractionObject::PropGathering(prop) => (
-                            KeyBindingType::Gathering,
-                            format!("Hit the {}", prop.borrow()._prop_data.borrow()._name.as_str()),
-                        ),
-                        _ => (KeyBindingType::Interaction, String::from("interaction")),
-                    };
-                }
-            }
+        if is_corpse {
+            let corpse_obj = player._controller._interaction_objects.values().find(|obj| {
+                matches!(obj, InteractionObject::Taming(_)) || matches!(obj, InteractionObject::Farming(_))
+            })?;
+            return Some(ActiveInteractionContext {
+                is_corpse: true,
+                primary_type: KeyBindingType::None,
+                primary_text: String::new(),
+                request_text: None,
+                position: corpse_obj.get_position(),
+                object_key: corpse_obj.get_key(),
+            });
         }
+
+        let interaction_object = player.get_nearest_interaction_object();
+        let position = interaction_object.get_position();
+        let object_key = interaction_object.get_key();
+
+        let (primary_type, primary_text, request_text) = match interaction_object {
+            InteractionObject::PropBed(_) => (KeyBindingType::Interaction, String::from("Wrap up the day"), None),
+            InteractionObject::PropPickup(prop) => (
+                KeyBindingType::Interaction,
+                format!("Pick up a {}", prop.borrow()._prop_data.borrow()._name.as_str()),
+                None,
+            ),
+            InteractionObject::PropMonolith(_) => (KeyBindingType::Interaction, String::from("Open Toolbox"), None),
+            InteractionObject::PropTable(_) => (KeyBindingType::Interaction, String::from("Sit Down"), None),
+            InteractionObject::Npc(npc) => {
+                let npc_borrow = npc.borrow();
+                let request = npc_borrow.get_request_name().map(String::from);
+                let text = if player.get_attached_item_data_type().is_eatable() {
+                    let item_name = player
+                        .get_attached_item()
+                        .as_ref()
+                        .map(|i| i.borrow()._item_data.borrow()._name.clone())
+                        .unwrap_or_default();
+                    format!("Give a {} to {}", item_name, npc_borrow._character_data.borrow()._name)
+                } else {
+                    format!("Interaction with {}", npc_borrow._character_data.borrow()._name)
+                };
+                (KeyBindingType::Interaction, text, request)
+            }
+            InteractionObject::PropGate(_) => (KeyBindingType::None, String::from("Enter Gate"), None),
+            InteractionObject::PropGathering(prop) => (
+                KeyBindingType::Gathering,
+                format!("Hit the {}", prop.borrow()._prop_data.borrow()._name.as_str()),
+                None,
+            ),
+            _ => (KeyBindingType::Interaction, String::from("interaction"), None),
+        };
+
+        Some(ActiveInteractionContext {
+            is_corpse: false,
+            primary_type,
+            primary_text,
+            request_text,
+            position,
+            object_key,
+        })
+    }
+
+    pub fn update_interaction_widget(&mut self) {
+        let character_manager = get_character_manager();
+        if !character_manager.is_valid_player() {
+            self.hide_all_interaction_widgets();
+            return;
+        }
+
+        let player = character_manager.get_player().borrow();
+        if Self::is_player_interaction_disabled(&player) || !player.is_in_interaction_range() {
+            self.hide_all_interaction_widgets();
+            return;
+        }
+
+        let context = match self.evaluate_interaction_context(&player) {
+            Some(ctx) => ctx,
+            None => {
+                self.hide_all_interaction_widgets();
+                return;
+            }
+        };
+
+        self._last_interaction_object_key = context.object_key;
+
+        // Calculate screen-space position once per update
+        let main_camera = get_scene_manager().get_main_camera();
+        let screen_pos = main_camera.convert_world_to_screen(&context.position, true)
+            / rust_engine_3d::scene::ui::get_global_dpi_scale();
+
+        let widget_map = ptr_as_mut(self._interaction_key_binding_widget_map.as_ref());
 
         const INTERACTION_WIDGETS: [KeyBindingType; 6] = [
             KeyBindingType::Interaction,
@@ -426,85 +470,52 @@ impl<'a> ControllerHelpWidget<'a> {
             KeyBindingType::Taming,
             KeyBindingType::Farming,
         ];
-        for key_binding_type in INTERACTION_WIDGETS.iter() {
-            let mut enable_interaction = true;
-            if character_manager.is_valid_player() {
-                let player = character_manager.get_player().borrow();
-                if !player.is_alive()
-                    || player.is_action(ActionAnimationState::Sleep)
-                    || player.is_action(ActionAnimationState::SleepNoSnoring)
-                    || player.is_action(ActionAnimationState::LayingDown)
-                    || player.is_action(ActionAnimationState::WakeUp)
-                {
-                    enable_interaction = false;
-                }
-            }
 
-            let interaction_key_binding_widget =
-                interaction_key_binding_widget_map.get_key_binding_widget(*key_binding_type);
-            let interaction_widget = ptr_as_mut(interaction_key_binding_widget._layout_widget);
+        for key_type in INTERACTION_WIDGETS.iter() {
+            let key_widget = widget_map.get_key_binding_widget(*key_type);
+            let layout_widget = ptr_as_mut(key_widget._layout_widget);
 
-            if enable_interaction
-                && is_corpse_interaction
-                && (*key_binding_type == KeyBindingType::Taming || *key_binding_type == KeyBindingType::Farming)
-            {
-                let player = character_manager.get_player().borrow();
-                let corpse_obj = player._controller._interaction_objects.values().find(|obj| {
-                    matches!(obj, InteractionObject::Taming(_)) || matches!(obj, InteractionObject::Farming(_))
-                });
-                if let Some(corpse_obj) = corpse_obj {
-                    let position = corpse_obj.get_position();
-                    let main_camera = get_scene_manager().get_main_camera();
-                    let screen_position = main_camera.convert_world_to_screen(&position, true)
-                        / rust_engine_3d::scene::ui::get_global_dpi_scale();
-                    let offset_y = if *key_binding_type == KeyBindingType::Taming {
-                        -25.0
-                    } else {
-                        25.0
-                    };
-                    interaction_widget._ui_component.set_pos(screen_position.x, screen_position.y + offset_y);
-                    interaction_widget._ui_component.set_visible(true);
-                    let label = if *key_binding_type == KeyBindingType::Taming {
-                        "Taming"
-                    } else {
-                        "Farming"
-                    };
-                    ptr_as_mut(interaction_key_binding_widget._binding_name_widget)._ui_component.set_text(label);
-                    self._last_interaction_object_key = corpse_obj.get_key();
+            if context.is_corpse {
+                if *key_type == KeyBindingType::Taming || *key_type == KeyBindingType::Farming {
+                    let offset_y = if *key_type == KeyBindingType::Taming { -25.0 } else { 25.0 };
+                    let label = if *key_type == KeyBindingType::Taming { "Taming" } else { "Farming" };
+                    layout_widget._ui_component.set_pos(screen_pos.x, screen_pos.y + offset_y);
+                    layout_widget._ui_component.set_visible(true);
+                    ptr_as_mut(key_widget._binding_name_widget)._ui_component.set_text(label);
+                } else {
+                    layout_widget._ui_component.set_visible(false);
                 }
-            } else if enable_interaction
-                && !is_corpse_interaction
-                && *key_binding_type == KeyBindingType::Request
-                && is_request_enabled
-            {
-                let player = character_manager.get_player().borrow();
-                let interaction_object = player.get_nearest_interaction_object();
-                let position = interaction_object.get_position();
-                let main_camera = get_scene_manager().get_main_camera();
-                let screen_position = main_camera.convert_world_to_screen(&position, true)
-                    / rust_engine_3d::scene::ui::get_global_dpi_scale();
-                interaction_widget._ui_component.set_pos(screen_position.x, screen_position.y + 25.0);
-                interaction_widget._ui_component.set_visible(true);
-                ptr_as_mut(interaction_key_binding_widget._binding_name_widget)
-                    ._ui_component
-                    .set_text(request_name.as_str());
-            } else if enable_interaction && !is_corpse_interaction && *key_binding_type == matched_key_binding_type {
-                let player = character_manager.get_player().borrow();
-                let interaction_object = player.get_nearest_interaction_object();
-                let position = interaction_object.get_position();
-                let main_camera = get_scene_manager().get_main_camera();
-                let screen_position = main_camera.convert_world_to_screen(&position, true)
-                    / rust_engine_3d::scene::ui::get_global_dpi_scale();
-                let offset_y = if is_request_enabled { -25.0 } else { 0.0 };
-                interaction_widget._ui_component.set_pos(screen_position.x, screen_position.y + offset_y);
-                interaction_widget._ui_component.set_visible(true);
-                ptr_as_mut(interaction_key_binding_widget._binding_name_widget)
-                    ._ui_component
-                    .set_text(interaction_name.as_str());
-                self._last_interaction_object_key = interaction_object.get_key();
             } else {
-                interaction_widget._ui_component.set_visible(false);
+                if *key_type == KeyBindingType::Request && context.request_text.is_some() {
+                    let request_name = context.request_text.as_ref().unwrap();
+                    layout_widget._ui_component.set_pos(screen_pos.x, screen_pos.y + 25.0);
+                    layout_widget._ui_component.set_visible(true);
+                    ptr_as_mut(key_widget._binding_name_widget)._ui_component.set_text(request_name.as_str());
+                } else if *key_type == context.primary_type {
+                    let offset_y = if context.request_text.is_some() { -25.0 } else { 0.0 };
+                    layout_widget._ui_component.set_pos(screen_pos.x, screen_pos.y + offset_y);
+                    layout_widget._ui_component.set_visible(true);
+                    ptr_as_mut(key_widget._binding_name_widget)._ui_component.set_text(context.primary_text.as_str());
+                } else {
+                    layout_widget._ui_component.set_visible(false);
+                }
             }
+        }
+    }
+
+    fn hide_all_interaction_widgets(&mut self) {
+        let widget_map = ptr_as_mut(self._interaction_key_binding_widget_map.as_ref());
+        const INTERACTION_WIDGETS: [KeyBindingType; 6] = [
+            KeyBindingType::Interaction,
+            KeyBindingType::Request,
+            KeyBindingType::EnterGate,
+            KeyBindingType::Gathering,
+            KeyBindingType::Taming,
+            KeyBindingType::Farming,
+        ];
+        for key_type in INTERACTION_WIDGETS.iter() {
+            let key_widget = widget_map.get_key_binding_widget(*key_type);
+            ptr_as_mut(key_widget._layout_widget)._ui_component.set_visible(false);
         }
     }
 
