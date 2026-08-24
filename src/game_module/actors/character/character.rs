@@ -681,7 +681,10 @@ impl<'a> Character<'a> {
     }
 
     pub fn is_civilian(&self) -> bool {
-        self._character_data.borrow()._character_type == CharacterDataType::Civilian
+        matches!(
+            self._character_data.borrow()._character_type,
+            CharacterDataType::Civilian | CharacterDataType::Chef | CharacterDataType::Crafter
+        )
     }
 
     pub fn is_corpse(&self) -> bool {

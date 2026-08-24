@@ -117,6 +117,8 @@ pub enum CharacterDataType {
     #[default]
     None,
     Player,
+    Chef,
+    Crafter,
     Civilian,
     Roamer,
     Guardian,

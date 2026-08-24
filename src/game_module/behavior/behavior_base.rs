@@ -159,7 +159,10 @@ pub trait BehaviorBase<'a> {
 
 pub fn create_character_behavior<'a>(character_type: CharacterDataType) -> Box<dyn BehaviorBase<'a> + 'a> {
     match character_type {
-        CharacterDataType::Civilian | CharacterDataType::Player => Box::new(BehaviorCivilian { ..Default::default() }),
+        CharacterDataType::Civilian
+        | CharacterDataType::Chef
+        | CharacterDataType::Crafter
+        | CharacterDataType::Player => Box::new(BehaviorCivilian { ..Default::default() }),
         CharacterDataType::Roamer => Box::new(BehaviorRoamer { ..Default::default() }),
         CharacterDataType::Ufo => Box::new(BehaviorUfo { ..Default::default() }),
         _ => Box::new(BehaviorDefault { ..Default::default() }),
