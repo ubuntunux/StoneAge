@@ -28,9 +28,9 @@ pub struct SaveLoadSlotItem<'a> {
 pub struct SaveLoadSlotWidget<'a> {
     pub _parent_widget: *const WidgetDefault<'a>,
     pub _layer: Rc<WidgetDefault<'a>>,
-    pub _title_widget: Rc<WidgetDefault<'a>>,
     pub _new_game_btn: Rc<WidgetDefault<'a>>,
     pub _exit_game_btn: Rc<WidgetDefault<'a>>,
+    pub _slot_header_label: Rc<WidgetDefault<'a>>,
     pub _slot_container: Rc<WidgetDefault<'a>>,
     pub _add_slot_btn: Rc<WidgetDefault<'a>>,
     pub _slot_items: Vec<Box<SaveLoadSlotItem<'a>>>,
@@ -103,23 +103,36 @@ impl<'a> SaveLoadSlotWidget<'a> {
         true
     }
 
+    pub fn callback_touch_down_close(
+        ui_component: &UIComponentInstance<'a>,
+        _touched_pos: &Vector2<f32>,
+        _touched_pos_delta: &Vector2<f32>,
+    ) -> bool {
+        let slot_widget = ptr_as_mut(ui_component.get_user_data() as *const SaveLoadSlotWidget<'a>);
+        slot_widget.close_slot_widget();
+        get_game_ui_manager_mut().close_game_menu();
+        true
+    }
+
     pub fn create_save_load_slot_widget(parent_widget: &mut WidgetDefault<'a>) -> Box<SaveLoadSlotWidget<'a>> {
         let layer = UIManager::create_widget("save_load_slot_layer", UIWidgetTypes::Default);
         let layer_mut = ptr_as_mut(layer.as_ref());
-        let ui_component = layer_mut.get_ui_component_mut();
-        ui_component.set_layout_type(UILayoutType::BoxLayout);
-        ui_component.set_layout_orientation(Orientation::VERTICAL);
-        ui_component.set_halign(HorizontalAlign::CENTER);
-        ui_component.set_valign(VerticalAlign::CENTER);
-        ui_component.set_pivot_preset(PIVOT_CENTER);
-        ui_component.set_pos_hint(Some(0.5), Some(0.5));
-        ui_component.set_size(680.0, 480.0);
-        ui_component.set_padding(12.0);
-        ui_component.set_color(get_color32(30, 35, 45, 245));
-        ui_component.set_border_color(get_color32(100, 150, 220, 255));
-        ui_component.set_round(8.0);
+        {
+            let ui_component = layer_mut.get_ui_component_mut();
+            ui_component.set_layout_type(UILayoutType::BoxLayout);
+            ui_component.set_layout_orientation(Orientation::VERTICAL);
+            ui_component.set_halign(HorizontalAlign::CENTER);
+            ui_component.set_valign(VerticalAlign::CENTER);
+            ui_component.set_pivot_preset(PIVOT_CENTER);
+            ui_component.set_pos_hint(Some(0.5), Some(0.5));
+            ui_component.set_size(700.0, 520.0);
+            ui_component.set_padding(14.0);
+            ui_component.set_color(get_color32(25, 30, 40, 245));
+            ui_component.set_border_color(get_color32(70, 110, 160, 255));
+            ui_component.set_round(8.0);
+        }
 
-        // Header Layout: Title + New Game + Exit Game + Close (X)
+        // --- 1. Top Header Area: Prominent [New Game] and [Exit Game] buttons + Close [X] ---
         let header_layout = UIManager::create_widget("slot_header", UIWidgetTypes::Default);
         let header_mut = ptr_as_mut(header_layout.as_ref());
         {
@@ -129,64 +142,67 @@ impl<'a> SaveLoadSlotWidget<'a> {
             ui_comp.set_halign(HorizontalAlign::CENTER);
             ui_comp.set_valign(VerticalAlign::CENTER);
             ui_comp.set_size_hint_x(Some(1.0));
-            ui_comp.set_size_y(40.0);
+            ui_comp.set_size_y(52.0);
             ui_comp.set_margin(4.0);
-            ui_comp.set_color(get_color32(20, 25, 35, 200));
-            ui_comp.set_round(5.0);
+            ui_comp.set_color(get_color32(18, 22, 30, 220));
+            ui_comp.set_round(6.0);
         }
         layer_mut.add_widget(&header_layout);
 
-        let title_widget = UIManager::create_widget("slot_title", UIWidgetTypes::Default);
-        {
-            let title_ui = ptr_as_mut(title_widget.as_ref()).get_ui_component_mut();
-            title_ui.set_halign(HorizontalAlign::LEFT);
-            title_ui.set_valign(VerticalAlign::CENTER);
-            title_ui.set_size(380.0, 30.0);
-            title_ui.set_margin(4.0);
-            title_ui.set_text("SAVE / LOAD");
-            title_ui.set_font_size(24.0);
-            title_ui.set_font_color(get_color32(255, 255, 255, 255));
-            title_ui.set_color(get_color32(0, 0, 0, 0));
-        }
-        header_mut.add_widget(&title_widget);
-
-        // Header New Game Button
+        // Header 1: [New Game] Button (Enlarged)
         let new_game_btn = UIManager::create_widget("header_new_game_btn", UIWidgetTypes::Default);
         {
             let ui_comp = ptr_as_mut(new_game_btn.as_ref()).get_ui_component_mut();
             ui_comp.set_halign(HorizontalAlign::CENTER);
             ui_comp.set_valign(VerticalAlign::CENTER);
-            ui_comp.set_size(90.0, 32.0);
-            ui_comp.set_margin(4.0);
+            ui_comp.set_size(240.0, 42.0);
+            ui_comp.set_margin(10.0);
             ui_comp.set_text("New Game");
-            ui_comp.set_font_size(18.0);
+            ui_comp.set_font_size(22.0);
             ui_comp.set_font_color(get_color32(255, 255, 255, 255));
-            ui_comp.set_color(get_color32(40, 140, 100, 255));
-            ui_comp.set_round(4.0);
+            ui_comp.set_color(get_color32(40, 130, 190, 255));
+            ui_comp.set_round(5.0);
             ui_comp.set_touchable(true);
             ui_comp.set_callback_touch_down(Some(Box::new(SaveLoadSlotWidget::callback_touch_down_new_game)));
         }
         header_mut.add_widget(&new_game_btn);
 
-        // Header Exit Game Button
+        // Header 2: [Exit Game] Button (Enlarged)
         let exit_game_btn = UIManager::create_widget("header_exit_game_btn", UIWidgetTypes::Default);
         {
             let ui_comp = ptr_as_mut(exit_game_btn.as_ref()).get_ui_component_mut();
             ui_comp.set_halign(HorizontalAlign::CENTER);
             ui_comp.set_valign(VerticalAlign::CENTER);
-            ui_comp.set_size(90.0, 32.0);
-            ui_comp.set_margin(4.0);
+            ui_comp.set_size(240.0, 42.0);
+            ui_comp.set_margin(10.0);
             ui_comp.set_text("Exit Game");
-            ui_comp.set_font_size(18.0);
+            ui_comp.set_font_size(22.0);
             ui_comp.set_font_color(get_color32(255, 255, 255, 255));
-            ui_comp.set_color(get_color32(160, 60, 60, 255));
-            ui_comp.set_round(4.0);
+            ui_comp.set_color(get_color32(180, 55, 55, 255));
+            ui_comp.set_round(5.0);
             ui_comp.set_touchable(true);
             ui_comp.set_callback_touch_down(Some(Box::new(SaveLoadSlotWidget::callback_touch_down_exit_game)));
         }
         header_mut.add_widget(&exit_game_btn);
 
-        // Slot Container
+        // --- 2. Slot Section Header: LOAD / SAVE Section Title Bar ---
+        let slot_header_label = UIManager::create_widget("slot_section_header", UIWidgetTypes::Default);
+        {
+            let label_ui = ptr_as_mut(slot_header_label.as_ref()).get_ui_component_mut();
+            label_ui.set_halign(HorizontalAlign::CENTER);
+            label_ui.set_valign(VerticalAlign::CENTER);
+            label_ui.set_size_hint_x(Some(1.0));
+            label_ui.set_size_y(32.0);
+            label_ui.set_margin(3.0);
+            label_ui.set_text("LOAD / SAVE");
+            label_ui.set_font_size(22.0);
+            label_ui.set_font_color(get_color32(220, 230, 245, 255));
+            label_ui.set_color(get_color32(18, 24, 34, 180));
+            label_ui.set_round(4.0);
+        }
+        layer_mut.add_widget(&slot_header_label);
+
+        // --- 3. Body Area: Vertical Slot List Container ---
         let slot_container = UIManager::create_widget("slot_container", UIWidgetTypes::Default);
         {
             let slot_container_mut = ptr_as_mut(slot_container.as_ref());
@@ -196,31 +212,47 @@ impl<'a> SaveLoadSlotWidget<'a> {
             ui_comp.set_halign(HorizontalAlign::CENTER);
             ui_comp.set_valign(VerticalAlign::TOP);
             ui_comp.set_size_hint_x(Some(1.0));
-            ui_comp.set_size_y(340.0);
-            ui_comp.set_margin(5.0);
-            ui_comp.set_padding(6.0);
+            ui_comp.set_size_y(315.0);
+            ui_comp.set_margin(4.0);
+            ui_comp.set_padding(8.0);
             ui_comp.set_color(get_color32(15, 20, 28, 200));
-            ui_comp.set_round(5.0);
+            ui_comp.set_round(6.0);
         }
         layer_mut.add_widget(&slot_container);
 
-        // Add Slot Button
+        // --- 4. Footer Area: [+ Add New Slot] Button ---
+        let footer_layout = UIManager::create_widget("slot_footer", UIWidgetTypes::Default);
+        let footer_mut = ptr_as_mut(footer_layout.as_ref());
+        {
+            let ui_comp = footer_mut.get_ui_component_mut();
+            ui_comp.set_layout_type(UILayoutType::BoxLayout);
+            ui_comp.set_layout_orientation(Orientation::HORIZONTAL);
+            ui_comp.set_halign(HorizontalAlign::CENTER);
+            ui_comp.set_valign(VerticalAlign::CENTER);
+            ui_comp.set_size_hint_x(Some(1.0));
+            ui_comp.set_size_y(48.0);
+            ui_comp.set_margin(4.0);
+            ui_comp.set_color(get_color32(18, 22, 30, 220));
+            ui_comp.set_round(5.0);
+        }
+        layer_mut.add_widget(&footer_layout);
+
         let add_slot_btn = UIManager::create_widget("add_slot_btn", UIWidgetTypes::Default);
         {
             let add_ui = ptr_as_mut(add_slot_btn.as_ref()).get_ui_component_mut();
             add_ui.set_halign(HorizontalAlign::CENTER);
             add_ui.set_valign(VerticalAlign::CENTER);
-            add_ui.set_size(240.0, 36.0);
+            add_ui.set_size(300.0, 38.0);
             add_ui.set_margin(6.0);
-            add_ui.set_text("+ Add New Save/Load Slot");
+            add_ui.set_text("+ Add New Slot");
             add_ui.set_font_size(20.0);
             add_ui.set_font_color(get_color32(255, 255, 255, 255));
-            add_ui.set_color(get_color32(50, 130, 70, 255));
+            add_ui.set_color(get_color32(45, 140, 75, 255));
             add_ui.set_round(5.0);
             add_ui.set_touchable(true);
             add_ui.set_callback_touch_down(Some(Box::new(SaveLoadSlotWidget::callback_touch_down_add_slot)));
         }
-        layer_mut.add_widget(&add_slot_btn);
+        footer_mut.add_widget(&add_slot_btn);
 
         let initial_slot_names = vec![
             "save_data/00".to_string(),
@@ -231,9 +263,9 @@ impl<'a> SaveLoadSlotWidget<'a> {
         let slot_widget = Box::new(SaveLoadSlotWidget {
             _parent_widget: parent_widget,
             _layer: layer,
-            _title_widget: title_widget,
             _new_game_btn: new_game_btn,
             _exit_game_btn: exit_game_btn,
+            _slot_header_label: slot_header_label,
             _slot_container: slot_container,
             _add_slot_btn: add_slot_btn,
             _slot_items: Vec::new(),
@@ -295,7 +327,7 @@ impl<'a> SaveLoadSlotWidget<'a> {
                 card_ui.set_layout_orientation(Orientation::HORIZONTAL);
                 card_ui.set_halign(HorizontalAlign::CENTER);
                 card_ui.set_valign(VerticalAlign::CENTER);
-                card_ui.set_size(640.0, 52.0);
+                card_ui.set_size(660.0, 52.0);
                 card_ui.set_margin(3.0);
                 card_ui.set_padding(6.0);
                 card_ui.set_round(5.0);
@@ -325,7 +357,7 @@ impl<'a> SaveLoadSlotWidget<'a> {
                 let text_ui = ptr_as_mut(text_widget.as_ref()).get_ui_component_mut();
                 text_ui.set_halign(HorizontalAlign::LEFT);
                 text_ui.set_valign(VerticalAlign::CENTER);
-                text_ui.set_size(380.0, 40.0);
+                text_ui.set_size(400.0, 40.0);
                 text_ui.set_margin(4.0);
                 text_ui.set_text(&slot_info_text);
                 text_ui.set_font_size(19.0);
@@ -340,7 +372,7 @@ impl<'a> SaveLoadSlotWidget<'a> {
                 let action_ui = ptr_as_mut(load_btn.as_ref()).get_ui_component_mut();
                 action_ui.set_halign(HorizontalAlign::CENTER);
                 action_ui.set_valign(VerticalAlign::CENTER);
-                action_ui.set_size(90.0, 36.0);
+                action_ui.set_size(95.0, 36.0);
                 action_ui.set_margin(4.0);
                 action_ui.set_round(4.0);
                 action_ui.set_text("LOAD");
@@ -363,7 +395,7 @@ impl<'a> SaveLoadSlotWidget<'a> {
                 let action_ui = ptr_as_mut(save_btn.as_ref()).get_ui_component_mut();
                 action_ui.set_halign(HorizontalAlign::CENTER);
                 action_ui.set_valign(VerticalAlign::CENTER);
-                action_ui.set_size(90.0, 36.0);
+                action_ui.set_size(95.0, 36.0);
                 action_ui.set_margin(4.0);
                 action_ui.set_round(4.0);
                 action_ui.set_text("SAVE");
