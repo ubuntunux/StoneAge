@@ -1,0 +1,6 @@
+{
+    "_item_type": "Food",
+    "_model_data_name": "items/rock",
+    "_name": "LEATHER ARMOR",
+    "_ui_material_instance": "ui/items/item_rock"
+}

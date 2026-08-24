@@ -92,6 +92,7 @@ impl CharacterStats {
             _intimacy: 0.0,
             _invincibility: false,
             _is_stat_displayed: false,
+            _is_interacting: false,
             _hit_blink_time: 0.0,
         }
     }
@@ -1051,6 +1052,17 @@ impl<'a> Character<'a> {
         self._character_stats._is_stat_displayed = is_stat_displayed;
     }
 
+    pub fn is_interacting(&self) -> bool {
+        self._character_stats._is_interacting
+    }
+
+    pub fn set_is_interacting(&mut self, is_interacting: bool) {
+        self._character_stats._is_interacting = is_interacting;
+        if is_interacting {
+            self.set_move_idle();
+        }
+    }
+
     pub fn set_behavior_none(&mut self) {
         self.set_next_behavior(BehaviorState::None, true);
     }
@@ -1142,7 +1154,12 @@ impl<'a> Character<'a> {
                 InteractionObject::Npc(character) => {
                     // interaction
                     self.look_at(character.borrow().get_position());
-                    character.borrow_mut().set_next_behavior(BehaviorState::Interaction, false);
+                    {
+                        let mut npc = character.borrow_mut();
+                        npc.set_is_interacting(true);
+                        npc.set_move_idle();
+                        npc.set_next_behavior(BehaviorState::Idle, true);
+                    }
 
                     // give item
                     let mut give_item = false;
@@ -1200,6 +1217,31 @@ impl<'a> Character<'a> {
                     }
                 }
                 _ => {}
+            }
+        }
+    }
+    pub fn set_action_request(&mut self) {
+        if self._controller.is_on_ground() && self.is_available_move() && self.is_idle_action() {
+            let target_interaction = self._controller._nearest_interaction_object.clone();
+            if let InteractionObject::Npc(character) = target_interaction {
+                self.look_at(character.borrow().get_position());
+                {
+                    let mut npc = character.borrow_mut();
+                    npc.set_is_interacting(true);
+                    npc.set_move_idle();
+                    npc.set_next_behavior(BehaviorState::Idle, true);
+                }
+                if let Some(request_name) = character.borrow().get_request_name() {
+                    match request_name {
+                        "Cooking" => {
+                            get_game_client_mut().set_next_game_phase(GamePhase::OpenCooking);
+                        }
+                        "Craft" => {
+                            get_game_client_mut().set_next_game_phase(GamePhase::OpenCraft);
+                        }
+                        _ => {}
+                    }
+                }
             }
         }
     }

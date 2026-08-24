@@ -53,7 +53,12 @@ impl<'a> BehaviorBase<'a> for BehaviorDefault<'a> {
                 BehaviorState::Idle => match state {
                     State::Begin => begin_idle(&mut self._behavior_data, owner),
                     State::Update => {
-                        if is_player_too_far_for_intimacy(owner, target) {
+                        if owner.is_interacting() {
+                            owner.set_move_idle();
+                            if let Some(target_actor) = target {
+                                owner.look_at(target_actor.get_position());
+                            }
+                        } else if is_player_too_far_for_intimacy(owner, target) {
                             self.set_next_behavior(BehaviorState::Follow, false);
                         } else if self._behavior_data.is_end_behavior_time() {
                             self.set_next_behavior(BehaviorState::Roaming, false);
@@ -64,7 +69,9 @@ impl<'a> BehaviorBase<'a> for BehaviorDefault<'a> {
                 BehaviorState::Roaming => match state {
                     State::Begin => begin_roaming(&mut self._behavior_data, owner, target),
                     State::Update => {
-                        if is_player_too_far_for_intimacy(owner, target) {
+                        if owner.is_interacting() {
+                            self.set_next_behavior(BehaviorState::Idle, true);
+                        } else if is_player_too_far_for_intimacy(owner, target) {
                             self.set_next_behavior(BehaviorState::Follow, false);
                         } else if should_roaming_go_idle(&self._behavior_data, owner) {
                             self.set_next_behavior(BehaviorState::Idle, false);

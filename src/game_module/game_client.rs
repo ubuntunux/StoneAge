@@ -33,6 +33,8 @@ pub enum GamePhase {
     Teleport,
     Respawn,
     OpenToolbox,
+    OpenCooking,
+    OpenCraft,
     Inventory,
     WorldMapOpen,
     WorldMapUpdate,
@@ -406,6 +408,56 @@ impl<'a> GameClient<'a> {
                     }
                     State::End => {
                         game_ui_manager.close_toolbox();
+                        game_ui_manager.set_cross_hair_visible(false);
+                    }
+                },
+                GamePhase::OpenCooking => match state {
+                    State::Begin => {
+                        game_ui_manager.set_cross_hair_visible(true);
+                        game_ui_manager.open_cooking();
+                    }
+                    State::Update => {
+                        if game_ui_manager.is_opened_cooking() {
+                            game_ui_manager.update_cooking_widget(
+                                time_data,
+                                joystick_input_data,
+                                keyboard_input_data,
+                                mouse_move_data,
+                                mouse_input_data,
+                                &mouse_delta,
+                                character_manager.get_player(),
+                            );
+                        } else {
+                            self.set_next_game_phase(GamePhase::GamePlay);
+                        }
+                    }
+                    State::End => {
+                        game_ui_manager.close_cooking();
+                        game_ui_manager.set_cross_hair_visible(false);
+                    }
+                },
+                GamePhase::OpenCraft => match state {
+                    State::Begin => {
+                        game_ui_manager.set_cross_hair_visible(true);
+                        game_ui_manager.open_craft();
+                    }
+                    State::Update => {
+                        if game_ui_manager.is_opened_craft() {
+                            game_ui_manager.update_craft_widget(
+                                time_data,
+                                joystick_input_data,
+                                keyboard_input_data,
+                                mouse_move_data,
+                                mouse_input_data,
+                                &mouse_delta,
+                                character_manager.get_player(),
+                            );
+                        } else {
+                            self.set_next_game_phase(GamePhase::GamePlay);
+                        }
+                    }
+                    State::End => {
+                        game_ui_manager.close_craft();
                         game_ui_manager.set_cross_hair_visible(false);
                     }
                 },

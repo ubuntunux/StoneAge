@@ -448,6 +448,8 @@ impl<'a> GameController<'a> {
             keyboard_input_data.get_key_pressed(KeyCode::AltLeft) || joystick_input_data._btn_b == ButtonState::Pressed;
         let is_interaction =
             keyboard_input_data.get_key_pressed(KeyCode::KeyF) || joystick_input_data._btn_x == ButtonState::Pressed;
+        let is_request =
+            keyboard_input_data.get_key_pressed(KeyCode::KeyC) || joystick_input_data._btn_y == ButtonState::Pressed;
         let is_previous_item = keyboard_input_data.get_key_pressed(KeyCode::ArrowLeft)
             || keyboard_input_data.get_key_hold(KeyCode::ArrowLeft)
             || keyboard_input_data.get_key_pressed(KeyCode::KeyQ)
@@ -603,7 +605,9 @@ impl<'a> GameController<'a> {
 
         let is_available_attack = player_mut.is_available_attack();
         let item_type = player_mut.get_attached_item_data_type();
-        if is_interaction && player_mut.is_in_interaction_range() {
+        if is_request && player_mut.is_in_interaction_range() {
+            player_mut.set_action_request();
+        } else if is_interaction && player_mut.is_in_interaction_range() {
             player_mut.set_action_interaction();
         } else if is_attack_or_use_item && is_available_attack {
             if item_type.is_fishing_item_type() {

@@ -19,6 +19,8 @@ use crate::game_module::widgets::quest_widgets::quest_widget::{QuestItemBase, Qu
 use crate::game_module::widgets::target_status_bar::TargetStatusWidget;
 use crate::game_module::widgets::text_box_widget::{TextBoxContent, TextBoxLayerType, TextBoxWidget};
 use crate::game_module::widgets::time_of_day::TimeOfDayWidget;
+use crate::game_module::widgets::cooking_widget::CookingWidget;
+use crate::game_module::widgets::craft_widget::CraftWidget;
 use crate::game_module::widgets::toolbox_widget::ToolboxWidget;
 use crate::game_module::widgets::world_map::WorldMapWidget;
 use nalgebra::Vector2;
@@ -53,6 +55,8 @@ pub struct GameUIManager<'a> {
     pub _item_bar_widget: Option<Box<ItemBarWidget<'a>>>,
     pub _item_acquire_notification_widget: Option<Box<ItemAcquireNotificationWidget<'a>>>,
     pub _toolbox_widget: Option<Box<ToolboxWidget<'a>>>,
+    pub _cooking_widget: Option<Box<CookingWidget<'a>>>,
+    pub _craft_widget: Option<Box<CraftWidget<'a>>>,
     pub _quest_widget: Option<Box<QuestWidget<'a>>>,
     pub _world_map_widget: Option<Box<WorldMapWidget<'a>>>,
     pub _debug_ui_widget: Option<Box<DebugUIWidget<'a>>>,
@@ -131,6 +135,8 @@ impl<'a> GameUIManager<'a> {
             _player_hud: None,
             _controller_help_widget: None,
             _toolbox_widget: None,
+            _cooking_widget: None,
+            _craft_widget: None,
             _quest_widget: None,
             _world_map_widget: None,
             _debug_ui_widget: None,
@@ -184,6 +190,8 @@ impl<'a> GameUIManager<'a> {
             game_ui_layout_mut,
         )));
         self._toolbox_widget = Some(Box::new(ToolboxWidget::create_toolbox_widget(game_ui_layout_mut)));
+        self._cooking_widget = Some(Box::new(CookingWidget::create_cooking_widget(game_ui_layout_mut)));
+        self._craft_widget = Some(Box::new(CraftWidget::create_craft_widget(game_ui_layout_mut)));
         self._world_map_widget = Some(WorldMapWidget::create_world_map_widget(game_ui_layout_mut, window_size));
         self._time_of_day = Some(Box::new(TimeOfDayWidget::create_time_of_day_widget(game_ui_layout_mut)));
         self._controller_help_widget = Some(Box::new(ControllerHelpWidget::create_controller_help_widget(
@@ -709,6 +717,76 @@ impl<'a> GameUIManager<'a> {
     ) {
         if let Some(toolbox_widget) = self._toolbox_widget.as_mut() {
             toolbox_widget.update_toolbox_widget(
+                time_data,
+                joystick_input_data,
+                keyboard_input_data,
+                mouse_move_data,
+                mouse_input_data,
+                mouse_delta,
+                player,
+            );
+        }
+    }
+
+    // cooking widget
+    pub fn open_cooking(&mut self) {
+        self._cooking_widget.as_mut().unwrap().open_cooking();
+        self.set_cross_hair_visible(true);
+    }
+    pub fn close_cooking(&mut self) {
+        self.set_cross_hair_visible(false);
+        self._cooking_widget.as_mut().unwrap().close_cooking();
+    }
+    pub fn is_opened_cooking(&self) -> bool {
+        self._cooking_widget.as_ref().unwrap().is_opened_cooking()
+    }
+    pub fn update_cooking_widget(
+        &mut self,
+        time_data: &TimeData,
+        joystick_input_data: &JoystickInputData,
+        keyboard_input_data: &KeyboardInputData,
+        mouse_move_data: &MouseMoveData,
+        mouse_input_data: &MouseInputData,
+        mouse_delta: &Vector2<f32>,
+        player: &RcRefCell<Character>,
+    ) {
+        if let Some(cooking_widget) = self._cooking_widget.as_mut() {
+            cooking_widget.update_cooking_widget(
+                time_data,
+                joystick_input_data,
+                keyboard_input_data,
+                mouse_move_data,
+                mouse_input_data,
+                mouse_delta,
+                player,
+            );
+        }
+    }
+
+    // craft widget
+    pub fn open_craft(&mut self) {
+        self._craft_widget.as_mut().unwrap().open_craft();
+        self.set_cross_hair_visible(true);
+    }
+    pub fn close_craft(&mut self) {
+        self.set_cross_hair_visible(false);
+        self._craft_widget.as_mut().unwrap().close_craft();
+    }
+    pub fn is_opened_craft(&self) -> bool {
+        self._craft_widget.as_ref().unwrap().is_opened_craft()
+    }
+    pub fn update_craft_widget(
+        &mut self,
+        time_data: &TimeData,
+        joystick_input_data: &JoystickInputData,
+        keyboard_input_data: &KeyboardInputData,
+        mouse_move_data: &MouseMoveData,
+        mouse_input_data: &MouseInputData,
+        mouse_delta: &Vector2<f32>,
+        player: &RcRefCell<Character>,
+    ) {
+        if let Some(craft_widget) = self._craft_widget.as_mut() {
+            craft_widget.update_craft_widget(
                 time_data,
                 joystick_input_data,
                 keyboard_input_data,

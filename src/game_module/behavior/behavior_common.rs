@@ -119,6 +119,13 @@ pub fn begin_interaction(data: &mut BehaviorData, owner: &mut Character) {
 }
 
 pub fn update_interaction_should_idle(data: &BehaviorData, owner: &mut Character, target: Option<&Character>) -> bool {
+    if owner.is_interacting() {
+        owner.set_move_idle();
+        if let Some(target_actor) = target {
+            owner.look_at(target_actor.get_position());
+        }
+        return false;
+    }
     if data.is_end_behavior_time() {
         return true;
     }

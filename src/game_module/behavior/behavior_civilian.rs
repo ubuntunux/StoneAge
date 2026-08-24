@@ -58,7 +58,12 @@ impl<'a> BehaviorBase<'a> for BehaviorCivilian<'a> {
                         begin_idle(&mut self._behavior_data, owner);
                     }
                     State::Update => {
-                        if owner.get_attached_item_data_type().is_eatable() {
+                        if owner.is_interacting() {
+                            owner.set_move_idle();
+                            if let Some(target_actor) = target {
+                                owner.look_at(target_actor.get_position());
+                            }
+                        } else if owner.get_attached_item_data_type().is_eatable() {
                             self.set_next_behavior(BehaviorState::Eating, true);
                         } else if owner.get_stats().is_hungry() {
                             self.set_next_behavior(BehaviorState::Hunger, true);
@@ -94,7 +99,9 @@ impl<'a> BehaviorBase<'a> for BehaviorCivilian<'a> {
                 BehaviorState::Roaming => match state {
                     State::Begin => begin_roaming(&mut self._behavior_data, owner, target),
                     State::Update => {
-                        if is_player_too_far_for_intimacy(owner, target) {
+                        if owner.is_interacting() {
+                            self.set_next_behavior(BehaviorState::Idle, true);
+                        } else if is_player_too_far_for_intimacy(owner, target) {
                             self.set_next_behavior(BehaviorState::Follow, false);
                         } else if owner.get_attached_item_data_type().is_eatable() {
                             self.set_next_behavior(BehaviorState::Eating, false);

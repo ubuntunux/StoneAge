@@ -67,6 +67,7 @@ pub struct CharacterStats {
     pub _intimacy: f32,
     pub _invincibility: bool,
     pub _is_stat_displayed: bool,
+    pub _is_interacting: bool,
     pub _hit_blink_time: f32,
 }
 
