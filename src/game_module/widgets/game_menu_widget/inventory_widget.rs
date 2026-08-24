@@ -4,7 +4,8 @@ use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, ITEM_NONE};
 use crate::game_module::game_controller::{HoldRepeatController, NAV_INITIAL_DELAY, NAV_REPEAT_INTERVAL};
 use crate::game_module::game_service_locator::{get_game_ui_manager, get_game_ui_manager_mut, get_item_manager_mut};
 use crate::game_module::widgets::item_bar::{
-    INVALID_ITEM_INDEX, ITEM_UI_SIZE, ITEM_WIDGET_UI_MARGIN, MAX_INVENTORY_ROWS, SLOTS_PER_ROW, TOTAL_INVENTORY_SLOTS,
+    EQUIPMENT_SLOT_START_INDEX, EquipmentSlotType, INVALID_ITEM_INDEX, ITEM_UI_SIZE, ITEM_WIDGET_UI_MARGIN,
+    NUM_EQUIPMENT_SLOTS, SLOTS_PER_ROW,
 };
 use nalgebra::Vector2;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
@@ -86,15 +87,23 @@ impl<'a> InventorySlotWidget<'a> {
         self._item_data_type = item_data_type;
         self._item_count = item_count;
 
+        let is_equipment_slot = self._slot_index >= EQUIPMENT_SLOT_START_INDEX;
+
         let ui_component = ptr_as_mut(self._widget.as_ref()).get_ui_component_mut();
         if material_instance.is_some() {
             ui_component.set_color(get_color32(255, 255, 255, 255));
+        } else if is_equipment_slot {
+            ui_component.set_color(get_color32(45, 55, 75, 220));
         } else {
             ui_component.set_color(get_color32(255, 255, 255, 0));
         }
 
         if is_selected_item {
             ui_component.set_border_color(get_color32(255, 255, 0, 255));
+        } else if is_equipment_slot && item_count > 0 && item_data_name != ITEM_NONE {
+            ui_component.set_border_color(get_color32(80, 220, 255, 255));
+        } else if is_equipment_slot {
+            ui_component.set_border_color(get_color32(120, 140, 180, 255));
         } else if is_active_quick_row {
             ui_component.set_border_color(get_color32(50, 220, 100, 255));
         } else {
@@ -102,7 +111,17 @@ impl<'a> InventorySlotWidget<'a> {
         }
 
         if item_count > 0 && item_data_name != ITEM_NONE {
+            ui_component.set_font_size(24.0);
+            ui_component.set_font_color(get_color32(255, 255, 255, 255));
             ui_component.set_text(&format!("{}", item_count));
+        } else if is_equipment_slot {
+            if let Some(equip_type) = EquipmentSlotType::from_slot_index(self._slot_index) {
+                ui_component.set_font_size(18.0);
+                ui_component.set_font_color(get_color32(200, 215, 240, 255));
+                ui_component.set_text(equip_type.display_name());
+            } else {
+                ui_component.set_text("");
+            }
         } else {
             ui_component.set_text("");
         }
@@ -174,19 +193,66 @@ impl<'a> InventoryWidget<'a> {
             _nav_repeat_controller: HoldRepeatController::new(NAV_INITIAL_DELAY, NAV_REPEAT_INTERVAL),
         });
 
-        // Grid Layout: 2 Rows x 10 Slots
-        for row in 0..MAX_INVENTORY_ROWS {
-            let row_layout =
-                InventoryWidget::create_inventory_row(ptr_as_mut(inventory_widget._inventory_bg.as_ref()), row);
+        inventory_widget.rebuild_inventory_grid();
+        inventory_widget
+    }
+
+    pub fn rebuild_inventory_grid(&mut self) {
+        let item_bar = get_game_ui_manager().get_item_bar_widget();
+        let inv_rows = item_bar.get_inventory_rows();
+        let total_widgets = inv_rows * SLOTS_PER_ROW + NUM_EQUIPMENT_SLOTS;
+
+        if self._slot_widgets.len() == total_widgets {
+            return;
+        }
+
+        let bg_mut = ptr_as_mut(self._inventory_bg.as_ref());
+        bg_mut.clear_widgets();
+        self._slot_widgets.clear();
+
+        for row in 0..inv_rows {
+            let row_layout = InventoryWidget::create_inventory_row(bg_mut, row);
             for column in 0..SLOTS_PER_ROW {
                 let slot_idx = row * SLOTS_PER_ROW + column;
-                let slot_item =
-                    InventorySlotWidget::create(inventory_widget.as_ref(), ptr_as_mut(row_layout.as_ref()), slot_idx);
-                inventory_widget._slot_widgets.push(slot_item);
+                let slot_item = InventorySlotWidget::create(self, ptr_as_mut(row_layout.as_ref()), slot_idx);
+                self._slot_widgets.push(slot_item);
             }
         }
 
-        inventory_widget
+        // Equipment Section: Header and 3 Equipment Slots (Hat, Armor, Shoes)
+        let equip_title = UIManager::create_widget("equip_title", UIWidgetTypes::Default);
+        let ui_component = ptr_as_mut(equip_title.as_ref()).get_ui_component_mut();
+        ui_component.set_halign(HorizontalAlign::CENTER);
+        ui_component.set_valign(VerticalAlign::CENTER);
+        ui_component.set_size_hint_x(Some(1.0));
+        ui_component.set_size_y(26.0);
+        ui_component.set_margin_top(6.0);
+        ui_component.set_margin_bottom(2.0);
+        ui_component.set_text("Equipment Slots");
+        ui_component.set_font_size(20.0);
+        ui_component.set_font_color(get_color32(240, 210, 130, 255));
+        bg_mut.add_widget(&equip_title);
+
+        let equip_row_layout = UIManager::create_widget("equip_row", UIWidgetTypes::Default);
+        let equip_row_mut = ptr_as_mut(equip_row_layout.as_ref());
+        let ui_component = equip_row_mut.get_ui_component_mut();
+        ui_component.set_layout_type(UILayoutType::BoxLayout);
+        ui_component.set_layout_orientation(Orientation::HORIZONTAL);
+        ui_component.set_halign(HorizontalAlign::CENTER);
+        ui_component.set_valign(VerticalAlign::CENTER);
+        ui_component.set_color(get_color32(140, 120, 80, 180));
+        ui_component.set_round(5.0);
+        ui_component.set_margin(5.0);
+        ui_component.set_size_hint_x(Some(1.0));
+        ui_component.set_size_y(0.0);
+        ui_component.set_expandable(true);
+        bg_mut.add_widget(&equip_row_layout);
+
+        for eq_col in 0..NUM_EQUIPMENT_SLOTS {
+            let slot_idx = EQUIPMENT_SLOT_START_INDEX + eq_col;
+            let slot_item = InventorySlotWidget::create(self, equip_row_mut, slot_idx);
+            self._slot_widgets.push(slot_item);
+        }
     }
 
     pub fn create_inventory_row(inventory_widget: &mut WidgetDefault<'a>, row: usize) -> Rc<WidgetDefault<'a>> {
@@ -306,16 +372,20 @@ impl<'a> InventoryWidget<'a> {
     }
 
     pub fn refresh_inventory_widget(&mut self) {
+        self.rebuild_inventory_grid();
+
         let item_bar = get_game_ui_manager().get_item_bar_widget();
         let active_row = item_bar.get_active_row_index();
+        let total_inv_slots = item_bar.get_total_inventory_slots();
 
-        for (slot_idx, slot_widget) in self._slot_widgets.iter_mut().enumerate() {
-            let slot_row = slot_idx / SLOTS_PER_ROW;
-            let slot_data = item_bar.get_inventory_slot_data(slot_idx);
-            let is_active_quick_row = slot_row == active_row;
-            let is_selected_item = slot_idx == self._focused_slot_index;
+        for slot_widget in self._slot_widgets.iter_mut() {
+            let actual_slot_idx = slot_widget._slot_index;
+            let slot_row = actual_slot_idx / SLOTS_PER_ROW;
+            let slot_data = item_bar.get_inventory_slot_data(actual_slot_idx);
+            let is_active_quick_row = actual_slot_idx < total_inv_slots && slot_row == active_row;
+            let is_selected_item = actual_slot_idx == self._focused_slot_index;
 
-            if slot_idx == self._drag_source_slot_index {
+            if actual_slot_idx == self._drag_source_slot_index {
                 slot_widget.set_data(
                     "",
                     ITEM_NONE,
@@ -405,22 +475,48 @@ impl<'a> InventoryWidget<'a> {
 
         if should_move_slot {
             let (dir_x, dir_y) = dir_opt.unwrap();
-            let mut r = self._focused_slot_index / SLOTS_PER_ROW;
-            let mut c = self._focused_slot_index % SLOTS_PER_ROW;
+            let item_bar = get_game_ui_manager().get_item_bar_widget();
+            let inv_rows = item_bar.get_inventory_rows();
+            let total_rows = inv_rows + 1;
+
+            let is_equip_row = self._focused_slot_index >= EQUIPMENT_SLOT_START_INDEX;
+            let mut r = if is_equip_row {
+                inv_rows
+            } else {
+                self._focused_slot_index / SLOTS_PER_ROW
+            };
+            let mut c = if is_equip_row {
+                self._focused_slot_index.saturating_sub(EQUIPMENT_SLOT_START_INDEX)
+            } else {
+                self._focused_slot_index % SLOTS_PER_ROW
+            };
 
             if dir_x < 0 {
-                c = (c + SLOTS_PER_ROW - 1) % SLOTS_PER_ROW;
+                if r == inv_rows {
+                    c = (c + NUM_EQUIPMENT_SLOTS - 1) % NUM_EQUIPMENT_SLOTS;
+                } else {
+                    c = (c + SLOTS_PER_ROW - 1) % SLOTS_PER_ROW;
+                }
             } else if dir_x > 0 {
-                c = (c + 1) % SLOTS_PER_ROW;
+                if r == inv_rows {
+                    c = (c + 1) % NUM_EQUIPMENT_SLOTS;
+                } else {
+                    c = (c + 1) % SLOTS_PER_ROW;
+                }
             }
 
             if dir_y < 0 {
-                r = (r + MAX_INVENTORY_ROWS - 1) % MAX_INVENTORY_ROWS;
+                r = (r + total_rows - 1) % total_rows;
             } else if dir_y > 0 {
-                r = (r + 1) % MAX_INVENTORY_ROWS;
+                r = (r + 1) % total_rows;
             }
 
-            let new_focused_slot = r * SLOTS_PER_ROW + c;
+            let new_focused_slot = if r == inv_rows {
+                EQUIPMENT_SLOT_START_INDEX + c.min(NUM_EQUIPMENT_SLOTS - 1)
+            } else {
+                r * SLOTS_PER_ROW + c.min(SLOTS_PER_ROW - 1)
+            };
+
             if self._drag_source_slot_index != INVALID_ITEM_INDEX {
                 // If keyboard navigating while dragging an item, attach/swap to the new slot
                 let src_slot = self._drag_source_slot_index;
@@ -442,6 +538,8 @@ impl<'a> InventoryWidget<'a> {
             || keyboard_input_data.get_key_pressed(KeyCode::KeyF)
             || keyboard_input_data.get_key_pressed(KeyCode::Delete);
 
+        let item_bar = get_game_ui_manager().get_item_bar_widget();
+
         if is_mouse_drop {
             let engine_core = rust_engine_3d::core::engine_service_locator::get_engine_core();
             let mouse_pos = &engine_core._mouse_move_data._mouse_pos;
@@ -457,13 +555,11 @@ impl<'a> InventoryWidget<'a> {
             }
 
             // Only proceed if mouse pointer is directly over a valid slot
-            if hovered_slot != INVALID_ITEM_INDEX && hovered_slot < TOTAL_INVENTORY_SLOTS {
+            if hovered_slot != INVALID_ITEM_INDEX && item_bar.is_valid_slot_index(hovered_slot) {
                 // Focus the slot under mouse pointer
                 self._focused_slot_index = hovered_slot;
 
                 // Drop item if slot is not empty and is droppable
-                let game_ui_manager = get_game_ui_manager();
-                let item_bar = game_ui_manager.get_item_bar_widget();
                 let slot_data = item_bar.get_inventory_slot_data(hovered_slot);
                 if slot_data._item_count > 0
                     && slot_data._item_data_name != ITEM_NONE
@@ -482,7 +578,7 @@ impl<'a> InventoryWidget<'a> {
             }
         } else if is_controller_drop {
             let target_slot = self._focused_slot_index;
-            if target_slot != INVALID_ITEM_INDEX && target_slot < TOTAL_INVENTORY_SLOTS {
+            if target_slot != INVALID_ITEM_INDEX && item_bar.is_valid_slot_index(target_slot) {
                 let game_ui_manager = get_game_ui_manager();
                 let item_bar = game_ui_manager.get_item_bar_widget();
                 let slot_data = item_bar.get_inventory_slot_data(target_slot);

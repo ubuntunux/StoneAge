@@ -13,7 +13,9 @@ use crate::game_module::game_service_locator::{
 use crate::game_module::game_weather::Weather;
 use crate::game_module::save_data::save_data::GameSaveData;
 use crate::game_module::scenario::scenario::{ScenarioBase, ScenarioDataCreateInfo, ScenarioType, create_scenario};
-use crate::game_module::widgets::item_bar::{INVALID_ITEM_INDEX, SLOTS_PER_ROW, TOTAL_INVENTORY_SLOTS};
+use crate::game_module::widgets::item_bar::{
+    DEFAULT_INVENTORY_ROWS, INVALID_ITEM_INDEX, SLOTS_PER_ROW,
+};
 use nalgebra::Vector2;
 use rust_engine_3d::begin_block;
 use rust_engine_3d::core::engine_service_locator::{get_scene_manager, get_scene_manager_mut};
@@ -259,11 +261,18 @@ impl<'a> GameSceneManager<'a> {
         game_ui_manager.set_controls_visibility(game_save_data._is_controls_visible);
         game_ui_manager.load_unlocked_toolbox_items(&game_save_data._unlocked_toolbox_items);
         game_ui_manager.set_last_opened_toolbox_tab(&game_save_data._last_opened_toolbox_tab);
+
+        let loaded_rows = if game_save_data._inventory_rows > 0 {
+            game_save_data._inventory_rows
+        } else {
+            DEFAULT_INVENTORY_ROWS
+        };
+        game_ui_manager.set_inventory_rows(loaded_rows);
+
         for create_infos in game_save_data._inventory_item_create_info_list.values() {
             for item_create_info in create_infos.iter() {
-                let slot_index = item_create_info._row * SLOTS_PER_ROW + item_create_info._column;
                 game_ui_manager.add_item_at_slot(
-                    slot_index,
+                    item_create_info._item_index,
                     item_create_info._item_data_name.as_str(),
                     item_create_info._item_count,
                 );
@@ -273,11 +282,11 @@ impl<'a> GameSceneManager<'a> {
         // Restore quick slot (row and column) selection state if saved
         if let Some((row, col)) = game_save_data._selected_quick_slot {
             let slot_index = row * SLOTS_PER_ROW + col;
-            if slot_index < TOTAL_INVENTORY_SLOTS {
+            if game_ui_manager.get_item_bar_widget().is_valid_slot_index(slot_index) {
                 game_ui_manager.select_item(slot_index);
             }
         } else if game_save_data._selected_inventory_item_index != INVALID_ITEM_INDEX
-            && game_save_data._selected_inventory_item_index < TOTAL_INVENTORY_SLOTS
+            && game_ui_manager.get_item_bar_widget().is_valid_slot_index(game_save_data._selected_inventory_item_index)
         {
             game_ui_manager.select_item(game_save_data._selected_inventory_item_index);
         } else {
@@ -295,6 +304,7 @@ impl<'a> GameSceneManager<'a> {
         game_save_data._date = self.get_date();
         game_save_data._weather_type = self._weather.get_weather_type();
         game_save_data._last_game_scene_data_name = self.get_current_game_scene_data_name().clone();
+        game_save_data._inventory_rows = get_game_ui_manager().get_inventory_rows();
         game_save_data._inventory_item_create_info_list = get_game_ui_manager().get_inventory_item_create_infos();
         game_save_data._selected_inventory_item_index = get_game_ui_manager().get_selected_inventory_item_index();
         game_save_data._selected_quick_slot = get_game_ui_manager().get_selected_quick_slot_row_col();

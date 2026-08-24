@@ -574,6 +574,23 @@ impl<'a> GameUIManager<'a> {
         result
     }
 
+    pub fn get_inventory_rows(&self) -> usize {
+        if let Some(item_bar) = self._item_bar_widget.as_ref() {
+            item_bar.get_inventory_rows()
+        } else {
+            2
+        }
+    }
+
+    pub fn set_inventory_rows(&mut self, rows: usize) {
+        if let Some(item_bar) = self._item_bar_widget.as_mut() {
+            item_bar.set_inventory_rows(rows);
+            if let Some(inventory_widget) = self.get_inventory_widget_mut() {
+                inventory_widget.refresh_inventory_widget();
+            }
+        }
+    }
+
     // inventory
     pub fn open_inventory(&mut self) {
         self.open_game_menu(Some(GameMenuTab::Inventory));

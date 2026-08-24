@@ -11,13 +11,50 @@ use std::rc::Rc;
 pub type InventoryItemCreateInfoList = HashMap<usize, Vec<InventoryItemCreateInfo>>;
 
 pub const ITEM_BAR_WIDGET_POS_Y_FROM_BOTTOM: f32 = 50.0;
-pub const MAX_INVENTORY_ROWS: usize = 2;
+pub const DEFAULT_INVENTORY_ROWS: usize = 2;
 pub const SLOTS_PER_ROW: usize = 10;
-pub const TOTAL_INVENTORY_SLOTS: usize = MAX_INVENTORY_ROWS * SLOTS_PER_ROW; // 20
+pub const NUM_EQUIPMENT_SLOTS: usize = 3;
+pub const EQUIPMENT_SLOT_START_INDEX: usize = 100;
 pub const MAX_ITEM_COUNT: usize = SLOTS_PER_ROW;
 pub const ITEM_UI_SIZE: f32 = 64.0;
 pub const ITEM_WIDGET_UI_MARGIN: f32 = 5.0;
 pub const INVALID_ITEM_INDEX: usize = usize::MAX;
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub enum EquipmentSlotType {
+    Hat = 0,   // Hat
+    Armor = 1, // Armor
+    Shoes = 2, // Shoes
+}
+
+impl EquipmentSlotType {
+    pub fn from_slot_index(slot_index: usize) -> Option<Self> {
+        if slot_index >= EQUIPMENT_SLOT_START_INDEX
+            && slot_index < EQUIPMENT_SLOT_START_INDEX + NUM_EQUIPMENT_SLOTS
+        {
+            match slot_index - EQUIPMENT_SLOT_START_INDEX {
+                0 => Some(EquipmentSlotType::Hat),
+                1 => Some(EquipmentSlotType::Armor),
+                2 => Some(EquipmentSlotType::Shoes),
+                _ => None,
+            }
+        } else {
+            None
+        }
+    }
+
+    pub fn to_slot_index(&self) -> usize {
+        EQUIPMENT_SLOT_START_INDEX + (*self as usize)
+    }
+
+    pub fn display_name(&self) -> &'static str {
+        match self {
+            EquipmentSlotType::Hat => "Hat",
+            EquipmentSlotType::Armor => "Armor",
+            EquipmentSlotType::Shoes => "Shoes",
+        }
+    }
+}
 
 #[derive(Clone, Debug)]
 pub struct InventorySlotData<'a> {
@@ -71,6 +108,7 @@ pub struct ItemBarWidget<'a> {
     pub _layer: *const WidgetDefault<'a>,
     pub _item_widgets: Vec<ItemWidget<'a>>,
     pub _inventory_slots: Vec<InventorySlotData<'a>>,
+    pub _inventory_rows: usize,
     pub _active_row_index: usize,
     pub _selected_item_widget: ItemSelectionWidget<'a>,
     pub _selected_inventory_slot_index: usize,
