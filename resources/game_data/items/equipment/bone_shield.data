@@ -2,5 +2,6 @@
     "_item_type": "Rock",
     "_model_data_name": "items/rock",
     "_name": "BONE SHIELD",
-    "_ui_material_instance": "ui/items/item_rock"
+    "_ui_material_instance": "ui/items/item_rock",
+    "_description": "Defensive shield crafted from thick animal bones."
 }

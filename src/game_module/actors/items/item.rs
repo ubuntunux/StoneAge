@@ -47,6 +47,7 @@ impl Default for ItemData {
             _model_data_name: String::new(),
             _name: String::new(),
             _ui_material_instance: String::new(),
+            _description: String::new(),
             _weapon_damage: 10.0,
             _weapon_range: 0.0,
         }
@@ -54,8 +55,47 @@ impl Default for ItemData {
 }
 
 impl ItemDataType {
+    pub fn item_code(&self) -> &'static str {
+        match self {
+            ItemDataType::None => "",
+            ItemDataType::Hand => "items/hand",
+            ItemDataType::Bow => "items/equipment/hunting_bow",
+            ItemDataType::EnergyBall => "items/energy_ball",
+            ItemDataType::Food => "items/foods/roast_meat",
+            ItemDataType::Meat => "items/meat",
+            ItemDataType::Coconut => "items/coconut",
+            ItemDataType::Rock => "items/rock",
+            ItemDataType::SpiritBall => "items/spirit_ball",
+            ItemDataType::MeleeWeapon => "items/equipment/stone_axe",
+            ItemDataType::StoneAxe => "items/equipment/stone_axe",
+            ItemDataType::Spear => "items/equipment/flint_spear",
+            ItemDataType::Wood => "items/wood",
+            ItemDataType::FishingRod => "items/fishing_rod",
+            ItemDataType::LeatherArmor => "items/equipment/leather_armor",
+            ItemDataType::BoneShield => "items/equipment/bone_shield",
+            ItemDataType::Campfire => "items/equipment/campfire",
+            ItemDataType::Worktable => "items/equipment/worktable",
+            ItemDataType::RoastMeat => "items/foods/roast_meat",
+            ItemDataType::FishSoup => "items/foods/fish_soup",
+            ItemDataType::SteamedVegetables => "items/foods/steamed_vegetables",
+            ItemDataType::EnergyStew => "items/foods/energy_stew",
+            ItemDataType::GoldenFeast => "items/foods/golden_feast",
+            ItemDataType::WoodenClub => "items/wooden_club",
+        }
+    }
+
     pub fn is_eatable(&self) -> bool {
-        *self == ItemDataType::Food
+        matches!(
+            *self,
+            ItemDataType::Food
+                | ItemDataType::Meat
+                | ItemDataType::Coconut
+                | ItemDataType::RoastMeat
+                | ItemDataType::FishSoup
+                | ItemDataType::SteamedVegetables
+                | ItemDataType::EnergyStew
+                | ItemDataType::GoldenFeast
+        )
     }
 
     pub fn is_droppable(&self) -> bool {
@@ -63,7 +103,14 @@ impl ItemDataType {
     }
 
     pub fn is_weapon_item_type(&self) -> bool {
-        *self == ItemDataType::Bow || *self == ItemDataType::MeleeWeapon || *self == ItemDataType::Spear
+        matches!(
+            *self,
+            ItemDataType::Bow
+                | ItemDataType::MeleeWeapon
+                | ItemDataType::Spear
+                | ItemDataType::StoneAxe
+                | ItemDataType::WoodenClub
+        )
     }
 
     pub fn is_fishing_item_type(&self) -> bool {

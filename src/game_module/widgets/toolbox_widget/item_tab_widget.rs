@@ -1,12 +1,13 @@
 use crate::game_module::actors::character::CharacterCreateInfo;
+use crate::game_module::actors::items::ItemDataType;
 use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, AUDIO_QUEST_COMPLETE, ITEM_ENERGY_BALL};
 use crate::game_module::game_service_locator::{
-    get_character_manager, get_character_manager_mut, get_game_scene_manager, get_game_ui_manager,
-    get_game_ui_manager_mut,
+    get_character_manager, get_character_manager_mut, get_game_resources, get_game_scene_manager,
+    get_game_ui_manager, get_game_ui_manager_mut,
 };
 use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
-use rust_engine_3d::core::engine_service_locator::get_audio_manager_mut;
+use rust_engine_3d::core::engine_service_locator::{get_audio_manager_mut, get_engine_resources};
 use rust_engine_3d::scene::ui::{
     HorizontalAlign, Orientation, UIComponentInstance, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign,
     WidgetDefault,
@@ -16,10 +17,9 @@ use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use std::ffi::c_void;
 use std::rc::Rc;
 
-const ITEM_ROW_HEIGHT: f32 = 90.0;
-const ITEM_ICON_SIZE: f32 = 70.0;
-const ACTION_BUTTON_WIDTH: f32 = 130.0;
-const ACTION_BUTTON_HEIGHT: f32 = 40.0;
+const ITEM_ROW_HEIGHT: f32 = 80.0;
+const ACTION_BUTTON_WIDTH: f32 = 120.0;
+const ACTION_BUTTON_HEIGHT: f32 = 34.0;
 
 fn spawn_npc_near_monolith(character_data_name: &str, offset: Vector3<f32>) {
     let monolith_pos = if let Some(monolith) = get_game_scene_manager().get_prop_manager().get_prop_by_name("monolith")
@@ -98,6 +98,30 @@ impl ToolboxIconType {
         }
     }
 
+    pub fn item_code(&self) -> &'static str {
+        match self {
+            ToolboxIconType::HandSkill => "items/hand",
+            ToolboxIconType::QuickGather => "items/hand",
+            ToolboxIconType::StoneShelter => "items/rock",
+            ToolboxIconType::Watchtower => "items/wood",
+            ToolboxIconType::RoastMeat => "items/foods/roast_meat",
+            ToolboxIconType::FishSoup => "items/foods/fish_soup",
+            ToolboxIconType::StoneAxe => "items/equipment/stone_axe",
+            ToolboxIconType::Worktable => "items/equipment/worktable",
+            ToolboxIconType::Campfire => "items/equipment/campfire",
+            ToolboxIconType::WoodenCart => "items/wood",
+            ToolboxIconType::RidingMammoth => "items/meat",
+            ToolboxIconType::FlintSpear => "items/equipment/flint_spear",
+            ToolboxIconType::HuntingBow => "items/equipment/hunting_bow",
+            ToolboxIconType::LeatherArmor => "items/equipment/leather_armor",
+            ToolboxIconType::BoneShield => "items/equipment/bone_shield",
+            ToolboxIconType::NpcGatherer => "items/hand",
+            ToolboxIconType::NpcCrafter => "items/equipment/worktable",
+            ToolboxIconType::NpcGuard => "items/equipment/flint_spear",
+            ToolboxIconType::NpcHunter => "items/equipment/hunting_bow",
+        }
+    }
+
     pub fn icon_str(&self) -> &'static str {
         match self {
             ToolboxIconType::HandSkill => "[HAND]",
@@ -159,15 +183,69 @@ impl ToolboxItemData {
     }
 }
 
+pub struct IngredientWidgetItem<'a> {
+    pub _layout: Rc<WidgetDefault<'a>>,
+    pub _icon: Rc<WidgetDefault<'a>>,
+    pub _label: Rc<WidgetDefault<'a>>,
+    pub _item_type: ItemDataType,
+    pub _count: usize,
+}
+
+impl<'a> IngredientWidgetItem<'a> {
+    pub fn item_code(&self) -> &'static str {
+        self._item_type.item_code()
+    }
+}
+
 pub struct ToolboxItemWidget<'a> {
     pub _layout: Rc<WidgetDefault<'a>>,
+    pub _product_icon: Rc<WidgetDefault<'a>>,
+    pub _name_lbl: Rc<WidgetDefault<'a>>,
+    pub _desc_lbl: Rc<WidgetDefault<'a>>,
     pub _status_label: Rc<WidgetDefault<'a>>,
+    pub _ing_widgets: Vec<IngredientWidgetItem<'a>>,
     pub _action_btn: Rc<WidgetDefault<'a>>,
     pub _state: ToolboxItemState,
     pub _data: ToolboxItemData,
 }
 
 impl<'a> ToolboxItemWidget<'a> {
+    pub fn get_item_name_from_resource(item_code: &str) -> String {
+        let resources = get_game_resources();
+        if resources.has_item_data(item_code) {
+            resources.get_item_data(item_code).borrow()._name.clone()
+        } else {
+            item_code.to_string()
+        }
+    }
+
+    pub fn get_item_description_from_resource(item_code: &str) -> String {
+        let resources = get_game_resources();
+        if resources.has_item_data(item_code) {
+            let desc = resources.get_item_data(item_code).borrow()._description.clone();
+            if !desc.is_empty() {
+                return desc;
+            }
+        }
+        item_code.to_string()
+    }
+
+    pub fn setup_item_icon(icon_widget: &Rc<WidgetDefault<'a>>, item_code: &str) {
+        let resources = get_game_resources();
+        if resources.has_item_data(item_code) {
+            let item_data = resources.get_item_data(item_code).borrow();
+            let mat_name = &item_data._ui_material_instance;
+            if !mat_name.is_empty() {
+                let engine_res = get_engine_resources();
+                if engine_res.has_material_instance_data(mat_name.as_str()) {
+                    let material = engine_res.get_material_instance_data(mat_name.as_str());
+                    let ui = ptr_as_mut(icon_widget.as_ref()).get_ui_component_mut();
+                    ui.set_material_instance(Some(material.clone()));
+                }
+            }
+        }
+    }
+
     pub fn callback_item_touch_over(
         _ui_component: &UIComponentInstance<'a>,
         _touched_pos: &nalgebra::Vector2<f32>,
@@ -231,8 +309,9 @@ impl<'a> ToolboxItemWidget<'a> {
                             cost,
                             current_energy_balls
                         );
+                        let mat_name = Self::get_item_name_from_resource(ITEM_ENERGY_BALL);
                         let status_ui = ptr_as_mut(self._status_label.as_ref()).get_ui_component_mut();
-                        status_ui.set_text(&format!("Need {} EnergyBall (Have {})", cost, current_energy_balls));
+                        status_ui.set_text(&format!("Need {} {} (Have {})", cost, mat_name, current_energy_balls));
                         status_ui.set_font_color(get_color32(230, 80, 80, 255));
                     }
                 } else {
@@ -253,6 +332,31 @@ impl<'a> ToolboxItemWidget<'a> {
     }
 
     pub fn update_ui(&mut self) {
+        let ui_mgr = get_game_ui_manager();
+
+        // Refresh description if set in ItemData
+        let item_code = self._data.icon_type.item_code();
+        let desc_text = Self::get_item_description_from_resource(item_code);
+        if !desc_text.is_empty() && desc_text != item_code {
+            let desc_ui = ptr_as_mut(self._desc_lbl.as_ref()).get_ui_component_mut();
+            desc_ui.set_text(&desc_text);
+        }
+
+        // Refresh material widgets
+        for ing_widget in self._ing_widgets.iter_mut() {
+            let item_code = ing_widget.item_code();
+            let have_count = ui_mgr.get_item_count(item_code);
+            let mat_name = Self::get_item_name_from_resource(item_code);
+            let text = format!("{} ({}/{})", mat_name, have_count, ing_widget._count);
+            let lbl_ui = ptr_as_mut(ing_widget._label.as_ref()).get_ui_component_mut();
+            lbl_ui.set_text(&text);
+            if have_count >= ing_widget._count {
+                lbl_ui.set_font_color(get_color32(230, 235, 240, 255));
+            } else {
+                lbl_ui.set_font_color(get_color32(235, 100, 100, 255));
+            }
+        }
+
         let status_ui = ptr_as_mut(self._status_label.as_ref()).get_ui_component_mut();
         let btn_ui = ptr_as_mut(self._action_btn.as_ref()).get_ui_component_mut();
 
@@ -262,8 +366,16 @@ impl<'a> ToolboxItemWidget<'a> {
                 status_ui.set_font_color(get_color32(150, 150, 150, 255));
 
                 btn_ui.set_text(&format!("Unlock ({})", self._data.cost_label()));
-                btn_ui.set_color(get_color32(65, 65, 65, 255)); // Dark Gray
-                btn_ui.set_border_color(get_color32(100, 100, 100, 255));
+                let current_energy_balls = ui_mgr.get_item_count(ITEM_ENERGY_BALL);
+                if self._data.energy_cost == 0 || current_energy_balls >= self._data.energy_cost {
+                    btn_ui.set_color(get_color32(75, 80, 90, 255));
+                    btn_ui.set_border_color(get_color32(115, 120, 130, 255));
+                    btn_ui.set_font_color(get_color32(255, 255, 255, 255));
+                } else {
+                    btn_ui.set_color(get_color32(45, 48, 52, 255));
+                    btn_ui.set_border_color(get_color32(65, 70, 75, 255));
+                    btn_ui.set_font_color(get_color32(150, 150, 150, 255));
+                }
                 btn_ui.set_renderable(true);
                 btn_ui.set_touchable(true);
                 btn_ui.set_enable(true);
@@ -290,85 +402,176 @@ impl<'a> ToolboxItemWidget<'a> {
         ui.set_valign(VerticalAlign::CENTER);
         ui.set_size_hint_x(Some(1.0));
         ui.set_size_y(ITEM_ROW_HEIGHT);
-        ui.set_padding(10.0);
-        ui.set_color(get_color32(45, 45, 45, 200));
-        ui.set_border_color(get_color32(80, 80, 80, 255));
-        ui.set_border(1.0);
-        ui.set_round(8.0);
-        ui.set_margin(5.0);
+        ui.set_padding(8.0);
+        ui.set_color(get_color32(40, 43, 48, 220));
+        ui.set_border_color(get_color32(65, 70, 78, 255));
+        ui.set_border(2.0);
+        ui.set_round(6.0);
+        ui.set_margin(3.0);
         ui.set_touchable(true);
         ui.set_callback_touch_over(Some(Box::new(Self::callback_item_touch_over)));
         ui.set_callback_touch_down(Some(Box::new(Self::callback_item_select)));
         parent_widget.add_widget(&layout);
 
-        // Icon display (Gray tone)
-        let icon = UIManager::create_widget(&format!("item_icon_{}", data.id), UIWidgetTypes::Default);
-        let ui = ptr_as_mut(icon.as_ref()).get_ui_component_mut();
-        ui.set_size(ITEM_ICON_SIZE, ITEM_ICON_SIZE);
-        ui.set_halign(HorizontalAlign::CENTER);
-        ui.set_valign(VerticalAlign::CENTER);
-        ui.set_color(get_color32(65, 65, 65, 255));
-        ui.set_border_color(get_color32(110, 110, 110, 255));
-        ui.set_border(2.0);
-        ui.set_round(8.0);
-        ui.set_margin(5.0);
-        ui.set_text(data.icon_type.icon_str());
-        ui.set_font_size(15.0);
-        ui.set_font_color(get_color32(230, 230, 230, 255));
-        layout_mut.add_widget(&icon);
-
-        // Info container (Vertical layout: Name, Description, Status Label)
-        let info = UIManager::create_widget(&format!("item_info_{}", data.id), UIWidgetTypes::Default);
-        let info_mut = ptr_as_mut(info.as_ref());
-        let ui = info_mut.get_ui_component_mut();
+        // 1. Left Product Section (Vertical: Icon + Name on top, Description below)
+        let product_set = UIManager::create_widget(&format!("item_prod_set_{}", data.id), UIWidgetTypes::Default);
+        let product_set_mut = ptr_as_mut(product_set.as_ref());
+        let ui = product_set_mut.get_ui_component_mut();
         ui.set_layout_type(UILayoutType::BoxLayout);
         ui.set_layout_orientation(Orientation::VERTICAL);
-        ui.set_halign(HorizontalAlign::LEFT);
+        ui.set_size(240.0, 68.0);
         ui.set_valign(VerticalAlign::CENTER);
-        ui.set_size_hint_x(Some(1.0));
-        ui.set_size_y(ITEM_ROW_HEIGHT);
-        ui.set_padding(5.0);
-        ui.set_renderable(false);
-        layout_mut.add_widget(&info);
+        ui.set_margin_right(10.0);
+        ui.set_color(get_color32(0, 0, 0, 0));
+        layout_mut.add_widget(&product_set);
 
-        // Name label
-        let name_label = UIManager::create_widget(&format!("item_name_{}", data.id), UIWidgetTypes::Default);
-        let ui = ptr_as_mut(name_label.as_ref()).get_ui_component_mut();
-        ui.set_halign(HorizontalAlign::LEFT);
+        // Top Header: Icon + Name
+        let product_hdr = UIManager::create_widget(&format!("item_prod_hdr_{}", data.id), UIWidgetTypes::Default);
+        let product_hdr_mut = ptr_as_mut(product_hdr.as_ref());
+        let ui = product_hdr_mut.get_ui_component_mut();
+        ui.set_layout_type(UILayoutType::BoxLayout);
+        ui.set_layout_orientation(Orientation::HORIZONTAL);
+        ui.set_size_hint_x(Some(1.0));
+        ui.set_size_y(36.0);
         ui.set_valign(VerticalAlign::CENTER);
+        ui.set_color(get_color32(0, 0, 0, 0));
+        product_set_mut.add_widget(&product_hdr);
+
+        // Product Icon (32x32)
+        let product_icon = UIManager::create_widget(&format!("item_prod_icon_{}", data.id), UIWidgetTypes::Default);
+        let ui = ptr_as_mut(product_icon.as_ref()).get_ui_component_mut();
+        ui.set_size(32.0, 32.0);
+        ui.set_valign(VerticalAlign::CENTER);
+        ui.set_halign(HorizontalAlign::LEFT);
+        ui.set_margin_right(6.0);
+        ui.set_color(get_color32(255, 255, 255, 255));
+        product_hdr_mut.add_widget(&product_icon);
+        Self::setup_item_icon(&product_icon, data.icon_type.item_code());
+
+        // Product Name Label
+        let item_code = data.icon_type.item_code();
+        let item_name = Self::get_item_name_from_resource(item_code);
+        let display_name = if item_name == item_code {
+            data.icon_type.as_str().to_string()
+        } else {
+            item_name
+        };
+        let name_lbl = UIManager::create_widget(&format!("item_name_{}", data.id), UIWidgetTypes::Default);
+        let ui = ptr_as_mut(name_lbl.as_ref()).get_ui_component_mut();
+        ui.set_size_hint_x(Some(1.0));
+        ui.set_size_y(32.0);
+        ui.set_valign(VerticalAlign::CENTER);
+        ui.set_text(&display_name);
+        ui.set_font_size(18.0);
+        ui.set_font_color(get_color32(255, 255, 255, 255));
+        ui.set_color(get_color32(0, 0, 0, 0));
+        product_hdr_mut.add_widget(&name_lbl);
+
+        // Description Label
+        let desc_text = Self::get_item_description_from_resource(item_code);
+        let display_desc = if desc_text.is_empty() || desc_text == item_code {
+            data.description.clone()
+        } else {
+            desc_text
+        };
+        let desc_lbl = UIManager::create_widget(&format!("item_desc_{}", data.id), UIWidgetTypes::Default);
+        let ui = ptr_as_mut(desc_lbl.as_ref()).get_ui_component_mut();
         ui.set_size_hint_x(Some(1.0));
         ui.set_size_y(26.0);
-        ui.set_text(data.icon_type.as_str());
-        ui.set_font_size(20.0);
-        ui.set_font_color(get_color32(220, 220, 220, 255));
-        ui.set_renderable(false);
-        info_mut.add_widget(&name_label);
+        ui.set_text(&display_desc);
+        ui.set_font_size(14.0);
+        ui.set_font_color(get_color32(180, 185, 195, 255));
+        ui.set_color(get_color32(0, 0, 0, 0));
+        product_set_mut.add_widget(&desc_lbl);
 
-        // Description label
-        let desc_label = UIManager::create_widget(&format!("item_desc_{}", data.id), UIWidgetTypes::Default);
-        let ui = ptr_as_mut(desc_label.as_ref()).get_ui_component_mut();
-        ui.set_halign(HorizontalAlign::LEFT);
-        ui.set_valign(VerticalAlign::CENTER);
+        // 2. Middle Materials Box (Horizontal layout for required ingredients)
+        let ing_box = UIManager::create_widget(&format!("item_ing_box_{}", data.id), UIWidgetTypes::Default);
+        let ing_box_mut = ptr_as_mut(ing_box.as_ref());
+        let ui = ing_box_mut.get_ui_component_mut();
+        ui.set_layout_type(UILayoutType::BoxLayout);
+        ui.set_layout_orientation(Orientation::HORIZONTAL);
         ui.set_size_hint_x(Some(1.0));
-        ui.set_size_y(22.0);
-        ui.set_text(&data.description);
-        ui.set_font_size(15.0);
-        ui.set_font_color(get_color32(160, 160, 160, 220));
-        ui.set_renderable(false);
-        info_mut.add_widget(&desc_label);
+        ui.set_size_y(56.0);
+        ui.set_valign(VerticalAlign::CENTER);
+        ui.set_color(get_color32(0, 0, 0, 0));
+        layout_mut.add_widget(&ing_box);
+
+        let mut ing_widgets = Vec::new();
+        if data.energy_cost > 0 {
+            let ing_set = UIManager::create_widget(&format!("item_ing_set_{}", data.id), UIWidgetTypes::Default);
+            let ing_set_mut = ptr_as_mut(ing_set.as_ref());
+            let ui = ing_set_mut.get_ui_component_mut();
+            ui.set_layout_type(UILayoutType::BoxLayout);
+            ui.set_layout_orientation(Orientation::HORIZONTAL);
+            ui.set_size_y(32.0);
+            ui.set_valign(VerticalAlign::CENTER);
+            ui.set_margin_right(14.0);
+            ui.set_color(get_color32(0, 0, 0, 0));
+            ing_box_mut.add_widget(&ing_set);
+
+            // Material Icon (28x28)
+            let ing_icon = UIManager::create_widget(&format!("item_ing_icon_{}", data.id), UIWidgetTypes::Default);
+            let ui = ptr_as_mut(ing_icon.as_ref()).get_ui_component_mut();
+            ui.set_size(28.0, 28.0);
+            ui.set_valign(VerticalAlign::CENTER);
+            ui.set_margin_right(4.0);
+            ui.set_color(get_color32(255, 255, 255, 255));
+            ing_set_mut.add_widget(&ing_icon);
+            Self::setup_item_icon(&ing_icon, ITEM_ENERGY_BALL);
+
+            // Material Label (Name (have/cost))
+            let ing_lbl = UIManager::create_widget(&format!("item_ing_lbl_{}", data.id), UIWidgetTypes::Default);
+            let ui = ptr_as_mut(ing_lbl.as_ref()).get_ui_component_mut();
+            ui.set_size_y(28.0);
+            ui.set_valign(VerticalAlign::CENTER);
+            ui.set_font_size(16.0);
+            ui.set_font_color(get_color32(230, 235, 240, 255));
+            ui.set_color(get_color32(0, 0, 0, 0));
+            ing_set_mut.add_widget(&ing_lbl);
+
+            ing_widgets.push(IngredientWidgetItem {
+                _layout: ing_set,
+                _icon: ing_icon,
+                _label: ing_lbl,
+                _item_type: ItemDataType::EnergyBall,
+                _count: data.energy_cost,
+            });
+        } else {
+            let free_lbl = UIManager::create_widget(&format!("item_free_lbl_{}", data.id), UIWidgetTypes::Default);
+            let ui = ptr_as_mut(free_lbl.as_ref()).get_ui_component_mut();
+            ui.set_size_y(28.0);
+            ui.set_valign(VerticalAlign::CENTER);
+            ui.set_text("Free");
+            ui.set_font_size(16.0);
+            ui.set_font_color(get_color32(100, 210, 120, 255));
+            ui.set_color(get_color32(0, 0, 0, 0));
+            ing_box_mut.add_widget(&free_lbl);
+        }
+
+        // 3. Right Section: Status label & Action Button
+        let right_set = UIManager::create_widget(&format!("item_right_set_{}", data.id), UIWidgetTypes::Default);
+        let right_set_mut = ptr_as_mut(right_set.as_ref());
+        let ui = right_set_mut.get_ui_component_mut();
+        ui.set_layout_type(UILayoutType::BoxLayout);
+        ui.set_layout_orientation(Orientation::VERTICAL);
+        ui.set_size(ACTION_BUTTON_WIDTH + 10.0, 56.0);
+        ui.set_valign(VerticalAlign::CENTER);
+        ui.set_halign(HorizontalAlign::CENTER);
+        ui.set_color(get_color32(0, 0, 0, 0));
+        layout_mut.add_widget(&right_set);
 
         // Status label
         let status_label = UIManager::create_widget(&format!("item_status_{}", data.id), UIWidgetTypes::Default);
         let ui = ptr_as_mut(status_label.as_ref()).get_ui_component_mut();
-        ui.set_halign(HorizontalAlign::LEFT);
-        ui.set_valign(VerticalAlign::CENTER);
         ui.set_size_hint_x(Some(1.0));
-        ui.set_size_y(20.0);
+        ui.set_size_y(18.0);
+        ui.set_halign(HorizontalAlign::CENTER);
+        ui.set_valign(VerticalAlign::CENTER);
         ui.set_text("Status: Locked");
-        ui.set_font_size(14.0);
+        ui.set_font_size(13.0);
         ui.set_font_color(get_color32(150, 150, 150, 255));
-        ui.set_renderable(false);
-        info_mut.add_widget(&status_label);
+        ui.set_color(get_color32(0, 0, 0, 0));
+        right_set_mut.add_widget(&status_label);
 
         // Action button (Unlock)
         let action_btn = UIManager::create_widget(&format!("item_action_{}", data.id), UIWidgetTypes::Default);
@@ -380,23 +583,27 @@ impl<'a> ToolboxItemWidget<'a> {
         ui.set_border_color(get_color32(100, 100, 100, 255));
         ui.set_border(2.0);
         ui.set_round(6.0);
-        ui.set_margin(10.0);
         ui.set_text(&format!("Unlock ({})", data.cost_label()));
-        ui.set_font_size(18.0);
+        ui.set_font_size(15.0);
         ui.set_font_color(get_color32(230, 230, 230, 255));
         ui.set_touchable(true);
         ui.set_callback_touch_over(Some(Box::new(Self::callback_item_touch_over)));
         ui.set_callback_touch_down(Some(Box::new(Self::callback_item_action)));
-        layout_mut.add_widget(&action_btn);
+        right_set_mut.add_widget(&action_btn);
 
-        let item = Box::new(ToolboxItemWidget {
+        let mut item = Box::new(ToolboxItemWidget {
             _layout: layout,
+            _product_icon: product_icon,
+            _name_lbl: name_lbl,
+            _desc_lbl: desc_lbl,
             _status_label: status_label,
+            _ing_widgets: ing_widgets,
             _action_btn: action_btn,
             _state: ToolboxItemState::Locked,
             _data: data,
         });
 
+        item.update_ui();
         item
     }
 }
@@ -477,6 +684,7 @@ impl<'a> ToolboxTabWidget<'a> {
                 let item_ptr = item.as_ref() as *const ToolboxItemWidget<'a> as *const c_void;
                 ptr_as_mut(item._action_btn.as_ref()).get_ui_component_mut().set_user_data(item_ptr);
                 ptr_as_mut(item._layout.as_ref()).get_ui_component_mut().set_user_data(item_ptr);
+                item.update_ui();
             }
             ptr_as_mut(self._layout.as_ref()).get_ui_component_mut().set_enable(true);
             self._is_visible = true;
@@ -490,3 +698,4 @@ impl<'a> ToolboxTabWidget<'a> {
         }
     }
 }
+

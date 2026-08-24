@@ -2,5 +2,6 @@
     "_item_type": "Food",
     "_model_data_name": "items/coconut",
     "_name": "STEAMED VEGETABLES",
-    "_ui_material_instance": "ui/items/item_coconut"
+    "_ui_material_instance": "ui/items/item_coconut",
+    "_description": "Healthy steamed veggies restoring 25 HP & 40 Stamina."
 }

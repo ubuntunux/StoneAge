@@ -26,6 +26,19 @@ pub enum ItemDataType {
     Spear,
     Wood,
     FishingRod,
+    Meat,
+    Coconut,
+    StoneAxe,
+    LeatherArmor,
+    BoneShield,
+    Campfire,
+    Worktable,
+    RoastMeat,
+    FishSoup,
+    SteamedVegetables,
+    EnergyStew,
+    GoldenFeast,
+    WoodenClub,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
@@ -53,6 +66,7 @@ pub struct ItemData {
     pub _model_data_name: String,
     pub _name: String,
     pub _ui_material_instance: String,
+    pub _description: String,
     pub _weapon_damage: f32,
     pub _weapon_range: f32,
 }

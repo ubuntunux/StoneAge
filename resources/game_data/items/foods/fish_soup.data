@@ -2,5 +2,6 @@
     "_item_type": "Food",
     "_model_data_name": "props/meat",
     "_name": "FISH SOUP",
-    "_ui_material_instance": "ui/items/item_meat"
+    "_ui_material_instance": "ui/items/item_meat",
+    "_description": "Nutritious fish soup restoring 40 HP & Speed."
 }

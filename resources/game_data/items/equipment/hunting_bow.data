@@ -2,5 +2,6 @@
     "_item_type": "Bow",
     "_model_data_name": "items/wooden_club",
     "_name": "HUNTING BOW",
-    "_ui_material_instance": "ui/items/item_wooden_club"
+    "_ui_material_instance": "ui/items/item_wooden_club",
+    "_description": "Long-range bow for hunting wild animals safely."
 }

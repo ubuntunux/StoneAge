@@ -2,5 +2,6 @@
     "_item_type": "Wood",
     "_model_data_name": "items/wood",
     "_name": "CAMPFIRE",
-    "_ui_material_instance": "ui/items/item_wood"
+    "_ui_material_instance": "ui/items/item_wood",
+    "_description": "Provides light, warmth, and cooking capability."
 }

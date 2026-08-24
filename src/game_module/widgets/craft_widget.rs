@@ -1,6 +1,6 @@
 use crate::game_module::actors::character::Character;
 use crate::game_module::actors::items::ItemDataType;
-use crate::game_module::game_constants::AUDIO_PICKUP_ITEM;
+use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, AUDIO_SELECT_ITEM};
 use crate::game_module::game_service_locator::{
     get_character_manager_mut, get_game_resources, get_game_ui_manager, get_game_ui_manager_mut, get_item_manager_mut,
 };
@@ -20,33 +20,38 @@ use std::rc::Rc;
 use winit::keyboard::KeyCode;
 
 pub struct IngredientReq {
-    pub item_code: &'static str,
     pub item_type: ItemDataType,
     pub count: usize,
 }
 
+impl IngredientReq {
+    pub fn item_code(&self) -> &'static str {
+        self.item_type.item_code()
+    }
+}
+
 pub struct CraftRecipeData {
     pub id: &'static str,
-    pub description: &'static str,
-    pub item_code: &'static str,
     pub item_type: ItemDataType,
     pub materials: &'static [IngredientReq],
+}
+
+impl CraftRecipeData {
+    pub fn item_code(&self) -> &'static str {
+        self.item_type.item_code()
+    }
 }
 
 pub const CRAFT_RECIPES: [CraftRecipeData; 7] = [
     CraftRecipeData {
         id: "stone_axe",
-        description: "Essential tool for chopping trees and mining rocks.",
-        item_code: "items/equipment/stone_axe",
-        item_type: ItemDataType::MeleeWeapon,
+        item_type: ItemDataType::StoneAxe,
         materials: &[
             IngredientReq {
-                item_code: "items/wood",
                 item_type: ItemDataType::Wood,
                 count: 2,
             },
             IngredientReq {
-                item_code: "items/rock",
                 item_type: ItemDataType::Rock,
                 count: 2,
             },
@@ -54,17 +59,13 @@ pub const CRAFT_RECIPES: [CraftRecipeData; 7] = [
     },
     CraftRecipeData {
         id: "flint_spear",
-        description: "Sharp hunting spear dealing high melee damage.",
-        item_code: "items/equipment/flint_spear",
         item_type: ItemDataType::Spear,
         materials: &[
             IngredientReq {
-                item_code: "items/wood",
                 item_type: ItemDataType::Wood,
                 count: 3,
             },
             IngredientReq {
-                item_code: "items/rock",
                 item_type: ItemDataType::Rock,
                 count: 2,
             },
@@ -72,17 +73,13 @@ pub const CRAFT_RECIPES: [CraftRecipeData; 7] = [
     },
     CraftRecipeData {
         id: "hunting_bow",
-        description: "Long-range bow for hunting wild animals safely.",
-        item_code: "items/equipment/hunting_bow",
         item_type: ItemDataType::Bow,
         materials: &[
             IngredientReq {
-                item_code: "items/wood",
                 item_type: ItemDataType::Wood,
                 count: 4,
             },
             IngredientReq {
-                item_code: "items/rock",
                 item_type: ItemDataType::Rock,
                 count: 2,
             },
@@ -90,17 +87,13 @@ pub const CRAFT_RECIPES: [CraftRecipeData; 7] = [
     },
     CraftRecipeData {
         id: "leather_armor",
-        description: "Sturdy armor offering defense against wild beasts.",
-        item_code: "items/equipment/leather_armor",
-        item_type: ItemDataType::Food,
+        item_type: ItemDataType::LeatherArmor,
         materials: &[
             IngredientReq {
-                item_code: "items/meat",
-                item_type: ItemDataType::Food,
+                item_type: ItemDataType::Meat,
                 count: 3,
             },
             IngredientReq {
-                item_code: "items/wood",
                 item_type: ItemDataType::Wood,
                 count: 2,
             },
@@ -108,17 +101,13 @@ pub const CRAFT_RECIPES: [CraftRecipeData; 7] = [
     },
     CraftRecipeData {
         id: "bone_shield",
-        description: "Defensive shield crafted from thick animal bones.",
-        item_code: "items/equipment/bone_shield",
-        item_type: ItemDataType::Rock,
+        item_type: ItemDataType::BoneShield,
         materials: &[
             IngredientReq {
-                item_code: "items/wood",
                 item_type: ItemDataType::Wood,
                 count: 4,
             },
             IngredientReq {
-                item_code: "items/rock",
                 item_type: ItemDataType::Rock,
                 count: 2,
             },
@@ -126,17 +115,13 @@ pub const CRAFT_RECIPES: [CraftRecipeData; 7] = [
     },
     CraftRecipeData {
         id: "campfire",
-        description: "Provides light, warmth, and cooking capability.",
-        item_code: "items/equipment/campfire",
-        item_type: ItemDataType::Wood,
+        item_type: ItemDataType::Campfire,
         materials: &[
             IngredientReq {
-                item_code: "items/wood",
                 item_type: ItemDataType::Wood,
                 count: 5,
             },
             IngredientReq {
-                item_code: "items/rock",
                 item_type: ItemDataType::Rock,
                 count: 5,
             },
@@ -144,17 +129,13 @@ pub const CRAFT_RECIPES: [CraftRecipeData; 7] = [
     },
     CraftRecipeData {
         id: "worktable",
-        description: "Essential workbench for crafting complex gear.",
-        item_code: "items/equipment/worktable",
-        item_type: ItemDataType::Wood,
+        item_type: ItemDataType::Worktable,
         materials: &[
             IngredientReq {
-                item_code: "items/wood",
                 item_type: ItemDataType::Wood,
                 count: 8,
             },
             IngredientReq {
-                item_code: "items/rock",
                 item_type: ItemDataType::Rock,
                 count: 4,
             },
@@ -196,6 +177,17 @@ impl<'a> CraftWidget<'a> {
         } else {
             item_code.to_string()
         }
+    }
+
+    pub fn get_item_description_from_resource(item_code: &str) -> String {
+        let resources = get_game_resources();
+        if resources.has_item_data(item_code) {
+            let desc = resources.get_item_data(item_code).borrow()._description.clone();
+            if !desc.is_empty() {
+                return desc;
+            }
+        }
+        item_code.to_string()
     }
 
     pub fn setup_item_icon(icon_widget: &Rc<WidgetDefault<'a>>, item_code: &str) {
@@ -328,6 +320,8 @@ impl<'a> CraftWidget<'a> {
             ui.set_margin(2.0);
             ui.set_padding(8.0);
             ui.set_touchable(true);
+            ui.set_callback_touch_over(Some(Box::new(Self::callback_item_touch_over)));
+            ui.set_callback_touch_down(Some(Box::new(Self::callback_item_select)));
             content_pane_mut.add_widget(&row);
 
             // 1. Left Product Section (Vertical: Icon + Name on top, Description below)
@@ -363,10 +357,10 @@ impl<'a> CraftWidget<'a> {
             ui.set_margin_right(6.0);
             ui.set_color(get_color32(255, 255, 255, 255));
             product_hdr_mut.add_widget(&product_icon);
-            Self::setup_item_icon(&product_icon, recipe.item_code);
+            Self::setup_item_icon(&product_icon, recipe.item_code());
 
             // Product Name Label
-            let item_name = Self::get_item_name_from_resource(recipe.item_code);
+            let item_name = Self::get_item_name_from_resource(recipe.item_code());
             let name_lbl = UIManager::create_widget(&format!("craft_name_{}", recipe.id), UIWidgetTypes::Default);
             let ui = ptr_as_mut(name_lbl.as_ref()).get_ui_component_mut();
             ui.set_size_hint_x(Some(1.0));
@@ -383,7 +377,8 @@ impl<'a> CraftWidget<'a> {
             let ui = ptr_as_mut(desc_lbl.as_ref()).get_ui_component_mut();
             ui.set_size_hint_x(Some(1.0));
             ui.set_size_y(22.0);
-            ui.set_text(recipe.description);
+            let display_desc = Self::get_item_description_from_resource(recipe.item_code());
+            ui.set_text(&display_desc);
             ui.set_font_size(15.0);
             ui.set_font_color(get_color32(180, 185, 195, 255));
             ui.set_color(get_color32(0, 0, 0, 0));
@@ -422,7 +417,7 @@ impl<'a> CraftWidget<'a> {
                 ui.set_margin_right(4.0);
                 ui.set_color(get_color32(255, 255, 255, 255));
                 ing_set_mut.add_widget(&ing_icon);
-                Self::setup_item_icon(&ing_icon, req.item_code);
+                Self::setup_item_icon(&ing_icon, req.item_code());
 
                 // Material Label (Name (have/need))
                 let ing_lbl = UIManager::create_widget(&format!("craft_ing_lbl_{}_{}", recipe.id, ing_idx), UIWidgetTypes::Default);
@@ -490,6 +485,16 @@ impl<'a> CraftWidget<'a> {
         true
     }
 
+    fn callback_item_touch_over(_ui: &UIComponentInstance<'a>, _pos: &Vector2<f32>, _delta: &Vector2<f32>) -> bool {
+        get_audio_manager_mut().play_audio_bank(AUDIO_SELECT_ITEM, AudioLoop::ONCE, None);
+        true
+    }
+
+    fn callback_item_select(_ui: &UIComponentInstance<'a>, _pos: &Vector2<f32>, _delta: &Vector2<f32>) -> bool {
+        get_audio_manager_mut().play_audio_bank(AUDIO_SELECT_ITEM, AudioLoop::ONCE, None);
+        true
+    }
+
     fn callback_craft_action(ui: &UIComponentInstance<'a>, _pos: &Vector2<f32>, _delta: &Vector2<f32>) -> bool {
         let item_ptr = ui.get_user_data() as *const CraftWidgetItem<'a>;
         if !item_ptr.is_null() {
@@ -507,10 +512,10 @@ impl<'a> CraftWidget<'a> {
 
         // Check material counts
         for req in recipe.materials {
-            let have_count = get_game_ui_manager().get_item_count(req.item_code);
+            let have_count = get_game_ui_manager().get_item_count(req.item_code());
             if have_count < req.count {
-                let recipe_name = Self::get_item_name_from_resource(recipe.item_code);
-                let mat_name = Self::get_item_name_from_resource(req.item_code);
+                let recipe_name = Self::get_item_name_from_resource(recipe.item_code());
+                let mat_name = Self::get_item_name_from_resource(req.item_code());
                 log::warn!(
                     "[CraftWidget] Cannot craft {}: missing {} (have {}, need {})",
                     recipe_name,
@@ -525,15 +530,15 @@ impl<'a> CraftWidget<'a> {
         // Deduct materials
         let item_mgr = get_item_manager_mut();
         for req in recipe.materials {
-            item_mgr.remove_inventory_item(req.item_code, req.count);
+            item_mgr.remove_inventory_item(req.item_code(), req.count);
         }
 
         // Grant crafted item
-        item_mgr.pick_item(recipe.item_code, 1);
-        get_game_ui_manager_mut().notify_item_acquired(recipe.item_code, 1, true);
+        item_mgr.pick_item(recipe.item_code(), 1);
+        get_game_ui_manager_mut().notify_item_acquired(recipe.item_code(), 1, true);
         get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
 
-        let recipe_name = Self::get_item_name_from_resource(recipe.item_code);
+        let recipe_name = Self::get_item_name_from_resource(recipe.item_code());
         log::info!("[CraftWidget] Crafted {}", recipe_name);
         true
     }
@@ -576,20 +581,26 @@ impl<'a> CraftWidget<'a> {
             if item._recipe_index < CRAFT_RECIPES.len() {
                 let recipe = &CRAFT_RECIPES[item._recipe_index];
 
-                // Refresh main item name from ItemData _name
-                let recipe_item_name = Self::get_item_name_from_resource(recipe.item_code);
+                // Refresh main item name & description from ItemData
+                let recipe_item_name = Self::get_item_name_from_resource(recipe.item_code());
                 let name_ui = ptr_as_mut(item._name_lbl.as_ref()).get_ui_component_mut();
                 name_ui.set_text(&recipe_item_name);
+
+                let recipe_item_desc = Self::get_item_description_from_resource(recipe.item_code());
+                if !recipe_item_desc.is_empty() && recipe_item_desc != recipe.item_code() {
+                    let desc_ui = ptr_as_mut(item._desc_lbl.as_ref()).get_ui_component_mut();
+                    desc_ui.set_text(&recipe_item_desc);
+                }
 
                 // Refresh materials with ItemData _name & icon
                 let mut can_craft = true;
                 for (ing_idx, req) in recipe.materials.iter().enumerate() {
                     if ing_idx < item._ing_widgets.len() {
-                        let have = ui_mgr.get_item_count(req.item_code);
+                        let have = ui_mgr.get_item_count(req.item_code());
                         if have < req.count {
                             can_craft = false;
                         }
-                        let mat_name = Self::get_item_name_from_resource(req.item_code);
+                        let mat_name = Self::get_item_name_from_resource(req.item_code());
                         let text = format!("{} ({}/{})", mat_name, have, req.count);
                         let lbl_ui = ptr_as_mut(item._ing_widgets[ing_idx]._label.as_ref()).get_ui_component_mut();
                         lbl_ui.set_text(&text);
@@ -680,9 +691,11 @@ impl<'a> CraftWidget<'a> {
         if (is_up || stick_up) && self._selected_index > 0 {
             self._selected_index -= 1;
             self.update_selection_highlight();
+            get_audio_manager_mut().play_audio_bank(AUDIO_SELECT_ITEM, AudioLoop::ONCE, None);
         } else if (is_down || stick_down) && self._selected_index + 1 < self._items.len() {
             self._selected_index += 1;
             self.update_selection_highlight();
+            get_audio_manager_mut().play_audio_bank(AUDIO_SELECT_ITEM, AudioLoop::ONCE, None);
         }
 
         // Enter or Space or Gamepad A/X to Craft selected item

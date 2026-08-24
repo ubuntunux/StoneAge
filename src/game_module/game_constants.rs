@@ -147,6 +147,7 @@ pub const AUDIO_UFO_BEAM: &str = "ufo/ufo_beam";
 pub const AUDIO_UFO_FLYING: &str = "ufo/ufo_flying";
 pub const AUDIO_UFO_LABORATORY: &str = "ufo/ufo_laboratory";
 pub const AUDIO_UFO_EXPERIMENT: &str = "ufo/ufo_experiment";
+pub const AUDIO_SELECT_ITEM: &str = "pickup_item";
 
 // music
 pub const DEFAULT_BGM_VOLUME: Option<f32> = Some(1.0);

@@ -3,6 +3,7 @@
     "_model_data_name": "props/invisible_cube",
     "_name": "HAND",
     "_ui_material_instance": "ui/items/item_hand",
+    "_description": "Passive hand-based crafting skill.",
     "_weapon_damage": 10.0,
     "_weapon_range": 1.0
 }

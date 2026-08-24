@@ -646,6 +646,11 @@ impl<'a> ToolboxWidget<'a> {
             return;
         }
 
+        // Refresh material counts for active tab
+        for item in self.get_active_tab_mut()._items.iter_mut() {
+            item.update_ui();
+        }
+
         // Tab navigation (Keyboard Tab / Shift+Tab, Joystick LB / RB)
         let tab_pressed = keyboard_input_data.get_key_pressed(KeyCode::Tab);
         let is_shift = keyboard_input_data.get_key_hold(KeyCode::ShiftLeft)

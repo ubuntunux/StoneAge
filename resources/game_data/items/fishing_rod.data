@@ -3,6 +3,7 @@
     "_model_data_name": "weapons/fishing_rod",
     "_name": "FISHING ROD",
     "_ui_material_instance": "ui/items/item_wooden_club",
+    "_description": "Tool used for catching fish near bodies of water.",
     "_weapon_damage": 10.0,
     "_weapon_range": 1.0
 }
