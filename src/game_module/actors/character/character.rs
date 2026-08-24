@@ -687,6 +687,10 @@ impl<'a> Character<'a> {
         )
     }
 
+    pub fn get_request_name(&self) -> Option<&'static str> {
+        self._character_data.borrow()._character_type.get_request_name()
+    }
+
     pub fn is_corpse(&self) -> bool {
         !self.is_alive() && !self.is_tamed() && !self.is_civilian() && self._character_stats._is_dead_loop
     }

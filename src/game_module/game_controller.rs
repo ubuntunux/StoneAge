@@ -85,6 +85,7 @@ pub enum KeyBindingType {
     Attack,
     PowerAttack,
     Interaction,
+    Request,
     EnterGate,
     Gathering,
     Taming,

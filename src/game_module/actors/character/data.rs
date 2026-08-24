@@ -127,6 +127,16 @@ pub enum CharacterDataType {
     Ufo,
 }
 
+impl CharacterDataType {
+    pub fn get_request_name(&self) -> Option<&'static str> {
+        match self {
+            CharacterDataType::Chef => Some("Cooking"),
+            CharacterDataType::Crafter => Some("Craft"),
+            _ => None,
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[serde(default)]
 pub struct SpawnPointData {

@@ -286,6 +286,14 @@ impl<'a> ControllerHelpWidget<'a> {
         ));
         interaction_key_binding_widget_map.register_key_binding_widget(create_interaction_key_binding_widget(
             ptr_as_mut(self._root_widget),
+            KeyBindingType::Request,
+            "request_key_binding",
+            "Request",
+            vec![engine_resources.get_material_instance_data("ui/controller/keycode_c").clone()],
+            vec![engine_resources.get_material_instance_data("ui/controller/joystick_y").clone()],
+        ));
+        interaction_key_binding_widget_map.register_key_binding_widget(create_interaction_key_binding_widget(
+            ptr_as_mut(self._root_widget),
             KeyBindingType::EnterGate,
             "enter_gate_key_binding",
             "Enter",
@@ -342,6 +350,8 @@ impl<'a> ControllerHelpWidget<'a> {
         let interaction_key_binding_widget_map = ptr_as_mut(self._interaction_key_binding_widget_map.as_ref());
         let mut matched_key_binding_type = KeyBindingType::None;
         let mut interaction_name: String = String::new();
+        let mut request_name: String = String::new();
+        let mut is_request_enabled = false;
         let mut is_corpse_interaction = false;
         let character_manager = get_character_manager();
         if character_manager.is_valid_player() {
@@ -364,6 +374,12 @@ impl<'a> ControllerHelpWidget<'a> {
                         }
                         InteractionObject::PropTable(_) => (KeyBindingType::Interaction, String::from("Sit Down")),
                         InteractionObject::Npc(npc) => {
+                            let npc_borrow = npc.borrow();
+                            if let Some(req_str) = npc_borrow.get_request_name() {
+                                is_request_enabled = true;
+                                request_name = String::from(req_str);
+                            }
+
                             if player.get_attached_item_data_type().is_eatable() {
                                 (
                                     KeyBindingType::Interaction,
@@ -378,7 +394,7 @@ impl<'a> ControllerHelpWidget<'a> {
                                             .borrow()
                                             ._name
                                             .as_str(),
-                                        npc.borrow()._character_data.borrow()._name.as_str()
+                                        npc_borrow._character_data.borrow()._name.as_str()
                                     ),
                                 )
                             } else {
@@ -386,7 +402,7 @@ impl<'a> ControllerHelpWidget<'a> {
                                     KeyBindingType::Interaction,
                                     format!(
                                         "Interaction with {}",
-                                        npc.borrow()._character_data.borrow()._name.as_str()
+                                        npc_borrow._character_data.borrow()._name.as_str()
                                     ),
                                 )
                             }
@@ -402,8 +418,9 @@ impl<'a> ControllerHelpWidget<'a> {
             }
         }
 
-        const INTERACTION_WIDGETS: [KeyBindingType; 5] = [
+        const INTERACTION_WIDGETS: [KeyBindingType; 6] = [
             KeyBindingType::Interaction,
+            KeyBindingType::Request,
             KeyBindingType::EnterGate,
             KeyBindingType::Gathering,
             KeyBindingType::Taming,
@@ -455,6 +472,22 @@ impl<'a> ControllerHelpWidget<'a> {
                     ptr_as_mut(interaction_key_binding_widget._binding_name_widget)._ui_component.set_text(label);
                     self._last_interaction_object_key = corpse_obj.get_key();
                 }
+            } else if enable_interaction
+                && !is_corpse_interaction
+                && *key_binding_type == KeyBindingType::Request
+                && is_request_enabled
+            {
+                let player = character_manager.get_player().borrow();
+                let interaction_object = player.get_nearest_interaction_object();
+                let position = interaction_object.get_position();
+                let main_camera = get_scene_manager().get_main_camera();
+                let screen_position = main_camera.convert_world_to_screen(&position, true)
+                    / rust_engine_3d::scene::ui::get_global_dpi_scale();
+                interaction_widget._ui_component.set_pos(screen_position.x, screen_position.y + 25.0);
+                interaction_widget._ui_component.set_visible(true);
+                ptr_as_mut(interaction_key_binding_widget._binding_name_widget)
+                    ._ui_component
+                    .set_text(request_name.as_str());
             } else if enable_interaction && !is_corpse_interaction && *key_binding_type == matched_key_binding_type {
                 let player = character_manager.get_player().borrow();
                 let interaction_object = player.get_nearest_interaction_object();
@@ -462,7 +495,8 @@ impl<'a> ControllerHelpWidget<'a> {
                 let main_camera = get_scene_manager().get_main_camera();
                 let screen_position = main_camera.convert_world_to_screen(&position, true)
                     / rust_engine_3d::scene::ui::get_global_dpi_scale();
-                interaction_widget._ui_component.set_pos(screen_position.x, screen_position.y);
+                let offset_y = if is_request_enabled { -25.0 } else { 0.0 };
+                interaction_widget._ui_component.set_pos(screen_position.x, screen_position.y + offset_y);
                 interaction_widget._ui_component.set_visible(true);
                 ptr_as_mut(interaction_key_binding_widget._binding_name_widget)
                     ._ui_component
