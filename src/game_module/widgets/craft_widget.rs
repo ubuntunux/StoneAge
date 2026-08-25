@@ -163,6 +163,7 @@ pub struct CraftWidgetItem<'a> {
 pub struct CraftWidget<'a> {
     pub _parent_widget: *const WidgetDefault<'a>,
     pub _layer: Rc<WidgetDefault<'a>>,
+    pub _content_pane: Rc<WidgetDefault<'a>>,
     pub _close_btn: Rc<WidgetDefault<'a>>,
     pub _items: Vec<Box<CraftWidgetItem<'a>>>,
     pub _is_opened: bool,
@@ -470,6 +471,7 @@ impl<'a> CraftWidget<'a> {
         let widget = CraftWidget {
             _parent_widget: parent_widget as *const WidgetDefault<'a>,
             _layer: layer,
+            _content_pane: content_pane,
             _close_btn: close_btn,
             _items: items,
             _is_opened: false,
@@ -632,12 +634,14 @@ impl<'a> CraftWidget<'a> {
     }
 
     fn update_selection_highlight(&mut self) {
+        let container_ui = ptr_as_mut(self._content_pane.as_ref()).get_ui_component_mut();
         for (idx, item) in self._items.iter_mut().enumerate() {
             let is_selected = idx == self._selected_index;
             let layout_ui = ptr_as_mut(item._layout.as_ref()).get_ui_component_mut();
             if is_selected {
                 layout_ui.set_border_color(get_color32(180, 185, 195, 255));
                 layout_ui.set_color(get_color32(65, 70, 80, 245));
+                container_ui.scroll_into_view(layout_ui);
             } else {
                 layout_ui.set_border_color(get_color32(65, 70, 78, 255));
                 layout_ui.set_color(get_color32(40, 43, 48, 220));

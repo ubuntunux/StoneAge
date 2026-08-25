@@ -407,6 +407,12 @@ impl<'a> InventoryWidget<'a> {
                 );
             }
         }
+
+        if let Some(focused_slot_widget) = self._slot_widgets.iter().find(|w| w._slot_index == self._focused_slot_index) {
+            let container_ui = ptr_as_mut(self._inventory_bg.as_ref()).get_ui_component_mut();
+            let slot_ui = ptr_as_mut(focused_slot_widget._widget.as_ref()).get_ui_component_mut();
+            container_ui.scroll_into_view(slot_ui);
+        }
     }
 
     pub fn update_inventory_widget(

@@ -587,12 +587,14 @@ impl<'a> ToolboxWidget<'a> {
             return;
         }
 
+        let container_ui = ptr_as_mut(active_tab._layout.as_ref()).get_ui_component_mut();
         for (idx, item) in active_tab._items.iter_mut().enumerate() {
             let is_selected = idx == selected_idx;
             let layout_ui = ptr_as_mut(item._layout.as_ref()).get_ui_component_mut();
             if is_selected {
                 layout_ui.set_border_color(get_color32(180, 180, 180, 255));
                 layout_ui.set_color(get_color32(65, 65, 65, 230));
+                container_ui.scroll_into_view(layout_ui);
             } else {
                 layout_ui.set_border_color(get_color32(80, 80, 80, 255));
                 layout_ui.set_color(get_color32(45, 45, 45, 200));
