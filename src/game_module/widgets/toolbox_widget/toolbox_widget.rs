@@ -177,6 +177,8 @@ impl<'a> ToolboxWidget<'a> {
         ui.set_pos_hint(Some(0.5), Some(0.5));
         ui.set_size_hint_x(Some(0.6));
         ui.set_size_hint_y(Some(0.65));
+        ui.set_expandable(false);
+        ui.set_enable_renderable_area(true);
         ui.set_color(get_color32(35, 35, 35, 230));
         ui.set_border_color(get_color32(90, 90, 90, 255));
         ui.set_border(2.0);
@@ -264,6 +266,8 @@ impl<'a> ToolboxWidget<'a> {
         ui.set_valign(VerticalAlign::TOP);
         ui.set_size_hint_x(Some(1.0));
         ui.set_size_hint_y(Some(1.0));
+        ui.set_expandable(false);
+        ui.set_enable_renderable_area(true);
         ui.set_color(get_color32(30, 30, 30, 220));
         ui.set_round(6.0);
         ui.set_margin(4.0);

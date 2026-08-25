@@ -170,8 +170,8 @@ impl<'a> CookingWidget<'a> {
         ui.set_valign(VerticalAlign::CENTER);
         ui.set_pivot_preset(PIVOT_CENTER);
         ui.set_pos_hint(Some(0.5), Some(0.5));
-        ui.set_size(820.0, 540.0);
-        ui.set_expandable(true);
+        ui.set_size(820.0, 520.0);
+        ui.set_expandable(false);
         ui.set_enable_renderable_area(true);
         ui.set_color(get_color32(30, 32, 36, 245));
         ui.set_border_color(get_color32(90, 95, 105, 255));
@@ -251,7 +251,8 @@ impl<'a> CookingWidget<'a> {
         ui.set_layout_orientation(Orientation::VERTICAL);
         ui.set_size_hint_x(Some(1.0));
         ui.set_size_hint_y(Some(1.0));
-        ui.set_expandable(true);
+        ui.set_expandable(false);
+        ui.set_scroll_y(true);
         ui.set_enable_renderable_area(true);
         ui.set_padding(4.0);
         ui.set_color(get_color32(0, 0, 0, 0));
@@ -269,6 +270,7 @@ impl<'a> CookingWidget<'a> {
             ui.set_valign(VerticalAlign::CENTER);
             ui.set_color(get_color32(40, 43, 48, 220));
             ui.set_border_color(get_color32(65, 70, 78, 255));
+            ui.set_enable_renderable_area(true);
             ui.set_border(2.0);
             ui.set_round(6.0);
             ui.set_margin(2.0);

@@ -634,6 +634,9 @@ impl<'a> ToolboxTabWidget<'a> {
         ui.set_valign(VerticalAlign::TOP);
         ui.set_size_hint_x(Some(1.0));
         ui.set_size_hint_y(Some(1.0));
+        ui.set_expandable(false);
+        ui.set_scroll_y(true);
+        ui.set_enable_renderable_area(true);
         ui.set_padding(10.0);
         ui.set_color(get_color32(30, 30, 30, 220));
         ui.set_renderable(true);
