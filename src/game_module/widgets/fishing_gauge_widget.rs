@@ -4,7 +4,7 @@ use crate::game_module::game_constants::MATERIAL_TIME_OF_DAY;
 use crate::game_module::widgets::status_bar_widget::StatusBarWidget;
 use ash::vk;
 use rust_engine_3d::core::engine_service_locator::get_engine_resources;
-use rust_engine_3d::scene::ui::{PIVOT_CENTER, UILayoutType, UIManager, UIWidgetTypes, WidgetDefault};
+use rust_engine_3d::scene::ui::{HorizontalAlign, UILayoutType, UIManager, UIWidgetTypes, WidgetDefault, PIVOT_CENTER, VerticalAlign};
 use rust_engine_3d::utilities::system::ptr_as_mut;
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 
@@ -61,6 +61,7 @@ impl<'a> FishingGaugeWidget<'a> {
         ui.set_color(get_color32(30, 45, 65, 230));
         ui.set_border_color(get_color32(80, 130, 190, 255));
         ui.set_border(3.0);
+        ui.set_enable_renderable_area(true);
         main_layer_ptr.add_widget(&direction_panel);
 
         // Fish escaping direction indicator (inside dial panel)
@@ -73,7 +74,6 @@ impl<'a> FishingGaugeWidget<'a> {
         ui.set_pos_hint(Some(0.5), Some(0.5));
         ui.set_texture_wrap_mode(vk::SamplerAddressMode::CLAMP_TO_EDGE);
         ui.set_material_instance(Some(tod_material.clone()));
-        ui.set_enable_renderable_area(true);
         ui.set_color(get_color32(255, 200, 50, 160));
         direction_panel_ptr.add_widget(&fish_indicator);
 
@@ -88,8 +88,11 @@ impl<'a> FishingGaugeWidget<'a> {
         ui.set_border(2.0);
         ui.set_font_size(14.0);
         ui.set_font_color(get_color32(20, 20, 20, 255));
+        ui.set_halign(HorizontalAlign::CENTER);
+        ui.set_valign(VerticalAlign::CENTER);
         ui.set_text("Fish");
         ui.set_renderable(SHOW_FISH_ICON);
+        ui.set_ignore_parent_renderable_area(true);
         direction_panel_ptr.add_widget(&fish_icon_widget);
 
         // Player needle widget (rotates with player angle input)
@@ -101,7 +104,7 @@ impl<'a> FishingGaugeWidget<'a> {
         ui.set_pos_hint(Some(0.5), Some(0.5));
         ui.set_texture_wrap_mode(vk::SamplerAddressMode::CLAMP_TO_EDGE);
         ui.set_material_instance(Some(tod_material.clone()));
-        ui.set_enable_renderable_area(true);
+        ui.set_ignore_parent_renderable_area(true);
         ui.set_color(get_color32(0, 255, 200, 255));
         direction_panel_ptr.add_widget(&player_needle);
 

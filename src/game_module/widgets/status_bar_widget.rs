@@ -30,6 +30,7 @@ fn create_status_layer_widget<'a>(parent_widget: &mut WidgetDefault<'a>) -> *con
     ui_component.set_border(4.0);
     ui_component.set_margin(WIDGET_UI_MARGIN);
     ui_component.set_padding(WIDGET_UI_PADDING);
+    ui_component.set_enable_renderable_area(true);
     parent_widget.add_widget(&status_layer);
     status_layer.as_ref()
 }
@@ -42,7 +43,6 @@ fn create_status_bar_widget<'a>(
     let ui_component = ptr_as_mut(max_status_bar.as_ref()).get_ui_component_mut();
     ui_component.set_size_hint_x(Some(1.0));
     ui_component.set_size_hint_y(Some(1.0));
-    ui_component.set_enable_renderable_area(true);
     ui_component.set_color(get_color32(50, 50, 50, 255));
     parent_widget.add_widget(&max_status_bar);
 
@@ -50,7 +50,6 @@ fn create_status_bar_widget<'a>(
     let ui_component = ptr_as_mut(status_bar.as_ref()).get_ui_component_mut();
     ui_component.set_size_hint_x(Some(1.0));
     ui_component.set_size_hint_y(Some(1.0));
-    ui_component.set_enable_renderable_area(true);
     ui_component.set_color(color);
     parent_widget.add_widget(&status_bar);
     (status_bar.as_ref(), max_status_bar.as_ref())
@@ -203,6 +202,7 @@ fn create_vertical_status_layer_widget<'a>(
     ui_component.set_border(3.0);
     ui_component.set_margin(WIDGET_UI_MARGIN);
     ui_component.set_padding(WIDGET_UI_PADDING);
+    ui_component.set_enable_renderable_area(true);
     parent_widget.add_widget(&status_layer);
     status_layer.as_ref()
 }
@@ -215,7 +215,6 @@ fn create_vertical_status_bar_widget<'a>(
     let ui_component = ptr_as_mut(max_status_bar.as_ref()).get_ui_component_mut();
     ui_component.set_size_hint_x(Some(1.0));
     ui_component.set_size_hint_y(Some(1.0));
-    ui_component.set_enable_renderable_area(true);
     ui_component.set_color(get_color32(50, 50, 50, 255));
     parent_widget.add_widget(&max_status_bar);
 
@@ -226,7 +225,6 @@ fn create_vertical_status_bar_widget<'a>(
     ui_component.set_pivot_preset(rust_engine_3d::scene::ui::PIVOT_BOTTOM_LEFT);
     ui_component.set_pos_hint(Some(0.0), Some(1.0));
     ui_component.set_valign(rust_engine_3d::scene::ui::VerticalAlign::BOTTOM);
-    ui_component.set_enable_renderable_area(true);
     ui_component.set_color(color);
     parent_widget.add_widget(&status_bar);
     (status_bar.as_ref(), max_status_bar.as_ref())

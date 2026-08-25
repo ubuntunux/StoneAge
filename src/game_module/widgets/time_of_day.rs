@@ -52,6 +52,7 @@ impl<'a> TimeOfDayWidget<'a> {
         ui_component.set_valign(VerticalAlign::TOP);
         ui_component.set_round(15.0);
         ui_component.set_color(background_color);
+        ui_component.set_enable_renderable_area(true);
         parent_layer_ptr.add_widget(&top_widget);
 
         let tod_material_instance = get_engine_resources().get_material_instance_data(MATERIAL_TIME_OF_DAY);
@@ -62,7 +63,6 @@ impl<'a> TimeOfDayWidget<'a> {
         ui_component.set_size_hint_y(Some(2.0));
         ui_component.set_texture_wrap_mode(vk::SamplerAddressMode::CLAMP_TO_EDGE);
         ui_component.set_material_instance(Some(tod_material_instance.clone()));
-        ui_component.set_enable_renderable_area(true);
         top_widget_mut.add_widget(&time_of_day_widget);
 
         // bottom layer

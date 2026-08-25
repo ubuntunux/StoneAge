@@ -113,7 +113,7 @@ impl<'a> InventorySlotWidget<'a> {
 
         if is_equipment_slot {
             ui_component.set_text("");
-        } else if item_count > 0 && item_data_name != ITEM_NONE {
+        } else if item_count > 1 && item_data_name != ITEM_NONE {
             ui_component.set_font_size(24.0);
             ui_component.set_font_color(get_color32(255, 255, 255, 255));
             ui_component.set_text(&format!("{}", item_count));
@@ -363,7 +363,11 @@ impl<'a> InventoryWidget<'a> {
 
                 let drag_ui = ptr_as_mut(inventory_widget._drag_widget.as_ref()).get_ui_component_mut();
                 drag_ui.set_material_instance(slot_data._material_instance.clone());
-                drag_ui.set_text(&format!("{}", slot_data._item_count));
+                if slot_data._item_count > 1 {
+                    drag_ui.set_text(&format!("{}", slot_data._item_count));
+                } else {
+                    drag_ui.set_text("");
+                }
                 drag_ui.set_draggable(true);
                 drag_ui.set_visible(true);
 

@@ -54,7 +54,11 @@ impl<'a> ItemWidget<'a> {
     pub fn set_item_count(&mut self, item_count: usize) {
         self._item_count = item_count;
         let ui_component = ptr_as_mut(self._widget).get_ui_component_mut();
-        ui_component.set_text(format!("{}", self._item_count).as_str());
+        if self._item_count > 1 {
+            ui_component.set_text(&format!("{}", self._item_count));
+        } else {
+            ui_component.set_text("");
+        }
         if 0 < self._item_count {
             ui_component.set_visible(true);
         } else {
