@@ -214,6 +214,9 @@ impl<'a> SaveLoadSlotWidget<'a> {
             ui_comp.set_layout_orientation(Orientation::VERTICAL);
             ui_comp.set_halign(HorizontalAlign::CENTER);
             ui_comp.set_valign(VerticalAlign::TOP);
+            ui_comp.set_expandable(false);
+            ui_comp.set_scroll_y(true);
+            ui_comp.set_enable_renderable_area(true);
             ui_comp.set_size_hint_x(Some(1.0));
             ui_comp.set_size_y(315.0);
             ui_comp.set_margin(4.0);
@@ -457,7 +460,11 @@ impl<'a> SaveLoadSlotWidget<'a> {
             }
 
             let curr_card = &self._slot_items[index]._item_widget;
-            ptr_as_mut(curr_card.as_ref()).get_ui_component_mut().set_color(get_color32(60, 90, 130, 240));
+            let curr_card_mut = ptr_as_mut(curr_card.as_ref());
+            curr_card_mut.get_ui_component_mut().set_color(get_color32(60, 90, 130, 240));
+
+            let container_mut = ptr_as_mut(self._slot_container.as_ref());
+            container_mut.get_ui_component_mut().scroll_into_view(curr_card_mut.get_ui_component());
 
             if !force {
                 get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
@@ -528,18 +535,11 @@ impl<'a> SaveLoadSlotWidget<'a> {
         if should_move {
             let (_dir_x, dir_y) = dir_opt.unwrap();
             if dir_y < 0 {
-                let next_index = if self._selected_slot_index == 0 {
-                    self._slot_items.len() - 1
-                } else {
-                    self._selected_slot_index - 1
-                };
+                let next_index = self._selected_slot_index.saturating_sub(1);
                 self.set_selected_slot(next_index, false);
             } else if dir_y > 0 {
-                let next_index = if self._selected_slot_index + 1 >= self._slot_items.len() {
-                    0
-                } else {
-                    self._selected_slot_index + 1
-                };
+                let max_index = self._slot_items.len().saturating_sub(1);
+                let next_index = (self._selected_slot_index + 1).min(max_index);
                 self.set_selected_slot(next_index, false);
             }
         }

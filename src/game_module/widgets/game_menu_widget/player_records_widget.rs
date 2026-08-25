@@ -1,4 +1,3 @@
-use crate::game_module::game_constants::{RECORD_ITEM_TYPES_PER_ROW, RECORD_MONSTER_KILLS_PER_ROW};
 use crate::game_module::game_service_locator::get_game_ui_manager;
 use nalgebra::Vector2;
 use rust_engine_3d::core::input::{JoystickInputData, KeyboardInputData};
@@ -9,9 +8,7 @@ use rust_engine_3d::utilities::system::ptr_as_mut;
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use std::rc::Rc;
 
-const STATS_CARD_HEIGHT: f32 = 125.0;
-const ITEM_TYPE_CARD_HEIGHT: f32 = 110.0;
-const KILL_CARD_HEIGHT: f32 = 130.0;
+const STATS_CARD_HEIGHT: f32 = 220.0;
 const HEADER_FONT_SIZE: f32 = 20.0;
 const BODY_FONT_SIZE: f32 = 16.0;
 const LIST_FONT_SIZE: f32 = 15.0;
@@ -88,7 +85,9 @@ impl<'a> PlayerRecordsWidget<'a> {
         ui_component.set_layout_orientation(Orientation::VERTICAL);
         ui_component.set_halign(HorizontalAlign::CENTER);
         ui_component.set_valign(VerticalAlign::TOP);
-        ui_component.set_expandable(true);
+        ui_component.set_expandable(false);
+        ui_component.set_scroll_y(true);
+        ui_component.set_enable_renderable_area(true);
         ui_component.set_size_hint_x(Some(1.0));
         ui_component.set_size_hint_y(Some(1.0));
         ui_component.set_padding(5.0);
@@ -167,46 +166,28 @@ impl<'a> PlayerRecordsWidget<'a> {
         ui.set_color(get_color32(0, 0, 0, 0));
         card_mut.add_widget(&stats_header);
 
-        let row1 = UIManager::create_widget("stats_row1", UIWidgetTypes::Default);
-        let ui = ptr_as_mut(row1.as_ref()).get_ui_component_mut();
-        ui.set_size_hint_x(Some(1.0));
-        ui.set_size_y(22.0);
-        ui.set_text(&format!(
-            "Total Items: {}   |   Craft Count: {}   |   Death Count: {}",
-            records._item_count, records._craft_count, records._death_count
-        ));
-        ui.set_font_size(BODY_FONT_SIZE);
-        ui.set_font_color(get_color32(230, 230, 230, 255));
-        ui.set_color(get_color32(0, 0, 0, 0));
-        card_mut.add_widget(&row1);
+        let stat_items = [
+            format!("Total Items: {}", records._item_count),
+            format!("Craft Count: {}", records._craft_count),
+            format!("Death Count: {}", records._death_count),
+            format!("Tamed: {}", records._taming_count),
+            format!("Friends: {}", records._friend_count),
+            format!("Visited Maps: {}", records.get_visited_map_count()),
+            format!("Energy Balls: {}", records._energy_balls),
+            format!("Spirit Balls: {}", records._spirit_balls),
+        ];
 
-        let row2 = UIManager::create_widget("stats_row2", UIWidgetTypes::Default);
-        let ui = ptr_as_mut(row2.as_ref()).get_ui_component_mut();
-        ui.set_size_hint_x(Some(1.0));
-        ui.set_size_y(22.0);
-        ui.set_text(&format!(
-            "Tamed: {}   |   Friends: {}   |   Visited Maps: {}",
-            records._taming_count,
-            records._friend_count,
-            records.get_visited_map_count()
-        ));
-        ui.set_font_size(BODY_FONT_SIZE);
-        ui.set_font_color(get_color32(230, 230, 230, 255));
-        ui.set_color(get_color32(0, 0, 0, 0));
-        card_mut.add_widget(&row2);
-
-        let row3 = UIManager::create_widget("stats_row3", UIWidgetTypes::Default);
-        let ui = ptr_as_mut(row3.as_ref()).get_ui_component_mut();
-        ui.set_size_hint_x(Some(1.0));
-        ui.set_size_y(22.0);
-        ui.set_text(&format!(
-            "Energy Balls: {}   |   Spirit Balls: {}",
-            records._energy_balls, records._spirit_balls
-        ));
-        ui.set_font_size(BODY_FONT_SIZE);
-        ui.set_font_color(get_color32(230, 230, 230, 255));
-        ui.set_color(get_color32(0, 0, 0, 0));
-        card_mut.add_widget(&row3);
+        for (idx, stat_text) in stat_items.iter().enumerate() {
+            let row = UIManager::create_widget(&format!("stats_row_{}", idx), UIWidgetTypes::Default);
+            let ui = ptr_as_mut(row.as_ref()).get_ui_component_mut();
+            ui.set_size_hint_x(Some(1.0));
+            ui.set_size_y(22.0);
+            ui.set_text(stat_text);
+            ui.set_font_size(BODY_FONT_SIZE);
+            ui.set_font_color(get_color32(230, 230, 230, 255));
+            ui.set_color(get_color32(0, 0, 0, 0));
+            card_mut.add_widget(&row);
+        }
 
         container_mut.add_widget(&stats_card);
 
@@ -219,7 +200,15 @@ impl<'a> PlayerRecordsWidget<'a> {
         ui_comp.set_halign(HorizontalAlign::CENTER);
         ui_comp.set_valign(VerticalAlign::TOP);
         ui_comp.set_size_hint_x(Some(0.95));
-        ui_comp.set_size_y(ITEM_TYPE_CARD_HEIGHT);
+
+        let mut item_type_entries: Vec<(&String, &u32)> =
+            records._item_type_counts.iter().filter(|(k, v)| **v > 0 && k.as_str() != "None").collect();
+        item_type_entries.sort_by(|a, b| b.1.cmp(a.1).then_with(|| a.0.cmp(b.0)));
+
+        let line_count = if item_type_entries.is_empty() { 1 } else { item_type_entries.len() };
+        let list_height = (line_count as f32) * 22.0;
+        let card_height = 36.0 + list_height;
+        ui_comp.set_size_y(card_height);
         ui_comp.set_margin(4.0);
         ui_comp.set_padding(6.0);
         ui_comp.set_color(get_color32(30, 55, 45, 230));
@@ -236,20 +225,14 @@ impl<'a> PlayerRecordsWidget<'a> {
         ui.set_color(get_color32(0, 0, 0, 0));
         card_mut.add_widget(&item_type_header);
 
-        let mut item_type_entries: Vec<(&String, &u32)> =
-            records._item_type_counts.iter().filter(|(k, v)| **v > 0 && k.as_str() != "None").collect();
-        item_type_entries.sort_by(|a, b| b.1.cmp(a.1).then_with(|| a.0.cmp(b.0)));
-
         let mut item_type_text = String::new();
         if item_type_entries.is_empty() {
             item_type_text.push_str("No Item Acquisitions Recorded Yet");
         } else {
             let mut count_displayed = 0;
             for (type_name, count) in item_type_entries {
-                if count_displayed > 0 && count_displayed % RECORD_ITEM_TYPES_PER_ROW == 0 {
+                if count_displayed > 0 {
                     item_type_text.push('\n');
-                } else if count_displayed > 0 {
-                    item_type_text.push_str("   |   ");
                 }
                 item_type_text.push_str(&format!("{}: {}", type_name, count));
                 count_displayed += 1;
@@ -259,7 +242,7 @@ impl<'a> PlayerRecordsWidget<'a> {
         let item_type_list_widget = UIManager::create_widget("item_type_list_widget", UIWidgetTypes::Default);
         let ui = ptr_as_mut(item_type_list_widget.as_ref()).get_ui_component_mut();
         ui.set_size_hint_x(Some(1.0));
-        ui.set_size_y(65.0);
+        ui.set_size_y(list_height);
         ui.set_text(&item_type_text);
         ui.set_font_size(LIST_FONT_SIZE);
         ui.set_font_color(get_color32(220, 240, 220, 255));
@@ -277,7 +260,20 @@ impl<'a> PlayerRecordsWidget<'a> {
         ui_comp.set_halign(HorizontalAlign::CENTER);
         ui_comp.set_valign(VerticalAlign::TOP);
         ui_comp.set_size_hint_x(Some(0.95));
-        ui_comp.set_size_y(KILL_CARD_HEIGHT);
+
+        let mut kill_entries: Vec<(String, u32)> = Vec::new();
+        for (monster_key, &kills) in records._monster_kill_counts.iter() {
+            if kills > 0 {
+                let display_name = format_entity_name(monster_key);
+                kill_entries.push((display_name, kills));
+            }
+        }
+        kill_entries.sort_by(|a, b| b.1.cmp(&a.1).then_with(|| a.0.cmp(&b.0)));
+
+        let line_count = if kill_entries.is_empty() { 1 } else { kill_entries.len() };
+        let list_height = (line_count as f32) * 22.0;
+        let card_height = 36.0 + list_height;
+        ui_comp.set_size_y(card_height);
         ui_comp.set_margin(4.0);
         ui_comp.set_padding(6.0);
         ui_comp.set_color(get_color32(50, 25, 30, 230));
@@ -297,25 +293,14 @@ impl<'a> PlayerRecordsWidget<'a> {
         ui.set_color(get_color32(0, 0, 0, 0));
         card_mut.add_widget(&kill_header);
 
-        let mut kill_entries: Vec<(String, u32)> = Vec::new();
-        for (monster_key, &kills) in records._monster_kill_counts.iter() {
-            if kills > 0 {
-                let display_name = format_entity_name(monster_key);
-                kill_entries.push((display_name, kills));
-            }
-        }
-        kill_entries.sort_by(|a, b| b.1.cmp(&a.1).then_with(|| a.0.cmp(&b.0)));
-
         let mut kill_items_text = String::new();
         if kill_entries.is_empty() {
             kill_items_text.push_str("No Monster Kills Recorded Yet");
         } else {
             let mut count_displayed = 0;
             for (display_name, kills) in kill_entries {
-                if count_displayed > 0 && count_displayed % RECORD_MONSTER_KILLS_PER_ROW == 0 {
+                if count_displayed > 0 {
                     kill_items_text.push('\n');
-                } else if count_displayed > 0 {
-                    kill_items_text.push_str("   |   ");
                 }
                 kill_items_text.push_str(&format!("{}: {} Kills", display_name, kills));
                 count_displayed += 1;
@@ -325,7 +310,7 @@ impl<'a> PlayerRecordsWidget<'a> {
         let kill_list_widget = UIManager::create_widget("kill_list_widget", UIWidgetTypes::Default);
         let ui = ptr_as_mut(kill_list_widget.as_ref()).get_ui_component_mut();
         ui.set_size_hint_x(Some(1.0));
-        ui.set_size_y(90.0);
+        ui.set_size_y(list_height);
         ui.set_text(&kill_items_text);
         ui.set_font_size(LIST_FONT_SIZE);
         ui.set_font_color(get_color32(240, 220, 220, 255));
@@ -335,3 +320,4 @@ impl<'a> PlayerRecordsWidget<'a> {
         container_mut.add_widget(&kill_card);
     }
 }
+
