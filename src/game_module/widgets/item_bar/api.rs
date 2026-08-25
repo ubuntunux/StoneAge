@@ -29,9 +29,7 @@ pub enum EquipmentSlotType {
 
 impl EquipmentSlotType {
     pub fn from_slot_index(slot_index: usize) -> Option<Self> {
-        if slot_index >= EQUIPMENT_SLOT_START_INDEX
-            && slot_index < EQUIPMENT_SLOT_START_INDEX + NUM_EQUIPMENT_SLOTS
-        {
+        if slot_index >= EQUIPMENT_SLOT_START_INDEX && slot_index < EQUIPMENT_SLOT_START_INDEX + NUM_EQUIPMENT_SLOTS {
             match slot_index - EQUIPMENT_SLOT_START_INDEX {
                 0 => Some(EquipmentSlotType::Hat),
                 1 => Some(EquipmentSlotType::Armor),

@@ -1,4 +1,6 @@
 pub mod controller_help;
+pub mod cooking_widget;
+pub mod craft_widget;
 pub mod cross_hair_widget;
 pub mod debug_ui_widget;
 pub mod fishing_gauge_widget;
@@ -14,7 +16,5 @@ pub mod status_bar_widget;
 pub mod target_status_bar;
 pub mod text_box_widget;
 pub mod time_of_day;
-pub mod cooking_widget;
-pub mod craft_widget;
 pub mod toolbox_widget;
 pub mod world_map;

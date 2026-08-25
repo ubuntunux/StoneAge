@@ -13,9 +13,7 @@ use crate::game_module::game_service_locator::{
 use crate::game_module::game_weather::Weather;
 use crate::game_module::save_data::save_data::GameSaveData;
 use crate::game_module::scenario::scenario::{ScenarioBase, ScenarioDataCreateInfo, ScenarioType, create_scenario};
-use crate::game_module::widgets::item_bar::{
-    DEFAULT_INVENTORY_ROWS, INVALID_ITEM_INDEX, SLOTS_PER_ROW,
-};
+use crate::game_module::widgets::item_bar::{DEFAULT_INVENTORY_ROWS, INVALID_ITEM_INDEX, SLOTS_PER_ROW};
 use nalgebra::Vector2;
 use rust_engine_3d::begin_block;
 use rust_engine_3d::core::engine_service_locator::{get_scene_manager, get_scene_manager_mut};

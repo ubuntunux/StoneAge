@@ -453,15 +453,11 @@ impl<'a> SaveLoadSlotWidget<'a> {
 
             if prev_index < self._slot_items.len() {
                 let prev_card = &self._slot_items[prev_index]._item_widget;
-                ptr_as_mut(prev_card.as_ref())
-                    .get_ui_component_mut()
-                    .set_color(get_color32(40, 48, 60, 220));
+                ptr_as_mut(prev_card.as_ref()).get_ui_component_mut().set_color(get_color32(40, 48, 60, 220));
             }
 
             let curr_card = &self._slot_items[index]._item_widget;
-            ptr_as_mut(curr_card.as_ref())
-                .get_ui_component_mut()
-                .set_color(get_color32(60, 90, 130, 240));
+            ptr_as_mut(curr_card.as_ref()).get_ui_component_mut().set_color(get_color32(60, 90, 130, 240));
 
             if !force {
                 get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
@@ -526,11 +522,8 @@ impl<'a> SaveLoadSlotWidget<'a> {
         }
 
         let delta_time: f32 = time_data._delta_time_with_scale as f32;
-        let (should_move, dir_opt) = self._nav_repeat_controller.update(
-            keyboard_input_data,
-            joystick_input_data,
-            delta_time,
-        );
+        let (should_move, dir_opt) =
+            self._nav_repeat_controller.update(keyboard_input_data, joystick_input_data, delta_time);
 
         if should_move {
             let (_dir_x, dir_y) = dir_opt.unwrap();
@@ -551,8 +544,8 @@ impl<'a> SaveLoadSlotWidget<'a> {
             }
         }
 
-        let close_widget = keyboard_input_data.get_key_pressed(KeyCode::Escape)
-            || joystick_input_data._btn_b == ButtonState::Pressed;
+        let close_widget =
+            keyboard_input_data.get_key_pressed(KeyCode::Escape) || joystick_input_data._btn_b == ButtonState::Pressed;
 
         if close_widget {
             self.close_slot_widget();

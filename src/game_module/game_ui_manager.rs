@@ -6,6 +6,8 @@ use crate::game_module::game_constants::{
 use crate::game_module::game_service_locator::{get_character_manager, get_game_resources, get_game_scene_manager};
 use crate::game_module::save_data::save_data::PlayerRecords;
 use crate::game_module::widgets::controller_help::ControllerHelpWidget;
+use crate::game_module::widgets::cooking_widget::CookingWidget;
+use crate::game_module::widgets::craft_widget::CraftWidget;
 use crate::game_module::widgets::cross_hair_widget::CrossHairWidget;
 use crate::game_module::widgets::debug_ui_widget::DebugUIWidget;
 use crate::game_module::widgets::game_menu_widget::{GameMenuTab, GameMenuWidget, InventoryWidget};
@@ -19,8 +21,6 @@ use crate::game_module::widgets::quest_widgets::quest_widget::{QuestItemBase, Qu
 use crate::game_module::widgets::target_status_bar::TargetStatusWidget;
 use crate::game_module::widgets::text_box_widget::{TextBoxContent, TextBoxLayerType, TextBoxWidget};
 use crate::game_module::widgets::time_of_day::TimeOfDayWidget;
-use crate::game_module::widgets::cooking_widget::CookingWidget;
-use crate::game_module::widgets::craft_widget::CraftWidget;
 use crate::game_module::widgets::toolbox_widget::ToolboxWidget;
 use crate::game_module::widgets::world_map::WorldMapWidget;
 use nalgebra::Vector2;

@@ -337,7 +337,8 @@ impl<'a> ItemBarWidget<'a> {
 
     pub fn is_valid_slot_index(&self, slot_index: usize) -> bool {
         slot_index < self.get_total_inventory_slots()
-            || (slot_index >= EQUIPMENT_SLOT_START_INDEX && slot_index < EQUIPMENT_SLOT_START_INDEX + NUM_EQUIPMENT_SLOTS)
+            || (slot_index >= EQUIPMENT_SLOT_START_INDEX
+                && slot_index < EQUIPMENT_SLOT_START_INDEX + NUM_EQUIPMENT_SLOTS)
     }
 
     pub fn get_total_slots_with_equipment(&self) -> usize {

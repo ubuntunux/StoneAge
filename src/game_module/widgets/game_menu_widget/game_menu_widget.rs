@@ -457,8 +457,7 @@ impl<'a> GameMenuWidget<'a> {
 
         match self._active_tab {
             GameMenuTab::Records => {
-                self._player_records_widget
-                    .update_player_records_widget(joystick_input_data, keyboard_input_data);
+                self._player_records_widget.update_player_records_widget(joystick_input_data, keyboard_input_data);
                 let close_game_menu = keyboard_input_data.get_key_pressed(KeyCode::Escape)
                     || joystick_input_data._btn_b == ButtonState::Pressed;
                 if close_game_menu {

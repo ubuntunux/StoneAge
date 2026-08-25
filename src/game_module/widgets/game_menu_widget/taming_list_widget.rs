@@ -154,6 +154,7 @@ impl<'a> TamingListWidget<'a> {
             ui_comp.set_text("No tamed companions found.");
             ui_comp.set_font_size(24.0);
             ui_comp.set_font_color(get_color32(180, 180, 180, 255));
+            ui_comp.set_color(get_color32(255, 255, 255, 0));
             container_mut.add_widget(&empty_widget);
         }
     }

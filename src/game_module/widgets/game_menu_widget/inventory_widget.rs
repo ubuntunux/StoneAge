@@ -3,6 +3,7 @@ use crate::game_module::actors::items::ItemDataType;
 use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, ITEM_NONE};
 use crate::game_module::game_controller::WidgetNavRepeatController;
 use crate::game_module::game_service_locator::{get_game_ui_manager, get_game_ui_manager_mut, get_item_manager_mut};
+use crate::game_module::widgets::game_menu_widget::player_stat_widget::PlayerStatWidget;
 use crate::game_module::widgets::item_bar::{
     EQUIPMENT_SLOT_START_INDEX, EquipmentSlotType, INVALID_ITEM_INDEX, ITEM_UI_SIZE, ITEM_WIDGET_UI_MARGIN,
     NUM_EQUIPMENT_SLOTS, SLOTS_PER_ROW,
@@ -128,6 +129,7 @@ pub struct InventoryWidget<'a> {
     pub _parent_widget: *const WidgetDefault<'a>,
     pub _layer: Rc<WidgetDefault<'a>>,
     pub _inventory_bg: Rc<WidgetDefault<'a>>,
+    pub _player_stat_widget: Option<Box<PlayerStatWidget<'a>>>,
     pub _drag_widget: Rc<WidgetDefault<'a>>,
     pub _slot_widgets: Vec<Box<InventorySlotWidget<'a>>>,
     pub _focused_slot_index: usize,
@@ -179,6 +181,7 @@ impl<'a> InventoryWidget<'a> {
             _parent_widget: parent_widget,
             _layer: layer,
             _inventory_bg: inventory_bg,
+            _player_stat_widget: None,
             _drag_widget: drag_widget,
             _slot_widgets: Vec::new(),
             _focused_slot_index: 0,
@@ -213,21 +216,45 @@ impl<'a> InventoryWidget<'a> {
             }
         }
 
-        // Equipment Section: Header and 3 Equipment Slots (Hat, Armor, Shoes) stacked vertically
+        // Shared Bottom Container (Horizontal BoxLayout) underneath Inventory grid
+        let bottom_container = UIManager::create_widget("inv_bottom_container", UIWidgetTypes::Default);
+        let bottom_container_mut = ptr_as_mut(bottom_container.as_ref());
+        let ui_component = bottom_container_mut.get_ui_component_mut();
+        ui_component.set_layout_type(UILayoutType::BoxLayout);
+        ui_component.set_layout_orientation(Orientation::HORIZONTAL);
+        ui_component.set_halign(HorizontalAlign::LEFT);
+        ui_component.set_valign(VerticalAlign::TOP);
+        ui_component.set_color(get_color32(180, 180, 180, 0));
+        ui_component.set_expandable(true);
+        ui_component.set_margin_top(6.0);
+        bg_mut.add_widget(&bottom_container);
+
+        // Left Child: Equipment Section Container
+        let equip_section = UIManager::create_widget("equip_section", UIWidgetTypes::Default);
+        let equip_section_mut = ptr_as_mut(equip_section.as_ref());
+        let ui_component = equip_section_mut.get_ui_component_mut();
+        ui_component.set_layout_type(UILayoutType::BoxLayout);
+        ui_component.set_layout_orientation(Orientation::VERTICAL);
+        ui_component.set_halign(HorizontalAlign::CENTER);
+        ui_component.set_valign(VerticalAlign::TOP);
+        ui_component.set_color(get_color32(0, 0, 0, 128));
+        ui_component.set_padding(5.0);
+        ui_component.set_expandable(true);
+        bottom_container_mut.add_widget(&equip_section);
+
         let equip_title = UIManager::create_widget("equip_title", UIWidgetTypes::Default);
         let ui_component = ptr_as_mut(equip_title.as_ref()).get_ui_component_mut();
         ui_component.set_halign(HorizontalAlign::CENTER);
         ui_component.set_valign(VerticalAlign::CENTER);
         ui_component.set_size_hint_x(Some(1.0));
         ui_component.set_size_y(30.0);
-        ui_component.set_margin_top(6.0);
         ui_component.set_margin_bottom(2.0);
         ui_component.set_text("Equipment Slots");
         ui_component.set_round(5.0);
         ui_component.set_color(get_color32(0, 0, 0, 128));
         ui_component.set_font_size(25.0);
         ui_component.set_font_color(get_color32(240, 210, 130, 255));
-        bg_mut.add_widget(&equip_title);
+        equip_section_mut.add_widget(&equip_title);
 
         let equip_container_layout = UIManager::create_widget("equip_container", UIWidgetTypes::Default);
         let equip_container_mut = ptr_as_mut(equip_container_layout.as_ref());
@@ -242,7 +269,7 @@ impl<'a> InventoryWidget<'a> {
         ui_component.set_size_hint_x(Some(1.0));
         ui_component.set_size_y(0.0);
         ui_component.set_expandable(true);
-        bg_mut.add_widget(&equip_container_layout);
+        equip_section_mut.add_widget(&equip_container_layout);
 
         for eq_idx in 0..NUM_EQUIPMENT_SLOTS {
             let slot_idx = EQUIPMENT_SLOT_START_INDEX + eq_idx;
@@ -257,7 +284,6 @@ impl<'a> InventoryWidget<'a> {
             ui_component.set_margin(3.0);
             ui_component.set_size_hint_x(Some(1.0));
             ui_component.set_size_y(0.0);
-            ui_component.set_round(5.0);
             ui_component.set_round(5.0);
             ui_component.set_color(get_color32(0, 0, 0, 128));
             ui_component.set_expandable(true);
@@ -281,6 +307,9 @@ impl<'a> InventoryWidget<'a> {
             let slot_item = InventorySlotWidget::create(self, equip_row_mut, slot_idx);
             self._slot_widgets.push(slot_item);
         }
+
+        // Right Child: Player Status Widget under same parent (bottom_container)
+        self._player_stat_widget = Some(PlayerStatWidget::create_player_stat_widget(bottom_container_mut));
     }
 
     pub fn create_inventory_row(inventory_widget: &mut WidgetDefault<'a>, row: usize) -> Rc<WidgetDefault<'a>> {
@@ -401,6 +430,9 @@ impl<'a> InventoryWidget<'a> {
 
     pub fn refresh_inventory_widget(&mut self) {
         self.rebuild_inventory_grid();
+        if let Some(player_stat_widget) = self._player_stat_widget.as_mut() {
+            player_stat_widget.refresh_player_stat_widget();
+        }
 
         let item_bar = get_game_ui_manager().get_item_bar_widget();
         let active_row = item_bar.get_active_row_index();
@@ -436,7 +468,8 @@ impl<'a> InventoryWidget<'a> {
             }
         }
 
-        if let Some(focused_slot_widget) = self._slot_widgets.iter().find(|w| w._slot_index == self._focused_slot_index) {
+        if let Some(focused_slot_widget) = self._slot_widgets.iter().find(|w| w._slot_index == self._focused_slot_index)
+        {
             let container_ui = ptr_as_mut(self._inventory_bg.as_ref()).get_ui_component_mut();
             let slot_ui = ptr_as_mut(focused_slot_widget._widget.as_ref()).get_ui_component_mut();
             container_ui.scroll_into_view(slot_ui);
@@ -467,11 +500,8 @@ impl<'a> InventoryWidget<'a> {
 
         let delta_time: f32 = _time_data._delta_time_with_scale as f32;
 
-        let (should_move_slot, dir_opt) = self._nav_repeat_controller.update(
-            keyboard_input_data,
-            joystick_input_data,
-            delta_time,
-        );
+        let (should_move_slot, dir_opt) =
+            self._nav_repeat_controller.update(keyboard_input_data, joystick_input_data, delta_time);
 
         if should_move_slot {
             let (dir_x, dir_y) = dir_opt.unwrap();

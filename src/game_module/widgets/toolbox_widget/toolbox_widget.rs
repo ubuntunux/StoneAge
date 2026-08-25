@@ -698,11 +698,8 @@ impl<'a> ToolboxWidget<'a> {
 
         // Item navigation (with hold repeat)
         let delta_time: f32 = time_data._delta_time_with_scale as f32;
-        let (should_move, dir_opt) = self._nav_repeat_controller.update(
-            keyboard_input_data,
-            joystick_input_data,
-            delta_time,
-        );
+        let (should_move, dir_opt) =
+            self._nav_repeat_controller.update(keyboard_input_data, joystick_input_data, delta_time);
 
         let item_count = self.get_active_tab_mut()._items.len();
         if should_move && item_count > 0 {

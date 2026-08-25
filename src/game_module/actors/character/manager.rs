@@ -15,7 +15,9 @@ use crate::game_module::widgets::text_box_widget::TextBoxContent;
 use crate::game_module::widgets::text_box_widget::TextBoxLayerType;
 use nalgebra::Vector3;
 
-use crate::game_module::game_service_locator::{get_game_resources, get_game_scene_manager, get_game_ui_manager, get_game_ui_manager_mut};
+use crate::game_module::game_service_locator::{
+    get_game_resources, get_game_scene_manager, get_game_ui_manager, get_game_ui_manager_mut,
+};
 use crate::game_module::widgets::game_menu_widget::character_list_helper::{AffinityTier, get_affinity_tier};
 use rust_engine_3d::core::engine_service_locator::{get_scene_manager, get_scene_manager_mut};
 use rust_engine_3d::scene::render_object::{RenderObjectCreateInfo, RenderObjectSaveData, SceneObjectType};

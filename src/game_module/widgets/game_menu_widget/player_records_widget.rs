@@ -236,11 +236,8 @@ impl<'a> PlayerRecordsWidget<'a> {
         ui.set_color(get_color32(0, 0, 0, 0));
         card_mut.add_widget(&item_type_header);
 
-        let mut item_type_entries: Vec<(&String, &u32)> = records
-            ._item_type_counts
-            .iter()
-            .filter(|(k, v)| **v > 0 && k.as_str() != "None")
-            .collect();
+        let mut item_type_entries: Vec<(&String, &u32)> =
+            records._item_type_counts.iter().filter(|(k, v)| **v > 0 && k.as_str() != "None").collect();
         item_type_entries.sort_by(|a, b| b.1.cmp(a.1).then_with(|| a.0.cmp(b.0)));
 
         let mut item_type_text = String::new();

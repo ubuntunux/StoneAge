@@ -367,9 +367,11 @@ impl<'a> ControllerHelpWidget<'a> {
         &self,
         player: &crate::game_module::actors::character::Character<'a>,
     ) -> Option<ActiveInteractionContext> {
-        let is_corpse = player._controller._interaction_objects.values().any(|obj| {
-            matches!(obj, InteractionObject::Taming(_)) || matches!(obj, InteractionObject::Farming(_))
-        });
+        let is_corpse = player
+            ._controller
+            ._interaction_objects
+            .values()
+            .any(|obj| matches!(obj, InteractionObject::Taming(_)) || matches!(obj, InteractionObject::Farming(_)));
 
         if is_corpse {
             let corpse_obj = player._controller._interaction_objects.values().find(|obj| {
@@ -477,8 +479,16 @@ impl<'a> ControllerHelpWidget<'a> {
 
             if context.is_corpse {
                 if *key_type == KeyBindingType::Taming || *key_type == KeyBindingType::Farming {
-                    let offset_y = if *key_type == KeyBindingType::Taming { -25.0 } else { 25.0 };
-                    let label = if *key_type == KeyBindingType::Taming { "Taming" } else { "Farming" };
+                    let offset_y = if *key_type == KeyBindingType::Taming {
+                        -25.0
+                    } else {
+                        25.0
+                    };
+                    let label = if *key_type == KeyBindingType::Taming {
+                        "Taming"
+                    } else {
+                        "Farming"
+                    };
                     layout_widget._ui_component.set_pos(screen_pos.x, screen_pos.y + offset_y);
                     layout_widget._ui_component.set_visible(true);
                     ptr_as_mut(key_widget._binding_name_widget)._ui_component.set_text(label);

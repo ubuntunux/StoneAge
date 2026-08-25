@@ -284,7 +284,8 @@ impl<'a> CookingWidget<'a> {
             content_pane_mut.add_widget(&row);
 
             // 1. Left Product Section (Vertical: Icon + Name on top, Description below)
-            let product_set = UIManager::create_widget(&format!("cooking_prod_set_{}", recipe.id), UIWidgetTypes::Default);
+            let product_set =
+                UIManager::create_widget(&format!("cooking_prod_set_{}", recipe.id), UIWidgetTypes::Default);
             let product_set_mut = ptr_as_mut(product_set.as_ref());
             let ui = product_set_mut.get_ui_component_mut();
             ui.set_layout_type(UILayoutType::BoxLayout);
@@ -296,7 +297,8 @@ impl<'a> CookingWidget<'a> {
             row_mut.add_widget(&product_set);
 
             // Top Header: Icon + Name
-            let product_hdr = UIManager::create_widget(&format!("cooking_prod_hdr_{}", recipe.id), UIWidgetTypes::Default);
+            let product_hdr =
+                UIManager::create_widget(&format!("cooking_prod_hdr_{}", recipe.id), UIWidgetTypes::Default);
             let product_hdr_mut = ptr_as_mut(product_hdr.as_ref());
             let ui = product_hdr_mut.get_ui_component_mut();
             ui.set_layout_type(UILayoutType::BoxLayout);
@@ -357,7 +359,10 @@ impl<'a> CookingWidget<'a> {
 
             let mut ing_widgets = Vec::new();
             for (ing_idx, req) in recipe.ingredients.iter().enumerate() {
-                let ing_set = UIManager::create_widget(&format!("cooking_ing_set_{}_{}", recipe.id, ing_idx), UIWidgetTypes::Default);
+                let ing_set = UIManager::create_widget(
+                    &format!("cooking_ing_set_{}_{}", recipe.id, ing_idx),
+                    UIWidgetTypes::Default,
+                );
                 let ing_set_mut = ptr_as_mut(ing_set.as_ref());
                 let ui = ing_set_mut.get_ui_component_mut();
                 ui.set_layout_type(UILayoutType::BoxLayout);
@@ -369,7 +374,10 @@ impl<'a> CookingWidget<'a> {
                 ing_box_mut.add_widget(&ing_set);
 
                 // Ingredient Icon (28x28)
-                let ing_icon = UIManager::create_widget(&format!("cooking_ing_icon_{}_{}", recipe.id, ing_idx), UIWidgetTypes::Default);
+                let ing_icon = UIManager::create_widget(
+                    &format!("cooking_ing_icon_{}_{}", recipe.id, ing_idx),
+                    UIWidgetTypes::Default,
+                );
                 let ui = ptr_as_mut(ing_icon.as_ref()).get_ui_component_mut();
                 ui.set_size(28.0, 28.0);
                 ui.set_valign(VerticalAlign::CENTER);
@@ -379,7 +387,10 @@ impl<'a> CookingWidget<'a> {
                 Self::setup_item_icon(&ing_icon, req.item_code());
 
                 // Ingredient Label (Name (have/need))
-                let ing_lbl = UIManager::create_widget(&format!("cooking_ing_lbl_{}_{}", recipe.id, ing_idx), UIWidgetTypes::Default);
+                let ing_lbl = UIManager::create_widget(
+                    &format!("cooking_ing_lbl_{}_{}", recipe.id, ing_idx),
+                    UIWidgetTypes::Default,
+                );
                 let ui = ptr_as_mut(ing_lbl.as_ref()).get_ui_component_mut();
                 ui.set_size_y(28.0);
                 ui.set_valign(VerticalAlign::CENTER);
@@ -633,11 +644,8 @@ impl<'a> CookingWidget<'a> {
 
         // Navigation (Up/Down with hold repeat)
         let delta_time: f32 = time_data._delta_time_with_scale as f32;
-        let (should_move, dir_opt) = self._nav_repeat_controller.update(
-            keyboard_input_data,
-            joystick_input_data,
-            delta_time,
-        );
+        let (should_move, dir_opt) =
+            self._nav_repeat_controller.update(keyboard_input_data, joystick_input_data, delta_time);
 
         if should_move {
             let (_dir_x, dir_y) = dir_opt.unwrap();
