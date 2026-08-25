@@ -25,8 +25,9 @@ impl<'a> FriendlyNpcListWidget<'a> {
         ui_component.set_halign(HorizontalAlign::CENTER);
         ui_component.set_valign(VerticalAlign::TOP);
         ui_component.set_pivot_preset(PIVOT_CENTER);
-        ui_component.set_pos_hint(Some(0.5), Some(0.5));
-        ui_component.set_expandable(true);
+        ui_component.set_expandable(false);
+        ui_component.set_size_hint_x(Some(1.0));
+        ui_component.set_size_hint_y(Some(1.0));
         ui_component.set_padding(10.0);
         ui_component.set_color(get_color32(40, 45, 55, 220));
         ui_component.set_border_color(get_color32(0, 0, 0, 255));
@@ -52,7 +53,9 @@ impl<'a> FriendlyNpcListWidget<'a> {
         ui_component.set_layout_orientation(Orientation::VERTICAL);
         ui_component.set_halign(HorizontalAlign::LEFT);
         ui_component.set_valign(VerticalAlign::TOP);
-        ui_component.set_expandable(true);
+        ui_component.set_expandable(false);
+        ui_component.set_scroll_y(true);
+        ui_component.set_enable_renderable_area(true);
         ui_component.set_size_hint_x(Some(1.0));
         ui_component.set_size_hint_y(Some(1.0));
         ui_component.set_color(get_color32(0, 0, 0, 128));

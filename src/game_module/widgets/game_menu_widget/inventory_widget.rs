@@ -144,7 +144,7 @@ impl<'a> InventoryWidget<'a> {
         let layer_mut = ptr_as_mut(layer.as_ref());
         let ui_component = layer_mut.get_ui_component_mut();
         ui_component.set_layout_type(UILayoutType::FloatLayout);
-        ui_component.set_expandable(true);
+        ui_component.set_expandable(false);
         ui_component.set_size_hint_x(Some(1.0));
         ui_component.set_size_hint_y(Some(1.0));
         ui_component.set_renderable(false);
@@ -158,7 +158,9 @@ impl<'a> InventoryWidget<'a> {
         ui_component.set_valign(VerticalAlign::CENTER);
         ui_component.set_pivot_preset(PIVOT_CENTER);
         ui_component.set_pos_hint(Some(0.5), Some(0.5));
-        ui_component.set_expandable(true);
+        ui_component.set_expandable(false);
+        ui_component.set_size_hint_x(Some(1.0));
+        ui_component.set_size_hint_y(Some(1.0));
         ui_component.set_padding(10.0);
         ui_component.set_color(get_color32(220, 200, 160, 200));
         ui_component.set_border_color(get_color32(0, 0, 0, 255));

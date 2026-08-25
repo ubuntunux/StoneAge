@@ -127,8 +127,9 @@ impl<'a> SaveLoadSlotWidget<'a> {
             ui_component.set_halign(HorizontalAlign::CENTER);
             ui_component.set_valign(VerticalAlign::CENTER);
             ui_component.set_pivot_preset(PIVOT_CENTER);
-            ui_component.set_pos_hint(Some(0.5), Some(0.5));
-            ui_component.set_size(700.0, 520.0);
+            ui_component.set_expandable(false);
+            ui_component.set_size_hint_x(Some(1.0));
+            ui_component.set_size_hint_y(Some(1.0));
             ui_component.set_padding(14.0);
             ui_component.set_color(get_color32(25, 30, 40, 245));
             ui_component.set_border_color(get_color32(70, 110, 160, 255));
@@ -218,7 +219,7 @@ impl<'a> SaveLoadSlotWidget<'a> {
             ui_comp.set_scroll_y(true);
             ui_comp.set_enable_renderable_area(true);
             ui_comp.set_size_hint_x(Some(1.0));
-            ui_comp.set_size_y(315.0);
+            ui_comp.set_size_hint_y(Some(1.0));
             ui_comp.set_margin(4.0);
             ui_comp.set_padding(8.0);
             ui_comp.set_color(get_color32(15, 20, 28, 200));

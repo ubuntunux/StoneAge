@@ -12,7 +12,7 @@ use rust_engine_3d::core::engine_core::TimeData;
 use rust_engine_3d::core::engine_service_locator::get_audio_manager_mut;
 use rust_engine_3d::core::input::{ButtonState, JoystickInputData, KeyboardInputData, MouseInputData, MouseMoveData};
 use rust_engine_3d::scene::ui::{
-    HorizontalAlign, Orientation, PIVOT_TOP_CENTER, UIComponentInstance, UILayoutType, UIManager, UIWidgetTypes,
+    HorizontalAlign, Orientation, PIVOT_CENTER, UIComponentInstance, UILayoutType, UIManager, UIWidgetTypes,
     VerticalAlign, WidgetDefault,
 };
 use rust_engine_3d::utilities::system::{RcRefCell, ptr_as_mut};
@@ -157,10 +157,10 @@ impl<'a> GameMenuWidget<'a> {
         ui_component.set_layout_orientation(Orientation::VERTICAL);
         ui_component.set_halign(HorizontalAlign::CENTER);
         ui_component.set_valign(VerticalAlign::TOP);
-        ui_component.set_pivot_preset(PIVOT_TOP_CENTER);
-        ui_component.set_pos_hint_x(Some(0.5));
-        ui_component.set_pos_y(300.0);
-        ui_component.set_expandable(true);
+        ui_component.set_pivot_preset(PIVOT_CENTER);
+        ui_component.set_pos_hint(Some(0.5), Some(0.5));
+        ui_component.set_size(760.0, 580.0);
+        ui_component.set_expandable(false);
         ui_component.set_padding(10.0);
         ui_component.set_color(get_color32(100, 100, 100, 220));
         ui_component.set_border_color(get_color32(0, 0, 0, 255));
@@ -176,7 +176,7 @@ impl<'a> GameMenuWidget<'a> {
         ui_component.set_layout_orientation(Orientation::HORIZONTAL);
         ui_component.set_halign(HorizontalAlign::CENTER);
         ui_component.set_valign(VerticalAlign::CENTER);
-        ui_component.set_expandable(true);
+        ui_component.set_expandable(false);
         ui_component.set_size_hint_x(Some(1.0));
         ui_component.set_size_y(45.0);
         ui_component.set_margin(5.0);
@@ -249,9 +249,9 @@ impl<'a> GameMenuWidget<'a> {
         ui_component.set_layout_orientation(Orientation::HORIZONTAL);
         ui_component.set_halign(HorizontalAlign::CENTER);
         ui_component.set_valign(VerticalAlign::CENTER);
-        ui_component.set_expandable(true);
+        ui_component.set_expandable(false);
         ui_component.set_size_hint_x(Some(1.0));
-        ui_component.set_size_y(45.0);
+        ui_component.set_size_hint_y(Some(1.0));
         ui_component.set_margin(5.0);
         ui_component.set_padding(5.0);
         ui_component.set_color(get_color32(0, 0, 0, 128));
