@@ -483,7 +483,7 @@ impl<'a> GameMenuWidget<'a> {
                 }
             }
             GameMenuTab::SaveLoad => {
-                self._save_load_widget.update_save_load_widget(joystick_input_data, keyboard_input_data);
+                self._save_load_widget.update_save_load_widget(time_data, joystick_input_data, keyboard_input_data);
                 let close_game_menu = keyboard_input_data.get_key_pressed(KeyCode::Escape)
                     || joystick_input_data._btn_b == ButtonState::Pressed;
                 if close_game_menu {

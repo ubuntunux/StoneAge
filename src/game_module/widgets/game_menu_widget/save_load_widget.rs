@@ -1,5 +1,6 @@
 use crate::game_module::widgets::game_menu_widget::save_load_slot_widget::SaveLoadSlotWidget;
 use nalgebra::Vector2;
+use rust_engine_3d::core::engine_core::TimeData;
 use rust_engine_3d::core::input::{JoystickInputData, KeyboardInputData};
 use rust_engine_3d::scene::ui::WidgetDefault;
 
@@ -35,9 +36,10 @@ impl<'a> SaveLoadWidget<'a> {
 
     pub fn update_save_load_widget(
         &mut self,
+        time_data: &TimeData,
         joystick_input_data: &JoystickInputData,
         keyboard_input_data: &KeyboardInputData,
     ) {
-        self._save_load_slot_widget.update_slot_widget(joystick_input_data, keyboard_input_data);
+        self._save_load_slot_widget.update_slot_widget(time_data, joystick_input_data, keyboard_input_data);
     }
 }

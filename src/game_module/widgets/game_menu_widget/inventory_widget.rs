@@ -1,7 +1,7 @@
 use crate::game_module::actors::character::Character;
 use crate::game_module::actors::items::ItemDataType;
 use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, ITEM_NONE};
-use crate::game_module::game_controller::{HoldRepeatController, NAV_INITIAL_DELAY, NAV_REPEAT_INTERVAL};
+use crate::game_module::game_controller::WidgetNavRepeatController;
 use crate::game_module::game_service_locator::{get_game_ui_manager, get_game_ui_manager_mut, get_item_manager_mut};
 use crate::game_module::widgets::item_bar::{
     EQUIPMENT_SLOT_START_INDEX, EquipmentSlotType, INVALID_ITEM_INDEX, ITEM_UI_SIZE, ITEM_WIDGET_UI_MARGIN,
@@ -139,7 +139,7 @@ pub struct InventoryWidget<'a> {
     pub _focused_slot_index: usize,
     pub _drag_source_slot_index: usize,
     pub _is_opened_inventory: bool,
-    pub _nav_repeat_controller: HoldRepeatController<(i32, i32)>,
+    pub _nav_repeat_controller: WidgetNavRepeatController,
 }
 
 impl<'a> InventoryWidget<'a> {
@@ -190,7 +190,7 @@ impl<'a> InventoryWidget<'a> {
             _focused_slot_index: 0,
             _drag_source_slot_index: INVALID_ITEM_INDEX,
             _is_opened_inventory: false,
-            _nav_repeat_controller: HoldRepeatController::new(NAV_INITIAL_DELAY, NAV_REPEAT_INTERVAL),
+            _nav_repeat_controller: WidgetNavRepeatController::new(),
         });
 
         inventory_widget.rebuild_inventory_grid();
@@ -433,45 +433,11 @@ impl<'a> InventoryWidget<'a> {
 
         let delta_time: f32 = _time_data._delta_time_with_scale as f32;
 
-        // WASD & Arrow Key Navigation (Supports Hold Repeat)
-        let is_left = keyboard_input_data.get_key_pressed(KeyCode::ArrowLeft)
-            || keyboard_input_data.get_key_hold(KeyCode::ArrowLeft)
-            || keyboard_input_data.get_key_pressed(KeyCode::KeyA)
-            || keyboard_input_data.get_key_hold(KeyCode::KeyA)
-            || joystick_input_data._btn_left == ButtonState::Pressed
-            || joystick_input_data._btn_left == ButtonState::Hold;
-        let is_right = keyboard_input_data.get_key_pressed(KeyCode::ArrowRight)
-            || keyboard_input_data.get_key_hold(KeyCode::ArrowRight)
-            || keyboard_input_data.get_key_pressed(KeyCode::KeyD)
-            || keyboard_input_data.get_key_hold(KeyCode::KeyD)
-            || joystick_input_data._btn_right == ButtonState::Pressed
-            || joystick_input_data._btn_right == ButtonState::Hold;
-        let is_up = keyboard_input_data.get_key_pressed(KeyCode::ArrowUp)
-            || keyboard_input_data.get_key_hold(KeyCode::ArrowUp)
-            || keyboard_input_data.get_key_pressed(KeyCode::KeyW)
-            || keyboard_input_data.get_key_hold(KeyCode::KeyW)
-            || joystick_input_data._btn_up == ButtonState::Pressed
-            || joystick_input_data._btn_up == ButtonState::Hold;
-        let is_down = keyboard_input_data.get_key_pressed(KeyCode::ArrowDown)
-            || keyboard_input_data.get_key_hold(KeyCode::ArrowDown)
-            || keyboard_input_data.get_key_pressed(KeyCode::KeyS)
-            || keyboard_input_data.get_key_hold(KeyCode::KeyS)
-            || joystick_input_data._btn_down == ButtonState::Pressed
-            || joystick_input_data._btn_down == ButtonState::Hold;
-
-        let current_dir: Option<(i32, i32)> = if is_left {
-            Some((-1, 0))
-        } else if is_right {
-            Some((1, 0))
-        } else if is_up {
-            Some((0, -1))
-        } else if is_down {
-            Some((0, 1))
-        } else {
-            None
-        };
-
-        let (should_move_slot, dir_opt) = self._nav_repeat_controller.update(current_dir, delta_time);
+        let (should_move_slot, dir_opt) = self._nav_repeat_controller.update(
+            keyboard_input_data,
+            joystick_input_data,
+            delta_time,
+        );
 
         if should_move_slot {
             let (dir_x, dir_y) = dir_opt.unwrap();

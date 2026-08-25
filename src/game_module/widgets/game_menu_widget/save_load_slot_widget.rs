@@ -1,9 +1,11 @@
 use crate::game_module::game_constants::AUDIO_PICKUP_ITEM;
+use crate::game_module::game_controller::WidgetNavRepeatController;
 use crate::game_module::game_service_locator::{
     get_game_client_mut, get_game_resources, get_game_resources_mut, get_game_ui_manager_mut,
 };
 use nalgebra::Vector2;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
+use rust_engine_3d::core::engine_core::TimeData;
 use rust_engine_3d::core::engine_service_locator::get_audio_manager_mut;
 use rust_engine_3d::core::input::{ButtonState, JoystickInputData, KeyboardInputData};
 use rust_engine_3d::scene::ui::{
@@ -37,6 +39,7 @@ pub struct SaveLoadSlotWidget<'a> {
     pub _slot_names: Vec<String>,
     pub _selected_slot_index: usize,
     pub _is_opened: bool,
+    pub _nav_repeat_controller: WidgetNavRepeatController,
 }
 
 impl<'a> SaveLoadSlotWidget<'a> {
@@ -272,6 +275,7 @@ impl<'a> SaveLoadSlotWidget<'a> {
             _slot_names: initial_slot_names,
             _selected_slot_index: 0,
             _is_opened: false,
+            _nav_repeat_controller: WidgetNavRepeatController::new(),
         });
 
         let ptr_self = slot_widget.as_ref() as *const SaveLoadSlotWidget<'a> as *const c_void;
@@ -513,6 +517,7 @@ impl<'a> SaveLoadSlotWidget<'a> {
 
     pub fn update_slot_widget(
         &mut self,
+        time_data: &TimeData,
         joystick_input_data: &JoystickInputData,
         keyboard_input_data: &KeyboardInputData,
     ) {
@@ -520,30 +525,34 @@ impl<'a> SaveLoadSlotWidget<'a> {
             return;
         }
 
-        let move_up = keyboard_input_data.get_key_pressed(KeyCode::ArrowUp)
-            || keyboard_input_data.get_key_pressed(KeyCode::KeyW)
-            || joystick_input_data._btn_up == ButtonState::Pressed;
-        let move_down = keyboard_input_data.get_key_pressed(KeyCode::ArrowDown)
-            || keyboard_input_data.get_key_pressed(KeyCode::KeyS)
-            || joystick_input_data._btn_down == ButtonState::Pressed;
+        let delta_time: f32 = time_data._delta_time_with_scale as f32;
+        let (should_move, dir_opt) = self._nav_repeat_controller.update(
+            keyboard_input_data,
+            joystick_input_data,
+            delta_time,
+        );
+
+        if should_move {
+            let (_dir_x, dir_y) = dir_opt.unwrap();
+            if dir_y < 0 {
+                let next_index = if self._selected_slot_index == 0 {
+                    self._slot_items.len() - 1
+                } else {
+                    self._selected_slot_index - 1
+                };
+                self.set_selected_slot(next_index, false);
+            } else if dir_y > 0 {
+                let next_index = if self._selected_slot_index + 1 >= self._slot_items.len() {
+                    0
+                } else {
+                    self._selected_slot_index + 1
+                };
+                self.set_selected_slot(next_index, false);
+            }
+        }
+
         let close_widget = keyboard_input_data.get_key_pressed(KeyCode::Escape)
             || joystick_input_data._btn_b == ButtonState::Pressed;
-
-        if move_up {
-            let next_index = if self._selected_slot_index == 0 {
-                self._slot_items.len() - 1
-            } else {
-                self._selected_slot_index - 1
-            };
-            self.set_selected_slot(next_index, false);
-        } else if move_down {
-            let next_index = if self._selected_slot_index + 1 >= self._slot_items.len() {
-                0
-            } else {
-                self._selected_slot_index + 1
-            };
-            self.set_selected_slot(next_index, false);
-        }
 
         if close_widget {
             self.close_slot_widget();

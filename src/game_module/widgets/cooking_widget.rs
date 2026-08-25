@@ -1,6 +1,7 @@
 use crate::game_module::actors::character::Character;
 use crate::game_module::actors::items::ItemDataType;
 use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, AUDIO_SELECT_ITEM};
+use crate::game_module::game_controller::WidgetNavRepeatController;
 use crate::game_module::game_service_locator::{
     get_character_manager_mut, get_game_resources, get_game_ui_manager, get_game_ui_manager_mut, get_item_manager_mut,
 };
@@ -121,6 +122,7 @@ pub struct CookingWidget<'a> {
     pub _is_opened: bool,
     pub _selected_index: usize,
     pub _last_stick_y: i8,
+    pub _nav_repeat_controller: WidgetNavRepeatController,
 }
 
 impl<'a> CookingWidget<'a> {
@@ -428,6 +430,7 @@ impl<'a> CookingWidget<'a> {
             _is_opened: false,
             _selected_index: 0,
             _last_stick_y: 0,
+            _nav_repeat_controller: WidgetNavRepeatController::new(),
         };
 
         widget
@@ -599,7 +602,7 @@ impl<'a> CookingWidget<'a> {
 
     pub fn update_cooking_widget(
         &mut self,
-        _time_data: &TimeData,
+        time_data: &TimeData,
         joystick_input_data: &JoystickInputData,
         keyboard_input_data: &KeyboardInputData,
         _mouse_move_data: &MouseMoveData,
@@ -624,34 +627,25 @@ impl<'a> CookingWidget<'a> {
             return;
         }
 
-        // Navigation (Up/Down)
-        let is_up = keyboard_input_data.get_key_pressed(KeyCode::ArrowUp)
-            || keyboard_input_data.get_key_pressed(KeyCode::KeyW)
-            || joystick_input_data._btn_up == ButtonState::Pressed;
-        let is_down = keyboard_input_data.get_key_pressed(KeyCode::ArrowDown)
-            || keyboard_input_data.get_key_pressed(KeyCode::KeyS)
-            || joystick_input_data._btn_down == ButtonState::Pressed;
+        // Navigation (Up/Down with hold repeat)
+        let delta_time: f32 = time_data._delta_time_with_scale as f32;
+        let (should_move, dir_opt) = self._nav_repeat_controller.update(
+            keyboard_input_data,
+            joystick_input_data,
+            delta_time,
+        );
 
-        let stick_y = if joystick_input_data._stick_left_direction.y > 0 {
-            1
-        } else if joystick_input_data._stick_left_direction.y < 0 {
-            -1
-        } else {
-            0
-        };
-
-        let stick_up = stick_y > 0 && self._last_stick_y <= 0;
-        let stick_down = stick_y < 0 && self._last_stick_y >= 0;
-        self._last_stick_y = stick_y;
-
-        if (is_up || stick_up) && self._selected_index > 0 {
-            self._selected_index -= 1;
-            self.update_selection_highlight();
-            get_audio_manager_mut().play_audio_bank(AUDIO_SELECT_ITEM, AudioLoop::ONCE, None);
-        } else if (is_down || stick_down) && self._selected_index + 1 < self._items.len() {
-            self._selected_index += 1;
-            self.update_selection_highlight();
-            get_audio_manager_mut().play_audio_bank(AUDIO_SELECT_ITEM, AudioLoop::ONCE, None);
+        if should_move {
+            let (_dir_x, dir_y) = dir_opt.unwrap();
+            if dir_y < 0 && self._selected_index > 0 {
+                self._selected_index -= 1;
+                self.update_selection_highlight();
+                get_audio_manager_mut().play_audio_bank(AUDIO_SELECT_ITEM, AudioLoop::ONCE, None);
+            } else if dir_y > 0 && self._selected_index + 1 < self._items.len() {
+                self._selected_index += 1;
+                self.update_selection_highlight();
+                get_audio_manager_mut().play_audio_bank(AUDIO_SELECT_ITEM, AudioLoop::ONCE, None);
+            }
         }
 
         // Enter or Space or Gamepad A/X to Cook selected item

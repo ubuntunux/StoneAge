@@ -1,5 +1,6 @@
 use crate::game_module::actors::character::Character;
 use crate::game_module::game_constants::AUDIO_PICKUP_ITEM;
+use crate::game_module::game_controller::WidgetNavRepeatController;
 use crate::game_module::widgets::toolbox_widget::item_tab_widget::{
     ToolboxIconType, ToolboxItemData, ToolboxItemState, ToolboxTabWidget,
 };
@@ -99,6 +100,7 @@ pub struct ToolboxWidget<'a> {
     pub _last_opened_tab: ToolboxTab,
     pub _selected_item_index: usize,
     pub _last_lstick_y: i16,
+    pub _nav_repeat_controller: WidgetNavRepeatController,
 }
 
 impl<'a> ToolboxWidget<'a> {
@@ -469,6 +471,7 @@ impl<'a> ToolboxWidget<'a> {
             _last_opened_tab: ToolboxTab::Skill,
             _selected_item_index: 0,
             _last_lstick_y: 0,
+            _nav_repeat_controller: WidgetNavRepeatController::new(),
         };
 
         // Wire user_data on tab buttons → they need *const ToolboxWidget
@@ -638,7 +641,7 @@ impl<'a> ToolboxWidget<'a> {
 
     pub fn update_toolbox_widget(
         &mut self,
-        _time_data: &TimeData,
+        time_data: &TimeData,
         joystick_input_data: &JoystickInputData,
         keyboard_input_data: &KeyboardInputData,
         _mouse_move_data: &MouseMoveData,
@@ -691,22 +694,18 @@ impl<'a> ToolboxWidget<'a> {
             self.set_active_tab(prev_tab);
         }
 
-        // Item navigation (Keyboard W/S, Up/Down, Joystick D-Pad Up/Down, Left Stick Up/Down)
-        let move_up = keyboard_input_data.get_key_pressed(KeyCode::KeyW)
-            || keyboard_input_data.get_key_pressed(KeyCode::ArrowUp)
-            || joystick_input_data._btn_up == ButtonState::Pressed
-            || (joystick_input_data._stick_left_direction.y > 10000 && self._last_lstick_y <= 10000);
-
-        let move_down = keyboard_input_data.get_key_pressed(KeyCode::KeyS)
-            || keyboard_input_data.get_key_pressed(KeyCode::ArrowDown)
-            || joystick_input_data._btn_down == ButtonState::Pressed
-            || (joystick_input_data._stick_left_direction.y < -10000 && self._last_lstick_y >= -10000);
-
-        self._last_lstick_y = joystick_input_data._stick_left_direction.y;
+        // Item navigation (with hold repeat)
+        let delta_time: f32 = time_data._delta_time_with_scale as f32;
+        let (should_move, dir_opt) = self._nav_repeat_controller.update(
+            keyboard_input_data,
+            joystick_input_data,
+            delta_time,
+        );
 
         let item_count = self.get_active_tab_mut()._items.len();
-        if item_count > 0 {
-            if move_up {
+        if should_move && item_count > 0 {
+            let (_dir_x, dir_y) = dir_opt.unwrap();
+            if dir_y < 0 {
                 if self._selected_item_index == 0 {
                     self._selected_item_index = item_count - 1;
                 } else {
@@ -714,7 +713,7 @@ impl<'a> ToolboxWidget<'a> {
                 }
                 get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
                 self.update_item_selection();
-            } else if move_down {
+            } else if dir_y > 0 {
                 if self._selected_item_index + 1 >= item_count {
                     self._selected_item_index = 0;
                 } else {
