@@ -110,18 +110,12 @@ impl<'a> InventorySlotWidget<'a> {
             ui_component.set_border_color(get_color32(80, 80, 100, 255));
         }
 
-        if item_count > 0 && item_data_name != ITEM_NONE {
+        if is_equipment_slot {
+            ui_component.set_text("");
+        } else if item_count > 0 && item_data_name != ITEM_NONE {
             ui_component.set_font_size(24.0);
             ui_component.set_font_color(get_color32(255, 255, 255, 255));
             ui_component.set_text(&format!("{}", item_count));
-        } else if is_equipment_slot {
-            if let Some(equip_type) = EquipmentSlotType::from_slot_index(self._slot_index) {
-                ui_component.set_font_size(18.0);
-                ui_component.set_font_color(get_color32(200, 215, 240, 255));
-                ui_component.set_text(equip_type.display_name());
-            } else {
-                ui_component.set_text("");
-            }
         } else {
             ui_component.set_text("");
         }
@@ -219,37 +213,71 @@ impl<'a> InventoryWidget<'a> {
             }
         }
 
-        // Equipment Section: Header and 3 Equipment Slots (Hat, Armor, Shoes)
+        // Equipment Section: Header and 3 Equipment Slots (Hat, Armor, Shoes) stacked vertically
         let equip_title = UIManager::create_widget("equip_title", UIWidgetTypes::Default);
         let ui_component = ptr_as_mut(equip_title.as_ref()).get_ui_component_mut();
         ui_component.set_halign(HorizontalAlign::CENTER);
         ui_component.set_valign(VerticalAlign::CENTER);
         ui_component.set_size_hint_x(Some(1.0));
-        ui_component.set_size_y(26.0);
+        ui_component.set_size_y(30.0);
         ui_component.set_margin_top(6.0);
         ui_component.set_margin_bottom(2.0);
         ui_component.set_text("Equipment Slots");
-        ui_component.set_font_size(20.0);
+        ui_component.set_round(5.0);
+        ui_component.set_color(get_color32(0, 0, 0, 128));
+        ui_component.set_font_size(25.0);
         ui_component.set_font_color(get_color32(240, 210, 130, 255));
         bg_mut.add_widget(&equip_title);
 
-        let equip_row_layout = UIManager::create_widget("equip_row", UIWidgetTypes::Default);
-        let equip_row_mut = ptr_as_mut(equip_row_layout.as_ref());
-        let ui_component = equip_row_mut.get_ui_component_mut();
+        let equip_container_layout = UIManager::create_widget("equip_container", UIWidgetTypes::Default);
+        let equip_container_mut = ptr_as_mut(equip_container_layout.as_ref());
+        let ui_component = equip_container_mut.get_ui_component_mut();
         ui_component.set_layout_type(UILayoutType::BoxLayout);
-        ui_component.set_layout_orientation(Orientation::HORIZONTAL);
+        ui_component.set_layout_orientation(Orientation::VERTICAL);
         ui_component.set_halign(HorizontalAlign::CENTER);
         ui_component.set_valign(VerticalAlign::CENTER);
-        ui_component.set_color(get_color32(140, 120, 80, 180));
+        ui_component.set_color(get_color32(50, 53, 60, 200));
         ui_component.set_round(5.0);
         ui_component.set_margin(5.0);
         ui_component.set_size_hint_x(Some(1.0));
         ui_component.set_size_y(0.0);
         ui_component.set_expandable(true);
-        bg_mut.add_widget(&equip_row_layout);
+        bg_mut.add_widget(&equip_container_layout);
 
-        for eq_col in 0..NUM_EQUIPMENT_SLOTS {
-            let slot_idx = EQUIPMENT_SLOT_START_INDEX + eq_col;
+        for eq_idx in 0..NUM_EQUIPMENT_SLOTS {
+            let slot_idx = EQUIPMENT_SLOT_START_INDEX + eq_idx;
+
+            let equip_row_layout = UIManager::create_widget(&format!("equip_row_{}", eq_idx), UIWidgetTypes::Default);
+            let equip_row_mut = ptr_as_mut(equip_row_layout.as_ref());
+            let ui_component = equip_row_mut.get_ui_component_mut();
+            ui_component.set_layout_type(UILayoutType::BoxLayout);
+            ui_component.set_layout_orientation(Orientation::HORIZONTAL);
+            ui_component.set_halign(HorizontalAlign::LEFT);
+            ui_component.set_valign(VerticalAlign::CENTER);
+            ui_component.set_margin(3.0);
+            ui_component.set_size_hint_x(Some(1.0));
+            ui_component.set_size_y(0.0);
+            ui_component.set_round(5.0);
+            ui_component.set_round(5.0);
+            ui_component.set_color(get_color32(0, 0, 0, 128));
+            ui_component.set_expandable(true);
+            equip_container_mut.add_widget(&equip_row_layout);
+
+            let equip_label = UIManager::create_widget(&format!("equip_label_{}", eq_idx), UIWidgetTypes::Default);
+            let ui_component = ptr_as_mut(equip_label.as_ref()).get_ui_component_mut();
+            ui_component.set_halign(HorizontalAlign::CENTER);
+            ui_component.set_valign(VerticalAlign::CENTER);
+            ui_component.set_size_x(80.0);
+            ui_component.set_size_y(ITEM_UI_SIZE);
+            ui_component.set_color(get_color32(0, 0, 0, 0));
+            ui_component.set_margin_right(12.0);
+            if let Some(equip_type) = EquipmentSlotType::from_slot_index(slot_idx) {
+                ui_component.set_text(equip_type.display_name());
+            }
+            ui_component.set_font_size(20.0);
+            ui_component.set_font_color(get_color32(230, 220, 200, 255));
+            equip_row_mut.add_widget(&equip_label);
+
             let slot_item = InventorySlotWidget::create(self, equip_row_mut, slot_idx);
             self._slot_widgets.push(slot_item);
         }
@@ -449,29 +477,32 @@ impl<'a> InventoryWidget<'a> {
             let (dir_x, dir_y) = dir_opt.unwrap();
             let item_bar = get_game_ui_manager().get_item_bar_widget();
             let inv_rows = item_bar.get_inventory_rows();
-            let total_rows = inv_rows + 1;
 
             let is_equip_row = self._focused_slot_index >= EQUIPMENT_SLOT_START_INDEX;
             let mut r = if is_equip_row {
-                inv_rows
+                inv_rows + (self._focused_slot_index - EQUIPMENT_SLOT_START_INDEX)
             } else {
                 self._focused_slot_index / SLOTS_PER_ROW
             };
             let mut c = if is_equip_row {
-                self._focused_slot_index.saturating_sub(EQUIPMENT_SLOT_START_INDEX)
+                0
             } else {
                 self._focused_slot_index % SLOTS_PER_ROW
             };
 
+            let total_rows = inv_rows + NUM_EQUIPMENT_SLOTS;
+
             if dir_x < 0 {
-                if r == inv_rows {
-                    c = (c + NUM_EQUIPMENT_SLOTS - 1) % NUM_EQUIPMENT_SLOTS;
+                if r >= inv_rows {
+                    let eq_idx = (r - inv_rows + NUM_EQUIPMENT_SLOTS - 1) % NUM_EQUIPMENT_SLOTS;
+                    r = inv_rows + eq_idx;
                 } else {
                     c = (c + SLOTS_PER_ROW - 1) % SLOTS_PER_ROW;
                 }
             } else if dir_x > 0 {
-                if r == inv_rows {
-                    c = (c + 1) % NUM_EQUIPMENT_SLOTS;
+                if r >= inv_rows {
+                    let eq_idx = (r - inv_rows + 1) % NUM_EQUIPMENT_SLOTS;
+                    r = inv_rows + eq_idx;
                 } else {
                     c = (c + 1) % SLOTS_PER_ROW;
                 }
@@ -483,8 +514,9 @@ impl<'a> InventoryWidget<'a> {
                 r = (r + 1) % total_rows;
             }
 
-            let new_focused_slot = if r == inv_rows {
-                EQUIPMENT_SLOT_START_INDEX + c.min(NUM_EQUIPMENT_SLOTS - 1)
+            let new_focused_slot = if r >= inv_rows {
+                let eq_idx = (r - inv_rows).min(NUM_EQUIPMENT_SLOTS - 1);
+                EQUIPMENT_SLOT_START_INDEX + eq_idx
             } else {
                 r * SLOTS_PER_ROW + c.min(SLOTS_PER_ROW - 1)
             };
