@@ -1,5 +1,5 @@
 use crate::game_module::actors::character::Character;
-use crate::game_module::game_constants::AUDIO_PICKUP_ITEM;
+use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, AUDIO_SELECT_ITEM};
 use crate::game_module::widgets::craft_widget::CraftWidget;
 use crate::game_module::widgets::game_menu_widget::friendly_npc_list_widget::FriendlyNpcListWidget;
 use crate::game_module::widgets::game_menu_widget::game_debug_menu_widget::GameDebugMenuWidget;
@@ -140,6 +140,15 @@ impl<'a> GameMenuWidget<'a> {
         true
     }
 
+    pub fn callback_tab_touch_over(
+        _ui_component: &UIComponentInstance<'a>,
+        _touched_pos: &Vector2<f32>,
+        _touched_pos_delta: &Vector2<f32>,
+    ) -> bool {
+        get_audio_manager_mut().play_audio_bank(AUDIO_SELECT_ITEM, AudioLoop::ONCE, None);
+        true
+    }
+
     pub fn create_tab_button(
         widget_name: &str,
         text: &str,
@@ -159,6 +168,7 @@ impl<'a> GameMenuWidget<'a> {
         ui_component.set_color(TAB_BUTTON_COLOR_INACTIVE);
         ui_component.set_touchable(true);
         ui_component.set_callback_touch_down(Some(Box::new(callback)));
+        ui_component.set_callback_touch_over(Some(Box::new(Self::callback_tab_touch_over)));
         parent_widget.add_widget(&tab_btn);
         tab_btn
     }
@@ -261,6 +271,7 @@ impl<'a> GameMenuWidget<'a> {
         ui_component.set_color(get_color32(180, 50, 50, 255));
         ui_component.set_touchable(true);
         ui_component.set_callback_touch_down(Some(Box::new(GameMenuWidget::callback_close)));
+        ui_component.set_callback_touch_over(Some(Box::new(GameMenuWidget::callback_tab_touch_over)));
         header_layout_mut.add_widget(&close_btn);
 
         let content_layout = UIManager::create_widget("menu_content", UIWidgetTypes::Default);
