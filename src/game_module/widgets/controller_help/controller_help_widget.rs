@@ -402,7 +402,7 @@ impl<'a> ControllerHelpWidget<'a> {
             InteractionObject::PropTable(_) => (KeyBindingType::Interaction, String::from("Sit Down"), None),
             InteractionObject::Npc(npc) => {
                 let npc_borrow = npc.borrow();
-                let request = npc_borrow.get_request_name().map(String::from);
+                let request_type = npc_borrow.get_request_type();
                 let text = if player.get_attached_item_data_type().is_eatable() {
                     let item_name = player
                         .get_attached_item()
@@ -413,7 +413,7 @@ impl<'a> ControllerHelpWidget<'a> {
                 } else {
                     format!("Interaction with {}", npc_borrow._character_data.borrow()._name)
                 };
-                (KeyBindingType::Interaction, text, request)
+                (KeyBindingType::Interaction, text, Some(request_type.to_string()))
             }
             InteractionObject::PropGate(_) => (KeyBindingType::None, String::from("Enter Gate"), None),
             InteractionObject::PropGathering(prop) => (

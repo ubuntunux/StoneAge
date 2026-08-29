@@ -688,8 +688,12 @@ impl<'a> Character<'a> {
         )
     }
 
-    pub fn get_request_name(&self) -> Option<&'static str> {
-        self._character_data.borrow()._character_type.get_request_name()
+    pub fn get_character_type(&self) -> CharacterDataType {
+        self._character_data.borrow()._character_type
+    }
+
+    pub fn get_request_type(&self) -> RequestType {
+        self._character_data.borrow()._character_type.get_request_type()
     }
 
     pub fn is_corpse(&self) -> bool {
@@ -1231,16 +1235,15 @@ impl<'a> Character<'a> {
                     npc.set_move_idle();
                     npc.set_next_behavior(BehaviorState::Idle, true);
                 }
-                if let Some(request_name) = character.borrow().get_request_name() {
-                    match request_name {
-                        "Cooking" => {
-                            get_game_client_mut().set_next_game_phase(GamePhase::OpenCooking);
-                        }
-                        "Craft" => {
-                            get_game_client_mut().set_next_game_phase(GamePhase::OpenCraft);
-                        }
-                        _ => {}
+
+                match character.borrow().get_request_type() {
+                    RequestType::Cooking => {
+                        get_game_client_mut().set_next_game_phase(GamePhase::OpenCooking);
                     }
+                    RequestType::Craft => {
+                        get_game_client_mut().set_next_game_phase(GamePhase::OpenCraft);
+                    }
+                    _ => {}
                 }
             }
         }

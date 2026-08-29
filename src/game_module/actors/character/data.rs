@@ -6,6 +6,7 @@ use rust_engine_3d::scene::animation::AnimationLayerData;
 use rust_engine_3d::scene::mesh::MeshData;
 use rust_engine_3d::utilities::system::RcRefCell;
 use serde::{Deserialize, Serialize};
+use strum_macros::{Display, EnumString};
 
 #[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq, Default)]
 pub enum ActionAnimationState {
@@ -127,12 +128,20 @@ pub enum CharacterDataType {
     Ufo,
 }
 
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, Display, PartialEq, Default, EnumString)]
+pub enum RequestType {
+    #[default]
+    None,
+    Cooking,
+    Craft
+}
+
 impl CharacterDataType {
-    pub fn get_request_name(&self) -> Option<&'static str> {
+    pub fn get_request_type(&self) -> RequestType {
         match self {
-            CharacterDataType::Chef => Some("Cooking"),
-            CharacterDataType::Crafter => Some("Craft"),
-            _ => None,
+            CharacterDataType::Chef => RequestType::Cooking,
+            CharacterDataType::Crafter => RequestType::Craft,
+            _ => RequestType::None,
         }
     }
 }
