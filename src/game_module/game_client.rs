@@ -438,28 +438,11 @@ impl<'a> GameClient<'a> {
                 },
                 GamePhase::OpenCraft => match state {
                     State::Begin => {
-                        game_ui_manager.set_cross_hair_visible(true);
                         game_ui_manager.open_craft();
+                        self.set_next_game_phase(GamePhase::GameMenu);
                     }
-                    State::Update => {
-                        if game_ui_manager.is_opened_craft() {
-                            game_ui_manager.update_craft_widget(
-                                time_data,
-                                joystick_input_data,
-                                keyboard_input_data,
-                                mouse_move_data,
-                                mouse_input_data,
-                                &mouse_delta,
-                                character_manager.get_player(),
-                            );
-                        } else {
-                            self.set_next_game_phase(GamePhase::GamePlay);
-                        }
-                    }
-                    State::End => {
-                        game_ui_manager.close_craft();
-                        game_ui_manager.set_cross_hair_visible(false);
-                    }
+                    State::Update => {}
+                    State::End => {}
                 },
                 GamePhase::Inventory => match state {
                     State::Begin => {

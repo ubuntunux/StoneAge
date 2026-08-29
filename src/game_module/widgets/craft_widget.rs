@@ -173,6 +173,8 @@ pub struct CraftWidget<'a> {
 }
 
 impl<'a> CraftWidget<'a> {
+    pub fn changed_window_size(&mut self, _window_size: &Vector2<i32>) {}
+
     pub fn get_item_name_from_resource(item_code: &str) -> String {
         let resources = get_game_resources();
         if resources.has_item_data(item_code) {
@@ -219,7 +221,8 @@ impl<'a> CraftWidget<'a> {
         ui.set_valign(VerticalAlign::CENTER);
         ui.set_pivot_preset(PIVOT_CENTER);
         ui.set_pos_hint(Some(0.5), Some(0.5));
-        ui.set_size(840.0, 520.0);
+        ui.set_size_hint_x(Some(1.0));
+        ui.set_size_hint_y(Some(1.0));
         ui.set_expandable(false);
         ui.set_enable_renderable_area(true);
         ui.set_color(get_color32(30, 32, 36, 245));
@@ -237,7 +240,7 @@ impl<'a> CraftWidget<'a> {
         ui.set_layout_type(UILayoutType::BoxLayout);
         ui.set_layout_orientation(Orientation::HORIZONTAL);
         ui.set_size_hint_x(Some(1.0));
-        ui.set_size_y(40.0);
+        ui.set_size_y(32.0);
         ui.set_valign(VerticalAlign::CENTER);
         ui.set_color(get_color32(0, 0, 0, 0));
         layer_mut.add_widget(&header);
@@ -250,27 +253,16 @@ impl<'a> CraftWidget<'a> {
         ui.set_halign(HorizontalAlign::LEFT);
         ui.set_valign(VerticalAlign::CENTER);
         ui.set_text("Crafter's Workshop");
-        ui.set_font_size(22.0);
+        ui.set_font_size(20.0);
         ui.set_font_color(get_color32(255, 255, 255, 255));
         ui.set_color(get_color32(0, 0, 0, 0));
         header_mut.add_widget(&title_label);
 
-        // Close Button [X]
+        // Hidden Close Button [X] for standalone compatibility
         let close_btn = UIManager::create_widget("craft_close_btn", UIWidgetTypes::Default);
         let ui = ptr_as_mut(close_btn.as_ref()).get_ui_component_mut();
-        ui.set_size(32.0, 32.0);
-        ui.set_halign(HorizontalAlign::CENTER);
-        ui.set_valign(VerticalAlign::CENTER);
-        ui.set_color(get_color32(70, 75, 85, 255));
-        ui.set_border_color(get_color32(110, 115, 125, 255));
-        ui.set_border(2.0);
-        ui.set_round(6.0);
-        ui.set_text("X");
-        ui.set_font_size(18.0);
-        ui.set_font_color(get_color32(255, 255, 255, 255));
-        ui.set_touchable(true);
-        ui.set_callback_touch_down(Some(Box::new(Self::callback_close_btn)));
-        header_mut.add_widget(&close_btn);
+        ui.set_size(0.0, 0.0);
+        ui.set_visible(false);
 
         // Separator
         let separator = UIManager::create_widget("craft_sep", UIWidgetTypes::Default);
@@ -494,7 +486,7 @@ impl<'a> CraftWidget<'a> {
         widget
     }
 
-    fn callback_close_btn(ui: &UIComponentInstance<'a>, _pos: &Vector2<f32>, _delta: &Vector2<f32>) -> bool {
+    fn _callback_close_btn(ui: &UIComponentInstance<'a>, _pos: &Vector2<f32>, _delta: &Vector2<f32>) -> bool {
         let self_ptr = ui.get_user_data() as *const CraftWidget<'a>;
         if !self_ptr.is_null() {
             ptr_as_mut(self_ptr).close_craft();

@@ -1,4 +1,4 @@
-use crate::game_module::actors::character::ActionAnimationState;
+use crate::game_module::actors::character::{ActionAnimationState, RequestType};
 use crate::game_module::actors::interaction_object::InteractionObject;
 use crate::game_module::game_controller::KeyBindingType;
 use crate::game_module::game_service_locator::get_character_manager;
@@ -24,7 +24,7 @@ struct ActiveInteractionContext {
     is_corpse: bool,
     primary_type: KeyBindingType,
     primary_text: String,
-    request_text: Option<String>,
+    request_type: RequestType,
     position: Vector3<f32>,
     object_key: *const c_void,
 }
@@ -381,7 +381,7 @@ impl<'a> ControllerHelpWidget<'a> {
                 is_corpse: true,
                 primary_type: KeyBindingType::None,
                 primary_text: String::new(),
-                request_text: None,
+                request_type: RequestType::None,
                 position: corpse_obj.get_position(),
                 object_key: corpse_obj.get_key(),
             });
@@ -391,19 +391,19 @@ impl<'a> ControllerHelpWidget<'a> {
         let position = interaction_object.get_position();
         let object_key = interaction_object.get_key();
 
-        let (primary_type, primary_text, request_text) = match interaction_object {
-            InteractionObject::PropBed(_) => (KeyBindingType::Interaction, String::from("Wrap up the day"), None),
+        let (primary_type, primary_text, request_type) = match interaction_object {
+            InteractionObject::PropBed(_) => (KeyBindingType::Interaction, String::from("Wrap up the day"), RequestType::None),
             InteractionObject::PropPickup(prop) => (
                 KeyBindingType::Interaction,
                 format!("Pick up a {}", prop.borrow()._prop_data.borrow()._name.as_str()),
-                None,
+                RequestType::None
             ),
-            InteractionObject::PropMonolith(_) => (KeyBindingType::Interaction, String::from("Open Toolbox"), None),
-            InteractionObject::PropTable(_) => (KeyBindingType::Interaction, String::from("Sit Down"), None),
+            InteractionObject::PropMonolith(_) => (KeyBindingType::Interaction, String::from("Open Toolbox"), RequestType::None),
+            InteractionObject::PropTable(_) => (KeyBindingType::Interaction, String::from("Sit Down"), RequestType::None),
             InteractionObject::Npc(npc) => {
                 let npc_borrow = npc.borrow();
                 let request_type = npc_borrow.get_request_type();
-                let text = if player.get_attached_item_data_type().is_eatable() {
+                let interaction_text = if player.get_attached_item_data_type().is_eatable() {
                     let item_name = player
                         .get_attached_item()
                         .as_ref()
@@ -413,22 +413,22 @@ impl<'a> ControllerHelpWidget<'a> {
                 } else {
                     format!("Interaction with {}", npc_borrow._character_data.borrow()._name)
                 };
-                (KeyBindingType::Interaction, text, Some(request_type.to_string()))
+                (KeyBindingType::Interaction, interaction_text, request_type)
             }
-            InteractionObject::PropGate(_) => (KeyBindingType::None, String::from("Enter Gate"), None),
+            InteractionObject::PropGate(_) => (KeyBindingType::None, String::from("Enter Gate"), RequestType::None),
             InteractionObject::PropGathering(prop) => (
                 KeyBindingType::Gathering,
                 format!("Hit the {}", prop.borrow()._prop_data.borrow()._name.as_str()),
-                None,
+                RequestType::None,
             ),
-            _ => (KeyBindingType::Interaction, String::from("interaction"), None),
+            _ => (KeyBindingType::Interaction, String::from("interaction"), RequestType::None),
         };
 
         Some(ActiveInteractionContext {
             is_corpse: false,
             primary_type,
             primary_text,
-            request_text,
+            request_type,
             position,
             object_key,
         })
@@ -484,25 +484,19 @@ impl<'a> ControllerHelpWidget<'a> {
                     } else {
                         25.0
                     };
-                    let label = if *key_type == KeyBindingType::Taming {
-                        "Taming"
-                    } else {
-                        "Farming"
-                    };
                     layout_widget._ui_component.set_pos(screen_pos.x, screen_pos.y + offset_y);
                     layout_widget._ui_component.set_visible(true);
-                    ptr_as_mut(key_widget._binding_name_widget)._ui_component.set_text(label);
+                    ptr_as_mut(key_widget._binding_name_widget)._ui_component.set_text(key_type.to_string().as_str());
                 } else {
                     layout_widget._ui_component.set_visible(false);
                 }
             } else {
-                if *key_type == KeyBindingType::Request && context.request_text.is_some() {
-                    let request_name = context.request_text.as_ref().unwrap();
+                if *key_type == KeyBindingType::Request && context.request_type != RequestType::None {
                     layout_widget._ui_component.set_pos(screen_pos.x, screen_pos.y + 25.0);
                     layout_widget._ui_component.set_visible(true);
-                    ptr_as_mut(key_widget._binding_name_widget)._ui_component.set_text(request_name.as_str());
+                    ptr_as_mut(key_widget._binding_name_widget)._ui_component.set_text(context.request_type.to_string().as_str());
                 } else if *key_type == context.primary_type {
-                    let offset_y = if context.request_text.is_some() { -25.0 } else { 0.0 };
+                    let offset_y = if context.request_type != RequestType::None { -25.0 } else { 0.0 };
                     layout_widget._ui_component.set_pos(screen_pos.x, screen_pos.y + offset_y);
                     layout_widget._ui_component.set_visible(true);
                     ptr_as_mut(key_widget._binding_name_widget)._ui_component.set_text(context.primary_text.as_str());

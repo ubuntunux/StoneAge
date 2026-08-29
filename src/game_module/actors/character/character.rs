@@ -1228,22 +1228,27 @@ impl<'a> Character<'a> {
         if self._controller.is_on_ground() && self.is_available_move() && self.is_idle_action() {
             let target_interaction = self._controller._nearest_interaction_object.clone();
             if let InteractionObject::Npc(character) = target_interaction {
-                self.look_at(character.borrow().get_position());
-                {
-                    let mut npc = character.borrow_mut();
-                    npc.set_is_interacting(true);
-                    npc.set_move_idle();
-                    npc.set_next_behavior(BehaviorState::Idle, true);
-                }
+                let mut npc = character.borrow_mut();
+                if !npc.get_stats().is_hungry() {
+                    let mut requestable = true;
+                    match npc.get_request_type() {
+                        RequestType::Cooking => {
+                            get_game_client_mut().set_next_game_phase(GamePhase::OpenCooking);
+                        }
+                        RequestType::Craft => {
+                            get_game_client_mut().set_next_game_phase(GamePhase::OpenCraft);
+                        }
+                        _ => {
+                            requestable = false;
+                        }
+                    }
 
-                match character.borrow().get_request_type() {
-                    RequestType::Cooking => {
-                        get_game_client_mut().set_next_game_phase(GamePhase::OpenCooking);
+                    if requestable {
+                        self.look_at(npc.get_position());
+                        npc.set_is_interacting(true);
+                        npc.set_move_idle();
+                        npc.set_next_behavior(BehaviorState::Idle, true);
                     }
-                    RequestType::Craft => {
-                        get_game_client_mut().set_next_game_phase(GamePhase::OpenCraft);
-                    }
-                    _ => {}
                 }
             }
         }

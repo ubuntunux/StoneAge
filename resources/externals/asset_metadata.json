@@ -8057,7 +8057,7 @@
             "asset_path": "family/koa",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/family/koa.blend",
             "guid": "",
-            "mtime": 1787583521.624578,
+            "mtime": 1788023327.215247,
             "data": {}
         }
     ],
@@ -8107,7 +8107,7 @@
             "asset_path": "intro_stage",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/intro_stage.blend",
             "guid": "",
-            "mtime": 1787247742.386881,
+            "mtime": 1787855554.6538432,
             "data": {}
         }
     ],
@@ -8457,7 +8457,7 @@
             "asset_path": "character_animation_data",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/data/data.blend",
             "guid": "",
-            "mtime": 1785949068.1057117,
+            "mtime": 1787593568.888257,
             "data": {}
         },
         {
@@ -8465,7 +8465,7 @@
             "asset_path": "character_audio_data",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/data/data.blend",
             "guid": "",
-            "mtime": 1785949068.1057117,
+            "mtime": 1787593568.888257,
             "data": {}
         },
         {
@@ -8473,7 +8473,7 @@
             "asset_path": "character_data",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/data/data.blend",
             "guid": "",
-            "mtime": 1785949068.1057117,
+            "mtime": 1787593568.888257,
             "data": {}
         },
         {
@@ -8481,7 +8481,7 @@
             "asset_path": "character_stat_data",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/data/data.blend",
             "guid": "",
-            "mtime": 1785949068.1057117,
+            "mtime": 1787593568.888257,
             "data": {}
         },
         {
@@ -8489,7 +8489,7 @@
             "asset_path": "item_data",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/data/data.blend",
             "guid": "",
-            "mtime": 1785949068.1057117,
+            "mtime": 1787593568.888257,
             "data": {}
         },
         {
@@ -8497,7 +8497,7 @@
             "asset_path": "prop_data",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/data/data.blend",
             "guid": "",
-            "mtime": 1785949068.1057117,
+            "mtime": 1787593568.888257,
             "data": {}
         },
         {
@@ -8505,7 +8505,7 @@
             "asset_path": "weapon_data",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/data/data.blend",
             "guid": "",
-            "mtime": 1785949068.1057117,
+            "mtime": 1787593568.888257,
             "data": {}
         }
     ]
