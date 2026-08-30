@@ -2,7 +2,10 @@ use crate::game_module::actors::character::Character;
 use crate::game_module::actors::items::ItemDataType;
 use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, ITEM_NONE};
 use crate::game_module::game_controller::WidgetNavRepeatController;
-use crate::game_module::game_service_locator::{get_game_ui_manager, get_game_ui_manager_mut, get_item_manager_mut};
+use crate::game_module::game_service_locator::{
+    get_game_ui_manager, get_game_ui_manager_mut, get_item_manager_mut,
+};
+use crate::game_module::widgets::game_menu_widget::item_info_widget::ItemInfoWidget;
 use crate::game_module::widgets::game_menu_widget::player_stat_widget::PlayerStatWidget;
 use crate::game_module::widgets::item_bar::{
     EQUIPMENT_SLOT_START_INDEX, EquipmentSlotType, INVALID_ITEM_INDEX, ITEM_UI_SIZE, ITEM_WIDGET_UI_MARGIN,
@@ -68,6 +71,7 @@ impl<'a> InventorySlotWidget<'a> {
 
         let ui_component = ptr_as_mut(inv_slot._widget.as_ref()).get_ui_component_mut();
         ui_component.set_callback_touch_down(Some(Box::new(InventoryWidget::callback_slot_click)));
+        ui_component.set_callback_touch_over(Some(Box::new(InventoryWidget::callback_slot_touch_over)));
         ui_component.set_user_data(inv_slot.as_ref() as *const InventorySlotWidget<'a> as *const c_void);
 
         inv_slot
@@ -131,6 +135,7 @@ pub struct InventoryWidget<'a> {
     pub _inventory_bg: Rc<WidgetDefault<'a>>,
     pub _player_stat_widget: Option<Box<PlayerStatWidget<'a>>>,
     pub _drag_widget: Rc<WidgetDefault<'a>>,
+    pub _item_info_widget: Box<ItemInfoWidget<'a>>,
     pub _slot_widgets: Vec<Box<InventorySlotWidget<'a>>>,
     pub _focused_slot_index: usize,
     pub _drag_source_slot_index: usize,
@@ -179,12 +184,15 @@ impl<'a> InventoryWidget<'a> {
         ui_component.set_visible(false);
         layer_mut.add_widget(&drag_widget);
 
+        let item_info_widget = ItemInfoWidget::create_item_info_widget(layer_mut);
+
         let mut inventory_widget = Box::new(InventoryWidget {
             _parent_widget: parent_widget,
             _layer: layer,
             _inventory_bg: inventory_bg,
             _player_stat_widget: None,
             _drag_widget: drag_widget,
+            _item_info_widget: item_info_widget,
             _slot_widgets: Vec::new(),
             _focused_slot_index: 0,
             _drag_source_slot_index: INVALID_ITEM_INDEX,
@@ -400,6 +408,29 @@ impl<'a> InventoryWidget<'a> {
         true
     }
 
+    pub fn callback_slot_touch_over(
+        ui_component: &UIComponentInstance<'a>,
+        _touched_pos: &Vector2<f32>,
+        _touched_pos_delta: &Vector2<f32>,
+    ) -> bool {
+        let slot_ptr = ui_component.get_user_data() as *const InventorySlotWidget<'a>;
+        if !slot_ptr.is_null() {
+            let slot_item = unsafe { &*slot_ptr };
+            let inventory_widget = ptr_as_mut(slot_item._inventory_widget);
+            if slot_item._item_count > 0 && slot_item._item_data_name != ITEM_NONE {
+                inventory_widget._item_info_widget.show_item_info(
+                    &slot_item._item_data_name,
+                    &slot_item._item_name,
+                    slot_item._item_count,
+                    slot_item._widget.as_ref(),
+                );
+            } else {
+                inventory_widget._item_info_widget.hide_item_info();
+            }
+        }
+        true
+    }
+
     pub fn open_inventory(&mut self) {
         if !self._is_opened_inventory {
             self._is_opened_inventory = true;
@@ -419,6 +450,7 @@ impl<'a> InventoryWidget<'a> {
         if self._is_opened_inventory {
             self._is_opened_inventory = false;
             self._nav_repeat_controller.reset();
+            self._item_info_widget.hide_item_info();
             if self._drag_source_slot_index != INVALID_ITEM_INDEX {
                 self._drag_source_slot_index = INVALID_ITEM_INDEX;
                 let drag_ui = ptr_as_mut(self._drag_widget.as_ref()).get_ui_component_mut();
