@@ -1,15 +1,11 @@
 use crate::game_module::game_service_locator::get_game_resources;
-use rust_engine_3d::scene::ui::{
-    HorizontalAlign, Orientation, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault,
-};
+use rust_engine_3d::scene::ui::{HorizontalAlign, Orientation, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault, PIVOT_BOTTOM_LEFT, PIVOT_TOP_LEFT};
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use std::rc::Rc;
 
-pub const ITEM_INFO_POPUP_WIDTH: f32 = 320.0;
-pub const ITEM_INFO_POPUP_HEIGHT: f32 = 120.0;
-pub const ITEM_INFO_TITLE_FONT_SIZE: f32 = 24.0;
-pub const ITEM_INFO_DESC_FONT_SIZE: f32 = 18.0;
+pub const ITEM_INFO_TITLE_FONT_SIZE: f32 = 30.0;
+pub const ITEM_INFO_DESC_FONT_SIZE: f32 = 22.0;
 
 pub struct ItemInfoWidget<'a> {
     pub _parent_widget: *const WidgetDefault<'a>,
@@ -24,33 +20,39 @@ impl<'a> ItemInfoWidget<'a> {
         let ui_component = ptr_as_mut(layer.as_ref()).get_ui_component_mut();
         ui_component.set_layout_type(UILayoutType::BoxLayout);
         ui_component.set_layout_orientation(Orientation::VERTICAL);
-        ui_component.set_size(ITEM_INFO_POPUP_WIDTH, ITEM_INFO_POPUP_HEIGHT);
-        ui_component.set_padding(12.0);
-        ui_component.set_color(get_color32(20, 25, 35, 235));
+        ui_component.set_pivot_preset(PIVOT_TOP_LEFT);
+        ui_component.set_size(0.0, 0.0);
+        ui_component.set_padding(10.0);
+        ui_component.set_color(get_color32(20, 25, 35, 255));
         ui_component.set_border(2.0);
         ui_component.set_border_color(get_color32(180, 200, 240, 255));
         ui_component.set_round(8.0);
+        ui_component.set_halign(HorizontalAlign::LEFT);
+        ui_component.set_valign(VerticalAlign::TOP);
         ui_component.set_expandable(true);
-        ui_component.set_touchable(false);
         ui_component.set_visible(false);
 
         let title_lbl = UIManager::create_widget("inv_item_info_title", UIWidgetTypes::Default);
         let ui = ptr_as_mut(title_lbl.as_ref()).get_ui_component_mut();
+        ui.set_size(0.0, 0.0);
         ui.set_font_size(ITEM_INFO_TITLE_FONT_SIZE);
         ui.set_font_color(get_color32(255, 255, 180, 255));
         ui.set_color(get_color32(0, 0, 0, 0));
+        ui.set_margin(4.0);
         ui.set_halign(HorizontalAlign::LEFT);
-        ui.set_valign(VerticalAlign::CENTER);
-        ui.set_touchable(false);
+        ui.set_valign(VerticalAlign::TOP);
+        ui.set_expandable(true);
 
         let desc_lbl = UIManager::create_widget("inv_item_info_desc", UIWidgetTypes::Default);
         let ui = ptr_as_mut(desc_lbl.as_ref()).get_ui_component_mut();
+        ui.set_size(0.0, 0.0);
         ui.set_font_size(ITEM_INFO_DESC_FONT_SIZE);
         ui.set_font_color(get_color32(220, 220, 220, 255));
         ui.set_color(get_color32(0, 0, 0, 0));
+        ui.set_margin(4.0);
         ui.set_halign(HorizontalAlign::LEFT);
-        ui.set_valign(VerticalAlign::CENTER);
-        ui.set_touchable(false);
+        ui.set_valign(VerticalAlign::TOP);
+        ui.set_expandable(true);
 
         ptr_as_mut(layer.as_ref()).add_widget(&title_lbl);
         ptr_as_mut(layer.as_ref()).add_widget(&desc_lbl);
@@ -77,7 +79,7 @@ impl<'a> ItemInfoWidget<'a> {
         let slot_area = slot_ui.get_ui_area();
         let parent_area = ptr_as_ref(self._parent_widget).get_ui_component().get_ui_area();
 
-        let popup_x = (slot_area.x - parent_area.x) / dpi_scale - ITEM_INFO_POPUP_WIDTH - 5.0;
+        let popup_x = (slot_area.x - parent_area.x) / dpi_scale;
         let popup_y = (slot_area.y - parent_area.y) / dpi_scale;
 
         let layer_ui = ptr_as_mut(self._layer.as_ref()).get_ui_component_mut();
