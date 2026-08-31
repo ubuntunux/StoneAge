@@ -1977,11 +1977,19 @@ impl<'a> Character<'a> {
                     }
                     State::End => {
                         if let Some(attached_item) = self.get_attached_item().clone() {
-                            self.get_stats_mut().add_hunger(-1.0);
-                            self.get_stats_mut().add_hp(10);
-                            self.get_stats_mut().add_stamina(10.0);
+                            let item_data_ref = attached_item.borrow()._item_data.clone();
+                            let item_data = item_data_ref.borrow();
+                            if item_data.get_hunger() != 0.0 {
+                                self.get_stats_mut().add_hunger(item_data.get_hunger() as f32);
+                            }
+                            if item_data.get_hp() != 0 {
+                                self.get_stats_mut().add_hp(item_data.get_hp());
+                            }
+                            if item_data.get_stamina() != 0.0 {
+                                self.get_stats_mut().add_stamina(item_data.get_stamina());
+                            }
 
-                            if self._is_player {
+                        if self._is_player {
                                 item_manager.remove_inventory_item(attached_item.borrow()._item_data_name.as_str(), 1);
                             } else {
                                 item_manager.detach_item(self);

@@ -3,5 +3,9 @@
     "_model_data_name": "weapons/wooden_club",
     "_name": "WOODEN CLUB",
     "_ui_material_instance": "ui/items/item_wooden_club",
-    "_description": "Simple wooden weapon for self-defense."
+    "_description": "Simple wooden weapon for self-defense.",
+    "_item_effects": [
+        { "WeaponDamage": 12.0 },
+        { "WeaponRange": 1.2 }
+    ]
 }

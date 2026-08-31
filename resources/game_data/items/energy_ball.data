@@ -3,5 +3,9 @@
     "_model_data_name": "props/energy_ball",
     "_name": "energy_ball",
     "_ui_material_instance": "ui/items/item_energy_ball",
-    "_description": "Magical energy sphere used for monolith upgrades and crafting."
+    "_description": "Magical energy sphere used for monolith upgrades and crafting.",
+    "_item_effects": [
+        { "Hp": 20 },
+        { "Stamina": 30.0 }
+    ]
 }

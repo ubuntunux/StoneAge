@@ -3,5 +3,9 @@
     "_model_data_name": "props/spirit_ball",
     "_name": "spirit_ball",
     "_ui_material_instance": "ui/items/item_spirit_ball",
-    "_description": "Mystic spirit orb containing ancient elemental power."
+    "_description": "Mystic spirit orb containing ancient elemental power.",
+    "_item_effects": [
+        { "Hp": 30 },
+        { "Stamina": 40.0 }
+    ]
 }

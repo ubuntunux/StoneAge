@@ -3,5 +3,10 @@
     "_model_data_name": "props/meat",
     "_name": "MEAT",
     "_ui_material_instance": "ui/items/item_meat",
-    "_description": "Raw meat harvested from wild animals."
+    "_description": "Raw meat harvested from wild animals.",
+    "_item_effects": [
+        { "Hp": 10 },
+        { "Stamina": 15.0 },
+        { "Hunger": -0.3 }
+    ]
 }

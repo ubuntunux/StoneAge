@@ -3,5 +3,10 @@
     "_model_data_name": "items/coconut",
     "_name": "ENERGY STEW",
     "_ui_material_instance": "ui/items/item_coconut",
-    "_description": "Hearty stew that fully restores Stamina."
+    "_description": "Hearty stew that fully restores Stamina.",
+    "_item_effects": [
+        { "Hp": 60 },
+        { "Stamina": 80.0 },
+        { "Hunger": -0.8 }
+    ]
 }

@@ -3,5 +3,10 @@
     "_model_data_name": "props/meat",
     "_name": "GOLDEN FEAST",
     "_ui_material_instance": "ui/items/item_meat",
-    "_description": "A grand feast that fully restores HP & Stamina."
+    "_description": "A grand feast that fully restores HP & Stamina.",
+    "_item_effects": [
+        { "Hp": 100 },
+        { "Stamina": 100.0 },
+        { "Hunger": -1.0 }
+    ]
 }

@@ -48,8 +48,7 @@ impl Default for ItemData {
             _name: String::new(),
             _ui_material_instance: String::new(),
             _description: String::new(),
-            _weapon_damage: 10.0,
-            _weapon_range: 0.0,
+            _item_effects: Vec::new(),
         }
     }
 }

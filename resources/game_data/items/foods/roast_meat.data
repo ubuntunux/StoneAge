@@ -3,5 +3,10 @@
     "_model_data_name": "props/meat",
     "_name": "ROAST MEAT",
     "_ui_material_instance": "ui/items/item_meat",
-    "_description": "Juicy roasted meat restoring 30 HP & 50 Stamina."
+    "_description": "Juicy roasted meat restoring 30 HP & 50 Stamina.",
+    "_item_effects": [
+        { "Hp": 30 },
+        { "Stamina": 50.0 },
+        { "Hunger": -0.5 }
+    ]
 }

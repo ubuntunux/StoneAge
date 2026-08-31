@@ -3,5 +3,9 @@
     "_model_data_name": "items/wooden_club",
     "_name": "STONE AXE",
     "_ui_material_instance": "ui/items/item_wooden_club",
-    "_description": "Essential tool for chopping trees and mining rocks."
+    "_description": "Essential tool for chopping trees and mining rocks.",
+    "_item_effects": [
+        { "WeaponDamage": 25.0 },
+        { "WeaponRange": 1.5 }
+    ]
 }

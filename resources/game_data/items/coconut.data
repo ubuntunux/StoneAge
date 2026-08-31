@@ -4,6 +4,11 @@
     "_name": "COCONUT",
     "_ui_material_instance": "ui/items/item_coconut",
     "_description": "Fresh coconut restoring health and stamina.",
-    "_weapon_damage": 10.0,
-    "_weapon_range": 1.0
+    "_item_effects": [
+        { "WeaponDamage": 10.0 },
+        { "WeaponRange": 1.0 },
+        { "Hp": 15 },
+        { "Stamina": 25.0 },
+        { "Hunger": -0.3 }
+    ]
 }

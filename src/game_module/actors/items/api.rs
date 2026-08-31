@@ -60,6 +60,15 @@ pub struct ItemSaveData {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+pub enum ItemEffect {
+    WeaponDamage(f32),
+    WeaponRange(f32),
+    Hp(i32),
+    Stamina(f32),
+    Hunger(f32),
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(default)]
 pub struct ItemData {
     pub _item_type: ItemDataType,
@@ -67,8 +76,54 @@ pub struct ItemData {
     pub _name: String,
     pub _ui_material_instance: String,
     pub _description: String,
-    pub _weapon_damage: f32,
-    pub _weapon_range: f32,
+    pub _item_effects: Vec<ItemEffect>,
+}
+
+impl ItemData {
+    pub fn get_weapon_damage(&self) -> f32 {
+        for effect in &self._item_effects {
+            if let ItemEffect::WeaponDamage(damage) = effect {
+                return *damage;
+            }
+        }
+        0.0
+    }
+
+    pub fn get_weapon_range(&self) -> f32 {
+        for effect in &self._item_effects {
+            if let ItemEffect::WeaponRange(range) = effect {
+                return *range;
+            }
+        }
+        0.0
+    }
+
+    pub fn get_hp(&self) -> i32 {
+        for effect in &self._item_effects {
+            if let ItemEffect::Hp(hp) = effect {
+                return *hp;
+            }
+        }
+        0
+    }
+
+    pub fn get_stamina(&self) -> f32 {
+        for effect in &self._item_effects {
+            if let ItemEffect::Stamina(stamina) = effect {
+                return *stamina;
+            }
+        }
+        0.0
+    }
+
+    pub fn get_hunger(&self) -> f32 {
+        for effect in &self._item_effects {
+            if let ItemEffect::Hunger(hunger) = effect {
+                return *hunger;
+            }
+        }
+        0.0
+    }
 }
 
 #[derive(Serialize, Deserialize, Default, Debug, Clone, PartialEq)]

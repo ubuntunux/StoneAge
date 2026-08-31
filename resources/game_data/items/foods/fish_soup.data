@@ -3,5 +3,10 @@
     "_model_data_name": "props/meat",
     "_name": "FISH SOUP",
     "_ui_material_instance": "ui/items/item_meat",
-    "_description": "Nutritious fish soup restoring 40 HP & Speed."
+    "_description": "Nutritious fish soup restoring 40 HP & Speed.",
+    "_item_effects": [
+        { "Hp": 40 },
+        { "Stamina": 40.0 },
+        { "Hunger": -0.6 }
+    ]
 }
