@@ -31,12 +31,16 @@ impl<'a> Default for BehaviorRoamer<'a> {
 }
 
 impl<'a> BehaviorRoamer<'a> {
-    /// Player is excluded from enemy detection for tamed or intimacy-following characters.
+    /// Player and Civilian allies are excluded from enemy detection for tamed or intimacy-following characters.
     fn is_enemy_in_range(&self, owner: &Character, target: Option<&Character>) -> bool {
         if let Some(target) = target.as_ref()
             && target.is_alive()
-            && !(target._is_player && (owner.is_tamed() || owner.is_following_intimacy()))
         {
+            if owner.is_tamed() || owner.is_following_intimacy() {
+                if target._is_player || target.is_civilian() || target.is_tamed() {
+                    return false;
+                }
+            }
             return owner.check_in_range(target.get_collision(), NPC_TRACKING_RANGE, false);
         }
         false
@@ -177,6 +181,11 @@ impl<'a> BehaviorBase<'a> for BehaviorRoamer<'a> {
                                     }
                                     IntimacyFollowResult::Moving | IntimacyFollowResult::NotFollowing => {}
                                 }
+                                do_idle = false;
+                            } else if owner.is_tamed()
+                                && (target_ref._is_player || target_ref.is_civilian() || target_ref.is_tamed())
+                            {
+                                self.set_next_behavior(BehaviorState::Idle, false);
                                 do_idle = false;
                             } else if owner.check_in_range(target_ref.get_collision(), NPC_TRACKING_RANGE, false) {
                                 if owner.check_in_range(target_ref.get_collision(), NPC_ATTACK_RANGE, false) {

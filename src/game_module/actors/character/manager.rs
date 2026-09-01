@@ -432,7 +432,11 @@ impl<'a> CharacterManager<'a> {
                     let mut min_dist = f32::MAX;
                     for other in self._characters.values() {
                         let other_mut = ptr_as_mut(other.as_ptr());
-                        if !other_mut.is_player() && !other_mut.is_tamed() && other_mut.is_alive() {
+                        if !other_mut.is_player()
+                            && !other_mut.is_tamed()
+                            && !other_mut.is_civilian()
+                            && other_mut.is_alive()
+                        {
                             let dist = (other_mut.get_position() - character_mut.get_position()).norm();
                             if dist <= NPC_TRACKING_RANGE && dist < min_dist {
                                 min_dist = dist;
@@ -587,6 +591,7 @@ impl<'a> CharacterManager<'a> {
                             let target_character_mut = ptr_as_mut(target_character.as_ptr());
                             if !target_character_mut._is_player
                                 && !target_character_mut.is_tamed()
+                                && !target_character_mut.is_civilian()
                                 && target_character_mut.is_alive()
                                 && !target_character_mut._character_stats._invincibility
                                 && character_mut.check_in_range(

@@ -286,7 +286,7 @@ impl<'a> BehaviorBase<'a> for BehaviorCivilian<'a> {
             }
 
             if state == State::Update {
-                owner._character_stats.add_hunger(0.02 * delta_time);
+                owner._character_stats.add_hunger(0.01 * delta_time);
                 self._behavior_data.update_behavior_time(delta_time);
             }
         }
