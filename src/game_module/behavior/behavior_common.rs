@@ -1,4 +1,4 @@
-use crate::game_module::actors::character::{ActionAnimationState, Character};
+use crate::game_module::actors::character::{ActionAnimationState, Character, MoveAnimationState};
 use crate::game_module::behavior::behavior_base::BehaviorData;
 use crate::game_module::game_constants::{
     ARRIVAL_DISTANCE_THRESHOLD, CHARACTER_INTERACTION_TIME, GAME_VIEW_MODE, GameViewMode, INTIMACY_ARRIVE_RANGE,
@@ -103,6 +103,7 @@ pub fn begin_eating(data: &mut BehaviorData, owner: &mut Character) {
     if !owner.is_move_stop() {
         owner.set_move_idle();
     }
+    owner.set_is_interacting(false);
     owner.set_action_eating();
     data.set_behavior_time(NPC_IDLE_TERM_MIN);
 }
@@ -112,27 +113,27 @@ pub fn update_eating_should_idle(is_first_update: bool, owner: &Character) -> bo
 }
 
 pub fn begin_interaction(data: &mut BehaviorData, owner: &mut Character) {
-    if !owner.is_move_stop() {
+    if !owner.is_move_stop() && !owner.is_move_state(MoveAnimationState::SitDownLoop) {
         owner.set_move_idle();
     }
     data.set_behavior_time(CHARACTER_INTERACTION_TIME);
 }
 
 pub fn update_interaction_should_idle(data: &BehaviorData, owner: &mut Character, target: Option<&Character>) -> bool {
+    if data.is_end_behavior_time() {
+        owner.set_is_interacting(false);
+        return true;
+    }
     if owner.is_interacting() {
-        owner.set_move_idle();
+        if !owner.is_move_state(MoveAnimationState::SitDownLoop) {
+            owner.set_move_idle();
+        }
         if let Some(target_actor) = target {
             owner.look_at(target_actor.get_position());
         }
         return false;
     }
-    if data.is_end_behavior_time() {
-        return true;
-    }
-    if let Some(target_actor) = target {
-        owner.look_at(target_actor.get_position());
-    }
-    false
+    true
 }
 
 pub fn begin_wake_up(owner: &mut Character) {

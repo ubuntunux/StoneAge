@@ -1062,7 +1062,7 @@ impl<'a> Character<'a> {
 
     pub fn set_is_interacting(&mut self, is_interacting: bool) {
         self._character_stats._is_interacting = is_interacting;
-        if is_interacting {
+        if is_interacting && !self.is_move_state(MoveAnimationState::SitDownLoop) {
             self.set_move_idle();
         }
     }
@@ -1161,8 +1161,10 @@ impl<'a> Character<'a> {
                     {
                         let mut npc = character.borrow_mut();
                         npc.set_is_interacting(true);
-                        npc.set_move_idle();
-                        npc.set_next_behavior(BehaviorState::Idle, true);
+                        if !npc.is_move_state(MoveAnimationState::SitDownLoop) {
+                            npc.set_move_idle();
+                        }
+                        npc.set_next_behavior(BehaviorState::Interaction, true);
                     }
 
                     // give item
@@ -1229,7 +1231,10 @@ impl<'a> Character<'a> {
             let target_interaction = self._controller._nearest_interaction_object.clone();
             if let InteractionObject::Npc(character) = target_interaction {
                 let mut npc = character.borrow_mut();
-                if !npc.get_stats().is_hungry() {
+                if !npc.is_action(ActionAnimationState::Eating)
+                    && npc._behavior.get_behavior_state() != BehaviorState::Eating
+                    && !npc.get_stats().is_hungry()
+                {
                     let mut requestable = true;
                     match npc.get_request_type() {
                         RequestType::Cooking => {
@@ -1246,7 +1251,9 @@ impl<'a> Character<'a> {
                     if requestable {
                         self.look_at(npc.get_position());
                         npc.set_is_interacting(true);
-                        npc.set_move_idle();
+                        if !npc.is_move_state(MoveAnimationState::SitDownLoop) {
+                            npc.set_move_idle();
+                        }
                         npc.set_next_behavior(BehaviorState::Idle, true);
                     }
                 }
@@ -1989,7 +1996,7 @@ impl<'a> Character<'a> {
                                 self.get_stats_mut().add_stamina(item_data.get_stamina());
                             }
 
-                        if self._is_player {
+                            if self._is_player {
                                 item_manager.remove_inventory_item(attached_item.borrow()._item_data_name.as_str(), 1);
                             } else {
                                 item_manager.detach_item(self);

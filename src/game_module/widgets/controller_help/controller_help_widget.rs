@@ -1,5 +1,6 @@
 use crate::game_module::actors::character::{ActionAnimationState, RequestType};
 use crate::game_module::actors::interaction_object::InteractionObject;
+use crate::game_module::behavior::behavior_base::BehaviorState;
 use crate::game_module::game_controller::KeyBindingType;
 use crate::game_module::game_service_locator::get_character_manager;
 use crate::game_module::widgets::key_binding_widget::{
@@ -392,17 +393,34 @@ impl<'a> ControllerHelpWidget<'a> {
         let object_key = interaction_object.get_key();
 
         let (primary_type, primary_text, request_type) = match interaction_object {
-            InteractionObject::PropBed(_) => (KeyBindingType::Interaction, String::from("Wrap up the day"), RequestType::None),
+            InteractionObject::PropBed(_) => (
+                KeyBindingType::Interaction,
+                String::from("Wrap up the day"),
+                RequestType::None,
+            ),
             InteractionObject::PropPickup(prop) => (
                 KeyBindingType::Interaction,
                 format!("Pick up a {}", prop.borrow()._prop_data.borrow()._name.as_str()),
-                RequestType::None
+                RequestType::None,
             ),
-            InteractionObject::PropMonolith(_) => (KeyBindingType::Interaction, String::from("Open Toolbox"), RequestType::None),
-            InteractionObject::PropTable(_) => (KeyBindingType::Interaction, String::from("Sit Down"), RequestType::None),
+            InteractionObject::PropMonolith(_) => (
+                KeyBindingType::Interaction,
+                String::from("Open Toolbox"),
+                RequestType::None,
+            ),
+            InteractionObject::PropTable(_) => {
+                (KeyBindingType::Interaction, String::from("Sit Down"), RequestType::None)
+            }
             InteractionObject::Npc(npc) => {
                 let npc_borrow = npc.borrow();
-                let request_type = npc_borrow.get_request_type();
+                let request_type = if npc_borrow.get_stats().is_hungry()
+                    || npc_borrow.is_action(ActionAnimationState::Eating)
+                    || npc_borrow._behavior.get_behavior_state() == BehaviorState::Eating
+                {
+                    RequestType::None
+                } else {
+                    npc_borrow.get_request_type()
+                };
                 let interaction_text = if player.get_attached_item_data_type().is_eatable() {
                     let item_name = player
                         .get_attached_item()
@@ -421,7 +439,11 @@ impl<'a> ControllerHelpWidget<'a> {
                 format!("Hit the {}", prop.borrow()._prop_data.borrow()._name.as_str()),
                 RequestType::None,
             ),
-            _ => (KeyBindingType::Interaction, String::from("interaction"), RequestType::None),
+            _ => (
+                KeyBindingType::Interaction,
+                String::from("interaction"),
+                RequestType::None,
+            ),
         };
 
         Some(ActiveInteractionContext {
@@ -494,9 +516,15 @@ impl<'a> ControllerHelpWidget<'a> {
                 if *key_type == KeyBindingType::Request && context.request_type != RequestType::None {
                     layout_widget._ui_component.set_pos(screen_pos.x, screen_pos.y + 25.0);
                     layout_widget._ui_component.set_visible(true);
-                    ptr_as_mut(key_widget._binding_name_widget)._ui_component.set_text(context.request_type.to_string().as_str());
+                    ptr_as_mut(key_widget._binding_name_widget)
+                        ._ui_component
+                        .set_text(context.request_type.to_string().as_str());
                 } else if *key_type == context.primary_type {
-                    let offset_y = if context.request_type != RequestType::None { -25.0 } else { 0.0 };
+                    let offset_y = if context.request_type != RequestType::None {
+                        -25.0
+                    } else {
+                        0.0
+                    };
                     layout_widget._ui_component.set_pos(screen_pos.x, screen_pos.y + offset_y);
                     layout_widget._ui_component.set_visible(true);
                     ptr_as_mut(key_widget._binding_name_widget)._ui_component.set_text(context.primary_text.as_str());

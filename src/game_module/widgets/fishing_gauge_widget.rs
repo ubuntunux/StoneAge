@@ -4,7 +4,9 @@ use crate::game_module::game_constants::MATERIAL_TIME_OF_DAY;
 use crate::game_module::widgets::status_bar_widget::StatusBarWidget;
 use ash::vk;
 use rust_engine_3d::core::engine_service_locator::get_engine_resources;
-use rust_engine_3d::scene::ui::{HorizontalAlign, UILayoutType, UIManager, UIWidgetTypes, WidgetDefault, PIVOT_CENTER, VerticalAlign};
+use rust_engine_3d::scene::ui::{
+    HorizontalAlign, PIVOT_CENTER, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault,
+};
 use rust_engine_3d::utilities::system::ptr_as_mut;
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 

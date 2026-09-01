@@ -2,9 +2,7 @@ use crate::game_module::actors::character::Character;
 use crate::game_module::actors::items::ItemDataType;
 use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, ITEM_NONE};
 use crate::game_module::game_controller::WidgetNavRepeatController;
-use crate::game_module::game_service_locator::{
-    get_game_ui_manager, get_game_ui_manager_mut, get_item_manager_mut,
-};
+use crate::game_module::game_service_locator::{get_game_ui_manager, get_game_ui_manager_mut, get_item_manager_mut};
 use crate::game_module::widgets::game_menu_widget::item_info_widget::ItemInfoWidget;
 use crate::game_module::widgets::game_menu_widget::player_stat_widget::PlayerStatWidget;
 use crate::game_module::widgets::item_bar::{

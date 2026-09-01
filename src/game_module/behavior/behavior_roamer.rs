@@ -1,4 +1,4 @@
-use crate::game_module::actors::character::Character;
+use crate::game_module::actors::character::{Character, MoveAnimationState};
 use crate::game_module::behavior::behavior_base::{BehaviorBase, BehaviorData, BehaviorSaveData, BehaviorState};
 use crate::game_module::behavior::behavior_common::{
     IntimacyFollowResult, begin_eating, begin_idle, begin_interaction, begin_roaming, begin_wake_up,
@@ -83,11 +83,17 @@ impl<'a> BehaviorBase<'a> for BehaviorRoamer<'a> {
                 BehaviorState::Idle => match state {
                     State::Begin => begin_idle(&mut self._behavior_data, owner),
                     State::Update => {
-                        if owner.is_interacting() {
-                            owner.set_move_idle();
+                        if owner.get_attached_item_data_type().is_eatable() {
+                            self.set_next_behavior(BehaviorState::Eating, true);
+                        } else if owner.is_interacting() {
+                            if !owner.is_move_state(MoveAnimationState::SitDownLoop) {
+                                owner.set_move_idle();
+                            }
                             if let Some(target_actor) = target {
                                 owner.look_at(target_actor.get_position());
                             }
+                        } else if owner.get_stats().is_hungry() {
+                            self.set_next_behavior(BehaviorState::Hunger, true);
                         } else if self.is_enemy_in_range(owner, target) {
                             self.set_next_behavior(BehaviorState::Chase, false);
                         } else if is_player_too_far_for_intimacy(owner, target) {
@@ -98,11 +104,27 @@ impl<'a> BehaviorBase<'a> for BehaviorRoamer<'a> {
                     }
                     State::End => {}
                 },
+                BehaviorState::Hunger => match state {
+                    State::Begin => {
+                        owner.set_action_hungry();
+                        owner.set_sit_down();
+                    }
+                    State::Update => {
+                        if !owner.get_stats().is_hungry() {
+                            self.set_next_behavior(BehaviorState::Idle, true);
+                        }
+                    }
+                    State::End => {}
+                },
                 BehaviorState::Eating => match state {
                     State::Begin => begin_eating(&mut self._behavior_data, owner),
                     State::Update => {
                         if update_eating_should_idle(is_first_update, owner) {
-                            self.set_next_behavior(BehaviorState::Idle, false);
+                            if owner.get_stats().is_hungry() {
+                                self.set_next_behavior(BehaviorState::Hunger, true);
+                            } else {
+                                self.set_next_behavior(BehaviorState::Idle, false);
+                            }
                         }
                     }
                     State::End => {}
@@ -110,8 +132,14 @@ impl<'a> BehaviorBase<'a> for BehaviorRoamer<'a> {
                 BehaviorState::Interaction => match state {
                     State::Begin => begin_interaction(&mut self._behavior_data, owner),
                     State::Update => {
-                        if update_interaction_should_idle(&self._behavior_data, owner, target) {
-                            self.set_next_behavior(BehaviorState::Idle, false);
+                        if owner.get_attached_item_data_type().is_eatable() {
+                            self.set_next_behavior(BehaviorState::Eating, true);
+                        } else if update_interaction_should_idle(&self._behavior_data, owner, target) {
+                            if owner.get_stats().is_hungry() {
+                                self.set_next_behavior(BehaviorState::Hunger, true);
+                            } else {
+                                self.set_next_behavior(BehaviorState::Idle, false);
+                            }
                         }
                     }
                     State::End => {}
@@ -119,8 +147,12 @@ impl<'a> BehaviorBase<'a> for BehaviorRoamer<'a> {
                 BehaviorState::Roaming => match state {
                     State::Begin => begin_roaming(&mut self._behavior_data, owner, target),
                     State::Update => {
-                        if owner.is_interacting() {
-                            self.set_next_behavior(BehaviorState::Idle, true);
+                        if owner.get_attached_item_data_type().is_eatable() {
+                            self.set_next_behavior(BehaviorState::Eating, false);
+                        } else if owner.is_interacting() {
+                            self.set_next_behavior(BehaviorState::Interaction, true);
+                        } else if owner.get_stats().is_hungry() {
+                            self.set_next_behavior(BehaviorState::Hunger, true);
                         } else if self.is_enemy_in_range(owner, target) {
                             self.set_next_behavior(BehaviorState::Chase, false);
                         } else if is_player_too_far_for_intimacy(owner, target) {

@@ -133,7 +133,7 @@ pub enum RequestType {
     #[default]
     None,
     Cooking,
-    Craft
+    Craft,
 }
 
 impl CharacterDataType {

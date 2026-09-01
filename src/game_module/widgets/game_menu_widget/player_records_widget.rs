@@ -206,7 +206,11 @@ impl<'a> PlayerRecordsWidget<'a> {
             records._item_type_counts.iter().filter(|(k, v)| **v > 0 && k.as_str() != "None").collect();
         item_type_entries.sort_by(|a, b| b.1.cmp(a.1).then_with(|| a.0.cmp(b.0)));
 
-        let line_count = if item_type_entries.is_empty() { 1 } else { item_type_entries.len() };
+        let line_count = if item_type_entries.is_empty() {
+            1
+        } else {
+            item_type_entries.len()
+        };
         let list_height = (line_count as f32) * 22.0;
         let card_height = 36.0 + list_height;
         ui_comp.set_size_y(card_height);
@@ -321,4 +325,3 @@ impl<'a> PlayerRecordsWidget<'a> {
         container_mut.add_widget(&kill_card);
     }
 }
-

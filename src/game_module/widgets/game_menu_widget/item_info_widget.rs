@@ -1,8 +1,8 @@
 use crate::game_module::actors::items::ItemEffect;
 use crate::game_module::game_service_locator::get_game_resources;
 use rust_engine_3d::scene::ui::{
-    HorizontalAlign, Orientation, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault,
-    PIVOT_BOTTOM_LEFT,
+    HorizontalAlign, Orientation, PIVOT_BOTTOM_LEFT, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign,
+    WidgetDefault,
 };
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
@@ -243,4 +243,3 @@ impl<'a> ItemInfoWidget<'a> {
         effects
     }
 }
-
