@@ -8,7 +8,7 @@ use crate::game_module::scenario::scenario::{
     GameScenarioCreateInfo, ScenarioBase, ScenarioDataCreateInfo, ScenarioType,
 };
 use crate::game_module::scenario::scenario_track::ScenarioTrack;
-use crate::game_module::widgets::text_box_widget::{TextBoxContent, TextBoxLayerType};
+use crate::game_module::widgets::text_box_widget::{TextBoxContent, TextBoxItemOption, TextBoxLayerType};
 use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop};
 use rust_engine_3d::core::engine_service_locator::{get_audio_manager, get_audio_manager_mut};
@@ -251,21 +251,27 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
                 },
                 ScenarioPhase::Discussion => match state {
                     State::Begin => {
-                        let contents = vec![TextBoxContent::MaterialInstance(String::from(MATERIAL_EMOJI_GOOD))];
+                        let contents = vec![TextBoxContent::MaterialInstance(String::from(MATERIAL_EMOJI_GOOD), None)];
                         if let Some(alpha) = &self._alien_alpha {
                             game_ui_manager.add_text_box_item(
-                                TextBoxLayerType::InteractionLayer,
                                 ActorWrapper::Character(alpha.clone()),
                                 &contents,
-                                Some(CHARACTER_INTERACTION_TIME),
+                                &TextBoxItemOption {
+                                    _layer_type: TextBoxLayerType::InteractionLayer,
+                                    _duration: Some(CHARACTER_INTERACTION_TIME),
+                                    ..Default::default()
+                                },
                             );
                         }
                         if let Some(beta) = &self._alien_beta {
                             game_ui_manager.add_text_box_item(
-                                TextBoxLayerType::InteractionLayer,
                                 ActorWrapper::Character(beta.clone()),
                                 &contents,
-                                Some(CHARACTER_INTERACTION_TIME),
+                                &TextBoxItemOption {
+                                    _layer_type: TextBoxLayerType::InteractionLayer,
+                                    _duration: Some(CHARACTER_INTERACTION_TIME),
+                                    ..Default::default()
+                                },
                             );
                         }
                         if let (Some(alpha), Some(beta)) = (&self._alien_alpha, &self._alien_beta) {

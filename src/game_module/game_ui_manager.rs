@@ -18,7 +18,9 @@ use crate::game_module::widgets::player_hud::PlayerHud;
 use crate::game_module::widgets::quest_widgets::quest_title::QuestTitle;
 use crate::game_module::widgets::quest_widgets::quest_widget::{QuestItemBase, QuestWidget};
 use crate::game_module::widgets::target_status_bar::TargetStatusWidget;
-use crate::game_module::widgets::text_box_widget::{TextBoxContent, TextBoxLayerType, TextBoxWidget};
+use crate::game_module::widgets::text_box_widget::{
+    TextBoxContent, TextBoxItemOption, TextBoxLayerType, TextBoxWidget,
+};
 use crate::game_module::widgets::time_of_day::TimeOfDayWidget;
 use crate::game_module::widgets::toolbox_widget::ToolboxWidget;
 use crate::game_module::widgets::world_map::WorldMapWidget;
@@ -479,6 +481,22 @@ impl<'a> GameUIManager<'a> {
         }
     }
 
+    pub fn find_eatable_inventory_item_data_name(&self) -> Option<String> {
+        let item_create_info_rows = self.get_inventory_item_create_infos();
+        let game_resources = get_game_resources();
+        for (_row, items) in item_create_info_rows {
+            for info in items {
+                if info._item_count > 0 {
+                    let item_data = game_resources.get_item_data(&info._item_data_name);
+                    if item_data.borrow()._item_type.is_eatable() {
+                        return Some(info._item_data_name);
+                    }
+                }
+            }
+        }
+        None
+    }
+
     pub fn clear_inventory_items(&mut self) {
         if let Some(item_bar_widget) = self._item_bar_widget.as_mut() {
             item_bar_widget.clear_item_bar_widget();
@@ -664,12 +682,11 @@ impl<'a> GameUIManager<'a> {
 
     pub fn add_text_box_item(
         &mut self,
-        layer_type: TextBoxLayerType,
         actor: ActorWrapper<'a>,
         contents: &Vec<TextBoxContent>,
-        duration: Option<f32>,
+        option: &TextBoxItemOption,
     ) {
-        self._text_box_widget.as_mut().unwrap().add_text_box_item(layer_type, actor, contents, duration);
+        self._text_box_widget.as_mut().unwrap().add_text_box_item(actor, contents, option);
     }
 
     pub fn remove_text_box_item(&mut self, key: *const c_void) {

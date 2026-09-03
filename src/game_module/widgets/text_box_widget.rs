@@ -18,6 +18,8 @@ const ICON_SIZE: f32 = 100.0;
 const ITEM_PADDING: f32 = 10.0;
 const TEXT_BOX_ANIMATION_DURATION: f32 = 0.25;
 const MAX_TEXT_BOX_HEIGHT: f32 = 2.0;
+const BOUNCE_SPEED: f32 = 6.0;
+const BOUNCE_HEIGHT: f32 = 10.0;
 
 #[repr(u8)]
 #[derive(PartialEq, Debug, Display, EnumCount, EnumIter, FromRepr, Copy, Clone)]
@@ -35,10 +37,35 @@ pub enum TextBoxAnimationState {
 }
 
 pub enum TextBoxContent {
-    MaterialInstance(String),
+    MaterialInstance(String, Option<Vector2<f32>>),
     Text(String),
     StatWidget((String, f32)),
     Audio(String),
+}
+
+#[derive(Clone, Debug)]
+pub struct TextBoxItemOption {
+    pub _layer_type: TextBoxLayerType,
+    pub _duration: Option<f32>,
+    pub _bounce: bool,
+    pub _visible_background: bool,
+    pub _color: u32,
+    pub _border_color: u32,
+    pub _offset: Vector2<f32>,
+}
+
+impl Default for TextBoxItemOption {
+    fn default() -> Self {
+        TextBoxItemOption {
+            _layer_type: TextBoxLayerType::InteractionLayer,
+            _duration: None,
+            _bounce: false,
+            _visible_background: true,
+            _color: get_color32(255, 255, 255, 128),
+            _border_color: get_color32(0, 0, 0, 128),
+            _offset: Vector2::zeros(),
+        }
+    }
 }
 
 pub struct TextBoxWidget<'a> {
@@ -54,15 +81,17 @@ pub struct TextBoxItem<'a> {
     pub _duration: Option<f32>,
     pub _animation_state: TextBoxAnimationState,
     pub _animation_timer: f32,
+    pub _bounce_timer: f32,
+    pub _is_bounce: bool,
+    pub _offset: Vector2<f32>,
 }
 
 impl<'a> TextBoxItem<'a> {
     pub fn create_text_box_item(
-        layer_type: TextBoxLayerType,
         parent_widget: &mut WidgetDefault<'a>,
         actor: ActorWrapper<'a>,
         contents: &Vec<TextBoxContent>,
-        duration: Option<f32>,
+        option: &TextBoxItemOption,
     ) -> TextBoxItem<'a> {
         let layout_widget = UIManager::create_widget("TextBoxItem", UIWidgetTypes::Default);
         let ui_component = ptr_as_mut(layout_widget.as_ref()).get_ui_component_mut();
@@ -70,25 +99,40 @@ impl<'a> TextBoxItem<'a> {
         ui_component.set_layout_orientation(Orientation::VERTICAL);
         ui_component.set_halign(HorizontalAlign::CENTER);
         ui_component.set_valign(VerticalAlign::CENTER);
-        ui_component.set_color(get_color32(255, 255, 255, 128));
+
+        let color = if option._visible_background {
+            option._color
+        } else {
+            option._color & 0x00FFFFFF
+        };
+        let border_color = if option._visible_background {
+            option._border_color
+        } else {
+            option._border_color & 0x00FFFFFF
+        };
+
+        ui_component.set_color(color);
         ui_component.set_round(20.0);
         ui_component.set_border(2.0);
-        ui_component.set_border_color(get_color32(0, 0, 0, 128));
+        ui_component.set_border_color(border_color);
         ui_component.set_padding(ITEM_PADDING);
         ui_component.set_expandable(true);
         ui_component.set_opacity(0.0);
         parent_widget.add_widget(&layout_widget);
 
         let mut item = TextBoxItem {
-            _layer_type: layer_type,
+            _layer_type: option._layer_type,
             _actor: actor,
             _layout_widget: layout_widget.as_ref(),
-            _duration: duration,
+            _duration: option._duration,
             _animation_state: TextBoxAnimationState::None,
             _animation_timer: 0.0,
+            _bounce_timer: 0.0,
+            _is_bounce: option._bounce,
+            _offset: option._offset,
         };
 
-        item.update_text_box_item(contents, duration, true);
+        item.update_text_box_item(contents, option._duration, true);
         item
     }
 
@@ -113,10 +157,11 @@ impl<'a> TextBoxItem<'a> {
                 ui_component.set_valign(VerticalAlign::CENTER);
                 ui_component.set_expandable(true);
                 match content {
-                    TextBoxContent::MaterialInstance(material_name) => {
+                    TextBoxContent::MaterialInstance(material_name, custom_size) => {
                         let material_instance = engine_resources.get_material_instance_data(material_name);
-                        ui_component.set_size_x(ICON_SIZE);
-                        ui_component.set_size_y(ICON_SIZE);
+                        let icon_size = custom_size.unwrap_or(Vector2::new(ICON_SIZE, ICON_SIZE));
+                        ui_component.set_size_x(icon_size.x);
+                        ui_component.set_size_y(icon_size.y);
                         ui_component.set_color(get_color32(255, 255, 255, 255));
                         ui_component.set_material_instance(Some(material_instance.clone()));
                     }
@@ -202,23 +247,23 @@ impl<'a> TextBoxWidget<'a> {
 
     pub fn add_text_box_item(
         &mut self,
-        layer_type: TextBoxLayerType,
         actor: ActorWrapper<'a>,
         contents: &Vec<TextBoxContent>,
-        duration: Option<f32>,
+        option: &TextBoxItemOption,
     ) {
         if let Some(item) = self._text_box_items.get_mut(&actor.get_key()) {
-            item.update_text_box_item(contents, duration, true);
+            item.update_text_box_item(contents, option._duration, true);
+            item._is_bounce = option._bounce;
+            item._offset = option._offset;
             item.set_animation_state(TextBoxAnimationState::None);
         } else {
             self._text_box_items.insert(
                 actor.get_key(),
                 TextBoxItem::create_text_box_item(
-                    layer_type,
-                    ptr_as_mut(self._layers[layer_type as usize]),
+                    ptr_as_mut(self._layers[option._layer_type as usize]),
                     actor,
                     contents,
-                    duration,
+                    option,
                 ),
             );
         }
@@ -266,10 +311,17 @@ impl<'a> TextBoxWidget<'a> {
                 let ui_size = ui_component.get_ui_size();
                 let max_x = (main_camera._window_size.x as f32 - ui_size.x).max(0.0);
                 let max_y = (main_camera._window_size.y as f32 - ui_size.y).max(0.0);
-                let screen_pos = main_camera.convert_world_to_screen(&position, true) - ui_size * 0.5;
+                let screen_pos =
+                    main_camera.convert_world_to_screen(&position, true) - ui_size * 0.5 + text_box_item._offset;
                 let clamped_pos = Vector2::new(screen_pos.x.clamp(0.0, max_x), screen_pos.y.clamp(0.0, max_y))
                     / rust_engine_3d::scene::ui::get_global_dpi_scale();
-                ui_component.set_pos(clamped_pos.x, clamped_pos.y);
+                let mut pos_y = clamped_pos.y;
+                if text_box_item._is_bounce {
+                    text_box_item._bounce_timer += delta_time;
+                    let bounce_offset = (text_box_item._bounce_timer * BOUNCE_SPEED).sin() * BOUNCE_HEIGHT;
+                    pos_y += bounce_offset;
+                }
+                ui_component.set_pos(clamped_pos.x, pos_y);
 
                 match text_box_item._animation_state {
                     TextBoxAnimationState::None => {

@@ -1,6 +1,6 @@
 use crate::game_module::actors::character::Character;
 use crate::game_module::actors::items::api::{
-    Item, ItemCreateInfo, ItemData, ItemDataType, ItemID, ItemManager, ItemProperties, ItemSaveData,
+    Item, ItemCreateInfo, ItemData, ItemDataType, ItemID, ItemManager, ItemMap, ItemProperties, ItemSaveData,
 };
 use crate::game_module::actors::items::updater::create_item_updater;
 use crate::game_module::game_constants::{
@@ -336,6 +336,10 @@ impl<'a> ItemManager<'a> {
         } else {
             get_scene_manager_mut().remove_static_render_object(item._render_object.borrow().get_object_id());
         }
+    }
+
+    pub fn get_items(&self) -> &ItemMap<'a> {
+        &self._items
     }
 
     pub fn clear_items(&mut self) {

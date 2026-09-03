@@ -1169,14 +1169,21 @@ impl<'a> Character<'a> {
 
                     // give item
                     let mut give_item = false;
-                    if character.borrow().get_attached_item().is_none()
-                        && let Some(attached_item) = self.get_attached_item()
-                        && attached_item.borrow().get_item_data_type().is_eatable()
-                    {
-                        give_item = true;
-                        let item_data_name = attached_item.borrow()._item_data_name.clone();
-                        item_manager.remove_inventory_item(item_data_name.as_str(), 1);
-                        item_manager.attach_item(&mut character.borrow_mut(), item_data_name.as_str());
+                    if character.borrow().get_attached_item().is_none() {
+                        let eatable_item_name = if let Some(attached_item) = self.get_attached_item()
+                            && attached_item.borrow().get_item_data_type().is_eatable()
+                        {
+                            Some(attached_item.borrow()._item_data_name.clone())
+                        } else {
+                            get_game_ui_manager_mut().find_eatable_inventory_item_data_name()
+                        };
+
+                        if let Some(item_data_name) = eatable_item_name {
+                            give_item = true;
+                            item_manager.remove_inventory_item(item_data_name.as_str(), 1);
+                            item_manager.attach_item(&mut character.borrow_mut(), item_data_name.as_str());
+                            character.borrow_mut().set_next_behavior(BehaviorState::Eating, true);
+                        }
                     }
 
                     // increase intimacy (2x multiplier if fed food)

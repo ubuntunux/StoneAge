@@ -13,8 +13,7 @@ use crate::game_module::game_constants::{
     MATERIAL_EMOJI_HUNGRY, NPC_ATTACK_HIT_RANGE, NPC_TRACKING_RANGE,
 };
 use crate::game_module::game_scene_manager::{CharacterCreateInfoMap, CharacterSaveDataMap};
-use crate::game_module::widgets::text_box_widget::TextBoxContent;
-use crate::game_module::widgets::text_box_widget::TextBoxLayerType;
+use crate::game_module::widgets::text_box_widget::{TextBoxContent, TextBoxItemOption, TextBoxLayerType};
 use nalgebra::Vector3;
 
 use crate::game_module::game_service_locator::{
@@ -301,17 +300,20 @@ impl<'a> CharacterManager<'a> {
         if character.is_alive() && character._character_stats.get_is_stat_displayed() {
             let mut contents = vec![];
             if character.get_stats().is_hungry() {
-                contents.push(TextBoxContent::MaterialInstance(String::from(MATERIAL_EMOJI_HUNGRY)));
+                contents.push(TextBoxContent::MaterialInstance(String::from(MATERIAL_EMOJI_HUNGRY), None));
                 contents.push(TextBoxContent::Audio(String::from(AUDIO_STOMACH_GROWLING)));
             } else {
-                contents.push(TextBoxContent::MaterialInstance(String::from(MATERIAL_EMOJI_GOOD)));
+                contents.push(TextBoxContent::MaterialInstance(String::from(MATERIAL_EMOJI_GOOD), None));
             }
 
             get_game_ui_manager_mut().add_text_box_item(
-                TextBoxLayerType::InteractionLayer,
                 ActorWrapper::Character(refcell_character.clone()),
                 &contents,
-                Some(CHARACTER_INTERACTION_TIME),
+                &TextBoxItemOption {
+                    _layer_type: TextBoxLayerType::InteractionLayer,
+                    _duration: Some(CHARACTER_INTERACTION_TIME),
+                    ..Default::default()
+                },
             );
 
             character._character_stats.set_is_stat_displayed(false);

@@ -161,10 +161,12 @@ pub const AUDIO_WRAP_UP_THE_DAY: &str = "wrap_up_the_day_music";
 // UI
 pub const DEFAULT_FADE_TIME: f32 = 2.0;
 pub const MATERIAL_UI_NONE: &str = "";
+pub const MATERIAL_UI_POINTER: &str = "ui/ui_pointer";
 pub const MATERIAL_CROSS_HAIR: &str = "ui/cross_hair_box";
 pub const MATERIAL_TIME_OF_DAY: &str = "ui/tod";
 pub const MATERIAL_INTRO_IMAGE: &str = "ui/intro_image";
 pub const MATERIAL_FADE_TO_BLACK: &str = "ui/fade_to_black";
+pub const MATERIAL_TARGET_ARROW: &str = "ui/target_arrow";
 
 // mouse
 pub const MATERIAL_MOUSE_ACTION: &str = "ui/mouse_action";
