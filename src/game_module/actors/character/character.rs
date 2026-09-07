@@ -1177,7 +1177,7 @@ impl<'a> Character<'a> {
                         {
                             Some(attached_item.borrow()._item_data_name.clone())
                         } else {
-                            get_game_ui_manager_mut().find_eatable_inventory_item_data_name()
+                            None
                         };
 
                         if let Some(item_data_name) = eatable_item_name {
