@@ -24,6 +24,7 @@ use crate::game_module::widgets::text_box_widget::{
 use crate::game_module::widgets::time_of_day::TimeOfDayWidget;
 use crate::game_module::widgets::toolbox_widget::ToolboxWidget;
 use crate::game_module::widgets::world_map::WorldMapWidget;
+use crate::game_module::widgets::wrap_up_popup_widget::WrapUpPopupWidget;
 use nalgebra::Vector2;
 use rust_engine_3d::constants::DEVELOPMENT;
 use rust_engine_3d::core::engine_core::TimeData;
@@ -59,6 +60,7 @@ pub struct GameUIManager<'a> {
     pub _cooking_widget: Option<Box<CookingWidget<'a>>>,
     pub _quest_widget: Option<Box<QuestWidget<'a>>>,
     pub _world_map_widget: Option<Box<WorldMapWidget<'a>>>,
+    pub _wrap_up_popup_widget: Option<Box<WrapUpPopupWidget<'a>>>,
     pub _debug_ui_widget: Option<Box<DebugUIWidget<'a>>>,
     pub _window_size: Vector2<i32>,
     pub _need_to_refresh: bool,
@@ -138,6 +140,7 @@ impl<'a> GameUIManager<'a> {
             _cooking_widget: None,
             _quest_widget: None,
             _world_map_widget: None,
+            _wrap_up_popup_widget: None,
             _debug_ui_widget: None,
             _window_size: Vector2::new(0, 0),
             _need_to_refresh: true,
@@ -199,6 +202,7 @@ impl<'a> GameUIManager<'a> {
         )));
         self._item_acquire_notification_widget = Some(ItemAcquireNotificationWidget::create(game_ui_layout_mut));
         self._quest_widget = Some(Box::new(QuestWidget::create_quest_widget(game_ui_layout_mut)));
+        self._wrap_up_popup_widget = Some(WrapUpPopupWidget::create_wrap_up_popup_widget(root_widget));
 
         // test box
         self._text_box_widget = Some(Box::new(TextBoxWidget::create_text_box_widget(root_widget)));
@@ -869,6 +873,9 @@ impl<'a> GameUIManager<'a> {
         self._time_of_day.as_mut().unwrap().changed_window_size(window_size);
         self._item_bar_widget.as_mut().unwrap().changed_window_size(window_size);
         self._game_menu_widget.as_mut().unwrap().changed_window_size(window_size);
+        if let Some(wrap_up_popup_widget) = self._wrap_up_popup_widget.as_mut() {
+            wrap_up_popup_widget.changed_window_size(window_size);
+        }
     }
 
     pub fn update_game_ui(&mut self, delta_time: f64) {
@@ -940,6 +947,37 @@ impl<'a> GameUIManager<'a> {
         if let Some(debug_ui_widget) = self._debug_ui_widget.as_mut() {
             debug_ui_widget.update_debug_ui_widget();
         }
+    }
+
+    pub fn update_wrap_up_popup_widget(
+        &mut self,
+        time_data: &TimeData,
+        joystick_input_data: &JoystickInputData,
+        keyboard_input_data: &KeyboardInputData,
+    ) {
+        if let Some(wrap_up_popup_widget) = self._wrap_up_popup_widget.as_mut() {
+            wrap_up_popup_widget.update_wrap_up_popup(time_data, joystick_input_data, keyboard_input_data);
+        }
+    }
+
+    pub fn open_wrap_up_popup_widget(&mut self) {
+        self.set_cross_hair_visible(true);
+        if let Some(wrap_up_popup_widget) = self._wrap_up_popup_widget.as_mut() {
+            wrap_up_popup_widget.open_wrap_up_popup();
+        }
+    }
+
+    pub fn close_wrap_up_popup_widget(&mut self) {
+        self.set_cross_hair_visible(false);
+        if let Some(wrap_up_popup_widget) = self._wrap_up_popup_widget.as_mut() {
+            wrap_up_popup_widget.close_wrap_up_popup();
+        }
+    }
+
+    pub fn is_opened_wrap_up_popup_widget(&self) -> bool {
+        self._wrap_up_popup_widget
+            .as_ref()
+            .is_some_and(|widget| widget.is_opened())
     }
 
     pub fn trigger_stamina_warning(&mut self) {

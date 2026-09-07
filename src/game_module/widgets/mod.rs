@@ -18,3 +18,6 @@ pub mod text_box_widget;
 pub mod time_of_day;
 pub mod toolbox_widget;
 pub mod world_map;
+pub mod wrap_up_popup_widget;
+
+pub use wrap_up_popup_widget::*;

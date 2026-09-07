@@ -39,6 +39,7 @@ pub enum GamePhase {
     WorldMapOpen,
     WorldMapUpdate,
     WorldMapClose,
+    WrapUpTheDay,
     ExitGame,
 }
 
@@ -502,6 +503,25 @@ impl<'a> GameClient<'a> {
                         }
                     }
                 }
+                GamePhase::WrapUpTheDay => match state {
+                    State::Begin => {
+                        game_ui_manager.open_wrap_up_popup_widget();
+                    }
+                    State::Update => {
+                        if game_ui_manager.is_opened_wrap_up_popup_widget() {
+                            game_ui_manager.update_wrap_up_popup_widget(
+                                time_data,
+                                joystick_input_data,
+                                keyboard_input_data,
+                            );
+                        } else {
+                            self.set_next_game_phase(GamePhase::GamePlay);
+                        }
+                    }
+                    State::End => {
+                        game_ui_manager.close_wrap_up_popup_widget();
+                    }
+                },
                 GamePhase::ExitGame => {}
             }
         }
