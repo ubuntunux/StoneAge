@@ -118,9 +118,9 @@ pub enum CharacterDataType {
     #[default]
     None,
     Player,
-    Chef,
-    Crafter,
     Civilian,
+    Wife,
+    Daughter,
     Roamer,
     Guardian,
     Stalker,
@@ -139,8 +139,7 @@ pub enum RequestType {
 impl CharacterDataType {
     pub fn get_request_type(&self) -> RequestType {
         match self {
-            CharacterDataType::Chef => RequestType::Cooking,
-            CharacterDataType::Crafter => RequestType::Craft,
+            CharacterDataType::Wife => RequestType::Cooking,
             _ => RequestType::None,
         }
     }

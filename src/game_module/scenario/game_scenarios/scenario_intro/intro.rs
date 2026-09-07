@@ -960,6 +960,28 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                             }
                         }
 
+                        if is_gather_food_completed {
+                            let ewa_completed =
+                                self._sub_quest_feed_ewa.as_ref().is_some_and(|q| q.borrow().is_completed_quest());
+                            let koa_completed =
+                                self._sub_quest_feed_koa.as_ref().is_some_and(|q| q.borrow().is_completed_quest());
+
+                            if (!ewa_completed || !koa_completed) && game_ui_manager.get_eatable_inventory_item_count() == 0 {
+                                if !ewa_completed {
+                                    if let Some(q) = &self._sub_quest_feed_ewa {
+                                        q.borrow_mut().set_completed_quest();
+                                    }
+                                    self.remove_give_food_to_ewa_text_box();
+                                }
+                                if !koa_completed {
+                                    if let Some(q) = &self._sub_quest_feed_koa {
+                                        q.borrow_mut().set_completed_quest();
+                                    }
+                                    self.remove_give_food_to_koa_text_box();
+                                }
+                            }
+                        }
+
                         let ewa_completed =
                             self._sub_quest_feed_ewa.as_ref().is_some_and(|q| q.borrow().is_completed_quest());
                         let koa_completed =

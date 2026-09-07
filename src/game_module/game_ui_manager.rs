@@ -497,6 +497,23 @@ impl<'a> GameUIManager<'a> {
         None
     }
 
+    pub fn get_eatable_inventory_item_count(&self) -> usize {
+        let item_create_info_rows = self.get_inventory_item_create_infos();
+        let game_resources = get_game_resources();
+        let mut total_count = 0;
+        for (_row, items) in item_create_info_rows {
+            for info in items {
+                if info._item_count > 0 {
+                    let item_data = game_resources.get_item_data(&info._item_data_name);
+                    if item_data.borrow()._item_type.is_eatable() {
+                        total_count += info._item_count;
+                    }
+                }
+            }
+        }
+        total_count
+    }
+
     pub fn clear_inventory_items(&mut self) {
         if let Some(item_bar_widget) = self._item_bar_widget.as_mut() {
             item_bar_widget.clear_item_bar_widget();
