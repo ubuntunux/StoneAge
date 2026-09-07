@@ -17,6 +17,8 @@ pub struct KeyBindingWidget<'a> {
     pub _binding_icon_widgets: Vec<*const WidgetDefault<'a>>,
     pub _key_binding_icons: Vec<RcRefCell<MaterialInstanceData<'a>>>,
     pub _joystick_binding_icons: Vec<RcRefCell<MaterialInstanceData<'a>>>,
+    pub _progress_bar_bg: Option<*const WidgetDefault<'a>>,
+    pub _progress_bar_fill: Option<*const WidgetDefault<'a>>,
 }
 
 impl<'a> KeyBindingWidget<'a> {

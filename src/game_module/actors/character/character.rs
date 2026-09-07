@@ -1139,7 +1139,6 @@ impl<'a> Character<'a> {
             match target_interaction {
                 InteractionObject::PropBed(_) => {
                     self.set_move_idle();
-                    get_game_client_mut().set_next_game_phase(GamePhase::WrapUpTheDay);
                 }
                 InteractionObject::PropPickup(_) => {
                     self.set_next_action_animation(ActionAnimationState::Pickup, 2.0);

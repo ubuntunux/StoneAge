@@ -2,7 +2,7 @@ use crate::game_module::actors::character::{ActionAnimationState, RequestType};
 use crate::game_module::actors::interaction_object::InteractionObject;
 use crate::game_module::behavior::behavior_base::BehaviorState;
 use crate::game_module::game_controller::KeyBindingType;
-use crate::game_module::game_service_locator::get_character_manager;
+use crate::game_module::game_service_locator::{get_character_manager, get_game_controller};
 use crate::game_module::widgets::key_binding_widget::{
     KEY_BINDING_FONT_SIZE, KEY_BINDING_ICON_MARGIN, KEY_BINDING_TEXT_MARGIN, KeyBindingWidgetManager,
     KeyBindingWidgetMap,
@@ -87,6 +87,8 @@ pub fn create_player_control_key_binding_widget<'a>(
         _binding_icon_widgets: binding_icon_widgets,
         _key_binding_icons: key_binding_icons,
         _joystick_binding_icons: joystick_binding_icons,
+        _progress_bar_bg: None,
+        _progress_bar_fill: None,
     }
 }
 
@@ -98,17 +100,28 @@ pub fn create_interaction_key_binding_widget<'a>(
     key_binding_icons: Vec<RcRefCell<MaterialInstanceData<'a>>>,
     joystick_binding_icons: Vec<RcRefCell<MaterialInstanceData<'a>>>,
 ) -> KeyBindingWidget<'a> {
-    let layout_widget = UIManager::create_widget(widget_name, UIWidgetTypes::Default);
+    let container_widget = UIManager::create_widget(widget_name, UIWidgetTypes::Default);
+    let container_widget_mut = ptr_as_mut(container_widget.as_ref());
+    let ui_component = container_widget_mut.get_ui_component_mut();
+    ui_component.set_layout_type(UILayoutType::BoxLayout);
+    ui_component.set_layout_orientation(Orientation::VERTICAL);
+    ui_component.set_expandable_x(true);
+    ui_component.set_size_x(KEY_BINDING_UI_SIZE);
+    ui_component.set_size_y(KEY_BINDING_UI_SIZE + 8.0);
+    ui_component.set_round(10.0);
+    ui_component.set_color(get_color32(0, 0, 0, 128));
+    parent_widget.add_widget(&container_widget);
+
+    let layout_widget = UIManager::create_widget("interaction_content_layout", UIWidgetTypes::Default);
     let layout_widget_mut = ptr_as_mut(layout_widget.as_ref());
-    let ui_component = ptr_as_mut(layout_widget.as_ref()).get_ui_component_mut();
+    let ui_component = layout_widget_mut.get_ui_component_mut();
     ui_component.set_layout_type(UILayoutType::BoxLayout);
     ui_component.set_layout_orientation(Orientation::HORIZONTAL);
     ui_component.set_expandable_x(true);
     ui_component.set_size_x(KEY_BINDING_UI_SIZE);
     ui_component.set_size_y(KEY_BINDING_UI_SIZE);
-    ui_component.set_round(10.0);
-    ui_component.set_color(get_color32(0, 0, 0, 128));
-    parent_widget.add_widget(&layout_widget);
+    ui_component.set_color(get_color32(0, 0, 0, 0));
+    container_widget_mut.add_widget(&layout_widget);
 
     // icons
     let mut binding_icon_widgets: Vec<*const WidgetDefault<'a>> = Vec::new();
@@ -138,13 +151,40 @@ pub fn create_interaction_key_binding_widget<'a>(
     ui_component.set_text(key_binding_text);
     layout_widget_mut.add_widget(&binding_name_widget);
 
+    // progress bar bg
+    let progress_bar_bg = UIManager::create_widget("interaction_progress_bg", UIWidgetTypes::Default);
+    let progress_bar_bg_mut = ptr_as_mut(progress_bar_bg.as_ref());
+    let ui_comp = progress_bar_bg_mut.get_ui_component_mut();
+    ui_comp.set_size_hint_x(Some(1.0));
+    ui_comp.set_size_y(6.0);
+    ui_comp.set_valign(VerticalAlign::BOTTOM);
+    ui_comp.set_halign(HorizontalAlign::LEFT);
+    ui_comp.set_color(get_color32(30, 35, 45, 220));
+    ui_comp.set_round(3.0);
+    ui_comp.set_visible(false);
+    container_widget_mut.add_widget(&progress_bar_bg);
+
+    // progress bar fill
+    let progress_bar_fill = UIManager::create_widget("interaction_progress_fill", UIWidgetTypes::Default);
+    let progress_bar_fill_mut = ptr_as_mut(progress_bar_fill.as_ref());
+    let ui_comp = progress_bar_fill_mut.get_ui_component_mut();
+    ui_comp.set_size_hint_x(Some(0.0));
+    ui_comp.set_size_hint_y(Some(1.0));
+    ui_comp.set_valign(VerticalAlign::CENTER);
+    ui_comp.set_halign(HorizontalAlign::LEFT);
+    ui_comp.set_color(get_color32(60, 180, 255, 255));
+    ui_comp.set_round(3.0);
+    progress_bar_bg_mut.add_widget(&progress_bar_fill);
+
     KeyBindingWidget {
         _key_binding_type: key_binding_type,
-        _layout_widget: layout_widget.as_ref(),
+        _layout_widget: container_widget.as_ref(),
         _binding_name_widget: binding_name_widget.as_ref(),
         _binding_icon_widgets: binding_icon_widgets,
         _key_binding_icons: key_binding_icons,
         _joystick_binding_icons: joystick_binding_icons,
+        _progress_bar_bg: Some(progress_bar_bg.as_ref()),
+        _progress_bar_fill: Some(progress_bar_fill.as_ref()),
     }
 }
 
@@ -395,7 +435,7 @@ impl<'a> ControllerHelpWidget<'a> {
         let (primary_type, primary_text, request_type) = match interaction_object {
             InteractionObject::PropBed(_) => (
                 KeyBindingType::Interaction,
-                String::from("Wrap up the day"),
+                String::from("Hold to Wrap up the day"),
                 RequestType::None,
             ),
             InteractionObject::PropPickup(prop) => (
@@ -495,9 +535,26 @@ impl<'a> ControllerHelpWidget<'a> {
             KeyBindingType::Farming,
         ];
 
+        let hold_timer = get_game_controller()._wrap_up_hold_timer;
+        let is_bed_interaction = matches!(player.get_nearest_interaction_object(), InteractionObject::PropBed(_));
+
         for key_type in INTERACTION_WIDGETS.iter() {
             let key_widget = widget_map.get_key_binding_widget(*key_type);
             let layout_widget = ptr_as_mut(key_widget._layout_widget);
+
+            if let (Some(bg_ptr), Some(fill_ptr)) = (key_widget._progress_bar_bg, key_widget._progress_bar_fill) {
+                let bg_ui = ptr_as_mut(bg_ptr).get_ui_component_mut();
+                let fill_ui = ptr_as_mut(fill_ptr).get_ui_component_mut();
+
+                if *key_type == KeyBindingType::Interaction && is_bed_interaction && 0.0 < hold_timer {
+                    let progress_ratio = (hold_timer / 1.0).clamp(0.0, 1.0);
+                    bg_ui.set_visible(true);
+                    fill_ui.set_size_hint_x(Some(progress_ratio));
+                } else {
+                    bg_ui.set_visible(false);
+                    fill_ui.set_size_hint_x(Some(0.0));
+                }
+            }
 
             if context.is_corpse {
                 if *key_type == KeyBindingType::Taming || *key_type == KeyBindingType::Farming {

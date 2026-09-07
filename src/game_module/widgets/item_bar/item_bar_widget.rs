@@ -79,6 +79,8 @@ fn create_inventory_key_binding_widget<'a>(
         _binding_icon_widgets: binding_icon_widgets,
         _key_binding_icons: key_binding_icons,
         _joystick_binding_icons: joystick_binding_icons,
+        _progress_bar_bg: None,
+        _progress_bar_fill: None,
     }
 }
 
@@ -118,6 +120,8 @@ fn create_quick_slot_key_binding_widget<'a>(
         _binding_icon_widgets: binding_icon_widgets,
         _key_binding_icons: key_binding_icons,
         _joystick_binding_icons: joystick_binding_icons,
+        _progress_bar_bg: None,
+        _progress_bar_fill: None,
     }
 }
 
