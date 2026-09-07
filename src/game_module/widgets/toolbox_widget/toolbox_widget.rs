@@ -1,5 +1,5 @@
 use crate::game_module::actors::character::Character;
-use crate::game_module::game_constants::AUDIO_PICKUP_ITEM;
+use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, AUDIO_SELECT_ITEM};
 use crate::game_module::game_controller::WidgetNavRepeatController;
 use crate::game_module::widgets::toolbox_widget::item_tab_widget::{
     ToolboxIconType, ToolboxItemData, ToolboxItemState, ToolboxTabWidget,
@@ -139,6 +139,15 @@ impl<'a> ToolboxWidget<'a> {
         true
     }
 
+    pub fn callback_tab_touch_over(
+        _ui: &UIComponentInstance<'a>,
+        _pos: &Vector2<f32>,
+        _delta: &Vector2<f32>,
+    ) -> bool {
+        get_audio_manager_mut().play_audio_bank(AUDIO_SELECT_ITEM, AudioLoop::ONCE, None);
+        true
+    }
+
     // ── Tab button helper ─────────────────────────────────────────
 
     fn create_tab_button(
@@ -160,6 +169,7 @@ impl<'a> ToolboxWidget<'a> {
         ui.set_color(TAB_INACTIVE_COLOR);
         ui.set_touchable(true);
         ui.set_callback_touch_down(Some(Box::new(callback)));
+        ui.set_callback_touch_over(Some(Box::new(Self::callback_tab_touch_over)));
         header.add_widget(&btn);
         btn
     }
@@ -505,6 +515,8 @@ impl<'a> ToolboxWidget<'a> {
     }
 
     pub fn set_active_tab(&mut self, tab: ToolboxTab) {
+        get_audio_manager_mut().play_audio_bank(AUDIO_SELECT_ITEM, AudioLoop::ONCE, None);
+
         self._active_tab = tab;
         self._last_opened_tab = tab;
 
