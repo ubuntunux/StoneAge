@@ -85,7 +85,7 @@ impl<'a> BehaviorBase<'a> for BehaviorDefault<'a> {
                     State::End => {}
                 },
                 BehaviorState::Eating => match state {
-                    State::Begin => begin_eating(&mut self._behavior_data, owner),
+                    State::Begin => begin_eating(&mut self._behavior_data, owner, target),
                     State::Update => {
                         if update_eating_should_idle(is_first_update, owner) {
                             if owner.get_stats().is_hungry() {

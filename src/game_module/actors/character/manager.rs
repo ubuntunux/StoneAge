@@ -427,6 +427,8 @@ impl<'a> CharacterManager<'a> {
             let character_mut = ptr_as_mut(character.as_ptr());
             let ai_target: Option<&Character<'a>> = if character_mut.is_player() {
                 None
+            } else if character_mut.is_interacting() && player.is_alive() {
+                Some(player)
             } else if character_mut.is_tamed() {
                 // Tamed monster: targets nearest alive untamed monster within tracking range ONLY IF AffinityTier >= Friend
                 let mut target_ref: Option<&Character<'a>> = None;

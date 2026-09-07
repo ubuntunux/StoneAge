@@ -122,7 +122,7 @@ impl<'a> BehaviorBase<'a> for BehaviorCivilian<'a> {
                     State::End => {}
                 },
                 BehaviorState::Eating => match state {
-                    State::Begin => begin_eating(&mut self._behavior_data, owner),
+                    State::Begin => begin_eating(&mut self._behavior_data, owner, target),
                     State::Update => {
                         if update_eating_should_idle(is_first_update, owner) {
                             if owner.get_stats().is_hungry() {
@@ -154,7 +154,7 @@ impl<'a> BehaviorBase<'a> for BehaviorCivilian<'a> {
                     State::End => {}
                 },
                 BehaviorState::Interaction => match state {
-                    State::Begin => begin_interaction(&mut self._behavior_data, owner),
+                    State::Begin => begin_interaction(&mut self._behavior_data, owner, target),
                     State::Update => {
                         if owner.get_attached_item_data_type().is_eatable() {
                             self.set_next_behavior(BehaviorState::Eating, true);

@@ -1184,6 +1184,7 @@ impl<'a> Character<'a> {
                             give_item = true;
                             item_manager.remove_inventory_item(item_data_name.as_str(), 1);
                             item_manager.attach_item(&mut character.borrow_mut(), item_data_name.as_str());
+                            character.borrow_mut().look_at(self.get_position());
                             character.borrow_mut().set_next_behavior(BehaviorState::Eating, true);
                         }
                     }
@@ -1259,6 +1260,7 @@ impl<'a> Character<'a> {
 
                     if requestable {
                         self.look_at(npc.get_position());
+                        npc.look_at(self.get_position());
                         npc.set_is_interacting(true);
                         if !npc.is_move_state(MoveAnimationState::SitDownLoop) {
                             npc.set_move_idle();

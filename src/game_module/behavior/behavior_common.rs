@@ -99,9 +99,12 @@ pub fn update_intimacy_follow(owner: &mut Character, target: Option<&Character>)
     IntimacyFollowResult::NotFollowing
 }
 
-pub fn begin_eating(data: &mut BehaviorData, owner: &mut Character) {
+pub fn begin_eating(data: &mut BehaviorData, owner: &mut Character, target: Option<&Character>) {
     if !owner.is_move_stop() {
         owner.set_move_idle();
+    }
+    if let Some(target_actor) = target {
+        owner.look_at(target_actor.get_position());
     }
     owner.set_is_interacting(false);
     owner.set_action_eating();
@@ -112,9 +115,12 @@ pub fn update_eating_should_idle(is_first_update: bool, owner: &Character) -> bo
     !is_first_update && !owner.is_action(ActionAnimationState::Eating)
 }
 
-pub fn begin_interaction(data: &mut BehaviorData, owner: &mut Character) {
+pub fn begin_interaction(data: &mut BehaviorData, owner: &mut Character, target: Option<&Character>) {
     if !owner.is_move_stop() && !owner.is_move_state(MoveAnimationState::SitDownLoop) {
         owner.set_move_idle();
+    }
+    if let Some(target_actor) = target {
+        owner.look_at(target_actor.get_position());
     }
     data.set_behavior_time(CHARACTER_INTERACTION_TIME);
 }
