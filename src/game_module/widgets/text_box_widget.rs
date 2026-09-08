@@ -99,22 +99,8 @@ impl<'a> TextBoxItem<'a> {
         ui_component.set_layout_orientation(Orientation::VERTICAL);
         ui_component.set_halign(HorizontalAlign::CENTER);
         ui_component.set_valign(VerticalAlign::CENTER);
-
-        let color = if option._visible_background {
-            option._color
-        } else {
-            option._color & 0x00FFFFFF
-        };
-        let border_color = if option._visible_background {
-            option._border_color
-        } else {
-            option._border_color & 0x00FFFFFF
-        };
-
-        ui_component.set_color(color);
         ui_component.set_round(20.0);
         ui_component.set_border(2.0);
-        ui_component.set_border_color(border_color);
         ui_component.set_padding(ITEM_PADDING);
         ui_component.set_expandable(true);
         ui_component.set_opacity(0.0);
@@ -132,8 +118,26 @@ impl<'a> TextBoxItem<'a> {
             _offset: option._offset,
         };
 
+        item.update_visible_background(option);
         item.update_text_box_item(contents, option._duration, true);
         item
+    }
+
+    pub fn update_visible_background(&mut self, option: &TextBoxItemOption) {
+        let ui_component = ptr_as_mut(self._layout_widget).get_ui_component_mut();
+        let color = if option._visible_background {
+            option._color
+        } else {
+            option._color & 0x00FFFFFF
+        };
+        let border_color = if option._visible_background {
+            option._border_color
+        } else {
+            option._border_color & 0x00FFFFFF
+        };
+
+        ui_component.set_color(color);
+        ui_component.set_border_color(border_color);
     }
 
     pub fn destroy_text_box_item(&mut self) {
@@ -253,6 +257,7 @@ impl<'a> TextBoxWidget<'a> {
     ) {
         if let Some(item) = self._text_box_items.get_mut(&actor.get_key()) {
             item.update_text_box_item(contents, option._duration, true);
+            item.update_visible_background(option);
             item._is_bounce = option._bounce;
             item._offset = option._offset;
             item.set_animation_state(TextBoxAnimationState::None);
