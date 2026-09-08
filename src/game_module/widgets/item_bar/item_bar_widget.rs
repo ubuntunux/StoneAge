@@ -679,19 +679,23 @@ impl<'a> ItemBarWidget<'a> {
 
     pub fn select_next_item(&mut self) {
         let mut target_slot = INVALID_ITEM_INDEX;
-        let total_inv_slots = self.get_total_inventory_slots();
+        let row_start_index = self._active_row_index * SLOTS_PER_ROW;
 
-        let curr_slot = if self._selected_inventory_slot_index < total_inv_slots {
-            self._selected_inventory_slot_index
+        let curr_offset = if self._selected_inventory_slot_index >= row_start_index
+            && self._selected_inventory_slot_index < row_start_index + SLOTS_PER_ROW
+        {
+            self._selected_inventory_slot_index - row_start_index
         } else {
-            self._active_row_index * SLOTS_PER_ROW + SLOTS_PER_ROW - 1
+            SLOTS_PER_ROW - 1
         };
 
-        let start_slot = (curr_slot + 1) % total_inv_slots;
+        let start_offset = (curr_offset + 1) % SLOTS_PER_ROW;
 
-        for step in 0..total_inv_slots {
-            let slot_idx = (start_slot + step) % total_inv_slots;
-            if self._inventory_slots[slot_idx]._item_data_name != ITEM_NONE
+        for step in 0..SLOTS_PER_ROW {
+            let offset = (start_offset + step) % SLOTS_PER_ROW;
+            let slot_idx = row_start_index + offset;
+            if slot_idx < self._inventory_slots.len()
+                && self._inventory_slots[slot_idx]._item_data_name != ITEM_NONE
                 && self._inventory_slots[slot_idx]._item_count > 0
             {
                 target_slot = slot_idx;
@@ -700,7 +704,7 @@ impl<'a> ItemBarWidget<'a> {
         }
 
         if target_slot == INVALID_ITEM_INDEX {
-            target_slot = start_slot;
+            target_slot = row_start_index + start_offset;
         }
 
         self.select_item(target_slot);
@@ -708,19 +712,23 @@ impl<'a> ItemBarWidget<'a> {
 
     pub fn select_previous_item(&mut self) {
         let mut target_slot = INVALID_ITEM_INDEX;
-        let total_inv_slots = self.get_total_inventory_slots();
+        let row_start_index = self._active_row_index * SLOTS_PER_ROW;
 
-        let curr_slot = if self._selected_inventory_slot_index < total_inv_slots {
-            self._selected_inventory_slot_index
+        let curr_offset = if self._selected_inventory_slot_index >= row_start_index
+            && self._selected_inventory_slot_index < row_start_index + SLOTS_PER_ROW
+        {
+            self._selected_inventory_slot_index - row_start_index
         } else {
-            self._active_row_index * SLOTS_PER_ROW
+            0
         };
 
-        let start_slot = (curr_slot + total_inv_slots - 1) % total_inv_slots;
+        let start_offset = (curr_offset + SLOTS_PER_ROW - 1) % SLOTS_PER_ROW;
 
-        for step in 0..total_inv_slots {
-            let slot_idx = (start_slot + total_inv_slots - step) % total_inv_slots;
-            if self._inventory_slots[slot_idx]._item_data_name != ITEM_NONE
+        for step in 0..SLOTS_PER_ROW {
+            let offset = (start_offset + SLOTS_PER_ROW - step) % SLOTS_PER_ROW;
+            let slot_idx = row_start_index + offset;
+            if slot_idx < self._inventory_slots.len()
+                && self._inventory_slots[slot_idx]._item_data_name != ITEM_NONE
                 && self._inventory_slots[slot_idx]._item_count > 0
             {
                 target_slot = slot_idx;
@@ -729,7 +737,7 @@ impl<'a> ItemBarWidget<'a> {
         }
 
         if target_slot == INVALID_ITEM_INDEX {
-            target_slot = start_slot;
+            target_slot = row_start_index + start_offset;
         }
 
         self.select_item(target_slot);
