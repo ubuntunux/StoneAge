@@ -513,7 +513,9 @@ impl<'a> GameClient<'a> {
                         }
                     }
                     State::End => {
-                        get_game_controller_mut()._wrap_up_hold_timer = 0.0;
+                        let controller = get_game_controller_mut();
+                        controller._wrap_up_hold_timer = 0.0;
+                        controller._is_wrap_up_holding = false;
                     }
                 },
                 GamePhase::ExitGame => {}

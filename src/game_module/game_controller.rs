@@ -214,6 +214,7 @@ pub struct GameController<'a> {
     pub _is_game_camera_auto_blend_mode: bool,
     pub _quick_slot_repeat_controller: HoldRepeatController<QuickSlotNavDirection>,
     pub _wrap_up_hold_timer: f32,
+    pub _is_wrap_up_holding: bool,
     pub _marker: std::marker::PhantomData<&'a ()>,
 }
 
@@ -231,6 +232,7 @@ impl<'a> GameController<'a> {
             _is_game_camera_auto_blend_mode: false,
             _quick_slot_repeat_controller: HoldRepeatController::new(NAV_INITIAL_DELAY, NAV_REPEAT_INTERVAL),
             _wrap_up_hold_timer: 0.0,
+            _is_wrap_up_holding: false,
             _marker: std::marker::PhantomData,
         })
     }
@@ -702,15 +704,28 @@ impl<'a> GameController<'a> {
 
         let is_near_bed = matches!(player_mut.get_nearest_interaction_object(), InteractionObject::PropBed(_))
             && player_mut.is_in_interaction_range();
+        let is_interaction_pressed = keyboard_input_data.get_key_pressed(KeyCode::KeyF)
+            || joystick_input_data._btn_x == ButtonState::Pressed;
         let is_interaction_hold = keyboard_input_data.get_key_hold(KeyCode::KeyF)
             || keyboard_input_data.get_key_pressed(KeyCode::KeyF)
             || joystick_input_data._btn_x == ButtonState::Hold
             || joystick_input_data._btn_x == ButtonState::Pressed;
 
-        if is_near_bed && is_interaction_hold {
+        if is_near_bed {
+            if is_interaction_pressed {
+                self._is_wrap_up_holding = true;
+            } else if !is_interaction_hold {
+                self._is_wrap_up_holding = false;
+            }
+        } else {
+            self._is_wrap_up_holding = false;
+        }
+
+        if is_near_bed && self._is_wrap_up_holding && is_interaction_hold {
             self._wrap_up_hold_timer += delta_time;
             if 1.0 <= self._wrap_up_hold_timer {
                 self._wrap_up_hold_timer = 1.0;
+                self._is_wrap_up_holding = false;
                 player_mut.set_move_idle();
                 get_game_scene_manager_mut().request_open_game_scenario(ScenarioType::ScenarioWrapUpTheDay);
                 get_game_client_mut().set_next_game_phase(GamePhase::WrapUpTheDay);
