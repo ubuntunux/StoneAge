@@ -453,8 +453,7 @@ impl<'a> ControllerHelpWidget<'a> {
             }
             InteractionObject::Npc(npc) => {
                 let npc_borrow = npc.borrow();
-                let request_type = if npc_borrow.get_stats().is_hungry()
-                    || npc_borrow.is_action(ActionAnimationState::Eating)
+                let request_type = if npc_borrow.is_action(ActionAnimationState::Eating)
                     || npc_borrow._behavior.get_behavior_state() == BehaviorState::Eating
                 {
                     RequestType::None

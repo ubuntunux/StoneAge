@@ -1241,7 +1241,6 @@ impl<'a> Character<'a> {
                 let mut npc = character.borrow_mut();
                 if !npc.is_action(ActionAnimationState::Eating)
                     && npc._behavior.get_behavior_state() != BehaviorState::Eating
-                    && !npc.get_stats().is_hungry()
                 {
                     let mut requestable = true;
                     match npc.get_request_type() {
