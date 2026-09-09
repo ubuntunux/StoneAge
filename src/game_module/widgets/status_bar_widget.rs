@@ -183,7 +183,7 @@ impl<'a> StatusBarWidget<'a> {
 
     pub fn update_vertical_status_widget(&self, status: f32, _delta_time: f64, _smooth_update: bool) {
         let status_bar = ptr_as_mut(self._status_bar).get_ui_component_mut();
-        status_bar.set_size_hint_y(Some(status));
+        status_bar.set_size_hint_y(Some(1.0 - status));
     }
 }
 

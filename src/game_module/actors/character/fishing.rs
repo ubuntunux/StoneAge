@@ -15,16 +15,19 @@ pub const FISHING_MINIGAME_RANDOM_ANGLE_INITIAL: f32 = 60.0;
 pub const FISHING_MINIGAME_RANDOM_ANGLE_TARGET: f32 = 80.0;
 pub const FISHING_MINIGAME_CHANGE_TIMER_MIN: f32 = 2.0;
 pub const FISHING_MINIGAME_CHANGE_TIMER_RANGE: f32 = 2.0;
-pub const FISHING_PLAYER_ROTATE_SPEED: f32 = 120.0;
-pub const FISHING_PLAYER_RETURN_SPEED: f32 = 140.0;
-pub const FISHING_PLAYER_RETURN_MIN_FACTOR: f32 = 0.20;
+pub const FISHING_PLAYER_MAX_ANGULAR_VELOCITY: f32 = 180.0;
+pub const FISHING_PLAYER_ANGULAR_ACCELERATION: f32 = 360.0;
+pub const FISHING_PLAYER_ANGULAR_DECELERATION: f32 = 240.0;
+pub const FISHING_PLAYER_MIN_ANGLE: f32 = -90.0;
+pub const FISHING_PLAYER_MAX_ANGLE: f32 = 90.0;
 pub const FISHING_FISH_BASE_TURN_SPEED: f32 = 75.0;
 pub const FISHING_FISH_TURN_MIN_FACTOR: f32 = 0.25;
 pub const FISHING_FISH_TURN_SPEED: f32 = FISHING_FISH_BASE_TURN_SPEED;
-pub const FISHING_ALIGNMENT_MATCH_DOT: f32 = 0.95;
+pub const FISHING_ALIGNMENT_MATCH_DOT: f32 = 0.9;
 pub const FISHING_PULL_DECREASE_MAX: f32 = 0.30;
-pub const FISHING_PULL_FAIL_INCREASE_MAX: f32 = 0.38;
-pub const FISHING_IDLE_INCREASE_SPEED: f32 = 0.18;
+pub const FISHING_PULL_FAIL_INCREASE_MAX: f32 = 0.5;
+pub const FISHING_IDLE_INCREASE_SPEED: f32 = 0.36;
+pub const FISHING_IDLE_DECREASE_SPEED: f32 = 0.18;
 pub const FISHING_PRESS_BONUS_MAX: f32 = 0.05;
 pub const FISHING_PRESS_PENALTY_MAX: f32 = 0.07;
 
@@ -85,6 +88,7 @@ impl<'a> Character<'a> {
         self._fishing_state._is_minigame_active = true;
         self._fishing_state._fish_gauge = FISHING_MINIGAME_INITIAL_GAUGE;
         self._fishing_state._player_angle = 0.0;
+        self._fishing_state._player_angular_velocity = 0.0;
         let angle_range = self._fishing_state._difficulty_angle_range;
         let random_angle = (rand::random::<f32>() * 2.0 - 1.0) * angle_range.min(60.0);
         self._fishing_state._fish_angle = random_angle;
@@ -97,29 +101,34 @@ impl<'a> Character<'a> {
     }
 
     pub fn rotate_player_angle(&mut self, dir: f32, delta_time: f32) {
-        if dir < 0.0 {
-            let new_angle = self._fishing_state._player_angle + dir * FISHING_PLAYER_ROTATE_SPEED * delta_time;
-            self._fishing_state._player_angle = new_angle.clamp(-90.0, 90.0);
-        } else if dir > 0.0 {
-            let new_angle = self._fishing_state._player_angle + dir * FISHING_PLAYER_ROTATE_SPEED * delta_time;
-            self._fishing_state._player_angle = new_angle.clamp(-90.0, 90.0);
+        if dir != 0.0 {
+            self._fishing_state._player_angular_velocity += dir * FISHING_PLAYER_ANGULAR_ACCELERATION * delta_time;
+            self._fishing_state._player_angular_velocity = self
+                ._fishing_state
+                ._player_angular_velocity
+                .clamp(-FISHING_PLAYER_MAX_ANGULAR_VELOCITY, FISHING_PLAYER_MAX_ANGULAR_VELOCITY);
         } else {
-            let current_angle = self._fishing_state._player_angle;
-            if current_angle.abs() <= 0.1 {
-                self._fishing_state._player_angle = 0.0;
-            } else {
-                let distance_ratio = (current_angle.abs() / 90.0).clamp(0.0, 1.0);
-                let speed_factor =
-                    FISHING_PLAYER_RETURN_MIN_FACTOR + (1.0 - FISHING_PLAYER_RETURN_MIN_FACTOR) * distance_ratio;
-                let return_speed = FISHING_PLAYER_RETURN_SPEED * speed_factor;
-                let step = return_speed * delta_time;
-
-                if current_angle > 0.0 {
-                    self._fishing_state._player_angle = (current_angle - step).max(0.0);
-                } else {
-                    self._fishing_state._player_angle = (current_angle + step).min(0.0);
-                }
+            let vel = self._fishing_state._player_angular_velocity;
+            if vel > 0.0 {
+                self._fishing_state._player_angular_velocity =
+                    (vel - FISHING_PLAYER_ANGULAR_DECELERATION * delta_time).max(0.0);
+            } else if vel < 0.0 {
+                self._fishing_state._player_angular_velocity =
+                    (vel + FISHING_PLAYER_ANGULAR_DECELERATION * delta_time).min(0.0);
             }
+        }
+
+        let new_angle =
+            self._fishing_state._player_angle + self._fishing_state._player_angular_velocity * delta_time;
+
+        if new_angle >= FISHING_PLAYER_MAX_ANGLE {
+            self._fishing_state._player_angle = FISHING_PLAYER_MAX_ANGLE;
+            self._fishing_state._player_angular_velocity = -self._fishing_state._player_angular_velocity.abs();
+        } else if new_angle <= FISHING_PLAYER_MIN_ANGLE {
+            self._fishing_state._player_angle = FISHING_PLAYER_MIN_ANGLE;
+            self._fishing_state._player_angular_velocity = self._fishing_state._player_angular_velocity.abs();
+        } else {
+            self._fishing_state._player_angle = new_angle;
         }
     }
 
@@ -179,24 +188,18 @@ impl<'a> Character<'a> {
         self._fishing_state._direction_dot = dot;
         self._fishing_state._is_direction_matched = is_direction_matched;
 
-        let matched_rate = if is_direction_matched {
-            (dot - FISHING_ALIGNMENT_MATCH_DOT) / (1.0 - FISHING_ALIGNMENT_MATCH_DOT)
-        } else {
-            (FISHING_ALIGNMENT_MATCH_DOT - dot) / (1.0 + FISHING_ALIGNMENT_MATCH_DOT)
-        };
-
         if self._fishing_state._is_pulling {
             let rate = if is_direction_matched {
-                -FISHING_PULL_DECREASE_MAX * matched_rate
+                -FISHING_PULL_DECREASE_MAX
             } else {
-                FISHING_PULL_FAIL_INCREASE_MAX * matched_rate
+                FISHING_PULL_FAIL_INCREASE_MAX
             };
             self._fishing_state._fish_gauge += rate * delta_time;
         } else {
             if is_direction_matched {
-                self._fishing_state._fish_gauge -= FISHING_IDLE_INCREASE_SPEED * matched_rate * delta_time;
+                self._fishing_state._fish_gauge -= FISHING_IDLE_DECREASE_SPEED * delta_time;
             } else {
-                self._fishing_state._fish_gauge += FISHING_IDLE_INCREASE_SPEED * matched_rate * delta_time;
+                self._fishing_state._fish_gauge += FISHING_IDLE_INCREASE_SPEED * delta_time;
             }
         }
 
