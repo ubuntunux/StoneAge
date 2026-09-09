@@ -174,21 +174,30 @@ impl<'a> Character<'a> {
         let v_player = (player_rad.sin(), player_rad.cos());
         let v_fish = (fish_rad.sin(), fish_rad.cos());
         let dot = (v_player.0 * v_fish.0 + v_player.1 * v_fish.1).clamp(-1.0, 1.0);
+        let is_direction_matched = dot >= FISHING_ALIGNMENT_MATCH_DOT;
 
         self._fishing_state._direction_dot = dot;
-        self._fishing_state._is_direction_matched = dot >= FISHING_ALIGNMENT_MATCH_DOT;
+        self._fishing_state._is_direction_matched = is_direction_matched;
+
+        let matched_rate = if is_direction_matched {
+            (dot - FISHING_ALIGNMENT_MATCH_DOT) / (1.0 - FISHING_ALIGNMENT_MATCH_DOT)
+        } else {
+            (FISHING_ALIGNMENT_MATCH_DOT - dot) / (1.0 + FISHING_ALIGNMENT_MATCH_DOT)
+        };
 
         if self._fishing_state._is_pulling {
-            let rate = if dot >= FISHING_ALIGNMENT_MATCH_DOT {
-                let t = (dot - FISHING_ALIGNMENT_MATCH_DOT) / (1.0 - FISHING_ALIGNMENT_MATCH_DOT);
-                -FISHING_PULL_DECREASE_MAX * t
+            let rate = if is_direction_matched {
+                -FISHING_PULL_DECREASE_MAX * matched_rate
             } else {
-                let t = (FISHING_ALIGNMENT_MATCH_DOT - dot) / (1.0 + FISHING_ALIGNMENT_MATCH_DOT);
-                FISHING_PULL_FAIL_INCREASE_MAX * t
+                FISHING_PULL_FAIL_INCREASE_MAX * matched_rate
             };
             self._fishing_state._fish_gauge += rate * delta_time;
         } else {
-            self._fishing_state._fish_gauge += FISHING_IDLE_INCREASE_SPEED * delta_time;
+            if is_direction_matched {
+                self._fishing_state._fish_gauge -= FISHING_IDLE_INCREASE_SPEED * matched_rate * delta_time;
+            } else {
+                self._fishing_state._fish_gauge += FISHING_IDLE_INCREASE_SPEED * matched_rate * delta_time;
+            }
         }
 
         self._fishing_state._fish_gauge = self._fishing_state._fish_gauge.clamp(0.0, 1.0);
