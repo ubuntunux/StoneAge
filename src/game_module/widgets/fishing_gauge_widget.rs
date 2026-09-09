@@ -15,6 +15,7 @@ pub const FISHING_UI_MAIN_PANEL_WIDTH: f32 = 360.0;
 pub const FISHING_UI_MAIN_PANEL_HEIGHT: f32 = 220.0;
 pub const FISHING_UI_DIRECTION_PANEL_SIZE: f32 = 170.0;
 pub const FISHING_UI_NEEDLE_SIZE: f32 = 150.0;
+pub const FISHING_UI_FISH_INDICATOR_ICON_SIZE: f32 = 30.0;
 pub const FISHING_UI_FISH_ICON_SIZE: f32 = 26.0;
 pub const FISHING_UI_FISH_ORBIT_RADIUS: f32 = 65.0;
 pub const FISHING_UI_VERTICAL_GAUGE_WIDTH: f32 = 35.0;
@@ -31,6 +32,7 @@ pub struct FishingGaugeWidget<'a> {
     pub _player_needle: *const WidgetDefault<'a>,
     pub _status_text: *const WidgetDefault<'a>,
     pub _fish_indicator: *const WidgetDefault<'a>,
+    pub _fish_indicator_icon: *const WidgetDefault<'a>,
     pub _fish_icon_widget: *const WidgetDefault<'a>,
     pub _vertical_gauge: StatusBarWidget<'a>,
     pub _cast_gauge: StatusBarWidget<'a>,
@@ -79,6 +81,36 @@ impl<'a> FishingGaugeWidget<'a> {
         ui.set_color(get_color32(255, 200, 50, 160));
         direction_panel_ptr.add_widget(&fish_indicator);
 
+        // Player needle widget (rotates with player angle input)
+        let player_needle = UIManager::create_widget("player_needle", UIWidgetTypes::Default);
+        let player_needle_ptr = ptr_as_mut(player_needle.as_ref());
+        let ui = player_needle_ptr.get_ui_component_mut();
+        ui.set_size(FISHING_UI_NEEDLE_SIZE, FISHING_UI_NEEDLE_SIZE);
+        ui.set_pivot_preset(PIVOT_CENTER);
+        ui.set_pos_hint(Some(0.5), Some(0.5));
+        ui.set_texture_wrap_mode(vk::SamplerAddressMode::CLAMP_TO_EDGE);
+        ui.set_material_instance(Some(tod_material.clone()));
+        ui.set_ignore_parent_renderable_area(true);
+        ui.set_color(get_color32(0, 255, 200, 255));
+        direction_panel_ptr.add_widget(&player_needle);
+
+        // Fish indicator icon widget moving along circular perimeter of direction_panel
+        let fish_indicator_icon_widget = UIManager::create_widget("fish_indicator_icon_widget", UIWidgetTypes::Default);
+        let fish_indicator_icon_ptr = ptr_as_mut(fish_indicator_icon_widget.as_ref());
+        let ui = fish_indicator_icon_ptr.get_ui_component_mut();
+        ui.set_size(FISHING_UI_FISH_INDICATOR_ICON_SIZE, FISHING_UI_FISH_INDICATOR_ICON_SIZE);
+        ui.set_round(FISHING_UI_FISH_INDICATOR_ICON_SIZE * 0.5);
+        ui.set_color(get_color32(40, 40, 255, 255));
+        ui.set_border_color(get_color32(255, 255, 255, 255));
+        ui.set_border(2.0);
+        ui.set_font_color(get_color32(20, 20, 20, 255));
+        ui.set_halign(HorizontalAlign::CENTER);
+        ui.set_valign(VerticalAlign::CENTER);
+        ui.set_pivot_preset(PIVOT_CENTER);
+        ui.set_renderable(SHOW_FISH_ICON);
+        ui.set_ignore_parent_renderable_area(true);
+        direction_panel_ptr.add_widget(&fish_indicator_icon_widget);
+
         // Fish icon widget moving along circular perimeter of direction_panel
         let fish_icon_widget = UIManager::create_widget("fish_icon_widget", UIWidgetTypes::Default);
         let fish_icon_ptr = ptr_as_mut(fish_icon_widget.as_ref());
@@ -92,23 +124,12 @@ impl<'a> FishingGaugeWidget<'a> {
         ui.set_font_color(get_color32(20, 20, 20, 255));
         ui.set_halign(HorizontalAlign::CENTER);
         ui.set_valign(VerticalAlign::CENTER);
+        ui.set_pivot_preset(PIVOT_CENTER);
         ui.set_text("Fish");
         ui.set_renderable(SHOW_FISH_ICON);
         ui.set_ignore_parent_renderable_area(true);
         direction_panel_ptr.add_widget(&fish_icon_widget);
 
-        // Player needle widget (rotates with player angle input)
-        let player_needle = UIManager::create_widget("player_needle", UIWidgetTypes::Default);
-        let player_needle_ptr = ptr_as_mut(player_needle.as_ref());
-        let ui = player_needle_ptr.get_ui_component_mut();
-        ui.set_size(FISHING_UI_NEEDLE_SIZE, FISHING_UI_NEEDLE_SIZE);
-        ui.set_pivot_preset(PIVOT_CENTER);
-        ui.set_pos_hint(Some(0.5), Some(0.5));
-        ui.set_texture_wrap_mode(vk::SamplerAddressMode::CLAMP_TO_EDGE);
-        ui.set_material_instance(Some(tod_material.clone()));
-        ui.set_ignore_parent_renderable_area(true);
-        ui.set_color(get_color32(0, 255, 200, 255));
-        direction_panel_ptr.add_widget(&player_needle);
 
         // Vertical status bar widget (referencing StatusBarWidget)
         let vertical_gauge = StatusBarWidget::create_vertical_status_widget(
@@ -145,6 +166,7 @@ impl<'a> FishingGaugeWidget<'a> {
             _direction_panel: direction_panel_ptr,
             _player_needle: player_needle_ptr,
             _fish_indicator: fish_indicator_ptr,
+            _fish_indicator_icon: fish_indicator_icon_ptr,
             _fish_icon_widget: fish_icon_ptr,
             _status_text: status_text_ptr,
             _vertical_gauge: vertical_gauge,
@@ -189,6 +211,14 @@ impl<'a> FishingGaugeWidget<'a> {
         let player_needle_ui = ptr_as_mut(self._player_needle).get_ui_component_mut();
         player_needle_ui.set_rotation(fishing_state._player_angle);
 
+        // Update fish icon position along circular perimeter of direction_panel
+        let center = FISHING_UI_DIRECTION_PANEL_SIZE * 0.5;
+        let player_rad = fishing_state._player_angle.to_radians();
+        let fish_x = center + FISHING_UI_FISH_ORBIT_RADIUS * player_rad.sin();
+        let fish_y = center - FISHING_UI_FISH_ORBIT_RADIUS * player_rad.cos();
+        let fish_indicator_icon_ui = ptr_as_mut(self._fish_indicator_icon).get_ui_component_mut();
+        fish_indicator_icon_ui.set_pos(fish_x, fish_y);
+
         // Update fish indicator rotation
         let fish_indicator_ui = ptr_as_mut(self._fish_indicator).get_ui_component_mut();
         fish_indicator_ui.set_rotation(fishing_state._fish_angle);
@@ -196,10 +226,8 @@ impl<'a> FishingGaugeWidget<'a> {
         // Update fish icon position along circular perimeter of direction_panel
         let center = FISHING_UI_DIRECTION_PANEL_SIZE * 0.5;
         let fish_rad = fishing_state._fish_angle.to_radians();
-        let half_icon = FISHING_UI_FISH_ICON_SIZE * 0.5;
-        let fish_x = center + FISHING_UI_FISH_ORBIT_RADIUS * fish_rad.sin() - half_icon;
-        let fish_y = center - FISHING_UI_FISH_ORBIT_RADIUS * fish_rad.cos() - half_icon;
-
+        let fish_x = center + FISHING_UI_FISH_ORBIT_RADIUS * fish_rad.sin();
+        let fish_y = center - FISHING_UI_FISH_ORBIT_RADIUS * fish_rad.cos();
         let fish_icon_ui = ptr_as_mut(self._fish_icon_widget).get_ui_component_mut();
         fish_icon_ui.set_pos(fish_x, fish_y);
 
