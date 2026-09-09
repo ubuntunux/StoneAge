@@ -26,9 +26,9 @@ pub const FISHING_FISH_TURN_SPEED: f32 = FISHING_FISH_BASE_TURN_SPEED;
 pub const FISHING_ALIGNMENT_MATCH_DOT: f32 = 0.9;
 pub const FISHING_PULL_DECREASE_MAX: f32 = 0.30;
 pub const FISHING_PULL_FAIL_INCREASE_MAX: f32 = 0.5;
-pub const FISHING_IDLE_INCREASE_SPEED: f32 = 0.36;
 pub const FISHING_IDLE_DECREASE_SPEED: f32 = 0.18;
-pub const FISHING_PRESS_BONUS_MAX: f32 = 0.05;
+pub const FISHING_FAIL_INCREASE_SPEED: f32 = 0.36;
+pub const FISHING_PRESS_BONUS_MAX: f32 = 0.025;
 pub const FISHING_PRESS_PENALTY_MAX: f32 = 0.07;
 
 // Difficulty Level Escaping Angle Ranges
@@ -188,21 +188,11 @@ impl<'a> Character<'a> {
         self._fishing_state._direction_dot = dot;
         self._fishing_state._is_direction_matched = is_direction_matched;
 
-        if self._fishing_state._is_pulling {
-            let rate = if is_direction_matched {
-                -FISHING_PULL_DECREASE_MAX
-            } else {
-                FISHING_PULL_FAIL_INCREASE_MAX
-            };
-            self._fishing_state._fish_gauge += rate * delta_time;
+        if is_direction_matched {
+            self._fishing_state._fish_gauge -= FISHING_IDLE_DECREASE_SPEED * delta_time;
         } else {
-            if is_direction_matched {
-                self._fishing_state._fish_gauge -= FISHING_IDLE_DECREASE_SPEED * delta_time;
-            } else {
-                self._fishing_state._fish_gauge += FISHING_IDLE_INCREASE_SPEED * delta_time;
-            }
-        }
-
+            self._fishing_state._fish_gauge += FISHING_FAIL_INCREASE_SPEED * delta_time;
+        };
         self._fishing_state._fish_gauge = self._fishing_state._fish_gauge.clamp(0.0, 1.0);
 
         if self._fishing_state._fish_gauge <= 0.0 {
