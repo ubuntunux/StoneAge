@@ -20,6 +20,9 @@ pub struct PlayerRecords {
     pub _monster_kill_counts: HashMap<String, u32>,
     pub _energy_balls: u32,
     pub _spirit_balls: u32,
+    pub _fishing_attempts: u32,
+    pub _fish_caught_count: u32,
+    pub _perfect_fishing_count: u32,
     pub _custom_activity_counts: HashMap<String, u32>,
 }
 
@@ -34,6 +37,18 @@ impl PlayerRecords {
 
     pub fn get_activity_stat(&self, key: &str) -> u32 {
         self._custom_activity_counts.get(key).copied().unwrap_or(0)
+    }
+
+    pub fn add_fishing_attempt(&mut self, amount: u32) {
+        self._fishing_attempts = self._fishing_attempts.saturating_add(amount);
+    }
+
+    pub fn add_fish_caught(&mut self, amount: u32) {
+        self._fish_caught_count = self._fish_caught_count.saturating_add(amount);
+    }
+
+    pub fn add_perfect_fishing(&mut self, amount: u32) {
+        self._perfect_fishing_count = self._perfect_fishing_count.saturating_add(amount);
     }
 
     pub fn add_item_count(&mut self, amount: u32) {

@@ -1,6 +1,6 @@
 use crate::game_module::actors::character::Character;
 use crate::game_module::game_constants::HP_WARNING_RATIO;
-use crate::game_module::widgets::fishing_gauge_widget::FishingGaugeWidget;
+use crate::game_module::widgets::fishing::FishingGaugeWidget;
 use crate::game_module::widgets::status_bar_widget::StatusBarWidget;
 use nalgebra::Vector2;
 use rust_engine_3d::scene::ui::{

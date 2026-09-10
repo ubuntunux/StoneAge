@@ -2151,7 +2151,10 @@ impl<'a> Character<'a> {
                         self.set_weapon_visible(true);
 
                         if self._is_player && self._fishing_state._minigame_success == Some(true) {
+                            let is_perfect = self._fishing_state._is_perfect_fishing;
                             item_manager.pick_item(ITEM_COCONUT, 1);
+                            get_game_ui_manager_mut().show_fishing_popup(ITEM_COCONUT, is_perfect);
+                            get_audio_manager_mut().play_audio_bank(AUDIO_QUEST_COMPLETE, AudioLoop::ONCE, None);
                         }
                     }
                     State::Update => {

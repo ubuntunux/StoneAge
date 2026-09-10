@@ -200,16 +200,24 @@ impl<'a> FishingGaugeWidget<'a> {
         ptr_as_mut(self._main_layer).get_ui_component_mut().set_visible(true);
 
         let fishing_state = &player._fishing_state;
-        if !fishing_state._is_minigame_active {
-            ptr_as_mut(self._status_text).get_ui_component_mut().set_text("Waiting...\nFish Bite");
-            self._vertical_gauge.set_bar_color(get_color32(0, 200, 255, 230));
-            self._vertical_gauge.update_vertical_status_widget(0.5, delta_time, false);
-            return;
-        }
 
         // Update needle rotation (player angle: 9 o'clock -90° to 3 o'clock +90°)
         let player_needle_ui = ptr_as_mut(self._player_needle).get_ui_component_mut();
         player_needle_ui.set_rotation(fishing_state._player_angle);
+
+        if !fishing_state._is_minigame_active {
+            ptr_as_mut(self._status_text).get_ui_component_mut().set_text("Waiting...\nFish Bite");
+            self._vertical_gauge.set_bar_color(get_color32(0, 200, 255, 230));
+            self._vertical_gauge.update_vertical_status_widget(0.5, delta_time, false);
+            ptr_as_mut(self._fish_indicator).get_ui_component_mut().set_visible(false);
+            ptr_as_mut(self._fish_indicator_icon).get_ui_component_mut().set_visible(false);
+            ptr_as_mut(self._fish_icon_widget).get_ui_component_mut().set_visible(false);
+            return;
+        }
+
+        ptr_as_mut(self._fish_indicator).get_ui_component_mut().set_visible(true);
+        ptr_as_mut(self._fish_indicator_icon).get_ui_component_mut().set_visible(SHOW_FISH_ICON);
+        ptr_as_mut(self._fish_icon_widget).get_ui_component_mut().set_visible(SHOW_FISH_ICON);
 
         // Update fish icon position along circular perimeter of direction_panel
         let center = FISHING_UI_DIRECTION_PANEL_SIZE * 0.5;

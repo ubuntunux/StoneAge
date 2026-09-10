@@ -8,7 +8,7 @@ use rust_engine_3d::utilities::system::ptr_as_mut;
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use std::rc::Rc;
 
-const STATS_CARD_HEIGHT: f32 = 220.0;
+const STATS_CARD_HEIGHT: f32 = 290.0;
 const HEADER_FONT_SIZE: f32 = 20.0;
 const BODY_FONT_SIZE: f32 = 16.0;
 const LIST_FONT_SIZE: f32 = 15.0;
@@ -176,6 +176,9 @@ impl<'a> PlayerRecordsWidget<'a> {
             format!("Visited Maps: {}", records.get_visited_map_count()),
             format!("Energy Balls: {}", records._energy_balls),
             format!("Spirit Balls: {}", records._spirit_balls),
+            format!("Fishing Attempts: {}", records._fishing_attempts),
+            format!("Fish Caught: {}", records._fish_caught_count),
+            format!("Perfect Fishing: {}", records._perfect_fishing_count),
         ];
 
         for (idx, stat_text) in stat_items.iter().enumerate() {

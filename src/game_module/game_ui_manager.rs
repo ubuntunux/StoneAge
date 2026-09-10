@@ -10,6 +10,7 @@ use crate::game_module::widgets::cooking_widget::CookingWidget;
 use crate::game_module::widgets::cross_hair_widget::CrossHairWidget;
 use crate::game_module::widgets::debug_ui_widget::DebugUIWidget;
 use crate::game_module::widgets::game_menu_widget::{GameMenuTab, GameMenuWidget, InventoryWidget};
+use crate::game_module::widgets::fishing::FishingPopupWidget;
 use crate::game_module::widgets::image_widget::ImageLayout;
 use crate::game_module::widgets::item_acquire_notification::ItemAcquireNotificationWidget;
 use crate::game_module::widgets::item_bar::{InventoryItemCreateInfoList, ItemBarWidget};
@@ -55,6 +56,7 @@ pub struct GameUIManager<'a> {
     pub _time_of_day: Option<Box<TimeOfDayWidget<'a>>>,
     pub _item_bar_widget: Option<Box<ItemBarWidget<'a>>>,
     pub _item_acquire_notification_widget: Option<Box<ItemAcquireNotificationWidget<'a>>>,
+    pub _fishing_popup_widget: Option<Box<FishingPopupWidget<'a>>>,
     pub _toolbox_widget: Option<Box<ToolboxWidget<'a>>>,
     pub _cooking_widget: Option<Box<CookingWidget<'a>>>,
     pub _quest_widget: Option<Box<QuestWidget<'a>>>,
@@ -132,6 +134,7 @@ impl<'a> GameUIManager<'a> {
             _time_of_day: None,
             _item_bar_widget: None,
             _item_acquire_notification_widget: None,
+            _fishing_popup_widget: None,
             _player_hud: None,
             _controller_help_widget: None,
             _toolbox_widget: None,
@@ -198,6 +201,7 @@ impl<'a> GameUIManager<'a> {
             window_size,
         )));
         self._item_acquire_notification_widget = Some(ItemAcquireNotificationWidget::create(game_ui_layout_mut));
+        self._fishing_popup_widget = Some(FishingPopupWidget::create_fishing_popup_widget(game_ui_layout_mut));
         self._quest_widget = Some(Box::new(QuestWidget::create_quest_widget(game_ui_layout_mut)));
 
         // test box
@@ -449,6 +453,12 @@ impl<'a> GameUIManager<'a> {
         }
     }
 
+    pub fn show_fishing_popup(&mut self, item_data_name: &str, is_perfect: bool) {
+        if let Some(fishing_popup) = self._fishing_popup_widget.as_mut() {
+            fishing_popup.show_popup(item_data_name, is_perfect);
+        }
+    }
+
     pub fn notify_item_crafted(&mut self) {
         self._player_records.add_craft_count(RECORD_DEFAULT_INCREMENT);
     }
@@ -471,6 +481,18 @@ impl<'a> GameUIManager<'a> {
 
     pub fn notify_map_visited(&mut self, map_name: &str) {
         self._player_records.record_map_visit(map_name);
+    }
+
+    pub fn notify_fishing_attempt(&mut self) {
+        self._player_records.add_fishing_attempt(RECORD_DEFAULT_INCREMENT);
+    }
+
+    pub fn notify_fish_caught(&mut self) {
+        self._player_records.add_fish_caught(RECORD_DEFAULT_INCREMENT);
+    }
+
+    pub fn notify_perfect_fishing(&mut self) {
+        self._player_records.add_perfect_fishing(RECORD_DEFAULT_INCREMENT);
     }
 
     pub fn get_inventory_item_create_infos(&self) -> InventoryItemCreateInfoList {
@@ -923,6 +945,10 @@ impl<'a> GameUIManager<'a> {
 
         if let Some(notification_widget) = self._item_acquire_notification_widget.as_mut() {
             notification_widget.update(delta_time as f32);
+        }
+
+        if let Some(fishing_popup) = self._fishing_popup_widget.as_mut() {
+            fishing_popup.update(delta_time as f32);
         }
 
         if let Some(text_box_widget) = self._text_box_widget.as_mut() {

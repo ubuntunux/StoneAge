@@ -3,7 +3,7 @@ pub mod cooking_widget;
 pub mod craft_widget;
 pub mod cross_hair_widget;
 pub mod debug_ui_widget;
-pub mod fishing_gauge_widget;
+pub mod fishing;
 pub mod game_audio_manager;
 pub mod game_menu_widget;
 pub mod image_widget;

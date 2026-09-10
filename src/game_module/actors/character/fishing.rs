@@ -1,8 +1,10 @@
 use crate::game_module::actors::character::Character;
 use crate::game_module::actors::character::data::ActionAnimationState;
 use crate::game_module::game_client::GamePhase;
-use crate::game_module::game_service_locator::get_game_client_mut;
-use rust_engine_3d::core::engine_service_locator::get_scene_manager;
+use crate::game_module::game_constants::AUDIO_SELECT_ITEM;
+use crate::game_module::game_service_locator::{get_game_client_mut, get_game_ui_manager_mut};
+use rust_engine_3d::audio::audio_manager::AudioLoop;
+use rust_engine_3d::core::engine_service_locator::{get_audio_manager_mut, get_scene_manager};
 
 // Fishing Cast & Gauge Constants
 pub const FISHING_CAST_DISTANCE_MIN: f32 = 2.0;
@@ -10,6 +12,8 @@ pub const FISHING_CAST_DISTANCE_RANGE: f32 = 6.0;
 pub const FISHING_GAUGE_SPEED: f32 = 2.0;
 
 // Fishing Minigame Tuning Parameters
+pub const FISHING_MINIGAME_WAIT_TIME_MIN: f32 = 5.0;
+pub const FISHING_MINIGAME_WAIT_TIME_RANGE: f32 = 15.0;
 pub const FISHING_MINIGAME_INITIAL_GAUGE: f32 = 0.5;
 pub const FISHING_MINIGAME_RANDOM_ANGLE_INITIAL: f32 = 60.0;
 pub const FISHING_MINIGAME_RANDOM_ANGLE_TARGET: f32 = 80.0;
@@ -85,19 +89,20 @@ impl<'a> Character<'a> {
     }
 
     pub fn start_fishing_minigame(&mut self) {
-        self._fishing_state._is_minigame_active = true;
+        self._fishing_state._is_minigame_active = false;
+        self._fishing_state._wait_timer =
+            FISHING_MINIGAME_WAIT_TIME_MIN + rand::random::<f32>() * FISHING_MINIGAME_WAIT_TIME_RANGE;
         self._fishing_state._fish_gauge = FISHING_MINIGAME_INITIAL_GAUGE;
         self._fishing_state._player_angle = 0.0;
         self._fishing_state._player_angular_velocity = 0.0;
-        let angle_range = self._fishing_state._difficulty_angle_range;
-        let random_angle = (rand::random::<f32>() * 2.0 - 1.0) * angle_range.min(60.0);
-        self._fishing_state._fish_angle = random_angle;
-        self._fishing_state._fish_target_angle = (rand::random::<f32>() * 2.0 - 1.0) * angle_range;
-        self._fishing_state._fish_change_timer = FISHING_MINIGAME_CHANGE_TIMER_MIN;
+        self._fishing_state._fish_angle = 0.0;
+        self._fishing_state._fish_target_angle = 0.0;
+        self._fishing_state._fish_change_timer = 0.0;
         self._fishing_state._direction_dot = 1.0;
         self._fishing_state._is_pulling = false;
-        self._fishing_state._is_direction_matched = true;
+        self._fishing_state._is_direction_matched = false;
         self._fishing_state._minigame_success = None;
+        self._fishing_state._is_perfect_fishing = true;
     }
 
     pub fn rotate_player_angle(&mut self, dir: f32, delta_time: f32) {
@@ -108,14 +113,14 @@ impl<'a> Character<'a> {
                 ._player_angular_velocity
                 .clamp(-FISHING_PLAYER_MAX_ANGULAR_VELOCITY, FISHING_PLAYER_MAX_ANGULAR_VELOCITY);
         } else {
-            let vel = self._fishing_state._player_angular_velocity;
-            if vel > 0.0 {
-                self._fishing_state._player_angular_velocity =
-                    (vel - FISHING_PLAYER_ANGULAR_DECELERATION * delta_time).max(0.0);
-            } else if vel < 0.0 {
-                self._fishing_state._player_angular_velocity =
-                    (vel + FISHING_PLAYER_ANGULAR_DECELERATION * delta_time).min(0.0);
-            }
+            // let vel = self._fishing_state._player_angular_velocity;
+            // if vel > 0.0 {
+            //     self._fishing_state._player_angular_velocity =
+            //         (vel - FISHING_PLAYER_ANGULAR_DECELERATION * delta_time).max(0.0);
+            // } else if vel < 0.0 {
+            //     self._fishing_state._player_angular_velocity =
+            //         (vel + FISHING_PLAYER_ANGULAR_DECELERATION * delta_time).min(0.0);
+            // }
         }
 
         let new_angle =
@@ -153,8 +158,30 @@ impl<'a> Character<'a> {
     }
 
     pub fn update_fishing_minigame(&mut self, delta_time: f32) {
-        if !self._fishing_state._is_minigame_active {
+        if self._fishing_state._minigame_success.is_some() {
             return;
+        }
+
+        if !self._fishing_state._is_minigame_active {
+            self._fishing_state._wait_timer -= delta_time;
+            if self._fishing_state._wait_timer <= 0.0 {
+                self._fishing_state._is_minigame_active = true;
+                self._fishing_state._fish_angle = self._fishing_state._player_angle;
+                let angle_range = self._fishing_state._difficulty_angle_range;
+                self._fishing_state._fish_target_angle = (rand::random::<f32>() * 2.0 - 1.0) * angle_range;
+                self._fishing_state._fish_change_timer = FISHING_MINIGAME_CHANGE_TIMER_MIN;
+                self._fishing_state._direction_dot = 1.0;
+                self._fishing_state._is_direction_matched = true;
+                self._fishing_state._is_perfect_fishing = true;
+
+                if self._is_player {
+                    get_game_ui_manager_mut().notify_fishing_attempt();
+                }
+
+                get_audio_manager_mut().play_audio_bank(AUDIO_SELECT_ITEM, AudioLoop::ONCE, None);
+            } else {
+                return;
+            }
         }
 
         let angle_diff_target = self._fishing_state._fish_target_angle - self._fishing_state._fish_angle;
@@ -185,12 +212,17 @@ impl<'a> Character<'a> {
         let dot = (v_player.0 * v_fish.0 + v_player.1 * v_fish.1).clamp(-1.0, 1.0);
         let is_direction_matched = dot >= FISHING_ALIGNMENT_MATCH_DOT;
 
+        if !self._fishing_state._is_direction_matched && is_direction_matched {
+            get_audio_manager_mut().play_audio_bank(AUDIO_SELECT_ITEM, AudioLoop::ONCE, None);
+        }
+
         self._fishing_state._direction_dot = dot;
         self._fishing_state._is_direction_matched = is_direction_matched;
 
         if is_direction_matched {
             self._fishing_state._fish_gauge -= FISHING_IDLE_DECREASE_SPEED * delta_time;
         } else {
+            self._fishing_state._is_perfect_fishing = false;
             self._fishing_state._fish_gauge += FISHING_FAIL_INCREASE_SPEED * delta_time;
         };
         self._fishing_state._fish_gauge = self._fishing_state._fish_gauge.clamp(0.0, 1.0);
@@ -198,6 +230,12 @@ impl<'a> Character<'a> {
         if self._fishing_state._fish_gauge <= 0.0 {
             self._fishing_state._is_minigame_active = false;
             self._fishing_state._minigame_success = Some(true);
+            if self._is_player {
+                get_game_ui_manager_mut().notify_fish_caught();
+                if self._fishing_state._is_perfect_fishing {
+                    get_game_ui_manager_mut().notify_perfect_fishing();
+                }
+            }
             self.set_action_fishing_end();
         } else if self._fishing_state._fish_gauge >= 1.0 {
             self._fishing_state._is_minigame_active = false;

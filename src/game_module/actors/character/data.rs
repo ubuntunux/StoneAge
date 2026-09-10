@@ -69,6 +69,7 @@ pub struct CharacterFishingState {
     pub _wait_timer: f32,
     pub _minigame_success: Option<bool>,
     pub _difficulty_angle_range: f32,
+    pub _is_perfect_fishing: bool,
 }
 
 impl Default for CharacterFishingState {
@@ -91,6 +92,7 @@ impl Default for CharacterFishingState {
             _wait_timer: 0.0,
             _minigame_success: None,
             _difficulty_angle_range: 70.0,
+            _is_perfect_fishing: true,
         }
     }
 }
