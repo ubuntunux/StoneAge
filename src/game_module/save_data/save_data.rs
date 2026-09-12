@@ -2,7 +2,7 @@ use crate::game_module::actors::character::CharacterSaveData;
 use crate::game_module::game_scene_manager::GameSceneSaveData;
 use crate::game_module::game_weather::WeatherType;
 use crate::game_module::scenario::scenario::{GameScenarioCreateInfo, ScenarioType};
-use crate::game_module::widgets::item_bar::{DEFAULT_INVENTORY_ROWS, InventoryItemCreateInfoList};
+use crate::game_module::widgets::item_bar::{DEFAULT_INVENTORY_ROWS, InventoryItemCreateInfo, InventoryItemCreateInfoList};
 use rust_engine_3d::scene::camera::CameraCreateInfo;
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
@@ -113,6 +113,7 @@ pub struct GameSaveData {
     pub _weather_type: WeatherType,
     pub _inventory_rows: usize,
     pub _inventory_item_create_info_list: InventoryItemCreateInfoList,
+    pub _table_storage_item_create_info_list: Vec<InventoryItemCreateInfo>,
     pub _selected_inventory_item_index: usize,
     pub _selected_quick_slot: Option<(usize, usize)>,
     pub _unlocked_toolbox_items: HashSet<String>,
@@ -136,6 +137,7 @@ impl Default for GameSaveData {
             _weather_type: WeatherType::None,
             _inventory_rows: DEFAULT_INVENTORY_ROWS,
             _inventory_item_create_info_list: Default::default(),
+            _table_storage_item_create_info_list: vec![],
             _selected_inventory_item_index: usize::MAX,
             _selected_quick_slot: None,
             _unlocked_toolbox_items: HashSet::new(),

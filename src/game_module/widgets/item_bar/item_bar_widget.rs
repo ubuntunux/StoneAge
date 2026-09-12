@@ -1,5 +1,5 @@
 use crate::game_module::actors::items::ItemDataType;
-use crate::game_module::game_constants::ITEM_NONE;
+use crate::game_module::game_constants::{ITEM_HAND, ITEM_NONE};
 use crate::game_module::game_controller::KeyBindingType;
 use crate::game_module::game_service_locator::{
     get_character_manager, get_game_resources, get_game_ui_manager, get_item_manager_mut,
@@ -379,11 +379,29 @@ impl<'a> ItemBarWidget<'a> {
         &self._inventory_slots[slot_index]
     }
 
+    pub fn set_inventory_slot_data(&mut self, slot_index: usize, slot_data: &InventorySlotData<'a>) {
+        if slot_index >= self._inventory_slots.len() {
+            self._inventory_slots.resize_with(slot_index + 1, InventorySlotData::default);
+        }
+        self._inventory_slots[slot_index] = slot_data.clone();
+        self.update_quick_slot_widgets();
+    }
+
     pub fn swap_inventory_slots(&mut self, src_slot_index: usize, dst_slot_index: usize) -> bool {
         if self.is_valid_slot_index(src_slot_index)
             && self.is_valid_slot_index(dst_slot_index)
             && src_slot_index != dst_slot_index
         {
+            let src_data = &self._inventory_slots[src_slot_index];
+            let dst_data = &self._inventory_slots[dst_slot_index];
+            if src_data._item_data_name == ITEM_HAND
+                || src_data._item_data_type == ItemDataType::Hand
+                || dst_data._item_data_name == ITEM_HAND
+                || dst_data._item_data_type == ItemDataType::Hand
+            {
+                return false;
+            }
+
             self._inventory_slots.swap(src_slot_index, dst_slot_index);
 
             if self._selected_inventory_slot_index == src_slot_index {

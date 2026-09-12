@@ -1,6 +1,6 @@
 use crate::game_module::actors::character::Character;
 use crate::game_module::actors::items::ItemDataType;
-use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, ITEM_NONE};
+use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, ITEM_HAND, ITEM_NONE};
 use crate::game_module::game_controller::WidgetNavRepeatController;
 use crate::game_module::game_service_locator::{get_game_ui_manager, get_game_ui_manager_mut, get_item_manager_mut};
 use crate::game_module::widgets::game_menu_widget::item_info_widget::ItemInfoWidget;
@@ -352,15 +352,33 @@ impl<'a> InventoryWidget<'a> {
         touched_pos: &Vector2<f32>,
         _touched_pos_delta: &Vector2<f32>,
     ) -> bool {
+        let user_data = ui_component.get_user_data();
+        if user_data.is_null() {
+            return false;
+        }
+
+        let slot_ptr = user_data as *const InventorySlotWidget<'a>;
+        if slot_ptr.is_null() {
+            return false;
+        }
+
+        let slot_item = unsafe { &*slot_ptr };
+        if slot_item._inventory_widget.is_null() {
+            return false;
+        }
+
         get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
 
-        let slot_item = ptr_as_ref(ui_component.get_user_data() as *const InventorySlotWidget<'a>);
         let inventory_widget = ptr_as_mut(slot_item._inventory_widget);
         let clicked_slot = slot_item._slot_index;
 
         if inventory_widget._drag_source_slot_index == INVALID_ITEM_INDEX {
-            // First click: Pick up / detach item for dragging if slot is not empty
-            if slot_item._item_count > 0 && slot_item._item_data_name != ITEM_NONE {
+            // First click: Pick up / detach item for dragging if slot is not empty and not Hand item
+            if slot_item._item_count > 0
+                && slot_item._item_data_name != ITEM_NONE
+                && slot_item._item_data_name != ITEM_HAND
+                && slot_item._item_data_type != ItemDataType::Hand
+            {
                 inventory_widget._drag_source_slot_index = clicked_slot;
                 inventory_widget._focused_slot_index = clicked_slot;
 
@@ -392,7 +410,17 @@ impl<'a> InventoryWidget<'a> {
             // Second click: Attach / swap dragged item to target slot
             let src_slot = inventory_widget._drag_source_slot_index;
             if src_slot != clicked_slot {
-                get_game_ui_manager_mut().swap_inventory_slots(src_slot, clicked_slot);
+                let item_bar = get_game_ui_manager().get_item_bar_widget();
+                let src_data = item_bar.get_inventory_slot_data(src_slot);
+                let dst_data = item_bar.get_inventory_slot_data(clicked_slot);
+
+                if src_data._item_data_name != ITEM_HAND
+                    && src_data._item_data_type != ItemDataType::Hand
+                    && dst_data._item_data_name != ITEM_HAND
+                    && dst_data._item_data_type != ItemDataType::Hand
+                {
+                    get_game_ui_manager_mut().swap_inventory_slots(src_slot, clicked_slot);
+                }
             }
             inventory_widget._drag_source_slot_index = INVALID_ITEM_INDEX;
             inventory_widget._focused_slot_index = clicked_slot;

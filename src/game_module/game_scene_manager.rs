@@ -277,6 +277,8 @@ impl<'a> GameSceneManager<'a> {
             }
         }
 
+        game_ui_manager.load_table_storage_item_create_infos(&game_save_data._table_storage_item_create_info_list);
+
         // Restore quick slot (row and column) selection state if saved
         if let Some((row, col)) = game_save_data._selected_quick_slot {
             let slot_index = row * SLOTS_PER_ROW + col;
@@ -304,6 +306,7 @@ impl<'a> GameSceneManager<'a> {
         game_save_data._last_game_scene_data_name = self.get_current_game_scene_data_name().clone();
         game_save_data._inventory_rows = get_game_ui_manager().get_inventory_rows();
         game_save_data._inventory_item_create_info_list = get_game_ui_manager().get_inventory_item_create_infos();
+        game_save_data._table_storage_item_create_info_list = get_game_ui_manager().get_table_storage_item_create_infos();
         game_save_data._selected_inventory_item_index = get_game_ui_manager().get_selected_inventory_item_index();
         game_save_data._selected_quick_slot = get_game_ui_manager().get_selected_quick_slot_row_col();
         game_save_data._is_controls_visible = get_game_ui_manager().get_controls_visibility();

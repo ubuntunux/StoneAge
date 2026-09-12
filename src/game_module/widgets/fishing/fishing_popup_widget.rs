@@ -55,7 +55,7 @@ impl<'a> FishingPopupWidget<'a> {
             ui.set_font_size(22.0);
             ui.set_font_color(get_color32(255, 215, 0, 255));
             ui.set_color(get_color32(0, 0, 0, 0));
-            ui.set_text("★ PERFECT CATCH! ★");
+            ui.set_text("* PERFECT CATCH! *");
         }
         container_ptr.add_widget(&title_widget);
 
@@ -145,7 +145,7 @@ impl<'a> FishingPopupWidget<'a> {
         if is_perfect {
             container_ui.set_border_color(get_color32(255, 215, 0, 255));
             let title_ui = ptr_as_mut(self._title_widget).get_ui_component_mut();
-            title_ui.set_text("★ PERFECT CATCH! ★");
+            title_ui.set_text("* PERFECT CATCH! *");
             title_ui.set_font_color(get_color32(255, 215, 0, 255));
 
             let badge_ui = ptr_as_mut(self._perfect_badge_widget).get_ui_component_mut();

@@ -449,7 +449,7 @@ impl<'a> ControllerHelpWidget<'a> {
                 RequestType::None,
             ),
             InteractionObject::PropTable(_) => {
-                (KeyBindingType::Interaction, String::from("Sit Down"), RequestType::None)
+                (KeyBindingType::Interaction, String::from("Table Storage"), RequestType::None)
             }
             InteractionObject::Npc(npc) => {
                 let npc_borrow = npc.borrow();

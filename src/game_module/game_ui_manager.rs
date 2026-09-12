@@ -13,7 +13,7 @@ use crate::game_module::widgets::game_menu_widget::{GameMenuTab, GameMenuWidget,
 use crate::game_module::widgets::fishing::FishingPopupWidget;
 use crate::game_module::widgets::image_widget::ImageLayout;
 use crate::game_module::widgets::item_acquire_notification::ItemAcquireNotificationWidget;
-use crate::game_module::widgets::item_bar::{InventoryItemCreateInfoList, ItemBarWidget};
+use crate::game_module::widgets::item_bar::{InventoryItemCreateInfo, InventoryItemCreateInfoList, ItemBarWidget};
 use crate::game_module::widgets::key_binding_widget::KeyBindingWidgetManager;
 use crate::game_module::widgets::player_hud::PlayerHud;
 use crate::game_module::widgets::quest_widgets::quest_title::QuestTitle;
@@ -23,6 +23,7 @@ use crate::game_module::widgets::text_box_widget::{
     TextBoxContent, TextBoxItemOption, TextBoxLayerType, TextBoxWidget,
 };
 use crate::game_module::widgets::time_of_day::TimeOfDayWidget;
+use crate::game_module::widgets::table_storage_widget::TableStorageWidget;
 use crate::game_module::widgets::toolbox_widget::ToolboxWidget;
 use crate::game_module::widgets::world_map::WorldMapWidget;
 use nalgebra::Vector2;
@@ -59,6 +60,7 @@ pub struct GameUIManager<'a> {
     pub _fishing_popup_widget: Option<Box<FishingPopupWidget<'a>>>,
     pub _toolbox_widget: Option<Box<ToolboxWidget<'a>>>,
     pub _cooking_widget: Option<Box<CookingWidget<'a>>>,
+    pub _table_storage_widget: Option<Box<TableStorageWidget<'a>>>,
     pub _quest_widget: Option<Box<QuestWidget<'a>>>,
     pub _world_map_widget: Option<Box<WorldMapWidget<'a>>>,
     pub _debug_ui_widget: Option<Box<DebugUIWidget<'a>>>,
@@ -139,6 +141,7 @@ impl<'a> GameUIManager<'a> {
             _controller_help_widget: None,
             _toolbox_widget: None,
             _cooking_widget: None,
+            _table_storage_widget: None,
             _quest_widget: None,
             _world_map_widget: None,
             _debug_ui_widget: None,
@@ -164,6 +167,10 @@ impl<'a> GameUIManager<'a> {
 
     pub fn get_item_bar_widget(&self) -> &ItemBarWidget<'a> {
         self._item_bar_widget.as_ref().unwrap()
+    }
+
+    pub fn get_item_bar_widget_mut(&mut self) -> &mut ItemBarWidget<'a> {
+        self._item_bar_widget.as_mut().unwrap()
     }
 
     pub fn build_game_ui(&mut self, window_size: &Vector2<i32>) {
@@ -193,6 +200,7 @@ impl<'a> GameUIManager<'a> {
         )));
         self._toolbox_widget = Some(Box::new(ToolboxWidget::create_toolbox_widget(game_ui_layout_mut)));
         self._cooking_widget = Some(Box::new(CookingWidget::create_cooking_widget(game_ui_layout_mut)));
+        self._table_storage_widget = Some(TableStorageWidget::create_table_storage_widget(game_ui_layout_mut));
         self._world_map_widget = Some(WorldMapWidget::create_world_map_widget(game_ui_layout_mut, window_size));
         self._time_of_day = Some(Box::new(TimeOfDayWidget::create_time_of_day_widget(game_ui_layout_mut)));
         self._controller_help_widget = Some(Box::new(ControllerHelpWidget::create_controller_help_widget(
@@ -829,6 +837,74 @@ impl<'a> GameUIManager<'a> {
                 mouse_delta,
                 player,
             );
+        }
+    }
+
+    // table storage widget
+    pub fn open_table_storage(&mut self) {
+        if let Some(table_storage_widget) = self._table_storage_widget.as_mut() {
+            table_storage_widget.open_table_storage();
+        }
+        self.set_cross_hair_visible(true);
+    }
+
+    pub fn close_table_storage(&mut self) {
+        self.set_cross_hair_visible(false);
+        if let Some(table_storage_widget) = self._table_storage_widget.as_mut() {
+            table_storage_widget.close_table_storage();
+        }
+    }
+
+    pub fn is_opened_table_storage(&self) -> bool {
+        if let Some(table_storage_widget) = self._table_storage_widget.as_ref() {
+            table_storage_widget.is_opened_table_storage()
+        } else {
+            false
+        }
+    }
+
+    pub fn update_table_storage_widget(
+        &mut self,
+        time_data: &TimeData,
+        joystick_input_data: &JoystickInputData,
+        keyboard_input_data: &KeyboardInputData,
+        mouse_move_data: &MouseMoveData,
+        mouse_input_data: &MouseInputData,
+        mouse_delta: &Vector2<f32>,
+        player: &RcRefCell<Character<'a>>,
+    ) {
+        if let Some(table_storage_widget) = self._table_storage_widget.as_mut() {
+            table_storage_widget.update_table_storage_widget(
+                time_data,
+                joystick_input_data,
+                keyboard_input_data,
+                mouse_move_data,
+                mouse_input_data,
+                mouse_delta,
+                player,
+            );
+        }
+    }
+
+    pub fn get_table_storage_widget(&self) -> Option<&TableStorageWidget<'a>> {
+        self._table_storage_widget.as_deref()
+    }
+
+    pub fn get_table_storage_widget_mut(&mut self) -> Option<&mut TableStorageWidget<'a>> {
+        self._table_storage_widget.as_deref_mut()
+    }
+
+    pub fn get_table_storage_item_create_infos(&self) -> Vec<InventoryItemCreateInfo> {
+        if let Some(table_storage_widget) = self._table_storage_widget.as_ref() {
+            table_storage_widget.get_table_storage_item_create_infos()
+        } else {
+            Vec::new()
+        }
+    }
+
+    pub fn load_table_storage_item_create_infos(&mut self, create_infos: &[InventoryItemCreateInfo]) {
+        if let Some(table_storage_widget) = self._table_storage_widget.as_mut() {
+            table_storage_widget.load_table_storage_item_create_infos(create_infos);
         }
     }
 

@@ -1149,11 +1149,8 @@ impl<'a> Character<'a> {
                 }
                 InteractionObject::PropTable(prop) => {
                     self.look_at(prop.borrow().get_position());
-                    if self.is_move_state(MoveAnimationState::SitDownLoop) {
-                        self.set_move_idle();
-                    } else {
-                        self.set_sit_down();
-                    }
+                    get_game_client_mut().set_next_game_phase(GamePhase::OpenTableStorage);
+                    self.set_move_idle();
                 }
                 InteractionObject::Npc(character) => {
                     // interaction
