@@ -10,6 +10,7 @@ use crate::game_module::game_service_locator::{
     get_game_ui_manager_mut,
 };
 use crate::game_module::save_data::save_data::GameSaveData;
+use crate::game_module::scenario::scenario::ScenarioType;
 use nalgebra::{Vector2, Vector3};
 use rust_engine_3d::core::engine_service_locator::{
     get_engine_core, get_scene_manager, get_scene_manager_mut, is_engine_core_valid,
@@ -337,11 +338,35 @@ impl<'a> GameClient<'a> {
                 },
                 GamePhase::PlayGameScenario => match state {
                     State::Begin => {
-                        game_ui_manager.show_game_ui(false);
+                        if game_scene_manager.has_game_scenario(ScenarioType::ScenarioWrapUpTheDay) {
+                            game_ui_manager.show_game_ui(true);
+                        } else {
+                            game_ui_manager.show_game_ui(false);
+                        }
                     }
                     State::Update => {
                         if !game_scene_manager.is_play_scenario_mode() {
                             self.set_next_game_phase(GamePhase::GamePlay);
+                        } else if game_scene_manager.has_game_scenario(ScenarioType::ScenarioWrapUpTheDay)
+                            && character_manager.is_valid_player()
+                        {
+                            game_ui_manager.show_game_ui(true);
+                            let is_allow_control = game_scene_manager
+                                .get_game_scenario(ScenarioType::ScenarioWrapUpTheDay)
+                                .as_ref()
+                                .is_some_and(|s| s.borrow().is_allow_player_control());
+                            if is_allow_control {
+                                game_controller.update_game_controller(
+                                    time_data,
+                                    joystick_input_data,
+                                    keyboard_input_data,
+                                    mouse_move_data,
+                                    mouse_input_data,
+                                    &mouse_delta,
+                                    scene_manager.get_main_camera_mut(),
+                                    character_manager.get_player(),
+                                );
+                            }
                         }
                     }
                     State::End => {

@@ -1,4 +1,4 @@
-use crate::game_module::actors::character::{Character, MoveAnimationState};
+use crate::game_module::actors::character::{ActionAnimationState, Character, MoveAnimationState};
 use crate::game_module::behavior::behavior_base::{BehaviorBase, BehaviorData, BehaviorSaveData, BehaviorState};
 use crate::game_module::behavior::behavior_common::{
     IntimacyFollowResult, begin_eating, begin_idle, begin_interaction, begin_roaming, begin_wake_up,
@@ -280,6 +280,17 @@ impl<'a> BehaviorBase<'a> for BehaviorCivilian<'a> {
                         IntimacyFollowResult::Moving => {}
                         IntimacyFollowResult::NotFollowing => self.set_next_behavior(BehaviorState::Idle, false),
                     },
+                    State::End => {}
+                },
+                BehaviorState::Dance => match state {
+                    State::Begin => {
+                        owner.set_action_dance();
+                    }
+                    State::Update => {
+                        if !owner.is_action(ActionAnimationState::Dance) {
+                            self.set_next_behavior(BehaviorState::Idle, false);
+                        }
+                    }
                     State::End => {}
                 },
                 _ => {}

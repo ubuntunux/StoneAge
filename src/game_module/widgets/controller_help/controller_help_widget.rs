@@ -2,7 +2,8 @@ use crate::game_module::actors::character::{ActionAnimationState, RequestType};
 use crate::game_module::actors::interaction_object::InteractionObject;
 use crate::game_module::behavior::behavior_base::BehaviorState;
 use crate::game_module::game_controller::KeyBindingType;
-use crate::game_module::game_service_locator::{get_character_manager, get_game_controller};
+use crate::game_module::game_service_locator::{get_character_manager, get_game_controller, get_game_scene_manager};
+use crate::game_module::scenario::scenario::ScenarioType;
 use crate::game_module::widgets::key_binding_widget::{
     KEY_BINDING_FONT_SIZE, KEY_BINDING_ICON_MARGIN, KEY_BINDING_TEXT_MARGIN, KeyBindingWidgetManager,
     KeyBindingWidgetMap,
@@ -433,11 +434,15 @@ impl<'a> ControllerHelpWidget<'a> {
         let object_key = interaction_object.get_key();
 
         let (primary_type, primary_text, request_type) = match interaction_object {
-            InteractionObject::PropBed(_) => (
-                KeyBindingType::Interaction,
-                String::from("Hold to Wrap up the day"),
-                RequestType::None,
-            ),
+            InteractionObject::PropBed(_) => {
+                let is_wrap_up = get_game_scene_manager().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay);
+                let text = if is_wrap_up {
+                    String::from("Sleep")
+                } else {
+                    String::from("Hold to Wrap up the day")
+                };
+                (KeyBindingType::Interaction, text, RequestType::None)
+            }
             InteractionObject::PropPickup(prop) => (
                 KeyBindingType::Interaction,
                 format!("Pick up a {}", prop.borrow()._prop_data.borrow()._name.as_str()),
@@ -460,7 +465,10 @@ impl<'a> ControllerHelpWidget<'a> {
                 } else {
                     npc_borrow.get_request_type()
                 };
-                let interaction_text = if player.get_attached_item_data_type().is_eatable() {
+                let is_wrap_up = get_game_scene_manager().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay);
+                let interaction_text = if is_wrap_up {
+                    format!("Dance with {}", npc_borrow._character_data.borrow()._name)
+                } else if player.get_attached_item_data_type().is_eatable() {
                     let item_name = player
                         .get_attached_item()
                         .as_ref()

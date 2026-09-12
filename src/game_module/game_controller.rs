@@ -212,6 +212,7 @@ pub struct GameController<'a> {
     pub _camera_position: Vector3<f32>,
     pub _camera_blend_ratio: f32,
     pub _is_game_camera_auto_blend_mode: bool,
+    pub _is_camera_fixed: bool,
     pub _quick_slot_repeat_controller: HoldRepeatController<QuickSlotNavDirection>,
     pub _wrap_up_hold_timer: f32,
     pub _is_wrap_up_holding: bool,
@@ -230,6 +231,7 @@ impl<'a> GameController<'a> {
             _camera_position: Vector3::zeros(),
             _camera_blend_ratio: 0.0,
             _is_game_camera_auto_blend_mode: false,
+            _is_camera_fixed: false,
             _quick_slot_repeat_controller: HoldRepeatController::new(NAV_INITIAL_DELAY, NAV_REPEAT_INTERVAL),
             _wrap_up_hold_timer: 0.0,
             _is_wrap_up_holding: false,
@@ -251,6 +253,14 @@ impl<'a> GameController<'a> {
         }
 
         self._is_game_camera_auto_blend_mode = is_game_camera_auto_blend_mode;
+    }
+
+    pub fn is_camera_fixed(&self) -> bool {
+        self._is_camera_fixed
+    }
+
+    pub fn set_camera_fixed(&mut self, is_camera_fixed: bool) {
+        self._is_camera_fixed = is_camera_fixed;
     }
 
     pub fn update_game_camera_auto_blend(
@@ -638,6 +648,26 @@ impl<'a> GameController<'a> {
 
         // set action & move
         let player_mut = ptr_as_mut(player.as_ptr());
+
+        let is_dance_pressed = keyboard_input_data.get_key_pressed(KeyCode::KeyG)
+            || joystick_input_data._btn_y == ButtonState::Pressed;
+
+        if player_mut.is_action(ActionAnimationState::Dance) && !is_dance_pressed {
+            let is_moving = is_left || is_right || is_up || is_down || stick_left_direction.x != 0.0 || stick_left_direction.y != 0.0;
+            let is_any_input = is_moving
+                || is_run
+                || is_jump
+                || is_roll
+                || is_interaction
+                || is_request
+                || is_attack_or_use_item
+                || is_power_attack
+                || keyboard_input_data.is_any_key_pressed();
+            if is_any_input {
+                player_mut.set_action_none();
+            }
+        }
+
         {
             let mut move_direction: Vector3<f32> = Vector3::zeros();
 
@@ -734,10 +764,18 @@ impl<'a> GameController<'a> {
             self._wrap_up_hold_timer = 0.0;
         }
 
-        if is_request && player_mut.is_in_interaction_range() {
+        if is_dance_pressed {
+            player_mut.set_action_dance();
+        } else if is_request && player_mut.is_in_interaction_range() {
             player_mut.set_action_request();
         } else if is_interaction && player_mut.is_in_interaction_range() && !is_near_bed {
-            player_mut.set_action_interaction();
+            if get_game_scene_manager_mut().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay)
+                && matches!(player_mut.get_nearest_interaction_object(), InteractionObject::Npc(_))
+            {
+                player_mut.set_action_dance();
+            } else {
+                player_mut.set_action_interaction();
+            }
         } else if is_attack_or_use_item && is_available_attack {
             if item_type.is_fishing_item_type() {
                 player_mut.set_action_fishing_begin();
@@ -773,6 +811,16 @@ impl<'a> GameController<'a> {
         main_camera: &mut CameraObjectData,
         player_mut: &mut Character<'a>,
     ) {
+        if self._is_camera_fixed {
+            main_camera
+                ._transform_object
+                .set_position(&Vector3::from(TABLE_SCENE_CAMERA_POSITION));
+            main_camera
+                ._transform_object
+                .set_rotation(&Vector3::from(TABLE_SCENE_CAMERA_ROTATION));
+            return;
+        }
+
         let mouse_sensitivity: f32 = 0.001;
         let mouse_pos_delta = Vector2::<f32>::new(
             mouse_move_data._mouse_pos_delta.x as f32,

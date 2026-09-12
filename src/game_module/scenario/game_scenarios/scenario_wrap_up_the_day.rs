@@ -1,13 +1,14 @@
 use crate::game_module::actors::character::ActionAnimationState;
 use crate::game_module::actors::character::Character;
+use crate::game_module::actors::interaction_object::InteractionObject;
 use crate::game_module::actors::props::Prop;
 use crate::game_module::behavior::behavior_base::BehaviorState;
 use crate::game_module::game_constants::{
     AUDIO_QUEST_COMPLETE, AUDIO_ROOSTER, AUDIO_WRAP_UP_THE_DAY, BED_FOR_ARU, DEFAULT_FADE_TIME, MATERIAL_UI_NONE,
-    SLEEP_TIMER,
+    SLEEP_TIMER, TABLE_SCENE_CAMERA_POSITION, TABLE_SCENE_CAMERA_ROTATION,
 };
 use crate::game_module::game_service_locator::{
-    get_game_scene_manager, get_game_scene_manager_mut, get_game_ui_manager_mut,
+    get_game_controller_mut, get_game_scene_manager, get_game_scene_manager_mut, get_game_ui_manager_mut,
 };
 use crate::game_module::scenario::scenario::{
     GameScenarioCreateInfo, ScenarioBase, ScenarioDataCreateInfo, ScenarioType,
@@ -15,17 +16,16 @@ use crate::game_module::scenario::scenario::{
 use crate::game_module::scenario::scenario_track::ScenarioTrack;
 use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop};
-use rust_engine_3d::core::engine_service_locator::{get_audio_manager, get_audio_manager_mut, get_scene_manager};
+use rust_engine_3d::core::engine_service_locator::{get_audio_manager_mut, get_engine_core, get_scene_manager};
+use rust_engine_3d::core::input::ButtonState;
 use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{RcRefCell, State, newRcRefCell};
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 use strum::IntoEnumIterator;
+use winit::keyboard::KeyCode;
 use strum_macros::{Display, EnumCount, EnumIter, EnumString};
-
-const TABLE_SCENE_CAMERA_POSITION: [f32; 3] = [23.27, 3.64, 19.15];
-const TABLE_SCENE_CAMERA_ROTATION: [f32; 3] = [0.06, -3.13, 0.0];
 
 #[derive(Clone, PartialEq, Eq, Hash, Display, Debug, Copy, EnumIter, EnumString, EnumCount)]
 enum ScenarioPhase {
@@ -93,7 +93,7 @@ impl<'a> ScenarioWrapUpTheDay<'a> {
     }
 }
 
-fn dance_around_the_table(
+fn set_actor_table_position(
     scene_manager: &SceneManager,
     actor: &Option<RcRefCell<Character>>,
     table: &Option<RcRefCell<Prop>>,
@@ -104,7 +104,25 @@ fn dance_around_the_table(
         pos.y = scene_manager.get_height_bilinear(&pos, 0);
         actor_ref.borrow_mut().set_position(&pos);
         actor_ref.borrow_mut().look_at(table_ref.borrow().get_position());
-        actor_ref.borrow_mut().set_action_dance();
+        actor_ref.borrow_mut().set_next_behavior(BehaviorState::Idle, true);
+    }
+}
+
+fn dance_in_place(
+    actor: &Option<RcRefCell<Character>>,
+    player: &Option<RcRefCell<Character>>,
+) {
+    if let (Some(actor_ref), Some(player_ref)) = (actor.as_ref(), player.as_ref()) {
+        actor_ref.borrow_mut().look_at(player_ref.borrow().get_position());
+        actor_ref.borrow_mut().set_next_behavior(BehaviorState::Dance, true);
+    }
+}
+
+fn stand_in_place(
+    actor: &Option<RcRefCell<Character>>,
+) {
+    if let Some(actor_ref) = actor.as_ref() {
+        actor_ref.borrow_mut().set_next_behavior(BehaviorState::Idle, true);
     }
 }
 
@@ -169,6 +187,10 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
         true
     }
 
+    fn is_allow_player_control(&self) -> bool {
+        matches!(self._scenario_track._scenario_phase, ScenarioPhase::Performance)
+    }
+
     fn is_end_of_scenario(&self) -> bool {
         self._scenario_track._scenario_phase == ScenarioPhase::End
     }
@@ -216,15 +238,16 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                 State::Update => next_scenario_phase,
             };
 
-            let phase_time = self._scenario_track.get_phase_time();
-            let phase_ratio = self._scenario_track.get_phase_ratio();
+            let _phase_time = self._scenario_track.get_phase_time();
+            let _phase_ratio = self._scenario_track.get_phase_ratio();
 
             match update_scenario_phase {
                 ScenarioPhase::None => {
                     self._scenario_track.set_next_scenario_phase(ScenarioPhase::Begin, None);
                 }
-                ScenarioPhase::Begin => {
-                    if state == State::Update {
+                ScenarioPhase::Begin => match state {
+                    State::Begin => {
+                        get_game_controller_mut().set_camera_fixed(false);
                         if let Some(actor) = &self._player {
                             actor.borrow_mut().set_behavior_none();
                             actor.borrow_mut().set_action_none();
@@ -238,50 +261,100 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                             actor.borrow_mut().set_action_none();
                         }
                         game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, DEFAULT_FADE_TIME);
-                        self._scenario_track.set_next_scenario_phase(ScenarioPhase::Performance, Some(10.0));
                     }
-                }
-                ScenarioPhase::Performance => {
-                    if state == State::Update {
+                    State::Update => {
                         if game_ui_manager.is_done_manual_fade_out() {
-                            self._audio_bgm = get_audio_manager_mut().play_audio_bank(
-                                AUDIO_WRAP_UP_THE_DAY,
-                                AudioLoop::SOME(4),
-                                None,
-                            );
-
+                            get_game_controller_mut().set_camera_fixed(true);
                             let main_camera = get_scene_manager().get_main_camera_mut();
                             main_camera._transform_object.set_position(&Vector3::from(TABLE_SCENE_CAMERA_POSITION));
                             main_camera._transform_object.set_rotation(&Vector3::from(TABLE_SCENE_CAMERA_ROTATION));
 
-                            dance_around_the_table(
-                                get_scene_manager(),
-                                &self._player,
-                                &self._prop_table,
-                                &Vector3::new(1.0, 0.0, 0.0),
-                            );
-                            dance_around_the_table(
+                            set_actor_table_position(
                                 get_scene_manager(),
                                 &self._actor_ewa,
                                 &self._prop_table,
                                 &Vector3::new(0.0, 0.0, 1.0),
                             );
-                            dance_around_the_table(
+                            set_actor_table_position(
                                 get_scene_manager(),
                                 &self._actor_koa,
                                 &self._prop_table,
                                 &Vector3::new(-1.0, 0.0, 0.0),
                             );
                             game_ui_manager.set_auto_fade_inout(true);
+                            self._scenario_track.set_next_scenario_phase(ScenarioPhase::Performance, None);
+                        }
+                    }
+                    _ => {}
+                },
+                ScenarioPhase::Performance => {
+                    if state == State::Update {
+                        let main_camera = get_scene_manager().get_main_camera_mut();
+                        main_camera._transform_object.set_position(&Vector3::from(TABLE_SCENE_CAMERA_POSITION));
+                        main_camera._transform_object.set_rotation(&Vector3::from(TABLE_SCENE_CAMERA_ROTATION));
+
+                        let player_is_dancing = self
+                            ._player
+                            .as_ref()
+                            .is_some_and(|p| p.borrow().is_action(ActionAnimationState::Dance));
+
+                        if player_is_dancing {
+                            if self._audio_bgm.is_none() {
+                                self._audio_bgm = get_audio_manager_mut().play_audio_bank(
+                                    AUDIO_WRAP_UP_THE_DAY,
+                                    AudioLoop::SOME(99),
+                                    None,
+                                );
+                            }
+
+                            let ewa_dancing = self
+                                ._actor_ewa
+                                .as_ref()
+                                .is_some_and(|a| a.borrow().is_action(ActionAnimationState::Dance));
+                            if !ewa_dancing {
+                                dance_in_place(&self._actor_ewa, &self._player);
+                            }
+
+                            let koa_dancing = self
+                                ._actor_koa
+                                .as_ref()
+                                .is_some_and(|a| a.borrow().is_action(ActionAnimationState::Dance));
+                            if !koa_dancing {
+                                dance_in_place(&self._actor_koa, &self._player);
+                            }
+                        } else {
+                            if let Some(audio_bgm) = &self._audio_bgm {
+                                get_audio_manager_mut().stop_audio_instance(audio_bgm);
+                                self._audio_bgm = None;
+                            }
+
+                            let ewa_dancing = self
+                                ._actor_ewa
+                                .as_ref()
+                                .is_some_and(|a| a.borrow().is_action(ActionAnimationState::Dance));
+                            if ewa_dancing {
+                                stand_in_place(&self._actor_ewa);
+                            }
+
+                            let koa_dancing = self
+                                ._actor_koa
+                                .as_ref()
+                                .is_some_and(|a| a.borrow().is_action(ActionAnimationState::Dance));
+                            if koa_dancing {
+                                stand_in_place(&self._actor_koa);
+                            }
                         }
 
-                        let is_playing = if let Some(audio_bgm) = &self._audio_bgm {
-                            get_audio_manager().is_playing_audio_instance(audio_bgm)
-                        } else {
-                            false
-                        };
+                        let engine_core = get_engine_core();
+                        let is_interaction_pressed = engine_core._keyboard_input_data.get_key_pressed(KeyCode::KeyF)
+                            || engine_core._joystick_input_data._btn_x == ButtonState::Pressed;
 
-                        if (self._audio_bgm.is_some() && !is_playing) || 1.0 <= phase_ratio {
+                        let is_near_bed = self._player.as_ref().is_some_and(|p| {
+                            matches!(p.borrow().get_nearest_interaction_object(), InteractionObject::PropBed(_))
+                                && p.borrow().is_in_interaction_range()
+                        });
+
+                        if is_near_bed && is_interaction_pressed {
                             if let Some(audio_bgm) = &self._audio_bgm {
                                 get_audio_manager_mut().stop_audio_instance(audio_bgm);
                             }
@@ -295,12 +368,12 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                             if let Some(actor) = &self._actor_koa {
                                 actor.borrow_mut().set_action_none();
                             }
-                            self._scenario_track.set_next_scenario_phase(ScenarioPhase::GoToSleep, Some(10.0));
+                            self._scenario_track.set_next_scenario_phase(ScenarioPhase::GoToSleep, None);
                         }
                     }
                 }
                 ScenarioPhase::GoToSleep => {
-                    if state == State::Update && 3.0 < phase_time {
+                    if state == State::Update {
                         go_to_sleep(&self._player, &self._prop_bed_for_aru);
                         go_to_sleep(&self._actor_ewa, &self._prop_bed_for_ewa);
                         go_to_sleep(&self._actor_koa, &self._prop_bed_for_koa);
@@ -346,7 +419,11 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                     }
                     _ => {}
                 },
-                ScenarioPhase::End => {}
+                ScenarioPhase::End => {
+                    if state == State::Begin {
+                        get_game_controller_mut().set_camera_fixed(false);
+                    }
+                }
             }
 
             if state == State::Update {

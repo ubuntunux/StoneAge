@@ -9,19 +9,28 @@ use nalgebra::Vector3;
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::math::lerp;
 
+use crate::game_module::game_service_locator::get_game_scene_manager;
+use crate::game_module::scenario::scenario::ScenarioType;
+
 pub fn begin_idle(data: &mut BehaviorData, owner: &mut Character) {
     owner.set_move_idle();
     data.set_behavior_time(lerp(NPC_IDLE_TERM_MIN, NPC_IDLE_TERM_MAX, rand::random::<f32>()));
 }
 
-/// Pick a random roam target around the spawn point, or around the player if intimacy-following.
+/// Pick a random roam target around the spawn point, or around the player if intimacy-following or for Ewa/Koa during WrapUpTheDay phase.
 pub fn begin_roaming(data: &mut BehaviorData, owner: &mut Character, target: Option<&Character>) {
+    let name = owner.get_character_name().as_str();
+    let is_ewa_or_koa = name.contains("ewa") || name.contains("koa");
+
+    let is_wrap_up_the_day_for_partner = is_ewa_or_koa
+        && get_game_scene_manager().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay);
+
     let is_intimate_following = owner.is_following_intimacy()
         && matches!(target, Some(t) if
             t.is_alive() && (t.get_position() - owner.get_position()).norm() <= INTIMACY_FOLLOW_RANGE
         );
 
-    let roam_radius = if is_intimate_following {
+    let roam_radius = if is_wrap_up_the_day_for_partner || is_intimate_following {
         INTIMACY_ROAMING_RADIUS
     } else {
         NPC_ROAMING_RADIUS
@@ -37,7 +46,13 @@ pub fn begin_roaming(data: &mut BehaviorData, owner: &mut Character, target: Opt
         },
     ) * roam_radius;
 
-    let center_point = if is_intimate_following {
+    let player_pos = target
+        .map(|t| *t.get_position())
+        .or_else(|| get_game_scene_manager().get_maybe_player().as_ref().map(|p| *p.borrow().get_position()));
+
+    let center_point = if is_wrap_up_the_day_for_partner {
+        player_pos.unwrap_or(data._spawn_point)
+    } else if is_intimate_following {
         *target.unwrap().get_position()
     } else {
         data._spawn_point

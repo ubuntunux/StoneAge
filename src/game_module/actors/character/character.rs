@@ -539,7 +539,7 @@ impl<'a> Character<'a> {
                 animation_data._attack_animation_speed * next_action_speed,
                 false,
             ),
-            ActionAnimationState::Dance => (Some(&animation_data._dance_animation), next_action_speed, true),
+            ActionAnimationState::Dance => (Some(&animation_data._dance_animation), next_action_speed, false),
             ActionAnimationState::Dead => (
                 Some(&animation_data._dead_animation),
                 animation_data._dead_animation_speed * next_action_speed,
@@ -1731,7 +1731,7 @@ impl<'a> Character<'a> {
                 ActionAnimationState::Dance => match state {
                     State::Begin => {
                         let mut animation_info = AnimationPlayArgs {
-                            _animation_loop: true,
+                            _animation_loop: false,
                             _force_animation_setting: true,
                             _animation_fade_out_time: 0.1,
                             ..Default::default()
@@ -1744,10 +1744,15 @@ impl<'a> Character<'a> {
                         );
                         self.set_weapon_visible(false);
                     }
+                    State::Update => {
+                        let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
+                        if animation_play_info._is_animation_end {
+                            self.set_action_none();
+                        }
+                    }
                     State::End => {
                         self.set_weapon_visible(true);
                     }
-                    _ => {}
                 },
                 ActionAnimationState::Dead => match state {
                     State::Begin => {

@@ -23,6 +23,8 @@ pub const ARRIVAL_DISTANCE_THRESHOLD: f32 = 1.0;
 pub const CAMERA_SHAKE_INTENSITY: f32 = 0.05;
 pub const CAMERA_SHAKE_SPEED_X: f32 = 100.0;
 pub const CAMERA_SHAKE_SPEED_Y: f32 = 130.0;
+pub const TABLE_SCENE_CAMERA_POSITION: [f32; 3] = [23.27, 3.64, 19.15];
+pub const TABLE_SCENE_CAMERA_ROTATION: [f32; 3] = [0.06, -3.13, 0.0];
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub enum GameViewMode {
