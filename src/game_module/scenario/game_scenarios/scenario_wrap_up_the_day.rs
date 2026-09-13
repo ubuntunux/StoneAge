@@ -2,7 +2,10 @@ use crate::game_module::actors::character::ActionAnimationState;
 use crate::game_module::actors::character::Character;
 use crate::game_module::actors::props::Prop;
 use crate::game_module::behavior::behavior_base::BehaviorState;
-use crate::game_module::game_constants::{AUDIO_QUEST_COMPLETE, AUDIO_ROOSTER, AUDIO_WRAP_UP_THE_DAY, BED_FOR_ARU, CAMERA_DISTANCE_MIN, CAMERA_OFFSET_Y, DEFAULT_FADE_TIME, MATERIAL_UI_NONE, SLEEP_TIMER, TIME_OF_MIDNIGHT, TIME_OF_NIGHT};
+use crate::game_module::game_constants::{
+    AUDIO_QUEST_COMPLETE, AUDIO_ROOSTER, AUDIO_WRAP_UP_THE_DAY, BED_FOR_ARU, CAMERA_DISTANCE_MIN, CAMERA_OFFSET_Y,
+    DEFAULT_FADE_TIME, MATERIAL_UI_NONE, SLEEP_TIMER, TIME_OF_NIGHT,
+};
 use crate::game_module::game_service_locator::{
     get_game_controller_mut, get_game_scene_manager, get_game_scene_manager_mut, get_game_ui_manager_mut,
 };
@@ -90,6 +93,26 @@ impl<'a> ScenarioWrapUpTheDay<'a> {
 
     pub fn set_skip_wakeup(&mut self, skip_wakeup: bool) {
         self._skip_wakeup = skip_wakeup;
+    }
+
+    pub fn set_sleep_phase(&mut self) {
+        self._scenario_track.set_scenario_phase(ScenarioPhase::Sleep, None);
+        self._scenario_track.set_next_scenario_phase(ScenarioPhase::Sleep, None);
+    }
+
+    pub fn setup_bed_camera(&self) {
+        let mut pivot = Vector3::new(0.0, CAMERA_OFFSET_Y, 0.0);
+        if let Some(prop_bed) = self._prop_bed_for_aru.as_ref() {
+            pivot += prop_bed.borrow().get_position();
+        };
+        let camera_rotation = Vector3::new(0.4, 0.0, 0.0);
+        let camera_rotation_matrix =
+            math::make_rotation_matrix(camera_rotation.x, camera_rotation.y, camera_rotation.z);
+        let camera_position =
+            pivot - camera_rotation_matrix.column(2).xyz() * (CAMERA_DISTANCE_MIN + 6.0);
+        get_game_controller_mut().set_camera_fixed(true);
+        get_game_controller_mut()
+            .set_camera_fixed_position_and_rotation(&camera_position, &camera_rotation);
     }
 }
 
@@ -301,18 +324,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                         }
 
                         // set camera
-                        let mut pivot = Vector3::new(0.0, CAMERA_OFFSET_Y, 0.0);
-                        if let Some(prop_bed) = self._prop_bed_for_aru.as_ref() {
-                            pivot += prop_bed.borrow().get_position();
-                        };
-                        let camera_rotation = Vector3::new(0.4, 0.0, 0.0);
-                        let camera_rotation_matrix =
-                            math::make_rotation_matrix(camera_rotation.x, camera_rotation.y, camera_rotation.z);
-                        let camera_position =
-                            pivot - camera_rotation_matrix.column(2).xyz() * (CAMERA_DISTANCE_MIN + 6.0);
-                        get_game_controller_mut().set_camera_fixed(true);
-                        get_game_controller_mut()
-                            .set_camera_fixed_position_and_rotation(&camera_position, &camera_rotation);
+                        self.setup_bed_camera();
                     } else if state == State::Update {
                         let player_is_dancing =
                             self._player.as_ref().is_some_and(|p| p.borrow().is_action(ActionAnimationState::Dance));
@@ -404,7 +416,41 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                 ScenarioPhase::Sleep => match state {
                     State::Begin => {
                         self._sleep_timer = 0.0;
+                        self.setup_bed_camera();
                         game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, DEFAULT_FADE_TIME);
+
+                        if let Some(actor) = &self._player {
+                            actor.borrow_mut().set_behavior_none();
+                            if !actor.borrow().is_action(ActionAnimationState::LayingDown)
+                                && !actor.borrow().is_action(ActionAnimationState::Sleep)
+                            {
+                                actor.borrow_mut().set_action_laying_down();
+                            }
+                        }
+                        if let Some(actor) = &self._actor_ewa {
+                            actor.borrow_mut().set_behavior_none();
+                            actor.borrow_mut()._controller.set_flying_mode(false);
+                            if let Some(bed) = &self._prop_bed_for_ewa {
+                                actor.borrow_mut().set_position(bed.borrow().get_position());
+                            }
+                            if !actor.borrow().is_action(ActionAnimationState::LayingDown)
+                                && !actor.borrow().is_action(ActionAnimationState::Sleep)
+                            {
+                                actor.borrow_mut().set_action_laying_down();
+                            }
+                        }
+                        if let Some(actor) = &self._actor_koa {
+                            actor.borrow_mut().set_behavior_none();
+                            actor.borrow_mut()._controller.set_flying_mode(false);
+                            if let Some(bed) = &self._prop_bed_for_koa {
+                                actor.borrow_mut().set_position(bed.borrow().get_position());
+                            }
+                            if !actor.borrow().is_action(ActionAnimationState::LayingDown)
+                                && !actor.borrow().is_action(ActionAnimationState::Sleep)
+                            {
+                                actor.borrow_mut().set_action_laying_down();
+                            }
+                        }
                     }
                     State::Update => {
                         if game_ui_manager.is_done_manual_fade_out() && self._sleep_timer < SLEEP_TIMER {
@@ -422,9 +468,17 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                                     actor.borrow_mut().set_action_wake_up();
                                 }
                                 if let Some(actor) = &self._actor_ewa {
+                                    actor.borrow_mut()._controller.set_flying_mode(false);
+                                    if let Some(bed) = &self._prop_bed_for_ewa {
+                                        actor.borrow_mut().set_position(bed.borrow().get_position());
+                                    }
                                     actor.borrow_mut().set_next_behavior(BehaviorState::WakeUp, true);
                                 }
                                 if let Some(actor) = &self._actor_koa {
+                                    actor.borrow_mut()._controller.set_flying_mode(false);
+                                    if let Some(bed) = &self._prop_bed_for_koa {
+                                        actor.borrow_mut().set_position(bed.borrow().get_position());
+                                    }
                                     actor.borrow_mut().set_next_behavior(BehaviorState::WakeUp, true);
                                 }
                             }

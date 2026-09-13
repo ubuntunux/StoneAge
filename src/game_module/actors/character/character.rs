@@ -75,7 +75,7 @@ impl CharacterStats {
         CharacterStats {
             _is_alive: true,
             _is_tamed: false,
-            _is_dead_loop: false,
+            _is_down_loop: false,
             _corpse_hit_count: MAX_CORPSE_HIT_COUNT,
             _hp: 100,
             _max_hp: 100,
@@ -274,7 +274,7 @@ impl CharacterStats {
         CharacterStatsSaveData {
             _is_alive: self._is_alive,
             _is_tamed: self._is_tamed,
-            _is_dead_loop: self._is_dead_loop,
+            _is_down_loop: self._is_down_loop,
             _corpse_hit_count: self._corpse_hit_count,
             _hp: self._hp,
             _max_hp: self._max_hp,
@@ -296,7 +296,7 @@ impl CharacterStats {
     pub fn load_character_stats_save_data(&mut self, save_data: &CharacterStatsSaveData) {
         self._is_alive = save_data._is_alive;
         self._is_tamed = save_data._is_tamed;
-        self._is_dead_loop = save_data._is_dead_loop;
+        self._is_down_loop = save_data._is_down_loop;
         self._corpse_hit_count = save_data._corpse_hit_count;
         self._hp = save_data._hp;
         self._max_hp = save_data._max_hp;
@@ -540,7 +540,7 @@ impl<'a> Character<'a> {
                 false,
             ),
             ActionAnimationState::Dance => (Some(&animation_data._dance_animation), next_action_speed, false),
-            ActionAnimationState::Dead => (
+            ActionAnimationState::Dead | ActionAnimationState::PassedOut => (
                 Some(&animation_data._dead_animation),
                 animation_data._dead_animation_speed * next_action_speed,
                 false,
@@ -696,7 +696,7 @@ impl<'a> Character<'a> {
     }
 
     pub fn is_corpse(&self) -> bool {
-        !self.is_alive() && !self.is_tamed() && !self.is_civilian() && self._character_stats._is_dead_loop
+        !self.is_alive() && !self.is_tamed() && !self.is_civilian() && self._character_stats._is_down_loop
     }
 
     pub fn get_intimacy(&self) -> f32 {
@@ -824,6 +824,7 @@ impl<'a> Character<'a> {
             && !self.is_action(ActionAnimationState::FishingBegin)
             && !self.is_action(ActionAnimationState::FishingLoop)
             && !self.is_action(ActionAnimationState::FishingEnd)
+            && !self.is_action(ActionAnimationState::PassedOut)
     }
 
     pub fn is_available_jump(&self) -> bool {
@@ -1043,8 +1044,8 @@ impl<'a> Character<'a> {
         self._character_stats._invincibility = invincibility;
     }
 
-    pub fn set_is_dead_loop(&mut self, is_corpse: bool) {
-        self._character_stats._is_dead_loop = is_corpse;
+    pub fn set_is_down_loop(&mut self, is_down: bool) {
+        self._character_stats._is_down_loop = is_down;
     }
 
     pub fn get_is_stat_displayed(&self) -> bool {
@@ -1087,6 +1088,15 @@ impl<'a> Character<'a> {
         self.set_next_behavior(BehaviorState::Dead, true);
     }
 
+    pub fn set_passed_out(&mut self) {
+        if self._is_player {
+            get_game_ui_manager_mut().notify_player_passed_out();
+        }
+        self._dead_time = 0.0;
+        self.set_action_passed_out();
+        self.set_next_behavior(BehaviorState::PassedOut, true);
+    }
+
     pub fn set_action_none(&mut self) {
         self.set_next_action_animation(ActionAnimationState::None, 1.0);
     }
@@ -1094,6 +1104,11 @@ impl<'a> Character<'a> {
     pub fn set_action_dance(&mut self) {
         self.set_move_idle();
         self.set_next_action_animation(ActionAnimationState::Dance, 1.0);
+    }
+
+    pub fn set_action_passed_out(&mut self) {
+        self.set_move_idle();
+        self.set_next_action_animation(ActionAnimationState::PassedOut, 1.0);
     }
 
     pub fn set_action_wake_up(&mut self) {
@@ -1756,7 +1771,7 @@ impl<'a> Character<'a> {
                     State::Begin => {
                         let mut animation_info = AnimationPlayArgs {
                             _animation_loop: false,
-                            _force_animation_setting: true,
+                            _animation_blend_time: 0.1,
                             _animation_fade_out_time: 0.0,
                             ..Default::default()
                         };
@@ -1769,14 +1784,14 @@ impl<'a> Character<'a> {
                         );
                         self.set_weapon_visible(false);
                         self.set_invincibility(true);
-                        self.set_is_dead_loop(false);
+                        self.set_is_down_loop(false);
                     }
                     State::Update => {
                         // respawn
                         let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
                         if animation_play_info._is_animation_end {
                             self.set_invincibility(false);
-                            self.set_is_dead_loop(true);
+                            self.set_is_down_loop(true);
 
                             if self._is_player {
                                 let game_scene_manager = get_game_scene_manager_mut();
@@ -1791,7 +1806,48 @@ impl<'a> Character<'a> {
                     State::End => {
                         self.set_weapon_visible(true);
                         self.set_invincibility(false);
-                        self.set_is_dead_loop(false);
+                        self.set_is_down_loop(false);
+                    }
+                },
+                ActionAnimationState::PassedOut => match state {
+                    State::Begin => {
+                        let mut animation_info = AnimationPlayArgs {
+                            _animation_loop: false,
+                            _animation_blend_time: 0.1,
+                            _animation_fade_out_time: 0.0,
+                            ..Default::default()
+                        };
+                        animation_info._animation_speed =
+                            animation_data._dead_animation_speed * next_action_animation_speed;
+                        render_object.set_animation(
+                            &animation_data._dead_animation,
+                            &animation_info,
+                            AnimationLayer::ActionLayer,
+                        );
+                        self.set_weapon_visible(false);
+                        self.set_invincibility(true);
+                        self.set_is_down_loop(false);
+                    }
+                    State::Update => {
+                        let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
+                        if animation_play_info._is_animation_end {
+                            self.set_invincibility(false);
+                            self.set_is_down_loop(true);
+
+                            if self._is_player {
+                                let game_scene_manager = get_game_scene_manager_mut();
+                                if !game_scene_manager.is_teleport_mode() {
+                                    game_scene_manager
+                                        .set_teleport_spawn_point(Stages::Home.get_stage_data_name(), BED_FOR_ARU);
+                                    get_game_client_mut().set_next_game_phase(GamePhase::PassOut);
+                                }
+                            }
+                        }
+                    }
+                    State::End => {
+                        self.set_weapon_visible(true);
+                        self.set_invincibility(false);
+                        self.set_is_down_loop(false);
                     }
                 },
                 ActionAnimationState::Hit => match state {

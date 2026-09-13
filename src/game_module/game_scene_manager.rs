@@ -3,10 +3,16 @@ use crate::game_module::actors::character::{CharacterCreateInfo, CharacterID, Ch
 use crate::game_module::actors::items::{ItemCreateInfo, ItemManager, ItemSaveData};
 use crate::game_module::actors::props::{PropCreateInfo, PropManager, PropSaveData};
 use crate::game_module::game_audio_manager::GameAudioManager;
-use crate::game_module::game_constants::{GameViewMode, BED_FOR_ARU, CHARACTER_DATA_NAME_MONKEY_ARU, GAME_VIEW_MODE, TEMPERATURE_MAX, TEMPERATURE_MIN, TIME_OF_DAWN, TIME_OF_DAY_SPEED, TIME_OF_MORNING};
-use crate::game_module::game_service_locator::{get_game_client, get_game_client_mut, get_game_resources, get_game_scene_manager_mut, get_game_ui_manager, get_game_ui_manager_mut};
+use crate::game_module::game_constants::{
+    CHARACTER_DATA_NAME_MONKEY_ARU, GAME_VIEW_MODE, GameViewMode,
+    TEMPERATURE_MAX, TEMPERATURE_MIN, TIME_OF_DAWN, TIME_OF_DAY_SPEED, TIME_OF_MORNING,
+};
+use crate::game_module::game_service_locator::{
+    get_game_client, get_game_client_mut, get_game_resources, get_game_ui_manager, get_game_ui_manager_mut,
+};
 use crate::game_module::game_weather::Weather;
 use crate::game_module::save_data::save_data::GameSaveData;
+use crate::game_module::scenario::game_scenarios::scenario_wrap_up_the_day::ScenarioWrapUpTheDay;
 use crate::game_module::scenario::scenario::{ScenarioBase, ScenarioDataCreateInfo, ScenarioType, create_scenario};
 use crate::game_module::widgets::item_bar::{DEFAULT_INVENTORY_ROWS, INVALID_ITEM_INDEX, SLOTS_PER_ROW};
 use nalgebra::Vector2;
@@ -18,7 +24,6 @@ use rust_engine_3d::utilities::system::{RcRefCell, ptr_as_mut, ptr_as_ref};
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use strum_macros::{Display, EnumString};
-use crate::game_module::game_client::GamePhase;
 
 pub type CharacterCreateInfoMap = HashMap<String, CharacterCreateInfo>;
 pub type CharacterSaveDataMap = HashMap<String, CharacterSaveData>;
@@ -412,6 +417,19 @@ impl<'a> GameSceneManager<'a> {
         self._reservation_scenarios.push(scenario_type);
     }
 
+    pub fn open_wrap_up_the_day_sleep(&mut self) {
+        let game_scene_data_name = self.get_current_game_scene_data_name().to_string();
+        let scenario_data_create_info =
+            get_game_resources().get_scenario_data(ScenarioType::ScenarioWrapUpTheDay.get_scenario_data_name());
+        let scenario = self.open_game_scenario_data(
+            ScenarioType::ScenarioWrapUpTheDay,
+            &scenario_data_create_info.borrow(),
+            true,
+        );
+        scenario.borrow_mut().on_open_game_scene(&game_scene_data_name);
+        ptr_as_mut(scenario.as_ptr() as *const ScenarioWrapUpTheDay).set_sleep_phase();
+    }
+
     fn open_game_scenario_data(
         &mut self,
         scenario_type: ScenarioType,
@@ -575,10 +593,12 @@ impl<'a> GameSceneManager<'a> {
             self._time_of_day %= 24.0;
             self._date += 1;
 
-            // if !self.is_teleport_mode() {
-            //     self.set_teleport_spawn_point(Stages::Home.get_stage_data_name(), BED_FOR_ARU);
-            //     get_game_client_mut().set_next_game_phase(GamePhase::WrapUpTheDay);
-            // }
+            // Force the character to sleep.
+            if !self.has_game_scenario(ScenarioType::ScenarioWrapUpTheDay) {
+                if let Some(player) = self.get_character_manager().get_maybe_player() {
+                    player.borrow_mut().set_passed_out();
+                }
+            }
         }
 
         let temperature_ratio = 1.0 - (self._time_of_day - 12.0) / 12.0;

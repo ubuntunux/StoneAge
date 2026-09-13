@@ -122,6 +122,14 @@ impl<'a> BehaviorBase<'a> for BehaviorDefault<'a> {
                     State::Update => {}
                     State::End => {}
                 },
+                BehaviorState::PassedOut => match state {
+                    State::Begin => {
+                        owner.set_action_passed_out();
+                        owner.set_move_idle();
+                    }
+                    State::Update => {}
+                    State::End => {}
+                },
                 BehaviorState::WakeUp => match state {
                     State::Begin => begin_wake_up(owner),
                     State::Update => {

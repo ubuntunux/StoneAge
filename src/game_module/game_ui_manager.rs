@@ -475,6 +475,10 @@ impl<'a> GameUIManager<'a> {
         self._player_records.add_death_count(RECORD_DEFAULT_INCREMENT);
     }
 
+    pub fn notify_player_passed_out(&mut self) {
+        self._player_records.add_pass_out_count(RECORD_DEFAULT_INCREMENT);
+    }
+
     pub fn notify_monster_killed(&mut self, monster_data_name: &str) {
         self._player_records.add_monster_kill(monster_data_name);
     }

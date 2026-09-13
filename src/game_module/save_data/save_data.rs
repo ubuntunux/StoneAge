@@ -15,6 +15,7 @@ pub struct PlayerRecords {
     pub _item_count: u32,
     pub _craft_count: u32,
     pub _death_count: u32,
+    pub _pass_out_count: u32,
     pub _taming_count: u32,
     pub _friend_count: u32,
     pub _visited_maps: HashSet<String>,
@@ -67,6 +68,10 @@ impl PlayerRecords {
 
     pub fn add_death_count(&mut self, amount: u32) {
         self._death_count = self._death_count.saturating_add(amount);
+    }
+
+    pub fn add_pass_out_count(&mut self, amount: u32) {
+        self._pass_out_count = self._pass_out_count.saturating_add(amount);
     }
 
     pub fn add_taming_count(&mut self, amount: u32) {

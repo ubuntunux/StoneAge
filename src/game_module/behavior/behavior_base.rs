@@ -24,6 +24,7 @@ pub enum BehaviorState {
     Sleep,
     WakeUp,
     Dead,
+    PassedOut,
     Follow,
     Dance,
 }
