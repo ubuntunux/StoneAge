@@ -3,10 +3,7 @@ use crate::game_module::actors::character::Character;
 use crate::game_module::actors::interaction_object::InteractionObject;
 use crate::game_module::actors::props::Prop;
 use crate::game_module::behavior::behavior_base::BehaviorState;
-use crate::game_module::game_constants::{
-    AUDIO_QUEST_COMPLETE, AUDIO_ROOSTER, AUDIO_WRAP_UP_THE_DAY, BED_FOR_ARU, DEFAULT_FADE_TIME, MATERIAL_UI_NONE,
-    SLEEP_TIMER, TABLE_SCENE_CAMERA_POSITION, TABLE_SCENE_CAMERA_ROTATION,
-};
+use crate::game_module::game_constants::{AUDIO_QUEST_COMPLETE, AUDIO_ROOSTER, AUDIO_WRAP_UP_THE_DAY, BED_FOR_ARU, CAMERA_DISTANCE_MIN, CAMERA_OFFSET_Y, DEFAULT_FADE_TIME, MATERIAL_UI_NONE, SLEEP_TIMER, TIME_OF_LATE_NOON, TIME_OF_NIGHT};
 use crate::game_module::game_service_locator::{
     get_game_controller_mut, get_game_scene_manager, get_game_scene_manager_mut, get_game_ui_manager_mut,
 };
@@ -247,7 +244,6 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                 }
                 ScenarioPhase::Begin => match state {
                     State::Begin => {
-                        get_game_controller_mut().set_camera_fixed(false);
                         if let Some(actor) = &self._player {
                             actor.borrow_mut().set_behavior_none();
                             actor.borrow_mut().set_action_none();
@@ -264,11 +260,6 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                     }
                     State::Update => {
                         if game_ui_manager.is_done_manual_fade_out() {
-                            get_game_controller_mut().set_camera_fixed(true);
-                            let main_camera = get_scene_manager().get_main_camera_mut();
-                            main_camera._transform_object.set_position(&Vector3::from(TABLE_SCENE_CAMERA_POSITION));
-                            main_camera._transform_object.set_rotation(&Vector3::from(TABLE_SCENE_CAMERA_ROTATION));
-
                             set_actor_table_position(
                                 get_scene_manager(),
                                 &self._actor_ewa,
@@ -288,11 +279,23 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                     _ => {}
                 },
                 ScenarioPhase::Performance => {
-                    if state == State::Update {
-                        let main_camera = get_scene_manager().get_main_camera_mut();
-                        main_camera._transform_object.set_position(&Vector3::from(TABLE_SCENE_CAMERA_POSITION));
-                        main_camera._transform_object.set_rotation(&Vector3::from(TABLE_SCENE_CAMERA_ROTATION));
+                    if state == State::Begin {
+                        // set time of day
+                        if get_game_scene_manager().get_time_of_day() < TIME_OF_LATE_NOON {
+                            get_game_scene_manager_mut().set_time_of_day(TIME_OF_LATE_NOON);
+                        }
 
+                        // set camera
+                        let mut pivot = Vector3::new(0.0, CAMERA_OFFSET_Y, 0.0);
+                        if let Some(prop_bed) = self._prop_bed_for_aru.as_ref() {
+                            pivot += prop_bed.borrow().get_position();
+                        };
+                        let camera_rotation = Vector3::new(0.4, 0.0, 0.0);
+                        let camera_rotation_matrix = math::make_rotation_matrix(camera_rotation.x, camera_rotation.y, camera_rotation.z);
+                        let camera_position = pivot - camera_rotation_matrix.column(2).xyz() * (CAMERA_DISTANCE_MIN + 6.0);
+                        get_game_controller_mut().set_camera_fixed(true);
+                        get_game_controller_mut().set_camera_fixed_position_and_rotation(&camera_position, &camera_rotation);
+                    } else if state == State::Update {
                         let player_is_dancing = self
                             ._player
                             .as_ref()
@@ -415,6 +418,9 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                                 }
                             }
                             self._scenario_track.set_next_scenario_phase(ScenarioPhase::End, None);
+                        } else {
+                            go_to_sleep(&self._actor_ewa, &self._prop_bed_for_ewa);
+                            go_to_sleep(&self._actor_koa, &self._prop_bed_for_koa);
                         }
                     }
                     _ => {}

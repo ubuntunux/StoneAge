@@ -213,6 +213,8 @@ pub struct GameController<'a> {
     pub _camera_blend_ratio: f32,
     pub _is_game_camera_auto_blend_mode: bool,
     pub _is_camera_fixed: bool,
+    pub _camera_fixed_position: Vector3<f32>,
+    pub _camera_fixed_rotation: Vector3<f32>,
     pub _quick_slot_repeat_controller: HoldRepeatController<QuickSlotNavDirection>,
     pub _wrap_up_hold_timer: f32,
     pub _is_wrap_up_holding: bool,
@@ -232,6 +234,8 @@ impl<'a> GameController<'a> {
             _camera_blend_ratio: 0.0,
             _is_game_camera_auto_blend_mode: false,
             _is_camera_fixed: false,
+            _camera_fixed_position: Default::default(),
+            _camera_fixed_rotation: Default::default(),
             _quick_slot_repeat_controller: HoldRepeatController::new(NAV_INITIAL_DELAY, NAV_REPEAT_INTERVAL),
             _wrap_up_hold_timer: 0.0,
             _is_wrap_up_holding: false,
@@ -261,6 +265,11 @@ impl<'a> GameController<'a> {
 
     pub fn set_camera_fixed(&mut self, is_camera_fixed: bool) {
         self._is_camera_fixed = is_camera_fixed;
+    }
+
+    pub fn set_camera_fixed_position_and_rotation(&mut self, camera_fixed_position: &Vector3<f32>, camera_fixed_rotation: &Vector3<f32>) {
+       self._camera_fixed_position = camera_fixed_position.clone();
+        self._camera_fixed_rotation = camera_fixed_rotation.clone();
     }
 
     pub fn update_game_camera_auto_blend(
@@ -734,6 +743,7 @@ impl<'a> GameController<'a> {
 
         let is_near_bed = matches!(player_mut.get_nearest_interaction_object(), InteractionObject::PropBed(_))
             && player_mut.is_in_interaction_range();
+        let is_wrap_up = get_game_scene_manager_mut().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay);
         let is_interaction_pressed = keyboard_input_data.get_key_pressed(KeyCode::KeyF)
             || joystick_input_data._btn_x == ButtonState::Pressed;
         let is_interaction_hold = keyboard_input_data.get_key_hold(KeyCode::KeyF)
@@ -741,7 +751,7 @@ impl<'a> GameController<'a> {
             || joystick_input_data._btn_x == ButtonState::Hold
             || joystick_input_data._btn_x == ButtonState::Pressed;
 
-        if is_near_bed {
+        if is_near_bed && !is_wrap_up {
             if is_interaction_pressed {
                 self._is_wrap_up_holding = true;
             } else if !is_interaction_hold {
@@ -751,7 +761,7 @@ impl<'a> GameController<'a> {
             self._is_wrap_up_holding = false;
         }
 
-        if is_near_bed && self._is_wrap_up_holding && is_interaction_hold {
+        if is_near_bed && !is_wrap_up && self._is_wrap_up_holding && is_interaction_hold {
             self._wrap_up_hold_timer += delta_time;
             if 1.0 <= self._wrap_up_hold_timer {
                 self._wrap_up_hold_timer = 1.0;
@@ -769,9 +779,7 @@ impl<'a> GameController<'a> {
         } else if is_request && player_mut.is_in_interaction_range() {
             player_mut.set_action_request();
         } else if is_interaction && player_mut.is_in_interaction_range() && !is_near_bed {
-            if get_game_scene_manager_mut().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay)
-                && matches!(player_mut.get_nearest_interaction_object(), InteractionObject::Npc(_))
-            {
+            if is_wrap_up && matches!(player_mut.get_nearest_interaction_object(), InteractionObject::Npc(_)) {
                 player_mut.set_action_dance();
             } else {
                 player_mut.set_action_interaction();
@@ -814,10 +822,10 @@ impl<'a> GameController<'a> {
         if self._is_camera_fixed {
             main_camera
                 ._transform_object
-                .set_position(&Vector3::from(TABLE_SCENE_CAMERA_POSITION));
+                .set_position(&self._camera_fixed_position);
             main_camera
                 ._transform_object
-                .set_rotation(&Vector3::from(TABLE_SCENE_CAMERA_ROTATION));
+                .set_rotation(&self._camera_fixed_rotation);
             return;
         }
 
