@@ -683,9 +683,7 @@ impl<'a> Character<'a> {
     pub fn is_civilian(&self) -> bool {
         matches!(
             self._character_data.borrow()._character_type,
-            CharacterDataType::Civilian
-                | CharacterDataType::Wife
-                | CharacterDataType::Daughter
+            CharacterDataType::Civilian | CharacterDataType::Wife | CharacterDataType::Daughter
         )
     }
 

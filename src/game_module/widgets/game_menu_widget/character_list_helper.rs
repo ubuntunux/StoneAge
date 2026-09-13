@@ -138,9 +138,7 @@ pub fn collect_all_characters() -> Vec<DisplayCharacterInfo> {
             let is_civilian = if game_resources.has_character_data(data_name.as_str()) {
                 matches!(
                     game_resources.get_character_data(data_name.as_str()).borrow()._character_type,
-                    CharacterDataType::Civilian
-                        | CharacterDataType::Wife
-                        | CharacterDataType::Daughter
+                    CharacterDataType::Civilian | CharacterDataType::Wife | CharacterDataType::Daughter
                 )
             } else {
                 false

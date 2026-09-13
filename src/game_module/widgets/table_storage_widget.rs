@@ -46,7 +46,8 @@ impl<'a> TableStorageSlotWidget<'a> {
         slot_index: usize,
     ) -> Box<TableStorageSlotWidget<'a>> {
         let prefix = if is_table_slot { "table" } else { "player" };
-        let slot_widget = UIManager::create_widget(&format!("{}_tbl_slot_{}", prefix, slot_index), UIWidgetTypes::Default);
+        let slot_widget =
+            UIManager::create_widget(&format!("{}_tbl_slot_{}", prefix, slot_index), UIWidgetTypes::Default);
         let slot_widget_mut = ptr_as_mut(slot_widget.as_ref());
         let ui_component = slot_widget_mut.get_ui_component_mut();
         ui_component.set_size(ITEM_UI_SIZE, ITEM_UI_SIZE);
@@ -325,7 +326,8 @@ impl<'a> TableStorageWidget<'a> {
             let row_layout = TableStorageWidget::create_row_layout(player_section_mut, &format!("plr_row_{}", row));
             for col in 0..SLOTS_PER_ROW {
                 let slot_idx = row * SLOTS_PER_ROW + col;
-                let slot_widget = TableStorageSlotWidget::create(self, ptr_as_mut(row_layout.as_ref()), false, slot_idx);
+                let slot_widget =
+                    TableStorageSlotWidget::create(self, ptr_as_mut(row_layout.as_ref()), false, slot_idx);
                 self._player_slot_widgets.push(slot_widget);
             }
         }

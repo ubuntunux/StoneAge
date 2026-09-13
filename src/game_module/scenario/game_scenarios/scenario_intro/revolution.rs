@@ -251,7 +251,10 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
                 },
                 ScenarioPhase::Discussion => match state {
                     State::Begin => {
-                        let contents = vec![TextBoxContent::MaterialInstance(String::from(MATERIAL_EMOJI_GOOD), None)];
+                        let contents = vec![TextBoxContent::MaterialInstance(
+                            String::from(MATERIAL_EMOJI_GOOD),
+                            None,
+                        )];
                         if let Some(alpha) = &self._alien_alpha {
                             game_ui_manager.add_text_box_item(
                                 ActorWrapper::Character(alpha.clone()),

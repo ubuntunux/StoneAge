@@ -192,7 +192,10 @@ impl<'a> ScenarioIntro<'a> {
     }
 
     pub fn emoji_hungry(&self, game_ui_manager: &mut GameUIManager<'a>, actor: &RcRefCell<Character<'a>>) {
-        let contents = vec![TextBoxContent::MaterialInstance(String::from(MATERIAL_EMOJI_HUNGRY), None)];
+        let contents = vec![TextBoxContent::MaterialInstance(
+            String::from(MATERIAL_EMOJI_HUNGRY),
+            None,
+        )];
         game_ui_manager.add_text_box_item(
             ActorWrapper::Character(actor.clone()),
             &contents,
@@ -215,7 +218,10 @@ impl<'a> ScenarioIntro<'a> {
     pub fn create_hit_this_tree_text_box(&self) {
         if let Some(prop_tree) = self._prop_tree.as_ref() {
             let actor_wrapper = ActorWrapper::Prop(prop_tree.clone());
-            let contents = vec![TextBoxContent::MaterialInstance(MATERIAL_UI_POINTER.to_string(), Some(Vector2::new(50.0, 50.0)))];
+            let contents = vec![TextBoxContent::MaterialInstance(
+                MATERIAL_UI_POINTER.to_string(),
+                Some(Vector2::new(50.0, 50.0)),
+            )];
             get_game_ui_manager_mut().add_text_box_item(
                 actor_wrapper,
                 &contents,
@@ -239,7 +245,10 @@ impl<'a> ScenarioIntro<'a> {
     pub fn create_give_food_to_ewa_text_box(&self) {
         if let Some(actor) = self._actor_ewa.as_ref() {
             let wrapper = ActorWrapper::Character(actor.clone());
-            let contents = vec![TextBoxContent::MaterialInstance(MATERIAL_UI_POINTER.to_string(), Some(Vector2::new(50.0, 50.0)))];
+            let contents = vec![TextBoxContent::MaterialInstance(
+                MATERIAL_UI_POINTER.to_string(),
+                Some(Vector2::new(50.0, 50.0)),
+            )];
             get_game_ui_manager_mut().add_text_box_item(
                 wrapper,
                 &contents,
@@ -263,7 +272,10 @@ impl<'a> ScenarioIntro<'a> {
     pub fn create_give_food_to_koa_text_box(&self) {
         if let Some(actor) = self._actor_koa.as_ref() {
             let wrapper = ActorWrapper::Character(actor.clone());
-            let contents = vec![TextBoxContent::MaterialInstance(MATERIAL_UI_POINTER.to_string(), Some(Vector2::new(50.0, 50.0)))];
+            let contents = vec![TextBoxContent::MaterialInstance(
+                MATERIAL_UI_POINTER.to_string(),
+                Some(Vector2::new(50.0, 50.0)),
+            )];
             get_game_ui_manager_mut().add_text_box_item(
                 wrapper,
                 &contents,
@@ -287,7 +299,10 @@ impl<'a> ScenarioIntro<'a> {
     pub fn create_wrap_up_the_day_text_box(&self) {
         if let Some(prop) = self._prop_bed_for_aru.as_ref() {
             let wrapper = ActorWrapper::Prop(prop.clone());
-            let contents = vec![TextBoxContent::MaterialInstance(MATERIAL_UI_POINTER.to_string(), Some(Vector2::new(50.0, 50.0)))];
+            let contents = vec![TextBoxContent::MaterialInstance(
+                MATERIAL_UI_POINTER.to_string(),
+                Some(Vector2::new(50.0, 50.0)),
+            )];
             get_game_ui_manager_mut().add_text_box_item(
                 wrapper,
                 &contents,
@@ -368,7 +383,10 @@ impl<'a> ScenarioIntro<'a> {
             let game_ui_manager = get_game_ui_manager_mut();
             for (key, actor_wrapper) in current_fruit_keys.iter() {
                 if !self._tree_fruit_items.contains_key(key) {
-                    let contents = vec![TextBoxContent::MaterialInstance(MATERIAL_UI_POINTER.to_string(), Some(Vector2::new(50.0, 50.0)))];
+                    let contents = vec![TextBoxContent::MaterialInstance(
+                        MATERIAL_UI_POINTER.to_string(),
+                        Some(Vector2::new(50.0, 50.0)),
+                    )];
                     game_ui_manager.add_text_box_item(
                         actor_wrapper.clone(),
                         &contents,
@@ -457,7 +475,10 @@ impl<'a> ScenarioIntro<'a> {
         ScenarioIntroQuestSaveData {
             _has_quest: self._quest.is_some(),
             _quest_title: self._quest.as_ref().and_then(|q| q.borrow()._quest_title.clone()),
-            _sub_quest_hit_the_tree: self._sub_quest_hit_the_tree.as_ref().map(|q| q.borrow().get_quest_item_save_data()),
+            _sub_quest_hit_the_tree: self
+                ._sub_quest_hit_the_tree
+                .as_ref()
+                .map(|q| q.borrow().get_quest_item_save_data()),
             _sub_quest_gather_food: self._sub_quest_gather_food.as_ref().map(|q| q.borrow().get_quest_item_save_data()),
             _sub_quest_feed_ewa: self._sub_quest_feed_ewa.as_ref().map(|q| q.borrow().get_quest_item_save_data()),
             _sub_quest_feed_koa: self._sub_quest_feed_koa.as_ref().map(|q| q.borrow().get_quest_item_save_data()),
@@ -550,8 +571,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
 
     fn is_play_scenario_mode(&self) -> bool {
         match self._scenario_track._scenario_phase {
-            ScenarioPhase::GatheringFood
-            | ScenarioPhase::WrapUpTheDay => false,
+            ScenarioPhase::GatheringFood | ScenarioPhase::WrapUpTheDay => false,
             _ => true,
         }
     }
@@ -965,7 +985,9 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                             let koa_completed =
                                 self._sub_quest_feed_koa.as_ref().is_some_and(|q| q.borrow().is_completed_quest());
 
-                            if (!ewa_completed || !koa_completed) && game_ui_manager.get_eatable_inventory_item_count() == 0 {
+                            if (!ewa_completed || !koa_completed)
+                                && game_ui_manager.get_eatable_inventory_item_count() == 0
+                            {
                                 if !ewa_completed {
                                     if let Some(q) = &self._sub_quest_feed_ewa {
                                         q.borrow_mut().set_completed_quest();

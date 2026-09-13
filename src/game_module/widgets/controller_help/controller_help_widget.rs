@@ -453,9 +453,11 @@ impl<'a> ControllerHelpWidget<'a> {
                 String::from("Open Toolbox"),
                 RequestType::None,
             ),
-            InteractionObject::PropTable(_) => {
-                (KeyBindingType::Interaction, String::from("Table Storage"), RequestType::None)
-            }
+            InteractionObject::PropTable(_) => (
+                KeyBindingType::Interaction,
+                String::from("Table Storage"),
+                RequestType::None,
+            ),
             InteractionObject::Npc(npc) => {
                 let npc_borrow = npc.borrow();
                 let request_type = if npc_borrow.is_action(ActionAnimationState::Eating)

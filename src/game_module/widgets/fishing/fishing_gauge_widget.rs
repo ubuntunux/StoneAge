@@ -130,7 +130,6 @@ impl<'a> FishingGaugeWidget<'a> {
         ui.set_ignore_parent_renderable_area(true);
         direction_panel_ptr.add_widget(&fish_icon_widget);
 
-
         // Vertical status bar widget (referencing StatusBarWidget)
         let vertical_gauge = StatusBarWidget::create_vertical_status_widget(
             main_layer_ptr,

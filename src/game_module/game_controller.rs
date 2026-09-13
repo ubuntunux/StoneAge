@@ -267,8 +267,12 @@ impl<'a> GameController<'a> {
         self._is_camera_fixed = is_camera_fixed;
     }
 
-    pub fn set_camera_fixed_position_and_rotation(&mut self, camera_fixed_position: &Vector3<f32>, camera_fixed_rotation: &Vector3<f32>) {
-       self._camera_fixed_position = camera_fixed_position.clone();
+    pub fn set_camera_fixed_position_and_rotation(
+        &mut self,
+        camera_fixed_position: &Vector3<f32>,
+        camera_fixed_rotation: &Vector3<f32>,
+    ) {
+        self._camera_fixed_position = camera_fixed_position.clone();
         self._camera_fixed_rotation = camera_fixed_rotation.clone();
     }
 
@@ -658,11 +662,16 @@ impl<'a> GameController<'a> {
         // set action & move
         let player_mut = ptr_as_mut(player.as_ptr());
 
-        let is_dance_pressed = keyboard_input_data.get_key_pressed(KeyCode::KeyG)
-            || joystick_input_data._btn_y == ButtonState::Pressed;
+        let is_dance_pressed =
+            keyboard_input_data.get_key_pressed(KeyCode::KeyG) || joystick_input_data._btn_y == ButtonState::Pressed;
 
         if player_mut.is_action(ActionAnimationState::Dance) && !is_dance_pressed {
-            let is_moving = is_left || is_right || is_up || is_down || stick_left_direction.x != 0.0 || stick_left_direction.y != 0.0;
+            let is_moving = is_left
+                || is_right
+                || is_up
+                || is_down
+                || stick_left_direction.x != 0.0
+                || stick_left_direction.y != 0.0;
             let is_any_input = is_moving
                 || is_run
                 || is_jump
@@ -741,11 +750,13 @@ impl<'a> GameController<'a> {
         let is_available_attack = player_mut.is_available_attack();
         let item_type = player_mut.get_attached_item_data_type();
 
-        let is_near_bed = matches!(player_mut.get_nearest_interaction_object(), InteractionObject::PropBed(_))
-            && player_mut.is_in_interaction_range();
+        let is_near_bed = matches!(
+            player_mut.get_nearest_interaction_object(),
+            InteractionObject::PropBed(_)
+        ) && player_mut.is_in_interaction_range();
         let is_wrap_up = get_game_scene_manager_mut().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay);
-        let is_interaction_pressed = keyboard_input_data.get_key_pressed(KeyCode::KeyF)
-            || joystick_input_data._btn_x == ButtonState::Pressed;
+        let is_interaction_pressed =
+            keyboard_input_data.get_key_pressed(KeyCode::KeyF) || joystick_input_data._btn_x == ButtonState::Pressed;
         let is_interaction_hold = keyboard_input_data.get_key_hold(KeyCode::KeyF)
             || keyboard_input_data.get_key_pressed(KeyCode::KeyF)
             || joystick_input_data._btn_x == ButtonState::Hold
@@ -820,12 +831,8 @@ impl<'a> GameController<'a> {
         player_mut: &mut Character<'a>,
     ) {
         if self._is_camera_fixed {
-            main_camera
-                ._transform_object
-                .set_position(&self._camera_fixed_position);
-            main_camera
-                ._transform_object
-                .set_rotation(&self._camera_fixed_rotation);
+            main_camera._transform_object.set_position(&self._camera_fixed_position);
+            main_camera._transform_object.set_rotation(&self._camera_fixed_rotation);
             return;
         }
 

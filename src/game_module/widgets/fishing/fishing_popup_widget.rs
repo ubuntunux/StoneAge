@@ -122,16 +122,13 @@ impl<'a> FishingPopupWidget<'a> {
             if game_resources.has_item_data(item_data_name) {
                 let item_data = game_resources.get_item_data(item_data_name).borrow();
                 let name = item_data._name.clone();
-                let material = get_engine_resources()
-                    .get_material_instance_data(item_data._ui_material_instance.as_str())
-                    .clone();
+                let material =
+                    get_engine_resources().get_material_instance_data(item_data._ui_material_instance.as_str()).clone();
                 (name, material)
             } else {
                 (
                     item_data_name.to_string(),
-                    get_engine_resources()
-                        .get_material_instance_data("materials/ui/material_ui_none")
-                        .clone(),
+                    get_engine_resources().get_material_instance_data("materials/ui/material_ui_none").clone(),
                 )
             }
         };

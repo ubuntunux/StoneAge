@@ -300,10 +300,16 @@ impl<'a> CharacterManager<'a> {
         if character.is_alive() && character._character_stats.get_is_stat_displayed() {
             let mut contents = vec![];
             if character.get_stats().is_hungry() {
-                contents.push(TextBoxContent::MaterialInstance(String::from(MATERIAL_EMOJI_HUNGRY), None));
+                contents.push(TextBoxContent::MaterialInstance(
+                    String::from(MATERIAL_EMOJI_HUNGRY),
+                    None,
+                ));
                 contents.push(TextBoxContent::Audio(String::from(AUDIO_STOMACH_GROWLING)));
             } else {
-                contents.push(TextBoxContent::MaterialInstance(String::from(MATERIAL_EMOJI_GOOD), None));
+                contents.push(TextBoxContent::MaterialInstance(
+                    String::from(MATERIAL_EMOJI_GOOD),
+                    None,
+                ));
             }
 
             get_game_ui_manager_mut().add_text_box_item(

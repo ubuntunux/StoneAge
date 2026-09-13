@@ -3,7 +3,10 @@ use crate::game_module::actors::character::Character;
 use crate::game_module::actors::interaction_object::InteractionObject;
 use crate::game_module::actors::props::Prop;
 use crate::game_module::behavior::behavior_base::BehaviorState;
-use crate::game_module::game_constants::{AUDIO_QUEST_COMPLETE, AUDIO_ROOSTER, AUDIO_WRAP_UP_THE_DAY, BED_FOR_ARU, CAMERA_DISTANCE_MIN, CAMERA_OFFSET_Y, DEFAULT_FADE_TIME, MATERIAL_UI_NONE, SLEEP_TIMER, TIME_OF_NIGHT};
+use crate::game_module::game_constants::{
+    AUDIO_QUEST_COMPLETE, AUDIO_ROOSTER, AUDIO_WRAP_UP_THE_DAY, BED_FOR_ARU, CAMERA_DISTANCE_MIN, CAMERA_OFFSET_Y,
+    DEFAULT_FADE_TIME, MATERIAL_UI_NONE, SLEEP_TIMER, TIME_OF_NIGHT,
+};
 use crate::game_module::game_service_locator::{
     get_game_controller_mut, get_game_scene_manager, get_game_scene_manager_mut, get_game_ui_manager_mut,
 };
@@ -21,14 +24,14 @@ use rust_engine_3d::utilities::system::{RcRefCell, State, newRcRefCell};
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 use strum::IntoEnumIterator;
-use winit::keyboard::KeyCode;
 use strum_macros::{Display, EnumCount, EnumIter, EnumString};
+use winit::keyboard::KeyCode;
 
 #[derive(Clone, PartialEq, Eq, Hash, Display, Debug, Copy, EnumIter, EnumString, EnumCount)]
 enum ScenarioPhase {
     None,
     Begin,
-    Performance,
+    Update,
     GoToSleep,
     Sleep,
     End,
@@ -54,6 +57,7 @@ pub struct ScenarioWrapUpTheDay<'a> {
     _prop_bed_for_koa: Option<RcRefCell<Prop<'a>>>,
     _audio_bgm: Option<RcRefCell<AudioInstance>>,
     _skip_wakeup: bool,
+    _waiting_for_key_release: bool,
     _scenario_track: ScenarioTrack<ScenarioPhase>,
 }
 
@@ -75,6 +79,7 @@ impl<'a> ScenarioWrapUpTheDay<'a> {
             _prop_bed_for_koa: None,
             _audio_bgm: None,
             _skip_wakeup: false,
+            _waiting_for_key_release: true,
             _scenario_track: ScenarioTrack {
                 _scenario_phase: ScenarioPhase::None,
                 _next_scenario_phase: ScenarioPhase::Begin,
@@ -105,19 +110,14 @@ fn set_actor_table_position(
     }
 }
 
-fn dance_in_place(
-    actor: &Option<RcRefCell<Character>>,
-    player: &Option<RcRefCell<Character>>,
-) {
+fn dance_in_place(actor: &Option<RcRefCell<Character>>, player: &Option<RcRefCell<Character>>) {
     if let (Some(actor_ref), Some(player_ref)) = (actor.as_ref(), player.as_ref()) {
         actor_ref.borrow_mut().look_at(player_ref.borrow().get_position());
         actor_ref.borrow_mut().set_next_behavior(BehaviorState::Dance, true);
     }
 }
 
-fn stand_in_place(
-    actor: &Option<RcRefCell<Character>>,
-) {
+fn stand_in_place(actor: &Option<RcRefCell<Character>>) {
     if let Some(actor_ref) = actor.as_ref() {
         actor_ref.borrow_mut().set_next_behavior(BehaviorState::Idle, true);
     }
@@ -185,7 +185,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
     }
 
     fn is_allow_player_control(&self) -> bool {
-        matches!(self._scenario_track._scenario_phase, ScenarioPhase::Performance)
+        matches!(self._scenario_track._scenario_phase, ScenarioPhase::Update)
     }
 
     fn is_end_of_scenario(&self) -> bool {
@@ -273,12 +273,12 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                                 &Vector3::new(-1.0, 0.0, 0.0),
                             );
                             game_ui_manager.set_auto_fade_inout(true);
-                            self._scenario_track.set_next_scenario_phase(ScenarioPhase::Performance, None);
+                            self._scenario_track.set_next_scenario_phase(ScenarioPhase::Update, None);
                         }
                     }
                     _ => {}
                 },
-                ScenarioPhase::Performance => {
+                ScenarioPhase::Update => {
                     if state == State::Begin {
                         // set time of day
                         if get_game_scene_manager().get_time_of_day() < TIME_OF_NIGHT {
@@ -291,15 +291,16 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                             pivot += prop_bed.borrow().get_position();
                         };
                         let camera_rotation = Vector3::new(0.4, 0.0, 0.0);
-                        let camera_rotation_matrix = math::make_rotation_matrix(camera_rotation.x, camera_rotation.y, camera_rotation.z);
-                        let camera_position = pivot - camera_rotation_matrix.column(2).xyz() * (CAMERA_DISTANCE_MIN + 6.0);
+                        let camera_rotation_matrix =
+                            math::make_rotation_matrix(camera_rotation.x, camera_rotation.y, camera_rotation.z);
+                        let camera_position =
+                            pivot - camera_rotation_matrix.column(2).xyz() * (CAMERA_DISTANCE_MIN + 6.0);
                         get_game_controller_mut().set_camera_fixed(true);
-                        get_game_controller_mut().set_camera_fixed_position_and_rotation(&camera_position, &camera_rotation);
+                        get_game_controller_mut()
+                            .set_camera_fixed_position_and_rotation(&camera_position, &camera_rotation);
                     } else if state == State::Update {
-                        let player_is_dancing = self
-                            ._player
-                            .as_ref()
-                            .is_some_and(|p| p.borrow().is_action(ActionAnimationState::Dance));
+                        let player_is_dancing =
+                            self._player.as_ref().is_some_and(|p| p.borrow().is_action(ActionAnimationState::Dance));
 
                         if player_is_dancing {
                             if self._audio_bgm.is_none() {
@@ -349,29 +350,43 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                         }
 
                         let engine_core = get_engine_core();
-                        let is_interaction_pressed = engine_core._keyboard_input_data.get_key_pressed(KeyCode::KeyF)
+                        let is_interaction_hold = engine_core._keyboard_input_data.get_key_hold(KeyCode::KeyF)
+                            || engine_core._keyboard_input_data.get_key_pressed(KeyCode::KeyF)
+                            || engine_core._joystick_input_data._btn_x == ButtonState::Hold
                             || engine_core._joystick_input_data._btn_x == ButtonState::Pressed;
 
-                        let is_near_bed = self._player.as_ref().is_some_and(|p| {
-                            matches!(p.borrow().get_nearest_interaction_object(), InteractionObject::PropBed(_))
-                                && p.borrow().is_in_interaction_range()
-                        });
+                        if self._waiting_for_key_release {
+                            if !is_interaction_hold {
+                                self._waiting_for_key_release = false;
+                            }
+                        } else {
+                            let is_interaction_pressed =
+                                engine_core._keyboard_input_data.get_key_pressed(KeyCode::KeyF)
+                                    || engine_core._joystick_input_data._btn_x == ButtonState::Pressed;
 
-                        if is_near_bed && is_interaction_pressed {
-                            if let Some(audio_bgm) = &self._audio_bgm {
-                                get_audio_manager_mut().stop_audio_instance(audio_bgm);
+                            let is_near_bed = self._player.as_ref().is_some_and(|p| {
+                                matches!(
+                                    p.borrow().get_nearest_interaction_object(),
+                                    InteractionObject::PropBed(_)
+                                ) && p.borrow().is_in_interaction_range()
+                            });
+
+                            if is_near_bed && is_interaction_pressed {
+                                if let Some(audio_bgm) = &self._audio_bgm {
+                                    get_audio_manager_mut().stop_audio_instance(audio_bgm);
+                                }
+                                get_audio_manager_mut().play_audio_bank(AUDIO_QUEST_COMPLETE, AudioLoop::ONCE, None);
+                                if let Some(actor) = &self._player {
+                                    actor.borrow_mut().set_action_none();
+                                }
+                                if let Some(actor) = &self._actor_ewa {
+                                    actor.borrow_mut().set_action_none();
+                                }
+                                if let Some(actor) = &self._actor_koa {
+                                    actor.borrow_mut().set_action_none();
+                                }
+                                self._scenario_track.set_next_scenario_phase(ScenarioPhase::GoToSleep, None);
                             }
-                            get_audio_manager_mut().play_audio_bank(AUDIO_QUEST_COMPLETE, AudioLoop::ONCE, None);
-                            if let Some(actor) = &self._player {
-                                actor.borrow_mut().set_action_none();
-                            }
-                            if let Some(actor) = &self._actor_ewa {
-                                actor.borrow_mut().set_action_none();
-                            }
-                            if let Some(actor) = &self._actor_koa {
-                                actor.borrow_mut().set_action_none();
-                            }
-                            self._scenario_track.set_next_scenario_phase(ScenarioPhase::GoToSleep, None);
                         }
                     }
                 }

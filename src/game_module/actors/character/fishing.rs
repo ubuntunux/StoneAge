@@ -108,10 +108,10 @@ impl<'a> Character<'a> {
     pub fn rotate_player_angle(&mut self, dir: f32, delta_time: f32) {
         if dir != 0.0 {
             self._fishing_state._player_angular_velocity += dir * FISHING_PLAYER_ANGULAR_ACCELERATION * delta_time;
-            self._fishing_state._player_angular_velocity = self
-                ._fishing_state
-                ._player_angular_velocity
-                .clamp(-FISHING_PLAYER_MAX_ANGULAR_VELOCITY, FISHING_PLAYER_MAX_ANGULAR_VELOCITY);
+            self._fishing_state._player_angular_velocity = self._fishing_state._player_angular_velocity.clamp(
+                -FISHING_PLAYER_MAX_ANGULAR_VELOCITY,
+                FISHING_PLAYER_MAX_ANGULAR_VELOCITY,
+            );
         } else {
             // let vel = self._fishing_state._player_angular_velocity;
             // if vel > 0.0 {
@@ -123,8 +123,7 @@ impl<'a> Character<'a> {
             // }
         }
 
-        let new_angle =
-            self._fishing_state._player_angle + self._fishing_state._player_angular_velocity * delta_time;
+        let new_angle = self._fishing_state._player_angle + self._fishing_state._player_angular_velocity * delta_time;
 
         if new_angle >= FISHING_PLAYER_MAX_ANGLE {
             self._fishing_state._player_angle = FISHING_PLAYER_MAX_ANGLE;

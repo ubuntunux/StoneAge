@@ -139,11 +139,7 @@ impl<'a> ToolboxWidget<'a> {
         true
     }
 
-    pub fn callback_tab_touch_over(
-        _ui: &UIComponentInstance<'a>,
-        _pos: &Vector2<f32>,
-        _delta: &Vector2<f32>,
-    ) -> bool {
+    pub fn callback_tab_touch_over(_ui: &UIComponentInstance<'a>, _pos: &Vector2<f32>, _delta: &Vector2<f32>) -> bool {
         get_audio_manager_mut().play_audio_bank(AUDIO_SELECT_ITEM, AudioLoop::ONCE, None);
         true
     }
