@@ -1,12 +1,8 @@
 use crate::game_module::actors::character::ActionAnimationState;
 use crate::game_module::actors::character::Character;
-use crate::game_module::actors::interaction_object::InteractionObject;
 use crate::game_module::actors::props::Prop;
 use crate::game_module::behavior::behavior_base::BehaviorState;
-use crate::game_module::game_constants::{
-    AUDIO_QUEST_COMPLETE, AUDIO_ROOSTER, AUDIO_WRAP_UP_THE_DAY, BED_FOR_ARU, CAMERA_DISTANCE_MIN, CAMERA_OFFSET_Y,
-    DEFAULT_FADE_TIME, MATERIAL_UI_NONE, SLEEP_TIMER, TIME_OF_NIGHT,
-};
+use crate::game_module::game_constants::{AUDIO_QUEST_COMPLETE, AUDIO_ROOSTER, AUDIO_WRAP_UP_THE_DAY, BED_FOR_ARU, CAMERA_DISTANCE_MIN, CAMERA_OFFSET_Y, DEFAULT_FADE_TIME, MATERIAL_UI_NONE, SLEEP_TIMER, TIME_OF_MIDNIGHT, TIME_OF_NIGHT};
 use crate::game_module::game_service_locator::{
     get_game_controller_mut, get_game_scene_manager, get_game_scene_manager_mut, get_game_ui_manager_mut,
 };
@@ -16,8 +12,7 @@ use crate::game_module::scenario::scenario::{
 use crate::game_module::scenario::scenario_track::ScenarioTrack;
 use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop};
-use rust_engine_3d::core::engine_service_locator::{get_audio_manager_mut, get_engine_core, get_scene_manager};
-use rust_engine_3d::core::input::ButtonState;
+use rust_engine_3d::core::engine_service_locator::{get_audio_manager_mut, get_scene_manager};
 use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{RcRefCell, State, newRcRefCell};
@@ -25,7 +20,6 @@ use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 use strum::IntoEnumIterator;
 use strum_macros::{Display, EnumCount, EnumIter, EnumString};
-use winit::keyboard::KeyCode;
 
 #[derive(Clone, PartialEq, Eq, Hash, Display, Debug, Copy, EnumIter, EnumString, EnumCount)]
 enum ScenarioPhase {
@@ -58,6 +52,8 @@ pub struct ScenarioWrapUpTheDay<'a> {
     _audio_bgm: Option<RcRefCell<AudioInstance>>,
     _skip_wakeup: bool,
     _waiting_for_key_release: bool,
+    _request_sleep: bool,
+    _check_time_for_sleep: f32,
     _scenario_track: ScenarioTrack<ScenarioPhase>,
 }
 
@@ -80,6 +76,8 @@ impl<'a> ScenarioWrapUpTheDay<'a> {
             _audio_bgm: None,
             _skip_wakeup: false,
             _waiting_for_key_release: true,
+            _request_sleep: false,
+            _check_time_for_sleep: 0.0,
             _scenario_track: ScenarioTrack {
                 _scenario_phase: ScenarioPhase::None,
                 _next_scenario_phase: ScenarioPhase::Begin,
@@ -188,6 +186,22 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
         matches!(self._scenario_track._scenario_phase, ScenarioPhase::Update)
     }
 
+    fn is_available_sleep(&self) -> bool {
+        matches!(self._scenario_track._scenario_phase, ScenarioPhase::Update)
+    }
+
+    fn request_sleep(&mut self) {
+        if self.is_available_sleep() && !self._waiting_for_key_release {
+            self._request_sleep = true;
+        }
+    }
+
+    fn on_interaction_released(&mut self) {
+        if self._waiting_for_key_release {
+            self._waiting_for_key_release = false;
+        }
+    }
+
     fn is_end_of_scenario(&self) -> bool {
         self._scenario_track._scenario_phase == ScenarioPhase::End
     }
@@ -240,6 +254,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
 
             match update_scenario_phase {
                 ScenarioPhase::None => {
+                    self._check_time_for_sleep = get_game_scene_manager().get_time_of_day();
                     self._scenario_track.set_next_scenario_phase(ScenarioPhase::Begin, None);
                 }
                 ScenarioPhase::Begin => match state {
@@ -349,44 +364,25 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                             }
                         }
 
-                        let engine_core = get_engine_core();
-                        let is_interaction_hold = engine_core._keyboard_input_data.get_key_hold(KeyCode::KeyF)
-                            || engine_core._keyboard_input_data.get_key_pressed(KeyCode::KeyF)
-                            || engine_core._joystick_input_data._btn_x == ButtonState::Hold
-                            || engine_core._joystick_input_data._btn_x == ButtonState::Pressed;
+                        let prev_time_of_day = self._check_time_for_sleep;
+                        self._check_time_for_sleep = get_game_scene_manager().get_time_of_day();
 
-                        if self._waiting_for_key_release {
-                            if !is_interaction_hold {
-                                self._waiting_for_key_release = false;
+                        if self._request_sleep || self._check_time_for_sleep < prev_time_of_day {
+                            self._request_sleep = false;
+                            if let Some(audio_bgm) = &self._audio_bgm {
+                                get_audio_manager_mut().stop_audio_instance(audio_bgm);
                             }
-                        } else {
-                            let is_interaction_pressed =
-                                engine_core._keyboard_input_data.get_key_pressed(KeyCode::KeyF)
-                                    || engine_core._joystick_input_data._btn_x == ButtonState::Pressed;
-
-                            let is_near_bed = self._player.as_ref().is_some_and(|p| {
-                                matches!(
-                                    p.borrow().get_nearest_interaction_object(),
-                                    InteractionObject::PropBed(_)
-                                ) && p.borrow().is_in_interaction_range()
-                            });
-
-                            if is_near_bed && is_interaction_pressed {
-                                if let Some(audio_bgm) = &self._audio_bgm {
-                                    get_audio_manager_mut().stop_audio_instance(audio_bgm);
-                                }
-                                get_audio_manager_mut().play_audio_bank(AUDIO_QUEST_COMPLETE, AudioLoop::ONCE, None);
-                                if let Some(actor) = &self._player {
-                                    actor.borrow_mut().set_action_none();
-                                }
-                                if let Some(actor) = &self._actor_ewa {
-                                    actor.borrow_mut().set_action_none();
-                                }
-                                if let Some(actor) = &self._actor_koa {
-                                    actor.borrow_mut().set_action_none();
-                                }
-                                self._scenario_track.set_next_scenario_phase(ScenarioPhase::GoToSleep, None);
+                            get_audio_manager_mut().play_audio_bank(AUDIO_QUEST_COMPLETE, AudioLoop::ONCE, None);
+                            if let Some(actor) = &self._player {
+                                actor.borrow_mut().set_action_none();
                             }
+                            if let Some(actor) = &self._actor_ewa {
+                                actor.borrow_mut().set_action_none();
+                            }
+                            if let Some(actor) = &self._actor_koa {
+                                actor.borrow_mut().set_action_none();
+                            }
+                            self._scenario_track.set_next_scenario_phase(ScenarioPhase::GoToSleep, None);
                         }
                     }
                 }

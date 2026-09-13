@@ -3,13 +3,8 @@ use crate::game_module::actors::character::{CharacterCreateInfo, CharacterID, Ch
 use crate::game_module::actors::items::{ItemCreateInfo, ItemManager, ItemSaveData};
 use crate::game_module::actors::props::{PropCreateInfo, PropManager, PropSaveData};
 use crate::game_module::game_audio_manager::GameAudioManager;
-use crate::game_module::game_constants::{
-    CHARACTER_DATA_NAME_MONKEY_ARU, GAME_VIEW_MODE, GameViewMode, TEMPERATURE_MAX, TEMPERATURE_MIN, TIME_OF_DAWN,
-    TIME_OF_DAY_SPEED, TIME_OF_MORNING,
-};
-use crate::game_module::game_service_locator::{
-    get_game_client, get_game_client_mut, get_game_resources, get_game_ui_manager, get_game_ui_manager_mut,
-};
+use crate::game_module::game_constants::{GameViewMode, BED_FOR_ARU, CHARACTER_DATA_NAME_MONKEY_ARU, GAME_VIEW_MODE, TEMPERATURE_MAX, TEMPERATURE_MIN, TIME_OF_DAWN, TIME_OF_DAY_SPEED, TIME_OF_MORNING};
+use crate::game_module::game_service_locator::{get_game_client, get_game_client_mut, get_game_resources, get_game_scene_manager_mut, get_game_ui_manager, get_game_ui_manager_mut};
 use crate::game_module::game_weather::Weather;
 use crate::game_module::save_data::save_data::GameSaveData;
 use crate::game_module::scenario::scenario::{ScenarioBase, ScenarioDataCreateInfo, ScenarioType, create_scenario};
@@ -23,6 +18,7 @@ use rust_engine_3d::utilities::system::{RcRefCell, ptr_as_mut, ptr_as_ref};
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use strum_macros::{Display, EnumString};
+use crate::game_module::game_client::GamePhase;
 
 pub type CharacterCreateInfoMap = HashMap<String, CharacterCreateInfo>;
 pub type CharacterSaveDataMap = HashMap<String, CharacterSaveData>;
@@ -573,11 +569,16 @@ impl<'a> GameSceneManager<'a> {
     }
 
     pub fn update_time_of_day(&mut self, delta_time: f64) {
-        self._time_of_day += self._time_of_day_speed * TIME_OF_DAY_SPEED * delta_time as f32;
+        self._time_of_day += self._time_of_day_speed * TIME_OF_DAY_SPEED * delta_time as f32 * 100.0;
 
         if 24.0 <= self._time_of_day {
             self._time_of_day %= 24.0;
             self._date += 1;
+
+            // if !self.is_teleport_mode() {
+            //     self.set_teleport_spawn_point(Stages::Home.get_stage_data_name(), BED_FOR_ARU);
+            //     get_game_client_mut().set_next_game_phase(GamePhase::WrapUpTheDay);
+            // }
         }
 
         let temperature_ratio = 1.0 - (self._time_of_day - 12.0) / 12.0;

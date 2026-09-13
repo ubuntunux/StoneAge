@@ -8,8 +8,9 @@ use crate::game_module::game_service_locator::{
 use crate::game_module::scenario::scenario::ScenarioType;
 use crate::game_module::widgets::game_menu_widget::GameMenuTab;
 use nalgebra::{Matrix4, Vector2, Vector3};
+use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::core::engine_core::TimeData;
-use rust_engine_3d::core::engine_service_locator::get_scene_manager;
+use rust_engine_3d::core::engine_service_locator::{get_audio_manager_mut, get_scene_manager};
 use rust_engine_3d::core::input::{ButtonState, JoystickInputData, KeyboardInputData, MouseInputData, MouseMoveData};
 use rust_engine_3d::scene::camera::CameraObjectData;
 use rust_engine_3d::scene::collision::{CollisionCreateInfo, CollisionData, CollisionType};
@@ -772,12 +773,19 @@ impl<'a> GameController<'a> {
             self._is_wrap_up_holding = false;
         }
 
+        if is_wrap_up && !is_interaction_hold {
+            if let Some(scenario) = get_game_scene_manager_mut().get_game_scenario(ScenarioType::ScenarioWrapUpTheDay) {
+                scenario.borrow_mut().on_interaction_released();
+            }
+        }
+
         if is_near_bed && !is_wrap_up && self._is_wrap_up_holding && is_interaction_hold {
             self._wrap_up_hold_timer += delta_time;
             if 1.0 <= self._wrap_up_hold_timer {
                 self._wrap_up_hold_timer = 1.0;
                 self._is_wrap_up_holding = false;
                 player_mut.set_move_idle();
+                get_audio_manager_mut().play_audio_bank(AUDIO_QUEST_COMPLETE, AudioLoop::ONCE, None);
                 get_game_scene_manager_mut().request_open_game_scenario(ScenarioType::ScenarioWrapUpTheDay);
                 get_game_client_mut().set_next_game_phase(GamePhase::WrapUpTheDay);
             }
@@ -789,8 +797,14 @@ impl<'a> GameController<'a> {
             player_mut.set_action_dance();
         } else if is_request && player_mut.is_in_interaction_range() {
             player_mut.set_action_request();
-        } else if is_interaction && player_mut.is_in_interaction_range() && !is_near_bed {
-            if is_wrap_up && matches!(player_mut.get_nearest_interaction_object(), InteractionObject::Npc(_)) {
+        } else if is_interaction && player_mut.is_in_interaction_range() {
+            if is_near_bed {
+                if let Some(scenario) =
+                    get_game_scene_manager_mut().get_game_scenario(ScenarioType::ScenarioWrapUpTheDay)
+                {
+                    scenario.borrow_mut().request_sleep();
+                }
+            } else if is_wrap_up && matches!(player_mut.get_nearest_interaction_object(), InteractionObject::Npc(_)) {
                 player_mut.set_action_dance();
             } else {
                 player_mut.set_action_interaction();

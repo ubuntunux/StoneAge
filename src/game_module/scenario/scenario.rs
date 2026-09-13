@@ -106,6 +106,11 @@ pub trait ScenarioBase<'a> {
     fn is_allow_player_control(&self) -> bool {
         false
     }
+    fn is_available_sleep(&self) -> bool {
+        false
+    }
+    fn request_sleep(&mut self) {}
+    fn on_interaction_released(&mut self) {}
     fn is_end_of_scenario(&self) -> bool;
     fn destroy_game_scenario(&mut self);
     fn on_close_game_scene(&mut self, game_scene_data_name: &str);
