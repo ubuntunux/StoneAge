@@ -3,7 +3,7 @@ use crate::game_module::actors::character::Character;
 use crate::game_module::actors::interaction_object::InteractionObject;
 use crate::game_module::actors::props::Prop;
 use crate::game_module::behavior::behavior_base::BehaviorState;
-use crate::game_module::game_constants::{AUDIO_QUEST_COMPLETE, AUDIO_ROOSTER, AUDIO_WRAP_UP_THE_DAY, BED_FOR_ARU, CAMERA_DISTANCE_MIN, CAMERA_OFFSET_Y, DEFAULT_FADE_TIME, MATERIAL_UI_NONE, SLEEP_TIMER, TIME_OF_LATE_NOON, TIME_OF_NIGHT};
+use crate::game_module::game_constants::{AUDIO_QUEST_COMPLETE, AUDIO_ROOSTER, AUDIO_WRAP_UP_THE_DAY, BED_FOR_ARU, CAMERA_DISTANCE_MIN, CAMERA_OFFSET_Y, DEFAULT_FADE_TIME, MATERIAL_UI_NONE, SLEEP_TIMER, TIME_OF_NIGHT};
 use crate::game_module::game_service_locator::{
     get_game_controller_mut, get_game_scene_manager, get_game_scene_manager_mut, get_game_ui_manager_mut,
 };
@@ -281,8 +281,8 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                 ScenarioPhase::Performance => {
                     if state == State::Begin {
                         // set time of day
-                        if get_game_scene_manager().get_time_of_day() < TIME_OF_LATE_NOON {
-                            get_game_scene_manager_mut().set_time_of_day(TIME_OF_LATE_NOON);
+                        if get_game_scene_manager().get_time_of_day() < TIME_OF_NIGHT {
+                            get_game_scene_manager_mut().set_time_of_day(TIME_OF_NIGHT);
                         }
 
                         // set camera
