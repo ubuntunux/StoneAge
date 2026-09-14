@@ -20,11 +20,7 @@ impl Lantern {
         let mut lantern = Lantern {
             _point_light: None,
             _is_on: false,
-            _light_color: Vector3::new(
-                LANTERN_LIGHT_COLOR[0],
-                LANTERN_LIGHT_COLOR[1],
-                LANTERN_LIGHT_COLOR[2],
-            ),
+            _light_color: Vector3::new(LANTERN_LIGHT_COLOR[0], LANTERN_LIGHT_COLOR[1], LANTERN_LIGHT_COLOR[2]),
             _max_radius: LANTERN_LIGHT_RADIUS,
             _current_radius: 0.0,
             _offset: Vector3::new(0.0, LANTERN_OFFSET_Y, 0.0),

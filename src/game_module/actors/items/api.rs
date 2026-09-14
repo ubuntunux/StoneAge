@@ -153,4 +153,3 @@ pub struct ItemManager<'a> {
     pub _table_storage_item_ids: Vec<ItemID>,
     pub _marker: std::marker::PhantomData<&'a ()>,
 }
-

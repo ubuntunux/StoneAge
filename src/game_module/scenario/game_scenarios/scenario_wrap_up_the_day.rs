@@ -4,11 +4,15 @@ use crate::game_module::actors::props::Prop;
 use crate::game_module::behavior::behavior_base::BehaviorState;
 use crate::game_module::game_constants::{
     AUDIO_QUEST_COMPLETE, AUDIO_ROOSTER, AUDIO_WRAP_UP_THE_DAY, BED_FOR_ARU, CAMERA_DISTANCE_MIN, CAMERA_OFFSET_Y,
-    DEFAULT_FADE_TIME, MATERIAL_UI_NONE, SLEEP_TIMER, TIME_OF_NIGHT,
+    CHARACTER_INTERACTION_DISTANCE, DEFAULT_FADE_TIME, EAT_ITEM_DELAY_TIME, MATERIAL_UI_NONE, SLEEP_TIMER,
+    TARGET_HUNGER_THRESHOLD, TIME_OF_NIGHT,
 };
+
 use crate::game_module::game_service_locator::{
     get_game_controller_mut, get_game_scene_manager, get_game_scene_manager_mut, get_game_ui_manager_mut,
 };
+use crate::game_module::game_ui_manager::GameUIManager;
+
 use crate::game_module::scenario::scenario::{
     GameScenarioCreateInfo, ScenarioBase, ScenarioDataCreateInfo, ScenarioType,
 };
@@ -57,6 +61,8 @@ pub struct ScenarioWrapUpTheDay<'a> {
     _waiting_for_key_release: bool,
     _request_sleep: bool,
     _check_time_for_sleep: f32,
+    _ewa_eat_delay: f32,
+    _koa_eat_delay: f32,
     _scenario_track: ScenarioTrack<ScenarioPhase>,
 }
 
@@ -81,6 +87,8 @@ impl<'a> ScenarioWrapUpTheDay<'a> {
             _waiting_for_key_release: true,
             _request_sleep: false,
             _check_time_for_sleep: 0.0,
+            _ewa_eat_delay: 0.0,
+            _koa_eat_delay: 0.0,
             _scenario_track: ScenarioTrack {
                 _scenario_phase: ScenarioPhase::None,
                 _next_scenario_phase: ScenarioPhase::Begin,
@@ -105,14 +113,12 @@ impl<'a> ScenarioWrapUpTheDay<'a> {
         if let Some(prop_bed) = self._prop_bed_for_aru.as_ref() {
             pivot += prop_bed.borrow().get_position();
         };
-        let camera_rotation = Vector3::new(0.4, 0.0, 0.0);
+        let camera_rotation = Vector3::new(0.4, -1.4, 0.0);
         let camera_rotation_matrix =
             math::make_rotation_matrix(camera_rotation.x, camera_rotation.y, camera_rotation.z);
-        let camera_position =
-            pivot - camera_rotation_matrix.column(2).xyz() * (CAMERA_DISTANCE_MIN + 3.0);
+        let camera_position = pivot - camera_rotation_matrix.column(2).xyz() * (CAMERA_DISTANCE_MIN + 6.0);
         get_game_controller_mut().set_camera_fixed(true);
-        get_game_controller_mut()
-            .set_camera_fixed_position_and_rotation(&camera_position, &camera_rotation);
+        get_game_controller_mut().set_camera_fixed_position_and_rotation(&camera_position, &camera_rotation);
     }
 }
 
@@ -143,6 +149,100 @@ fn stand_in_place(actor: &Option<RcRefCell<Character>>) {
         actor_ref.borrow_mut().set_next_behavior(BehaviorState::Idle, true);
     }
 }
+
+fn is_in_table_interaction_range(actor: &Character, table: &Option<RcRefCell<Prop>>) -> bool {
+    if let Some(table_prop) = table.as_ref() {
+        actor.check_in_range(
+            table_prop.borrow().get_collision(),
+            CHARACTER_INTERACTION_DISTANCE * 2.0,
+            false,
+        )
+    } else {
+        false
+    }
+}
+
+fn update_actor_table_eating<'a>(
+    actor_opt: &Option<RcRefCell<Character<'a>>>,
+    table_opt: &Option<RcRefCell<Prop<'a>>>,
+    seat_direction: &Vector3<f32>,
+    eat_delay: &mut f32,
+    has_eatable_item: bool,
+    game_ui_manager: &mut GameUIManager<'a>,
+) {
+    let Some(actor) = actor_opt.as_ref() else {
+        return;
+    };
+
+    if actor.borrow().is_action(ActionAnimationState::Dance) {
+        return;
+    }
+
+    let is_hungry = actor.borrow().get_hunger() > TARGET_HUNGER_THRESHOLD;
+
+    if is_hungry {
+        if has_eatable_item {
+            let is_in_range = is_in_table_interaction_range(&actor.borrow(), table_opt);
+
+            if !is_in_range {
+                if let Some(table_prop) = table_opt.as_ref() {
+                    let scene_manager = get_scene_manager();
+                    let mut seat_pos = table_prop.borrow().get_position() - math::safe_normalize(seat_direction) * 2.0;
+                    seat_pos.y = scene_manager.get_height_bilinear(&seat_pos, 0);
+
+                    let (direction, dist) =
+                        math::make_normalize_xz_with_norm(&(seat_pos - actor.borrow().get_position()));
+                    if dist > 0.3 {
+                        actor.borrow_mut().set_move(&direction);
+                    } else {
+                        if !actor.borrow().is_move_stop() {
+                            actor.borrow_mut().set_move_idle();
+                        }
+                        actor.borrow_mut().look_at(table_prop.borrow().get_position());
+                    }
+                }
+            } else {
+                if !actor.borrow().is_move_stop() {
+                    actor.borrow_mut().set_move_idle();
+                }
+                if let Some(table_prop) = table_opt.as_ref() {
+                    actor.borrow_mut().look_at(table_prop.borrow().get_position());
+                }
+
+                let is_ready_to_eat = {
+                    let actor_ref = actor.borrow();
+                    *eat_delay <= 0.0
+                        && actor_ref.get_attached_item().is_none()
+                        && !actor_ref.is_action(ActionAnimationState::Eating)
+                };
+
+                if is_ready_to_eat {
+                    if let Some(item_data_name) = game_ui_manager.pop_eatable_table_storage_item() {
+                        let item_manager = get_game_scene_manager().get_item_manager_mut();
+                        let mut actor_ref = actor.borrow_mut();
+                        item_manager.attach_item(&mut actor_ref, item_data_name.as_str());
+                        actor_ref.set_next_behavior(BehaviorState::Eating, true);
+                        *eat_delay = EAT_ITEM_DELAY_TIME;
+                    }
+                }
+            }
+        } else {
+            if !actor.borrow().is_move_stop() {
+                actor.borrow_mut().set_move_idle();
+            }
+
+            let mut actor_ref = actor.borrow_mut();
+            if actor_ref.get_attached_item().is_none()
+                && !actor_ref.is_action(ActionAnimationState::Eating)
+                && !actor_ref.is_action(ActionAnimationState::Hungry)
+            {
+                actor_ref.set_action_hungry();
+                actor_ref.set_sit_down();
+            }
+        }
+    }
+}
+
 
 fn go_to_sleep(actor: &Option<RcRefCell<Character>>, bed: &Option<RcRefCell<Prop>>) {
     if let (Some(actor), Some(bed_ref)) = (actor.as_ref(), bed.as_ref()) {
@@ -374,6 +474,33 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                             if koa_dancing {
                                 stand_in_place(&self._actor_koa);
                             }
+
+                            if self._ewa_eat_delay > 0.0 {
+                                self._ewa_eat_delay = (self._ewa_eat_delay - delta_time as f32).max(0.0);
+                            }
+                            if self._koa_eat_delay > 0.0 {
+                                self._koa_eat_delay = (self._koa_eat_delay - delta_time as f32).max(0.0);
+                            }
+
+                            let has_eatable_item = game_ui_manager.has_eatable_table_storage_item();
+
+                            update_actor_table_eating(
+                                &self._actor_ewa,
+                                &self._prop_table,
+                                &Vector3::new(0.0, 0.0, 1.0),
+                                &mut self._ewa_eat_delay,
+                                has_eatable_item,
+                                game_ui_manager,
+                            );
+
+                            update_actor_table_eating(
+                                &self._actor_koa,
+                                &self._prop_table,
+                                &Vector3::new(-1.0, 0.0, 0.0),
+                                &mut self._koa_eat_delay,
+                                has_eatable_item,
+                                game_ui_manager,
+                            );
                         }
 
                         let prev_time_of_day = self._check_time_for_sleep;
@@ -385,14 +512,17 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                                 get_audio_manager_mut().stop_audio_instance(audio_bgm);
                             }
                             get_audio_manager_mut().play_audio_bank(AUDIO_QUEST_COMPLETE, AudioLoop::ONCE, None);
+                            let item_manager = get_game_scene_manager().get_item_manager_mut();
                             if let Some(actor) = &self._player {
                                 actor.borrow_mut().set_action_none();
                             }
                             if let Some(actor) = &self._actor_ewa {
                                 actor.borrow_mut().set_action_none();
+                                item_manager.detach_item(&mut actor.borrow_mut());
                             }
                             if let Some(actor) = &self._actor_koa {
                                 actor.borrow_mut().set_action_none();
+                                item_manager.detach_item(&mut actor.borrow_mut());
                             }
                             self._scenario_track.set_next_scenario_phase(ScenarioPhase::GoToSleep, None);
                         }
@@ -419,6 +549,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                         self.setup_bed_camera();
                         game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, DEFAULT_FADE_TIME);
 
+                        let item_manager = get_game_scene_manager().get_item_manager_mut();
                         if let Some(actor) = &self._player {
                             actor.borrow_mut().set_behavior_none();
                             if !actor.borrow().is_action(ActionAnimationState::LayingDown)
@@ -430,6 +561,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                         if let Some(actor) = &self._actor_ewa {
                             actor.borrow_mut().set_behavior_none();
                             actor.borrow_mut()._controller.set_flying_mode(false);
+                            item_manager.detach_item(&mut actor.borrow_mut());
                             if let Some(bed) = &self._prop_bed_for_ewa {
                                 actor.borrow_mut().set_position(bed.borrow().get_position());
                             }
@@ -442,6 +574,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                         if let Some(actor) = &self._actor_koa {
                             actor.borrow_mut().set_behavior_none();
                             actor.borrow_mut()._controller.set_flying_mode(false);
+                            item_manager.detach_item(&mut actor.borrow_mut());
                             if let Some(bed) = &self._prop_bed_for_koa {
                                 actor.borrow_mut().set_position(bed.borrow().get_position());
                             }
@@ -452,6 +585,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                             }
                         }
                     }
+
                     State::Update => {
                         if game_ui_manager.is_done_manual_fade_out() && self._sleep_timer < SLEEP_TIMER {
                             self._sleep_timer += delta_time as f32;

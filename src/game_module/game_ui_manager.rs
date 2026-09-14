@@ -256,7 +256,6 @@ impl<'a> GameUIManager<'a> {
         self.clear_player_records();
     }
 
-
     pub fn get_game_ui_layout(&self) -> *const WidgetDefault<'a> {
         self._game_ui_layout
     }
@@ -920,6 +919,21 @@ impl<'a> GameUIManager<'a> {
         }
     }
 
+    pub fn has_eatable_table_storage_item(&self) -> bool {
+        if let Some(table_storage_widget) = self._table_storage_widget.as_ref() {
+            table_storage_widget.has_eatable_table_storage_item()
+        } else {
+            false
+        }
+    }
+
+    pub fn pop_eatable_table_storage_item(&mut self) -> Option<String> {
+        if let Some(table_storage_widget) = self._table_storage_widget.as_mut() {
+            table_storage_widget.pop_eatable_table_storage_item()
+        } else {
+            None
+        }
+    }
 
     // craft widget
     pub fn open_craft(&mut self) {

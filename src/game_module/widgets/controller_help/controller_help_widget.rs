@@ -435,14 +435,20 @@ impl<'a> ControllerHelpWidget<'a> {
 
         let (primary_type, primary_text, request_type) = match interaction_object {
             InteractionObject::PropBed(_) => {
-                if let Some(game_scenario) = get_game_scene_manager().get_game_scenario(ScenarioType::ScenarioWrapUpTheDay) {
+                if let Some(game_scenario) =
+                    get_game_scene_manager().get_game_scenario(ScenarioType::ScenarioWrapUpTheDay)
+                {
                     if game_scenario.borrow().is_available_sleep() {
                         (KeyBindingType::Interaction, String::from("Sleep"), RequestType::None)
                     } else {
                         (KeyBindingType::None, String::default(), RequestType::None)
                     }
                 } else {
-                    (KeyBindingType::Interaction, String::from("Hold to Wrap up the day"), RequestType::None)
+                    (
+                        KeyBindingType::Interaction,
+                        String::from("Hold to Wrap up the day"),
+                        RequestType::None,
+                    )
                 }
             }
             InteractionObject::PropPickup(prop) => (

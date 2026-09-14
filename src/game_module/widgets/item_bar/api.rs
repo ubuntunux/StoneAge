@@ -102,7 +102,6 @@ pub struct ItemSelectionWidget<'a> {
     pub _widget: *const WidgetDefault<'a>,
 }
 
-
 pub struct ItemBarWidget<'a> {
     pub _parent_widget: *const WidgetDefault<'a>,
     pub _layer: *const WidgetDefault<'a>,

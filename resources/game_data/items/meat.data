@@ -7,6 +7,6 @@
     "_item_effects": [
         { "Hp": 10 },
         { "Stamina": 15.0 },
-        { "Hunger": -0.3 }
+        { "Hunger": -0.8 }
     ]
 }

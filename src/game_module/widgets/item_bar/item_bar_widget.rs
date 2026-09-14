@@ -433,7 +433,6 @@ impl<'a> ItemBarWidget<'a> {
         false
     }
 
-
     pub fn get_selected_inventory_slot_index(&self) -> usize {
         self._selected_inventory_slot_index
     }

@@ -532,7 +532,8 @@ impl<'a> TableStorageWidget<'a> {
                                     table_widget._table_inventory_slots[table_idx] = InventorySlotData::default();
                                 } else {
                                     // Move/Stack from Player to Table: table gets combined count, player becomes empty
-                                    table_widget._table_inventory_slots[table_idx]._item_count += player_slot_data._item_count;
+                                    table_widget._table_inventory_slots[table_idx]._item_count +=
+                                        player_slot_data._item_count;
                                     item_bar.set_inventory_slot_data(player_idx, &InventorySlotData::default());
                                 }
                             } else {
@@ -543,7 +544,6 @@ impl<'a> TableStorageWidget<'a> {
                     }
                 }
             }
-
 
             table_widget._drag_source_slot_index = INVALID_ITEM_INDEX;
             table_widget._focused_is_table_slot = clicked_is_table;
@@ -558,7 +558,6 @@ impl<'a> TableStorageWidget<'a> {
         table_widget.sync_3d_table_items();
         true
     }
-
 
     pub fn callback_slot_touch_over(
         ui_component: &UIComponentInstance<'a>,
@@ -853,4 +852,34 @@ impl<'a> TableStorageWidget<'a> {
         self.sync_3d_table_items();
     }
 
+    pub fn has_eatable_table_storage_item(&self) -> bool {
+        for slot in self._table_inventory_slots.iter() {
+            if slot._item_count > 0 && slot._item_data_name != ITEM_NONE {
+                if slot._item_data_type.is_eatable() {
+                    return true;
+                }
+            }
+        }
+        false
+    }
+
+    pub fn pop_eatable_table_storage_item(&mut self) -> Option<String> {
+        for slot in self._table_inventory_slots.iter_mut() {
+            if slot._item_count > 0 && slot._item_data_name != ITEM_NONE {
+                if slot._item_data_type.is_eatable() {
+                    let item_data_name = slot._item_data_name.clone();
+                    slot._item_count -= 1;
+                    if slot._item_count == 0 {
+                        *slot = InventorySlotData::default();
+                    }
+                    if self._is_opened {
+                        self.refresh_table_storage_widget();
+                    }
+                    self.sync_3d_table_items();
+                    return Some(item_data_name);
+                }
+            }
+        }
+        None
+    }
 }

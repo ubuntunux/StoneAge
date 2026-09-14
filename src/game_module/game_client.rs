@@ -423,30 +423,47 @@ impl<'a> GameClient<'a> {
                             game_scene_manager.update_teleport(character_manager);
                             if !game_scene_manager.is_teleport_mode() {
                                 game_scene_manager.set_next_time_of_day();
-                                rust_engine_3d::core::engine_service_locator::get_audio_manager_mut()
-                                    .play_audio_bank(crate::game_module::game_constants::AUDIO_ROOSTER, rust_engine_3d::audio::audio_manager::AudioLoop::ONCE, None);
-                                
+                                rust_engine_3d::core::engine_service_locator::get_audio_manager_mut().play_audio_bank(
+                                    crate::game_module::game_constants::AUDIO_ROOSTER,
+                                    rust_engine_3d::audio::audio_manager::AudioLoop::ONCE,
+                                    None,
+                                );
+
                                 if character_manager.is_valid_player() {
                                     character_manager.get_player().borrow_mut().set_action_wake_up();
                                 }
-                                
+
                                 // Wake up Ewa and Koa in their beds
-                                let ewa = character_manager.get_character_by_name("monkey_ewa").or_else(|| character_manager.get_character_by_name("ewa"));
+                                let ewa = character_manager
+                                    .get_character_by_name("monkey_ewa")
+                                    .or_else(|| character_manager.get_character_by_name("ewa"));
                                 if let Some(actor) = ewa {
                                     actor.borrow_mut()._controller.set_flying_mode(false);
-                                    if let Some(bed) = game_scene_manager.get_prop_manager().get_prop_by_name("bed_for_ewa") {
+                                    if let Some(bed) =
+                                        game_scene_manager.get_prop_manager().get_prop_by_name("bed_for_ewa")
+                                    {
                                         actor.borrow_mut().set_position(bed.borrow().get_position());
                                     }
-                                    actor.borrow_mut().set_next_behavior(crate::game_module::behavior::behavior_base::BehaviorState::WakeUp, true);
+                                    actor.borrow_mut().set_next_behavior(
+                                        crate::game_module::behavior::behavior_base::BehaviorState::WakeUp,
+                                        true,
+                                    );
                                 }
-                                
-                                let koa = character_manager.get_character_by_name("monkey_koa").or_else(|| character_manager.get_character_by_name("koa"));
+
+                                let koa = character_manager
+                                    .get_character_by_name("monkey_koa")
+                                    .or_else(|| character_manager.get_character_by_name("koa"));
                                 if let Some(actor) = koa {
                                     actor.borrow_mut()._controller.set_flying_mode(false);
-                                    if let Some(bed) = game_scene_manager.get_prop_manager().get_prop_by_name("bed_for_koa") {
+                                    if let Some(bed) =
+                                        game_scene_manager.get_prop_manager().get_prop_by_name("bed_for_koa")
+                                    {
                                         actor.borrow_mut().set_position(bed.borrow().get_position());
                                     }
-                                    actor.borrow_mut().set_next_behavior(crate::game_module::behavior::behavior_base::BehaviorState::WakeUp, true);
+                                    actor.borrow_mut().set_next_behavior(
+                                        crate::game_module::behavior::behavior_base::BehaviorState::WakeUp,
+                                        true,
+                                    );
                                 }
 
                                 self.set_next_game_phase(GamePhase::GamePlay);

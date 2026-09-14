@@ -10,8 +10,8 @@ use crate::game_module::game_constants::{
 };
 use crate::game_module::game_scene_manager::{ItemCreateInfoMap, ItemSaveDataMap};
 use crate::game_module::game_service_locator::{
-    get_character_manager, get_character_manager_mut, get_game_resources, get_game_ui_manager,
-    get_game_ui_manager_mut, get_prop_manager,
+    get_character_manager, get_character_manager_mut, get_game_resources, get_game_ui_manager, get_game_ui_manager_mut,
+    get_prop_manager,
 };
 
 use crate::game_module::widgets::item_bar::InventoryItemCreateInfo;
@@ -269,10 +269,8 @@ impl<'a> ItemManager<'a> {
 
         let prop_manager = get_prop_manager();
         let props = prop_manager.get_props();
-        let table_prop = props
-            .values()
-            .find(|prop| prop.borrow()._prop_data.borrow()._prop_type == PropDataType::Table)
-            .cloned();
+        let table_prop =
+            props.values().find(|prop| prop.borrow()._prop_data.borrow()._prop_type == PropDataType::Table).cloned();
 
         let Some(table_prop) = table_prop else {
             return;
@@ -294,8 +292,7 @@ impl<'a> ItemManager<'a> {
 
             let col_offset =
                 (col as f32 - (TABLE_STORAGE_SLOTS_PER_ROW as f32 - 1.0) * 0.5) * TABLE_STORAGE_ITEM_GRID_SPAN_X;
-            let row_offset =
-                (row as f32 - (TABLE_STORAGE_ROWS as f32 - 1.0) * 0.5) * TABLE_STORAGE_ITEM_GRID_SPAN_Z;
+            let row_offset = (row as f32 - (TABLE_STORAGE_ROWS as f32 - 1.0) * 0.5) * TABLE_STORAGE_ITEM_GRID_SPAN_Z;
 
             let spawn_position = Vector3::new(
                 table_center_x + col_offset,
@@ -321,7 +318,6 @@ impl<'a> ItemManager<'a> {
             self._table_storage_item_ids.push(item_refcell.borrow().get_item_id());
         }
     }
-
 
     pub fn initialize_item_manager(&mut self) {
         log::info!("initialize_item_manager");
@@ -457,7 +453,6 @@ impl<'a> ItemManager<'a> {
             self.sync_table_storage_items_in_world(&create_infos);
         }
     }
-
 
     pub fn pick_item(&self, item_data_name: &str, item_count: usize) -> bool {
         let success = get_game_ui_manager_mut().add_item(item_data_name, item_count, true);
