@@ -150,5 +150,7 @@ pub struct Item<'a> {
 pub struct ItemManager<'a> {
     pub _items: ItemMap<'a>,
     pub _item_name_map: ItemNameMap<'a>,
+    pub _table_storage_item_ids: Vec<ItemID>,
     pub _marker: std::marker::PhantomData<&'a ()>,
 }
+

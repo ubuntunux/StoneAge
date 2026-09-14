@@ -249,11 +249,13 @@ impl<'a> GameUIManager<'a> {
 
     pub fn clear_game_ui(&mut self) {
         self.clear_inventory_items();
+        self.clear_table_storage_items();
         self.clear_quests();
         self.clear_text_box_widgets();
         self.set_controls_visibility(true);
         self.clear_player_records();
     }
+
 
     pub fn get_game_ui_layout(&self) -> *const WidgetDefault<'a> {
         self._game_ui_layout
@@ -911,6 +913,13 @@ impl<'a> GameUIManager<'a> {
             table_storage_widget.load_table_storage_item_create_infos(create_infos);
         }
     }
+
+    pub fn clear_table_storage_items(&mut self) {
+        if let Some(table_storage_widget) = self._table_storage_widget.as_mut() {
+            table_storage_widget.clear_table_storage_items();
+        }
+    }
+
 
     // craft widget
     pub fn open_craft(&mut self) {

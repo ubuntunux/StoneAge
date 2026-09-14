@@ -207,3 +207,9 @@ pub const DEFAULT_GATE_NAME: &str = "gate";
 pub const RECORD_DEFAULT_INCREMENT: u32 = 1;
 pub const RECORD_ITEM_TYPES_PER_ROW: usize = 3;
 pub const RECORD_MONSTER_KILLS_PER_ROW: usize = 2;
+
+// Table storage 3D placement
+pub const TABLE_STORAGE_ITEM_OFFSET_Y: f32 = 0.05;
+pub const TABLE_STORAGE_ITEM_GRID_SPAN_X: f32 = 0.4;
+pub const TABLE_STORAGE_ITEM_GRID_SPAN_Z: f32 = 0.4;
+

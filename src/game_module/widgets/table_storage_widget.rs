@@ -2,7 +2,10 @@ use crate::game_module::actors::character::Character;
 use crate::game_module::actors::items::ItemDataType;
 use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, ITEM_HAND, ITEM_NONE};
 use crate::game_module::game_controller::WidgetNavRepeatController;
-use crate::game_module::game_service_locator::{get_game_resources, get_game_ui_manager, get_game_ui_manager_mut};
+use crate::game_module::game_service_locator::{
+    get_game_resources, get_game_ui_manager, get_game_ui_manager_mut, get_item_manager_mut,
+};
+
 use crate::game_module::widgets::game_menu_widget::item_info_widget::ItemInfoWidget;
 use crate::game_module::widgets::item_bar::{
     INVALID_ITEM_INDEX, ITEM_UI_SIZE, ITEM_WIDGET_UI_MARGIN, InventoryItemCreateInfo, InventorySlotData, SLOTS_PER_ROW,
@@ -472,13 +475,27 @@ impl<'a> TableStorageWidget<'a> {
 
             if !is_src_hand && !is_dst_hand {
                 if src_is_table == clicked_is_table {
-                    // Same container swap
+                    // Same container swap / stack
                     if src_is_table {
                         if src_slot != clicked_slot
                             && src_slot < table_widget._table_inventory_slots.len()
                             && clicked_slot < table_widget._table_inventory_slots.len()
                         {
-                            table_widget._table_inventory_slots.swap(src_slot, clicked_slot);
+                            let src_data = &table_widget._table_inventory_slots[src_slot];
+                            let dst_data = &table_widget._table_inventory_slots[clicked_slot];
+                            let is_same_item = !src_data._item_data_name.is_empty()
+                                && src_data._item_data_name != ITEM_NONE
+                                && src_data._item_data_name == dst_data._item_data_name
+                                && src_data._item_count > 0
+                                && dst_data._item_count > 0;
+
+                            if is_same_item {
+                                let count_to_add = table_widget._table_inventory_slots[src_slot]._item_count;
+                                table_widget._table_inventory_slots[clicked_slot]._item_count += count_to_add;
+                                table_widget._table_inventory_slots[src_slot] = InventorySlotData::default();
+                            } else {
+                                table_widget._table_inventory_slots.swap(src_slot, clicked_slot);
+                            }
                         }
                     } else {
                         if src_slot != clicked_slot {
@@ -486,7 +503,7 @@ impl<'a> TableStorageWidget<'a> {
                         }
                     }
                 } else {
-                    // Cross container transfer/swap! (Table <-> Player)
+                    // Cross container transfer/swap/stack! (Table <-> Player)
                     let (table_idx, player_idx) = if src_is_table {
                         (src_slot, clicked_slot)
                     } else {
@@ -500,12 +517,33 @@ impl<'a> TableStorageWidget<'a> {
                             let table_slot_data = table_widget._table_inventory_slots[table_idx].clone();
                             let player_slot_data = item_bar.get_inventory_slot_data(player_idx).clone();
 
-                            table_widget._table_inventory_slots[table_idx] = player_slot_data;
-                            item_bar.set_inventory_slot_data(player_idx, &table_slot_data);
+                            let is_same_item = !table_slot_data._item_data_name.is_empty()
+                                && table_slot_data._item_data_name != ITEM_NONE
+                                && table_slot_data._item_data_name == player_slot_data._item_data_name
+                                && table_slot_data._item_count > 0
+                                && player_slot_data._item_count > 0;
+
+                            if is_same_item {
+                                if src_is_table {
+                                    // Move/Stack from Table to Player: player gets combined count, table becomes empty
+                                    let mut new_player_data = player_slot_data.clone();
+                                    new_player_data._item_count += table_slot_data._item_count;
+                                    item_bar.set_inventory_slot_data(player_idx, &new_player_data);
+                                    table_widget._table_inventory_slots[table_idx] = InventorySlotData::default();
+                                } else {
+                                    // Move/Stack from Player to Table: table gets combined count, player becomes empty
+                                    table_widget._table_inventory_slots[table_idx]._item_count += player_slot_data._item_count;
+                                    item_bar.set_inventory_slot_data(player_idx, &InventorySlotData::default());
+                                }
+                            } else {
+                                table_widget._table_inventory_slots[table_idx] = player_slot_data;
+                                item_bar.set_inventory_slot_data(player_idx, &table_slot_data);
+                            }
                         }
                     }
                 }
             }
+
 
             table_widget._drag_source_slot_index = INVALID_ITEM_INDEX;
             table_widget._focused_is_table_slot = clicked_is_table;
@@ -517,8 +555,10 @@ impl<'a> TableStorageWidget<'a> {
         }
 
         table_widget.refresh_table_storage_widget();
+        table_widget.sync_3d_table_items();
         true
     }
+
 
     pub fn callback_slot_touch_over(
         ui_component: &UIComponentInstance<'a>,
@@ -743,6 +783,7 @@ impl<'a> TableStorageWidget<'a> {
         if self._is_opened {
             self.refresh_table_storage_widget();
         }
+        self.sync_3d_table_items();
     }
 
     pub fn get_table_storage_item_create_infos(&self) -> Vec<InventoryItemCreateInfo> {
@@ -790,5 +831,26 @@ impl<'a> TableStorageWidget<'a> {
         if self._is_opened {
             self.refresh_table_storage_widget();
         }
+        self.sync_3d_table_items();
     }
+
+    pub fn sync_3d_table_items(&self) {
+        let create_infos = self.get_table_storage_item_create_infos();
+        get_item_manager_mut().sync_table_storage_items_in_world(&create_infos);
+    }
+
+    pub fn post_process_after_item_loading(&self) {
+        self.sync_3d_table_items();
+    }
+
+    pub fn clear_table_storage_items(&mut self) {
+        for slot in self._table_inventory_slots.iter_mut() {
+            *slot = InventorySlotData::default();
+        }
+        if self._is_opened {
+            self.refresh_table_storage_widget();
+        }
+        self.sync_3d_table_items();
+    }
+
 }

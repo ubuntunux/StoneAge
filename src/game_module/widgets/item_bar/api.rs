@@ -98,8 +98,10 @@ pub struct ItemWidget<'a> {
 
 pub struct ItemSelectionWidget<'a> {
     pub _item_index: usize,
+    pub _last_item_index: usize,
     pub _widget: *const WidgetDefault<'a>,
 }
+
 
 pub struct ItemBarWidget<'a> {
     pub _parent_widget: *const WidgetDefault<'a>,

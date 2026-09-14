@@ -173,8 +173,10 @@ impl<'a> ItemBarWidget<'a> {
             _active_row_index: 0,
             _selected_item_widget: ItemSelectionWidget {
                 _item_index: INVALID_ITEM_INDEX,
+                _last_item_index: INVALID_ITEM_INDEX,
                 _widget: selected_item_widget.as_ref(),
             },
+
             _selected_inventory_slot_index: INVALID_ITEM_INDEX,
             _item_count: 0,
             _max_item_count: total_storage_len,
@@ -314,7 +316,10 @@ impl<'a> ItemBarWidget<'a> {
                 slot_data._item_count,
             );
         }
+    }
 
+    pub fn update_item_selection_widget(&mut self) {
+        let start_slot = self._active_row_index * SLOTS_PER_ROW;
         let selected_slot = self._selected_inventory_slot_index;
         if selected_slot != INVALID_ITEM_INDEX
             && selected_slot >= start_slot
@@ -402,7 +407,19 @@ impl<'a> ItemBarWidget<'a> {
                 return false;
             }
 
-            self._inventory_slots.swap(src_slot_index, dst_slot_index);
+            let is_same_item = !src_data._item_data_name.is_empty()
+                && src_data._item_data_name != ITEM_NONE
+                && src_data._item_data_name == dst_data._item_data_name
+                && src_data._item_count > 0
+                && dst_data._item_count > 0;
+
+            if is_same_item {
+                let count_to_add = self._inventory_slots[src_slot_index]._item_count;
+                self._inventory_slots[dst_slot_index]._item_count += count_to_add;
+                self._inventory_slots[src_slot_index] = InventorySlotData::default();
+            } else {
+                self._inventory_slots.swap(src_slot_index, dst_slot_index);
+            }
 
             if self._selected_inventory_slot_index == src_slot_index {
                 self._selected_inventory_slot_index = dst_slot_index;
@@ -415,6 +432,7 @@ impl<'a> ItemBarWidget<'a> {
         }
         false
     }
+
 
     pub fn get_selected_inventory_slot_index(&self) -> usize {
         self._selected_inventory_slot_index
@@ -776,5 +794,6 @@ impl<'a> ItemBarWidget<'a> {
 
     pub fn update_item_bar_widget(&mut self) {
         self.update_selected_item_helper_widget(true);
+        self.update_item_selection_widget();
     }
 }
