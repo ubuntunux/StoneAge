@@ -2083,6 +2083,7 @@ impl<'a> Character<'a> {
 
                             if self._is_player {
                                 item_manager.remove_inventory_item(attached_item.borrow()._item_data_name.as_str(), 1);
+                                get_game_ui_manager_mut().get_player_records_mut().add_food_eaten_count(1);
                             } else {
                                 item_manager.detach_item(self);
                             }

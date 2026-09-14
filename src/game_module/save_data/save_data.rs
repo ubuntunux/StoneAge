@@ -14,6 +14,7 @@ use std::collections::{HashMap, HashSet};
 pub struct PlayerRecords {
     pub _item_count: u32,
     pub _craft_count: u32,
+    pub _food_eaten_count: u32,
     pub _death_count: u32,
     pub _pass_out_count: u32,
     pub _taming_count: u32,
@@ -64,6 +65,10 @@ impl PlayerRecords {
 
     pub fn add_craft_count(&mut self, amount: u32) {
         self._craft_count = self._craft_count.saturating_add(amount);
+    }
+
+    pub fn add_food_eaten_count(&mut self, amount: u32) {
+        self._food_eaten_count = self._food_eaten_count.saturating_add(amount);
     }
 
     pub fn add_death_count(&mut self, amount: u32) {

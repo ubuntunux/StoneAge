@@ -8,7 +8,7 @@ use rust_engine_3d::utilities::system::ptr_as_mut;
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use std::rc::Rc;
 
-const STATS_CARD_HEIGHT: f32 = 312.0;
+const STATS_CARD_HEIGHT: f32 = 335.0;
 const HEADER_FONT_SIZE: f32 = 20.0;
 const BODY_FONT_SIZE: f32 = 16.0;
 const LIST_FONT_SIZE: f32 = 15.0;
@@ -170,6 +170,7 @@ impl<'a> PlayerRecordsWidget<'a> {
         let stat_items = [
             format!("Total Items: {}", records._item_count),
             format!("Craft Count: {}", records._craft_count),
+            format!("Food Eaten: {}", records._food_eaten_count),
             format!("Death Count: {}", records._death_count),
             format!("Pass Out Count: {}", records._pass_out_count),
             format!("Tamed: {}", records._taming_count),

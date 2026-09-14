@@ -238,6 +238,9 @@ impl<'a> GameSceneManager<'a> {
         get_game_ui_manager_mut().clear_game_ui();
         self.close_game_scene_data();
         self._weather.clear_weather();
+        self.set_time_of_day(TIME_OF_MORNING);
+        self.set_time_of_day_speed(1.0);
+        self._date = 1;
         self.request_open_game_scenario(ScenarioType::ScenarioIntro_Intro);
     }
 
