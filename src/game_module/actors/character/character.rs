@@ -1,5 +1,6 @@
 use crate::game_module::actors::character::controller::CharacterController;
 use crate::game_module::actors::character::data::*;
+use crate::game_module::actors::character::lantern::Lantern;
 use crate::game_module::actors::character::manager::{CharacterCreateInfo, CharacterID, CharacterSaveData};
 use crate::game_module::actors::character::stats::*;
 use crate::game_module::actors::interaction_object::InteractionObject;
@@ -51,6 +52,7 @@ pub struct Character<'a> {
     pub _audio_snoring: Option<RcRefCell<AudioInstance>>,
     pub _fishing_state: Box<CharacterFishingState>,
     pub _dead_time: f32,
+    pub _lantern: Option<Box<Lantern>>,
 }
 
 impl CharacterAnimationState {
@@ -327,6 +329,15 @@ impl<'a> Character<'a> {
         rotation: &Vector3<f32>,
         scale: &Vector3<f32>,
     ) -> Character<'a> {
+        let lantern = if is_player {
+            Some(Box::new(Lantern::create_lantern(
+                format!("{}_lantern", character_name).as_str(),
+                position,
+            )))
+        } else {
+            None
+        };
+
         let mut character = Character {
             _character_name: String::from(character_name),
             _character_id: character_id,
@@ -343,6 +354,7 @@ impl<'a> Character<'a> {
             _audio_snoring: None,
             _fishing_state: Box::new(CharacterFishingState::default()),
             _dead_time: 0.0,
+            _lantern: lantern,
         };
 
         character.initialize_character(position, rotation, scale);
@@ -381,6 +393,10 @@ impl<'a> Character<'a> {
     }
 
     pub fn destroy_character(&mut self) {
+        if let Some(lantern) = &mut self._lantern {
+            lantern.destroy_lantern();
+        }
+        self._lantern = None;
         self.stop_animations(true);
         self._character_stats.set_is_stat_displayed(false);
         get_game_ui_manager_mut().remove_text_box_item((self as *const Self) as *const c_void);
@@ -1811,6 +1827,11 @@ impl<'a> Character<'a> {
                 },
                 ActionAnimationState::PassedOut => match state {
                     State::Begin => {
+                        get_audio_manager_mut().play_audio_resource_data(
+                            &self._character_data.borrow()._audio_data._audio_dead,
+                            AudioLoop::ONCE,
+                            None,
+                        );
                         let mut animation_info = AnimationPlayArgs {
                             _animation_loop: false,
                             _animation_blend_time: 0.1,
@@ -2340,5 +2361,12 @@ impl<'a> Character<'a> {
 
         // transform
         self.update_transform();
+
+        // update lantern
+        let position = *self.get_position();
+        if let Some(lantern) = &mut self._lantern {
+            let is_night = get_game_scene_manager().is_night();
+            lantern.update_lantern(&position, is_night, delta_time);
+        }
     }
 }

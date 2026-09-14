@@ -5,7 +5,7 @@ use crate::game_module::actors::props::{PropCreateInfo, PropManager, PropSaveDat
 use crate::game_module::game_audio_manager::GameAudioManager;
 use crate::game_module::game_constants::{
     CHARACTER_DATA_NAME_MONKEY_ARU, GAME_VIEW_MODE, GameViewMode,
-    TEMPERATURE_MAX, TEMPERATURE_MIN, TIME_OF_DAWN, TIME_OF_DAY_SPEED, TIME_OF_MORNING,
+    TEMPERATURE_MAX, TEMPERATURE_MIN, TIME_OF_DAWN, TIME_OF_DAY_SPEED, TIME_OF_MORNING, TIME_OF_NIGHT,
 };
 use crate::game_module::game_service_locator::{
     get_game_client, get_game_client_mut, get_game_resources, get_game_ui_manager, get_game_ui_manager_mut,
@@ -208,6 +208,14 @@ impl<'a> GameSceneManager<'a> {
 
     pub fn get_time_of_day(&self) -> f32 {
         self._time_of_day
+    }
+
+    pub fn is_night(&self) -> bool {
+        !(TIME_OF_DAWN..TIME_OF_NIGHT).contains(&self._time_of_day)
+    }
+
+    pub fn is_day(&self) -> bool {
+        (TIME_OF_DAWN..TIME_OF_NIGHT).contains(&self._time_of_day)
     }
 
     pub fn temperature(&self) -> f32 {

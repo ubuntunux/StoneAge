@@ -55,6 +55,12 @@ pub const CHARACTER_DATA_NAME_ARU: &str = "characters/family/aru";
 pub const CHARACTER_DATA_NAME_MONKEY_ARU: &str = "characters/family/monkey_aru";
 pub const BED_FOR_ARU: &str = "bed_for_aru";
 
+// lantern
+pub const LANTERN_LIGHT_RADIUS: f32 = 12.0;
+pub const LANTERN_LIGHT_COLOR: [f32; 3] = [2.0, 1.5, 0.8];
+pub const LANTERN_OFFSET_Y: f32 = 3.0;
+pub const LANTERN_FADE_SPEED: f32 = 4.0;
+
 // player
 pub const GRAVITY: f32 = 30.0;
 pub const MOVE_LIMIT: f32 = 2.0;

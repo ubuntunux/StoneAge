@@ -109,7 +109,7 @@ impl<'a> ScenarioWrapUpTheDay<'a> {
         let camera_rotation_matrix =
             math::make_rotation_matrix(camera_rotation.x, camera_rotation.y, camera_rotation.z);
         let camera_position =
-            pivot - camera_rotation_matrix.column(2).xyz() * (CAMERA_DISTANCE_MIN + 6.0);
+            pivot - camera_rotation_matrix.column(2).xyz() * (CAMERA_DISTANCE_MIN + 3.0);
         get_game_controller_mut().set_camera_fixed(true);
         get_game_controller_mut()
             .set_camera_fixed_position_and_rotation(&camera_position, &camera_rotation);
