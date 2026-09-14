@@ -3,7 +3,7 @@ use crate::game_module::actors::items::ItemDataType;
 use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, ITEM_HAND, ITEM_NONE};
 use crate::game_module::game_controller::WidgetNavRepeatController;
 use crate::game_module::game_service_locator::{
-    get_game_resources, get_game_ui_manager, get_game_ui_manager_mut, get_item_manager_mut,
+    get_character_manager, get_game_resources, get_game_ui_manager, get_game_ui_manager_mut, get_item_manager_mut,
 };
 
 use crate::game_module::widgets::game_menu_widget::item_info_widget::ItemInfoWidget;
@@ -537,8 +537,37 @@ impl<'a> TableStorageWidget<'a> {
                                     item_bar.set_inventory_slot_data(player_idx, &InventorySlotData::default());
                                 }
                             } else {
-                                table_widget._table_inventory_slots[table_idx] = player_slot_data;
+                                table_widget._table_inventory_slots[table_idx] = player_slot_data.clone();
                                 item_bar.set_inventory_slot_data(player_idx, &table_slot_data);
+                            }
+
+                            // If an item from player inventory was moved to table storage,
+                            // check if it was attached to the character or in the currently selected slot, and detach it if so.
+                            let item_moved_to_table = if !src_is_table {
+                                true
+                            } else {
+                                !is_same_item
+                                    && !player_slot_data._item_data_name.is_empty()
+                                    && player_slot_data._item_data_name != ITEM_NONE
+                                    && player_slot_data._item_count > 0
+                            };
+
+                            if item_moved_to_table {
+                                if let Some(player) = get_character_manager().get_maybe_player() {
+                                    let player_ref = ptr_as_mut(player.as_ptr());
+                                    let is_selected_slot = item_bar.get_selected_inventory_slot_index() == player_idx;
+                                    let is_attached_item =
+                                        player_ref.get_attached_item().as_ref().map_or(false, |attached| {
+                                            *attached.borrow().get_item_data_name() == player_slot_data._item_data_name
+                                        });
+
+                                    if is_selected_slot || is_attached_item {
+                                        get_item_manager_mut().detach_item(player_ref);
+                                        if is_selected_slot {
+                                            item_bar.select_item(INVALID_ITEM_INDEX);
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -671,7 +700,7 @@ impl<'a> TableStorageWidget<'a> {
         joystick_input_data: &JoystickInputData,
         keyboard_input_data: &KeyboardInputData,
         _mouse_move_data: &MouseMoveData,
-        _mouse_input_data: &MouseInputData,
+        mouse_input_data: &MouseInputData,
         _mouse_delta: &Vector2<f32>,
         _player: &RcRefCell<Character<'a>>,
     ) {
@@ -683,6 +712,210 @@ impl<'a> TableStorageWidget<'a> {
         if keyboard_input_data.get_key_pressed(KeyCode::Escape) {
             self.close_table_storage();
             return;
+        }
+
+        // Mouse Right Click handling for 1-item transfer between Table Storage and Player Inventory
+        if mouse_input_data._btn_r_pressed {
+            let engine_core = get_engine_core();
+            let mouse_pos = &engine_core._mouse_move_data._mouse_pos;
+            let mouse_pos_f32 = Vector2::new(mouse_pos.x as f32, mouse_pos.y as f32);
+
+            let mut hovered_table_slot = INVALID_ITEM_INDEX;
+            let mut hovered_player_slot = INVALID_ITEM_INDEX;
+
+            for slot_widget in self._table_slot_widgets.iter() {
+                let ui_comp = slot_widget._widget.get_ui_component();
+                if ui_comp.check_collide(&mouse_pos_f32) {
+                    hovered_table_slot = slot_widget._slot_index;
+                    break;
+                }
+            }
+
+            if hovered_table_slot == INVALID_ITEM_INDEX {
+                for slot_widget in self._player_slot_widgets.iter() {
+                    let ui_comp = slot_widget._widget.get_ui_component();
+                    if ui_comp.check_collide(&mouse_pos_f32) {
+                        hovered_player_slot = slot_widget._slot_index;
+                        break;
+                    }
+                }
+            }
+
+            if hovered_table_slot != INVALID_ITEM_INDEX && hovered_table_slot < self._table_inventory_slots.len() {
+                // Right-clicked Table Storage slot: move 1 unit to Player Inventory
+                let src_table_slot = &self._table_inventory_slots[hovered_table_slot];
+                if src_table_slot._item_count > 0
+                    && src_table_slot._item_data_name != ITEM_NONE
+                    && src_table_slot._item_data_name != ITEM_HAND
+                    && src_table_slot._item_data_type != ItemDataType::Hand
+                {
+                    let move_item_data_name = src_table_slot._item_data_name.clone();
+                    let move_item_name = src_table_slot._item_name.clone();
+                    let move_item_type = src_table_slot._item_data_type;
+                    let move_material = src_table_slot._material_instance.clone();
+
+                    let game_ui_manager = get_game_ui_manager_mut();
+                    let item_bar = game_ui_manager.get_item_bar_widget_mut();
+                    let total_player_slots = item_bar.get_total_inventory_slots();
+
+                    // Search for existing stackable player slot first
+                    let mut target_player_idx = INVALID_ITEM_INDEX;
+                    for p_idx in 0..total_player_slots {
+                        let p_slot = item_bar.get_inventory_slot_data(p_idx);
+                        if p_slot._item_count > 0 && p_slot._item_data_name == move_item_data_name {
+                            target_player_idx = p_idx;
+                            break;
+                        }
+                    }
+
+                    // If no stackable slot found, find first empty player slot
+                    if target_player_idx == INVALID_ITEM_INDEX {
+                        for p_idx in 0..total_player_slots {
+                            let p_slot = item_bar.get_inventory_slot_data(p_idx);
+                            if p_slot._item_count == 0
+                                || p_slot._item_data_name.is_empty()
+                                || p_slot._item_data_name == ITEM_NONE
+                            {
+                                target_player_idx = p_idx;
+                                break;
+                            }
+                        }
+                    }
+
+                    if target_player_idx != INVALID_ITEM_INDEX {
+                        let mut p_slot_data = item_bar.get_inventory_slot_data(target_player_idx).clone();
+                        if p_slot_data._item_count > 0 && p_slot_data._item_data_name == move_item_data_name {
+                            p_slot_data._item_count += 1;
+                        } else {
+                            p_slot_data = InventorySlotData {
+                                _item_data_name: move_item_data_name,
+                                _item_name: move_item_name,
+                                _item_data_type: move_item_type,
+                                _material_instance: move_material,
+                                _item_count: 1,
+                            };
+                        }
+                        item_bar.set_inventory_slot_data(target_player_idx, &p_slot_data);
+
+                        // Decrease 1 count from table storage slot
+                        self._table_inventory_slots[hovered_table_slot]._item_count -= 1;
+                        if self._table_inventory_slots[hovered_table_slot]._item_count == 0 {
+                            self._table_inventory_slots[hovered_table_slot] = InventorySlotData::default();
+                            if self._drag_source_is_table && self._drag_source_slot_index == hovered_table_slot {
+                                self._drag_source_slot_index = INVALID_ITEM_INDEX;
+                                let drag_ui = ptr_as_mut(self._drag_widget.as_ref()).get_ui_component_mut();
+                                drag_ui.set_draggable(false);
+                                drag_ui.set_visible(false);
+                            }
+                        }
+
+                        get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
+                        self._focused_is_table_slot = true;
+                        self._focused_slot_index = hovered_table_slot;
+                        self.refresh_table_storage_widget();
+                        self.sync_3d_table_items();
+                    }
+                }
+            } else if hovered_player_slot != INVALID_ITEM_INDEX {
+                // Right-clicked Player Inventory slot: move 1 unit to Table Storage
+                let game_ui_manager = get_game_ui_manager_mut();
+                let item_bar = game_ui_manager.get_item_bar_widget_mut();
+                if hovered_player_slot < item_bar.get_total_inventory_slots() {
+                    let src_player_slot = item_bar.get_inventory_slot_data(hovered_player_slot).clone();
+                    if src_player_slot._item_count > 0
+                        && src_player_slot._item_data_name != ITEM_NONE
+                        && src_player_slot._item_data_name != ITEM_HAND
+                        && src_player_slot._item_data_type != ItemDataType::Hand
+                    {
+                        let move_item_data_name = src_player_slot._item_data_name.clone();
+                        let move_item_name = src_player_slot._item_name.clone();
+                        let move_item_type = src_player_slot._item_data_type;
+                        let move_material = src_player_slot._material_instance.clone();
+
+                        let total_table_slots = self._table_inventory_slots.len();
+
+                        // Search for existing stackable table slot first
+                        let mut target_table_idx = INVALID_ITEM_INDEX;
+                        for t_idx in 0..total_table_slots {
+                            let t_slot = &self._table_inventory_slots[t_idx];
+                            if t_slot._item_count > 0 && t_slot._item_data_name == move_item_data_name {
+                                target_table_idx = t_idx;
+                                break;
+                            }
+                        }
+
+                        // If no stackable slot found, find first empty table slot
+                        if target_table_idx == INVALID_ITEM_INDEX {
+                            for t_idx in 0..total_table_slots {
+                                let t_slot = &self._table_inventory_slots[t_idx];
+                                if t_slot._item_count == 0
+                                    || t_slot._item_data_name.is_empty()
+                                    || t_slot._item_data_name == ITEM_NONE
+                                {
+                                    target_table_idx = t_idx;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if target_table_idx != INVALID_ITEM_INDEX {
+                            if self._table_inventory_slots[target_table_idx]._item_count > 0
+                                && self._table_inventory_slots[target_table_idx]._item_data_name == move_item_data_name
+                            {
+                                self._table_inventory_slots[target_table_idx]._item_count += 1;
+                            } else {
+                                self._table_inventory_slots[target_table_idx] = InventorySlotData {
+                                    _item_data_name: move_item_data_name.clone(),
+                                    _item_name: move_item_name,
+                                    _item_data_type: move_item_type,
+                                    _material_instance: move_material,
+                                    _item_count: 1,
+                                };
+                            }
+
+                            // Decrease 1 count from player inventory slot
+                            let mut updated_p_slot = src_player_slot.clone();
+                            updated_p_slot._item_count -= 1;
+                            if updated_p_slot._item_count == 0 {
+                                updated_p_slot = InventorySlotData::default();
+                                if !self._drag_source_is_table && self._drag_source_slot_index == hovered_player_slot {
+                                    self._drag_source_slot_index = INVALID_ITEM_INDEX;
+                                    let drag_ui = ptr_as_mut(self._drag_widget.as_ref()).get_ui_component_mut();
+                                    drag_ui.set_draggable(false);
+                                    drag_ui.set_visible(false);
+                                }
+                            }
+                            item_bar.set_inventory_slot_data(hovered_player_slot, &updated_p_slot);
+
+                            // Check if attached item should be detached when player slot becomes empty
+                            if let Some(player) = get_character_manager().get_maybe_player() {
+                                let player_ref = ptr_as_mut(player.as_ptr());
+                                let is_selected_slot =
+                                    item_bar.get_selected_inventory_slot_index() == hovered_player_slot;
+                                let is_attached_item =
+                                    player_ref.get_attached_item().as_ref().map_or(false, |attached| {
+                                        *attached.borrow().get_item_data_name() == move_item_data_name
+                                    });
+
+                                if (is_selected_slot && updated_p_slot._item_count == 0)
+                                    || (is_attached_item && updated_p_slot._item_count == 0)
+                                {
+                                    get_item_manager_mut().detach_item(player_ref);
+                                    if is_selected_slot {
+                                        item_bar.select_item(INVALID_ITEM_INDEX);
+                                    }
+                                }
+                            }
+
+                            get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
+                            self._focused_is_table_slot = false;
+                            self._focused_slot_index = hovered_player_slot;
+                            self.refresh_table_storage_widget();
+                            self.sync_3d_table_items();
+                        }
+                    }
+                }
+            }
         }
 
         // Update drag item position on mouse move

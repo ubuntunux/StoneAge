@@ -243,7 +243,6 @@ fn update_actor_table_eating<'a>(
     }
 }
 
-
 fn go_to_sleep(actor: &Option<RcRefCell<Character>>, bed: &Option<RcRefCell<Prop>>) {
     if let (Some(actor), Some(bed_ref)) = (actor.as_ref(), bed.as_ref()) {
         let radius = bed_ref.borrow().get_collision()._bounding_box._mag_xz * 0.5;
