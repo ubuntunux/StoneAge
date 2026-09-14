@@ -444,16 +444,8 @@ impl<'a> InventoryWidget<'a> {
         if !slot_ptr.is_null() {
             let slot_item = unsafe { &*slot_ptr };
             let inventory_widget = ptr_as_mut(slot_item._inventory_widget);
-            if slot_item._item_count > 0 && slot_item._item_data_name != ITEM_NONE {
-                inventory_widget._item_info_widget.show_item_info(
-                    &slot_item._item_data_name,
-                    &slot_item._item_name,
-                    slot_item._item_count,
-                    slot_item._widget.as_ref(),
-                );
-            } else {
-                inventory_widget._item_info_widget.hide_item_info();
-            }
+            inventory_widget._focused_slot_index = slot_item._slot_index;
+            inventory_widget.refresh_inventory_widget();
         }
         true
     }
@@ -552,6 +544,23 @@ impl<'a> InventoryWidget<'a> {
             let container_ui = ptr_as_mut(self._inventory_bg.as_ref()).get_ui_component_mut();
             let slot_ui = ptr_as_mut(focused_slot_widget._widget.as_ref()).get_ui_component_mut();
             container_ui.scroll_into_view(slot_ui);
+
+            let slot_data = item_bar.get_inventory_slot_data(self._focused_slot_index);
+            if self._focused_slot_index != self._drag_source_slot_index
+                && slot_data._item_count > 0
+                && slot_data._item_data_name != ITEM_NONE
+            {
+                self._item_info_widget.show_item_info(
+                    &slot_data._item_data_name,
+                    &slot_data._item_name,
+                    slot_data._item_count,
+                    focused_slot_widget._widget.as_ref(),
+                );
+            } else {
+                self._item_info_widget.hide_item_info();
+            }
+        } else {
+            self._item_info_widget.hide_item_info();
         }
     }
 
