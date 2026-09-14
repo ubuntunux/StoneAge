@@ -80,6 +80,7 @@ impl<'a> TableStorageSlotWidget<'a> {
         let ui_component = ptr_as_mut(slot._widget.as_ref()).get_ui_component_mut();
         ui_component.set_callback_touch_down(Some(Box::new(TableStorageWidget::callback_slot_click)));
         ui_component.set_callback_touch_over(Some(Box::new(TableStorageWidget::callback_slot_touch_over)));
+        ui_component.set_callback_touch_out(Some(Box::new(TableStorageWidget::callback_slot_touch_out)));
         ui_component.set_user_data(slot.as_ref() as *const TableStorageSlotWidget<'a> as *const c_void);
 
         slot
@@ -613,6 +614,27 @@ impl<'a> TableStorageWidget<'a> {
                 } else {
                     table_widget._item_info_widget.hide_item_info();
                 }
+            }
+        }
+        true
+    }
+
+    pub fn callback_slot_touch_out(
+        ui_component: &UIComponentInstance<'a>,
+        _touched_pos: &Vector2<f32>,
+        _touched_pos_delta: &Vector2<f32>,
+    ) -> bool {
+        let user_data = ui_component.get_user_data();
+        if user_data.is_null() {
+            return false;
+        }
+
+        let slot_ptr = user_data as *const TableStorageSlotWidget<'a>;
+        if !slot_ptr.is_null() {
+            let slot_item = unsafe { &*slot_ptr };
+            if !slot_item._table_storage_widget.is_null() {
+                let table_widget = ptr_as_mut(slot_item._table_storage_widget);
+                table_widget._item_info_widget.hide_item_info();
             }
         }
         true

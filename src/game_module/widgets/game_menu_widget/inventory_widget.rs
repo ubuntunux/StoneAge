@@ -70,6 +70,7 @@ impl<'a> InventorySlotWidget<'a> {
         let ui_component = ptr_as_mut(inv_slot._widget.as_ref()).get_ui_component_mut();
         ui_component.set_callback_touch_down(Some(Box::new(InventoryWidget::callback_slot_click)));
         ui_component.set_callback_touch_over(Some(Box::new(InventoryWidget::callback_slot_touch_over)));
+        ui_component.set_callback_touch_out(Some(Box::new(InventoryWidget::callback_slot_touch_out)));
         ui_component.set_user_data(inv_slot.as_ref() as *const InventorySlotWidget<'a> as *const c_void);
 
         inv_slot
@@ -453,6 +454,20 @@ impl<'a> InventoryWidget<'a> {
             } else {
                 inventory_widget._item_info_widget.hide_item_info();
             }
+        }
+        true
+    }
+
+    pub fn callback_slot_touch_out(
+        ui_component: &UIComponentInstance<'a>,
+        _touched_pos: &Vector2<f32>,
+        _touched_pos_delta: &Vector2<f32>,
+    ) -> bool {
+        let slot_ptr = ui_component.get_user_data() as *const InventorySlotWidget<'a>;
+        if !slot_ptr.is_null() {
+            let slot_item = unsafe { &*slot_ptr };
+            let inventory_widget = ptr_as_mut(slot_item._inventory_widget);
+            inventory_widget._item_info_widget.hide_item_info();
         }
         true
     }
