@@ -587,7 +587,7 @@ impl<'a> GameSceneManager<'a> {
     }
 
     pub fn update_time_of_day(&mut self, delta_time: f64) {
-        self._time_of_day += self._time_of_day_speed * TIME_OF_DAY_SPEED * delta_time as f32 * 100.0;
+        self._time_of_day += self._time_of_day_speed * TIME_OF_DAY_SPEED * delta_time as f32;
 
         if 24.0 <= self._time_of_day {
             self._time_of_day %= 24.0;
