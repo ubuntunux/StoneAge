@@ -103,6 +103,13 @@ impl<'a> ScenarioWrapUpTheDay<'a> {
         self._skip_wakeup = skip_wakeup;
     }
 
+    pub fn is_sleeping(&self) -> bool {
+        matches!(
+            self._scenario_track._scenario_phase,
+            ScenarioPhase::GoToSleep | ScenarioPhase::Sleep | ScenarioPhase::End
+        )
+    }
+
     pub fn set_sleep_phase(&mut self) {
         self._scenario_track.set_scenario_phase(ScenarioPhase::Sleep, None);
         self._scenario_track.set_next_scenario_phase(ScenarioPhase::Sleep, None);
@@ -347,6 +354,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
         self._prop_bed_for_aru = game_scene_manager.get_prop_manager().get_prop_by_name(BED_FOR_ARU).cloned();
         self._prop_bed_for_ewa = game_scene_manager.get_prop_manager().get_prop_by_name("bed_for_ewa").cloned();
         self._prop_bed_for_koa = game_scene_manager.get_prop_manager().get_prop_by_name("bed_for_koa").cloned();
+        self.setup_bed_camera();
     }
 
     fn update_game_scenario(&mut self, _any_key_hold: bool, _any_key_pressed: bool, delta_time: f64) {
