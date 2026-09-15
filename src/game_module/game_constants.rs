@@ -89,6 +89,7 @@ pub const WEAPON_SOCKET_NAME: &str = "SOCKET_WEAPON";
 // stats
 pub const MAX_HUNGER: f32 = 1.0;
 pub const MAX_STAMINA: f32 = 100.0;
+pub const HUNGER_RATE: f32 = 0.05;
 pub const HUNGER_WARNING_THRESHOLD: f32 = 0.5;
 pub const HUNGER_RECOVERY_THRESHOLD: f32 = 0.25;
 pub const TARGET_HUNGER_THRESHOLD: f32 = 0.2;
@@ -177,6 +178,10 @@ pub const MATERIAL_TIME_OF_DAY: &str = "ui/tod";
 pub const MATERIAL_INTRO_IMAGE: &str = "ui/intro_image";
 pub const MATERIAL_FADE_TO_BLACK: &str = "ui/fade_to_black";
 pub const MATERIAL_TARGET_ARROW: &str = "ui/target_arrow";
+
+pub const MATERIAL_ICON_HP: &str = "ui/icons/icon_hp";
+pub const MATERIAL_ICON_STAMINA: &str = "ui/icons/icon_stamina";
+pub const MATERIAL_ICON_HUNGER: &str = "ui/icons/icon_hunger";
 
 // mouse
 pub const MATERIAL_MOUSE_ACTION: &str = "ui/mouse_action";

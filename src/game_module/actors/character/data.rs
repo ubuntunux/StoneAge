@@ -143,6 +143,15 @@ pub enum RequestType {
 }
 
 impl CharacterDataType {
+    pub fn is_family(&self) -> bool {
+        match self {
+            CharacterDataType::Player |
+            CharacterDataType::Wife |
+            CharacterDataType::Daughter => true,
+            _ => false,
+        }
+    }
+
     pub fn get_request_type(&self) -> RequestType {
         match self {
             CharacterDataType::Wife => RequestType::Cooking,

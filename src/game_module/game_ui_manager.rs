@@ -1087,4 +1087,10 @@ impl<'a> GameUIManager<'a> {
             player_hud.trigger_stamina_warning();
         }
     }
+
+    pub fn trigger_hunger_warning(&mut self) {
+        if let Some(player_hud) = self._player_hud.as_mut() {
+            player_hud.trigger_hunger_warning();
+        }
+    }
 }

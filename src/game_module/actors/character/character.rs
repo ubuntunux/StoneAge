@@ -160,6 +160,9 @@ impl CharacterStats {
     pub fn add_hunger(&mut self, hunger: f32) {
         self.set_hunger(self.get_hunger() + hunger);
     }
+    pub fn update_hunger(&mut self, delta_time: f32) {
+        self.add_hunger(HUNGER_RATE * delta_time);
+    }
     pub fn get_tired(&self) -> f32 {
         self._tired
     }
@@ -247,8 +250,8 @@ impl CharacterStats {
             }
         } else if owner.is_idle_action()
             && (owner.is_move_stop()
-                || owner.is_move_state(MoveAnimationState::SitDownLoop)
-                || owner.is_move_state(MoveAnimationState::Walk))
+            || owner.is_move_state(MoveAnimationState::SitDownLoop)
+            || owner.is_move_state(MoveAnimationState::Walk))
         {
             if self._stamina < 0.0 {
                 self._stamina = 0.0;
@@ -266,9 +269,15 @@ impl CharacterStats {
     }
 
     pub fn update_stat<'a>(&mut self, owner: &Character<'a>, delta_time: f32) {
-        if owner._is_player && self._is_alive {
-            self.update_hp(owner, delta_time);
-            self.update_stamina(owner, delta_time);
+        if self._is_alive {
+            if owner._is_player || owner.get_character_type().is_family() {
+                self.update_hunger(delta_time);
+            }
+
+            if owner._is_player {
+                self.update_hp(owner, delta_time);
+                self.update_stamina(owner, delta_time);
+            }
         }
     }
 

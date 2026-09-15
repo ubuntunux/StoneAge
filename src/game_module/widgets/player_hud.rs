@@ -1,5 +1,5 @@
 use crate::game_module::actors::character::Character;
-use crate::game_module::game_constants::HP_WARNING_RATIO;
+use crate::game_module::game_constants::{HP_WARNING_RATIO, HUNGER_WARNING_THRESHOLD, MAX_HUNGER};
 use crate::game_module::widgets::fishing::FishingGaugeWidget;
 use crate::game_module::widgets::status_bar_widget::StatusBarWidget;
 use nalgebra::Vector2;
@@ -9,10 +9,15 @@ use rust_engine_3d::scene::ui::{
 use rust_engine_3d::utilities::system::ptr_as_mut;
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 
+pub const HUD_HP_BAR_COLOR: u32 = get_color32(255, 64, 0, 128);
+pub const HUD_STAMINA_BAR_COLOR: u32 = get_color32(128, 128, 255, 128);
+pub const HUD_HUNGER_BAR_COLOR: u32 = get_color32(240, 170, 100, 128);
+
 pub struct PlayerHud<'a> {
     pub _widget: *const WidgetDefault<'a>,
     pub _hp_widget: StatusBarWidget<'a>,
     pub _stamina_widget: StatusBarWidget<'a>,
+    pub _hunger_widget: StatusBarWidget<'a>,
     pub _fishing_gauge_widget: FishingGaugeWidget<'a>,
 }
 
@@ -43,8 +48,9 @@ impl<'a> PlayerHud<'a> {
 
         PlayerHud {
             _widget: player_widget_ptr,
-            _hp_widget: StatusBarWidget::create_status_widget(player_widget_ptr, get_color32(255, 64, 0, 128)),
-            _stamina_widget: StatusBarWidget::create_status_widget(player_widget_ptr, get_color32(128, 128, 255, 128)),
+            _hp_widget: StatusBarWidget::create_status_widget(player_widget_ptr, HUD_HP_BAR_COLOR),
+            _stamina_widget: StatusBarWidget::create_status_widget(player_widget_ptr, HUD_STAMINA_BAR_COLOR),
+            _hunger_widget: StatusBarWidget::create_status_widget(player_widget_ptr, HUD_HUNGER_BAR_COLOR),
             _fishing_gauge_widget: FishingGaugeWidget::create_fishing_gauge_widget(root_widget),
         }
     }
@@ -53,6 +59,10 @@ impl<'a> PlayerHud<'a> {
 
     pub fn trigger_stamina_warning(&self) {
         self._stamina_widget.trigger_warning();
+    }
+
+    pub fn trigger_hunger_warning(&self) {
+        self._hunger_widget.trigger_warning();
     }
 
     pub fn update_status_widget(&mut self, player: &Character<'a>, delta_time: f64) {
@@ -72,6 +82,17 @@ impl<'a> PlayerHud<'a> {
             delta_time,
             true,
             None,
+        );
+
+        let hunger = player.get_stats().get_hunger();
+        let satiety = (MAX_HUNGER - hunger).max(0.0);
+        self._hunger_widget.update_status_widget(
+            satiety,
+            MAX_HUNGER,
+            MAX_HUNGER,
+            delta_time,
+            true,
+            Some(HUNGER_WARNING_THRESHOLD),
         );
 
         if player.is_fishing_gauge_active() {
