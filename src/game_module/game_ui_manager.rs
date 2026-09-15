@@ -45,6 +45,7 @@ pub struct EditorUIManager<'a> {
 }
 
 pub struct GameUIManager<'a> {
+    pub _game_notify_layout: *const WidgetDefault<'a>,
     pub _game_ui_layout: *const WidgetDefault<'a>,
     pub _game_image: Option<Box<ImageLayout<'a>>>,
     pub _key_binding_widget_manager: Option<Box<KeyBindingWidgetManager<'a>>>,
@@ -126,6 +127,7 @@ impl<'a> EditorUIManager<'a> {
 impl<'a> GameUIManager<'a> {
     pub fn create_game_ui_manager() -> Box<GameUIManager<'a>> {
         Box::new(GameUIManager {
+            _game_notify_layout: std::ptr::null(),
             _game_ui_layout: std::ptr::null(),
             _game_image: None,
             _key_binding_widget_manager: None,
@@ -178,6 +180,17 @@ impl<'a> GameUIManager<'a> {
         let _game_scene_manager = get_game_scene_manager();
         let root_widget = ptr_as_mut(get_ui_manager().get_root_ptr());
 
+        // game notify layer
+        let game_notify_layout = UIManager::create_widget("game notify layer", UIWidgetTypes::Default);
+        let game_notify_layout_mut: &mut WidgetDefault = ptr_as_mut(game_notify_layout.as_ref());
+        let ui_component: &mut UIComponentInstance = game_notify_layout_mut.get_ui_component_mut();
+        ui_component.set_size_hint_x(Some(1.0));
+        ui_component.set_size_hint_y(Some(1.0));
+        ui_component.set_renderable(false);
+        root_widget.add_widget(&game_notify_layout);
+        self._game_notify_layout = game_notify_layout.as_ref();
+        self._text_box_widget = Some(Box::new(TextBoxWidget::create_text_box_widget(game_notify_layout_mut)));
+
         // game ui layer
         let game_ui_layout = UIManager::create_widget("game ui layout", UIWidgetTypes::Default);
         let game_ui_layout_mut: &mut WidgetDefault = ptr_as_mut(game_ui_layout.as_ref());
@@ -211,9 +224,6 @@ impl<'a> GameUIManager<'a> {
         self._item_acquire_notification_widget = Some(ItemAcquireNotificationWidget::create(game_ui_layout_mut));
         self._fishing_popup_widget = Some(FishingPopupWidget::create_fishing_popup_widget(game_ui_layout_mut));
         self._quest_widget = Some(Box::new(QuestWidget::create_quest_widget(game_ui_layout_mut)));
-
-        // test box
-        self._text_box_widget = Some(Box::new(TextBoxWidget::create_text_box_widget(root_widget)));
 
         // game menu layer
         let game_menu_layout = UIManager::create_widget("game menu layout", UIWidgetTypes::Default);
@@ -265,6 +275,7 @@ impl<'a> GameUIManager<'a> {
             let game_ui_layout_mut = ptr_as_mut(self._game_ui_layout);
             game_ui_layout_mut.get_ui_component_mut().set_visible(show);
         }
+
         self._text_box_widget.as_mut().unwrap().set_text_box_layer_visible(TextBoxLayerType::GamePlayLayer, show);
     }
 
