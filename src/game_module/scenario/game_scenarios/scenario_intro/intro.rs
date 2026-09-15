@@ -60,9 +60,8 @@ pub struct ScenarioIntroQuestSaveData {
     pub _quest_title: Option<String>,
     pub _sub_quest_hit_the_tree: Option<QuestItemSaveData>,
     pub _sub_quest_gather_food: Option<QuestItemSaveData>,
-    pub _sub_quest_feed_ewa: Option<QuestItemSaveData>,
-    pub _sub_quest_feed_koa: Option<QuestItemSaveData>,
-    pub _sub_quest_sleep: Option<QuestItemSaveData>,
+    pub _sub_quest_storage_food_to_table: Option<QuestItemSaveData>,
+    pub _sub_quest_wrap_up_the_day: Option<QuestItemSaveData>,
 }
 
 impl ScenarioIntroQuestSaveData {
@@ -70,9 +69,8 @@ impl ScenarioIntroQuestSaveData {
         self._has_quest
             || self._sub_quest_hit_the_tree.is_some()
             || self._sub_quest_gather_food.is_some()
-            || self._sub_quest_feed_ewa.is_some()
-            || self._sub_quest_feed_koa.is_some()
-            || self._sub_quest_sleep.is_some()
+            || self._sub_quest_storage_food_to_table.is_some()
+            || self._sub_quest_wrap_up_the_day.is_some()
     }
 }
 
@@ -101,15 +99,15 @@ pub struct ScenarioIntro<'a> {
     _prop_gate: Option<RcRefCell<Prop<'a>>>,
     _prop_gate_stage01: Option<RcRefCell<Prop<'a>>>,
     _prop_tree: Option<RcRefCell<Prop<'a>>>,
+    _prop_table: Option<RcRefCell<Prop<'a>>>,
     _prop_bed_for_aru: Option<RcRefCell<Prop<'a>>>,
     _prop_bed_for_ewa: Option<RcRefCell<Prop<'a>>>,
     _prop_bed_for_koa: Option<RcRefCell<Prop<'a>>>,
     _quest: Option<RcRefCell<QuestTitle<'a>>>,
     _sub_quest_hit_the_tree: Option<QuestItem<'a>>,
     _sub_quest_gather_food: Option<QuestItem<'a>>,
-    _sub_quest_feed_ewa: Option<QuestItem<'a>>,
-    _sub_quest_feed_koa: Option<QuestItem<'a>>,
-    _sub_quest_sleep: Option<QuestItem<'a>>,
+    _sub_quest_storage_food_to_table: Option<QuestItem<'a>>,
+    _sub_quest_wrap_up_the_day: Option<QuestItem<'a>>,
     _tree_fruit_items: HashMap<*const c_void, ActorWrapper<'a>>,
     _was_completed_sub_quest_gather_food: bool,
     _wakeup_delay_aru: f32,
@@ -139,15 +137,15 @@ impl<'a> ScenarioIntro<'a> {
             _prop_gate: None,
             _prop_gate_stage01: None,
             _prop_tree: None,
+            _prop_table: None,
             _prop_bed_for_aru: None,
             _prop_bed_for_ewa: None,
             _prop_bed_for_koa: None,
             _quest: None,
             _sub_quest_hit_the_tree: None,
             _sub_quest_gather_food: None,
-            _sub_quest_feed_ewa: None,
-            _sub_quest_feed_koa: None,
-            _sub_quest_sleep: None,
+            _sub_quest_storage_food_to_table: None,
+            _sub_quest_wrap_up_the_day: None,
             _tree_fruit_items: HashMap::new(),
             _was_completed_sub_quest_gather_food: false,
             _wakeup_delay_aru: 2.0,
@@ -242,9 +240,9 @@ impl<'a> ScenarioIntro<'a> {
         }
     }
 
-    pub fn create_give_food_to_ewa_text_box(&self) {
-        if let Some(actor) = self._actor_ewa.as_ref() {
-            let wrapper = ActorWrapper::Character(actor.clone());
+    pub fn create_storage_food_to_table_text_box(&self) {
+        if let Some(prop_table) = self._prop_table.as_ref() {
+            let wrapper = ActorWrapper::Prop(prop_table.clone());
             let contents = vec![TextBoxContent::MaterialInstance(
                 MATERIAL_UI_POINTER.to_string(),
                 Some(Vector2::new(50.0, 50.0)),
@@ -262,37 +260,10 @@ impl<'a> ScenarioIntro<'a> {
         }
     }
 
-    pub fn remove_give_food_to_ewa_text_box(&self) {
-        if let Some(actor) = self._actor_ewa.as_ref() {
-            let actor_wrapper = ActorWrapper::Character(actor.clone());
-            get_game_ui_manager_mut().remove_text_box_item(actor_wrapper.get_key());
-        }
-    }
-
-    pub fn create_give_food_to_koa_text_box(&self) {
-        if let Some(actor) = self._actor_koa.as_ref() {
-            let wrapper = ActorWrapper::Character(actor.clone());
-            let contents = vec![TextBoxContent::MaterialInstance(
-                MATERIAL_UI_POINTER.to_string(),
-                Some(Vector2::new(50.0, 50.0)),
-            )];
-            get_game_ui_manager_mut().add_text_box_item(
-                wrapper,
-                &contents,
-                &TextBoxItemOption {
-                    _layer_type: TextBoxLayerType::GamePlayLayer,
-                    _bounce: true,
-                    _visible_background: false,
-                    ..Default::default()
-                },
-            );
-        }
-    }
-
-    pub fn remove_give_food_to_koa_text_box(&self) {
-        if let Some(actor) = self._actor_koa.as_ref() {
-            let actor_wrapper = ActorWrapper::Character(actor.clone());
-            get_game_ui_manager_mut().remove_text_box_item(actor_wrapper.get_key());
+    pub fn remove_storage_food_to_table_text_box(&self) {
+        if let Some(prop_table) = self._prop_table.as_ref() {
+            let wrapper = ActorWrapper::Prop(prop_table.clone());
+            get_game_ui_manager_mut().remove_text_box_item(wrapper.get_key());
         }
     }
 
@@ -333,8 +304,7 @@ impl<'a> ScenarioIntro<'a> {
     pub fn clear_all(&mut self) {
         self.remove_move_to_tutorial_stage_text_box();
         self.remove_hit_this_tree_text_box();
-        self.remove_give_food_to_ewa_text_box();
-        self.remove_give_food_to_koa_text_box();
+        self.remove_storage_food_to_table_text_box();
         self.remove_wrap_up_the_day_text_box();
 
         self.remove_all_tree_fruit_text_boxes();
@@ -345,6 +315,7 @@ impl<'a> ScenarioIntro<'a> {
         self._prop_gate = None;
         self._prop_gate_stage01 = None;
         self._prop_tree = None;
+        self._prop_table = None;
         self._prop_bed_for_aru = None;
         self._prop_bed_for_ewa = None;
         self._prop_bed_for_koa = None;
@@ -437,19 +408,13 @@ impl<'a> ScenarioIntro<'a> {
                         _gather_item_count: 2,
                     },
                 )));
-                self._sub_quest_feed_ewa = Some(quest.borrow_mut().add_quest_item(QuestCreateInfo::DefaultQuest(
+                self._sub_quest_storage_food_to_table = Some(quest.borrow_mut().add_quest_item(QuestCreateInfo::DefaultQuest(
                     DefaultQuestData {
                         _quest_icon_name: None,
-                        _quest_description: Some(String::from("Feed food to Ewa.")),
+                        _quest_description: Some(String::from("Store food on table.")),
                     },
                 )));
-                self._sub_quest_feed_koa = Some(quest.borrow_mut().add_quest_item(QuestCreateInfo::DefaultQuest(
-                    DefaultQuestData {
-                        _quest_icon_name: None,
-                        _quest_description: Some(String::from("Feed food to Koa.")),
-                    },
-                )));
-                self._sub_quest_sleep = Some(quest.borrow_mut().add_quest_item(QuestCreateInfo::DefaultQuest(
+                self._sub_quest_wrap_up_the_day = Some(quest.borrow_mut().add_quest_item(QuestCreateInfo::DefaultQuest(
                     DefaultQuestData {
                         _quest_icon_name: None,
                         _quest_description: Some(String::from("Wrap up the day.")),
@@ -466,9 +431,8 @@ impl<'a> ScenarioIntro<'a> {
         self._quest = None;
         self._sub_quest_hit_the_tree = None;
         self._sub_quest_gather_food = None;
-        self._sub_quest_feed_ewa = None;
-        self._sub_quest_feed_koa = None;
-        self._sub_quest_sleep = None;
+        self._sub_quest_storage_food_to_table = None;
+        self._sub_quest_wrap_up_the_day = None;
     }
 
     pub fn get_quest_save_data(&self) -> ScenarioIntroQuestSaveData {
@@ -480,9 +444,11 @@ impl<'a> ScenarioIntro<'a> {
                 .as_ref()
                 .map(|q| q.borrow().get_quest_item_save_data()),
             _sub_quest_gather_food: self._sub_quest_gather_food.as_ref().map(|q| q.borrow().get_quest_item_save_data()),
-            _sub_quest_feed_ewa: self._sub_quest_feed_ewa.as_ref().map(|q| q.borrow().get_quest_item_save_data()),
-            _sub_quest_feed_koa: self._sub_quest_feed_koa.as_ref().map(|q| q.borrow().get_quest_item_save_data()),
-            _sub_quest_sleep: self._sub_quest_sleep.as_ref().map(|q| q.borrow().get_quest_item_save_data()),
+            _sub_quest_storage_food_to_table: self
+                ._sub_quest_storage_food_to_table
+                .as_ref()
+                .map(|q| q.borrow().get_quest_item_save_data()),
+            _sub_quest_wrap_up_the_day: self._sub_quest_wrap_up_the_day.as_ref().map(|q| q.borrow().get_quest_item_save_data()),
         }
     }
 
@@ -501,18 +467,13 @@ impl<'a> ScenarioIntro<'a> {
             {
                 q.borrow_mut().load_quest_item_save_data(save_data);
             }
-            if let Some(save_data) = &quest_save_data._sub_quest_feed_ewa
-                && let Some(q) = &self._sub_quest_feed_ewa
+            if let Some(save_data) = &quest_save_data._sub_quest_storage_food_to_table
+                && let Some(q) = &self._sub_quest_storage_food_to_table
             {
                 q.borrow_mut().load_quest_item_save_data(save_data);
             }
-            if let Some(save_data) = &quest_save_data._sub_quest_feed_koa
-                && let Some(q) = &self._sub_quest_feed_koa
-            {
-                q.borrow_mut().load_quest_item_save_data(save_data);
-            }
-            if let Some(save_data) = &quest_save_data._sub_quest_sleep
-                && let Some(q) = &self._sub_quest_sleep
+            if let Some(save_data) = &quest_save_data._sub_quest_wrap_up_the_day
+                && let Some(q) = &self._sub_quest_wrap_up_the_day
             {
                 q.borrow_mut().load_quest_item_save_data(save_data);
             }
@@ -600,6 +561,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
         self._actor_ewa = game_scene_manager.get_actor_by_name("monkey_ewa").cloned();
         self._actor_koa = game_scene_manager.get_actor_by_name("monkey_koa").cloned();
         self._prop_gate = game_scene_manager.get_prop_manager().get_prop_by_name(DEFAULT_GATE_NAME).cloned();
+        self._prop_table = game_scene_manager.get_prop_manager().get_prop_by_name("table").cloned();
         self._prop_bed_for_aru = game_scene_manager.get_prop_manager().get_prop_by_name(BED_FOR_ARU).cloned();
         self._prop_bed_for_ewa = game_scene_manager.get_prop_manager().get_prop_by_name("bed_for_ewa").cloned();
         self._prop_bed_for_koa = game_scene_manager.get_prop_manager().get_prop_by_name("bed_for_koa").cloned();
@@ -645,26 +607,12 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                     let is_gather_food_completed =
                         self._sub_quest_gather_food.as_ref().is_some_and(|q| q.borrow().is_completed_quest());
                     if is_gather_food_completed {
-                        let feed_ewa_not_completed =
-                            self._sub_quest_feed_ewa.as_ref().is_none_or(|q| !q.borrow().is_completed_quest());
-                        if feed_ewa_not_completed {
-                            if let Some(actor) = &self._actor_ewa {
-                                if !actor.borrow().get_stats().is_hungry() {
-                                    actor.borrow_mut().set_hunger(HUNGER_WARNING_THRESHOLD);
-                                }
-                                self.create_give_food_to_ewa_text_box();
-                            }
-                        }
-
-                        let feed_koa_not_completed =
-                            self._sub_quest_feed_koa.as_ref().is_none_or(|q| !q.borrow().is_completed_quest());
-                        if feed_koa_not_completed {
-                            if let Some(actor) = &self._actor_koa {
-                                if !actor.borrow().get_stats().is_hungry() {
-                                    actor.borrow_mut().set_hunger(HUNGER_WARNING_THRESHOLD);
-                                }
-                                self.create_give_food_to_koa_text_box();
-                            }
+                        let storage_food_not_completed = self
+                            ._sub_quest_storage_food_to_table
+                            .as_ref()
+                            .is_none_or(|q| !q.borrow().is_completed_quest());
+                        if storage_food_not_completed {
+                            self.create_storage_food_to_table_text_box();
                         }
                     }
                 }
@@ -924,93 +872,38 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                         let is_gather_food_completed =
                             self._sub_quest_gather_food.as_ref().is_some_and(|q| q.borrow().is_completed_quest());
                         if is_gather_food_completed {
-                            let feed_ewa_not_completed =
-                                self._sub_quest_feed_ewa.as_ref().is_none_or(|q| !q.borrow().is_completed_quest());
-                            if feed_ewa_not_completed {
-                                if let Some(actor) = &self._actor_ewa {
-                                    let key = ActorWrapper::Character(actor.clone()).get_key();
+                            let storage_food_not_completed = self
+                                ._sub_quest_storage_food_to_table
+                                .as_ref()
+                                .is_none_or(|q| !q.borrow().is_completed_quest());
+                            if storage_food_not_completed {
+                                if let Some(prop_table) = &self._prop_table {
+                                    let key = ActorWrapper::Prop(prop_table.clone()).get_key();
                                     if !game_ui_manager.has_text_box_item(key) {
-                                        if !actor.borrow().get_stats().is_hungry() {
-                                            actor.borrow_mut().set_hunger(HUNGER_WARNING_THRESHOLD);
-                                        }
-                                        self.create_give_food_to_ewa_text_box();
-                                    }
-                                }
-                            }
-
-                            let feed_koa_not_completed =
-                                self._sub_quest_feed_koa.as_ref().is_none_or(|q| !q.borrow().is_completed_quest());
-                            if feed_koa_not_completed {
-                                if let Some(actor) = &self._actor_koa {
-                                    let key = ActorWrapper::Character(actor.clone()).get_key();
-                                    if !game_ui_manager.has_text_box_item(key) {
-                                        if !actor.borrow().get_stats().is_hungry() {
-                                            actor.borrow_mut().set_hunger(HUNGER_WARNING_THRESHOLD);
-                                        }
-                                        self.create_give_food_to_koa_text_box();
+                                        self.create_storage_food_to_table_text_box();
                                     }
                                 }
                             }
                         }
 
-                        if let Some(actor_ewa) = &self._actor_ewa {
-                            let ewa_borrow = actor_ewa.borrow();
-                            if ewa_borrow.get_hunger() < HUNGER_WARNING_THRESHOLD
-                                || ewa_borrow.get_attached_item().is_some()
-                                || ewa_borrow.is_action(ActionAnimationState::Eating)
-                            {
-                                if let Some(q) = &self._sub_quest_feed_ewa {
+                        if game_ui_manager.has_eatable_table_storage_item() {
+                            if let Some(q) = &self._sub_quest_storage_food_to_table {
+                                if !q.borrow().is_completed_quest() {
                                     q.borrow_mut().set_completed_quest();
-                                }
-                                self.remove_give_food_to_ewa_text_box();
-                            }
-                        }
-
-                        if let Some(actor_koa) = &self._actor_koa {
-                            let koa_borrow = actor_koa.borrow();
-                            if koa_borrow.get_hunger() < HUNGER_WARNING_THRESHOLD
-                                || koa_borrow.get_attached_item().is_some()
-                                || koa_borrow.is_action(ActionAnimationState::Eating)
-                            {
-                                if let Some(q) = &self._sub_quest_feed_koa {
-                                    q.borrow_mut().set_completed_quest();
-                                }
-                                self.remove_give_food_to_koa_text_box();
-                            }
-                        }
-
-                        if is_gather_food_completed {
-                            let ewa_completed =
-                                self._sub_quest_feed_ewa.as_ref().is_some_and(|q| q.borrow().is_completed_quest());
-                            let koa_completed =
-                                self._sub_quest_feed_koa.as_ref().is_some_and(|q| q.borrow().is_completed_quest());
-
-                            if (!ewa_completed || !koa_completed)
-                                && game_ui_manager.get_eatable_inventory_item_count() == 0
-                            {
-                                if !ewa_completed {
-                                    if let Some(q) = &self._sub_quest_feed_ewa {
-                                        q.borrow_mut().set_completed_quest();
-                                    }
-                                    self.remove_give_food_to_ewa_text_box();
-                                }
-                                if !koa_completed {
-                                    if let Some(q) = &self._sub_quest_feed_koa {
-                                        q.borrow_mut().set_completed_quest();
-                                    }
-                                    self.remove_give_food_to_koa_text_box();
+                                    self.remove_storage_food_to_table_text_box();
                                 }
                             }
                         }
 
-                        let ewa_completed =
-                            self._sub_quest_feed_ewa.as_ref().is_some_and(|q| q.borrow().is_completed_quest());
-                        let koa_completed =
-                            self._sub_quest_feed_koa.as_ref().is_some_and(|q| q.borrow().is_completed_quest());
+                        let storage_food_completed = self
+                            ._sub_quest_storage_food_to_table
+                            .as_ref()
+                            .is_some_and(|q| q.borrow().is_completed_quest());
 
-                        if ewa_completed && koa_completed {
+                        if storage_food_completed {
                             self.remove_move_to_tutorial_stage_text_box();
                             self.remove_hit_this_tree_text_box();
+                            self.remove_storage_food_to_table_text_box();
                             self.remove_all_tree_fruit_text_boxes();
                             self._scenario_track.set_next_scenario_phase(ScenarioPhase::WrapUpTheDay, None);
                         }
@@ -1039,14 +932,14 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
             }
         }
 
-        let sleep_not_completed = self._sub_quest_sleep.as_ref().is_some_and(|q| !q.borrow().is_completed_quest());
-        if self._sub_quest_sleep.is_some()
+        let sleep_not_completed = self._sub_quest_wrap_up_the_day.as_ref().is_some_and(|q| !q.borrow().is_completed_quest());
+        if self._sub_quest_wrap_up_the_day.is_some()
             && sleep_not_completed
             && let Some(scenario_wrap_up_the_day) =
                 game_scene_manager.get_game_scenario(ScenarioType::ScenarioWrapUpTheDay).as_ref()
         {
             ptr_as_mut(scenario_wrap_up_the_day.as_ptr() as *const ScenarioWrapUpTheDay).set_skip_wakeup(true);
-            if let Some(q) = &self._sub_quest_sleep {
+            if let Some(q) = &self._sub_quest_wrap_up_the_day {
                 q.borrow_mut().set_completed_quest();
             }
             self._scenario_track.set_next_scenario_phase(ScenarioPhase::Sleeping, None);
