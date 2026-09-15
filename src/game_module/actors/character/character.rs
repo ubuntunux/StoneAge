@@ -135,9 +135,6 @@ impl CharacterStats {
     pub fn get_max_hp_data(&self) -> i32 {
         self._max_hp_data
     }
-    pub fn get_hunger_level(&self) -> f32 {
-        1f32.min(((MAX_HUNGER - self._hunger) * 10.0).ceil() / 10.0)
-    }
     pub fn is_hungry(&self) -> bool {
         HUNGER_WARNING_THRESHOLD <= self._hunger
     }
@@ -146,13 +143,13 @@ impl CharacterStats {
     }
     pub fn set_hunger(&mut self, hunger: f32) {
         self._hunger = MAX_HUNGER.min(0f32.max(hunger));
-        let hunger_level = self.get_hunger_level();
-        self.set_max_hp((self._max_hp_data as f32 * hunger_level).ceil() as i32);
+        let max_stat_ratio = 1.0 - 1f32.min((((self._hunger - HUNGER_WARNING_THRESHOLD) / ( MAX_HUNGER - HUNGER_WARNING_THRESHOLD)) * 10.0).ceil() / 10.0);
+        self.set_max_hp((self._max_hp_data as f32 * max_stat_ratio).ceil() as i32);
         if self._max_hp < self._hp {
             self.set_hp(self._max_hp);
         }
 
-        self.set_max_stamina((self._max_stamina_data * hunger_level).ceil());
+        self.set_max_stamina((self._max_stamina_data * max_stat_ratio).ceil());
         if self._max_stamina < self._stamina {
             self.set_stamina(self._max_stamina);
         }

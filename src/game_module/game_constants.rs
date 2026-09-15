@@ -89,9 +89,8 @@ pub const WEAPON_SOCKET_NAME: &str = "SOCKET_WEAPON";
 // stats
 pub const MAX_HUNGER: f32 = 1.0;
 pub const MAX_STAMINA: f32 = 100.0;
-pub const HUNGER_RATE: f32 = 0.05;
-pub const HUNGER_WARNING_THRESHOLD: f32 = 0.5;
-pub const HUNGER_RECOVERY_THRESHOLD: f32 = 0.25;
+pub const HUNGER_RATE: f32 = 0.005;
+pub const HUNGER_WARNING_THRESHOLD: f32 = 0.3;
 pub const TARGET_HUNGER_THRESHOLD: f32 = 0.2;
 
 pub const STAMINA_RECOVERY_DELAY_TIME: f32 = 1.0;
