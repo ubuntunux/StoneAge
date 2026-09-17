@@ -137,6 +137,7 @@ pub struct InventoryWidget<'a> {
     pub _item_info_widget: Box<ItemInfoWidget<'a>>,
     pub _slot_widgets: Vec<Box<InventorySlotWidget<'a>>>,
     pub _focused_slot_index: usize,
+    pub _hovered_slot_index: usize,
     pub _drag_source_slot_index: usize,
     pub _is_opened_inventory: bool,
     pub _nav_repeat_controller: WidgetNavRepeatController,
@@ -194,6 +195,7 @@ impl<'a> InventoryWidget<'a> {
             _item_info_widget: item_info_widget,
             _slot_widgets: Vec::new(),
             _focused_slot_index: 0,
+            _hovered_slot_index: INVALID_ITEM_INDEX,
             _drag_source_slot_index: INVALID_ITEM_INDEX,
             _is_opened_inventory: false,
             _nav_repeat_controller: WidgetNavRepeatController::new(),
@@ -445,6 +447,7 @@ impl<'a> InventoryWidget<'a> {
             let slot_item = unsafe { &*slot_ptr };
             let inventory_widget = ptr_as_mut(slot_item._inventory_widget);
             inventory_widget._focused_slot_index = slot_item._slot_index;
+            inventory_widget._hovered_slot_index = slot_item._slot_index;
             inventory_widget.refresh_inventory_widget();
         }
         true
@@ -459,7 +462,11 @@ impl<'a> InventoryWidget<'a> {
         if !slot_ptr.is_null() {
             let slot_item = unsafe { &*slot_ptr };
             let inventory_widget = ptr_as_mut(slot_item._inventory_widget);
+            if inventory_widget._hovered_slot_index == slot_item._slot_index {
+                inventory_widget._hovered_slot_index = INVALID_ITEM_INDEX;
+            }
             inventory_widget._item_info_widget.hide_item_info();
+            inventory_widget.refresh_inventory_widget();
         }
         true
     }
@@ -473,6 +480,7 @@ impl<'a> InventoryWidget<'a> {
             } else {
                 self._focused_slot_index = 0;
             }
+            self._hovered_slot_index = self._focused_slot_index;
             let parent_mut = ptr_as_mut(self._parent_widget);
             parent_mut.add_widget(&self._layer);
             self.refresh_inventory_widget();
@@ -482,6 +490,7 @@ impl<'a> InventoryWidget<'a> {
     pub fn close_inventory(&mut self) {
         if self._is_opened_inventory {
             self._is_opened_inventory = false;
+            self._hovered_slot_index = INVALID_ITEM_INDEX;
             self._nav_repeat_controller.reset();
             self._item_info_widget.hide_item_info();
             if self._drag_source_slot_index != INVALID_ITEM_INDEX {
@@ -544,18 +553,26 @@ impl<'a> InventoryWidget<'a> {
             let container_ui = ptr_as_mut(self._inventory_bg.as_ref()).get_ui_component_mut();
             let slot_ui = ptr_as_mut(focused_slot_widget._widget.as_ref()).get_ui_component_mut();
             container_ui.scroll_into_view(slot_ui);
+        }
 
-            let slot_data = item_bar.get_inventory_slot_data(self._focused_slot_index);
-            if self._focused_slot_index != self._drag_source_slot_index
-                && slot_data._item_count > 0
-                && slot_data._item_data_name != ITEM_NONE
+        if self._hovered_slot_index != INVALID_ITEM_INDEX {
+            if let Some(hovered_slot_widget) =
+                self._slot_widgets.iter().find(|w| w._slot_index == self._hovered_slot_index)
             {
-                self._item_info_widget.show_item_info(
-                    &slot_data._item_data_name,
-                    &slot_data._item_name,
-                    slot_data._item_count,
-                    focused_slot_widget._widget.as_ref(),
-                );
+                let slot_data = item_bar.get_inventory_slot_data(self._hovered_slot_index);
+                if self._hovered_slot_index != self._drag_source_slot_index
+                    && slot_data._item_count > 0
+                    && slot_data._item_data_name != ITEM_NONE
+                {
+                    self._item_info_widget.show_item_info(
+                        &slot_data._item_data_name,
+                        &slot_data._item_name,
+                        slot_data._item_count,
+                        hovered_slot_widget._widget.as_ref(),
+                    );
+                } else {
+                    self._item_info_widget.hide_item_info();
+                }
             } else {
                 self._item_info_widget.hide_item_info();
             }
@@ -652,6 +669,7 @@ impl<'a> InventoryWidget<'a> {
             }
 
             self._focused_slot_index = new_focused_slot;
+            self._hovered_slot_index = new_focused_slot;
         }
 
         // Mouse Right Click OR Keyboard/Joystick Drop Input
@@ -680,6 +698,7 @@ impl<'a> InventoryWidget<'a> {
             if hovered_slot != INVALID_ITEM_INDEX && item_bar.is_valid_slot_index(hovered_slot) {
                 // Focus the slot under mouse pointer
                 self._focused_slot_index = hovered_slot;
+                self._hovered_slot_index = hovered_slot;
 
                 // Drop item if slot is not empty and is droppable
                 let slot_data = item_bar.get_inventory_slot_data(hovered_slot);

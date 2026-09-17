@@ -143,7 +143,11 @@ impl CharacterStats {
     }
     pub fn set_hunger(&mut self, hunger: f32) {
         self._hunger = MAX_HUNGER.min(0f32.max(hunger));
-        let max_stat_ratio = 1.0 - 1f32.min((((self._hunger - HUNGER_WARNING_THRESHOLD) / ( MAX_HUNGER - HUNGER_WARNING_THRESHOLD)) * 10.0).ceil() / 10.0);
+        let max_stat_ratio = 1.0
+            - 1f32.min(
+                (((self._hunger - HUNGER_WARNING_THRESHOLD) / (MAX_HUNGER - HUNGER_WARNING_THRESHOLD)) * 10.0).ceil()
+                    / 10.0,
+            );
         self.set_max_hp((self._max_hp_data as f32 * max_stat_ratio).ceil() as i32);
         if self._max_hp < self._hp {
             self.set_hp(self._max_hp);
@@ -247,8 +251,8 @@ impl CharacterStats {
             }
         } else if owner.is_idle_action()
             && (owner.is_move_stop()
-            || owner.is_move_state(MoveAnimationState::SitDownLoop)
-            || owner.is_move_state(MoveAnimationState::Walk))
+                || owner.is_move_state(MoveAnimationState::SitDownLoop)
+                || owner.is_move_state(MoveAnimationState::Walk))
         {
             if self._stamina < 0.0 {
                 self._stamina = 0.0;

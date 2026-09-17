@@ -7,7 +7,10 @@ use crate::game_module::game_constants::{
     CHARACTER_DATA_NAME_MONKEY_ARU, GAME_VIEW_MODE, GameViewMode, TEMPERATURE_MAX, TEMPERATURE_MIN, TIME_OF_DAWN,
     TIME_OF_DAY_SPEED, TIME_OF_MORNING, TIME_OF_NIGHT,
 };
-use crate::game_module::game_service_locator::{get_game_client, get_game_client_mut, get_game_controller_mut, get_game_resources, get_game_ui_manager, get_game_ui_manager_mut};
+use crate::game_module::game_service_locator::{
+    get_game_client, get_game_client_mut, get_game_controller_mut, get_game_resources, get_game_ui_manager,
+    get_game_ui_manager_mut,
+};
 use crate::game_module::game_weather::Weather;
 use crate::game_module::save_data::save_data::GameSaveData;
 use crate::game_module::scenario::game_scenarios::scenario_wrap_up_the_day::ScenarioWrapUpTheDay;
