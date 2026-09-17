@@ -50,7 +50,6 @@ enum ScenarioPhase {
     IamHungry,
     GatheringFood,
     WrapUpTheDay,
-    Sleeping,
     End,
 }
 
@@ -325,15 +324,48 @@ impl<'a> ScenarioIntro<'a> {
         self._prop_bed_for_koa = None;
     }
 
+    pub fn complete_sub_quest_hit_the_tree(&mut self) {
+        if let Some(q) = &self._sub_quest_hit_the_tree {
+            if !q.borrow().is_completed_quest() {
+                q.borrow_mut().set_completed_quest();
+                self.remove_hit_this_tree_text_box();
+            }
+        }
+    }
+
+    pub fn complete_sub_quest_gather_food(&mut self) {
+        if let Some(q) = &self._sub_quest_gather_food {
+            if !q.borrow().is_completed_quest() {
+                q.borrow_mut().set_completed_quest();
+                self.remove_all_tree_fruit_text_boxes();
+            }
+        }
+        self.complete_sub_quest_hit_the_tree();
+    }
+
+    pub fn complete_sub_quest_storage_food_to_table(&mut self) {
+        if let Some(q) = &self._sub_quest_storage_food_to_table {
+            if !q.borrow().is_completed_quest() {
+                q.borrow_mut().set_completed_quest();
+                self.remove_storage_food_to_table_text_box();
+            }
+        }
+        self.complete_sub_quest_gather_food();
+    }
+
+    pub fn complete_sub_quest_wrap_up_the_day(&mut self) {
+        if let Some(q) = &self._sub_quest_wrap_up_the_day {
+            if !q.borrow().is_completed_quest() {
+                q.borrow_mut().set_completed_quest();
+            }
+        }
+        self.complete_sub_quest_storage_food_to_table();
+    }
+
     pub fn check_hit_the_tree_complete(&mut self) {
         if let Some(prop_tree) = &self._prop_tree {
             if prop_tree.borrow()._prop_stats._hit_blink_time > 0.0 {
-                if let Some(q) = &self._sub_quest_hit_the_tree {
-                    if !q.borrow().is_completed_quest() {
-                        q.borrow_mut().set_completed_quest();
-                        self.remove_hit_this_tree_text_box();
-                    }
-                }
+                self.complete_sub_quest_hit_the_tree();
             }
         }
     }
@@ -891,67 +923,54 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                     State::Update => {
                         self.update_tree_fruit_text_boxes();
 
-                        if let Some(prop_tree) = &self._prop_tree {
-                            if prop_tree.borrow()._prop_stats._hit_blink_time > 0.0 {
-                                if let Some(q) = &self._sub_quest_hit_the_tree {
-                                    if !q.borrow().is_completed_quest() {
-                                        q.borrow_mut().set_completed_quest();
-                                        self.remove_hit_this_tree_text_box();
-                                    }
-                                }
-                            }
-                        }
-
-                        let is_gather_food_completed =
-                            self._sub_quest_gather_food.as_ref().is_some_and(|q| q.borrow().is_completed_quest());
-                        if is_gather_food_completed {
-                            let storage_food_not_completed = self
-                                ._sub_quest_storage_food_to_table
-                                .as_ref()
-                                .is_none_or(|q| !q.borrow().is_completed_quest());
-                            if storage_food_not_completed {
-                                if let Some(prop_table) = &self._prop_table {
-                                    let key = ActorWrapper::Prop(prop_table.clone()).get_key();
-                                    if !game_ui_manager.has_text_box_item(key) {
-                                        self.create_storage_food_to_table_text_box();
-                                    }
-                                }
-                            }
-                        }
-
-                        if game_ui_manager.has_eatable_table_storage_item() {
-                            if let Some(q) = &self._sub_quest_storage_food_to_table {
-                                if !q.borrow().is_completed_quest() {
-                                    q.borrow_mut().set_completed_quest();
-                                    self.remove_storage_food_to_table_text_box();
-                                }
-                            }
-                        }
-
-                        let storage_food_completed = self
-                            ._sub_quest_storage_food_to_table
+                        let wrap_up_the_day_not_completed = self
+                            ._sub_quest_wrap_up_the_day
                             .as_ref()
-                            .is_some_and(|q| q.borrow().is_completed_quest());
+                            .is_some_and(|q| !q.borrow().is_completed_quest());
 
-                        if storage_food_completed {
+                        if wrap_up_the_day_not_completed
+                            && let Some(scenario_wrap_up_the_day) =
+                                game_scene_manager.get_game_scenario(ScenarioType::ScenarioWrapUpTheDay).as_ref()
+                        {
+                            ptr_as_mut(scenario_wrap_up_the_day.as_ptr() as *const ScenarioWrapUpTheDay)
+                                .set_skip_wakeup(true);
+                            self.complete_sub_quest_wrap_up_the_day();
                             self._scenario_track.set_next_scenario_phase(ScenarioPhase::WrapUpTheDay, None);
+                        } else {
+                            if game_ui_manager.has_eatable_table_storage_item() {
+                                self.complete_sub_quest_storage_food_to_table();
+                            }
+
+                            let is_gather_food_completed = self
+                                ._sub_quest_gather_food
+                                .as_ref()
+                                .is_some_and(|q| q.borrow().is_completed_quest());
+
+                            if is_gather_food_completed {
+                                self.complete_sub_quest_gather_food();
+
+                                let storage_food_not_completed = self
+                                    ._sub_quest_storage_food_to_table
+                                    .as_ref()
+                                    .is_none_or(|q| !q.borrow().is_completed_quest());
+
+                                if storage_food_not_completed {
+                                    if let Some(prop_table) = &self._prop_table {
+                                        let key = ActorWrapper::Prop(prop_table.clone()).get_key();
+                                        if !game_ui_manager.has_text_box_item(key) {
+                                            self.create_storage_food_to_table_text_box();
+                                        }
+                                    }
+                                }
+                            }
+
+                            self.check_hit_the_tree_complete();
                         }
                     }
                     _ => {}
                 },
                 ScenarioPhase::WrapUpTheDay => {
-                    if state == State::Update {
-                        if game_scene_manager.has_game_scenario(ScenarioType::ScenarioWrapUpTheDay) {
-                            self._scenario_track.set_next_scenario_phase(ScenarioPhase::Sleeping, None);
-                        }
-                    }
-                }
-                ScenarioPhase::Sleeping => {
                     if state == State::Begin {
-                        self.remove_move_to_tutorial_stage_text_box();
-                        self.remove_hit_this_tree_text_box();
-                        self.remove_storage_food_to_table_text_box();
-                        self.remove_all_tree_fruit_text_boxes();
                         self.create_prop_bed_text_box();
                     } else if state == State::Update {
                         if let Some(scenario_wrap_up_the_day) =
@@ -981,29 +1000,6 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
             if state == State::Update {
                 self._scenario_track.update_scenario_phase_time(delta_time as f32);
             }
-        }
-
-        let sleep_not_completed =
-            self._sub_quest_wrap_up_the_day.as_ref().is_some_and(|q| !q.borrow().is_completed_quest());
-        if self._sub_quest_wrap_up_the_day.is_some()
-            && sleep_not_completed
-            && let Some(scenario_wrap_up_the_day) =
-                game_scene_manager.get_game_scenario(ScenarioType::ScenarioWrapUpTheDay).as_ref()
-        {
-            ptr_as_mut(scenario_wrap_up_the_day.as_ptr() as *const ScenarioWrapUpTheDay).set_skip_wakeup(true);
-            if let Some(q) = &self._sub_quest_hit_the_tree {
-                q.borrow_mut().set_completed_quest();
-            }
-            if let Some(q) = &self._sub_quest_gather_food {
-                q.borrow_mut().set_completed_quest();
-            }
-            if let Some(q) = &self._sub_quest_storage_food_to_table {
-                q.borrow_mut().set_completed_quest();
-            }
-            if let Some(q) = &self._sub_quest_wrap_up_the_day {
-                q.borrow_mut().set_completed_quest();
-            }
-            self._scenario_track.set_next_scenario_phase(ScenarioPhase::Sleeping, None);
         }
     }
 }
