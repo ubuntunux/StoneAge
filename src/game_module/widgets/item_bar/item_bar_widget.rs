@@ -453,6 +453,13 @@ impl<'a> ItemBarWidget<'a> {
         self._item_widgets.iter_mut().find(|item_widget| item_widget._item_data_name.as_str() == item_data_name)
     }
 
+    pub fn find_hand_item_slot_index(&self) -> Option<usize> {
+        self._inventory_slots.iter().position(|slot| {
+            (slot._item_data_name == ITEM_HAND || slot._item_data_type == ItemDataType::Hand)
+                && slot._item_count > 0
+        })
+    }
+
     pub fn get_item_count(&self, item_data_name: &str) -> usize {
         let mut total = 0;
         for slot in self._inventory_slots.iter() {
@@ -672,9 +679,7 @@ impl<'a> ItemBarWidget<'a> {
                     self._item_count = self._item_count.saturating_sub(1);
 
                     if self._selected_inventory_slot_index == idx {
-                        let player = ptr_as_mut(get_character_manager().get_player().as_ptr());
-                        get_item_manager_mut().detach_item(player);
-                        self._selected_inventory_slot_index = INVALID_ITEM_INDEX;
+                        self.select_item(INVALID_ITEM_INDEX);
                     }
                 }
                 self.update_quick_slot_widgets();
@@ -688,14 +693,28 @@ impl<'a> ItemBarWidget<'a> {
         if let Some(player) = get_character_manager().get_maybe_player() {
             let player = ptr_as_mut(player.as_ptr());
             let total_inv_slots = self.get_total_inventory_slots();
-            if slot_index < total_inv_slots {
-                self._active_row_index = slot_index / SLOTS_PER_ROW;
-            }
-            if self.is_valid_slot_index(slot_index)
-                && self._inventory_slots[slot_index]._item_data_name != ITEM_NONE
-                && self._inventory_slots[slot_index]._item_count > 0
+
+            let mut target_slot = slot_index;
+            if !self.is_valid_slot_index(target_slot)
+                || self._inventory_slots[target_slot]._item_data_name == ITEM_NONE
+                || self._inventory_slots[target_slot]._item_count == 0
             {
-                self._selected_inventory_slot_index = slot_index;
+                if let Some(hand_slot_index) = self.find_hand_item_slot_index() {
+                    target_slot = hand_slot_index;
+                } else {
+                    target_slot = INVALID_ITEM_INDEX;
+                }
+            }
+
+            if target_slot < total_inv_slots {
+                self._active_row_index = target_slot / SLOTS_PER_ROW;
+            }
+
+            if self.is_valid_slot_index(target_slot)
+                && self._inventory_slots[target_slot]._item_data_name != ITEM_NONE
+                && self._inventory_slots[target_slot]._item_count > 0
+            {
+                self._selected_inventory_slot_index = target_slot;
                 get_item_manager_mut().attach_item(player, self.get_selected_item_data_name());
             } else {
                 self._selected_inventory_slot_index = INVALID_ITEM_INDEX;
