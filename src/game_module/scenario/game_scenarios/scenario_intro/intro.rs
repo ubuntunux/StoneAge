@@ -348,6 +348,7 @@ impl<'a> ScenarioIntro<'a> {
             if !q.borrow().is_completed_quest() {
                 q.borrow_mut().set_completed_quest();
                 self.remove_storage_food_to_table_text_box();
+                self.create_prop_bed_text_box();
             }
         }
         self.complete_sub_quest_gather_food();
@@ -955,11 +956,20 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                                     .is_none_or(|q| !q.borrow().is_completed_quest());
 
                                 if storage_food_not_completed {
-                                    if let Some(prop_table) = &self._prop_table {
-                                        let key = ActorWrapper::Prop(prop_table.clone()).get_key();
-                                        if !game_ui_manager.has_text_box_item(key) {
-                                            self.create_storage_food_to_table_text_box();
+                                    let has_eatable_item = game_ui_manager.get_eatable_inventory_item_count() > 0
+                                        || self
+                                            ._player
+                                            .as_ref()
+                                            .is_some_and(|p| p.borrow().get_attached_item_data_type().is_eatable());
+                                    if has_eatable_item {
+                                        if let Some(prop_table) = &self._prop_table {
+                                            let key = ActorWrapper::Prop(prop_table.clone()).get_key();
+                                            if !game_ui_manager.has_text_box_item(key) {
+                                                self.create_storage_food_to_table_text_box();
+                                            }
                                         }
+                                    } else {
+                                        self.complete_sub_quest_storage_food_to_table();
                                     }
                                 }
                             }
