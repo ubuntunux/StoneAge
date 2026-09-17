@@ -678,7 +678,25 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                             .as_ref()
                             .is_none_or(|q| !q.borrow().is_completed_quest());
                         if storage_food_not_completed {
-                            self.create_storage_food_to_table_text_box();
+                            let game_ui_manager = get_game_ui_manager_mut();
+                            let has_eatable_item = game_ui_manager.get_eatable_inventory_item_count() > 0
+                                || self
+                                    ._player
+                                    .as_ref()
+                                    .is_some_and(|p| p.borrow().get_attached_item_data_type().is_eatable());
+                            if has_eatable_item {
+                                self.create_storage_food_to_table_text_box();
+                            } else {
+                                self.complete_sub_quest_storage_food_to_table();
+                            }
+                        } else {
+                            let wrap_up_the_day_not_completed = self
+                                ._sub_quest_wrap_up_the_day
+                                .as_ref()
+                                .is_none_or(|q| !q.borrow().is_completed_quest());
+                            if wrap_up_the_day_not_completed {
+                                self.create_prop_bed_text_box();
+                            }
                         }
                     }
                 }
@@ -970,6 +988,19 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                                         }
                                     } else {
                                         self.complete_sub_quest_storage_food_to_table();
+                                    }
+                                } else {
+                                    let wrap_up_the_day_not_completed = self
+                                        ._sub_quest_wrap_up_the_day
+                                        .as_ref()
+                                        .is_none_or(|q| !q.borrow().is_completed_quest());
+                                    if wrap_up_the_day_not_completed {
+                                        if let Some(prop_bed) = &self._prop_bed_for_aru {
+                                            let key = ActorWrapper::Prop(prop_bed.clone()).get_key();
+                                            if !game_ui_manager.has_text_box_item(key) {
+                                                self.create_prop_bed_text_box();
+                                            }
+                                        }
                                     }
                                 }
                             }
