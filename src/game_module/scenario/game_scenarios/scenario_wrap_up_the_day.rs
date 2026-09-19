@@ -555,46 +555,24 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                         self._sleep_timer = 0.0;
                         self.setup_bed_camera();
                         game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, DEFAULT_FADE_TIME);
-
-                        let item_manager = get_game_scene_manager().get_item_manager_mut();
-                        if let Some(actor) = &self._player {
-                            actor.borrow_mut().set_behavior_none();
-                            if !actor.borrow().is_action(ActionAnimationState::LayingDown)
-                                && !actor.borrow().is_action(ActionAnimationState::Sleep)
-                            {
-                                actor.borrow_mut().set_action_laying_down();
-                            }
-                        }
-                        if let Some(actor) = &self._actor_ewa {
-                            actor.borrow_mut().set_behavior_none();
-                            actor.borrow_mut()._controller.set_flying_mode(false);
-                            item_manager.detach_item(&mut actor.borrow_mut());
-                            if let Some(bed) = &self._prop_bed_for_ewa {
-                                actor.borrow_mut().set_position(bed.borrow().get_position());
-                            }
-                            if !actor.borrow().is_action(ActionAnimationState::LayingDown)
-                                && !actor.borrow().is_action(ActionAnimationState::Sleep)
-                            {
-                                actor.borrow_mut().set_action_laying_down();
-                            }
-                        }
-                        if let Some(actor) = &self._actor_koa {
-                            actor.borrow_mut().set_behavior_none();
-                            actor.borrow_mut()._controller.set_flying_mode(false);
-                            item_manager.detach_item(&mut actor.borrow_mut());
-                            if let Some(bed) = &self._prop_bed_for_koa {
-                                actor.borrow_mut().set_position(bed.borrow().get_position());
-                            }
-                            if !actor.borrow().is_action(ActionAnimationState::LayingDown)
-                                && !actor.borrow().is_action(ActionAnimationState::Sleep)
-                            {
-                                actor.borrow_mut().set_action_laying_down();
-                            }
-                        }
                     }
-
                     State::Update => {
                         if game_ui_manager.is_done_manual_fade_out() && self._sleep_timer < SLEEP_TIMER {
+                            if self._sleep_timer == 0.0 {
+                                if let Some(actor) = &self._actor_ewa {
+                                    if let Some(bed) = &self._prop_bed_for_ewa {
+                                        actor.borrow_mut().set_position(bed.borrow().get_position());
+                                    }
+                                    actor.borrow_mut().set_action_sleep();
+                                }
+                                if let Some(actor) = &self._actor_koa {
+                                    if let Some(bed) = &self._prop_bed_for_koa {
+                                        actor.borrow_mut().set_position(bed.borrow().get_position());
+                                    }
+                                    actor.borrow_mut().set_action_sleep();
+                                }
+                            }
+
                             self._sleep_timer += delta_time as f32;
                             if SLEEP_TIMER <= self._sleep_timer {
                                 game_ui_manager.set_auto_fade_inout(true);
@@ -610,16 +588,10 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                                 }
                                 if let Some(actor) = &self._actor_ewa {
                                     actor.borrow_mut()._controller.set_flying_mode(false);
-                                    if let Some(bed) = &self._prop_bed_for_ewa {
-                                        actor.borrow_mut().set_position(bed.borrow().get_position());
-                                    }
                                     actor.borrow_mut().set_next_behavior(BehaviorState::WakeUp, true);
                                 }
                                 if let Some(actor) = &self._actor_koa {
                                     actor.borrow_mut()._controller.set_flying_mode(false);
-                                    if let Some(bed) = &self._prop_bed_for_koa {
-                                        actor.borrow_mut().set_position(bed.borrow().get_position());
-                                    }
                                     actor.borrow_mut().set_next_behavior(BehaviorState::WakeUp, true);
                                 }
                             }
