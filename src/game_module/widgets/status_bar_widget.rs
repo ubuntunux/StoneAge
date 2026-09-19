@@ -1,5 +1,5 @@
 use rust_engine_3d::scene::ui::{UILayoutType, UIManager, UIWidgetTypes, WidgetDefault};
-use rust_engine_3d::utilities::system::ptr_as_mut;
+use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use std::cell::Cell;
 
@@ -56,17 +56,23 @@ fn create_status_bar_widget<'a>(
 }
 
 impl<'a> StatusBarWidget<'a> {
-    pub fn create_status_widget(parent_widget: &mut WidgetDefault<'a>, color: u32) -> StatusBarWidget<'a> {
+    pub fn create_status_widget(
+        parent_widget: &mut WidgetDefault<'a>,
+        color: u32,
+        is_visible_max_status_bar: bool,
+    ) -> StatusBarWidget<'a> {
         let status_layer = create_status_layer_widget(parent_widget);
         let (status_bar, max_status_bar) = create_status_bar_widget(ptr_as_mut(status_layer), color);
-        StatusBarWidget {
+        let widget = StatusBarWidget {
             _status_layer: status_layer,
             _max_status_bar: max_status_bar,
             _status_bar: status_bar,
             _default_color: Cell::new(color),
             _warning_timer: Cell::new(0.0),
             _accum_flash_time: Cell::new(0.0),
-        }
+        };
+        widget.set_visible_max_status_bar(is_visible_max_status_bar);
+        widget
     }
 
     pub fn create_vertical_status_widget(
@@ -74,17 +80,20 @@ impl<'a> StatusBarWidget<'a> {
         color: u32,
         width: f32,
         height: f32,
+        is_visible_max_status_bar: bool,
     ) -> StatusBarWidget<'a> {
         let status_layer = create_vertical_status_layer_widget(parent_widget, width, height);
         let (status_bar, max_status_bar) = create_vertical_status_bar_widget(ptr_as_mut(status_layer), color);
-        StatusBarWidget {
+        let widget = StatusBarWidget {
             _status_layer: status_layer,
             _max_status_bar: max_status_bar,
             _status_bar: status_bar,
             _default_color: Cell::new(color),
             _warning_timer: Cell::new(0.0),
             _accum_flash_time: Cell::new(0.0),
-        }
+        };
+        widget.set_visible_max_status_bar(is_visible_max_status_bar);
+        widget
     }
 
     pub fn trigger_warning(&self) {
@@ -97,6 +106,10 @@ impl<'a> StatusBarWidget<'a> {
 
     pub fn set_bg_color(&self, color: u32) {
         ptr_as_mut(self._max_status_bar).get_ui_component_mut().set_color(color);
+    }
+
+    pub fn set_visible_max_status_bar(&self, visible: bool) {
+        ptr_as_mut(self._max_status_bar).get_ui_component_mut().set_visible(visible);
     }
 
     pub fn update_status_widget(
@@ -184,6 +197,11 @@ impl<'a> StatusBarWidget<'a> {
     pub fn update_vertical_status_widget(&self, status: f32, _delta_time: f64, _smooth_update: bool) {
         let status_bar = ptr_as_mut(self._status_bar).get_ui_component_mut();
         status_bar.set_size_hint_y(Some(1.0 - status));
+    }
+
+    pub fn get_status_ratio(&self) -> f32 {
+        let status_bar = ptr_as_ref(self._status_bar).get_ui_component();
+        status_bar.get_size_hint_x().unwrap_or(0.0)
     }
 }
 

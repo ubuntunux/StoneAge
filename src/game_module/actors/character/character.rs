@@ -239,7 +239,7 @@ impl CharacterStats {
     }
 
     pub fn set_body_temperature(&mut self, temp: f32) {
-        self._body_temperature = temp.clamp(30.0, 42.0);
+        self._body_temperature = temp.clamp(MIN_BODY_TEMPERATURE, MAX_BODY_TEMPERATURE);
     }
 
     pub fn get_wetness(&self) -> f32 {
@@ -260,6 +260,7 @@ impl CharacterStats {
 
     pub fn update_body_temperature<'a>(&mut self, owner: &Character<'a>, delta_time: f32) {
         let is_raining = get_game_scene_manager()._weather.get_weather_type() == WeatherType::Rain;
+        let env_temp = get_game_scene_manager().temperature();
         let mut is_near_heat_source = false;
         let mut is_sheltered = false;
 
@@ -281,11 +282,10 @@ impl CharacterStats {
                 }
             }
 
-            if distance <= 4.0 {
-                if prop_type == PropDataType::Ceiling || prop_type == PropDataType::Building
-                    || prop_name.contains("roof") || prop_name.contains("house") || prop_name.contains("shelter") || prop_name.contains("leaf")
-                    || prop_data_name.contains("roof") || prop_data_name.contains("house") || prop_data_name.contains("shelter") || prop_data_name.contains("leaf")
-                    || model_name.contains("roof") || model_name.contains("house") || model_name.contains("shelter") || model_name.contains("leaf") {
+            if distance <= 3.0 {
+                if prop_type == PropDataType::Ceiling
+                    || prop_name.contains("shelter_roof") || prop_name.contains("leaf_house")
+                    || prop_data_name.contains("shelter_roof") || prop_data_name.contains("leaf_house") {
                     is_sheltered = true;
                 }
             }
@@ -294,25 +294,46 @@ impl CharacterStats {
         if is_raining && !is_sheltered && !is_near_heat_source {
             self._wetness = (self._wetness + WETNESS_INCREASE_RATE * delta_time).min(1.0);
         } else {
-            let dry_multiplier = if is_near_heat_source { 4.0 } else { 1.0 };
+            let dry_multiplier = if is_near_heat_source { 4.0 } else { 1.5 };
             self._wetness = (self._wetness - WETNESS_DRY_RATE * dry_multiplier * delta_time).max(0.0);
         }
 
+        // Calculate target body temperature based on realistic human thermoregulation (homeostasis)
+        let mut target_temp = NORMAL_BODY_TEMPERATURE;
+
+        if env_temp < THERMONEUTRAL_MIN_TEMP {
+            let cold_ratio = ((THERMONEUTRAL_MIN_TEMP - env_temp) / (THERMONEUTRAL_MIN_TEMP - TEMPERATURE_MIN)).clamp(0.0, 1.0);
+            target_temp -= cold_ratio * MAX_DRY_COLD_BODY_TEMP_DROP;
+        } else if env_temp > THERMONEUTRAL_MAX_TEMP {
+            let heat_ratio = ((env_temp - THERMONEUTRAL_MAX_TEMP) / (TEMPERATURE_MAX - THERMONEUTRAL_MAX_TEMP)).clamp(0.0, 1.0);
+            target_temp += heat_ratio * MAX_DRY_HEAT_BODY_TEMP_RISE;
+        }
+
         if is_near_heat_source {
-            self._body_temperature = (self._body_temperature + BODY_TEMP_HEAT_RECOVERY_RATE * delta_time).min(NORMAL_BODY_TEMPERATURE);
-        } else if is_sheltered {
-            if self._body_temperature < NORMAL_BODY_TEMPERATURE {
-                self._body_temperature = (self._body_temperature + 0.4 * delta_time).min(NORMAL_BODY_TEMPERATURE);
-            }
-        } else if is_raining || self._wetness > 0.0 {
-            let env_temp = get_game_scene_manager().temperature();
-            let cold_factor = if env_temp < 20.0 { (20.0 - env_temp) / 20.0 } else { 0.1 };
-            let wet_drain = BODY_TEMP_COLD_DRAIN_RATE * (self._wetness * 0.7 + 0.3) * (1.0 + cold_factor);
-            self._body_temperature = (self._body_temperature - wet_drain * delta_time).max(30.0);
+            target_temp = (target_temp + 1.0).clamp(NORMAL_BODY_TEMPERATURE, NORMAL_BODY_TEMPERATURE + 0.5);
         } else {
-            if self._body_temperature < NORMAL_BODY_TEMPERATURE {
-                self._body_temperature = (self._body_temperature + 0.3 * delta_time).min(NORMAL_BODY_TEMPERATURE);
+            if is_raining && !is_sheltered {
+                target_temp -= 1.5;
             }
+            if self._wetness > 0.0 {
+                target_temp -= self._wetness * 3.0;
+            }
+        }
+
+        target_temp = target_temp.clamp(MIN_BODY_TEMPERATURE, MAX_BODY_TEMPERATURE);
+
+        let temp_diff = target_temp - self._body_temperature;
+        if temp_diff > 0.0 {
+            let recovery_rate = if is_near_heat_source { BODY_TEMP_HEAT_RECOVERY_RATE } else { 0.15 };
+            self._body_temperature = (self._body_temperature + recovery_rate * delta_time).min(target_temp);
+        } else if temp_diff < 0.0 {
+            let mut drain_rate = 0.05;
+            if is_raining && !is_sheltered {
+                drain_rate = BODY_TEMP_COLD_DRAIN_RATE * (self._wetness.max(0.3) * 1.5);
+            } else if self._wetness > 0.0 {
+                drain_rate = self._wetness * 0.4;
+            }
+            self._body_temperature = (self._body_temperature - drain_rate * delta_time).max(target_temp);
         }
 
         if self._body_temperature <= HYPOTHERMIA_THRESHOLD {
@@ -427,8 +448,11 @@ impl CharacterStats {
         self._happiness = save_data._happiness;
         self._intimacy = save_data._intimacy;
         self._invincibility = save_data._invincibility;
-        self._is_stat_displayed = save_data._is_stat_displayed;
-        self._body_temperature = save_data._body_temperature;
+        self._body_temperature = if save_data._body_temperature <= 0.0 {
+            NORMAL_BODY_TEMPERATURE
+        } else {
+            save_data._body_temperature
+        };
         self._wetness = save_data._wetness;
         self._is_hypothermia = save_data._is_hypothermia;
     }

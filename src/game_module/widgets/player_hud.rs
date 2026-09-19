@@ -1,5 +1,8 @@
 use crate::game_module::actors::character::Character;
-use crate::game_module::game_constants::{HP_WARNING_RATIO, HUNGER_WARNING_THRESHOLD, MAX_HUNGER};
+use crate::game_module::game_constants::{
+    HP_WARNING_RATIO, HUNGER_WARNING_THRESHOLD, HYPOTHERMIA_THRESHOLD, MAX_HUNGER, MIN_BODY_TEMPERATURE,
+    MAX_BODY_TEMPERATURE,
+};
 use crate::game_module::widgets::fishing::FishingGaugeWidget;
 use crate::game_module::widgets::status_bar_widget::StatusBarWidget;
 use nalgebra::Vector2;
@@ -48,12 +51,17 @@ impl<'a> PlayerHud<'a> {
         ui_component.set_margin_bottom(10.0);
         root_widget.add_widget(&player_widget);
 
+        let hp_widget = StatusBarWidget::create_status_widget(player_widget_ptr, HUD_HP_BAR_COLOR, true);
+        let stamina_widget = StatusBarWidget::create_status_widget(player_widget_ptr, HUD_STAMINA_BAR_COLOR, true);
+        let hunger_widget = StatusBarWidget::create_status_widget(player_widget_ptr, HUD_HUNGER_BAR_COLOR, false);
+        let temperature_widget = StatusBarWidget::create_status_widget(player_widget_ptr, HUD_TEMPERATURE_BAR_COLOR, false);
+
         PlayerHud {
             _widget: player_widget_ptr,
-            _hp_widget: StatusBarWidget::create_status_widget(player_widget_ptr, HUD_HP_BAR_COLOR),
-            _stamina_widget: StatusBarWidget::create_status_widget(player_widget_ptr, HUD_STAMINA_BAR_COLOR),
-            _hunger_widget: StatusBarWidget::create_status_widget(player_widget_ptr, HUD_HUNGER_BAR_COLOR),
-            _temperature_widget: StatusBarWidget::create_status_widget(player_widget_ptr, HUD_TEMPERATURE_BAR_COLOR),
+            _hp_widget: hp_widget,
+            _stamina_widget: stamina_widget,
+            _hunger_widget: hunger_widget,
+            _temperature_widget: temperature_widget,
             _fishing_gauge_widget: FishingGaugeWidget::create_fishing_gauge_widget(root_widget),
         }
     }
@@ -103,14 +111,17 @@ impl<'a> PlayerHud<'a> {
         );
 
         let body_temp = player.get_stats().get_body_temperature();
-        let temp_val = (body_temp - 30.0).max(0.0);
+        let temp_range = MAX_BODY_TEMPERATURE - MIN_BODY_TEMPERATURE;
+        let normalized_temp = (body_temp - MIN_BODY_TEMPERATURE).clamp(0.0, temp_range);
+        let warning_threshold = (HYPOTHERMIA_THRESHOLD - MIN_BODY_TEMPERATURE) / temp_range;
+
         self._temperature_widget.update_status_widget(
-            temp_val,
-            6.5, // 36.5 normal
-            12.0, // max 42.0
+            normalized_temp,
+            temp_range,
+            temp_range,
             delta_time,
-            true,
-            Some(4.0), // 34.0°C warning threshold (34 - 30 = 4.0)
+            false,
+            Some(warning_threshold),
         );
 
         if player.get_stats().is_hypothermia() {

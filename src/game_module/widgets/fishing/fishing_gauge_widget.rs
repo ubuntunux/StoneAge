@@ -136,6 +136,7 @@ impl<'a> FishingGaugeWidget<'a> {
             get_color32(0, 200, 255, 230),
             FISHING_UI_VERTICAL_GAUGE_WIDTH,
             FISHING_UI_VERTICAL_GAUGE_HEIGHT,
+            true,
         );
         let ui = ptr_as_mut(vertical_gauge._status_layer).get_ui_component_mut();
         ui.set_pos(210.0, 25.0);
@@ -153,7 +154,7 @@ impl<'a> FishingGaugeWidget<'a> {
         main_layer_ptr.add_widget(&status_text);
 
         // Cast gauge (horizontal bar for rod casting power)
-        let cast_gauge = StatusBarWidget::create_status_widget(parent_widget, get_color32(0, 200, 255, 230));
+        let cast_gauge = StatusBarWidget::create_status_widget(parent_widget, get_color32(0, 200, 255, 230), true);
         let ui = ptr_as_mut(cast_gauge._status_layer).get_ui_component_mut();
         ui.set_pivot_preset(PIVOT_CENTER);
         ui.set_pos_hint(Some(0.5), Some(0.8));

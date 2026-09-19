@@ -6,6 +6,7 @@ use rust_engine_3d::scene::render_object::RenderObjectData;
 use rust_engine_3d::utilities::system::RcRefCell;
 use serde::{Deserialize, Serialize};
 use std::ffi::c_void;
+use crate::game_module::game_constants::NORMAL_BODY_TEMPERATURE;
 
 #[derive(Clone)]
 pub enum ActorWrapper<'a> {
@@ -24,7 +25,11 @@ impl<'a> ActorWrapper<'a> {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq)]
+fn default_body_temperature() -> f32 {
+    NORMAL_BODY_TEMPERATURE
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(default)]
 pub struct CharacterStatsSaveData {
     pub _is_alive: bool,
@@ -46,12 +51,40 @@ pub struct CharacterStatsSaveData {
     pub _intimacy: f32,
     pub _invincibility: bool,
     pub _is_stat_displayed: bool,
+    #[serde(default = "default_body_temperature")]
     pub _body_temperature: f32,
     pub _wetness: f32,
     pub _is_hypothermia: bool,
 }
 
-#[derive(Default)]
+impl Default for CharacterStatsSaveData {
+    fn default() -> Self {
+        Self {
+            _is_alive: false,
+            _is_tamed: false,
+            _is_down_loop: false,
+            _corpse_hit_count: 0,
+            _hp: 0,
+            _max_hp: 0,
+            _max_hp_data: 0,
+            _stamina_recovery_delay_time: 0.0,
+            _prev_stamina: 0.0,
+            _stamina: 0.0,
+            _max_stamina: 0.0,
+            _max_stamina_data: 0.0,
+            _hunger: 0.0,
+            _tired: 0.0,
+            _happiness: 0.0,
+            _intimacy: 0.0,
+            _invincibility: false,
+            _is_stat_displayed: false,
+            _body_temperature: NORMAL_BODY_TEMPERATURE,
+            _wetness: 0.0,
+            _is_hypothermia: false,
+        }
+    }
+}
+
 pub struct CharacterStats {
     pub _is_alive: bool,
     pub _is_tamed: bool,
@@ -76,6 +109,36 @@ pub struct CharacterStats {
     pub _body_temperature: f32,
     pub _wetness: f32,
     pub _is_hypothermia: bool,
+}
+
+impl Default for CharacterStats {
+    fn default() -> Self {
+        Self {
+            _is_alive: false,
+            _is_tamed: false,
+            _is_down_loop: false,
+            _corpse_hit_count: 0,
+            _hp: 0,
+            _max_hp: 0,
+            _max_hp_data: 0,
+            _stamina_recovery_delay_time: 0.0,
+            _prev_stamina: 0.0,
+            _stamina: 0.0,
+            _max_stamina: 0.0,
+            _max_stamina_data: 0.0,
+            _hunger: 0.0,
+            _tired: 0.0,
+            _happiness: 0.0,
+            _intimacy: 0.0,
+            _invincibility: false,
+            _is_stat_displayed: false,
+            _is_interacting: false,
+            _hit_blink_time: 0.0,
+            _body_temperature: 36.5,
+            _wetness: 0.0,
+            _is_hypothermia: false,
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq)]

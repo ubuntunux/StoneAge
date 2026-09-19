@@ -45,9 +45,20 @@ pub const TIME_OF_LATE_NOON: f32 = 16.0;
 pub const TIME_OF_NIGHT: f32 = 18.0;
 pub const TIME_OF_MIDNIGHT: f32 = 24.0;
 pub const TIME_OF_DAY_SPEED: f32 = 14.0 / (20.0 * 60.0); // Minute 14 per day for 20 hours
+
+pub const SLEEP_TIMER: f32 = 1.5;
+pub const CHARACTER_INTERACTION_TIME: f32 = 3.0;
+
+// temperature
 pub const TEMPERATURE_MIN: f32 = 12.0;
 pub const TEMPERATURE_MAX: f32 = 32.0;
+pub const MIN_BODY_TEMPERATURE: f32 = 28.0;
+pub const MAX_BODY_TEMPERATURE: f32 = 42.0;
 pub const NORMAL_BODY_TEMPERATURE: f32 = 36.5;
+pub const THERMONEUTRAL_MIN_TEMP: f32 = 18.0;
+pub const THERMONEUTRAL_MAX_TEMP: f32 = 26.0;
+pub const MAX_DRY_COLD_BODY_TEMP_DROP: f32 = 0.5;
+pub const MAX_DRY_HEAT_BODY_TEMP_RISE: f32 = 0.5;
 pub const HYPOTHERMIA_THRESHOLD: f32 = 34.0;
 pub const HYPOTHERMIA_RECOVERY_THRESHOLD: f32 = 35.5;
 pub const WETNESS_INCREASE_RATE: f32 = 0.33;
@@ -55,8 +66,6 @@ pub const WETNESS_DRY_RATE: f32 = 0.25;
 pub const BODY_TEMP_COLD_DRAIN_RATE: f32 = 0.6;
 pub const BODY_TEMP_HEAT_RECOVERY_RATE: f32 = 1.2;
 pub const HEAT_SOURCE_RADIUS: f32 = 6.0;
-pub const SLEEP_TIMER: f32 = 1.5;
-pub const CHARACTER_INTERACTION_TIME: f32 = 3.0;
 
 // character
 pub const CHARACTER_DATA_NAME_ARU: &str = "characters/family/aru";

@@ -1,5 +1,5 @@
 use crate::game_module::game_constants::ITEM_NONE;
-use crate::game_module::game_service_locator::{get_character_manager, get_game_scene_manager, get_game_ui_manager};
+use crate::game_module::game_service_locator::{get_character_manager, get_game_ui_manager};
 use crate::game_module::widgets::item_bar::{EQUIPMENT_SLOT_START_INDEX, NUM_EQUIPMENT_SLOTS};
 use rust_engine_3d::scene::ui::{
     HorizontalAlign, Orientation, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault,
@@ -168,8 +168,9 @@ impl<'a> PlayerStatWidget<'a> {
             }
             self._defence_row.set_value(&format!("{}", defence_val));
 
-            let temp = get_game_scene_manager().temperature();
+            let temp = player.get_stats().get_body_temperature();
             self._temp_row.set_value(&format!("{:.1}°C", temp));
+            log::info!("[PlayerStatWidget Log] _temp_row text set to: {:.1}°C (actual body_temp: {:.2}°C)", temp, temp);
         }
     }
 }
