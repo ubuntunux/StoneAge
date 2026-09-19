@@ -47,6 +47,14 @@ pub const TIME_OF_MIDNIGHT: f32 = 24.0;
 pub const TIME_OF_DAY_SPEED: f32 = 14.0 / (20.0 * 60.0); // Minute 14 per day for 20 hours
 pub const TEMPERATURE_MIN: f32 = 12.0;
 pub const TEMPERATURE_MAX: f32 = 32.0;
+pub const NORMAL_BODY_TEMPERATURE: f32 = 36.5;
+pub const HYPOTHERMIA_THRESHOLD: f32 = 34.0;
+pub const HYPOTHERMIA_RECOVERY_THRESHOLD: f32 = 35.5;
+pub const WETNESS_INCREASE_RATE: f32 = 0.1;
+pub const WETNESS_DRY_RATE: f32 = 0.2;
+pub const BODY_TEMP_COLD_DRAIN_RATE: f32 = 0.15;
+pub const BODY_TEMP_HEAT_RECOVERY_RATE: f32 = 0.8;
+pub const HEAT_SOURCE_RADIUS: f32 = 6.0;
 pub const SLEEP_TIMER: f32 = 1.5;
 pub const CHARACTER_INTERACTION_TIME: f32 = 3.0;
 

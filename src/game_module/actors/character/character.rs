@@ -11,7 +11,9 @@ use crate::game_module::actors::items::ItemDataType;
 use crate::game_module::behavior::behavior_base::{BehaviorBase, BehaviorState, create_character_behavior};
 use crate::game_module::game_client::GamePhase;
 use crate::game_module::game_constants::*;
+use crate::game_module::actors::props::api::PropDataType;
 use crate::game_module::game_scene_manager::Stages;
+use crate::game_module::game_weather::WeatherType;
 use crate::game_module::game_service_locator::{
     get_character_manager, get_character_manager_mut, get_game_client_mut, get_game_scene_manager,
     get_game_scene_manager_mut, get_game_ui_manager_mut, get_item_manager,
@@ -95,6 +97,9 @@ impl CharacterStats {
             _is_stat_displayed: false,
             _is_interacting: false,
             _hit_blink_time: 0.0,
+            _body_temperature: NORMAL_BODY_TEMPERATURE,
+            _wetness: 0.0,
+            _is_hypothermia: false,
         }
     }
 
@@ -110,6 +115,9 @@ impl CharacterStats {
         self._max_stamina_data = MAX_STAMINA;
         self._hunger = 0.0;
         self._invincibility = false;
+        self._body_temperature = NORMAL_BODY_TEMPERATURE;
+        self._wetness = 0.0;
+        self._is_hypothermia = false;
     }
 }
 
@@ -226,6 +234,94 @@ impl CharacterStats {
         self._is_stat_displayed = is_stat_displayed
     }
 
+    pub fn get_body_temperature(&self) -> f32 {
+        self._body_temperature
+    }
+
+    pub fn set_body_temperature(&mut self, temp: f32) {
+        self._body_temperature = temp.clamp(30.0, 42.0);
+    }
+
+    pub fn get_wetness(&self) -> f32 {
+        self._wetness
+    }
+
+    pub fn set_wetness(&mut self, wetness: f32) {
+        self._wetness = wetness.clamp(0.0, 1.0);
+    }
+
+    pub fn is_hypothermia(&self) -> bool {
+        self._is_hypothermia
+    }
+
+    pub fn set_is_hypothermia(&mut self, is_hypothermia: bool) {
+        self._is_hypothermia = is_hypothermia;
+    }
+
+    pub fn update_body_temperature<'a>(&mut self, owner: &Character<'a>, delta_time: f32) {
+        let is_raining = get_game_scene_manager()._weather.get_weather_type() == WeatherType::Rain;
+        let mut is_near_heat_source = false;
+        let mut is_sheltered = false;
+
+        let char_pos = owner.get_position();
+
+        for prop in get_game_scene_manager().get_prop_manager().get_props().values() {
+            let prop_ref = prop.borrow();
+            let distance = (prop_ref.get_position() - char_pos).norm();
+            let prop_name = prop_ref._prop_name.to_lowercase();
+            let prop_data_name = prop_ref._prop_data_name.to_lowercase();
+            let model_name = prop_ref._prop_data.borrow()._model_data_name.to_lowercase();
+            let prop_type = prop_ref._prop_data.borrow()._prop_type;
+
+            if distance <= HEAT_SOURCE_RADIUS {
+                if prop_name.contains("fire") || prop_name.contains("fireplace") || prop_name.contains("bonfire") || prop_name.contains("stove")
+                    || prop_data_name.contains("fire") || prop_data_name.contains("fireplace") || prop_data_name.contains("bonfire")
+                    || model_name.contains("fire") || model_name.contains("fireplace") || model_name.contains("bonfire") || model_name.contains("stove") {
+                    is_near_heat_source = true;
+                }
+            }
+
+            if distance <= 4.0 {
+                if prop_type == PropDataType::Ceiling || prop_type == PropDataType::Building
+                    || prop_name.contains("roof") || prop_name.contains("house") || prop_name.contains("shelter") || prop_name.contains("leaf")
+                    || prop_data_name.contains("roof") || prop_data_name.contains("house") || prop_data_name.contains("shelter") || prop_data_name.contains("leaf")
+                    || model_name.contains("roof") || model_name.contains("house") || model_name.contains("shelter") || model_name.contains("leaf") {
+                    is_sheltered = true;
+                }
+            }
+        }
+
+        if is_raining && !is_sheltered && !is_near_heat_source {
+            self._wetness = (self._wetness + WETNESS_INCREASE_RATE * delta_time).min(1.0);
+        } else {
+            let dry_multiplier = if is_near_heat_source { 4.0 } else { 1.0 };
+            self._wetness = (self._wetness - WETNESS_DRY_RATE * dry_multiplier * delta_time).max(0.0);
+        }
+
+        if is_near_heat_source {
+            self._body_temperature = (self._body_temperature + BODY_TEMP_HEAT_RECOVERY_RATE * delta_time).min(NORMAL_BODY_TEMPERATURE);
+        } else if is_sheltered || (!is_raining && self._wetness <= 0.0) {
+            if self._body_temperature < NORMAL_BODY_TEMPERATURE {
+                self._body_temperature = (self._body_temperature + 0.2 * delta_time).min(NORMAL_BODY_TEMPERATURE);
+            }
+        } else {
+            let env_temp = get_game_scene_manager().temperature();
+            let cold_factor = if env_temp < 20.0 { (20.0 - env_temp) / 20.0 } else { 0.1 };
+            let wet_drain = (self._wetness * 0.7 + 0.3) * BODY_TEMP_COLD_DRAIN_RATE * (1.0 + cold_factor);
+            self._body_temperature = (self._body_temperature - wet_drain * delta_time).max(30.0);
+        }
+
+        if self._body_temperature <= HYPOTHERMIA_THRESHOLD {
+            if !self._is_hypothermia {
+                self._is_hypothermia = true;
+            }
+        } else if self._body_temperature >= HYPOTHERMIA_RECOVERY_THRESHOLD {
+            if self._is_hypothermia {
+                self._is_hypothermia = false;
+            }
+        }
+    }
+
     pub fn update_hp<'a>(&mut self, _owner: &Character<'a>, _delta_time: f32) {
         if self._max_hp < self._hp {
             self._hp = self._max_hp;
@@ -278,6 +374,7 @@ impl CharacterStats {
             if owner._is_player {
                 self.update_hp(owner, delta_time);
                 self.update_stamina(owner, delta_time);
+                self.update_body_temperature(owner, delta_time);
             }
         }
     }
@@ -302,6 +399,9 @@ impl CharacterStats {
             _intimacy: self._intimacy,
             _invincibility: self._invincibility,
             _is_stat_displayed: self._is_stat_displayed,
+            _body_temperature: self._body_temperature,
+            _wetness: self._wetness,
+            _is_hypothermia: self._is_hypothermia,
         }
     }
 
@@ -324,6 +424,9 @@ impl CharacterStats {
         self._intimacy = save_data._intimacy;
         self._invincibility = save_data._invincibility;
         self._is_stat_displayed = save_data._is_stat_displayed;
+        self._body_temperature = save_data._body_temperature;
+        self._wetness = save_data._wetness;
+        self._is_hypothermia = save_data._is_hypothermia;
     }
 }
 
@@ -841,6 +944,7 @@ impl<'a> Character<'a> {
 
     pub fn is_available_move(&self) -> bool {
         self.is_alive()
+            && !self.is_hypothermia()
             && !self.is_move_state(MoveAnimationState::Roll)
             && (!self.is_on_ground() || !self.is_action(ActionAnimationState::Kick))
             && !self.is_action(ActionAnimationState::LayingDown)
@@ -1064,6 +1168,26 @@ impl<'a> Character<'a> {
 
     pub fn set_hunger(&mut self, hunger: f32) {
         self._character_stats.set_hunger(hunger)
+    }
+
+    pub fn get_body_temperature(&self) -> f32 {
+        self._character_stats.get_body_temperature()
+    }
+
+    pub fn set_body_temperature(&mut self, temp: f32) {
+        self._character_stats.set_body_temperature(temp);
+    }
+
+    pub fn get_wetness(&self) -> f32 {
+        self._character_stats.get_wetness()
+    }
+
+    pub fn set_wetness(&mut self, wetness: f32) {
+        self._character_stats.set_wetness(wetness);
+    }
+
+    pub fn is_hypothermia(&self) -> bool {
+        self._character_stats.is_hypothermia()
     }
 
     pub fn set_invincibility(&mut self, invincibility: bool) {

@@ -46,6 +46,9 @@ pub struct CharacterStatsSaveData {
     pub _intimacy: f32,
     pub _invincibility: bool,
     pub _is_stat_displayed: bool,
+    pub _body_temperature: f32,
+    pub _wetness: f32,
+    pub _is_hypothermia: bool,
 }
 
 #[derive(Default)]
@@ -70,6 +73,9 @@ pub struct CharacterStats {
     pub _is_stat_displayed: bool,
     pub _is_interacting: bool,
     pub _hit_blink_time: f32,
+    pub _body_temperature: f32,
+    pub _wetness: f32,
+    pub _is_hypothermia: bool,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq)]

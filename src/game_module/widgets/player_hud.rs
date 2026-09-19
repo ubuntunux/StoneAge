@@ -12,12 +12,14 @@ use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 pub const HUD_HP_BAR_COLOR: u32 = get_color32(255, 64, 0, 128);
 pub const HUD_STAMINA_BAR_COLOR: u32 = get_color32(128, 128, 255, 128);
 pub const HUD_HUNGER_BAR_COLOR: u32 = get_color32(240, 170, 100, 128);
+pub const HUD_TEMPERATURE_BAR_COLOR: u32 = get_color32(80, 200, 240, 128);
 
 pub struct PlayerHud<'a> {
     pub _widget: *const WidgetDefault<'a>,
     pub _hp_widget: StatusBarWidget<'a>,
     pub _stamina_widget: StatusBarWidget<'a>,
     pub _hunger_widget: StatusBarWidget<'a>,
+    pub _temperature_widget: StatusBarWidget<'a>,
     pub _fishing_gauge_widget: FishingGaugeWidget<'a>,
 }
 
@@ -51,6 +53,7 @@ impl<'a> PlayerHud<'a> {
             _hp_widget: StatusBarWidget::create_status_widget(player_widget_ptr, HUD_HP_BAR_COLOR),
             _stamina_widget: StatusBarWidget::create_status_widget(player_widget_ptr, HUD_STAMINA_BAR_COLOR),
             _hunger_widget: StatusBarWidget::create_status_widget(player_widget_ptr, HUD_HUNGER_BAR_COLOR),
+            _temperature_widget: StatusBarWidget::create_status_widget(player_widget_ptr, HUD_TEMPERATURE_BAR_COLOR),
             _fishing_gauge_widget: FishingGaugeWidget::create_fishing_gauge_widget(root_widget),
         }
     }
@@ -63,6 +66,10 @@ impl<'a> PlayerHud<'a> {
 
     pub fn trigger_hunger_warning(&self) {
         self._hunger_widget.trigger_warning();
+    }
+
+    pub fn trigger_temperature_warning(&self) {
+        self._temperature_widget.trigger_warning();
     }
 
     pub fn update_status_widget(&mut self, player: &Character<'a>, delta_time: f64) {
@@ -94,6 +101,21 @@ impl<'a> PlayerHud<'a> {
             true,
             Some(HUNGER_WARNING_THRESHOLD),
         );
+
+        let body_temp = player.get_stats().get_body_temperature();
+        let temp_val = (body_temp - 30.0).max(0.0);
+        self._temperature_widget.update_status_widget(
+            temp_val,
+            6.5, // 36.5 normal
+            12.0, // max 42.0
+            delta_time,
+            true,
+            Some(4.0), // 34.0°C warning threshold (34 - 30 = 4.0)
+        );
+
+        if player.get_stats().is_hypothermia() {
+            self._temperature_widget.trigger_warning();
+        }
 
         if player.is_fishing_gauge_active() {
             self._fishing_gauge_widget.set_visible_fishing_gauge(true);
