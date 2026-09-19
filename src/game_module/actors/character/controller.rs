@@ -446,11 +446,7 @@ impl<'a> CharacterController<'a> {
             self._move_direction
         };
 
-        if owner.is_hypothermia() {
-            move_direction = Vector3::zeros();
-            self._velocity.x = 0.0;
-            self._velocity.z = 0.0;
-        } else if move_direction.x != 0.0 || move_direction.z != 0.0 {
+        if move_direction.x != 0.0 || move_direction.z != 0.0 {
             move_direction.normalize_mut();
             let air_speed_factor = if !self._is_ground { self._slope_ratio } else { 1.0 };
             self._velocity.x = move_direction.x * self._move_speed * air_speed_factor;

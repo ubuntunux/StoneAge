@@ -300,15 +300,19 @@ impl CharacterStats {
 
         if is_near_heat_source {
             self._body_temperature = (self._body_temperature + BODY_TEMP_HEAT_RECOVERY_RATE * delta_time).min(NORMAL_BODY_TEMPERATURE);
-        } else if is_sheltered || (!is_raining && self._wetness <= 0.0) {
+        } else if is_sheltered {
             if self._body_temperature < NORMAL_BODY_TEMPERATURE {
-                self._body_temperature = (self._body_temperature + 0.2 * delta_time).min(NORMAL_BODY_TEMPERATURE);
+                self._body_temperature = (self._body_temperature + 0.4 * delta_time).min(NORMAL_BODY_TEMPERATURE);
             }
-        } else {
+        } else if is_raining || self._wetness > 0.0 {
             let env_temp = get_game_scene_manager().temperature();
             let cold_factor = if env_temp < 20.0 { (20.0 - env_temp) / 20.0 } else { 0.1 };
-            let wet_drain = (self._wetness * 0.7 + 0.3) * BODY_TEMP_COLD_DRAIN_RATE * (1.0 + cold_factor);
+            let wet_drain = BODY_TEMP_COLD_DRAIN_RATE * (self._wetness * 0.7 + 0.3) * (1.0 + cold_factor);
             self._body_temperature = (self._body_temperature - wet_drain * delta_time).max(30.0);
+        } else {
+            if self._body_temperature < NORMAL_BODY_TEMPERATURE {
+                self._body_temperature = (self._body_temperature + 0.3 * delta_time).min(NORMAL_BODY_TEMPERATURE);
+            }
         }
 
         if self._body_temperature <= HYPOTHERMIA_THRESHOLD {
@@ -944,7 +948,6 @@ impl<'a> Character<'a> {
 
     pub fn is_available_move(&self) -> bool {
         self.is_alive()
-            && !self.is_hypothermia()
             && !self.is_move_state(MoveAnimationState::Roll)
             && (!self.is_on_ground() || !self.is_action(ActionAnimationState::Kick))
             && !self.is_action(ActionAnimationState::LayingDown)
