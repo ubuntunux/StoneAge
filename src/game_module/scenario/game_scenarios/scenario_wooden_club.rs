@@ -101,11 +101,9 @@ impl<'a> ScenarioWoodenClub<'a> {
         if self._quest.is_none() {
             let game_ui_manager = get_game_ui_manager_mut();
             let item_wood = get_game_resources().get_item_data(ITEM_WOOD);
-            let item_wooden_club = get_game_resources().get_item_data(ItemDataType::WoodenClub.item_code());
 
             self._quest = Some(game_ui_manager.add_quest(Some(String::from("Crafting a Wooden Club"))));
             if let Some(quest) = &self._quest {
-                // Sub Quest 1: Unlock Wooden Club in Toolbox
                 self._sub_quest_unlock_wooden_club = Some(quest.borrow_mut().add_quest_item(
                     QuestCreateInfo::DefaultQuest(DefaultQuestData {
                         _quest_icon_name: None,
@@ -113,7 +111,6 @@ impl<'a> ScenarioWoodenClub<'a> {
                     }),
                 ));
 
-                // Sub Quest 2: Gather 1 Wood
                 self._sub_quest_gather_wood = Some(quest.borrow_mut().add_quest_item(QuestCreateInfo::GatherItem(
                     GatherItemData {
                         _item_data_name: String::from(ITEM_WOOD),
@@ -122,12 +119,10 @@ impl<'a> ScenarioWoodenClub<'a> {
                     },
                 )));
 
-                // Sub Quest 3: Craft Wooden Club in Craft menu
                 self._sub_quest_craft_wooden_club = Some(quest.borrow_mut().add_quest_item(
-                    QuestCreateInfo::GatherItem(GatherItemData {
-                        _item_data_name: String::from(ItemDataType::WoodenClub.item_code()),
-                        _item_data: item_wooden_club.clone(),
-                        _gather_item_count: 1,
+                    QuestCreateInfo::DefaultQuest(DefaultQuestData {
+                        _quest_icon_name: None,
+                        _quest_description: Some(String::from("Open Inventory & Craft Wooden Club")),
                     }),
                 ));
             }
@@ -352,6 +347,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWoodenClub<'a> {
                         self.create_toolbox_text_box();
                     }
                     State::Update => {
+                        // Check Step 1: Unlock Wooden Club in Toolbox
                         let is_unlocked = get_game_ui_manager()
                             .get_unlocked_toolbox_items()
                             .contains("wooden_club");
@@ -361,21 +357,24 @@ impl<'a> ScenarioBase<'a> for ScenarioWoodenClub<'a> {
                             self.create_toolbox_text_box();
                         }
 
-                        let sub1_complete = self
-                            ._sub_quest_unlock_wooden_club
-                            .as_ref()
-                            .is_some_and(|q| q.borrow().is_completed_quest());
-                        let sub2_complete = self
-                            ._sub_quest_gather_wood
-                            .as_ref()
-                            .is_some_and(|q| q.borrow().is_completed_quest());
+                        // Check Step 3: Craft Wooden Club in Inventory
+                        let has_wooden_club =
+                            get_game_ui_manager().get_item_count(ItemDataType::WoodenClub.item_code()) >= 1;
+                        if has_wooden_club {
+                            if let Some(q) = &self._sub_quest_craft_wooden_club {
+                                if !q.borrow().is_completed_quest() {
+                                    q.borrow_mut().set_completed_quest();
+                                }
+                            }
+                        }
+
                         let sub3_complete = self
                             ._sub_quest_craft_wooden_club
                             .as_ref()
                             .is_some_and(|q| q.borrow().is_completed_quest());
 
-                        if sub1_complete && sub2_complete && sub3_complete {
-                            self._scenario_track.set_next_scenario_phase(ScenarioPhase::End, None);
+                        if sub3_complete {
+                            self._scenario_track.set_next_scenario_phase(ScenarioPhase::End, Some(1.0));
                         }
                     }
                     _ => {}
@@ -383,6 +382,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWoodenClub<'a> {
                 ScenarioPhase::End => {
                     if state == State::Begin {
                         self.remove_toolbox_text_box();
+                        self.destroy_quest();
                     }
                 }
             }

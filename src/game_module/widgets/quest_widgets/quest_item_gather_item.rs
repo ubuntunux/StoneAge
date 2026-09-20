@@ -59,9 +59,15 @@ impl<'a> QuestItemGatherItem<'a> {
         let ui_component = ptr_as_mut(self._is_complete_widget.as_ref()).get_ui_component_mut();
         ui_component.set_text(if is_completed_quest { "[X]" } else { "[ ]" });
 
+        let item_name = self._item_data._item_data.borrow()._name.clone();
+        let display_name = if item_name.is_empty() {
+            &self._item_data._item_data_name
+        } else {
+            &item_name
+        };
+
         let ui_component = ptr_as_mut(self._text_widget.as_ref()).get_ui_component_mut();
-        ui_component
-            .set_text(format!("Collected: {}/{}", self._item_count, self._item_data._gather_item_count).as_str());
+        ui_component.set_text(&format!("Gather {} ({}/{})", display_name, self._item_count, self._item_data._gather_item_count));
     }
 }
 

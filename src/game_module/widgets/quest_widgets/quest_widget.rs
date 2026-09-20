@@ -93,7 +93,7 @@ impl<'a> QuestWidget<'a> {
         ui_component.set_margin_left(ITEM_MARGIN);
         ui_component.set_margin_right(ITEM_MARGIN);
         ui_component.set_color(get_color32(0, 0, 0, 128));
-        ui_component.set_size_y(ITEM_SIZE * 5.0);
+        ui_component.set_size(0.0, 0.0);
         ui_component.set_round(10.0);
         ui_component.set_padding(ITEM_PADDING);
         ui_component.set_expandable_x(true);
