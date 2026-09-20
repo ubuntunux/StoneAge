@@ -64,6 +64,9 @@ pub struct ScenarioWrapUpTheDay<'a> {
     _ewa_eat_delay: f32,
     _koa_eat_delay: f32,
     _bed_camera_position: Vector3<f32>,
+    _camera_target_position: Vector3<f32>,
+    _camera_target_velocity: Vector3<f32>,
+    _is_camera_target_initialized: bool,
     _scenario_track: ScenarioTrack<ScenarioPhase>,
 }
 
@@ -91,6 +94,9 @@ impl<'a> ScenarioWrapUpTheDay<'a> {
             _ewa_eat_delay: 0.0,
             _koa_eat_delay: 0.0,
             _bed_camera_position: Vector3::default(),
+            _camera_target_position: Vector3::default(),
+            _camera_target_velocity: Vector3::default(),
+            _is_camera_target_initialized: false,
             _scenario_track: ScenarioTrack {
                 _scenario_phase: ScenarioPhase::None,
                 _next_scenario_phase: ScenarioPhase::Begin,
@@ -127,11 +133,12 @@ impl<'a> ScenarioWrapUpTheDay<'a> {
             math::make_rotation_matrix(camera_rotation.x, camera_rotation.y, camera_rotation.z);
         self._bed_camera_position = pivot - camera_rotation_matrix.column(2).xyz() * (CAMERA_DISTANCE_MIN + 6.0);
         get_game_controller_mut().set_camera_fixed(true);
-        self.update_bed_camera();
+        self._is_camera_target_initialized = false;
+        self.update_bed_camera(0.0);
     }
 
-    pub fn update_bed_camera(&self) {
-        let target_position = if let Some(player) = self._player.as_ref() {
+    pub fn update_bed_camera(&mut self, delta_time: f32) {
+        let goal_target_position = if let Some(player) = self._player.as_ref() {
             player.borrow().get_bounding_box()._center + Vector3::new(0.0, CAMERA_OFFSET_Y, 0.0)
         } else if let Some(prop_bed) = self._prop_bed_for_aru.as_ref() {
             prop_bed.borrow().get_position() + Vector3::new(0.0, CAMERA_OFFSET_Y, 0.0)
@@ -139,7 +146,20 @@ impl<'a> ScenarioWrapUpTheDay<'a> {
             Vector3::new(0.0, CAMERA_OFFSET_Y, 0.0)
         };
 
-        let diff = self._bed_camera_position - target_position;
+        if !self._is_camera_target_initialized {
+            self._camera_target_position = goal_target_position;
+            self._camera_target_velocity = Vector3::zeros();
+            self._is_camera_target_initialized = true;
+        } else if 0.0 < delta_time {
+            let diff = goal_target_position - self._camera_target_position;
+            const ACCEL_SPEED: f32 = 25.0;
+            const DAMPING: f32 = 8.0;
+            self._camera_target_velocity += diff * ACCEL_SPEED * delta_time;
+            self._camera_target_velocity *= (-DAMPING * delta_time).exp();
+            self._camera_target_position += self._camera_target_velocity * delta_time;
+        }
+
+        let diff = self._bed_camera_position - self._camera_target_position;
         let dist = diff.magnitude();
         let camera_rotation = if 0.0001 < dist {
             let back = diff / dist;
@@ -386,7 +406,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
         let game_scene_manager = get_game_scene_manager_mut();
         let game_ui_manager = get_game_ui_manager_mut();
 
-        self.update_bed_camera();
+        self.update_bed_camera(delta_time as f32);
 
         let prev_scenario_phase = self._scenario_track._scenario_phase;
         let next_scenario_phase = self._scenario_track._next_scenario_phase;
