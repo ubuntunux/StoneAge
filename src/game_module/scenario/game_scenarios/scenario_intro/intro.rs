@@ -492,6 +492,18 @@ impl<'a> ScenarioIntro<'a> {
         self._sub_quest_sleep = None;
     }
 
+    pub fn reset_actors_to_bed_positions(&mut self) {
+        if let (Some(actor), Some(prop)) = (self._player.as_ref(), self._prop_bed_for_aru.as_ref()) {
+            actor.borrow_mut().set_position(prop.borrow().get_position());
+        }
+        if let (Some(actor), Some(prop)) = (self._actor_ewa.as_ref(), self._prop_bed_for_ewa.as_ref()) {
+            actor.borrow_mut().set_position(prop.borrow().get_position());
+        }
+        if let (Some(actor), Some(prop)) = (self._actor_koa.as_ref(), self._prop_bed_for_koa.as_ref()) {
+            actor.borrow_mut().set_position(prop.borrow().get_position());
+        }
+    }
+
     pub fn get_quest_save_data(&self) -> ScenarioIntroQuestSaveData {
         ScenarioIntroQuestSaveData {
             _has_quest: self._quest.is_some(),
@@ -637,6 +649,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
         // update quest & text box
         match self._scenario_track._scenario_phase {
             ScenarioPhase::None | ScenarioPhase::Begin => {
+                self.reset_actors_to_bed_positions();
                 let mut pivot = Vector3::new(0.0, CAMERA_OFFSET_Y, 0.0);
                 if let Some(actor) = self._player.as_ref() {
                     pivot += *actor.borrow().get_center();
@@ -744,10 +757,12 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                     self._scenario_track.set_next_scenario_phase(ScenarioPhase::Begin, None);
                 }
                 ScenarioPhase::Begin => {
+                    self.reset_actors_to_bed_positions();
                     self._scenario_track.set_next_scenario_phase(ScenarioPhase::StoryBoard, None);
                 }
                 ScenarioPhase::StoryBoard => match state {
                     State::Begin => {
+                        self.reset_actors_to_bed_positions();
                         game_scene_manager.set_time(TIME_OF_DAWN, 0.0);
                         if let Some(actor) = &self._actor_ewa {
                             actor.borrow_mut().set_behavior_none();

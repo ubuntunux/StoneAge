@@ -242,8 +242,8 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
         main_camera._transform_object.set_position(&Vector3::new(13.48, 26.56, -5.02));
         main_camera._transform_object.set_rotation(&Vector3::new(0.76, 0.33, 0.0));
 
-        let pivot = if let Some(actor) = &self._player {
-            *actor.borrow().get_center()
+        let pivot = if let Some(prop) = &self._prop_bed_for_aru {
+            *prop.borrow().get_position()
         } else {
             Vector3::zeros()
         };
@@ -288,13 +288,39 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
                     self._scenario_track.set_next_scenario_phase(ScenarioPhase::Begin, None);
                 }
                 ScenarioPhase::Begin => {
-                    if state == State::Update {
+                    if state == State::Begin {
+                        if let Some(ufo) = &self._actor_ufo {
+                            let mut ufo_position = ufo.borrow().get_position().clone();
+                            ufo_position.x = self._around_start_position.x;
+                            ufo_position.z = self._around_start_position.z;
+                            ufo.borrow_mut().set_position(&ufo_position);
+                        }
+                    } else if state == State::Update {
                         game_scene_manager.set_time(TIME_OF_EARLY_MORNING, 0.0);
                         self._scenario_track.set_next_scenario_phase(ScenarioPhase::ReleaseFamily, Some(6.0));
                     }
                 }
                 ScenarioPhase::ReleaseFamily => match state {
                     State::Begin => {
+                        if let Some(ufo) = &self._actor_ufo {
+                            let prop_bed_position = self._prop_bed_for_aru.as_ref().unwrap().borrow().get_position().clone();
+                            let mut ufo_position = ufo.borrow().get_position().clone();
+                            ufo_position.x = prop_bed_position.x;
+                            ufo_position.z = prop_bed_position.z;
+                            ufo.borrow_mut().set_position(&ufo_position);
+                            if let Some(actor) = &self._player {
+                                actor.borrow_mut().set_position(&ufo_position);
+                            }
+
+                            if let Some(actor) = &self._actor_ewa {
+                                actor.borrow_mut().set_position(&ufo_position);
+                            }
+
+                            if let Some(actor) = &self._actor_koa {
+                                actor.borrow_mut().set_position(&ufo_position);
+                            }
+                        }
+
                         self._audio_ufo_flying =
                             get_audio_manager_mut().play_audio_bank(AUDIO_UFO_FLYING, AudioLoop::LOOP, Some(1.0));
                         get_audio_manager_mut().play_audio_bank(AUDIO_UFO_BEAM, AudioLoop::ONCE, Some(1.0));

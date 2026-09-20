@@ -8469,16 +8469,6 @@
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/game_data/scenario/scenario_intro/day_one.blend": [
-        {
-            "asset_type": "GAME_SCENARIO",
-            "asset_path": "scenario_intro/day_one",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/scenario/scenario_intro/day_one.blend",
-            "guid": "",
-            "mtime": 1788704111.4043255,
-            "data": {}
-        }
-    ],
     "/mnt/Workspace/StoneAge/resources/externals/game_data/scenario/scenario_intro/intro.blend": [
         {
             "asset_type": "GAME_SCENARIO",
@@ -8506,6 +8496,16 @@
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/scenario/scenario_intro/ufo.blend",
             "guid": "",
             "mtime": 1788704111.4202137,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/scenario/scenario_intro/day_one.blend": [
+        {
+            "asset_type": "GAME_SCENARIO",
+            "asset_path": "scenario_intro/day_one",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/scenario/scenario_intro/day_one.blend",
+            "guid": "",
+            "mtime": 1789921447.082406,
             "data": {}
         }
     ]
