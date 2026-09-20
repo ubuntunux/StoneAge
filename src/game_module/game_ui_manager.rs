@@ -410,11 +410,7 @@ impl<'a> GameUIManager<'a> {
         }
     }
     pub fn is_requested_close_world_map(&self) -> bool {
-        if let Some(toolbox_widget) = self._toolbox_widget.as_ref() {
-            toolbox_widget._world_map_widget.is_requested_close_world_map()
-        } else {
-            false
-        }
+        !self.is_opened_world_map()
     }
     pub fn close_world_map(&mut self) {
         if let Some(toolbox_widget) = self._toolbox_widget.as_mut() {
@@ -422,30 +418,15 @@ impl<'a> GameUIManager<'a> {
         }
     }
     pub fn get_selected_world_map_stage_data_name(&self) -> &String {
-        self._toolbox_widget
-            .as_ref()
-            .unwrap()
-            ._world_map_widget
-            .get_selected_world_map_stage_data_name()
+        get_game_scene_manager().get_current_game_scene_data_name()
     }
-    pub fn set_selected_world_map_stage(&mut self, selected_stage_name: &String) {
-        if let Some(toolbox_widget) = self._toolbox_widget.as_mut() {
-            toolbox_widget._world_map_widget.set_selected_world_map_stage(selected_stage_name);
-        }
-    }
-    pub fn unset_selected_world_map_stage(&mut self) {
-        if let Some(toolbox_widget) = self._toolbox_widget.as_mut() {
-            toolbox_widget._world_map_widget.set_selected_world_map_stage(&String::default());
-        }
-    }
+    pub fn set_selected_world_map_stage(&mut self, _selected_stage_name: &String) {}
+    pub fn unset_selected_world_map_stage(&mut self) {}
     pub fn update_world_map_widget(
         &mut self,
-        joystick_input_data: &JoystickInputData,
-        keyboard_input_data: &KeyboardInputData,
+        _joystick_input_data: &JoystickInputData,
+        _keyboard_input_data: &KeyboardInputData,
     ) {
-        if let Some(toolbox_widget) = self._toolbox_widget.as_mut() {
-            toolbox_widget._world_map_widget.update_world_map(joystick_input_data, keyboard_input_data);
-        }
     }
 
     // item bar

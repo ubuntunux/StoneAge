@@ -1,9 +1,9 @@
 use crate::game_module::actors::character::CharacterCreateInfo;
 use crate::game_module::actors::items::ItemDataType;
-use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, AUDIO_QUEST_COMPLETE, ITEM_ENERGY_BALL};
+use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, AUDIO_QUEST_COMPLETE, DEFAULT_GATE_NAME, ITEM_ENERGY_BALL};
 use crate::game_module::game_service_locator::{
-    get_character_manager, get_character_manager_mut, get_game_resources, get_game_scene_manager, get_game_ui_manager,
-    get_game_ui_manager_mut,
+    get_character_manager, get_character_manager_mut, get_game_resources, get_game_scene_manager,
+    get_game_scene_manager_mut, get_game_ui_manager, get_game_ui_manager_mut,
 };
 use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
@@ -72,6 +72,10 @@ pub enum ToolboxIconType {
     NpcGuard,
     NpcHunter,
     WoodenClub,
+    MapHome,
+    MapForest,
+    MapCave,
+    MapUfo,
 }
 
 impl ToolboxIconType {
@@ -97,6 +101,10 @@ impl ToolboxIconType {
             ToolboxIconType::NpcGuard => "Guard NPC",
             ToolboxIconType::NpcHunter => "Hunter NPC",
             ToolboxIconType::WoodenClub => "Wooden Club",
+            ToolboxIconType::MapHome => "Home",
+            ToolboxIconType::MapForest => "Forest",
+            ToolboxIconType::MapCave => "Cave",
+            ToolboxIconType::MapUfo => "UFO",
         }
     }
 
@@ -122,6 +130,10 @@ impl ToolboxIconType {
             ToolboxIconType::NpcGuard => "items/equipment/flint_spear",
             ToolboxIconType::NpcHunter => "items/equipment/hunting_bow",
             ToolboxIconType::WoodenClub => "items/wooden_club",
+            ToolboxIconType::MapHome => "items/wood",
+            ToolboxIconType::MapForest => "items/wood",
+            ToolboxIconType::MapCave => "items/wood",
+            ToolboxIconType::MapUfo => "items/wood",
         }
     }
 
@@ -147,6 +159,20 @@ impl ToolboxIconType {
             ToolboxIconType::NpcGuard => "[GUARD]",
             ToolboxIconType::NpcHunter => "[HUNTER]",
             ToolboxIconType::WoodenClub => "[CLUB]",
+            ToolboxIconType::MapHome => "[HOME]",
+            ToolboxIconType::MapForest => "[FOREST]",
+            ToolboxIconType::MapCave => "[CAVE]",
+            ToolboxIconType::MapUfo => "[UFO]",
+        }
+    }
+
+    pub fn stage_data_name(&self) -> Option<&'static str> {
+        match self {
+            ToolboxIconType::MapHome => Some("game_scenes/intro_stage"),
+            ToolboxIconType::MapForest => Some("game_scenes/stage_01"),
+            ToolboxIconType::MapCave => Some("game_scenes/stage_cave"),
+            ToolboxIconType::MapUfo => Some("game_scenes/stage_ufo"),
+            _ => None,
         }
     }
 
@@ -283,6 +309,13 @@ impl<'a> ToolboxItemWidget<'a> {
     }
 
     pub fn toggle_state(&mut self) {
+        if let Some(stage_name) = self._data.icon_type.stage_data_name() {
+            get_game_scene_manager_mut().set_teleport_stage(stage_name, DEFAULT_GATE_NAME);
+            get_audio_manager_mut().play_audio_bank(AUDIO_QUEST_COMPLETE, AudioLoop::ONCE, None);
+            get_game_ui_manager_mut().close_toolbox();
+            return;
+        }
+
         match self._state {
             ToolboxItemState::Locked => {
                 let cost = self._data.energy_cost;
@@ -338,12 +371,19 @@ impl<'a> ToolboxItemWidget<'a> {
     pub fn update_ui(&mut self) {
         let ui_mgr = get_game_ui_manager();
 
-        // Refresh description if set in ItemData
-        let item_code = self._data.icon_type.item_code();
-        let desc_text = Self::get_item_description_from_resource(item_code);
-        if !desc_text.is_empty() && desc_text != item_code {
-            let desc_ui = ptr_as_mut(self._desc_lbl.as_ref()).get_ui_component_mut();
-            desc_ui.set_text(&desc_text);
+        // Refresh description if set in ItemData or custom description
+        let is_map_item = self._data.icon_type.stage_data_name().is_some();
+        let desc_ui = ptr_as_mut(self._desc_lbl.as_ref()).get_ui_component_mut();
+        if is_map_item {
+            desc_ui.set_text(&self._data.description);
+        } else {
+            let item_code = self._data.icon_type.item_code();
+            let desc_text = Self::get_item_description_from_resource(item_code);
+            if !desc_text.is_empty() && desc_text != item_code {
+                desc_ui.set_text(&desc_text);
+            } else if !self._data.description.is_empty() {
+                desc_ui.set_text(&self._data.description);
+            }
         }
 
         // Refresh material widgets
@@ -363,6 +403,19 @@ impl<'a> ToolboxItemWidget<'a> {
 
         let status_ui = ptr_as_mut(self._status_label.as_ref()).get_ui_component_mut();
         let btn_ui = ptr_as_mut(self._action_btn.as_ref()).get_ui_component_mut();
+
+        if let Some(_stage_name) = self._data.icon_type.stage_data_name() {
+            status_ui.set_renderable(false);
+
+            btn_ui.set_text("Teleport");
+            btn_ui.set_color(get_color32(50, 110, 180, 255));
+            btn_ui.set_border_color(get_color32(90, 160, 240, 255));
+            btn_ui.set_font_color(get_color32(255, 255, 255, 255));
+            btn_ui.set_renderable(true);
+            btn_ui.set_touchable(true);
+            btn_ui.set_enable(true);
+            return;
+        }
 
         match self._state {
             ToolboxItemState::Locked => {
@@ -396,6 +449,8 @@ impl<'a> ToolboxItemWidget<'a> {
     }
 
     pub fn create(parent_widget: &mut WidgetDefault<'a>, data: ToolboxItemData) -> Box<ToolboxItemWidget<'a>> {
+        let is_map_item = data.icon_type.stage_data_name().is_some();
+
         // Main row container (Neutral dark gray)
         let layout = UIManager::create_widget(&format!("item_row_{}", data.id), UIWidgetTypes::Default);
         let layout_mut = ptr_as_mut(layout.as_ref());
@@ -423,7 +478,12 @@ impl<'a> ToolboxItemWidget<'a> {
         let ui = product_set_mut.get_ui_component_mut();
         ui.set_layout_type(UILayoutType::BoxLayout);
         ui.set_layout_orientation(Orientation::VERTICAL);
-        ui.set_size(240.0, 68.0);
+        if is_map_item {
+            ui.set_size_hint_x(Some(1.0));
+            ui.set_size_y(68.0);
+        } else {
+            ui.set_size(240.0, 68.0);
+        }
         ui.set_valign(VerticalAlign::CENTER);
         ui.set_margin_right(10.0);
         ui.set_color(get_color32(0, 0, 0, 0));
@@ -453,12 +513,16 @@ impl<'a> ToolboxItemWidget<'a> {
         Self::setup_item_icon(&product_icon, data.icon_type.item_code());
 
         // Product Name Label
-        let item_code = data.icon_type.item_code();
-        let item_name = Self::get_item_name_from_resource(item_code);
-        let display_name = if item_name == item_code {
+        let display_name = if is_map_item {
             data.icon_type.as_str().to_string()
         } else {
-            item_name
+            let item_code = data.icon_type.item_code();
+            let item_name = Self::get_item_name_from_resource(item_code);
+            if item_name == item_code {
+                data.icon_type.as_str().to_string()
+            } else {
+                item_name
+            }
         };
         let name_lbl = UIManager::create_widget(&format!("item_name_{}", data.id), UIWidgetTypes::Default);
         let ui = ptr_as_mut(name_lbl.as_ref()).get_ui_component_mut();
@@ -472,11 +536,16 @@ impl<'a> ToolboxItemWidget<'a> {
         product_hdr_mut.add_widget(&name_lbl);
 
         // Description Label
-        let desc_text = Self::get_item_description_from_resource(item_code);
-        let display_desc = if desc_text.is_empty() || desc_text == item_code {
+        let display_desc = if is_map_item {
             data.description.clone()
         } else {
-            desc_text
+            let item_code = data.icon_type.item_code();
+            let desc_text = Self::get_item_description_from_resource(item_code);
+            if desc_text.is_empty() || desc_text == item_code {
+                data.description.clone()
+            } else {
+                desc_text
+            }
         };
         let desc_lbl = UIManager::create_widget(&format!("item_desc_{}", data.id), UIWidgetTypes::Default);
         let ui = ptr_as_mut(desc_lbl.as_ref()).get_ui_component_mut();
@@ -494,65 +563,72 @@ impl<'a> ToolboxItemWidget<'a> {
         let ui = ing_box_mut.get_ui_component_mut();
         ui.set_layout_type(UILayoutType::BoxLayout);
         ui.set_layout_orientation(Orientation::HORIZONTAL);
-        ui.set_size_hint_x(Some(1.0));
-        ui.set_size_y(56.0);
+        if is_map_item {
+            ui.set_size(0.0, 0.0);
+            ui.set_renderable(false);
+        } else {
+            ui.set_size_hint_x(Some(1.0));
+            ui.set_size_y(56.0);
+            layout_mut.add_widget(&ing_box);
+        }
         ui.set_valign(VerticalAlign::CENTER);
         ui.set_color(get_color32(0, 0, 0, 0));
-        layout_mut.add_widget(&ing_box);
 
         let mut ing_widgets = Vec::new();
-        if data.energy_cost > 0 {
-            let ing_set = UIManager::create_widget(&format!("item_ing_set_{}", data.id), UIWidgetTypes::Default);
-            let ing_set_mut = ptr_as_mut(ing_set.as_ref());
-            let ui = ing_set_mut.get_ui_component_mut();
-            ui.set_layout_type(UILayoutType::BoxLayout);
-            ui.set_layout_orientation(Orientation::HORIZONTAL);
-            ui.set_size_y(32.0);
-            ui.set_valign(VerticalAlign::CENTER);
-            ui.set_margin_right(14.0);
-            ui.set_color(get_color32(0, 0, 0, 0));
-            ing_box_mut.add_widget(&ing_set);
+        if !is_map_item {
+            if data.energy_cost > 0 {
+                let ing_set = UIManager::create_widget(&format!("item_ing_set_{}", data.id), UIWidgetTypes::Default);
+                let ing_set_mut = ptr_as_mut(ing_set.as_ref());
+                let ui = ing_set_mut.get_ui_component_mut();
+                ui.set_layout_type(UILayoutType::BoxLayout);
+                ui.set_layout_orientation(Orientation::HORIZONTAL);
+                ui.set_size_y(32.0);
+                ui.set_valign(VerticalAlign::CENTER);
+                ui.set_margin_right(14.0);
+                ui.set_color(get_color32(0, 0, 0, 0));
+                ing_box_mut.add_widget(&ing_set);
 
-            // Material Icon (28x28)
-            let ing_icon = UIManager::create_widget(&format!("item_ing_icon_{}", data.id), UIWidgetTypes::Default);
-            let ui = ptr_as_mut(ing_icon.as_ref()).get_ui_component_mut();
-            ui.set_size(28.0, 28.0);
-            ui.set_valign(VerticalAlign::CENTER);
-            ui.set_margin_right(4.0);
-            ui.set_color(get_color32(255, 255, 255, 255));
-            ing_set_mut.add_widget(&ing_icon);
-            Self::setup_item_icon(&ing_icon, ITEM_ENERGY_BALL);
+                // Material Icon (28x28)
+                let ing_icon = UIManager::create_widget(&format!("item_ing_icon_{}", data.id), UIWidgetTypes::Default);
+                let ui = ptr_as_mut(ing_icon.as_ref()).get_ui_component_mut();
+                ui.set_size(28.0, 28.0);
+                ui.set_valign(VerticalAlign::CENTER);
+                ui.set_margin_right(4.0);
+                ui.set_color(get_color32(255, 255, 255, 255));
+                ing_set_mut.add_widget(&ing_icon);
+                Self::setup_item_icon(&ing_icon, ITEM_ENERGY_BALL);
 
-            // Material Label (Name (have/cost))
-            let ing_lbl = UIManager::create_widget(&format!("item_ing_lbl_{}", data.id), UIWidgetTypes::Default);
-            let ui = ptr_as_mut(ing_lbl.as_ref()).get_ui_component_mut();
-            ui.set_size_y(28.0);
-            ui.set_valign(VerticalAlign::CENTER);
-            ui.set_font_size(16.0);
-            ui.set_font_color(get_color32(230, 235, 240, 255));
-            ui.set_color(get_color32(0, 0, 0, 0));
-            ing_set_mut.add_widget(&ing_lbl);
+                // Material Label (Name (have/cost))
+                let ing_lbl = UIManager::create_widget(&format!("item_ing_lbl_{}", data.id), UIWidgetTypes::Default);
+                let ui = ptr_as_mut(ing_lbl.as_ref()).get_ui_component_mut();
+                ui.set_size_y(28.0);
+                ui.set_valign(VerticalAlign::CENTER);
+                ui.set_font_size(16.0);
+                ui.set_font_color(get_color32(230, 235, 240, 255));
+                ui.set_color(get_color32(0, 0, 0, 0));
+                ing_set_mut.add_widget(&ing_lbl);
 
-            ing_widgets.push(IngredientWidgetItem {
-                _layout: ing_set,
-                _icon: ing_icon,
-                _label: ing_lbl,
-                _item_type: ItemDataType::EnergyBall,
-                _count: data.energy_cost,
-            });
-        } else {
-            let free_lbl = UIManager::create_widget(&format!("item_free_lbl_{}", data.id), UIWidgetTypes::Default);
-            let ui = ptr_as_mut(free_lbl.as_ref()).get_ui_component_mut();
-            ui.set_size_y(28.0);
-            ui.set_valign(VerticalAlign::CENTER);
-            ui.set_text("Free");
-            ui.set_font_size(16.0);
-            ui.set_font_color(get_color32(100, 210, 120, 255));
-            ui.set_color(get_color32(0, 0, 0, 0));
-            ing_box_mut.add_widget(&free_lbl);
+                ing_widgets.push(IngredientWidgetItem {
+                    _layout: ing_set,
+                    _icon: ing_icon,
+                    _label: ing_lbl,
+                    _item_type: ItemDataType::EnergyBall,
+                    _count: data.energy_cost,
+                });
+            } else {
+                let free_lbl = UIManager::create_widget(&format!("item_free_lbl_{}", data.id), UIWidgetTypes::Default);
+                let ui = ptr_as_mut(free_lbl.as_ref()).get_ui_component_mut();
+                ui.set_size_y(28.0);
+                ui.set_valign(VerticalAlign::CENTER);
+                ui.set_text("Free");
+                ui.set_font_size(16.0);
+                ui.set_font_color(get_color32(100, 210, 120, 255));
+                ui.set_color(get_color32(0, 0, 0, 0));
+                ing_box_mut.add_widget(&free_lbl);
+            }
         }
 
-        // 3. Right Section: Status label & Action Button
+        // 3. Right Section: Action Button (and status label if non-map)
         let right_set = UIManager::create_widget(&format!("item_right_set_{}", data.id), UIWidgetTypes::Default);
         let right_set_mut = ptr_as_mut(right_set.as_ref());
         let ui = right_set_mut.get_ui_component_mut();
@@ -575,7 +651,11 @@ impl<'a> ToolboxItemWidget<'a> {
         ui.set_font_size(13.0);
         ui.set_font_color(get_color32(150, 150, 150, 255));
         ui.set_color(get_color32(0, 0, 0, 0));
-        right_set_mut.add_widget(&status_label);
+        if is_map_item {
+            ui.set_renderable(false);
+        } else {
+            right_set_mut.add_widget(&status_label);
+        }
 
         // Action button (Unlock)
         let action_btn = UIManager::create_widget(&format!("item_action_{}", data.id), UIWidgetTypes::Default);

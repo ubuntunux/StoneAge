@@ -1,6 +1,6 @@
 use crate::game_module::actors::character::data::ActionAnimationState;
 use crate::game_module::game_constants::{
-    CAMERA_DISTANCE_MAX, DEFAULT_FADE_TIME, DEFAULT_GAME_SAVE_DATA, DEFAULT_GATE_NAME, GAME_VIEW_MODE, GameViewMode,
+    CAMERA_DISTANCE_MAX, DEFAULT_FADE_TIME, DEFAULT_GAME_SAVE_DATA, GAME_VIEW_MODE, GameViewMode,
     MATERIAL_INTRO_IMAGE, MATERIAL_UI_NONE, MATERIAL_WORLDMAP_FADE_TIME,
 };
 use crate::game_module::game_scene_manager::GameSceneState;
@@ -577,9 +577,6 @@ impl<'a> GameClient<'a> {
                             game_ui_manager.set_cross_hair_visible(true);
                             game_ui_manager.set_auto_fade_inout(true);
                             game_ui_manager.open_world_map();
-                            game_ui_manager.set_selected_world_map_stage(
-                                get_game_scene_manager().get_current_game_scene_data_name(),
-                            );
                             self.set_next_game_phase(GamePhase::WorldMapUpdate);
                         }
                     }
@@ -588,14 +585,10 @@ impl<'a> GameClient<'a> {
                 GamePhase::WorldMapUpdate => match state {
                     State::Begin => {}
                     State::Update => {
-                        game_ui_manager.update_world_map_widget(joystick_input_data, keyboard_input_data);
-                        if game_scene_manager.is_teleport_mode() || !get_character_manager().is_player_alive() {
-                            self.set_next_game_phase(GamePhase::WorldMapClose);
-                        } else if game_ui_manager.is_requested_close_world_map() {
-                            get_game_scene_manager_mut().set_teleport_stage(
-                                get_game_scene_manager().get_current_game_scene_data_name(),
-                                DEFAULT_GATE_NAME,
-                            );
+                        if !game_ui_manager.is_opened_world_map()
+                            || game_scene_manager.is_teleport_mode()
+                            || !get_character_manager().is_player_alive()
+                        {
                             self.set_next_game_phase(GamePhase::WorldMapClose);
                         }
                     }
@@ -607,7 +600,6 @@ impl<'a> GameClient<'a> {
                         if game_ui_manager.is_done_manual_fade_out() || game_ui_manager.is_done_game_image_progress() {
                             game_ui_manager.set_text_box_visible(true);
                             game_ui_manager.set_cross_hair_visible(false);
-                            game_ui_manager.unset_selected_world_map_stage();
                             game_ui_manager.close_world_map();
                             // note: Pay attention to the order of operations. is_teleport_stage -> update_teleport
                             if !game_scene_manager.is_teleport_stage() {

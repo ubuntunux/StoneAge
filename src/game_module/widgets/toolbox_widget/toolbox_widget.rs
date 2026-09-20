@@ -1,11 +1,9 @@
 use crate::game_module::actors::character::Character;
 use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, AUDIO_SELECT_ITEM};
 use crate::game_module::game_controller::WidgetNavRepeatController;
-use crate::game_module::game_service_locator::get_game_scene_manager;
 use crate::game_module::widgets::toolbox_widget::item_tab_widget::{
     ToolboxIconType, ToolboxItemData, ToolboxItemState, ToolboxTabWidget,
 };
-use crate::game_module::widgets::world_map::WorldMapWidget;
 use nalgebra::Vector2;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::core::engine_core::TimeData;
@@ -101,7 +99,7 @@ pub struct ToolboxWidget<'a> {
     pub _weapon_tab: Box<ToolboxTabWidget<'a>>,
     pub _defense_tab: Box<ToolboxTabWidget<'a>>,
     pub _npc_tab: Box<ToolboxTabWidget<'a>>,
-    pub _world_map_widget: Box<WorldMapWidget<'a>>,
+    pub _teleport_tab: Box<ToolboxTabWidget<'a>>,
 
     pub _active_tab: ToolboxTab,
     pub _last_opened_tab: ToolboxTab,
@@ -479,7 +477,37 @@ impl<'a> ToolboxWidget<'a> {
             ],
         );
 
-        let world_map_widget = WorldMapWidget::create_world_map_widget(content_mut, &Vector2::new(0, 0));
+        let teleport_tab = ToolboxTabWidget::create(
+            "teleport",
+            "World Map Teleport Locations",
+            content_mut,
+            vec![
+                ToolboxItemData {
+                    id: "map_home".to_string(),
+                    icon_type: ToolboxIconType::MapHome,
+                    description: "Safe haven base village with Monolith".to_string(),
+                    energy_cost: 0,
+                },
+                ToolboxItemData {
+                    id: "map_forest".to_string(),
+                    icon_type: ToolboxIconType::MapForest,
+                    description: "Lush green forest teeming with wildlife and resources".to_string(),
+                    energy_cost: 0,
+                },
+                ToolboxItemData {
+                    id: "map_cave".to_string(),
+                    icon_type: ToolboxIconType::MapCave,
+                    description: "Dark underground cave containing rare minerals and dangerous beasts".to_string(),
+                    energy_cost: 0,
+                },
+                ToolboxItemData {
+                    id: "map_ufo".to_string(),
+                    icon_type: ToolboxIconType::MapUfo,
+                    description: "Mysterious alien UFO wreckage site with high-tech anomalies".to_string(),
+                    energy_cost: 0,
+                },
+            ],
+        );
 
         let widget = ToolboxWidget {
             _parent_widget: parent_widget,
@@ -502,7 +530,7 @@ impl<'a> ToolboxWidget<'a> {
             _weapon_tab: weapon_tab,
             _defense_tab: defense_tab,
             _npc_tab: npc_tab,
-            _world_map_widget: world_map_widget,
+            _teleport_tab: teleport_tab,
             _active_tab: ToolboxTab::Skill,
             _last_opened_tab: ToolboxTab::Skill,
             _selected_item_index: 0,
@@ -562,7 +590,7 @@ impl<'a> ToolboxWidget<'a> {
         self._weapon_tab.close();
         self._defense_tab.close();
         self._npc_tab.close();
-        self._world_map_widget.close_world_map();
+        self._teleport_tab.close();
 
         // Activate selected tab
         let (active_btn, open_fn): (&Rc<WidgetDefault<'a>>, Box<dyn FnOnce(&mut ToolboxWidget<'a>)>) = match tab {
@@ -600,12 +628,7 @@ impl<'a> ToolboxWidget<'a> {
             ),
             ToolboxTab::Teleport => (
                 &self._tab_btn_teleport,
-                Box::new(|w: &mut ToolboxWidget<'a>| {
-                    w._world_map_widget.open_world_map();
-                    w._world_map_widget.set_selected_world_map_stage(
-                        get_game_scene_manager().get_current_game_scene_data_name(),
-                    );
-                }),
+                Box::new(|w: &mut ToolboxWidget<'a>| w._teleport_tab.open()),
             ),
         };
 
@@ -625,7 +648,8 @@ impl<'a> ToolboxWidget<'a> {
             ToolboxTab::Vehicle => &mut self._vehicle_tab,
             ToolboxTab::Weapon => &mut self._weapon_tab,
             ToolboxTab::Defense => &mut self._defense_tab,
-            ToolboxTab::Npc | ToolboxTab::Teleport => &mut self._npc_tab,
+            ToolboxTab::Npc => &mut self._npc_tab,
+            ToolboxTab::Teleport => &mut self._teleport_tab,
         }
     }
 
@@ -685,7 +709,7 @@ impl<'a> ToolboxWidget<'a> {
 
     pub fn close_toolbox(&mut self) {
         if self._is_opened_toolbox {
-            self._world_map_widget.close_world_map();
+            self._teleport_tab.close();
             ptr_as_mut(self._parent_widget).remove_widget(self._layer.as_ref());
             self._is_opened_toolbox = false;
         }
@@ -707,17 +731,9 @@ impl<'a> ToolboxWidget<'a> {
             return;
         }
 
-        if self._active_tab == ToolboxTab::Teleport {
-            self._world_map_widget.update_world_map(joystick_input_data, keyboard_input_data);
-            if self._world_map_widget.is_requested_close_world_map() {
-                self.close_toolbox();
-                return;
-            }
-        } else {
-            // Refresh material counts for active tab
-            for item in self.get_active_tab_mut()._items.iter_mut() {
-                item.update_ui();
-            }
+        // Refresh material counts for active tab
+        for item in self.get_active_tab_mut()._items.iter_mut() {
+            item.update_ui();
         }
 
         // Tab navigation (Keyboard Tab / Shift+Tab, Joystick LB / RB)
@@ -758,46 +774,44 @@ impl<'a> ToolboxWidget<'a> {
             self.set_active_tab(prev_tab);
         }
 
-        if self._active_tab != ToolboxTab::Teleport {
-            // Item navigation (with hold repeat)
-            let delta_time: f32 = time_data._delta_time_with_scale as f32;
-            let (should_move, dir_opt) =
-                self._nav_repeat_controller.update(keyboard_input_data, joystick_input_data, delta_time);
+        // Item navigation (with hold repeat)
+        let delta_time: f32 = time_data._delta_time_with_scale as f32;
+        let (should_move, dir_opt) =
+            self._nav_repeat_controller.update(keyboard_input_data, joystick_input_data, delta_time);
 
-            let item_count = self.get_active_tab_mut()._items.len();
-            if should_move && item_count > 0 {
-                let (_dir_x, dir_y) = dir_opt.unwrap();
-                if dir_y < 0 {
-                    if self._selected_item_index == 0 {
-                        self._selected_item_index = item_count - 1;
-                    } else {
-                        self._selected_item_index -= 1;
-                    }
-                    get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
-                    self.update_item_selection();
-                } else if dir_y > 0 {
-                    if self._selected_item_index + 1 >= item_count {
-                        self._selected_item_index = 0;
-                    } else {
-                        self._selected_item_index += 1;
-                    }
-                    get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
-                    self.update_item_selection();
+        let item_count = self.get_active_tab_mut()._items.len();
+        if should_move && item_count > 0 {
+            let (_dir_x, dir_y) = dir_opt.unwrap();
+            if dir_y < 0 {
+                if self._selected_item_index == 0 {
+                    self._selected_item_index = item_count - 1;
+                } else {
+                    self._selected_item_index -= 1;
                 }
+                get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
+                self.update_item_selection();
+            } else if dir_y > 0 {
+                if self._selected_item_index + 1 >= item_count {
+                    self._selected_item_index = 0;
+                } else {
+                    self._selected_item_index += 1;
+                }
+                get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
+                self.update_item_selection();
             }
+        }
 
-            // Action / Unlock confirm (Keyboard Enter/Space, Joystick A/X)
-            let action_pressed = keyboard_input_data.get_key_pressed(KeyCode::Enter)
-                || keyboard_input_data.get_key_pressed(KeyCode::Space)
-                || joystick_input_data._btn_a == ButtonState::Pressed
-                || joystick_input_data._btn_x == ButtonState::Pressed;
+        // Action / Unlock / Teleport confirm (Keyboard Enter/Space, Joystick A/X)
+        let action_pressed = keyboard_input_data.get_key_pressed(KeyCode::Enter)
+            || keyboard_input_data.get_key_pressed(KeyCode::Space)
+            || joystick_input_data._btn_a == ButtonState::Pressed
+            || joystick_input_data._btn_x == ButtonState::Pressed;
 
-            if action_pressed {
-                let selected_idx = self._selected_item_index;
-                let active_tab = self.get_active_tab_mut();
-                if selected_idx < active_tab._items.len() {
-                    active_tab._items[selected_idx].toggle_state();
-                }
+        if action_pressed {
+            let selected_idx = self._selected_item_index;
+            let active_tab = self.get_active_tab_mut();
+            if selected_idx < active_tab._items.len() {
+                active_tab._items[selected_idx].toggle_state();
             }
         }
 
@@ -820,6 +834,7 @@ impl<'a> ToolboxWidget<'a> {
             &self._weapon_tab,
             &self._defense_tab,
             &self._npc_tab,
+            &self._teleport_tab,
         ];
         for tab in tabs {
             for item in &tab._items {
@@ -841,6 +856,7 @@ impl<'a> ToolboxWidget<'a> {
             &mut self._weapon_tab,
             &mut self._defense_tab,
             &mut self._npc_tab,
+            &mut self._teleport_tab,
         ];
         for tab in tabs {
             for item in &mut tab._items {

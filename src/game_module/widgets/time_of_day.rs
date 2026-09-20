@@ -1,6 +1,6 @@
 use crate::game_module::game_constants::MATERIAL_TIME_OF_DAY;
 use crate::game_module::game_scene_manager::Stages;
-use crate::game_module::game_service_locator::{get_game_scene_manager, get_game_ui_manager};
+use crate::game_module::game_service_locator::get_game_scene_manager;
 use ash::vk;
 use nalgebra::Vector2;
 use rust_engine_3d::core::engine_service_locator::get_engine_resources;
@@ -146,7 +146,6 @@ impl<'a> TimeOfDayWidget<'a> {
     pub fn changed_window_size(&mut self, _window_size: &Vector2<i32>) {}
 
     pub fn update_time_of_day_widget(&mut self) {
-        let game_ui_manager = get_game_ui_manager();
         let game_scene_manager = get_game_scene_manager();
         let time_of_day = game_scene_manager.get_time_of_day();
 
@@ -166,14 +165,7 @@ impl<'a> TimeOfDayWidget<'a> {
         temperature_ui_component.set_text(format!("Temperature {:.01}", game_scene_manager.temperature()).as_str());
 
         let stage_widget_component = ptr_as_mut(self._stage_widget).get_ui_component_mut();
-        if game_ui_manager.is_opened_world_map() {
-            stage_widget_component.set_text(
-                Stages::find_stage_value(game_ui_manager.get_selected_world_map_stage_data_name().as_str())
-                    .get_stage_display_name(),
-            );
-        } else {
-            let stage_data_name = game_scene_manager.get_current_game_scene_data_name();
-            stage_widget_component.set_text(Stages::find_stage_value(stage_data_name).get_stage_display_name());
-        }
+        let stage_data_name = game_scene_manager.get_current_game_scene_data_name();
+        stage_widget_component.set_text(Stages::find_stage_value(stage_data_name).get_stage_display_name());
     }
 }
