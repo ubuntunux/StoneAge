@@ -457,9 +457,9 @@
     "_props": {
         "bed_for_aru": {
             "_position": [
-                21.401073455810547,
-                1.8113737106323242,
-                11.705606460571289
+                22.662303924560547,
+                1.6688294410705566,
+                11.49563217163086
             ],
             "_prop_data_name": "props/bed",
             "_rotation": [
@@ -475,9 +475,9 @@
         },
         "bed_for_ewa": {
             "_position": [
-                16.917131423950195,
-                1.9342679977416992,
-                10.097185134887695
+                19.184072494506836,
+                2.119084596633911,
+                12.513614654541016
             ],
             "_prop_data_name": "props/bed",
             "_rotation": [
@@ -493,9 +493,9 @@
         },
         "bed_for_koa": {
             "_position": [
-                19.45322036743164,
-                1.8658685684204102,
-                10.609284400939941
+                20.63823890686035,
+                1.8610801696777344,
+                11.515796661376953
             ],
             "_prop_data_name": "props/bed",
             "_rotation": [
@@ -1200,6 +1200,215 @@
                     15.469171524047852,
                     1.588536262512207,
                     1.4030437469482422
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "_scene_object_type": "Default"
+            },
+            "SM_Env_Bush_Tropical_02.002": {
+                "_model_data_name": "PolygonNatureBiomes/SM_Env_Bush_Tropical_02",
+                "_position": [
+                    28.43301010131836,
+                    1.000274419784546,
+                    17.72987174987793
+                ],
+                "_rotation": [
+                    0.0,
+                    4.475069522857666,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "_scene_object_type": "Default"
+            },
+            "SM_Env_Bush_Tropical_02.004": {
+                "_model_data_name": "PolygonNatureBiomes/SM_Env_Bush_Tropical_02",
+                "_position": [
+                    28.380226135253906,
+                    0.8229321241378784,
+                    14.631946563720703
+                ],
+                "_rotation": [
+                    0.0,
+                    1.5410124063491821,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "_scene_object_type": "Default"
+            },
+            "SM_Env_Bush_Tropical_02.005": {
+                "_model_data_name": "PolygonNatureBiomes/SM_Env_Bush_Tropical_02",
+                "_position": [
+                    27.622488021850586,
+                    0.8949905633926392,
+                    11.181381225585938
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "_scene_object_type": "Default"
+            },
+            "SM_Env_Bush_Tropical_02.006": {
+                "_model_data_name": "PolygonNatureBiomes/SM_Env_Bush_Tropical_02",
+                "_position": [
+                    25.49260139465332,
+                    1.3513836860656738,
+                    9.163243293762207
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "_scene_object_type": "Default"
+            },
+            "SM_Env_Bush_Tropical_02.007": {
+                "_model_data_name": "PolygonNatureBiomes/SM_Env_Bush_Tropical_02",
+                "_position": [
+                    22.212556838989258,
+                    1.4881784915924072,
+                    8.44070816040039
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "_scene_object_type": "Default"
+            },
+            "SM_Env_Bush_Tropical_02.008": {
+                "_model_data_name": "PolygonNatureBiomes/SM_Env_Bush_Tropical_02",
+                "_position": [
+                    18.272762298583984,
+                    1.6040959358215332,
+                    8.345438003540039
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "_scene_object_type": "Default"
+            },
+            "SM_Env_Bush_Tropical_02.009": {
+                "_model_data_name": "PolygonNatureBiomes/SM_Env_Bush_Tropical_02",
+                "_position": [
+                    15.31445026397705,
+                    2.0118114948272705,
+                    10.364421844482422
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "_scene_object_type": "Default"
+            },
+            "SM_Env_Bush_Tropical_02.010": {
+                "_model_data_name": "PolygonNatureBiomes/SM_Env_Bush_Tropical_02",
+                "_position": [
+                    16.209861755371094,
+                    2.3647620677948,
+                    12.237295150756836
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "_scene_object_type": "Default"
+            },
+            "SM_Env_Bush_Tropical_02.012": {
+                "_model_data_name": "PolygonNatureBiomes/SM_Env_Bush_Tropical_02",
+                "_position": [
+                    19.159160614013672,
+                    2.5890743732452393,
+                    17.461833953857422
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "_scene_object_type": "Default"
+            },
+            "SM_Env_Bush_Tropical_02.013": {
+                "_model_data_name": "PolygonNatureBiomes/SM_Env_Bush_Tropical_02",
+                "_position": [
+                    22.013010025024414,
+                    2.250310182571411,
+                    19.667009353637695
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "_scene_object_type": "Default"
+            },
+            "SM_Env_Bush_Tropical_02.015": {
+                "_model_data_name": "PolygonNatureBiomes/SM_Env_Bush_Tropical_02",
+                "_position": [
+                    27.158193588256836,
+                    1.2743504047393799,
+                    19.89972496032715
                 ],
                 "_rotation": [
                     0.0,

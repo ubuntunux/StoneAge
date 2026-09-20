@@ -84,6 +84,7 @@ pub const MOVE_LIMIT: f32 = 2.0;
 pub const BLOCK_TOLERANCE: f32 = 0.5;
 pub const EAT_ITEM_DISTANCE: f32 = 1.0;
 pub const EAT_ITEM_DELAY_TIME: f32 = 3.0;
+pub const MAX_BED_RESTRICTION_DISTANCE: f32 = 7.0;
 
 pub const CHARACTER_ROTATION_SPEED: f32 = 20.0;
 pub const FALLING_TIME: f32 = 0.3;

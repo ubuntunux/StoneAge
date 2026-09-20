@@ -2,11 +2,7 @@ use crate::game_module::actors::character::ActionAnimationState;
 use crate::game_module::actors::character::Character;
 use crate::game_module::actors::props::Prop;
 use crate::game_module::behavior::behavior_base::BehaviorState;
-use crate::game_module::game_constants::{
-    AUDIO_QUEST_COMPLETE, AUDIO_ROOSTER, AUDIO_WRAP_UP_THE_DAY, BED_FOR_ARU, CAMERA_DISTANCE_MIN, CAMERA_OFFSET_Y,
-    CHARACTER_INTERACTION_DISTANCE, DEFAULT_FADE_TIME, EAT_ITEM_DELAY_TIME, MATERIAL_UI_NONE, SLEEP_TIMER,
-    TARGET_HUNGER_THRESHOLD, TIME_OF_NIGHT,
-};
+use crate::game_module::game_constants::{AUDIO_QUEST_COMPLETE, AUDIO_ROOSTER, AUDIO_WRAP_UP_THE_DAY, BED_FOR_ARU, CAMERA_DISTANCE_MIN, CAMERA_OFFSET_Y, CHARACTER_INTERACTION_DISTANCE, DEFAULT_FADE_TIME, EAT_ITEM_DELAY_TIME, MATERIAL_UI_NONE, MAX_BED_RESTRICTION_DISTANCE, SLEEP_TIMER, TARGET_HUNGER_THRESHOLD, TIME_OF_NIGHT};
 
 use crate::game_module::game_service_locator::{
     get_game_controller_mut, get_game_scene_manager, get_game_scene_manager_mut, get_game_ui_manager_mut,
@@ -171,6 +167,26 @@ impl<'a> ScenarioWrapUpTheDay<'a> {
         };
 
         get_game_controller_mut().set_camera_fixed_position_and_rotation(&self._bed_camera_position, &camera_rotation);
+    }
+}
+
+fn clamp_actor_position_from_bed(
+    actor: &Option<RcRefCell<Character>>,
+    bed_pos: &Vector3<f32>,
+    max_distance: f32,
+) {
+    if let Some(actor_ref) = actor.as_ref() {
+        let mut actor_mut = actor_ref.borrow_mut();
+        let current_pos = *actor_mut.get_position();
+        let mut diff = current_pos - bed_pos;
+        diff.y = 0.0;
+        let dist_xz = diff.magnitude();
+        if max_distance < dist_xz && 0.0001 < dist_xz {
+            let clamped_diff = (diff / dist_xz) * max_distance;
+            let mut new_pos = *bed_pos + clamped_diff;
+            new_pos.y = current_pos.y;
+            actor_mut.set_position(&new_pos);
+        }
     }
 }
 
@@ -407,6 +423,13 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
         let game_ui_manager = get_game_ui_manager_mut();
 
         self.update_bed_camera(delta_time as f32);
+
+        if let Some(prop_table) = self._prop_table.as_ref() {
+            let table_pos = *prop_table.borrow().get_position();
+            clamp_actor_position_from_bed(&self._player, &table_pos, MAX_BED_RESTRICTION_DISTANCE);
+            clamp_actor_position_from_bed(&self._actor_ewa, &table_pos, MAX_BED_RESTRICTION_DISTANCE);
+            clamp_actor_position_from_bed(&self._actor_koa, &table_pos, MAX_BED_RESTRICTION_DISTANCE);
+        }
 
         let prev_scenario_phase = self._scenario_track._scenario_phase;
         let next_scenario_phase = self._scenario_track._next_scenario_phase;
