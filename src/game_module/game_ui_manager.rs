@@ -264,6 +264,7 @@ impl<'a> GameUIManager<'a> {
         self.clear_text_box_widgets();
         self.set_controls_visibility(true);
         self.clear_player_records();
+        self.load_unlocked_toolbox_items(&std::collections::HashSet::new());
     }
 
     pub fn get_game_ui_layout(&self) -> *const WidgetDefault<'a> {

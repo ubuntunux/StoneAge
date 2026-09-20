@@ -459,7 +459,11 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
                     }
                     _ => {}
                 },
-                ScenarioPhase::End => {}
+                ScenarioPhase::End => {
+                    if state == State::Begin {
+                        get_game_scene_manager_mut().request_open_game_scenario(ScenarioType::ScenarioWoodenClub);
+                    }
+                }
             }
 
             if state == State::Update {

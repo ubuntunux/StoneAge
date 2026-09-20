@@ -237,6 +237,8 @@ impl<'a> GameSceneManager<'a> {
 
     pub fn new_game_scene(&mut self) {
         get_game_ui_manager_mut().clear_game_ui();
+        self.clear_all_game_scenario();
+        self._completed_game_scenarios.clear();
         self.close_game_scene_data();
         self._weather.clear_weather();
         self.set_time_of_day(TIME_OF_MORNING);

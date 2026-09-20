@@ -227,6 +227,7 @@ pub const EFFECT_RAIN: &str = "rain";
 // Items
 pub const ITEM_NONE: &str = "";
 pub const ITEM_COCONUT: &str = "items/coconut";
+pub const ITEM_WOOD: &str = "items/wood";
 pub const ITEM_HAND: &str = "items/hand";
 pub const ITEM_SPIRIT_BALL: &str = "items/spirit_ball";
 pub const ITEM_ENERGY_BALL: &str = "items/energy_ball";

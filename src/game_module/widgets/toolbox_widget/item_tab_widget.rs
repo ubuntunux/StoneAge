@@ -71,6 +71,7 @@ pub enum ToolboxIconType {
     NpcCrafter,
     NpcGuard,
     NpcHunter,
+    WoodenClub,
 }
 
 impl ToolboxIconType {
@@ -95,6 +96,7 @@ impl ToolboxIconType {
             ToolboxIconType::NpcCrafter => "Crafter NPC",
             ToolboxIconType::NpcGuard => "Guard NPC",
             ToolboxIconType::NpcHunter => "Hunter NPC",
+            ToolboxIconType::WoodenClub => "Wooden Club",
         }
     }
 
@@ -119,6 +121,7 @@ impl ToolboxIconType {
             ToolboxIconType::NpcCrafter => "items/equipment/worktable",
             ToolboxIconType::NpcGuard => "items/equipment/flint_spear",
             ToolboxIconType::NpcHunter => "items/equipment/hunting_bow",
+            ToolboxIconType::WoodenClub => "items/wooden_club",
         }
     }
 
@@ -143,6 +146,7 @@ impl ToolboxIconType {
             ToolboxIconType::NpcCrafter => "[CRAFTER]",
             ToolboxIconType::NpcGuard => "[GUARD]",
             ToolboxIconType::NpcHunter => "[HUNTER]",
+            ToolboxIconType::WoodenClub => "[CLUB]",
         }
     }
 

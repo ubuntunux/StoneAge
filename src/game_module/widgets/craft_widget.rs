@@ -43,7 +43,15 @@ impl CraftRecipeData {
     }
 }
 
-pub const CRAFT_RECIPES: [CraftRecipeData; 7] = [
+pub const CRAFT_RECIPES: [CraftRecipeData; 8] = [
+    CraftRecipeData {
+        id: "wooden_club",
+        item_type: ItemDataType::WoodenClub,
+        materials: &[IngredientReq {
+            item_type: ItemDataType::Wood,
+            count: 1,
+        }],
+    },
     CraftRecipeData {
         id: "stone_axe",
         item_type: ItemDataType::StoneAxe,

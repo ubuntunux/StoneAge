@@ -345,6 +345,12 @@ impl<'a> ToolboxWidget<'a> {
             content_mut,
             vec![
                 ToolboxItemData {
+                    id: "wooden_club".to_string(),
+                    icon_type: ToolboxIconType::WoodenClub,
+                    description: "Basic wooden club weapon".to_string(),
+                    energy_cost: 0,
+                },
+                ToolboxItemData {
                     id: "craft_axe".to_string(),
                     icon_type: ToolboxIconType::StoneAxe,
                     description: "Essential harvesting tool for wood and stone".to_string(),
@@ -388,6 +394,12 @@ impl<'a> ToolboxWidget<'a> {
             "Weapons",
             content_mut,
             vec![
+                ToolboxItemData {
+                    id: "weapon_wooden_club".to_string(),
+                    icon_type: ToolboxIconType::WoodenClub,
+                    description: "Simple wooden club weapon".to_string(),
+                    energy_cost: 0,
+                },
                 ToolboxItemData {
                     id: "weapon_spear".to_string(),
                     icon_type: ToolboxIconType::FlintSpear,
@@ -790,8 +802,10 @@ impl<'a> ToolboxWidget<'a> {
             for item in &mut tab._items {
                 if unlocked_set.contains(&item._data.id) {
                     item._state = ToolboxItemState::Unlocked;
-                    item.update_ui();
+                } else {
+                    item._state = ToolboxItemState::Locked;
                 }
+                item.update_ui();
             }
         }
     }
