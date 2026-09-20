@@ -112,6 +112,13 @@ pub struct GameSceneSaveData {
     pub _props: PropSaveDataMap,
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[serde(default)]
+pub struct DiscoveredWorldData {
+    pub _items: Vec<String>,
+    pub _characters: Vec<String>,
+}
+
 pub struct GameSceneManager<'a> {
     pub _character_manager: Box<CharacterManager<'a>>,
     pub _item_manager: Box<ItemManager<'a>>,
@@ -134,6 +141,7 @@ pub struct GameSceneManager<'a> {
     pub _next_game_scene_state: GameSceneState,
     pub _weather: Box<Weather>,
     pub _game_audio_manager: Box<GameAudioManager>,
+    pub _discovered_world_data: HashMap<String, DiscoveredWorldData>,
 }
 
 impl<'a> GameSceneManager<'a> {
@@ -196,6 +204,7 @@ impl<'a> GameSceneManager<'a> {
             _next_game_scene_state: GameSceneState::None,
             _weather: Box::new(Weather::default()),
             _game_audio_manager: Box::new(GameAudioManager::default()),
+            _discovered_world_data: Default::default(),
         })
     }
 
@@ -239,6 +248,7 @@ impl<'a> GameSceneManager<'a> {
         get_game_ui_manager_mut().clear_game_ui();
         self.clear_all_game_scenario();
         self._completed_game_scenarios.clear();
+        self._discovered_world_data.clear();
         self.close_game_scene_data();
         self._weather.clear_weather();
         self.set_time_of_day(TIME_OF_MORNING);
@@ -252,6 +262,7 @@ impl<'a> GameSceneManager<'a> {
         get_game_ui_manager_mut().clear_game_ui();
         self.clear_all_game_scenario();
         self._weather.clear_weather();
+        self._discovered_world_data = game_save_data._discovered_world_data.clone();
 
         // loading
         self.open_game_scene_data(&game_save_data._last_game_scene_data_name);
@@ -330,6 +341,7 @@ impl<'a> GameSceneManager<'a> {
         game_save_data._unlocked_toolbox_items = get_game_ui_manager().get_unlocked_toolbox_items();
         game_save_data._last_opened_toolbox_tab = get_game_ui_manager().get_last_opened_toolbox_tab();
         game_save_data._player_records = get_game_ui_manager()._player_records.clone();
+        game_save_data._discovered_world_data = self._discovered_world_data.clone();
 
         game_save_data._game_scenes.insert(
             self.get_current_game_scene_data_name().clone(),
@@ -740,6 +752,7 @@ impl<'a> GameSceneManager<'a> {
                         scenario.borrow_mut().on_open_game_scene(self._current_game_scene_data_name.as_str());
                     }
 
+                    self.inspect_and_register_discovered_world_data();
                     self.set_next_game_scene_state(GameSceneState::LoadCompleted);
                 }
             }
@@ -755,5 +768,99 @@ impl<'a> GameSceneManager<'a> {
         }
 
         self._game_audio_manager.update_game_sound();
+    }
+
+    pub fn inspect_and_register_discovered_world_data(&mut self) {
+        let current_stage_name = self._current_game_scene_data_name.clone();
+        if current_stage_name.is_empty() {
+            return;
+        }
+
+        let mut item_names: HashSet<String> = HashSet::new();
+        let mut char_names: HashSet<String> = HashSet::new();
+
+        // 1. Inspect spawned characters
+        for char_rc in self._character_manager.get_characters().values() {
+            let character = char_rc.borrow();
+            let char_name = character.get_character_name().as_str();
+            let display_name = if char_name.is_empty() {
+                let data_name = character.get_character_data()._name.as_str();
+                if data_name.is_empty() {
+                    "Character".to_string()
+                } else {
+                    data_name.to_string()
+                }
+            } else {
+                char_name.to_string()
+            };
+            char_names.insert(display_name);
+        }
+
+        // 2. Inspect spawned items
+        for item_rc in self._item_manager.get_items().values() {
+            let item = item_rc.borrow();
+            let data_name = item.get_item_data_name();
+            if data_name.is_empty() {
+                continue;
+            }
+            let display_name = if get_game_resources().has_item_data(data_name) {
+                let name = get_game_resources().get_item_data(data_name).borrow()._name.clone();
+                if name.is_empty() {
+                    data_name.split('/').last().unwrap_or(data_name).to_string()
+                } else {
+                    name
+                }
+            } else {
+                data_name.split('/').last().unwrap_or(data_name).to_string()
+            };
+            item_names.insert(display_name);
+        }
+
+        // 3. Inspect spawned scene props (excluding purely decorative terrain props)
+        for prop_rc in self._prop_manager.get_props().values() {
+            let prop = prop_rc.borrow();
+            let data_name = prop._prop_data_name.as_str();
+            if data_name.is_empty() {
+                continue;
+            }
+            let prop_short_name = data_name.split('/').last().unwrap_or(data_name);
+            if !prop_short_name.starts_with("terrain")
+                && !prop_short_name.starts_with("grass")
+                && !prop_short_name.starts_with("stone_0")
+            {
+                let display_name = if get_game_resources().has_prop_data(data_name) {
+                    let name = get_game_resources().get_prop_data(data_name).borrow()._name.clone();
+                    if name.is_empty() {
+                        prop_short_name.to_string()
+                    } else {
+                        name
+                    }
+                } else {
+                    prop_short_name.to_string()
+                };
+                item_names.insert(display_name);
+            }
+        }
+
+        let mut items_vec: Vec<String> = item_names.into_iter().collect();
+        items_vec.sort();
+        let mut chars_vec: Vec<String> = char_names.into_iter().collect();
+        chars_vec.sort();
+
+        let data = self._discovered_world_data.entry(current_stage_name).or_default();
+        for item in items_vec {
+            if !data._items.contains(&item) {
+                data._items.push(item);
+            }
+        }
+        for char_name in chars_vec {
+            if !data._characters.contains(&char_name) {
+                data._characters.push(char_name);
+            }
+        }
+    }
+
+    pub fn get_discovered_world_data(&self, stage_data_name: &str) -> Option<&DiscoveredWorldData> {
+        self._discovered_world_data.get(stage_data_name)
     }
 }

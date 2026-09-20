@@ -1,6 +1,7 @@
 use crate::game_module::actors::character::Character;
 use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, AUDIO_SELECT_ITEM};
 use crate::game_module::game_controller::WidgetNavRepeatController;
+use crate::game_module::game_service_locator::{get_game_scene_manager, get_game_scene_manager_mut};
 use crate::game_module::widgets::toolbox_widget::item_tab_widget::{
     ToolboxIconType, ToolboxItemData, ToolboxItemState, ToolboxTabWidget,
 };
@@ -628,7 +629,15 @@ impl<'a> ToolboxWidget<'a> {
             ),
             ToolboxTab::Teleport => (
                 &self._tab_btn_teleport,
-                Box::new(|w: &mut ToolboxWidget<'a>| w._teleport_tab.open()),
+                Box::new(|w: &mut ToolboxWidget<'a>| {
+                    let current_stage_name = get_game_scene_manager().get_current_game_scene_data_name().clone();
+                    if !current_stage_name.is_empty()
+                        && get_game_scene_manager().get_discovered_world_data(&current_stage_name).is_none()
+                    {
+                        get_game_scene_manager_mut().inspect_and_register_discovered_world_data();
+                    }
+                    w._teleport_tab.open();
+                }),
             ),
         };
 

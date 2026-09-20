@@ -176,6 +176,17 @@ impl ToolboxIconType {
         }
     }
 
+    pub fn world_discovered_info(&self) -> Option<(Vec<String>, Vec<String>)> {
+        let stage_name = self.stage_data_name()?;
+        let game_scene_manager = get_game_scene_manager();
+
+        if let Some(data) = game_scene_manager.get_discovered_world_data(stage_name) {
+            return Some((data._items.clone(), data._characters.clone()));
+        }
+
+        None
+    }
+
     pub fn npc_character_info(&self) -> Option<(&'static str, Vector3<f32>)> {
         match self {
             ToolboxIconType::NpcGatherer => Some(("characters/villager_00", Vector3::new(3.0, 0.0, 3.0))),
@@ -235,6 +246,9 @@ pub struct ToolboxItemWidget<'a> {
     pub _status_label: Rc<WidgetDefault<'a>>,
     pub _ing_widgets: Vec<IngredientWidgetItem<'a>>,
     pub _action_btn: Rc<WidgetDefault<'a>>,
+    pub _info_items_lbl: Option<Rc<WidgetDefault<'a>>>,
+    pub _info_chars_lbl: Option<Rc<WidgetDefault<'a>>>,
+    pub _info_unexp_lbl: Option<Rc<WidgetDefault<'a>>>,
     pub _state: ToolboxItemState,
     pub _data: ToolboxItemData,
 }
@@ -404,8 +418,46 @@ impl<'a> ToolboxItemWidget<'a> {
         let status_ui = ptr_as_mut(self._status_label.as_ref()).get_ui_component_mut();
         let btn_ui = ptr_as_mut(self._action_btn.as_ref()).get_ui_component_mut();
 
-        if let Some(_stage_name) = self._data.icon_type.stage_data_name() {
+        if is_map_item {
             status_ui.set_renderable(false);
+
+            if let Some((items, chars)) = self._data.icon_type.world_discovered_info() {
+                if let Some(lbl) = &self._info_items_lbl {
+                    let items_str = if items.is_empty() {
+                        "Items: None".to_string()
+                    } else {
+                        format!("Items: {}", items.join(", "))
+                    };
+                    let ui = ptr_as_mut(lbl.as_ref()).get_ui_component_mut();
+                    ui.set_text(&items_str);
+                    ui.set_renderable(true);
+                }
+                if let Some(lbl) = &self._info_chars_lbl {
+                    let chars_str = if chars.is_empty() {
+                        "Characters: None".to_string()
+                    } else {
+                        format!("Characters: {}", chars.join(", "))
+                    };
+                    let ui = ptr_as_mut(lbl.as_ref()).get_ui_component_mut();
+                    ui.set_text(&chars_str);
+                    ui.set_renderable(true);
+                }
+                if let Some(lbl) = &self._info_unexp_lbl {
+                    ptr_as_mut(lbl.as_ref()).get_ui_component_mut().set_renderable(false);
+                }
+            } else {
+                if let Some(lbl) = &self._info_items_lbl {
+                    ptr_as_mut(lbl.as_ref()).get_ui_component_mut().set_renderable(false);
+                }
+                if let Some(lbl) = &self._info_chars_lbl {
+                    ptr_as_mut(lbl.as_ref()).get_ui_component_mut().set_renderable(false);
+                }
+                if let Some(lbl) = &self._info_unexp_lbl {
+                    let ui = ptr_as_mut(lbl.as_ref()).get_ui_component_mut();
+                    ui.set_text("Unexplored Region");
+                    ui.set_renderable(true);
+                }
+            }
 
             btn_ui.set_text("Teleport");
             btn_ui.set_color(get_color32(50, 110, 180, 255));
@@ -479,8 +531,7 @@ impl<'a> ToolboxItemWidget<'a> {
         ui.set_layout_type(UILayoutType::BoxLayout);
         ui.set_layout_orientation(Orientation::VERTICAL);
         if is_map_item {
-            ui.set_size_hint_x(Some(1.0));
-            ui.set_size_y(68.0);
+            ui.set_size(210.0, 68.0);
         } else {
             ui.set_size(240.0, 68.0);
         }
@@ -557,22 +608,63 @@ impl<'a> ToolboxItemWidget<'a> {
         ui.set_color(get_color32(0, 0, 0, 0));
         product_set_mut.add_widget(&desc_lbl);
 
-        // 2. Middle Materials Box (Horizontal layout for required ingredients)
+        // 2. Middle Section: Discovered Items & Characters for Map items, or Materials Box for crafting items
         let ing_box = UIManager::create_widget(&format!("item_ing_box_{}", data.id), UIWidgetTypes::Default);
         let ing_box_mut = ptr_as_mut(ing_box.as_ref());
         let ui = ing_box_mut.get_ui_component_mut();
         ui.set_layout_type(UILayoutType::BoxLayout);
-        ui.set_layout_orientation(Orientation::HORIZONTAL);
+        let mut info_items_lbl = None;
+        let mut info_chars_lbl = None;
+        let mut info_unexp_lbl = None;
+
         if is_map_item {
-            ui.set_size(0.0, 0.0);
-            ui.set_renderable(false);
+            ui.set_layout_orientation(Orientation::VERTICAL);
+            ui.set_size_hint_x(Some(1.0));
+            ui.set_size_y(60.0);
+            ui.set_valign(VerticalAlign::CENTER);
+            ui.set_color(get_color32(0, 0, 0, 0));
+            layout_mut.add_widget(&ing_box);
+
+            let items_lbl = UIManager::create_widget(&format!("item_info_items_{}", data.id), UIWidgetTypes::Default);
+            let ui = ptr_as_mut(items_lbl.as_ref()).get_ui_component_mut();
+            ui.set_size_hint_x(Some(1.0));
+            ui.set_size_y(26.0);
+            ui.set_valign(VerticalAlign::CENTER);
+            ui.set_font_size(14.0);
+            ui.set_font_color(get_color32(130, 220, 160, 255));
+            ui.set_color(get_color32(0, 0, 0, 0));
+            ing_box_mut.add_widget(&items_lbl);
+            info_items_lbl = Some(items_lbl);
+
+            let chars_lbl = UIManager::create_widget(&format!("item_info_chars_{}", data.id), UIWidgetTypes::Default);
+            let ui = ptr_as_mut(chars_lbl.as_ref()).get_ui_component_mut();
+            ui.set_size_hint_x(Some(1.0));
+            ui.set_size_y(26.0);
+            ui.set_valign(VerticalAlign::CENTER);
+            ui.set_font_size(14.0);
+            ui.set_font_color(get_color32(240, 180, 120, 255));
+            ui.set_color(get_color32(0, 0, 0, 0));
+            ing_box_mut.add_widget(&chars_lbl);
+            info_chars_lbl = Some(chars_lbl);
+
+            let unexp_lbl = UIManager::create_widget(&format!("item_info_unexp_{}", data.id), UIWidgetTypes::Default);
+            let ui = ptr_as_mut(unexp_lbl.as_ref()).get_ui_component_mut();
+            ui.set_size_hint_x(Some(1.0));
+            ui.set_size_y(26.0);
+            ui.set_valign(VerticalAlign::CENTER);
+            ui.set_font_size(14.0);
+            ui.set_font_color(get_color32(150, 150, 150, 255));
+            ui.set_color(get_color32(0, 0, 0, 0));
+            ing_box_mut.add_widget(&unexp_lbl);
+            info_unexp_lbl = Some(unexp_lbl);
         } else {
+            ui.set_layout_orientation(Orientation::HORIZONTAL);
             ui.set_size_hint_x(Some(1.0));
             ui.set_size_y(56.0);
+            ui.set_valign(VerticalAlign::CENTER);
+            ui.set_color(get_color32(0, 0, 0, 0));
             layout_mut.add_widget(&ing_box);
         }
-        ui.set_valign(VerticalAlign::CENTER);
-        ui.set_color(get_color32(0, 0, 0, 0));
 
         let mut ing_widgets = Vec::new();
         if !is_map_item {
@@ -683,6 +775,9 @@ impl<'a> ToolboxItemWidget<'a> {
             _status_label: status_label,
             _ing_widgets: ing_widgets,
             _action_btn: action_btn,
+            _info_items_lbl: info_items_lbl,
+            _info_chars_lbl: info_chars_lbl,
+            _info_unexp_lbl: info_unexp_lbl,
             _state: ToolboxItemState::Locked,
             _data: data,
         });

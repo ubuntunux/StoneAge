@@ -1,5 +1,5 @@
 use crate::game_module::actors::character::CharacterSaveData;
-use crate::game_module::game_scene_manager::GameSceneSaveData;
+use crate::game_module::game_scene_manager::{DiscoveredWorldData, GameSceneSaveData};
 use crate::game_module::game_weather::WeatherType;
 use crate::game_module::scenario::scenario::{GameScenarioCreateInfo, ScenarioType};
 use crate::game_module::widgets::item_bar::{
@@ -136,6 +136,7 @@ pub struct GameSaveData {
     pub _completed_game_scenarios: HashSet<ScenarioType>,
     pub _is_controls_visible: bool,
     pub _player_records: PlayerRecords,
+    pub _discovered_world_data: HashMap<String, DiscoveredWorldData>,
 }
 
 impl Default for GameSaveData {
@@ -160,6 +161,7 @@ impl Default for GameSaveData {
             _completed_game_scenarios: Default::default(),
             _is_controls_visible: true,
             _player_records: Default::default(),
+            _discovered_world_data: Default::default(),
         }
     }
 }
