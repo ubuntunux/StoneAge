@@ -63,6 +63,7 @@ pub struct ScenarioWrapUpTheDay<'a> {
     _check_time_for_sleep: f32,
     _ewa_eat_delay: f32,
     _koa_eat_delay: f32,
+    _bed_camera_position: Vector3<f32>,
     _scenario_track: ScenarioTrack<ScenarioPhase>,
 }
 
@@ -89,6 +90,7 @@ impl<'a> ScenarioWrapUpTheDay<'a> {
             _check_time_for_sleep: 0.0,
             _ewa_eat_delay: 0.0,
             _koa_eat_delay: 0.0,
+            _bed_camera_position: Vector3::default(),
             _scenario_track: ScenarioTrack {
                 _scenario_phase: ScenarioPhase::None,
                 _next_scenario_phase: ScenarioPhase::Begin,
@@ -115,7 +117,7 @@ impl<'a> ScenarioWrapUpTheDay<'a> {
         self._scenario_track.set_next_scenario_phase(ScenarioPhase::Sleep, None);
     }
 
-    pub fn setup_bed_camera(&self) {
+    pub fn setup_bed_camera(&mut self) {
         let mut pivot = Vector3::new(0.0, CAMERA_OFFSET_Y, 0.0);
         if let Some(prop_bed) = self._prop_bed_for_aru.as_ref() {
             pivot += prop_bed.borrow().get_position();
@@ -123,9 +125,32 @@ impl<'a> ScenarioWrapUpTheDay<'a> {
         let camera_rotation = Vector3::new(0.4, -1.4, 0.0);
         let camera_rotation_matrix =
             math::make_rotation_matrix(camera_rotation.x, camera_rotation.y, camera_rotation.z);
-        let camera_position = pivot - camera_rotation_matrix.column(2).xyz() * (CAMERA_DISTANCE_MIN + 6.0);
+        self._bed_camera_position = pivot - camera_rotation_matrix.column(2).xyz() * (CAMERA_DISTANCE_MIN + 6.0);
         get_game_controller_mut().set_camera_fixed(true);
-        get_game_controller_mut().set_camera_fixed_position_and_rotation(&camera_position, &camera_rotation);
+        self.update_bed_camera();
+    }
+
+    pub fn update_bed_camera(&self) {
+        let target_position = if let Some(player) = self._player.as_ref() {
+            player.borrow().get_bounding_box()._center + Vector3::new(0.0, CAMERA_OFFSET_Y, 0.0)
+        } else if let Some(prop_bed) = self._prop_bed_for_aru.as_ref() {
+            prop_bed.borrow().get_position() + Vector3::new(0.0, CAMERA_OFFSET_Y, 0.0)
+        } else {
+            Vector3::new(0.0, CAMERA_OFFSET_Y, 0.0)
+        };
+
+        let diff = self._bed_camera_position - target_position;
+        let dist = diff.magnitude();
+        let camera_rotation = if 0.0001 < dist {
+            let back = diff / dist;
+            let pitch = back.y.clamp(-1.0, 1.0).asin();
+            let yaw = back.x.atan2(back.z);
+            Vector3::new(pitch, yaw + std::f32::consts::PI, 0.0)
+        } else {
+            Vector3::new(0.4, -1.4, 0.0)
+        };
+
+        get_game_controller_mut().set_camera_fixed_position_and_rotation(&self._bed_camera_position, &camera_rotation);
     }
 }
 
@@ -360,6 +385,8 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
     fn update_game_scenario(&mut self, _any_key_hold: bool, _any_key_pressed: bool, delta_time: f64) {
         let game_scene_manager = get_game_scene_manager_mut();
         let game_ui_manager = get_game_ui_manager_mut();
+
+        self.update_bed_camera();
 
         let prev_scenario_phase = self._scenario_track._scenario_phase;
         let next_scenario_phase = self._scenario_track._next_scenario_phase;
