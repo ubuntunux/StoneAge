@@ -958,12 +958,12 @@ impl<'a> Character<'a> {
             if self.is_idle_action() || self.is_action(ActionAnimationState::Hit) {
                 return true;
             } else if self.is_action(ActionAnimationState::Attack) {
-                let attackable_time = self.get_character_data()._stat_data._attack_event_time + ATTACK_DELAY;
+                let attackable_time = (self.get_character_data()._stat_data._attack_event_time + ATTACK_DELAY) / action_animation_play_info._animation_speed;
                 return attackable_time < action_animation_play_info._animation_play_time;
             }
         } else {
             if self.is_action(ActionAnimationState::Kick) {
-                let attackable_time = self.get_character_data()._stat_data._kick_event_time + KICK_DELAY;
+                let attackable_time = (self.get_character_data()._stat_data._kick_event_time + KICK_DELAY) / action_animation_play_info._animation_speed;
                 return attackable_time < action_animation_play_info._animation_play_time;
             }
         }
@@ -1906,7 +1906,7 @@ impl<'a> Character<'a> {
                     }
                     State::Update => {
                         let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
-                        if animation_play_info.check_animation_event_time(character_data._stat_data._attack_event_time)
+                        if animation_play_info.check_animation_event_time(character_data._stat_data._attack_event_time / animation_play_info._animation_speed)
                         {
                             self._animation_state.set_action_event(ActionEvent::Attack);
                             get_audio_manager_mut().play_audio_bank(AUDIO_ATTACK, AudioLoop::ONCE, None);
@@ -2074,7 +2074,7 @@ impl<'a> Character<'a> {
                     }
                     State::Update => {
                         let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
-                        if animation_play_info.check_animation_event_time(character_data._stat_data._kick_event_time) {
+                        if animation_play_info.check_animation_event_time(character_data._stat_data._kick_event_time / animation_play_info._animation_speed) {
                             self._animation_state.set_action_event(ActionEvent::Kick);
                             get_audio_manager_mut().play_audio_bank(AUDIO_ATTACK, AudioLoop::ONCE, None);
                         }
@@ -2162,7 +2162,7 @@ impl<'a> Character<'a> {
                     State::Update => {
                         let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
                         if animation_play_info
-                            .check_animation_event_time(character_data._stat_data._power_attack_event_time)
+                            .check_animation_event_time(character_data._stat_data._power_attack_event_time / animation_play_info._animation_speed)
                         {
                             get_audio_manager_mut().play_audio_bank(AUDIO_ATTACK, AudioLoop::ONCE, None);
                             self._animation_state.set_action_event(ActionEvent::PowerAttack);
