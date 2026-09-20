@@ -490,6 +490,9 @@ impl<'a> GameClient<'a> {
                                 &mouse_delta,
                                 character_manager.get_player(),
                             );
+                            if game_scene_manager.is_teleport_stage() || game_scene_manager.is_teleport_mode() {
+                                self.set_next_game_phase(GamePhase::WorldMapClose);
+                            }
                         } else {
                             self.set_next_game_phase(GamePhase::GamePlay);
                         }

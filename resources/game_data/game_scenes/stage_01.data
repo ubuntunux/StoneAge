@@ -513,6 +513,24 @@
                 1.0
             ]
         },
+        "monolith": {
+            "_position": [
+                -23.47739028930664,
+                3.610344409942627,
+                -1.6218845844268799
+            ],
+            "_prop_data_name": "props/monolith",
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
         "mushroom_orange_00": {
             "_position": [
                 -1.2456340789794922,
@@ -1475,25 +1493,6 @@
                     1.0,
                     1.0,
                     1.0
-                ],
-                "_scene_object_type": "Default"
-            },
-            "SM_Env_Monolith_01": {
-                "_model_data_name": "PolygonNatureBiomes/SM_Env_Monolith_01",
-                "_position": [
-                    -25.022550582885742,
-                    3.4810447692871094,
-                    -3.07336688041687
-                ],
-                "_rotation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "_scale": [
-                    0.41061627864837646,
-                    0.41061627864837646,
-                    0.41061627864837646
                 ],
                 "_scene_object_type": "Default"
             },

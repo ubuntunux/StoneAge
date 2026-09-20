@@ -24,8 +24,8 @@ use crate::game_module::widgets::text_box_widget::{
     TextBoxContent, TextBoxItemOption, TextBoxLayerType, TextBoxWidget,
 };
 use crate::game_module::widgets::time_of_day::TimeOfDayWidget;
+use crate::game_module::widgets::toolbox_widget::ToolboxTab;
 use crate::game_module::widgets::toolbox_widget::ToolboxWidget;
-use crate::game_module::widgets::world_map::WorldMapWidget;
 use nalgebra::Vector2;
 use rust_engine_3d::constants::DEVELOPMENT;
 use rust_engine_3d::core::engine_core::TimeData;
@@ -63,7 +63,6 @@ pub struct GameUIManager<'a> {
     pub _cooking_widget: Option<Box<CookingWidget<'a>>>,
     pub _table_storage_widget: Option<Box<TableStorageWidget<'a>>>,
     pub _quest_widget: Option<Box<QuestWidget<'a>>>,
-    pub _world_map_widget: Option<Box<WorldMapWidget<'a>>>,
     pub _debug_ui_widget: Option<Box<DebugUIWidget<'a>>>,
     pub _window_size: Vector2<i32>,
     pub _need_to_refresh: bool,
@@ -145,7 +144,6 @@ impl<'a> GameUIManager<'a> {
             _cooking_widget: None,
             _table_storage_widget: None,
             _quest_widget: None,
-            _world_map_widget: None,
             _debug_ui_widget: None,
             _window_size: Vector2::new(0, 0),
             _need_to_refresh: true,
@@ -214,7 +212,6 @@ impl<'a> GameUIManager<'a> {
         self._toolbox_widget = Some(Box::new(ToolboxWidget::create_toolbox_widget(game_ui_layout_mut)));
         self._cooking_widget = Some(Box::new(CookingWidget::create_cooking_widget(game_ui_layout_mut)));
         self._table_storage_widget = Some(TableStorageWidget::create_table_storage_widget(game_ui_layout_mut));
-        self._world_map_widget = Some(WorldMapWidget::create_world_map_widget(game_ui_layout_mut, window_size));
         self._time_of_day = Some(Box::new(TimeOfDayWidget::create_time_of_day_widget(game_ui_layout_mut)));
         self._controller_help_widget = Some(Box::new(ControllerHelpWidget::create_controller_help_widget(
             self._key_binding_widget_manager.as_ref().unwrap().as_ref(),
@@ -400,33 +397,54 @@ impl<'a> GameUIManager<'a> {
 
     // world map
     pub fn is_opened_world_map(&self) -> bool {
-        self._world_map_widget.as_ref().unwrap().is_opened_world_map()
+        if let Some(toolbox_widget) = self._toolbox_widget.as_ref() {
+            toolbox_widget.is_opened_toolbox() && toolbox_widget._active_tab == ToolboxTab::Teleport
+        } else {
+            false
+        }
     }
     pub fn open_world_map(&mut self) {
-        self._world_map_widget.as_mut().unwrap().open_world_map();
+        if let Some(toolbox_widget) = self._toolbox_widget.as_mut() {
+            toolbox_widget.open_toolbox();
+            toolbox_widget.set_active_tab(ToolboxTab::Teleport);
+        }
     }
     pub fn is_requested_close_world_map(&self) -> bool {
-        self._world_map_widget.as_ref().unwrap().is_requested_close_world_map()
+        if let Some(toolbox_widget) = self._toolbox_widget.as_ref() {
+            toolbox_widget._world_map_widget.is_requested_close_world_map()
+        } else {
+            false
+        }
     }
     pub fn close_world_map(&mut self) {
-        self._world_map_widget.as_mut().unwrap().close_world_map();
+        if let Some(toolbox_widget) = self._toolbox_widget.as_mut() {
+            toolbox_widget.close_toolbox();
+        }
     }
     pub fn get_selected_world_map_stage_data_name(&self) -> &String {
-        self._world_map_widget.as_ref().unwrap().get_selected_world_map_stage_data_name()
+        self._toolbox_widget
+            .as_ref()
+            .unwrap()
+            ._world_map_widget
+            .get_selected_world_map_stage_data_name()
     }
     pub fn set_selected_world_map_stage(&mut self, selected_stage_name: &String) {
-        self._world_map_widget.as_mut().unwrap().set_selected_world_map_stage(selected_stage_name);
+        if let Some(toolbox_widget) = self._toolbox_widget.as_mut() {
+            toolbox_widget._world_map_widget.set_selected_world_map_stage(selected_stage_name);
+        }
     }
     pub fn unset_selected_world_map_stage(&mut self) {
-        self._world_map_widget.as_mut().unwrap().set_selected_world_map_stage(&String::default());
+        if let Some(toolbox_widget) = self._toolbox_widget.as_mut() {
+            toolbox_widget._world_map_widget.set_selected_world_map_stage(&String::default());
+        }
     }
     pub fn update_world_map_widget(
         &mut self,
         joystick_input_data: &JoystickInputData,
         keyboard_input_data: &KeyboardInputData,
     ) {
-        if let Some(world_map_widget) = self._world_map_widget.as_mut() {
-            world_map_widget.update_world_map(joystick_input_data, keyboard_input_data);
+        if let Some(toolbox_widget) = self._toolbox_widget.as_mut() {
+            toolbox_widget._world_map_widget.update_world_map(joystick_input_data, keyboard_input_data);
         }
     }
 

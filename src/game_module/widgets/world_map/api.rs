@@ -55,4 +55,5 @@ pub struct WorldMapWidget<'a> {
     pub _world_map_stages: HashMap<String, Rc<WorldMapStage<'a>>>,
     pub _is_opened_world_map: bool,
     pub _request_close_world_map: bool,
+    pub _ignore_first_interaction: bool,
 }

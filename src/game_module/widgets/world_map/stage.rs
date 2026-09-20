@@ -40,11 +40,11 @@ impl<'a> WorldMapStage<'a> {
         ui_component.set_halign(HorizontalAlign::CENTER);
         ui_component.set_valign(VerticalAlign::CENTER);
         ui_component.set_text(stage.get_stage_display_name());
-        ui_component.set_font_size(32.0);
+        ui_component.set_font_size(24.0);
         ui_component.set_font_color(get_color32(0, 0, 0, 255));
         ui_component.set_color(get_color32(255, 255, 255, 255));
 
-        const STAGE_SIZE: f32 = 100.0;
+        const STAGE_SIZE: f32 = 80.0;
         ui_component.set_size(STAGE_SIZE, STAGE_SIZE);
         ui_component.set_pivot_preset(rust_engine_3d::scene::ui::PIVOT_CENTER);
         root_layout.add_widget(&world_map_stage);

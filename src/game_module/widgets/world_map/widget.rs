@@ -2,7 +2,7 @@ use crate::game_module::game_constants::{
     AUDIO_PICKUP_ITEM, DEFAULT_GATE_NAME, JOYSTICK_SENSITIVITY, MATERIAL_WORLDMAP,
 };
 use crate::game_module::game_scene_manager::Stages;
-use crate::game_module::game_service_locator::get_game_scene_manager_mut;
+use crate::game_module::game_service_locator::{get_game_scene_manager, get_game_scene_manager_mut};
 use crate::game_module::widgets::world_map::api::{WorldMapDirection, WorldMapPlayer, WorldMapStage, WorldMapWidget};
 use crate::game_module::widgets::world_map::control_trait::WorldMapControl;
 use crate::game_module::widgets::world_map::layout_trait::WorldMapLayout;
@@ -34,7 +34,7 @@ impl<'a> WorldMapWidget<'a> {
         ui_component.set_size_hint_y(Some(1.0));
         ui_component.set_pivot_preset(PIVOT_CENTER);
         ui_component.set_pos_hint(Some(0.5), Some(0.5));
-        ui_component.set_color(get_color32(80, 80, 180, 255));
+        ui_component.set_color(get_color32(0, 0, 0, 0));
         ui_component.set_enable(false);
         root_widget.add_widget(&background_layout);
 
@@ -47,7 +47,7 @@ impl<'a> WorldMapWidget<'a> {
         let image_height = texture.borrow()._image_height as f32;
         let image_aspect = image_width / image_height;
 
-        let max_bounds = Vector2::new(1400.0, 800.0);
+        let max_bounds = Vector2::new(750.0, 480.0);
         let scale = (max_bounds.x / image_width).min(max_bounds.y / image_height);
         let map_size = Vector2::new(image_width * scale, image_height * scale);
 
@@ -101,6 +101,7 @@ impl<'a> WorldMapWidget<'a> {
             _world_map_stages: HashMap::new(),
             _is_opened_world_map: false,
             _request_close_world_map: false,
+            _ignore_first_interaction: false,
         });
 
         world_map_widget.as_mut()._world_map_player = Some(WorldMapPlayer::create_world_map_player(
@@ -239,11 +240,19 @@ impl<'a> WorldMapControl<'a> for WorldMapWidget<'a> {
             get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
             ptr_as_mut(self._background_layout.as_ref()).get_ui_component_mut().set_enable(true);
             self._request_close_world_map = false;
+            self._ignore_first_interaction = true;
+            self._selected_stage_name.clear();
             self._is_opened_world_map = true;
         }
     }
 
     fn close_world_map(&mut self) {
+        self._request_close_world_map = false;
+        self._ignore_first_interaction = false;
+        self._selected_stage_name.clear();
+        for stage in self._world_map_stages.values_mut() {
+            ptr_as_mut(stage.as_ref()).set_selected(false);
+        }
         if self._is_opened_world_map {
             ptr_as_mut(self._background_layout.as_ref()).get_ui_component_mut().set_enable(false);
             self._is_opened_world_map = false;
@@ -277,7 +286,12 @@ impl<'a> WorldMapControl<'a> for WorldMapWidget<'a> {
         if self._selected_stage_name == *selected_stage_name {
             if let Some(selected_stage) = self._world_map_stages.get_mut(selected_stage_name) {
                 let teleport_stage: &String = ptr_as_ref(selected_stage.as_ref()).get_stage_data_name();
-                get_game_scene_manager_mut().set_teleport_stage(teleport_stage, DEFAULT_GATE_NAME);
+                let current_stage_name = get_game_scene_manager().get_current_game_scene_data_name();
+                if current_stage_name == teleport_stage {
+                    self.request_close_world_map();
+                } else {
+                    get_game_scene_manager_mut().set_teleport_stage(teleport_stage, DEFAULT_GATE_NAME);
+                }
             }
         } else {
             if let Some(prev_selected_stage) = self._world_map_stages.get_mut(&self._selected_stage_name) {
@@ -350,7 +364,11 @@ impl<'a> WorldMapControl<'a> for WorldMapWidget<'a> {
         };
         self.change_selected_world_map_stage(world_map_direction);
 
-        if is_interaction {
+        if self._ignore_first_interaction {
+            if !is_interaction {
+                self._ignore_first_interaction = false;
+            }
+        } else if is_interaction {
             self.teleport_selected_world_map_stage();
         }
     }

@@ -1,9 +1,11 @@
 use crate::game_module::actors::character::Character;
 use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, AUDIO_SELECT_ITEM};
 use crate::game_module::game_controller::WidgetNavRepeatController;
+use crate::game_module::game_service_locator::get_game_scene_manager;
 use crate::game_module::widgets::toolbox_widget::item_tab_widget::{
     ToolboxIconType, ToolboxItemData, ToolboxItemState, ToolboxTabWidget,
 };
+use crate::game_module::widgets::world_map::WorldMapWidget;
 use nalgebra::Vector2;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::core::engine_core::TimeData;
@@ -38,6 +40,7 @@ pub enum ToolboxTab {
     Weapon,
     Defense,
     Npc,
+    Teleport,
 }
 
 impl ToolboxTab {
@@ -51,6 +54,7 @@ impl ToolboxTab {
             ToolboxTab::Weapon => "Weapon",
             ToolboxTab::Defense => "Defense",
             ToolboxTab::Npc => "Npc",
+            ToolboxTab::Teleport => "Teleport",
         }
     }
 
@@ -63,6 +67,7 @@ impl ToolboxTab {
             "Weapon" => ToolboxTab::Weapon,
             "Defense" => ToolboxTab::Defense,
             "Npc" => ToolboxTab::Npc,
+            "Teleport" => ToolboxTab::Teleport,
             _ => ToolboxTab::Skill,
         }
     }
@@ -85,6 +90,7 @@ pub struct ToolboxWidget<'a> {
     pub _tab_btn_weapon: Rc<WidgetDefault<'a>>,
     pub _tab_btn_defense: Rc<WidgetDefault<'a>>,
     pub _tab_btn_npc: Rc<WidgetDefault<'a>>,
+    pub _tab_btn_teleport: Rc<WidgetDefault<'a>>,
 
     // Content panes
     pub _skill_tab: Box<ToolboxTabWidget<'a>>,
@@ -95,6 +101,7 @@ pub struct ToolboxWidget<'a> {
     pub _weapon_tab: Box<ToolboxTabWidget<'a>>,
     pub _defense_tab: Box<ToolboxTabWidget<'a>>,
     pub _npc_tab: Box<ToolboxTabWidget<'a>>,
+    pub _world_map_widget: Box<WorldMapWidget<'a>>,
 
     pub _active_tab: ToolboxTab,
     pub _last_opened_tab: ToolboxTab,
@@ -138,6 +145,10 @@ impl<'a> ToolboxWidget<'a> {
         ptr_as_mut(ui.get_user_data() as *const ToolboxWidget<'a>).set_active_tab(ToolboxTab::Npc);
         true
     }
+    pub fn callback_tab_teleport(ui: &UIComponentInstance<'a>, _pos: &Vector2<f32>, _delta: &Vector2<f32>) -> bool {
+        ptr_as_mut(ui.get_user_data() as *const ToolboxWidget<'a>).set_active_tab(ToolboxTab::Teleport);
+        true
+    }
 
     pub fn callback_tab_touch_over(_ui: &UIComponentInstance<'a>, _pos: &Vector2<f32>, _delta: &Vector2<f32>) -> bool {
         get_audio_manager_mut().play_audio_bank(AUDIO_SELECT_ITEM, AudioLoop::ONCE, None);
@@ -159,7 +170,8 @@ impl<'a> ToolboxWidget<'a> {
         ui.set_valign(VerticalAlign::CENTER);
         ui.set_margin(3.0);
         ui.set_text(label);
-        ui.set_font_size(20.0);
+        let font_size = if label.len() > 6 { 16.0 } else { 20.0 };
+        ui.set_font_size(font_size);
         ui.set_font_color(get_color32(220, 220, 220, 255));
         ui.set_round(6.0);
         ui.set_color(TAB_INACTIVE_COLOR);
@@ -183,8 +195,8 @@ impl<'a> ToolboxWidget<'a> {
         ui.set_valign(VerticalAlign::TOP);
         ui.set_pivot_preset(PIVOT_CENTER);
         ui.set_pos_hint(Some(0.5), Some(0.5));
-        ui.set_size_hint_x(Some(0.6));
-        ui.set_size_hint_y(Some(0.65));
+        ui.set_size_hint_x(Some(0.65));
+        ui.set_size_hint_y(Some(0.7));
         ui.set_expandable(false);
         ui.set_enable_renderable_area(true);
         ui.set_color(get_color32(35, 35, 35, 230));
@@ -263,6 +275,8 @@ impl<'a> ToolboxWidget<'a> {
         let tab_btn_weapon = Self::create_tab_button("tb_weapon", "Weapon", Self::callback_tab_weapon, header_mut);
         let tab_btn_defense = Self::create_tab_button("tb_defense", "Defense", Self::callback_tab_defense, header_mut);
         let tab_btn_npc = Self::create_tab_button("tb_npc", "NPC", Self::callback_tab_npc, header_mut);
+        let tab_btn_teleport =
+            Self::create_tab_button("tb_teleport", "Teleport", Self::callback_tab_teleport, header_mut);
 
         // ── Content area (Dark gray) ────────────────────────────────
         let content = UIManager::create_widget("toolbox_content", UIWidgetTypes::Default);
@@ -465,6 +479,8 @@ impl<'a> ToolboxWidget<'a> {
             ],
         );
 
+        let world_map_widget = WorldMapWidget::create_world_map_widget(content_mut, &Vector2::new(0, 0));
+
         let widget = ToolboxWidget {
             _parent_widget: parent_widget,
             _layer: layer,
@@ -477,6 +493,7 @@ impl<'a> ToolboxWidget<'a> {
             _tab_btn_weapon: tab_btn_weapon,
             _tab_btn_defense: tab_btn_defense,
             _tab_btn_npc: tab_btn_npc,
+            _tab_btn_teleport: tab_btn_teleport,
             _skill_tab: skill_tab,
             _architecture_tab: architecture_tab,
             _cooking_tab: cooking_tab,
@@ -485,6 +502,7 @@ impl<'a> ToolboxWidget<'a> {
             _weapon_tab: weapon_tab,
             _defense_tab: defense_tab,
             _npc_tab: npc_tab,
+            _world_map_widget: world_map_widget,
             _active_tab: ToolboxTab::Skill,
             _last_opened_tab: ToolboxTab::Skill,
             _selected_item_index: 0,
@@ -503,13 +521,14 @@ impl<'a> ToolboxWidget<'a> {
         ptr_as_mut(widget._tab_btn_weapon.as_ref()).get_ui_component_mut().set_user_data(self_ptr);
         ptr_as_mut(widget._tab_btn_defense.as_ref()).get_ui_component_mut().set_user_data(self_ptr);
         ptr_as_mut(widget._tab_btn_npc.as_ref()).get_ui_component_mut().set_user_data(self_ptr);
+        ptr_as_mut(widget._tab_btn_teleport.as_ref()).get_ui_component_mut().set_user_data(self_ptr);
 
         widget
     }
 
     // ── Tab switching ─────────────────────────────────────────────
 
-    fn all_tab_buttons(&self) -> [&Rc<WidgetDefault<'a>>; 8] {
+    fn all_tab_buttons(&self) -> [&Rc<WidgetDefault<'a>>; 9] {
         [
             &self._tab_btn_skill,
             &self._tab_btn_architecture,
@@ -519,6 +538,7 @@ impl<'a> ToolboxWidget<'a> {
             &self._tab_btn_weapon,
             &self._tab_btn_defense,
             &self._tab_btn_npc,
+            &self._tab_btn_teleport,
         ]
     }
 
@@ -542,6 +562,7 @@ impl<'a> ToolboxWidget<'a> {
         self._weapon_tab.close();
         self._defense_tab.close();
         self._npc_tab.close();
+        self._world_map_widget.close_world_map();
 
         // Activate selected tab
         let (active_btn, open_fn): (&Rc<WidgetDefault<'a>>, Box<dyn FnOnce(&mut ToolboxWidget<'a>)>) = match tab {
@@ -577,6 +598,15 @@ impl<'a> ToolboxWidget<'a> {
                 &self._tab_btn_npc,
                 Box::new(|w: &mut ToolboxWidget<'a>| w._npc_tab.open()),
             ),
+            ToolboxTab::Teleport => (
+                &self._tab_btn_teleport,
+                Box::new(|w: &mut ToolboxWidget<'a>| {
+                    w._world_map_widget.open_world_map();
+                    w._world_map_widget.set_selected_world_map_stage(
+                        get_game_scene_manager().get_current_game_scene_data_name(),
+                    );
+                }),
+            ),
         };
 
         ptr_as_mut(active_btn.as_ref()).get_ui_component_mut().set_color(TAB_ACTIVE_COLOR);
@@ -595,7 +625,7 @@ impl<'a> ToolboxWidget<'a> {
             ToolboxTab::Vehicle => &mut self._vehicle_tab,
             ToolboxTab::Weapon => &mut self._weapon_tab,
             ToolboxTab::Defense => &mut self._defense_tab,
-            ToolboxTab::Npc => &mut self._npc_tab,
+            ToolboxTab::Npc | ToolboxTab::Teleport => &mut self._npc_tab,
         }
     }
 
@@ -645,6 +675,7 @@ impl<'a> ToolboxWidget<'a> {
             ptr_as_mut(self._tab_btn_weapon.as_ref()).get_ui_component_mut().set_user_data(self_ptr);
             ptr_as_mut(self._tab_btn_defense.as_ref()).get_ui_component_mut().set_user_data(self_ptr);
             ptr_as_mut(self._tab_btn_npc.as_ref()).get_ui_component_mut().set_user_data(self_ptr);
+            ptr_as_mut(self._tab_btn_teleport.as_ref()).get_ui_component_mut().set_user_data(self_ptr);
 
             // Restore last opened tab
             let last_tab = self._last_opened_tab;
@@ -654,6 +685,7 @@ impl<'a> ToolboxWidget<'a> {
 
     pub fn close_toolbox(&mut self) {
         if self._is_opened_toolbox {
+            self._world_map_widget.close_world_map();
             ptr_as_mut(self._parent_widget).remove_widget(self._layer.as_ref());
             self._is_opened_toolbox = false;
         }
@@ -675,9 +707,17 @@ impl<'a> ToolboxWidget<'a> {
             return;
         }
 
-        // Refresh material counts for active tab
-        for item in self.get_active_tab_mut()._items.iter_mut() {
-            item.update_ui();
+        if self._active_tab == ToolboxTab::Teleport {
+            self._world_map_widget.update_world_map(joystick_input_data, keyboard_input_data);
+            if self._world_map_widget.is_requested_close_world_map() {
+                self.close_toolbox();
+                return;
+            }
+        } else {
+            // Refresh material counts for active tab
+            for item in self.get_active_tab_mut()._items.iter_mut() {
+                item.update_ui();
+            }
         }
 
         // Tab navigation (Keyboard Tab / Shift+Tab, Joystick LB / RB)
@@ -699,12 +739,13 @@ impl<'a> ToolboxWidget<'a> {
                 ToolboxTab::Vehicle => ToolboxTab::Weapon,
                 ToolboxTab::Weapon => ToolboxTab::Defense,
                 ToolboxTab::Defense => ToolboxTab::Npc,
-                ToolboxTab::Npc => ToolboxTab::Skill,
+                ToolboxTab::Npc => ToolboxTab::Teleport,
+                ToolboxTab::Teleport => ToolboxTab::Skill,
             };
             self.set_active_tab(next_tab);
         } else if switch_tab_prev {
             let prev_tab = match self._active_tab {
-                ToolboxTab::Skill => ToolboxTab::Npc,
+                ToolboxTab::Skill => ToolboxTab::Teleport,
                 ToolboxTab::Architecture => ToolboxTab::Skill,
                 ToolboxTab::Cooking => ToolboxTab::Architecture,
                 ToolboxTab::ItemCraft => ToolboxTab::Cooking,
@@ -712,48 +753,51 @@ impl<'a> ToolboxWidget<'a> {
                 ToolboxTab::Weapon => ToolboxTab::Vehicle,
                 ToolboxTab::Defense => ToolboxTab::Weapon,
                 ToolboxTab::Npc => ToolboxTab::Defense,
+                ToolboxTab::Teleport => ToolboxTab::Npc,
             };
             self.set_active_tab(prev_tab);
         }
 
-        // Item navigation (with hold repeat)
-        let delta_time: f32 = time_data._delta_time_with_scale as f32;
-        let (should_move, dir_opt) =
-            self._nav_repeat_controller.update(keyboard_input_data, joystick_input_data, delta_time);
+        if self._active_tab != ToolboxTab::Teleport {
+            // Item navigation (with hold repeat)
+            let delta_time: f32 = time_data._delta_time_with_scale as f32;
+            let (should_move, dir_opt) =
+                self._nav_repeat_controller.update(keyboard_input_data, joystick_input_data, delta_time);
 
-        let item_count = self.get_active_tab_mut()._items.len();
-        if should_move && item_count > 0 {
-            let (_dir_x, dir_y) = dir_opt.unwrap();
-            if dir_y < 0 {
-                if self._selected_item_index == 0 {
-                    self._selected_item_index = item_count - 1;
-                } else {
-                    self._selected_item_index -= 1;
+            let item_count = self.get_active_tab_mut()._items.len();
+            if should_move && item_count > 0 {
+                let (_dir_x, dir_y) = dir_opt.unwrap();
+                if dir_y < 0 {
+                    if self._selected_item_index == 0 {
+                        self._selected_item_index = item_count - 1;
+                    } else {
+                        self._selected_item_index -= 1;
+                    }
+                    get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
+                    self.update_item_selection();
+                } else if dir_y > 0 {
+                    if self._selected_item_index + 1 >= item_count {
+                        self._selected_item_index = 0;
+                    } else {
+                        self._selected_item_index += 1;
+                    }
+                    get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
+                    self.update_item_selection();
                 }
-                get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
-                self.update_item_selection();
-            } else if dir_y > 0 {
-                if self._selected_item_index + 1 >= item_count {
-                    self._selected_item_index = 0;
-                } else {
-                    self._selected_item_index += 1;
-                }
-                get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
-                self.update_item_selection();
             }
-        }
 
-        // Action / Unlock confirm (Keyboard Enter/Space, Joystick A/X)
-        let action_pressed = keyboard_input_data.get_key_pressed(KeyCode::Enter)
-            || keyboard_input_data.get_key_pressed(KeyCode::Space)
-            || joystick_input_data._btn_a == ButtonState::Pressed
-            || joystick_input_data._btn_x == ButtonState::Pressed;
+            // Action / Unlock confirm (Keyboard Enter/Space, Joystick A/X)
+            let action_pressed = keyboard_input_data.get_key_pressed(KeyCode::Enter)
+                || keyboard_input_data.get_key_pressed(KeyCode::Space)
+                || joystick_input_data._btn_a == ButtonState::Pressed
+                || joystick_input_data._btn_x == ButtonState::Pressed;
 
-        if action_pressed {
-            let selected_idx = self._selected_item_index;
-            let active_tab = self.get_active_tab_mut();
-            if selected_idx < active_tab._items.len() {
-                active_tab._items[selected_idx].toggle_state();
+            if action_pressed {
+                let selected_idx = self._selected_item_index;
+                let active_tab = self.get_active_tab_mut();
+                if selected_idx < active_tab._items.len() {
+                    active_tab._items[selected_idx].toggle_state();
+                }
             }
         }
 
