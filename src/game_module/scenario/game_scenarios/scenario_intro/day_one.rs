@@ -136,10 +136,13 @@ impl<'a> ScenarioDayOne<'a> {
             let moved_pos = pos_before + math::safe_normalize(&to_target) * move_dist;
             let range = 0.1f32;
             if math::check_arrival_with_radius(&pos_before, &moved_pos, &self._monolith_start_position, range, false) {
+                prop.borrow_mut()._prop_stats._scale = Vector3::new(1.0, 1.0, 1.0);
                 prop.borrow_mut().set_position(&moved_pos);
                 return true;
             }
 
+            let scale = 1.0f32.min(prop.borrow_mut()._prop_stats._scale.x + delta_time as f32);
+            prop.borrow_mut()._prop_stats._scale = Vector3::new(scale, scale, scale);
             prop.borrow_mut().set_position(&moved_pos);
             false
         } else {
@@ -149,7 +152,7 @@ impl<'a> ScenarioDayOne<'a> {
 }
 
 impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
-    fn get_scenario_type(&self) -> ScenarioType {
+    fn get_scenario_type(&self) -> ScenarioType  {
         self._scenario_type
     }
 
@@ -256,6 +259,15 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
         if let Some(prop) = &self._prop_monolith {
             self._monolith_start_position = *prop.borrow().get_position();
             prop.borrow()._render_object.borrow_mut().set_visible(false);
+
+            if let Some(ufo) = &self._actor_ufo {
+                prop.borrow_mut()._prop_stats._scale = Vector3::new(0.1, 0.1, 0.1);
+                prop.borrow_mut().set_position(&Vector3::new(
+                    self._monolith_start_position.x,
+                    ufo.borrow().get_position().y,
+                    self._monolith_start_position.z
+                ));
+            }
         }
     }
 

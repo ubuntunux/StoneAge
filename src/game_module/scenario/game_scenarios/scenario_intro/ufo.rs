@@ -159,6 +159,9 @@ impl<'a> ScenarioBase<'a> for ScenarioUfo<'a> {
 
         if game_scene_data_name == Stages::Home.get_stage_data_name() {
             self._actor_ufo = game_scene_manager.get_actor_by_name("ufo").cloned();
+            if let Some(ufo) = self._actor_ufo.as_ref() {
+                ufo.borrow_mut().set_invincibility(true);
+            }
             self._player = game_scene_manager.get_maybe_player().clone();
             self._actor_ewa = game_scene_manager.get_actor_by_name("monkey_ewa").cloned();
             self._actor_koa = game_scene_manager.get_actor_by_name("monkey_koa").cloned();
@@ -203,6 +206,14 @@ impl<'a> ScenarioBase<'a> for ScenarioUfo<'a> {
                         main_camera._transform_object.set_rotation(&Vector3::new(0.76, 0.33, 0.0));
                         if let Some(actor) = &self._player {
                             actor.borrow_mut().set_action_sleep_no_snoring();
+                        }
+                        if let Some(ewa) = self._actor_ewa.as_ref() {
+                            ewa.borrow_mut().set_behavior_none();
+                            ewa.borrow_mut().set_action_sleep_no_snoring();
+                        }
+                        if let Some(koa) = self._actor_koa.as_ref() {
+                            koa.borrow_mut().set_behavior_none();
+                            koa.borrow_mut().set_action_sleep_no_snoring();
                         }
                     }
                     State::Update => {
