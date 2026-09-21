@@ -24,7 +24,6 @@ enum ScenarioPhase {
     None,
     Begin,
     ReleaseFamily,
-    UfoGone,
     DropMonolith,
     ReallyUfoGone,
     CloseUpShot,
@@ -328,27 +327,16 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
                     State::Update => {
                         let complete = self.update_release_family(delta_time);
                         if complete {
-                            self._scenario_track.set_next_scenario_phase(ScenarioPhase::UfoGone, Some(3.0));
+                            self._scenario_track.set_next_scenario_phase(ScenarioPhase::DropMonolith, Some(3.0));
                         }
                     }
                     _ => {}
                 },
-                ScenarioPhase::UfoGone => {
-                    if state == State::Update {
-                        if let Some(ufo) = &self._actor_ufo {
-                            ufo.borrow_mut().set_move(&Vector3::new(0.0, 0.0, -1.0));
-                        }
-                        if 1.0 <= phase_ratio {
-                            self._scenario_track.set_next_scenario_phase(ScenarioPhase::DropMonolith, None);
-                        }
-                    }
-                }
                 ScenarioPhase::DropMonolith => {
                     if state == State::Update {
-                        let radius = 0.5;
                         let mut drop_completed: bool = false;
                         let ufo_at_target = if let (Some(ufo), Some(_prop)) = (&self._actor_ufo, &self._prop_monolith) {
-                            ufo.borrow_mut().move_to_target(&self._monolith_start_position, radius)
+                            ufo.borrow_mut().move_to_target(&self._monolith_start_position, 0.0, delta_time as f32)
                         } else {
                             false
                         };

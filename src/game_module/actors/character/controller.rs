@@ -232,6 +232,10 @@ impl<'a> CharacterController<'a> {
         self._position.x = position.x;
         self._position.y = position.y;
     }
+    pub fn set_position_xz(&mut self, position: &Vector3<f32>) {
+        self._position.x = position.x;
+        self._position.z = position.z;
+    }
     pub fn get_move_speed(&self) -> f32 {
         self._move_speed
     }

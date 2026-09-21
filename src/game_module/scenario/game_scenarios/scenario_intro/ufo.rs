@@ -21,8 +21,6 @@ use strum_macros::{Display, EnumCount, EnumIter, EnumString};
 #[derive(Clone, PartialEq, Eq, Hash, Display, Debug, Copy, EnumIter, EnumString, EnumCount)]
 enum ScenarioPhase {
     None,
-    Begin,
-    AppearUfo,
     UfoLongShot,
     BeAbducted,
     End,
@@ -60,7 +58,7 @@ impl<'a> ScenarioUfo<'a> {
             _audio_ufo_beam: None,
             _scenario_track: ScenarioTrack {
                 _scenario_phase: ScenarioPhase::None,
-                _next_scenario_phase: ScenarioPhase::Begin,
+                _next_scenario_phase: ScenarioPhase::UfoLongShot,
                 _phase_time: 0.0,
                 _phase_duration: None,
                 _next_phase_duration: None,
@@ -68,19 +66,14 @@ impl<'a> ScenarioUfo<'a> {
         })
     }
 
-    pub fn update_ufo_movement(&mut self) -> bool {
-        if let (Some(actor), Some(target)) = (&self._actor_ufo, &self._actor_koa) {
-            let to_target = target.borrow().get_position() - actor.borrow().get_position();
-            if math::make_vector_xz(&to_target).magnitude_squared() < 1.0 {
+    pub fn update_ufo_movement(&mut self, delta_time: f32) -> bool {
+        if let (Some(actor), Some(target)) = (&self._actor_ufo, &self._player) {
+            if actor.borrow_mut().move_to_target(target.borrow().get_position(), 0.0, delta_time) {
                 actor.borrow_mut().set_move_idle();
-                true
-            } else {
-                actor.borrow_mut().set_move(&math::safe_normalize(&to_target));
-                false
+                return true;
             }
-        } else {
-            false
         }
+        false
     }
 
     pub fn update_be_abducted_actor(&mut self, actor: RcRefCell<Character>, delta_time: f64) -> bool {
@@ -195,32 +188,16 @@ impl<'a> ScenarioBase<'a> for ScenarioUfo<'a> {
             };
 
             let _phase_time = self._scenario_track.get_phase_time();
-            let phase_ratio = self._scenario_track.get_phase_ratio();
+            let _phase_ratio = self._scenario_track.get_phase_ratio();
             match update_scenario_phase {
                 ScenarioPhase::None => {
-                    self._scenario_track.set_next_scenario_phase(ScenarioPhase::Begin, None);
+                    self._scenario_track.set_next_scenario_phase(ScenarioPhase::UfoLongShot, None);
                 }
-                ScenarioPhase::Begin => {
-                    if state == State::Update {
-                        game_scene_manager.set_time(TIME_OF_DAWN, 0.0);
-                        self._scenario_track.set_next_scenario_phase(ScenarioPhase::AppearUfo, Some(3.0));
-                    }
-                }
-                ScenarioPhase::AppearUfo => match state {
-                    State::Begin => {
-                        self._audio_ufo_flying =
-                            get_audio_manager_mut().play_audio_bank(AUDIO_UFO_FLYING, AudioLoop::LOOP, Some(1.0));
-                    }
-                    State::Update => {
-                        self.update_ufo_movement();
-                        if 1.0 <= phase_ratio {
-                            self._scenario_track.set_next_scenario_phase(ScenarioPhase::UfoLongShot, None);
-                        }
-                    }
-                    _ => {}
-                },
                 ScenarioPhase::UfoLongShot => match state {
                     State::Begin => {
+                        game_scene_manager.set_time(TIME_OF_DAWN, 0.0);
+                        self._audio_ufo_flying =
+                            get_audio_manager_mut().play_audio_bank(AUDIO_UFO_FLYING, AudioLoop::LOOP, Some(1.0));
                         let main_camera = get_scene_manager().get_main_camera_mut();
                         main_camera._transform_object.set_position(&Vector3::new(13.48, 26.56, -5.02));
                         main_camera._transform_object.set_rotation(&Vector3::new(0.76, 0.33, 0.0));
@@ -229,8 +206,11 @@ impl<'a> ScenarioBase<'a> for ScenarioUfo<'a> {
                         }
                     }
                     State::Update => {
-                        if self.update_ufo_movement() {
-                            self._scenario_track.set_next_scenario_phase(ScenarioPhase::BeAbducted, None);
+                        if let (Some(actor), Some(target)) = (&self._actor_ufo, &self._player) {
+                            if actor.borrow_mut().move_to_target(target.borrow().get_position(), 0.0, delta_time as f32) {
+                                actor.borrow_mut().set_move_idle();
+                                self._scenario_track.set_next_scenario_phase(ScenarioPhase::BeAbducted, None);
+                            }
                         }
                     }
                     _ => {}

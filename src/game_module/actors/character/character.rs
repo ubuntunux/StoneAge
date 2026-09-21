@@ -1591,6 +1591,10 @@ impl<'a> Character<'a> {
         self._controller.set_position_xy(position);
     }
 
+    pub fn set_position_xz(&mut self, position: &Vector3<f32>) {
+        self._controller.set_position_xz(position);
+    }
+
     pub fn set_position(&mut self, position: &Vector3<f32>) {
         self._controller.set_position(position);
     }
@@ -1607,10 +1611,17 @@ impl<'a> Character<'a> {
     pub fn get_move_direction(&self) -> &Vector3<f32> {
         self._controller.get_move_direction()
     }
-
     pub fn set_move_direction(&mut self, move_direction: &Vector3<f32>, force_update: bool) {
         if self.is_available_move() || force_update {
             self._controller.set_move_direction(move_direction);
+        }
+    }
+    pub fn get_walk_or_run_speed(&self) -> f32 {
+        let character_data = self.get_character_data();
+        if self._controller._is_running {
+            character_data._stat_data._run_speed
+        } else {
+            character_data._stat_data._walk_speed
         }
     }
 
@@ -1640,16 +1651,15 @@ impl<'a> Character<'a> {
         }
     }
 
-    pub fn move_to_target(&mut self, target_position: &Vector3<f32>, radius: f32) -> bool {
-        if self.check_arrival_with_radius(target_position, radius, true) {
-            self.set_position(&Vector3::new(
-                target_position.x,
-                self.get_position().y,
-                target_position.z,
-            ));
+    pub fn move_to_target(&mut self, target_position: &Vector3<f32>, radius: f32, delta_time: f32) -> bool {
+        let diff = target_position - self.get_position();
+        let (target_dir, target_dist) = math::make_normalize_xz_with_norm(&diff);
+        let move_dist = self.get_walk_or_run_speed() * delta_time;
+        if (target_dist - 0.1f32.max(radius)) <= move_dist {
+            self.set_position_xz(&target_position);
             return true;
         }
-        self.set_move(&(target_position - self.get_position()));
+        self.set_move(&target_dir);
         false
     }
 
