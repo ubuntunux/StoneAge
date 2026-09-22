@@ -14,7 +14,7 @@ use nalgebra::Vector2;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::core::engine_core::TimeData;
 use rust_engine_3d::core::engine_service_locator::{get_audio_manager_mut, get_engine_core};
-use rust_engine_3d::core::input::{JoystickInputData, KeyboardInputData, MouseInputData, MouseMoveData};
+use rust_engine_3d::core::input::{ButtonState, JoystickInputData, KeyboardInputData, MouseInputData, MouseMoveData};
 use rust_engine_3d::scene::material_instance::MaterialInstanceData;
 use rust_engine_3d::scene::ui::{
     HorizontalAlign, Orientation, PIVOT_CENTER, UIComponentInstance, UILayoutType, UIManager, UIWidgetTypes,
@@ -730,8 +730,10 @@ impl<'a> TableStorageWidget<'a> {
             return;
         }
 
-        // ESC or Close key
-        if keyboard_input_data.get_key_pressed(KeyCode::Escape) {
+        // ESC, KeyB or Joystick B button to close
+        if keyboard_input_data.get_key_pressed(KeyCode::Escape)
+            || joystick_input_data._btn_b == ButtonState::Pressed
+        {
             self.close_table_storage();
             return;
         }
