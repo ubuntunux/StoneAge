@@ -1,7 +1,7 @@
 use crate::game_module::actors::character::{ActorWrapper, Character};
 use crate::game_module::actors::items::ItemDataType;
 use crate::game_module::game_constants::{
-    ITEM_ENERGY_BALL, ITEM_SPIRIT_BALL, MATERIAL_INTRO_IMAGE, RECORD_DEFAULT_INCREMENT,
+    ITEM_ENERGY_BALL, ITEM_SPIRIT_BALL, MATERIAL_INTRO_IMAGE, MATERIAL_UI_NONE, RECORD_DEFAULT_INCREMENT,
 };
 use crate::game_module::game_service_locator::{get_character_manager, get_game_resources, get_game_scene_manager};
 use crate::game_module::save_data::save_data::PlayerRecords;
@@ -247,6 +247,7 @@ impl<'a> GameUIManager<'a> {
             }
         }
 
+        self.set_image_manual_fade_inout(MATERIAL_UI_NONE, 0.0);
         self.set_cross_hair_visible(false);
     }
 

@@ -81,7 +81,7 @@ impl<'a> ImageLayout<'a> {
             _fadeout_image_brightness: 0.0,
             _image_aspect: 1.0,
             _next_image_aspect: 1.0,
-            _image_size_hint: 0.9,
+            _image_size_hint: 1.0,
             _window_size: *window_size,
         })
     }

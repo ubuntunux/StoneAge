@@ -440,7 +440,8 @@ impl<'a> CharacterController<'a> {
         }
 
         if self._is_running {
-            self._running_multiplier = (self._running_multiplier + RUNNING_MULTIPLIER_ACCELERATION * delta_time).clamp(RUNNING_MULTIPLIER_MIN, RUNNING_MULTIPLIER_MAX);
+            self._running_multiplier = (self._running_multiplier + RUNNING_MULTIPLIER_ACCELERATION * delta_time)
+                .clamp(RUNNING_MULTIPLIER_MIN, RUNNING_MULTIPLIER_MAX);
         } else {
             self._running_multiplier = 1.0;
         }

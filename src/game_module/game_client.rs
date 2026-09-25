@@ -13,7 +13,7 @@ use crate::game_module::save_data::save_data::GameSaveData;
 use crate::game_module::scenario::scenario::ScenarioType;
 use nalgebra::{Vector2, Vector3};
 use rust_engine_3d::core::engine_service_locator::{
-    get_engine_core, get_scene_manager, get_scene_manager_mut, is_engine_core_valid,
+    get_engine_core, get_renderer_data_mut, get_scene_manager, get_scene_manager_mut, is_engine_core_valid,
 };
 use rust_engine_3d::utilities::system::{BoxRefCell, State, newBoxRefCell};
 use std::cmp::PartialEq;
@@ -188,8 +188,9 @@ impl<'a> GameClient<'a> {
             match update_game_phase {
                 GamePhase::None => {}
                 GamePhase::Start => {
-                    if state == State::Update {
-                        game_ui_manager.set_image_auto_fade_inout(MATERIAL_INTRO_IMAGE, 0.0);
+                    if state == State::Begin {
+                        get_renderer_data_mut().set_render_scene(true);
+                        game_ui_manager.set_image_auto_fade_inout(MATERIAL_INTRO_IMAGE, 1.0);
                         self.set_next_game_phase(GamePhase::TitleScreen);
                     }
                 }

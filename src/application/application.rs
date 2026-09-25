@@ -47,6 +47,7 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
         self._editor_ui_manager.initialize_editor_ui_manager();
 
         // start game
+        get_renderer_data_mut().set_render_scene(false);
         self._game_ui_manager.build_game_ui(window_size);
         self._editor_ui_manager.build_editor_ui(window_size);
         self.set_game_mode(true);
