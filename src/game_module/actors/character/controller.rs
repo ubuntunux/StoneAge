@@ -41,6 +41,7 @@ pub struct CharacterControllerSaveData {
     pub _is_cliff: bool,
     pub _is_blocked: bool,
     pub _is_flying_mode: bool,
+    pub _running_multiplier: f32,
 }
 
 pub struct CharacterController<'a> {
@@ -68,6 +69,7 @@ pub struct CharacterController<'a> {
     pub _is_cliff: bool,
     pub _is_blocked: bool,
     pub _is_flying_mode: bool,
+    pub _running_multiplier: f32,
     pub _nearest_interaction_object: InteractionObject<'a>,
     pub _interaction_objects: HashMap<*const c_void, InteractionObject<'a>>,
 }
@@ -99,6 +101,7 @@ impl<'a> CharacterController<'a> {
             _is_cliff: false,
             _is_blocked: false,
             _is_flying_mode: false,
+            _running_multiplier: 1.0,
             _nearest_interaction_object: InteractionObject::None,
             _interaction_objects: HashMap::new(),
         }
@@ -128,6 +131,7 @@ impl<'a> CharacterController<'a> {
         self._is_blocked = false;
         self._is_cliff = false;
         self._is_flying_mode = false;
+        self.reset_running_boost();
         self._interaction_objects.clear();
     }
     pub fn set_flying_mode(&mut self, is_flying_mode: bool) {
@@ -185,7 +189,16 @@ impl<'a> CharacterController<'a> {
         }
     }
     pub fn set_jump_start(&mut self) {
+        if self._is_running {
+            self.set_running_boost();
+        }
         self._is_jump_start = true;
+    }
+    pub fn set_running_boost(&mut self) {
+        self._running_multiplier = RUNNING_MULTIPLIER;
+    }
+    pub fn reset_running_boost(&mut self) {
+        self._running_multiplier = 1.0;
     }
     pub fn is_jump(&self) -> bool {
         self._is_jump
@@ -365,8 +378,8 @@ impl<'a> CharacterController<'a> {
 
         if move_direction.x != 0.0 || move_direction.z != 0.0 {
             move_direction.normalize_mut();
-            self._velocity.x = move_direction.x * self._move_speed;
-            self._velocity.z = move_direction.z * self._move_speed;
+            self._velocity.x = move_direction.x * self._move_speed * self._running_multiplier;
+            self._velocity.z = move_direction.z * self._move_speed * self._running_multiplier;
         } else {
             self._velocity.x = 0.0;
             self._velocity.z = 0.0;
@@ -453,8 +466,8 @@ impl<'a> CharacterController<'a> {
         if move_direction.x != 0.0 || move_direction.z != 0.0 {
             move_direction.normalize_mut();
             let air_speed_factor = if !self._is_ground { self._slope_ratio } else { 1.0 };
-            self._velocity.x = move_direction.x * self._move_speed * air_speed_factor;
-            self._velocity.z = move_direction.z * self._move_speed * air_speed_factor;
+            self._velocity.x = move_direction.x * self._move_speed * air_speed_factor * self._running_multiplier;
+            self._velocity.z = move_direction.z * self._move_speed * air_speed_factor * self._running_multiplier;
         } else {
             self._velocity.x = 0.0;
             self._velocity.z = 0.0;
@@ -692,6 +705,10 @@ impl<'a> CharacterController<'a> {
             self._roll_delay -= delta_time;
         }
 
+        if !self._is_jump && !owner.is_move_state(MoveAnimationState::Roll) {
+            self.reset_running_boost();
+        }
+
         // reset
         self._is_jump_start = false;
 
@@ -728,6 +745,7 @@ impl<'a> CharacterController<'a> {
             _is_cliff: self._is_cliff,
             _is_blocked: self._is_blocked,
             _is_flying_mode: self._is_flying_mode,
+            _running_multiplier: self._running_multiplier,
         }
     }
 
@@ -756,5 +774,10 @@ impl<'a> CharacterController<'a> {
         self._is_cliff = controller_save_data._is_cliff;
         self._is_blocked = controller_save_data._is_blocked;
         self._is_flying_mode = controller_save_data._is_flying_mode;
+        self._running_multiplier = if controller_save_data._running_multiplier == 0.0 {
+            1.0
+        } else {
+            controller_save_data._running_multiplier
+        };
     }
 }

@@ -1713,11 +1713,11 @@ impl<'a> Character<'a> {
                 self._character_stats._stamina -= STAMINA_ROLL;
             }
 
-            let character_data = self.get_character_data();
             if self.is_move_state(MoveAnimationState::Run) {
-                self.set_move_speed(character_data._stat_data._run_speed);
+                self.set_move_speed(self.get_character_data()._stat_data._run_speed);
+                self._controller.set_running_boost();
             } else {
-                self.set_move_speed(character_data._stat_data._roll_speed);
+                self.set_move_speed(self.get_character_data()._stat_data._roll_speed);
             }
             self.set_move_direction(&self._controller._face_direction.clone(), false);
             self.set_action_none();
@@ -1848,6 +1848,7 @@ impl<'a> Character<'a> {
                     }
                     State::End => {
                         self._controller.set_roll_delay();
+                        self._controller.reset_running_boost();
                         self.set_invincibility(false);
                     }
                 },
