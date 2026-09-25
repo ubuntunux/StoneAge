@@ -223,6 +223,16 @@ impl<'a> GameClient<'a> {
                 GamePhase::LoadingProgress => {
                     if state == State::Update && game_scene_manager.is_game_scene_state(GameSceneState::LoadCompleted) {
                         game_ui_manager.set_auto_fade_inout(true);
+                        if !game_scene_manager.has_game_scenario(ScenarioType::ScenarioWrapUpTheDay) {
+                            game_controller.set_camera_fixed(false);
+                            game_controller.set_game_camera_auto_blend_mode(false);
+                            if let Some(player) = character_manager.get_maybe_player() {
+                                game_controller.apply_game_camera_transform(
+                                    scene_manager.get_main_camera_mut(),
+                                    &mut player.borrow_mut(),
+                                );
+                            }
+                        }
                         game_controller.set_game_camera_goal_transform(
                             1.0,
                             scene_manager.get_main_camera()._transform_object.get_pitch(),

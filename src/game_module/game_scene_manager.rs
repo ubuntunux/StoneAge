@@ -281,6 +281,12 @@ impl<'a> GameSceneManager<'a> {
             opened_scenario.borrow_mut().load_scenario_save_data(game_scenario_create_info);
         }
 
+        if !self.has_game_scenario(ScenarioType::ScenarioWrapUpTheDay) {
+            let game_controller = get_game_controller_mut();
+            game_controller.set_camera_fixed(false);
+            game_controller.set_game_camera_auto_blend_mode(false);
+        }
+
         let game_ui_manager = get_game_ui_manager_mut();
         game_ui_manager._player_records = game_save_data._player_records.clone();
         game_ui_manager.set_controls_visibility(game_save_data._is_controls_visible);
