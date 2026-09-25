@@ -5,13 +5,10 @@ use crate::game_module::behavior::behavior_common::{
     is_player_too_far_for_intimacy, should_roaming_go_idle, update_eating_should_idle, update_interaction_should_idle,
     update_intimacy_follow, update_wake_up_should_idle,
 };
-use crate::game_module::game_constants::{
-    NPC_ATTACK_RANGE, NPC_ATTACK_TERM_MAX, NPC_ATTACK_TERM_MIN, NPC_AVAILABLE_MOVING_ATTACK, NPC_TRACKING_RANGE,
-};
+use crate::game_module::game_constants::{NPC_ATTACK_CHASE_RANGE, NPC_ATTACK_IDLE_RANGE, NPC_ATTACK_RANGE, NPC_ATTACK_TERM_MAX, NPC_ATTACK_TERM_MIN, NPC_AVAILABLE_MOVING_ATTACK, NPC_TRACKING_RANGE};
 use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::core::engine_service_locator::get_audio_manager_mut;
-use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::math::lerp;
 use rust_engine_3d::utilities::system::State;
 use strum::IntoEnumIterator;
@@ -19,6 +16,7 @@ use strum::IntoEnumIterator;
 pub struct BehaviorRoamer<'a> {
     pub _behavior_data: BehaviorData<'a>,
     pub _attack_time: f32,
+    pub _is_in_attack_range: bool,
 }
 
 impl<'a> Default for BehaviorRoamer<'a> {
@@ -26,6 +24,7 @@ impl<'a> Default for BehaviorRoamer<'a> {
         Self {
             _behavior_data: BehaviorData::default(),
             _attack_time: 0.0,
+            _is_in_attack_range: false,
         }
     }
 }
@@ -206,18 +205,15 @@ impl<'a> BehaviorBase<'a> for BehaviorRoamer<'a> {
                 },
                 BehaviorState::Attack => match state {
                     State::Begin => {
-                        let to_dir =
-                            math::safe_normalize(&(target.as_ref().unwrap().get_position() - owner.get_position()));
-                        owner.set_move_direction(&to_dir, false);
-                        if !NPC_AVAILABLE_MOVING_ATTACK {
-                            owner.set_move_idle();
-                        }
-
                         if owner.is_available_attack() {
                             owner.set_action_attack();
                         }
 
                         self._attack_time = lerp(NPC_ATTACK_TERM_MIN, NPC_ATTACK_TERM_MAX, rand::random::<f32>());
+                        if let Some(target_ref) = target {
+                            self._is_in_attack_range = target_ref.is_alive()
+                                && owner.check_in_range(target_ref.get_collision(), NPC_ATTACK_IDLE_RANGE, false);
+                        }
                         get_audio_manager_mut().play_audio_resource_data(
                             &owner._character_data.borrow()._audio_data._audio_growl,
                             AudioLoop::ONCE,
@@ -225,27 +221,44 @@ impl<'a> BehaviorBase<'a> for BehaviorRoamer<'a> {
                         );
                     }
                     State::Update => {
-                        if let Some(target_ref) = target
-                            && target_ref.is_alive()
-                            && 0.0 < self._attack_time
-                        {
-                            if owner.is_attack_animation() {
-                                if !owner.is_available_move()
-                                    || (NPC_AVAILABLE_MOVING_ATTACK || !owner.is_attack_animation())
-                                {
-                                    owner.set_move_idle();
+                        if let Some(target_ref) = target {
+                            if target_ref.is_alive() {
+                                if self._is_in_attack_range {
+                                    if !owner.check_in_range(target_ref.get_collision(), NPC_ATTACK_CHASE_RANGE, false) {
+                                        self._is_in_attack_range = false;
+                                    }
+                                } else if owner.check_in_range(
+                                    target_ref.get_collision(),
+                                    NPC_ATTACK_IDLE_RANGE,
+                                    false,
+                                ) {
+                                    self._is_in_attack_range = true;
                                 }
                             } else {
-                                owner.set_move_idle();
-                                self._attack_time -= delta_time;
+                                self._is_in_attack_range = false;
                             }
-                        } else if let Some(target_ref) = target
-                            && target_ref.is_alive()
-                            && owner.check_in_range(target_ref.get_collision(), NPC_TRACKING_RANGE, false)
-                        {
-                            self.set_next_behavior(BehaviorState::Chase, false);
-                        } else {
-                            self.set_next_behavior(BehaviorState::Idle, false);
+
+                            if NPC_AVAILABLE_MOVING_ATTACK && !self._is_in_attack_range {
+                                let to_target = target_ref.get_position() - owner.get_position();
+                                owner.set_move(&to_target);
+                                owner.set_run(true);
+                            } else {
+                                owner.set_move_idle();
+                            }
+
+                            if self._attack_time <= 0.0 {
+                                if target_ref.is_alive()
+                                    && owner.check_in_range(target_ref.get_collision(), NPC_TRACKING_RANGE, false)
+                                {
+                                    self.set_next_behavior(BehaviorState::Chase, false);
+                                } else {
+                                    self.set_next_behavior(BehaviorState::Idle, false);
+                                }
+                            }
+                        }
+
+                        if !owner.is_attack_animation() {
+                            self._attack_time -= delta_time;
                         }
                     }
                     State::End => {}

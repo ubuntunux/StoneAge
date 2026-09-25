@@ -287,7 +287,7 @@ impl<'a> CharacterController<'a> {
                 0f32,
             );
         } else {
-            self._hit_velocity = *direction * HIT_VELOCITY_SPEED;
+            self._hit_velocity = math::make_normalize_xz(direction) * HIT_VELOCITY_SPEED;
         }
     }
 

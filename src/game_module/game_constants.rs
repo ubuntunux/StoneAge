@@ -95,7 +95,7 @@ pub const SLOPE_SPEED: f32 = 1.0;
 pub const SLOPE_ANGLE: f32 = 0.707;
 pub const SLOPE_VELOCITY_DECAY: f32 = 100.0;
 pub const HIT_VELOCITY_SPEED: f32 = 20.0;
-pub const HIT_VELOCITY_DECAY: f32 = 200.0;
+pub const HIT_VELOCITY_DECAY: f32 = 100.0;
 pub const ATTACK_DELAY: f32 = 0.0;
 pub const KICK_DELAY: f32 = 0.2;
 pub const ROLL_DELAY: f32 = 0.2;
@@ -146,11 +146,13 @@ pub const NPC_IDLE_TERM_MAX: f32 = 3.0;
 pub const NPC_ATTACK_TERM_MIN: f32 = 1.0;
 pub const NPC_ATTACK_TERM_MAX: f32 = 2.0;
 pub const NPC_ATTACK_RANGE: f32 = 2.0;
+pub const NPC_ATTACK_IDLE_RANGE: f32 = 0f32.max(NPC_ATTACK_RANGE - 1.0);
+pub const NPC_ATTACK_CHASE_RANGE: f32 = 0f32.max(NPC_ATTACK_RANGE + 1.0);
 pub const NPC_ATTACK_HIT_RANGE: f32 = 2.0;
 pub const NPC_TRACKING_RANGE: f32 = 6.0;
 pub const NPC_ROAMING_RADIUS: f32 = 5.0;
 pub const NPC_ROAMING_TIME: f32 = 5.0;
-pub const NPC_AVAILABLE_MOVING_ATTACK: bool = true;
+pub const NPC_AVAILABLE_MOVING_ATTACK: bool = false;
 
 // intimacy
 pub const INTIMACY_INTERACTION_ADD: f32 = 10.0;
