@@ -1661,6 +1661,7 @@ impl<'a> Character<'a> {
             self.set_move_direction(move_direction, false);
 
             if GAME_VIEW_MODE != GameViewMode::GameViewMode2D || move_direction.x.abs() >= move_direction.z.abs() {
+                self._controller._is_high_speed_moving = move_animation == MoveAnimationState::Run;
                 self.set_move_speed(move_speed);
                 if !self.is_move_state(move_animation) && self._controller._is_ground {
                     self.set_next_move_animation(move_animation, 1.0);
@@ -1719,6 +1720,8 @@ impl<'a> Character<'a> {
             } else {
                 self.set_move_speed(self.get_character_data()._stat_data._roll_speed);
             }
+
+            self._controller._is_high_speed_moving = true;
             self.set_move_direction(&self._controller._face_direction.clone(), false);
             self.set_action_none();
             self.set_next_move_animation(MoveAnimationState::Roll, 1.0);

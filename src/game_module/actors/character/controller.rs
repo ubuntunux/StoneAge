@@ -30,6 +30,8 @@ pub struct CharacterControllerSaveData {
     pub _slop_velocity: Vector3<f32>,
     pub _hit_velocity: Vector3<f32>,
     pub _move_speed: f32,
+    pub _final_move_speed: f32,
+    pub _is_high_speed_moving: bool,
     pub _fall_time: f32,
     pub _roll_delay: f32,
     pub _slope_ratio: f32,
@@ -58,6 +60,8 @@ pub struct CharacterController<'a> {
     pub _slop_velocity: Vector3<f32>,
     pub _hit_velocity: Vector3<f32>,
     pub _move_speed: f32,
+    pub _final_move_speed: f32,
+    pub _is_high_speed_moving: bool,
     pub _fall_time: f32,
     pub _roll_delay: f32,
     pub _slope_ratio: f32,
@@ -90,6 +94,8 @@ impl<'a> CharacterController<'a> {
             _slop_velocity: Vector3::zeros(),
             _hit_velocity: Vector3::zeros(),
             _move_speed: 0.0,
+            _final_move_speed: 0.0,
+            _is_high_speed_moving: false,
             _roll_delay: 0.0,
             _fall_time: 0.0,
             _slope_ratio: 1.0,
@@ -121,6 +127,8 @@ impl<'a> CharacterController<'a> {
         self._slop_velocity = Vector3::zeros();
         self._hit_velocity = Vector3::zeros();
         self._move_speed = 0.0;
+        self._final_move_speed = 0.0;
+        self._is_high_speed_moving = false;
         self._fall_time = 0.0;
         self._slope_ratio = 1.0;
         self._is_falling = false;
@@ -376,10 +384,12 @@ impl<'a> CharacterController<'a> {
             self._move_direction
         };
 
+        let move_speed = self.update_move_speed(delta_time);
+
         if move_direction.x != 0.0 || move_direction.z != 0.0 {
             move_direction.normalize_mut();
-            self._velocity.x = move_direction.x * self._move_speed * self._running_multiplier;
-            self._velocity.z = move_direction.z * self._move_speed * self._running_multiplier;
+            self._velocity.x = move_direction.x * move_speed * self._running_multiplier;
+            self._velocity.z = move_direction.z * move_speed * self._running_multiplier;
         } else {
             self._velocity.x = 0.0;
             self._velocity.z = 0.0;
@@ -424,7 +434,6 @@ impl<'a> CharacterController<'a> {
         self._is_cliff = false;
         self._is_blocked = false;
         self._is_ground = false;
-        self._is_jump = true;
 
         // reset
         self._is_jump_start = false;
@@ -432,6 +441,24 @@ impl<'a> CharacterController<'a> {
         if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
             self._position.z = self._prev_position.z;
         }
+    }
+
+    pub fn update_move_speed(&mut self, delta_time: f32) -> f32 {
+        if self._is_jump {
+            return self._final_move_speed;
+        }
+
+        if self._is_high_speed_moving && self._move_speed == 0.0 {
+            self._final_move_speed = 0f32.max(self._final_move_speed - MOVE_VELOCITY_DECAY * delta_time);
+            if self._final_move_speed <= 0.0 {
+                self._final_move_speed = 0.0;
+                self._is_high_speed_moving = false;
+            }
+        } else {
+            // rfest
+            self._final_move_speed = self._move_speed;
+        }
+        self._final_move_speed
     }
 
     pub fn update_ground_controller(
@@ -463,11 +490,13 @@ impl<'a> CharacterController<'a> {
             self._move_direction
         };
 
+        let move_speed = self.update_move_speed(delta_time);
+
         if move_direction.x != 0.0 || move_direction.z != 0.0 {
             move_direction.normalize_mut();
             let air_speed_factor = if !self._is_ground { self._slope_ratio } else { 1.0 };
-            self._velocity.x = move_direction.x * self._move_speed * air_speed_factor * self._running_multiplier;
-            self._velocity.z = move_direction.z * self._move_speed * air_speed_factor * self._running_multiplier;
+            self._velocity.x = move_direction.x * move_speed * air_speed_factor * self._running_multiplier;
+            self._velocity.z = move_direction.z * move_speed * air_speed_factor * self._running_multiplier;
         } else {
             self._velocity.x = 0.0;
             self._velocity.z = 0.0;
@@ -570,7 +599,7 @@ impl<'a> CharacterController<'a> {
             let ground_height = height_map_data.get_height_bilinear(&self._position, 0);
 
             if _was_on_ground && !self._is_jump && self._velocity.y <= 0.0 {
-                let max_step_down = (self._move_speed * delta_time * 2.0).max(0.5);
+                let max_step_down = (move_speed * delta_time * 2.0).max(0.5);
                 if self._position.y > ground_height && self._position.y <= ground_height + max_step_down {
                     self._position.y = ground_height;
                 }
@@ -734,6 +763,8 @@ impl<'a> CharacterController<'a> {
             _slop_velocity: self._slop_velocity,
             _hit_velocity: self._hit_velocity,
             _move_speed: self._move_speed,
+            _final_move_speed: self._final_move_speed,
+            _is_high_speed_moving: self._is_high_speed_moving,
             _fall_time: self._fall_time,
             _roll_delay: self._roll_delay,
             _slope_ratio: self._slope_ratio,
@@ -763,6 +794,8 @@ impl<'a> CharacterController<'a> {
         self._slop_velocity = controller_save_data._slop_velocity;
         self._hit_velocity = controller_save_data._hit_velocity;
         self._move_speed = controller_save_data._move_speed;
+        self._final_move_speed = controller_save_data._final_move_speed;
+        self._is_high_speed_moving = controller_save_data._is_high_speed_moving;
         self._fall_time = controller_save_data._fall_time;
         self._roll_delay = controller_save_data._roll_delay;
         self._slope_ratio = controller_save_data._slope_ratio;
