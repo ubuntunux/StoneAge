@@ -1636,13 +1636,8 @@ impl<'a> Character<'a> {
             self._controller.set_move_direction(move_direction);
         }
     }
-    pub fn get_walk_or_run_speed(&self) -> f32 {
-        let character_data = self.get_character_data();
-        if self._controller._is_running {
-            character_data._stat_data._run_speed
-        } else {
-            character_data._stat_data._walk_speed
-        }
+    pub fn get_walk_speed(&self) -> f32 {
+        self.get_character_data()._stat_data._walk_speed
     }
 
     pub fn set_move(&mut self, move_direction: &Vector3<f32>) {
@@ -1651,18 +1646,17 @@ impl<'a> Character<'a> {
                 self.set_run(false);
             }
 
-            let character_data = self.get_character_data();
-            let (move_animation, move_speed) = if self._controller._is_running {
-                (MoveAnimationState::Run, character_data._stat_data._run_speed)
+            let move_animation = if self._controller._is_running {
+                MoveAnimationState::Run
             } else {
-                (MoveAnimationState::Walk, character_data._stat_data._walk_speed)
+                MoveAnimationState::Walk
             };
 
             self.set_move_direction(move_direction, false);
 
             if GAME_VIEW_MODE != GameViewMode::GameViewMode2D || move_direction.x.abs() >= move_direction.z.abs() {
                 self._controller._is_high_speed_moving = move_animation == MoveAnimationState::Run;
-                self.set_move_speed(move_speed);
+                self.set_move_speed(self.get_character_data()._stat_data._walk_speed);
                 if !self.is_move_state(move_animation) && self._controller._is_ground {
                     self.set_next_move_animation(move_animation, 1.0);
                 }
@@ -1675,7 +1669,7 @@ impl<'a> Character<'a> {
     pub fn move_to_target(&mut self, target_position: &Vector3<f32>, radius: f32, delta_time: f32) -> bool {
         let diff = target_position - self.get_position();
         let (target_dir, target_dist) = math::make_normalize_xz_with_norm(&diff);
-        let move_dist = self.get_walk_or_run_speed() * delta_time;
+        let move_dist = self.get_walk_speed() * delta_time;
         if (target_dist - 0.1f32.max(radius)) <= move_dist {
             self.set_position_xz(&target_position);
             return true;
@@ -1714,14 +1708,8 @@ impl<'a> Character<'a> {
                 self._character_stats._stamina -= STAMINA_ROLL;
             }
 
-            if self.is_move_state(MoveAnimationState::Run) {
-                self.set_move_speed(self.get_character_data()._stat_data._run_speed);
-                self._controller.set_running_boost();
-            } else {
-                self.set_move_speed(self.get_character_data()._stat_data._roll_speed);
-            }
-
             self._controller._is_high_speed_moving = true;
+            self.set_move_speed(self.get_character_data()._stat_data._roll_speed);
             self.set_move_direction(&self._controller._face_direction.clone(), false);
             self.set_action_none();
             self.set_next_move_animation(MoveAnimationState::Roll, 1.0);
@@ -1851,7 +1839,6 @@ impl<'a> Character<'a> {
                     }
                     State::End => {
                         self._controller.set_roll_delay();
-                        self._controller.reset_running_boost();
                         self.set_invincibility(false);
                     }
                 },
