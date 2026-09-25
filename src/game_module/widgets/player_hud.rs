@@ -1,7 +1,7 @@
 use crate::game_module::actors::character::Character;
 use crate::game_module::game_constants::{
-    HP_WARNING_RATIO, HUNGER_WARNING_THRESHOLD, HYPOTHERMIA_THRESHOLD, MAX_HUNGER, MIN_BODY_TEMPERATURE,
-    MAX_BODY_TEMPERATURE,
+    HP_WARNING_RATIO, HUNGER_WARNING_THRESHOLD, HYPOTHERMIA_THRESHOLD, MAX_BODY_TEMPERATURE, MAX_HUNGER,
+    MIN_BODY_TEMPERATURE,
 };
 use crate::game_module::widgets::fishing::FishingGaugeWidget;
 use crate::game_module::widgets::status_bar_widget::StatusBarWidget;
@@ -54,7 +54,8 @@ impl<'a> PlayerHud<'a> {
         let hp_widget = StatusBarWidget::create_status_widget(player_widget_ptr, HUD_HP_BAR_COLOR, true);
         let stamina_widget = StatusBarWidget::create_status_widget(player_widget_ptr, HUD_STAMINA_BAR_COLOR, true);
         let hunger_widget = StatusBarWidget::create_status_widget(player_widget_ptr, HUD_HUNGER_BAR_COLOR, false);
-        let temperature_widget = StatusBarWidget::create_status_widget(player_widget_ptr, HUD_TEMPERATURE_BAR_COLOR, false);
+        let temperature_widget =
+            StatusBarWidget::create_status_widget(player_widget_ptr, HUD_TEMPERATURE_BAR_COLOR, false);
 
         PlayerHud {
             _widget: player_widget_ptr,

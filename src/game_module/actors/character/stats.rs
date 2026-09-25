@@ -2,11 +2,11 @@ use super::character::Character;
 use crate::game_module::actors::character::ActionEvent;
 use crate::game_module::actors::character::data::{ActionAnimationState, MoveAnimationState};
 use crate::game_module::actors::props::Prop;
+use crate::game_module::game_constants::NORMAL_BODY_TEMPERATURE;
 use rust_engine_3d::scene::render_object::RenderObjectData;
 use rust_engine_3d::utilities::system::RcRefCell;
 use serde::{Deserialize, Serialize};
 use std::ffi::c_void;
-use crate::game_module::game_constants::NORMAL_BODY_TEMPERATURE;
 
 #[derive(Clone)]
 pub enum ActorWrapper<'a> {

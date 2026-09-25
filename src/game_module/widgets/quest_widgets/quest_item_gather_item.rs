@@ -67,7 +67,10 @@ impl<'a> QuestItemGatherItem<'a> {
         };
 
         let ui_component = ptr_as_mut(self._text_widget.as_ref()).get_ui_component_mut();
-        ui_component.set_text(&format!("Gather {} ({}/{})", display_name, self._item_count, self._item_data._gather_item_count));
+        ui_component.set_text(&format!(
+            "Gather {} ({}/{})",
+            display_name, self._item_count, self._item_data._gather_item_count
+        ));
     }
 }
 

@@ -218,7 +218,8 @@ impl<'a> ScenarioBase<'a> for ScenarioUfo<'a> {
                     }
                     State::Update => {
                         if let (Some(actor), Some(target)) = (&self._actor_ufo, &self._player) {
-                            if actor.borrow_mut().move_to_target(target.borrow().get_position(), 0.0, delta_time as f32) {
+                            if actor.borrow_mut().move_to_target(target.borrow().get_position(), 0.0, delta_time as f32)
+                            {
                                 actor.borrow_mut().set_move_idle();
                                 self._scenario_track.set_next_scenario_phase(ScenarioPhase::BeAbducted, None);
                             }

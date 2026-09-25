@@ -1,7 +1,7 @@
 use crate::game_module::actors::character::data::ActionAnimationState;
 use crate::game_module::game_constants::{
-    CAMERA_DISTANCE_MAX, DEFAULT_FADE_TIME, DEFAULT_GAME_SAVE_DATA, GAME_VIEW_MODE, GameViewMode,
-    MATERIAL_INTRO_IMAGE, MATERIAL_UI_NONE, MATERIAL_WORLDMAP_FADE_TIME,
+    CAMERA_DISTANCE_MAX, DEFAULT_FADE_TIME, DEFAULT_GAME_SAVE_DATA, GAME_VIEW_MODE, GameViewMode, MATERIAL_INTRO_IMAGE,
+    MATERIAL_UI_NONE, MATERIAL_WORLDMAP_FADE_TIME,
 };
 use crate::game_module::game_scene_manager::GameSceneState;
 use crate::game_module::game_service_locator::{

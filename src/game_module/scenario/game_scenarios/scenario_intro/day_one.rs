@@ -152,7 +152,7 @@ impl<'a> ScenarioDayOne<'a> {
 }
 
 impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
-    fn get_scenario_type(&self) -> ScenarioType  {
+    fn get_scenario_type(&self) -> ScenarioType {
         self._scenario_type
     }
 
@@ -265,7 +265,7 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
                 prop.borrow_mut().set_position(&Vector3::new(
                     self._monolith_start_position.x,
                     ufo.borrow().get_position().y,
-                    self._monolith_start_position.z
+                    self._monolith_start_position.z,
                 ));
             }
         }
@@ -314,7 +314,8 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
                 ScenarioPhase::ReleaseFamily => match state {
                     State::Begin => {
                         if let Some(ufo) = &self._actor_ufo {
-                            let prop_bed_position = self._prop_bed_for_aru.as_ref().unwrap().borrow().get_position().clone();
+                            let prop_bed_position =
+                                self._prop_bed_for_aru.as_ref().unwrap().borrow().get_position().clone();
                             let mut ufo_position = ufo.borrow().get_position().clone();
                             ufo_position.x = prop_bed_position.x;
                             ufo_position.z = prop_bed_position.z;

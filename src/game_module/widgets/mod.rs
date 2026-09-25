@@ -18,4 +18,3 @@ pub mod target_status_bar;
 pub mod text_box_widget;
 pub mod time_of_day;
 pub mod toolbox_widget;
-

@@ -957,10 +957,8 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                     State::Update => {
                         self.update_tree_fruit_text_boxes();
 
-                        let wrap_up_the_day_not_completed = self
-                            ._sub_quest_wrap_up_the_day
-                            .as_ref()
-                            .is_some_and(|q| !q.borrow().is_completed_quest());
+                        let wrap_up_the_day_not_completed =
+                            self._sub_quest_wrap_up_the_day.as_ref().is_some_and(|q| !q.borrow().is_completed_quest());
 
                         if wrap_up_the_day_not_completed
                             && let Some(scenario_wrap_up_the_day) =
@@ -975,10 +973,8 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                                 self.complete_sub_quest_storage_food_to_table();
                             }
 
-                            let is_gather_food_completed = self
-                                ._sub_quest_gather_food
-                                .as_ref()
-                                .is_some_and(|q| q.borrow().is_completed_quest());
+                            let is_gather_food_completed =
+                                self._sub_quest_gather_food.as_ref().is_some_and(|q| q.borrow().is_completed_quest());
 
                             if is_gather_food_completed {
                                 self.complete_sub_quest_gather_food();

@@ -3,8 +3,7 @@ use crate::game_module::actors::items::ItemDataType;
 use crate::game_module::actors::props::Prop;
 use crate::game_module::game_constants::{ITEM_WOOD, MATERIAL_UI_POINTER};
 use crate::game_module::game_service_locator::{
-    get_character_manager, get_game_resources, get_game_scene_manager_mut, get_game_ui_manager,
-    get_game_ui_manager_mut,
+    get_character_manager, get_game_resources, get_game_scene_manager_mut, get_game_ui_manager, get_game_ui_manager_mut,
 };
 use crate::game_module::game_ui_manager::QuestItem;
 use crate::game_module::scenario::scenario::{
@@ -141,8 +140,7 @@ impl<'a> ScenarioWoodenClub<'a> {
 
     pub fn create_toolbox_text_box(&mut self) {
         if self._prop_monolith.is_none() {
-            self._prop_monolith =
-                get_game_scene_manager_mut().get_prop_manager().get_prop_by_name("monolith").cloned();
+            self._prop_monolith = get_game_scene_manager_mut().get_prop_manager().get_prop_by_name("monolith").cloned();
         }
         if let Some(prop_monolith) = self._prop_monolith.as_ref() {
             let wrapper = ActorWrapper::Prop(prop_monolith.clone());
@@ -167,8 +165,7 @@ impl<'a> ScenarioWoodenClub<'a> {
 
     pub fn remove_toolbox_text_box(&mut self) {
         if self._prop_monolith.is_none() {
-            self._prop_monolith =
-                get_game_scene_manager_mut().get_prop_manager().get_prop_by_name("monolith").cloned();
+            self._prop_monolith = get_game_scene_manager_mut().get_prop_manager().get_prop_by_name("monolith").cloned();
         }
         if let Some(prop_monolith) = self._prop_monolith.as_ref() {
             let wrapper = ActorWrapper::Prop(prop_monolith.clone());
@@ -193,10 +190,7 @@ impl<'a> ScenarioWoodenClub<'a> {
                 ._sub_quest_unlock_wooden_club
                 .as_ref()
                 .map(|q| q.borrow().get_quest_item_save_data()),
-            _sub_quest_gather_wood: self
-                ._sub_quest_gather_wood
-                .as_ref()
-                .map(|q| q.borrow().get_quest_item_save_data()),
+            _sub_quest_gather_wood: self._sub_quest_gather_wood.as_ref().map(|q| q.borrow().get_quest_item_save_data()),
             _sub_quest_craft_wooden_club: self
                 ._sub_quest_craft_wooden_club
                 .as_ref()
@@ -304,10 +298,8 @@ impl<'a> ScenarioBase<'a> for ScenarioWoodenClub<'a> {
 
         self.create_quests();
 
-        let unlock_not_completed = self
-            ._sub_quest_unlock_wooden_club
-            .as_ref()
-            .is_none_or(|q| !q.borrow().is_completed_quest());
+        let unlock_not_completed =
+            self._sub_quest_unlock_wooden_club.as_ref().is_none_or(|q| !q.borrow().is_completed_quest());
         if unlock_not_completed {
             self.create_toolbox_text_box();
         }
@@ -348,9 +340,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWoodenClub<'a> {
                     }
                     State::Update => {
                         // Check Step 1: Unlock Wooden Club in Toolbox
-                        let is_unlocked = get_game_ui_manager()
-                            .get_unlocked_toolbox_items()
-                            .contains("wooden_club");
+                        let is_unlocked = get_game_ui_manager().get_unlocked_toolbox_items().contains("wooden_club");
                         if is_unlocked {
                             self.complete_sub_quest_unlock_wooden_club();
                         } else {
@@ -368,10 +358,8 @@ impl<'a> ScenarioBase<'a> for ScenarioWoodenClub<'a> {
                             }
                         }
 
-                        let sub3_complete = self
-                            ._sub_quest_craft_wooden_club
-                            .as_ref()
-                            .is_some_and(|q| q.borrow().is_completed_quest());
+                        let sub3_complete =
+                            self._sub_quest_craft_wooden_club.as_ref().is_some_and(|q| q.borrow().is_completed_quest());
 
                         if sub3_complete {
                             self._scenario_track.set_next_scenario_phase(ScenarioPhase::End, Some(1.0));

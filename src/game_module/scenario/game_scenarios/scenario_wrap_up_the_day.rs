@@ -2,7 +2,11 @@ use crate::game_module::actors::character::ActionAnimationState;
 use crate::game_module::actors::character::Character;
 use crate::game_module::actors::props::Prop;
 use crate::game_module::behavior::behavior_base::BehaviorState;
-use crate::game_module::game_constants::{AUDIO_QUEST_COMPLETE, AUDIO_ROOSTER, AUDIO_WRAP_UP_THE_DAY, BED_FOR_ARU, CAMERA_DISTANCE_MIN, CAMERA_OFFSET_Y, CHARACTER_INTERACTION_DISTANCE, DEFAULT_FADE_TIME, EAT_ITEM_DELAY_TIME, MATERIAL_UI_NONE, MAX_BED_RESTRICTION_DISTANCE, SLEEP_TIMER, TARGET_HUNGER_THRESHOLD, TIME_OF_NIGHT};
+use crate::game_module::game_constants::{
+    AUDIO_QUEST_COMPLETE, AUDIO_ROOSTER, AUDIO_WRAP_UP_THE_DAY, BED_FOR_ARU, CAMERA_DISTANCE_MIN, CAMERA_OFFSET_Y,
+    CHARACTER_INTERACTION_DISTANCE, DEFAULT_FADE_TIME, EAT_ITEM_DELAY_TIME, MATERIAL_UI_NONE,
+    MAX_BED_RESTRICTION_DISTANCE, SLEEP_TIMER, TARGET_HUNGER_THRESHOLD, TIME_OF_NIGHT,
+};
 
 use crate::game_module::game_service_locator::{
     get_game_controller_mut, get_game_scene_manager, get_game_scene_manager_mut, get_game_ui_manager_mut,
@@ -170,11 +174,7 @@ impl<'a> ScenarioWrapUpTheDay<'a> {
     }
 }
 
-fn clamp_actor_position_from_bed(
-    actor: &Option<RcRefCell<Character>>,
-    bed_pos: &Vector3<f32>,
-    max_distance: f32,
-) {
+fn clamp_actor_position_from_bed(actor: &Option<RcRefCell<Character>>, bed_pos: &Vector3<f32>, max_distance: f32) {
     if let Some(actor_ref) = actor.as_ref() {
         let mut actor_mut = actor_ref.borrow_mut();
         let current_pos = *actor_mut.get_position();

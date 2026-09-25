@@ -455,8 +455,7 @@ impl<'a> ItemBarWidget<'a> {
 
     pub fn find_hand_item_slot_index(&self) -> Option<usize> {
         self._inventory_slots.iter().position(|slot| {
-            (slot._item_data_name == ITEM_HAND || slot._item_data_type == ItemDataType::Hand)
-                && slot._item_count > 0
+            (slot._item_data_name == ITEM_HAND || slot._item_data_type == ItemDataType::Hand) && slot._item_count > 0
         })
     }
 

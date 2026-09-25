@@ -1,6 +1,8 @@
 use crate::game_module::actors::character::CharacterCreateInfo;
 use crate::game_module::actors::items::ItemDataType;
-use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, AUDIO_QUEST_COMPLETE, DEFAULT_GATE_NAME, ITEM_ENERGY_BALL};
+use crate::game_module::game_constants::{
+    AUDIO_PICKUP_ITEM, AUDIO_QUEST_COMPLETE, DEFAULT_GATE_NAME, ITEM_ENERGY_BALL,
+};
 use crate::game_module::game_service_locator::{
     get_character_manager, get_character_manager_mut, get_game_resources, get_game_scene_manager,
     get_game_scene_manager_mut, get_game_ui_manager, get_game_ui_manager_mut,

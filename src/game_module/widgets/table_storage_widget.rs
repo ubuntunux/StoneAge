@@ -731,9 +731,7 @@ impl<'a> TableStorageWidget<'a> {
         }
 
         // ESC, KeyB or Joystick B button to close
-        if keyboard_input_data.get_key_pressed(KeyCode::Escape)
-            || joystick_input_data._btn_b == ButtonState::Pressed
-        {
+        if keyboard_input_data.get_key_pressed(KeyCode::Escape) || joystick_input_data._btn_b == ButtonState::Pressed {
             self.close_table_storage();
             return;
         }

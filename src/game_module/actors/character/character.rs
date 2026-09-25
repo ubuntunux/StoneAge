@@ -8,16 +8,16 @@ use crate::game_module::actors::items::{Item, ItemCreateInfo, ItemID};
 use rust_engine_3d::audio::audio_manager::AudioInstance;
 
 use crate::game_module::actors::items::ItemDataType;
+use crate::game_module::actors::props::api::PropDataType;
 use crate::game_module::behavior::behavior_base::{BehaviorBase, BehaviorState, create_character_behavior};
 use crate::game_module::game_client::GamePhase;
 use crate::game_module::game_constants::*;
-use crate::game_module::actors::props::api::PropDataType;
 use crate::game_module::game_scene_manager::Stages;
-use crate::game_module::game_weather::WeatherType;
 use crate::game_module::game_service_locator::{
     get_character_manager, get_character_manager_mut, get_game_client_mut, get_game_scene_manager,
     get_game_scene_manager_mut, get_game_ui_manager_mut, get_item_manager,
 };
+use crate::game_module::game_weather::WeatherType;
 use crate::game_module::widgets::game_menu_widget::character_list_helper::{AffinityTier, get_affinity_tier};
 use nalgebra::{Vector3, Vector4};
 use rust_engine_3d::audio::audio_manager::AudioLoop;
@@ -275,17 +275,29 @@ impl CharacterStats {
             let prop_type = prop_ref._prop_data.borrow()._prop_type;
 
             if distance <= HEAT_SOURCE_RADIUS {
-                if prop_name.contains("fire") || prop_name.contains("fireplace") || prop_name.contains("bonfire") || prop_name.contains("stove")
-                    || prop_data_name.contains("fire") || prop_data_name.contains("fireplace") || prop_data_name.contains("bonfire")
-                    || model_name.contains("fire") || model_name.contains("fireplace") || model_name.contains("bonfire") || model_name.contains("stove") {
+                if prop_name.contains("fire")
+                    || prop_name.contains("fireplace")
+                    || prop_name.contains("bonfire")
+                    || prop_name.contains("stove")
+                    || prop_data_name.contains("fire")
+                    || prop_data_name.contains("fireplace")
+                    || prop_data_name.contains("bonfire")
+                    || model_name.contains("fire")
+                    || model_name.contains("fireplace")
+                    || model_name.contains("bonfire")
+                    || model_name.contains("stove")
+                {
                     is_near_heat_source = true;
                 }
             }
 
             if distance <= 3.0 {
                 if prop_type == PropDataType::Ceiling
-                    || prop_name.contains("shelter_roof") || prop_name.contains("leaf_house")
-                    || prop_data_name.contains("shelter_roof") || prop_data_name.contains("leaf_house") {
+                    || prop_name.contains("shelter_roof")
+                    || prop_name.contains("leaf_house")
+                    || prop_data_name.contains("shelter_roof")
+                    || prop_data_name.contains("leaf_house")
+                {
                     is_sheltered = true;
                 }
             }
@@ -302,10 +314,12 @@ impl CharacterStats {
         let mut target_temp = NORMAL_BODY_TEMPERATURE;
 
         if env_temp < THERMONEUTRAL_MIN_TEMP {
-            let cold_ratio = ((THERMONEUTRAL_MIN_TEMP - env_temp) / (THERMONEUTRAL_MIN_TEMP - TEMPERATURE_MIN)).clamp(0.0, 1.0);
+            let cold_ratio =
+                ((THERMONEUTRAL_MIN_TEMP - env_temp) / (THERMONEUTRAL_MIN_TEMP - TEMPERATURE_MIN)).clamp(0.0, 1.0);
             target_temp -= cold_ratio * MAX_DRY_COLD_BODY_TEMP_DROP;
         } else if env_temp > THERMONEUTRAL_MAX_TEMP {
-            let heat_ratio = ((env_temp - THERMONEUTRAL_MAX_TEMP) / (TEMPERATURE_MAX - THERMONEUTRAL_MAX_TEMP)).clamp(0.0, 1.0);
+            let heat_ratio =
+                ((env_temp - THERMONEUTRAL_MAX_TEMP) / (TEMPERATURE_MAX - THERMONEUTRAL_MAX_TEMP)).clamp(0.0, 1.0);
             target_temp += heat_ratio * MAX_DRY_HEAT_BODY_TEMP_RISE;
         }
 
@@ -324,7 +338,11 @@ impl CharacterStats {
 
         let temp_diff = target_temp - self._body_temperature;
         if temp_diff > 0.0 {
-            let recovery_rate = if is_near_heat_source { BODY_TEMP_HEAT_RECOVERY_RATE } else { 0.15 };
+            let recovery_rate = if is_near_heat_source {
+                BODY_TEMP_HEAT_RECOVERY_RATE
+            } else {
+                0.15
+            };
             self._body_temperature = (self._body_temperature + recovery_rate * delta_time).min(target_temp);
         } else if temp_diff < 0.0 {
             let mut drain_rate = 0.05;
@@ -958,12 +976,14 @@ impl<'a> Character<'a> {
             if self.is_idle_action() || self.is_action(ActionAnimationState::Hit) {
                 return true;
             } else if self.is_action(ActionAnimationState::Attack) {
-                let attackable_time = (self.get_character_data()._stat_data._attack_event_time + ATTACK_DELAY) / action_animation_play_info._animation_speed;
+                let attackable_time = (self.get_character_data()._stat_data._attack_event_time + ATTACK_DELAY)
+                    / action_animation_play_info._animation_speed;
                 return attackable_time < action_animation_play_info._animation_play_time;
             }
         } else {
             if self.is_action(ActionAnimationState::Kick) {
-                let attackable_time = (self.get_character_data()._stat_data._kick_event_time + KICK_DELAY) / action_animation_play_info._animation_speed;
+                let attackable_time = (self.get_character_data()._stat_data._kick_event_time + KICK_DELAY)
+                    / action_animation_play_info._animation_speed;
                 return attackable_time < action_animation_play_info._animation_play_time;
             }
         }
@@ -1916,8 +1936,9 @@ impl<'a> Character<'a> {
                     }
                     State::Update => {
                         let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
-                        if animation_play_info.check_animation_event_time(character_data._stat_data._attack_event_time / animation_play_info._animation_speed)
-                        {
+                        if animation_play_info.check_animation_event_time(
+                            character_data._stat_data._attack_event_time / animation_play_info._animation_speed,
+                        ) {
                             self._animation_state.set_action_event(ActionEvent::Attack);
                             get_audio_manager_mut().play_audio_bank(AUDIO_ATTACK, AudioLoop::ONCE, None);
                         }
@@ -2084,7 +2105,9 @@ impl<'a> Character<'a> {
                     }
                     State::Update => {
                         let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
-                        if animation_play_info.check_animation_event_time(character_data._stat_data._kick_event_time / animation_play_info._animation_speed) {
+                        if animation_play_info.check_animation_event_time(
+                            character_data._stat_data._kick_event_time / animation_play_info._animation_speed,
+                        ) {
                             self._animation_state.set_action_event(ActionEvent::Kick);
                             get_audio_manager_mut().play_audio_bank(AUDIO_ATTACK, AudioLoop::ONCE, None);
                         }
@@ -2171,9 +2194,9 @@ impl<'a> Character<'a> {
                     }
                     State::Update => {
                         let animation_play_info = render_object.get_animation_play_info(AnimationLayer::ActionLayer);
-                        if animation_play_info
-                            .check_animation_event_time(character_data._stat_data._power_attack_event_time / animation_play_info._animation_speed)
-                        {
+                        if animation_play_info.check_animation_event_time(
+                            character_data._stat_data._power_attack_event_time / animation_play_info._animation_speed,
+                        ) {
                             get_audio_manager_mut().play_audio_bank(AUDIO_ATTACK, AudioLoop::ONCE, None);
                             self._animation_state.set_action_event(ActionEvent::PowerAttack);
                         }

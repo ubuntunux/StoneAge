@@ -258,8 +258,6 @@ pub fn run_application() {
             constants::DEBUG_MESSAGE_LEVEL = vk::DebugUtilsMessageSeverityFlagsEXT::ERROR;
         }
 
-
-
         constants::REQUIRED_DEVICE_EXTENSIONS = vec![
             "VK_KHR_swapchain".to_string(),
             "VK_KHR_buffer_device_address".to_string(),

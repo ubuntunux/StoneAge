@@ -47,7 +47,8 @@ impl<'a> TargetStatusWidget<'a> {
         ui_component.set_color(get_color32(255, 255, 255, 0));
         target_status_widget_ptr.add_widget(&target_name_widget);
 
-        let hp_widget = StatusBarWidget::create_status_widget(target_status_widget_ptr, get_color32(255, 64, 0, 128), true);
+        let hp_widget =
+            StatusBarWidget::create_status_widget(target_status_widget_ptr, get_color32(255, 64, 0, 128), true);
 
         TargetStatusWidget {
             _widget: target_status_widget_ptr,
