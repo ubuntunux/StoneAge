@@ -10,6 +10,7 @@
         "_idle_animation_speed": 1.0,
         "_jump_animation": "characters/iguanodon/idle",
         "_jump_animation_speed": 1.0,
+        "_kick_animation_speed": 1.0,
         "_power_attack_animation": "characters/iguanodon/attack",
         "_power_attack_animation_speed": 1.5,
         "_roll_animation": "characters/iguanodon/idle",
@@ -18,6 +19,7 @@
         "_run_animation_speed": 1.5,
         "_running_jump_animation": "characters/iguanodon/idle",
         "_running_jump_animation_speed": 1.0,
+        "_upper_animation_layer": "iguanodon/upper_animation_layer",
         "_walk_animation": "characters/iguanodon/walk",
         "_walk_animation_speed": 1.5
     },

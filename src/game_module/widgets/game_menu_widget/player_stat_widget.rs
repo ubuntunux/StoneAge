@@ -170,11 +170,6 @@ impl<'a> PlayerStatWidget<'a> {
 
             let temp = player.get_stats().get_body_temperature();
             self._temp_row.set_value(&format!("{:.1}°C", temp));
-            log::info!(
-                "[PlayerStatWidget Log] _temp_row text set to: {:.1}°C (actual body_temp: {:.2}°C)",
-                temp,
-                temp
-            );
         }
     }
 }

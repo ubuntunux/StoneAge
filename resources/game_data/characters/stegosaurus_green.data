@@ -10,6 +10,7 @@
         "_idle_animation_speed": 1.0,
         "_jump_animation": "characters/stegosaurus/idle",
         "_jump_animation_speed": 1.0,
+        "_kick_animation_speed": 1.0,
         "_power_attack_animation": "characters/stegosaurus/attack",
         "_power_attack_animation_speed": 1.0,
         "_roll_animation": "characters/stegosaurus/idle",
@@ -18,6 +19,7 @@
         "_run_animation_speed": 1.0,
         "_running_jump_animation": "characters/stegosaurus/idle",
         "_running_jump_animation_speed": 1.0,
+        "_upper_animation_layer": "stegosaurus/upper_animation_layer",
         "_walk_animation": "characters/stegosaurus/walk",
         "_walk_animation_speed": 1.0
     },

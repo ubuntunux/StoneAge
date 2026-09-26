@@ -8,12 +8,14 @@
         "_idle_animation": "characters/triceratops_01/base",
         "_idle_animation_speed": 1.0,
         "_jump_animation_speed": 1.0,
+        "_kick_animation_speed": 1.0,
         "_power_attack_animation": "characters/triceratops_01/attack",
         "_power_attack_animation_speed": 1.0,
         "_roll_animation_speed": 1.0,
         "_run_animation": "characters/triceratops_01/run",
         "_run_animation_speed": 1.0,
         "_running_jump_animation_speed": 1.0,
+        "_upper_animation_layer": "stegosaurus/upper_animation_layer",
         "_walk_animation": "characters/triceratops_01/walk",
         "_walk_animation_speed": 1.0
     },
@@ -37,5 +39,5 @@
     },
     "_character_type": "Roamer",
     "_model_data_name": "characters/triceratops_01",
-    "_name": "TRICERATOPS"
+    "_name": "TRICERATOPS HORRIDUS"
 }

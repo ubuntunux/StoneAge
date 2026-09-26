@@ -1020,7 +1020,7 @@ impl<'a> Character<'a> {
     }
 
     pub fn get_animation_play_info(&self, layer: AnimationLayer) -> &AnimationPlayInfo {
-        &ptr_as_ref(self._render_object.as_ptr())._animation_play_infos[layer as usize]
+        ptr_as_ref(self._render_object.as_ptr()).get_animation_play_info(layer)
     }
 
     pub fn get_attack_range(&self, attack_event: ActionAnimationState) -> f32 {
