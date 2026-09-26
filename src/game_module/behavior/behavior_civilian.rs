@@ -1,16 +1,12 @@
 use crate::game_module::actors::character::{ActionAnimationState, Character, MoveAnimationState};
 use crate::game_module::behavior::behavior_base::{BehaviorBase, BehaviorData, BehaviorSaveData, BehaviorState};
 use crate::game_module::behavior::behavior_common::{
-    IntimacyFollowResult, begin_eating, begin_idle, begin_interaction, begin_roaming, begin_wake_up,
-    is_player_too_far_for_intimacy, should_roaming_go_idle, update_eating_should_idle, update_interaction_should_idle,
-    update_intimacy_follow, update_wake_up_should_idle,
+    IntimacyFollowResult, begin_attack, begin_eating, begin_idle, begin_interaction, begin_roaming, begin_wake_up,
+    is_player_too_far_for_intimacy, should_roaming_go_idle, update_attack, update_chase, update_eating_should_idle,
+    update_interaction_should_idle, update_intimacy_follow, update_wake_up_should_idle,
 };
-use crate::game_module::game_constants::{CIVILIAN_DEAD_TIME, NPC_ATTACK_CHASE_RANGE, NPC_ATTACK_HIT_RANGE, NPC_ATTACK_IDLE_RANGE, NPC_ATTACK_TERM_MAX, NPC_ATTACK_TERM_MIN, NPC_AVAILABLE_MOVING_ATTACK, NPC_TRACKING_RANGE};
+use crate::game_module::game_constants::{CIVILIAN_DEAD_TIME, NPC_TRACKING_RANGE};
 use nalgebra::Vector3;
-use rust_engine_3d::audio::audio_manager::AudioLoop;
-use rust_engine_3d::core::engine_service_locator::get_audio_manager_mut;
-use rust_engine_3d::utilities::math;
-use rust_engine_3d::utilities::math::lerp;
 use rust_engine_3d::utilities::system::State;
 use strum::IntoEnumIterator;
 
@@ -170,89 +166,31 @@ impl<'a> BehaviorBase<'a> for BehaviorCivilian<'a> {
                 BehaviorState::Chase => match state {
                     State::Begin => {}
                     State::Update => {
-                        let mut do_idle = true;
-                        if let Some(target_ref) = target
-                            && target_ref.is_alive()
-                        {
-                            if owner.is_following_intimacy() && target_ref._is_player {
-                                match update_intimacy_follow(owner, target) {
-                                    IntimacyFollowResult::Arrived => {
-                                        self.set_next_behavior(BehaviorState::Roaming, false);
-                                    }
-                                    IntimacyFollowResult::Moving | IntimacyFollowResult::NotFollowing => {}
-                                }
-                                do_idle = false;
-                            } else if owner.check_in_range(target_ref.get_collision(), NPC_TRACKING_RANGE, false) {
-                                if owner.check_in_range(target_ref.get_collision(), NPC_ATTACK_HIT_RANGE, false) {
-                                    self.set_next_behavior(BehaviorState::Attack, false);
-                                } else {
-                                    let to_target = target_ref.get_position() - owner.get_position();
-                                    owner.set_move(&to_target);
-                                    owner.set_run(true);
-                                }
-                                do_idle = false;
-                            }
-                        }
-                        if do_idle {
-                            self.set_next_behavior(BehaviorState::Idle, false);
+                        let next_state = update_chase(owner, target);
+                        if next_state != BehaviorState::Chase {
+                            self.set_next_behavior(next_state, false);
                         }
                     }
                     State::End => {}
                 },
                 BehaviorState::Attack => match state {
                     State::Begin => {
-                        if let Some(target_ref) = target && owner.is_available_attack() {
-                            let to_dir = math::make_normalize_xz(&(target.as_ref().unwrap().get_position() - owner.get_position()));
-                            owner.set_move_direction(&to_dir, false);
-                            owner.set_action_attack();
-                            get_audio_manager_mut().play_audio_resource_data(
-                                &owner._character_data.borrow()._audio_data._audio_growl,
-                                AudioLoop::ONCE,
-                                None,
-                            );
-
-                            self._attack_time = lerp(NPC_ATTACK_TERM_MIN, NPC_ATTACK_TERM_MAX, rand::random::<f32>());
-                            self._is_in_attack_range = target_ref.is_alive() && owner.check_in_range(target_ref.get_collision(), NPC_ATTACK_IDLE_RANGE, false);
-                        } else {
-                            self.set_next_behavior(BehaviorState::Chase, false);
+                        let next_state =
+                            begin_attack(owner, target, &mut self._attack_time, &mut self._is_in_attack_range);
+                        if next_state != BehaviorState::Attack {
+                            self.set_next_behavior(next_state, false);
                         }
                     }
                     State::Update => {
-                        if target.is_none_or(|target| !target.is_alive()) {
-                            self.set_next_behavior(BehaviorState::Idle, false);
-                        } else {
-                            let target = target.unwrap();
-                            if self._is_in_attack_range {
-                                if !owner.check_in_range(target.get_collision(), NPC_ATTACK_CHASE_RANGE, false) {
-                                    self._is_in_attack_range = false;
-                                }
-                            } else if owner.check_in_range(
-                                target.get_collision(),
-                                NPC_ATTACK_IDLE_RANGE,
-                                false,
-                            ) {
-                                self._is_in_attack_range = true;
-                            }
-
-                            if NPC_AVAILABLE_MOVING_ATTACK && !self._is_in_attack_range {
-                                let to_target = target.get_position() - owner.get_position();
-                                owner.set_move(&to_target);
-                                owner.set_run(true);
-                            } else {
-                                owner.set_move_idle();
-                            }
-
-                            if self._attack_time <= 0.0 {
-                                if owner.check_in_range(target.get_collision(), NPC_TRACKING_RANGE, false) {
-                                    self.set_next_behavior(BehaviorState::Chase, false);
-                                } else {
-                                    self.set_next_behavior(BehaviorState::Idle, false);
-                                }
-                            }
-                        }
-
-                        if !owner.is_attack_animation() {
-                            self._attack_time -= delta_time;
+                        let next_state = update_attack(
+                            owner,
+                            target,
+                            &mut self._attack_time,
+                            &mut self._is_in_attack_range,
+                            delta_time,
+                        );
+                        if next_state != BehaviorState::Attack {
+                            self.set_next_behavior(next_state, false);
                         }
                     }
                     State::End => {}
