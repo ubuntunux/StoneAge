@@ -145,14 +145,13 @@ pub const NPC_IDLE_TERM_MIN: f32 = 1.0;
 pub const NPC_IDLE_TERM_MAX: f32 = 3.0;
 pub const NPC_ATTACK_TERM_MIN: f32 = 1.0;
 pub const NPC_ATTACK_TERM_MAX: f32 = 2.0;
-pub const NPC_ATTACK_RANGE: f32 = 2.0;
-pub const NPC_ATTACK_IDLE_RANGE: f32 = 0f32.max(NPC_ATTACK_RANGE - 1.0);
-pub const NPC_ATTACK_CHASE_RANGE: f32 = 0f32.max(NPC_ATTACK_RANGE + 1.0);
 pub const NPC_ATTACK_HIT_RANGE: f32 = 2.0;
-pub const NPC_TRACKING_RANGE: f32 = 6.0;
+pub const NPC_ATTACK_IDLE_RANGE: f32 = 0f32.max(NPC_ATTACK_HIT_RANGE - 1.0);
+pub const NPC_ATTACK_CHASE_RANGE: f32 = 0f32.max(NPC_ATTACK_HIT_RANGE + 1.0);
+pub const NPC_TRACKING_RANGE: f32 = 8.0;
 pub const NPC_ROAMING_RADIUS: f32 = 5.0;
 pub const NPC_ROAMING_TIME: f32 = 5.0;
-pub const NPC_AVAILABLE_MOVING_ATTACK: bool = false;
+pub const NPC_AVAILABLE_MOVING_ATTACK: bool = true;
 
 // intimacy
 pub const INTIMACY_INTERACTION_ADD: f32 = 10.0;
