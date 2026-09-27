@@ -121,7 +121,7 @@ impl<'a> ScenarioWoodenClub<'a> {
                 self._sub_quest_craft_wooden_club = Some(quest.borrow_mut().add_quest_item(
                     QuestCreateInfo::DefaultQuest(DefaultQuestData {
                         _quest_icon_name: None,
-                        _quest_description: Some(String::from("Open Inventory & Craft Wooden Club")),
+                        _quest_description: Some(String::from("Open Craft Menu & Craft Wooden Club")),
                     }),
                 ));
             }

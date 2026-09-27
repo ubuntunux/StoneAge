@@ -117,8 +117,8 @@ pub const TARGET_HUNGER_THRESHOLD: f32 = 0.2;
 
 pub const STAMINA_RECOVERY_DELAY_TIME: f32 = 1.0;
 pub const STAMINA_RECOVERY: f32 = 40.0;
-pub const STAMINA_ATTACK: f32 = 5.0;
-pub const STAMINA_POWER_ATTACK: f32 = 10.0;
+pub const STAMINA_ATTACK: f32 = 20.0;
+pub const STAMINA_POWER_ATTACK: f32 = 40.0;
 pub const STAMINA_RUN: f32 = 20.0;
 pub const STAMINA_JUMP: f32 = 25.0;
 pub const STAMINA_ROLL: f32 = 25.0;
