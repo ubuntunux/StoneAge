@@ -109,6 +109,9 @@ impl<'a> ItemAcquireNotificationWidget<'a> {
     pub fn notify_item_acquired(&mut self, item_data_name: &str) {
         let (item_name, material_instance) = {
             let game_resources = get_game_resources();
+            if !game_resources.has_item_data(item_data_name) {
+                return;
+            }
             let item_data = game_resources.get_item_data(item_data_name).borrow();
             let name = item_data._name.clone();
             let material =

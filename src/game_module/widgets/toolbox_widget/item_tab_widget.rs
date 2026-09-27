@@ -341,6 +341,8 @@ impl<'a> ToolboxItemWidget<'a> {
                         if get_game_ui_manager_mut().remove_item(ITEM_ENERGY_BALL, cost) {
                             self._state = ToolboxItemState::Unlocked;
                             get_game_ui_manager_mut().notify_item_crafted();
+                            let item_code = self._data.icon_type.item_code();
+                            get_game_ui_manager_mut().notify_item_acquired(item_code, 1, true);
                             get_audio_manager_mut().play_audio_bank(AUDIO_QUEST_COMPLETE, AudioLoop::ONCE, None);
                             if let Some((char_data_name, offset)) = self._data.icon_type.npc_character_info() {
                                 spawn_npc_near_monolith(char_data_name, offset);
@@ -370,6 +372,8 @@ impl<'a> ToolboxItemWidget<'a> {
                 } else {
                     self._state = ToolboxItemState::Unlocked;
                     get_game_ui_manager_mut().notify_item_crafted();
+                    let item_code = self._data.icon_type.item_code();
+                    get_game_ui_manager_mut().notify_item_acquired(item_code, 1, true);
                     get_audio_manager_mut().play_audio_bank(AUDIO_QUEST_COMPLETE, AudioLoop::ONCE, None);
                     if let Some((char_data_name, offset)) = self._data.icon_type.npc_character_info() {
                         spawn_npc_near_monolith(char_data_name, offset);
