@@ -1231,6 +1231,25 @@
                 ],
                 "_scene_object_type": "Default"
             },
+            "SM_Env_Bush_Tropical_02.001": {
+                "_model_data_name": "PolygonNatureBiomes/SM_Env_Bush_Tropical_02",
+                "_position": [
+                    31.70952796936035,
+                    1.2787059545516968,
+                    13.824719429016113
+                ],
+                "_rotation": [
+                    0.0,
+                    1.7853585481643677,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "_scene_object_type": "Default"
+            },
             "SM_Env_Bush_Tropical_02.002": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Bush_Tropical_02",
                 "_position": [
@@ -1250,16 +1269,35 @@
                 ],
                 "_scene_object_type": "Default"
             },
-            "SM_Env_Bush_Tropical_02.004": {
+            "SM_Env_Bush_Tropical_02.003": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Bush_Tropical_02",
                 "_position": [
-                    28.380226135253906,
-                    0.8229321241378784,
-                    14.631946563720703
+                    30.752273559570312,
+                    1.278704047203064,
+                    11.626069068908691
                 ],
                 "_rotation": [
                     0.0,
-                    1.5410124063491821,
+                    2.378770351409912,
+                    0.0
+                ],
+                "_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "_scene_object_type": "Default"
+            },
+            "SM_Env_Bush_Tropical_02.004": {
+                "_model_data_name": "PolygonNatureBiomes/SM_Env_Bush_Tropical_02",
+                "_position": [
+                    30.849571228027344,
+                    1.2787059545516968,
+                    16.592212677001953
+                ],
+                "_rotation": [
+                    0.0,
+                    0.6683477759361267,
                     0.0
                 ],
                 "_scale": [
@@ -5218,6 +5256,25 @@
                     1.0,
                     1.0,
                     1.0
+                ],
+                "_scene_object_type": "Default"
+            },
+            "rock.003": {
+                "_model_data_name": "environments/rock",
+                "_position": [
+                    28.88062858581543,
+                    -0.7212949991226196,
+                    14.730999946594238
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    4.0,
+                    1.0,
+                    4.0
                 ],
                 "_scene_object_type": "Default"
             },
