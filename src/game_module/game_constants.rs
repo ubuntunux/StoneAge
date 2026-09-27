@@ -143,8 +143,8 @@ pub const HIT_BLINK_INTENSITY: f32 = 3.0;
 // npc
 pub const NPC_IDLE_TERM_MIN: f32 = 1.0;
 pub const NPC_IDLE_TERM_MAX: f32 = 3.0;
-pub const NPC_ATTACK_TERM_MIN: f32 = 1.0;
-pub const NPC_ATTACK_TERM_MAX: f32 = 2.0;
+pub const NPC_ATTACK_TERM_MIN: f32 = 0.0;
+pub const NPC_ATTACK_TERM_MAX: f32 = 1.0;
 pub const NPC_ATTACK_HIT_RANGE: f32 = 2.0;
 pub const NPC_ATTACK_IDLE_RANGE: f32 = 0f32.max(NPC_ATTACK_HIT_RANGE - 1.0);
 pub const NPC_ATTACK_CHASE_RANGE: f32 = 0f32.max(NPC_ATTACK_HIT_RANGE + 1.0);
