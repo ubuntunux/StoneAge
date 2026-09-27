@@ -1178,18 +1178,20 @@ impl<'a> Character<'a> {
         let falling_height = falling_height - self.get_position().y;
         if FALLING_HEIGHT < falling_height {
             let falling_damage: i32 = (falling_height - FALLING_HEIGHT).ceil() as i32 * FALLING_DAMAGE_RATIO;
-            self.set_hit_damage(falling_damage, None);
+            self.set_hit_damage(falling_damage, None, false);
         }
     }
 
-    pub fn set_hit_damage(&mut self, damage: i32, attack_dir: Option<&Vector3<f32>>) {
+    pub fn set_hit_damage(&mut self, damage: i32, attacker_pos: Option<&Vector3<f32>>, is_enable_knockback: bool) {
         if 0 < damage {
             self.set_damage(damage);
 
             if self.is_alive()
-                && let Some(attack_dir) = attack_dir
+                && is_enable_knockback
+                && let Some(attacker_pos) = attacker_pos
             {
-                self._controller.set_hit_direction(attack_dir);
+                let attack_dir = math::make_normalize_xz(&(self.get_position() - attacker_pos));
+                self._controller.set_hit_direction(&attack_dir);
             }
 
             self._character_stats._hit_blink_time = HIT_BLINK_TIME;
@@ -1427,10 +1429,9 @@ impl<'a> Character<'a> {
                 }
                 InteractionObject::Farming(character) => {
                     self.set_next_action_animation(ActionAnimationState::Pickup, 2.0);
-                    let face_dir = self.get_face_direction();
                     let is_destroyed = {
                         let mut corpse = character.borrow_mut();
-                        corpse.set_hit_damage(1, Some(face_dir));
+                        corpse.set_hit_damage(1, Some(self.get_position()), true);
                         corpse.get_corpse_hit_count() <= 0
                     };
                     if is_destroyed {

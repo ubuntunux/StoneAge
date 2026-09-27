@@ -553,6 +553,12 @@ impl<'a> CharacterManager<'a> {
             if character_mut._animation_state.is_attack_event() {
                 if character_mut._is_player {
                     // player attack to npc
+                    let is_enable_knockback = 0.0 < character_mut._character_stats.get_stamina();
+                    let mut damage = character_mut.get_power(character_mut._animation_state.get_action_event());
+                    if !is_enable_knockback {
+                        damage = (damage as f32 * 0.5) as i32;
+                    }
+
                     for target_character in self._characters.values() {
                         let target_character_mut = ptr_as_mut(target_character.as_ptr());
                         if !target_character_mut._is_player
@@ -572,8 +578,9 @@ impl<'a> CharacterManager<'a> {
                             {
                                 // hit living monster..
                                 target_character_mut.set_hit_damage(
-                                    character_mut.get_power(character_mut._animation_state.get_action_event()),
-                                    Some(character_mut.get_face_direction()),
+                                    damage,
+                                    Some(character_mut.get_position()),
+                                    is_enable_knockback,
                                 );
 
                                 if !target_character_mut.is_alive() {
@@ -584,8 +591,9 @@ impl<'a> CharacterManager<'a> {
                             } else if target_character_mut.is_corpse() {
                                 // hit dead corpse (monsters only) -> set_hit_damage plays hit sound & effect and decrements _corpse_hit_count
                                 target_character_mut.set_hit_damage(
-                                    character_mut.get_power(character_mut._animation_state.get_action_event()),
-                                    Some(character_mut.get_face_direction()),
+                                    damage,
+                                    Some(character_mut.get_position()),
+                                    is_enable_knockback,
                                 );
 
                                 if target_character_mut.get_corpse_hit_count() <= 0 {
@@ -612,7 +620,8 @@ impl<'a> CharacterManager<'a> {
                             {
                                 target_character_mut.set_hit_damage(
                                     character_mut.get_power(character_mut._animation_state.get_action_event()),
-                                    Some(character_mut.get_face_direction()),
+                                    Some(character_mut.get_position()),
+                                    true,
                                 );
 
                                 if !target_character_mut.is_alive() {
@@ -640,7 +649,8 @@ impl<'a> CharacterManager<'a> {
                         {
                             target_character_mut.set_hit_damage(
                                 character_mut.get_power(character_mut._animation_state.get_action_event()),
-                                Some(character_mut.get_face_direction()),
+                                Some(character_mut.get_position()),
+                                true,
                             );
 
                             if !target_character_mut.is_alive() {
@@ -658,7 +668,8 @@ impl<'a> CharacterManager<'a> {
                     {
                         player.set_hit_damage(
                             character_mut.get_power(character_mut._animation_state.get_action_event()),
-                            Some(character_mut.get_face_direction()),
+                            Some(character_mut.get_position()),
+                            true,
                         );
                     }
 
@@ -677,7 +688,8 @@ impl<'a> CharacterManager<'a> {
                         {
                             target_character_mut.set_hit_damage(
                                 character_mut.get_power(character_mut._animation_state.get_action_event()),
-                                Some(character_mut.get_face_direction()),
+                                Some(character_mut.get_position()),
+                                true,
                             );
 
                             if !target_character_mut.is_alive() {
