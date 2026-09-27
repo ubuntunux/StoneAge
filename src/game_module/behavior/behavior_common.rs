@@ -265,7 +265,7 @@ pub fn update_attack(
         }
     }
 
-    if !owner.is_attack_animation() {
+    if owner.is_available_attack() {
         *attack_time -= delta_time;
     }
 
