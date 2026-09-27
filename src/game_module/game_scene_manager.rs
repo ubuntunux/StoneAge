@@ -555,8 +555,31 @@ impl<'a> GameSceneManager<'a> {
     }
 
     pub fn spawn_game_scenario_objects(&mut self, scenario_create_info: &ScenarioDataCreateInfo) {
+        // scene render objects
+        let scene_manager = get_scene_manager_mut();
+
+        // static objects
+        for (object_name, render_object_create_info) in scenario_create_info._scene._static_objects.iter() {
+            scene_manager.add_static_render_object(object_name, render_object_create_info);
+        }
+
+        // skeletal objects
+        for (object_name, render_object_create_info) in scenario_create_info._scene._skeletal_objects.iter() {
+            scene_manager.add_skeletal_render_object(object_name, render_object_create_info);
+        }
+
+        // point lights
+        for (object_name, light_create_info) in scenario_create_info._scene._point_lights.iter() {
+            scene_manager.add_point_light_object(object_name, light_create_info);
+        }
+
+        // effects
+        for (object_name, effect_create_info) in scenario_create_info._scene._effects.iter() {
+            scene_manager.add_effect(object_name, effect_create_info);
+        }
+
         // cameras
-        let main_camera = get_scene_manager().get_main_camera_mut();
+        let main_camera = scene_manager.get_main_camera_mut();
         for (_camera_name, camera_create_info) in scenario_create_info._scene._cameras.iter() {
             main_camera._transform_object.set_position(&camera_create_info.position);
             main_camera._transform_object.set_rotation(&camera_create_info.rotation);

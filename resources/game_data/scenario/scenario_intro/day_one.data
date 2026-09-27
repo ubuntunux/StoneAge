@@ -75,7 +75,62 @@
             ]
         }
     },
-    "_items": {},
+    "_items": {
+        "energy_ball": {
+            "_item_data_name": "items/energy_ball",
+            "_position": [
+                20.896825790405273,
+                3.4548771381378174,
+                15.236568450927734
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "spirit_ball": {
+            "_item_data_name": "items/spirit_ball",
+            "_position": [
+                21.382061004638672,
+                2.7975611686706543,
+                17.176624298095703
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "wood": {
+            "_item_data_name": "items/wood",
+            "_position": [
+                22.097881317138672,
+                2.1263349056243896,
+                17.70633316040039
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        }
+    },
     "_player": {
         "aru": {
             "_character_data_name": "characters/family/aru",
@@ -99,9 +154,9 @@
     "_props": {
         "monolith": {
             "_position": [
-                26.14865493774414,
-                1.4472906589508057,
-                18.78030014038086
+                29.219982147216797,
+                1.2787047624588013,
+                14.66644287109375
             ],
             "_prop_data_name": "props/monolith",
             "_rotation": [
@@ -116,12 +171,5 @@
             ]
         }
     },
-    "_scene": {
-        "_cameras": {},
-        "_directional_lights": {},
-        "_effects": {},
-        "_point_lights": {},
-        "_skeletal_objects": {},
-        "_static_objects": {}
-    }
+    "_scene": {}
 }

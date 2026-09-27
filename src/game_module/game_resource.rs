@@ -90,6 +90,7 @@ impl<'a> GameResources<'a> {
                 &scenario_data_file,
             );
             let loaded_contents = system::load(&scenario_data_file);
+            log::info!("loaded_contents: {:?}", scenario_data_file);
             let scenario_data_create_info: ScenarioDataCreateInfo =
                 serde_json::from_reader(loaded_contents).expect("Failed to deserialize.");
             self._scenario_data_create_info_map
