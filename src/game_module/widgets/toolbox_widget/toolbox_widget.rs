@@ -21,7 +21,7 @@ use std::ffi::c_void;
 use std::rc::Rc;
 use winit::keyboard::KeyCode;
 
-const TAB_BUTTON_WIDTH: f32 = 50.0;
+const TAB_BUTTON_WIDTH: f32 = 80.0;
 const TAB_BUTTON_HEIGHT: f32 = 40.0;
 const TAB_ACTIVE_COLOR: u32 = get_color32(110, 110, 110, 255);
 const TAB_INACTIVE_COLOR: u32 = get_color32(50, 50, 50, 255);
@@ -188,12 +188,12 @@ impl<'a> ToolboxWidget<'a> {
         ui.set_renderable(false);
         title_mut.add_widget(&title_label);
 
-        // ── Main Body Container (Horizontal: Left Header + Right Content) ──
+        // ── Main Body Container (Vertical: Top Header + Bottom Content) ──
         let body = UIManager::create_widget("toolbox_body", UIWidgetTypes::Default);
         let body_mut = ptr_as_mut(body.as_ref());
         let ui = body_mut.get_ui_component_mut();
         ui.set_layout_type(UILayoutType::BoxLayout);
-        ui.set_layout_orientation(Orientation::HORIZONTAL);
+        ui.set_layout_orientation(Orientation::VERTICAL);
         ui.set_halign(HorizontalAlign::LEFT);
         ui.set_valign(VerticalAlign::TOP);
         ui.set_size_hint_x(Some(1.0));
@@ -201,16 +201,16 @@ impl<'a> ToolboxWidget<'a> {
         ui.set_renderable(false);
         layer_mut.add_widget(&body);
 
-        // ── Vertical Tab Header Sidebar (Dark gray) ─────────────────
+        // ── Horizontal Tab Header Bar (Dark gray) ─────────────────
         let header = UIManager::create_widget("toolbox_header", UIWidgetTypes::Default);
         let header_mut = ptr_as_mut(header.as_ref());
         let ui = header_mut.get_ui_component_mut();
         ui.set_layout_type(UILayoutType::BoxLayout);
-        ui.set_layout_orientation(Orientation::VERTICAL);
-        ui.set_halign(HorizontalAlign::CENTER);
-        ui.set_valign(VerticalAlign::TOP);
-        ui.set_size_x(TAB_BUTTON_WIDTH + 10.0);
-        ui.set_size_hint_y(Some(1.0));
+        ui.set_layout_orientation(Orientation::HORIZONTAL);
+        ui.set_halign(HorizontalAlign::LEFT);
+        ui.set_valign(VerticalAlign::CENTER);
+        ui.set_size_hint_x(Some(1.0));
+        ui.set_size_y(TAB_BUTTON_HEIGHT + 8.0);
         ui.set_color(get_color32(25, 25, 25, 200));
         ui.set_border_color(get_color32(70, 70, 70, 200));
         ui.set_border(1.0);
