@@ -296,7 +296,7 @@ impl<'a> GameMenuWidget<'a> {
         let player_records_widget = PlayerRecordsWidget::create_player_records_widget(content_layout_mut);
         let taming_list_widget = TamingListWidget::create_taming_list_widget(content_layout_mut);
         let friendly_npc_list_widget = FriendlyNpcListWidget::create_friendly_npc_list_widget(content_layout_mut);
-        let save_load_widget = SaveLoadWidget::create_save_load_widget(content_layout_mut);
+        let save_load_widget = SaveLoadWidget::create_save_load_widget(content_layout_mut, parent_widget);
         let game_debug_menu_widget = GameDebugMenuWidget::create_game_debug_menu_widget(content_layout_mut);
 
         let game_menu_widget = Box::new(GameMenuWidget {

@@ -36,10 +36,13 @@ pub struct SaveLoadSlotWidget<'a> {
     pub _exit_game_btn: Rc<WidgetDefault<'a>>,
     pub _slot_header_label: Rc<WidgetDefault<'a>>,
     pub _slot_container: Rc<WidgetDefault<'a>>,
+    pub _save_popup_layer: Rc<WidgetDefault<'a>>,
+    pub _save_popup_ok_btn: Rc<WidgetDefault<'a>>,
     pub _slot_items: Vec<Box<SaveLoadSlotItem<'a>>>,
     pub _slot_names: Vec<String>,
     pub _selected_slot_index: usize,
     pub _is_opened: bool,
+    pub _is_opened_save_popup: bool,
     pub _nav_repeat_controller: WidgetNavRepeatController,
     pub _need_rebuild_slot_list: bool,
 }
@@ -89,6 +92,16 @@ impl<'a> SaveLoadSlotWidget<'a> {
         true
     }
 
+    pub fn callback_touch_down_close_save_popup(
+        ui_component: &UIComponentInstance<'a>,
+        _touched_pos: &Vector2<f32>,
+        _touched_pos_delta: &Vector2<f32>,
+    ) -> bool {
+        let slot_widget = ptr_as_mut(ui_component.get_user_data() as *const SaveLoadSlotWidget<'a>);
+        slot_widget.close_save_complete_popup();
+        true
+    }
+
     pub fn callback_touch_down_new_game(
         ui_component: &UIComponentInstance<'a>,
         _touched_pos: &Vector2<f32>,
@@ -120,7 +133,7 @@ impl<'a> SaveLoadSlotWidget<'a> {
         true
     }
 
-    pub fn create_save_load_slot_widget(parent_widget: &mut WidgetDefault<'a>) -> Box<SaveLoadSlotWidget<'a>> {
+    pub fn create_save_load_slot_widget(parent_widget: &mut WidgetDefault<'a>, root_widget: &mut WidgetDefault<'a>) -> Box<SaveLoadSlotWidget<'a>> {
         let layer = UIManager::create_widget("save_load_slot_layer", UIWidgetTypes::Default);
         let layer_mut = ptr_as_mut(layer.as_ref());
         {
@@ -230,6 +243,79 @@ impl<'a> SaveLoadSlotWidget<'a> {
         }
         layer_mut.add_widget(&slot_container);
 
+        // --- 5. Save Complete Popup Layer ---
+        let save_popup_layer = UIManager::create_widget("save_complete_popup", UIWidgetTypes::Default);
+        {
+            let ui_comp = ptr_as_mut(save_popup_layer.as_ref()).get_ui_component_mut();
+            ui_comp.set_halign(HorizontalAlign::CENTER);
+            ui_comp.set_valign(VerticalAlign::CENTER);
+            ui_comp.set_pivot_preset(PIVOT_CENTER);
+            ui_comp.set_pos_hint(Some(0.5), Some(0.5));
+            ui_comp.set_size_hint_x(Some(1.0));
+            ui_comp.set_size_hint_y(Some(1.0));
+            ui_comp.set_renderable(false);
+            ui_comp.set_touchable(true);
+            ui_comp.set_enable(false);
+            ui_comp.set_callback_touch_down(Some(Box::new(
+                SaveLoadSlotWidget::callback_touch_down_close_save_popup,
+            )));
+        }
+        root_widget.add_widget(&save_popup_layer);
+
+        let save_popup_layer_content = UIManager::create_widget("save_complete_popup", UIWidgetTypes::Default);
+        {
+            let color = get_color32(20, 26, 36, 250);
+            let border_color = get_color32(70, 140, 210, 255);
+            let ui_comp = ptr_as_mut(save_popup_layer_content.as_ref()).get_ui_component_mut();
+            ui_comp.set_layout_type(UILayoutType::BoxLayout);
+            ui_comp.set_layout_orientation(Orientation::VERTICAL);
+            ui_comp.set_halign(HorizontalAlign::CENTER);
+            ui_comp.set_valign(VerticalAlign::CENTER);
+            ui_comp.set_pivot_preset(PIVOT_CENTER);
+            ui_comp.set_pos_hint(Some(0.5), Some(0.5));
+            ui_comp.set_size(440.0, 210.0);
+            ui_comp.set_padding(16.0);
+            ui_comp.set_color(color);
+            ui_comp.set_border_color(border_color);
+            ui_comp.set_border(2.0);
+            ui_comp.set_round(10.0);
+            ui_comp.set_ignore_parent_renderable_area(true);
+        }
+        ptr_as_mut(save_popup_layer.as_ref()).add_widget(&save_popup_layer_content);
+
+        let save_popup_text = UIManager::create_widget("save_popup_text", UIWidgetTypes::Default);
+        {
+            let ui_comp = ptr_as_mut(save_popup_text.as_ref()).get_ui_component_mut();
+            ui_comp.set_halign(HorizontalAlign::CENTER);
+            ui_comp.set_valign(VerticalAlign::CENTER);
+            ui_comp.set_size(400.0, 60.0);
+            ui_comp.set_margin(10.0);
+            ui_comp.set_text("Game Saved Successfully!");
+            ui_comp.set_font_size(24.0);
+            ui_comp.set_font_color(get_color32(240, 245, 255, 255));
+            ui_comp.set_color(get_color32(0, 0, 0, 0));
+        }
+        ptr_as_mut(save_popup_layer_content.as_ref()).add_widget(&save_popup_text);
+
+        let save_popup_ok_btn = UIManager::create_widget("save_popup_ok_btn", UIWidgetTypes::Default);
+        {
+            let ui_comp = ptr_as_mut(save_popup_ok_btn.as_ref()).get_ui_component_mut();
+            ui_comp.set_halign(HorizontalAlign::CENTER);
+            ui_comp.set_valign(VerticalAlign::CENTER);
+            ui_comp.set_size(140.0, 42.0);
+            ui_comp.set_margin(10.0);
+            ui_comp.set_text("OK");
+            ui_comp.set_font_size(22.0);
+            ui_comp.set_font_color(get_color32(255, 255, 255, 255));
+            ui_comp.set_color(get_color32(40, 130, 190, 255));
+            ui_comp.set_round(6.0);
+            ui_comp.set_touchable(true);
+            ui_comp.set_callback_touch_down(Some(Box::new(
+                SaveLoadSlotWidget::callback_touch_down_close_save_popup,
+            )));
+        }
+        ptr_as_mut(save_popup_layer_content.as_ref()).add_widget(&save_popup_ok_btn);
+
         let slot_widget = Box::new(SaveLoadSlotWidget {
             _parent_widget: parent_widget,
             _layer: layer,
@@ -237,10 +323,13 @@ impl<'a> SaveLoadSlotWidget<'a> {
             _exit_game_btn: exit_game_btn,
             _slot_header_label: slot_header_label,
             _slot_container: slot_container,
+            _save_popup_layer: save_popup_layer,
+            _save_popup_ok_btn: save_popup_ok_btn,
             _slot_items: Vec::new(),
             _slot_names: Vec::new(),
             _selected_slot_index: 0,
             _is_opened: false,
+            _is_opened_save_popup: false,
             _nav_repeat_controller: WidgetNavRepeatController::new(),
             _need_rebuild_slot_list: false,
         });
@@ -248,6 +337,8 @@ impl<'a> SaveLoadSlotWidget<'a> {
         let ptr_self = slot_widget.as_ref() as *const SaveLoadSlotWidget<'a> as *const c_void;
         ptr_as_mut(slot_widget._new_game_btn.as_ref()).get_ui_component_mut().set_user_data(ptr_self);
         ptr_as_mut(slot_widget._exit_game_btn.as_ref()).get_ui_component_mut().set_user_data(ptr_self);
+        ptr_as_mut(slot_widget._save_popup_layer.as_ref()).get_ui_component_mut().set_user_data(ptr_self);
+        ptr_as_mut(slot_widget._save_popup_ok_btn.as_ref()).get_ui_component_mut().set_user_data(ptr_self);
 
         slot_widget
     }
@@ -274,6 +365,7 @@ impl<'a> SaveLoadSlotWidget<'a> {
 
     pub fn close_slot_widget(&mut self) {
         if self._is_opened {
+            self.close_save_complete_popup();
             let parent_mut = ptr_as_mut(self._parent_widget);
             parent_mut.remove_widget(self._layer.as_ref());
             self._is_opened = false;
@@ -619,6 +711,19 @@ impl<'a> SaveLoadSlotWidget<'a> {
         }
     }
 
+    pub fn show_save_complete_popup(&mut self) {
+        self._is_opened_save_popup = true;
+        ptr_as_mut(self._save_popup_layer.as_ref()).get_ui_component_mut().set_enable(true);
+    }
+
+    pub fn close_save_complete_popup(&mut self) {
+        if self._is_opened_save_popup {
+            self._is_opened_save_popup = false;
+            ptr_as_mut(self._save_popup_layer.as_ref()).get_ui_component_mut().set_enable(false);
+            get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
+        }
+    }
+
     pub fn save_slot(&mut self, slot_index: usize) {
         if slot_index < self._slot_names.len() {
             let slot_name = self._slot_names[slot_index].clone();
@@ -629,6 +734,7 @@ impl<'a> SaveLoadSlotWidget<'a> {
             self.update_slot_item_ui(slot_index);
             self.ensure_empty_slot_exists();
             self.set_selected_slot(slot_index, true);
+            self.show_save_complete_popup();
         }
     }
 
@@ -639,6 +745,20 @@ impl<'a> SaveLoadSlotWidget<'a> {
         keyboard_input_data: &KeyboardInputData,
     ) {
         if !self._is_opened {
+            return;
+        }
+
+        if self._is_opened_save_popup {
+            let close_popup = keyboard_input_data.get_key_pressed(KeyCode::Escape)
+                || keyboard_input_data.get_key_pressed(KeyCode::Space)
+                || keyboard_input_data.get_key_pressed(KeyCode::Enter)
+                || joystick_input_data._btn_a == ButtonState::Pressed
+                || joystick_input_data._btn_b == ButtonState::Pressed
+                || joystick_input_data._btn_x == ButtonState::Pressed;
+
+            if close_popup {
+                self.close_save_complete_popup();
+            }
             return;
         }
 
