@@ -20,8 +20,8 @@ use std::ffi::c_void;
 use std::rc::Rc;
 
 const ITEM_ROW_HEIGHT: f32 = 80.0;
-const ACTION_BUTTON_WIDTH: f32 = 120.0;
-const ACTION_BUTTON_HEIGHT: f32 = 34.0;
+const ACTION_BUTTON_WIDTH: f32 = 130.0;
+const ACTION_BUTTON_HEIGHT: f32 = 36.0;
 
 fn spawn_npc_near_monolith(character_data_name: &str, offset: Vector3<f32>) {
     let monolith_pos = if let Some(monolith) = get_game_scene_manager().get_prop_manager().get_prop_by_name("monolith")
@@ -587,7 +587,7 @@ impl<'a> ToolboxItemWidget<'a> {
         ui.set_size_y(32.0);
         ui.set_valign(VerticalAlign::CENTER);
         ui.set_text(&display_name);
-        ui.set_font_size(18.0);
+        ui.set_font_size(21.0);
         ui.set_font_color(get_color32(255, 255, 255, 255));
         ui.set_color(get_color32(0, 0, 0, 0));
         product_hdr_mut.add_widget(&name_lbl);
@@ -609,7 +609,7 @@ impl<'a> ToolboxItemWidget<'a> {
         ui.set_size_hint_x(Some(1.0));
         ui.set_size_y(26.0);
         ui.set_text(&display_desc);
-        ui.set_font_size(14.0);
+        ui.set_font_size(16.0);
         ui.set_font_color(get_color32(180, 185, 195, 255));
         ui.set_color(get_color32(0, 0, 0, 0));
         product_set_mut.add_widget(&desc_lbl);
@@ -636,7 +636,7 @@ impl<'a> ToolboxItemWidget<'a> {
             ui.set_size_hint_x(Some(1.0));
             ui.set_size_y(26.0);
             ui.set_valign(VerticalAlign::CENTER);
-            ui.set_font_size(14.0);
+            ui.set_font_size(16.0);
             ui.set_font_color(get_color32(130, 220, 160, 255));
             ui.set_color(get_color32(0, 0, 0, 0));
             ing_box_mut.add_widget(&items_lbl);
@@ -647,7 +647,7 @@ impl<'a> ToolboxItemWidget<'a> {
             ui.set_size_hint_x(Some(1.0));
             ui.set_size_y(26.0);
             ui.set_valign(VerticalAlign::CENTER);
-            ui.set_font_size(14.0);
+            ui.set_font_size(16.0);
             ui.set_font_color(get_color32(240, 180, 120, 255));
             ui.set_color(get_color32(0, 0, 0, 0));
             ing_box_mut.add_widget(&chars_lbl);
@@ -658,7 +658,7 @@ impl<'a> ToolboxItemWidget<'a> {
             ui.set_size_hint_x(Some(1.0));
             ui.set_size_y(26.0);
             ui.set_valign(VerticalAlign::CENTER);
-            ui.set_font_size(14.0);
+            ui.set_font_size(16.0);
             ui.set_font_color(get_color32(150, 150, 150, 255));
             ui.set_color(get_color32(0, 0, 0, 0));
             ing_box_mut.add_widget(&unexp_lbl);
@@ -701,7 +701,7 @@ impl<'a> ToolboxItemWidget<'a> {
                 let ui = ptr_as_mut(ing_lbl.as_ref()).get_ui_component_mut();
                 ui.set_size_y(28.0);
                 ui.set_valign(VerticalAlign::CENTER);
-                ui.set_font_size(16.0);
+                ui.set_font_size(18.0);
                 ui.set_font_color(get_color32(230, 235, 240, 255));
                 ui.set_color(get_color32(0, 0, 0, 0));
                 ing_set_mut.add_widget(&ing_lbl);
@@ -719,7 +719,7 @@ impl<'a> ToolboxItemWidget<'a> {
                 ui.set_size_y(28.0);
                 ui.set_valign(VerticalAlign::CENTER);
                 ui.set_text("Free");
-                ui.set_font_size(16.0);
+                ui.set_font_size(18.0);
                 ui.set_font_color(get_color32(100, 210, 120, 255));
                 ui.set_color(get_color32(0, 0, 0, 0));
                 ing_box_mut.add_widget(&free_lbl);
@@ -746,7 +746,7 @@ impl<'a> ToolboxItemWidget<'a> {
         ui.set_halign(HorizontalAlign::CENTER);
         ui.set_valign(VerticalAlign::CENTER);
         ui.set_text("Status: Locked");
-        ui.set_font_size(13.0);
+        ui.set_font_size(15.0);
         ui.set_font_color(get_color32(150, 150, 150, 255));
         ui.set_color(get_color32(0, 0, 0, 0));
         if is_map_item {
@@ -766,7 +766,7 @@ impl<'a> ToolboxItemWidget<'a> {
         ui.set_border(2.0);
         ui.set_round(6.0);
         ui.set_text(&format!("Unlock ({})", data.cost_label()));
-        ui.set_font_size(15.0);
+        ui.set_font_size(17.0);
         ui.set_font_color(get_color32(230, 230, 230, 255));
         ui.set_touchable(true);
         ui.set_callback_touch_over(Some(Box::new(Self::callback_item_touch_over)));
@@ -805,7 +805,7 @@ pub struct ToolboxTabWidget<'a> {
 impl<'a> ToolboxTabWidget<'a> {
     pub fn create(
         tab_id: &str,
-        category_title: &str,
+        _category_title: &str,
         parent_widget: &mut WidgetDefault<'a>,
         item_list: Vec<ToolboxItemData>,
     ) -> Box<ToolboxTabWidget<'a>> {
@@ -827,29 +827,6 @@ impl<'a> ToolboxTabWidget<'a> {
         ui.set_renderable(true);
         ui.set_enable(false);
         parent_widget.add_widget(&layout);
-
-        // Section header label
-        let section_label = UIManager::create_widget(&format!("{}_section_label", tab_id), UIWidgetTypes::Default);
-        let ui = ptr_as_mut(section_label.as_ref()).get_ui_component_mut();
-        ui.set_size_hint_x(Some(1.0));
-        ui.set_size_y(36.0);
-        ui.set_halign(HorizontalAlign::LEFT);
-        ui.set_valign(VerticalAlign::CENTER);
-        ui.set_text(category_title);
-        ui.set_font_size(20.0);
-        ui.set_font_color(get_color32(200, 200, 200, 255));
-        ui.set_margin(5.0);
-        ui.set_renderable(false);
-        layout_mut.add_widget(&section_label);
-
-        // Separator line
-        let separator = UIManager::create_widget(&format!("{}_separator", tab_id), UIWidgetTypes::Default);
-        let ui = ptr_as_mut(separator.as_ref()).get_ui_component_mut();
-        ui.set_size_hint_x(Some(1.0));
-        ui.set_size_y(2.0);
-        ui.set_color(get_color32(75, 75, 75, 200));
-        ui.set_margin(3.0);
-        layout_mut.add_widget(&separator);
 
         let mut tab_widget = Box::new(ToolboxTabWidget {
             _layout: layout,

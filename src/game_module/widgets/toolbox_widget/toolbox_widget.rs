@@ -21,10 +21,10 @@ use std::ffi::c_void;
 use std::rc::Rc;
 use winit::keyboard::KeyCode;
 
-const TAB_BUTTON_WIDTH: f32 = 80.0;
-const TAB_BUTTON_HEIGHT: f32 = 40.0;
-const TAB_ACTIVE_COLOR: u32 = get_color32(110, 110, 110, 255);
-const TAB_INACTIVE_COLOR: u32 = get_color32(50, 50, 50, 255);
+const TAB_BUTTON_WIDTH: f32 = 110.0;
+const TAB_BUTTON_HEIGHT: f32 = 44.0;
+const TAB_ACTIVE_COLOR: u32 = get_color32(128, 128, 128, 255);
+const TAB_INACTIVE_COLOR: u32 = get_color32(80, 80, 80, 255);
 
 // ────────────────────────────────────────────────────────────────
 // Tab enum
@@ -124,9 +124,8 @@ impl<'a> ToolboxWidget<'a> {
         ui.set_valign(VerticalAlign::CENTER);
         ui.set_margin(3.0);
         ui.set_text(label);
-        let font_size = if label.len() > 6 { 16.0 } else { 20.0 };
-        ui.set_font_size(font_size);
-        ui.set_font_color(get_color32(220, 220, 220, 255));
+        ui.set_font_size(24.0);
+        ui.set_font_color(get_color32(255, 255, 255, 255));
         ui.set_round(6.0);
         ui.set_color(TAB_INACTIVE_COLOR);
         ui.set_touchable(true);
@@ -149,8 +148,7 @@ impl<'a> ToolboxWidget<'a> {
         ui.set_valign(VerticalAlign::TOP);
         ui.set_pivot_preset(PIVOT_CENTER);
         ui.set_pos_hint(Some(0.5), Some(0.5));
-        ui.set_size_hint_x(Some(0.65));
-        ui.set_size_hint_y(Some(0.7));
+        ui.set_size(760.0, 580.0);
         ui.set_expandable(false);
         ui.set_enable_renderable_area(true);
         ui.set_color(get_color32(35, 35, 35, 230));
@@ -158,35 +156,6 @@ impl<'a> ToolboxWidget<'a> {
         ui.set_border(2.0);
         ui.set_round(10.0);
         ui.set_padding(8.0);
-
-        // ── Title bar (Dark gray) ───────────────────────────────────
-        let title_bar = UIManager::create_widget("toolbox_title_bar", UIWidgetTypes::Default);
-        let title_mut = ptr_as_mut(title_bar.as_ref());
-        let ui = title_mut.get_ui_component_mut();
-        ui.set_layout_type(UILayoutType::BoxLayout);
-        ui.set_layout_orientation(Orientation::HORIZONTAL);
-        ui.set_halign(HorizontalAlign::CENTER);
-        ui.set_valign(VerticalAlign::CENTER);
-        ui.set_size_hint_x(Some(1.0));
-        ui.set_size_y(44.0);
-        ui.set_color(get_color32(25, 25, 25, 255));
-        ui.set_border_color(get_color32(70, 70, 70, 255));
-        ui.set_border(1.0);
-        ui.set_round(8.0);
-        ui.set_margin(4.0);
-        layer_mut.add_widget(&title_bar);
-
-        let title_label = UIManager::create_widget("toolbox_title", UIWidgetTypes::Default);
-        let ui = ptr_as_mut(title_label.as_ref()).get_ui_component_mut();
-        ui.set_halign(HorizontalAlign::CENTER);
-        ui.set_valign(VerticalAlign::CENTER);
-        ui.set_size_hint_x(Some(1.0));
-        ui.set_size_y(44.0);
-        ui.set_text("Monolith Toolbox");
-        ui.set_font_size(26.0);
-        ui.set_font_color(get_color32(220, 220, 220, 255));
-        ui.set_renderable(false);
-        title_mut.add_widget(&title_label);
 
         // ── Main Body Container (Vertical: Top Header + Bottom Content) ──
         let body = UIManager::create_widget("toolbox_body", UIWidgetTypes::Default);
