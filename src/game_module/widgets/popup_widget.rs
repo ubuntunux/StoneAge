@@ -1,4 +1,3 @@
-use std::ffi::c_void;
 use crate::game_module::game_constants::AUDIO_PICKUP_ITEM;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::core::engine_core::TimeData;
@@ -8,8 +7,9 @@ use rust_engine_3d::scene::ui::{
     CallbackTouchEvent, HorizontalAlign, Orientation, PIVOT_CENTER, UILayoutType, UIManager, UIWidgetTypes,
     VerticalAlign, WidgetDefault,
 };
-use rust_engine_3d::utilities::system::ptr_as_mut;
+use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
+use std::ffi::c_void;
 use std::rc::Rc;
 use winit::keyboard::KeyCode;
 
@@ -19,6 +19,8 @@ pub struct PopupWindowWidget<'a> {
     pub _text_widget: Rc<WidgetDefault<'a>>,
     pub _ok_btn: Rc<WidgetDefault<'a>>,
     pub _cancel_btn: Option<Rc<WidgetDefault<'a>>>,
+    pub _ok_callback: Option<(CallbackTouchEvent<'a>, *const c_void)>,
+    pub _cancel_callback: Option<(CallbackTouchEvent<'a>, *const c_void)>,
     pub _is_opened: bool,
 }
 
@@ -46,7 +48,10 @@ impl<'a> PopupWindowWidget<'a> {
             ui_comp.set_enable(false);
             ui_comp.set_renderable(false);
             ui_comp.set_touchable(true);
-            if let Some(callback) = ok_callback {
+            if let Some(callback) = cancel_callback {
+                ui_comp.set_callback_touch_down(Some(Box::new(callback.0)));
+                ui_comp.set_user_data(callback.1);
+            } else if let Some(callback) = ok_callback {
                 ui_comp.set_callback_touch_down(Some(Box::new(callback.0)));
                 ui_comp.set_user_data(callback.1);
             }
@@ -151,6 +156,8 @@ impl<'a> PopupWindowWidget<'a> {
             _text_widget: text_widget,
             _ok_btn: ok_btn,
             _cancel_btn: cancel_btn,
+            _ok_callback: ok_callback,
+            _cancel_callback: cancel_callback,
             _is_opened: false,
         })
     }
@@ -188,16 +195,50 @@ impl<'a> PopupWindowWidget<'a> {
             return false;
         }
 
-        let close_popup = keyboard_input_data.get_key_pressed(KeyCode::Escape)
-            || keyboard_input_data.get_key_pressed(KeyCode::Space)
-            || keyboard_input_data.get_key_pressed(KeyCode::Enter)
-            || joystick_input_data._btn_a == ButtonState::Pressed
-            || joystick_input_data._btn_b == ButtonState::Pressed
-            || joystick_input_data._btn_x == ButtonState::Pressed;
+        let press_cancel =
+            keyboard_input_data.get_key_pressed(KeyCode::Escape) || joystick_input_data._btn_b == ButtonState::Pressed;
 
-        if close_popup {
-            self.close();
+        let press_ok = keyboard_input_data.get_key_pressed(KeyCode::Space)
+            || keyboard_input_data.get_key_pressed(KeyCode::Enter)
+            || joystick_input_data._btn_a == ButtonState::Pressed;
+
+        if self._cancel_btn.is_some() {
+            if press_cancel {
+                let cancel_callback = self._cancel_callback;
+                let cancel_btn = self._cancel_btn.clone();
+                self.close();
+                if let Some(btn) = cancel_btn {
+                    let cancel_ui = ptr_as_ref(btn.as_ref()).get_ui_component();
+                    if let Some((callback, _user_data)) = cancel_callback {
+                        callback(cancel_ui, &nalgebra::Vector2::zeros(), &nalgebra::Vector2::zeros());
+                    }
+                }
+                return true;
+            } else if press_ok {
+                let ok_callback = self._ok_callback;
+                let ok_btn = self._ok_btn.clone();
+                self.close();
+                let ok_ui = ptr_as_ref(ok_btn.as_ref()).get_ui_component();
+                if let Some((callback, _user_data)) = ok_callback {
+                    callback(ok_ui, &nalgebra::Vector2::zeros(), &nalgebra::Vector2::zeros());
+                }
+                return true;
+            }
+        } else {
+            let close_popup = press_cancel || press_ok || joystick_input_data._btn_x == ButtonState::Pressed;
+
+            if close_popup {
+                let ok_callback = self._ok_callback;
+                let ok_btn = self._ok_btn.clone();
+                self.close();
+                let ok_ui = ptr_as_ref(ok_btn.as_ref()).get_ui_component();
+                if let Some((callback, _user_data)) = ok_callback {
+                    callback(ok_ui, &nalgebra::Vector2::zeros(), &nalgebra::Vector2::zeros());
+                }
+                return true;
+            }
         }
+
         true
     }
 }

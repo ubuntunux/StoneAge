@@ -10,7 +10,10 @@ pub struct SaveLoadWidget<'a> {
 }
 
 impl<'a> SaveLoadWidget<'a> {
-    pub fn create_save_load_widget(parent_widget: &mut WidgetDefault<'a>, root_widget: &mut WidgetDefault<'a>) -> Box<SaveLoadWidget<'a>> {
+    pub fn create_save_load_widget(
+        parent_widget: &mut WidgetDefault<'a>,
+        root_widget: &mut WidgetDefault<'a>,
+    ) -> Box<SaveLoadWidget<'a>> {
         let save_load_slot_widget = SaveLoadSlotWidget::create_save_load_slot_widget(parent_widget, root_widget);
         Box::new(SaveLoadWidget {
             _parent_widget: parent_widget,

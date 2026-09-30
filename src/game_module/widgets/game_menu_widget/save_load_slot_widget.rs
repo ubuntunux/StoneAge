@@ -38,6 +38,8 @@ pub struct SaveLoadSlotWidget<'a> {
     pub _slot_header_label: Rc<WidgetDefault<'a>>,
     pub _slot_container: Rc<WidgetDefault<'a>>,
     pub _save_complete_popup: Option<Box<PopupWindowWidget<'a>>>,
+    pub _delete_confirm_popup: Option<Box<PopupWindowWidget<'a>>>,
+    pub _pending_delete_slot_index: Option<usize>,
     pub _slot_items: Vec<Box<SaveLoadSlotItem<'a>>>,
     pub _slot_names: Vec<String>,
     pub _selected_slot_index: usize,
@@ -87,7 +89,36 @@ impl<'a> SaveLoadSlotWidget<'a> {
     ) -> bool {
         let slot_item = ptr_as_ref(ui_component.get_user_data() as *const SaveLoadSlotItem<'a>);
         let slot_widget = ptr_as_mut(slot_item._slot_widget);
-        slot_widget.delete_slot(slot_item._slot_index);
+        slot_widget.request_delete_slot(slot_item._slot_index);
+        true
+    }
+
+    pub fn callback_touch_down_confirm_delete_slot(
+        ui_component: &UIComponentInstance<'a>,
+        _touched_pos: &Vector2<f32>,
+        _touched_pos_delta: &Vector2<f32>,
+    ) -> bool {
+        let slot_widget = ptr_as_mut(ui_component.get_user_data() as *const SaveLoadSlotWidget<'a>);
+        if let Some(slot_index) = slot_widget._pending_delete_slot_index {
+            slot_widget.delete_slot(slot_index);
+            slot_widget._pending_delete_slot_index = None;
+        }
+        if let Some(popup) = slot_widget._delete_confirm_popup.as_mut() {
+            popup.close();
+        }
+        true
+    }
+
+    pub fn callback_touch_down_cancel_delete_slot(
+        ui_component: &UIComponentInstance<'a>,
+        _touched_pos: &Vector2<f32>,
+        _touched_pos_delta: &Vector2<f32>,
+    ) -> bool {
+        let slot_widget = ptr_as_mut(ui_component.get_user_data() as *const SaveLoadSlotWidget<'a>);
+        slot_widget._pending_delete_slot_index = None;
+        if let Some(popup) = slot_widget._delete_confirm_popup.as_mut() {
+            popup.close();
+        }
         true
     }
 
@@ -132,7 +163,10 @@ impl<'a> SaveLoadSlotWidget<'a> {
         true
     }
 
-    pub fn create_save_load_slot_widget(parent_widget: &mut WidgetDefault<'a>, root_widget: &mut WidgetDefault<'a>) -> Box<SaveLoadSlotWidget<'a>> {
+    pub fn create_save_load_slot_widget(
+        parent_widget: &mut WidgetDefault<'a>,
+        root_widget: &mut WidgetDefault<'a>,
+    ) -> Box<SaveLoadSlotWidget<'a>> {
         let layer = UIManager::create_widget("save_load_slot_layer", UIWidgetTypes::Default);
         let layer_mut = ptr_as_mut(layer.as_ref());
         {
@@ -250,6 +284,8 @@ impl<'a> SaveLoadSlotWidget<'a> {
             _slot_header_label: slot_header_label,
             _slot_container: slot_container,
             _save_complete_popup: None,
+            _delete_confirm_popup: None,
+            _pending_delete_slot_index: None,
             _slot_items: Vec::new(),
             _slot_names: Vec::new(),
             _selected_slot_index: 0,
@@ -259,8 +295,12 @@ impl<'a> SaveLoadSlotWidget<'a> {
         });
 
         let ptr_self = slot_widget.as_ref() as *const SaveLoadSlotWidget<'a> as *const c_void;
-        ptr_as_mut::<WidgetDefault<'a>>(slot_widget._new_game_btn.as_ref()).get_ui_component_mut().set_user_data(ptr_self);
-        ptr_as_mut::<WidgetDefault<'a>>(slot_widget._exit_game_btn.as_ref()).get_ui_component_mut().set_user_data(ptr_self);
+        ptr_as_mut::<WidgetDefault<'a>>(slot_widget._new_game_btn.as_ref())
+            .get_ui_component_mut()
+            .set_user_data(ptr_self);
+        ptr_as_mut::<WidgetDefault<'a>>(slot_widget._exit_game_btn.as_ref())
+            .get_ui_component_mut()
+            .set_user_data(ptr_self);
 
         // --- 5. Save Complete Popup ---
         slot_widget._save_complete_popup = Some(PopupWindowWidget::create_popup_widget(
@@ -272,6 +312,15 @@ impl<'a> SaveLoadSlotWidget<'a> {
             None,
         ));
 
+        // --- 6. Delete Confirmation Popup ---
+        slot_widget._delete_confirm_popup = Some(PopupWindowWidget::create_popup_widget(
+            root_widget,
+            "Are you sure you want to delete?",
+            "Delete",
+            Some("Cancel"),
+            Some((SaveLoadSlotWidget::callback_touch_down_confirm_delete_slot, ptr_self)),
+            Some((SaveLoadSlotWidget::callback_touch_down_cancel_delete_slot, ptr_self)),
+        ));
 
         slot_widget
     }
@@ -299,6 +348,9 @@ impl<'a> SaveLoadSlotWidget<'a> {
     pub fn close_slot_widget(&mut self) {
         if self._is_opened {
             self._save_complete_popup.as_mut().unwrap().close();
+            if let Some(popup) = self._delete_confirm_popup.as_mut() {
+                popup.close();
+            }
             let parent_mut = ptr_as_mut::<WidgetDefault<'a>>(self._parent_widget);
             parent_mut.remove_widget(self._layer.as_ref());
             self._is_opened = false;
@@ -572,7 +624,9 @@ impl<'a> SaveLoadSlotWidget<'a> {
 
             if prev_index < self._slot_items.len() {
                 let prev_card = &self._slot_items[prev_index]._item_widget;
-                ptr_as_mut::<WidgetDefault<'a>>(prev_card.as_ref()).get_ui_component_mut().set_color(get_color32(40, 48, 60, 220));
+                ptr_as_mut::<WidgetDefault<'a>>(prev_card.as_ref())
+                    .get_ui_component_mut()
+                    .set_color(get_color32(40, 48, 60, 220));
             }
 
             let curr_card = &self._slot_items[index]._item_widget;
@@ -614,6 +668,18 @@ impl<'a> SaveLoadSlotWidget<'a> {
         }
     }
 
+    pub fn request_delete_slot(&mut self, slot_index: usize) {
+        if slot_index < self._slot_names.len() {
+            let slot_name = &self._slot_names[slot_index];
+            if get_game_resources().has_game_save_data(slot_name) {
+                self._pending_delete_slot_index = Some(slot_index);
+                if let Some(popup) = self._delete_confirm_popup.as_mut() {
+                    popup.open();
+                }
+            }
+        }
+    }
+
     pub fn delete_slot(&mut self, slot_index: usize) {
         if slot_index < self._slot_names.len() {
             let slot_name = self._slot_names[slot_index].clone();
@@ -636,7 +702,8 @@ impl<'a> SaveLoadSlotWidget<'a> {
                 get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
 
                 if slot_index < self._slot_items.len() {
-                    let card_ui = ptr_as_mut::<WidgetDefault<'a>>(self._slot_items[slot_index]._item_widget.as_ref()).get_ui_component_mut();
+                    let card_ui = ptr_as_mut::<WidgetDefault<'a>>(self._slot_items[slot_index]._item_widget.as_ref())
+                        .get_ui_component_mut();
                     card_ui.set_enable(false);
                 }
 
@@ -672,6 +739,13 @@ impl<'a> SaveLoadSlotWidget<'a> {
         if self._save_complete_popup.as_ref().unwrap().is_opened() {
             self._save_complete_popup.as_mut().unwrap().update(time_data, joystick_input_data, keyboard_input_data);
             return;
+        }
+
+        if let Some(popup) = self._delete_confirm_popup.as_mut() {
+            if popup.is_opened() {
+                popup.update(time_data, joystick_input_data, keyboard_input_data);
+                return;
+            }
         }
 
         if self._need_rebuild_slot_list {
