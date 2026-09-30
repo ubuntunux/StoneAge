@@ -13,7 +13,7 @@ use rust_engine_3d::scene::ui::{
     HorizontalAlign, Orientation, PIVOT_CENTER, UIComponentInstance, UILayoutType, UIManager, UIWidgetTypes,
     VerticalAlign, WidgetDefault,
 };
-use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
+use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref, RcRefCell};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use std::ffi::c_void;
 use std::rc::Rc;
@@ -37,8 +37,8 @@ pub struct SaveLoadSlotWidget<'a> {
     pub _exit_game_btn: Rc<WidgetDefault<'a>>,
     pub _slot_header_label: Rc<WidgetDefault<'a>>,
     pub _slot_container: Rc<WidgetDefault<'a>>,
-    pub _save_complete_popup: Option<Box<PopupWindowWidget<'a>>>,
-    pub _delete_confirm_popup: Option<Box<PopupWindowWidget<'a>>>,
+    pub _save_complete_popup: Option<RcRefCell<PopupWindowWidget<'a>>>,
+    pub _delete_confirm_popup: Option<RcRefCell<PopupWindowWidget<'a>>>,
     pub _pending_delete_slot_index: Option<usize>,
     pub _slot_items: Vec<Box<SaveLoadSlotItem<'a>>>,
     pub _slot_names: Vec<String>,
@@ -103,8 +103,8 @@ impl<'a> SaveLoadSlotWidget<'a> {
             slot_widget.delete_slot(slot_index);
             slot_widget._pending_delete_slot_index = None;
         }
-        if let Some(popup) = slot_widget._delete_confirm_popup.as_mut() {
-            popup.close();
+        if let Some(popup) = slot_widget._delete_confirm_popup.as_ref() {
+            popup.borrow_mut().close();
         }
         true
     }
@@ -116,8 +116,8 @@ impl<'a> SaveLoadSlotWidget<'a> {
     ) -> bool {
         let slot_widget = ptr_as_mut(ui_component.get_user_data() as *const SaveLoadSlotWidget<'a>);
         slot_widget._pending_delete_slot_index = None;
-        if let Some(popup) = slot_widget._delete_confirm_popup.as_mut() {
-            popup.close();
+        if let Some(popup) = slot_widget._delete_confirm_popup.as_ref() {
+            popup.borrow_mut().close();
         }
         true
     }
@@ -128,7 +128,9 @@ impl<'a> SaveLoadSlotWidget<'a> {
         _touched_pos_delta: &Vector2<f32>,
     ) -> bool {
         let slot_widget = ptr_as_mut(ui_component.get_user_data() as *const SaveLoadSlotWidget<'a>);
-        slot_widget._save_complete_popup.as_mut().unwrap().close();
+        if let Some(popup) = slot_widget._save_complete_popup.as_ref() {
+            popup.borrow_mut().close();
+        }
         true
     }
 
@@ -347,9 +349,11 @@ impl<'a> SaveLoadSlotWidget<'a> {
 
     pub fn close_slot_widget(&mut self) {
         if self._is_opened {
-            self._save_complete_popup.as_mut().unwrap().close();
-            if let Some(popup) = self._delete_confirm_popup.as_mut() {
-                popup.close();
+            if let Some(popup) = self._save_complete_popup.as_ref() {
+                popup.borrow_mut().close();
+            }
+            if let Some(popup) = self._delete_confirm_popup.as_ref() {
+                popup.borrow_mut().close();
             }
             let parent_mut = ptr_as_mut::<WidgetDefault<'a>>(self._parent_widget);
             parent_mut.remove_widget(self._layer.as_ref());
@@ -673,8 +677,8 @@ impl<'a> SaveLoadSlotWidget<'a> {
             let slot_name = &self._slot_names[slot_index];
             if get_game_resources().has_game_save_data(slot_name) {
                 self._pending_delete_slot_index = Some(slot_index);
-                if let Some(popup) = self._delete_confirm_popup.as_mut() {
-                    popup.open();
+                if let Some(popup) = self._delete_confirm_popup.as_ref() {
+                    popup.borrow_mut().open(popup);
                 }
             }
         }
@@ -722,7 +726,9 @@ impl<'a> SaveLoadSlotWidget<'a> {
             self.update_slot_item_ui(slot_index);
             self.ensure_empty_slot_exists();
             self.set_selected_slot(slot_index, true);
-            self._save_complete_popup.as_mut().unwrap().open();
+            if let Some(popup) = self._save_complete_popup.as_ref() {
+                popup.borrow_mut().open(popup);
+            }
         }
     }
 
@@ -736,14 +742,14 @@ impl<'a> SaveLoadSlotWidget<'a> {
             return;
         }
 
-        if self._save_complete_popup.as_ref().unwrap().is_opened() {
-            self._save_complete_popup.as_mut().unwrap().update(time_data, joystick_input_data, keyboard_input_data);
-            return;
+        if let Some(popup) = self._save_complete_popup.as_ref() {
+            if popup.borrow().is_opened() {
+                return;
+            }
         }
 
-        if let Some(popup) = self._delete_confirm_popup.as_mut() {
-            if popup.is_opened() {
-                popup.update(time_data, joystick_input_data, keyboard_input_data);
+        if let Some(popup) = self._delete_confirm_popup.as_ref() {
+            if popup.borrow().is_opened() {
                 return;
             }
         }

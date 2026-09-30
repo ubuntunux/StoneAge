@@ -26,6 +26,7 @@ use crate::game_module::widgets::text_box_widget::{
 use crate::game_module::widgets::time_of_day::TimeOfDayWidget;
 use crate::game_module::widgets::toolbox_widget::ToolboxTab;
 use crate::game_module::widgets::toolbox_widget::ToolboxWidget;
+use crate::game_module::widgets::popup_widget::PopupWindowWidget;
 use nalgebra::Vector2;
 use rust_engine_3d::constants::DEVELOPMENT;
 use rust_engine_3d::core::engine_core::TimeData;
@@ -35,6 +36,7 @@ use rust_engine_3d::scene::ui::{UIComponentInstance, UIManager, UIWidgetTypes, W
 use rust_engine_3d::utilities::system::{RcRefCell, ptr_as_mut, ptr_as_ref};
 use std::collections::HashSet;
 use std::ffi::c_void;
+use std::rc::Rc;
 
 pub type QuestItem<'a> = RcRefCell<dyn QuestItemBase<'a> + 'a>;
 
@@ -64,6 +66,7 @@ pub struct GameUIManager<'a> {
     pub _table_storage_widget: Option<Box<TableStorageWidget<'a>>>,
     pub _quest_widget: Option<Box<QuestWidget<'a>>>,
     pub _debug_ui_widget: Option<Box<DebugUIWidget<'a>>>,
+    pub _registered_popups: Vec<RcRefCell<PopupWindowWidget<'a>>>,
     pub _window_size: Vector2<i32>,
     pub _need_to_refresh: bool,
     pub _player_records: PlayerRecords,
@@ -145,6 +148,7 @@ impl<'a> GameUIManager<'a> {
             _table_storage_widget: None,
             _quest_widget: None,
             _debug_ui_widget: None,
+            _registered_popups: Vec::new(),
             _window_size: Vector2::new(0, 0),
             _need_to_refresh: true,
             _player_records: PlayerRecords::default(),
@@ -265,10 +269,21 @@ impl<'a> GameUIManager<'a> {
         self.load_unlocked_toolbox_items(&std::collections::HashSet::new());
         self.set_last_opened_toolbox_tab("");
         self.close_toolbox();
+        self._registered_popups.clear();
     }
 
     pub fn get_game_ui_layout(&self) -> *const WidgetDefault<'a> {
         self._game_ui_layout
+    }
+
+    pub fn register_popup_widget(&mut self, popup: RcRefCell<PopupWindowWidget<'a>>) {
+        if !self._registered_popups.iter().any(|p| Rc::ptr_eq(p, &popup)) {
+            self._registered_popups.push(popup);
+        }
+    }
+
+    pub fn unregister_popup_widget(&mut self, popup_ptr: *const PopupWindowWidget<'a>) {
+        self._registered_popups.retain(|p| p.as_ptr() as *const _ != popup_ptr);
     }
 
     pub fn show_game_ui(&mut self, show: bool) {
@@ -1082,6 +1097,15 @@ impl<'a> GameUIManager<'a> {
 
         if let Some(debug_ui_widget) = self._debug_ui_widget.as_mut() {
             debug_ui_widget.update_debug_ui_widget();
+        }
+
+        let registered_popups = self._registered_popups.clone();
+        for popup in registered_popups.iter() {
+            popup.borrow_mut().update(
+                &engine_core._time_data,
+                &engine_core._joystick_input_data,
+                &engine_core._keyboard_input_data,
+            );
         }
     }
 

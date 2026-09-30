@@ -1,4 +1,5 @@
 use crate::game_module::game_constants::AUDIO_PICKUP_ITEM;
+use crate::game_module::game_service_locator::get_game_ui_manager_mut;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::core::engine_core::TimeData;
 use rust_engine_3d::core::engine_service_locator::get_audio_manager_mut;
@@ -7,7 +8,7 @@ use rust_engine_3d::scene::ui::{
     CallbackTouchEvent, HorizontalAlign, Orientation, PIVOT_CENTER, UILayoutType, UIManager, UIWidgetTypes,
     VerticalAlign, WidgetDefault,
 };
-use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
+use rust_engine_3d::utilities::system::{newRcRefCell, ptr_as_mut, ptr_as_ref, RcRefCell};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use std::ffi::c_void;
 use std::rc::Rc;
@@ -32,7 +33,7 @@ impl<'a> PopupWindowWidget<'a> {
         cancel_button_text: Option<&str>,
         ok_callback: Option<(CallbackTouchEvent<'a>, *const c_void)>,
         cancel_callback: Option<(CallbackTouchEvent<'a>, *const c_void)>,
-    ) -> Box<PopupWindowWidget<'a>> {
+    ) -> RcRefCell<PopupWindowWidget<'a>> {
         let popup_layer = UIManager::create_widget("popup_window_layer", UIWidgetTypes::Default);
         {
             let ui_comp = ptr_as_mut(popup_layer.as_ref()).get_ui_component_mut();
@@ -150,7 +151,7 @@ impl<'a> PopupWindowWidget<'a> {
             None
         };
 
-        Box::new(PopupWindowWidget {
+        newRcRefCell(PopupWindowWidget {
             _parent_widget: parent_widget,
             _layer: popup_layer,
             _text_widget: text_widget,
@@ -166,12 +167,13 @@ impl<'a> PopupWindowWidget<'a> {
         self._is_opened
     }
 
-    pub fn open(&mut self) {
+    pub fn open(&mut self, self_rc: &RcRefCell<PopupWindowWidget<'a>>) {
         if !self._is_opened {
             self._is_opened = true;
             let parent_mut = ptr_as_mut(self._parent_widget);
             parent_mut.add_widget(&self._layer);
             ptr_as_mut(self._layer.as_ref()).get_ui_component_mut().set_enable(true);
+            get_game_ui_manager_mut().register_popup_widget(self_rc.clone());
         }
     }
 
@@ -182,6 +184,7 @@ impl<'a> PopupWindowWidget<'a> {
             parent_mut.remove_widget(self._layer.as_ref());
             ptr_as_mut(self._layer.as_ref()).get_ui_component_mut().set_enable(false);
             get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
+            get_game_ui_manager_mut().unregister_popup_widget(self as *const Self);
         }
     }
 
