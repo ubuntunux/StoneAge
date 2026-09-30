@@ -805,11 +805,9 @@ pub struct ToolboxTabWidget<'a> {
 impl<'a> ToolboxTabWidget<'a> {
     pub fn create(
         tab_id: &str,
-        _category_title: &str,
         parent_widget: &mut WidgetDefault<'a>,
         item_list: Vec<ToolboxItemData>,
     ) -> Box<ToolboxTabWidget<'a>> {
-        // Pane layout container (Neutral dark gray)
         let layout = UIManager::create_widget(&format!("{}_tab_layout", tab_id), UIWidgetTypes::Default);
         let layout_mut = ptr_as_mut(layout.as_ref());
         let ui = layout_mut.get_ui_component_mut();

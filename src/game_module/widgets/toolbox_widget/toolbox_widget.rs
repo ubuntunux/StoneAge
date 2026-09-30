@@ -21,7 +21,6 @@ use std::ffi::c_void;
 use std::rc::Rc;
 use winit::keyboard::KeyCode;
 
-const TAB_BUTTON_WIDTH: f32 = 110.0;
 const TAB_BUTTON_HEIGHT: f32 = 44.0;
 const TAB_ACTIVE_COLOR: u32 = get_color32(128, 128, 128, 255);
 const TAB_INACTIVE_COLOR: u32 = get_color32(80, 80, 80, 255);
@@ -70,6 +69,7 @@ pub struct ToolboxWidget<'a> {
     pub _tab_btn_item_craft: Rc<WidgetDefault<'a>>,
     pub _tab_btn_npc: Rc<WidgetDefault<'a>>,
     pub _tab_btn_teleport: Rc<WidgetDefault<'a>>,
+    pub _close_btn: Rc<WidgetDefault<'a>>,
 
     // Content panes
     pub _skill_tab: Box<ToolboxTabWidget<'a>>,
@@ -104,6 +104,11 @@ impl<'a> ToolboxWidget<'a> {
         true
     }
 
+    pub fn callback_close(ui: &UIComponentInstance<'a>, _pos: &Vector2<f32>, _delta: &Vector2<f32>) -> bool {
+        ptr_as_mut(ui.get_user_data() as *const ToolboxWidget<'a>).close_toolbox();
+        true
+    }
+
     pub fn callback_tab_touch_over(_ui: &UIComponentInstance<'a>, _pos: &Vector2<f32>, _delta: &Vector2<f32>) -> bool {
         get_audio_manager_mut().play_audio_bank(AUDIO_SELECT_ITEM, AudioLoop::ONCE, None);
         true
@@ -119,12 +124,13 @@ impl<'a> ToolboxWidget<'a> {
     ) -> Rc<WidgetDefault<'a>> {
         let btn = UIManager::create_widget(name, UIWidgetTypes::Default);
         let ui = ptr_as_mut(btn.as_ref()).get_ui_component_mut();
-        ui.set_size(TAB_BUTTON_WIDTH, TAB_BUTTON_HEIGHT);
         ui.set_halign(HorizontalAlign::CENTER);
         ui.set_valign(VerticalAlign::CENTER);
         ui.set_margin(3.0);
         ui.set_text(label);
         ui.set_font_size(24.0);
+        ui.set_size_hint_x(Some(1.0));
+        ui.set_size_hint_y(Some(1.0));
         ui.set_font_color(get_color32(255, 255, 255, 255));
         ui.set_round(6.0);
         ui.set_color(TAB_INACTIVE_COLOR);
@@ -195,6 +201,22 @@ impl<'a> ToolboxWidget<'a> {
         let tab_btn_teleport =
             Self::create_tab_button("tb_teleport", "Teleport", Self::callback_tab_teleport, header_mut);
 
+        let close_btn = UIManager::create_widget("close_btn", UIWidgetTypes::Default);
+        let ui_component = ptr_as_mut(close_btn.as_ref()).get_ui_component_mut();
+        ui_component.set_halign(HorizontalAlign::CENTER);
+        ui_component.set_valign(VerticalAlign::CENTER);
+        ui_component.set_size(35.0, 35.0);
+        ui_component.set_margin(3.0);
+        ui_component.set_text("X");
+        ui_component.set_font_size(24.0);
+        ui_component.set_font_color(get_color32(255, 255, 255, 255));
+        ui_component.set_round(6.0);
+        ui_component.set_color(get_color32(180, 50, 50, 255));
+        ui_component.set_touchable(true);
+        ui_component.set_callback_touch_down(Some(Box::new(Self::callback_close)));
+        ui_component.set_callback_touch_over(Some(Box::new(Self::callback_tab_touch_over)));
+        header_mut.add_widget(&close_btn);
+
         // ── Content area (Dark gray) ────────────────────────────────
         let content = UIManager::create_widget("toolbox_content", UIWidgetTypes::Default);
         let content_mut = ptr_as_mut(content.as_ref());
@@ -215,7 +237,6 @@ impl<'a> ToolboxWidget<'a> {
         // Build content panes for each tab with items requiring EnergyBall
         let skill_tab = ToolboxTabWidget::create(
             "skill",
-            "Skill List",
             content_mut,
             vec![
                 ToolboxItemData {
@@ -234,7 +255,6 @@ impl<'a> ToolboxWidget<'a> {
         );
         let item_craft_tab = ToolboxTabWidget::create(
             "item_craft",
-            "Item Crafting Recipes",
             content_mut,
             vec![
                 ToolboxItemData {
@@ -265,7 +285,6 @@ impl<'a> ToolboxWidget<'a> {
         );
         let npc_tab = ToolboxTabWidget::create(
             "npc",
-            "NPC Recruitment",
             content_mut,
             vec![
                 ToolboxItemData {
@@ -297,7 +316,6 @@ impl<'a> ToolboxWidget<'a> {
 
         let teleport_tab = ToolboxTabWidget::create(
             "teleport",
-            "World Map Teleport Locations",
             content_mut,
             vec![
                 ToolboxItemData {
@@ -335,6 +353,7 @@ impl<'a> ToolboxWidget<'a> {
             _tab_btn_item_craft: tab_btn_item_craft,
             _tab_btn_npc: tab_btn_npc,
             _tab_btn_teleport: tab_btn_teleport,
+            _close_btn: close_btn,
             _skill_tab: skill_tab,
             _item_craft_tab: item_craft_tab,
             _npc_tab: npc_tab,
@@ -353,6 +372,7 @@ impl<'a> ToolboxWidget<'a> {
         ptr_as_mut(widget._tab_btn_item_craft.as_ref()).get_ui_component_mut().set_user_data(self_ptr);
         ptr_as_mut(widget._tab_btn_npc.as_ref()).get_ui_component_mut().set_user_data(self_ptr);
         ptr_as_mut(widget._tab_btn_teleport.as_ref()).get_ui_component_mut().set_user_data(self_ptr);
+        ptr_as_mut(widget._close_btn.as_ref()).get_ui_component_mut().set_user_data(self_ptr);
 
         widget
     }
@@ -471,6 +491,7 @@ impl<'a> ToolboxWidget<'a> {
             ptr_as_mut(self._tab_btn_item_craft.as_ref()).get_ui_component_mut().set_user_data(self_ptr);
             ptr_as_mut(self._tab_btn_npc.as_ref()).get_ui_component_mut().set_user_data(self_ptr);
             ptr_as_mut(self._tab_btn_teleport.as_ref()).get_ui_component_mut().set_user_data(self_ptr);
+            ptr_as_mut(self._close_btn.as_ref()).get_ui_component_mut().set_user_data(self_ptr);
 
             // Restore last opened tab
             let last_tab = self._last_opened_tab;
