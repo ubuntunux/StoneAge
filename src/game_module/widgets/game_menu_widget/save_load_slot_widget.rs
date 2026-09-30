@@ -37,7 +37,7 @@ pub struct SaveLoadSlotWidget<'a> {
     pub _exit_game_btn: Rc<WidgetDefault<'a>>,
     pub _slot_header_label: Rc<WidgetDefault<'a>>,
     pub _slot_container: Rc<WidgetDefault<'a>>,
-    pub _save_complete_popup: Box<PopupWindowWidget<'a>>,
+    pub _save_complete_popup: Option<Box<PopupWindowWidget<'a>>>,
     pub _slot_items: Vec<Box<SaveLoadSlotItem<'a>>>,
     pub _slot_names: Vec<String>,
     pub _selected_slot_index: usize,
@@ -97,7 +97,7 @@ impl<'a> SaveLoadSlotWidget<'a> {
         _touched_pos_delta: &Vector2<f32>,
     ) -> bool {
         let slot_widget = ptr_as_mut(ui_component.get_user_data() as *const SaveLoadSlotWidget<'a>);
-        slot_widget._save_complete_popup.close();
+        slot_widget._save_complete_popup.as_mut().unwrap().close();
         true
     }
 
@@ -242,24 +242,14 @@ impl<'a> SaveLoadSlotWidget<'a> {
         }
         layer_mut.add_widget(&slot_container);
 
-        // --- 5. Save Complete Popup ---
-        let save_complete_popup = PopupWindowWidget::create_popup_widget(
-            root_widget,
-            "Game Saved Successfully!",
-            "OK",
-            None,
-            Some(SaveLoadSlotWidget::callback_touch_down_close_save_popup),
-            None,
-        );
-
-        let slot_widget = Box::new(SaveLoadSlotWidget {
+        let mut slot_widget = Box::new(SaveLoadSlotWidget {
             _parent_widget: parent_widget,
             _layer: layer,
             _new_game_btn: new_game_btn,
             _exit_game_btn: exit_game_btn,
             _slot_header_label: slot_header_label,
             _slot_container: slot_container,
-            _save_complete_popup: save_complete_popup,
+            _save_complete_popup: None,
             _slot_items: Vec::new(),
             _slot_names: Vec::new(),
             _selected_slot_index: 0,
@@ -271,8 +261,17 @@ impl<'a> SaveLoadSlotWidget<'a> {
         let ptr_self = slot_widget.as_ref() as *const SaveLoadSlotWidget<'a> as *const c_void;
         ptr_as_mut::<WidgetDefault<'a>>(slot_widget._new_game_btn.as_ref()).get_ui_component_mut().set_user_data(ptr_self);
         ptr_as_mut::<WidgetDefault<'a>>(slot_widget._exit_game_btn.as_ref()).get_ui_component_mut().set_user_data(ptr_self);
-        ptr_as_mut::<WidgetDefault<'a>>(slot_widget._save_complete_popup._layer.as_ref()).get_ui_component_mut().set_user_data(ptr_self);
-        ptr_as_mut::<WidgetDefault<'a>>(slot_widget._save_complete_popup._ok_btn.as_ref()).get_ui_component_mut().set_user_data(ptr_self);
+
+        // --- 5. Save Complete Popup ---
+        slot_widget._save_complete_popup = Some(PopupWindowWidget::create_popup_widget(
+            root_widget,
+            "Game Saved Successfully!",
+            "OK",
+            None,
+            Some((SaveLoadSlotWidget::callback_touch_down_close_save_popup, ptr_self)),
+            None,
+        ));
+
 
         slot_widget
     }
@@ -299,7 +298,7 @@ impl<'a> SaveLoadSlotWidget<'a> {
 
     pub fn close_slot_widget(&mut self) {
         if self._is_opened {
-            self._save_complete_popup.close();
+            self._save_complete_popup.as_mut().unwrap().close();
             let parent_mut = ptr_as_mut::<WidgetDefault<'a>>(self._parent_widget);
             parent_mut.remove_widget(self._layer.as_ref());
             self._is_opened = false;
@@ -656,7 +655,7 @@ impl<'a> SaveLoadSlotWidget<'a> {
             self.update_slot_item_ui(slot_index);
             self.ensure_empty_slot_exists();
             self.set_selected_slot(slot_index, true);
-            self._save_complete_popup.open();
+            self._save_complete_popup.as_mut().unwrap().open();
         }
     }
 
@@ -670,8 +669,8 @@ impl<'a> SaveLoadSlotWidget<'a> {
             return;
         }
 
-        if self._save_complete_popup.is_opened() {
-            self._save_complete_popup.update(time_data, joystick_input_data, keyboard_input_data);
+        if self._save_complete_popup.as_ref().unwrap().is_opened() {
+            self._save_complete_popup.as_mut().unwrap().update(time_data, joystick_input_data, keyboard_input_data);
             return;
         }
 

@@ -1,3 +1,4 @@
+use std::ffi::c_void;
 use crate::game_module::game_constants::AUDIO_PICKUP_ITEM;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::core::engine_core::TimeData;
@@ -27,8 +28,8 @@ impl<'a> PopupWindowWidget<'a> {
         popup_text: &str,
         ok_button_text: &str,
         cancel_button_text: Option<&str>,
-        ok_callback: Option<CallbackTouchEvent<'a>>,
-        cancel_callback: Option<CallbackTouchEvent<'a>>,
+        ok_callback: Option<(CallbackTouchEvent<'a>, *const c_void)>,
+        cancel_callback: Option<(CallbackTouchEvent<'a>, *const c_void)>,
     ) -> Box<PopupWindowWidget<'a>> {
         let popup_layer = UIManager::create_widget("popup_window_layer", UIWidgetTypes::Default);
         {
@@ -45,7 +46,10 @@ impl<'a> PopupWindowWidget<'a> {
             ui_comp.set_enable(false);
             ui_comp.set_renderable(false);
             ui_comp.set_touchable(true);
-            ui_comp.set_callback_touch_down(ok_callback.map(Box::new));
+            if let Some(callback) = ok_callback {
+                ui_comp.set_callback_touch_down(Some(Box::new(callback.0)));
+                ui_comp.set_user_data(callback.1);
+            }
         }
 
         let popup_layer_frame = UIManager::create_widget("popup_window_frame", UIWidgetTypes::Default);
@@ -109,7 +113,10 @@ impl<'a> PopupWindowWidget<'a> {
             ui_comp.set_color(get_color32(40, 130, 190, 255));
             ui_comp.set_round(6.0);
             ui_comp.set_touchable(true);
-            ui_comp.set_callback_touch_down(ok_callback.map(Box::new));
+            if let Some(callback) = ok_callback {
+                ui_comp.set_callback_touch_down(Some(Box::new(callback.0)));
+                ui_comp.set_user_data(callback.1);
+            }
         }
         ptr_as_mut(btn_container.as_ref()).add_widget(&ok_btn);
 
@@ -127,7 +134,10 @@ impl<'a> PopupWindowWidget<'a> {
                 ui_comp.set_color(get_color32(100, 105, 115, 255));
                 ui_comp.set_round(6.0);
                 ui_comp.set_touchable(true);
-                ui_comp.set_callback_touch_down(cancel_callback.map(Box::new));
+                if let Some(callback) = cancel_callback {
+                    ui_comp.set_callback_touch_down(Some(Box::new(callback.0)));
+                    ui_comp.set_user_data(callback.1);
+                }
             }
             ptr_as_mut(btn_container.as_ref()).add_widget(&cancel_btn_widget);
             Some(cancel_btn_widget)
