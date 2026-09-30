@@ -1101,11 +1101,13 @@ impl<'a> GameUIManager<'a> {
 
         let registered_popups = self._registered_popups.clone();
         for popup in registered_popups.iter() {
-            popup.borrow_mut().update(
-                &engine_core._time_data,
-                &engine_core._joystick_input_data,
-                &engine_core._keyboard_input_data,
-            );
+            if let Ok(mut popup_guard) = popup.try_borrow_mut() {
+                popup_guard.update(
+                    &engine_core._time_data,
+                    &engine_core._joystick_input_data,
+                    &engine_core._keyboard_input_data,
+                );
+            }
         }
     }
 
