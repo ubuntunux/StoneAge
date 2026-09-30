@@ -26,6 +26,7 @@ pub struct SaveLoadSlotItem<'a> {
     pub _text_widget: Rc<WidgetDefault<'a>>,
     pub _load_btn: Rc<WidgetDefault<'a>>,
     pub _save_btn: Rc<WidgetDefault<'a>>,
+    pub _delete_btn: Rc<WidgetDefault<'a>>,
 }
 
 pub struct SaveLoadSlotWidget<'a> {
@@ -35,12 +36,12 @@ pub struct SaveLoadSlotWidget<'a> {
     pub _exit_game_btn: Rc<WidgetDefault<'a>>,
     pub _slot_header_label: Rc<WidgetDefault<'a>>,
     pub _slot_container: Rc<WidgetDefault<'a>>,
-    pub _add_slot_btn: Rc<WidgetDefault<'a>>,
     pub _slot_items: Vec<Box<SaveLoadSlotItem<'a>>>,
     pub _slot_names: Vec<String>,
     pub _selected_slot_index: usize,
     pub _is_opened: bool,
     pub _nav_repeat_controller: WidgetNavRepeatController,
+    pub _need_rebuild_slot_list: bool,
 }
 
 impl<'a> SaveLoadSlotWidget<'a> {
@@ -77,6 +78,17 @@ impl<'a> SaveLoadSlotWidget<'a> {
         true
     }
 
+    pub fn callback_touch_down_slot_delete(
+        ui_component: &UIComponentInstance<'a>,
+        _touched_pos: &Vector2<f32>,
+        _touched_pos_delta: &Vector2<f32>,
+    ) -> bool {
+        let slot_item = ptr_as_ref(ui_component.get_user_data() as *const SaveLoadSlotItem<'a>);
+        let slot_widget = ptr_as_mut(slot_item._slot_widget);
+        slot_widget.delete_slot(slot_item._slot_index);
+        true
+    }
+
     pub fn callback_touch_down_new_game(
         ui_component: &UIComponentInstance<'a>,
         _touched_pos: &Vector2<f32>,
@@ -94,16 +106,6 @@ impl<'a> SaveLoadSlotWidget<'a> {
     ) -> bool {
         let slot_widget = ptr_as_mut(ui_component.get_user_data() as *const SaveLoadSlotWidget<'a>);
         slot_widget.exit_game();
-        true
-    }
-
-    pub fn callback_touch_down_add_slot(
-        ui_component: &UIComponentInstance<'a>,
-        _touched_pos: &Vector2<f32>,
-        _touched_pos_delta: &Vector2<f32>,
-    ) -> bool {
-        let slot_widget = ptr_as_mut(ui_component.get_user_data() as *const SaveLoadSlotWidget<'a>);
-        slot_widget.add_new_slot();
         true
     }
 
@@ -228,46 +230,6 @@ impl<'a> SaveLoadSlotWidget<'a> {
         }
         layer_mut.add_widget(&slot_container);
 
-        // --- 4. Footer Area: [+ Add New Slot] Button ---
-        let footer_layout = UIManager::create_widget("slot_footer", UIWidgetTypes::Default);
-        let footer_mut = ptr_as_mut(footer_layout.as_ref());
-        {
-            let ui_comp = footer_mut.get_ui_component_mut();
-            ui_comp.set_layout_type(UILayoutType::BoxLayout);
-            ui_comp.set_layout_orientation(Orientation::HORIZONTAL);
-            ui_comp.set_halign(HorizontalAlign::CENTER);
-            ui_comp.set_valign(VerticalAlign::CENTER);
-            ui_comp.set_size_hint_x(Some(1.0));
-            ui_comp.set_size_y(48.0);
-            ui_comp.set_margin(4.0);
-            ui_comp.set_color(get_color32(18, 22, 30, 220));
-            ui_comp.set_round(5.0);
-        }
-        layer_mut.add_widget(&footer_layout);
-
-        let add_slot_btn = UIManager::create_widget("add_slot_btn", UIWidgetTypes::Default);
-        {
-            let add_ui = ptr_as_mut(add_slot_btn.as_ref()).get_ui_component_mut();
-            add_ui.set_halign(HorizontalAlign::CENTER);
-            add_ui.set_valign(VerticalAlign::CENTER);
-            add_ui.set_size(300.0, 38.0);
-            add_ui.set_margin(6.0);
-            add_ui.set_text("+ Add New Slot");
-            add_ui.set_font_size(20.0);
-            add_ui.set_font_color(get_color32(255, 255, 255, 255));
-            add_ui.set_color(get_color32(45, 140, 75, 255));
-            add_ui.set_round(5.0);
-            add_ui.set_touchable(true);
-            add_ui.set_callback_touch_down(Some(Box::new(SaveLoadSlotWidget::callback_touch_down_add_slot)));
-        }
-        footer_mut.add_widget(&add_slot_btn);
-
-        let initial_slot_names = vec![
-            "save_data/00".to_string(),
-            "save_data/01".to_string(),
-            "save_data/02".to_string(),
-        ];
-
         let slot_widget = Box::new(SaveLoadSlotWidget {
             _parent_widget: parent_widget,
             _layer: layer,
@@ -275,18 +237,17 @@ impl<'a> SaveLoadSlotWidget<'a> {
             _exit_game_btn: exit_game_btn,
             _slot_header_label: slot_header_label,
             _slot_container: slot_container,
-            _add_slot_btn: add_slot_btn,
             _slot_items: Vec::new(),
-            _slot_names: initial_slot_names,
+            _slot_names: Vec::new(),
             _selected_slot_index: 0,
             _is_opened: false,
             _nav_repeat_controller: WidgetNavRepeatController::new(),
+            _need_rebuild_slot_list: false,
         });
 
         let ptr_self = slot_widget.as_ref() as *const SaveLoadSlotWidget<'a> as *const c_void;
         ptr_as_mut(slot_widget._new_game_btn.as_ref()).get_ui_component_mut().set_user_data(ptr_self);
         ptr_as_mut(slot_widget._exit_game_btn.as_ref()).get_ui_component_mut().set_user_data(ptr_self);
-        ptr_as_mut(slot_widget._add_slot_btn.as_ref()).get_ui_component_mut().set_user_data(ptr_self);
 
         slot_widget
     }
@@ -303,7 +264,11 @@ impl<'a> SaveLoadSlotWidget<'a> {
             parent_mut.add_widget(&self._layer);
             self._is_opened = true;
             self._selected_slot_index = 0;
-            self.refresh_slot_list();
+            if self._slot_items.is_empty() {
+                self.init_slot_list();
+            } else {
+                self.refresh_slot_states();
+            }
         }
     }
 
@@ -400,7 +365,7 @@ impl<'a> SaveLoadSlotWidget<'a> {
             let action_ui = ptr_as_mut(save_btn.as_ref()).get_ui_component_mut();
             action_ui.set_halign(HorizontalAlign::CENTER);
             action_ui.set_valign(VerticalAlign::CENTER);
-            action_ui.set_size(95.0, 36.0);
+            action_ui.set_size(85.0, 36.0);
             action_ui.set_margin(4.0);
             action_ui.set_round(4.0);
             action_ui.set_text("SAVE");
@@ -410,6 +375,29 @@ impl<'a> SaveLoadSlotWidget<'a> {
             action_ui.set_touchable(true);
         }
         ptr_as_mut(slot_card.as_ref()).add_widget(&save_btn);
+
+        // DELETE Button on slot card
+        let delete_btn = UIManager::create_widget("slot_delete_btn", UIWidgetTypes::Default);
+        {
+            let action_ui = ptr_as_mut(delete_btn.as_ref()).get_ui_component_mut();
+            action_ui.set_halign(HorizontalAlign::CENTER);
+            action_ui.set_valign(VerticalAlign::CENTER);
+            action_ui.set_size(36.0, 36.0);
+            action_ui.set_margin(4.0);
+            action_ui.set_round(4.0);
+            action_ui.set_text("X");
+            action_ui.set_font_size(19.0);
+            action_ui.set_font_color(get_color32(255, 255, 255, 255));
+
+            if has_save_data {
+                action_ui.set_color(get_color32(180, 50, 50, 255));
+                action_ui.set_touchable(true);
+            } else {
+                action_ui.set_color(get_color32(70, 75, 85, 180));
+                action_ui.set_touchable(false);
+            }
+        }
+        ptr_as_mut(slot_card.as_ref()).add_widget(&delete_btn);
 
         container_mut.add_widget(&slot_card);
 
@@ -421,6 +409,7 @@ impl<'a> SaveLoadSlotWidget<'a> {
             _text_widget: text_widget.clone(),
             _load_btn: load_btn.clone(),
             _save_btn: save_btn.clone(),
+            _delete_btn: delete_btn.clone(),
         });
 
         let item_ptr = slot_item.as_ref() as *const SaveLoadSlotItem<'a> as *const c_void;
@@ -444,18 +433,65 @@ impl<'a> SaveLoadSlotWidget<'a> {
             save_ui.set_user_data(item_ptr);
         }
 
+        {
+            let delete_ui = ptr_as_mut(delete_btn.as_ref()).get_ui_component_mut();
+            delete_ui.set_callback_touch_down(Some(Box::new(SaveLoadSlotWidget::callback_touch_down_slot_delete)));
+            delete_ui.set_user_data(item_ptr);
+        }
+
         self._slot_items.push(slot_item);
     }
 
-    pub fn refresh_slot_list(&mut self) {
+    pub fn get_max_save_data_index(&self) -> Option<usize> {
+        let mut max_idx = None;
+        for idx in 0..100 {
+            let slot_name = format!("save_data/{:02}", idx);
+            if get_game_resources().has_game_save_data(&slot_name) {
+                max_idx = Some(idx);
+            }
+        }
+        max_idx
+    }
+
+    pub fn init_slot_list(&mut self) {
         let container_mut = ptr_as_mut(self._slot_container.as_ref());
         container_mut.clear_widgets();
         self._slot_items.clear();
+        self._slot_names.clear();
 
-        let slot_names = self._slot_names.clone();
-        for (index, slot_name) in slot_names.iter().enumerate() {
-            self.create_slot_item_widget(index, slot_name);
+        let max_save_idx = self.get_max_save_data_index();
+        let target_max = match max_save_idx {
+            Some(m) => m + 1,
+            None => 0,
+        };
+
+        for idx in 0..=target_max {
+            let slot_name = format!("save_data/{:02}", idx);
+            self._slot_names.push(slot_name.clone());
+            self.create_slot_item_widget(idx, &slot_name);
         }
+    }
+
+    pub fn ensure_empty_slot_exists(&mut self) {
+        if let Some(last_slot_name) = self._slot_names.last().cloned() {
+            if get_game_resources().has_game_save_data(&last_slot_name) {
+                let new_index = self._slot_names.len();
+                let new_slot_name = format!("save_data/{:02}", new_index);
+                self._slot_names.push(new_slot_name.clone());
+                self.create_slot_item_widget(new_index, &new_slot_name);
+            }
+        } else {
+            let new_slot_name = "save_data/00".to_string();
+            self._slot_names.push(new_slot_name.clone());
+            self.create_slot_item_widget(0, &new_slot_name);
+        }
+    }
+
+    pub fn refresh_slot_states(&mut self) {
+        for idx in 0..self._slot_items.len() {
+            self.update_slot_item_ui(idx);
+        }
+        self.ensure_empty_slot_exists();
     }
 
     pub fn update_slot_item_ui(&mut self, slot_index: usize) {
@@ -491,6 +527,15 @@ impl<'a> SaveLoadSlotWidget<'a> {
                 load_ui.set_color(get_color32(70, 75, 85, 180));
                 load_ui.set_touchable(false);
             }
+
+            let delete_ui = ptr_as_mut(item._delete_btn.as_ref()).get_ui_component_mut();
+            if has_save_data {
+                delete_ui.set_color(get_color32(180, 50, 50, 255));
+                delete_ui.set_touchable(true);
+            } else {
+                delete_ui.set_color(get_color32(70, 75, 85, 180));
+                delete_ui.set_touchable(false);
+            }
         }
     }
 
@@ -515,15 +560,6 @@ impl<'a> SaveLoadSlotWidget<'a> {
                 get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
             }
         }
-    }
-
-    pub fn add_new_slot(&mut self) {
-        let new_index = self._slot_names.len();
-        let new_slot_name = format!("save_data/{:02}", new_index);
-        self._slot_names.push(new_slot_name.clone());
-        self._selected_slot_index = new_index;
-        self.create_slot_item_widget(new_index, &new_slot_name);
-        get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
     }
 
     pub fn new_game(&mut self) {
@@ -552,6 +588,37 @@ impl<'a> SaveLoadSlotWidget<'a> {
         }
     }
 
+    pub fn delete_slot(&mut self, slot_index: usize) {
+        if slot_index < self._slot_names.len() {
+            let slot_name = self._slot_names[slot_index].clone();
+            if get_game_resources().has_game_save_data(&slot_name) {
+                let game_res = get_game_resources_mut();
+                game_res.remove_game_save_data(&slot_name);
+
+                let mut idx = slot_index + 1;
+                loop {
+                    let from_name = format!("save_data/{:02}", idx);
+                    let to_name = format!("save_data/{:02}", idx - 1);
+                    if game_res.has_game_save_data(&from_name) {
+                        game_res.rename_game_save_data(&from_name, &to_name);
+                        idx += 1;
+                    } else {
+                        break;
+                    }
+                }
+
+                get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
+
+                if slot_index < self._slot_items.len() {
+                    let card_ui = ptr_as_mut(self._slot_items[slot_index]._item_widget.as_ref()).get_ui_component_mut();
+                    card_ui.set_enable(false);
+                }
+
+                self._need_rebuild_slot_list = true;
+            }
+        }
+    }
+
     pub fn save_slot(&mut self, slot_index: usize) {
         if slot_index < self._slot_names.len() {
             let slot_name = self._slot_names[slot_index].clone();
@@ -560,6 +627,8 @@ impl<'a> SaveLoadSlotWidget<'a> {
             game_client.save_game(true);
             get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
             self.update_slot_item_ui(slot_index);
+            self.ensure_empty_slot_exists();
+            self.set_selected_slot(slot_index, true);
         }
     }
 
@@ -569,7 +638,19 @@ impl<'a> SaveLoadSlotWidget<'a> {
         joystick_input_data: &JoystickInputData,
         keyboard_input_data: &KeyboardInputData,
     ) {
-        if !self._is_opened || self._slot_items.is_empty() {
+        if !self._is_opened {
+            return;
+        }
+
+        if self._need_rebuild_slot_list {
+            self._need_rebuild_slot_list = false;
+            self.init_slot_list();
+            let max_idx = self._slot_items.len().saturating_sub(1);
+            let target_idx = self._selected_slot_index.min(max_idx);
+            self.set_selected_slot(target_idx, true);
+        }
+
+        if self._slot_items.is_empty() {
             return;
         }
 

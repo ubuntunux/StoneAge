@@ -202,6 +202,38 @@ impl<'a> GameResources<'a> {
         write_file.write_all(write_contents.as_bytes()).expect("Failed to write");
     }
 
+    pub fn remove_game_save_data(&mut self, resource_name: &str) {
+        if self._game_save_data_map.remove(resource_name).is_some() {
+            let mut game_save_data_filepath = PathBuf::from(APPLICATION_RESOURCE_PATH);
+            game_save_data_filepath.push(GAME_DATA_DIRECTORY);
+            game_save_data_filepath.push(resource_name);
+            game_save_data_filepath.set_extension(EXT_GAME_DATA);
+            if game_save_data_filepath.exists() {
+                let _ = std::fs::remove_file(game_save_data_filepath);
+            }
+        }
+    }
+
+    pub fn rename_game_save_data(&mut self, old_name: &str, new_name: &str) {
+        if let Some(save_data) = self._game_save_data_map.remove(old_name) {
+            self._game_save_data_map.insert(new_name.to_string(), save_data);
+
+            let mut old_filepath = PathBuf::from(APPLICATION_RESOURCE_PATH);
+            old_filepath.push(GAME_DATA_DIRECTORY);
+            old_filepath.push(old_name);
+            old_filepath.set_extension(EXT_GAME_DATA);
+
+            let mut new_filepath = PathBuf::from(APPLICATION_RESOURCE_PATH);
+            new_filepath.push(GAME_DATA_DIRECTORY);
+            new_filepath.push(new_name);
+            new_filepath.set_extension(EXT_GAME_DATA);
+
+            if old_filepath.exists() {
+                let _ = std::fs::rename(old_filepath, new_filepath);
+            }
+        }
+    }
+
     // Game Data
     fn load_game_data(&mut self) {
         log::info!("    load_game_data");
