@@ -267,7 +267,7 @@ impl<'a> GameUIManager<'a> {
         self.set_controls_visibility(true);
         self.clear_player_records();
         self.load_unlocked_toolbox_items(&std::collections::HashSet::new());
-        self.set_last_opened_toolbox_tab("");
+        self.set_last_opened_toolbox_tab(ToolboxTab::Skill);
         self.close_toolbox();
         self._registered_popups.clear();
     }
@@ -804,16 +804,16 @@ impl<'a> GameUIManager<'a> {
             toolbox_widget.load_unlocked_items(unlocked_set);
         }
     }
-    pub fn get_last_opened_toolbox_tab(&self) -> String {
+    pub fn get_last_opened_toolbox_tab(&self) -> ToolboxTab {
         if let Some(toolbox_widget) = self._toolbox_widget.as_ref() {
             toolbox_widget.get_last_opened_tab()
         } else {
-            "".to_string()
+            ToolboxTab::Skill
         }
     }
-    pub fn set_last_opened_toolbox_tab(&mut self, tab_name: &str) {
+    pub fn set_last_opened_toolbox_tab(&mut self, tab: ToolboxTab) {
         if let Some(toolbox_widget) = self._toolbox_widget.as_mut() {
-            toolbox_widget.set_last_opened_tab(tab_name);
+            toolbox_widget.set_last_opened_tab(tab);
         }
     }
     pub fn update_toolbox_widget(

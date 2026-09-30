@@ -19,6 +19,7 @@ use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use std::collections::HashSet;
 use std::ffi::c_void;
 use std::rc::Rc;
+use serde::{Deserialize, Serialize};
 use winit::keyboard::KeyCode;
 
 const TAB_BUTTON_HEIGHT: f32 = 44.0;
@@ -28,8 +29,9 @@ const TAB_INACTIVE_COLOR: u32 = get_color32(80, 80, 80, 255);
 // ────────────────────────────────────────────────────────────────
 // Tab enum
 // ────────────────────────────────────────────────────────────────
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Copy, Clone, Debug, PartialEq, Eq, Default)]
 pub enum ToolboxTab {
+    #[default]
     Skill,
     ItemCraft,
     Npc,
@@ -642,12 +644,12 @@ impl<'a> ToolboxWidget<'a> {
         }
     }
 
-    pub fn get_last_opened_tab(&self) -> String {
-        self._last_opened_tab.as_str().to_string()
+    pub fn get_last_opened_tab(&self) -> ToolboxTab {
+        self._last_opened_tab
     }
 
-    pub fn set_last_opened_tab(&mut self, tab_name: &str) {
-        self._last_opened_tab = ToolboxTab::from_str(tab_name);
+    pub fn set_last_opened_tab(&mut self, tab: ToolboxTab) {
+        self._last_opened_tab = tab;
         self._active_tab = self._last_opened_tab;
     }
 }
