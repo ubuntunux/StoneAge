@@ -885,5 +885,6 @@ impl<'a> ToolboxWidget<'a> {
 
     pub fn set_last_opened_tab(&mut self, tab_name: &str) {
         self._last_opened_tab = ToolboxTab::from_str(tab_name);
+        self._active_tab = self._last_opened_tab;
     }
 }

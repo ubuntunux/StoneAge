@@ -291,7 +291,6 @@ impl<'a> GameSceneManager<'a> {
         game_ui_manager._player_records = game_save_data._player_records.clone();
         game_ui_manager.set_controls_visibility(game_save_data._is_controls_visible);
         game_ui_manager.load_unlocked_toolbox_items(&game_save_data._unlocked_toolbox_items);
-        game_ui_manager.set_last_opened_toolbox_tab(&game_save_data._last_opened_toolbox_tab);
 
         let loaded_rows = if game_save_data._inventory_rows > 0 {
             game_save_data._inventory_rows
