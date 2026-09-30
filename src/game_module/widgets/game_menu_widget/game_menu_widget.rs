@@ -322,16 +322,24 @@ impl<'a> GameMenuWidget<'a> {
 
         // Set user_data on header buttons to point to game_menu_widget instance
         let ptr_self = game_menu_widget.as_ref() as *const GameMenuWidget<'a> as *const c_void;
-        ptr_as_mut(game_menu_widget._inventory_tab_btn.as_ref()).get_ui_component_mut().set_user_data(ptr_self);
-        ptr_as_mut(game_menu_widget._craft_tab_btn.as_ref()).get_ui_component_mut().set_user_data(ptr_self);
-        ptr_as_mut(game_menu_widget._records_tab_btn.as_ref()).get_ui_component_mut().set_user_data(ptr_self);
-        ptr_as_mut(game_menu_widget._taming_tab_btn.as_ref()).get_ui_component_mut().set_user_data(ptr_self);
-        ptr_as_mut(game_menu_widget._friendly_npc_tab_btn.as_ref()).get_ui_component_mut().set_user_data(ptr_self);
-        ptr_as_mut(game_menu_widget._saveload_tab_btn.as_ref()).get_ui_component_mut().set_user_data(ptr_self);
-        ptr_as_mut(game_menu_widget._debug_tab_btn.as_ref()).get_ui_component_mut().set_user_data(ptr_self);
+        for (btn, _) in game_menu_widget.all_tab_buttons() {
+            ptr_as_mut(btn.as_ref()).get_ui_component_mut().set_user_data(ptr_self);
+        }
         ptr_as_mut(close_btn.as_ref()).get_ui_component_mut().set_user_data(ptr_self);
 
         game_menu_widget
+    }
+
+    pub fn all_tab_buttons(&self) -> [(&Rc<WidgetDefault<'a>>, GameMenuTab); 7] {
+        [
+            (&self._inventory_tab_btn, GameMenuTab::Inventory),
+            (&self._craft_tab_btn, GameMenuTab::Craft),
+            (&self._records_tab_btn, GameMenuTab::Records),
+            (&self._taming_tab_btn, GameMenuTab::TamingList),
+            (&self._friendly_npc_tab_btn, GameMenuTab::FriendlyNpcList),
+            (&self._saveload_tab_btn, GameMenuTab::SaveLoad),
+            (&self._debug_tab_btn, GameMenuTab::DebugMenu),
+        ]
     }
 
     pub fn changed_window_size(&mut self, window_size: &Vector2<i32>) {
@@ -357,13 +365,14 @@ impl<'a> GameMenuWidget<'a> {
 
         self._active_tab = tab;
 
-        let inv_tab_ui = ptr_as_mut(self._inventory_tab_btn.as_ref()).get_ui_component_mut();
-        let craft_tab_ui = ptr_as_mut(self._craft_tab_btn.as_ref()).get_ui_component_mut();
-        let records_tab_ui = ptr_as_mut(self._records_tab_btn.as_ref()).get_ui_component_mut();
-        let taming_tab_ui = ptr_as_mut(self._taming_tab_btn.as_ref()).get_ui_component_mut();
-        let friendly_npc_tab_ui = ptr_as_mut(self._friendly_npc_tab_btn.as_ref()).get_ui_component_mut();
-        let saveload_tab_ui = ptr_as_mut(self._saveload_tab_btn.as_ref()).get_ui_component_mut();
-        let debug_tab_ui = ptr_as_mut(self._debug_tab_btn.as_ref()).get_ui_component_mut();
+        for (btn, tab_type) in self.all_tab_buttons() {
+            let color = if tab_type == tab {
+                TAB_BUTTON_COLOR_ACTIVE
+            } else {
+                TAB_BUTTON_COLOR_INACTIVE
+            };
+            ptr_as_mut(btn.as_ref()).get_ui_component_mut().set_color(color);
+        }
 
         // Close all sub-widgets first
         self._inventory_widget.close_inventory();
@@ -375,76 +384,13 @@ impl<'a> GameMenuWidget<'a> {
         self._game_debug_menu_widget.close_game_debug_menu();
 
         match tab {
-            GameMenuTab::Inventory => {
-                inv_tab_ui.set_color(TAB_BUTTON_COLOR_ACTIVE);
-                craft_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
-                records_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
-                taming_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
-                friendly_npc_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
-                saveload_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
-                debug_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
-                self._inventory_widget.open_inventory();
-            }
-            GameMenuTab::Craft => {
-                inv_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
-                craft_tab_ui.set_color(TAB_BUTTON_COLOR_ACTIVE);
-                records_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
-                taming_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
-                friendly_npc_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
-                saveload_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
-                debug_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
-                self._craft_widget.open_craft();
-            }
-            GameMenuTab::Records => {
-                inv_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
-                craft_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
-                records_tab_ui.set_color(TAB_BUTTON_COLOR_ACTIVE);
-                taming_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
-                friendly_npc_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
-                saveload_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
-                debug_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
-                self._player_records_widget.open_player_records_widget();
-            }
-            GameMenuTab::TamingList => {
-                inv_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
-                craft_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
-                records_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
-                taming_tab_ui.set_color(TAB_BUTTON_COLOR_ACTIVE);
-                friendly_npc_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
-                saveload_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
-                debug_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
-                self._taming_list_widget.open_taming_list_widget();
-            }
-            GameMenuTab::FriendlyNpcList => {
-                inv_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
-                craft_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
-                records_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
-                taming_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
-                friendly_npc_tab_ui.set_color(TAB_BUTTON_COLOR_ACTIVE);
-                saveload_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
-                debug_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
-                self._friendly_npc_list_widget.open_friendly_npc_list_widget();
-            }
-            GameMenuTab::SaveLoad => {
-                inv_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
-                craft_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
-                records_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
-                taming_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
-                friendly_npc_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
-                saveload_tab_ui.set_color(TAB_BUTTON_COLOR_ACTIVE);
-                debug_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
-                self._save_load_widget.open_save_load_widget();
-            }
-            GameMenuTab::DebugMenu => {
-                inv_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
-                craft_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
-                records_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
-                taming_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
-                friendly_npc_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
-                saveload_tab_ui.set_color(TAB_BUTTON_COLOR_INACTIVE);
-                debug_tab_ui.set_color(TAB_BUTTON_COLOR_ACTIVE);
-                self._game_debug_menu_widget.open_game_debug_menu();
-            }
+            GameMenuTab::Inventory => self._inventory_widget.open_inventory(),
+            GameMenuTab::Craft => self._craft_widget.open_craft(),
+            GameMenuTab::Records => self._player_records_widget.open_player_records_widget(),
+            GameMenuTab::TamingList => self._taming_list_widget.open_taming_list_widget(),
+            GameMenuTab::FriendlyNpcList => self._friendly_npc_list_widget.open_friendly_npc_list_widget(),
+            GameMenuTab::SaveLoad => self._save_load_widget.open_save_load_widget(),
+            GameMenuTab::DebugMenu => self._game_debug_menu_widget.open_game_debug_menu(),
         }
     }
 
