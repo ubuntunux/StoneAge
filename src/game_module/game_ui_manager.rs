@@ -24,6 +24,7 @@ use crate::game_module::widgets::text_box_widget::{
     TextBoxContent, TextBoxItemOption, TextBoxLayerType, TextBoxWidget,
 };
 use crate::game_module::widgets::time_of_day::TimeOfDayWidget;
+use crate::game_module::widgets::toolbox_widget::item_tab_widget::ToolboxIconType;
 use crate::game_module::widgets::toolbox_widget::ToolboxTab;
 use crate::game_module::widgets::toolbox_widget::ToolboxWidget;
 use crate::game_module::widgets::popup_widget::PopupWindowWidget;
@@ -792,14 +793,14 @@ impl<'a> GameUIManager<'a> {
     pub fn is_opened_toolbox(&self) -> bool {
         self._toolbox_widget.as_ref().unwrap().is_opened_toolbox()
     }
-    pub fn get_unlocked_toolbox_items(&self) -> HashSet<String> {
+    pub fn get_unlocked_toolbox_items(&self) -> HashSet<ToolboxIconType> {
         if let Some(toolbox_widget) = self._toolbox_widget.as_ref() {
             toolbox_widget.get_unlocked_items()
         } else {
             HashSet::new()
         }
     }
-    pub fn load_unlocked_toolbox_items(&mut self, unlocked_set: &HashSet<String>) {
+    pub fn load_unlocked_toolbox_items(&mut self, unlocked_set: &HashSet<ToolboxIconType>) {
         if let Some(toolbox_widget) = self._toolbox_widget.as_mut() {
             toolbox_widget.load_unlocked_items(unlocked_set);
         }

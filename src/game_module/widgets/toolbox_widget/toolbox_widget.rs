@@ -3,7 +3,7 @@ use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, AUDIO_SELECT_ITEM};
 use crate::game_module::game_controller::WidgetNavRepeatController;
 use crate::game_module::game_service_locator::{get_game_scene_manager, get_game_scene_manager_mut};
 use crate::game_module::widgets::toolbox_widget::item_tab_widget::{
-    ToolboxIconType, ToolboxItemData, ToolboxItemState, ToolboxTabWidget,
+    get_tool_box_item_data, ToolboxIconType, ToolboxItemState, ToolboxTabWidget,
 };
 use nalgebra::Vector2;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
@@ -241,78 +241,28 @@ impl<'a> ToolboxWidget<'a> {
             "skill",
             content_mut,
             vec![
-                ToolboxItemData {
-                    id: "skill_hand".to_string(),
-                    icon_type: ToolboxIconType::HandSkill,
-                    description: "Passive hand-based crafting skill".to_string(),
-                    energy_cost: 0,
-                },
-                ToolboxItemData {
-                    id: "skill_gather".to_string(),
-                    icon_type: ToolboxIconType::QuickGather,
-                    description: "Increases resource gathering speed".to_string(),
-                    energy_cost: 1,
-                },
+                get_tool_box_item_data(ToolboxIconType::HandSkill),
+                get_tool_box_item_data(ToolboxIconType::QuickGather),
             ],
         );
         let item_craft_tab = ToolboxTabWidget::create(
             "item_craft",
             content_mut,
             vec![
-                ToolboxItemData {
-                    id: "wooden_club".to_string(),
-                    icon_type: ToolboxIconType::WoodenClub,
-                    description: "Basic wooden club weapon".to_string(),
-                    energy_cost: 0,
-                },
-                ToolboxItemData {
-                    id: "craft_axe".to_string(),
-                    icon_type: ToolboxIconType::StoneAxe,
-                    description: "Essential harvesting tool for wood and stone".to_string(),
-                    energy_cost: 1,
-                },
-                ToolboxItemData {
-                    id: "craft_table".to_string(),
-                    icon_type: ToolboxIconType::Worktable,
-                    description: "Unlocks advanced recipe crafting".to_string(),
-                    energy_cost: 2,
-                },
-                ToolboxItemData {
-                    id: "craft_campfire".to_string(),
-                    icon_type: ToolboxIconType::Campfire,
-                    description: "Provides light, warmth, and cooking capability".to_string(),
-                    energy_cost: 1,
-                },
+                get_tool_box_item_data(ToolboxIconType::WoodenClub),
+                get_tool_box_item_data(ToolboxIconType::StoneAxe),
+                get_tool_box_item_data(ToolboxIconType::Worktable),
+                get_tool_box_item_data(ToolboxIconType::Campfire),
             ],
         );
         let npc_tab = ToolboxTabWidget::create(
             "npc",
             content_mut,
             vec![
-                ToolboxItemData {
-                    id: "npc_gatherer".to_string(),
-                    icon_type: ToolboxIconType::NpcGatherer,
-                    description: "Collects wood and wild plants for the village".to_string(),
-                    energy_cost: 2,
-                },
-                ToolboxItemData {
-                    id: "npc_crafter".to_string(),
-                    icon_type: ToolboxIconType::NpcCrafter,
-                    description: "Crafts tools and building items automatically".to_string(),
-                    energy_cost: 3,
-                },
-                ToolboxItemData {
-                    id: "npc_guard".to_string(),
-                    icon_type: ToolboxIconType::NpcGuard,
-                    description: "Defends the base against wild beasts and threats".to_string(),
-                    energy_cost: 4,
-                },
-                ToolboxItemData {
-                    id: "npc_hunter".to_string(),
-                    icon_type: ToolboxIconType::NpcHunter,
-                    description: "Hunts animals and gathers meat and leather".to_string(),
-                    energy_cost: 3,
-                },
+                get_tool_box_item_data(ToolboxIconType::NpcGatherer),
+                get_tool_box_item_data(ToolboxIconType::NpcCrafter),
+                get_tool_box_item_data(ToolboxIconType::NpcGuard),
+                get_tool_box_item_data(ToolboxIconType::NpcHunter),
             ],
         );
 
@@ -320,30 +270,10 @@ impl<'a> ToolboxWidget<'a> {
             "teleport",
             content_mut,
             vec![
-                ToolboxItemData {
-                    id: "map_home".to_string(),
-                    icon_type: ToolboxIconType::MapHome,
-                    description: "Safe haven base village with Monolith".to_string(),
-                    energy_cost: 0,
-                },
-                ToolboxItemData {
-                    id: "map_forest".to_string(),
-                    icon_type: ToolboxIconType::MapForest,
-                    description: "Lush green forest teeming with wildlife and resources".to_string(),
-                    energy_cost: 0,
-                },
-                ToolboxItemData {
-                    id: "map_cave".to_string(),
-                    icon_type: ToolboxIconType::MapCave,
-                    description: "Dark underground cave containing rare minerals and dangerous beasts".to_string(),
-                    energy_cost: 0,
-                },
-                ToolboxItemData {
-                    id: "map_ufo".to_string(),
-                    icon_type: ToolboxIconType::MapUfo,
-                    description: "Mysterious alien UFO wreckage site with high-tech anomalies".to_string(),
-                    energy_cost: 0,
-                },
+                get_tool_box_item_data(ToolboxIconType::MapHome),
+                get_tool_box_item_data(ToolboxIconType::MapForest),
+                get_tool_box_item_data(ToolboxIconType::MapCave),
+                get_tool_box_item_data(ToolboxIconType::MapUfo),
             ],
         );
 
@@ -607,7 +537,7 @@ impl<'a> ToolboxWidget<'a> {
         }
     }
 
-    pub fn get_unlocked_items(&self) -> HashSet<String> {
+    pub fn get_unlocked_items(&self) -> HashSet<ToolboxIconType> {
         let mut unlocked = HashSet::new();
         let tabs = [
             &self._skill_tab,
@@ -618,14 +548,14 @@ impl<'a> ToolboxWidget<'a> {
         for tab in tabs {
             for item in &tab._items {
                 if item._state == ToolboxItemState::Unlocked {
-                    unlocked.insert(item._data.id.clone());
+                    unlocked.insert(item._data._icon_type);
                 }
             }
         }
         unlocked
     }
 
-    pub fn load_unlocked_items(&mut self, unlocked_set: &HashSet<String>) {
+    pub fn load_unlocked_items(&mut self, unlocked_set: &HashSet<ToolboxIconType>) {
         let tabs = [
             &mut self._skill_tab,
             &mut self._item_craft_tab,
@@ -634,7 +564,7 @@ impl<'a> ToolboxWidget<'a> {
         ];
         for tab in tabs {
             for item in &mut tab._items {
-                if unlocked_set.contains(&item._data.id) {
+                if unlocked_set.contains(&item._data._icon_type) {
                     item._state = ToolboxItemState::Unlocked;
                 } else {
                     item._state = ToolboxItemState::Locked;

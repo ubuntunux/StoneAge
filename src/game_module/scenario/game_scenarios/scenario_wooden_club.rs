@@ -15,6 +15,7 @@ use crate::game_module::widgets::quest_widgets::quest_item_gather_item::GatherIt
 use crate::game_module::widgets::quest_widgets::quest_title::QuestTitle;
 use crate::game_module::widgets::quest_widgets::quest_widget::{QuestCreateInfo, QuestItemSaveData};
 use crate::game_module::widgets::text_box_widget::{TextBoxContent, TextBoxItemOption, TextBoxLayerType};
+use crate::game_module::widgets::toolbox_widget::item_tab_widget::ToolboxIconType;
 use nalgebra::Vector2;
 use rust_engine_3d::utilities::system::{RcRefCell, State, newRcRefCell};
 use serde::{Deserialize, Serialize};
@@ -340,7 +341,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWoodenClub<'a> {
                     }
                     State::Update => {
                         // Check Step 1: Unlock Wooden Club in Toolbox
-                        let is_unlocked = get_game_ui_manager().get_unlocked_toolbox_items().contains("wooden_club");
+                        let is_unlocked = get_game_ui_manager().get_unlocked_toolbox_items().contains(&ToolboxIconType::WoodenClub);
                         if is_unlocked {
                             self.complete_sub_quest_unlock_wooden_club();
                         } else {

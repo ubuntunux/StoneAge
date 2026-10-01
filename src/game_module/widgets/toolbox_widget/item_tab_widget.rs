@@ -1,7 +1,7 @@
 use crate::game_module::actors::character::CharacterCreateInfo;
 use crate::game_module::actors::items::ItemDataType;
 use crate::game_module::game_constants::{
-    AUDIO_PICKUP_ITEM, AUDIO_QUEST_COMPLETE, DEFAULT_GATE_NAME, ITEM_ENERGY_BALL,
+    AUDIO_PICKUP_ITEM, AUDIO_QUEST_COMPLETE, DEFAULT_GATE_NAME,
 };
 use crate::game_module::game_service_locator::{
     get_character_manager, get_character_manager_mut, get_game_resources, get_game_scene_manager,
@@ -18,6 +18,7 @@ use rust_engine_3d::utilities::system::ptr_as_mut;
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use std::ffi::c_void;
 use std::rc::Rc;
+use serde::{Deserialize, Serialize};
 
 const ITEM_ROW_HEIGHT: f32 = 80.0;
 const ACTION_BUTTON_WIDTH: f32 = 130.0;
@@ -45,14 +46,9 @@ fn spawn_npc_near_monolith(character_data_name: &str, offset: Vector3<f32>) {
 
     let character_name = format!("npc_{}", character_data_name.replace('/', "_"));
     get_character_manager_mut().create_character(&character_name, &character_create_info, false);
-    log::info!(
-        "[Toolbox] Spawned NPC {} near Monolith at {:?}",
-        character_name,
-        spawn_pos
-    );
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Copy, Clone, Debug, PartialEq, Eq, Hash)]
 pub enum ToolboxIconType {
     HandSkill,
     QuickGather,
@@ -208,20 +204,64 @@ pub enum ToolboxItemState {
 
 #[derive(Clone, Debug)]
 pub struct ToolboxItemData {
-    pub id: String,
-    pub icon_type: ToolboxIconType,
-    pub description: String,
-    pub energy_cost: usize,
+    pub _icon_type: ToolboxIconType,
+    pub _description: String,
+    pub _item_data_type: ItemDataType,
+    pub _item_data_count: usize,
+}
+
+pub fn get_tool_box_item_data(icon_type: ToolboxIconType) -> ToolboxItemData {
+    let (description, item_data_type, item_data_count) = match icon_type {
+        ToolboxIconType::HandSkill => ("Passive hand-based crafting skill", ItemDataType::EnergyBall, 0),
+        ToolboxIconType::QuickGather => ("Increases resource gathering speed", ItemDataType::EnergyBall, 1),
+        ToolboxIconType::StoneShelter => ("Provides basic shelter", ItemDataType::EnergyBall, 1),
+        ToolboxIconType::Watchtower => ("Provides high vantage view", ItemDataType::EnergyBall, 2),
+        ToolboxIconType::RoastMeat => ("Cooked meat restoring hunger", ItemDataType::EnergyBall, 1),
+        ToolboxIconType::FishSoup => ("Warm fish soup restoring stamina", ItemDataType::EnergyBall, 1),
+        ToolboxIconType::WoodenClub => ("Basic wooden club weapon", ItemDataType::EnergyBall, 0),
+        ToolboxIconType::StoneAxe => ("Essential harvesting tool for wood and stone", ItemDataType::EnergyBall, 1),
+        ToolboxIconType::Worktable => ("Unlocks advanced recipe crafting", ItemDataType::EnergyBall, 2),
+        ToolboxIconType::Campfire => ("Provides light, warmth, and cooking capability", ItemDataType::EnergyBall, 1),
+        ToolboxIconType::WoodenCart => ("Transports heavy materials", ItemDataType::EnergyBall, 2),
+        ToolboxIconType::RidingMammoth => ("Mount for fast travel", ItemDataType::EnergyBall, 3),
+        ToolboxIconType::FlintSpear => ("Long range melee weapon", ItemDataType::EnergyBall, 2),
+        ToolboxIconType::HuntingBow => ("Ranged weapon for hunting", ItemDataType::EnergyBall, 2),
+        ToolboxIconType::LeatherArmor => ("Basic protective armor", ItemDataType::EnergyBall, 2),
+        ToolboxIconType::BoneShield => ("Shield for defense", ItemDataType::EnergyBall, 2),
+        ToolboxIconType::NpcGatherer => ("Collects wood and wild plants for the village", ItemDataType::EnergyBall, 2),
+        ToolboxIconType::NpcCrafter => ("Crafts tools and building items automatically", ItemDataType::EnergyBall, 3),
+        ToolboxIconType::NpcGuard => ("Defends the base against wild beasts and threats", ItemDataType::EnergyBall, 4),
+        ToolboxIconType::NpcHunter => ("Hunts animals and gathers meat and leather", ItemDataType::EnergyBall, 3),
+        ToolboxIconType::MapHome => ("Safe haven base village with Monolith", ItemDataType::None, 0),
+        ToolboxIconType::MapForest => ("Lush green forest teeming with wildlife and resources", ItemDataType::None, 0),
+        ToolboxIconType::MapCave => ("Dark underground cave containing rare minerals and dangerous beasts", ItemDataType::None, 0),
+        ToolboxIconType::MapUfo => ("Mysterious alien UFO wreckage site with high-tech anomalies", ItemDataType::None, 0),
+    };
+
+    ToolboxItemData {
+        _icon_type: icon_type,
+        _description: description.to_string(),
+        _item_data_type: item_data_type,
+        _item_data_count: item_data_count,
+    }
 }
 
 impl ToolboxItemData {
+    pub fn create(icon_type: ToolboxIconType) -> ToolboxItemData {
+        get_tool_box_item_data(icon_type)
+    }
+
     pub fn cost_label(&self) -> String {
-        if self.energy_cost == 0 {
+        if self._item_data_count == 0 || self._item_data_type == ItemDataType::None {
             "Free".to_string()
-        } else if self.energy_cost == 1 {
-            "1 Energy".to_string()
         } else {
-            format!("{} Energy", self.energy_cost)
+            let item_code = self._item_data_type.item_code();
+            let mat_name = ToolboxItemWidget::get_item_name_from_resource(item_code);
+            if self._item_data_count == 1 {
+                format!("1 {}", mat_name)
+            } else {
+                format!("{} {}", self._item_data_count, mat_name)
+            }
         }
     }
 }
@@ -245,7 +285,6 @@ pub struct ToolboxItemWidget<'a> {
     pub _product_icon: Rc<WidgetDefault<'a>>,
     pub _name_lbl: Rc<WidgetDefault<'a>>,
     pub _desc_lbl: Rc<WidgetDefault<'a>>,
-    pub _status_label: Rc<WidgetDefault<'a>>,
     pub _ing_widgets: Vec<IngredientWidgetItem<'a>>,
     pub _action_btn: Rc<WidgetDefault<'a>>,
     pub _info_items_lbl: Option<Rc<WidgetDefault<'a>>>,
@@ -325,7 +364,7 @@ impl<'a> ToolboxItemWidget<'a> {
     }
 
     pub fn toggle_state(&mut self) {
-        if let Some(stage_name) = self._data.icon_type.stage_data_name() {
+        if let Some(stage_name) = self._data._icon_type.stage_data_name() {
             get_game_scene_manager_mut().set_teleport_stage(stage_name, DEFAULT_GATE_NAME);
             get_audio_manager_mut().play_audio_bank(AUDIO_QUEST_COMPLETE, AudioLoop::ONCE, None);
             get_game_ui_manager_mut().close_toolbox();
@@ -334,51 +373,35 @@ impl<'a> ToolboxItemWidget<'a> {
 
         match self._state {
             ToolboxItemState::Locked => {
-                let cost = self._data.energy_cost;
-                if cost > 0 {
-                    let current_energy_balls = get_game_ui_manager().get_item_count(ITEM_ENERGY_BALL);
-                    if current_energy_balls >= cost {
-                        if get_game_ui_manager_mut().remove_item(ITEM_ENERGY_BALL, cost) {
+                let cost = self._data._item_data_count;
+                let item_type = self._data._item_data_type;
+                if cost > 0 && item_type != ItemDataType::None {
+                    let item_code = item_type.item_code();
+                    let current_count = get_game_ui_manager().get_item_count(item_code);
+                    if current_count >= cost {
+                        if get_game_ui_manager_mut().remove_item(item_code, cost) {
                             self._state = ToolboxItemState::Unlocked;
                             get_game_ui_manager_mut().notify_item_crafted();
-                            let item_code = self._data.icon_type.item_code();
-                            get_game_ui_manager_mut().notify_item_acquired(item_code, 1, true);
+                            let reward_item_code = self._data._icon_type.item_code();
+                            get_game_ui_manager_mut().notify_item_acquired(reward_item_code, 1, true);
                             get_audio_manager_mut().play_audio_bank(AUDIO_QUEST_COMPLETE, AudioLoop::ONCE, None);
-                            if let Some((char_data_name, offset)) = self._data.icon_type.npc_character_info() {
+                            if let Some((char_data_name, offset)) = self._data._icon_type.npc_character_info() {
                                 spawn_npc_near_monolith(char_data_name, offset);
                             }
-                            log::info!(
-                                "[Toolbox] Unlocked item: {} (Consumed {} EnergyBall(s))",
-                                self._data.icon_type.as_str(),
-                                cost
-                            );
                             self.update_ui();
-                        } else {
-                            log::warn!("[Toolbox] Failed to remove EnergyBall from inventory");
                         }
                     } else {
                         get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
-                        log::warn!(
-                            "[Toolbox] Cannot unlock {}: Needs {} EnergyBall(s), but only have {}",
-                            self._data.icon_type.as_str(),
-                            cost,
-                            current_energy_balls
-                        );
-                        let mat_name = Self::get_item_name_from_resource(ITEM_ENERGY_BALL);
-                        let status_ui = ptr_as_mut(self._status_label.as_ref()).get_ui_component_mut();
-                        status_ui.set_text(&format!("Need {} {} (Have {})", cost, mat_name, current_energy_balls));
-                        status_ui.set_font_color(get_color32(230, 80, 80, 255));
                     }
                 } else {
                     self._state = ToolboxItemState::Unlocked;
                     get_game_ui_manager_mut().notify_item_crafted();
-                    let item_code = self._data.icon_type.item_code();
-                    get_game_ui_manager_mut().notify_item_acquired(item_code, 1, true);
+                    let reward_item_code = self._data._icon_type.item_code();
+                    get_game_ui_manager_mut().notify_item_acquired(reward_item_code, 1, true);
                     get_audio_manager_mut().play_audio_bank(AUDIO_QUEST_COMPLETE, AudioLoop::ONCE, None);
-                    if let Some((char_data_name, offset)) = self._data.icon_type.npc_character_info() {
+                    if let Some((char_data_name, offset)) = self._data._icon_type.npc_character_info() {
                         spawn_npc_near_monolith(char_data_name, offset);
                     }
-                    log::info!("[Toolbox] Unlocked free item: {}", self._data.icon_type.as_str());
                     self.update_ui();
                 }
             }
@@ -392,17 +415,17 @@ impl<'a> ToolboxItemWidget<'a> {
         let ui_mgr = get_game_ui_manager();
 
         // Refresh description if set in ItemData or custom description
-        let is_map_item = self._data.icon_type.stage_data_name().is_some();
+        let is_map_item = self._data._icon_type.stage_data_name().is_some();
         let desc_ui = ptr_as_mut(self._desc_lbl.as_ref()).get_ui_component_mut();
         if is_map_item {
-            desc_ui.set_text(&self._data.description);
+            desc_ui.set_text(&self._data._description);
         } else {
-            let item_code = self._data.icon_type.item_code();
+            let item_code = self._data._icon_type.item_code();
             let desc_text = Self::get_item_description_from_resource(item_code);
             if !desc_text.is_empty() && desc_text != item_code {
                 desc_ui.set_text(&desc_text);
-            } else if !self._data.description.is_empty() {
-                desc_ui.set_text(&self._data.description);
+            } else if !self._data._description.is_empty() {
+                desc_ui.set_text(&self._data._description);
             }
         }
 
@@ -421,13 +444,10 @@ impl<'a> ToolboxItemWidget<'a> {
             }
         }
 
-        let status_ui = ptr_as_mut(self._status_label.as_ref()).get_ui_component_mut();
         let btn_ui = ptr_as_mut(self._action_btn.as_ref()).get_ui_component_mut();
 
         if is_map_item {
-            status_ui.set_renderable(false);
-
-            if let Some((items, chars)) = self._data.icon_type.world_discovered_info() {
+            if let Some((items, chars)) = self._data._icon_type.world_discovered_info() {
                 if let Some(lbl) = &self._info_items_lbl {
                     let items_str = if items.is_empty() {
                         "Items: None".to_string()
@@ -477,12 +497,16 @@ impl<'a> ToolboxItemWidget<'a> {
 
         match self._state {
             ToolboxItemState::Locked => {
-                status_ui.set_text("Status: Locked");
-                status_ui.set_font_color(get_color32(150, 150, 150, 255));
-
                 btn_ui.set_text(&format!("Unlock ({})", self._data.cost_label()));
-                let current_energy_balls = ui_mgr.get_item_count(ITEM_ENERGY_BALL);
-                if self._data.energy_cost == 0 || current_energy_balls >= self._data.energy_cost {
+                let current_count = if self._data._item_data_type != ItemDataType::None {
+                    ui_mgr.get_item_count(self._data._item_data_type.item_code())
+                } else {
+                    0
+                };
+                if self._data._item_data_count == 0
+                    || self._data._item_data_type == ItemDataType::None
+                    || current_count >= self._data._item_data_count
+                {
                     btn_ui.set_color(get_color32(75, 80, 90, 255));
                     btn_ui.set_border_color(get_color32(115, 120, 130, 255));
                     btn_ui.set_font_color(get_color32(255, 255, 255, 255));
@@ -496,9 +520,6 @@ impl<'a> ToolboxItemWidget<'a> {
                 btn_ui.set_enable(true);
             }
             ToolboxItemState::Unlocked => {
-                status_ui.set_text("Status: Unlocked");
-                status_ui.set_font_color(get_color32(100, 210, 120, 255));
-
                 btn_ui.set_renderable(false);
                 btn_ui.set_touchable(false);
                 btn_ui.set_enable(false);
@@ -507,10 +528,10 @@ impl<'a> ToolboxItemWidget<'a> {
     }
 
     pub fn create(parent_widget: &mut WidgetDefault<'a>, data: ToolboxItemData) -> Box<ToolboxItemWidget<'a>> {
-        let is_map_item = data.icon_type.stage_data_name().is_some();
+        let is_map_item = data._icon_type.stage_data_name().is_some();
 
         // Main row container (Neutral dark gray)
-        let layout = UIManager::create_widget(&format!("item_row_{}", data.id), UIWidgetTypes::Default);
+        let layout = UIManager::create_widget(&format!("item_row_{:?}", data._icon_type), UIWidgetTypes::Default);
         let layout_mut = ptr_as_mut(layout.as_ref());
         let ui = layout_mut.get_ui_component_mut();
         ui.set_layout_type(UILayoutType::BoxLayout);
@@ -531,7 +552,7 @@ impl<'a> ToolboxItemWidget<'a> {
         parent_widget.add_widget(&layout);
 
         // 1. Left Product Section (Vertical: Icon + Name on top, Description below)
-        let product_set = UIManager::create_widget(&format!("item_prod_set_{}", data.id), UIWidgetTypes::Default);
+        let product_set = UIManager::create_widget(&format!("item_prod_set_{:?}", data._icon_type), UIWidgetTypes::Default);
         let product_set_mut = ptr_as_mut(product_set.as_ref());
         let ui = product_set_mut.get_ui_component_mut();
         ui.set_layout_type(UILayoutType::BoxLayout);
@@ -547,7 +568,7 @@ impl<'a> ToolboxItemWidget<'a> {
         layout_mut.add_widget(&product_set);
 
         // Top Header: Icon + Name
-        let product_hdr = UIManager::create_widget(&format!("item_prod_hdr_{}", data.id), UIWidgetTypes::Default);
+        let product_hdr = UIManager::create_widget(&format!("item_prod_hdr_{:?}", data._icon_type), UIWidgetTypes::Default);
         let product_hdr_mut = ptr_as_mut(product_hdr.as_ref());
         let ui = product_hdr_mut.get_ui_component_mut();
         ui.set_layout_type(UILayoutType::BoxLayout);
@@ -559,7 +580,7 @@ impl<'a> ToolboxItemWidget<'a> {
         product_set_mut.add_widget(&product_hdr);
 
         // Product Icon (32x32)
-        let product_icon = UIManager::create_widget(&format!("item_prod_icon_{}", data.id), UIWidgetTypes::Default);
+        let product_icon = UIManager::create_widget(&format!("item_prod_icon_{:?}", data._icon_type), UIWidgetTypes::Default);
         let ui = ptr_as_mut(product_icon.as_ref()).get_ui_component_mut();
         ui.set_size(32.0, 32.0);
         ui.set_valign(VerticalAlign::CENTER);
@@ -567,21 +588,21 @@ impl<'a> ToolboxItemWidget<'a> {
         ui.set_margin_right(6.0);
         ui.set_color(get_color32(255, 255, 255, 255));
         product_hdr_mut.add_widget(&product_icon);
-        Self::setup_item_icon(&product_icon, data.icon_type.item_code());
+        Self::setup_item_icon(&product_icon, data._icon_type.item_code());
 
         // Product Name Label
         let display_name = if is_map_item {
-            data.icon_type.as_str().to_string()
+            data._icon_type.as_str().to_string()
         } else {
-            let item_code = data.icon_type.item_code();
+            let item_code = data._icon_type.item_code();
             let item_name = Self::get_item_name_from_resource(item_code);
             if item_name == item_code {
-                data.icon_type.as_str().to_string()
+                data._icon_type.as_str().to_string()
             } else {
                 item_name
             }
         };
-        let name_lbl = UIManager::create_widget(&format!("item_name_{}", data.id), UIWidgetTypes::Default);
+        let name_lbl = UIManager::create_widget(&format!("item_name_{:?}", data._icon_type), UIWidgetTypes::Default);
         let ui = ptr_as_mut(name_lbl.as_ref()).get_ui_component_mut();
         ui.set_size_hint_x(Some(1.0));
         ui.set_size_y(32.0);
@@ -594,17 +615,17 @@ impl<'a> ToolboxItemWidget<'a> {
 
         // Description Label
         let display_desc = if is_map_item {
-            data.description.clone()
+            data._description.clone()
         } else {
-            let item_code = data.icon_type.item_code();
+            let item_code = data._icon_type.item_code();
             let desc_text = Self::get_item_description_from_resource(item_code);
             if desc_text.is_empty() || desc_text == item_code {
-                data.description.clone()
+                data._description.clone()
             } else {
                 desc_text
             }
         };
-        let desc_lbl = UIManager::create_widget(&format!("item_desc_{}", data.id), UIWidgetTypes::Default);
+        let desc_lbl = UIManager::create_widget(&format!("item_desc_{:?}", data._icon_type), UIWidgetTypes::Default);
         let ui = ptr_as_mut(desc_lbl.as_ref()).get_ui_component_mut();
         ui.set_size_hint_x(Some(1.0));
         ui.set_size_y(26.0);
@@ -615,7 +636,7 @@ impl<'a> ToolboxItemWidget<'a> {
         product_set_mut.add_widget(&desc_lbl);
 
         // 2. Middle Section: Discovered Items & Characters for Map items, or Materials Box for crafting items
-        let ing_box = UIManager::create_widget(&format!("item_ing_box_{}", data.id), UIWidgetTypes::Default);
+        let ing_box = UIManager::create_widget(&format!("item_ing_box_{:?}", data._icon_type), UIWidgetTypes::Default);
         let ing_box_mut = ptr_as_mut(ing_box.as_ref());
         let ui = ing_box_mut.get_ui_component_mut();
         ui.set_layout_type(UILayoutType::BoxLayout);
@@ -631,7 +652,7 @@ impl<'a> ToolboxItemWidget<'a> {
             ui.set_color(get_color32(0, 0, 0, 0));
             layout_mut.add_widget(&ing_box);
 
-            let items_lbl = UIManager::create_widget(&format!("item_info_items_{}", data.id), UIWidgetTypes::Default);
+            let items_lbl = UIManager::create_widget(&format!("item_info_items_{:?}", data._icon_type), UIWidgetTypes::Default);
             let ui = ptr_as_mut(items_lbl.as_ref()).get_ui_component_mut();
             ui.set_size_hint_x(Some(1.0));
             ui.set_size_y(26.0);
@@ -642,7 +663,7 @@ impl<'a> ToolboxItemWidget<'a> {
             ing_box_mut.add_widget(&items_lbl);
             info_items_lbl = Some(items_lbl);
 
-            let chars_lbl = UIManager::create_widget(&format!("item_info_chars_{}", data.id), UIWidgetTypes::Default);
+            let chars_lbl = UIManager::create_widget(&format!("item_info_chars_{:?}", data._icon_type), UIWidgetTypes::Default);
             let ui = ptr_as_mut(chars_lbl.as_ref()).get_ui_component_mut();
             ui.set_size_hint_x(Some(1.0));
             ui.set_size_y(26.0);
@@ -653,7 +674,7 @@ impl<'a> ToolboxItemWidget<'a> {
             ing_box_mut.add_widget(&chars_lbl);
             info_chars_lbl = Some(chars_lbl);
 
-            let unexp_lbl = UIManager::create_widget(&format!("item_info_unexp_{}", data.id), UIWidgetTypes::Default);
+            let unexp_lbl = UIManager::create_widget(&format!("item_info_unexp_{:?}", data._icon_type), UIWidgetTypes::Default);
             let ui = ptr_as_mut(unexp_lbl.as_ref()).get_ui_component_mut();
             ui.set_size_hint_x(Some(1.0));
             ui.set_size_y(26.0);
@@ -674,8 +695,8 @@ impl<'a> ToolboxItemWidget<'a> {
 
         let mut ing_widgets = Vec::new();
         if !is_map_item {
-            if data.energy_cost > 0 {
-                let ing_set = UIManager::create_widget(&format!("item_ing_set_{}", data.id), UIWidgetTypes::Default);
+            if data._item_data_count > 0 && data._item_data_type != ItemDataType::None {
+                let ing_set = UIManager::create_widget(&format!("item_ing_set_{:?}", data._icon_type), UIWidgetTypes::Default);
                 let ing_set_mut = ptr_as_mut(ing_set.as_ref());
                 let ui = ing_set_mut.get_ui_component_mut();
                 ui.set_layout_type(UILayoutType::BoxLayout);
@@ -687,17 +708,17 @@ impl<'a> ToolboxItemWidget<'a> {
                 ing_box_mut.add_widget(&ing_set);
 
                 // Material Icon (28x28)
-                let ing_icon = UIManager::create_widget(&format!("item_ing_icon_{}", data.id), UIWidgetTypes::Default);
+                let ing_icon = UIManager::create_widget(&format!("item_ing_icon_{:?}", data._icon_type), UIWidgetTypes::Default);
                 let ui = ptr_as_mut(ing_icon.as_ref()).get_ui_component_mut();
                 ui.set_size(28.0, 28.0);
                 ui.set_valign(VerticalAlign::CENTER);
                 ui.set_margin_right(4.0);
                 ui.set_color(get_color32(255, 255, 255, 255));
                 ing_set_mut.add_widget(&ing_icon);
-                Self::setup_item_icon(&ing_icon, ITEM_ENERGY_BALL);
+                Self::setup_item_icon(&ing_icon, data._item_data_type.item_code());
 
                 // Material Label (Name (have/cost))
-                let ing_lbl = UIManager::create_widget(&format!("item_ing_lbl_{}", data.id), UIWidgetTypes::Default);
+                let ing_lbl = UIManager::create_widget(&format!("item_ing_lbl_{:?}", data._icon_type), UIWidgetTypes::Default);
                 let ui = ptr_as_mut(ing_lbl.as_ref()).get_ui_component_mut();
                 ui.set_size_y(28.0);
                 ui.set_valign(VerticalAlign::CENTER);
@@ -710,11 +731,11 @@ impl<'a> ToolboxItemWidget<'a> {
                     _layout: ing_set,
                     _icon: ing_icon,
                     _label: ing_lbl,
-                    _item_type: ItemDataType::EnergyBall,
-                    _count: data.energy_cost,
+                    _item_type: data._item_data_type,
+                    _count: data._item_data_count,
                 });
             } else {
-                let free_lbl = UIManager::create_widget(&format!("item_free_lbl_{}", data.id), UIWidgetTypes::Default);
+                let free_lbl = UIManager::create_widget(&format!("item_free_lbl_{:?}", data._icon_type), UIWidgetTypes::Default);
                 let ui = ptr_as_mut(free_lbl.as_ref()).get_ui_component_mut();
                 ui.set_size_y(28.0);
                 ui.set_valign(VerticalAlign::CENTER);
@@ -727,7 +748,7 @@ impl<'a> ToolboxItemWidget<'a> {
         }
 
         // 3. Right Section: Action Button (and status label if non-map)
-        let right_set = UIManager::create_widget(&format!("item_right_set_{}", data.id), UIWidgetTypes::Default);
+        let right_set = UIManager::create_widget(&format!("item_right_set_{:?}", data._icon_type), UIWidgetTypes::Default);
         let right_set_mut = ptr_as_mut(right_set.as_ref());
         let ui = right_set_mut.get_ui_component_mut();
         ui.set_layout_type(UILayoutType::BoxLayout);
@@ -739,7 +760,7 @@ impl<'a> ToolboxItemWidget<'a> {
         layout_mut.add_widget(&right_set);
 
         // Status label
-        let status_label = UIManager::create_widget(&format!("item_status_{}", data.id), UIWidgetTypes::Default);
+        let status_label = UIManager::create_widget(&format!("item_status_{:?}", data._icon_type), UIWidgetTypes::Default);
         let ui = ptr_as_mut(status_label.as_ref()).get_ui_component_mut();
         ui.set_size_hint_x(Some(1.0));
         ui.set_size_y(18.0);
@@ -756,7 +777,7 @@ impl<'a> ToolboxItemWidget<'a> {
         }
 
         // Action button (Unlock)
-        let action_btn = UIManager::create_widget(&format!("item_action_{}", data.id), UIWidgetTypes::Default);
+        let action_btn = UIManager::create_widget(&format!("item_action_{:?}", data._icon_type), UIWidgetTypes::Default);
         let ui = ptr_as_mut(action_btn.as_ref()).get_ui_component_mut();
         ui.set_size(ACTION_BUTTON_WIDTH, ACTION_BUTTON_HEIGHT);
         ui.set_halign(HorizontalAlign::CENTER);
@@ -778,7 +799,6 @@ impl<'a> ToolboxItemWidget<'a> {
             _product_icon: product_icon,
             _name_lbl: name_lbl,
             _desc_lbl: desc_lbl,
-            _status_label: status_label,
             _ing_widgets: ing_widgets,
             _action_btn: action_btn,
             _info_items_lbl: info_items_lbl,

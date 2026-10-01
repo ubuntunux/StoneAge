@@ -5,6 +5,7 @@ use crate::game_module::scenario::scenario::{GameScenarioCreateInfo, ScenarioTyp
 use crate::game_module::widgets::item_bar::{
     DEFAULT_INVENTORY_ROWS, InventoryItemCreateInfo, InventoryItemCreateInfoList,
 };
+use crate::game_module::widgets::toolbox_widget::item_tab_widget::ToolboxIconType;
 use crate::game_module::widgets::toolbox_widget::ToolboxTab;
 use rust_engine_3d::scene::camera::CameraCreateInfo;
 use serde::{Deserialize, Serialize};
@@ -129,7 +130,7 @@ pub struct GameSaveData {
     pub _table_storage_item_create_info_list: Vec<InventoryItemCreateInfo>,
     pub _selected_inventory_item_index: usize,
     pub _selected_quick_slot: Option<(usize, usize)>,
-    pub _unlocked_toolbox_items: HashSet<String>,
+    pub _unlocked_toolbox_items: HashSet<ToolboxIconType>,
     pub _last_opened_toolbox_tab: ToolboxTab,
     pub _last_game_scene_data_name: String,
     pub _game_scenes: HashMap<String, GameSceneSaveData>,
