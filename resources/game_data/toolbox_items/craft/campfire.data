@@ -1,0 +1,6 @@
+{
+    "_icon_type": "Campfire",
+    "_description": "Provides light, warmth, and cooking capability",
+    "_item_data_type": "EnergyBall",
+    "_item_data_count": 1
+}

@@ -1,0 +1,6 @@
+{
+    "_icon_type": "HandSkill",
+    "_description": "Passive hand-based crafting skill",
+    "_item_data_type": "EnergyBall",
+    "_item_data_count": 0
+}

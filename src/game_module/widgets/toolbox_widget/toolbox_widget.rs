@@ -1,9 +1,12 @@
 use crate::game_module::actors::character::Character;
 use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, AUDIO_SELECT_ITEM};
 use crate::game_module::game_controller::WidgetNavRepeatController;
-use crate::game_module::game_service_locator::{get_game_scene_manager, get_game_scene_manager_mut};
+use crate::game_module::actors::items::ItemDataType;
+use crate::game_module::game_service_locator::{
+    get_game_resources, get_game_scene_manager, get_game_scene_manager_mut,
+};
 use crate::game_module::widgets::toolbox_widget::item_tab_widget::{
-    get_tool_box_item_data, ToolboxIconType, ToolboxItemState, ToolboxTabWidget,
+    ToolboxIconType, ToolboxItemData, ToolboxItemState, ToolboxTabWidget,
 };
 use nalgebra::Vector2;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
@@ -84,6 +87,21 @@ pub struct ToolboxWidget<'a> {
     pub _selected_item_index: usize,
     pub _last_lstick_y: i16,
     pub _nav_repeat_controller: WidgetNavRepeatController,
+}
+
+fn get_toolbox_item_data(icon_type: ToolboxIconType) -> ToolboxItemData {
+    let resources = get_game_resources();
+    let res_name = icon_type.toolbox_data_name();
+    if resources.has_toolbox_item_data(res_name) {
+        resources.get_toolbox_item_data(res_name).borrow().clone()
+    } else {
+        ToolboxItemData {
+            _icon_type: icon_type,
+            _description: "".to_string(),
+            _item_data_type: ItemDataType::None,
+            _item_data_count: 0,
+        }
+    }
 }
 
 impl<'a> ToolboxWidget<'a> {
@@ -241,28 +259,28 @@ impl<'a> ToolboxWidget<'a> {
             "skill",
             content_mut,
             vec![
-                get_tool_box_item_data(ToolboxIconType::HandSkill),
-                get_tool_box_item_data(ToolboxIconType::QuickGather),
+                get_toolbox_item_data(ToolboxIconType::HandSkill),
+                get_toolbox_item_data(ToolboxIconType::QuickGather),
             ],
         );
         let item_craft_tab = ToolboxTabWidget::create(
             "item_craft",
             content_mut,
             vec![
-                get_tool_box_item_data(ToolboxIconType::WoodenClub),
-                get_tool_box_item_data(ToolboxIconType::StoneAxe),
-                get_tool_box_item_data(ToolboxIconType::Worktable),
-                get_tool_box_item_data(ToolboxIconType::Campfire),
+                get_toolbox_item_data(ToolboxIconType::WoodenClub),
+                get_toolbox_item_data(ToolboxIconType::StoneAxe),
+                get_toolbox_item_data(ToolboxIconType::Worktable),
+                get_toolbox_item_data(ToolboxIconType::Campfire),
             ],
         );
         let npc_tab = ToolboxTabWidget::create(
             "npc",
             content_mut,
             vec![
-                get_tool_box_item_data(ToolboxIconType::NpcGatherer),
-                get_tool_box_item_data(ToolboxIconType::NpcCrafter),
-                get_tool_box_item_data(ToolboxIconType::NpcGuard),
-                get_tool_box_item_data(ToolboxIconType::NpcHunter),
+                get_toolbox_item_data(ToolboxIconType::NpcGatherer),
+                get_toolbox_item_data(ToolboxIconType::NpcCrafter),
+                get_toolbox_item_data(ToolboxIconType::NpcGuard),
+                get_toolbox_item_data(ToolboxIconType::NpcHunter),
             ],
         );
 
@@ -270,10 +288,10 @@ impl<'a> ToolboxWidget<'a> {
             "teleport",
             content_mut,
             vec![
-                get_tool_box_item_data(ToolboxIconType::MapHome),
-                get_tool_box_item_data(ToolboxIconType::MapForest),
-                get_tool_box_item_data(ToolboxIconType::MapCave),
-                get_tool_box_item_data(ToolboxIconType::MapUfo),
+                get_toolbox_item_data(ToolboxIconType::MapHome),
+                get_toolbox_item_data(ToolboxIconType::MapForest),
+                get_toolbox_item_data(ToolboxIconType::MapCave),
+                get_toolbox_item_data(ToolboxIconType::MapUfo),
             ],
         );
 

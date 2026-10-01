@@ -48,8 +48,9 @@ fn spawn_npc_near_monolith(character_data_name: &str, offset: Vector3<f32>) {
     get_character_manager_mut().create_character(&character_name, &character_create_info, false);
 }
 
-#[derive(Serialize, Deserialize, Copy, Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Serialize, Deserialize, Copy, Clone, Debug, PartialEq, Eq, Hash, Default)]
 pub enum ToolboxIconType {
+    #[default]
     HandSkill,
     QuickGather,
     StoneShelter,
@@ -194,6 +195,35 @@ impl ToolboxIconType {
             _ => None,
         }
     }
+
+    pub fn toolbox_data_name(&self) -> &'static str {
+        match self {
+            ToolboxIconType::HandSkill => "toolbox_items/skill/hand_skill",
+            ToolboxIconType::QuickGather => "toolbox_items/skill/quick_gather",
+            ToolboxIconType::StoneShelter => "toolbox_items/craft/stone_shelter",
+            ToolboxIconType::Watchtower => "toolbox_items/craft/watchtower",
+            ToolboxIconType::RoastMeat => "toolbox_items/craft/roast_meat",
+            ToolboxIconType::FishSoup => "toolbox_items/craft/fish_soup",
+            ToolboxIconType::StoneAxe => "toolbox_items/craft/stone_axe",
+            ToolboxIconType::Worktable => "toolbox_items/craft/worktable",
+            ToolboxIconType::Campfire => "toolbox_items/craft/campfire",
+            ToolboxIconType::WoodenCart => "toolbox_items/craft/wooden_cart",
+            ToolboxIconType::RidingMammoth => "toolbox_items/craft/riding_mammoth",
+            ToolboxIconType::FlintSpear => "toolbox_items/craft/flint_spear",
+            ToolboxIconType::HuntingBow => "toolbox_items/craft/hunting_bow",
+            ToolboxIconType::LeatherArmor => "toolbox_items/craft/leather_armor",
+            ToolboxIconType::BoneShield => "toolbox_items/craft/bone_shield",
+            ToolboxIconType::NpcGatherer => "toolbox_items/npc/npc_gatherer",
+            ToolboxIconType::NpcCrafter => "toolbox_items/npc/npc_crafter",
+            ToolboxIconType::NpcGuard => "toolbox_items/npc/npc_guard",
+            ToolboxIconType::NpcHunter => "toolbox_items/npc/npc_hunter",
+            ToolboxIconType::WoodenClub => "toolbox_items/craft/wooden_club",
+            ToolboxIconType::MapHome => "toolbox_items/teleport/map_home",
+            ToolboxIconType::MapForest => "toolbox_items/teleport/map_forest",
+            ToolboxIconType::MapCave => "toolbox_items/teleport/map_cave",
+            ToolboxIconType::MapUfo => "toolbox_items/teleport/map_ufo",
+        }
+    }
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
@@ -202,7 +232,8 @@ pub enum ToolboxItemState {
     Unlocked,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, Default)]
+#[serde(default)]
 pub struct ToolboxItemData {
     pub _icon_type: ToolboxIconType,
     pub _description: String,
@@ -210,46 +241,7 @@ pub struct ToolboxItemData {
     pub _item_data_count: usize,
 }
 
-pub fn get_tool_box_item_data(icon_type: ToolboxIconType) -> ToolboxItemData {
-    let (description, item_data_type, item_data_count) = match icon_type {
-        ToolboxIconType::HandSkill => ("Passive hand-based crafting skill", ItemDataType::EnergyBall, 0),
-        ToolboxIconType::QuickGather => ("Increases resource gathering speed", ItemDataType::EnergyBall, 1),
-        ToolboxIconType::StoneShelter => ("Provides basic shelter", ItemDataType::EnergyBall, 1),
-        ToolboxIconType::Watchtower => ("Provides high vantage view", ItemDataType::EnergyBall, 2),
-        ToolboxIconType::RoastMeat => ("Cooked meat restoring hunger", ItemDataType::EnergyBall, 1),
-        ToolboxIconType::FishSoup => ("Warm fish soup restoring stamina", ItemDataType::EnergyBall, 1),
-        ToolboxIconType::WoodenClub => ("Basic wooden club weapon", ItemDataType::EnergyBall, 0),
-        ToolboxIconType::StoneAxe => ("Essential harvesting tool for wood and stone", ItemDataType::EnergyBall, 1),
-        ToolboxIconType::Worktable => ("Unlocks advanced recipe crafting", ItemDataType::EnergyBall, 2),
-        ToolboxIconType::Campfire => ("Provides light, warmth, and cooking capability", ItemDataType::EnergyBall, 1),
-        ToolboxIconType::WoodenCart => ("Transports heavy materials", ItemDataType::EnergyBall, 2),
-        ToolboxIconType::RidingMammoth => ("Mount for fast travel", ItemDataType::EnergyBall, 3),
-        ToolboxIconType::FlintSpear => ("Long range melee weapon", ItemDataType::EnergyBall, 2),
-        ToolboxIconType::HuntingBow => ("Ranged weapon for hunting", ItemDataType::EnergyBall, 2),
-        ToolboxIconType::LeatherArmor => ("Basic protective armor", ItemDataType::EnergyBall, 2),
-        ToolboxIconType::BoneShield => ("Shield for defense", ItemDataType::EnergyBall, 2),
-        ToolboxIconType::NpcGatherer => ("Collects wood and wild plants for the village", ItemDataType::EnergyBall, 2),
-        ToolboxIconType::NpcCrafter => ("Crafts tools and building items automatically", ItemDataType::EnergyBall, 3),
-        ToolboxIconType::NpcGuard => ("Defends the base against wild beasts and threats", ItemDataType::EnergyBall, 4),
-        ToolboxIconType::NpcHunter => ("Hunts animals and gathers meat and leather", ItemDataType::EnergyBall, 3),
-        ToolboxIconType::MapHome => ("Safe haven base village with Monolith", ItemDataType::None, 0),
-        ToolboxIconType::MapForest => ("Lush green forest teeming with wildlife and resources", ItemDataType::None, 0),
-        ToolboxIconType::MapCave => ("Dark underground cave containing rare minerals and dangerous beasts", ItemDataType::None, 0),
-        ToolboxIconType::MapUfo => ("Mysterious alien UFO wreckage site with high-tech anomalies", ItemDataType::None, 0),
-    };
-
-    ToolboxItemData {
-        _icon_type: icon_type,
-        _description: description.to_string(),
-        _item_data_type: item_data_type,
-        _item_data_count: item_data_count,
-    }
-}
-
 impl ToolboxItemData {
-    pub fn create(icon_type: ToolboxIconType) -> ToolboxItemData {
-        get_tool_box_item_data(icon_type)
-    }
 
     pub fn cost_label(&self) -> String {
         if self._item_data_count == 0 || self._item_data_type == ItemDataType::None {

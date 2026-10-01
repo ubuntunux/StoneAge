@@ -6,6 +6,7 @@ use crate::game_module::actors::weapons::WeaponDataCreateInfo;
 use crate::game_module::game_scene_manager::GameSceneDataCreateInfo;
 use crate::game_module::save_data::save_data::GameSaveData;
 use crate::game_module::scenario::scenario::ScenarioDataCreateInfo;
+use crate::game_module::widgets::toolbox_widget::item_tab_widget::ToolboxItemData;
 use rust_engine_3d::core::engine_service_locator::get_engine_resources;
 use rust_engine_3d::resource::resource::{
     APPLICATION_RESOURCE_PATH, ResourceDataContainer, get_resource_data_must, get_unique_resource_name,
@@ -24,6 +25,7 @@ pub const PROP_DATA_FILE_PATH: &str = "game_data/props";
 pub const SCENARIO_FILE_PATH: &str = "game_data/scenario";
 pub const WEAPON_DATA_FILE_PATH: &str = "game_data/weapons";
 pub const GAME_SAVE_DATA_FILE_PATH: &str = "game_data/save_data";
+pub const TOOLBOX_ITEM_DATA_FILE_PATH: &str = "game_data/toolbox_items";
 
 pub const EXT_GAME_DATA: &str = "data";
 
@@ -36,6 +38,7 @@ pub type GameSaveDataMap = ResourceDataContainer<GameSaveData>;
 pub type PropDataMap = ResourceDataContainer<PropData>;
 pub type ScenarioDataCreateInfoMap = ResourceDataContainer<ScenarioDataCreateInfo>;
 pub type WeaponDataMap<'a> = ResourceDataContainer<WeaponData<'a>>;
+pub type ToolboxItemDataMap = ResourceDataContainer<ToolboxItemData>;
 
 #[derive(Clone)]
 pub struct GameResources<'a> {
@@ -46,6 +49,7 @@ pub struct GameResources<'a> {
     _item_data_map: ItemDataMap,
     _prop_data_map: PropDataMap,
     _weapon_data_map: WeaponDataMap<'a>,
+    _toolbox_item_data_map: ToolboxItemDataMap,
 }
 
 impl<'a> GameResources<'a> {
@@ -58,6 +62,7 @@ impl<'a> GameResources<'a> {
             _item_data_map: ItemDataMap::new(),
             _prop_data_map: PropDataMap::new(),
             _weapon_data_map: WeaponDataMap::new(),
+            _toolbox_item_data_map: ToolboxItemDataMap::new(),
         };
         Box::new(game_resources)
     }
@@ -241,11 +246,13 @@ impl<'a> GameResources<'a> {
         self.load_item_data();
         self.load_prop_data();
         self.load_weapon_data();
+        self.load_toolbox_item_data();
         self.load_game_save_data();
     }
 
     fn unload_game_data(&mut self) {
         self.unload_game_save_data();
+        self.unload_toolbox_item_data();
         self.unload_weapon_data();
         self.unload_prop_data();
         self.unload_item_data();
@@ -365,5 +372,34 @@ impl<'a> GameResources<'a> {
 
     pub fn get_item_data(&self, resource_name: &str) -> &RcRefCell<ItemData> {
         get_resource_data_must("item_data", &self._item_data_map, resource_name)
+    }
+
+    // toolbox item data
+    fn load_toolbox_item_data(&mut self) {
+        let game_data_directory = PathBuf::from(GAME_DATA_DIRECTORY);
+        let toolbox_item_data_directory = PathBuf::from(TOOLBOX_ITEM_DATA_FILE_PATH);
+
+        let game_data_files: Vec<PathBuf> = self.collect_resources(&toolbox_item_data_directory, &[EXT_GAME_DATA]);
+        for game_data_file in game_data_files {
+            let toolbox_item_data_name =
+                get_unique_resource_name(&self._toolbox_item_data_map, &game_data_directory, &game_data_file);
+            let loaded_contents = system::load(&game_data_file);
+            let toolbox_item_data: ToolboxItemData =
+                serde_json::from_reader(loaded_contents).expect("Failed to deserialize.");
+            self._toolbox_item_data_map
+                .insert(toolbox_item_data_name.clone(), newRcRefCell(toolbox_item_data));
+        }
+    }
+
+    fn unload_toolbox_item_data(&mut self) {
+        self._toolbox_item_data_map.clear();
+    }
+
+    pub fn has_toolbox_item_data(&self, resource_name: &str) -> bool {
+        self._toolbox_item_data_map.get(resource_name).is_some()
+    }
+
+    pub fn get_toolbox_item_data(&self, resource_name: &str) -> &RcRefCell<ToolboxItemData> {
+        get_resource_data_must("toolbox_item_data", &self._toolbox_item_data_map, resource_name)
     }
 }

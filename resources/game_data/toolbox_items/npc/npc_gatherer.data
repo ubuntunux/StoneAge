@@ -1,0 +1,6 @@
+{
+    "_icon_type": "NpcGatherer",
+    "_description": "Collects wood and wild plants for the village",
+    "_item_data_type": "EnergyBall",
+    "_item_data_count": 2
+}

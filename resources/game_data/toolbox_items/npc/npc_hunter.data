@@ -1,0 +1,6 @@
+{
+    "_icon_type": "NpcHunter",
+    "_description": "Hunts animals and gathers meat and leather",
+    "_item_data_type": "EnergyBall",
+    "_item_data_count": 3
+}

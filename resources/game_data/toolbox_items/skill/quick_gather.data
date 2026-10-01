@@ -1,0 +1,6 @@
+{
+    "_icon_type": "QuickGather",
+    "_description": "Increases resource gathering speed",
+    "_item_data_type": "EnergyBall",
+    "_item_data_count": 1
+}
