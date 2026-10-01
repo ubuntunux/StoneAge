@@ -356,13 +356,6 @@ impl<'a> ToolboxItemWidget<'a> {
     }
 
     pub fn toggle_state(&mut self) {
-        if let Some(stage_name) = self._data._icon_type.stage_data_name() {
-            get_game_scene_manager_mut().set_teleport_stage(stage_name, DEFAULT_GATE_NAME);
-            get_audio_manager_mut().play_audio_bank(AUDIO_QUEST_COMPLETE, AudioLoop::ONCE, None);
-            get_game_ui_manager_mut().close_toolbox();
-            return;
-        }
-
         match self._state {
             ToolboxItemState::Locked => {
                 let cost = self._data._item_data_count;
@@ -398,7 +391,11 @@ impl<'a> ToolboxItemWidget<'a> {
                 }
             }
             ToolboxItemState::Unlocked => {
-                // Item is already unlocked
+                if let Some(stage_name) = self._data._icon_type.stage_data_name() {
+                    get_game_scene_manager_mut().set_teleport_stage(stage_name, DEFAULT_GATE_NAME);
+                    get_audio_manager_mut().play_audio_bank(AUDIO_QUEST_COMPLETE, AudioLoop::ONCE, None);
+                    get_game_ui_manager_mut().close_toolbox();
+                }
             }
         }
     }
@@ -476,20 +473,11 @@ impl<'a> ToolboxItemWidget<'a> {
                     ui.set_renderable(true);
                 }
             }
-
-            btn_ui.set_text("Teleport");
-            btn_ui.set_color(get_color32(50, 110, 180, 255));
-            btn_ui.set_border_color(get_color32(90, 160, 240, 255));
-            btn_ui.set_font_color(get_color32(255, 255, 255, 255));
-            btn_ui.set_renderable(true);
-            btn_ui.set_touchable(true);
-            btn_ui.set_enable(true);
-            return;
         }
 
         match self._state {
             ToolboxItemState::Locked => {
-                btn_ui.set_text(&format!("Unlock ({})", self._data.cost_label()));
+                btn_ui.set_text("Unlock");
                 let current_count = if self._data._item_data_type != ItemDataType::None {
                     ui_mgr.get_item_count(self._data._item_data_type.item_code())
                 } else {
@@ -512,9 +500,19 @@ impl<'a> ToolboxItemWidget<'a> {
                 btn_ui.set_enable(true);
             }
             ToolboxItemState::Unlocked => {
-                btn_ui.set_renderable(false);
-                btn_ui.set_touchable(false);
-                btn_ui.set_enable(false);
+                if is_map_item {
+                    btn_ui.set_text("Teleport");
+                    btn_ui.set_color(get_color32(50, 110, 180, 255));
+                    btn_ui.set_border_color(get_color32(90, 160, 240, 255));
+                    btn_ui.set_font_color(get_color32(255, 255, 255, 255));
+                    btn_ui.set_renderable(true);
+                    btn_ui.set_touchable(true);
+                    btn_ui.set_enable(true);
+                } else {
+                    btn_ui.set_renderable(false);
+                    btn_ui.set_touchable(false);
+                    btn_ui.set_enable(false);
+                }
             }
         }
     }
@@ -751,23 +749,6 @@ impl<'a> ToolboxItemWidget<'a> {
         ui.set_color(get_color32(0, 0, 0, 0));
         layout_mut.add_widget(&right_set);
 
-        // Status label
-        let status_label = UIManager::create_widget(&format!("item_status_{:?}", data._icon_type), UIWidgetTypes::Default);
-        let ui = ptr_as_mut(status_label.as_ref()).get_ui_component_mut();
-        ui.set_size_hint_x(Some(1.0));
-        ui.set_size_y(18.0);
-        ui.set_halign(HorizontalAlign::CENTER);
-        ui.set_valign(VerticalAlign::CENTER);
-        ui.set_text("Status: Locked");
-        ui.set_font_size(15.0);
-        ui.set_font_color(get_color32(150, 150, 150, 255));
-        ui.set_color(get_color32(0, 0, 0, 0));
-        if is_map_item {
-            ui.set_renderable(false);
-        } else {
-            right_set_mut.add_widget(&status_label);
-        }
-
         // Action button (Unlock)
         let action_btn = UIManager::create_widget(&format!("item_action_{:?}", data._icon_type), UIWidgetTypes::Default);
         let ui = ptr_as_mut(action_btn.as_ref()).get_ui_component_mut();
@@ -778,7 +759,7 @@ impl<'a> ToolboxItemWidget<'a> {
         ui.set_border_color(get_color32(100, 100, 100, 255));
         ui.set_border(2.0);
         ui.set_round(6.0);
-        ui.set_text(&format!("Unlock ({})", data.cost_label()));
+        ui.set_text("Unlock");
         ui.set_font_size(17.0);
         ui.set_font_color(get_color32(230, 230, 230, 255));
         ui.set_touchable(true);
