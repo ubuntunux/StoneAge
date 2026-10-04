@@ -640,12 +640,14 @@ impl<'a> ToolboxTabWidget<'a> {
         for ing_widget in self._detail_ing_widgets.iter_mut() {
             ing_widget._item_type = item._data._item_data_type;
             ing_widget._count = item._data._item_data_count;
-            let show_req = item._data._item_data_count > 0
+            let unlocked = item._state == ToolboxItemState::Unlocked;
+            let show_req = !unlocked
+                && item._data._item_data_count > 0
                 && item._data._item_data_type != ItemDataType::None;
             let item_code = ing_widget.item_code();
             let have_count = ui_mgr.get_item_count(item_code);
             let mat_name = ToolboxItemWidget::get_item_name_from_resource(item_code);
-            let text = if item._state == ToolboxItemState::Unlocked {
+            let text = if unlocked {
                 "Unlocked".to_string()
             } else if show_req {
                 format!("{} ({}/{})", mat_name, have_count, ing_widget._count)
@@ -654,7 +656,7 @@ impl<'a> ToolboxTabWidget<'a> {
             };
             let lbl_ui = ptr_as_mut(ing_widget._label.as_ref()).get_ui_component_mut();
             lbl_ui.set_text(&text);
-            if have_count >= ing_widget._count {
+            if have_count >= ing_widget._count || unlocked {
                 lbl_ui.set_font_color(get_color32(230, 235, 240, 255));
             } else {
                 lbl_ui.set_font_color(get_color32(235, 100, 100, 255));
