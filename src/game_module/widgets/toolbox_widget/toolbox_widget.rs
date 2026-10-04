@@ -402,24 +402,7 @@ impl<'a> ToolboxWidget<'a> {
     pub fn update_item_selection(&mut self) {
         let selected_idx = self._selected_item_index;
         let active_tab = self.get_active_tab_mut();
-        let item_count = active_tab._items.len();
-        if item_count == 0 {
-            return;
-        }
-
-        let container_ui = ptr_as_mut(active_tab._layout.as_ref()).get_ui_component_mut();
-        for (idx, item) in active_tab._items.iter_mut().enumerate() {
-            let is_selected = idx == selected_idx;
-            let layout_ui = ptr_as_mut(item._layout.as_ref()).get_ui_component_mut();
-            if is_selected {
-                layout_ui.set_border_color(get_color32(180, 180, 180, 255));
-                layout_ui.set_color(get_color32(65, 65, 65, 230));
-                container_ui.scroll_into_view(layout_ui);
-            } else {
-                layout_ui.set_border_color(get_color32(80, 80, 80, 255));
-                layout_ui.set_color(get_color32(45, 45, 45, 200));
-            }
-        }
+        active_tab.select_item(selected_idx);
     }
 
     // ── Open / Close ──────────────────────────────────────────────
@@ -474,9 +457,7 @@ impl<'a> ToolboxWidget<'a> {
         }
 
         // Refresh material counts for active tab
-        for item in self.get_active_tab_mut()._items.iter_mut() {
-            item.update_ui();
-        }
+        self.get_active_tab_mut().update_detail_panel();
 
         // Tab navigation (Keyboard Tab / Shift+Tab, Joystick LB / RB)
         let tab_pressed = keyboard_input_data.get_key_pressed(KeyCode::Tab);
@@ -540,11 +521,7 @@ impl<'a> ToolboxWidget<'a> {
             || joystick_input_data._btn_x == ButtonState::Pressed;
 
         if action_pressed {
-            let selected_idx = self._selected_item_index;
-            let active_tab = self.get_active_tab_mut();
-            if selected_idx < active_tab._items.len() {
-                active_tab._items[selected_idx].toggle_state();
-            }
+            self.get_active_tab_mut().execute_selected_action();
         }
 
         let close =
@@ -587,8 +564,8 @@ impl<'a> ToolboxWidget<'a> {
                 } else {
                     item._state = ToolboxItemState::Locked;
                 }
-                item.update_ui();
             }
+            tab.update_detail_panel();
         }
     }
 

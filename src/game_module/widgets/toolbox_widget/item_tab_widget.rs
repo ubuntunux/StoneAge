@@ -20,9 +20,10 @@ use std::ffi::c_void;
 use std::rc::Rc;
 use serde::{Deserialize, Serialize};
 
-const ITEM_ROW_HEIGHT: f32 = 80.0;
-const ACTION_BUTTON_WIDTH: f32 = 130.0;
-const ACTION_BUTTON_HEIGHT: f32 = 36.0;
+const LIST_ITEM_ROW_HEIGHT: f32 = 54.0;
+const LEFT_LIST_PANEL_WIDTH: f32 = 290.0;
+const ACTION_BUTTON_WIDTH: f32 = 150.0;
+const ACTION_BUTTON_HEIGHT: f32 = 40.0;
 
 fn spawn_npc_near_monolith(character_data_name: &str, offset: Vector3<f32>) {
     let monolith_pos = if let Some(monolith) = get_game_scene_manager().get_prop_manager().get_prop_by_name("monolith")
@@ -242,7 +243,6 @@ pub struct ToolboxItemData {
 }
 
 impl ToolboxItemData {
-
     pub fn cost_label(&self) -> String {
         if self._item_data_count == 0 || self._item_data_type == ItemDataType::None {
             "Free".to_string()
@@ -272,18 +272,19 @@ impl<'a> IngredientWidgetItem<'a> {
     }
 }
 
+// ────────────────────────────────────────────────────────────────
+// ToolboxItemWidget - Left side list item entry
+// Layout: [Icon] [Icon name] [Unlocked status]
+// ────────────────────────────────────────────────────────────────
 pub struct ToolboxItemWidget<'a> {
     pub _layout: Rc<WidgetDefault<'a>>,
-    pub _product_icon: Rc<WidgetDefault<'a>>,
+    pub _icon: Rc<WidgetDefault<'a>>,
     pub _name_lbl: Rc<WidgetDefault<'a>>,
-    pub _desc_lbl: Rc<WidgetDefault<'a>>,
-    pub _ing_widgets: Vec<IngredientWidgetItem<'a>>,
-    pub _action_btn: Rc<WidgetDefault<'a>>,
-    pub _info_items_lbl: Option<Rc<WidgetDefault<'a>>>,
-    pub _info_chars_lbl: Option<Rc<WidgetDefault<'a>>>,
-    pub _info_unexp_lbl: Option<Rc<WidgetDefault<'a>>>,
+    pub _status_lbl: Rc<WidgetDefault<'a>>,
     pub _state: ToolboxItemState,
     pub _data: ToolboxItemData,
+    pub _tab_ptr: *mut c_void,
+    pub _item_index: usize,
 }
 
 impl<'a> ToolboxItemWidget<'a> {
@@ -333,15 +334,6 @@ impl<'a> ToolboxItemWidget<'a> {
     }
 
     pub fn callback_item_select(
-        _ui_component: &UIComponentInstance<'a>,
-        _touched_pos: &nalgebra::Vector2<f32>,
-        _touched_pos_delta: &nalgebra::Vector2<f32>,
-    ) -> bool {
-        get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
-        true
-    }
-
-    pub fn callback_item_action(
         ui_component: &UIComponentInstance<'a>,
         _touched_pos: &nalgebra::Vector2<f32>,
         _touched_pos_delta: &nalgebra::Vector2<f32>,
@@ -351,47 +343,220 @@ impl<'a> ToolboxItemWidget<'a> {
             return false;
         }
         let item = ptr_as_mut(item_ptr);
-        item.toggle_state();
+        if !item._tab_ptr.is_null() {
+            let tab = ptr_as_mut(item._tab_ptr as *mut ToolboxTabWidget<'a>);
+            tab.select_item(item._item_index);
+        }
+        get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
         true
     }
 
-    pub fn toggle_state(&mut self) {
+    pub fn update_list_item_ui(&mut self, is_selected: bool) {
+        let layout_ui = ptr_as_mut(self._layout.as_ref()).get_ui_component_mut();
+        if is_selected {
+            layout_ui.set_color(get_color32(60, 70, 85, 230));
+            layout_ui.set_border_color(get_color32(110, 160, 220, 255));
+        } else {
+            layout_ui.set_color(get_color32(40, 43, 48, 220));
+            layout_ui.set_border_color(get_color32(65, 70, 78, 255));
+        }
+
+        let status_ui = ptr_as_mut(self._status_lbl.as_ref()).get_ui_component_mut();
         match self._state {
             ToolboxItemState::Locked => {
-                let cost = self._data._item_data_count;
-                let item_type = self._data._item_data_type;
+                status_ui.set_text("Locked");
+                status_ui.set_font_color(get_color32(210, 165, 160, 255));
+            }
+            ToolboxItemState::Unlocked => {
+                status_ui.set_text("");
+                status_ui.set_font_color(get_color32(100, 210, 120, 255));
+            }
+        }
+    }
+
+    pub fn create(
+        parent_widget: &mut WidgetDefault<'a>,
+        data: ToolboxItemData,
+        item_index: usize,
+    ) -> Box<ToolboxItemWidget<'a>> {
+        let is_map_item = data._icon_type.stage_data_name().is_some();
+
+        // Single Row Entry: [Icon] [Icon name] [Unlocked status]
+        let layout = UIManager::create_widget(
+            &format!("item_list_row_{:?}_{}", data._icon_type, item_index),
+            UIWidgetTypes::Default,
+        );
+        let layout_mut = ptr_as_mut(layout.as_ref());
+        let ui = layout_mut.get_ui_component_mut();
+        ui.set_layout_type(UILayoutType::BoxLayout);
+        ui.set_layout_orientation(Orientation::HORIZONTAL);
+        ui.set_halign(HorizontalAlign::LEFT);
+        ui.set_valign(VerticalAlign::CENTER);
+        ui.set_size_hint_x(Some(1.0));
+        ui.set_size_y(LIST_ITEM_ROW_HEIGHT);
+        ui.set_padding(6.0);
+        ui.set_color(get_color32(40, 43, 48, 220));
+        ui.set_border_color(get_color32(65, 70, 78, 255));
+        ui.set_border(2.0);
+        ui.set_round(6.0);
+        ui.set_margin(2.0);
+        ui.set_touchable(true);
+        ui.set_callback_touch_over(Some(Box::new(Self::callback_item_touch_over)));
+        ui.set_callback_touch_down(Some(Box::new(Self::callback_item_select)));
+        parent_widget.add_widget(&layout);
+
+        // Icon (32x32)
+        let icon = UIManager::create_widget(
+            &format!("item_list_icon_{:?}_{}", data._icon_type, item_index),
+            UIWidgetTypes::Default,
+        );
+        let ui = ptr_as_mut(icon.as_ref()).get_ui_component_mut();
+        ui.set_size(40.0, 40.0);
+        ui.set_valign(VerticalAlign::CENTER);
+        ui.set_halign(HorizontalAlign::LEFT);
+        ui.set_margin_right(8.0);
+        ui.set_color(get_color32(255, 255, 255, 255));
+        layout_mut.add_widget(&icon);
+        Self::setup_item_icon(&icon, data._icon_type.item_code());
+
+        // Name Label
+        let display_name = if is_map_item {
+            data._icon_type.as_str().to_string()
+        } else {
+            let item_code = data._icon_type.item_code();
+            let item_name = Self::get_item_name_from_resource(item_code);
+            if item_name == item_code {
+                data._icon_type.as_str().to_string()
+            } else {
+                item_name
+            }
+        };
+        let name_lbl = UIManager::create_widget(
+            &format!("item_list_name_{:?}_{}", data._icon_type, item_index),
+            UIWidgetTypes::Default,
+        );
+        let ui = ptr_as_mut(name_lbl.as_ref()).get_ui_component_mut();
+        ui.set_size_hint_x(Some(1.0));
+        ui.set_size_y(28.0);
+        ui.set_valign(VerticalAlign::CENTER);
+        ui.set_text(&display_name);
+        ui.set_font_size(24.0);
+        ui.set_font_color(get_color32(240, 240, 240, 255));
+        ui.set_color(get_color32(0, 0, 0, 0));
+        layout_mut.add_widget(&name_lbl);
+
+        // Status Label (Unlocked / Locked)
+        let status_lbl = UIManager::create_widget(
+            &format!("item_list_status_{:?}_{}", data._icon_type, item_index),
+            UIWidgetTypes::Default,
+        );
+        let ui = ptr_as_mut(status_lbl.as_ref()).get_ui_component_mut();
+        ui.set_size(76.0, 28.0);
+        ui.set_valign(VerticalAlign::CENTER);
+        ui.set_halign(HorizontalAlign::RIGHT);
+        ui.set_font_size(20.0);
+        ui.set_margin_right(10.0);
+        ui.set_color(get_color32(0, 0, 0, 0));
+        layout_mut.add_widget(&status_lbl);
+
+        let mut item = Box::new(ToolboxItemWidget {
+            _layout: layout,
+            _icon: icon,
+            _name_lbl: name_lbl,
+            _status_lbl: status_lbl,
+            _state: ToolboxItemState::Locked,
+            _data: data,
+            _tab_ptr: std::ptr::null_mut(),
+            _item_index: item_index,
+        });
+
+        item.update_list_item_ui(false);
+        item
+    }
+}
+
+// ────────────────────────────────────────────────────────────────
+// ToolboxTabWidget - Master-Detail Content pane for a category tab
+// Left: List Container (Items)
+// Right: Detail Container (Selected Item Info: Icon, Name, Desc, Requirements, Unlock Button)
+// ────────────────────────────────────────────────────────────────
+pub struct ToolboxTabWidget<'a> {
+    pub _layout: Rc<WidgetDefault<'a>>,
+    pub _list_container: Rc<WidgetDefault<'a>>,
+    pub _detail_container: Rc<WidgetDefault<'a>>,
+    pub _items: Vec<Box<ToolboxItemWidget<'a>>>,
+    pub _selected_index: usize,
+
+    // Right Detail Panel widgets
+    pub _detail_icon: Rc<WidgetDefault<'a>>,
+    pub _detail_name_lbl: Rc<WidgetDefault<'a>>,
+    pub _detail_desc_lbl: Rc<WidgetDefault<'a>>,
+    pub _detail_req_box: Rc<WidgetDefault<'a>>,
+    pub _detail_ing_widgets: Vec<IngredientWidgetItem<'a>>,
+    pub _detail_info_items_lbl: Option<Rc<WidgetDefault<'a>>>,
+    pub _detail_info_chars_lbl: Option<Rc<WidgetDefault<'a>>>,
+    pub _detail_info_unexp_lbl: Option<Rc<WidgetDefault<'a>>>,
+    pub _detail_action_btn: Rc<WidgetDefault<'a>>,
+
+    pub _is_visible: bool,
+}
+
+impl<'a> ToolboxTabWidget<'a> {
+    pub fn callback_action_btn(
+        ui_component: &UIComponentInstance<'a>,
+        _touched_pos: &nalgebra::Vector2<f32>,
+        _touched_pos_delta: &nalgebra::Vector2<f32>,
+    ) -> bool {
+        let tab_ptr = ui_component.get_user_data() as *mut ToolboxTabWidget<'a>;
+        if tab_ptr.is_null() {
+            return false;
+        }
+        let tab = ptr_as_mut(tab_ptr);
+        tab.execute_selected_action();
+        true
+    }
+
+    pub fn execute_selected_action(&mut self) {
+        if self._selected_index >= self._items.len() {
+            return;
+        }
+        let item = &mut self._items[self._selected_index];
+        match item._state {
+            ToolboxItemState::Locked => {
+                let cost = item._data._item_data_count;
+                let item_type = item._data._item_data_type;
                 if cost > 0 && item_type != ItemDataType::None {
                     let item_code = item_type.item_code();
                     let current_count = get_game_ui_manager().get_item_count(item_code);
                     if current_count >= cost {
                         if get_game_ui_manager_mut().remove_item(item_code, cost) {
-                            self._state = ToolboxItemState::Unlocked;
+                            item._state = ToolboxItemState::Unlocked;
                             get_game_ui_manager_mut().notify_item_crafted();
-                            let reward_item_code = self._data._icon_type.item_code();
+                            let reward_item_code = item._data._icon_type.item_code();
                             get_game_ui_manager_mut().notify_item_acquired(reward_item_code, 1, true);
                             get_audio_manager_mut().play_audio_bank(AUDIO_QUEST_COMPLETE, AudioLoop::ONCE, None);
-                            if let Some((char_data_name, offset)) = self._data._icon_type.npc_character_info() {
+                            if let Some((char_data_name, offset)) = item._data._icon_type.npc_character_info() {
                                 spawn_npc_near_monolith(char_data_name, offset);
                             }
-                            self.update_ui();
+                            self.update_detail_panel();
                         }
                     } else {
                         get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
                     }
                 } else {
-                    self._state = ToolboxItemState::Unlocked;
+                    item._state = ToolboxItemState::Unlocked;
                     get_game_ui_manager_mut().notify_item_crafted();
-                    let reward_item_code = self._data._icon_type.item_code();
+                    let reward_item_code = item._data._icon_type.item_code();
                     get_game_ui_manager_mut().notify_item_acquired(reward_item_code, 1, true);
                     get_audio_manager_mut().play_audio_bank(AUDIO_QUEST_COMPLETE, AudioLoop::ONCE, None);
-                    if let Some((char_data_name, offset)) = self._data._icon_type.npc_character_info() {
+                    if let Some((char_data_name, offset)) = item._data._icon_type.npc_character_info() {
                         spawn_npc_near_monolith(char_data_name, offset);
                     }
-                    self.update_ui();
+                    self.update_detail_panel();
                 }
             }
             ToolboxItemState::Unlocked => {
-                if let Some(stage_name) = self._data._icon_type.stage_data_name() {
+                if let Some(stage_name) = item._data._icon_type.stage_data_name() {
                     get_game_scene_manager_mut().set_teleport_stage(stage_name, DEFAULT_GATE_NAME);
                     get_audio_manager_mut().play_audio_bank(AUDIO_QUEST_COMPLETE, AudioLoop::ONCE, None);
                     get_game_ui_manager_mut().close_toolbox();
@@ -400,29 +565,65 @@ impl<'a> ToolboxItemWidget<'a> {
         }
     }
 
-    pub fn update_ui(&mut self) {
+    pub fn select_item(&mut self, index: usize) {
+        if index >= self._items.len() {
+            return;
+        }
+        self._selected_index = index;
+        self.update_detail_panel();
+    }
+
+    pub fn update_detail_panel(&mut self) {
         let ui_mgr = get_game_ui_manager();
 
-        // Refresh description if set in ItemData or custom description
-        let is_map_item = self._data._icon_type.stage_data_name().is_some();
-        let desc_ui = ptr_as_mut(self._desc_lbl.as_ref()).get_ui_component_mut();
-        if is_map_item {
-            desc_ui.set_text(&self._data._description);
+        for (idx, item) in self._items.iter_mut().enumerate() {
+            let is_sel = idx == self._selected_index;
+            item.update_list_item_ui(is_sel);
+        }
+
+        if self._selected_index >= self._items.len() {
+            return;
+        }
+
+        let item = &self._items[self._selected_index];
+        let is_map_item = item._data._icon_type.stage_data_name().is_some();
+
+        // 1. Setup Detail Icon & Name
+        ToolboxItemWidget::setup_item_icon(&self._detail_icon, item._data._icon_type.item_code());
+        let display_name = if is_map_item {
+            item._data._icon_type.as_str().to_string()
         } else {
-            let item_code = self._data._icon_type.item_code();
-            let desc_text = Self::get_item_description_from_resource(item_code);
+            let item_code = item._data._icon_type.item_code();
+            let item_name = ToolboxItemWidget::get_item_name_from_resource(item_code);
+            if item_name == item_code {
+                item._data._icon_type.as_str().to_string()
+            } else {
+                item_name
+            }
+        };
+        ptr_as_mut(self._detail_name_lbl.as_ref()).get_ui_component_mut().set_text(&display_name);
+
+        // 2. Setup Description
+        let desc_ui = ptr_as_mut(self._detail_desc_lbl.as_ref()).get_ui_component_mut();
+        if is_map_item {
+            desc_ui.set_text(&item._data._description);
+        } else {
+            let item_code = item._data._icon_type.item_code();
+            let desc_text = ToolboxItemWidget::get_item_description_from_resource(item_code);
             if !desc_text.is_empty() && desc_text != item_code {
                 desc_ui.set_text(&desc_text);
-            } else if !self._data._description.is_empty() {
-                desc_ui.set_text(&self._data._description);
+            } else if !item._data._description.is_empty() {
+                desc_ui.set_text(&item._data._description);
             }
         }
 
-        // Refresh material widgets
-        for ing_widget in self._ing_widgets.iter_mut() {
+        // 3. Setup Requirements / Map Discovered Info
+        for ing_widget in self._detail_ing_widgets.iter_mut() {
+            ing_widget._item_type = item._data._item_data_type;
+            ing_widget._count = item._data._item_data_count;
             let item_code = ing_widget.item_code();
             let have_count = ui_mgr.get_item_count(item_code);
-            let mat_name = Self::get_item_name_from_resource(item_code);
+            let mat_name = ToolboxItemWidget::get_item_name_from_resource(item_code);
             let text = format!("{} ({}/{})", mat_name, have_count, ing_widget._count);
             let lbl_ui = ptr_as_mut(ing_widget._label.as_ref()).get_ui_component_mut();
             lbl_ui.set_text(&text);
@@ -431,13 +632,18 @@ impl<'a> ToolboxItemWidget<'a> {
             } else {
                 lbl_ui.set_font_color(get_color32(235, 100, 100, 255));
             }
+
+            ToolboxItemWidget::setup_item_icon(&ing_widget._icon, item_code);
+
+            let show_req = !is_map_item
+                && item._data._item_data_count > 0
+                && item._data._item_data_type != ItemDataType::None;
+            ptr_as_mut(ing_widget._layout.as_ref()).get_ui_component_mut().set_enable(show_req);
         }
 
-        let btn_ui = ptr_as_mut(self._action_btn.as_ref()).get_ui_component_mut();
-
         if is_map_item {
-            if let Some((items, chars)) = self._data._icon_type.world_discovered_info() {
-                if let Some(lbl) = &self._info_items_lbl {
+            if let Some((items, chars)) = item._data._icon_type.world_discovered_info() {
+                if let Some(lbl) = &self._detail_info_items_lbl {
                     let items_str = if items.is_empty() {
                         "Items: None".to_string()
                     } else {
@@ -447,7 +653,7 @@ impl<'a> ToolboxItemWidget<'a> {
                     ui.set_text(&items_str);
                     ui.set_renderable(true);
                 }
-                if let Some(lbl) = &self._info_chars_lbl {
+                if let Some(lbl) = &self._detail_info_chars_lbl {
                     let chars_str = if chars.is_empty() {
                         "Characters: None".to_string()
                     } else {
@@ -457,46 +663,61 @@ impl<'a> ToolboxItemWidget<'a> {
                     ui.set_text(&chars_str);
                     ui.set_renderable(true);
                 }
-                if let Some(lbl) = &self._info_unexp_lbl {
+                if let Some(lbl) = &self._detail_info_unexp_lbl {
                     ptr_as_mut(lbl.as_ref()).get_ui_component_mut().set_renderable(false);
                 }
             } else {
-                if let Some(lbl) = &self._info_items_lbl {
+                if let Some(lbl) = &self._detail_info_items_lbl {
                     ptr_as_mut(lbl.as_ref()).get_ui_component_mut().set_renderable(false);
                 }
-                if let Some(lbl) = &self._info_chars_lbl {
+                if let Some(lbl) = &self._detail_info_chars_lbl {
                     ptr_as_mut(lbl.as_ref()).get_ui_component_mut().set_renderable(false);
                 }
-                if let Some(lbl) = &self._info_unexp_lbl {
+                if let Some(lbl) = &self._detail_info_unexp_lbl {
                     let ui = ptr_as_mut(lbl.as_ref()).get_ui_component_mut();
                     ui.set_text("Unexplored Region");
                     ui.set_renderable(true);
                 }
             }
+        } else {
+            if let Some(lbl) = &self._detail_info_items_lbl {
+                ptr_as_mut(lbl.as_ref()).get_ui_component_mut().set_renderable(false);
+            }
+            if let Some(lbl) = &self._detail_info_chars_lbl {
+                ptr_as_mut(lbl.as_ref()).get_ui_component_mut().set_renderable(false);
+            }
+            if let Some(lbl) = &self._detail_info_unexp_lbl {
+                ptr_as_mut(lbl.as_ref()).get_ui_component_mut().set_renderable(false);
+            }
         }
 
-        match self._state {
+        // 4. Setup Action Button State
+        let btn_ui = ptr_as_mut(self._detail_action_btn.as_ref()).get_ui_component_mut();
+
+        match item._state {
             ToolboxItemState::Locked => {
                 btn_ui.set_text("Unlock");
-                let current_count = if self._data._item_data_type != ItemDataType::None {
-                    ui_mgr.get_item_count(self._data._item_data_type.item_code())
+                let current_count = if item._data._item_data_type != ItemDataType::None {
+                    ui_mgr.get_item_count(item._data._item_data_type.item_code())
                 } else {
                     0
                 };
-                if self._data._item_data_count == 0
-                    || self._data._item_data_type == ItemDataType::None
-                    || current_count >= self._data._item_data_count
+                if item._data._item_data_count == 0
+                    || item._data._item_data_type == ItemDataType::None
+                    || current_count >= item._data._item_data_count
                 {
-                    btn_ui.set_color(get_color32(75, 80, 90, 255));
-                    btn_ui.set_border_color(get_color32(115, 120, 130, 255));
+                    btn_ui.set_color(get_color32(75, 130, 85, 255));
+                    btn_ui.set_border_color(get_color32(115, 190, 130, 255));
                     btn_ui.set_font_color(get_color32(255, 255, 255, 255));
+                    btn_ui.set_touchable(true);
+
                 } else {
                     btn_ui.set_color(get_color32(45, 48, 52, 255));
                     btn_ui.set_border_color(get_color32(65, 70, 75, 255));
                     btn_ui.set_font_color(get_color32(150, 150, 150, 255));
+                    btn_ui.set_touchable(false);
                 }
                 btn_ui.set_renderable(true);
-                btn_ui.set_touchable(true);
                 btn_ui.set_enable(true);
             }
             ToolboxItemState::Unlocked => {
@@ -509,7 +730,11 @@ impl<'a> ToolboxItemWidget<'a> {
                     btn_ui.set_touchable(true);
                     btn_ui.set_enable(true);
                 } else {
-                    btn_ui.set_renderable(false);
+                    btn_ui.set_text("Unlocked");
+                    btn_ui.set_color(get_color32(40, 45, 50, 255));
+                    btn_ui.set_border_color(get_color32(70, 75, 80, 255));
+                    btn_ui.set_font_color(get_color32(120, 120, 120, 255));
+                    btn_ui.set_renderable(true);
                     btn_ui.set_touchable(false);
                     btn_ui.set_enable(false);
                 }
@@ -517,241 +742,199 @@ impl<'a> ToolboxItemWidget<'a> {
         }
     }
 
-    pub fn create(parent_widget: &mut WidgetDefault<'a>, data: ToolboxItemData) -> Box<ToolboxItemWidget<'a>> {
-        let is_map_item = data._icon_type.stage_data_name().is_some();
-
-        // Main row container (Neutral dark gray)
-        let layout = UIManager::create_widget(&format!("item_row_{:?}", data._icon_type), UIWidgetTypes::Default);
+    pub fn create(
+        tab_id: &str,
+        parent_widget: &mut WidgetDefault<'a>,
+        item_list: Vec<ToolboxItemData>,
+    ) -> Box<ToolboxTabWidget<'a>> {
+        // Main Tab Layout (Horizontal Split View)
+        let layout = UIManager::create_widget(&format!("{}_tab_layout", tab_id), UIWidgetTypes::Default);
         let layout_mut = ptr_as_mut(layout.as_ref());
         let ui = layout_mut.get_ui_component_mut();
         ui.set_layout_type(UILayoutType::BoxLayout);
         ui.set_layout_orientation(Orientation::HORIZONTAL);
         ui.set_halign(HorizontalAlign::LEFT);
-        ui.set_valign(VerticalAlign::CENTER);
+        ui.set_valign(VerticalAlign::TOP);
         ui.set_size_hint_x(Some(1.0));
-        ui.set_size_y(ITEM_ROW_HEIGHT);
+        ui.set_size_hint_y(Some(1.0));
         ui.set_padding(8.0);
-        ui.set_color(get_color32(40, 43, 48, 220));
-        ui.set_border_color(get_color32(65, 70, 78, 255));
-        ui.set_border(2.0);
-        ui.set_round(6.0);
-        ui.set_margin(3.0);
-        ui.set_touchable(true);
-        ui.set_callback_touch_over(Some(Box::new(Self::callback_item_touch_over)));
-        ui.set_callback_touch_down(Some(Box::new(Self::callback_item_select)));
+        ui.set_color(get_color32(30, 30, 30, 220));
+        ui.set_renderable(true);
+        ui.set_enable(false);
         parent_widget.add_widget(&layout);
 
-        // 1. Left Product Section (Vertical: Icon + Name on top, Description below)
-        let product_set = UIManager::create_widget(&format!("item_prod_set_{:?}", data._icon_type), UIWidgetTypes::Default);
-        let product_set_mut = ptr_as_mut(product_set.as_ref());
-        let ui = product_set_mut.get_ui_component_mut();
+        // 1. Left List Container (Width ~ 290)
+        let list_container = UIManager::create_widget(&format!("{}_list_container", tab_id), UIWidgetTypes::Default);
+        let list_container_mut = ptr_as_mut(list_container.as_ref());
+        let ui = list_container_mut.get_ui_component_mut();
         ui.set_layout_type(UILayoutType::BoxLayout);
         ui.set_layout_orientation(Orientation::VERTICAL);
-        if is_map_item {
-            ui.set_size(210.0, 68.0);
-        } else {
-            ui.set_size(240.0, 68.0);
-        }
-        ui.set_valign(VerticalAlign::CENTER);
-        ui.set_margin_right(10.0);
-        ui.set_color(get_color32(0, 0, 0, 0));
-        layout_mut.add_widget(&product_set);
+        ui.set_halign(HorizontalAlign::LEFT);
+        ui.set_valign(VerticalAlign::TOP);
+        ui.set_size(LEFT_LIST_PANEL_WIDTH, 480.0);
+        ui.set_size_hint_y(Some(1.0));
+        ui.set_scroll_y(true);
+        ui.set_enable_renderable_area(true);
+        ui.set_padding(4.0);
+        ui.set_margin_right(8.0);
+        ui.set_color(get_color32(25, 27, 30, 220));
+        ui.set_border_color(get_color32(50, 55, 60, 255));
+        ui.set_border(1.0);
+        ui.set_round(6.0);
+        layout_mut.add_widget(&list_container);
 
-        // Top Header: Icon + Name
-        let product_hdr = UIManager::create_widget(&format!("item_prod_hdr_{:?}", data._icon_type), UIWidgetTypes::Default);
-        let product_hdr_mut = ptr_as_mut(product_hdr.as_ref());
-        let ui = product_hdr_mut.get_ui_component_mut();
+        // 2. Right Detail Container (Width ~ 430)
+        let detail_container = UIManager::create_widget(&format!("{}_detail_container", tab_id), UIWidgetTypes::Default);
+        let detail_container_mut = ptr_as_mut(detail_container.as_ref());
+        let ui = detail_container_mut.get_ui_component_mut();
+        ui.set_layout_type(UILayoutType::BoxLayout);
+        ui.set_layout_orientation(Orientation::VERTICAL);
+        ui.set_halign(HorizontalAlign::LEFT);
+        ui.set_valign(VerticalAlign::TOP);
+        ui.set_size_hint_x(Some(1.0));
+        ui.set_size_hint_y(Some(1.0));
+        ui.set_padding(14.0);
+        ui.set_color(get_color32(35, 38, 43, 230));
+        ui.set_border_color(get_color32(65, 70, 78, 255));
+        ui.set_border(1.0);
+        ui.set_round(6.0);
+        layout_mut.add_widget(&detail_container);
+
+        // Detail Header: Icon + Name
+        let detail_hdr = UIManager::create_widget(&format!("{}_detail_hdr", tab_id), UIWidgetTypes::Default);
+        let detail_hdr_mut = ptr_as_mut(detail_hdr.as_ref());
+        let ui = detail_hdr_mut.get_ui_component_mut();
+        ui.set_layout_type(UILayoutType::BoxLayout);
+        ui.set_layout_orientation(Orientation::HORIZONTAL);
+        ui.set_size_hint_x(Some(1.0));
+        ui.set_size_y(54.0);
+        ui.set_valign(VerticalAlign::CENTER);
+        ui.set_margin_bottom(10.0);
+        ui.set_color(get_color32(0, 0, 0, 0));
+        detail_container_mut.add_widget(&detail_hdr);
+
+        // Detail Large Icon (48x48)
+        let detail_icon = UIManager::create_widget(&format!("{}_detail_icon", tab_id), UIWidgetTypes::Default);
+        let ui = ptr_as_mut(detail_icon.as_ref()).get_ui_component_mut();
+        ui.set_size(48.0, 48.0);
+        ui.set_valign(VerticalAlign::CENTER);
+        ui.set_margin_right(12.0);
+        ui.set_color(get_color32(255, 255, 255, 255));
+        detail_hdr_mut.add_widget(&detail_icon);
+
+        // Detail Name Label
+        let detail_name_lbl = UIManager::create_widget(&format!("{}_detail_name", tab_id), UIWidgetTypes::Default);
+        let ui = ptr_as_mut(detail_name_lbl.as_ref()).get_ui_component_mut();
+        ui.set_size_hint_x(Some(1.0));
+        ui.set_size_y(48.0);
+        ui.set_valign(VerticalAlign::CENTER);
+        ui.set_font_size(24.0);
+        ui.set_font_color(get_color32(255, 255, 255, 255));
+        ui.set_color(get_color32(0, 0, 0, 0));
+        detail_hdr_mut.add_widget(&detail_name_lbl);
+
+        // Detail Description Label
+        let detail_desc_lbl = UIManager::create_widget(&format!("{}_detail_desc", tab_id), UIWidgetTypes::Default);
+        let ui = ptr_as_mut(detail_desc_lbl.as_ref()).get_ui_component_mut();
+        ui.set_size_hint_x(Some(1.0));
+        ui.set_size_y(60.0);
+        ui.set_valign(VerticalAlign::TOP);
+        ui.set_font_size(20.0);
+        ui.set_font_color(get_color32(190, 195, 205, 255));
+        ui.set_color(get_color32(0, 0, 0, 0));
+        ui.set_margin_bottom(12.0);
+        detail_container_mut.add_widget(&detail_desc_lbl);
+
+        // Detail Requirements / Map Info Box
+        let detail_req_box = UIManager::create_widget(&format!("{}_detail_req_box", tab_id), UIWidgetTypes::Default);
+        let detail_req_box_mut = ptr_as_mut(detail_req_box.as_ref());
+        let ui = detail_req_box_mut.get_ui_component_mut();
+        ui.set_layout_type(UILayoutType::BoxLayout);
+        ui.set_layout_orientation(Orientation::VERTICAL);
+        ui.set_halign(HorizontalAlign::LEFT);
+        ui.set_valign(VerticalAlign::TOP);
+        ui.set_size_hint_x(Some(1.0));
+        ui.set_size_y(140.0);
+        ui.set_padding(8.0);
+        ui.set_color(get_color32(28, 30, 34, 200));
+        ui.set_border_color(get_color32(55, 60, 68, 255));
+        ui.set_border(1.0);
+        ui.set_round(6.0);
+        ui.set_margin_bottom(16.0);
+        detail_container_mut.add_widget(&detail_req_box);
+
+        // Map Info Labels
+        let items_lbl = UIManager::create_widget(&format!("{}_detail_info_items", tab_id), UIWidgetTypes::Default);
+        let ui = ptr_as_mut(items_lbl.as_ref()).get_ui_component_mut();
+        ui.set_size_hint_x(Some(1.0));
+        ui.set_size_y(26.0);
+        ui.set_font_size(16.0);
+        ui.set_font_color(get_color32(130, 220, 160, 255));
+        ui.set_color(get_color32(0, 0, 0, 0));
+        detail_req_box_mut.add_widget(&items_lbl);
+
+        let chars_lbl = UIManager::create_widget(&format!("{}_detail_info_chars", tab_id), UIWidgetTypes::Default);
+        let ui = ptr_as_mut(chars_lbl.as_ref()).get_ui_component_mut();
+        ui.set_size_hint_x(Some(1.0));
+        ui.set_size_y(26.0);
+        ui.set_font_size(16.0);
+        ui.set_font_color(get_color32(240, 180, 120, 255));
+        ui.set_color(get_color32(0, 0, 0, 0));
+        detail_req_box_mut.add_widget(&chars_lbl);
+
+        let unexp_lbl = UIManager::create_widget(&format!("{}_detail_info_unexp", tab_id), UIWidgetTypes::Default);
+        let ui = ptr_as_mut(unexp_lbl.as_ref()).get_ui_component_mut();
+        ui.set_size_hint_x(Some(1.0));
+        ui.set_size_y(26.0);
+        ui.set_font_size(16.0);
+        ui.set_font_color(get_color32(150, 150, 150, 255));
+        ui.set_color(get_color32(0, 0, 0, 0));
+        detail_req_box_mut.add_widget(&unexp_lbl);
+
+        // Material Requirements Item Widget
+        let ing_set = UIManager::create_widget(&format!("{}_detail_ing_set", tab_id), UIWidgetTypes::Default);
+        let ing_set_mut = ptr_as_mut(ing_set.as_ref());
+        let ui = ing_set_mut.get_ui_component_mut();
         ui.set_layout_type(UILayoutType::BoxLayout);
         ui.set_layout_orientation(Orientation::HORIZONTAL);
         ui.set_size_hint_x(Some(1.0));
         ui.set_size_y(36.0);
-        ui.set_valign(VerticalAlign::CENTER);
         ui.set_color(get_color32(0, 0, 0, 0));
-        product_set_mut.add_widget(&product_hdr);
+        detail_req_box_mut.add_widget(&ing_set);
 
-        // Product Icon (32x32)
-        let product_icon = UIManager::create_widget(&format!("item_prod_icon_{:?}", data._icon_type), UIWidgetTypes::Default);
-        let ui = ptr_as_mut(product_icon.as_ref()).get_ui_component_mut();
-        ui.set_size(32.0, 32.0);
+        let ing_icon = UIManager::create_widget(&format!("{}_detail_ing_icon", tab_id), UIWidgetTypes::Default);
+        let ui = ptr_as_mut(ing_icon.as_ref()).get_ui_component_mut();
+        ui.set_size(30.0, 30.0);
         ui.set_valign(VerticalAlign::CENTER);
-        ui.set_halign(HorizontalAlign::LEFT);
-        ui.set_margin_right(6.0);
+        ui.set_margin_right(8.0);
         ui.set_color(get_color32(255, 255, 255, 255));
-        product_hdr_mut.add_widget(&product_icon);
-        Self::setup_item_icon(&product_icon, data._icon_type.item_code());
+        ing_set_mut.add_widget(&ing_icon);
 
-        // Product Name Label
-        let display_name = if is_map_item {
-            data._icon_type.as_str().to_string()
-        } else {
-            let item_code = data._icon_type.item_code();
-            let item_name = Self::get_item_name_from_resource(item_code);
-            if item_name == item_code {
-                data._icon_type.as_str().to_string()
-            } else {
-                item_name
-            }
-        };
-        let name_lbl = UIManager::create_widget(&format!("item_name_{:?}", data._icon_type), UIWidgetTypes::Default);
-        let ui = ptr_as_mut(name_lbl.as_ref()).get_ui_component_mut();
+        let ing_lbl = UIManager::create_widget(&format!("{}_detail_ing_lbl", tab_id), UIWidgetTypes::Default);
+        let ui = ptr_as_mut(ing_lbl.as_ref()).get_ui_component_mut();
         ui.set_size_hint_x(Some(1.0));
-        ui.set_size_y(32.0);
+        ui.set_size_y(30.0);
         ui.set_valign(VerticalAlign::CENTER);
-        ui.set_text(&display_name);
-        ui.set_font_size(21.0);
-        ui.set_font_color(get_color32(255, 255, 255, 255));
+        ui.set_font_size(17.0);
+        ui.set_font_color(get_color32(230, 235, 240, 255));
         ui.set_color(get_color32(0, 0, 0, 0));
-        product_hdr_mut.add_widget(&name_lbl);
+        ing_set_mut.add_widget(&ing_lbl);
 
-        // Description Label
-        let display_desc = if is_map_item {
-            data._description.clone()
-        } else {
-            let item_code = data._icon_type.item_code();
-            let desc_text = Self::get_item_description_from_resource(item_code);
-            if desc_text.is_empty() || desc_text == item_code {
-                data._description.clone()
-            } else {
-                desc_text
-            }
-        };
-        let desc_lbl = UIManager::create_widget(&format!("item_desc_{:?}", data._icon_type), UIWidgetTypes::Default);
-        let ui = ptr_as_mut(desc_lbl.as_ref()).get_ui_component_mut();
+        // Detail Action Button Container (Bottom aligned)
+        let action_btn_box = UIManager::create_widget(&format!("{}_detail_action_box", tab_id), UIWidgetTypes::Default);
+        let action_btn_box_mut = ptr_as_mut(action_btn_box.as_ref());
+        let ui = action_btn_box_mut.get_ui_component_mut();
+        ui.set_layout_type(UILayoutType::BoxLayout);
+        ui.set_layout_orientation(Orientation::HORIZONTAL);
         ui.set_size_hint_x(Some(1.0));
-        ui.set_size_y(26.0);
-        ui.set_text(&display_desc);
-        ui.set_font_size(16.0);
-        ui.set_font_color(get_color32(180, 185, 195, 255));
-        ui.set_color(get_color32(0, 0, 0, 0));
-        product_set_mut.add_widget(&desc_lbl);
-
-        // 2. Middle Section: Discovered Items & Characters for Map items, or Materials Box for crafting items
-        let ing_box = UIManager::create_widget(&format!("item_ing_box_{:?}", data._icon_type), UIWidgetTypes::Default);
-        let ing_box_mut = ptr_as_mut(ing_box.as_ref());
-        let ui = ing_box_mut.get_ui_component_mut();
-        ui.set_layout_type(UILayoutType::BoxLayout);
-        let mut info_items_lbl = None;
-        let mut info_chars_lbl = None;
-        let mut info_unexp_lbl = None;
-
-        if is_map_item {
-            ui.set_layout_orientation(Orientation::VERTICAL);
-            ui.set_size_hint_x(Some(1.0));
-            ui.set_size_y(60.0);
-            ui.set_valign(VerticalAlign::CENTER);
-            ui.set_color(get_color32(0, 0, 0, 0));
-            layout_mut.add_widget(&ing_box);
-
-            let items_lbl = UIManager::create_widget(&format!("item_info_items_{:?}", data._icon_type), UIWidgetTypes::Default);
-            let ui = ptr_as_mut(items_lbl.as_ref()).get_ui_component_mut();
-            ui.set_size_hint_x(Some(1.0));
-            ui.set_size_y(26.0);
-            ui.set_valign(VerticalAlign::CENTER);
-            ui.set_font_size(16.0);
-            ui.set_font_color(get_color32(130, 220, 160, 255));
-            ui.set_color(get_color32(0, 0, 0, 0));
-            ing_box_mut.add_widget(&items_lbl);
-            info_items_lbl = Some(items_lbl);
-
-            let chars_lbl = UIManager::create_widget(&format!("item_info_chars_{:?}", data._icon_type), UIWidgetTypes::Default);
-            let ui = ptr_as_mut(chars_lbl.as_ref()).get_ui_component_mut();
-            ui.set_size_hint_x(Some(1.0));
-            ui.set_size_y(26.0);
-            ui.set_valign(VerticalAlign::CENTER);
-            ui.set_font_size(16.0);
-            ui.set_font_color(get_color32(240, 180, 120, 255));
-            ui.set_color(get_color32(0, 0, 0, 0));
-            ing_box_mut.add_widget(&chars_lbl);
-            info_chars_lbl = Some(chars_lbl);
-
-            let unexp_lbl = UIManager::create_widget(&format!("item_info_unexp_{:?}", data._icon_type), UIWidgetTypes::Default);
-            let ui = ptr_as_mut(unexp_lbl.as_ref()).get_ui_component_mut();
-            ui.set_size_hint_x(Some(1.0));
-            ui.set_size_y(26.0);
-            ui.set_valign(VerticalAlign::CENTER);
-            ui.set_font_size(16.0);
-            ui.set_font_color(get_color32(150, 150, 150, 255));
-            ui.set_color(get_color32(0, 0, 0, 0));
-            ing_box_mut.add_widget(&unexp_lbl);
-            info_unexp_lbl = Some(unexp_lbl);
-        } else {
-            ui.set_layout_orientation(Orientation::HORIZONTAL);
-            ui.set_size_hint_x(Some(1.0));
-            ui.set_size_y(56.0);
-            ui.set_valign(VerticalAlign::CENTER);
-            ui.set_color(get_color32(0, 0, 0, 0));
-            layout_mut.add_widget(&ing_box);
-        }
-
-        let mut ing_widgets = Vec::new();
-        if !is_map_item {
-            if data._item_data_count > 0 && data._item_data_type != ItemDataType::None {
-                let ing_set = UIManager::create_widget(&format!("item_ing_set_{:?}", data._icon_type), UIWidgetTypes::Default);
-                let ing_set_mut = ptr_as_mut(ing_set.as_ref());
-                let ui = ing_set_mut.get_ui_component_mut();
-                ui.set_layout_type(UILayoutType::BoxLayout);
-                ui.set_layout_orientation(Orientation::HORIZONTAL);
-                ui.set_size_y(32.0);
-                ui.set_valign(VerticalAlign::CENTER);
-                ui.set_margin_right(14.0);
-                ui.set_color(get_color32(0, 0, 0, 0));
-                ing_box_mut.add_widget(&ing_set);
-
-                // Material Icon (28x28)
-                let ing_icon = UIManager::create_widget(&format!("item_ing_icon_{:?}", data._icon_type), UIWidgetTypes::Default);
-                let ui = ptr_as_mut(ing_icon.as_ref()).get_ui_component_mut();
-                ui.set_size(28.0, 28.0);
-                ui.set_valign(VerticalAlign::CENTER);
-                ui.set_margin_right(4.0);
-                ui.set_color(get_color32(255, 255, 255, 255));
-                ing_set_mut.add_widget(&ing_icon);
-                Self::setup_item_icon(&ing_icon, data._item_data_type.item_code());
-
-                // Material Label (Name (have/cost))
-                let ing_lbl = UIManager::create_widget(&format!("item_ing_lbl_{:?}", data._icon_type), UIWidgetTypes::Default);
-                let ui = ptr_as_mut(ing_lbl.as_ref()).get_ui_component_mut();
-                ui.set_size_y(28.0);
-                ui.set_valign(VerticalAlign::CENTER);
-                ui.set_font_size(18.0);
-                ui.set_font_color(get_color32(230, 235, 240, 255));
-                ui.set_color(get_color32(0, 0, 0, 0));
-                ing_set_mut.add_widget(&ing_lbl);
-
-                ing_widgets.push(IngredientWidgetItem {
-                    _layout: ing_set,
-                    _icon: ing_icon,
-                    _label: ing_lbl,
-                    _item_type: data._item_data_type,
-                    _count: data._item_data_count,
-                });
-            } else {
-                let free_lbl = UIManager::create_widget(&format!("item_free_lbl_{:?}", data._icon_type), UIWidgetTypes::Default);
-                let ui = ptr_as_mut(free_lbl.as_ref()).get_ui_component_mut();
-                ui.set_size_y(28.0);
-                ui.set_valign(VerticalAlign::CENTER);
-                ui.set_text("Free");
-                ui.set_font_size(18.0);
-                ui.set_font_color(get_color32(100, 210, 120, 255));
-                ui.set_color(get_color32(0, 0, 0, 0));
-                ing_box_mut.add_widget(&free_lbl);
-            }
-        }
-
-        // 3. Right Section: Action Button (and status label if non-map)
-        let right_set = UIManager::create_widget(&format!("item_right_set_{:?}", data._icon_type), UIWidgetTypes::Default);
-        let right_set_mut = ptr_as_mut(right_set.as_ref());
-        let ui = right_set_mut.get_ui_component_mut();
-        ui.set_layout_type(UILayoutType::BoxLayout);
-        ui.set_layout_orientation(Orientation::VERTICAL);
-        ui.set_size(ACTION_BUTTON_WIDTH + 10.0, 56.0);
-        ui.set_valign(VerticalAlign::CENTER);
+        ui.set_size_y(ACTION_BUTTON_HEIGHT + 10.0);
         ui.set_halign(HorizontalAlign::CENTER);
+        ui.set_valign(VerticalAlign::BOTTOM);
         ui.set_color(get_color32(0, 0, 0, 0));
-        layout_mut.add_widget(&right_set);
+        detail_container_mut.add_widget(&action_btn_box);
 
-        // Action button (Unlock)
-        let action_btn = UIManager::create_widget(&format!("item_action_{:?}", data._icon_type), UIWidgetTypes::Default);
-        let ui = ptr_as_mut(action_btn.as_ref()).get_ui_component_mut();
+        let detail_action_btn = UIManager::create_widget(&format!("{}_detail_action_btn", tab_id), UIWidgetTypes::Default);
+        let ui = ptr_as_mut(detail_action_btn.as_ref()).get_ui_component_mut();
         ui.set_size(ACTION_BUTTON_WIDTH, ACTION_BUTTON_HEIGHT);
         ui.set_halign(HorizontalAlign::CENTER);
         ui.set_valign(VerticalAlign::CENTER);
@@ -760,90 +943,78 @@ impl<'a> ToolboxItemWidget<'a> {
         ui.set_border(2.0);
         ui.set_round(6.0);
         ui.set_text("Unlock");
-        ui.set_font_size(17.0);
+        ui.set_font_size(18.0);
         ui.set_font_color(get_color32(230, 230, 230, 255));
-        ui.set_touchable(true);
-        ui.set_callback_touch_over(Some(Box::new(Self::callback_item_touch_over)));
-        ui.set_callback_touch_down(Some(Box::new(Self::callback_item_action)));
-        right_set_mut.add_widget(&action_btn);
+        ui.set_touchable(false);
+        ui.set_callback_touch_over(Some(Box::new(ToolboxItemWidget::callback_item_touch_over)));
+        ui.set_callback_touch_down(Some(Box::new(Self::callback_action_btn)));
+        action_btn_box_mut.add_widget(&detail_action_btn);
 
-        let mut item = Box::new(ToolboxItemWidget {
+        // Populate items into left list container
+        let first_item_data = item_list.first().cloned();
+        let mut items = Vec::new();
+        for (idx, item_data) in item_list.into_iter().enumerate() {
+            let item_widget = ToolboxItemWidget::create(
+                list_container_mut,
+                item_data,
+                idx,
+            );
+            items.push(item_widget);
+        }
+
+        let first_req_type = first_item_data.as_ref().map(|d| d._item_data_type).unwrap_or(ItemDataType::None);
+        let first_req_count = first_item_data.as_ref().map(|d| d._item_data_count).unwrap_or(0);
+
+        let ing_widget = IngredientWidgetItem {
+            _layout: ing_set,
+            _icon: ing_icon,
+            _label: ing_lbl,
+            _item_type: first_req_type,
+            _count: first_req_count,
+        };
+
+        let tab_widget = Box::new(ToolboxTabWidget {
             _layout: layout,
-            _product_icon: product_icon,
-            _name_lbl: name_lbl,
-            _desc_lbl: desc_lbl,
-            _ing_widgets: ing_widgets,
-            _action_btn: action_btn,
-            _info_items_lbl: info_items_lbl,
-            _info_chars_lbl: info_chars_lbl,
-            _info_unexp_lbl: info_unexp_lbl,
-            _state: ToolboxItemState::Locked,
-            _data: data,
-        });
-
-        item.update_ui();
-        item
-    }
-}
-
-// ────────────────────────────────────────────────────────────────
-// ToolboxTabWidget - Content pane for a category tab
-// ────────────────────────────────────────────────────────────────
-pub struct ToolboxTabWidget<'a> {
-    pub _layout: Rc<WidgetDefault<'a>>,
-    pub _items: Vec<Box<ToolboxItemWidget<'a>>>,
-    pub _is_visible: bool,
-}
-
-impl<'a> ToolboxTabWidget<'a> {
-    pub fn create(
-        tab_id: &str,
-        parent_widget: &mut WidgetDefault<'a>,
-        item_list: Vec<ToolboxItemData>,
-    ) -> Box<ToolboxTabWidget<'a>> {
-        let layout = UIManager::create_widget(&format!("{}_tab_layout", tab_id), UIWidgetTypes::Default);
-        let layout_mut = ptr_as_mut(layout.as_ref());
-        let ui = layout_mut.get_ui_component_mut();
-        ui.set_layout_type(UILayoutType::BoxLayout);
-        ui.set_layout_orientation(Orientation::VERTICAL);
-        ui.set_halign(HorizontalAlign::LEFT);
-        ui.set_valign(VerticalAlign::TOP);
-        ui.set_size_hint_x(Some(1.0));
-        ui.set_size_hint_y(Some(1.0));
-        ui.set_expandable(false);
-        ui.set_scroll_y(true);
-        ui.set_enable_renderable_area(true);
-        ui.set_padding(10.0);
-        ui.set_color(get_color32(30, 30, 30, 220));
-        ui.set_renderable(true);
-        ui.set_enable(false);
-        parent_widget.add_widget(&layout);
-
-        let mut tab_widget = Box::new(ToolboxTabWidget {
-            _layout: layout,
-            _items: Vec::new(),
+            _list_container: list_container,
+            _detail_container: detail_container,
+            _items: items,
+            _selected_index: 0,
+            _detail_icon: detail_icon,
+            _detail_name_lbl: detail_name_lbl,
+            _detail_desc_lbl: detail_desc_lbl,
+            _detail_req_box: detail_req_box,
+            _detail_ing_widgets: vec![ing_widget],
+            _detail_info_items_lbl: Some(items_lbl),
+            _detail_info_chars_lbl: Some(chars_lbl),
+            _detail_info_unexp_lbl: Some(unexp_lbl),
+            _detail_action_btn: detail_action_btn,
             _is_visible: false,
         });
 
-        // Add items to the tab pane
-        for item_data in item_list {
-            let item_widget = ToolboxItemWidget::create(ptr_as_mut(tab_widget._layout.as_ref()), item_data);
-            tab_widget._items.push(item_widget);
-        }
+        // Set action button user data to tab pointer
+        let tab_ptr = tab_widget.as_ref() as *const ToolboxTabWidget<'a> as *const c_void;
+        ptr_as_mut(tab_widget._detail_action_btn.as_ref())
+            .get_ui_component_mut()
+            .set_user_data(tab_ptr);
 
         tab_widget
     }
 
     pub fn open(&mut self) {
         if !self._is_visible {
+            let tab_ptr = self as *mut ToolboxTabWidget<'a> as *mut c_void;
             for item in self._items.iter_mut() {
+                item._tab_ptr = tab_ptr;
                 let item_ptr = item.as_ref() as *const ToolboxItemWidget<'a> as *const c_void;
-                ptr_as_mut(item._action_btn.as_ref()).get_ui_component_mut().set_user_data(item_ptr);
                 ptr_as_mut(item._layout.as_ref()).get_ui_component_mut().set_user_data(item_ptr);
-                item.update_ui();
             }
+            ptr_as_mut(self._detail_action_btn.as_ref())
+                .get_ui_component_mut()
+                .set_user_data(tab_ptr);
+
             ptr_as_mut(self._layout.as_ref()).get_ui_component_mut().set_enable(true);
             self._is_visible = true;
+            self.select_item(self._selected_index);
         }
     }
 
