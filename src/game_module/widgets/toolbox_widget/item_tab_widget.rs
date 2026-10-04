@@ -493,12 +493,13 @@ pub struct ToolboxTabWidget<'a> {
     // Right Detail Panel widgets
     pub _detail_icon: Rc<WidgetDefault<'a>>,
     pub _detail_name_lbl: Rc<WidgetDefault<'a>>,
+    pub _detail_desc_box: Rc<WidgetDefault<'a>>,
     pub _detail_desc_lbl: Rc<WidgetDefault<'a>>,
-    pub _detail_req_box: Rc<WidgetDefault<'a>>,
-    pub _detail_ing_widgets: Vec<IngredientWidgetItem<'a>>,
     pub _detail_info_items_lbl: Option<Rc<WidgetDefault<'a>>>,
     pub _detail_info_chars_lbl: Option<Rc<WidgetDefault<'a>>>,
     pub _detail_info_unexp_lbl: Option<Rc<WidgetDefault<'a>>>,
+    pub _detail_req_box: Rc<WidgetDefault<'a>>,
+    pub _detail_ing_widgets: Vec<IngredientWidgetItem<'a>>,
     pub _detail_action_btn: Rc<WidgetDefault<'a>>,
 
     pub _is_visible: bool,
@@ -838,6 +839,24 @@ impl<'a> ToolboxTabWidget<'a> {
         detail_hdr_mut.add_widget(&detail_name_lbl);
 
         // Detail Description Label
+        let detail_desc_box = UIManager::create_widget(&format!("{}_detail_desc_box", tab_id), UIWidgetTypes::Default);
+        let detail_desc_box_mut = ptr_as_mut(detail_desc_box.as_ref());
+        let ui = detail_desc_box_mut.get_ui_component_mut();
+        ui.set_layout_type(UILayoutType::BoxLayout);
+        ui.set_layout_orientation(Orientation::VERTICAL);
+        ui.set_halign(HorizontalAlign::LEFT);
+        ui.set_valign(VerticalAlign::TOP);
+        ui.set_size_hint_x(Some(1.0));
+        ui.set_expandable_y(true);
+        ui.set_size_y(0.0);
+        ui.set_padding(8.0);
+        ui.set_color(get_color32(28, 30, 34, 200));
+        ui.set_border_color(get_color32(55, 60, 68, 255));
+        ui.set_border(1.0);
+        ui.set_round(6.0);
+        ui.set_margin_bottom(16.0);
+        detail_container_mut.add_widget(&detail_desc_box);
+
         let detail_desc_lbl = UIManager::create_widget(&format!("{}_detail_desc", tab_id), UIWidgetTypes::Default);
         let ui = ptr_as_mut(detail_desc_lbl.as_ref()).get_ui_component_mut();
         ui.set_size_hint_x(Some(1.0));
@@ -848,7 +867,35 @@ impl<'a> ToolboxTabWidget<'a> {
         ui.set_font_color(get_color32(190, 195, 205, 255));
         ui.set_color(get_color32(0, 0, 0, 0));
         ui.set_margin_bottom(12.0);
-        detail_container_mut.add_widget(&detail_desc_lbl);
+        detail_desc_box_mut.add_widget(&detail_desc_lbl);
+
+        // Map Info Labels
+        let items_lbl = UIManager::create_widget(&format!("{}_detail_info_items", tab_id), UIWidgetTypes::Default);
+        let ui = ptr_as_mut(items_lbl.as_ref()).get_ui_component_mut();
+        ui.set_size_hint_x(Some(1.0));
+        ui.set_size_y(26.0);
+        ui.set_font_size(20.0);
+        ui.set_font_color(get_color32(130, 220, 160, 255));
+        ui.set_color(get_color32(0, 0, 0, 0));
+        detail_desc_box_mut.add_widget(&items_lbl);
+
+        let chars_lbl = UIManager::create_widget(&format!("{}_detail_info_chars", tab_id), UIWidgetTypes::Default);
+        let ui = ptr_as_mut(chars_lbl.as_ref()).get_ui_component_mut();
+        ui.set_size_hint_x(Some(1.0));
+        ui.set_size_y(26.0);
+        ui.set_font_size(20.0);
+        ui.set_font_color(get_color32(240, 180, 120, 255));
+        ui.set_color(get_color32(0, 0, 0, 0));
+        detail_desc_box_mut.add_widget(&chars_lbl);
+
+        let unexp_lbl = UIManager::create_widget(&format!("{}_detail_info_unexp", tab_id), UIWidgetTypes::Default);
+        let ui = ptr_as_mut(unexp_lbl.as_ref()).get_ui_component_mut();
+        ui.set_size_hint_x(Some(1.0));
+        ui.set_size_y(26.0);
+        ui.set_font_size(20.0);
+        ui.set_font_color(get_color32(150, 150, 150, 255));
+        ui.set_color(get_color32(0, 0, 0, 0));
+        detail_desc_box_mut.add_widget(&unexp_lbl);
 
         // Detail Requirements / Map Info Box
         let detail_req_text = UIManager::create_widget(&format!("{}_detail_req_text", tab_id), UIWidgetTypes::Default);
@@ -861,7 +908,7 @@ impl<'a> ToolboxTabWidget<'a> {
         ui.set_margin_bottom(4.0);
         ui.set_color(get_color32(0, 0, 0, 0));
         ui.set_font_size(20.0);
-        ui.set_text("Requirements");
+        ui.set_text("Requirements:");
         ui.set_font_color(get_color32(130, 220, 160, 255));
         detail_container_mut.add_widget(&detail_req_text);
 
@@ -882,34 +929,6 @@ impl<'a> ToolboxTabWidget<'a> {
         ui.set_round(6.0);
         ui.set_margin_bottom(16.0);
         detail_container_mut.add_widget(&detail_req_box);
-
-        // Map Info Labels
-        let items_lbl = UIManager::create_widget(&format!("{}_detail_info_items", tab_id), UIWidgetTypes::Default);
-        let ui = ptr_as_mut(items_lbl.as_ref()).get_ui_component_mut();
-        ui.set_size_hint_x(Some(1.0));
-        ui.set_size_y(26.0);
-        ui.set_font_size(20.0);
-        ui.set_font_color(get_color32(130, 220, 160, 255));
-        ui.set_color(get_color32(0, 0, 0, 0));
-        detail_req_box_mut.add_widget(&items_lbl);
-
-        let chars_lbl = UIManager::create_widget(&format!("{}_detail_info_chars", tab_id), UIWidgetTypes::Default);
-        let ui = ptr_as_mut(chars_lbl.as_ref()).get_ui_component_mut();
-        ui.set_size_hint_x(Some(1.0));
-        ui.set_size_y(26.0);
-        ui.set_font_size(20.0);
-        ui.set_font_color(get_color32(240, 180, 120, 255));
-        ui.set_color(get_color32(0, 0, 0, 0));
-        detail_req_box_mut.add_widget(&chars_lbl);
-
-        let unexp_lbl = UIManager::create_widget(&format!("{}_detail_info_unexp", tab_id), UIWidgetTypes::Default);
-        let ui = ptr_as_mut(unexp_lbl.as_ref()).get_ui_component_mut();
-        ui.set_size_hint_x(Some(1.0));
-        ui.set_size_y(26.0);
-        ui.set_font_size(20.0);
-        ui.set_font_color(get_color32(150, 150, 150, 255));
-        ui.set_color(get_color32(0, 0, 0, 0));
-        detail_req_box_mut.add_widget(&unexp_lbl);
 
         // Material Requirements Item Widget
         let ing_set = UIManager::create_widget(&format!("{}_detail_ing_set", tab_id), UIWidgetTypes::Default);
@@ -1001,12 +1020,13 @@ impl<'a> ToolboxTabWidget<'a> {
             _selected_index: 0,
             _detail_icon: detail_icon,
             _detail_name_lbl: detail_name_lbl,
+            _detail_desc_box: detail_desc_box,
             _detail_desc_lbl: detail_desc_lbl,
-            _detail_req_box: detail_req_box,
-            _detail_ing_widgets: vec![ing_widget],
             _detail_info_items_lbl: Some(items_lbl),
             _detail_info_chars_lbl: Some(chars_lbl),
             _detail_info_unexp_lbl: Some(unexp_lbl),
+            _detail_req_box: detail_req_box,
+            _detail_ing_widgets: vec![ing_widget],
             _detail_action_btn: detail_action_btn,
             _is_visible: false,
         });
