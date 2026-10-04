@@ -308,7 +308,9 @@ impl<'a> ToolboxItemWidget<'a> {
         item_code.to_string()
     }
 
-    pub fn setup_item_icon(icon_widget: &Rc<WidgetDefault<'a>>, item_code: &str) {
+    pub fn setup_item_icon(icon_widget: &Rc<WidgetDefault<'a>>, item_code: &str, enable: bool) {
+        let mut has_item_data: bool = false;
+        let ui = ptr_as_mut(icon_widget.as_ref()).get_ui_component_mut();
         let resources = get_game_resources();
         if resources.has_item_data(item_code) {
             let item_data = resources.get_item_data(item_code).borrow();
@@ -317,11 +319,12 @@ impl<'a> ToolboxItemWidget<'a> {
                 let engine_res = get_engine_resources();
                 if engine_res.has_material_instance_data(mat_name.as_str()) {
                     let material = engine_res.get_material_instance_data(mat_name.as_str());
-                    let ui = ptr_as_mut(icon_widget.as_ref()).get_ui_component_mut();
                     ui.set_material_instance(Some(material.clone()));
+                    has_item_data = true;
                 }
             }
         }
+        ui.set_enable(enable && has_item_data);
     }
 
     pub fn callback_item_touch_over(
@@ -417,7 +420,7 @@ impl<'a> ToolboxItemWidget<'a> {
         ui.set_margin_right(8.0);
         ui.set_color(get_color32(255, 255, 255, 255));
         layout_mut.add_widget(&icon);
-        Self::setup_item_icon(&icon, data._icon_type.item_code());
+        Self::setup_item_icon(&icon, data._icon_type.item_code(), true);
 
         // Name Label
         let display_name = if is_map_item {
@@ -589,7 +592,7 @@ impl<'a> ToolboxTabWidget<'a> {
         let is_map_item = item._data._icon_type.stage_data_name().is_some();
 
         // 1. Setup Detail Icon & Name
-        ToolboxItemWidget::setup_item_icon(&self._detail_icon, item._data._icon_type.item_code());
+        ToolboxItemWidget::setup_item_icon(&self._detail_icon, item._data._icon_type.item_code(), true);
         let display_name = if is_map_item {
             item._data._icon_type.as_str().to_string()
         } else {
@@ -621,10 +624,18 @@ impl<'a> ToolboxTabWidget<'a> {
         for ing_widget in self._detail_ing_widgets.iter_mut() {
             ing_widget._item_type = item._data._item_data_type;
             ing_widget._count = item._data._item_data_count;
+            let show_req = item._data._item_data_count > 0
+                && item._data._item_data_type != ItemDataType::None;
             let item_code = ing_widget.item_code();
             let have_count = ui_mgr.get_item_count(item_code);
             let mat_name = ToolboxItemWidget::get_item_name_from_resource(item_code);
-            let text = format!("{} ({}/{})", mat_name, have_count, ing_widget._count);
+            let text = if item._state == ToolboxItemState::Unlocked {
+                "Unlocked".to_string()
+            } else if show_req {
+                format!("{} ({}/{})", mat_name, have_count, ing_widget._count)
+            } else {
+                "Unlock for Free".to_string()
+            };
             let lbl_ui = ptr_as_mut(ing_widget._label.as_ref()).get_ui_component_mut();
             lbl_ui.set_text(&text);
             if have_count >= ing_widget._count {
@@ -633,12 +644,7 @@ impl<'a> ToolboxTabWidget<'a> {
                 lbl_ui.set_font_color(get_color32(235, 100, 100, 255));
             }
 
-            ToolboxItemWidget::setup_item_icon(&ing_widget._icon, item_code);
-
-            let show_req = !is_map_item
-                && item._data._item_data_count > 0
-                && item._data._item_data_type != ItemDataType::None;
-            ptr_as_mut(ing_widget._layout.as_ref()).get_ui_component_mut().set_enable(show_req);
+            ToolboxItemWidget::setup_item_icon(&ing_widget._icon, item_code, show_req);
         }
 
         if is_map_item {
@@ -808,7 +814,7 @@ impl<'a> ToolboxTabWidget<'a> {
         ui.set_size_y(54.0);
         ui.set_valign(VerticalAlign::CENTER);
         ui.set_margin_bottom(10.0);
-        ui.set_color(get_color32(0, 0, 0, 0));
+        ui.set_color(get_color32(255, 0, 0, 0));
         detail_container_mut.add_widget(&detail_hdr);
 
         // Detail Large Icon (48x48)
@@ -835,7 +841,8 @@ impl<'a> ToolboxTabWidget<'a> {
         let detail_desc_lbl = UIManager::create_widget(&format!("{}_detail_desc", tab_id), UIWidgetTypes::Default);
         let ui = ptr_as_mut(detail_desc_lbl.as_ref()).get_ui_component_mut();
         ui.set_size_hint_x(Some(1.0));
-        ui.set_size_y(60.0);
+        ui.set_expandable_y(true);
+        ui.set_size_y(0.0);
         ui.set_valign(VerticalAlign::TOP);
         ui.set_font_size(20.0);
         ui.set_font_color(get_color32(190, 195, 205, 255));
@@ -844,6 +851,20 @@ impl<'a> ToolboxTabWidget<'a> {
         detail_container_mut.add_widget(&detail_desc_lbl);
 
         // Detail Requirements / Map Info Box
+        let detail_req_text = UIManager::create_widget(&format!("{}_detail_req_text", tab_id), UIWidgetTypes::Default);
+        let detail_req_text_mut = ptr_as_mut(detail_req_text.as_ref());
+        let ui = detail_req_text_mut.get_ui_component_mut();
+        ui.set_halign(HorizontalAlign::LEFT);
+        ui.set_valign(VerticalAlign::CENTER);
+        ui.set_size_hint_x(Some(1.0));
+        ui.set_size_y(20.0);
+        ui.set_margin_bottom(4.0);
+        ui.set_color(get_color32(0, 0, 0, 0));
+        ui.set_font_size(20.0);
+        ui.set_text("Requirements");
+        ui.set_font_color(get_color32(130, 220, 160, 255));
+        detail_container_mut.add_widget(&detail_req_text);
+
         let detail_req_box = UIManager::create_widget(&format!("{}_detail_req_box", tab_id), UIWidgetTypes::Default);
         let detail_req_box_mut = ptr_as_mut(detail_req_box.as_ref());
         let ui = detail_req_box_mut.get_ui_component_mut();
@@ -867,8 +888,7 @@ impl<'a> ToolboxTabWidget<'a> {
         let ui = ptr_as_mut(items_lbl.as_ref()).get_ui_component_mut();
         ui.set_size_hint_x(Some(1.0));
         ui.set_size_y(26.0);
-        ui.set_font_size(16.0);
-        ui.set_text(items_lbl.get_ui_widget_name());
+        ui.set_font_size(20.0);
         ui.set_font_color(get_color32(130, 220, 160, 255));
         ui.set_color(get_color32(0, 0, 0, 0));
         detail_req_box_mut.add_widget(&items_lbl);
@@ -877,26 +897,18 @@ impl<'a> ToolboxTabWidget<'a> {
         let ui = ptr_as_mut(chars_lbl.as_ref()).get_ui_component_mut();
         ui.set_size_hint_x(Some(1.0));
         ui.set_size_y(26.0);
-        ui.set_font_size(16.0);
+        ui.set_font_size(20.0);
         ui.set_font_color(get_color32(240, 180, 120, 255));
         ui.set_color(get_color32(0, 0, 0, 0));
-
-        ui.set_text(items_lbl.get_ui_widget_name());
-        ui.set_color(get_color32(255, 0, 0, 0));
-
         detail_req_box_mut.add_widget(&chars_lbl);
 
         let unexp_lbl = UIManager::create_widget(&format!("{}_detail_info_unexp", tab_id), UIWidgetTypes::Default);
         let ui = ptr_as_mut(unexp_lbl.as_ref()).get_ui_component_mut();
         ui.set_size_hint_x(Some(1.0));
         ui.set_size_y(26.0);
-        ui.set_font_size(16.0);
+        ui.set_font_size(20.0);
         ui.set_font_color(get_color32(150, 150, 150, 255));
         ui.set_color(get_color32(0, 0, 0, 0));
-
-        ui.set_text(items_lbl.get_ui_widget_name());
-        ui.set_color(get_color32(0, 255, 0, 0));
-
         detail_req_box_mut.add_widget(&unexp_lbl);
 
         // Material Requirements Item Widget
@@ -908,10 +920,6 @@ impl<'a> ToolboxTabWidget<'a> {
         ui.set_size_hint_x(Some(1.0));
         ui.set_size_y(36.0);
         ui.set_color(get_color32(0, 0, 0, 0));
-
-        ui.set_text(items_lbl.get_ui_widget_name());
-        ui.set_color(get_color32(0, 0, 255, 0));
-
         detail_req_box_mut.add_widget(&ing_set);
 
         let ing_icon = UIManager::create_widget(&format!("{}_detail_ing_icon", tab_id), UIWidgetTypes::Default);
@@ -927,7 +935,7 @@ impl<'a> ToolboxTabWidget<'a> {
         ui.set_size_hint_x(Some(1.0));
         ui.set_size_y(30.0);
         ui.set_valign(VerticalAlign::CENTER);
-        ui.set_font_size(17.0);
+        ui.set_font_size(20.0);
         ui.set_font_color(get_color32(230, 235, 240, 255));
         ui.set_color(get_color32(0, 0, 0, 0));
         ing_set_mut.add_widget(&ing_lbl);
