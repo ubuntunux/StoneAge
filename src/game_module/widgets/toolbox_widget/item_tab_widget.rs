@@ -651,7 +651,7 @@ impl<'a> ToolboxTabWidget<'a> {
                     };
                     let ui = ptr_as_mut(lbl.as_ref()).get_ui_component_mut();
                     ui.set_text(&items_str);
-                    ui.set_renderable(true);
+                    ui.set_enable(true);
                 }
                 if let Some(lbl) = &self._detail_info_chars_lbl {
                     let chars_str = if chars.is_empty() {
@@ -661,33 +661,33 @@ impl<'a> ToolboxTabWidget<'a> {
                     };
                     let ui = ptr_as_mut(lbl.as_ref()).get_ui_component_mut();
                     ui.set_text(&chars_str);
-                    ui.set_renderable(true);
+                    ui.set_enable(true);
                 }
                 if let Some(lbl) = &self._detail_info_unexp_lbl {
-                    ptr_as_mut(lbl.as_ref()).get_ui_component_mut().set_renderable(false);
+                    ptr_as_mut(lbl.as_ref()).get_ui_component_mut().set_enable(false);
                 }
             } else {
                 if let Some(lbl) = &self._detail_info_items_lbl {
-                    ptr_as_mut(lbl.as_ref()).get_ui_component_mut().set_renderable(false);
+                    ptr_as_mut(lbl.as_ref()).get_ui_component_mut().set_enable(false);
                 }
                 if let Some(lbl) = &self._detail_info_chars_lbl {
-                    ptr_as_mut(lbl.as_ref()).get_ui_component_mut().set_renderable(false);
+                    ptr_as_mut(lbl.as_ref()).get_ui_component_mut().set_enable(false);
                 }
                 if let Some(lbl) = &self._detail_info_unexp_lbl {
                     let ui = ptr_as_mut(lbl.as_ref()).get_ui_component_mut();
                     ui.set_text("Unexplored Region");
-                    ui.set_renderable(true);
+                    ui.set_enable(true);
                 }
             }
         } else {
             if let Some(lbl) = &self._detail_info_items_lbl {
-                ptr_as_mut(lbl.as_ref()).get_ui_component_mut().set_renderable(false);
+                ptr_as_mut(lbl.as_ref()).get_ui_component_mut().set_enable(false);
             }
             if let Some(lbl) = &self._detail_info_chars_lbl {
-                ptr_as_mut(lbl.as_ref()).get_ui_component_mut().set_renderable(false);
+                ptr_as_mut(lbl.as_ref()).get_ui_component_mut().set_enable(false);
             }
             if let Some(lbl) = &self._detail_info_unexp_lbl {
-                ptr_as_mut(lbl.as_ref()).get_ui_component_mut().set_renderable(false);
+                ptr_as_mut(lbl.as_ref()).get_ui_component_mut().set_enable(false);
             }
         }
 
@@ -717,7 +717,6 @@ impl<'a> ToolboxTabWidget<'a> {
                     btn_ui.set_font_color(get_color32(150, 150, 150, 255));
                     btn_ui.set_touchable(false);
                 }
-                btn_ui.set_renderable(true);
                 btn_ui.set_enable(true);
             }
             ToolboxItemState::Unlocked => {
@@ -726,7 +725,6 @@ impl<'a> ToolboxTabWidget<'a> {
                     btn_ui.set_color(get_color32(50, 110, 180, 255));
                     btn_ui.set_border_color(get_color32(90, 160, 240, 255));
                     btn_ui.set_font_color(get_color32(255, 255, 255, 255));
-                    btn_ui.set_renderable(true);
                     btn_ui.set_touchable(true);
                     btn_ui.set_enable(true);
                 } else {
@@ -734,7 +732,6 @@ impl<'a> ToolboxTabWidget<'a> {
                     btn_ui.set_color(get_color32(40, 45, 50, 255));
                     btn_ui.set_border_color(get_color32(70, 75, 80, 255));
                     btn_ui.set_font_color(get_color32(120, 120, 120, 255));
-                    btn_ui.set_renderable(true);
                     btn_ui.set_touchable(false);
                     btn_ui.set_enable(false);
                 }
@@ -759,7 +756,6 @@ impl<'a> ToolboxTabWidget<'a> {
         ui.set_size_hint_y(Some(1.0));
         ui.set_padding(8.0);
         ui.set_color(get_color32(30, 30, 30, 220));
-        ui.set_renderable(true);
         ui.set_enable(false);
         parent_widget.add_widget(&layout);
 
@@ -793,6 +789,8 @@ impl<'a> ToolboxTabWidget<'a> {
         ui.set_valign(VerticalAlign::TOP);
         ui.set_size_hint_x(Some(1.0));
         ui.set_size_hint_y(Some(1.0));
+        ui.set_expandable_y(true);
+        ui.set_size_y(0.0);
         ui.set_padding(14.0);
         ui.set_color(get_color32(35, 38, 43, 230));
         ui.set_border_color(get_color32(65, 70, 78, 255));
@@ -854,7 +852,8 @@ impl<'a> ToolboxTabWidget<'a> {
         ui.set_halign(HorizontalAlign::LEFT);
         ui.set_valign(VerticalAlign::TOP);
         ui.set_size_hint_x(Some(1.0));
-        ui.set_size_y(140.0);
+        ui.set_expandable_y(true);
+        ui.set_size_y(0.0);
         ui.set_padding(8.0);
         ui.set_color(get_color32(28, 30, 34, 200));
         ui.set_border_color(get_color32(55, 60, 68, 255));
@@ -869,6 +868,7 @@ impl<'a> ToolboxTabWidget<'a> {
         ui.set_size_hint_x(Some(1.0));
         ui.set_size_y(26.0);
         ui.set_font_size(16.0);
+        ui.set_text(items_lbl.get_ui_widget_name());
         ui.set_font_color(get_color32(130, 220, 160, 255));
         ui.set_color(get_color32(0, 0, 0, 0));
         detail_req_box_mut.add_widget(&items_lbl);
@@ -880,6 +880,10 @@ impl<'a> ToolboxTabWidget<'a> {
         ui.set_font_size(16.0);
         ui.set_font_color(get_color32(240, 180, 120, 255));
         ui.set_color(get_color32(0, 0, 0, 0));
+
+        ui.set_text(items_lbl.get_ui_widget_name());
+        ui.set_color(get_color32(255, 0, 0, 0));
+
         detail_req_box_mut.add_widget(&chars_lbl);
 
         let unexp_lbl = UIManager::create_widget(&format!("{}_detail_info_unexp", tab_id), UIWidgetTypes::Default);
@@ -889,6 +893,10 @@ impl<'a> ToolboxTabWidget<'a> {
         ui.set_font_size(16.0);
         ui.set_font_color(get_color32(150, 150, 150, 255));
         ui.set_color(get_color32(0, 0, 0, 0));
+
+        ui.set_text(items_lbl.get_ui_widget_name());
+        ui.set_color(get_color32(0, 255, 0, 0));
+
         detail_req_box_mut.add_widget(&unexp_lbl);
 
         // Material Requirements Item Widget
@@ -900,6 +908,10 @@ impl<'a> ToolboxTabWidget<'a> {
         ui.set_size_hint_x(Some(1.0));
         ui.set_size_y(36.0);
         ui.set_color(get_color32(0, 0, 0, 0));
+
+        ui.set_text(items_lbl.get_ui_widget_name());
+        ui.set_color(get_color32(0, 0, 255, 0));
+
         detail_req_box_mut.add_widget(&ing_set);
 
         let ing_icon = UIManager::create_widget(&format!("{}_detail_ing_icon", tab_id), UIWidgetTypes::Default);
