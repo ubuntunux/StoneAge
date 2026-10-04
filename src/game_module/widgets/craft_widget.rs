@@ -5,7 +5,7 @@ use crate::game_module::game_controller::WidgetNavRepeatController;
 use crate::game_module::game_service_locator::{
     get_character_manager_mut, get_game_resources, get_game_ui_manager, get_game_ui_manager_mut, get_item_manager_mut,
 };
-use nalgebra::Vector2;
+use nalgebra::{Vector2, Vector4};
 use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::core::engine_core::TimeData;
 use rust_engine_3d::core::engine_service_locator::{get_audio_manager_mut, get_engine_resources};
@@ -235,8 +235,6 @@ impl<'a> CraftWidget<'a> {
         ui.set_enable_renderable_area(true);
         ui.set_color(get_color32(30, 32, 36, 245));
         ui.set_border_color(get_color32(90, 95, 105, 255));
-        ui.set_border(3.0);
-        ui.set_round(10.0);
         ui.set_padding(12.0);
         ui.set_renderable(true);
         ui.set_enable(true);
@@ -278,7 +276,7 @@ impl<'a> CraftWidget<'a> {
         ui.set_size_hint_x(Some(1.0));
         ui.set_size_y(2.0);
         ui.set_color(get_color32(75, 80, 90, 200));
-        ui.set_margin(4.0);
+        ui.set_margins(Vector4::new(0.0, 4.0, 0.0, 4.0));
         layer_mut.add_widget(&separator);
 
         // Subtitle / Prompt
