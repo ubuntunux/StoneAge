@@ -18,12 +18,95 @@ use serde::{Deserialize, Serialize};
 use std::ffi::c_void;
 use std::rc::Rc;
 
-const LIST_ITEM_ROW_HEIGHT: f32 = 54.0;
-const LEFT_LIST_PANEL_WIDTH: f32 = 290.0;
-const ACTION_BUTTON_WIDTH: f32 = 150.0;
-const ACTION_BUTTON_HEIGHT: f32 = 40.0;
-const DESCRIPTION_LABEL_HEIGHT: f32 = 22.0;
-const DESCRIPTION_LABEL_FONT_SIZE: f32 = 20.0;
+// ────────────────────────────────────────────────────────────────
+// UI Layout & Dimension Constants
+// ────────────────────────────────────────────────────────────────
+pub const LIST_ITEM_ROW_HEIGHT: f32 = 54.0;
+pub const LEFT_LIST_PANEL_WIDTH: f32 = 290.0;
+pub const LEFT_LIST_PANEL_HEIGHT: f32 = 480.0;
+pub const ACTION_BUTTON_WIDTH: f32 = 150.0;
+pub const ACTION_BUTTON_HEIGHT: f32 = 40.0;
+pub const ACTION_BUTTON_BOX_HEIGHT: f32 = ACTION_BUTTON_HEIGHT + 10.0;
+
+pub const LIST_ITEM_ICON_SIZE: f32 = 40.0;
+pub const LIST_ITEM_NAME_HEIGHT: f32 = 28.0;
+pub const LIST_ITEM_STATUS_WIDTH: f32 = 76.0;
+pub const LIST_ITEM_STATUS_HEIGHT: f32 = 28.0;
+
+pub const DETAIL_HEADER_HEIGHT: f32 = 54.0;
+pub const DETAIL_ICON_SIZE: f32 = 48.0;
+pub const DETAIL_NAME_LABEL_HEIGHT: f32 = 48.0;
+pub const DESCRIPTION_LABEL_HEIGHT: f32 = 22.0;
+pub const REQUIREMENT_HEADER_HEIGHT: f32 = 20.0;
+pub const INGREDIENT_SET_HEIGHT: f32 = 36.0;
+pub const INGREDIENT_ICON_SIZE: f32 = 30.0;
+pub const INGREDIENT_LABEL_HEIGHT: f32 = 30.0;
+
+// ────────────────────────────────────────────────────────────────
+// Font Size Constants
+// ────────────────────────────────────────────────────────────────
+pub const FONT_SIZE_TITLE: f32 = 24.0;
+pub const FONT_SIZE_NORMAL: f32 = 20.0;
+pub const FONT_SIZE_BUTTON: f32 = 18.0;
+pub const DESCRIPTION_LABEL_FONT_SIZE: f32 = 20.0;
+
+// ────────────────────────────────────────────────────────────────
+// Margin, Padding & Border Constants
+// ────────────────────────────────────────────────────────────────
+pub const TAB_PADDING: f32 = 8.0;
+pub const LIST_CONTAINER_PADDING: f32 = 4.0;
+pub const DETAIL_CONTAINER_PADDING: f32 = 14.0;
+pub const BOX_PADDING: f32 = 8.0;
+pub const LIST_ITEM_PADDING: f32 = 6.0;
+
+pub const BORDER_WIDTH_NORMAL: f32 = 1.0;
+pub const BORDER_WIDTH_THICK: f32 = 2.0;
+pub const CORNER_ROUND_NORMAL: f32 = 6.0;
+
+// ────────────────────────────────────────────────────────────────
+// Color Constants
+// ────────────────────────────────────────────────────────────────
+pub const COLOR_TRANSPARENT: u32 = get_color32(0, 0, 0, 0);
+pub const COLOR_WHITE: u32 = get_color32(255, 255, 255, 255);
+
+// Background & Border Colors
+pub const COLOR_TAB_BG: u32 = get_color32(30, 30, 30, 220);
+pub const COLOR_PANEL_BG: u32 = get_color32(25, 27, 30, 220);
+pub const COLOR_PANEL_BORDER: u32 = get_color32(50, 55, 60, 255);
+pub const COLOR_DETAIL_BG: u32 = get_color32(35, 38, 43, 230);
+pub const COLOR_DETAIL_BORDER: u32 = get_color32(65, 70, 78, 255);
+pub const COLOR_BOX_BG: u32 = get_color32(28, 30, 34, 200);
+pub const COLOR_BOX_BORDER: u32 = get_color32(55, 60, 68, 255);
+
+// List Item Colors
+pub const COLOR_ITEM_NORMAL_BG: u32 = get_color32(40, 43, 48, 220);
+pub const COLOR_ITEM_NORMAL_BORDER: u32 = get_color32(65, 70, 78, 255);
+pub const COLOR_ITEM_SELECTED_BG: u32 = get_color32(60, 70, 85, 230);
+pub const COLOR_ITEM_SELECTED_BORDER: u32 = get_color32(110, 160, 220, 255);
+
+// Text Colors
+pub const COLOR_TEXT_TITLE: u32 = get_color32(240, 240, 240, 255);
+pub const COLOR_TEXT_NORMAL: u32 = get_color32(220, 225, 230, 255);
+pub const COLOR_TEXT_MUTED: u32 = get_color32(190, 195, 205, 255);
+pub const COLOR_TEXT_DISABLED: u32 = get_color32(150, 150, 150, 255);
+pub const COLOR_TEXT_DISABLED_ALT: u32 = get_color32(120, 120, 120, 255);
+pub const COLOR_TEXT_SUCCESS: u32 = get_color32(130, 220, 160, 255);
+pub const COLOR_TEXT_WARNING: u32 = get_color32(240, 180, 120, 255);
+pub const COLOR_TEXT_ERROR: u32 = get_color32(235, 100, 100, 255);
+pub const COLOR_STATUS_LOCKED: u32 = get_color32(210, 165, 160, 255);
+pub const COLOR_STATUS_UNLOCKED: u32 = get_color32(100, 210, 120, 255);
+
+// Button Colors
+pub const COLOR_BTN_UNLOCK_BG: u32 = get_color32(75, 130, 85, 255);
+pub const COLOR_BTN_UNLOCK_BORDER: u32 = get_color32(115, 190, 130, 255);
+pub const COLOR_BTN_TELEPORT_BG: u32 = get_color32(50, 110, 180, 255);
+pub const COLOR_BTN_TELEPORT_BORDER: u32 = get_color32(90, 160, 240, 255);
+pub const COLOR_BTN_DISABLED_BG: u32 = get_color32(45, 48, 52, 255);
+pub const COLOR_BTN_DISABLED_BORDER: u32 = get_color32(65, 70, 75, 255);
+pub const COLOR_BTN_UNLOCKED_BG: u32 = get_color32(40, 45, 50, 255);
+pub const COLOR_BTN_UNLOCKED_BORDER: u32 = get_color32(70, 75, 80, 255);
+pub const COLOR_BTN_DEFAULT_BG: u32 = get_color32(65, 65, 65, 255);
+pub const COLOR_BTN_DEFAULT_BORDER: u32 = get_color32(100, 100, 100, 255);
 
 fn spawn_npc_near_monolith(character_data_name: &str, offset: Vector3<f32>) {
     let monolith_pos = if let Some(monolith) = get_game_scene_manager().get_prop_manager().get_prop_by_name("monolith")
@@ -309,7 +392,7 @@ impl<'a> DetailInfoEntryWidget<'a> {
         if margin_bottom > 0.0 {
             ui.set_margin_bottom(margin_bottom);
         }
-        ui.set_color(get_color32(0, 0, 0, 0));
+        ui.set_color(COLOR_TRANSPARENT);
 
         let entry_icon = UIManager::create_widget(
             &format!("{}_detail_{}_icon_{}", tab_id, category, index),
@@ -319,7 +402,7 @@ impl<'a> DetailInfoEntryWidget<'a> {
         ui.set_size(DESCRIPTION_LABEL_HEIGHT, DESCRIPTION_LABEL_HEIGHT);
         ui.set_valign(VerticalAlign::CENTER);
         ui.set_margin_right(6.0);
-        ui.set_color(get_color32(255, 255, 255, 255));
+        ui.set_color(COLOR_WHITE);
         entry_layout_mut.add_widget(&entry_icon);
 
         let entry_label = UIManager::create_widget(
@@ -331,8 +414,8 @@ impl<'a> DetailInfoEntryWidget<'a> {
         ui.set_size_y(DESCRIPTION_LABEL_HEIGHT);
         ui.set_valign(VerticalAlign::CENTER);
         ui.set_font_size(DESCRIPTION_LABEL_FONT_SIZE);
-        ui.set_font_color(get_color32(220, 225, 230, 255));
-        ui.set_color(get_color32(0, 0, 0, 0));
+        ui.set_font_color(COLOR_TEXT_NORMAL);
+        ui.set_color(COLOR_TRANSPARENT);
         entry_layout_mut.add_widget(&entry_label);
 
         DetailInfoEntryWidget {
@@ -433,22 +516,22 @@ impl<'a> ToolboxItemWidget<'a> {
     pub fn update_list_item_ui(&mut self, is_selected: bool) {
         let layout_ui = ptr_as_mut(self._layout.as_ref()).get_ui_component_mut();
         if is_selected {
-            layout_ui.set_color(get_color32(60, 70, 85, 230));
-            layout_ui.set_border_color(get_color32(110, 160, 220, 255));
+            layout_ui.set_color(COLOR_ITEM_SELECTED_BG);
+            layout_ui.set_border_color(COLOR_ITEM_SELECTED_BORDER);
         } else {
-            layout_ui.set_color(get_color32(40, 43, 48, 220));
-            layout_ui.set_border_color(get_color32(65, 70, 78, 255));
+            layout_ui.set_color(COLOR_ITEM_NORMAL_BG);
+            layout_ui.set_border_color(COLOR_ITEM_NORMAL_BORDER);
         }
 
         let status_ui = ptr_as_mut(self._status_lbl.as_ref()).get_ui_component_mut();
         match self._state {
             ToolboxItemState::Locked => {
                 status_ui.set_text("Locked");
-                status_ui.set_font_color(get_color32(210, 165, 160, 255));
+                status_ui.set_font_color(COLOR_STATUS_LOCKED);
             }
             ToolboxItemState::Unlocked => {
                 status_ui.set_text("");
-                status_ui.set_font_color(get_color32(100, 210, 120, 255));
+                status_ui.set_font_color(COLOR_STATUS_UNLOCKED);
             }
         }
     }
@@ -471,11 +554,11 @@ impl<'a> ToolboxItemWidget<'a> {
         ui.set_valign(VerticalAlign::CENTER);
         ui.set_size_hint_x(Some(1.0));
         ui.set_size_y(LIST_ITEM_ROW_HEIGHT);
-        ui.set_padding(6.0);
-        ui.set_color(get_color32(40, 43, 48, 220));
-        ui.set_border_color(get_color32(65, 70, 78, 255));
-        ui.set_border(2.0);
-        ui.set_round(6.0);
+        ui.set_padding(LIST_ITEM_PADDING);
+        ui.set_color(COLOR_ITEM_NORMAL_BG);
+        ui.set_border_color(COLOR_ITEM_NORMAL_BORDER);
+        ui.set_border(BORDER_WIDTH_THICK);
+        ui.set_round(CORNER_ROUND_NORMAL);
         ui.set_margin(2.0);
         ui.set_touchable(true);
         ui.set_callback_touch_over(Some(Box::new(Self::callback_item_touch_over)));
@@ -488,11 +571,11 @@ impl<'a> ToolboxItemWidget<'a> {
             UIWidgetTypes::Default,
         );
         let ui = ptr_as_mut(icon.as_ref()).get_ui_component_mut();
-        ui.set_size(40.0, 40.0);
+        ui.set_size(LIST_ITEM_ICON_SIZE, LIST_ITEM_ICON_SIZE);
         ui.set_valign(VerticalAlign::CENTER);
         ui.set_halign(HorizontalAlign::LEFT);
         ui.set_margin_right(8.0);
-        ui.set_color(get_color32(255, 255, 255, 255));
+        ui.set_color(COLOR_WHITE);
         layout_mut.add_widget(&icon);
         Self::setup_item_icon(&icon, data._icon_type.item_code(), true);
 
@@ -504,12 +587,12 @@ impl<'a> ToolboxItemWidget<'a> {
         );
         let ui = ptr_as_mut(name_lbl.as_ref()).get_ui_component_mut();
         ui.set_size_hint_x(Some(1.0));
-        ui.set_size_y(28.0);
+        ui.set_size_y(LIST_ITEM_NAME_HEIGHT);
         ui.set_valign(VerticalAlign::CENTER);
         ui.set_text(&display_name);
-        ui.set_font_size(24.0);
-        ui.set_font_color(get_color32(240, 240, 240, 255));
-        ui.set_color(get_color32(0, 0, 0, 0));
+        ui.set_font_size(FONT_SIZE_TITLE);
+        ui.set_font_color(COLOR_TEXT_TITLE);
+        ui.set_color(COLOR_TRANSPARENT);
         layout_mut.add_widget(&name_lbl);
 
         // Status Label (Unlocked / Locked)
@@ -518,12 +601,12 @@ impl<'a> ToolboxItemWidget<'a> {
             UIWidgetTypes::Default,
         );
         let ui = ptr_as_mut(status_lbl.as_ref()).get_ui_component_mut();
-        ui.set_size(76.0, 28.0);
+        ui.set_size(LIST_ITEM_STATUS_WIDTH, LIST_ITEM_STATUS_HEIGHT);
         ui.set_valign(VerticalAlign::CENTER);
         ui.set_halign(HorizontalAlign::RIGHT);
-        ui.set_font_size(20.0);
+        ui.set_font_size(FONT_SIZE_NORMAL);
         ui.set_margin_right(10.0);
-        ui.set_color(get_color32(0, 0, 0, 0));
+        ui.set_color(COLOR_TRANSPARENT);
         layout_mut.add_widget(&status_lbl);
 
         let mut item = Box::new(ToolboxItemWidget {
@@ -589,7 +672,7 @@ fn create_info_label<'a>(
     ui.set_size_y(height);
     ui.set_font_size(font_size);
     ui.set_font_color(font_color);
-    ui.set_color(get_color32(0, 0, 0, 0));
+    ui.set_color(COLOR_TRANSPARENT);
     if margin_top > 0.0 {
         ui.set_margin_top(margin_top);
     }
@@ -753,9 +836,9 @@ impl<'a> ToolboxTabWidget<'a> {
             let lbl_ui = ptr_as_mut(ing_widget._label.as_ref()).get_ui_component_mut();
             lbl_ui.set_text(&text);
             if have_count >= ing_widget._count || unlocked {
-                lbl_ui.set_font_color(get_color32(230, 235, 240, 255));
+                lbl_ui.set_font_color(COLOR_TEXT_NORMAL);
             } else {
-                lbl_ui.set_font_color(get_color32(235, 100, 100, 255));
+                lbl_ui.set_font_color(COLOR_TEXT_ERROR);
             }
 
             ToolboxItemWidget::setup_item_icon(&ing_widget._icon, item_code, show_req);
@@ -845,14 +928,14 @@ impl<'a> ToolboxTabWidget<'a> {
                     || item._data._item_data_type == ItemDataType::None
                     || current_count >= item._data._item_data_count
                 {
-                    btn_ui.set_color(get_color32(75, 130, 85, 255));
-                    btn_ui.set_border_color(get_color32(115, 190, 130, 255));
-                    btn_ui.set_font_color(get_color32(255, 255, 255, 255));
+                    btn_ui.set_color(COLOR_BTN_UNLOCK_BG);
+                    btn_ui.set_border_color(COLOR_BTN_UNLOCK_BORDER);
+                    btn_ui.set_font_color(COLOR_WHITE);
                     btn_ui.set_touchable(true);
                 } else {
-                    btn_ui.set_color(get_color32(45, 48, 52, 255));
-                    btn_ui.set_border_color(get_color32(65, 70, 75, 255));
-                    btn_ui.set_font_color(get_color32(150, 150, 150, 255));
+                    btn_ui.set_color(COLOR_BTN_DISABLED_BG);
+                    btn_ui.set_border_color(COLOR_BTN_DISABLED_BORDER);
+                    btn_ui.set_font_color(COLOR_TEXT_DISABLED);
                     btn_ui.set_touchable(false);
                 }
                 btn_ui.set_enable(true);
@@ -860,16 +943,16 @@ impl<'a> ToolboxTabWidget<'a> {
             ToolboxItemState::Unlocked => {
                 if is_map_item {
                     btn_ui.set_text("Teleport");
-                    btn_ui.set_color(get_color32(50, 110, 180, 255));
-                    btn_ui.set_border_color(get_color32(90, 160, 240, 255));
-                    btn_ui.set_font_color(get_color32(255, 255, 255, 255));
+                    btn_ui.set_color(COLOR_BTN_TELEPORT_BG);
+                    btn_ui.set_border_color(COLOR_BTN_TELEPORT_BORDER);
+                    btn_ui.set_font_color(COLOR_WHITE);
                     btn_ui.set_touchable(true);
                     btn_ui.set_enable(true);
                 } else {
                     btn_ui.set_text("Unlocked");
-                    btn_ui.set_color(get_color32(40, 45, 50, 255));
-                    btn_ui.set_border_color(get_color32(70, 75, 80, 255));
-                    btn_ui.set_font_color(get_color32(120, 120, 120, 255));
+                    btn_ui.set_color(COLOR_BTN_UNLOCKED_BG);
+                    btn_ui.set_border_color(COLOR_BTN_UNLOCKED_BORDER);
+                    btn_ui.set_font_color(COLOR_TEXT_DISABLED_ALT);
                     btn_ui.set_touchable(false);
                     btn_ui.set_enable(false);
                 }
@@ -892,8 +975,8 @@ impl<'a> ToolboxTabWidget<'a> {
         ui.set_valign(VerticalAlign::TOP);
         ui.set_size_hint_x(Some(1.0));
         ui.set_size_hint_y(Some(1.0));
-        ui.set_padding(8.0);
-        ui.set_color(get_color32(30, 30, 30, 220));
+        ui.set_padding(TAB_PADDING);
+        ui.set_color(COLOR_TAB_BG);
         ui.set_enable(false);
         parent_widget.add_widget(&layout);
 
@@ -905,16 +988,16 @@ impl<'a> ToolboxTabWidget<'a> {
         ui.set_layout_orientation(Orientation::VERTICAL);
         ui.set_halign(HorizontalAlign::LEFT);
         ui.set_valign(VerticalAlign::TOP);
-        ui.set_size(LEFT_LIST_PANEL_WIDTH, 480.0);
+        ui.set_size(LEFT_LIST_PANEL_WIDTH, LEFT_LIST_PANEL_HEIGHT);
         ui.set_size_hint_y(Some(1.0));
         ui.set_scroll_y(true);
         ui.set_enable_renderable_area(true);
-        ui.set_padding(4.0);
-        ui.set_margin_right(8.0);
-        ui.set_color(get_color32(25, 27, 30, 220));
-        ui.set_border_color(get_color32(50, 55, 60, 255));
-        ui.set_border(1.0);
-        ui.set_round(6.0);
+        ui.set_padding(LIST_CONTAINER_PADDING);
+        ui.set_margin_right(TAB_PADDING);
+        ui.set_color(COLOR_PANEL_BG);
+        ui.set_border_color(COLOR_PANEL_BORDER);
+        ui.set_border(BORDER_WIDTH_NORMAL);
+        ui.set_round(CORNER_ROUND_NORMAL);
         layout_mut.add_widget(&list_container);
 
         // 2. Right Detail Container (Width ~ 430)
@@ -926,8 +1009,8 @@ impl<'a> ToolboxTabWidget<'a> {
         ui.set_size_hint_x(Some(1.0));
         ui.set_size_hint_y(Some(1.0));
         ui.set_scroll_y(true);
-        ui.set_color(get_color32(25, 27, 30, 0));
-        ui.set_border_color(get_color32(50, 55, 60, 0));
+        ui.set_color(COLOR_TRANSPARENT);
+        ui.set_border_color(COLOR_TRANSPARENT);
         layout_mut.add_widget(&detail_container_layout);
 
         let detail_container =
@@ -942,11 +1025,11 @@ impl<'a> ToolboxTabWidget<'a> {
         ui.set_size_hint_y(Some(1.0));
         ui.set_expandable_y(true);
         ui.set_size_y(0.0);
-        ui.set_padding(14.0);
-        ui.set_color(get_color32(35, 38, 43, 230));
-        ui.set_border_color(get_color32(65, 70, 78, 255));
-        ui.set_border(1.0);
-        ui.set_round(6.0);
+        ui.set_padding(DETAIL_CONTAINER_PADDING);
+        ui.set_color(COLOR_DETAIL_BG);
+        ui.set_border_color(COLOR_DETAIL_BORDER);
+        ui.set_border(BORDER_WIDTH_NORMAL);
+        ui.set_round(CORNER_ROUND_NORMAL);
         detail_container_layout_mut.add_widget(&detail_container);
 
         // Detail Header: Icon + Name
@@ -956,30 +1039,30 @@ impl<'a> ToolboxTabWidget<'a> {
         ui.set_layout_type(UILayoutType::BoxLayout);
         ui.set_layout_orientation(Orientation::HORIZONTAL);
         ui.set_size_hint_x(Some(1.0));
-        ui.set_size_y(54.0);
+        ui.set_size_y(DETAIL_HEADER_HEIGHT);
         ui.set_valign(VerticalAlign::CENTER);
         ui.set_margin_bottom(10.0);
-        ui.set_color(get_color32(255, 0, 0, 0));
+        ui.set_color(COLOR_TRANSPARENT);
         detail_container_mut.add_widget(&detail_hdr);
 
         // Detail Large Icon (48x48)
         let detail_icon = UIManager::create_widget(&format!("{}_detail_icon", tab_id), UIWidgetTypes::Default);
         let ui = ptr_as_mut(detail_icon.as_ref()).get_ui_component_mut();
-        ui.set_size(48.0, 48.0);
+        ui.set_size(DETAIL_ICON_SIZE, DETAIL_ICON_SIZE);
         ui.set_valign(VerticalAlign::CENTER);
         ui.set_margin_right(12.0);
-        ui.set_color(get_color32(255, 255, 255, 255));
+        ui.set_color(COLOR_WHITE);
         detail_hdr_mut.add_widget(&detail_icon);
 
         // Detail Name Label
         let detail_name_lbl = UIManager::create_widget(&format!("{}_detail_name", tab_id), UIWidgetTypes::Default);
         let ui = ptr_as_mut(detail_name_lbl.as_ref()).get_ui_component_mut();
         ui.set_size_hint_x(Some(1.0));
-        ui.set_size_y(48.0);
+        ui.set_size_y(DETAIL_NAME_LABEL_HEIGHT);
         ui.set_valign(VerticalAlign::CENTER);
-        ui.set_font_size(24.0);
-        ui.set_font_color(get_color32(255, 255, 255, 255));
-        ui.set_color(get_color32(0, 0, 0, 0));
+        ui.set_font_size(FONT_SIZE_TITLE);
+        ui.set_font_color(COLOR_WHITE);
+        ui.set_color(COLOR_TRANSPARENT);
         detail_hdr_mut.add_widget(&detail_name_lbl);
 
         // Detail Description Box
@@ -993,11 +1076,11 @@ impl<'a> ToolboxTabWidget<'a> {
         ui.set_size_hint_x(Some(1.0));
         ui.set_expandable_y(true);
         ui.set_size_y(0.0);
-        ui.set_padding(8.0);
-        ui.set_color(get_color32(28, 30, 34, 200));
-        ui.set_border_color(get_color32(55, 60, 68, 255));
-        ui.set_border(1.0);
-        ui.set_round(6.0);
+        ui.set_padding(BOX_PADDING);
+        ui.set_color(COLOR_BOX_BG);
+        ui.set_border_color(COLOR_BOX_BORDER);
+        ui.set_border(BORDER_WIDTH_NORMAL);
+        ui.set_round(CORNER_ROUND_NORMAL);
         ui.set_margin_bottom(16.0);
         detail_container_mut.add_widget(&detail_desc_box);
 
@@ -1011,8 +1094,8 @@ impl<'a> ToolboxTabWidget<'a> {
         ui.set_size_y(0.0);
         ui.set_valign(VerticalAlign::TOP);
         ui.set_font_size(DESCRIPTION_LABEL_FONT_SIZE);
-        ui.set_font_color(get_color32(190, 195, 205, 255));
-        ui.set_color(get_color32(0, 0, 0, 0));
+        ui.set_font_color(COLOR_TEXT_MUTED);
+        ui.set_color(COLOR_TRANSPARENT);
         ui.set_margin_bottom(12.0);
         detail_desc_box_mut.add_widget(&detail_desc_lbl);
         detail_info_labels.push(detail_desc_lbl);
@@ -1022,7 +1105,7 @@ impl<'a> ToolboxTabWidget<'a> {
             &format!("{}_detail_info_items", tab_id),
             DESCRIPTION_LABEL_HEIGHT,
             DESCRIPTION_LABEL_FONT_SIZE,
-            get_color32(130, 220, 160, 255),
+            COLOR_TEXT_SUCCESS,
             0.0,
         );
         detail_desc_box_mut.add_widget(&items_hdr_lbl);
@@ -1041,7 +1124,7 @@ impl<'a> ToolboxTabWidget<'a> {
             &format!("{}_detail_info_chars", tab_id),
             DESCRIPTION_LABEL_HEIGHT,
             DESCRIPTION_LABEL_FONT_SIZE,
-            get_color32(240, 180, 120, 255),
+            COLOR_TEXT_WARNING,
             6.0,
         );
         detail_desc_box_mut.add_widget(&chars_hdr_lbl);
@@ -1060,7 +1143,7 @@ impl<'a> ToolboxTabWidget<'a> {
             &format!("{}_detail_info_unexp", tab_id),
             DESCRIPTION_LABEL_HEIGHT,
             DESCRIPTION_LABEL_FONT_SIZE,
-            get_color32(150, 150, 150, 255),
+            COLOR_TEXT_DISABLED,
             0.0,
         );
         detail_desc_box_mut.add_widget(&unexp_lbl);
@@ -1073,12 +1156,12 @@ impl<'a> ToolboxTabWidget<'a> {
         ui.set_halign(HorizontalAlign::LEFT);
         ui.set_valign(VerticalAlign::CENTER);
         ui.set_size_hint_x(Some(1.0));
-        ui.set_size_y(20.0);
+        ui.set_size_y(REQUIREMENT_HEADER_HEIGHT);
         ui.set_margin_bottom(4.0);
-        ui.set_color(get_color32(0, 0, 0, 0));
-        ui.set_font_size(20.0);
+        ui.set_color(COLOR_TRANSPARENT);
+        ui.set_font_size(FONT_SIZE_NORMAL);
         ui.set_text("Requirements:");
-        ui.set_font_color(get_color32(130, 220, 160, 255));
+        ui.set_font_color(COLOR_TEXT_SUCCESS);
         detail_container_mut.add_widget(&detail_req_text);
 
         let detail_req_box = UIManager::create_widget(&format!("{}_detail_req_box", tab_id), UIWidgetTypes::Default);
@@ -1091,11 +1174,11 @@ impl<'a> ToolboxTabWidget<'a> {
         ui.set_size_hint_x(Some(1.0));
         ui.set_expandable_y(true);
         ui.set_size_y(0.0);
-        ui.set_padding(8.0);
-        ui.set_color(get_color32(28, 30, 34, 200));
-        ui.set_border_color(get_color32(55, 60, 68, 255));
-        ui.set_border(1.0);
-        ui.set_round(6.0);
+        ui.set_padding(BOX_PADDING);
+        ui.set_color(COLOR_BOX_BG);
+        ui.set_border_color(COLOR_BOX_BORDER);
+        ui.set_border(BORDER_WIDTH_NORMAL);
+        ui.set_round(CORNER_ROUND_NORMAL);
         ui.set_margin_bottom(16.0);
         detail_container_mut.add_widget(&detail_req_box);
 
@@ -1106,26 +1189,26 @@ impl<'a> ToolboxTabWidget<'a> {
         ui.set_layout_type(UILayoutType::BoxLayout);
         ui.set_layout_orientation(Orientation::HORIZONTAL);
         ui.set_size_hint_x(Some(1.0));
-        ui.set_size_y(36.0);
-        ui.set_color(get_color32(0, 0, 0, 0));
+        ui.set_size_y(INGREDIENT_SET_HEIGHT);
+        ui.set_color(COLOR_TRANSPARENT);
         detail_req_box_mut.add_widget(&ing_set);
 
         let ing_icon = UIManager::create_widget(&format!("{}_detail_ing_icon", tab_id), UIWidgetTypes::Default);
         let ui = ptr_as_mut(ing_icon.as_ref()).get_ui_component_mut();
-        ui.set_size(30.0, 30.0);
+        ui.set_size(INGREDIENT_ICON_SIZE, INGREDIENT_ICON_SIZE);
         ui.set_valign(VerticalAlign::CENTER);
         ui.set_margin_right(8.0);
-        ui.set_color(get_color32(255, 255, 255, 255));
+        ui.set_color(COLOR_WHITE);
         ing_set_mut.add_widget(&ing_icon);
 
         let ing_lbl = UIManager::create_widget(&format!("{}_detail_ing_lbl", tab_id), UIWidgetTypes::Default);
         let ui = ptr_as_mut(ing_lbl.as_ref()).get_ui_component_mut();
         ui.set_size_hint_x(Some(1.0));
-        ui.set_size_y(30.0);
+        ui.set_size_y(INGREDIENT_LABEL_HEIGHT);
         ui.set_valign(VerticalAlign::CENTER);
-        ui.set_font_size(20.0);
-        ui.set_font_color(get_color32(230, 235, 240, 255));
-        ui.set_color(get_color32(0, 0, 0, 0));
+        ui.set_font_size(FONT_SIZE_NORMAL);
+        ui.set_font_color(COLOR_TEXT_NORMAL);
+        ui.set_color(COLOR_TRANSPARENT);
         ing_set_mut.add_widget(&ing_lbl);
 
         // Detail Action Button Container (Bottom aligned)
@@ -1135,10 +1218,10 @@ impl<'a> ToolboxTabWidget<'a> {
         ui.set_layout_type(UILayoutType::BoxLayout);
         ui.set_layout_orientation(Orientation::HORIZONTAL);
         ui.set_size_hint_x(Some(1.0));
-        ui.set_size_y(ACTION_BUTTON_HEIGHT + 10.0);
+        ui.set_size_y(ACTION_BUTTON_BOX_HEIGHT);
         ui.set_halign(HorizontalAlign::CENTER);
         ui.set_valign(VerticalAlign::BOTTOM);
-        ui.set_color(get_color32(0, 0, 0, 0));
+        ui.set_color(COLOR_TRANSPARENT);
         detail_container_mut.add_widget(&action_btn_box);
 
         let detail_action_btn =
@@ -1147,13 +1230,13 @@ impl<'a> ToolboxTabWidget<'a> {
         ui.set_size(ACTION_BUTTON_WIDTH, ACTION_BUTTON_HEIGHT);
         ui.set_halign(HorizontalAlign::CENTER);
         ui.set_valign(VerticalAlign::CENTER);
-        ui.set_color(get_color32(65, 65, 65, 255));
-        ui.set_border_color(get_color32(100, 100, 100, 255));
-        ui.set_border(2.0);
-        ui.set_round(6.0);
+        ui.set_color(COLOR_BTN_DEFAULT_BG);
+        ui.set_border_color(COLOR_BTN_DEFAULT_BORDER);
+        ui.set_border(BORDER_WIDTH_THICK);
+        ui.set_round(CORNER_ROUND_NORMAL);
         ui.set_text("Unlock");
-        ui.set_font_size(18.0);
-        ui.set_font_color(get_color32(230, 230, 230, 255));
+        ui.set_font_size(FONT_SIZE_BUTTON);
+        ui.set_font_color(COLOR_TEXT_NORMAL);
         ui.set_touchable(false);
         ui.set_callback_touch_over(Some(Box::new(ToolboxItemWidget::callback_item_touch_over)));
         ui.set_callback_touch_down(Some(Box::new(Self::callback_action_btn)));
