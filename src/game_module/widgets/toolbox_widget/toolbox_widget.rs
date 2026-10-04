@@ -255,7 +255,7 @@ impl<'a> ToolboxWidget<'a> {
         body_mut.add_widget(&content);
 
         // Build content panes for each tab with items requiring EnergyBall
-        let skill_tab = ToolboxTabWidget::create(
+        let skill_tab = ToolboxTabWidget::create_toolbox_tab_widget(
             "skill",
             content_mut,
             vec![
@@ -263,7 +263,7 @@ impl<'a> ToolboxWidget<'a> {
                 get_toolbox_item_data(ToolboxIconType::QuickGather),
             ],
         );
-        let item_craft_tab = ToolboxTabWidget::create(
+        let item_craft_tab = ToolboxTabWidget::create_toolbox_tab_widget(
             "item_craft",
             content_mut,
             vec![
@@ -273,7 +273,7 @@ impl<'a> ToolboxWidget<'a> {
                 get_toolbox_item_data(ToolboxIconType::Campfire),
             ],
         );
-        let npc_tab = ToolboxTabWidget::create(
+        let npc_tab = ToolboxTabWidget::create_toolbox_tab_widget(
             "npc",
             content_mut,
             vec![
@@ -284,7 +284,7 @@ impl<'a> ToolboxWidget<'a> {
             ],
         );
 
-        let teleport_tab = ToolboxTabWidget::create(
+        let teleport_tab = ToolboxTabWidget::create_toolbox_tab_widget(
             "teleport",
             content_mut,
             vec![

@@ -30,8 +30,8 @@ pub const ACTION_BUTTON_BOX_HEIGHT: f32 = ACTION_BUTTON_HEIGHT + 10.0;
 
 pub const LIST_ITEM_ICON_SIZE: f32 = 40.0;
 pub const LIST_ITEM_NAME_HEIGHT: f32 = 28.0;
-pub const LIST_ITEM_STATUS_WIDTH: f32 = 76.0;
-pub const LIST_ITEM_STATUS_HEIGHT: f32 = 28.0;
+pub const LIST_ITEM_BTN_WIDTH: f32 = 80.0;
+pub const LIST_ITEM_BTN_HEIGHT: f32 = 32.0;
 
 pub const DETAIL_HEADER_HEIGHT: f32 = 54.0;
 pub const DETAIL_ICON_SIZE: f32 = 48.0;
@@ -59,7 +59,7 @@ pub const DETAIL_CONTAINER_PADDING: f32 = 14.0;
 pub const BOX_PADDING: f32 = 8.0;
 pub const LIST_ITEM_PADDING: f32 = 6.0;
 
-pub const BORDER_WIDTH_NORMAL: f32 = 1.0;
+pub const BORDER_WIDTH_NORMAL: f32 = 2.0;
 pub const BORDER_WIDTH_THICK: f32 = 2.0;
 pub const CORNER_ROUND_NORMAL: f32 = 6.0;
 
@@ -427,14 +427,15 @@ impl<'a> DetailInfoEntryWidget<'a> {
 }
 
 // ────────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────
 // ToolboxItemWidget - Left side list item entry
-// Layout: [Icon] [Icon name] [Unlocked status]
+// Layout: [Icon] [Icon name] [Action button]
 // ────────────────────────────────────────────────────────────────
 pub struct ToolboxItemWidget<'a> {
     pub _layout: Rc<WidgetDefault<'a>>,
     pub _icon: Rc<WidgetDefault<'a>>,
     pub _name_lbl: Rc<WidgetDefault<'a>>,
-    pub _status_lbl: Rc<WidgetDefault<'a>>,
+    pub _action_btn: Rc<WidgetDefault<'a>>,
     pub _state: ToolboxItemState,
     pub _data: ToolboxItemData,
     pub _tab_ptr: *mut c_void,
@@ -513,6 +514,23 @@ impl<'a> ToolboxItemWidget<'a> {
         true
     }
 
+    pub fn callback_item_action_btn(
+        ui_component: &UIComponentInstance<'a>,
+        _touched_pos: &nalgebra::Vector2<f32>,
+        _touched_pos_delta: &nalgebra::Vector2<f32>,
+    ) -> bool {
+        let item_ptr = ui_component.get_user_data() as *mut ToolboxItemWidget<'a>;
+        if item_ptr.is_null() {
+            return false;
+        }
+        let item = ptr_as_mut(item_ptr);
+        if !item._tab_ptr.is_null() {
+            let tab = ptr_as_mut(item._tab_ptr as *mut ToolboxTabWidget<'a>);
+            tab.execute_item_action(item._item_index);
+        }
+        true
+    }
+
     pub fn update_list_item_ui(&mut self, is_selected: bool) {
         let layout_ui = ptr_as_mut(self._layout.as_ref()).get_ui_component_mut();
         if is_selected {
@@ -523,15 +541,50 @@ impl<'a> ToolboxItemWidget<'a> {
             layout_ui.set_border_color(COLOR_ITEM_NORMAL_BORDER);
         }
 
-        let status_ui = ptr_as_mut(self._status_lbl.as_ref()).get_ui_component_mut();
+        let is_map_item = self._data._icon_type.stage_data_name().is_some();
+        let ui_mgr = get_game_ui_manager();
+        let btn_ui = ptr_as_mut(self._action_btn.as_ref()).get_ui_component_mut();
+
         match self._state {
             ToolboxItemState::Locked => {
-                status_ui.set_text("Locked");
-                status_ui.set_font_color(COLOR_STATUS_LOCKED);
+                btn_ui.set_text("Unlock");
+                let current_count = if self._data._item_data_type != ItemDataType::None {
+                    ui_mgr.get_item_count(self._data._item_data_type.item_code())
+                } else {
+                    0
+                };
+                if self._data._item_data_count == 0
+                    || self._data._item_data_type == ItemDataType::None
+                    || current_count >= self._data._item_data_count
+                {
+                    btn_ui.set_color(COLOR_BTN_UNLOCK_BG);
+                    btn_ui.set_border_color(COLOR_BTN_UNLOCK_BORDER);
+                    btn_ui.set_font_color(COLOR_WHITE);
+                    btn_ui.set_touchable(true);
+                } else {
+                    btn_ui.set_color(COLOR_BTN_DISABLED_BG);
+                    btn_ui.set_border_color(COLOR_BTN_DISABLED_BORDER);
+                    btn_ui.set_font_color(COLOR_TEXT_DISABLED);
+                    btn_ui.set_touchable(false);
+                }
+                btn_ui.set_enable(true);
             }
             ToolboxItemState::Unlocked => {
-                status_ui.set_text("");
-                status_ui.set_font_color(COLOR_STATUS_UNLOCKED);
+                if is_map_item {
+                    btn_ui.set_text("Teleport");
+                    btn_ui.set_color(COLOR_BTN_TELEPORT_BG);
+                    btn_ui.set_border_color(COLOR_BTN_TELEPORT_BORDER);
+                    btn_ui.set_font_color(COLOR_WHITE);
+                    btn_ui.set_touchable(true);
+                    btn_ui.set_enable(true);
+                } else {
+                    btn_ui.set_text("Unlocked");
+                    btn_ui.set_color(COLOR_BTN_UNLOCKED_BG);
+                    btn_ui.set_border_color(COLOR_BTN_UNLOCKED_BORDER);
+                    btn_ui.set_font_color(COLOR_TEXT_DISABLED_ALT);
+                    btn_ui.set_touchable(false);
+                    btn_ui.set_enable(false);
+                }
             }
         }
     }
@@ -541,7 +594,7 @@ impl<'a> ToolboxItemWidget<'a> {
         data: ToolboxItemData,
         item_index: usize,
     ) -> Box<ToolboxItemWidget<'a>> {
-        // Single Row Entry: [Icon] [Icon name] [Unlocked status]
+        // Single Row Entry: [Icon] [Icon name] [Action button]
         let layout = UIManager::create_widget(
             &format!("item_list_row_{:?}_{}", data._icon_type, item_index),
             UIWidgetTypes::Default,
@@ -595,25 +648,32 @@ impl<'a> ToolboxItemWidget<'a> {
         ui.set_color(COLOR_TRANSPARENT);
         layout_mut.add_widget(&name_lbl);
 
-        // Status Label (Unlocked / Locked)
-        let status_lbl = UIManager::create_widget(
-            &format!("item_list_status_{:?}_{}", data._icon_type, item_index),
+        // Action Button (Unlock / Teleport / Unlocked)
+        let action_btn = UIManager::create_widget(
+            &format!("item_list_btn_{:?}_{}", data._icon_type, item_index),
             UIWidgetTypes::Default,
         );
-        let ui = ptr_as_mut(status_lbl.as_ref()).get_ui_component_mut();
-        ui.set_size(LIST_ITEM_STATUS_WIDTH, LIST_ITEM_STATUS_HEIGHT);
+        let ui = ptr_as_mut(action_btn.as_ref()).get_ui_component_mut();
+        ui.set_size(LIST_ITEM_BTN_WIDTH, LIST_ITEM_BTN_HEIGHT);
+        ui.set_halign(HorizontalAlign::CENTER);
         ui.set_valign(VerticalAlign::CENTER);
-        ui.set_halign(HorizontalAlign::RIGHT);
-        ui.set_font_size(FONT_SIZE_NORMAL);
-        ui.set_margin_right(10.0);
-        ui.set_color(COLOR_TRANSPARENT);
-        layout_mut.add_widget(&status_lbl);
+        ui.set_color(COLOR_BTN_DEFAULT_BG);
+        ui.set_border_color(COLOR_BTN_DEFAULT_BORDER);
+        ui.set_border(BORDER_WIDTH_NORMAL);
+        ui.set_round(CORNER_ROUND_NORMAL);
+        ui.set_font_size(FONT_SIZE_BUTTON);
+        ui.set_font_color(COLOR_TEXT_NORMAL);
+        ui.set_margin_right(4.0);
+        ui.set_touchable(false);
+        ui.set_callback_touch_over(Some(Box::new(Self::callback_item_touch_over)));
+        ui.set_callback_touch_down(Some(Box::new(Self::callback_item_action_btn)));
+        layout_mut.add_widget(&action_btn);
 
         let mut item = Box::new(ToolboxItemWidget {
             _layout: layout,
             _icon: icon,
             _name_lbl: name_lbl,
-            _status_lbl: status_lbl,
+            _action_btn: action_btn,
             _state: ToolboxItemState::Locked,
             _data: data,
             _tab_ptr: std::ptr::null_mut(),
@@ -700,26 +760,11 @@ pub struct ToolboxTabWidget<'a> {
     pub _detail_info_char_entries: Vec<DetailInfoEntryWidget<'a>>,
     pub _detail_req_box: Rc<WidgetDefault<'a>>,
     pub _detail_ing_widgets: Vec<IngredientWidgetItem<'a>>,
-    pub _detail_action_btn: Rc<WidgetDefault<'a>>,
 
     pub _is_visible: bool,
 }
 
 impl<'a> ToolboxTabWidget<'a> {
-    pub fn callback_action_btn(
-        ui_component: &UIComponentInstance<'a>,
-        _touched_pos: &nalgebra::Vector2<f32>,
-        _touched_pos_delta: &nalgebra::Vector2<f32>,
-    ) -> bool {
-        let tab_ptr = ui_component.get_user_data() as *mut ToolboxTabWidget<'a>;
-        if tab_ptr.is_null() {
-            return false;
-        }
-        let tab = ptr_as_mut(tab_ptr);
-        tab.execute_selected_action();
-        true
-    }
-
     fn unlock_item(&mut self, index: usize) {
         if index >= self._items.len() {
             return;
@@ -736,11 +781,12 @@ impl<'a> ToolboxTabWidget<'a> {
         self.update_detail_panel();
     }
 
-    pub fn execute_selected_action(&mut self) {
-        if self._selected_index >= self._items.len() {
+    pub fn execute_item_action(&mut self, index: usize) {
+        if index >= self._items.len() {
             return;
         }
-        let item = &mut self._items[self._selected_index];
+        self.select_item(index);
+        let item = &mut self._items[index];
         match item._state {
             ToolboxItemState::Locked => {
                 let cost = item._data._item_data_count;
@@ -759,7 +805,7 @@ impl<'a> ToolboxTabWidget<'a> {
                 };
 
                 if has_enough_cost {
-                    self.unlock_item(self._selected_index);
+                    self.unlock_item(index);
                 }
             }
             ToolboxItemState::Unlocked => {
@@ -770,6 +816,10 @@ impl<'a> ToolboxTabWidget<'a> {
                 }
             }
         }
+    }
+
+    pub fn execute_selected_action(&mut self) {
+        self.execute_item_action(self._selected_index);
     }
 
     pub fn select_item(&mut self, index: usize) {
@@ -912,55 +962,9 @@ impl<'a> ToolboxTabWidget<'a> {
                 &self._detail_info_char_entries,
             );
         }
-
-        // 4. Setup Action Button State
-        let btn_ui = ptr_as_mut(self._detail_action_btn.as_ref()).get_ui_component_mut();
-
-        match item._state {
-            ToolboxItemState::Locked => {
-                btn_ui.set_text("Unlock");
-                let current_count = if item._data._item_data_type != ItemDataType::None {
-                    ui_mgr.get_item_count(item._data._item_data_type.item_code())
-                } else {
-                    0
-                };
-                if item._data._item_data_count == 0
-                    || item._data._item_data_type == ItemDataType::None
-                    || current_count >= item._data._item_data_count
-                {
-                    btn_ui.set_color(COLOR_BTN_UNLOCK_BG);
-                    btn_ui.set_border_color(COLOR_BTN_UNLOCK_BORDER);
-                    btn_ui.set_font_color(COLOR_WHITE);
-                    btn_ui.set_touchable(true);
-                } else {
-                    btn_ui.set_color(COLOR_BTN_DISABLED_BG);
-                    btn_ui.set_border_color(COLOR_BTN_DISABLED_BORDER);
-                    btn_ui.set_font_color(COLOR_TEXT_DISABLED);
-                    btn_ui.set_touchable(false);
-                }
-                btn_ui.set_enable(true);
-            }
-            ToolboxItemState::Unlocked => {
-                if is_map_item {
-                    btn_ui.set_text("Teleport");
-                    btn_ui.set_color(COLOR_BTN_TELEPORT_BG);
-                    btn_ui.set_border_color(COLOR_BTN_TELEPORT_BORDER);
-                    btn_ui.set_font_color(COLOR_WHITE);
-                    btn_ui.set_touchable(true);
-                    btn_ui.set_enable(true);
-                } else {
-                    btn_ui.set_text("Unlocked");
-                    btn_ui.set_color(COLOR_BTN_UNLOCKED_BG);
-                    btn_ui.set_border_color(COLOR_BTN_UNLOCKED_BORDER);
-                    btn_ui.set_font_color(COLOR_TEXT_DISABLED_ALT);
-                    btn_ui.set_touchable(false);
-                    btn_ui.set_enable(false);
-                }
-            }
-        }
     }
 
-    pub fn create(
+    pub fn create_toolbox_tab_widget(
         tab_id: &str,
         parent_widget: &mut WidgetDefault<'a>,
         item_list: Vec<ToolboxItemData>,
@@ -988,7 +992,8 @@ impl<'a> ToolboxTabWidget<'a> {
         ui.set_layout_orientation(Orientation::VERTICAL);
         ui.set_halign(HorizontalAlign::LEFT);
         ui.set_valign(VerticalAlign::TOP);
-        ui.set_size(LEFT_LIST_PANEL_WIDTH, LEFT_LIST_PANEL_HEIGHT);
+        ui.set_size_hint_x(Some(1.0));
+        ui.set_size_hint_y(Some(1.0));
         ui.set_size_hint_y(Some(1.0));
         ui.set_scroll_y(true);
         ui.set_enable_renderable_area(true);
@@ -1211,37 +1216,6 @@ impl<'a> ToolboxTabWidget<'a> {
         ui.set_color(COLOR_TRANSPARENT);
         ing_set_mut.add_widget(&ing_lbl);
 
-        // Detail Action Button Container (Bottom aligned)
-        let action_btn_box = UIManager::create_widget(&format!("{}_detail_action_box", tab_id), UIWidgetTypes::Default);
-        let action_btn_box_mut = ptr_as_mut(action_btn_box.as_ref());
-        let ui = action_btn_box_mut.get_ui_component_mut();
-        ui.set_layout_type(UILayoutType::BoxLayout);
-        ui.set_layout_orientation(Orientation::HORIZONTAL);
-        ui.set_size_hint_x(Some(1.0));
-        ui.set_size_y(ACTION_BUTTON_BOX_HEIGHT);
-        ui.set_halign(HorizontalAlign::CENTER);
-        ui.set_valign(VerticalAlign::BOTTOM);
-        ui.set_color(COLOR_TRANSPARENT);
-        detail_container_mut.add_widget(&action_btn_box);
-
-        let detail_action_btn =
-            UIManager::create_widget(&format!("{}_detail_action_btn", tab_id), UIWidgetTypes::Default);
-        let ui = ptr_as_mut(detail_action_btn.as_ref()).get_ui_component_mut();
-        ui.set_size(ACTION_BUTTON_WIDTH, ACTION_BUTTON_HEIGHT);
-        ui.set_halign(HorizontalAlign::CENTER);
-        ui.set_valign(VerticalAlign::CENTER);
-        ui.set_color(COLOR_BTN_DEFAULT_BG);
-        ui.set_border_color(COLOR_BTN_DEFAULT_BORDER);
-        ui.set_border(BORDER_WIDTH_THICK);
-        ui.set_round(CORNER_ROUND_NORMAL);
-        ui.set_text("Unlock");
-        ui.set_font_size(FONT_SIZE_BUTTON);
-        ui.set_font_color(COLOR_TEXT_NORMAL);
-        ui.set_touchable(false);
-        ui.set_callback_touch_over(Some(Box::new(ToolboxItemWidget::callback_item_touch_over)));
-        ui.set_callback_touch_down(Some(Box::new(Self::callback_action_btn)));
-        action_btn_box_mut.add_widget(&detail_action_btn);
-
         // Populate items into left list container
         let first_item_data = item_list.first().cloned();
         let mut items = Vec::new();
@@ -1261,7 +1235,7 @@ impl<'a> ToolboxTabWidget<'a> {
             _count: first_req_count,
         };
 
-        let tab_widget = Box::new(ToolboxTabWidget {
+        Box::new(ToolboxTabWidget {
             _layout: layout,
             _list_container: list_container,
             _detail_container: detail_container,
@@ -1275,15 +1249,8 @@ impl<'a> ToolboxTabWidget<'a> {
             _detail_info_char_entries: detail_info_char_entries,
             _detail_req_box: detail_req_box,
             _detail_ing_widgets: vec![ing_widget],
-            _detail_action_btn: detail_action_btn,
             _is_visible: false,
-        });
-
-        // Set action button user data to tab pointer
-        let tab_ptr = tab_widget.as_ref() as *const ToolboxTabWidget<'a> as *const c_void;
-        ptr_as_mut(tab_widget._detail_action_btn.as_ref()).get_ui_component_mut().set_user_data(tab_ptr);
-
-        tab_widget
+        })
     }
 
     pub fn open(&mut self) {
@@ -1293,8 +1260,8 @@ impl<'a> ToolboxTabWidget<'a> {
                 item._tab_ptr = tab_ptr;
                 let item_ptr = item.as_ref() as *const ToolboxItemWidget<'a> as *const c_void;
                 ptr_as_mut(item._layout.as_ref()).get_ui_component_mut().set_user_data(item_ptr);
+                ptr_as_mut(item._action_btn.as_ref()).get_ui_component_mut().set_user_data(item_ptr);
             }
-            ptr_as_mut(self._detail_action_btn.as_ref()).get_ui_component_mut().set_user_data(tab_ptr);
 
             ptr_as_mut(self._layout.as_ref()).get_ui_component_mut().set_enable(true);
             self._is_visible = true;
