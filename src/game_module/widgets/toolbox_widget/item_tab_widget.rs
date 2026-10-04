@@ -2,12 +2,13 @@ use crate::game_module::actors::character::CharacterCreateInfo;
 use crate::game_module::actors::items::ItemDataType;
 use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, AUDIO_QUEST_COMPLETE, DEFAULT_GATE_NAME};
 use crate::game_module::game_service_locator::{
-    get_character_manager, get_character_manager_mut, get_game_resources, get_game_scene_manager,
-    get_game_scene_manager_mut, get_game_ui_manager, get_game_ui_manager_mut,
+    get_character_manager, get_character_manager_mut, get_game_scene_manager, get_game_scene_manager_mut,
+    get_game_ui_manager, get_game_ui_manager_mut,
 };
+use crate::game_module::widgets::item_detail_layout::*;
 use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
-use rust_engine_3d::core::engine_service_locator::{get_audio_manager_mut, get_engine_resources};
+use rust_engine_3d::core::engine_service_locator::get_audio_manager_mut;
 use rust_engine_3d::scene::ui::{
     HorizontalAlign, Orientation, UIComponentInstance, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign,
     WidgetDefault,
@@ -19,40 +20,14 @@ use std::ffi::c_void;
 use std::rc::Rc;
 
 // ────────────────────────────────────────────────────────────────
-// UI Layout & Dimension Constants
+// Toolbox Specific UI Constants
 // ────────────────────────────────────────────────────────────────
-pub const LIST_ITEM_ROW_HEIGHT: f32 = 54.0;
-pub const LEFT_LIST_PANEL_WIDTH: f32 = 290.0;
 pub const LEFT_LIST_PANEL_HEIGHT: f32 = 480.0;
 pub const ACTION_BUTTON_WIDTH: f32 = 150.0;
 pub const ACTION_BUTTON_HEIGHT: f32 = 40.0;
 pub const ACTION_BUTTON_BOX_HEIGHT: f32 = ACTION_BUTTON_HEIGHT + 10.0;
-
-pub const LIST_ITEM_ICON_SIZE: f32 = 40.0;
-pub const LIST_ITEM_NAME_HEIGHT: f32 = 28.0;
-pub const LIST_ITEM_BTN_WIDTH: f32 = 80.0;
-pub const LIST_ITEM_BTN_HEIGHT: f32 = 32.0;
-
-pub const DETAIL_HEADER_HEIGHT: f32 = 54.0;
-pub const DETAIL_ICON_SIZE: f32 = 48.0;
-pub const DETAIL_NAME_LABEL_HEIGHT: f32 = 48.0;
-pub const DESCRIPTION_LABEL_HEIGHT: f32 = 22.0;
-pub const REQUIREMENT_HEADER_HEIGHT: f32 = 20.0;
-pub const INGREDIENT_SET_HEIGHT: f32 = 36.0;
-pub const INGREDIENT_ICON_SIZE: f32 = 30.0;
-pub const INGREDIENT_LABEL_HEIGHT: f32 = 30.0;
-
-// ────────────────────────────────────────────────────────────────
-// Font Size Constants
-// ────────────────────────────────────────────────────────────────
-pub const FONT_SIZE_TITLE: f32 = 24.0;
-pub const FONT_SIZE_NORMAL: f32 = 20.0;
-pub const FONT_SIZE_BUTTON: f32 = 18.0;
 pub const DESCRIPTION_LABEL_FONT_SIZE: f32 = 20.0;
 
-// ────────────────────────────────────────────────────────────────
-// Margin, Padding & Border Constants
-// ────────────────────────────────────────────────────────────────
 pub const TAB_PADDING: f32 = 8.0;
 pub const LIST_CONTAINER_PADDING: f32 = 4.0;
 pub const DETAIL_CONTAINER_PADDING: f32 = 14.0;
@@ -63,50 +38,21 @@ pub const BORDER_WIDTH_NORMAL: f32 = 2.0;
 pub const BORDER_WIDTH_THICK: f32 = 2.0;
 pub const CORNER_ROUND_NORMAL: f32 = 6.0;
 
-// ────────────────────────────────────────────────────────────────
-// Color Constants
-// ────────────────────────────────────────────────────────────────
-pub const COLOR_TRANSPARENT: u32 = get_color32(0, 0, 0, 0);
-pub const COLOR_WHITE: u32 = get_color32(255, 255, 255, 255);
-
-// Background & Border Colors
 pub const COLOR_TAB_BG: u32 = get_color32(30, 30, 30, 220);
 pub const COLOR_PANEL_BG: u32 = get_color32(25, 27, 30, 220);
 pub const COLOR_PANEL_BORDER: u32 = get_color32(50, 55, 60, 255);
-pub const COLOR_DETAIL_BG: u32 = get_color32(35, 38, 43, 230);
-pub const COLOR_DETAIL_BORDER: u32 = get_color32(65, 70, 78, 255);
-pub const COLOR_BOX_BG: u32 = get_color32(28, 30, 34, 200);
-pub const COLOR_BOX_BORDER: u32 = get_color32(55, 60, 68, 255);
 
-// List Item Colors
-pub const COLOR_ITEM_NORMAL_BG: u32 = get_color32(40, 43, 48, 220);
-pub const COLOR_ITEM_NORMAL_BORDER: u32 = get_color32(65, 70, 78, 255);
-pub const COLOR_ITEM_SELECTED_BG: u32 = get_color32(60, 70, 85, 230);
-pub const COLOR_ITEM_SELECTED_BORDER: u32 = get_color32(110, 160, 220, 255);
-
-// Text Colors
-pub const COLOR_TEXT_TITLE: u32 = get_color32(240, 240, 240, 255);
-pub const COLOR_TEXT_NORMAL: u32 = get_color32(220, 225, 230, 255);
-pub const COLOR_TEXT_MUTED: u32 = get_color32(190, 195, 205, 255);
-pub const COLOR_TEXT_DISABLED: u32 = get_color32(150, 150, 150, 255);
 pub const COLOR_TEXT_DISABLED_ALT: u32 = get_color32(120, 120, 120, 255);
-pub const COLOR_TEXT_SUCCESS: u32 = get_color32(130, 220, 160, 255);
 pub const COLOR_TEXT_WARNING: u32 = get_color32(240, 180, 120, 255);
-pub const COLOR_TEXT_ERROR: u32 = get_color32(235, 100, 100, 255);
 pub const COLOR_STATUS_LOCKED: u32 = get_color32(210, 165, 160, 255);
 pub const COLOR_STATUS_UNLOCKED: u32 = get_color32(100, 210, 120, 255);
 
-// Button Colors
 pub const COLOR_BTN_UNLOCK_BG: u32 = get_color32(75, 130, 85, 255);
 pub const COLOR_BTN_UNLOCK_BORDER: u32 = get_color32(115, 190, 130, 255);
 pub const COLOR_BTN_TELEPORT_BG: u32 = get_color32(50, 110, 180, 255);
 pub const COLOR_BTN_TELEPORT_BORDER: u32 = get_color32(90, 160, 240, 255);
-pub const COLOR_BTN_DISABLED_BG: u32 = get_color32(45, 48, 52, 255);
-pub const COLOR_BTN_DISABLED_BORDER: u32 = get_color32(65, 70, 75, 255);
 pub const COLOR_BTN_UNLOCKED_BG: u32 = get_color32(40, 45, 50, 255);
 pub const COLOR_BTN_UNLOCKED_BORDER: u32 = get_color32(70, 75, 80, 255);
-pub const COLOR_BTN_DEFAULT_BG: u32 = get_color32(65, 65, 65, 255);
-pub const COLOR_BTN_DEFAULT_BORDER: u32 = get_color32(100, 100, 100, 255);
 
 fn spawn_npc_near_monolith(character_data_name: &str, offset: Vector3<f32>) {
     let monolith_pos = if let Some(monolith) = get_game_scene_manager().get_prop_manager().get_prop_by_name("monolith")
@@ -349,20 +295,6 @@ impl ToolboxItemData {
     }
 }
 
-pub struct IngredientWidgetItem<'a> {
-    pub _layout: Rc<WidgetDefault<'a>>,
-    pub _icon: Rc<WidgetDefault<'a>>,
-    pub _label: Rc<WidgetDefault<'a>>,
-    pub _item_type: ItemDataType,
-    pub _count: usize,
-}
-
-impl<'a> IngredientWidgetItem<'a> {
-    pub fn item_code(&self) -> &'static str {
-        self._item_type.item_code()
-    }
-}
-
 pub const INFO_LABEL_INDEX_DESC: usize = 0;
 pub const INFO_LABEL_INDEX_ITEMS_HDR: usize = 1;
 pub const INFO_LABEL_INDEX_CHARS_HDR: usize = 2;
@@ -444,12 +376,7 @@ pub struct ToolboxItemWidget<'a> {
 
 impl<'a> ToolboxItemWidget<'a> {
     pub fn get_item_name_from_resource(item_code: &str) -> String {
-        let resources = get_game_resources();
-        if resources.has_item_data(item_code) {
-            resources.get_item_data(item_code).borrow()._name.clone()
-        } else {
-            item_code.to_string()
-        }
+        get_item_name_from_resource(item_code)
     }
 
     pub fn resolve_display_name(code: &str) -> String {
@@ -458,33 +385,11 @@ impl<'a> ToolboxItemWidget<'a> {
     }
 
     pub fn get_item_description_from_resource(item_code: &str) -> String {
-        let resources = get_game_resources();
-        if resources.has_item_data(item_code) {
-            let desc = resources.get_item_data(item_code).borrow()._description.clone();
-            if !desc.is_empty() {
-                return desc;
-            }
-        }
-        item_code.to_string()
+        get_item_description_from_resource(item_code)
     }
 
     pub fn setup_item_icon(icon_widget: &Rc<WidgetDefault<'a>>, item_code: &str, enable: bool) {
-        let mut has_item_data: bool = false;
-        let ui = ptr_as_mut(icon_widget.as_ref()).get_ui_component_mut();
-        let resources = get_game_resources();
-        if resources.has_item_data(item_code) {
-            let item_data = resources.get_item_data(item_code).borrow();
-            let mat_name = &item_data._ui_material_instance;
-            if !mat_name.is_empty() {
-                let engine_res = get_engine_resources();
-                if engine_res.has_material_instance_data(mat_name.as_str()) {
-                    let material = engine_res.get_material_instance_data(mat_name.as_str());
-                    ui.set_material_instance(Some(material.clone()));
-                    has_item_data = true;
-                }
-            }
-        }
-        ui.set_enable(enable && has_item_data);
+        setup_item_icon(icon_widget, item_code, enable);
     }
 
     pub fn callback_item_touch_over(

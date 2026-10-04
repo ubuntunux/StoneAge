@@ -9,6 +9,7 @@ pub mod game_menu_widget;
 pub mod image_widget;
 pub mod item_acquire_notification;
 pub mod item_bar;
+pub mod item_detail_layout;
 pub mod key_binding_widget;
 pub mod player_hud;
 pub mod popup_widget;
