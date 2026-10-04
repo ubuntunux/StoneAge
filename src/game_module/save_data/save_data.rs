@@ -5,8 +5,8 @@ use crate::game_module::scenario::scenario::{GameScenarioCreateInfo, ScenarioTyp
 use crate::game_module::widgets::item_bar::{
     DEFAULT_INVENTORY_ROWS, InventoryItemCreateInfo, InventoryItemCreateInfoList,
 };
-use crate::game_module::widgets::toolbox_widget::item_tab_widget::ToolboxIconType;
 use crate::game_module::widgets::toolbox_widget::ToolboxTab;
+use crate::game_module::widgets::toolbox_widget::item_tab_widget::ToolboxIconType;
 use rust_engine_3d::scene::camera::CameraCreateInfo;
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};

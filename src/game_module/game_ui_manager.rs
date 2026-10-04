@@ -16,6 +16,7 @@ use crate::game_module::widgets::item_acquire_notification::ItemAcquireNotificat
 use crate::game_module::widgets::item_bar::{InventoryItemCreateInfo, InventoryItemCreateInfoList, ItemBarWidget};
 use crate::game_module::widgets::key_binding_widget::KeyBindingWidgetManager;
 use crate::game_module::widgets::player_hud::PlayerHud;
+use crate::game_module::widgets::popup_widget::PopupWindowWidget;
 use crate::game_module::widgets::quest_widgets::quest_title::QuestTitle;
 use crate::game_module::widgets::quest_widgets::quest_widget::{QuestItemBase, QuestWidget};
 use crate::game_module::widgets::table_storage_widget::TableStorageWidget;
@@ -24,10 +25,9 @@ use crate::game_module::widgets::text_box_widget::{
     TextBoxContent, TextBoxItemOption, TextBoxLayerType, TextBoxWidget,
 };
 use crate::game_module::widgets::time_of_day::TimeOfDayWidget;
-use crate::game_module::widgets::toolbox_widget::item_tab_widget::ToolboxIconType;
 use crate::game_module::widgets::toolbox_widget::ToolboxTab;
 use crate::game_module::widgets::toolbox_widget::ToolboxWidget;
-use crate::game_module::widgets::popup_widget::PopupWindowWidget;
+use crate::game_module::widgets::toolbox_widget::item_tab_widget::ToolboxIconType;
 use nalgebra::Vector2;
 use rust_engine_3d::constants::DEVELOPMENT;
 use rust_engine_3d::core::engine_core::TimeData;

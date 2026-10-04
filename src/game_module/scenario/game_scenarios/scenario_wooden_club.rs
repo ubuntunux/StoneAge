@@ -341,7 +341,8 @@ impl<'a> ScenarioBase<'a> for ScenarioWoodenClub<'a> {
                     }
                     State::Update => {
                         // Check Step 1: Unlock Wooden Club in Toolbox
-                        let is_unlocked = get_game_ui_manager().get_unlocked_toolbox_items().contains(&ToolboxIconType::WoodenClub);
+                        let is_unlocked =
+                            get_game_ui_manager().get_unlocked_toolbox_items().contains(&ToolboxIconType::WoodenClub);
                         if is_unlocked {
                             self.complete_sub_quest_unlock_wooden_club();
                         } else {

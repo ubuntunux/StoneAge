@@ -1,8 +1,6 @@
 use crate::game_module::actors::character::CharacterCreateInfo;
 use crate::game_module::actors::items::ItemDataType;
-use crate::game_module::game_constants::{
-    AUDIO_PICKUP_ITEM, AUDIO_QUEST_COMPLETE, DEFAULT_GATE_NAME,
-};
+use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, AUDIO_QUEST_COMPLETE, DEFAULT_GATE_NAME};
 use crate::game_module::game_service_locator::{
     get_character_manager, get_character_manager_mut, get_game_resources, get_game_scene_manager,
     get_game_scene_manager_mut, get_game_ui_manager, get_game_ui_manager_mut,
@@ -16,9 +14,9 @@ use rust_engine_3d::scene::ui::{
 };
 use rust_engine_3d::utilities::system::ptr_as_mut;
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
+use serde::{Deserialize, Serialize};
 use std::ffi::c_void;
 use std::rc::Rc;
-use serde::{Deserialize, Serialize};
 
 const LIST_ITEM_ROW_HEIGHT: f32 = 54.0;
 const LEFT_LIST_PANEL_WIDTH: f32 = 290.0;
@@ -227,6 +225,14 @@ impl ToolboxIconType {
             ToolboxIconType::MapUfo => "toolbox_items/teleport/map_ufo",
         }
     }
+
+    pub fn get_display_name(&self) -> String {
+        if self.stage_data_name().is_some() {
+            self.as_str().to_string()
+        } else {
+            ToolboxItemWidget::resolve_display_name(self.item_code())
+        }
+    }
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
@@ -286,6 +292,57 @@ pub struct DetailInfoEntryWidget<'a> {
     pub _label: Rc<WidgetDefault<'a>>,
 }
 
+impl<'a> DetailInfoEntryWidget<'a> {
+    pub fn create(tab_id: &str, category: &str, index: usize, margin_bottom: f32) -> DetailInfoEntryWidget<'a> {
+        let entry_layout = UIManager::create_widget(
+            &format!("{}_detail_{}_entry_{}", tab_id, category, index),
+            UIWidgetTypes::Default,
+        );
+        let entry_layout_mut = ptr_as_mut(entry_layout.as_ref());
+        let ui = entry_layout_mut.get_ui_component_mut();
+        ui.set_layout_type(UILayoutType::BoxLayout);
+        ui.set_layout_orientation(Orientation::HORIZONTAL);
+        ui.set_size_hint_x(Some(1.0));
+        ui.set_size_y(DESCRIPTION_LABEL_HEIGHT);
+        ui.set_valign(VerticalAlign::CENTER);
+        ui.set_margin_left(12.0);
+        if margin_bottom > 0.0 {
+            ui.set_margin_bottom(margin_bottom);
+        }
+        ui.set_color(get_color32(0, 0, 0, 0));
+
+        let entry_icon = UIManager::create_widget(
+            &format!("{}_detail_{}_icon_{}", tab_id, category, index),
+            UIWidgetTypes::Default,
+        );
+        let ui = ptr_as_mut(entry_icon.as_ref()).get_ui_component_mut();
+        ui.set_size(DESCRIPTION_LABEL_HEIGHT, DESCRIPTION_LABEL_HEIGHT);
+        ui.set_valign(VerticalAlign::CENTER);
+        ui.set_margin_right(6.0);
+        ui.set_color(get_color32(255, 255, 255, 255));
+        entry_layout_mut.add_widget(&entry_icon);
+
+        let entry_label = UIManager::create_widget(
+            &format!("{}_detail_{}_lbl_{}", tab_id, category, index),
+            UIWidgetTypes::Default,
+        );
+        let ui = ptr_as_mut(entry_label.as_ref()).get_ui_component_mut();
+        ui.set_size_hint_x(Some(1.0));
+        ui.set_size_y(DESCRIPTION_LABEL_HEIGHT);
+        ui.set_valign(VerticalAlign::CENTER);
+        ui.set_font_size(DESCRIPTION_LABEL_FONT_SIZE);
+        ui.set_font_color(get_color32(220, 225, 230, 255));
+        ui.set_color(get_color32(0, 0, 0, 0));
+        entry_layout_mut.add_widget(&entry_label);
+
+        DetailInfoEntryWidget {
+            _layout: entry_layout,
+            _icon: entry_icon,
+            _label: entry_label,
+        }
+    }
+}
+
 // ────────────────────────────────────────────────────────────────
 // ToolboxItemWidget - Left side list item entry
 // Layout: [Icon] [Icon name] [Unlocked status]
@@ -309,6 +366,11 @@ impl<'a> ToolboxItemWidget<'a> {
         } else {
             item_code.to_string()
         }
+    }
+
+    pub fn resolve_display_name(code: &str) -> String {
+        let name = Self::get_item_name_from_resource(code);
+        if name == code { code.to_string() } else { name }
     }
 
     pub fn get_item_description_from_resource(item_code: &str) -> String {
@@ -396,8 +458,6 @@ impl<'a> ToolboxItemWidget<'a> {
         data: ToolboxItemData,
         item_index: usize,
     ) -> Box<ToolboxItemWidget<'a>> {
-        let is_map_item = data._icon_type.stage_data_name().is_some();
-
         // Single Row Entry: [Icon] [Icon name] [Unlocked status]
         let layout = UIManager::create_widget(
             &format!("item_list_row_{:?}_{}", data._icon_type, item_index),
@@ -422,7 +482,7 @@ impl<'a> ToolboxItemWidget<'a> {
         ui.set_callback_touch_down(Some(Box::new(Self::callback_item_select)));
         parent_widget.add_widget(&layout);
 
-        // Icon (32x32)
+        // Icon (40x40)
         let icon = UIManager::create_widget(
             &format!("item_list_icon_{:?}_{}", data._icon_type, item_index),
             UIWidgetTypes::Default,
@@ -437,17 +497,7 @@ impl<'a> ToolboxItemWidget<'a> {
         Self::setup_item_icon(&icon, data._icon_type.item_code(), true);
 
         // Name Label
-        let display_name = if is_map_item {
-            data._icon_type.as_str().to_string()
-        } else {
-            let item_code = data._icon_type.item_code();
-            let item_name = Self::get_item_name_from_resource(item_code);
-            if item_name == item_code {
-                data._icon_type.as_str().to_string()
-            } else {
-                item_name
-            }
-        };
+        let display_name = data._icon_type.get_display_name();
         let name_lbl = UIManager::create_widget(
             &format!("item_list_name_{:?}_{}", data._icon_type, item_index),
             UIWidgetTypes::Default,
@@ -492,6 +542,60 @@ impl<'a> ToolboxItemWidget<'a> {
     }
 }
 
+// Helper functions for updating discovered detail info list entries
+fn update_detail_info_entry_list<'a>(entries: &[DetailInfoEntryWidget<'a>], codes: &[String]) {
+    for (i, entry) in entries.iter().enumerate() {
+        if i < codes.len() {
+            let code = &codes[i];
+            let name_text = ToolboxItemWidget::resolve_display_name(code);
+            ptr_as_mut(entry._label.as_ref()).get_ui_component_mut().set_text(&name_text);
+            ToolboxItemWidget::setup_item_icon(&entry._icon, code, true);
+            ptr_as_mut(entry._layout.as_ref()).get_ui_component_mut().set_enable(true);
+        } else {
+            ptr_as_mut(entry._layout.as_ref()).get_ui_component_mut().set_enable(false);
+        }
+    }
+}
+
+fn setup_discovered_category_header<'a>(
+    hdr_label: &Rc<WidgetDefault<'a>>,
+    category_name: &str,
+    entries: &[DetailInfoEntryWidget<'a>],
+    codes: &[String],
+) {
+    let hdr_ui = ptr_as_mut(hdr_label.as_ref()).get_ui_component_mut();
+    hdr_ui.set_enable(true);
+    if codes.is_empty() {
+        hdr_ui.set_text(&format!("Discovered {}: None", category_name));
+        for entry in entries {
+            ptr_as_mut(entry._layout.as_ref()).get_ui_component_mut().set_enable(false);
+        }
+    } else {
+        hdr_ui.set_text(&format!("Discovered {}:", category_name));
+        update_detail_info_entry_list(entries, codes);
+    }
+}
+
+fn create_info_label<'a>(
+    name: &str,
+    height: f32,
+    font_size: f32,
+    font_color: u32,
+    margin_top: f32,
+) -> Rc<WidgetDefault<'a>> {
+    let lbl = UIManager::create_widget(name, UIWidgetTypes::Default);
+    let ui = ptr_as_mut(lbl.as_ref()).get_ui_component_mut();
+    ui.set_size_hint_x(Some(1.0));
+    ui.set_size_y(height);
+    ui.set_font_size(font_size);
+    ui.set_font_color(font_color);
+    ui.set_color(get_color32(0, 0, 0, 0));
+    if margin_top > 0.0 {
+        ui.set_margin_top(margin_top);
+    }
+    lbl
+}
+
 // ────────────────────────────────────────────────────────────────
 // ToolboxTabWidget - Master-Detail Content pane for a category tab
 // Left: List Container (Items)
@@ -533,6 +637,22 @@ impl<'a> ToolboxTabWidget<'a> {
         true
     }
 
+    fn unlock_item(&mut self, index: usize) {
+        if index >= self._items.len() {
+            return;
+        }
+        let item = &mut self._items[index];
+        item._state = ToolboxItemState::Unlocked;
+        get_game_ui_manager_mut().notify_item_crafted();
+        let reward_item_code = item._data._icon_type.item_code();
+        get_game_ui_manager_mut().notify_item_acquired(reward_item_code, 1, true);
+        get_audio_manager_mut().play_audio_bank(AUDIO_QUEST_COMPLETE, AudioLoop::ONCE, None);
+        if let Some((char_data_name, offset)) = item._data._icon_type.npc_character_info() {
+            spawn_npc_near_monolith(char_data_name, offset);
+        }
+        self.update_detail_panel();
+    }
+
     pub fn execute_selected_action(&mut self) {
         if self._selected_index >= self._items.len() {
             return;
@@ -542,34 +662,21 @@ impl<'a> ToolboxTabWidget<'a> {
             ToolboxItemState::Locked => {
                 let cost = item._data._item_data_count;
                 let item_type = item._data._item_data_type;
-                if cost > 0 && item_type != ItemDataType::None {
+                let has_enough_cost = if cost > 0 && item_type != ItemDataType::None {
                     let item_code = item_type.item_code();
                     let current_count = get_game_ui_manager().get_item_count(item_code);
                     if current_count >= cost {
-                        if get_game_ui_manager_mut().remove_item(item_code, cost) {
-                            item._state = ToolboxItemState::Unlocked;
-                            get_game_ui_manager_mut().notify_item_crafted();
-                            let reward_item_code = item._data._icon_type.item_code();
-                            get_game_ui_manager_mut().notify_item_acquired(reward_item_code, 1, true);
-                            get_audio_manager_mut().play_audio_bank(AUDIO_QUEST_COMPLETE, AudioLoop::ONCE, None);
-                            if let Some((char_data_name, offset)) = item._data._icon_type.npc_character_info() {
-                                spawn_npc_near_monolith(char_data_name, offset);
-                            }
-                            self.update_detail_panel();
-                        }
+                        get_game_ui_manager_mut().remove_item(item_code, cost)
                     } else {
                         get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
+                        false
                     }
                 } else {
-                    item._state = ToolboxItemState::Unlocked;
-                    get_game_ui_manager_mut().notify_item_crafted();
-                    let reward_item_code = item._data._icon_type.item_code();
-                    get_game_ui_manager_mut().notify_item_acquired(reward_item_code, 1, true);
-                    get_audio_manager_mut().play_audio_bank(AUDIO_QUEST_COMPLETE, AudioLoop::ONCE, None);
-                    if let Some((char_data_name, offset)) = item._data._icon_type.npc_character_info() {
-                        spawn_npc_near_monolith(char_data_name, offset);
-                    }
-                    self.update_detail_panel();
+                    true
+                };
+
+                if has_enough_cost {
+                    self.unlock_item(self._selected_index);
                 }
             }
             ToolboxItemState::Unlocked => {
@@ -607,17 +714,7 @@ impl<'a> ToolboxTabWidget<'a> {
 
         // 1. Setup Detail Icon & Name
         ToolboxItemWidget::setup_item_icon(&self._detail_icon, item._data._icon_type.item_code(), true);
-        let display_name = if is_map_item {
-            item._data._icon_type.as_str().to_string()
-        } else {
-            let item_code = item._data._icon_type.item_code();
-            let item_name = ToolboxItemWidget::get_item_name_from_resource(item_code);
-            if item_name == item_code {
-                item._data._icon_type.as_str().to_string()
-            } else {
-                item_name
-            }
-        };
+        let display_name = item._data._icon_type.get_display_name();
         ptr_as_mut(self._detail_name_lbl.as_ref()).get_ui_component_mut().set_text(&display_name);
 
         // 2. Setup Description & Info Labels/Lists
@@ -641,9 +738,8 @@ impl<'a> ToolboxTabWidget<'a> {
             ing_widget._item_type = item._data._item_data_type;
             ing_widget._count = item._data._item_data_count;
             let unlocked = item._state == ToolboxItemState::Unlocked;
-            let show_req = !unlocked
-                && item._data._item_data_count > 0
-                && item._data._item_data_type != ItemDataType::None;
+            let show_req =
+                !unlocked && item._data._item_data_count > 0 && item._data._item_data_type != ItemDataType::None;
             let item_code = ing_widget.item_code();
             let have_count = ui_mgr.get_item_count(item_code);
             let mat_name = ToolboxItemWidget::get_item_name_from_resource(item_code);
@@ -689,72 +785,49 @@ impl<'a> ToolboxTabWidget<'a> {
         if is_map_item {
             if let Some((items, chars)) = item._data._icon_type.world_discovered_info() {
                 if self._detail_info_labels.len() > INFO_LABEL_INDEX_UNEXP {
-                    ptr_as_mut(self._detail_info_labels[INFO_LABEL_INDEX_UNEXP].as_ref()).get_ui_component_mut().set_enable(false);
+                    ptr_as_mut(self._detail_info_labels[INFO_LABEL_INDEX_UNEXP].as_ref())
+                        .get_ui_component_mut()
+                        .set_enable(false);
                 }
 
                 // Setup Items list
                 if self._detail_info_labels.len() > INFO_LABEL_INDEX_ITEMS_HDR {
-                    let hdr_ui = ptr_as_mut(self._detail_info_labels[INFO_LABEL_INDEX_ITEMS_HDR].as_ref()).get_ui_component_mut();
-                    if items.is_empty() {
-                        hdr_ui.set_text("Discovered items: None");
-                        hdr_ui.set_enable(true);
-                        for entry in self._detail_info_item_entries.iter() {
-                            ptr_as_mut(entry._layout.as_ref()).get_ui_component_mut().set_enable(false);
-                        }
-                    } else {
-                        hdr_ui.set_text("Discovered items:");
-                        hdr_ui.set_enable(true);
-                        for (i, entry) in self._detail_info_item_entries.iter().enumerate() {
-                            if i < items.len() {
-                                let item_code = &items[i];
-                                let item_name = ToolboxItemWidget::get_item_name_from_resource(item_code);
-                                let name_text = if item_name == *item_code { item_code.to_string() } else { item_name };
-                                ptr_as_mut(entry._label.as_ref()).get_ui_component_mut().set_text(&name_text);
-                                ToolboxItemWidget::setup_item_icon(&entry._icon, item_code, true);
-                                ptr_as_mut(entry._layout.as_ref()).get_ui_component_mut().set_enable(true);
-                            } else {
-                                ptr_as_mut(entry._layout.as_ref()).get_ui_component_mut().set_enable(false);
-                            }
-                        }
-                    }
+                    setup_discovered_category_header(
+                        &self._detail_info_labels[INFO_LABEL_INDEX_ITEMS_HDR],
+                        "items",
+                        &self._detail_info_item_entries,
+                        &items,
+                    );
                 }
 
                 // Setup Characters list
                 if self._detail_info_labels.len() > INFO_LABEL_INDEX_CHARS_HDR {
-                    let hdr_ui = ptr_as_mut(self._detail_info_labels[INFO_LABEL_INDEX_CHARS_HDR].as_ref()).get_ui_component_mut();
-                    if chars.is_empty() {
-                        hdr_ui.set_text("Discovered characters: None");
-                        hdr_ui.set_enable(true);
-                        for entry in self._detail_info_char_entries.iter() {
-                            ptr_as_mut(entry._layout.as_ref()).get_ui_component_mut().set_enable(false);
-                        }
-                    } else {
-                        hdr_ui.set_text("Discovered characters:");
-                        hdr_ui.set_enable(true);
-                        for (i, entry) in self._detail_info_char_entries.iter().enumerate() {
-                            if i < chars.len() {
-                                let char_code = &chars[i];
-                                let char_name = ToolboxItemWidget::get_item_name_from_resource(char_code);
-                                let name_text = if char_name == *char_code { char_code.to_string() } else { char_name };
-                                ptr_as_mut(entry._label.as_ref()).get_ui_component_mut().set_text(&name_text);
-                                ToolboxItemWidget::setup_item_icon(&entry._icon, char_code, true);
-                                ptr_as_mut(entry._layout.as_ref()).get_ui_component_mut().set_enable(true);
-                            } else {
-                                ptr_as_mut(entry._layout.as_ref()).get_ui_component_mut().set_enable(false);
-                            }
-                        }
-                    }
+                    setup_discovered_category_header(
+                        &self._detail_info_labels[INFO_LABEL_INDEX_CHARS_HDR],
+                        "characters",
+                        &self._detail_info_char_entries,
+                        &chars,
+                    );
                 }
             } else {
-                disable_all_info(&self._detail_info_labels, &self._detail_info_item_entries, &self._detail_info_char_entries);
+                disable_all_info(
+                    &self._detail_info_labels,
+                    &self._detail_info_item_entries,
+                    &self._detail_info_char_entries,
+                );
                 if self._detail_info_labels.len() > INFO_LABEL_INDEX_UNEXP {
-                    let ui = ptr_as_mut(self._detail_info_labels[INFO_LABEL_INDEX_UNEXP].as_ref()).get_ui_component_mut();
+                    let ui =
+                        ptr_as_mut(self._detail_info_labels[INFO_LABEL_INDEX_UNEXP].as_ref()).get_ui_component_mut();
                     ui.set_text("Unexplored Region");
                     ui.set_enable(true);
                 }
             }
         } else {
-            disable_all_info(&self._detail_info_labels, &self._detail_info_item_entries, &self._detail_info_char_entries);
+            disable_all_info(
+                &self._detail_info_labels,
+                &self._detail_info_item_entries,
+                &self._detail_info_char_entries,
+            );
         }
 
         // 4. Setup Action Button State
@@ -776,7 +849,6 @@ impl<'a> ToolboxTabWidget<'a> {
                     btn_ui.set_border_color(get_color32(115, 190, 130, 255));
                     btn_ui.set_font_color(get_color32(255, 255, 255, 255));
                     btn_ui.set_touchable(true);
-
                 } else {
                     btn_ui.set_color(get_color32(45, 48, 52, 255));
                     btn_ui.set_border_color(get_color32(65, 70, 75, 255));
@@ -846,7 +918,8 @@ impl<'a> ToolboxTabWidget<'a> {
         layout_mut.add_widget(&list_container);
 
         // 2. Right Detail Container (Width ~ 430)
-        let detail_container_layout = UIManager::create_widget(&format!("{}_detail_container_layout", tab_id), UIWidgetTypes::Default);
+        let detail_container_layout =
+            UIManager::create_widget(&format!("{}_detail_container_layout", tab_id), UIWidgetTypes::Default);
         let detail_container_layout_mut = ptr_as_mut(detail_container_layout.as_ref());
         let ui = detail_container_layout_mut.get_ui_component_mut();
         ui.set_layout_type(UILayoutType::BoxLayout);
@@ -857,7 +930,8 @@ impl<'a> ToolboxTabWidget<'a> {
         ui.set_border_color(get_color32(50, 55, 60, 0));
         layout_mut.add_widget(&detail_container_layout);
 
-        let detail_container = UIManager::create_widget(&format!("{}_detail_container", tab_id), UIWidgetTypes::Default);
+        let detail_container =
+            UIManager::create_widget(&format!("{}_detail_container", tab_id), UIWidgetTypes::Default);
         let detail_container_mut = ptr_as_mut(detail_container.as_ref());
         let ui = detail_container_mut.get_ui_component_mut();
         ui.set_layout_type(UILayoutType::BoxLayout);
@@ -908,7 +982,7 @@ impl<'a> ToolboxTabWidget<'a> {
         ui.set_color(get_color32(0, 0, 0, 0));
         detail_hdr_mut.add_widget(&detail_name_lbl);
 
-        // Detail Description Label
+        // Detail Description Box
         let detail_desc_box = UIManager::create_widget(&format!("{}_detail_desc_box", tab_id), UIWidgetTypes::Default);
         let detail_desc_box_mut = ptr_as_mut(detail_desc_box.as_ref());
         let ui = detail_desc_box_mut.get_ui_component_mut();
@@ -944,117 +1018,51 @@ impl<'a> ToolboxTabWidget<'a> {
         detail_info_labels.push(detail_desc_lbl);
 
         // Index 1: Items Header Label
-        let items_hdr_lbl = UIManager::create_widget(&format!("{}_detail_info_items", tab_id), UIWidgetTypes::Default);
-        let ui = ptr_as_mut(items_hdr_lbl.as_ref()).get_ui_component_mut();
-        ui.set_size_hint_x(Some(1.0));
-        ui.set_size_y(DESCRIPTION_LABEL_HEIGHT);
-        ui.set_font_size(DESCRIPTION_LABEL_FONT_SIZE);
-        ui.set_font_color(get_color32(130, 220, 160, 255));
-        ui.set_color(get_color32(0, 0, 0, 0));
+        let items_hdr_lbl = create_info_label(
+            &format!("{}_detail_info_items", tab_id),
+            DESCRIPTION_LABEL_HEIGHT,
+            DESCRIPTION_LABEL_FONT_SIZE,
+            get_color32(130, 220, 160, 255),
+            0.0,
+        );
         detail_desc_box_mut.add_widget(&items_hdr_lbl);
         detail_info_labels.push(items_hdr_lbl);
 
-        // Item Entries (Vertical List of icon, icon_name)
-        let mut detail_info_item_entries = Vec::new();
+        // Item Entries
+        let mut detail_info_item_entries = Vec::with_capacity(MAX_DETAIL_INFO_ENTRIES);
         for i in 0..MAX_DETAIL_INFO_ENTRIES {
-            let entry_layout = UIManager::create_widget(&format!("{}_detail_item_entry_{}", tab_id, i), UIWidgetTypes::Default);
-            let entry_layout_mut = ptr_as_mut(entry_layout.as_ref());
-            let ui = entry_layout_mut.get_ui_component_mut();
-            ui.set_layout_type(UILayoutType::BoxLayout);
-            ui.set_layout_orientation(Orientation::HORIZONTAL);
-            ui.set_size_hint_x(Some(1.0));
-            ui.set_size_y(DESCRIPTION_LABEL_HEIGHT);
-            ui.set_valign(VerticalAlign::CENTER);
-            ui.set_margin_left(12.0);
-            ui.set_color(get_color32(0, 0, 0, 0));
-
-            let entry_icon = UIManager::create_widget(&format!("{}_detail_item_icon_{}", tab_id, i), UIWidgetTypes::Default);
-            let ui = ptr_as_mut(entry_icon.as_ref()).get_ui_component_mut();
-            ui.set_size(DESCRIPTION_LABEL_HEIGHT, DESCRIPTION_LABEL_HEIGHT);
-            ui.set_valign(VerticalAlign::CENTER);
-            ui.set_margin_right(6.0);
-            ui.set_color(get_color32(255, 255, 255, 255));
-            entry_layout_mut.add_widget(&entry_icon);
-
-            let entry_label = UIManager::create_widget(&format!("{}_detail_item_lbl_{}", tab_id, i), UIWidgetTypes::Default);
-            let ui = ptr_as_mut(entry_label.as_ref()).get_ui_component_mut();
-            ui.set_size_hint_x(Some(1.0));
-            ui.set_size_y(DESCRIPTION_LABEL_HEIGHT);
-            ui.set_valign(VerticalAlign::CENTER);
-            ui.set_font_size(DESCRIPTION_LABEL_FONT_SIZE);
-            ui.set_font_color(get_color32(220, 225, 230, 255));
-            ui.set_color(get_color32(0, 0, 0, 0));
-            entry_layout_mut.add_widget(&entry_label);
-
-            detail_desc_box_mut.add_widget(&entry_layout);
-            detail_info_item_entries.push(DetailInfoEntryWidget {
-                _layout: entry_layout,
-                _icon: entry_icon,
-                _label: entry_label,
-            });
+            let entry = DetailInfoEntryWidget::create(tab_id, "item", i, 0.0);
+            detail_desc_box_mut.add_widget(&entry._layout);
+            detail_info_item_entries.push(entry);
         }
 
         // Index 2: Characters Header Label
-        let chars_hdr_lbl = UIManager::create_widget(&format!("{}_detail_info_chars", tab_id), UIWidgetTypes::Default);
-        let ui = ptr_as_mut(chars_hdr_lbl.as_ref()).get_ui_component_mut();
-        ui.set_size_hint_x(Some(1.0));
-        ui.set_size_y(DESCRIPTION_LABEL_HEIGHT);
-        ui.set_font_size(DESCRIPTION_LABEL_FONT_SIZE);
-        ui.set_font_color(get_color32(240, 180, 120, 255));
-        ui.set_color(get_color32(0, 0, 0, 0));
-        ui.set_margin_top(6.0);
+        let chars_hdr_lbl = create_info_label(
+            &format!("{}_detail_info_chars", tab_id),
+            DESCRIPTION_LABEL_HEIGHT,
+            DESCRIPTION_LABEL_FONT_SIZE,
+            get_color32(240, 180, 120, 255),
+            6.0,
+        );
         detail_desc_box_mut.add_widget(&chars_hdr_lbl);
         detail_info_labels.push(chars_hdr_lbl);
 
-        // Character Entries (Vertical List of icon, icon_name)
-        let mut detail_info_char_entries = Vec::new();
+        // Character Entries
+        let mut detail_info_char_entries = Vec::with_capacity(MAX_DETAIL_INFO_ENTRIES);
         for i in 0..MAX_DETAIL_INFO_ENTRIES {
-            let entry_layout = UIManager::create_widget(&format!("{}_detail_char_entry_{}", tab_id, i), UIWidgetTypes::Default);
-            let entry_layout_mut = ptr_as_mut(entry_layout.as_ref());
-            let ui = entry_layout_mut.get_ui_component_mut();
-            ui.set_layout_type(UILayoutType::BoxLayout);
-            ui.set_layout_orientation(Orientation::HORIZONTAL);
-            ui.set_size_hint_x(Some(1.0));
-            ui.set_size_y(DESCRIPTION_LABEL_HEIGHT);
-            ui.set_valign(VerticalAlign::CENTER);
-            ui.set_margin_left(12.0);
-            ui.set_margin_bottom(2.0);
-            ui.set_color(get_color32(0, 0, 0, 0));
-
-            let entry_icon = UIManager::create_widget(&format!("{}_detail_char_icon_{}", tab_id, i), UIWidgetTypes::Default);
-            let ui = ptr_as_mut(entry_icon.as_ref()).get_ui_component_mut();
-            ui.set_size(DESCRIPTION_LABEL_HEIGHT, DESCRIPTION_LABEL_HEIGHT);
-            ui.set_valign(VerticalAlign::CENTER);
-            ui.set_margin_right(6.0);
-            ui.set_color(get_color32(255, 255, 255, 255));
-            entry_layout_mut.add_widget(&entry_icon);
-
-            let entry_label = UIManager::create_widget(&format!("{}_detail_char_lbl_{}", tab_id, i), UIWidgetTypes::Default);
-            let ui = ptr_as_mut(entry_label.as_ref()).get_ui_component_mut();
-            ui.set_size_hint_x(Some(1.0));
-            ui.set_size_y(DESCRIPTION_LABEL_HEIGHT);
-            ui.set_valign(VerticalAlign::CENTER);
-            ui.set_font_size(DESCRIPTION_LABEL_FONT_SIZE);
-            ui.set_font_color(get_color32(220, 225, 230, 255));
-            ui.set_color(get_color32(0, 0, 0, 0));
-            entry_layout_mut.add_widget(&entry_label);
-
-            detail_desc_box_mut.add_widget(&entry_layout);
-            detail_info_char_entries.push(DetailInfoEntryWidget {
-                _layout: entry_layout,
-                _icon: entry_icon,
-                _label: entry_label,
-            });
+            let entry = DetailInfoEntryWidget::create(tab_id, "char", i, 2.0);
+            detail_desc_box_mut.add_widget(&entry._layout);
+            detail_info_char_entries.push(entry);
         }
 
         // Index 3: Unexplored Label
-        let unexp_lbl = UIManager::create_widget(&format!("{}_detail_info_unexp", tab_id), UIWidgetTypes::Default);
-        let ui = ptr_as_mut(unexp_lbl.as_ref()).get_ui_component_mut();
-        ui.set_size_hint_x(Some(1.0));
-        ui.set_size_y(DESCRIPTION_LABEL_HEIGHT);
-        ui.set_font_size(DESCRIPTION_LABEL_FONT_SIZE);
-        ui.set_font_color(get_color32(150, 150, 150, 255));
-        ui.set_color(get_color32(0, 0, 0, 0));
+        let unexp_lbl = create_info_label(
+            &format!("{}_detail_info_unexp", tab_id),
+            DESCRIPTION_LABEL_HEIGHT,
+            DESCRIPTION_LABEL_FONT_SIZE,
+            get_color32(150, 150, 150, 255),
+            0.0,
+        );
         detail_desc_box_mut.add_widget(&unexp_lbl);
         detail_info_labels.push(unexp_lbl);
 
@@ -1133,7 +1141,8 @@ impl<'a> ToolboxTabWidget<'a> {
         ui.set_color(get_color32(0, 0, 0, 0));
         detail_container_mut.add_widget(&action_btn_box);
 
-        let detail_action_btn = UIManager::create_widget(&format!("{}_detail_action_btn", tab_id), UIWidgetTypes::Default);
+        let detail_action_btn =
+            UIManager::create_widget(&format!("{}_detail_action_btn", tab_id), UIWidgetTypes::Default);
         let ui = ptr_as_mut(detail_action_btn.as_ref()).get_ui_component_mut();
         ui.set_size(ACTION_BUTTON_WIDTH, ACTION_BUTTON_HEIGHT);
         ui.set_halign(HorizontalAlign::CENTER);
@@ -1154,11 +1163,7 @@ impl<'a> ToolboxTabWidget<'a> {
         let first_item_data = item_list.first().cloned();
         let mut items = Vec::new();
         for (idx, item_data) in item_list.into_iter().enumerate() {
-            let item_widget = ToolboxItemWidget::create(
-                list_container_mut,
-                item_data,
-                idx,
-            );
+            let item_widget = ToolboxItemWidget::create(list_container_mut, item_data, idx);
             items.push(item_widget);
         }
 
@@ -1193,9 +1198,7 @@ impl<'a> ToolboxTabWidget<'a> {
 
         // Set action button user data to tab pointer
         let tab_ptr = tab_widget.as_ref() as *const ToolboxTabWidget<'a> as *const c_void;
-        ptr_as_mut(tab_widget._detail_action_btn.as_ref())
-            .get_ui_component_mut()
-            .set_user_data(tab_ptr);
+        ptr_as_mut(tab_widget._detail_action_btn.as_ref()).get_ui_component_mut().set_user_data(tab_ptr);
 
         tab_widget
     }
@@ -1208,9 +1211,7 @@ impl<'a> ToolboxTabWidget<'a> {
                 let item_ptr = item.as_ref() as *const ToolboxItemWidget<'a> as *const c_void;
                 ptr_as_mut(item._layout.as_ref()).get_ui_component_mut().set_user_data(item_ptr);
             }
-            ptr_as_mut(self._detail_action_btn.as_ref())
-                .get_ui_component_mut()
-                .set_user_data(tab_ptr);
+            ptr_as_mut(self._detail_action_btn.as_ref()).get_ui_component_mut().set_user_data(tab_ptr);
 
             ptr_as_mut(self._layout.as_ref()).get_ui_component_mut().set_enable(true);
             self._is_visible = true;

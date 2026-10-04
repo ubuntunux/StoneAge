@@ -1,7 +1,7 @@
 use crate::game_module::actors::character::Character;
+use crate::game_module::actors::items::ItemDataType;
 use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, AUDIO_SELECT_ITEM};
 use crate::game_module::game_controller::WidgetNavRepeatController;
-use crate::game_module::actors::items::ItemDataType;
 use crate::game_module::game_service_locator::{
     get_game_resources, get_game_scene_manager, get_game_scene_manager_mut,
 };
@@ -19,10 +19,10 @@ use rust_engine_3d::scene::ui::{
 };
 use rust_engine_3d::utilities::system::{RcRefCell, ptr_as_mut};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
+use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 use std::ffi::c_void;
 use std::rc::Rc;
-use serde::{Deserialize, Serialize};
 use winit::keyboard::KeyCode;
 
 const TAB_BUTTON_HEIGHT: f32 = 44.0;

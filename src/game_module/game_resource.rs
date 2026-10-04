@@ -386,8 +386,7 @@ impl<'a> GameResources<'a> {
             let loaded_contents = system::load(&game_data_file);
             let toolbox_item_data: ToolboxItemData =
                 serde_json::from_reader(loaded_contents).expect("Failed to deserialize.");
-            self._toolbox_item_data_map
-                .insert(toolbox_item_data_name.clone(), newRcRefCell(toolbox_item_data));
+            self._toolbox_item_data_map.insert(toolbox_item_data_name.clone(), newRcRefCell(toolbox_item_data));
         }
     }
 
