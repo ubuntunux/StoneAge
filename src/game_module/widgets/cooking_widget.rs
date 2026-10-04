@@ -46,7 +46,7 @@ pub const INGREDIENT_LABEL_HEIGHT: f32 = 30.0;
 // ────────────────────────────────────────────────────────────────
 pub const FONT_SIZE_TITLE: f32 = 22.0;
 pub const FONT_SIZE_NORMAL: f32 = 18.0;
-pub const FONT_SIZE_BUTTON: f32 = 16.0;
+pub const FONT_SIZE_BUTTON: f32 = 18.0;
 pub const FONT_SIZE_DESC: f32 = 16.0;
 
 // ────────────────────────────────────────────────────────────────
@@ -81,6 +81,8 @@ pub const COLOR_BTN_COOK_BG: u32 = get_color32(75, 130, 85, 255);
 pub const COLOR_BTN_COOK_BORDER: u32 = get_color32(115, 190, 130, 255);
 pub const COLOR_BTN_DISABLED_BG: u32 = get_color32(45, 48, 52, 255);
 pub const COLOR_BTN_DISABLED_BORDER: u32 = get_color32(65, 70, 75, 255);
+pub const COLOR_BTN_DEFAULT_BG: u32 = get_color32(65, 65, 65, 255);
+pub const COLOR_BTN_DEFAULT_BORDER: u32 = get_color32(100, 100, 100, 255);
 
 pub const MAX_INGREDIENT_ENTRIES: usize = 4;
 
@@ -323,7 +325,7 @@ impl<'a> CookingWidget<'a> {
         ui.set_layout_orientation(Orientation::VERTICAL);
         ui.set_halign(HorizontalAlign::LEFT);
         ui.set_valign(VerticalAlign::TOP);
-        ui.set_size(LEFT_LIST_PANEL_WIDTH, 0.0);
+        ui.set_size_hint_x(Some(1.0));
         ui.set_size_hint_y(Some(1.0));
         ui.set_scroll_y(true);
         ui.set_enable_renderable_area(true);
@@ -526,14 +528,14 @@ impl<'a> CookingWidget<'a> {
             let ui = ptr_as_mut(cook_btn.as_ref()).get_ui_component_mut();
             ui.set_size(LIST_ITEM_BTN_WIDTH, LIST_ITEM_BTN_HEIGHT);
             ui.set_valign(VerticalAlign::CENTER);
-            ui.set_halign(HorizontalAlign::RIGHT);
-            ui.set_color(COLOR_BTN_COOK_BG);
-            ui.set_border_color(COLOR_BTN_COOK_BORDER);
-            ui.set_border(1.0);
+            ui.set_halign(HorizontalAlign::CENTER);
+            ui.set_color(COLOR_BTN_DEFAULT_BG);
+            ui.set_border_color(COLOR_BTN_DEFAULT_BORDER);
+            ui.set_border(2.0);
             ui.set_round(6.0);
             ui.set_text("Cook");
             ui.set_font_size(FONT_SIZE_BUTTON);
-            ui.set_font_color(COLOR_WHITE);
+            ui.set_font_color(COLOR_TEXT_NORMAL);
             ui.set_margin_right(4.0);
             ui.set_touchable(true);
             ui.set_callback_touch_over(Some(Box::new(Self::callback_item_touch_over)));
