@@ -24,6 +24,8 @@ const LIST_ITEM_ROW_HEIGHT: f32 = 54.0;
 const LEFT_LIST_PANEL_WIDTH: f32 = 290.0;
 const ACTION_BUTTON_WIDTH: f32 = 150.0;
 const ACTION_BUTTON_HEIGHT: f32 = 40.0;
+const DESCRIPTION_LABEL_HEIGHT: f32 = 22.0;
+const DESCRIPTION_LABEL_FONT_SIZE: f32 = 20.0;
 
 fn spawn_npc_near_monolith(character_data_name: &str, offset: Vector3<f32>) {
     let monolith_pos = if let Some(monolith) = get_game_scene_manager().get_prop_manager().get_prop_by_name("monolith")
@@ -272,6 +274,18 @@ impl<'a> IngredientWidgetItem<'a> {
     }
 }
 
+pub const INFO_LABEL_INDEX_DESC: usize = 0;
+pub const INFO_LABEL_INDEX_ITEMS_HDR: usize = 1;
+pub const INFO_LABEL_INDEX_CHARS_HDR: usize = 2;
+pub const INFO_LABEL_INDEX_UNEXP: usize = 3;
+pub const MAX_DETAIL_INFO_ENTRIES: usize = 8;
+
+pub struct DetailInfoEntryWidget<'a> {
+    pub _layout: Rc<WidgetDefault<'a>>,
+    pub _icon: Rc<WidgetDefault<'a>>,
+    pub _label: Rc<WidgetDefault<'a>>,
+}
+
 // ────────────────────────────────────────────────────────────────
 // ToolboxItemWidget - Left side list item entry
 // Layout: [Icon] [Icon name] [Unlocked status]
@@ -494,10 +508,9 @@ pub struct ToolboxTabWidget<'a> {
     pub _detail_icon: Rc<WidgetDefault<'a>>,
     pub _detail_name_lbl: Rc<WidgetDefault<'a>>,
     pub _detail_desc_box: Rc<WidgetDefault<'a>>,
-    pub _detail_desc_lbl: Rc<WidgetDefault<'a>>,
-    pub _detail_info_items_lbl: Option<Rc<WidgetDefault<'a>>>,
-    pub _detail_info_chars_lbl: Option<Rc<WidgetDefault<'a>>>,
-    pub _detail_info_unexp_lbl: Option<Rc<WidgetDefault<'a>>>,
+    pub _detail_info_labels: Vec<Rc<WidgetDefault<'a>>>,
+    pub _detail_info_item_entries: Vec<DetailInfoEntryWidget<'a>>,
+    pub _detail_info_char_entries: Vec<DetailInfoEntryWidget<'a>>,
     pub _detail_req_box: Rc<WidgetDefault<'a>>,
     pub _detail_ing_widgets: Vec<IngredientWidgetItem<'a>>,
     pub _detail_action_btn: Rc<WidgetDefault<'a>>,
@@ -607,17 +620,19 @@ impl<'a> ToolboxTabWidget<'a> {
         };
         ptr_as_mut(self._detail_name_lbl.as_ref()).get_ui_component_mut().set_text(&display_name);
 
-        // 2. Setup Description
-        let desc_ui = ptr_as_mut(self._detail_desc_lbl.as_ref()).get_ui_component_mut();
-        if is_map_item {
-            desc_ui.set_text(&item._data._description);
-        } else {
-            let item_code = item._data._icon_type.item_code();
-            let desc_text = ToolboxItemWidget::get_item_description_from_resource(item_code);
-            if !desc_text.is_empty() && desc_text != item_code {
-                desc_ui.set_text(&desc_text);
-            } else if !item._data._description.is_empty() {
+        // 2. Setup Description & Info Labels/Lists
+        if self._detail_info_labels.len() > INFO_LABEL_INDEX_DESC {
+            let desc_ui = ptr_as_mut(self._detail_info_labels[INFO_LABEL_INDEX_DESC].as_ref()).get_ui_component_mut();
+            if is_map_item {
                 desc_ui.set_text(&item._data._description);
+            } else {
+                let item_code = item._data._icon_type.item_code();
+                let desc_text = ToolboxItemWidget::get_item_description_from_resource(item_code);
+                if !desc_text.is_empty() && desc_text != item_code {
+                    desc_ui.set_text(&desc_text);
+                } else if !item._data._description.is_empty() {
+                    desc_ui.set_text(&item._data._description);
+                }
             }
         }
 
@@ -648,54 +663,96 @@ impl<'a> ToolboxTabWidget<'a> {
             ToolboxItemWidget::setup_item_icon(&ing_widget._icon, item_code, show_req);
         }
 
+        // Helper function to disable all map info labels and entry lists
+        let disable_all_info = |labels: &Vec<Rc<WidgetDefault<'a>>>,
+                                item_entries: &Vec<DetailInfoEntryWidget<'a>>,
+                                char_entries: &Vec<DetailInfoEntryWidget<'a>>| {
+            if labels.len() > INFO_LABEL_INDEX_ITEMS_HDR {
+                ptr_as_mut(labels[INFO_LABEL_INDEX_ITEMS_HDR].as_ref()).get_ui_component_mut().set_enable(false);
+            }
+            if labels.len() > INFO_LABEL_INDEX_CHARS_HDR {
+                ptr_as_mut(labels[INFO_LABEL_INDEX_CHARS_HDR].as_ref()).get_ui_component_mut().set_enable(false);
+            }
+            if labels.len() > INFO_LABEL_INDEX_UNEXP {
+                ptr_as_mut(labels[INFO_LABEL_INDEX_UNEXP].as_ref()).get_ui_component_mut().set_enable(false);
+            }
+            for entry in item_entries {
+                ptr_as_mut(entry._layout.as_ref()).get_ui_component_mut().set_enable(false);
+            }
+            for entry in char_entries {
+                ptr_as_mut(entry._layout.as_ref()).get_ui_component_mut().set_enable(false);
+            }
+        };
+
         if is_map_item {
             if let Some((items, chars)) = item._data._icon_type.world_discovered_info() {
-                if let Some(lbl) = &self._detail_info_items_lbl {
-                    let items_str = if items.is_empty() {
-                        "Items: None".to_string()
-                    } else {
-                        format!("Items: {}", items.join(", "))
-                    };
-                    let ui = ptr_as_mut(lbl.as_ref()).get_ui_component_mut();
-                    ui.set_text(&items_str);
-                    ui.set_enable(true);
+                if self._detail_info_labels.len() > INFO_LABEL_INDEX_UNEXP {
+                    ptr_as_mut(self._detail_info_labels[INFO_LABEL_INDEX_UNEXP].as_ref()).get_ui_component_mut().set_enable(false);
                 }
-                if let Some(lbl) = &self._detail_info_chars_lbl {
-                    let chars_str = if chars.is_empty() {
-                        "Characters: None".to_string()
+
+                // Setup Items list
+                if self._detail_info_labels.len() > INFO_LABEL_INDEX_ITEMS_HDR {
+                    let hdr_ui = ptr_as_mut(self._detail_info_labels[INFO_LABEL_INDEX_ITEMS_HDR].as_ref()).get_ui_component_mut();
+                    if items.is_empty() {
+                        hdr_ui.set_text("Discovered items: None");
+                        hdr_ui.set_enable(true);
+                        for entry in self._detail_info_item_entries.iter() {
+                            ptr_as_mut(entry._layout.as_ref()).get_ui_component_mut().set_enable(false);
+                        }
                     } else {
-                        format!("Characters: {}", chars.join(", "))
-                    };
-                    let ui = ptr_as_mut(lbl.as_ref()).get_ui_component_mut();
-                    ui.set_text(&chars_str);
-                    ui.set_enable(true);
+                        hdr_ui.set_text("Discovered items:");
+                        hdr_ui.set_enable(true);
+                        for (i, entry) in self._detail_info_item_entries.iter().enumerate() {
+                            if i < items.len() {
+                                let item_code = &items[i];
+                                let item_name = ToolboxItemWidget::get_item_name_from_resource(item_code);
+                                let name_text = if item_name == *item_code { item_code.to_string() } else { item_name };
+                                ptr_as_mut(entry._label.as_ref()).get_ui_component_mut().set_text(&name_text);
+                                ToolboxItemWidget::setup_item_icon(&entry._icon, item_code, true);
+                                ptr_as_mut(entry._layout.as_ref()).get_ui_component_mut().set_enable(true);
+                            } else {
+                                ptr_as_mut(entry._layout.as_ref()).get_ui_component_mut().set_enable(false);
+                            }
+                        }
+                    }
                 }
-                if let Some(lbl) = &self._detail_info_unexp_lbl {
-                    ptr_as_mut(lbl.as_ref()).get_ui_component_mut().set_enable(false);
+
+                // Setup Characters list
+                if self._detail_info_labels.len() > INFO_LABEL_INDEX_CHARS_HDR {
+                    let hdr_ui = ptr_as_mut(self._detail_info_labels[INFO_LABEL_INDEX_CHARS_HDR].as_ref()).get_ui_component_mut();
+                    if chars.is_empty() {
+                        hdr_ui.set_text("Discovered characters: None");
+                        hdr_ui.set_enable(true);
+                        for entry in self._detail_info_char_entries.iter() {
+                            ptr_as_mut(entry._layout.as_ref()).get_ui_component_mut().set_enable(false);
+                        }
+                    } else {
+                        hdr_ui.set_text("Discovered characters:");
+                        hdr_ui.set_enable(true);
+                        for (i, entry) in self._detail_info_char_entries.iter().enumerate() {
+                            if i < chars.len() {
+                                let char_code = &chars[i];
+                                let char_name = ToolboxItemWidget::get_item_name_from_resource(char_code);
+                                let name_text = if char_name == *char_code { char_code.to_string() } else { char_name };
+                                ptr_as_mut(entry._label.as_ref()).get_ui_component_mut().set_text(&name_text);
+                                ToolboxItemWidget::setup_item_icon(&entry._icon, char_code, true);
+                                ptr_as_mut(entry._layout.as_ref()).get_ui_component_mut().set_enable(true);
+                            } else {
+                                ptr_as_mut(entry._layout.as_ref()).get_ui_component_mut().set_enable(false);
+                            }
+                        }
+                    }
                 }
             } else {
-                if let Some(lbl) = &self._detail_info_items_lbl {
-                    ptr_as_mut(lbl.as_ref()).get_ui_component_mut().set_enable(false);
-                }
-                if let Some(lbl) = &self._detail_info_chars_lbl {
-                    ptr_as_mut(lbl.as_ref()).get_ui_component_mut().set_enable(false);
-                }
-                if let Some(lbl) = &self._detail_info_unexp_lbl {
-                    let ui = ptr_as_mut(lbl.as_ref()).get_ui_component_mut();
+                disable_all_info(&self._detail_info_labels, &self._detail_info_item_entries, &self._detail_info_char_entries);
+                if self._detail_info_labels.len() > INFO_LABEL_INDEX_UNEXP {
+                    let ui = ptr_as_mut(self._detail_info_labels[INFO_LABEL_INDEX_UNEXP].as_ref()).get_ui_component_mut();
                     ui.set_text("Unexplored Region");
                     ui.set_enable(true);
                 }
             }
         } else {
-            if let Some(lbl) = &self._detail_info_items_lbl {
-                ptr_as_mut(lbl.as_ref()).get_ui_component_mut().set_enable(false);
-            }
-            if let Some(lbl) = &self._detail_info_chars_lbl {
-                ptr_as_mut(lbl.as_ref()).get_ui_component_mut().set_enable(false);
-            }
-            if let Some(lbl) = &self._detail_info_unexp_lbl {
-                ptr_as_mut(lbl.as_ref()).get_ui_component_mut().set_enable(false);
-            }
+            disable_all_info(&self._detail_info_labels, &self._detail_info_item_entries, &self._detail_info_char_entries);
         }
 
         // 4. Setup Action Button State
@@ -787,6 +844,17 @@ impl<'a> ToolboxTabWidget<'a> {
         layout_mut.add_widget(&list_container);
 
         // 2. Right Detail Container (Width ~ 430)
+        let detail_container_layout = UIManager::create_widget(&format!("{}_detail_container_layout", tab_id), UIWidgetTypes::Default);
+        let detail_container_layout_mut = ptr_as_mut(detail_container_layout.as_ref());
+        let ui = detail_container_layout_mut.get_ui_component_mut();
+        ui.set_layout_type(UILayoutType::BoxLayout);
+        ui.set_size_hint_x(Some(1.0));
+        ui.set_size_hint_y(Some(1.0));
+        ui.set_scroll_y(true);
+        ui.set_color(get_color32(25, 27, 30, 0));
+        ui.set_border_color(get_color32(50, 55, 60, 0));
+        layout_mut.add_widget(&detail_container_layout);
+
         let detail_container = UIManager::create_widget(&format!("{}_detail_container", tab_id), UIWidgetTypes::Default);
         let detail_container_mut = ptr_as_mut(detail_container.as_ref());
         let ui = detail_container_mut.get_ui_component_mut();
@@ -803,7 +871,7 @@ impl<'a> ToolboxTabWidget<'a> {
         ui.set_border_color(get_color32(65, 70, 78, 255));
         ui.set_border(1.0);
         ui.set_round(6.0);
-        layout_mut.add_widget(&detail_container);
+        detail_container_layout_mut.add_widget(&detail_container);
 
         // Detail Header: Icon + Name
         let detail_hdr = UIManager::create_widget(&format!("{}_detail_hdr", tab_id), UIWidgetTypes::Default);
@@ -857,45 +925,136 @@ impl<'a> ToolboxTabWidget<'a> {
         ui.set_margin_bottom(16.0);
         detail_container_mut.add_widget(&detail_desc_box);
 
+        let mut detail_info_labels = Vec::new();
+
+        // Index 0: Description Label
         let detail_desc_lbl = UIManager::create_widget(&format!("{}_detail_desc", tab_id), UIWidgetTypes::Default);
         let ui = ptr_as_mut(detail_desc_lbl.as_ref()).get_ui_component_mut();
         ui.set_size_hint_x(Some(1.0));
         ui.set_expandable_y(true);
         ui.set_size_y(0.0);
         ui.set_valign(VerticalAlign::TOP);
-        ui.set_font_size(20.0);
+        ui.set_font_size(DESCRIPTION_LABEL_FONT_SIZE);
         ui.set_font_color(get_color32(190, 195, 205, 255));
         ui.set_color(get_color32(0, 0, 0, 0));
         ui.set_margin_bottom(12.0);
         detail_desc_box_mut.add_widget(&detail_desc_lbl);
+        detail_info_labels.push(detail_desc_lbl);
 
-        // Map Info Labels
-        let items_lbl = UIManager::create_widget(&format!("{}_detail_info_items", tab_id), UIWidgetTypes::Default);
-        let ui = ptr_as_mut(items_lbl.as_ref()).get_ui_component_mut();
+        // Index 1: Items Header Label
+        let items_hdr_lbl = UIManager::create_widget(&format!("{}_detail_info_items", tab_id), UIWidgetTypes::Default);
+        let ui = ptr_as_mut(items_hdr_lbl.as_ref()).get_ui_component_mut();
         ui.set_size_hint_x(Some(1.0));
-        ui.set_size_y(26.0);
-        ui.set_font_size(20.0);
+        ui.set_size_y(DESCRIPTION_LABEL_HEIGHT);
+        ui.set_font_size(DESCRIPTION_LABEL_FONT_SIZE);
         ui.set_font_color(get_color32(130, 220, 160, 255));
         ui.set_color(get_color32(0, 0, 0, 0));
-        detail_desc_box_mut.add_widget(&items_lbl);
+        detail_desc_box_mut.add_widget(&items_hdr_lbl);
+        detail_info_labels.push(items_hdr_lbl);
 
-        let chars_lbl = UIManager::create_widget(&format!("{}_detail_info_chars", tab_id), UIWidgetTypes::Default);
-        let ui = ptr_as_mut(chars_lbl.as_ref()).get_ui_component_mut();
+        // Item Entries (Vertical List of icon, icon_name)
+        let mut detail_info_item_entries = Vec::new();
+        for i in 0..MAX_DETAIL_INFO_ENTRIES {
+            let entry_layout = UIManager::create_widget(&format!("{}_detail_item_entry_{}", tab_id, i), UIWidgetTypes::Default);
+            let entry_layout_mut = ptr_as_mut(entry_layout.as_ref());
+            let ui = entry_layout_mut.get_ui_component_mut();
+            ui.set_layout_type(UILayoutType::BoxLayout);
+            ui.set_layout_orientation(Orientation::HORIZONTAL);
+            ui.set_size_hint_x(Some(1.0));
+            ui.set_size_y(DESCRIPTION_LABEL_HEIGHT);
+            ui.set_valign(VerticalAlign::CENTER);
+            ui.set_margin_left(12.0);
+            ui.set_color(get_color32(0, 0, 0, 0));
+
+            let entry_icon = UIManager::create_widget(&format!("{}_detail_item_icon_{}", tab_id, i), UIWidgetTypes::Default);
+            let ui = ptr_as_mut(entry_icon.as_ref()).get_ui_component_mut();
+            ui.set_size(DESCRIPTION_LABEL_HEIGHT, DESCRIPTION_LABEL_HEIGHT);
+            ui.set_valign(VerticalAlign::CENTER);
+            ui.set_margin_right(6.0);
+            ui.set_color(get_color32(255, 255, 255, 255));
+            entry_layout_mut.add_widget(&entry_icon);
+
+            let entry_label = UIManager::create_widget(&format!("{}_detail_item_lbl_{}", tab_id, i), UIWidgetTypes::Default);
+            let ui = ptr_as_mut(entry_label.as_ref()).get_ui_component_mut();
+            ui.set_size_hint_x(Some(1.0));
+            ui.set_size_y(DESCRIPTION_LABEL_HEIGHT);
+            ui.set_valign(VerticalAlign::CENTER);
+            ui.set_font_size(DESCRIPTION_LABEL_FONT_SIZE);
+            ui.set_font_color(get_color32(220, 225, 230, 255));
+            ui.set_color(get_color32(0, 0, 0, 0));
+            entry_layout_mut.add_widget(&entry_label);
+
+            detail_desc_box_mut.add_widget(&entry_layout);
+            detail_info_item_entries.push(DetailInfoEntryWidget {
+                _layout: entry_layout,
+                _icon: entry_icon,
+                _label: entry_label,
+            });
+        }
+
+        // Index 2: Characters Header Label
+        let chars_hdr_lbl = UIManager::create_widget(&format!("{}_detail_info_chars", tab_id), UIWidgetTypes::Default);
+        let ui = ptr_as_mut(chars_hdr_lbl.as_ref()).get_ui_component_mut();
         ui.set_size_hint_x(Some(1.0));
-        ui.set_size_y(26.0);
-        ui.set_font_size(20.0);
+        ui.set_size_y(DESCRIPTION_LABEL_HEIGHT);
+        ui.set_font_size(DESCRIPTION_LABEL_FONT_SIZE);
         ui.set_font_color(get_color32(240, 180, 120, 255));
         ui.set_color(get_color32(0, 0, 0, 0));
-        detail_desc_box_mut.add_widget(&chars_lbl);
+        ui.set_margin_top(6.0);
+        detail_desc_box_mut.add_widget(&chars_hdr_lbl);
+        detail_info_labels.push(chars_hdr_lbl);
 
+        // Character Entries (Vertical List of icon, icon_name)
+        let mut detail_info_char_entries = Vec::new();
+        for i in 0..MAX_DETAIL_INFO_ENTRIES {
+            let entry_layout = UIManager::create_widget(&format!("{}_detail_char_entry_{}", tab_id, i), UIWidgetTypes::Default);
+            let entry_layout_mut = ptr_as_mut(entry_layout.as_ref());
+            let ui = entry_layout_mut.get_ui_component_mut();
+            ui.set_layout_type(UILayoutType::BoxLayout);
+            ui.set_layout_orientation(Orientation::HORIZONTAL);
+            ui.set_size_hint_x(Some(1.0));
+            ui.set_size_y(DESCRIPTION_LABEL_HEIGHT);
+            ui.set_valign(VerticalAlign::CENTER);
+            ui.set_margin_left(12.0);
+            ui.set_margin_bottom(2.0);
+            ui.set_color(get_color32(0, 0, 0, 0));
+
+            let entry_icon = UIManager::create_widget(&format!("{}_detail_char_icon_{}", tab_id, i), UIWidgetTypes::Default);
+            let ui = ptr_as_mut(entry_icon.as_ref()).get_ui_component_mut();
+            ui.set_size(DESCRIPTION_LABEL_HEIGHT, DESCRIPTION_LABEL_HEIGHT);
+            ui.set_valign(VerticalAlign::CENTER);
+            ui.set_margin_right(6.0);
+            ui.set_color(get_color32(255, 255, 255, 255));
+            entry_layout_mut.add_widget(&entry_icon);
+
+            let entry_label = UIManager::create_widget(&format!("{}_detail_char_lbl_{}", tab_id, i), UIWidgetTypes::Default);
+            let ui = ptr_as_mut(entry_label.as_ref()).get_ui_component_mut();
+            ui.set_size_hint_x(Some(1.0));
+            ui.set_size_y(DESCRIPTION_LABEL_HEIGHT);
+            ui.set_valign(VerticalAlign::CENTER);
+            ui.set_font_size(DESCRIPTION_LABEL_FONT_SIZE);
+            ui.set_font_color(get_color32(220, 225, 230, 255));
+            ui.set_color(get_color32(0, 0, 0, 0));
+            entry_layout_mut.add_widget(&entry_label);
+
+            detail_desc_box_mut.add_widget(&entry_layout);
+            detail_info_char_entries.push(DetailInfoEntryWidget {
+                _layout: entry_layout,
+                _icon: entry_icon,
+                _label: entry_label,
+            });
+        }
+
+        // Index 3: Unexplored Label
         let unexp_lbl = UIManager::create_widget(&format!("{}_detail_info_unexp", tab_id), UIWidgetTypes::Default);
         let ui = ptr_as_mut(unexp_lbl.as_ref()).get_ui_component_mut();
         ui.set_size_hint_x(Some(1.0));
-        ui.set_size_y(26.0);
-        ui.set_font_size(20.0);
+        ui.set_size_y(DESCRIPTION_LABEL_HEIGHT);
+        ui.set_font_size(DESCRIPTION_LABEL_FONT_SIZE);
         ui.set_font_color(get_color32(150, 150, 150, 255));
         ui.set_color(get_color32(0, 0, 0, 0));
         detail_desc_box_mut.add_widget(&unexp_lbl);
+        detail_info_labels.push(unexp_lbl);
 
         // Detail Requirements / Map Info Box
         let detail_req_text = UIManager::create_widget(&format!("{}_detail_req_text", tab_id), UIWidgetTypes::Default);
@@ -1021,10 +1180,9 @@ impl<'a> ToolboxTabWidget<'a> {
             _detail_icon: detail_icon,
             _detail_name_lbl: detail_name_lbl,
             _detail_desc_box: detail_desc_box,
-            _detail_desc_lbl: detail_desc_lbl,
-            _detail_info_items_lbl: Some(items_lbl),
-            _detail_info_chars_lbl: Some(chars_lbl),
-            _detail_info_unexp_lbl: Some(unexp_lbl),
+            _detail_info_labels: detail_info_labels,
+            _detail_info_item_entries: detail_info_item_entries,
+            _detail_info_char_entries: detail_info_char_entries,
             _detail_req_box: detail_req_box,
             _detail_ing_widgets: vec![ing_widget],
             _detail_action_btn: detail_action_btn,
