@@ -971,6 +971,9 @@ impl<'a> Character<'a> {
     }
 
     pub fn is_available_attack(&self) -> bool {
+        if self._is_player && self._character_stats._stamina < STAMINA_ATTACK && self.is_attack_animation() {
+            return false;
+        }
         let action_animation_play_info = self.get_animation_play_info(AnimationLayer::ActionLayer);
         if self.is_available_move() {
             if self.is_idle_action() || self.is_action(ActionAnimationState::Hit) {
