@@ -5,6 +5,7 @@ use crate::game_module::game_controller::WidgetNavRepeatController;
 use crate::game_module::game_service_locator::{
     get_character_manager, get_game_resources, get_game_ui_manager, get_game_ui_manager_mut, get_item_manager_mut,
 };
+use crate::game_module::game_ui_manager::move_mouse_to_ui_component;
 
 use crate::game_module::widgets::game_menu_widget::item_info_widget::ItemInfoWidget;
 use crate::game_module::widgets::item_bar::{
@@ -1021,6 +1022,14 @@ impl<'a> TableStorageWidget<'a> {
                 self._focused_is_table_slot = is_table;
                 self._focused_slot_index = idx;
                 self.refresh_table_storage_widget();
+                let ui_comp = if is_table {
+                    self._table_slot_widgets.get(idx).map(|s| s._widget.get_ui_component())
+                } else {
+                    self._player_slot_widgets.get(idx).map(|s| s._widget.get_ui_component())
+                };
+                if let Some(comp) = ui_comp {
+                    move_mouse_to_ui_component(comp);
+                }
             }
         }
     }

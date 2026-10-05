@@ -433,11 +433,8 @@ impl<'a> CharacterManager<'a> {
 
         if player_is_dancing {
             if self._dance_audio_bgm.is_none() {
-                self._dance_audio_bgm = get_audio_manager_mut().play_audio_bank(
-                    AUDIO_WRAP_UP_THE_DAY,
-                    AudioLoop::SOME(99),
-                    None,
-                );
+                self._dance_audio_bgm =
+                    get_audio_manager_mut().play_audio_bank(AUDIO_WRAP_UP_THE_DAY, AudioLoop::SOME(99), None);
             }
 
             for character in self._characters.values() {

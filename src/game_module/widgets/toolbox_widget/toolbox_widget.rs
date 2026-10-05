@@ -5,6 +5,7 @@ use crate::game_module::game_controller::WidgetNavRepeatController;
 use crate::game_module::game_service_locator::{
     get_game_resources, get_game_scene_manager, get_game_scene_manager_mut,
 };
+use crate::game_module::game_ui_manager::move_mouse_to_ui_component;
 use crate::game_module::widgets::toolbox_widget::item_tab_widget::{
     ToolboxIconType, ToolboxItemData, ToolboxItemState, ToolboxTabWidget,
 };
@@ -515,6 +516,11 @@ impl<'a> ToolboxWidget<'a> {
                 }
                 get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
                 self.update_item_selection();
+            }
+            let sel_idx = self._selected_item_index;
+            let active_tab = self.get_active_tab_mut();
+            if let Some(item) = active_tab._items.get(sel_idx) {
+                move_mouse_to_ui_component(item._layout.get_ui_component());
             }
         }
 

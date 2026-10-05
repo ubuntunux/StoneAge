@@ -2,6 +2,7 @@ use crate::game_module::actors::character::{Character, CharacterDataType, Reques
 use crate::game_module::game_client::GamePhase;
 use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, AUDIO_SELECT_ITEM};
 use crate::game_module::game_service_locator::{get_character_manager, get_game_client_mut};
+use crate::game_module::game_ui_manager::move_mouse_to_ui_component;
 use crate::game_module::widgets::key_binding_widget::KEY_BINDING_FONT_SIZE;
 use nalgebra::Vector2;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
@@ -9,8 +10,8 @@ use rust_engine_3d::core::engine_core::TimeData;
 use rust_engine_3d::core::engine_service_locator::{get_audio_manager_mut, get_scene_manager};
 use rust_engine_3d::core::input::{ButtonState, JoystickInputData, KeyboardInputData};
 use rust_engine_3d::scene::ui::{
-    HorizontalAlign, Orientation, PIVOT_CENTER_LEFT, UILayoutType, UIManager, UIWidgetTypes,
-    VerticalAlign, WidgetDefault,
+    HorizontalAlign, Orientation, PIVOT_CENTER_LEFT, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign,
+    WidgetDefault,
 };
 use rust_engine_3d::utilities::system::{RcRefCell, ptr_as_mut, ptr_as_ref};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
@@ -317,11 +318,7 @@ impl<'a> NpcInteractionMenuWidget<'a> {
         let matched = menu_widget._buttons.iter().enumerate().find_map(|(idx, b)| {
             let comp_ptr = ptr_as_ref(b._widget.as_ref()).get_ui_component()
                 as *const rust_engine_3d::scene::ui::UIComponentInstance<'a>;
-            if comp_ptr == clicked_ptr {
-                Some(idx)
-            } else {
-                None
-            }
+            if comp_ptr == clicked_ptr { Some(idx) } else { None }
         });
 
         if let Some(idx) = matched {
@@ -473,10 +470,16 @@ impl<'a> NpcInteractionMenuWidget<'a> {
             }
             self.update_selected_visuals();
             get_audio_manager_mut().play_audio_bank(AUDIO_SELECT_ITEM, AudioLoop::ONCE, None);
+            if let Some(btn) = self._buttons.get(self._selected_index) {
+                move_mouse_to_ui_component(btn._widget.get_ui_component());
+            }
         } else if press_down {
             self._selected_index = (self._selected_index + 1) % btn_count;
             self.update_selected_visuals();
             get_audio_manager_mut().play_audio_bank(AUDIO_SELECT_ITEM, AudioLoop::ONCE, None);
+            if let Some(btn) = self._buttons.get(self._selected_index) {
+                move_mouse_to_ui_component(btn._widget.get_ui_component());
+            }
         } else if press_execute {
             let option = self._buttons[self._selected_index]._option;
             self.execute_option(option);

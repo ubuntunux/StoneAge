@@ -5,6 +5,7 @@ use crate::game_module::game_controller::WidgetNavRepeatController;
 use crate::game_module::game_service_locator::{
     get_character_manager_mut, get_game_ui_manager, get_game_ui_manager_mut, get_item_manager_mut,
 };
+use crate::game_module::game_ui_manager::move_mouse_to_ui_component;
 use crate::game_module::widgets::item_detail_layout::*;
 use nalgebra::Vector2;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
@@ -580,12 +581,19 @@ impl<'a> CookingWidget<'a> {
 
         if should_move {
             let (_dir_x, dir_y) = dir_opt.unwrap();
-            if dir_y < 0 && self._selected_index > 0 {
-                self.select_recipe(self._selected_index - 1);
-                get_audio_manager_mut().play_audio_bank(AUDIO_SELECT_ITEM, AudioLoop::ONCE, None);
+            let selected_idx = if dir_y < 0 && self._selected_index > 0 {
+                Some(self._selected_index - 1)
             } else if dir_y > 0 && self._selected_index + 1 < self._items.len() {
-                self.select_recipe(self._selected_index + 1);
+                Some(self._selected_index + 1)
+            } else {
+                None
+            };
+            if let Some(idx) = selected_idx {
+                self.select_recipe(idx);
                 get_audio_manager_mut().play_audio_bank(AUDIO_SELECT_ITEM, AudioLoop::ONCE, None);
+                if let Some(item) = self._items.get(idx) {
+                    move_mouse_to_ui_component(item._layout.get_ui_component());
+                }
             }
         }
 

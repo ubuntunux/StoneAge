@@ -1208,3 +1208,12 @@ impl<'a> GameUIManager<'a> {
         }
     }
 }
+
+pub fn move_mouse_to_ui_component(ui_component: &rust_engine_3d::scene::ui::UIComponentInstance) {
+    let engine_core = rust_engine_3d::core::engine_service_locator::get_engine_core_mut();
+    let render_area = ui_component.get_render_area();
+    let center_x = ((render_area.x + render_area.z) * 0.5) as i32;
+    let center_y = ((render_area.y + render_area.w) * 0.5) as i32;
+    let window_size = engine_core._window_size.clone();
+    engine_core._mouse_move_data.set_mouse_pos(&nalgebra::Vector2::new(center_x, center_y), &window_size);
+}

@@ -3,6 +3,7 @@ use crate::game_module::game_controller::WidgetNavRepeatController;
 use crate::game_module::game_service_locator::{
     get_game_client_mut, get_game_resources, get_game_resources_mut, get_game_ui_manager_mut,
 };
+use crate::game_module::game_ui_manager::move_mouse_to_ui_component;
 use crate::game_module::widgets::popup_widget::PopupWindowWidget;
 use nalgebra::Vector2;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
@@ -794,13 +795,19 @@ impl<'a> SaveLoadSlotWidget<'a> {
 
         if should_move {
             if let Some((_dir_x, dir_y)) = dir_opt {
-                if dir_y < 0 {
-                    let next_index = self._selected_slot_index.saturating_sub(1);
-                    self.set_selected_slot(next_index, false);
+                let next_index = if dir_y < 0 {
+                    Some(self._selected_slot_index.saturating_sub(1))
                 } else if dir_y > 0 {
                     let max_index = self._slot_items.len().saturating_sub(1);
-                    let next_index = (self._selected_slot_index + 1).min(max_index);
-                    self.set_selected_slot(next_index, false);
+                    Some((self._selected_slot_index + 1).min(max_index))
+                } else {
+                    None
+                };
+                if let Some(idx) = next_index {
+                    self.set_selected_slot(idx, false);
+                    if let Some(slot_item) = self._slot_items.get(idx) {
+                        move_mouse_to_ui_component(slot_item._item_widget.get_ui_component());
+                    }
                 }
             }
         }

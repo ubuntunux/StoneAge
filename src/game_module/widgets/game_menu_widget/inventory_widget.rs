@@ -3,6 +3,7 @@ use crate::game_module::actors::items::ItemDataType;
 use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, ITEM_HAND, ITEM_NONE};
 use crate::game_module::game_controller::WidgetNavRepeatController;
 use crate::game_module::game_service_locator::{get_game_ui_manager, get_game_ui_manager_mut, get_item_manager_mut};
+use crate::game_module::game_ui_manager::move_mouse_to_ui_component;
 use crate::game_module::widgets::game_menu_widget::item_info_widget::ItemInfoWidget;
 use crate::game_module::widgets::game_menu_widget::player_stat_widget::PlayerStatWidget;
 use crate::game_module::widgets::item_bar::{
@@ -670,6 +671,9 @@ impl<'a> InventoryWidget<'a> {
 
             self._focused_slot_index = new_focused_slot;
             self._hovered_slot_index = new_focused_slot;
+            if let Some(slot_widget) = self._slot_widgets.get(new_focused_slot) {
+                move_mouse_to_ui_component(slot_widget._widget.get_ui_component());
+            }
         }
 
         // Mouse Right Click OR Keyboard/Joystick Drop Input

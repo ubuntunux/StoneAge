@@ -5,6 +5,7 @@ use crate::game_module::game_controller::WidgetNavRepeatController;
 use crate::game_module::game_service_locator::{
     get_character_manager_mut, get_game_ui_manager, get_game_ui_manager_mut, get_item_manager_mut,
 };
+use crate::game_module::game_ui_manager::move_mouse_to_ui_component;
 use crate::game_module::widgets::item_detail_layout::*;
 use crate::game_module::widgets::toolbox_widget::item_tab_widget::ToolboxIconType;
 use nalgebra::Vector2;
@@ -616,15 +617,18 @@ impl<'a> CraftWidget<'a> {
 
         if should_move {
             let (_dir_x, dir_y) = dir_opt.unwrap();
-            if dir_y < 0 {
-                if let Some(prev_idx) = self.get_prev_unlocked_index(self._selected_index) {
-                    self.select_recipe(prev_idx);
-                    get_audio_manager_mut().play_audio_bank(AUDIO_SELECT_ITEM, AudioLoop::ONCE, None);
-                }
+            let selected_idx = if dir_y < 0 {
+                self.get_prev_unlocked_index(self._selected_index)
             } else if dir_y > 0 {
-                if let Some(next_idx) = self.get_next_unlocked_index(self._selected_index) {
-                    self.select_recipe(next_idx);
-                    get_audio_manager_mut().play_audio_bank(AUDIO_SELECT_ITEM, AudioLoop::ONCE, None);
+                self.get_next_unlocked_index(self._selected_index)
+            } else {
+                None
+            };
+            if let Some(idx) = selected_idx {
+                self.select_recipe(idx);
+                get_audio_manager_mut().play_audio_bank(AUDIO_SELECT_ITEM, AudioLoop::ONCE, None);
+                if let Some(item) = self._items.get(idx) {
+                    move_mouse_to_ui_component(item._layout.get_ui_component());
                 }
             }
         }
