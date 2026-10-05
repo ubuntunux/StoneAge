@@ -130,8 +130,8 @@ impl ItemDataType {
                 | ItemDataType::Rock
                 | ItemDataType::Coconut
                 | ItemDataType::Meat
-                | ItemDataType::EnergyBall
-                | ItemDataType::SpiritBall
+                // | ItemDataType::EnergyBall
+                // | ItemDataType::SpiritBall
         )
     }
 }
