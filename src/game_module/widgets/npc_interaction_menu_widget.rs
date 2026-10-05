@@ -1,4 +1,4 @@
-use crate::game_module::actors::character::{Character, RequestType};
+use crate::game_module::actors::character::{Character, CharacterDataType, RequestType};
 use crate::game_module::game_client::GamePhase;
 use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, AUDIO_SELECT_ITEM};
 use crate::game_module::game_service_locator::{get_character_manager, get_game_client_mut};
@@ -25,6 +25,7 @@ pub const NPC_INTERACTION_MENU_BUTTON_HEIGHT: f32 = 36.0;
 pub enum NpcInteractionOption {
     Talk,
     Request,
+    StorageTable,
     Dance,
     GiveItem,
     Close,
@@ -41,6 +42,7 @@ impl NpcInteractionOption {
                     String::from("Request Menu")
                 }
             }
+            NpcInteractionOption::StorageTable => String::from("Give Resources"),
             NpcInteractionOption::Dance => String::from("Dance"),
             NpcInteractionOption::GiveItem => {
                 if let Some(name) = item_name {
@@ -201,6 +203,7 @@ impl<'a> NpcInteractionMenuWidget<'a> {
         };
 
         let target_npc_ref = target_npc_rc.borrow();
+        let is_wife = target_npc_ref.get_character_type() == CharacterDataType::Wife;
         let request_type = target_npc_ref.get_request_type();
         let request_type_str = match request_type {
             RequestType::Cooking => Some("Cooking"),
@@ -213,6 +216,10 @@ impl<'a> NpcInteractionMenuWidget<'a> {
 
         if request_type_str.is_some() {
             options.push(NpcInteractionOption::Request);
+        }
+
+        if is_wife {
+            options.push(NpcInteractionOption::StorageTable);
         }
 
         options.push(NpcInteractionOption::Dance);
@@ -382,6 +389,9 @@ impl<'a> NpcInteractionMenuWidget<'a> {
             NpcInteractionOption::Request => {
                 player.execute_npc_request(&target_npc);
             }
+            NpcInteractionOption::StorageTable => {
+                player.execute_npc_table_storage(&target_npc);
+            }
             NpcInteractionOption::Dance => {
                 player.execute_npc_dance(&target_npc);
             }
@@ -474,6 +484,7 @@ impl<'a> NpcInteractionMenuWidget<'a> {
             KeyCode::Digit3,
             KeyCode::Digit4,
             KeyCode::Digit5,
+            KeyCode::Digit6,
         ];
 
         for (i, key_code) in key_codes.iter().enumerate() {
