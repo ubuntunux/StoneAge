@@ -220,7 +220,9 @@ impl<'a> GameUIManager<'a> {
         self._toolbox_widget = Some(Box::new(ToolboxWidget::create_toolbox_widget(game_ui_layout_mut)));
         self._cooking_widget = Some(Box::new(CookingWidget::create_cooking_widget(game_ui_layout_mut)));
         self._table_storage_widget = Some(TableStorageWidget::create_table_storage_widget(game_ui_layout_mut));
-        self._npc_interaction_menu_widget = Some(Box::new(NpcInteractionMenuWidget::create_npc_interaction_menu_widget(game_ui_layout_mut)));
+        self._npc_interaction_menu_widget = Some(Box::new(
+            NpcInteractionMenuWidget::create_npc_interaction_menu_widget(game_ui_layout_mut),
+        ));
         self._time_of_day = Some(Box::new(TimeOfDayWidget::create_time_of_day_widget(game_ui_layout_mut)));
         self._controller_help_widget = Some(Box::new(ControllerHelpWidget::create_controller_help_widget(
             self._key_binding_widget_manager.as_ref().unwrap().as_ref(),

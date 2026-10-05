@@ -776,18 +776,15 @@ impl<'a> ToolboxTabWidget<'a> {
         let unlocked = item._state == ToolboxItemState::Unlocked;
         let show_requirements = !unlocked;
 
-        ptr_as_mut(self._detail_req_text.as_ref())
-            .get_ui_component_mut()
-            .set_enable(show_requirements);
-        ptr_as_mut(self._detail_req_box.as_ref())
-            .get_ui_component_mut()
-            .set_enable(show_requirements);
+        ptr_as_mut(self._detail_req_text.as_ref()).get_ui_component_mut().set_enable(show_requirements);
+        ptr_as_mut(self._detail_req_box.as_ref()).get_ui_component_mut().set_enable(show_requirements);
 
         for ing_widget in self._detail_ing_widgets.iter_mut() {
             ing_widget._item_type = item._data._item_data_type;
             ing_widget._count = item._data._item_data_count;
-            let show_req =
-                show_requirements && item._data._item_data_count > 0 && item._data._item_data_type != ItemDataType::None;
+            let show_req = show_requirements
+                && item._data._item_data_count > 0
+                && item._data._item_data_type != ItemDataType::None;
             let item_code = ing_widget.item_code();
             let have_count = ui_mgr.get_item_count(item_code);
             let mat_name = ToolboxItemWidget::get_item_name_from_resource(item_code);

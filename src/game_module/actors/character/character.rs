@@ -1423,9 +1423,7 @@ impl<'a> Character<'a> {
 
     pub fn execute_npc_request(&mut self, target_npc: &RcRefCell<Character<'a>>) {
         let mut npc = target_npc.borrow_mut();
-        if !npc.is_action(ActionAnimationState::Eating)
-            && npc._behavior.get_behavior_state() != BehaviorState::Eating
-        {
+        if !npc.is_action(ActionAnimationState::Eating) && npc._behavior.get_behavior_state() != BehaviorState::Eating {
             let mut requestable = true;
             match npc.get_request_type() {
                 RequestType::Cooking => {

@@ -8,7 +8,10 @@ use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::core::engine_core::TimeData;
 use rust_engine_3d::core::engine_service_locator::{get_audio_manager_mut, get_scene_manager};
 use rust_engine_3d::core::input::{ButtonState, JoystickInputData, KeyboardInputData};
-use rust_engine_3d::scene::ui::{HorizontalAlign, Orientation, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault, PIVOT_CENTER, PIVOT_CENTER_LEFT};
+use rust_engine_3d::scene::ui::{
+    HorizontalAlign, Orientation, PIVOT_CENTER_LEFT, UILayoutType, UIManager, UIWidgetTypes,
+    VerticalAlign, WidgetDefault,
+};
 use rust_engine_3d::utilities::system::{RcRefCell, ptr_as_mut, ptr_as_ref};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use std::ffi::c_void;
@@ -33,7 +36,7 @@ impl NpcInteractionOption {
             NpcInteractionOption::Talk => String::from("Talk"),
             NpcInteractionOption::Request => {
                 if let Some(req) = request_name {
-                    format!("Request Menu ({})", req)
+                    format!("{}", req)
                 } else {
                     String::from("Request Menu")
                 }
@@ -75,9 +78,7 @@ pub struct NpcInteractionMenuWidget<'a> {
 }
 
 impl<'a> NpcInteractionMenuWidget<'a> {
-    pub fn create_npc_interaction_menu_widget(
-        parent_widget: &mut WidgetDefault<'a>,
-    ) -> NpcInteractionMenuWidget<'a> {
+    pub fn create_npc_interaction_menu_widget(parent_widget: &mut WidgetDefault<'a>) -> NpcInteractionMenuWidget<'a> {
         let parent_ptr = parent_widget as *const WidgetDefault<'a>;
 
         let layer = UIManager::create_widget("npc_interaction_menu_layer", UIWidgetTypes::Default);
@@ -136,7 +137,7 @@ impl<'a> NpcInteractionMenuWidget<'a> {
     }
 
     pub fn open_npc_interaction_menu(&mut self, target_npc: RcRefCell<Character<'a>>) {
-        let npc_name = target_npc.borrow()._character_data.borrow()._name.clone();
+        let _npc_name = target_npc.borrow()._character_data.borrow()._name.clone();
         self._target_npc = Some(target_npc.clone());
         self._selected_index = 0;
 
@@ -224,11 +225,9 @@ impl<'a> NpcInteractionMenuWidget<'a> {
 
         options.push(NpcInteractionOption::Close);
 
-        let eatable_item_name = player.as_ref().and_then(|p| {
-            p.get_attached_item()
-                .as_ref()
-                .map(|item| item.borrow()._item_data.borrow()._name.clone())
-        });
+        let eatable_item_name = player
+            .as_ref()
+            .and_then(|p| p.get_attached_item().as_ref().map(|item| item.borrow()._item_data.borrow()._name.clone()));
 
         for (index, option) in options.into_iter().enumerate() {
             let btn_widget = UIManager::create_widget(
@@ -275,11 +274,7 @@ impl<'a> NpcInteractionMenuWidget<'a> {
                     text_ui.set_font_size(KEY_BINDING_FONT_SIZE);
                     text_ui.set_font_color(get_color32(255, 255, 255, 255));
                     text_ui.set_color(get_color32(0, 0, 0, 0));
-                    text_ui.set_text(
-                        option
-                            .get_display_name(request_type_str, eatable_item_name.as_deref())
-                            .as_str(),
-                    );
+                    text_ui.set_text(option.get_display_name(request_type_str, eatable_item_name.as_deref()).as_str());
                 }
                 ptr_as_mut(btn_widget.as_ref()).add_widget(&text_widget);
 
@@ -383,8 +378,8 @@ impl<'a> NpcInteractionMenuWidget<'a> {
         // Update screen position tracking based on NPC world position
         let main_camera = get_scene_manager().get_main_camera();
         let target_pos = *target_npc.borrow().get_position() + nalgebra::Vector3::new(0.0, 1.8, 0.0);
-        let screen_pos = main_camera.convert_world_to_screen(&target_pos, true)
-            / rust_engine_3d::scene::ui::get_global_dpi_scale();
+        let screen_pos =
+            main_camera.convert_world_to_screen(&target_pos, true) / rust_engine_3d::scene::ui::get_global_dpi_scale();
 
         let layer_ui = ptr_as_mut(self._layer.as_ref()).get_ui_component_mut();
         layer_ui.set_pos(screen_pos.x, screen_pos.y);
@@ -457,5 +452,3 @@ impl<'a> NpcInteractionMenuWidget<'a> {
         }
     }
 }
-
-

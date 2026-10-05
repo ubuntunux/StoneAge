@@ -1,6 +1,5 @@
 use crate::game_module::actors::character::{ActionAnimationState, RequestType};
 use crate::game_module::actors::interaction_object::InteractionObject;
-use crate::game_module::behavior::behavior_base::BehaviorState;
 use crate::game_module::game_client::GamePhase;
 use crate::game_module::game_controller::KeyBindingType;
 use crate::game_module::game_service_locator::{
