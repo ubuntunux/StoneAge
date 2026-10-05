@@ -804,8 +804,6 @@ impl<'a> GameController<'a> {
                 {
                     scenario.borrow_mut().request_sleep();
                 }
-            } else if is_wrap_up && matches!(player_mut.get_nearest_interaction_object(), InteractionObject::Npc(_)) {
-                player_mut.set_action_dance();
             } else {
                 player_mut.set_action_interaction();
             }
