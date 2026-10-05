@@ -459,6 +459,20 @@ impl<'a> GameUIManager<'a> {
         self._item_bar_widget.as_ref().unwrap().get_item_count(item_data_name)
     }
 
+    pub fn get_table_storage_item_count(&self, item_data_name: &str) -> usize {
+        if let Some(table_storage_widget) = self._table_storage_widget.as_ref() {
+            table_storage_widget.get_item_count(item_data_name)
+        } else {
+            0
+        }
+    }
+
+    pub fn get_total_item_count(&self, item_data_name: &str) -> usize {
+        let player_count = self.get_item_count(item_data_name);
+        let table_storage_count = self.get_table_storage_item_count(item_data_name);
+        player_count + table_storage_count
+    }
+
     pub fn add_item(&mut self, item_data_name: &str, item_count: usize, show_notification: bool) -> bool {
         let result = self._item_bar_widget.as_mut().unwrap().add_item(item_data_name, item_count);
         if result {
@@ -593,6 +607,34 @@ impl<'a> GameUIManager<'a> {
 
     pub fn remove_item(&mut self, item_data_name: &str, item_count: usize) -> bool {
         self._item_bar_widget.as_mut().unwrap().remove_item(item_data_name, item_count)
+    }
+
+    pub fn remove_item_with_table_storage(&mut self, item_data_name: &str, item_count: usize) -> bool {
+        if item_data_name.is_empty() || item_count == 0 {
+            return false;
+        }
+
+        let total_have = self.get_total_item_count(item_data_name);
+        if total_have < item_count {
+            return false;
+        }
+
+        let player_count = self.get_item_count(item_data_name);
+        let player_deduct = player_count.min(item_count);
+        let mut remaining = item_count - player_deduct;
+
+        if player_deduct > 0 {
+            self.remove_item(item_data_name, player_deduct);
+        }
+
+        if remaining > 0 {
+            if let Some(table_storage_widget) = self._table_storage_widget.as_mut() {
+                let removed = table_storage_widget.remove_item(item_data_name, remaining);
+                remaining -= removed;
+            }
+        }
+
+        remaining == 0
     }
 
     pub fn get_selected_inventory_item_data_name(&self) -> &str {

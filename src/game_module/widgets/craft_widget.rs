@@ -393,7 +393,7 @@ impl<'a> CraftWidget<'a> {
 
         // Check ingredient counts
         for req in recipe.materials {
-            let have_count = get_game_ui_manager().get_item_count(req.item_code());
+            let have_count = get_game_ui_manager().get_total_item_count(req.item_code());
             if have_count < req.count {
                 let recipe_name = Self::get_item_name_from_resource(recipe.item_code());
                 let ing_name = Self::get_item_name_from_resource(req.item_code());
@@ -497,7 +497,7 @@ impl<'a> CraftWidget<'a> {
                 let req_code = req.item_code();
                 Self::setup_item_icon(&ing_widget._icon, req_code);
 
-                let have = ui_mgr.get_item_count(req_code);
+                let have = ui_mgr.get_total_item_count(req_code);
                 let ing_name = Self::get_item_name_from_resource(req_code);
                 let text = format!("{} ({}/{})", ing_name, have, req.count);
                 let lbl_ui = ptr_as_mut(ing_widget._label.as_ref()).get_ui_component_mut();
@@ -536,7 +536,7 @@ impl<'a> CraftWidget<'a> {
 
                 let mut can_craft = true;
                 for req in recipe.materials.iter() {
-                    let have = ui_mgr.get_item_count(req.item_code());
+                    let have = ui_mgr.get_total_item_count(req.item_code());
                     if have < req.count {
                         can_craft = false;
                         break;

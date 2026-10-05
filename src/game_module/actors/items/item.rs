@@ -475,7 +475,7 @@ impl<'a> ItemManager<'a> {
     }
 
     pub fn remove_inventory_item(&mut self, item_data_name: &str, item_count: usize) -> bool {
-        let success = get_game_ui_manager_mut().remove_item(item_data_name, item_count);
+        let success = get_game_ui_manager_mut().remove_item_with_table_storage(item_data_name, item_count);
         if success {
             get_audio_manager_mut().play_audio_bank(AUDIO_ITEM_INVENTORY, AudioLoop::ONCE, None);
         }

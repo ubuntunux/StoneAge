@@ -454,7 +454,7 @@ impl<'a> ToolboxItemWidget<'a> {
             ToolboxItemState::Locked => {
                 btn_ui.set_text("Unlock");
                 let current_count = if self._data._item_data_type != ItemDataType::None {
-                    ui_mgr.get_item_count(self._data._item_data_type.item_code())
+                    ui_mgr.get_total_item_count(self._data._item_data_type.item_code())
                 } else {
                     0
                 };
@@ -699,9 +699,9 @@ impl<'a> ToolboxTabWidget<'a> {
                 let item_type = item._data._item_data_type;
                 let has_enough_cost = if cost > 0 && item_type != ItemDataType::None {
                     let item_code = item_type.item_code();
-                    let current_count = get_game_ui_manager().get_item_count(item_code);
+                    let current_count = get_game_ui_manager().get_total_item_count(item_code);
                     if current_count >= cost {
-                        get_game_ui_manager_mut().remove_item(item_code, cost)
+                        get_game_ui_manager_mut().remove_item_with_table_storage(item_code, cost)
                     } else {
                         get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
                         false
@@ -786,7 +786,7 @@ impl<'a> ToolboxTabWidget<'a> {
                 && item._data._item_data_count > 0
                 && item._data._item_data_type != ItemDataType::None;
             let item_code = ing_widget.item_code();
-            let have_count = ui_mgr.get_item_count(item_code);
+            let have_count = ui_mgr.get_total_item_count(item_code);
             let mat_name = ToolboxItemWidget::get_item_name_from_resource(item_code);
             let text = if unlocked {
                 "Unlocked".to_string()

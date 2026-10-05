@@ -1107,6 +1107,50 @@ impl<'a> TableStorageWidget<'a> {
         self.sync_3d_table_items();
     }
 
+    pub fn get_item_count(&self, item_data_name: &str) -> usize {
+        if item_data_name == ITEM_NONE || item_data_name.is_empty() {
+            return 0;
+        }
+        let mut total_count = 0;
+        for slot in self._table_inventory_slots.iter() {
+            if slot._item_data_name == item_data_name && slot._item_count > 0 {
+                total_count += slot._item_count;
+            }
+        }
+        total_count
+    }
+
+    pub fn remove_item(&mut self, item_data_name: &str, item_count: usize) -> usize {
+        if item_data_name == ITEM_NONE || item_data_name.is_empty() || item_count == 0 {
+            return 0;
+        }
+
+        let mut remaining = item_count;
+        for slot in self._table_inventory_slots.iter_mut() {
+            if remaining == 0 {
+                break;
+            }
+            if slot._item_data_name == item_data_name && slot._item_count > 0 {
+                let deduct = slot._item_count.min(remaining);
+                slot._item_count -= deduct;
+                remaining -= deduct;
+
+                if slot._item_count == 0 {
+                    *slot = InventorySlotData::default();
+                }
+            }
+        }
+
+        let removed = item_count - remaining;
+        if removed > 0 {
+            if self._is_opened {
+                self.refresh_table_storage_widget();
+            }
+            self.sync_3d_table_items();
+        }
+        removed
+    }
+
     pub fn has_eatable_table_storage_item(&self) -> bool {
         for slot in self._table_inventory_slots.iter() {
             if slot._item_count > 0 && slot._item_data_name != ITEM_NONE {

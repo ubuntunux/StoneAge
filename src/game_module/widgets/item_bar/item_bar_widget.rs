@@ -658,17 +658,20 @@ impl<'a> ItemBarWidget<'a> {
     }
 
     pub fn remove_item(&mut self, item_data_name: &str, item_count: usize) -> bool {
-        if item_data_name == ITEM_NONE {
+        if item_data_name == ITEM_NONE || item_data_name.is_empty() || item_count == 0 {
             return false;
         }
 
+        let mut remaining = item_count;
+        let mut should_deselect = false;
         for (idx, slot) in self._inventory_slots.iter_mut().enumerate() {
+            if remaining == 0 {
+                break;
+            }
             if slot._item_data_name == item_data_name && slot._item_count > 0 {
-                if item_count <= slot._item_count {
-                    slot._item_count -= item_count;
-                } else {
-                    slot._item_count = 0;
-                }
+                let deduct = slot._item_count.min(remaining);
+                slot._item_count -= deduct;
+                remaining -= deduct;
 
                 if slot._item_count == 0 {
                     slot._item_data_name = String::from(ITEM_NONE);
@@ -678,12 +681,19 @@ impl<'a> ItemBarWidget<'a> {
                     self._item_count = self._item_count.saturating_sub(1);
 
                     if self._selected_inventory_slot_index == idx {
-                        self.select_item(INVALID_ITEM_INDEX);
+                        should_deselect = true;
                     }
                 }
-                self.update_quick_slot_widgets();
-                return true;
             }
+        }
+
+        if should_deselect {
+            self.select_item(INVALID_ITEM_INDEX);
+        }
+
+        if remaining < item_count {
+            self.update_quick_slot_widgets();
+            return true;
         }
         false
     }
