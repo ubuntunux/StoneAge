@@ -663,6 +663,7 @@ pub struct ToolboxTabWidget<'a> {
     pub _detail_info_labels: Vec<Rc<WidgetDefault<'a>>>,
     pub _detail_info_item_entries: Vec<DetailInfoEntryWidget<'a>>,
     pub _detail_info_char_entries: Vec<DetailInfoEntryWidget<'a>>,
+    pub _detail_req_text: Rc<WidgetDefault<'a>>,
     pub _detail_req_box: Rc<WidgetDefault<'a>>,
     pub _detail_ing_widgets: Vec<IngredientWidgetItem<'a>>,
 
@@ -772,12 +773,21 @@ impl<'a> ToolboxTabWidget<'a> {
         }
 
         // 3. Setup Requirements / Map Discovered Info
+        let unlocked = item._state == ToolboxItemState::Unlocked;
+        let show_requirements = !unlocked;
+
+        ptr_as_mut(self._detail_req_text.as_ref())
+            .get_ui_component_mut()
+            .set_enable(show_requirements);
+        ptr_as_mut(self._detail_req_box.as_ref())
+            .get_ui_component_mut()
+            .set_enable(show_requirements);
+
         for ing_widget in self._detail_ing_widgets.iter_mut() {
             ing_widget._item_type = item._data._item_data_type;
             ing_widget._count = item._data._item_data_count;
-            let unlocked = item._state == ToolboxItemState::Unlocked;
             let show_req =
-                !unlocked && item._data._item_data_count > 0 && item._data._item_data_type != ItemDataType::None;
+                show_requirements && item._data._item_data_count > 0 && item._data._item_data_type != ItemDataType::None;
             let item_code = ing_widget.item_code();
             let have_count = ui_mgr.get_item_count(item_code);
             let mat_name = ToolboxItemWidget::get_item_name_from_resource(item_code);
@@ -790,12 +800,14 @@ impl<'a> ToolboxTabWidget<'a> {
             };
             let lbl_ui = ptr_as_mut(ing_widget._label.as_ref()).get_ui_component_mut();
             lbl_ui.set_text(&text);
+            lbl_ui.set_enable(show_requirements);
             if have_count >= ing_widget._count || unlocked {
                 lbl_ui.set_font_color(COLOR_TEXT_NORMAL);
             } else {
                 lbl_ui.set_font_color(COLOR_TEXT_ERROR);
             }
 
+            ptr_as_mut(ing_widget._layout.as_ref()).get_ui_component_mut().set_enable(show_requirements);
             ToolboxItemWidget::setup_item_icon(&ing_widget._icon, item_code, show_req);
         }
 
@@ -1152,6 +1164,7 @@ impl<'a> ToolboxTabWidget<'a> {
             _detail_info_labels: detail_info_labels,
             _detail_info_item_entries: detail_info_item_entries,
             _detail_info_char_entries: detail_info_char_entries,
+            _detail_req_text: detail_req_text,
             _detail_req_box: detail_req_box,
             _detail_ing_widgets: vec![ing_widget],
             _is_visible: false,
