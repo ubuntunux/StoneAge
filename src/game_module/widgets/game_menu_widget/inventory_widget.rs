@@ -194,7 +194,7 @@ impl<'a> InventoryWidget<'a> {
             _drag_widget: drag_widget,
             _item_info_widget: item_info_widget,
             _slot_widgets: Vec::new(),
-            _focused_slot_index: 0,
+            _focused_slot_index: INVALID_ITEM_INDEX,
             _hovered_slot_index: INVALID_ITEM_INDEX,
             _drag_source_slot_index: INVALID_ITEM_INDEX,
             _is_opened_inventory: false,
@@ -474,13 +474,8 @@ impl<'a> InventoryWidget<'a> {
     pub fn open_inventory(&mut self) {
         if !self._is_opened_inventory {
             self._is_opened_inventory = true;
-            let selected_slot = get_game_ui_manager().get_selected_inventory_item_index();
-            if selected_slot != INVALID_ITEM_INDEX {
-                self._focused_slot_index = selected_slot;
-            } else {
-                self._focused_slot_index = 0;
-            }
-            self._hovered_slot_index = self._focused_slot_index;
+            self._focused_slot_index = INVALID_ITEM_INDEX;
+            self._hovered_slot_index = INVALID_ITEM_INDEX;
             let parent_mut = ptr_as_mut(self._parent_widget);
             parent_mut.add_widget(&self._layer);
             self.refresh_inventory_widget();
@@ -490,6 +485,7 @@ impl<'a> InventoryWidget<'a> {
     pub fn close_inventory(&mut self) {
         if self._is_opened_inventory {
             self._is_opened_inventory = false;
+            self._focused_slot_index = INVALID_ITEM_INDEX;
             self._hovered_slot_index = INVALID_ITEM_INDEX;
             self._nav_repeat_controller.reset();
             self._item_info_widget.hide_item_info();
@@ -609,51 +605,55 @@ impl<'a> InventoryWidget<'a> {
             self._nav_repeat_controller.update(keyboard_input_data, joystick_input_data, delta_time);
 
         if should_move_slot {
-            let (dir_x, dir_y) = dir_opt.unwrap();
             let item_bar = get_game_ui_manager().get_item_bar_widget();
             let inv_rows = item_bar.get_inventory_rows();
 
-            let is_equip_row = self._focused_slot_index >= EQUIPMENT_SLOT_START_INDEX;
-            let mut r = if is_equip_row {
-                inv_rows + (self._focused_slot_index - EQUIPMENT_SLOT_START_INDEX)
-            } else {
-                self._focused_slot_index / SLOTS_PER_ROW
-            };
-            let mut c = if is_equip_row {
+            let new_focused_slot = if self._focused_slot_index == INVALID_ITEM_INDEX {
                 0
             } else {
-                self._focused_slot_index % SLOTS_PER_ROW
-            };
-
-            let total_rows = inv_rows + NUM_EQUIPMENT_SLOTS;
-
-            if dir_x < 0 {
-                if r >= inv_rows {
-                    let eq_idx = (r - inv_rows + NUM_EQUIPMENT_SLOTS - 1) % NUM_EQUIPMENT_SLOTS;
-                    r = inv_rows + eq_idx;
+                let (dir_x, dir_y) = dir_opt.unwrap();
+                let is_equip_row = self._focused_slot_index >= EQUIPMENT_SLOT_START_INDEX;
+                let mut r = if is_equip_row {
+                    inv_rows + (self._focused_slot_index - EQUIPMENT_SLOT_START_INDEX)
                 } else {
-                    c = (c + SLOTS_PER_ROW - 1) % SLOTS_PER_ROW;
-                }
-            } else if dir_x > 0 {
-                if r >= inv_rows {
-                    let eq_idx = (r - inv_rows + 1) % NUM_EQUIPMENT_SLOTS;
-                    r = inv_rows + eq_idx;
+                    self._focused_slot_index / SLOTS_PER_ROW
+                };
+                let mut c = if is_equip_row {
+                    0
                 } else {
-                    c = (c + 1) % SLOTS_PER_ROW;
+                    self._focused_slot_index % SLOTS_PER_ROW
+                };
+
+                let total_rows = inv_rows + NUM_EQUIPMENT_SLOTS;
+
+                if dir_x < 0 {
+                    if r >= inv_rows {
+                        let eq_idx = (r - inv_rows + NUM_EQUIPMENT_SLOTS - 1) % NUM_EQUIPMENT_SLOTS;
+                        r = inv_rows + eq_idx;
+                    } else {
+                        c = (c + SLOTS_PER_ROW - 1) % SLOTS_PER_ROW;
+                    }
+                } else if dir_x > 0 {
+                    if r >= inv_rows {
+                        let eq_idx = (r - inv_rows + 1) % NUM_EQUIPMENT_SLOTS;
+                        r = inv_rows + eq_idx;
+                    } else {
+                        c = (c + 1) % SLOTS_PER_ROW;
+                    }
                 }
-            }
 
-            if dir_y < 0 {
-                r = (r + total_rows - 1) % total_rows;
-            } else if dir_y > 0 {
-                r = (r + 1) % total_rows;
-            }
+                if dir_y < 0 {
+                    r = (r + total_rows - 1) % total_rows;
+                } else if dir_y > 0 {
+                    r = (r + 1) % total_rows;
+                }
 
-            let new_focused_slot = if r >= inv_rows {
-                let eq_idx = (r - inv_rows).min(NUM_EQUIPMENT_SLOTS - 1);
-                EQUIPMENT_SLOT_START_INDEX + eq_idx
-            } else {
-                r * SLOTS_PER_ROW + c.min(SLOTS_PER_ROW - 1)
+                if r >= inv_rows {
+                    let eq_idx = (r - inv_rows).min(NUM_EQUIPMENT_SLOTS - 1);
+                    EQUIPMENT_SLOT_START_INDEX + eq_idx
+                } else {
+                    r * SLOTS_PER_ROW + c.min(SLOTS_PER_ROW - 1)
+                }
             };
 
             if self._drag_source_slot_index != INVALID_ITEM_INDEX {
