@@ -3,7 +3,7 @@ use crate::game_module::actors::character::Character;
 use crate::game_module::actors::props::Prop;
 use crate::game_module::behavior::behavior_base::BehaviorState;
 use crate::game_module::game_constants::{
-    AUDIO_QUEST_COMPLETE, AUDIO_ROOSTER, AUDIO_WRAP_UP_THE_DAY, BED_FOR_ARU, CAMERA_DISTANCE_MIN, CAMERA_OFFSET_Y,
+    AUDIO_QUEST_COMPLETE, AUDIO_ROOSTER, BED_FOR_ARU, CAMERA_DISTANCE_MIN, CAMERA_OFFSET_Y,
     CHARACTER_INTERACTION_DISTANCE, DEFAULT_FADE_TIME, EAT_ITEM_DELAY_TIME, MATERIAL_UI_NONE,
     MAX_BED_RESTRICTION_DISTANCE, SLEEP_TIMER, TARGET_HUNGER_THRESHOLD, TIME_OF_NIGHT,
 };
@@ -507,14 +507,6 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                             self._player.as_ref().is_some_and(|p| p.borrow().is_action(ActionAnimationState::Dance));
 
                         if player_is_dancing {
-                            if self._audio_bgm.is_none() {
-                                self._audio_bgm = get_audio_manager_mut().play_audio_bank(
-                                    AUDIO_WRAP_UP_THE_DAY,
-                                    AudioLoop::SOME(99),
-                                    None,
-                                );
-                            }
-
                             let ewa_dancing = self
                                 ._actor_ewa
                                 .as_ref()
@@ -531,11 +523,6 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                                 dance_in_place(&self._actor_koa, &self._player);
                             }
                         } else {
-                            if let Some(audio_bgm) = &self._audio_bgm {
-                                get_audio_manager_mut().stop_audio_instance(audio_bgm);
-                                self._audio_bgm = None;
-                            }
-
                             let ewa_dancing = self
                                 ._actor_ewa
                                 .as_ref()

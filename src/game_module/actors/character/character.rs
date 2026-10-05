@@ -1450,8 +1450,10 @@ impl<'a> Character<'a> {
     }
 
     pub fn execute_npc_dance(&mut self, target_npc: &RcRefCell<Character<'a>>) {
+        self.look_at(target_npc.borrow().get_position());
         self.set_action_dance();
         let mut npc = target_npc.borrow_mut();
+        npc.look_at(self.get_position());
         npc.set_is_interacting(true);
         if !npc.is_move_state(MoveAnimationState::SitDownLoop) {
             npc.set_move_idle();

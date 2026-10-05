@@ -8,9 +8,9 @@ use crate::game_module::actors::interaction_object::InteractionObject;
 use crate::game_module::actors::items::{ItemCreateInfo, ItemID};
 use crate::game_module::behavior::behavior_base::BehaviorSaveData;
 use crate::game_module::game_constants::{
-    AUDIO_STOMACH_GROWLING, CHARACTER_INTERACTION_DISTANCE, CHARACTER_INTERACTION_TIME, CORPSE_AUTO_REMOVE_TIME,
-    FARM_MEAT_COUNT, GAME_VIEW_MODE, GameViewMode, ITEM_HAND, ITEM_MEAT, ITEM_SPIRIT_BALL, MATERIAL_EMOJI_GOOD,
-    MATERIAL_EMOJI_HUNGRY, NPC_ATTACK_HIT_RANGE, NPC_TRACKING_RANGE,
+    AUDIO_STOMACH_GROWLING, AUDIO_WRAP_UP_THE_DAY, CHARACTER_INTERACTION_DISTANCE, CHARACTER_INTERACTION_TIME,
+    CORPSE_AUTO_REMOVE_TIME, FARM_MEAT_COUNT, GAME_VIEW_MODE, GameViewMode, ITEM_HAND, ITEM_MEAT, ITEM_SPIRIT_BALL,
+    MATERIAL_EMOJI_GOOD, MATERIAL_EMOJI_HUNGRY, NPC_ATTACK_HIT_RANGE, NPC_TRACKING_RANGE,
 };
 use crate::game_module::game_scene_manager::{CharacterCreateInfoMap, CharacterSaveDataMap};
 use crate::game_module::widgets::text_box_widget::{TextBoxContent, TextBoxItemOption, TextBoxLayerType};
@@ -20,7 +20,8 @@ use crate::game_module::game_service_locator::{
     get_game_resources, get_game_scene_manager, get_game_ui_manager, get_game_ui_manager_mut,
 };
 use crate::game_module::widgets::game_menu_widget::character_list_helper::{AffinityTier, get_affinity_tier};
-use rust_engine_3d::core::engine_service_locator::{get_scene_manager, get_scene_manager_mut};
+use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop};
+use rust_engine_3d::core::engine_service_locator::{get_audio_manager_mut, get_scene_manager, get_scene_manager_mut};
 use rust_engine_3d::scene::render_object::{RenderObjectCreateInfo, RenderObjectSaveData, SceneObjectType};
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{RcRefCell, extract_name_and_uuid, newRcRefCell, ptr_as_mut, ptr_as_ref};
@@ -73,6 +74,7 @@ pub struct CharacterManager<'a> {
     pub _target_focus_time: f64,
     pub _characters: CharacterMap<'a>,
     pub _character_name_map: CharacterNameMap<'a>,
+    pub _dance_audio_bgm: Option<RcRefCell<AudioInstance>>,
 }
 
 impl<'a> CharacterManager<'a> {
@@ -83,6 +85,7 @@ impl<'a> CharacterManager<'a> {
             _target_focus_time: 0.0,
             _characters: HashMap::new(),
             _character_name_map: HashMap::new(),
+            _dance_audio_bgm: None,
         })
     }
 
@@ -418,10 +421,67 @@ impl<'a> CharacterManager<'a> {
         }
     }
 
+    pub fn update_dance_state(&mut self) {
+        let Some(player_rc) = &self._player else {
+            return;
+        };
+
+        let (player_is_dancing, player_pos) = {
+            let player = player_rc.borrow();
+            (player.is_action(ActionAnimationState::Dance), *player.get_position())
+        };
+
+        if player_is_dancing {
+            if self._dance_audio_bgm.is_none() {
+                self._dance_audio_bgm = get_audio_manager_mut().play_audio_bank(
+                    AUDIO_WRAP_UP_THE_DAY,
+                    AudioLoop::SOME(99),
+                    None,
+                );
+            }
+
+            for character in self._characters.values() {
+                if std::ptr::eq(character.as_ptr(), player_rc.as_ptr()) {
+                    continue;
+                }
+                let is_target = self
+                    ._target_character
+                    .as_ref()
+                    .is_some_and(|target| std::ptr::eq(target.as_ptr(), character.as_ptr()));
+                let mut character_mut = character.borrow_mut();
+                if character_mut.is_interacting() || is_target {
+                    if !character_mut.is_action(ActionAnimationState::Dance) {
+                        character_mut.look_at(&player_pos);
+                        character_mut.set_next_behavior(BehaviorState::Dance, true);
+                    }
+                }
+            }
+        } else {
+            if let Some(audio_bgm) = &self._dance_audio_bgm {
+                get_audio_manager_mut().stop_audio_instance(audio_bgm);
+                self._dance_audio_bgm = None;
+            }
+
+            for character in self._characters.values() {
+                if std::ptr::eq(character.as_ptr(), player_rc.as_ptr()) {
+                    continue;
+                }
+                let mut character_mut = character.borrow_mut();
+                if character_mut.is_action(ActionAnimationState::Dance)
+                    || character_mut._behavior.get_behavior_state() == BehaviorState::Dance
+                {
+                    character_mut.set_next_behavior(BehaviorState::Idle, true);
+                }
+            }
+        }
+    }
+
     pub fn update_character_manager(&mut self, delta_time: f64) {
         if self._player.is_none() {
             return;
         }
+
+        self.update_dance_state();
 
         let player = ptr_as_mut(self._player.as_ref().unwrap().as_ptr());
         let mut dead_characters: Vec<RcRefCell<Character>> = Vec::new();
