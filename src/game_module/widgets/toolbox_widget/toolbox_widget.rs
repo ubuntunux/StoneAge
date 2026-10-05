@@ -269,8 +269,12 @@ impl<'a> ToolboxWidget<'a> {
             vec![
                 get_toolbox_item_data(ToolboxIconType::WoodenClub),
                 get_toolbox_item_data(ToolboxIconType::StoneAxe),
-                get_toolbox_item_data(ToolboxIconType::Worktable),
+                get_toolbox_item_data(ToolboxIconType::FlintSpear),
+                get_toolbox_item_data(ToolboxIconType::HuntingBow),
+                get_toolbox_item_data(ToolboxIconType::LeatherArmor),
+                get_toolbox_item_data(ToolboxIconType::BoneShield),
                 get_toolbox_item_data(ToolboxIconType::Campfire),
+                get_toolbox_item_data(ToolboxIconType::Worktable),
             ],
         );
         let npc_tab = ToolboxTabWidget::create_toolbox_tab_widget(

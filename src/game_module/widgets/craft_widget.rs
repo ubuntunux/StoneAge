@@ -6,6 +6,7 @@ use crate::game_module::game_service_locator::{
     get_character_manager_mut, get_game_ui_manager, get_game_ui_manager_mut, get_item_manager_mut,
 };
 use crate::game_module::widgets::item_detail_layout::*;
+use crate::game_module::widgets::toolbox_widget::item_tab_widget::ToolboxIconType;
 use nalgebra::Vector2;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::core::engine_core::TimeData;
@@ -40,6 +41,20 @@ pub struct CraftRecipeData {
 impl CraftRecipeData {
     pub fn item_code(&self) -> &'static str {
         self.item_type.item_code()
+    }
+
+    pub fn toolbox_icon_type(&self) -> ToolboxIconType {
+        match self.item_type {
+            ItemDataType::WoodenClub => ToolboxIconType::WoodenClub,
+            ItemDataType::StoneAxe => ToolboxIconType::StoneAxe,
+            ItemDataType::Spear => ToolboxIconType::FlintSpear,
+            ItemDataType::Bow => ToolboxIconType::HuntingBow,
+            ItemDataType::LeatherArmor => ToolboxIconType::LeatherArmor,
+            ItemDataType::BoneShield => ToolboxIconType::BoneShield,
+            ItemDataType::Campfire => ToolboxIconType::Campfire,
+            ItemDataType::Worktable => ToolboxIconType::Worktable,
+            _ => ToolboxIconType::WoodenClub,
+        }
     }
 }
 
@@ -337,8 +352,32 @@ impl<'a> CraftWidget<'a> {
         true
     }
 
+    pub fn is_recipe_unlocked(index: usize) -> bool {
+        if index < CRAFT_RECIPES.len() {
+            let unlocked = get_game_ui_manager().get_unlocked_toolbox_items();
+            unlocked.contains(&CRAFT_RECIPES[index].toolbox_icon_type())
+        } else {
+            false
+        }
+    }
+
+    pub fn get_first_unlocked_index(&self) -> Option<usize> {
+        let unlocked = get_game_ui_manager().get_unlocked_toolbox_items();
+        (0..CRAFT_RECIPES.len()).find(|&i| unlocked.contains(&CRAFT_RECIPES[i].toolbox_icon_type()))
+    }
+
+    pub fn get_prev_unlocked_index(&self, current: usize) -> Option<usize> {
+        let unlocked = get_game_ui_manager().get_unlocked_toolbox_items();
+        (0..current).rfind(|&i| unlocked.contains(&CRAFT_RECIPES[i].toolbox_icon_type()))
+    }
+
+    pub fn get_next_unlocked_index(&self, current: usize) -> Option<usize> {
+        let unlocked = get_game_ui_manager().get_unlocked_toolbox_items();
+        ((current + 1)..CRAFT_RECIPES.len()).find(|&i| unlocked.contains(&CRAFT_RECIPES[i].toolbox_icon_type()))
+    }
+
     pub fn select_recipe(&mut self, index: usize) {
-        if index >= self._items.len() {
+        if index >= self._items.len() || !Self::is_recipe_unlocked(index) {
             return;
         }
         self._selected_index = index;
@@ -347,7 +386,7 @@ impl<'a> CraftWidget<'a> {
     }
 
     pub fn try_craft_recipe(recipe_index: usize) -> bool {
-        if recipe_index >= CRAFT_RECIPES.len() {
+        if recipe_index >= CRAFT_RECIPES.len() || !Self::is_recipe_unlocked(recipe_index) {
             return false;
         }
         let recipe = &CRAFT_RECIPES[recipe_index];
@@ -394,7 +433,6 @@ impl<'a> CraftWidget<'a> {
         if !self._is_opened {
             ptr_as_mut(self._parent_widget).add_widget(&self._layer);
             self._is_opened = true;
-            self._selected_index = 0;
 
             let self_ptr = self as *const CraftWidget<'a> as *const c_void;
             for item in self._items.iter_mut() {
@@ -404,8 +442,13 @@ impl<'a> CraftWidget<'a> {
                 ptr_as_mut(item._layout.as_ref()).get_ui_component_mut().set_user_data(item_ptr);
             }
 
-            self.select_recipe(0);
             self.refresh_recipe_labels();
+
+            if let Some(first_unlocked_idx) = self.get_first_unlocked_index() {
+                self.select_recipe(first_unlocked_idx);
+            } else {
+                self.update_detail_panel();
+            }
         }
     }
 
@@ -418,8 +461,22 @@ impl<'a> CraftWidget<'a> {
     }
 
     pub fn update_detail_panel(&mut self) {
-        if self._selected_index >= CRAFT_RECIPES.len() {
-            return;
+        let unlocked_set = get_game_ui_manager().get_unlocked_toolbox_items();
+
+        if self._selected_index >= CRAFT_RECIPES.len()
+            || !unlocked_set.contains(&CRAFT_RECIPES[self._selected_index].toolbox_icon_type())
+        {
+            if let Some(first_unlocked) = self.get_first_unlocked_index() {
+                self._selected_index = first_unlocked;
+            } else {
+                ptr_as_mut(self._detail_name_lbl.as_ref()).get_ui_component_mut().set_text("");
+                ptr_as_mut(self._detail_desc_lbl.as_ref()).get_ui_component_mut().set_text("");
+                for ing_widget in self._detail_ing_widgets.iter_mut() {
+                    let layout_ui = ptr_as_mut(ing_widget._layout.as_ref()).get_ui_component_mut();
+                    layout_ui.set_enable(false);
+                }
+                return;
+            }
         }
 
         let recipe = &CRAFT_RECIPES[self._selected_index];
@@ -459,9 +516,19 @@ impl<'a> CraftWidget<'a> {
 
     pub fn refresh_recipe_labels(&mut self) {
         let ui_mgr = get_game_ui_manager();
+        let unlocked_set = ui_mgr.get_unlocked_toolbox_items();
+
         for item in self._items.iter_mut() {
             if item._recipe_index < CRAFT_RECIPES.len() {
                 let recipe = &CRAFT_RECIPES[item._recipe_index];
+                let is_unlocked = unlocked_set.contains(&recipe.toolbox_icon_type());
+
+                let layout_ui = ptr_as_mut(item._layout.as_ref()).get_ui_component_mut();
+                layout_ui.set_enable(is_unlocked);
+
+                if !is_unlocked {
+                    continue;
+                }
 
                 let recipe_item_name = Self::get_item_name_from_resource(recipe.item_code());
                 let name_ui = ptr_as_mut(item._name_lbl.as_ref()).get_ui_component_mut();
@@ -495,8 +562,13 @@ impl<'a> CraftWidget<'a> {
     }
 
     fn update_selection_highlight(&mut self) {
+        let unlocked_set = get_game_ui_manager().get_unlocked_toolbox_items();
         let container_ui = ptr_as_mut(self._list_container.as_ref()).get_ui_component_mut();
         for (idx, item) in self._items.iter_mut().enumerate() {
+            let is_unlocked = unlocked_set.contains(&CRAFT_RECIPES[item._recipe_index].toolbox_icon_type());
+            if !is_unlocked {
+                continue;
+            }
             let is_selected = idx == self._selected_index;
             let layout_ui = ptr_as_mut(item._layout.as_ref()).get_ui_component_mut();
             if is_selected {
@@ -544,12 +616,16 @@ impl<'a> CraftWidget<'a> {
 
         if should_move {
             let (_dir_x, dir_y) = dir_opt.unwrap();
-            if dir_y < 0 && self._selected_index > 0 {
-                self.select_recipe(self._selected_index - 1);
-                get_audio_manager_mut().play_audio_bank(AUDIO_SELECT_ITEM, AudioLoop::ONCE, None);
-            } else if dir_y > 0 && self._selected_index + 1 < self._items.len() {
-                self.select_recipe(self._selected_index + 1);
-                get_audio_manager_mut().play_audio_bank(AUDIO_SELECT_ITEM, AudioLoop::ONCE, None);
+            if dir_y < 0 {
+                if let Some(prev_idx) = self.get_prev_unlocked_index(self._selected_index) {
+                    self.select_recipe(prev_idx);
+                    get_audio_manager_mut().play_audio_bank(AUDIO_SELECT_ITEM, AudioLoop::ONCE, None);
+                }
+            } else if dir_y > 0 {
+                if let Some(next_idx) = self.get_next_unlocked_index(self._selected_index) {
+                    self.select_recipe(next_idx);
+                    get_audio_manager_mut().play_audio_bank(AUDIO_SELECT_ITEM, AudioLoop::ONCE, None);
+                }
             }
         }
 
