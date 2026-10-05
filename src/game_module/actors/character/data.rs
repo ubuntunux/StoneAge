@@ -153,6 +153,7 @@ impl CharacterDataType {
     pub fn get_request_type(&self) -> RequestType {
         match self {
             CharacterDataType::Wife => RequestType::Cooking,
+            CharacterDataType::Daughter => RequestType::Craft,
             _ => RequestType::None,
         }
     }
