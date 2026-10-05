@@ -1,6 +1,6 @@
 use crate::game_module::actors::character::{Character, RequestType};
 use crate::game_module::game_client::GamePhase;
-use crate::game_module::game_constants::AUDIO_PICKUP_ITEM;
+use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, AUDIO_SELECT_ITEM};
 use crate::game_module::game_service_locator::{get_character_manager, get_game_client_mut};
 use crate::game_module::widgets::key_binding_widget::KEY_BINDING_FONT_SIZE;
 use nalgebra::Vector2;
@@ -281,6 +281,7 @@ impl<'a> NpcInteractionMenuWidget<'a> {
                 let self_ptr = self as *mut Self as *const c_void;
                 ui_comp.set_user_data(self_ptr);
                 ui_comp.set_callback_touch_down(Some(Box::new(Self::on_click_option_button)));
+                ui_comp.set_callback_touch_over(Some(Box::new(Self::on_touch_over_option_button)));
             }
 
             btn_container_mut.add_widget(&btn_widget);
@@ -288,6 +289,40 @@ impl<'a> NpcInteractionMenuWidget<'a> {
                 _option: option,
                 _widget: btn_widget,
             });
+        }
+    }
+
+    fn on_touch_over_option_button(
+        widget: &rust_engine_3d::scene::ui::UIComponentInstance<'a>,
+        _touch_pos: &Vector2<f32>,
+        _touch_delta: &Vector2<f32>,
+    ) -> bool {
+        let user_data = widget.get_user_data();
+        if user_data.is_null() {
+            return false;
+        }
+        let menu_widget = unsafe { &mut *(user_data as *mut NpcInteractionMenuWidget<'a>) };
+        let clicked_ptr = widget as *const rust_engine_3d::scene::ui::UIComponentInstance<'a>;
+
+        let matched = menu_widget._buttons.iter().enumerate().find_map(|(idx, b)| {
+            let comp_ptr = ptr_as_ref(b._widget.as_ref()).get_ui_component()
+                as *const rust_engine_3d::scene::ui::UIComponentInstance<'a>;
+            if comp_ptr == clicked_ptr {
+                Some(idx)
+            } else {
+                None
+            }
+        });
+
+        if let Some(idx) = matched {
+            if menu_widget._selected_index != idx {
+                menu_widget._selected_index = idx;
+                menu_widget.update_selected_visuals();
+            }
+            get_audio_manager_mut().play_audio_bank(AUDIO_SELECT_ITEM, AudioLoop::ONCE, None);
+            true
+        } else {
+            false
         }
     }
 
@@ -421,9 +456,11 @@ impl<'a> NpcInteractionMenuWidget<'a> {
                 self._selected_index -= 1;
             }
             self.update_selected_visuals();
+            get_audio_manager_mut().play_audio_bank(AUDIO_SELECT_ITEM, AudioLoop::ONCE, None);
         } else if press_down {
             self._selected_index = (self._selected_index + 1) % btn_count;
             self.update_selected_visuals();
+            get_audio_manager_mut().play_audio_bank(AUDIO_SELECT_ITEM, AudioLoop::ONCE, None);
         } else if press_execute {
             let option = self._buttons[self._selected_index]._option;
             self.execute_option(option);
