@@ -1,8 +1,11 @@
 use crate::game_module::actors::character::{ActionAnimationState, RequestType};
 use crate::game_module::actors::interaction_object::InteractionObject;
 use crate::game_module::behavior::behavior_base::BehaviorState;
+use crate::game_module::game_client::GamePhase;
 use crate::game_module::game_controller::KeyBindingType;
-use crate::game_module::game_service_locator::{get_character_manager, get_game_controller, get_game_scene_manager};
+use crate::game_module::game_service_locator::{
+    get_character_manager, get_game_client, get_game_controller, get_game_scene_manager, get_game_ui_manager,
+};
 use crate::game_module::scenario::scenario::ScenarioType;
 use crate::game_module::widgets::key_binding_widget::{
     KEY_BINDING_FONT_SIZE, KEY_BINDING_ICON_MARGIN, KEY_BINDING_TEXT_MARGIN, KeyBindingWidgetManager,
@@ -468,27 +471,8 @@ impl<'a> ControllerHelpWidget<'a> {
             ),
             InteractionObject::Npc(npc) => {
                 let npc_borrow = npc.borrow();
-                let request_type = if npc_borrow.is_action(ActionAnimationState::Eating)
-                    || npc_borrow._behavior.get_behavior_state() == BehaviorState::Eating
-                {
-                    RequestType::None
-                } else {
-                    npc_borrow.get_request_type()
-                };
-                let is_wrap_up = get_game_scene_manager().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay);
-                let interaction_text = if is_wrap_up {
-                    format!("Dance with {}", npc_borrow._character_data.borrow()._name)
-                } else if player.get_attached_item_data_type().is_eatable() {
-                    let item_name = player
-                        .get_attached_item()
-                        .as_ref()
-                        .map(|i| i.borrow()._item_data.borrow()._name.clone())
-                        .unwrap_or_default();
-                    format!("Give a {} to {}", item_name, npc_borrow._character_data.borrow()._name)
-                } else {
-                    format!("Interaction with {}", npc_borrow._character_data.borrow()._name)
-                };
-                (KeyBindingType::Interaction, interaction_text, request_type)
+                let interaction_text = format!("{}", npc_borrow._character_data.borrow()._name);
+                (KeyBindingType::Interaction, interaction_text, RequestType::None)
             }
             InteractionObject::PropGate(_) => (KeyBindingType::None, String::from("Enter Gate"), RequestType::None),
             InteractionObject::PropGathering(prop) => (
@@ -514,6 +498,13 @@ impl<'a> ControllerHelpWidget<'a> {
     }
 
     pub fn update_interaction_widget(&mut self) {
+        if get_game_client().is_game_phase(GamePhase::Interaction)
+            || get_game_ui_manager().is_opened_npc_interaction_menu()
+        {
+            self.hide_all_interaction_widgets();
+            return;
+        }
+
         let character_manager = get_character_manager();
         if !character_manager.is_valid_player() {
             self.hide_all_interaction_widgets();

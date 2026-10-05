@@ -15,6 +15,7 @@ use crate::game_module::widgets::image_widget::ImageLayout;
 use crate::game_module::widgets::item_acquire_notification::ItemAcquireNotificationWidget;
 use crate::game_module::widgets::item_bar::{InventoryItemCreateInfo, InventoryItemCreateInfoList, ItemBarWidget};
 use crate::game_module::widgets::key_binding_widget::KeyBindingWidgetManager;
+use crate::game_module::widgets::npc_interaction_menu_widget::NpcInteractionMenuWidget;
 use crate::game_module::widgets::player_hud::PlayerHud;
 use crate::game_module::widgets::popup_widget::PopupWindowWidget;
 use crate::game_module::widgets::quest_widgets::quest_title::QuestTitle;
@@ -65,6 +66,7 @@ pub struct GameUIManager<'a> {
     pub _toolbox_widget: Option<Box<ToolboxWidget<'a>>>,
     pub _cooking_widget: Option<Box<CookingWidget<'a>>>,
     pub _table_storage_widget: Option<Box<TableStorageWidget<'a>>>,
+    pub _npc_interaction_menu_widget: Option<Box<NpcInteractionMenuWidget<'a>>>,
     pub _quest_widget: Option<Box<QuestWidget<'a>>>,
     pub _debug_ui_widget: Option<Box<DebugUIWidget<'a>>>,
     pub _registered_popups: Vec<RcRefCell<PopupWindowWidget<'a>>>,
@@ -147,6 +149,7 @@ impl<'a> GameUIManager<'a> {
             _toolbox_widget: None,
             _cooking_widget: None,
             _table_storage_widget: None,
+            _npc_interaction_menu_widget: None,
             _quest_widget: None,
             _debug_ui_widget: None,
             _registered_popups: Vec::new(),
@@ -217,6 +220,7 @@ impl<'a> GameUIManager<'a> {
         self._toolbox_widget = Some(Box::new(ToolboxWidget::create_toolbox_widget(game_ui_layout_mut)));
         self._cooking_widget = Some(Box::new(CookingWidget::create_cooking_widget(game_ui_layout_mut)));
         self._table_storage_widget = Some(TableStorageWidget::create_table_storage_widget(game_ui_layout_mut));
+        self._npc_interaction_menu_widget = Some(Box::new(NpcInteractionMenuWidget::create_npc_interaction_menu_widget(game_ui_layout_mut)));
         self._time_of_day = Some(Box::new(TimeOfDayWidget::create_time_of_day_widget(game_ui_layout_mut)));
         self._controller_help_widget = Some(Box::new(ControllerHelpWidget::create_controller_help_widget(
             self._key_binding_widget_manager.as_ref().unwrap().as_ref(),
@@ -1100,6 +1104,14 @@ impl<'a> GameUIManager<'a> {
             debug_ui_widget.update_debug_ui_widget();
         }
 
+        if let Some(npc_interaction_menu) = self._npc_interaction_menu_widget.as_mut() {
+            npc_interaction_menu.update(
+                &engine_core._time_data,
+                &engine_core._joystick_input_data,
+                &engine_core._keyboard_input_data,
+            );
+        }
+
         let registered_popups = self._registered_popups.clone();
         for popup in registered_popups.iter() {
             if let Ok(mut popup_guard) = popup.try_borrow_mut() {
@@ -1109,6 +1121,26 @@ impl<'a> GameUIManager<'a> {
                     &engine_core._keyboard_input_data,
                 );
             }
+        }
+    }
+
+    pub fn open_npc_interaction_menu(&mut self, target_npc: RcRefCell<Character<'a>>) {
+        if let Some(menu) = self._npc_interaction_menu_widget.as_mut() {
+            menu.open_npc_interaction_menu(target_npc);
+        }
+    }
+
+    pub fn close_npc_interaction_menu(&mut self) {
+        if let Some(menu) = self._npc_interaction_menu_widget.as_mut() {
+            menu.close_npc_interaction_menu();
+        }
+    }
+
+    pub fn is_opened_npc_interaction_menu(&self) -> bool {
+        if let Some(menu) = self._npc_interaction_menu_widget.as_ref() {
+            menu.is_opened_npc_interaction_menu()
+        } else {
+            false
         }
     }
 

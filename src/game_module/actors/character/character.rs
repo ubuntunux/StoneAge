@@ -1368,48 +1368,9 @@ impl<'a> Character<'a> {
                     self.set_move_idle();
                 }
                 InteractionObject::Npc(character) => {
-                    // interaction
-                    self.look_at(character.borrow().get_position());
-                    {
-                        let mut npc = character.borrow_mut();
-                        npc.set_is_interacting(true);
-                        if !npc.is_move_state(MoveAnimationState::SitDownLoop) {
-                            npc.set_move_idle();
-                        }
-                        npc.set_next_behavior(BehaviorState::Interaction, true);
-                    }
-
-                    // give item
-                    let mut give_item = false;
-                    if character.borrow().get_attached_item().is_none() {
-                        let eatable_item_name = if let Some(attached_item) = self.get_attached_item()
-                            && attached_item.borrow().get_item_data_type().is_eatable()
-                        {
-                            Some(attached_item.borrow()._item_data_name.clone())
-                        } else {
-                            None
-                        };
-
-                        if let Some(item_data_name) = eatable_item_name {
-                            give_item = true;
-                            item_manager.remove_inventory_item(item_data_name.as_str(), 1);
-                            item_manager.attach_item(&mut character.borrow_mut(), item_data_name.as_str());
-                            character.borrow_mut().look_at(self.get_position());
-                            character.borrow_mut().set_next_behavior(BehaviorState::Eating, true);
-                        }
-                    }
-
-                    // increase intimacy (2x multiplier if fed food)
-                    let intimacy_add = if give_item {
-                        INTIMACY_INTERACTION_ADD * INTIMACY_FEEDING_MULTIPLIER
-                    } else {
-                        INTIMACY_INTERACTION_ADD
-                    };
-                    character.borrow_mut().add_intimacy(intimacy_add);
-
-                    if !give_item {
-                        character.borrow_mut().set_is_stat_displayed(true);
-                    }
+                    self.set_move_idle();
+                    get_game_client_mut().set_next_game_phase(GamePhase::Interaction);
+                    get_game_ui_manager_mut().open_npc_interaction_menu(character.clone());
                 }
                 InteractionObject::Taming(character) => {
                     self.set_next_action_animation(ActionAnimationState::Pickup, 2.0);
@@ -1445,40 +1406,98 @@ impl<'a> Character<'a> {
             }
         }
     }
+
+    pub fn execute_npc_talk(&mut self, target_npc: &RcRefCell<Character<'a>>) {
+        self.look_at(target_npc.borrow().get_position());
+        {
+            let mut npc = target_npc.borrow_mut();
+            npc.set_is_interacting(true);
+            if !npc.is_move_state(MoveAnimationState::SitDownLoop) {
+                npc.set_move_idle();
+            }
+            npc.set_next_behavior(BehaviorState::Interaction, true);
+            npc.set_is_stat_displayed(true);
+            npc.add_intimacy(INTIMACY_INTERACTION_ADD);
+        }
+    }
+
+    pub fn execute_npc_request(&mut self, target_npc: &RcRefCell<Character<'a>>) {
+        let mut npc = target_npc.borrow_mut();
+        if !npc.is_action(ActionAnimationState::Eating)
+            && npc._behavior.get_behavior_state() != BehaviorState::Eating
+        {
+            let mut requestable = true;
+            match npc.get_request_type() {
+                RequestType::Cooking => {
+                    get_game_client_mut().set_next_game_phase(GamePhase::OpenCooking);
+                }
+                RequestType::Craft => {
+                    get_game_client_mut().set_next_game_phase(GamePhase::OpenCraft);
+                }
+                _ => {
+                    requestable = false;
+                }
+            }
+
+            if requestable {
+                self.look_at(npc.get_position());
+                npc.look_at(self.get_position());
+                npc.set_is_interacting(true);
+                if !npc.is_move_state(MoveAnimationState::SitDownLoop) {
+                    npc.set_move_idle();
+                }
+                npc.set_next_behavior(BehaviorState::Idle, true);
+            }
+        }
+    }
+
+    pub fn execute_npc_dance(&mut self, target_npc: &RcRefCell<Character<'a>>) {
+        self.set_action_dance();
+        let mut npc = target_npc.borrow_mut();
+        npc.set_is_interacting(true);
+        if !npc.is_move_state(MoveAnimationState::SitDownLoop) {
+            npc.set_move_idle();
+        }
+        npc.set_next_behavior(BehaviorState::Dance, true);
+        npc.add_intimacy(INTIMACY_INTERACTION_ADD);
+    }
+
+    pub fn execute_npc_give_item(&mut self, target_npc: &RcRefCell<Character<'a>>) {
+        let item_manager = get_game_scene_manager().get_item_manager_mut();
+        if target_npc.borrow().get_attached_item().is_none() {
+            let eatable_item_name = if let Some(attached_item) = self.get_attached_item()
+                && attached_item.borrow().get_item_data_type().is_eatable()
+            {
+                Some(attached_item.borrow()._item_data_name.clone())
+            } else {
+                None
+            };
+
+            if let Some(item_data_name) = eatable_item_name {
+                item_manager.remove_inventory_item(item_data_name.as_str(), 1);
+                item_manager.attach_item(&mut target_npc.borrow_mut(), item_data_name.as_str());
+                target_npc.borrow_mut().look_at(self.get_position());
+                target_npc.borrow_mut().set_next_behavior(BehaviorState::Eating, true);
+                target_npc.borrow_mut().add_intimacy(INTIMACY_INTERACTION_ADD * INTIMACY_FEEDING_MULTIPLIER);
+            }
+        }
+    }
+
+    pub fn execute_npc_table_storage(&mut self, target_npc: &RcRefCell<Character<'a>>) {
+        self.look_at(target_npc.borrow().get_position());
+        get_game_client_mut().set_next_game_phase(GamePhase::OpenTableStorage);
+        self.set_move_idle();
+    }
+
     pub fn set_action_request(&mut self) {
         if self._controller.is_on_ground() && self.is_available_move() && self.is_idle_action() {
             let target_interaction = self._controller._nearest_interaction_object.clone();
             if let InteractionObject::Npc(character) = target_interaction {
-                let mut npc = character.borrow_mut();
-                if !npc.is_action(ActionAnimationState::Eating)
-                    && npc._behavior.get_behavior_state() != BehaviorState::Eating
-                {
-                    let mut requestable = true;
-                    match npc.get_request_type() {
-                        RequestType::Cooking => {
-                            get_game_client_mut().set_next_game_phase(GamePhase::OpenCooking);
-                        }
-                        RequestType::Craft => {
-                            get_game_client_mut().set_next_game_phase(GamePhase::OpenCraft);
-                        }
-                        _ => {
-                            requestable = false;
-                        }
-                    }
-
-                    if requestable {
-                        self.look_at(npc.get_position());
-                        npc.look_at(self.get_position());
-                        npc.set_is_interacting(true);
-                        if !npc.is_move_state(MoveAnimationState::SitDownLoop) {
-                            npc.set_move_idle();
-                        }
-                        npc.set_next_behavior(BehaviorState::Idle, true);
-                    }
-                }
+                self.execute_npc_request(&character);
             }
         }
     }
+
     pub fn callback_changed_interaction_object(&mut self) {
         if let InteractionObject::PropGate(_) = self._controller._nearest_interaction_object.clone() {
             get_game_client_mut().set_next_game_phase(GamePhase::WorldMapOpen);

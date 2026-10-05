@@ -38,6 +38,7 @@ pub enum GamePhase {
     OpenCooking,
     OpenTableStorage,
     OpenCraft,
+    Interaction,
     Inventory,
     WorldMapOpen,
     WorldMapUpdate,
@@ -570,6 +571,20 @@ impl<'a> GameClient<'a> {
                     }
                     State::Update => {}
                     State::End => {}
+                },
+                GamePhase::Interaction => match state {
+                    State::Begin => {
+                        game_ui_manager.set_cross_hair_visible(true);
+                    }
+                    State::Update => {
+                        if !game_ui_manager.is_opened_npc_interaction_menu() {
+                            self.set_next_game_phase(GamePhase::GamePlay);
+                        }
+                    }
+                    State::End => {
+                        game_ui_manager.close_npc_interaction_menu();
+                        game_ui_manager.set_cross_hair_visible(false);
+                    }
                 },
                 GamePhase::Inventory => match state {
                     State::Begin => {

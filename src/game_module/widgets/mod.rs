@@ -11,6 +11,7 @@ pub mod item_acquire_notification;
 pub mod item_bar;
 pub mod item_detail_layout;
 pub mod key_binding_widget;
+pub mod npc_interaction_menu_widget;
 pub mod player_hud;
 pub mod popup_widget;
 pub mod quest_widgets;
