@@ -971,6 +971,14 @@ impl<'a> GameUIManager<'a> {
         }
     }
 
+    pub fn transfer_all_materials_to_table_storage(&mut self) -> usize {
+        if let Some(table_storage_widget) = self._table_storage_widget.as_mut() {
+            table_storage_widget.transfer_all_materials_from_player()
+        } else {
+            0
+        }
+    }
+
     // craft widget
     pub fn open_craft(&mut self) {
         self.open_game_menu(Some(GameMenuTab::Craft));

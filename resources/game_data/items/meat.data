@@ -1,5 +1,5 @@
 {
-    "_item_type": "Food",
+    "_item_type": "Meat",
     "_model_data_name": "props/meat",
     "_name": "MEAT",
     "_ui_material_instance": "ui/items/item_meat",

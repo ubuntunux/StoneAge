@@ -26,6 +26,7 @@ pub enum NpcInteractionOption {
     Talk,
     Request,
     StorageTable,
+    GiveAllResources,
     Dance,
     GiveItem,
     Close,
@@ -42,7 +43,8 @@ impl NpcInteractionOption {
                     String::from("Request Menu")
                 }
             }
-            NpcInteractionOption::StorageTable => String::from("Give Resources"),
+            NpcInteractionOption::StorageTable => String::from("Supply Ingredients"),
+            NpcInteractionOption::GiveAllResources => String::from("Give All Resources"),
             NpcInteractionOption::Dance => String::from("Dance"),
             NpcInteractionOption::GiveItem => {
                 if let Some(name) = item_name {
@@ -220,6 +222,7 @@ impl<'a> NpcInteractionMenuWidget<'a> {
 
         if is_wife {
             options.push(NpcInteractionOption::StorageTable);
+            options.push(NpcInteractionOption::GiveAllResources);
         }
 
         options.push(NpcInteractionOption::Dance);
@@ -392,6 +395,9 @@ impl<'a> NpcInteractionMenuWidget<'a> {
             NpcInteractionOption::StorageTable => {
                 player.execute_npc_table_storage(&target_npc);
             }
+            NpcInteractionOption::GiveAllResources => {
+                player.execute_npc_give_all_materials(&target_npc);
+            }
             NpcInteractionOption::Dance => {
                 player.execute_npc_dance(&target_npc);
             }
@@ -485,6 +491,7 @@ impl<'a> NpcInteractionMenuWidget<'a> {
             KeyCode::Digit4,
             KeyCode::Digit5,
             KeyCode::Digit6,
+            KeyCode::Digit7,
         ];
 
         for (i, key_code) in key_codes.iter().enumerate() {

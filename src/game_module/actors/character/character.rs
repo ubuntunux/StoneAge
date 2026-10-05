@@ -1489,6 +1489,23 @@ impl<'a> Character<'a> {
         self.set_move_idle();
     }
 
+    pub fn execute_npc_give_all_materials(&mut self, target_npc: &RcRefCell<Character<'a>>) {
+        self.look_at(target_npc.borrow().get_position());
+        let mut npc = target_npc.borrow_mut();
+        npc.look_at(self.get_position());
+        npc.set_is_interacting(true);
+        if !npc.is_move_state(MoveAnimationState::SitDownLoop) {
+            npc.set_move_idle();
+        }
+        npc.set_next_behavior(BehaviorState::Interaction, true);
+
+        let transferred_count = get_game_ui_manager_mut().transfer_all_materials_to_table_storage();
+        if transferred_count > 0 {
+            npc.add_intimacy(INTIMACY_INTERACTION_ADD * INTIMACY_FEEDING_MULTIPLIER);
+            get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
+        }
+    }
+
     pub fn set_action_request(&mut self) {
         if self._controller.is_on_ground() && self.is_available_move() && self.is_idle_action() {
             let target_interaction = self._controller._nearest_interaction_object.clone();

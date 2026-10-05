@@ -1137,4 +1137,77 @@ impl<'a> TableStorageWidget<'a> {
         }
         None
     }
+
+    pub fn transfer_all_materials_from_player(&mut self) -> usize {
+        let game_ui_manager = get_game_ui_manager_mut();
+        let item_bar = game_ui_manager.get_item_bar_widget_mut();
+        let total_player_slots = item_bar.get_total_inventory_slots();
+        let mut transferred_count = 0;
+
+        for player_idx in 0..total_player_slots {
+            let player_slot_data = item_bar.get_inventory_slot_data(player_idx).clone();
+            if player_slot_data._item_count == 0
+                || player_slot_data._item_data_name.is_empty()
+                || player_slot_data._item_data_name == ITEM_NONE
+                || player_slot_data._item_data_name == ITEM_HAND
+                || !player_slot_data._item_data_type.is_base_material()
+            {
+                continue;
+            }
+
+            // 1) Try to stack with existing matching item in table storage
+            let mut stored = false;
+            for table_idx in 0..self._table_inventory_slots.len() {
+                let table_slot = &mut self._table_inventory_slots[table_idx];
+                if table_slot._item_count > 0 && table_slot._item_data_name == player_slot_data._item_data_name {
+                    table_slot._item_count += player_slot_data._item_count;
+                    stored = true;
+                    break;
+                }
+            }
+
+            // 2) If not stacked, place into the first empty slot in table storage
+            if !stored {
+                for table_idx in 0..self._table_inventory_slots.len() {
+                    let table_slot = &self._table_inventory_slots[table_idx];
+                    if table_slot._item_count == 0
+                        || table_slot._item_data_name.is_empty()
+                        || table_slot._item_data_name == ITEM_NONE
+                    {
+                        self._table_inventory_slots[table_idx] = player_slot_data.clone();
+                        stored = true;
+                        break;
+                    }
+                }
+            }
+
+            if stored {
+                transferred_count += player_slot_data._item_count;
+                item_bar.set_inventory_slot_data(player_idx, &InventorySlotData::default());
+
+                // Detach if player was holding/selecting this slot
+                if let Some(player) = get_character_manager().get_maybe_player() {
+                    let player_ref = ptr_as_mut(player.as_ptr());
+                    let is_selected_slot = item_bar.get_selected_inventory_slot_index() == player_idx;
+                    let is_attached_item = player_ref.get_attached_item().as_ref().map_or(false, |attached| {
+                        *attached.borrow().get_item_data_name() == player_slot_data._item_data_name
+                    });
+
+                    if is_selected_slot || is_attached_item {
+                        get_item_manager_mut().detach_item(player_ref);
+                        if is_selected_slot {
+                            item_bar.select_item(INVALID_ITEM_INDEX);
+                        }
+                    }
+                }
+            }
+        }
+
+        if transferred_count > 0 {
+            self.refresh_table_storage_widget();
+            self.sync_3d_table_items();
+        }
+
+        transferred_count
+    }
 }

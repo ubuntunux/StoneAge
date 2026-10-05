@@ -122,6 +122,18 @@ impl ItemDataType {
     pub fn is_fishing_item_type(&self) -> bool {
         *self == ItemDataType::FishingRod
     }
+
+    pub fn is_base_material(&self) -> bool {
+        matches!(
+            *self,
+            ItemDataType::Wood
+                | ItemDataType::Rock
+                | ItemDataType::Coconut
+                | ItemDataType::Meat
+                | ItemDataType::EnergyBall
+                | ItemDataType::SpiritBall
+        )
+    }
 }
 
 impl<'a> Item<'a> {
