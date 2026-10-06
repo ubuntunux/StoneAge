@@ -16,20 +16,20 @@ use std::ffi::c_void;
 use std::rc::Rc;
 use winit::keyboard::KeyCode;
 
-pub const COLOR_PANEL_BG: u32 = get_color32(30, 32, 36, 245);
-pub const COLOR_PANEL_BORDER: u32 = get_color32(90, 95, 105, 255);
-pub const COLOR_TITLE_BG: u32 = get_color32(45, 50, 60, 220);
-pub const COLOR_TITLE_BORDER: u32 = get_color32(90, 95, 105, 200);
-pub const COLOR_TITLE_TEXT: u32 = get_color32(240, 245, 255, 255);
-pub const COLOR_CONTAINER_BG: u32 = get_color32(20, 22, 26, 200);
-pub const COLOR_CONTAINER_BORDER: u32 = get_color32(60, 65, 75, 180);
-pub const COLOR_OK_BTN_BG: u32 = get_color32(65, 75, 90, 230);
-pub const COLOR_OK_BTN_BORDER: u32 = get_color32(110, 120, 135, 255);
-pub const COLOR_OK_BTN_TEXT: u32 = get_color32(255, 255, 255, 255);
-pub const COLOR_ITEM_ROW_BG: u32 = get_color32(40, 44, 52, 200);
-pub const COLOR_ITEM_ROW_BORDER: u32 = get_color32(75, 80, 90, 180);
-pub const COLOR_ITEM_ROW_TEXT: u32 = get_color32(230, 235, 240, 255);
-pub const COLOR_EMPTY_TEXT: u32 = get_color32(150, 155, 165, 255);
+pub const COLOR_PANEL_BG: u32 = get_color32(240, 222, 186, 248);
+pub const COLOR_PANEL_BORDER: u32 = get_color32(135, 78, 42, 255);
+pub const COLOR_TITLE_BG: u32 = get_color32(195, 118, 58, 240);
+pub const COLOR_TITLE_BORDER: u32 = get_color32(115, 60, 28, 220);
+pub const COLOR_TITLE_TEXT: u32 = get_color32(255, 250, 230, 255);
+pub const COLOR_CONTAINER_BG: u32 = get_color32(252, 245, 226, 230);
+pub const COLOR_CONTAINER_BORDER: u32 = get_color32(188, 148, 105, 200);
+pub const COLOR_OK_BTN_BG: u32 = get_color32(118, 168, 68, 240);
+pub const COLOR_OK_BTN_BORDER: u32 = get_color32(72, 115, 38, 255);
+pub const COLOR_OK_BTN_TEXT: u32 = get_color32(255, 255, 245, 255);
+pub const COLOR_ITEM_ROW_BG: u32 = get_color32(245, 232, 205, 230);
+pub const COLOR_ITEM_ROW_BORDER: u32 = get_color32(200, 165, 125, 200);
+pub const COLOR_ITEM_ROW_TEXT: u32 = get_color32(75, 45, 20, 255);
+pub const COLOR_EMPTY_TEXT: u32 = get_color32(155, 120, 90, 255);
 
 pub struct WrapUpTheDayWidget<'a> {
     pub _parent_widget: *const WidgetDefault<'a>,
@@ -105,7 +105,7 @@ impl<'a> WrapUpTheDayWidget<'a> {
             ui_comp.set_layout_type(UILayoutType::BoxLayout);
             ui_comp.set_layout_orientation(Orientation::VERTICAL);
             ui_comp.set_halign(HorizontalAlign::CENTER);
-            ui_comp.set_valign(VerticalAlign::CENTER);
+            ui_comp.set_valign(VerticalAlign::TOP);
             ui_comp.set_size(480.0, 210.0);
             ui_comp.set_margin(10.0);
             ui_comp.set_padding(10.0);
@@ -168,15 +168,17 @@ impl<'a> WrapUpTheDayWidget<'a> {
         items_container_mut.clear_widgets();
         self._item_widgets.clear();
 
+        let widget_heights = 50.0;
+
         if transferred_items.is_empty() {
             let empty_widget = UIManager::create_widget("settlement_item_empty", UIWidgetTypes::Default);
             let ui_comp = ptr_as_mut(empty_widget.as_ref()).get_ui_component_mut();
             ui_comp.set_halign(HorizontalAlign::CENTER);
             ui_comp.set_valign(VerticalAlign::CENTER);
-            ui_comp.set_size(440.0, 40.0);
-            ui_comp.set_margin(5.0);
+            ui_comp.set_size_y(widget_heights);
+            ui_comp.set_margin(2.0);
             ui_comp.set_text("No resources collected today.");
-            ui_comp.set_font_size(18.0);
+            ui_comp.set_font_size(24.0);
             ui_comp.set_font_color(COLOR_EMPTY_TEXT);
             ui_comp.set_color(get_color32(0, 0, 0, 0));
             items_container_mut.add_widget(&empty_widget);
@@ -191,34 +193,53 @@ impl<'a> WrapUpTheDayWidget<'a> {
                 ui_comp.set_layout_orientation(Orientation::HORIZONTAL);
                 ui_comp.set_halign(HorizontalAlign::LEFT);
                 ui_comp.set_valign(VerticalAlign::CENTER);
-                ui_comp.set_size(440.0, 36.0);
-                ui_comp.set_margin(4.0);
-                ui_comp.set_color(COLOR_ITEM_ROW_BG);
-                ui_comp.set_border_color(COLOR_ITEM_ROW_BORDER);
-                ui_comp.set_border(1.0);
-                ui_comp.set_round(6.0);
+                ui_comp.set_size_hint_x(Some(1.0));
+                ui_comp.set_size_y(widget_heights);
+                ui_comp.set_margin(2.0);
+                ui_comp.set_color(get_color32(0, 0, 0, 0));
+                items_container_mut.add_widget(&row_widget);
 
                 // Material instance if available
+                let icon_widget =
+                    UIManager::create_widget(&format!("settlement_item_icon_{}", idx), UIWidgetTypes::Default);
+                let ui_comp = ptr_as_mut(icon_widget.as_ref()).get_ui_component_mut();
+                ui_comp.set_layout_type(UILayoutType::BoxLayout);
+                ui_comp.set_layout_orientation(Orientation::HORIZONTAL);
+                ui_comp.set_halign(HorizontalAlign::LEFT);
+                ui_comp.set_valign(VerticalAlign::CENTER);
+                ui_comp.set_size(widget_heights, widget_heights);
                 if !slot._item_data_name.is_empty() {
                     let item_data = get_game_resources().get_item_data(&slot._item_data_name).borrow();
                     if !item_data._ui_material_instance.is_empty() {
                         let mat_inst = engine_resources.get_material_instance_data(&item_data._ui_material_instance);
                         ui_comp.set_material_instance(Some(mat_inst.clone()));
                     }
+                    ptr_as_mut(row_widget.as_ref()).add_widget(&icon_widget);
                 }
 
+                let item_info_widget =
+                    UIManager::create_widget(&format!("settlement_item_icon_{}", idx), UIWidgetTypes::Default);
+                let ui_comp = ptr_as_mut(item_info_widget.as_ref()).get_ui_component_mut();
+                ui_comp.set_layout_type(UILayoutType::BoxLayout);
+                ui_comp.set_layout_orientation(Orientation::HORIZONTAL);
+                ui_comp.set_halign(HorizontalAlign::LEFT);
+                ui_comp.set_valign(VerticalAlign::CENTER);
+                ui_comp.set_color(get_color32(0, 0, 0, 0));
+                ui_comp.set_expandable_x(true);
+                ui_comp.set_size_hint_y(Some(1.0));
+                ui_comp.set_margin_left(4.0);
                 let display_name = if !slot._item_name.is_empty() {
                     &slot._item_name
                 } else {
                     &slot._item_data_name
                 };
-
-                let item_text = format!("  {}  x  {}", display_name, slot._item_count);
+                let item_text = format!("{} x {}", display_name, slot._item_count);
                 ui_comp.set_text(&item_text);
-                ui_comp.set_font_size(20.0);
+                ui_comp.set_font_size(24.0);
                 ui_comp.set_font_color(COLOR_ITEM_ROW_TEXT);
+                ptr_as_mut(row_widget.as_ref()).add_widget(&item_info_widget);
 
-                items_container_mut.add_widget(&row_widget);
+
                 self._item_widgets.push(row_widget);
             }
         }
