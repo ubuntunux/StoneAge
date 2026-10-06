@@ -38,32 +38,32 @@ pub const FONT_SIZE_DESC: f32 = 16.0;
 pub const COLOR_TRANSPARENT: u32 = get_color32(0, 0, 0, 0);
 pub const COLOR_WHITE: u32 = get_color32(255, 255, 255, 255);
 
-pub const COLOR_LIST_BG: u32 = get_color32(25, 27, 30, 220);
-pub const COLOR_LIST_BORDER: u32 = get_color32(50, 55, 60, 255);
+pub const COLOR_LIST_BG: u32 = get_color32(245, 232, 205, 220);
+pub const COLOR_LIST_BORDER: u32 = get_color32(188, 148, 105, 200);
 
-pub const COLOR_DETAIL_BG: u32 = get_color32(35, 38, 43, 230);
-pub const COLOR_DETAIL_BORDER: u32 = get_color32(65, 70, 78, 255);
-pub const COLOR_BOX_BG: u32 = get_color32(28, 30, 34, 200);
-pub const COLOR_BOX_BORDER: u32 = get_color32(55, 60, 68, 255);
+pub const COLOR_DETAIL_BG: u32 = get_color32(252, 245, 226, 230);
+pub const COLOR_DETAIL_BORDER: u32 = get_color32(188, 148, 105, 200);
+pub const COLOR_BOX_BG: u32 = get_color32(240, 225, 195, 200);
+pub const COLOR_BOX_BORDER: u32 = get_color32(195, 160, 120, 255);
 
-pub const COLOR_ITEM_NORMAL_BG: u32 = get_color32(40, 43, 48, 220);
-pub const COLOR_ITEM_NORMAL_BORDER: u32 = get_color32(65, 70, 78, 255);
-pub const COLOR_ITEM_SELECTED_BG: u32 = get_color32(60, 70, 85, 230);
-pub const COLOR_ITEM_SELECTED_BORDER: u32 = get_color32(110, 160, 220, 255);
+pub const COLOR_ITEM_NORMAL_BG: u32 = get_color32(242, 228, 198, 220);
+pub const COLOR_ITEM_NORMAL_BORDER: u32 = get_color32(195, 160, 120, 255);
+pub const COLOR_ITEM_SELECTED_BG: u32 = get_color32(235, 205, 155, 240);
+pub const COLOR_ITEM_SELECTED_BORDER: u32 = get_color32(255, 195, 40, 255);
 
-pub const COLOR_TEXT_TITLE: u32 = get_color32(240, 240, 240, 255);
-pub const COLOR_TEXT_NORMAL: u32 = get_color32(220, 225, 230, 255);
-pub const COLOR_TEXT_MUTED: u32 = get_color32(190, 195, 205, 255);
-pub const COLOR_TEXT_DISABLED: u32 = get_color32(150, 150, 150, 255);
-pub const COLOR_TEXT_SUCCESS: u32 = get_color32(130, 220, 160, 255);
-pub const COLOR_TEXT_ERROR: u32 = get_color32(235, 100, 100, 255);
+pub const COLOR_TEXT_TITLE: u32 = get_color32(75, 45, 20, 255);
+pub const COLOR_TEXT_NORMAL: u32 = get_color32(75, 45, 20, 255);
+pub const COLOR_TEXT_MUTED: u32 = get_color32(120, 85, 55, 255);
+pub const COLOR_TEXT_DISABLED: u32 = get_color32(150, 125, 95, 255);
+pub const COLOR_TEXT_SUCCESS: u32 = get_color32(65, 135, 45, 255);
+pub const COLOR_TEXT_ERROR: u32 = get_color32(195, 60, 50, 255);
 
-pub const COLOR_BTN_CRAFT_BG: u32 = get_color32(75, 130, 85, 255);
-pub const COLOR_BTN_CRAFT_BORDER: u32 = get_color32(115, 190, 130, 255);
-pub const COLOR_BTN_DISABLED_BG: u32 = get_color32(45, 48, 52, 255);
-pub const COLOR_BTN_DISABLED_BORDER: u32 = get_color32(65, 70, 75, 255);
-pub const COLOR_BTN_DEFAULT_BG: u32 = get_color32(65, 65, 65, 255);
-pub const COLOR_BTN_DEFAULT_BORDER: u32 = get_color32(100, 100, 100, 255);
+pub const COLOR_BTN_CRAFT_BG: u32 = get_color32(118, 168, 68, 240);
+pub const COLOR_BTN_CRAFT_BORDER: u32 = get_color32(72, 115, 38, 255);
+pub const COLOR_BTN_DISABLED_BG: u32 = get_color32(210, 185, 150, 255);
+pub const COLOR_BTN_DISABLED_BORDER: u32 = get_color32(175, 145, 110, 255);
+pub const COLOR_BTN_DEFAULT_BG: u32 = get_color32(195, 118, 58, 240);
+pub const COLOR_BTN_DEFAULT_BORDER: u32 = get_color32(115, 60, 28, 220);
 
 pub const MAX_INGREDIENT_ENTRIES: usize = 4;
 

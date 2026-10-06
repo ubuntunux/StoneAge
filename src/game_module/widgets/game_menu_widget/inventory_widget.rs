@@ -49,7 +49,7 @@ impl<'a> InventorySlotWidget<'a> {
         ui_component.set_margin(ITEM_WIDGET_UI_MARGIN);
         ui_component.set_round(5.0);
         ui_component.set_border(2.0);
-        ui_component.set_border_color(get_color32(100, 100, 120, 255));
+        ui_component.set_border_color(get_color32(188, 148, 105, 200));
         ui_component.set_font_size(24.0);
         ui_component.set_font_color(get_color32(255, 255, 255, 255));
         ui_component.set_halign(HorizontalAlign::CENTER);
@@ -98,21 +98,21 @@ impl<'a> InventorySlotWidget<'a> {
         if material_instance.is_some() {
             ui_component.set_color(get_color32(255, 255, 255, 255));
         } else if is_equipment_slot {
-            ui_component.set_color(get_color32(45, 55, 75, 220));
+            ui_component.set_color(get_color32(220, 190, 140, 220));
         } else {
             ui_component.set_color(get_color32(255, 255, 255, 0));
         }
 
         if is_selected_item {
-            ui_component.set_border_color(get_color32(255, 255, 0, 255));
+            ui_component.set_border_color(get_color32(255, 195, 40, 255));
         } else if is_equipment_slot && item_count > 0 && item_data_name != ITEM_NONE {
-            ui_component.set_border_color(get_color32(80, 220, 255, 255));
+            ui_component.set_border_color(get_color32(70, 135, 200, 255));
         } else if is_equipment_slot {
-            ui_component.set_border_color(get_color32(120, 140, 180, 255));
+            ui_component.set_border_color(get_color32(188, 148, 105, 200));
         } else if is_active_quick_row {
-            ui_component.set_border_color(get_color32(50, 220, 100, 255));
+            ui_component.set_border_color(get_color32(118, 168, 68, 255));
         } else {
-            ui_component.set_border_color(get_color32(80, 80, 100, 255));
+            ui_component.set_border_color(get_color32(165, 130, 90, 200));
         }
 
         if is_equipment_slot {
@@ -168,8 +168,8 @@ impl<'a> InventoryWidget<'a> {
         ui_component.set_size_hint_x(Some(1.0));
         ui_component.set_size_hint_y(Some(1.0));
         ui_component.set_padding(10.0);
-        ui_component.set_color(get_color32(220, 200, 160, 200));
-        ui_component.set_border_color(get_color32(0, 0, 0, 255));
+        ui_component.set_color(get_color32(240, 222, 186, 248));
+        ui_component.set_border_color(get_color32(135, 78, 42, 255));
         ui_component.set_round(5.0);
         layer_mut.add_widget(&inventory_bg);
 
@@ -249,7 +249,7 @@ impl<'a> InventoryWidget<'a> {
         ui_component.set_layout_orientation(Orientation::VERTICAL);
         ui_component.set_halign(HorizontalAlign::CENTER);
         ui_component.set_valign(VerticalAlign::TOP);
-        ui_component.set_color(get_color32(0, 0, 0, 128));
+        ui_component.set_color(get_color32(215, 185, 140, 230));
         ui_component.set_padding(5.0);
         ui_component.set_expandable(true);
         bottom_container_mut.add_widget(&equip_section);
@@ -263,9 +263,9 @@ impl<'a> InventoryWidget<'a> {
         ui_component.set_margin_bottom(2.0);
         ui_component.set_text("Equipment Slots");
         ui_component.set_round(5.0);
-        ui_component.set_color(get_color32(0, 0, 0, 128));
+        ui_component.set_color(get_color32(195, 118, 58, 240));
         ui_component.set_font_size(25.0);
-        ui_component.set_font_color(get_color32(240, 210, 130, 255));
+        ui_component.set_font_color(get_color32(255, 250, 230, 255));
         equip_section_mut.add_widget(&equip_title);
 
         let equip_container_layout = UIManager::create_widget("equip_container", UIWidgetTypes::Default);
@@ -275,7 +275,7 @@ impl<'a> InventoryWidget<'a> {
         ui_component.set_layout_orientation(Orientation::VERTICAL);
         ui_component.set_halign(HorizontalAlign::CENTER);
         ui_component.set_valign(VerticalAlign::CENTER);
-        ui_component.set_color(get_color32(50, 53, 60, 200));
+        ui_component.set_color(get_color32(235, 215, 175, 220));
         ui_component.set_round(5.0);
         ui_component.set_margin(5.0);
         ui_component.set_size_hint_x(Some(1.0));
@@ -297,7 +297,7 @@ impl<'a> InventoryWidget<'a> {
             ui_component.set_size_hint_x(Some(1.0));
             ui_component.set_size_y(0.0);
             ui_component.set_round(5.0);
-            ui_component.set_color(get_color32(0, 0, 0, 128));
+            ui_component.set_color(get_color32(220, 195, 150, 200));
             ui_component.set_expandable(true);
             equip_container_mut.add_widget(&equip_row_layout);
 
@@ -313,7 +313,8 @@ impl<'a> InventoryWidget<'a> {
                 ui_component.set_text(equip_type.display_name());
             }
             ui_component.set_font_size(20.0);
-            ui_component.set_font_color(get_color32(230, 220, 200, 255));
+            ui_component.set_font_color(get_color32(75, 45, 20, 255));
+            equip_row_mut.add_widget(&equip_label);
             equip_row_mut.add_widget(&equip_label);
 
             let slot_item = InventorySlotWidget::create(self, equip_row_mut, slot_idx);
@@ -332,7 +333,7 @@ impl<'a> InventoryWidget<'a> {
         ui_component.set_layout_orientation(Orientation::HORIZONTAL);
         ui_component.set_halign(HorizontalAlign::CENTER);
         ui_component.set_valign(VerticalAlign::CENTER);
-        ui_component.set_color(get_color32(160, 140, 100, 200));
+        ui_component.set_color(get_color32(225, 200, 155, 220));
         ui_component.set_round(5.0);
         ui_component.set_margin(10.0);
         ui_component.set_size_hint_x(Some(1.0));

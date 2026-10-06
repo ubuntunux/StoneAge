@@ -29,8 +29,8 @@ impl<'a> TamingListWidget<'a> {
         ui_component.set_size_hint_x(Some(1.0));
         ui_component.set_size_hint_y(Some(1.0));
         ui_component.set_padding(10.0);
-        ui_component.set_color(get_color32(40, 40, 50, 220));
-        ui_component.set_border_color(get_color32(0, 0, 0, 255));
+        ui_component.set_color(get_color32(240, 222, 186, 248));
+        ui_component.set_border_color(get_color32(135, 78, 42, 255));
         ui_component.set_round(5.0);
 
         // Title Header
@@ -41,7 +41,7 @@ impl<'a> TamingListWidget<'a> {
         ui_component.set_valign(VerticalAlign::CENTER);
         ui_component.set_text("Tamed Companions");
         ui_component.set_font_size(25.0);
-        ui_component.set_font_color(get_color32(255, 255, 255, 255));
+        ui_component.set_font_color(get_color32(75, 45, 20, 255));
         ui_component.set_color(get_color32(0, 0, 0, 0));
         layer_mut.add_widget(&title_widget);
 
@@ -58,7 +58,7 @@ impl<'a> TamingListWidget<'a> {
         ui_component.set_enable_renderable_area(true);
         ui_component.set_size_hint_x(Some(1.0));
         ui_component.set_size_hint_y(Some(1.0));
-        ui_component.set_color(get_color32(0, 0, 0, 128));
+        ui_component.set_color(get_color32(252, 245, 226, 230));
         layer_mut.add_widget(&list_container);
 
         Box::new(TamingListWidget {
@@ -119,8 +119,8 @@ impl<'a> TamingListWidget<'a> {
             ui_comp.set_size(620.0, 48.0);
             ui_comp.set_margin(4.0);
             ui_comp.set_padding(8.0);
-            ui_comp.set_color(get_color32(60, 60, 75, 240));
-            ui_comp.set_border_color(get_color32(100, 100, 130, 255));
+            ui_comp.set_color(get_color32(245, 232, 205, 230));
+            ui_comp.set_border_color(get_color32(200, 165, 125, 200));
             ui_comp.set_round(5.0);
 
             let status_str = if item.is_alive { "ALIVE" } else { "DEAD" };

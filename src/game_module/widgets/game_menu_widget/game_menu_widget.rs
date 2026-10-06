@@ -24,8 +24,8 @@ use winit::keyboard::KeyCode;
 
 const TAB_BUTTON_WIDTH: f32 = 92.0;
 const TAB_BUTTON_HEIGHT: f32 = 35.0;
-const TAB_BUTTON_COLOR_ACTIVE: u32 = get_color32(70, 130, 200, 255);
-const TAB_BUTTON_COLOR_INACTIVE: u32 = get_color32(50, 50, 50, 255);
+const TAB_BUTTON_COLOR_ACTIVE: u32 = get_color32(195, 118, 58, 240);
+const TAB_BUTTON_COLOR_INACTIVE: u32 = get_color32(165, 130, 90, 230);
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum GameMenuTab {
@@ -186,8 +186,8 @@ impl<'a> GameMenuWidget<'a> {
         ui_component.set_size(760.0, 580.0);
         ui_component.set_expandable(false);
         ui_component.set_padding(10.0);
-        ui_component.set_color(get_color32(100, 100, 100, 220));
-        ui_component.set_border_color(get_color32(0, 0, 0, 255));
+        ui_component.set_color(get_color32(240, 222, 186, 248));
+        ui_component.set_border_color(get_color32(135, 78, 42, 255));
         ui_component.set_round(5.0);
         ui_component.set_enable(false);
         parent_widget.add_widget(&layer);
@@ -205,7 +205,7 @@ impl<'a> GameMenuWidget<'a> {
         ui_component.set_size_y(45.0);
         ui_component.set_margin(5.0);
         ui_component.set_padding(5.0);
-        ui_component.set_color(get_color32(0, 0, 0, 128));
+        ui_component.set_color(get_color32(215, 185, 140, 230));
         ui_component.set_round(5.0);
         layer_mut.add_widget(&header_layout);
 
@@ -268,7 +268,7 @@ impl<'a> GameMenuWidget<'a> {
         ui_component.set_font_size(26.0);
         ui_component.set_font_color(get_color32(255, 255, 255, 255));
         ui_component.set_round(5.0);
-        ui_component.set_color(get_color32(180, 50, 50, 255));
+        ui_component.set_color(get_color32(200, 75, 60, 255));
         ui_component.set_touchable(true);
         ui_component.set_callback_touch_down(Some(Box::new(GameMenuWidget::callback_close)));
         ui_component.set_callback_touch_over(Some(Box::new(GameMenuWidget::callback_tab_touch_over)));
@@ -286,7 +286,7 @@ impl<'a> GameMenuWidget<'a> {
         ui_component.set_size_hint_y(Some(1.0));
         ui_component.set_margin(5.0);
         ui_component.set_padding(5.0);
-        ui_component.set_color(get_color32(0, 0, 0, 128));
+        ui_component.set_color(get_color32(252, 245, 226, 230));
         ui_component.set_round(5.0);
         layer_mut.add_widget(&content_layout);
 

@@ -27,8 +27,8 @@ use std::rc::Rc;
 use winit::keyboard::KeyCode;
 
 const TAB_BUTTON_HEIGHT: f32 = 44.0;
-const TAB_ACTIVE_COLOR: u32 = get_color32(128, 128, 128, 255);
-const TAB_INACTIVE_COLOR: u32 = get_color32(80, 80, 80, 255);
+const TAB_ACTIVE_COLOR: u32 = get_color32(195, 118, 58, 240);
+const TAB_INACTIVE_COLOR: u32 = get_color32(165, 130, 90, 230);
 
 // ────────────────────────────────────────────────────────────────
 // Tab enum
@@ -178,8 +178,8 @@ impl<'a> ToolboxWidget<'a> {
         ui.set_size(760.0, 580.0);
         ui.set_expandable(false);
         ui.set_enable_renderable_area(true);
-        ui.set_color(get_color32(35, 35, 35, 230));
-        ui.set_border_color(get_color32(90, 90, 90, 255));
+        ui.set_color(get_color32(240, 222, 186, 248));
+        ui.set_border_color(get_color32(135, 78, 42, 255));
         ui.set_border(2.0);
         ui.set_round(10.0);
         ui.set_padding(8.0);
@@ -207,8 +207,8 @@ impl<'a> ToolboxWidget<'a> {
         ui.set_valign(VerticalAlign::CENTER);
         ui.set_size_hint_x(Some(1.0));
         ui.set_size_y(TAB_BUTTON_HEIGHT + 8.0);
-        ui.set_color(get_color32(25, 25, 25, 200));
-        ui.set_border_color(get_color32(70, 70, 70, 200));
+        ui.set_color(get_color32(215, 185, 140, 230));
+        ui.set_border_color(get_color32(160, 115, 70, 220));
         ui.set_border(1.0);
         ui.set_round(6.0);
         ui.set_margin(4.0);
@@ -232,7 +232,7 @@ impl<'a> ToolboxWidget<'a> {
         ui_component.set_font_size(24.0);
         ui_component.set_font_color(get_color32(255, 255, 255, 255));
         ui_component.set_round(6.0);
-        ui_component.set_color(get_color32(180, 50, 50, 255));
+        ui_component.set_color(get_color32(200, 75, 60, 255));
         ui_component.set_touchable(true);
         ui_component.set_callback_touch_down(Some(Box::new(Self::callback_close)));
         ui_component.set_callback_touch_over(Some(Box::new(Self::callback_tab_touch_over)));
@@ -250,7 +250,7 @@ impl<'a> ToolboxWidget<'a> {
         ui.set_size_hint_y(Some(1.0));
         ui.set_expandable(false);
         ui.set_enable_renderable_area(true);
-        ui.set_color(get_color32(30, 30, 30, 220));
+        ui.set_color(get_color32(252, 245, 226, 230));
         ui.set_round(6.0);
         ui.set_margin(4.0);
         body_mut.add_widget(&content);

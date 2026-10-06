@@ -189,8 +189,8 @@ impl<'a> SaveLoadSlotWidget<'a> {
             ui_component.set_size_hint_x(Some(1.0));
             ui_component.set_size_hint_y(Some(1.0));
             ui_component.set_padding(14.0);
-            ui_component.set_color(get_color32(25, 30, 40, 245));
-            ui_component.set_border_color(get_color32(70, 110, 160, 255));
+            ui_component.set_color(get_color32(240, 222, 186, 248));
+            ui_component.set_border_color(get_color32(135, 78, 42, 255));
             ui_component.set_round(8.0);
         }
 
@@ -206,7 +206,7 @@ impl<'a> SaveLoadSlotWidget<'a> {
             ui_comp.set_size_hint_x(Some(1.0));
             ui_comp.set_size_y(52.0);
             ui_comp.set_margin(4.0);
-            ui_comp.set_color(get_color32(18, 22, 30, 220));
+            ui_comp.set_color(get_color32(215, 185, 140, 230));
             ui_comp.set_round(6.0);
         }
         layer_mut.add_widget(&header_layout);
@@ -222,7 +222,7 @@ impl<'a> SaveLoadSlotWidget<'a> {
             ui_comp.set_text("New Game");
             ui_comp.set_font_size(22.0);
             ui_comp.set_font_color(get_color32(255, 255, 255, 255));
-            ui_comp.set_color(get_color32(40, 130, 190, 255));
+            ui_comp.set_color(get_color32(118, 168, 68, 240));
             ui_comp.set_round(5.0);
             ui_comp.set_touchable(true);
             ui_comp.set_callback_touch_down(Some(Box::new(SaveLoadSlotWidget::callback_touch_down_new_game)));
@@ -240,7 +240,7 @@ impl<'a> SaveLoadSlotWidget<'a> {
             ui_comp.set_text("Exit Game");
             ui_comp.set_font_size(22.0);
             ui_comp.set_font_color(get_color32(255, 255, 255, 255));
-            ui_comp.set_color(get_color32(180, 55, 55, 255));
+            ui_comp.set_color(get_color32(200, 75, 60, 255));
             ui_comp.set_round(5.0);
             ui_comp.set_touchable(true);
             ui_comp.set_callback_touch_down(Some(Box::new(SaveLoadSlotWidget::callback_touch_down_exit_game)));
@@ -258,8 +258,8 @@ impl<'a> SaveLoadSlotWidget<'a> {
             label_ui.set_margin(3.0);
             label_ui.set_text("LOAD / SAVE");
             label_ui.set_font_size(22.0);
-            label_ui.set_font_color(get_color32(220, 230, 245, 255));
-            label_ui.set_color(get_color32(18, 24, 34, 180));
+            label_ui.set_font_color(get_color32(255, 250, 230, 255));
+            label_ui.set_color(get_color32(195, 118, 58, 240));
             label_ui.set_round(4.0);
         }
         layer_mut.add_widget(&slot_header_label);
@@ -280,7 +280,7 @@ impl<'a> SaveLoadSlotWidget<'a> {
             ui_comp.set_size_hint_y(Some(1.0));
             ui_comp.set_margin(4.0);
             ui_comp.set_padding(8.0);
-            ui_comp.set_color(get_color32(15, 20, 28, 200));
+            ui_comp.set_color(get_color32(252, 245, 226, 230));
             ui_comp.set_round(6.0);
         }
         layer_mut.add_widget(&slot_container);
@@ -378,9 +378,9 @@ impl<'a> SaveLoadSlotWidget<'a> {
 
         let is_selected = index == self._selected_slot_index;
         let card_color = if is_selected {
-            get_color32(60, 90, 130, 240)
+            get_color32(235, 205, 155, 240)
         } else {
-            get_color32(40, 48, 60, 220)
+            get_color32(245, 232, 205, 230)
         };
 
         {
@@ -394,7 +394,7 @@ impl<'a> SaveLoadSlotWidget<'a> {
             card_ui.set_padding(6.0);
             card_ui.set_round(5.0);
             card_ui.set_color(card_color);
-            card_ui.set_border_color(get_color32(80, 100, 125, 255));
+            card_ui.set_border_color(get_color32(200, 165, 125, 200));
         }
 
         let has_save_data = get_game_resources().has_game_save_data(slot_name);
@@ -423,7 +423,7 @@ impl<'a> SaveLoadSlotWidget<'a> {
             text_ui.set_margin(4.0);
             text_ui.set_text(&slot_info_text);
             text_ui.set_font_size(19.0);
-            text_ui.set_font_color(get_color32(255, 255, 255, 255));
+            text_ui.set_font_color(get_color32(75, 45, 20, 255));
             text_ui.set_color(get_color32(0, 0, 0, 0));
         }
         ptr_as_mut(slot_card.as_ref()).add_widget(&text_widget);
@@ -442,10 +442,10 @@ impl<'a> SaveLoadSlotWidget<'a> {
             action_ui.set_font_color(get_color32(255, 255, 255, 255));
 
             if has_save_data {
-                action_ui.set_color(get_color32(40, 110, 190, 255));
+                action_ui.set_color(get_color32(70, 135, 200, 240));
                 action_ui.set_touchable(true);
             } else {
-                action_ui.set_color(get_color32(70, 75, 85, 180));
+                action_ui.set_color(get_color32(210, 185, 150, 255));
                 action_ui.set_touchable(false);
             }
         }
@@ -463,7 +463,7 @@ impl<'a> SaveLoadSlotWidget<'a> {
             action_ui.set_text("SAVE");
             action_ui.set_font_size(20.0);
             action_ui.set_font_color(get_color32(255, 255, 255, 255));
-            action_ui.set_color(get_color32(45, 140, 65, 255));
+            action_ui.set_color(get_color32(118, 168, 68, 240));
             action_ui.set_touchable(true);
         }
         ptr_as_mut(slot_card.as_ref()).add_widget(&save_btn);
@@ -482,10 +482,10 @@ impl<'a> SaveLoadSlotWidget<'a> {
             action_ui.set_font_color(get_color32(255, 255, 255, 255));
 
             if has_save_data {
-                action_ui.set_color(get_color32(180, 50, 50, 255));
+                action_ui.set_color(get_color32(200, 75, 60, 255));
                 action_ui.set_touchable(true);
             } else {
-                action_ui.set_color(get_color32(70, 75, 85, 180));
+                action_ui.set_color(get_color32(210, 185, 150, 255));
                 action_ui.set_touchable(false);
             }
         }
@@ -614,19 +614,19 @@ impl<'a> SaveLoadSlotWidget<'a> {
 
             let load_ui = ptr_as_mut::<WidgetDefault<'a>>(item._load_btn.as_ref()).get_ui_component_mut();
             if has_save_data {
-                load_ui.set_color(get_color32(40, 110, 190, 255));
+                load_ui.set_color(get_color32(70, 135, 200, 240));
                 load_ui.set_touchable(true);
             } else {
-                load_ui.set_color(get_color32(70, 75, 85, 180));
+                load_ui.set_color(get_color32(210, 185, 150, 255));
                 load_ui.set_touchable(false);
             }
 
             let delete_ui = ptr_as_mut::<WidgetDefault<'a>>(item._delete_btn.as_ref()).get_ui_component_mut();
             if has_save_data {
-                delete_ui.set_color(get_color32(180, 50, 50, 255));
+                delete_ui.set_color(get_color32(200, 75, 60, 255));
                 delete_ui.set_touchable(true);
             } else {
-                delete_ui.set_color(get_color32(70, 75, 85, 180));
+                delete_ui.set_color(get_color32(210, 185, 150, 255));
                 delete_ui.set_touchable(false);
             }
         }
@@ -641,12 +641,12 @@ impl<'a> SaveLoadSlotWidget<'a> {
                 let prev_card = &self._slot_items[prev_index]._item_widget;
                 ptr_as_mut::<WidgetDefault<'a>>(prev_card.as_ref())
                     .get_ui_component_mut()
-                    .set_color(get_color32(40, 48, 60, 220));
+                    .set_color(get_color32(245, 232, 205, 230));
             }
 
             let curr_card = &self._slot_items[index]._item_widget;
             let curr_card_mut = ptr_as_mut::<WidgetDefault<'a>>(curr_card.as_ref());
-            curr_card_mut.get_ui_component_mut().set_color(get_color32(60, 90, 130, 240));
+            curr_card_mut.get_ui_component_mut().set_color(get_color32(235, 205, 155, 240));
 
             let container_mut = ptr_as_mut::<WidgetDefault<'a>>(self._slot_container.as_ref());
             container_mut.get_ui_component_mut().scroll_into_view(curr_card_mut.get_ui_component());

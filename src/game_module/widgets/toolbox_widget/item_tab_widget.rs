@@ -38,21 +38,21 @@ pub const BORDER_WIDTH_NORMAL: f32 = 2.0;
 pub const BORDER_WIDTH_THICK: f32 = 2.0;
 pub const CORNER_ROUND_NORMAL: f32 = 6.0;
 
-pub const COLOR_TAB_BG: u32 = get_color32(30, 30, 30, 220);
-pub const COLOR_PANEL_BG: u32 = get_color32(25, 27, 30, 220);
-pub const COLOR_PANEL_BORDER: u32 = get_color32(50, 55, 60, 255);
+pub const COLOR_TAB_BG: u32 = get_color32(215, 185, 140, 230);
+pub const COLOR_PANEL_BG: u32 = get_color32(252, 245, 226, 230);
+pub const COLOR_PANEL_BORDER: u32 = get_color32(188, 148, 105, 200);
 
-pub const COLOR_TEXT_DISABLED_ALT: u32 = get_color32(120, 120, 120, 255);
-pub const COLOR_TEXT_WARNING: u32 = get_color32(240, 180, 120, 255);
-pub const COLOR_STATUS_LOCKED: u32 = get_color32(210, 165, 160, 255);
-pub const COLOR_STATUS_UNLOCKED: u32 = get_color32(100, 210, 120, 255);
+pub const COLOR_TEXT_DISABLED_ALT: u32 = get_color32(150, 125, 95, 255);
+pub const COLOR_TEXT_WARNING: u32 = get_color32(210, 110, 40, 255);
+pub const COLOR_STATUS_LOCKED: u32 = get_color32(180, 80, 70, 255);
+pub const COLOR_STATUS_UNLOCKED: u32 = get_color32(75, 145, 55, 255);
 
-pub const COLOR_BTN_UNLOCK_BG: u32 = get_color32(75, 130, 85, 255);
-pub const COLOR_BTN_UNLOCK_BORDER: u32 = get_color32(115, 190, 130, 255);
-pub const COLOR_BTN_TELEPORT_BG: u32 = get_color32(50, 110, 180, 255);
-pub const COLOR_BTN_TELEPORT_BORDER: u32 = get_color32(90, 160, 240, 255);
-pub const COLOR_BTN_UNLOCKED_BG: u32 = get_color32(40, 45, 50, 255);
-pub const COLOR_BTN_UNLOCKED_BORDER: u32 = get_color32(70, 75, 80, 255);
+pub const COLOR_BTN_UNLOCK_BG: u32 = get_color32(118, 168, 68, 240);
+pub const COLOR_BTN_UNLOCK_BORDER: u32 = get_color32(72, 115, 38, 255);
+pub const COLOR_BTN_TELEPORT_BG: u32 = get_color32(70, 135, 200, 240);
+pub const COLOR_BTN_TELEPORT_BORDER: u32 = get_color32(40, 95, 150, 255);
+pub const COLOR_BTN_UNLOCKED_BG: u32 = get_color32(220, 195, 160, 200);
+pub const COLOR_BTN_UNLOCKED_BORDER: u32 = get_color32(180, 145, 105, 200);
 
 fn spawn_npc_near_monolith(character_data_name: &str, offset: Vector3<f32>) {
     let monolith_pos = if let Some(monolith) = get_game_scene_manager().get_prop_manager().get_prop_by_name("monolith")

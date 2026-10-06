@@ -71,7 +71,7 @@ impl<'a> WrapUpTheDayWidget<'a> {
             ui_comp.set_valign(VerticalAlign::CENTER);
             ui_comp.set_pivot_preset(PIVOT_CENTER);
             ui_comp.set_pos_hint(Some(0.5), Some(0.5));
-            ui_comp.set_size(520.0, 380.0);
+            ui_comp.set_size(520.0, 500.0);
             ui_comp.set_padding(20.0);
             ui_comp.set_color(COLOR_PANEL_BG);
             ui_comp.set_border_color(COLOR_PANEL_BORDER);
@@ -106,13 +106,15 @@ impl<'a> WrapUpTheDayWidget<'a> {
             ui_comp.set_layout_orientation(Orientation::VERTICAL);
             ui_comp.set_halign(HorizontalAlign::CENTER);
             ui_comp.set_valign(VerticalAlign::TOP);
-            ui_comp.set_size(480.0, 210.0);
+            ui_comp.set_size(480.0, 330.0);
             ui_comp.set_margin(10.0);
             ui_comp.set_padding(10.0);
             ui_comp.set_color(COLOR_CONTAINER_BG);
             ui_comp.set_border_color(COLOR_CONTAINER_BORDER);
             ui_comp.set_border(1.0);
             ui_comp.set_round(8.0);
+            ui_comp.set_scroll_y(true);
+            ui_comp.set_enable_renderable_area(true);
         }
         ptr_as_mut(panel_frame.as_ref()).add_widget(&items_container);
 
@@ -173,8 +175,9 @@ impl<'a> WrapUpTheDayWidget<'a> {
         if transferred_items.is_empty() {
             let empty_widget = UIManager::create_widget("settlement_item_empty", UIWidgetTypes::Default);
             let ui_comp = ptr_as_mut(empty_widget.as_ref()).get_ui_component_mut();
-            ui_comp.set_halign(HorizontalAlign::CENTER);
+            ui_comp.set_halign(HorizontalAlign::LEFT);
             ui_comp.set_valign(VerticalAlign::CENTER);
+            ui_comp.set_size_hint_y(Some(1.0));
             ui_comp.set_size_y(widget_heights);
             ui_comp.set_margin(2.0);
             ui_comp.set_text("No resources collected today.");
