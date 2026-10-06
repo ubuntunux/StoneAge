@@ -19,7 +19,7 @@ use crate::game_module::scenario::scenario::{
 use crate::game_module::scenario::scenario_track::ScenarioTrack;
 use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop};
-use rust_engine_3d::core::engine_service_locator::{get_audio_manager_mut, get_scene_manager};
+use rust_engine_3d::core::engine_service_locator::{get_audio_manager_mut, get_engine_core, get_scene_manager};
 use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{RcRefCell, State, newRcRefCell};
@@ -32,6 +32,7 @@ use strum_macros::{Display, EnumCount, EnumIter, EnumString};
 enum ScenarioPhase {
     None,
     Begin,
+    ResourceSettlement,
     Update,
     GoToSleep,
     Sleep,
@@ -396,7 +397,13 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
         self._scenario_track._scenario_phase == ScenarioPhase::End
     }
 
-    fn destroy_game_scenario(&mut self) {}
+    fn destroy_game_scenario(&mut self) {
+        let game_ui_manager = get_game_ui_manager_mut();
+        if game_ui_manager.is_opened_daily_settlement() {
+            game_ui_manager.close_daily_settlement();
+            game_ui_manager.set_cross_hair_visible(false);
+        }
+    }
 
     fn on_close_game_scene(&mut self, _game_scene_data_name: &str) {}
 
@@ -488,13 +495,13 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                                 &Vector3::new(-1.0, 0.0, 0.0),
                             );
                             game_ui_manager.set_auto_fade_inout(true);
-                            self._scenario_track.set_next_scenario_phase(ScenarioPhase::Update, None);
+                            self._scenario_track.set_next_scenario_phase(ScenarioPhase::ResourceSettlement, None);
                         }
                     }
                     _ => {}
                 },
-                ScenarioPhase::Update => {
-                    if state == State::Begin {
+                ScenarioPhase::ResourceSettlement => match state {
+                    State::Begin => {
                         // set time of day
                         if get_game_scene_manager().get_time_of_day() < TIME_OF_NIGHT {
                             get_game_scene_manager_mut().set_time_of_day(TIME_OF_NIGHT);
@@ -502,7 +509,31 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
 
                         // set camera
                         self.setup_bed_camera();
-                    } else if state == State::Update {
+
+                        let (_count, transferred_items) =
+                            game_ui_manager.transfer_all_materials_to_table_storage_with_details();
+                        game_ui_manager.open_daily_settlement(&transferred_items);
+                    }
+                    State::Update => {
+                        let engine_core = get_engine_core();
+                        game_ui_manager.update_wrap_up_the_day_widget(
+                            &engine_core._time_data,
+                            &engine_core._joystick_input_data,
+                            &engine_core._keyboard_input_data,
+                            &engine_core._mouse_move_data,
+                            &engine_core._mouse_input_data,
+                        );
+
+                        if game_ui_manager.is_daily_settlement_ok_clicked() {
+                            self._scenario_track.set_next_scenario_phase(ScenarioPhase::Update, None);
+                        }
+                    }
+                    State::End => {
+                        game_ui_manager.close_daily_settlement();
+                    }
+                },
+                ScenarioPhase::Update => {
+                    if state == State::Update {
                         let player_is_dancing =
                             self._player.as_ref().is_some_and(|p| p.borrow().is_action(ActionAnimationState::Dance));
 

@@ -1192,10 +1192,15 @@ impl<'a> TableStorageWidget<'a> {
     }
 
     pub fn transfer_all_materials_from_player(&mut self) -> usize {
+        self.transfer_all_materials_from_player_with_details().0
+    }
+
+    pub fn transfer_all_materials_from_player_with_details(&mut self) -> (usize, Vec<InventorySlotData<'a>>) {
         let game_ui_manager = get_game_ui_manager_mut();
         let item_bar = game_ui_manager.get_item_bar_widget_mut();
         let total_player_slots = item_bar.get_total_inventory_slots();
         let mut transferred_count = 0;
+        let mut transferred_items: Vec<InventorySlotData<'a>> = Vec::new();
 
         for player_idx in 0..total_player_slots {
             let player_slot_data = item_bar.get_inventory_slot_data(player_idx).clone();
@@ -1236,6 +1241,16 @@ impl<'a> TableStorageWidget<'a> {
 
             if stored {
                 transferred_count += player_slot_data._item_count;
+
+                // Record transferred item summary for settlement UI
+                if let Some(existing) =
+                    transferred_items.iter_mut().find(|item| item._item_data_name == player_slot_data._item_data_name)
+                {
+                    existing._item_count += player_slot_data._item_count;
+                } else {
+                    transferred_items.push(player_slot_data.clone());
+                }
+
                 item_bar.set_inventory_slot_data(player_idx, &InventorySlotData::default());
 
                 // Detach if player was holding/selecting this slot
@@ -1261,6 +1276,6 @@ impl<'a> TableStorageWidget<'a> {
             self.sync_3d_table_items();
         }
 
-        transferred_count
+        (transferred_count, transferred_items)
     }
 }

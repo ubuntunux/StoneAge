@@ -13,7 +13,9 @@ use crate::game_module::widgets::fishing::FishingPopupWidget;
 use crate::game_module::widgets::game_menu_widget::{GameMenuTab, GameMenuWidget, InventoryWidget};
 use crate::game_module::widgets::image_widget::ImageLayout;
 use crate::game_module::widgets::item_acquire_notification::ItemAcquireNotificationWidget;
-use crate::game_module::widgets::item_bar::{InventoryItemCreateInfo, InventoryItemCreateInfoList, ItemBarWidget};
+use crate::game_module::widgets::item_bar::{
+    InventoryItemCreateInfo, InventoryItemCreateInfoList, InventorySlotData, ItemBarWidget,
+};
 use crate::game_module::widgets::key_binding_widget::KeyBindingWidgetManager;
 use crate::game_module::widgets::npc_interaction_menu_widget::NpcInteractionMenuWidget;
 use crate::game_module::widgets::player_hud::PlayerHud;
@@ -29,6 +31,7 @@ use crate::game_module::widgets::time_of_day::TimeOfDayWidget;
 use crate::game_module::widgets::toolbox_widget::ToolboxTab;
 use crate::game_module::widgets::toolbox_widget::ToolboxWidget;
 use crate::game_module::widgets::toolbox_widget::item_tab_widget::ToolboxIconType;
+use crate::game_module::widgets::wrap_up_the_day_widget::WrapUpTheDayWidget;
 use nalgebra::Vector2;
 use rust_engine_3d::constants::DEVELOPMENT;
 use rust_engine_3d::core::engine_core::TimeData;
@@ -66,6 +69,7 @@ pub struct GameUIManager<'a> {
     pub _toolbox_widget: Option<Box<ToolboxWidget<'a>>>,
     pub _cooking_widget: Option<Box<CookingWidget<'a>>>,
     pub _table_storage_widget: Option<Box<TableStorageWidget<'a>>>,
+    pub _wrap_up_the_day_widget: Option<Box<WrapUpTheDayWidget<'a>>>,
     pub _npc_interaction_menu_widget: Option<Box<NpcInteractionMenuWidget<'a>>>,
     pub _quest_widget: Option<Box<QuestWidget<'a>>>,
     pub _debug_ui_widget: Option<Box<DebugUIWidget<'a>>>,
@@ -149,6 +153,7 @@ impl<'a> GameUIManager<'a> {
             _toolbox_widget: None,
             _cooking_widget: None,
             _table_storage_widget: None,
+            _wrap_up_the_day_widget: None,
             _npc_interaction_menu_widget: None,
             _quest_widget: None,
             _debug_ui_widget: None,
@@ -232,6 +237,7 @@ impl<'a> GameUIManager<'a> {
         self._item_acquire_notification_widget = Some(ItemAcquireNotificationWidget::create(game_ui_layout_mut));
         self._fishing_popup_widget = Some(FishingPopupWidget::create_fishing_popup_widget(game_ui_layout_mut));
         self._quest_widget = Some(Box::new(QuestWidget::create_quest_widget(game_ui_layout_mut)));
+        self._wrap_up_the_day_widget = Some(WrapUpTheDayWidget::create_wrap_up_the_day_widget(game_ui_layout_mut));
 
         // game menu layer
         let game_menu_layout = UIManager::create_widget("game menu layout", UIWidgetTypes::Default);
@@ -1018,6 +1024,56 @@ impl<'a> GameUIManager<'a> {
             table_storage_widget.transfer_all_materials_from_player()
         } else {
             0
+        }
+    }
+
+    pub fn transfer_all_materials_to_table_storage_with_details(&mut self) -> (usize, Vec<InventorySlotData<'a>>) {
+        if let Some(table_storage_widget) = self._table_storage_widget.as_mut() {
+            table_storage_widget.transfer_all_materials_from_player_with_details()
+        } else {
+            (0, Vec::new())
+        }
+    }
+
+    // daily settlement widget
+    pub fn open_daily_settlement(&mut self, transferred_items: &[InventorySlotData<'a>]) {
+        if let Some(widget) = self._wrap_up_the_day_widget.as_mut() {
+            widget.open_daily_settlement(transferred_items);
+        }
+        self.set_cross_hair_visible(true);
+    }
+
+    pub fn close_daily_settlement(&mut self) {
+        if let Some(widget) = self._wrap_up_the_day_widget.as_mut() {
+            widget.close_daily_settlement();
+        }
+        self.set_cross_hair_visible(false);
+    }
+
+    pub fn is_opened_daily_settlement(&self) -> bool {
+        self._wrap_up_the_day_widget.as_ref().map_or(false, |w| w.is_opened_daily_settlement())
+    }
+
+    pub fn is_daily_settlement_ok_clicked(&self) -> bool {
+        self._wrap_up_the_day_widget.as_ref().map_or(false, |w| w.is_ok_clicked())
+    }
+
+    pub fn update_wrap_up_the_day_widget(
+        &mut self,
+        time_data: &TimeData,
+        joystick_input_data: &JoystickInputData,
+        keyboard_input_data: &KeyboardInputData,
+        mouse_move_data: &MouseMoveData,
+        mouse_input_data: &MouseInputData,
+    ) {
+        if let Some(widget) = self._wrap_up_the_day_widget.as_mut() {
+            widget.update_wrap_up_the_day_widget(
+                time_data,
+                joystick_input_data,
+                keyboard_input_data,
+                mouse_move_data,
+                mouse_input_data,
+            );
         }
     }
 
