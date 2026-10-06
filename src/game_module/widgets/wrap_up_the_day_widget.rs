@@ -177,6 +177,7 @@ impl<'a> WrapUpTheDayWidget<'a> {
             let ui_comp = ptr_as_mut(empty_widget.as_ref()).get_ui_component_mut();
             ui_comp.set_halign(HorizontalAlign::LEFT);
             ui_comp.set_valign(VerticalAlign::CENTER);
+            ui_comp.set_size_hint_x(Some(1.0));
             ui_comp.set_size_hint_y(Some(1.0));
             ui_comp.set_size_y(widget_heights);
             ui_comp.set_margin(2.0);

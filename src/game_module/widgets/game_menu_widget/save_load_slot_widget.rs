@@ -422,7 +422,7 @@ impl<'a> SaveLoadSlotWidget<'a> {
             text_ui.set_size(400.0, 40.0);
             text_ui.set_margin(4.0);
             text_ui.set_text(&slot_info_text);
-            text_ui.set_font_size(19.0);
+            text_ui.set_font_size(22.0);
             text_ui.set_font_color(get_color32(75, 45, 20, 255));
             text_ui.set_color(get_color32(0, 0, 0, 0));
         }
@@ -438,7 +438,7 @@ impl<'a> SaveLoadSlotWidget<'a> {
             action_ui.set_margin(4.0);
             action_ui.set_round(4.0);
             action_ui.set_text("LOAD");
-            action_ui.set_font_size(20.0);
+            action_ui.set_font_size(22.0);
             action_ui.set_font_color(get_color32(255, 255, 255, 255));
 
             if has_save_data {
@@ -461,7 +461,7 @@ impl<'a> SaveLoadSlotWidget<'a> {
             action_ui.set_margin(4.0);
             action_ui.set_round(4.0);
             action_ui.set_text("SAVE");
-            action_ui.set_font_size(20.0);
+            action_ui.set_font_size(22.0);
             action_ui.set_font_color(get_color32(255, 255, 255, 255));
             action_ui.set_color(get_color32(118, 168, 68, 240));
             action_ui.set_touchable(true);
@@ -478,7 +478,7 @@ impl<'a> SaveLoadSlotWidget<'a> {
             action_ui.set_margin(4.0);
             action_ui.set_round(4.0);
             action_ui.set_text("X");
-            action_ui.set_font_size(19.0);
+            action_ui.set_font_size(22.0);
             action_ui.set_font_color(get_color32(255, 255, 255, 255));
 
             if has_save_data {

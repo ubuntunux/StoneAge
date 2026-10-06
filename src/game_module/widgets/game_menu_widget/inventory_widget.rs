@@ -312,7 +312,7 @@ impl<'a> InventoryWidget<'a> {
             if let Some(equip_type) = EquipmentSlotType::from_slot_index(slot_idx) {
                 ui_component.set_text(equip_type.display_name());
             }
-            ui_component.set_font_size(20.0);
+            ui_component.set_font_size(22.0);
             ui_component.set_font_color(get_color32(75, 45, 20, 255));
             equip_row_mut.add_widget(&equip_label);
             equip_row_mut.add_widget(&equip_label);

@@ -143,7 +143,7 @@ impl<'a> TamingListWidget<'a> {
             );
 
             ui_comp.set_text(&info_text);
-            ui_comp.set_font_size(20.0);
+            ui_comp.set_font_size(22.0);
             ui_comp.set_font_color(status_color);
 
             container_mut.add_widget(&card_widget);

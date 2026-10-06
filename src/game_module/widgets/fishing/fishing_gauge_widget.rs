@@ -120,7 +120,7 @@ impl<'a> FishingGaugeWidget<'a> {
         ui.set_color(get_color32(255, 190, 40, 255));
         ui.set_border_color(get_color32(255, 255, 255, 255));
         ui.set_border(2.0);
-        ui.set_font_size(14.0);
+        ui.set_font_size(22.0);
         ui.set_font_color(get_color32(20, 20, 20, 255));
         ui.set_halign(HorizontalAlign::CENTER);
         ui.set_valign(VerticalAlign::CENTER);
@@ -148,7 +148,7 @@ impl<'a> FishingGaugeWidget<'a> {
         ui.set_pos(260.0, 25.0);
         ui.set_size(85.0, 170.0);
         ui.set_color(get_color32(0, 0, 0, 0));
-        ui.set_font_size(18.0);
+        ui.set_font_size(22.0);
         ui.set_font_color(get_color32(255, 255, 255, 255));
         ui.set_text("A/D: Turn\nSpace: Pull");
         main_layer_ptr.add_widget(&status_text);

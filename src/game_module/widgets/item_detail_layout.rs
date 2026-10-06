@@ -21,16 +21,16 @@ pub const LIST_ITEM_BTN_HEIGHT: f32 = 32.0;
 pub const DETAIL_HEADER_HEIGHT: f32 = 54.0;
 pub const DETAIL_ICON_SIZE: f32 = 48.0;
 pub const DETAIL_NAME_LABEL_HEIGHT: f32 = 48.0;
-pub const DESCRIPTION_LABEL_HEIGHT: f32 = 22.0;
-pub const REQUIREMENT_HEADER_HEIGHT: f32 = 20.0;
+pub const DESCRIPTION_LABEL_HEIGHT: f32 = 28.0;
+pub const REQUIREMENT_HEADER_HEIGHT: f32 = 26.0;
 pub const INGREDIENT_SET_HEIGHT: f32 = 36.0;
 pub const INGREDIENT_ICON_SIZE: f32 = 30.0;
 pub const INGREDIENT_LABEL_HEIGHT: f32 = 30.0;
 
 pub const FONT_SIZE_TITLE: f32 = 22.0;
-pub const FONT_SIZE_NORMAL: f32 = 18.0;
-pub const FONT_SIZE_BUTTON: f32 = 18.0;
-pub const FONT_SIZE_DESC: f32 = 16.0;
+pub const FONT_SIZE_NORMAL: f32 = 22.0;
+pub const FONT_SIZE_BUTTON: f32 = 22.0;
+pub const FONT_SIZE_DESC: f32 = 22.0;
 
 // ────────────────────────────────────────────────────────────────
 // Color Constants

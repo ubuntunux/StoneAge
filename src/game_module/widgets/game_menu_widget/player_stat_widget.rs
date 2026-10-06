@@ -10,7 +10,7 @@ use std::rc::Rc;
 
 const STAT_ROW_LABEL_WIDTH: f32 = 100.0;
 const STAT_ROW_VALUE_WIDTH: f32 = 110.0;
-const STAT_ROW_HEIGHT: f32 = 28.0;
+const STAT_ROW_HEIGHT: f32 = 30.0;
 
 pub struct PlayerStatRowWidget<'a> {
     pub _widget: Rc<WidgetDefault<'a>>,
@@ -41,7 +41,7 @@ impl<'a> PlayerStatRowWidget<'a> {
         ui_comp.set_size(STAT_ROW_LABEL_WIDTH, STAT_ROW_HEIGHT);
         ui_comp.set_margin_left(6.0);
         ui_comp.set_text(label_text);
-        ui_comp.set_font_size(18.0);
+        ui_comp.set_font_size(22.0);
         ui_comp.set_font_color(get_color32(75, 45, 20, 255));
         ui_comp.set_color(get_color32(0, 0, 0, 0));
         row_layout_mut.add_widget(&label_w);
@@ -53,7 +53,7 @@ impl<'a> PlayerStatRowWidget<'a> {
         ui_comp.set_size(STAT_ROW_VALUE_WIDTH, STAT_ROW_HEIGHT);
         ui_comp.set_margin_right(6.0);
         ui_comp.set_text("-");
-        ui_comp.set_font_size(18.0);
+        ui_comp.set_font_size(22.0);
         ui_comp.set_font_color(get_color32(75, 45, 20, 255));
         ui_comp.set_color(get_color32(0, 0, 0, 0));
         row_layout_mut.add_widget(&value_w);

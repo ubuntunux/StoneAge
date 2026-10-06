@@ -10,8 +10,8 @@ use std::rc::Rc;
 
 pub const ITEM_INFO_TITLE_FONT_SIZE: f32 = 30.0;
 pub const ITEM_INFO_DESC_FONT_SIZE: f32 = 22.0;
-pub const ITEM_INFO_HEADER_FONT_SIZE: f32 = 20.0;
-pub const ITEM_INFO_STAT_FONT_SIZE: f32 = 20.0;
+pub const ITEM_INFO_HEADER_FONT_SIZE: f32 = 22.0;
+pub const ITEM_INFO_STAT_FONT_SIZE: f32 = 22.0;
 
 pub struct ItemStatEffect {
     pub _text: String,

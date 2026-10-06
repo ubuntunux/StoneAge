@@ -79,10 +79,10 @@ impl<'a> FishingPopupWidget<'a> {
         {
             let ui = name_ptr.get_ui_component_mut();
             ui.set_size_hint_x(Some(1.0));
-            ui.set_size_y(26.0);
+            ui.set_size_y(28.0);
             ui.set_halign(HorizontalAlign::CENTER);
             ui.set_valign(VerticalAlign::CENTER);
-            ui.set_font_size(20.0);
+            ui.set_font_size(22.0);
             ui.set_font_color(get_color32(255, 255, 255, 255));
             ui.set_color(get_color32(0, 0, 0, 0));
             ui.set_text("Fish Item");
@@ -95,10 +95,10 @@ impl<'a> FishingPopupWidget<'a> {
         {
             let ui = perfect_badge_ptr.get_ui_component_mut();
             ui.set_size_hint_x(Some(1.0));
-            ui.set_size_y(22.0);
+            ui.set_size_y(28.0);
             ui.set_halign(HorizontalAlign::CENTER);
             ui.set_valign(VerticalAlign::CENTER);
-            ui.set_font_size(15.0);
+            ui.set_font_size(22.0);
             ui.set_font_color(get_color32(255, 220, 100, 255));
             ui.set_color(get_color32(0, 0, 0, 0));
             ui.set_text("Perfect Alignment Bonus!");

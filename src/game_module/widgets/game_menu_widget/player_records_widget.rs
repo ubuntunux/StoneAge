@@ -8,10 +8,10 @@ use rust_engine_3d::utilities::system::ptr_as_mut;
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use std::rc::Rc;
 
-const STATS_CARD_HEIGHT: f32 = 335.0;
-const HEADER_FONT_SIZE: f32 = 20.0;
-const BODY_FONT_SIZE: f32 = 16.0;
-const LIST_FONT_SIZE: f32 = 15.0;
+const STATS_CARD_HEIGHT: f32 = 440.0;
+const HEADER_FONT_SIZE: f32 = 22.0;
+const BODY_FONT_SIZE: f32 = 22.0;
+const LIST_FONT_SIZE: f32 = 22.0;
 
 /// Dynamically formats any entity/monster/item key string into Title Case display text.
 pub fn format_entity_name(key: &str) -> String {
@@ -199,7 +199,7 @@ impl<'a> PlayerRecordsWidget<'a> {
             let row = UIManager::create_widget(&format!("stats_row_{}", idx), UIWidgetTypes::Default);
             let ui = ptr_as_mut(row.as_ref()).get_ui_component_mut();
             ui.set_size_hint_x(Some(1.0));
-            ui.set_size_y(22.0);
+            ui.set_size_y(28.0);
             ui.set_text(stat_text);
             ui.set_font_size(BODY_FONT_SIZE);
             ui.set_font_color(get_color32(75, 45, 20, 255));
@@ -228,7 +228,7 @@ impl<'a> PlayerRecordsWidget<'a> {
         } else {
             item_type_entries.len()
         };
-        let list_height = (line_count as f32) * 22.0;
+        let list_height = (line_count as f32) * 28.0;
         let card_height = 36.0 + list_height;
         ui_comp.set_size_y(card_height);
         ui_comp.set_margin(4.0);
@@ -293,7 +293,7 @@ impl<'a> PlayerRecordsWidget<'a> {
         kill_entries.sort_by(|a, b| b.1.cmp(&a.1).then_with(|| a.0.cmp(&b.0)));
 
         let line_count = if kill_entries.is_empty() { 1 } else { kill_entries.len() };
-        let list_height = (line_count as f32) * 22.0;
+        let list_height = (line_count as f32) * 28.0;
         let card_height = 36.0 + list_height;
         ui_comp.set_size_y(card_height);
         ui_comp.set_margin(4.0);
