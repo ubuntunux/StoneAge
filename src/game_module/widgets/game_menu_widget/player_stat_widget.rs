@@ -30,7 +30,7 @@ impl<'a> PlayerStatRowWidget<'a> {
         ui_comp.set_size_hint_x(Some(1.0));
         ui_comp.set_size_y(STAT_ROW_HEIGHT);
         ui_comp.set_margin_bottom(2.0);
-        ui_comp.set_color(get_color32(0, 0, 0, 80));
+        ui_comp.set_color(get_color32(235, 215, 175, 220));
         ui_comp.set_round(3.0);
         parent.add_widget(&row_layout);
 
@@ -42,7 +42,7 @@ impl<'a> PlayerStatRowWidget<'a> {
         ui_comp.set_margin_left(6.0);
         ui_comp.set_text(label_text);
         ui_comp.set_font_size(18.0);
-        ui_comp.set_font_color(get_color32(200, 210, 225, 255));
+        ui_comp.set_font_color(get_color32(75, 45, 20, 255));
         ui_comp.set_color(get_color32(0, 0, 0, 0));
         row_layout_mut.add_widget(&label_w);
 
@@ -54,7 +54,7 @@ impl<'a> PlayerStatRowWidget<'a> {
         ui_comp.set_margin_right(6.0);
         ui_comp.set_text("-");
         ui_comp.set_font_size(18.0);
-        ui_comp.set_font_color(get_color32(255, 255, 255, 255));
+        ui_comp.set_font_color(get_color32(75, 45, 20, 255));
         ui_comp.set_color(get_color32(0, 0, 0, 0));
         row_layout_mut.add_widget(&value_w);
 
@@ -97,8 +97,8 @@ impl<'a> PlayerStatWidget<'a> {
         ui_component.set_expandable(true);
         ui_component.set_padding(8.0);
         ui_component.set_margin_left(10.0);
-        ui_component.set_color(get_color32(40, 44, 52, 220));
-        ui_component.set_border_color(get_color32(80, 90, 110, 255));
+        ui_component.set_color(get_color32(215, 185, 140, 230));
+        ui_component.set_border_color(get_color32(160, 115, 70, 220));
         ui_component.set_round(5.0);
 
         let title_widget = UIManager::create_widget("stat_title", UIWidgetTypes::Default);
@@ -110,9 +110,9 @@ impl<'a> PlayerStatWidget<'a> {
         ui_comp.set_margin_bottom(6.0);
         ui_comp.set_text("Player Status");
         ui_comp.set_round(5.0);
-        ui_comp.set_color(get_color32(0, 0, 0, 128));
+        ui_comp.set_color(get_color32(195, 118, 58, 240));
         ui_comp.set_font_size(22.0);
-        ui_comp.set_font_color(get_color32(240, 210, 130, 255));
+        ui_comp.set_font_color(get_color32(255, 250, 230, 255));
         layer_mut.add_widget(&title_widget);
 
         let hp_row = PlayerStatRowWidget::create(layer_mut, "HP", "hp");

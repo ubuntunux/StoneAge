@@ -970,7 +970,6 @@ impl<'a> ToolboxTabWidget<'a> {
         ui.set_size(DETAIL_ICON_SIZE, DETAIL_ICON_SIZE);
         ui.set_valign(VerticalAlign::CENTER);
         ui.set_margin_right(12.0);
-        ui.set_color(COLOR_WHITE);
         detail_hdr_mut.add_widget(&detail_icon);
 
         // Detail Name Label
@@ -980,7 +979,7 @@ impl<'a> ToolboxTabWidget<'a> {
         ui.set_size_y(DETAIL_NAME_LABEL_HEIGHT);
         ui.set_valign(VerticalAlign::CENTER);
         ui.set_font_size(FONT_SIZE_TITLE);
-        ui.set_font_color(COLOR_WHITE);
+        ui.set_font_color(COLOR_TEXT_TITLE);
         ui.set_color(COLOR_TRANSPARENT);
         detail_hdr_mut.add_widget(&detail_name_lbl);
 

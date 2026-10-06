@@ -209,7 +209,7 @@ pub fn create_master_detail_components<'a>(
     ui.set_size(DETAIL_ICON_SIZE, DETAIL_ICON_SIZE);
     ui.set_valign(VerticalAlign::CENTER);
     ui.set_margin_right(12.0);
-    ui.set_color(COLOR_WHITE);
+    ui.set_color(COLOR_TEXT_TITLE);
     detail_hdr_mut.add_widget(&detail_icon);
 
     let detail_name_lbl = UIManager::create_widget(&format!("{}_detail_name", prefix), UIWidgetTypes::Default);
@@ -218,7 +218,7 @@ pub fn create_master_detail_components<'a>(
     ui.set_size_y(DETAIL_NAME_LABEL_HEIGHT);
     ui.set_valign(VerticalAlign::CENTER);
     ui.set_font_size(FONT_SIZE_TITLE);
-    ui.set_font_color(COLOR_WHITE);
+    ui.set_font_color(COLOR_TEXT_TITLE);
     ui.set_color(COLOR_TRANSPARENT);
     detail_hdr_mut.add_widget(&detail_name_lbl);
 
@@ -298,7 +298,7 @@ pub fn create_master_detail_components<'a>(
         ui.set_size(INGREDIENT_ICON_SIZE, INGREDIENT_ICON_SIZE);
         ui.set_valign(VerticalAlign::CENTER);
         ui.set_margin_right(8.0);
-        ui.set_color(COLOR_WHITE);
+        ui.set_color(COLOR_TEXT_TITLE);
         ing_set_mut.add_widget(&ing_icon);
 
         let ing_lbl = UIManager::create_widget(&format!("{}_detail_ing_lbl_{}", prefix, i), UIWidgetTypes::Default);
