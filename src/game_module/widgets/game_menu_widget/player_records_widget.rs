@@ -62,8 +62,8 @@ impl<'a> PlayerRecordsWidget<'a> {
         ui_component.set_size_hint_x(Some(1.0));
         ui_component.set_size_hint_y(Some(1.0));
         ui_component.set_padding(10.0);
-        ui_component.set_color(get_color32(35, 40, 45, 230));
-        ui_component.set_border_color(get_color32(0, 0, 0, 255));
+        ui_component.set_color(get_color32(240, 222, 186, 248));
+        ui_component.set_border_color(get_color32(135, 78, 42, 255));
         ui_component.set_round(5.0);
 
         // Title Header
@@ -74,7 +74,7 @@ impl<'a> PlayerRecordsWidget<'a> {
         ui_component.set_valign(VerticalAlign::CENTER);
         ui_component.set_text("Player Records");
         ui_component.set_font_size(24.0);
-        ui_component.set_font_color(get_color32(255, 220, 100, 255));
+        ui_component.set_font_color(get_color32(75, 45, 20, 255));
         ui_component.set_color(get_color32(0, 0, 0, 0));
         layer_mut.add_widget(&title_widget);
 
@@ -93,7 +93,7 @@ impl<'a> PlayerRecordsWidget<'a> {
         ui_component.set_size_hint_y(Some(1.0));
         ui_component.set_padding(5.0);
         ui_component.set_margin(5.0);
-        ui_component.set_color(get_color32(0, 0, 0, 100));
+        ui_component.set_color(get_color32(252, 245, 226, 230));
         layer_mut.add_widget(&content_container);
 
         Box::new(PlayerRecordsWidget {
@@ -153,8 +153,20 @@ impl<'a> PlayerRecordsWidget<'a> {
         ui_comp.set_size_y(STATS_CARD_HEIGHT);
         ui_comp.set_margin(4.0);
         ui_comp.set_padding(6.0);
-        ui_comp.set_color(get_color32(25, 45, 65, 230));
-        ui_comp.set_border_color(get_color32(70, 130, 200, 255));
+        // 1. General Records Section
+        let stats_card = UIManager::create_widget("stats_card", UIWidgetTypes::Default);
+        let card_mut = ptr_as_mut(stats_card.as_ref());
+        let ui_comp = card_mut.get_ui_component_mut();
+        ui_comp.set_layout_type(UILayoutType::BoxLayout);
+        ui_comp.set_layout_orientation(Orientation::VERTICAL);
+        ui_comp.set_halign(HorizontalAlign::CENTER);
+        ui_comp.set_valign(VerticalAlign::TOP);
+        ui_comp.set_size_hint_x(Some(0.95));
+        ui_comp.set_size_y(STATS_CARD_HEIGHT);
+        ui_comp.set_margin(4.0);
+        ui_comp.set_padding(6.0);
+        ui_comp.set_color(get_color32(245, 232, 205, 230));
+        ui_comp.set_border_color(get_color32(200, 165, 125, 200));
         ui_comp.set_round(5.0);
 
         let stats_header = UIManager::create_widget("stats_header", UIWidgetTypes::Default);
@@ -163,7 +175,7 @@ impl<'a> PlayerRecordsWidget<'a> {
         ui.set_size_y(24.0);
         ui.set_text("Activity Statistics");
         ui.set_font_size(HEADER_FONT_SIZE);
-        ui.set_font_color(get_color32(100, 200, 255, 255));
+        ui.set_font_color(get_color32(195, 118, 58, 255));
         ui.set_color(get_color32(0, 0, 0, 0));
         card_mut.add_widget(&stats_header);
 
@@ -190,7 +202,7 @@ impl<'a> PlayerRecordsWidget<'a> {
             ui.set_size_y(22.0);
             ui.set_text(stat_text);
             ui.set_font_size(BODY_FONT_SIZE);
-            ui.set_font_color(get_color32(230, 230, 230, 255));
+            ui.set_font_color(get_color32(75, 45, 20, 255));
             ui.set_color(get_color32(0, 0, 0, 0));
             card_mut.add_widget(&row);
         }
@@ -221,8 +233,8 @@ impl<'a> PlayerRecordsWidget<'a> {
         ui_comp.set_size_y(card_height);
         ui_comp.set_margin(4.0);
         ui_comp.set_padding(6.0);
-        ui_comp.set_color(get_color32(30, 55, 45, 230));
-        ui_comp.set_border_color(get_color32(60, 180, 120, 255));
+        ui_comp.set_color(get_color32(245, 232, 205, 230));
+        ui_comp.set_border_color(get_color32(200, 165, 125, 200));
         ui_comp.set_round(5.0);
 
         let item_type_header = UIManager::create_widget("item_type_header", UIWidgetTypes::Default);
@@ -231,7 +243,7 @@ impl<'a> PlayerRecordsWidget<'a> {
         ui.set_size_y(24.0);
         ui.set_text("Item Acquisitions by ItemType");
         ui.set_font_size(HEADER_FONT_SIZE);
-        ui.set_font_color(get_color32(120, 240, 160, 255));
+        ui.set_font_color(get_color32(118, 168, 68, 255));
         ui.set_color(get_color32(0, 0, 0, 0));
         card_mut.add_widget(&item_type_header);
 
@@ -255,7 +267,7 @@ impl<'a> PlayerRecordsWidget<'a> {
         ui.set_size_y(list_height);
         ui.set_text(&item_type_text);
         ui.set_font_size(LIST_FONT_SIZE);
-        ui.set_font_color(get_color32(220, 240, 220, 255));
+        ui.set_font_color(get_color32(75, 45, 20, 255));
         ui.set_color(get_color32(0, 0, 0, 0));
         card_mut.add_widget(&item_type_list_widget);
 
@@ -286,8 +298,8 @@ impl<'a> PlayerRecordsWidget<'a> {
         ui_comp.set_size_y(card_height);
         ui_comp.set_margin(4.0);
         ui_comp.set_padding(6.0);
-        ui_comp.set_color(get_color32(50, 25, 30, 230));
-        ui_comp.set_border_color(get_color32(200, 70, 80, 255));
+        ui_comp.set_color(get_color32(245, 232, 205, 230));
+        ui_comp.set_border_color(get_color32(200, 165, 125, 200));
         ui_comp.set_round(5.0);
 
         let kill_header = UIManager::create_widget("kill_header", UIWidgetTypes::Default);
@@ -299,7 +311,7 @@ impl<'a> PlayerRecordsWidget<'a> {
             records.get_total_monster_kills()
         ));
         ui.set_font_size(HEADER_FONT_SIZE);
-        ui.set_font_color(get_color32(255, 120, 120, 255));
+        ui.set_font_color(get_color32(200, 75, 60, 255));
         ui.set_color(get_color32(0, 0, 0, 0));
         card_mut.add_widget(&kill_header);
 
@@ -323,7 +335,7 @@ impl<'a> PlayerRecordsWidget<'a> {
         ui.set_size_y(list_height);
         ui.set_text(&kill_items_text);
         ui.set_font_size(LIST_FONT_SIZE);
-        ui.set_font_color(get_color32(240, 220, 220, 255));
+        ui.set_font_color(get_color32(75, 45, 20, 255));
         ui.set_color(get_color32(0, 0, 0, 0));
         card_mut.add_widget(&kill_list_widget);
 

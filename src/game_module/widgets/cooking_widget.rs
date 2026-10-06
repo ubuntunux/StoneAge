@@ -28,11 +28,11 @@ use winit::keyboard::KeyCode;
 pub const COOKING_PANEL_WIDTH: f32 = 780.0;
 pub const COOKING_PANEL_HEIGHT: f32 = 520.0;
 
-pub const COLOR_PANEL_BG: u32 = get_color32(30, 32, 36, 245);
-pub const COLOR_PANEL_BORDER: u32 = get_color32(90, 95, 105, 255);
+pub const COLOR_PANEL_BG: u32 = get_color32(240, 222, 186, 248);
+pub const COLOR_PANEL_BORDER: u32 = get_color32(135, 78, 42, 255);
 
-pub const COLOR_BTN_COOK_BG: u32 = get_color32(75, 130, 85, 255);
-pub const COLOR_BTN_COOK_BORDER: u32 = get_color32(115, 190, 130, 255);
+pub const COLOR_BTN_COOK_BG: u32 = get_color32(118, 168, 68, 240);
+pub const COLOR_BTN_COOK_BORDER: u32 = get_color32(72, 115, 38, 255);
 
 pub struct IngredientReq {
     pub item_type: ItemDataType,
@@ -193,7 +193,7 @@ impl<'a> CookingWidget<'a> {
         ui.set_valign(VerticalAlign::CENTER);
         ui.set_text("Chef's Cooking Station");
         ui.set_font_size(FONT_SIZE_TITLE);
-        ui.set_font_color(COLOR_WHITE);
+        ui.set_font_color(get_color32(75, 45, 20, 255));
         ui.set_color(COLOR_TRANSPARENT);
         header_mut.add_widget(&title_label);
 
@@ -203,8 +203,8 @@ impl<'a> CookingWidget<'a> {
         ui.set_size(32.0, 32.0);
         ui.set_halign(HorizontalAlign::CENTER);
         ui.set_valign(VerticalAlign::CENTER);
-        ui.set_color(get_color32(70, 75, 85, 255));
-        ui.set_border_color(get_color32(110, 115, 125, 255));
+        ui.set_color(get_color32(200, 75, 60, 255));
+        ui.set_border_color(get_color32(140, 50, 40, 255));
         ui.set_border(2.0);
         ui.set_round(6.0);
         ui.set_text("X");
@@ -219,7 +219,7 @@ impl<'a> CookingWidget<'a> {
         let ui = ptr_as_mut(separator.as_ref()).get_ui_component_mut();
         ui.set_size_hint_x(Some(1.0));
         ui.set_size_y(2.0);
-        ui.set_color(get_color32(75, 80, 90, 200));
+        ui.set_color(get_color32(188, 148, 105, 200));
         ui.set_margin(4.0);
         layer_mut.add_widget(&separator);
 
