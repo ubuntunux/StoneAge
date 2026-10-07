@@ -1171,6 +1171,18 @@ impl<'a> TableStorageWidget<'a> {
         false
     }
 
+    pub fn get_eatable_table_storage_item_count(&self) -> usize {
+        let mut count = 0;
+        for slot in self._table_inventory_slots.iter() {
+            if slot._item_count > 0 && slot._item_data_name != ITEM_NONE {
+                if slot._item_data_type.is_eatable() {
+                    count += slot._item_count;
+                }
+            }
+        }
+        count
+    }
+
     pub fn pop_eatable_table_storage_item(&mut self) -> Option<String> {
         for slot in self._table_inventory_slots.iter_mut() {
             if slot._item_count > 0 && slot._item_data_name != ITEM_NONE {

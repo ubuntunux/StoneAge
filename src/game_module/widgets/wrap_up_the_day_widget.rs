@@ -31,8 +31,8 @@ pub const COLOR_ITEM_ROW_BORDER: u32 = get_color32(200, 165, 125, 200);
 pub const COLOR_ITEM_ROW_TEXT: u32 = get_color32(75, 45, 20, 255);
 pub const COLOR_EMPTY_TEXT: u32 = get_color32(155, 120, 90, 255);
 
-pub const ITEM_STAGGER_INTERVAL: f32 = 0.2;
-pub const NUMBER_TICK_SPEED: f32 = 10.0;
+pub const ITEM_STAGGER_INTERVAL: f32 = 0.45;
+pub const NUMBER_TICK_SPEED: f32 = 6.0;
 
 pub struct SettlementItemAnimData<'a> {
     pub _display_name: String,
@@ -41,6 +41,8 @@ pub struct SettlementItemAnimData<'a> {
     pub _row_widget: Rc<WidgetDefault<'a>>,
     pub _info_widget: Rc<WidgetDefault<'a>>,
     pub _is_visible: bool,
+    pub _is_transferred: bool,
+    pub _transfer_t: f32,
 }
 
 pub struct WrapUpTheDayWidget<'a> {
@@ -48,11 +50,16 @@ pub struct WrapUpTheDayWidget<'a> {
     pub _layer: Rc<WidgetDefault<'a>>,
     pub _panel_frame: Rc<WidgetDefault<'a>>,
     pub _title_text: Rc<WidgetDefault<'a>>,
+    pub _content_body: Rc<WidgetDefault<'a>>,
     pub _items_container: Rc<WidgetDefault<'a>>,
+    pub _storage_container: Rc<WidgetDefault<'a>>,
+    pub _storage_icon: Rc<WidgetDefault<'a>>,
     pub _ok_btn: Rc<WidgetDefault<'a>>,
     pub _is_opened: bool,
     pub _is_ok_clicked: bool,
     pub _is_settlement_started: bool,
+    pub _is_transferring: bool,
+    pub _transfer_timer: f32,
     pub _item_widgets: Vec<Rc<WidgetDefault<'a>>>,
     pub _anim_timer: f32,
     pub _item_anim_data: Vec<SettlementItemAnimData<'a>>,
@@ -76,7 +83,7 @@ impl<'a> WrapUpTheDayWidget<'a> {
             ui_comp.set_renderable(false);
         }
 
-        // Panel Frame
+        // Panel Frame (Wider for 2-column layout)
         let panel_frame = UIManager::create_widget("daily_settlement_frame", UIWidgetTypes::Default);
         {
             let ui_comp = ptr_as_mut(panel_frame.as_ref()).get_ui_component_mut();
@@ -86,8 +93,8 @@ impl<'a> WrapUpTheDayWidget<'a> {
             ui_comp.set_valign(VerticalAlign::CENTER);
             ui_comp.set_pivot_preset(PIVOT_CENTER);
             ui_comp.set_pos_hint(Some(0.5), Some(0.5));
-            ui_comp.set_size(520.0, 500.0);
-            ui_comp.set_padding(20.0);
+            ui_comp.set_size(620.0, 520.0);
+            ui_comp.set_padding(16.0);
             ui_comp.set_color(COLOR_PANEL_BG);
             ui_comp.set_border_color(COLOR_PANEL_BORDER);
             ui_comp.set_border(3.0);
@@ -101,8 +108,8 @@ impl<'a> WrapUpTheDayWidget<'a> {
             let ui_comp = ptr_as_mut(title_text.as_ref()).get_ui_component_mut();
             ui_comp.set_halign(HorizontalAlign::CENTER);
             ui_comp.set_valign(VerticalAlign::CENTER);
-            ui_comp.set_size(480.0, 50.0);
-            ui_comp.set_margin(8.0);
+            ui_comp.set_size(580.0, 50.0);
+            ui_comp.set_margin(6.0);
             ui_comp.set_text("DAY 1 - WRAP UP THE DAY");
             ui_comp.set_font_size(24.0);
             ui_comp.set_font_color(COLOR_TITLE_TEXT);
@@ -113,7 +120,21 @@ impl<'a> WrapUpTheDayWidget<'a> {
         }
         ptr_as_mut(panel_frame.as_ref()).add_widget(&title_text);
 
-        // Items Container List
+        // Content Body Split Layout (Horizontal Layout)
+        let content_body = UIManager::create_widget("daily_settlement_content_body", UIWidgetTypes::Default);
+        {
+            let ui_comp = ptr_as_mut(content_body.as_ref()).get_ui_component_mut();
+            ui_comp.set_layout_type(UILayoutType::BoxLayout);
+            ui_comp.set_layout_orientation(Orientation::HORIZONTAL);
+            ui_comp.set_halign(HorizontalAlign::CENTER);
+            ui_comp.set_valign(VerticalAlign::CENTER);
+            ui_comp.set_size(580.0, 350.0);
+            ui_comp.set_margin(6.0);
+            ui_comp.set_color(get_color32(0, 0, 0, 0));
+        }
+        ptr_as_mut(panel_frame.as_ref()).add_widget(&content_body);
+
+        // Left: Items Container List
         let items_container = UIManager::create_widget("daily_settlement_items_container", UIWidgetTypes::Default);
         {
             let ui_comp = ptr_as_mut(items_container.as_ref()).get_ui_component_mut();
@@ -121,9 +142,9 @@ impl<'a> WrapUpTheDayWidget<'a> {
             ui_comp.set_layout_orientation(Orientation::VERTICAL);
             ui_comp.set_halign(HorizontalAlign::CENTER);
             ui_comp.set_valign(VerticalAlign::TOP);
-            ui_comp.set_size(480.0, 330.0);
-            ui_comp.set_margin(10.0);
-            ui_comp.set_padding(10.0);
+            ui_comp.set_size(340.0, 340.0);
+            ui_comp.set_margin(4.0);
+            ui_comp.set_padding(8.0);
             ui_comp.set_color(COLOR_CONTAINER_BG);
             ui_comp.set_border_color(COLOR_CONTAINER_BORDER);
             ui_comp.set_border(1.0);
@@ -131,16 +152,69 @@ impl<'a> WrapUpTheDayWidget<'a> {
             ui_comp.set_scroll_y(true);
             ui_comp.set_enable_renderable_area(true);
         }
-        ptr_as_mut(panel_frame.as_ref()).add_widget(&items_container);
+        ptr_as_mut(content_body.as_ref()).add_widget(&items_container);
 
-        // OK Button (Store In Chest)
+        // Right: Storage Chest Container UI
+        let storage_container = UIManager::create_widget("daily_settlement_storage_container", UIWidgetTypes::Default);
+        {
+            let ui_comp = ptr_as_mut(storage_container.as_ref()).get_ui_component_mut();
+            ui_comp.set_layout_type(UILayoutType::BoxLayout);
+            ui_comp.set_layout_orientation(Orientation::VERTICAL);
+            ui_comp.set_halign(HorizontalAlign::CENTER);
+            ui_comp.set_valign(VerticalAlign::CENTER);
+            ui_comp.set_size(225.0, 340.0);
+            ui_comp.set_margin(4.0);
+            ui_comp.set_padding(10.0);
+            ui_comp.set_color(get_color32(236, 222, 195, 240));
+            ui_comp.set_border_color(COLOR_PANEL_BORDER);
+            ui_comp.set_border(2.0);
+            ui_comp.set_round(8.0);
+        }
+        ptr_as_mut(content_body.as_ref()).add_widget(&storage_container);
+
+        // Storage Chest Icon Box
+        let storage_icon = UIManager::create_widget("daily_settlement_storage_icon", UIWidgetTypes::Default);
+        {
+            let ui_comp = ptr_as_mut(storage_icon.as_ref()).get_ui_component_mut();
+            ui_comp.set_layout_type(UILayoutType::BoxLayout);
+            ui_comp.set_layout_orientation(Orientation::VERTICAL);
+            ui_comp.set_halign(HorizontalAlign::CENTER);
+            ui_comp.set_valign(VerticalAlign::CENTER);
+            ui_comp.set_size(110.0, 110.0);
+            ui_comp.set_margin(12.0);
+            ui_comp.set_color(get_color32(195, 128, 68, 250));
+            ui_comp.set_border_color(get_color32(115, 60, 28, 255));
+            ui_comp.set_border(3.0);
+            ui_comp.set_round(16.0);
+            ui_comp.set_text("📦");
+            ui_comp.set_font_size(48.0);
+            ui_comp.set_font_color(COLOR_TITLE_TEXT);
+        }
+        ptr_as_mut(storage_container.as_ref()).add_widget(&storage_icon);
+
+        // Storage Chest Label
+        let storage_label = UIManager::create_widget("daily_settlement_storage_label", UIWidgetTypes::Default);
+        {
+            let ui_comp = ptr_as_mut(storage_label.as_ref()).get_ui_component_mut();
+            ui_comp.set_halign(HorizontalAlign::CENTER);
+            ui_comp.set_valign(VerticalAlign::CENTER);
+            ui_comp.set_size(200.0, 36.0);
+            ui_comp.set_margin(4.0);
+            ui_comp.set_text("STORAGE CHEST");
+            ui_comp.set_font_size(20.0);
+            ui_comp.set_font_color(COLOR_TITLE_BORDER);
+            ui_comp.set_color(get_color32(0, 0, 0, 0));
+        }
+        ptr_as_mut(storage_container.as_ref()).add_widget(&storage_label);
+
+        // Bottom OK Button (Store In Chest)
         let ok_btn = UIManager::create_widget("daily_settlement_ok_btn", UIWidgetTypes::Default);
         {
             let ui_comp = ptr_as_mut(ok_btn.as_ref()).get_ui_component_mut();
             ui_comp.set_halign(HorizontalAlign::CENTER);
             ui_comp.set_valign(VerticalAlign::CENTER);
             ui_comp.set_size(240.0, 44.0);
-            ui_comp.set_margin(10.0);
+            ui_comp.set_margin(8.0);
             ui_comp.set_text("STORE IN CHEST");
             ui_comp.set_font_size(20.0);
             ui_comp.set_font_color(COLOR_OK_BTN_TEXT);
@@ -159,11 +233,16 @@ impl<'a> WrapUpTheDayWidget<'a> {
             _layer: layer,
             _panel_frame: panel_frame,
             _title_text: title_text,
+            _content_body: content_body,
             _items_container: items_container,
+            _storage_container: storage_container,
+            _storage_icon: storage_icon,
             _ok_btn: ok_btn,
             _is_opened: false,
             _is_ok_clicked: false,
             _is_settlement_started: false,
+            _is_transferring: false,
+            _transfer_timer: 0.0,
             _item_widgets: Vec::new(),
             _anim_timer: 0.0,
             _item_anim_data: Vec::new(),
@@ -180,8 +259,15 @@ impl<'a> WrapUpTheDayWidget<'a> {
         self._is_opened = true;
         self._is_ok_clicked = false;
         self._is_settlement_started = false;
+        self._is_transferring = false;
+        self._transfer_timer = 0.0;
         self._anim_timer = 0.0;
         self._item_anim_data.clear();
+
+        // Enable OK button
+        let ok_btn_comp = ptr_as_mut(self._ok_btn.as_ref()).get_ui_component_mut();
+        ok_btn_comp.set_touchable(true);
+        ok_btn_comp.set_color(COLOR_OK_BTN_BG);
 
         // Title update with Game Date
         let date = get_game_scene_manager().get_date();
@@ -281,6 +367,8 @@ impl<'a> WrapUpTheDayWidget<'a> {
                     _row_widget: row_widget.clone(),
                     _info_widget: item_info_widget,
                     _is_visible: false,
+                    _is_transferred: false,
+                    _transfer_t: 0.0,
                 });
 
                 self._item_widgets.push(row_widget);
@@ -298,6 +386,7 @@ impl<'a> WrapUpTheDayWidget<'a> {
     pub fn close_daily_settlement(&mut self) {
         self._is_opened = false;
         self._is_settlement_started = false;
+        self._is_transferring = false;
         let ui_comp = ptr_as_mut(self._layer.as_ref()).get_ui_component_mut();
         ui_comp.set_enable(false);
     }
@@ -343,12 +432,61 @@ impl<'a> WrapUpTheDayWidget<'a> {
             return;
         }
 
-        if self._is_ok_clicked {
-            let ui_comp = ptr_as_mut(self._panel_frame.as_ref()).get_ui_component_mut();
-            let opacity = 0f32.max(ui_comp.get_opacity() - time_data._delta_time as f32 * 5.0);
-            ui_comp.set_opacity(opacity);
-            if opacity <= 0.0 {
-                self.close_daily_settlement();
+        // Trigger transfer animation when confirm / ok is clicked
+        if self._is_ok_clicked && !self._is_transferring {
+            self._is_transferring = true;
+            self._transfer_timer = 0.0;
+            let ok_comp = ptr_as_mut(self._ok_btn.as_ref()).get_ui_component_mut();
+            ok_comp.set_touchable(false);
+            ok_comp.set_color(get_color32(130, 130, 130, 200));
+        }
+
+        // Fly To Storage Chest Animation
+        if self._is_transferring {
+            self._transfer_timer += time_data._delta_time as f32;
+            const TRANSFER_STAGGER: f32 = 0.16;
+            let mut all_completed = true;
+
+            for (idx, anim_data) in self._item_anim_data.iter_mut().enumerate() {
+                if anim_data._is_transferred {
+                    continue;
+                }
+                all_completed = false;
+
+                let start_time = idx as f32 * TRANSFER_STAGGER;
+                if start_time <= self._transfer_timer {
+                    let elapsed = self._transfer_timer - start_time;
+                    let fly_t = (elapsed * 2.5).min(1.0);
+                    anim_data._transfer_t = fly_t;
+
+                    let row_comp = ptr_as_mut(anim_data._row_widget.as_ref()).get_ui_component_mut();
+                    let offset_x = fly_t * 220.0;
+                    row_comp.set_margin_left(offset_x);
+
+                    if 1.0 <= fly_t {
+                        anim_data._is_transferred = true;
+                        row_comp.set_visible(false);
+                        get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
+
+                        let storage_comp = ptr_as_mut(self._storage_icon.as_ref()).get_ui_component_mut();
+                        storage_comp.set_color(get_color32(235, 168, 88, 255));
+                    }
+                }
+            }
+
+            if (self._transfer_timer * 10.0) as u32 % 2 == 0 {
+                let storage_comp = ptr_as_mut(self._storage_icon.as_ref()).get_ui_component_mut();
+                storage_comp.set_color(get_color32(195, 128, 68, 250));
+            }
+
+            let last_item_start_time = self._item_anim_data.len() as f32 * TRANSFER_STAGGER;
+            if all_completed || (last_item_start_time + 0.5 <= self._transfer_timer) {
+                let ui_comp = ptr_as_mut(self._panel_frame.as_ref()).get_ui_component_mut();
+                let opacity = 0f32.max(ui_comp.get_opacity() - time_data._delta_time as f32 * 5.0);
+                ui_comp.set_opacity(opacity);
+                if opacity <= 0.0 {
+                    self.close_daily_settlement();
+                }
             }
             return;
         }
@@ -378,7 +516,7 @@ impl<'a> WrapUpTheDayWidget<'a> {
                         let text = format!("{} x {}", anim_data._display_name, anim_data._current_count);
                         let ui_comp = ptr_as_mut(anim_data._info_widget.as_ref()).get_ui_component_mut();
                         ui_comp.set_text(&text);
-                        //get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
+                        get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
                     }
                 }
             }
@@ -396,4 +534,5 @@ impl<'a> WrapUpTheDayWidget<'a> {
         }
     }
 }
+
 

@@ -1011,6 +1011,14 @@ impl<'a> GameUIManager<'a> {
         }
     }
 
+    pub fn get_eatable_table_storage_item_count(&self) -> usize {
+        if let Some(table_storage_widget) = self._table_storage_widget.as_ref() {
+            table_storage_widget.get_eatable_table_storage_item_count()
+        } else {
+            0
+        }
+    }
+
     pub fn pop_eatable_table_storage_item(&mut self) -> Option<String> {
         if let Some(table_storage_widget) = self._table_storage_widget.as_mut() {
             table_storage_widget.pop_eatable_table_storage_item()
