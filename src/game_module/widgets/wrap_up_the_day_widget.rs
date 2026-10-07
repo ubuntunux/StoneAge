@@ -1,5 +1,5 @@
 use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, AUDIO_QUEST_COMPLETE};
-use crate::game_module::game_service_locator::get_game_resources;
+use crate::game_module::game_service_locator::{get_game_resources, get_game_scene_manager};
 use crate::game_module::widgets::item_bar::InventorySlotData;
 use nalgebra::Vector2;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
@@ -31,6 +31,18 @@ pub const COLOR_ITEM_ROW_BORDER: u32 = get_color32(200, 165, 125, 200);
 pub const COLOR_ITEM_ROW_TEXT: u32 = get_color32(75, 45, 20, 255);
 pub const COLOR_EMPTY_TEXT: u32 = get_color32(155, 120, 90, 255);
 
+pub const ITEM_STAGGER_INTERVAL: f32 = 0.2;
+pub const NUMBER_TICK_SPEED: f32 = 10.0;
+
+pub struct SettlementItemAnimData<'a> {
+    pub _display_name: String,
+    pub _target_count: u32,
+    pub _current_count: u32,
+    pub _row_widget: Rc<WidgetDefault<'a>>,
+    pub _info_widget: Rc<WidgetDefault<'a>>,
+    pub _is_visible: bool,
+}
+
 pub struct WrapUpTheDayWidget<'a> {
     pub _parent_widget: *const WidgetDefault<'a>,
     pub _layer: Rc<WidgetDefault<'a>>,
@@ -40,7 +52,10 @@ pub struct WrapUpTheDayWidget<'a> {
     pub _ok_btn: Rc<WidgetDefault<'a>>,
     pub _is_opened: bool,
     pub _is_ok_clicked: bool,
+    pub _is_settlement_started: bool,
     pub _item_widgets: Vec<Rc<WidgetDefault<'a>>>,
+    pub _anim_timer: f32,
+    pub _item_anim_data: Vec<SettlementItemAnimData<'a>>,
 }
 
 impl<'a> WrapUpTheDayWidget<'a> {
@@ -88,8 +103,8 @@ impl<'a> WrapUpTheDayWidget<'a> {
             ui_comp.set_valign(VerticalAlign::CENTER);
             ui_comp.set_size(480.0, 50.0);
             ui_comp.set_margin(8.0);
-            ui_comp.set_text("WRAP UP THE DAY");
-            ui_comp.set_font_size(26.0);
+            ui_comp.set_text("DAY 1 - WRAP UP THE DAY");
+            ui_comp.set_font_size(24.0);
             ui_comp.set_font_color(COLOR_TITLE_TEXT);
             ui_comp.set_color(COLOR_TITLE_BG);
             ui_comp.set_border_color(COLOR_TITLE_BORDER);
@@ -118,16 +133,16 @@ impl<'a> WrapUpTheDayWidget<'a> {
         }
         ptr_as_mut(panel_frame.as_ref()).add_widget(&items_container);
 
-        // OK Button
+        // OK Button (Store In Chest)
         let ok_btn = UIManager::create_widget("daily_settlement_ok_btn", UIWidgetTypes::Default);
         {
             let ui_comp = ptr_as_mut(ok_btn.as_ref()).get_ui_component_mut();
             ui_comp.set_halign(HorizontalAlign::CENTER);
             ui_comp.set_valign(VerticalAlign::CENTER);
-            ui_comp.set_size(180.0, 44.0);
+            ui_comp.set_size(240.0, 44.0);
             ui_comp.set_margin(10.0);
-            ui_comp.set_text("OK");
-            ui_comp.set_font_size(22.0);
+            ui_comp.set_text("STORE IN CHEST");
+            ui_comp.set_font_size(20.0);
             ui_comp.set_font_color(COLOR_OK_BTN_TEXT);
             ui_comp.set_color(COLOR_OK_BTN_BG);
             ui_comp.set_border_color(COLOR_OK_BTN_BORDER);
@@ -148,7 +163,10 @@ impl<'a> WrapUpTheDayWidget<'a> {
             _ok_btn: ok_btn,
             _is_opened: false,
             _is_ok_clicked: false,
+            _is_settlement_started: false,
             _item_widgets: Vec::new(),
+            _anim_timer: 0.0,
+            _item_anim_data: Vec::new(),
         });
 
         let ok_btn_comp = ptr_as_mut(widget._ok_btn.as_ref()).get_ui_component_mut();
@@ -161,6 +179,15 @@ impl<'a> WrapUpTheDayWidget<'a> {
     pub fn open_daily_settlement(&mut self, transferred_items: &[InventorySlotData<'a>]) {
         self._is_opened = true;
         self._is_ok_clicked = false;
+        self._is_settlement_started = false;
+        self._anim_timer = 0.0;
+        self._item_anim_data.clear();
+
+        // Title update with Game Date
+        let date = get_game_scene_manager().get_date();
+        let title_text_str = format!("DAY {} - WRAP UP THE DAY", date);
+        let title_comp = ptr_as_mut(self._title_text.as_ref()).get_ui_component_mut();
+        title_comp.set_text(&title_text_str);
 
         let ui_comp = ptr_as_mut(self._layer.as_ref()).get_ui_component_mut();
         ui_comp.set_enable(true);
@@ -204,9 +231,10 @@ impl<'a> WrapUpTheDayWidget<'a> {
                 ui_comp.set_size_y(widget_heights);
                 ui_comp.set_margin(2.0);
                 ui_comp.set_color(get_color32(0, 0, 0, 0));
+                ui_comp.set_opacity(0.0);
                 items_container_mut.add_widget(&row_widget);
 
-                // Material instance if available
+                // Material instance icon
                 let icon_widget =
                     UIManager::create_widget(&format!("settlement_item_icon_{}", idx), UIWidgetTypes::Default);
                 let ui_comp = ptr_as_mut(icon_widget.as_ref()).get_ui_component_mut();
@@ -225,7 +253,7 @@ impl<'a> WrapUpTheDayWidget<'a> {
                 }
 
                 let item_info_widget =
-                    UIManager::create_widget(&format!("settlement_item_icon_{}", idx), UIWidgetTypes::Default);
+                    UIManager::create_widget(&format!("settlement_item_info_{}", idx), UIWidgetTypes::Default);
                 let ui_comp = ptr_as_mut(item_info_widget.as_ref()).get_ui_component_mut();
                 ui_comp.set_layout_type(UILayoutType::BoxLayout);
                 ui_comp.set_layout_orientation(Orientation::HORIZONTAL);
@@ -236,30 +264,50 @@ impl<'a> WrapUpTheDayWidget<'a> {
                 ui_comp.set_size_hint_y(Some(1.0));
                 ui_comp.set_margin_left(4.0);
                 let display_name = if !slot._item_name.is_empty() {
-                    &slot._item_name
+                    slot._item_name.clone()
                 } else {
-                    &slot._item_data_name
+                    slot._item_data_name.clone()
                 };
-                let item_text = format!("{} x {}", display_name, slot._item_count);
-                ui_comp.set_text(&item_text);
+                let initial_text = format!("{} x 0", display_name);
+                ui_comp.set_text(&initial_text);
                 ui_comp.set_font_size(24.0);
                 ui_comp.set_font_color(COLOR_ITEM_ROW_TEXT);
                 ptr_as_mut(row_widget.as_ref()).add_widget(&item_info_widget);
 
+                self._item_anim_data.push(SettlementItemAnimData {
+                    _display_name: display_name,
+                    _target_count: slot._item_count as u32,
+                    _current_count: 0,
+                    _row_widget: row_widget.clone(),
+                    _info_widget: item_info_widget,
+                    _is_visible: false,
+                });
 
                 self._item_widgets.push(row_widget);
             }
         }
     }
 
+    pub fn start_daily_settlement(&mut self) {
+        if !self._is_settlement_started {
+            self._is_settlement_started = true;
+            self._anim_timer = 0.0;
+        }
+    }
+
     pub fn close_daily_settlement(&mut self) {
         self._is_opened = false;
+        self._is_settlement_started = false;
         let ui_comp = ptr_as_mut(self._layer.as_ref()).get_ui_component_mut();
         ui_comp.set_enable(false);
     }
 
     pub fn is_opened_daily_settlement(&self) -> bool {
         self._is_opened
+    }
+
+    pub fn is_settlement_started(&self) -> bool {
+        self._is_settlement_started
     }
 
     pub fn is_ok_clicked(&self) -> bool {
@@ -302,6 +350,38 @@ impl<'a> WrapUpTheDayWidget<'a> {
             if opacity <= 0.0 {
                 self.close_daily_settlement();
             }
+            return;
+        }
+
+        if !self._is_settlement_started {
+            return;
+        }
+
+        // Staggered fade-in & count ticker update
+        self._anim_timer += time_data._delta_time as f32;
+        for (idx, anim_data) in self._item_anim_data.iter_mut().enumerate() {
+            let start_time = idx as f32 * ITEM_STAGGER_INTERVAL;
+            if start_time <= self._anim_timer {
+                if !anim_data._is_visible {
+                    anim_data._is_visible = true;
+                    let ui_comp = ptr_as_mut(anim_data._row_widget.as_ref()).get_ui_component_mut();
+                    ui_comp.set_opacity(1.0);
+                    get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
+                }
+
+                if anim_data._current_count < anim_data._target_count {
+                    let elapsed = self._anim_timer - start_time;
+                    let calculated_count = (elapsed * NUMBER_TICK_SPEED) as u32;
+                    let new_count = calculated_count.min(anim_data._target_count);
+                    if new_count != anim_data._current_count {
+                        anim_data._current_count = new_count;
+                        let text = format!("{} x {}", anim_data._display_name, anim_data._current_count);
+                        let ui_comp = ptr_as_mut(anim_data._info_widget.as_ref()).get_ui_component_mut();
+                        ui_comp.set_text(&text);
+                        //get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
+                    }
+                }
+            }
         }
 
         // Key interactions (Confirm with Space, Return/Enter, KeyE, or Joypad Button A)
@@ -316,3 +396,4 @@ impl<'a> WrapUpTheDayWidget<'a> {
         }
     }
 }
+

@@ -516,6 +516,11 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                         game_ui_manager.open_daily_settlement(&transferred_items);
                     }
                     State::Update => {
+                        let phase_time = self._scenario_track.get_phase_time();
+                        if 0.5 <= phase_time && !game_ui_manager.is_settlement_started() {
+                            game_ui_manager.start_daily_settlement();
+                        }
+
                         let engine_core = get_engine_core();
                         game_ui_manager.update_wrap_up_the_day_widget(
                             &engine_core._time_data,

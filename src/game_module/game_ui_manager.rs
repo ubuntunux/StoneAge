@@ -1050,8 +1050,20 @@ impl<'a> GameUIManager<'a> {
         self.set_cross_hair_visible(false);
     }
 
+    pub fn start_daily_settlement(&mut self) {
+        if let Some(widget) = self._wrap_up_the_day_widget.as_mut() {
+            widget.start_daily_settlement();
+        }
+    }
+
     pub fn is_opened_daily_settlement(&self) -> bool {
         self._wrap_up_the_day_widget.as_ref().map_or(false, |w| w.is_opened_daily_settlement())
+    }
+
+    pub fn is_settlement_started(&self) -> bool {
+        self._wrap_up_the_day_widget
+            .as_ref()
+            .map_or(false, |w| w.is_settlement_started())
     }
 
     pub fn update_wrap_up_the_day_widget(
