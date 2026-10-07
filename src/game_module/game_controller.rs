@@ -833,6 +833,11 @@ impl<'a> GameController<'a> {
         );
     }
 
+    pub fn update_fixed_camera_transform(&self, main_camera: &mut CameraObjectData) {
+        main_camera._transform_object.set_position(&self._camera_fixed_position);
+        main_camera._transform_object.set_rotation(&self._camera_fixed_rotation);
+    }
+
     pub fn process_camera_inputs(
         &mut self,
         joystick_input_data: &JoystickInputData,
@@ -843,8 +848,7 @@ impl<'a> GameController<'a> {
         player_mut: &mut Character<'a>,
     ) {
         if self._is_camera_fixed {
-            main_camera._transform_object.set_position(&self._camera_fixed_position);
-            main_camera._transform_object.set_rotation(&self._camera_fixed_rotation);
+            self.update_fixed_camera_transform(main_camera);
             return;
         }
 

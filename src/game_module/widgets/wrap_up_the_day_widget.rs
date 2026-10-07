@@ -165,6 +165,9 @@ impl<'a> WrapUpTheDayWidget<'a> {
         let ui_comp = ptr_as_mut(self._layer.as_ref()).get_ui_component_mut();
         ui_comp.set_enable(true);
 
+        let ui_comp = ptr_as_mut(self._panel_frame.as_ref()).get_ui_component_mut();
+        ui_comp.set_opacity(1.0);
+
         // Clear existing item row widgets
         let items_container_mut = ptr_as_mut(self._items_container.as_ref());
         items_container_mut.clear_widgets();
@@ -263,10 +266,6 @@ impl<'a> WrapUpTheDayWidget<'a> {
         self._is_ok_clicked
     }
 
-    pub fn reset_ok_clicked(&mut self) {
-        self._is_ok_clicked = false;
-    }
-
     pub fn callback_ok_click(
         ui_component: &UIComponentInstance<'a>,
         _touched_pos: &Vector2<f32>,
@@ -286,7 +285,7 @@ impl<'a> WrapUpTheDayWidget<'a> {
 
     pub fn update_wrap_up_the_day_widget(
         &mut self,
-        _time_data: &TimeData,
+        time_data: &TimeData,
         joystick_input_data: &JoystickInputData,
         keyboard_input_data: &KeyboardInputData,
         _mouse_move_data: &MouseMoveData,
@@ -294,6 +293,15 @@ impl<'a> WrapUpTheDayWidget<'a> {
     ) {
         if !self._is_opened {
             return;
+        }
+
+        if self._is_ok_clicked {
+            let ui_comp = ptr_as_mut(self._panel_frame.as_ref()).get_ui_component_mut();
+            let opacity = 0f32.max(ui_comp.get_opacity() - time_data._delta_time as f32 * 5.0);
+            ui_comp.set_opacity(opacity);
+            if opacity <= 0.0 {
+                self.close_daily_settlement();
+            }
         }
 
         // Key interactions (Confirm with Space, Return/Enter, KeyE, or Joypad Button A)

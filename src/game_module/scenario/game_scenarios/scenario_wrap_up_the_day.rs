@@ -48,7 +48,6 @@ struct ScenarioWrapUpTheDaySaveData {
 pub struct ScenarioWrapUpTheDay<'a> {
     _scenario_type: ScenarioType,
     _scenario_create_info: ScenarioDataCreateInfo,
-
     _sleep_timer: f32,
     _player: Option<RcRefCell<Character<'a>>>,
     _actor_ewa: Option<RcRefCell<Character<'a>>>,
@@ -172,6 +171,8 @@ impl<'a> ScenarioWrapUpTheDay<'a> {
         };
 
         get_game_controller_mut().set_camera_fixed_position_and_rotation(&self._bed_camera_position, &camera_rotation);
+        let main_camera = get_scene_manager().get_main_camera_mut();
+        get_game_controller_mut().update_fixed_camera_transform(main_camera);
     }
 }
 
@@ -524,12 +525,11 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                             &engine_core._mouse_input_data,
                         );
 
-                        if game_ui_manager.is_daily_settlement_ok_clicked() {
+                        if !game_ui_manager.is_opened_daily_settlement() {
                             self._scenario_track.set_next_scenario_phase(ScenarioPhase::Update, None);
                         }
                     }
                     State::End => {
-                        game_ui_manager.close_daily_settlement();
                     }
                 },
                 ScenarioPhase::Update => {

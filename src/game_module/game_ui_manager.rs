@@ -1054,10 +1054,6 @@ impl<'a> GameUIManager<'a> {
         self._wrap_up_the_day_widget.as_ref().map_or(false, |w| w.is_opened_daily_settlement())
     }
 
-    pub fn is_daily_settlement_ok_clicked(&self) -> bool {
-        self._wrap_up_the_day_widget.as_ref().map_or(false, |w| w.is_ok_clicked())
-    }
-
     pub fn update_wrap_up_the_day_widget(
         &mut self,
         time_data: &TimeData,
