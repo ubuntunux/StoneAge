@@ -403,7 +403,6 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
         let game_ui_manager = get_game_ui_manager_mut();
         if game_ui_manager.is_opened_daily_settlement() {
             game_ui_manager.close_daily_settlement();
-            game_ui_manager.set_cross_hair_visible(false);
         }
     }
 

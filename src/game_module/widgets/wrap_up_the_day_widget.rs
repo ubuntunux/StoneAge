@@ -1,5 +1,5 @@
 use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, AUDIO_QUEST_COMPLETE};
-use crate::game_module::game_service_locator::{get_game_resources, get_game_scene_manager};
+use crate::game_module::game_service_locator::{get_game_resources, get_game_scene_manager, get_game_ui_manager_mut};
 use crate::game_module::widgets::item_bar::InventorySlotData;
 use nalgebra::Vector2;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
@@ -389,6 +389,7 @@ impl<'a> WrapUpTheDayWidget<'a> {
         self._is_transferring = false;
         let ui_comp = ptr_as_mut(self._layer.as_ref()).get_ui_component_mut();
         ui_comp.set_enable(false);
+        get_game_ui_manager_mut().set_cross_hair_visible(false);
     }
 
     pub fn is_opened_daily_settlement(&self) -> bool {

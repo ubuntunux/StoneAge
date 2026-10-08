@@ -1055,7 +1055,6 @@ impl<'a> GameUIManager<'a> {
         if let Some(widget) = self._wrap_up_the_day_widget.as_mut() {
             widget.close_daily_settlement();
         }
-        self.set_cross_hair_visible(false);
     }
 
     pub fn start_daily_settlement(&mut self) {
