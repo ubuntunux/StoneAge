@@ -59,7 +59,6 @@ pub struct ScenarioIntroQuestSaveData {
     pub _quest_title: Option<String>,
     pub _sub_quest_hit_the_tree: Option<QuestItemSaveData>,
     pub _sub_quest_gather_food: Option<QuestItemSaveData>,
-    pub _sub_quest_storage_food_to_table: Option<QuestItemSaveData>,
     pub _sub_quest_wrap_up_the_day: Option<QuestItemSaveData>,
     pub _sub_quest_sleep: Option<QuestItemSaveData>,
 }
@@ -69,7 +68,6 @@ impl ScenarioIntroQuestSaveData {
         self._has_quest
             || self._sub_quest_hit_the_tree.is_some()
             || self._sub_quest_gather_food.is_some()
-            || self._sub_quest_storage_food_to_table.is_some()
             || self._sub_quest_wrap_up_the_day.is_some()
             || self._sub_quest_sleep.is_some()
     }
@@ -107,7 +105,6 @@ pub struct ScenarioIntro<'a> {
     _quest: Option<RcRefCell<QuestTitle<'a>>>,
     _sub_quest_hit_the_tree: Option<QuestItem<'a>>,
     _sub_quest_gather_food: Option<QuestItem<'a>>,
-    _sub_quest_storage_food_to_table: Option<QuestItem<'a>>,
     _sub_quest_wrap_up_the_day: Option<QuestItem<'a>>,
     _sub_quest_sleep: Option<QuestItem<'a>>,
     _tree_fruit_items: HashMap<*const c_void, ActorWrapper<'a>>,
@@ -146,7 +143,6 @@ impl<'a> ScenarioIntro<'a> {
             _quest: None,
             _sub_quest_hit_the_tree: None,
             _sub_quest_gather_food: None,
-            _sub_quest_storage_food_to_table: None,
             _sub_quest_wrap_up_the_day: None,
             _sub_quest_sleep: None,
             _tree_fruit_items: HashMap::new(),
@@ -243,32 +239,6 @@ impl<'a> ScenarioIntro<'a> {
         }
     }
 
-    pub fn create_storage_food_to_table_text_box(&self) {
-        if let Some(prop_table) = self._prop_table.as_ref() {
-            let wrapper = ActorWrapper::Prop(prop_table.clone());
-            let contents = vec![TextBoxContent::MaterialInstance(
-                MATERIAL_UI_POINTER.to_string(),
-                Some(Vector2::new(50.0, 50.0)),
-            )];
-            get_game_ui_manager_mut().add_text_box_item(
-                wrapper,
-                &contents,
-                &TextBoxItemOption {
-                    _layer_type: TextBoxLayerType::GamePlayLayer,
-                    _bounce: true,
-                    _visible_background: false,
-                    ..Default::default()
-                },
-            );
-        }
-    }
-
-    pub fn remove_storage_food_to_table_text_box(&self) {
-        if let Some(prop_table) = self._prop_table.as_ref() {
-            let wrapper = ActorWrapper::Prop(prop_table.clone());
-            get_game_ui_manager_mut().remove_text_box_item(wrapper.get_key());
-        }
-    }
 
     pub fn create_prop_bed_text_box(&self) {
         if let Some(prop) = self._prop_bed_for_aru.as_ref() {
@@ -307,7 +277,6 @@ impl<'a> ScenarioIntro<'a> {
     pub fn clear_all(&mut self) {
         self.remove_move_to_tutorial_stage_text_box();
         self.remove_hit_this_tree_text_box();
-        self.remove_storage_food_to_table_text_box();
         self.remove_prop_bed_text_box();
 
         self.remove_all_tree_fruit_text_boxes();
@@ -343,24 +312,13 @@ impl<'a> ScenarioIntro<'a> {
         self.complete_sub_quest_hit_the_tree();
     }
 
-    pub fn complete_sub_quest_storage_food_to_table(&mut self) {
-        if let Some(q) = &self._sub_quest_storage_food_to_table {
-            if !q.borrow().is_completed_quest() {
-                q.borrow_mut().set_completed_quest();
-                self.remove_storage_food_to_table_text_box();
-                self.create_prop_bed_text_box();
-            }
-        }
-        self.complete_sub_quest_gather_food();
-    }
-
     pub fn complete_sub_quest_wrap_up_the_day(&mut self) {
         if let Some(q) = &self._sub_quest_wrap_up_the_day {
             if !q.borrow().is_completed_quest() {
                 q.borrow_mut().set_completed_quest();
             }
         }
-        self.complete_sub_quest_storage_food_to_table();
+        self.complete_sub_quest_gather_food();
     }
 
     pub fn check_hit_the_tree_complete(&mut self) {
@@ -458,12 +416,6 @@ impl<'a> ScenarioIntro<'a> {
                         _gather_item_count: 2,
                     },
                 )));
-                self._sub_quest_storage_food_to_table = Some(quest.borrow_mut().add_quest_item(
-                    QuestCreateInfo::DefaultQuest(DefaultQuestData {
-                        _quest_icon_name: None,
-                        _quest_description: Some(String::from("Store food on table.")),
-                    }),
-                ));
                 self._sub_quest_wrap_up_the_day = Some(quest.borrow_mut().add_quest_item(
                     QuestCreateInfo::DefaultQuest(DefaultQuestData {
                         _quest_icon_name: None,
@@ -487,7 +439,6 @@ impl<'a> ScenarioIntro<'a> {
         self._quest = None;
         self._sub_quest_hit_the_tree = None;
         self._sub_quest_gather_food = None;
-        self._sub_quest_storage_food_to_table = None;
         self._sub_quest_wrap_up_the_day = None;
         self._sub_quest_sleep = None;
     }
@@ -513,10 +464,6 @@ impl<'a> ScenarioIntro<'a> {
                 .as_ref()
                 .map(|q| q.borrow().get_quest_item_save_data()),
             _sub_quest_gather_food: self._sub_quest_gather_food.as_ref().map(|q| q.borrow().get_quest_item_save_data()),
-            _sub_quest_storage_food_to_table: self
-                ._sub_quest_storage_food_to_table
-                .as_ref()
-                .map(|q| q.borrow().get_quest_item_save_data()),
             _sub_quest_wrap_up_the_day: self
                 ._sub_quest_wrap_up_the_day
                 .as_ref()
@@ -537,11 +484,6 @@ impl<'a> ScenarioIntro<'a> {
             }
             if let Some(save_data) = &quest_save_data._sub_quest_gather_food
                 && let Some(q) = &self._sub_quest_gather_food
-            {
-                q.borrow_mut().load_quest_item_save_data(save_data);
-            }
-            if let Some(save_data) = &quest_save_data._sub_quest_storage_food_to_table
-                && let Some(q) = &self._sub_quest_storage_food_to_table
             {
                 q.borrow_mut().load_quest_item_save_data(save_data);
             }
@@ -686,30 +628,12 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                     let is_gather_food_completed =
                         self._sub_quest_gather_food.as_ref().is_some_and(|q| q.borrow().is_completed_quest());
                     if is_gather_food_completed {
-                        let storage_food_not_completed = self
-                            ._sub_quest_storage_food_to_table
+                        let wrap_up_the_day_not_completed = self
+                            ._sub_quest_wrap_up_the_day
                             .as_ref()
                             .is_none_or(|q| !q.borrow().is_completed_quest());
-                        if storage_food_not_completed {
-                            let game_ui_manager = get_game_ui_manager_mut();
-                            let has_eatable_item = game_ui_manager.get_eatable_inventory_item_count() > 0
-                                || self
-                                    ._player
-                                    .as_ref()
-                                    .is_some_and(|p| p.borrow().get_attached_item_data_type().is_eatable());
-                            if has_eatable_item {
-                                self.create_storage_food_to_table_text_box();
-                            } else {
-                                self.complete_sub_quest_storage_food_to_table();
-                            }
-                        } else {
-                            let wrap_up_the_day_not_completed = self
-                                ._sub_quest_wrap_up_the_day
-                                .as_ref()
-                                .is_none_or(|q| !q.borrow().is_completed_quest());
-                            if wrap_up_the_day_not_completed {
-                                self.create_prop_bed_text_box();
-                            }
+                        if wrap_up_the_day_not_completed {
+                            self.create_prop_bed_text_box();
                         }
                     }
                 }
@@ -969,48 +893,21 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                             self.complete_sub_quest_wrap_up_the_day();
                             self._scenario_track.set_next_scenario_phase(ScenarioPhase::WrapUpTheDay, None);
                         } else {
-                            if game_ui_manager.has_eatable_table_storage_item() {
-                                self.complete_sub_quest_storage_food_to_table();
-                            }
-
                             let is_gather_food_completed =
                                 self._sub_quest_gather_food.as_ref().is_some_and(|q| q.borrow().is_completed_quest());
 
                             if is_gather_food_completed {
                                 self.complete_sub_quest_gather_food();
 
-                                let storage_food_not_completed = self
-                                    ._sub_quest_storage_food_to_table
+                                let wrap_up_the_day_not_completed = self
+                                    ._sub_quest_wrap_up_the_day
                                     .as_ref()
                                     .is_none_or(|q| !q.borrow().is_completed_quest());
-
-                                if storage_food_not_completed {
-                                    let has_eatable_item = game_ui_manager.get_eatable_inventory_item_count() > 0
-                                        || self
-                                            ._player
-                                            .as_ref()
-                                            .is_some_and(|p| p.borrow().get_attached_item_data_type().is_eatable());
-                                    if has_eatable_item {
-                                        if let Some(prop_table) = &self._prop_table {
-                                            let key = ActorWrapper::Prop(prop_table.clone()).get_key();
-                                            if !game_ui_manager.has_text_box_item(key) {
-                                                self.create_storage_food_to_table_text_box();
-                                            }
-                                        }
-                                    } else {
-                                        self.complete_sub_quest_storage_food_to_table();
-                                    }
-                                } else {
-                                    let wrap_up_the_day_not_completed = self
-                                        ._sub_quest_wrap_up_the_day
-                                        .as_ref()
-                                        .is_none_or(|q| !q.borrow().is_completed_quest());
-                                    if wrap_up_the_day_not_completed {
-                                        if let Some(prop_bed) = &self._prop_bed_for_aru {
-                                            let key = ActorWrapper::Prop(prop_bed.clone()).get_key();
-                                            if !game_ui_manager.has_text_box_item(key) {
-                                                self.create_prop_bed_text_box();
-                                            }
+                                if wrap_up_the_day_not_completed {
+                                    if let Some(prop_bed) = &self._prop_bed_for_aru {
+                                        let key = ActorWrapper::Prop(prop_bed.clone()).get_key();
+                                        if !game_ui_manager.has_text_box_item(key) {
+                                            self.create_prop_bed_text_box();
                                         }
                                     }
                                 }
