@@ -440,7 +440,18 @@ impl<'a> ControllerHelpWidget<'a> {
         let object_key = interaction_object.get_key();
 
         let (primary_type, primary_text, request_type) = match interaction_object {
-            InteractionObject::PropBed(_) => {
+            InteractionObject::PropBed(_) => (KeyBindingType::None, String::default(), RequestType::None),
+            InteractionObject::PropPickup(prop) => (
+                KeyBindingType::Interaction,
+                format!("Pick up a {}", prop.borrow()._prop_data.borrow()._name.as_str()),
+                RequestType::None,
+            ),
+            InteractionObject::PropMonolith(_) => (
+                KeyBindingType::Interaction,
+                String::from("Open Toolbox"),
+                RequestType::None,
+            ),
+            InteractionObject::PropTable(_) => {
                 if let Some(game_scenario) =
                     get_game_scene_manager().get_game_scenario(ScenarioType::ScenarioWrapUpTheDay)
                 {
@@ -456,22 +467,7 @@ impl<'a> ControllerHelpWidget<'a> {
                         RequestType::None,
                     )
                 }
-            }
-            InteractionObject::PropPickup(prop) => (
-                KeyBindingType::Interaction,
-                format!("Pick up a {}", prop.borrow()._prop_data.borrow()._name.as_str()),
-                RequestType::None,
-            ),
-            InteractionObject::PropMonolith(_) => (
-                KeyBindingType::Interaction,
-                String::from("Open Toolbox"),
-                RequestType::None,
-            ),
-            InteractionObject::PropTable(_) => (
-                KeyBindingType::Interaction,
-                String::from("Table Storage"),
-                RequestType::None,
-            ),
+            },
             InteractionObject::Npc(npc) => {
                 if !get_game_client().is_available_interaction() {
                     (KeyBindingType::None, String::new(), RequestType::None)
@@ -551,7 +547,7 @@ impl<'a> ControllerHelpWidget<'a> {
         ];
 
         let hold_timer = get_game_controller()._wrap_up_hold_timer;
-        let is_bed_interaction = matches!(player.get_nearest_interaction_object(), InteractionObject::PropBed(_));
+        let is_table_interaction = matches!(player.get_nearest_interaction_object(), InteractionObject::PropTable(_));
 
         for key_type in INTERACTION_WIDGETS.iter() {
             let key_widget = widget_map.get_key_binding_widget(*key_type);
@@ -561,7 +557,7 @@ impl<'a> ControllerHelpWidget<'a> {
                 let bg_ui = ptr_as_mut(bg_ptr).get_ui_component_mut();
                 let fill_ui = ptr_as_mut(fill_ptr).get_ui_component_mut();
 
-                if *key_type == KeyBindingType::Interaction && is_bed_interaction && 0.0 < hold_timer {
+                if *key_type == KeyBindingType::Interaction && is_table_interaction && 0.0 < hold_timer {
                     let progress_ratio = (hold_timer / 1.0).clamp(0.0, 1.0);
                     bg_ui.set_visible(true);
                     fill_ui.set_size_hint_x(Some(progress_ratio));

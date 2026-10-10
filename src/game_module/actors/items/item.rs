@@ -3,19 +3,15 @@ use crate::game_module::actors::items::api::{
     Item, ItemCreateInfo, ItemData, ItemDataType, ItemID, ItemManager, ItemMap, ItemProperties, ItemSaveData,
 };
 use crate::game_module::actors::items::updater::create_item_updater;
-use crate::game_module::actors::props::api::PropDataType;
 use crate::game_module::game_constants::{
-    AUDIO_ITEM_INVENTORY, AUDIO_PICKUP_ITEM, EAT_ITEM_DISTANCE, ITEM_NONE, TABLE_STORAGE_ITEM_GRID_SPAN_X,
-    TABLE_STORAGE_ITEM_GRID_SPAN_Z, TABLE_STORAGE_ITEM_OFFSET_Y, WEAPON_SOCKET_NAME,
+    AUDIO_ITEM_INVENTORY, AUDIO_PICKUP_ITEM, EAT_ITEM_DISTANCE, WEAPON_SOCKET_NAME,
 };
 use crate::game_module::game_scene_manager::{ItemCreateInfoMap, ItemSaveDataMap};
 use crate::game_module::game_service_locator::{
     get_character_manager, get_character_manager_mut, get_game_resources, get_game_ui_manager, get_game_ui_manager_mut,
-    get_prop_manager,
 };
 
 use crate::game_module::widgets::item_bar::InventoryItemCreateInfo;
-use crate::game_module::widgets::table_storage_widget::{TABLE_STORAGE_ROWS, TABLE_STORAGE_SLOTS_PER_ROW};
 
 use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
@@ -276,59 +272,8 @@ impl<'a> ItemManager<'a> {
         }
     }
 
-    pub fn sync_table_storage_items_in_world(&mut self, create_infos: &[InventoryItemCreateInfo]) {
+    pub fn sync_table_storage_items_in_world(&mut self, _create_infos: &[InventoryItemCreateInfo]) {
         self.clear_table_storage_items_in_world();
-
-        let prop_manager = get_prop_manager();
-        let props = prop_manager.get_props();
-        let table_prop =
-            props.values().find(|prop| prop.borrow()._prop_data.borrow()._prop_type == PropDataType::Table).cloned();
-
-        let Some(table_prop) = table_prop else {
-            return;
-        };
-
-        let table_ref = table_prop.borrow();
-        let bound_box = table_ref.get_bounding_box();
-        let table_top_y = bound_box._max.y;
-        let table_center_x = bound_box._center.x;
-        let table_center_z = bound_box._center.z;
-
-        for info in create_infos {
-            if info._item_data_name.is_empty() || info._item_data_name == ITEM_NONE || info._item_count == 0 {
-                continue;
-            }
-
-            let row = info._row;
-            let col = info._column;
-
-            let col_offset =
-                (col as f32 - (TABLE_STORAGE_SLOTS_PER_ROW as f32 - 1.0) * 0.5) * TABLE_STORAGE_ITEM_GRID_SPAN_X;
-            let row_offset = (row as f32 - (TABLE_STORAGE_ROWS as f32 - 1.0) * 0.5) * TABLE_STORAGE_ITEM_GRID_SPAN_Z;
-
-            let spawn_position = Vector3::new(
-                table_center_x + col_offset,
-                table_top_y + TABLE_STORAGE_ITEM_OFFSET_Y,
-                table_center_z + row_offset,
-            );
-
-            let item_create_info = ItemCreateInfo {
-                _item_data_name: info._item_data_name.clone(),
-                _position: spawn_position,
-                _pickup_delay: f32::MAX,
-                ..Default::default()
-            };
-
-            let item_name = format!("table_storage_item_{}", info._item_index);
-            let item_refcell = self.create_item(&item_name, &item_create_info, None);
-
-            {
-                let mut item = item_refcell.borrow_mut();
-                item._item_properties._is_on_ground = true;
-            }
-
-            self._table_storage_item_ids.push(item_refcell.borrow().get_item_id());
-        }
     }
 
     pub fn initialize_item_manager(&mut self) {

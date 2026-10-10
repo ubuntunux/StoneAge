@@ -451,19 +451,7 @@ impl<'a> PropManager<'a> {
                     let bounding_box = prop.get_bounding_box();
 
                     match prop_type {
-                        PropDataType::Bed => {
-                            let is_in_player_range = is_available_interaction
-                                && player.get_bounding_box().collide_bound_box(&bounding_box._min, &bounding_box._max);
-                            if !is_interaction_object && is_in_player_range {
-                                player
-                                    ._controller
-                                    .add_interaction_object(InteractionObject::PropBed(prop_refcell.clone()));
-                            } else if is_interaction_object && !is_in_player_range {
-                                player
-                                    ._controller
-                                    .remove_interaction_object(InteractionObject::PropBed(prop_refcell.clone()));
-                            }
-                        }
+                        PropDataType::Bed => {}
                         PropDataType::Ceiling => {
                             prop._render_object
                                 .borrow_mut()

@@ -243,8 +243,8 @@ impl<'a> ScenarioIntro<'a> {
         }
     }
 
-    pub fn create_prop_bed_text_box(&self) {
-        if let Some(prop) = self._prop_bed_for_aru.as_ref() {
+    pub fn create_prop_table_text_box(&self) {
+        if let Some(prop) = self._prop_table.as_ref() {
             let wrapper = ActorWrapper::Prop(prop.clone());
             let contents = vec![TextBoxContent::MaterialInstance(
                 MATERIAL_UI_POINTER.to_string(),
@@ -263,8 +263,8 @@ impl<'a> ScenarioIntro<'a> {
         }
     }
 
-    pub fn remove_prop_bed_text_box(&self) {
-        if let Some(prop) = self._prop_bed_for_aru.as_ref() {
+    pub fn remove_prop_table_text_box(&self) {
+        if let Some(prop) = self._prop_table.as_ref() {
             let wrapper = ActorWrapper::Prop(prop.clone());
             get_game_ui_manager_mut().remove_text_box_item(wrapper.get_key());
         }
@@ -280,7 +280,7 @@ impl<'a> ScenarioIntro<'a> {
     pub fn clear_all(&mut self) {
         self.remove_move_to_tutorial_stage_text_box();
         self.remove_hit_this_tree_text_box();
-        self.remove_prop_bed_text_box();
+        self.remove_prop_table_text_box();
 
         self.remove_all_tree_fruit_text_boxes();
 
@@ -685,15 +685,12 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                         let wrap_up_the_day_not_completed =
                             self._sub_quest_wrap_up_the_day.as_ref().is_none_or(|q| !q.borrow().is_completed_quest());
                         if wrap_up_the_day_not_completed {
-                            self.create_prop_bed_text_box();
+                            self.create_prop_table_text_box();
                         }
                     }
                 }
             }
             ScenarioPhase::WrapUpTheDay => {
-                if game_scene_data_name == Stages::Home.get_stage_data_name() {
-                    self.create_prop_bed_text_box();
-                }
             }
             _ => (),
         }
@@ -950,19 +947,6 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
 
                             if is_gather_food_completed {
                                 self.complete_sub_quest_gather_food();
-
-                                let wrap_up_the_day_not_completed = self
-                                    ._sub_quest_wrap_up_the_day
-                                    .as_ref()
-                                    .is_none_or(|q| !q.borrow().is_completed_quest());
-                                if wrap_up_the_day_not_completed {
-                                    if let Some(prop_bed) = &self._prop_bed_for_aru {
-                                        let key = ActorWrapper::Prop(prop_bed.clone()).get_key();
-                                        if !game_ui_manager.has_text_box_item(key) {
-                                            self.create_prop_bed_text_box();
-                                        }
-                                    }
-                                }
                             }
 
                             self.check_hit_the_tree_complete();
@@ -972,7 +956,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                 },
                 ScenarioPhase::WrapUpTheDay => {
                     if state == State::Begin {
-                        self.create_prop_bed_text_box();
+                        self.remove_prop_table_text_box();
                     } else if state == State::Update {
                         self.check_eat_food_complete();
 
@@ -987,7 +971,6 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                             {
                                 if !q.borrow().is_completed_quest() {
                                     q.borrow_mut().set_completed_quest();
-                                    self.remove_prop_bed_text_box();
                                 }
                             }
                         } else {

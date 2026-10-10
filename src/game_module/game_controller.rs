@@ -751,9 +751,9 @@ impl<'a> GameController<'a> {
         let is_available_attack = player_mut.is_available_attack();
         let item_type = player_mut.get_attached_item_data_type();
 
-        let is_near_bed = matches!(
+        let is_near_table = matches!(
             player_mut.get_nearest_interaction_object(),
-            InteractionObject::PropBed(_)
+            InteractionObject::PropTable(_)
         ) && player_mut.is_in_interaction_range();
         let is_wrap_up = get_game_scene_manager_mut().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay);
         let is_interaction_pressed =
@@ -763,7 +763,7 @@ impl<'a> GameController<'a> {
             || joystick_input_data._btn_x == ButtonState::Hold
             || joystick_input_data._btn_x == ButtonState::Pressed;
 
-        if is_near_bed && !is_wrap_up {
+        if is_near_table && !is_wrap_up {
             if is_interaction_pressed {
                 self._is_wrap_up_holding = true;
             } else if !is_interaction_hold {
@@ -779,7 +779,7 @@ impl<'a> GameController<'a> {
             }
         }
 
-        if is_near_bed && !is_wrap_up && self._is_wrap_up_holding && is_interaction_hold {
+        if is_near_table && !is_wrap_up && self._is_wrap_up_holding && is_interaction_hold {
             self._wrap_up_hold_timer += delta_time;
             if 1.0 <= self._wrap_up_hold_timer {
                 self._wrap_up_hold_timer = 1.0;
