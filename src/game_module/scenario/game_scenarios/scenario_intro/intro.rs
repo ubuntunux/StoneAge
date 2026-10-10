@@ -334,6 +334,15 @@ impl<'a> ScenarioIntro<'a> {
         self.complete_sub_quest_wrap_up_the_day();
     }
 
+    pub fn complete_sub_quest_sleep(&mut self) {
+        if let Some(q) = &self._sub_quest_sleep {
+            if !q.borrow().is_completed_quest() {
+                q.borrow_mut().set_completed_quest();
+            }
+        }
+        self.complete_sub_quest_eat_food();
+    }
+
     pub fn has_any_eatable_item(&self) -> bool {
         let game_ui_manager = get_game_ui_manager_mut();
         if game_ui_manager.get_eatable_inventory_item_count() > 0 {
@@ -690,8 +699,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                     }
                 }
             }
-            ScenarioPhase::WrapUpTheDay => {
-            }
+            ScenarioPhase::WrapUpTheDay => {}
             _ => (),
         }
     }
@@ -966,12 +974,8 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                             let is_sleeping =
                                 ptr_as_ref(scenario_wrap_up_the_day.as_ptr() as *const ScenarioWrapUpTheDay)
                                     .is_sleeping();
-                            if let Some(q) = &self._sub_quest_sleep
-                                && is_sleeping
-                            {
-                                if !q.borrow().is_completed_quest() {
-                                    q.borrow_mut().set_completed_quest();
-                                }
+                            if is_sleeping {
+                                self.complete_sub_quest_sleep();
                             }
                         } else {
                             self.clear_all();

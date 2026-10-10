@@ -467,7 +467,7 @@ impl<'a> ControllerHelpWidget<'a> {
                         RequestType::None,
                     )
                 }
-            },
+            }
             InteractionObject::Npc(npc) => {
                 if !get_game_client().is_available_interaction() {
                     (KeyBindingType::None, String::new(), RequestType::None)
