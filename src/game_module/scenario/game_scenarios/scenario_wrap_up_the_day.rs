@@ -61,6 +61,7 @@ pub struct ScenarioWrapUpTheDay<'a> {
     _audio_bgm: Option<RcRefCell<AudioInstance>>,
     _skip_wakeup: bool,
     _waiting_for_key_release: bool,
+    _waiting_for_dance_cancel_release: bool,
     _request_sleep: bool,
     _check_time_for_sleep: f32,
     _ewa_eat_delay: f32,
@@ -92,6 +93,7 @@ impl<'a> ScenarioWrapUpTheDay<'a> {
             _audio_bgm: None,
             _skip_wakeup: false,
             _waiting_for_key_release: true,
+            _waiting_for_dance_cancel_release: false,
             _request_sleep: false,
             _check_time_for_sleep: 0.0,
             _ewa_eat_delay: 0.0,
@@ -578,6 +580,13 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                                 player.borrow_mut().set_action_none();
                             }
                             player_is_dancing = false;
+                            self._waiting_for_dance_cancel_release = true;
+                        }
+
+                        if self._waiting_for_dance_cancel_release {
+                            if !is_any_input {
+                                self._waiting_for_dance_cancel_release = false;
+                            }
                         }
 
                         if player_is_dancing {
@@ -667,6 +676,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                             && !game_ui_manager.is_opened_cooking()
                             && !game_ui_manager.is_opened_table_storage()
                             && !player_is_dancing
+                            && !self._waiting_for_dance_cancel_release
                         {
                             if let Some(player) = &self._player {
                                 game_ui_manager.open_player_interaction_menu(player.clone());
