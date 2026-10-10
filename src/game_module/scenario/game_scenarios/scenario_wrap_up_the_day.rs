@@ -628,6 +628,14 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                                 item_manager.detach_item(&mut actor.borrow_mut());
                             }
                             self._scenario_track.set_next_scenario_phase(ScenarioPhase::GoToSleep, None);
+                        } else if !game_ui_manager.is_opened_npc_interaction_menu()
+                            && !game_ui_manager.is_opened_cooking()
+                            && !game_ui_manager.is_opened_table_storage()
+                            && !player_is_dancing
+                        {
+                            if let Some(player) = &self._player {
+                                game_ui_manager.open_player_interaction_menu(player.clone());
+                            }
                         }
                     }
                     State::End => {}
