@@ -54,6 +54,7 @@ pub struct GameClient<'a> {
     pub _game_save_data: BoxRefCell<GameSaveData>,
     pub _request_load_game_save_data: bool,
     pub _request_new_game: bool,
+    pub _is_available_interaction: bool,
     pub _marker: std::marker::PhantomData<&'a ()>,
 }
 
@@ -66,8 +67,17 @@ impl<'a> GameClient<'a> {
             _game_save_data: newBoxRefCell(GameSaveData::default()),
             _request_load_game_save_data: true,
             _request_new_game: false,
+            _is_available_interaction: true,
             _marker: std::marker::PhantomData,
         })
+    }
+
+    pub fn is_available_interaction(&self) -> bool {
+        self._is_available_interaction
+    }
+
+    pub fn set_is_available_interaction(&mut self, is_available_interaction: bool) {
+        self._is_available_interaction = is_available_interaction;
     }
 
     pub fn initialize_game_client(&mut self) {

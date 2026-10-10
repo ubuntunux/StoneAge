@@ -17,7 +17,7 @@ use crate::game_module::widgets::text_box_widget::{TextBoxContent, TextBoxItemOp
 use nalgebra::Vector3;
 
 use crate::game_module::game_service_locator::{
-    get_game_resources, get_game_scene_manager, get_game_ui_manager, get_game_ui_manager_mut,
+    get_game_client, get_game_resources, get_game_scene_manager, get_game_ui_manager, get_game_ui_manager_mut,
 };
 use crate::game_module::widgets::game_menu_widget::character_list_helper::{AffinityTier, get_affinity_tier};
 use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop};
@@ -404,7 +404,13 @@ impl<'a> CharacterManager<'a> {
 
             let is_eating = character_ref.is_action(ActionAnimationState::Eating)
                 || character_ref._behavior.get_behavior_state() == BehaviorState::Eating;
-            if character_ref.is_alive() && !is_eating && (character_ref.is_civilian() || character_ref.is_tamed()) {
+            let is_available_interaction = get_game_client().is_available_interaction();
+
+            if character_ref.is_alive()
+                && !is_eating
+                && is_available_interaction
+                && (character_ref.is_civilian() || character_ref.is_tamed())
+            {
                 let npc_obj = InteractionObject::Npc(character.clone());
                 let was_npc = player._controller.is_interaction_object(npc_obj.get_key());
                 if !was_npc && is_in_player_range {

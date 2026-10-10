@@ -9,7 +9,8 @@ use crate::game_module::game_constants::{
 };
 
 use crate::game_module::game_service_locator::{
-    get_game_controller_mut, get_game_scene_manager, get_game_scene_manager_mut, get_game_ui_manager_mut,
+    get_game_client_mut, get_game_controller_mut, get_game_scene_manager, get_game_scene_manager_mut,
+    get_game_ui_manager_mut,
 };
 use crate::game_module::game_ui_manager::GameUIManager;
 
@@ -76,6 +77,7 @@ impl<'a> ScenarioWrapUpTheDay<'a> {
         scenario_type: ScenarioType,
         scenario_create_info: &ScenarioDataCreateInfo,
     ) -> RcRefCell<ScenarioWrapUpTheDay<'a>> {
+        get_game_client_mut().set_is_available_interaction(false);
         newRcRefCell(ScenarioWrapUpTheDay {
             _scenario_type: scenario_type,
             _scenario_create_info: scenario_create_info.clone(),
@@ -406,6 +408,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
     }
 
     fn destroy_game_scenario(&mut self) {
+        get_game_client_mut().set_is_available_interaction(true);
         let game_ui_manager = get_game_ui_manager_mut();
         if game_ui_manager.is_opened_daily_settlement() {
             game_ui_manager.close_daily_settlement();
@@ -415,6 +418,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
     fn on_close_game_scene(&mut self, _game_scene_data_name: &str) {}
 
     fn on_open_game_scene(&mut self, _game_scene_data_name: &str) {
+        get_game_client_mut().set_is_available_interaction(false);
         let game_scene_manager = get_game_scene_manager();
         self._player = game_scene_manager.get_maybe_player().clone();
         self._actor_ewa = game_scene_manager

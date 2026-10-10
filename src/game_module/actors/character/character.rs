@@ -14,7 +14,7 @@ use crate::game_module::game_client::GamePhase;
 use crate::game_module::game_constants::*;
 use crate::game_module::game_scene_manager::Stages;
 use crate::game_module::game_service_locator::{
-    get_character_manager, get_character_manager_mut, get_game_client_mut, get_game_scene_manager,
+    get_character_manager, get_character_manager_mut, get_game_client, get_game_client_mut, get_game_scene_manager,
     get_game_scene_manager_mut, get_game_ui_manager_mut, get_item_manager,
 };
 use crate::game_module::game_weather::WeatherType;
@@ -1342,6 +1342,9 @@ impl<'a> Character<'a> {
     }
 
     pub fn set_action_interaction(&mut self) {
+        if !get_game_client().is_available_interaction() {
+            return;
+        }
         if self._controller.is_on_ground() && self.is_available_move() && self.is_idle_action() {
             let item_manager = get_game_scene_manager().get_item_manager_mut();
             let target_interaction = self
@@ -1368,9 +1371,11 @@ impl<'a> Character<'a> {
                     self.set_move_idle();
                 }
                 InteractionObject::Npc(character) => {
-                    self.set_move_idle();
-                    get_game_client_mut().set_next_game_phase(GamePhase::Interaction);
-                    get_game_ui_manager_mut().open_npc_interaction_menu(character.clone());
+                    if get_game_client().is_available_interaction() {
+                        self.set_move_idle();
+                        get_game_client_mut().set_next_game_phase(GamePhase::Interaction);
+                        get_game_ui_manager_mut().open_npc_interaction_menu(character.clone());
+                    }
                 }
                 InteractionObject::Taming(character) => {
                     self.set_next_action_animation(ActionAnimationState::Pickup, 2.0);
@@ -1507,6 +1512,9 @@ impl<'a> Character<'a> {
     }
 
     pub fn set_action_request(&mut self) {
+        if !get_game_client().is_available_interaction() {
+            return;
+        }
         if self._controller.is_on_ground() && self.is_available_move() && self.is_idle_action() {
             let target_interaction = self._controller._nearest_interaction_object.clone();
             if let InteractionObject::Npc(character) = target_interaction {
@@ -1516,6 +1524,9 @@ impl<'a> Character<'a> {
     }
 
     pub fn callback_changed_interaction_object(&mut self) {
+        if !get_game_client().is_available_interaction() {
+            return;
+        }
         if let InteractionObject::PropGate(_) = self._controller._nearest_interaction_object.clone() {
             get_game_client_mut().set_next_game_phase(GamePhase::WorldMapOpen);
             self.set_move_idle();

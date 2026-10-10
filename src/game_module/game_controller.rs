@@ -3,7 +3,7 @@ use crate::game_module::actors::interaction_object::InteractionObject;
 use crate::game_module::game_client::GamePhase;
 use crate::game_module::game_constants::*;
 use crate::game_module::game_service_locator::{
-    get_character_manager, get_game_client_mut, get_game_scene_manager_mut, get_game_ui_manager_mut,
+    get_character_manager, get_game_client, get_game_client_mut, get_game_scene_manager_mut, get_game_ui_manager_mut,
 };
 use crate::game_module::scenario::scenario::ScenarioType;
 use crate::game_module::widgets::game_menu_widget::GameMenuTab;
@@ -796,15 +796,11 @@ impl<'a> GameController<'a> {
         if is_dance_pressed {
             player_mut.set_action_dance();
         } else if is_request && player_mut.is_in_interaction_range() {
-            player_mut.set_action_request();
+            if get_game_client().is_available_interaction() {
+                player_mut.set_action_request();
+            }
         } else if is_interaction && player_mut.is_in_interaction_range() {
-            if is_near_bed {
-                if let Some(scenario) =
-                    get_game_scene_manager_mut().get_game_scenario(ScenarioType::ScenarioWrapUpTheDay)
-                {
-                    scenario.borrow_mut().request_sleep();
-                }
-            } else {
+            if get_game_client().is_available_interaction() {
                 player_mut.set_action_interaction();
             }
         } else if is_attack_or_use_item && is_available_attack {

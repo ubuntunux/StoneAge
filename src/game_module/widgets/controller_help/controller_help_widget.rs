@@ -411,6 +411,10 @@ impl<'a> ControllerHelpWidget<'a> {
         &self,
         player: &crate::game_module::actors::character::Character<'a>,
     ) -> Option<ActiveInteractionContext> {
+        if !get_game_client().is_available_interaction() {
+            return None;
+        }
+
         let is_corpse = player
             ._controller
             ._interaction_objects
@@ -469,9 +473,13 @@ impl<'a> ControllerHelpWidget<'a> {
                 RequestType::None,
             ),
             InteractionObject::Npc(npc) => {
-                let npc_borrow = npc.borrow();
-                let interaction_text = format!("{}", npc_borrow._character_data.borrow()._name);
-                (KeyBindingType::Interaction, interaction_text, RequestType::None)
+                if !get_game_client().is_available_interaction() {
+                    (KeyBindingType::None, String::new(), RequestType::None)
+                } else {
+                    let npc_borrow = npc.borrow();
+                    let interaction_text = format!("{}", npc_borrow._character_data.borrow()._name);
+                    (KeyBindingType::Interaction, interaction_text, RequestType::None)
+                }
             }
             InteractionObject::PropGate(_) => (KeyBindingType::None, String::from("Enter Gate"), RequestType::None),
             InteractionObject::PropGathering(prop) => (
