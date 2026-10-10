@@ -126,7 +126,12 @@ impl ItemDataType {
     pub fn is_base_material(&self) -> bool {
         matches!(
             *self,
-            ItemDataType::Wood | ItemDataType::Rock | ItemDataType::Coconut | ItemDataType::Meat | ItemDataType::EnergyBall | ItemDataType::SpiritBall
+            ItemDataType::Wood
+                | ItemDataType::Rock
+                | ItemDataType::Coconut
+                | ItemDataType::Meat
+                | ItemDataType::EnergyBall
+                | ItemDataType::SpiritBall
         )
     }
 }

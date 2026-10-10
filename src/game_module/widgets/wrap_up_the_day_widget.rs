@@ -535,5 +535,3 @@ impl<'a> WrapUpTheDayWidget<'a> {
         }
     }
 }
-
-

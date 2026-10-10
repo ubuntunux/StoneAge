@@ -3,7 +3,7 @@ use crate::game_module::actors::character::Character;
 use crate::game_module::actors::props::Prop;
 use crate::game_module::behavior::behavior_base::BehaviorState;
 use crate::game_module::game_constants::{
-    AUDIO_QUEST_COMPLETE, AUDIO_ROOSTER, AUDIO_STOMACH_GROWLING, BED_FOR_ARU, CAMERA_DISTANCE_MIN, CAMERA_OFFSET_Y,
+    AUDIO_QUEST_COMPLETE, AUDIO_ROOSTER, BED_FOR_ARU, CAMERA_DISTANCE_MIN, CAMERA_OFFSET_Y,
     CHARACTER_INTERACTION_DISTANCE, DEFAULT_FADE_TIME, EAT_ITEM_DELAY_TIME, MATERIAL_UI_NONE,
     MAX_BED_RESTRICTION_DISTANCE, SLEEP_TIMER, TARGET_HUNGER_THRESHOLD, TIME_OF_NIGHT,
 };
@@ -33,7 +33,6 @@ enum ScenarioPhase {
     None,
     Begin,
     ResourceSettlement,
-    CeremonyPhase,
     Update,
     GoToSleep,
     Sleep,
@@ -376,7 +375,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
     }
 
     fn is_allow_player_control(&self) -> bool {
-        matches!(self._scenario_track._scenario_phase, ScenarioPhase::CeremonyPhase) || matches!(self._scenario_track._scenario_phase, ScenarioPhase::Update)
+        matches!(self._scenario_track._scenario_phase, ScenarioPhase::Update)
     }
 
     fn is_available_sleep(&self) -> bool {
@@ -531,45 +530,18 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                         );
 
                         if !game_ui_manager.is_opened_daily_settlement() {
-                            self._scenario_track.set_next_scenario_phase(ScenarioPhase::CeremonyPhase, Some(4.0));
+                            self._scenario_track.set_next_scenario_phase(ScenarioPhase::Update, None);
                         }
-                    }
-                    State::End => {
-                    }
-                },
-                ScenarioPhase::CeremonyPhase => match state {
-                    State::Begin => {
-                        let total_food = game_ui_manager.get_eatable_table_storage_item_count()
-                            + game_ui_manager.get_eatable_inventory_item_count();
-
-                        if total_food >= 3 {
-                            get_audio_manager_mut().play_audio_bank(AUDIO_QUEST_COMPLETE, AudioLoop::ONCE, None);
-                            if let Some(player) = &self._player {
-                                player.borrow_mut().set_action_dance();
-                            }
-                        } else {
-                            get_audio_manager_mut().play_audio_bank(AUDIO_STOMACH_GROWLING, AudioLoop::ONCE, None);
-                            if let Some(player) = &self._player {
-                                player.borrow_mut().set_hunger(1.0);
-                                player.borrow_mut().set_next_behavior(BehaviorState::Hunger, true);
-                            }
-                            if let Some(actor) = &self._actor_ewa {
-                                actor.borrow_mut().set_hunger(1.0);
-                                actor.borrow_mut().set_next_behavior(BehaviorState::Hunger, true);
-                            }
-                            if let Some(actor) = &self._actor_koa {
-                                actor.borrow_mut().set_hunger(1.0);
-                                actor.borrow_mut().set_next_behavior(BehaviorState::Hunger, true);
-                            }
-                        }
-                    }
-                    State::Update => {
-                        self._scenario_track.set_next_scenario_phase(ScenarioPhase::Update, None);
                     }
                     State::End => {}
                 },
-                ScenarioPhase::Update => {
-                    if state == State::Update {
+                ScenarioPhase::Update => match state {
+                    State::Begin => {
+                        if let Some(player) = &self._player {
+                            game_ui_manager.open_player_interaction_menu(player.clone());
+                        }
+                    }
+                    State::Update => {
                         let player_is_dancing =
                             self._player.as_ref().is_some_and(|p| p.borrow().is_action(ActionAnimationState::Dance));
 
@@ -658,7 +630,8 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                             self._scenario_track.set_next_scenario_phase(ScenarioPhase::GoToSleep, None);
                         }
                     }
-                }
+                    State::End => {}
+                },
                 ScenarioPhase::GoToSleep => {
                     if state == State::Update {
                         go_to_sleep(&self._player, &self._prop_bed_for_aru);

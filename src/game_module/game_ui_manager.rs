@@ -1068,9 +1068,7 @@ impl<'a> GameUIManager<'a> {
     }
 
     pub fn is_settlement_started(&self) -> bool {
-        self._wrap_up_the_day_widget
-            .as_ref()
-            .map_or(false, |w| w.is_settlement_started())
+        self._wrap_up_the_day_widget.as_ref().map_or(false, |w| w.is_settlement_started())
     }
 
     pub fn update_wrap_up_the_day_widget(
@@ -1250,6 +1248,12 @@ impl<'a> GameUIManager<'a> {
     pub fn open_npc_interaction_menu(&mut self, target_npc: RcRefCell<Character<'a>>) {
         if let Some(menu) = self._npc_interaction_menu_widget.as_mut() {
             menu.open_npc_interaction_menu(target_npc);
+        }
+    }
+
+    pub fn open_player_interaction_menu(&mut self, player: RcRefCell<Character<'a>>) {
+        if let Some(menu) = self._npc_interaction_menu_widget.as_mut() {
+            menu.open_player_interaction_menu(player);
         }
     }
 

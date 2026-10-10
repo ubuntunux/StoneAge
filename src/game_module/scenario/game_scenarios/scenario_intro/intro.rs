@@ -243,7 +243,6 @@ impl<'a> ScenarioIntro<'a> {
         }
     }
 
-
     pub fn create_prop_bed_text_box(&self) {
         if let Some(prop) = self._prop_bed_for_aru.as_ref() {
             let wrapper = ActorWrapper::Prop(prop.clone());
@@ -343,11 +342,7 @@ impl<'a> ScenarioIntro<'a> {
         if game_ui_manager.has_eatable_table_storage_item() {
             return true;
         }
-        if self
-            ._player
-            .as_ref()
-            .is_some_and(|p| p.borrow().get_attached_item_data_type().is_eatable())
-        {
+        if self._player.as_ref().is_some_and(|p| p.borrow().get_attached_item_data_type().is_eatable()) {
             return true;
         }
         false
@@ -358,10 +353,8 @@ impl<'a> ScenarioIntro<'a> {
         if eat_food_not_completed {
             let food_eaten = get_game_ui_manager_mut().get_player_records()._food_eaten_count > 0;
             let is_eating = self._player.as_ref().is_some_and(|p| p.borrow().is_action(ActionAnimationState::Eating));
-            let wrap_up_the_day_completed = self
-                ._sub_quest_wrap_up_the_day
-                .as_ref()
-                .is_some_and(|q| q.borrow().is_completed_quest());
+            let wrap_up_the_day_completed =
+                self._sub_quest_wrap_up_the_day.as_ref().is_some_and(|q| q.borrow().is_completed_quest());
             let no_eatable_item = wrap_up_the_day_completed && !self.has_any_eatable_item();
             if food_eaten || is_eating || no_eatable_item {
                 self.complete_sub_quest_eat_food();
@@ -689,10 +682,8 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                     let is_gather_food_completed =
                         self._sub_quest_gather_food.as_ref().is_some_and(|q| q.borrow().is_completed_quest());
                     if is_gather_food_completed {
-                        let wrap_up_the_day_not_completed = self
-                            ._sub_quest_wrap_up_the_day
-                            .as_ref()
-                            .is_none_or(|q| !q.borrow().is_completed_quest());
+                        let wrap_up_the_day_not_completed =
+                            self._sub_quest_wrap_up_the_day.as_ref().is_none_or(|q| !q.borrow().is_completed_quest());
                         if wrap_up_the_day_not_completed {
                             self.create_prop_bed_text_box();
                         }
