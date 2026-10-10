@@ -383,7 +383,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
     }
 
     fn request_sleep(&mut self) {
-        if self.is_available_sleep() && !self._waiting_for_key_release {
+        if self.is_available_sleep() {
             self._request_sleep = true;
         }
     }
