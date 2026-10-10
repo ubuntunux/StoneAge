@@ -20,6 +20,7 @@ use crate::game_module::scenario::scenario_track::ScenarioTrack;
 use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop};
 use rust_engine_3d::core::engine_service_locator::{get_audio_manager_mut, get_engine_core, get_scene_manager};
+use rust_engine_3d::core::input::ButtonState;
 use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{RcRefCell, State, newRcRefCell};
@@ -375,7 +376,13 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
     }
 
     fn is_allow_player_control(&self) -> bool {
-        matches!(self._scenario_track._scenario_phase, ScenarioPhase::Update)
+        if matches!(self._scenario_track._scenario_phase, ScenarioPhase::Update) {
+            let player_is_dancing =
+                self._player.as_ref().is_some_and(|p| p.borrow().is_action(ActionAnimationState::Dance));
+            !player_is_dancing
+        } else {
+            false
+        }
     }
 
     fn is_available_sleep(&self) -> bool {
@@ -484,6 +491,12 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                         if game_ui_manager.is_done_manual_fade_out() {
                             set_actor_table_position(
                                 get_scene_manager(),
+                                &self._player,
+                                &self._prop_table,
+                                &Vector3::new(-0.707, 0.0, 0.707),
+                            );
+                            set_actor_table_position(
+                                get_scene_manager(),
                                 &self._actor_ewa,
                                 &self._prop_table,
                                 &Vector3::new(0.0, 0.0, 1.0),
@@ -542,8 +555,26 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                         }
                     }
                     State::Update => {
-                        let player_is_dancing =
+                        let engine_core = get_engine_core();
+                        let is_any_input = engine_core._keyboard_input_data.is_any_key_pressed()
+                            || engine_core._mouse_input_data._btn_l_pressed
+                            || engine_core._mouse_input_data._btn_r_pressed
+                            || engine_core._joystick_input_data._btn_a == ButtonState::Pressed
+                            || engine_core._joystick_input_data._btn_b == ButtonState::Pressed
+                            || engine_core._joystick_input_data._btn_x == ButtonState::Pressed
+                            || engine_core._joystick_input_data._btn_y == ButtonState::Pressed
+                            || engine_core._joystick_input_data._stick_left_direction.x.abs() > 3000
+                            || engine_core._joystick_input_data._stick_left_direction.y.abs() > 3000;
+
+                        let mut player_is_dancing =
                             self._player.as_ref().is_some_and(|p| p.borrow().is_action(ActionAnimationState::Dance));
+
+                        if player_is_dancing && is_any_input {
+                            if let Some(player) = &self._player {
+                                player.borrow_mut().set_action_none();
+                            }
+                            player_is_dancing = false;
+                        }
 
                         if player_is_dancing {
                             let ewa_dancing = self
