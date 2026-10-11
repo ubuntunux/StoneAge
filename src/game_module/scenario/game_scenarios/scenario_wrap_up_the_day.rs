@@ -1,5 +1,4 @@
-use crate::game_module::actors::character::ActionAnimationState;
-use crate::game_module::actors::character::Character;
+use crate::game_module::actors::character::{ActionAnimationState, Character, MoveAnimationState};
 use crate::game_module::actors::props::Prop;
 use crate::game_module::behavior::behavior_base::BehaviorState;
 use crate::game_module::game_constants::{
@@ -62,6 +61,7 @@ pub struct ScenarioWrapUpTheDay<'a> {
     _skip_wakeup: bool,
     _waiting_for_key_release: bool,
     _waiting_for_dance_cancel_release: bool,
+    _waiting_for_chill_cancel_release: bool,
     _request_sleep: bool,
     _check_time_for_sleep: f32,
     _ewa_eat_delay: f32,
@@ -94,6 +94,7 @@ impl<'a> ScenarioWrapUpTheDay<'a> {
             _skip_wakeup: false,
             _waiting_for_key_release: true,
             _waiting_for_dance_cancel_release: false,
+            _waiting_for_chill_cancel_release: false,
             _request_sleep: false,
             _check_time_for_sleep: 0.0,
             _ewa_eat_delay: 0.0,
@@ -219,9 +220,21 @@ fn dance_in_place(actor: &Option<RcRefCell<Character>>, player: &Option<RcRefCel
     }
 }
 
+fn sit_down_in_place(actor: &Option<RcRefCell<Character>>, player: &Option<RcRefCell<Character>>) {
+    if let (Some(actor_ref), Some(player_ref)) = (actor.as_ref(), player.as_ref()) {
+        let mut actor_mut = actor_ref.borrow_mut();
+        actor_mut.look_at(player_ref.borrow().get_position());
+        actor_mut.set_is_interacting(true);
+        actor_mut.set_sit_down();
+    }
+}
+
 fn stand_in_place(actor: &Option<RcRefCell<Character>>) {
     if let Some(actor_ref) = actor.as_ref() {
-        actor_ref.borrow_mut().set_next_behavior(BehaviorState::Idle, true);
+        let mut actor_mut = actor_ref.borrow_mut();
+        actor_mut.set_is_interacting(false);
+        actor_mut.set_move_idle();
+        actor_mut.set_next_behavior(BehaviorState::Idle, true);
     }
 }
 
@@ -383,7 +396,9 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
         if matches!(self._scenario_track._scenario_phase, ScenarioPhase::Update) {
             let player_is_dancing =
                 self._player.as_ref().is_some_and(|p| p.borrow().is_action(ActionAnimationState::Dance));
-            !player_is_dancing
+            let player_is_chilling =
+                self._player.as_ref().is_some_and(|p| p.borrow().is_move_state(MoveAnimationState::SitDownLoop));
+            !player_is_dancing && !player_is_chilling
         } else {
             false
         }
@@ -574,6 +589,10 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
 
                         let mut player_is_dancing =
                             self._player.as_ref().is_some_and(|p| p.borrow().is_action(ActionAnimationState::Dance));
+                        let mut player_is_chilling = self
+                            ._player
+                            .as_ref()
+                            .is_some_and(|p| p.borrow().is_move_state(MoveAnimationState::SitDownLoop));
 
                         if player_is_dancing && is_any_input {
                             if let Some(player) = &self._player {
@@ -586,6 +605,20 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                         if self._waiting_for_dance_cancel_release {
                             if !is_any_input {
                                 self._waiting_for_dance_cancel_release = false;
+                            }
+                        }
+
+                        if player_is_chilling && is_any_input {
+                            if let Some(player) = &self._player {
+                                player.borrow_mut().set_move_idle();
+                            }
+                            player_is_chilling = false;
+                            self._waiting_for_chill_cancel_release = true;
+                        }
+
+                        if self._waiting_for_chill_cancel_release {
+                            if !is_any_input {
+                                self._waiting_for_chill_cancel_release = false;
                             }
                         }
 
@@ -605,12 +638,32 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                             if !koa_dancing {
                                 dance_in_place(&self._actor_koa, &self._player);
                             }
+                        } else if player_is_chilling {
+                            let ewa_chilling = self
+                                ._actor_ewa
+                                .as_ref()
+                                .is_some_and(|a| a.borrow().is_move_state(MoveAnimationState::SitDownLoop));
+                            if !ewa_chilling {
+                                sit_down_in_place(&self._actor_ewa, &self._player);
+                            }
+
+                            let koa_chilling = self
+                                ._actor_koa
+                                .as_ref()
+                                .is_some_and(|a| a.borrow().is_move_state(MoveAnimationState::SitDownLoop));
+                            if !koa_chilling {
+                                sit_down_in_place(&self._actor_koa, &self._player);
+                            }
                         } else {
                             let ewa_dancing = self
                                 ._actor_ewa
                                 .as_ref()
                                 .is_some_and(|a| a.borrow().is_action(ActionAnimationState::Dance));
-                            if ewa_dancing {
+                            let ewa_chilling = self
+                                ._actor_ewa
+                                .as_ref()
+                                .is_some_and(|a| a.borrow().is_move_state(MoveAnimationState::SitDownLoop));
+                            if ewa_dancing || ewa_chilling {
                                 stand_in_place(&self._actor_ewa);
                             }
 
@@ -618,7 +671,11 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                                 ._actor_koa
                                 .as_ref()
                                 .is_some_and(|a| a.borrow().is_action(ActionAnimationState::Dance));
-                            if koa_dancing {
+                            let koa_chilling = self
+                                ._actor_koa
+                                .as_ref()
+                                .is_some_and(|a| a.borrow().is_move_state(MoveAnimationState::SitDownLoop));
+                            if koa_dancing || koa_chilling {
                                 stand_in_place(&self._actor_koa);
                             }
 
@@ -662,13 +719,16 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                             let item_manager = get_game_scene_manager().get_item_manager_mut();
                             if let Some(actor) = &self._player {
                                 actor.borrow_mut().set_action_none();
+                                actor.borrow_mut().set_move_idle();
                             }
                             if let Some(actor) = &self._actor_ewa {
                                 actor.borrow_mut().set_action_none();
+                                actor.borrow_mut().set_move_idle();
                                 item_manager.detach_item(&mut actor.borrow_mut());
                             }
                             if let Some(actor) = &self._actor_koa {
                                 actor.borrow_mut().set_action_none();
+                                actor.borrow_mut().set_move_idle();
                                 item_manager.detach_item(&mut actor.borrow_mut());
                             }
                             self._scenario_track.set_next_scenario_phase(ScenarioPhase::GoToSleep, None);
@@ -676,7 +736,9 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                             && !game_ui_manager.is_opened_cooking()
                             && !game_ui_manager.is_opened_table_storage()
                             && !player_is_dancing
+                            && !player_is_chilling
                             && !self._waiting_for_dance_cancel_release
+                            && !self._waiting_for_chill_cancel_release
                         {
                             if let Some(player) = &self._player {
                                 game_ui_manager.open_player_interaction_menu(player.clone());

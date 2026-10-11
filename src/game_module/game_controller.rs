@@ -1,4 +1,4 @@
-use crate::game_module::actors::character::{ActionAnimationState, Character};
+use crate::game_module::actors::character::{ActionAnimationState, Character, MoveAnimationState};
 use crate::game_module::actors::interaction_object::InteractionObject;
 use crate::game_module::game_client::GamePhase;
 use crate::game_module::game_constants::*;
@@ -684,6 +684,27 @@ impl<'a> GameController<'a> {
                 || keyboard_input_data.is_any_key_pressed();
             if is_any_input {
                 player_mut.set_action_none();
+            }
+        }
+
+        if player_mut.is_move_state(MoveAnimationState::SitDownLoop) {
+            let is_moving = is_left
+                || is_right
+                || is_up
+                || is_down
+                || stick_left_direction.x != 0.0
+                || stick_left_direction.y != 0.0;
+            let is_any_input = is_moving
+                || is_run
+                || is_jump
+                || is_roll
+                || is_interaction
+                || is_request
+                || is_attack_or_use_item
+                || is_power_attack
+                || keyboard_input_data.is_any_key_pressed();
+            if is_any_input {
+                player_mut.set_move_idle();
             }
         }
 
