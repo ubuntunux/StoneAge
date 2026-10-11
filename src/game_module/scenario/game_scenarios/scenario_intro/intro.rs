@@ -13,7 +13,6 @@ use crate::game_module::scenario::scenario::{
     GameScenarioCreateInfo, ScenarioBase, ScenarioDataCreateInfo, ScenarioType,
 };
 use crate::game_module::scenario::scenario_track::ScenarioTrack;
-use crate::game_module::widgets::cooking_widget::COOKING_RECIPES;
 use crate::game_module::widgets::quest_widgets::quest_item_default::DefaultQuestData;
 use crate::game_module::widgets::quest_widgets::quest_item_gather_item::GatherItemData;
 use crate::game_module::widgets::quest_widgets::quest_title::QuestTitle;
@@ -64,6 +63,8 @@ pub struct ScenarioIntroQuestSaveData {
     #[serde(alias = "_sub_quest_eat_food")]
     pub _sub_quest_cooking: Option<QuestItemSaveData>,
     pub _sub_quest_sleep: Option<QuestItemSaveData>,
+    #[serde(default)]
+    pub _base_cooking_count_for_quest: Option<u32>,
 }
 
 impl ScenarioIntroQuestSaveData {
@@ -112,6 +113,7 @@ pub struct ScenarioIntro<'a> {
     _sub_quest_wrap_up_the_day: Option<QuestItem<'a>>,
     _sub_quest_cooking: Option<QuestItem<'a>>,
     _sub_quest_sleep: Option<QuestItem<'a>>,
+    _base_cooking_count_for_quest: Option<u32>,
     _tree_fruit_items: HashMap<*const c_void, ActorWrapper<'a>>,
     _was_completed_sub_quest_gather_food: bool,
     _wakeup_delay_aru: f32,
@@ -151,6 +153,7 @@ impl<'a> ScenarioIntro<'a> {
             _sub_quest_wrap_up_the_day: None,
             _sub_quest_cooking: None,
             _sub_quest_sleep: None,
+            _base_cooking_count_for_quest: None,
             _tree_fruit_items: HashMap::new(),
             _was_completed_sub_quest_gather_food: false,
             _wakeup_delay_aru: 2.0,
@@ -324,7 +327,11 @@ impl<'a> ScenarioIntro<'a> {
             }
         }
         self.complete_sub_quest_gather_food();
-        self.check_cooking_complete();
+
+        if self._base_cooking_count_for_quest.is_none() {
+            let current_cook_count = get_game_ui_manager_mut().get_player_records()._cooking_count;
+            self._base_cooking_count_for_quest = Some(current_cook_count);
+        }
     }
 
     pub fn complete_sub_quest_cooking(&mut self) {
@@ -351,22 +358,6 @@ impl<'a> ScenarioIntro<'a> {
         self.complete_sub_quest_cooking();
     }
 
-    pub fn has_any_cooked_item(&self) -> bool {
-        let game_ui_manager = get_game_ui_manager_mut();
-        for recipe in COOKING_RECIPES.iter() {
-            if game_ui_manager.get_total_item_count(recipe.item_code()) > 0 {
-                return true;
-            }
-        }
-        if self._player.as_ref().is_some_and(|p| {
-            let attached_type = p.borrow().get_attached_item_data_type();
-            COOKING_RECIPES.iter().any(|r| r.item_type == attached_type)
-        }) {
-            return true;
-        }
-        false
-    }
-
     pub fn check_cooking_complete(&mut self) {
         let is_wrap_up_completed =
             self._sub_quest_wrap_up_the_day.as_ref().is_some_and(|q| q.borrow().is_completed_quest());
@@ -374,10 +365,19 @@ impl<'a> ScenarioIntro<'a> {
             return;
         }
 
+        let base_count = match self._base_cooking_count_for_quest {
+            Some(count) => count,
+            None => {
+                let current_cook_count = get_game_ui_manager_mut().get_player_records()._cooking_count;
+                self._base_cooking_count_for_quest = Some(current_cook_count);
+                current_cook_count
+            }
+        };
+
         let cooking_not_completed = self._sub_quest_cooking.as_ref().is_none_or(|q| !q.borrow().is_completed_quest());
         if cooking_not_completed {
-            let cooked = get_game_ui_manager_mut().get_player_records()._cooking_count > 0;
-            if cooked || self.has_any_cooked_item() {
+            let current_cook_count = get_game_ui_manager_mut().get_player_records()._cooking_count;
+            if current_cook_count > base_count {
                 self.complete_sub_quest_cooking();
             }
         }
@@ -510,6 +510,7 @@ impl<'a> ScenarioIntro<'a> {
         self._sub_quest_wrap_up_the_day = None;
         self._sub_quest_cooking = None;
         self._sub_quest_sleep = None;
+        self._base_cooking_count_for_quest = None;
     }
 
     pub fn reset_actors_to_bed_positions(&mut self) {
@@ -539,6 +540,7 @@ impl<'a> ScenarioIntro<'a> {
                 .map(|q| q.borrow().get_quest_item_save_data()),
             _sub_quest_cooking: self._sub_quest_cooking.as_ref().map(|q| q.borrow().get_quest_item_save_data()),
             _sub_quest_sleep: self._sub_quest_sleep.as_ref().map(|q| q.borrow().get_quest_item_save_data()),
+            _base_cooking_count_for_quest: self._base_cooking_count_for_quest,
         }
     }
 
@@ -572,6 +574,7 @@ impl<'a> ScenarioIntro<'a> {
             {
                 q.borrow_mut().load_quest_item_save_data(save_data);
             }
+            self._base_cooking_count_for_quest = quest_save_data._base_cooking_count_for_quest;
         }
     }
 }
