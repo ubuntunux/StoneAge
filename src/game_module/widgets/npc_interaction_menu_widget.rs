@@ -405,37 +405,36 @@ impl<'a> NpcInteractionMenuWidget<'a> {
         if !character_manager.is_valid_player() {
             return;
         }
-        let mut player = character_manager.get_player().borrow_mut();
 
         match option {
             NpcInteractionOption::Talk => {
                 if let Some(target_npc) = &target_npc {
-                    player.execute_npc_talk(target_npc);
+                    character_manager.get_player().borrow_mut().execute_npc_talk(target_npc);
                 }
             }
             NpcInteractionOption::Request => {
                 if let Some(target_npc) = &target_npc {
-                    player.execute_npc_request(target_npc);
+                    character_manager.get_player().borrow_mut().execute_npc_request(target_npc);
                 }
             }
             NpcInteractionOption::StorageTable => {
                 if let Some(target_npc) = &target_npc {
-                    player.execute_npc_table_storage(target_npc);
+                    character_manager.get_player().borrow_mut().execute_npc_table_storage(target_npc);
                 }
             }
             NpcInteractionOption::GiveAllResources => {
                 if let Some(target_npc) = &target_npc {
-                    player.execute_npc_give_all_materials(target_npc);
+                    character_manager.get_player().borrow_mut().execute_npc_give_all_materials(target_npc);
                 }
             }
             NpcInteractionOption::Dance => {
                 if let Some(target_npc) = &target_npc {
-                    player.execute_npc_dance(target_npc);
+                    character_manager.get_player().borrow_mut().execute_npc_dance(target_npc);
                 }
             }
             NpcInteractionOption::GiveItem => {
                 if let Some(target_npc) = &target_npc {
-                    player.execute_npc_give_item(target_npc);
+                    character_manager.get_player().borrow_mut().execute_npc_give_item(target_npc);
                 }
             }
             NpcInteractionOption::Sleep => {

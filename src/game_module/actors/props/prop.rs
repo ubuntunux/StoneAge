@@ -451,20 +451,19 @@ impl<'a> PropManager<'a> {
                     let bounding_box = prop.get_bounding_box();
                     match prop_type {
                         PropDataType::Bed => {
-                            let is_in_player_range = is_available_interaction
-                                && if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
-                                    player.check_in_range_xy(
-                                        prop.get_collision(),
-                                        CHARACTER_INTERACTION_DISTANCE,
-                                        check_direction,
-                                    )
+                            let to_player = player.get_position() - prop.get_position();
+                            let (_to_player_dir, mut to_player_distance) =
+                                if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
+                                    math::make_normalize_xy_with_norm(&to_player)
                                 } else {
-                                    player.check_in_range(
-                                        prop.get_collision(),
-                                        CHARACTER_INTERACTION_DISTANCE,
-                                        check_direction,
-                                    )
+                                    math::make_normalize_with_norm(&to_player)
                                 };
+                            to_player_distance = 0f32.max(
+                                to_player_distance
+                                    - (player.get_collision()._bounding_box._mag_xz + bounding_box._mag_xz) * 0.5,
+                            );
+                            let is_in_player_range =
+                                is_available_interaction && to_player_distance <= CHARACTER_INTERACTION_DISTANCE;
 
                             if !is_interaction_object && is_in_player_range {
                                 player
