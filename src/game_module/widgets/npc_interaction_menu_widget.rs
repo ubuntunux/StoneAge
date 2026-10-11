@@ -102,6 +102,7 @@ impl<'a> NpcInteractionMenuWidget<'a> {
             ui_comp.set_halign(HorizontalAlign::CENTER);
             ui_comp.set_valign(VerticalAlign::CENTER);
             ui_comp.set_pivot_preset(PIVOT_CENTER_LEFT);
+            ui_comp.set_margin_left(150.0);
             ui_comp.set_renderable(false);
             ui_comp.set_expandable_y(true);
             ui_comp.set_enable(false);
