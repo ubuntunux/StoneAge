@@ -182,6 +182,7 @@ impl<'a> PlayerRecordsWidget<'a> {
         let stat_items = [
             format!("Total Items: {}", records._item_count),
             format!("Craft Count: {}", records._craft_count),
+            format!("Cooking Count: {}", records._cooking_count),
             format!("Food Eaten: {}", records._food_eaten_count),
             format!("Death Count: {}", records._death_count),
             format!("Pass Out Count: {}", records._pass_out_count),

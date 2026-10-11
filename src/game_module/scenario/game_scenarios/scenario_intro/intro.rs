@@ -13,6 +13,7 @@ use crate::game_module::scenario::scenario::{
     GameScenarioCreateInfo, ScenarioBase, ScenarioDataCreateInfo, ScenarioType,
 };
 use crate::game_module::scenario::scenario_track::ScenarioTrack;
+use crate::game_module::widgets::cooking_widget::COOKING_RECIPES;
 use crate::game_module::widgets::quest_widgets::quest_item_default::DefaultQuestData;
 use crate::game_module::widgets::quest_widgets::quest_item_gather_item::GatherItemData;
 use crate::game_module::widgets::quest_widgets::quest_title::QuestTitle;
@@ -60,7 +61,8 @@ pub struct ScenarioIntroQuestSaveData {
     pub _sub_quest_hit_the_tree: Option<QuestItemSaveData>,
     pub _sub_quest_gather_food: Option<QuestItemSaveData>,
     pub _sub_quest_wrap_up_the_day: Option<QuestItemSaveData>,
-    pub _sub_quest_eat_food: Option<QuestItemSaveData>,
+    #[serde(alias = "_sub_quest_eat_food")]
+    pub _sub_quest_cooking: Option<QuestItemSaveData>,
     pub _sub_quest_sleep: Option<QuestItemSaveData>,
 }
 
@@ -70,7 +72,7 @@ impl ScenarioIntroQuestSaveData {
             || self._sub_quest_hit_the_tree.is_some()
             || self._sub_quest_gather_food.is_some()
             || self._sub_quest_wrap_up_the_day.is_some()
-            || self._sub_quest_eat_food.is_some()
+            || self._sub_quest_cooking.is_some()
             || self._sub_quest_sleep.is_some()
     }
 }
@@ -108,7 +110,7 @@ pub struct ScenarioIntro<'a> {
     _sub_quest_hit_the_tree: Option<QuestItem<'a>>,
     _sub_quest_gather_food: Option<QuestItem<'a>>,
     _sub_quest_wrap_up_the_day: Option<QuestItem<'a>>,
-    _sub_quest_eat_food: Option<QuestItem<'a>>,
+    _sub_quest_cooking: Option<QuestItem<'a>>,
     _sub_quest_sleep: Option<QuestItem<'a>>,
     _tree_fruit_items: HashMap<*const c_void, ActorWrapper<'a>>,
     _was_completed_sub_quest_gather_food: bool,
@@ -147,7 +149,7 @@ impl<'a> ScenarioIntro<'a> {
             _sub_quest_hit_the_tree: None,
             _sub_quest_gather_food: None,
             _sub_quest_wrap_up_the_day: None,
-            _sub_quest_eat_food: None,
+            _sub_quest_cooking: None,
             _sub_quest_sleep: None,
             _tree_fruit_items: HashMap::new(),
             _was_completed_sub_quest_gather_food: false,
@@ -322,11 +324,17 @@ impl<'a> ScenarioIntro<'a> {
             }
         }
         self.complete_sub_quest_gather_food();
-        self.check_eat_food_complete();
+        self.check_cooking_complete();
     }
 
-    pub fn complete_sub_quest_eat_food(&mut self) {
-        if let Some(q) = &self._sub_quest_eat_food {
+    pub fn complete_sub_quest_cooking(&mut self) {
+        let is_wrap_up_completed =
+            self._sub_quest_wrap_up_the_day.as_ref().is_some_and(|q| q.borrow().is_completed_quest());
+        if !is_wrap_up_completed {
+            return;
+        }
+
+        if let Some(q) = &self._sub_quest_cooking {
             if !q.borrow().is_completed_quest() {
                 q.borrow_mut().set_completed_quest();
             }
@@ -340,33 +348,37 @@ impl<'a> ScenarioIntro<'a> {
                 q.borrow_mut().set_completed_quest();
             }
         }
-        self.complete_sub_quest_eat_food();
+        self.complete_sub_quest_cooking();
     }
 
-    pub fn has_any_eatable_item(&self) -> bool {
+    pub fn has_any_cooked_item(&self) -> bool {
         let game_ui_manager = get_game_ui_manager_mut();
-        if game_ui_manager.get_eatable_inventory_item_count() > 0 {
-            return true;
+        for recipe in COOKING_RECIPES.iter() {
+            if game_ui_manager.get_total_item_count(recipe.item_code()) > 0 {
+                return true;
+            }
         }
-        if game_ui_manager.has_eatable_table_storage_item() {
-            return true;
-        }
-        if self._player.as_ref().is_some_and(|p| p.borrow().get_attached_item_data_type().is_eatable()) {
+        if self._player.as_ref().is_some_and(|p| {
+            let attached_type = p.borrow().get_attached_item_data_type();
+            COOKING_RECIPES.iter().any(|r| r.item_type == attached_type)
+        }) {
             return true;
         }
         false
     }
 
-    pub fn check_eat_food_complete(&mut self) {
-        let eat_food_not_completed = self._sub_quest_eat_food.as_ref().is_none_or(|q| !q.borrow().is_completed_quest());
-        if eat_food_not_completed {
-            let food_eaten = get_game_ui_manager_mut().get_player_records()._food_eaten_count > 0;
-            let is_eating = self._player.as_ref().is_some_and(|p| p.borrow().is_action(ActionAnimationState::Eating));
-            let wrap_up_the_day_completed =
-                self._sub_quest_wrap_up_the_day.as_ref().is_some_and(|q| q.borrow().is_completed_quest());
-            let no_eatable_item = wrap_up_the_day_completed && !self.has_any_eatable_item();
-            if food_eaten || is_eating || no_eatable_item {
-                self.complete_sub_quest_eat_food();
+    pub fn check_cooking_complete(&mut self) {
+        let is_wrap_up_completed =
+            self._sub_quest_wrap_up_the_day.as_ref().is_some_and(|q| q.borrow().is_completed_quest());
+        if !is_wrap_up_completed {
+            return;
+        }
+
+        let cooking_not_completed = self._sub_quest_cooking.as_ref().is_none_or(|q| !q.borrow().is_completed_quest());
+        if cooking_not_completed {
+            let cooked = get_game_ui_manager_mut().get_player_records()._cooking_count > 0;
+            if cooked || self.has_any_cooked_item() {
+                self.complete_sub_quest_cooking();
             }
         }
     }
@@ -472,10 +484,10 @@ impl<'a> ScenarioIntro<'a> {
                         _quest_description: Some(String::from("Wrap up the day.")),
                     }),
                 ));
-                self._sub_quest_eat_food = Some(quest.borrow_mut().add_quest_item(QuestCreateInfo::DefaultQuest(
+                self._sub_quest_cooking = Some(quest.borrow_mut().add_quest_item(QuestCreateInfo::DefaultQuest(
                     DefaultQuestData {
                         _quest_icon_name: None,
-                        _quest_description: Some(String::from("Eat food.")),
+                        _quest_description: Some(String::from("Cooking.")),
                     },
                 )));
                 self._sub_quest_sleep = Some(quest.borrow_mut().add_quest_item(QuestCreateInfo::DefaultQuest(
@@ -496,7 +508,7 @@ impl<'a> ScenarioIntro<'a> {
         self._sub_quest_hit_the_tree = None;
         self._sub_quest_gather_food = None;
         self._sub_quest_wrap_up_the_day = None;
-        self._sub_quest_eat_food = None;
+        self._sub_quest_cooking = None;
         self._sub_quest_sleep = None;
     }
 
@@ -525,7 +537,7 @@ impl<'a> ScenarioIntro<'a> {
                 ._sub_quest_wrap_up_the_day
                 .as_ref()
                 .map(|q| q.borrow().get_quest_item_save_data()),
-            _sub_quest_eat_food: self._sub_quest_eat_food.as_ref().map(|q| q.borrow().get_quest_item_save_data()),
+            _sub_quest_cooking: self._sub_quest_cooking.as_ref().map(|q| q.borrow().get_quest_item_save_data()),
             _sub_quest_sleep: self._sub_quest_sleep.as_ref().map(|q| q.borrow().get_quest_item_save_data()),
         }
     }
@@ -550,8 +562,8 @@ impl<'a> ScenarioIntro<'a> {
             {
                 q.borrow_mut().load_quest_item_save_data(save_data);
             }
-            if let Some(save_data) = &quest_save_data._sub_quest_eat_food
-                && let Some(q) = &self._sub_quest_eat_food
+            if let Some(save_data) = &quest_save_data._sub_quest_cooking
+                && let Some(q) = &self._sub_quest_cooking
             {
                 q.borrow_mut().load_quest_item_save_data(save_data);
             }
@@ -966,7 +978,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                     if state == State::Begin {
                         self.remove_prop_table_text_box();
                     } else if state == State::Update {
-                        self.check_eat_food_complete();
+                        self.check_cooking_complete();
 
                         if let Some(scenario_wrap_up_the_day) =
                             game_scene_manager.get_game_scenario(ScenarioType::ScenarioWrapUpTheDay).as_ref()

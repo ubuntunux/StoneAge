@@ -29,6 +29,7 @@ pub struct PlayerRecords {
     pub _fishing_attempts: u32,
     pub _fish_caught_count: u32,
     pub _perfect_fishing_count: u32,
+    pub _cooking_count: u32,
     pub _custom_activity_counts: HashMap<String, u32>,
 }
 
@@ -71,6 +72,10 @@ impl PlayerRecords {
 
     pub fn add_food_eaten_count(&mut self, amount: u32) {
         self._food_eaten_count = self._food_eaten_count.saturating_add(amount);
+    }
+
+    pub fn add_cooking_count(&mut self, amount: u32) {
+        self._cooking_count = self._cooking_count.saturating_add(amount);
     }
 
     pub fn add_death_count(&mut self, amount: u32) {

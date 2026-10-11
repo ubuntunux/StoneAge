@@ -414,6 +414,7 @@ impl<'a> CookingWidget<'a> {
         // Grant cooked item
         item_mgr.pick_item(recipe.item_code(), 1);
         get_game_ui_manager_mut().notify_item_acquired(recipe.item_code(), 1, true);
+        get_game_ui_manager_mut().get_player_records_mut().add_cooking_count(1);
         get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
 
         let recipe_name = Self::get_item_name_from_resource(recipe.item_code());
