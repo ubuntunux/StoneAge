@@ -136,7 +136,7 @@ impl<'a> ScenarioWrapUpTheDay<'a> {
         let camera_rotation = Vector3::new(0.4, -1.4, 0.0);
         let camera_rotation_matrix =
             math::make_rotation_matrix(camera_rotation.x, camera_rotation.y, camera_rotation.z);
-        self._bed_camera_position = pivot - camera_rotation_matrix.column(2).xyz() * (CAMERA_DISTANCE_MIN + 1.0);
+        self._bed_camera_position = pivot - camera_rotation_matrix.column(2).xyz() * (CAMERA_DISTANCE_MIN + 0.0);
         get_game_controller_mut().set_camera_fixed(true);
         self._is_camera_target_initialized = false;
         self.update_bed_camera(0.0);

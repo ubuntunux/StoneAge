@@ -524,7 +524,6 @@ impl<'a> NpcInteractionMenuWidget<'a> {
         // Execution (Enter, Space, E key, Joystick Button A)
         let press_execute = keyboard_input_data.get_key_pressed(KeyCode::Enter)
             || keyboard_input_data.get_key_pressed(KeyCode::Space)
-            || keyboard_input_data.get_key_pressed(KeyCode::KeyE)
             || joystick_input_data._btn_a == ButtonState::Pressed;
 
         if press_up {
