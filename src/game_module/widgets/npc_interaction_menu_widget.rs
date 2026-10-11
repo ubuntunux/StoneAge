@@ -35,7 +35,7 @@ pub enum NpcInteractionOption {
     Dance,
     GiveItem,
     Cooking,
-    Chill,
+    EatFood,
     Sleep,
     Close,
 }
@@ -62,7 +62,7 @@ impl NpcInteractionOption {
                 }
             }
             NpcInteractionOption::Cooking => String::from("Cooking"),
-            NpcInteractionOption::Chill => String::from("Chill"),
+            NpcInteractionOption::EatFood => String::from("Eat Food"),
             NpcInteractionOption::Sleep => String::from("Sleep"),
             NpcInteractionOption::Close => String::from("Close"),
         }
@@ -248,7 +248,7 @@ impl<'a> NpcInteractionMenuWidget<'a> {
         let mut options = Vec::new();
         if self._is_player_menu {
             options.push(NpcInteractionOption::Cooking);
-            options.push(NpcInteractionOption::Chill);
+            options.push(NpcInteractionOption::EatFood);
             options.push(NpcInteractionOption::Dance);
             options.push(NpcInteractionOption::Sleep);
         } else {
@@ -425,8 +425,9 @@ impl<'a> NpcInteractionMenuWidget<'a> {
                 NpcInteractionOption::Cooking => {
                     get_game_client_mut().set_next_game_phase(GamePhase::OpenCooking);
                 }
-                NpcInteractionOption::Chill => {
-                    player.set_sit_down();
+                NpcInteractionOption::EatFood => {
+                    get_game_client_mut().set_next_game_phase(GamePhase::OpenTableStorage);
+                    player.set_move_idle();
                 }
                 NpcInteractionOption::Dance => {
                     player.set_action_dance();
