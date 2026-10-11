@@ -1,4 +1,5 @@
 use crate::game_module::actors::character::{ActorWrapper, Character};
+use crate::game_module::actors::props::Prop;
 use crate::game_module::actors::items::ItemDataType;
 use crate::game_module::game_constants::{
     ITEM_ENERGY_BALL, ITEM_SPIRIT_BALL, MATERIAL_INTRO_IMAGE, MATERIAL_UI_NONE, RECORD_DEFAULT_INCREMENT,
@@ -1251,9 +1252,9 @@ impl<'a> GameUIManager<'a> {
         }
     }
 
-    pub fn open_player_interaction_menu(&mut self, player: RcRefCell<Character<'a>>) {
+    pub fn open_bed_interaction_menu(&mut self, target_bed: RcRefCell<Prop<'a>>) {
         if let Some(menu) = self._npc_interaction_menu_widget.as_mut() {
-            menu.open_player_interaction_menu(player);
+            menu.open_bed_interaction_menu(target_bed);
         }
     }
 

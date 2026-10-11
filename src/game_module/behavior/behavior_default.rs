@@ -2,8 +2,7 @@ use crate::game_module::actors::character::{Character, MoveAnimationState};
 use crate::game_module::behavior::behavior_base::{BehaviorBase, BehaviorData, BehaviorSaveData, BehaviorState};
 use crate::game_module::behavior::behavior_common::{
     IntimacyFollowResult, begin_eating, begin_idle, begin_roaming, begin_wake_up, is_player_too_far_for_intimacy,
-    is_wrap_up_the_day, should_idle_go_roaming, should_roaming_go_idle, update_eating_should_idle,
-    update_intimacy_follow, update_wake_up_should_idle,
+    should_roaming_go_idle, update_eating_should_idle, update_intimacy_follow, update_wake_up_should_idle,
 };
 use nalgebra::Vector3;
 use rust_engine_3d::utilities::system::State;
@@ -67,7 +66,7 @@ impl<'a> BehaviorBase<'a> for BehaviorDefault<'a> {
                             self.set_next_behavior(BehaviorState::Hunger, true);
                         } else if is_player_too_far_for_intimacy(owner, target) {
                             self.set_next_behavior(BehaviorState::Follow, false);
-                        } else if should_idle_go_roaming(&mut self._behavior_data, owner) {
+                        } else if self._behavior_data.is_end_behavior_time() {
                             self.set_next_behavior(BehaviorState::Roaming, false);
                         }
                     }
@@ -143,13 +142,7 @@ impl<'a> BehaviorBase<'a> for BehaviorDefault<'a> {
                 BehaviorState::Follow => match state {
                     State::Begin => {}
                     State::Update => match update_intimacy_follow(owner, target) {
-                        IntimacyFollowResult::Arrived => {
-                            if is_wrap_up_the_day() {
-                                self.set_next_behavior(BehaviorState::Idle, false);
-                            } else {
-                                self.set_next_behavior(BehaviorState::Roaming, false);
-                            }
-                        }
+                        IntimacyFollowResult::Arrived => self.set_next_behavior(BehaviorState::Roaming, false),
                         IntimacyFollowResult::Moving => {}
                         IntimacyFollowResult::NotFollowing => self.set_next_behavior(BehaviorState::Idle, false),
                     },

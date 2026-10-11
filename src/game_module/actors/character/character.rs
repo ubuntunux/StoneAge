@@ -1355,8 +1355,10 @@ impl<'a> Character<'a> {
                 .cloned()
                 .unwrap_or_else(|| self._controller._nearest_interaction_object.clone());
             match target_interaction {
-                InteractionObject::PropBed(_) => {
+                InteractionObject::PropBed(prop) => {
                     self.set_move_idle();
+                    get_game_client_mut().set_next_game_phase(GamePhase::Interaction);
+                    get_game_ui_manager_mut().open_bed_interaction_menu(prop.clone());
                 }
                 InteractionObject::PropPickup(_) => {
                     self.set_next_action_animation(ActionAnimationState::Pickup, 2.0);

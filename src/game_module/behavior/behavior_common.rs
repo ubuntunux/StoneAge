@@ -15,42 +15,25 @@ use rust_engine_3d::utilities::math::lerp;
 use crate::game_module::game_service_locator::get_game_scene_manager;
 use crate::game_module::scenario::scenario::ScenarioType;
 
-pub fn is_wrap_up_the_day() -> bool {
-    get_game_scene_manager().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay)
-}
-
 pub fn begin_idle(data: &mut BehaviorData, owner: &mut Character) {
     owner.set_move_idle();
     data.set_behavior_time(lerp(NPC_IDLE_TERM_MIN, NPC_IDLE_TERM_MAX, rand::random::<f32>()));
 }
 
-/// Returns true when idle time has ended and owner should transition to roaming.
-/// If ScenarioWrapUpTheDay is active, owner remains in idle and timer is refreshed.
-pub fn should_idle_go_roaming(data: &mut BehaviorData, owner: &mut Character) -> bool {
-    if !data.is_end_behavior_time() {
-        return false;
-    }
-    if is_wrap_up_the_day() {
-        begin_idle(data, owner);
-        false
-    } else {
-        true
-    }
-}
-
-/// Pick a random roam target around the spawn point, or around the player if intimacy-following.
+/// Pick a random roam target around the spawn point, or around the player if intimacy-following or for Ewa/Koa during WrapUpTheDay phase.
 pub fn begin_roaming(data: &mut BehaviorData, owner: &mut Character, target: Option<&Character>) {
-    if is_wrap_up_the_day() {
-        owner.set_move_idle();
-        return;
-    }
+    let name = owner.get_character_name().as_str();
+    let is_ewa_or_koa = name.contains("ewa") || name.contains("koa");
+
+    let is_wrap_up_the_day_for_partner =
+        is_ewa_or_koa && get_game_scene_manager().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay);
 
     let is_intimate_following = owner.is_following_intimacy()
         && matches!(target, Some(t) if
             t.is_alive() && (t.get_position() - owner.get_position()).norm() <= INTIMACY_FOLLOW_RANGE
         );
 
-    let roam_radius = if is_intimate_following {
+    let roam_radius = if is_wrap_up_the_day_for_partner || is_intimate_following {
         INTIMACY_ROAMING_RADIUS
     } else {
         NPC_ROAMING_RADIUS
@@ -66,7 +49,13 @@ pub fn begin_roaming(data: &mut BehaviorData, owner: &mut Character, target: Opt
         },
     ) * roam_radius;
 
-    let center_point = if is_intimate_following {
+    let player_pos = target
+        .map(|t| *t.get_position())
+        .or_else(|| get_game_scene_manager().get_maybe_player().as_ref().map(|p| *p.borrow().get_position()));
+
+    let center_point = if is_wrap_up_the_day_for_partner {
+        player_pos.unwrap_or(data._spawn_point)
+    } else if is_intimate_following {
         *target.unwrap().get_position()
     } else {
         data._spawn_point
@@ -79,11 +68,8 @@ pub fn begin_roaming(data: &mut BehaviorData, owner: &mut Character, target: Opt
     owner.set_run(false);
 }
 
-/// Returns true when roaming should end: timeout, arrived, blocked, or WrapUpTheDay phase.
+/// Returns true when roaming should end: timeout, arrived, or blocked.
 pub fn should_roaming_go_idle(data: &BehaviorData, owner: &Character) -> bool {
-    if is_wrap_up_the_day() {
-        return true;
-    }
     if data.is_end_behavior_time() {
         return true;
     }
@@ -97,8 +83,7 @@ pub fn should_roaming_go_idle(data: &BehaviorData, owner: &Character) -> bool {
 
 /// Returns true when the owner is intimacy-following and the player has moved beyond INTIMACY_FOLLOW_RANGE.
 pub fn is_player_too_far_for_intimacy(owner: &Character, target: Option<&Character>) -> bool {
-    !is_wrap_up_the_day()
-        && owner.is_following_intimacy()
+    owner.is_following_intimacy()
         && matches!(target, Some(t) if
             t.is_alive() && t._is_player
             && (t.get_position() - owner.get_position()).norm() > INTIMACY_FOLLOW_RANGE
@@ -114,9 +99,6 @@ pub enum IntimacyFollowResult {
 }
 
 pub fn update_intimacy_follow(owner: &mut Character, target: Option<&Character>) -> IntimacyFollowResult {
-    if is_wrap_up_the_day() {
-        return IntimacyFollowResult::NotFollowing;
-    }
     if !owner.is_following_intimacy() {
         return IntimacyFollowResult::NotFollowing;
     }
@@ -194,9 +176,6 @@ pub fn update_chase(owner: &mut Character, target: Option<&Character>) -> Behavi
         if owner.is_following_intimacy() && target_ref._is_player {
             match update_intimacy_follow(owner, target) {
                 IntimacyFollowResult::Arrived => {
-                    if is_wrap_up_the_day() {
-                        return BehaviorState::Idle;
-                    }
                     return BehaviorState::Roaming;
                 }
                 IntimacyFollowResult::Moving | IntimacyFollowResult::NotFollowing => {}

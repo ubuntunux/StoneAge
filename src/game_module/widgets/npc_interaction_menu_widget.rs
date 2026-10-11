@@ -1,4 +1,5 @@
 use crate::game_module::actors::character::{Character, CharacterDataType, RequestType};
+use crate::game_module::actors::props::Prop;
 use crate::game_module::game_client::GamePhase;
 use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, AUDIO_SELECT_ITEM};
 use crate::game_module::game_service_locator::{
@@ -34,8 +35,6 @@ pub enum NpcInteractionOption {
     GiveAllResources,
     Dance,
     GiveItem,
-    Cooking,
-    EatFood,
     Sleep,
     Close,
 }
@@ -61,8 +60,6 @@ impl NpcInteractionOption {
                     String::from("Give Item")
                 }
             }
-            NpcInteractionOption::Cooking => String::from("Cooking"),
-            NpcInteractionOption::EatFood => String::from("Eat Food"),
             NpcInteractionOption::Sleep => String::from("Sleep"),
             NpcInteractionOption::Close => String::from("Close"),
         }
@@ -88,7 +85,7 @@ pub struct NpcInteractionMenuWidget<'a> {
     pub _button_container: Rc<WidgetDefault<'a>>,
     pub _buttons: Vec<NpcInteractionButton<'a>>,
     pub _target_npc: Option<RcRefCell<Character<'a>>>,
-    pub _is_player_menu: bool,
+    pub _target_bed: Option<RcRefCell<Prop<'a>>>,
     pub _selected_index: usize,
     pub _is_opened: bool,
 }
@@ -105,7 +102,6 @@ impl<'a> NpcInteractionMenuWidget<'a> {
             ui_comp.set_halign(HorizontalAlign::CENTER);
             ui_comp.set_valign(VerticalAlign::CENTER);
             ui_comp.set_pivot_preset(PIVOT_CENTER_LEFT);
-            ui_comp.set_margin_left(150.0);
             ui_comp.set_renderable(false);
             ui_comp.set_expandable_y(true);
             ui_comp.set_enable(false);
@@ -144,7 +140,7 @@ impl<'a> NpcInteractionMenuWidget<'a> {
             _button_container: button_container,
             _buttons: Vec::new(),
             _target_npc: None,
-            _is_player_menu: false,
+            _target_bed: None,
             _selected_index: 0,
             _is_opened: false,
         }
@@ -156,7 +152,7 @@ impl<'a> NpcInteractionMenuWidget<'a> {
 
     pub fn open_npc_interaction_menu(&mut self, target_npc: RcRefCell<Character<'a>>) {
         let _npc_name = target_npc.borrow()._character_data.borrow()._name.clone();
-        self._is_player_menu = false;
+        self._target_bed = None;
         self._target_npc = Some(target_npc.clone());
         self._selected_index = 0;
 
@@ -172,9 +168,9 @@ impl<'a> NpcInteractionMenuWidget<'a> {
         }
     }
 
-    pub fn open_player_interaction_menu(&mut self, player: RcRefCell<Character<'a>>) {
-        self._is_player_menu = true;
-        self._target_npc = Some(player);
+    pub fn open_bed_interaction_menu(&mut self, target_bed: RcRefCell<Prop<'a>>) {
+        self._target_npc = None;
+        self._target_bed = Some(target_bed);
         self._selected_index = 0;
 
         self.rebuild_buttons();
@@ -196,6 +192,7 @@ impl<'a> NpcInteractionMenuWidget<'a> {
             parent_mut.remove_widget(self._layer.as_ref());
             ptr_as_mut(self._layer.as_ref()).get_ui_component_mut().set_enable(false);
             self._target_npc = None;
+            self._target_bed = None;
             get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
             if get_game_client_mut().is_game_phase(GamePhase::Interaction) {
                 get_game_client_mut().set_next_game_phase(GamePhase::GamePlay);
@@ -224,11 +221,6 @@ impl<'a> NpcInteractionMenuWidget<'a> {
         btn_container_mut.clear_widgets();
         self._buttons.clear();
 
-        let target_npc_rc = match &self._target_npc {
-            Some(npc) => npc.clone(),
-            None => return,
-        };
-
         let character_manager = get_character_manager();
         let player = if character_manager.is_valid_player() {
             Some(character_manager.get_player().borrow())
@@ -236,22 +228,22 @@ impl<'a> NpcInteractionMenuWidget<'a> {
             None
         };
 
-        let target_npc_ref = target_npc_rc.borrow();
-        let is_wife = target_npc_ref.get_character_type() == CharacterDataType::Wife;
-        let request_type = target_npc_ref.get_request_type();
-        let request_type_str = match request_type {
-            RequestType::Cooking => Some("Cooking"),
-            RequestType::Craft => Some("Craft"),
-            _ => None,
-        };
-
+        let mut request_type_str: Option<&str> = None;
         let mut options = Vec::new();
-        if self._is_player_menu {
-            options.push(NpcInteractionOption::Cooking);
-            options.push(NpcInteractionOption::EatFood);
-            options.push(NpcInteractionOption::Dance);
+
+        if self._target_bed.is_some() {
             options.push(NpcInteractionOption::Sleep);
-        } else {
+            options.push(NpcInteractionOption::Close);
+        } else if let Some(target_npc_rc) = &self._target_npc {
+            let target_npc_ref = target_npc_rc.borrow();
+            let is_wife = target_npc_ref.get_character_type() == CharacterDataType::Wife;
+            let request_type = target_npc_ref.get_request_type();
+            request_type_str = match request_type {
+                RequestType::Cooking => Some("Cooking"),
+                RequestType::Craft => Some("Craft"),
+                _ => None,
+            };
+
             options.push(NpcInteractionOption::Talk);
 
             if request_type_str.is_some() {
@@ -272,6 +264,8 @@ impl<'a> NpcInteractionMenuWidget<'a> {
             }
 
             options.push(NpcInteractionOption::Close);
+        } else {
+            return;
         }
 
         let eatable_item_name = player
@@ -404,14 +398,7 @@ impl<'a> NpcInteractionMenuWidget<'a> {
     }
 
     pub fn execute_option(&mut self, option: NpcInteractionOption) {
-        let target_npc = match &self._target_npc {
-            Some(npc) => npc.clone(),
-            None => {
-                self.close_npc_interaction_menu();
-                return;
-            }
-        };
-
+        let target_npc = self._target_npc.clone();
         self.close_npc_interaction_menu();
 
         let character_manager = get_character_manager();
@@ -420,51 +407,48 @@ impl<'a> NpcInteractionMenuWidget<'a> {
         }
         let mut player = character_manager.get_player().borrow_mut();
 
-        if self._is_player_menu {
-            match option {
-                NpcInteractionOption::Cooking => {
-                    get_game_client_mut().set_next_game_phase(GamePhase::OpenCooking);
+        match option {
+            NpcInteractionOption::Talk => {
+                if let Some(target_npc) = &target_npc {
+                    player.execute_npc_talk(target_npc);
                 }
-                NpcInteractionOption::EatFood => {
-                    get_game_client_mut().set_next_game_phase(GamePhase::OpenTableStorage);
-                    player.set_move_idle();
-                }
-                NpcInteractionOption::Dance => {
-                    player.set_action_dance();
-                }
-                NpcInteractionOption::Sleep => {
-                    if let Some(scenario) =
-                        get_game_scene_manager_mut().get_game_scenario(ScenarioType::ScenarioWrapUpTheDay)
-                    {
-                        let scenario_wrap_up = ptr_as_mut(scenario.as_ptr() as *const ScenarioWrapUpTheDay);
-                        scenario_wrap_up.request_sleep();
-                    }
-                }
-                _ => {}
             }
-        } else {
-            match option {
-                NpcInteractionOption::Talk => {
-                    player.execute_npc_talk(&target_npc);
+            NpcInteractionOption::Request => {
+                if let Some(target_npc) = &target_npc {
+                    player.execute_npc_request(target_npc);
                 }
-                NpcInteractionOption::Request => {
-                    player.execute_npc_request(&target_npc);
-                }
-                NpcInteractionOption::StorageTable => {
-                    player.execute_npc_table_storage(&target_npc);
-                }
-                NpcInteractionOption::GiveAllResources => {
-                    player.execute_npc_give_all_materials(&target_npc);
-                }
-                NpcInteractionOption::Dance => {
-                    player.execute_npc_dance(&target_npc);
-                }
-                NpcInteractionOption::GiveItem => {
-                    player.execute_npc_give_item(&target_npc);
-                }
-                NpcInteractionOption::Close => {}
-                _ => {}
             }
+            NpcInteractionOption::StorageTable => {
+                if let Some(target_npc) = &target_npc {
+                    player.execute_npc_table_storage(target_npc);
+                }
+            }
+            NpcInteractionOption::GiveAllResources => {
+                if let Some(target_npc) = &target_npc {
+                    player.execute_npc_give_all_materials(target_npc);
+                }
+            }
+            NpcInteractionOption::Dance => {
+                if let Some(target_npc) = &target_npc {
+                    player.execute_npc_dance(target_npc);
+                }
+            }
+            NpcInteractionOption::GiveItem => {
+                if let Some(target_npc) = &target_npc {
+                    player.execute_npc_give_item(target_npc);
+                }
+            }
+            NpcInteractionOption::Sleep => {
+                if let Some(scenario) =
+                    get_game_scene_manager_mut().get_game_scenario(ScenarioType::ScenarioWrapUpTheDay)
+                {
+                    let scenario_wrap_up = ptr_as_mut(scenario.as_ptr() as *const ScenarioWrapUpTheDay);
+                    scenario_wrap_up.request_sleep();
+                } else {
+                    get_game_scene_manager_mut().open_wrap_up_the_day_sleep();
+                }
+            }
+            NpcInteractionOption::Close => {}
         }
     }
 
@@ -478,17 +462,23 @@ impl<'a> NpcInteractionMenuWidget<'a> {
             return;
         }
 
-        let target_npc = match &self._target_npc {
-            Some(npc) => npc.clone(),
-            None => {
-                self.close_npc_interaction_menu();
-                return;
-            }
+        let target_pos = if let Some(npc) = &self._target_npc {
+            *npc.borrow().get_position() + nalgebra::Vector3::new(0.0, 1.8, 0.0)
+        } else if let Some(bed) = &self._target_bed {
+            let bed_borrow = bed.borrow();
+            let bounding_box = bed_borrow.get_bounding_box();
+            nalgebra::Vector3::new(
+                bounding_box._center.x,
+                bounding_box._min.y + 1.0,
+                bounding_box._center.z,
+            )
+        } else {
+            self.close_npc_interaction_menu();
+            return;
         };
 
-        // Update screen position tracking based on NPC world position
+        // Update screen position tracking based on target world position
         let main_camera = get_scene_manager().get_main_camera();
-        let target_pos = *target_npc.borrow().get_position() + nalgebra::Vector3::new(0.0, 1.8, 0.0);
         let screen_pos =
             main_camera.convert_world_to_screen(&target_pos, true) / rust_engine_3d::scene::ui::get_global_dpi_scale();
 
@@ -506,10 +496,8 @@ impl<'a> NpcInteractionMenuWidget<'a> {
             || joystick_input_data._btn_b == ButtonState::Pressed;
 
         if press_cancel {
-            if !self._is_player_menu {
-                self.close_npc_interaction_menu();
-                return;
-            }
+            self.close_npc_interaction_menu();
+            return;
         }
 
         // Navigation (Up/Down / WS / DPad)

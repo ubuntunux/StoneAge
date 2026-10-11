@@ -2,8 +2,8 @@ use crate::game_module::actors::character::{Character, MoveAnimationState};
 use crate::game_module::behavior::behavior_base::{BehaviorBase, BehaviorData, BehaviorSaveData, BehaviorState};
 use crate::game_module::behavior::behavior_common::{
     begin_attack, begin_eating, begin_idle, begin_interaction, begin_roaming, begin_wake_up,
-    is_player_too_far_for_intimacy, should_idle_go_roaming, should_roaming_go_idle, update_attack, update_chase,
-    update_eating_should_idle, update_interaction_should_idle, update_wake_up_should_idle,
+    is_player_too_far_for_intimacy, should_roaming_go_idle, update_attack, update_chase, update_eating_should_idle,
+    update_interaction_should_idle, update_wake_up_should_idle,
 };
 use crate::game_module::game_constants::NPC_TRACKING_RANGE;
 use nalgebra::Vector3;
@@ -98,7 +98,7 @@ impl<'a> BehaviorBase<'a> for BehaviorRoamer<'a> {
                             self.set_next_behavior(BehaviorState::Chase, false);
                         } else if is_player_too_far_for_intimacy(owner, target) {
                             self.set_next_behavior(BehaviorState::Chase, false);
-                        } else if should_idle_go_roaming(&mut self._behavior_data, owner) {
+                        } else if self._behavior_data.is_end_behavior_time() {
                             self.set_next_behavior(BehaviorState::Roaming, false);
                         }
                     }

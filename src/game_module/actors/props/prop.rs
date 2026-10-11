@@ -449,9 +449,33 @@ impl<'a> PropManager<'a> {
                     let is_interaction_object = player._controller.is_interaction_object(key);
                     let prop_type = prop._prop_data.borrow()._prop_type;
                     let bounding_box = prop.get_bounding_box();
-
                     match prop_type {
-                        PropDataType::Bed => {}
+                        PropDataType::Bed => {
+                            let is_in_player_range = is_available_interaction
+                                && if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
+                                    player.check_in_range_xy(
+                                        prop.get_collision(),
+                                        CHARACTER_INTERACTION_DISTANCE,
+                                        check_direction,
+                                    )
+                                } else {
+                                    player.check_in_range(
+                                        prop.get_collision(),
+                                        CHARACTER_INTERACTION_DISTANCE,
+                                        check_direction,
+                                    )
+                                };
+
+                            if !is_interaction_object && is_in_player_range {
+                                player
+                                    ._controller
+                                    .add_interaction_object(InteractionObject::PropBed(prop_refcell.clone()));
+                            } else if is_interaction_object && !is_in_player_range {
+                                player
+                                    ._controller
+                                    .remove_interaction_object(InteractionObject::PropBed(prop_refcell.clone()));
+                            }
+                        }
                         PropDataType::Ceiling => {
                             prop._render_object
                                 .borrow_mut()

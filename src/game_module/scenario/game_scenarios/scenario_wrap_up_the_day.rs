@@ -78,7 +78,6 @@ impl<'a> ScenarioWrapUpTheDay<'a> {
         scenario_type: ScenarioType,
         scenario_create_info: &ScenarioDataCreateInfo,
     ) -> RcRefCell<ScenarioWrapUpTheDay<'a>> {
-        get_game_client_mut().set_is_available_interaction(false);
         newRcRefCell(ScenarioWrapUpTheDay {
             _scenario_type: scenario_type,
             _scenario_create_info: scenario_create_info.clone(),
@@ -136,7 +135,7 @@ impl<'a> ScenarioWrapUpTheDay<'a> {
         let camera_rotation = Vector3::new(0.4, -1.4, 0.0);
         let camera_rotation_matrix =
             math::make_rotation_matrix(camera_rotation.x, camera_rotation.y, camera_rotation.z);
-        self._bed_camera_position = pivot - camera_rotation_matrix.column(2).xyz() * (CAMERA_DISTANCE_MIN + 0.0);
+        self._bed_camera_position = pivot - camera_rotation_matrix.column(2).xyz() * (CAMERA_DISTANCE_MIN + 2.0);
         get_game_controller_mut().set_camera_fixed(true);
         self._is_camera_target_initialized = false;
         self.update_bed_camera(0.0);
@@ -420,7 +419,6 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
     fn on_close_game_scene(&mut self, _game_scene_data_name: &str) {}
 
     fn on_open_game_scene(&mut self, _game_scene_data_name: &str) {
-        get_game_client_mut().set_is_available_interaction(false);
         let game_scene_manager = get_game_scene_manager();
         self._player = game_scene_manager.get_maybe_player().clone();
         self._actor_ewa = game_scene_manager
@@ -555,11 +553,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                     State::End => {}
                 },
                 ScenarioPhase::Update => match state {
-                    State::Begin => {
-                        if let Some(player) = &self._player {
-                            game_ui_manager.open_player_interaction_menu(player.clone());
-                        }
-                    }
+                    State::Begin => {}
                     State::Update => {
                         let engine_core = get_engine_core();
                         let is_any_input = engine_core._keyboard_input_data.is_any_key_pressed()
@@ -672,15 +666,6 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                                 item_manager.detach_item(&mut actor.borrow_mut());
                             }
                             self._scenario_track.set_next_scenario_phase(ScenarioPhase::GoToSleep, None);
-                        } else if !game_ui_manager.is_opened_npc_interaction_menu()
-                            && !game_ui_manager.is_opened_cooking()
-                            && !game_ui_manager.is_opened_table_storage()
-                            && !player_is_dancing
-                            && !self._waiting_for_dance_cancel_release
-                        {
-                            if let Some(player) = &self._player {
-                                game_ui_manager.open_player_interaction_menu(player.clone());
-                            }
                         }
                     }
                     State::End => {}
