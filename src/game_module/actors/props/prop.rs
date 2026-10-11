@@ -11,8 +11,9 @@ use crate::game_module::game_constants::{
 };
 use crate::game_module::game_scene_manager::{PropCreateInfoMap, PropSaveDataMap};
 use crate::game_module::game_service_locator::{
-    get_character_manager, get_game_client, get_game_resources, get_item_manager_mut,
+    get_character_manager, get_game_client, get_game_resources, get_game_scene_manager, get_item_manager_mut,
 };
+use crate::game_module::scenario::scenario::ScenarioType;
 use nalgebra::{Vector3, Vector4};
 use rand;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
@@ -462,8 +463,10 @@ impl<'a> PropManager<'a> {
                                 to_player_distance
                                     - (player.get_collision()._bounding_box._mag_xz + bounding_box._mag_xz) * 0.5,
                             );
+                            let is_wrap_up =
+                                get_game_scene_manager().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay);
                             let is_in_player_range =
-                                is_available_interaction && to_player_distance <= CHARACTER_INTERACTION_DISTANCE;
+                                is_available_interaction && is_wrap_up && to_player_distance <= CHARACTER_INTERACTION_DISTANCE;
 
                             if !is_interaction_object && is_in_player_range {
                                 player

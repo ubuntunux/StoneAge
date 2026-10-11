@@ -441,7 +441,12 @@ impl<'a> ControllerHelpWidget<'a> {
 
         let (primary_type, primary_text, request_type) = match interaction_object {
             InteractionObject::PropBed(prop) => {
-                (KeyBindingType::Interaction, prop.borrow()._prop_data.borrow()._name.clone(), RequestType::None)
+                let is_wrap_up = get_game_scene_manager().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay);
+                if is_wrap_up {
+                    (KeyBindingType::Interaction, prop.borrow()._prop_data.borrow()._name.clone(), RequestType::None)
+                } else {
+                    (KeyBindingType::None, String::new(), RequestType::None)
+                }
             }
             InteractionObject::PropPickup(prop) => (
                 KeyBindingType::Interaction,

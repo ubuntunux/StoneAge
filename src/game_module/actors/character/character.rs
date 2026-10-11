@@ -18,6 +18,7 @@ use crate::game_module::game_service_locator::{
     get_game_scene_manager_mut, get_game_ui_manager_mut, get_item_manager,
 };
 use crate::game_module::game_weather::WeatherType;
+use crate::game_module::scenario::scenario::ScenarioType;
 use crate::game_module::widgets::game_menu_widget::character_list_helper::{AffinityTier, get_affinity_tier};
 use nalgebra::{Vector3, Vector4};
 use rust_engine_3d::audio::audio_manager::AudioLoop;
@@ -1356,9 +1357,11 @@ impl<'a> Character<'a> {
                 .unwrap_or_else(|| self._controller._nearest_interaction_object.clone());
             match target_interaction {
                 InteractionObject::PropBed(prop) => {
-                    self.set_move_idle();
-                    get_game_client_mut().set_next_game_phase(GamePhase::Interaction);
-                    get_game_ui_manager_mut().open_bed_interaction_menu(prop.clone());
+                    if get_game_scene_manager().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay) {
+                        self.set_move_idle();
+                        get_game_client_mut().set_next_game_phase(GamePhase::Interaction);
+                        get_game_ui_manager_mut().open_bed_interaction_menu(prop.clone());
+                    }
                 }
                 InteractionObject::PropPickup(_) => {
                     self.set_next_action_animation(ActionAnimationState::Pickup, 2.0);

@@ -3,7 +3,7 @@ use crate::game_module::actors::props::Prop;
 use crate::game_module::game_client::GamePhase;
 use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, AUDIO_SELECT_ITEM};
 use crate::game_module::game_service_locator::{
-    get_character_manager, get_game_client_mut, get_game_scene_manager_mut,
+    get_character_manager, get_game_client_mut, get_game_scene_manager, get_game_scene_manager_mut,
 };
 use crate::game_module::game_ui_manager::move_mouse_to_ui_component;
 use crate::game_module::scenario::game_scenarios::scenario_wrap_up_the_day::ScenarioWrapUpTheDay;
@@ -169,6 +169,10 @@ impl<'a> NpcInteractionMenuWidget<'a> {
     }
 
     pub fn open_bed_interaction_menu(&mut self, target_bed: RcRefCell<Prop<'a>>) {
+        if !get_game_scene_manager().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay) {
+            return;
+        }
+
         self._target_npc = None;
         self._target_bed = Some(target_bed);
         self._selected_index = 0;
