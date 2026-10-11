@@ -136,7 +136,7 @@ impl<'a> ScenarioWrapUpTheDay<'a> {
         let camera_rotation = Vector3::new(0.4, -1.4, 0.0);
         let camera_rotation_matrix =
             math::make_rotation_matrix(camera_rotation.x, camera_rotation.y, camera_rotation.z);
-        self._bed_camera_position = pivot - camera_rotation_matrix.column(2).xyz() * (CAMERA_DISTANCE_MIN + 6.0);
+        self._bed_camera_position = pivot - camera_rotation_matrix.column(2).xyz() * (CAMERA_DISTANCE_MIN + 1.0);
         get_game_controller_mut().set_camera_fixed(true);
         self._is_camera_target_initialized = false;
         self.update_bed_camera(0.0);
@@ -204,7 +204,7 @@ fn set_actor_table_position(
     direction: &Vector3<f32>,
 ) {
     if let (Some(actor_ref), Some(table_ref)) = (actor.as_ref(), table.as_ref()) {
-        let mut pos = table_ref.borrow().get_position() - math::safe_normalize(direction) * 2.0;
+        let mut pos = table_ref.borrow().get_position() - math::safe_normalize(direction) * 1.0;
         pos.y = scene_manager.get_height_bilinear(&pos, 0);
         actor_ref.borrow_mut().set_position(&pos);
         actor_ref.borrow_mut().look_at(table_ref.borrow().get_position());
@@ -499,19 +499,19 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                                 get_scene_manager(),
                                 &self._player,
                                 &self._prop_table,
-                                &Vector3::new(-0.707, 0.0, 0.707),
+                                &Vector3::new(0.0, 0.0, -1.0),
                             );
                             set_actor_table_position(
                                 get_scene_manager(),
                                 &self._actor_ewa,
                                 &self._prop_table,
-                                &Vector3::new(0.0, 0.0, 1.0),
+                                &Vector3::new(1.0, 0.0, -1.0),
                             );
                             set_actor_table_position(
                                 get_scene_manager(),
                                 &self._actor_koa,
                                 &self._prop_table,
-                                &Vector3::new(-1.0, 0.0, 0.0),
+                                &Vector3::new(1.0, 0.0, 0.0),
                             );
                             game_ui_manager.set_auto_fade_inout(true);
                             self._scenario_track.set_next_scenario_phase(ScenarioPhase::ResourceSettlement, None);

@@ -2,8 +2,9 @@ use crate::game_module::actors::character::{ActionAnimationState, Character, Mov
 use crate::game_module::behavior::behavior_base::{BehaviorBase, BehaviorData, BehaviorSaveData, BehaviorState};
 use crate::game_module::behavior::behavior_common::{
     IntimacyFollowResult, begin_attack, begin_eating, begin_idle, begin_interaction, begin_roaming, begin_wake_up,
-    is_player_too_far_for_intimacy, should_roaming_go_idle, update_attack, update_chase, update_eating_should_idle,
-    update_interaction_should_idle, update_intimacy_follow, update_wake_up_should_idle,
+    is_player_too_far_for_intimacy, is_wrap_up_the_day, should_idle_go_roaming, should_roaming_go_idle, update_attack,
+    update_chase, update_eating_should_idle, update_interaction_should_idle, update_intimacy_follow,
+    update_wake_up_should_idle,
 };
 use crate::game_module::game_constants::{CIVILIAN_DEAD_TIME, NPC_TRACKING_RANGE};
 use nalgebra::Vector3;
@@ -96,7 +97,7 @@ impl<'a> BehaviorBase<'a> for BehaviorCivilian<'a> {
                             self.set_next_behavior(BehaviorState::Chase, false);
                         } else if owner.get_stats().is_hungry() {
                             self.set_next_behavior(BehaviorState::Hunger, true);
-                        } else if self._behavior_data.is_end_behavior_time() {
+                        } else if should_idle_go_roaming(&mut self._behavior_data, owner) {
                             self.set_next_behavior(BehaviorState::Roaming, true);
                         } else if is_player_too_far_for_intimacy(owner, target) {
                             self.set_next_behavior(BehaviorState::Follow, false);
@@ -225,7 +226,13 @@ impl<'a> BehaviorBase<'a> for BehaviorCivilian<'a> {
                 BehaviorState::Follow => match state {
                     State::Begin => {}
                     State::Update => match update_intimacy_follow(owner, target) {
-                        IntimacyFollowResult::Arrived => self.set_next_behavior(BehaviorState::Roaming, false),
+                        IntimacyFollowResult::Arrived => {
+                            if is_wrap_up_the_day() {
+                                self.set_next_behavior(BehaviorState::Idle, false);
+                            } else {
+                                self.set_next_behavior(BehaviorState::Roaming, false);
+                            }
+                        }
                         IntimacyFollowResult::Moving => {}
                         IntimacyFollowResult::NotFollowing => self.set_next_behavior(BehaviorState::Idle, false),
                     },
