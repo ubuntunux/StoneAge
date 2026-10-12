@@ -555,6 +555,9 @@ impl<'a> GameClient<'a> {
                         if game_ui_manager.is_cooking_minigame_active() {
                             game_ui_manager.close_cooking_minigame();
                         }
+                        if game_scene_manager.has_game_scenario(ScenarioType::ScenarioWrapUpTheDay) {
+                            game_ui_manager.transfer_all_eatable_items_to_table_storage();
+                        }
                         game_ui_manager.set_cross_hair_visible(false);
                     }
                 },

@@ -1373,6 +1373,10 @@ impl<'a> Character<'a> {
                 InteractionObject::PropTable(prop) => {
                     self.look_at(prop.borrow().get_position());
                     self.set_move_idle();
+                    if get_game_scene_manager().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay) {
+                        get_game_client_mut().set_next_game_phase(GamePhase::Interaction);
+                        get_game_ui_manager_mut().open_table_interaction_menu(prop.clone());
+                    }
                 }
                 InteractionObject::Npc(character) => {
                     if get_game_client().is_available_interaction() {

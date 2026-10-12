@@ -1306,6 +1306,12 @@ impl<'a> GameUIManager<'a> {
         }
     }
 
+    pub fn open_table_interaction_menu(&mut self, target_table: RcRefCell<Prop<'a>>) {
+        if let Some(menu) = self._npc_interaction_menu_widget.as_mut() {
+            menu.open_table_interaction_menu(target_table);
+        }
+    }
+
     pub fn close_npc_interaction_menu(&mut self) {
         if let Some(menu) = self._npc_interaction_menu_widget.as_mut() {
             menu.close_npc_interaction_menu();

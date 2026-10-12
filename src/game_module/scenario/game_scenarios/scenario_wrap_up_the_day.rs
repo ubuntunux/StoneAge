@@ -560,7 +560,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                         );
 
                         if !game_ui_manager.is_opened_daily_settlement() {
-                            self._scenario_track.set_next_scenario_phase(ScenarioPhase::Cooking, None);
+                            self._scenario_track.set_next_scenario_phase(ScenarioPhase::Update, None);
                         }
                     }
                     State::End => {}

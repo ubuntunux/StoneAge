@@ -462,10 +462,14 @@ impl<'a> ControllerHelpWidget<'a> {
                 String::from("Open Toolbox"),
                 RequestType::None,
             ),
-            InteractionObject::PropTable(_) => {
+            InteractionObject::PropTable(prop) => {
                 let is_wrap_up = get_game_scene_manager().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay);
                 if is_wrap_up {
-                    (KeyBindingType::None, String::default(), RequestType::None)
+                    (
+                        KeyBindingType::Interaction,
+                        prop.borrow()._prop_data.borrow()._name.clone(),
+                        RequestType::None,
+                    )
                 } else {
                     (
                         KeyBindingType::Interaction,
