@@ -365,9 +365,32 @@ impl<'a> CookingWidget<'a> {
             if !widget_ptr.is_null() {
                 ptr_as_mut(widget_ptr).select_recipe(recipe_index);
             }
-            Self::try_cook_recipe(recipe_index);
-            if !widget_ptr.is_null() {
-                ptr_as_mut(widget_ptr).refresh_recipe_labels();
+            if Self::can_cook_recipe(recipe_index) {
+                if !widget_ptr.is_null() {
+                    ptr_as_mut(widget_ptr).close_cooking();
+                }
+                get_game_ui_manager_mut().start_cooking_minigame(recipe_index);
+            } else {
+                let recipe = &COOKING_RECIPES[recipe_index];
+                let recipe_name = Self::get_item_name_from_resource(recipe.item_code());
+                log::warn!("[CookingWidget] Cannot cook {}: insufficient ingredients", recipe_name);
+                if !widget_ptr.is_null() {
+                    ptr_as_mut(widget_ptr).refresh_recipe_labels();
+                }
+            }
+        }
+        true
+    }
+
+    pub fn can_cook_recipe(recipe_index: usize) -> bool {
+        if recipe_index >= COOKING_RECIPES.len() {
+            return false;
+        }
+        let recipe = &COOKING_RECIPES[recipe_index];
+        for req in recipe.ingredients {
+            let have_count = get_game_ui_manager().get_total_item_count(req.item_code());
+            if have_count < req.count {
+                return false;
             }
         }
         true

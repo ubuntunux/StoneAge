@@ -1,4 +1,5 @@
 pub mod controller_help;
+pub mod cooking_minigame_widget;
 pub mod cooking_widget;
 pub mod craft_widget;
 pub mod cross_hair_widget;

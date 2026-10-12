@@ -1,5 +1,5 @@
-use crate::game_module::actors::character::ActionAnimationState;
 use crate::game_module::actors::character::Character;
+use crate::game_module::actors::character::{ActionAnimationState, MoveAnimationState};
 use crate::game_module::actors::props::Prop;
 use crate::game_module::behavior::behavior_base::BehaviorState;
 use crate::game_module::game_constants::{
@@ -18,7 +18,7 @@ use crate::game_module::scenario::scenario::{
     GameScenarioCreateInfo, ScenarioBase, ScenarioDataCreateInfo, ScenarioType,
 };
 use crate::game_module::scenario::scenario_track::ScenarioTrack;
-use nalgebra::Vector3;
+use nalgebra::{Vector2, Vector3};
 use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop};
 use rust_engine_3d::core::engine_service_locator::{get_audio_manager_mut, get_engine_core, get_scene_manager};
 use rust_engine_3d::core::input::ButtonState;
@@ -35,6 +35,7 @@ enum ScenarioPhase {
     None,
     Begin,
     ResourceSettlement,
+    Cooking,
     Update,
     GoToSleep,
     Sleep,
@@ -242,6 +243,7 @@ fn update_actor_table_eating<'a>(
     seat_direction: &Vector3<f32>,
     eat_delay: &mut f32,
     has_eatable_item: bool,
+    force_eat: bool,
     game_ui_manager: &mut GameUIManager<'a>,
 ) {
     let Some(actor) = actor_opt.as_ref() else {
@@ -253,8 +255,9 @@ fn update_actor_table_eating<'a>(
     }
 
     let is_hungry = actor.borrow().get_hunger() > TARGET_HUNGER_THRESHOLD;
+    let should_eat = force_eat || is_hungry;
 
-    if is_hungry {
+    if should_eat {
         if has_eatable_item {
             let is_in_range = is_in_table_interaction_range(&actor.borrow(), table_opt);
 
@@ -295,12 +298,16 @@ fn update_actor_table_eating<'a>(
                         let item_manager = get_game_scene_manager().get_item_manager_mut();
                         let mut actor_ref = actor.borrow_mut();
                         item_manager.attach_item(&mut actor_ref, item_data_name.as_str());
-                        actor_ref.set_next_behavior(BehaviorState::Eating, true);
+                        if actor_ref.is_player() {
+                            actor_ref.set_action_eating();
+                        } else {
+                            actor_ref.set_next_behavior(BehaviorState::Eating, true);
+                        }
                         *eat_delay = EAT_ITEM_DELAY_TIME;
                     }
                 }
             }
-        } else {
+        } else if is_hungry {
             if !actor.borrow().is_move_stop() {
                 actor.borrow_mut().set_move_idle();
             }
@@ -413,6 +420,12 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
         let game_ui_manager = get_game_ui_manager_mut();
         if game_ui_manager.is_opened_daily_settlement() {
             game_ui_manager.close_daily_settlement();
+        }
+        if game_ui_manager.is_opened_cooking() {
+            game_ui_manager.close_cooking();
+        }
+        if game_ui_manager.is_cooking_minigame_active() {
+            game_ui_manager.close_cooking_minigame();
         }
     }
 
@@ -547,13 +560,67 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                         );
 
                         if !game_ui_manager.is_opened_daily_settlement() {
-                            self._scenario_track.set_next_scenario_phase(ScenarioPhase::Update, None);
+                            self._scenario_track.set_next_scenario_phase(ScenarioPhase::Cooking, None);
                         }
                     }
                     State::End => {}
                 },
+                ScenarioPhase::Cooking => match state {
+                    State::Begin => {
+                        self.setup_bed_camera();
+                        game_ui_manager.open_cooking();
+                    }
+                    State::Update => {
+                        let engine_core = get_engine_core();
+                        if game_ui_manager.is_opened_cooking() {
+                            if let Some(player) = &self._player {
+                                let mouse_delta = Vector2::new(
+                                    engine_core._mouse_move_data._mouse_pos_delta.x as f32,
+                                    engine_core._mouse_move_data._mouse_pos_delta.y as f32,
+                                );
+                                game_ui_manager.update_cooking_widget(
+                                    &engine_core._time_data,
+                                    &engine_core._joystick_input_data,
+                                    &engine_core._keyboard_input_data,
+                                    &engine_core._mouse_move_data,
+                                    &engine_core._mouse_input_data,
+                                    &mouse_delta,
+                                    player,
+                                );
+                            }
+                        } else if game_ui_manager.is_cooking_minigame_active() {
+                            game_ui_manager.update_cooking_minigame(
+                                delta_time as f32,
+                                &engine_core._keyboard_input_data,
+                                &engine_core._joystick_input_data,
+                            );
+                        } else {
+                            game_ui_manager.transfer_all_eatable_items_to_table_storage();
+                            self._scenario_track.set_next_scenario_phase(ScenarioPhase::Update, None);
+                        }
+                    }
+                    State::End => {
+                        if game_ui_manager.is_opened_cooking() {
+                            game_ui_manager.close_cooking();
+                        }
+                        if game_ui_manager.is_cooking_minigame_active() {
+                            game_ui_manager.close_cooking_minigame();
+                        }
+                    }
+                },
                 ScenarioPhase::Update => match state {
-                    State::Begin => {}
+                    State::Begin => {
+                        if game_ui_manager.has_eatable_table_storage_item() {
+                            if let Some(player) = &self._player {
+                                let mut player_ref = player.borrow_mut();
+                                if let Some(item_data_name) = game_ui_manager.pop_eatable_table_storage_item() {
+                                    let item_manager = get_game_scene_manager().get_item_manager_mut();
+                                    item_manager.attach_item(&mut player_ref, item_data_name.as_str());
+                                    player_ref.set_action_eating();
+                                }
+                            }
+                        }
+                    }
                     State::Update => {
                         let engine_core = get_engine_core();
                         let is_any_input = engine_core._keyboard_input_data.is_any_key_pressed()
@@ -566,14 +633,26 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                             || engine_core._joystick_input_data._stick_left_direction.x.abs() > 3000
                             || engine_core._joystick_input_data._stick_left_direction.y.abs() > 3000;
 
-                        let mut player_is_dancing =
-                            self._player.as_ref().is_some_and(|p| p.borrow().is_action(ActionAnimationState::Dance));
+                        let mut player_is_acting = self._player.as_ref().is_some_and(|p| {
+                            let p_ref = p.borrow();
+                            p_ref.is_action(ActionAnimationState::Dance)
+                                || p_ref.is_action(ActionAnimationState::Eating)
+                                || p_ref.is_action(ActionAnimationState::Hungry)
+                        });
 
-                        if player_is_dancing && is_any_input {
+                        if player_is_acting && is_any_input {
                             if let Some(player) = &self._player {
-                                player.borrow_mut().set_action_none();
+                                let mut player_ref = player.borrow_mut();
+                                if player_ref.is_action(ActionAnimationState::Eating) {
+                                    let item_manager = get_game_scene_manager().get_item_manager_mut();
+                                    item_manager.detach_item(&mut player_ref);
+                                }
+                                player_ref.set_action_none();
+                                if player_ref.is_move_state(MoveAnimationState::SitDownLoop) {
+                                    player_ref.set_move_idle();
+                                }
                             }
-                            player_is_dancing = false;
+                            player_is_acting = false;
                             self._waiting_for_dance_cancel_release = true;
                         }
 
@@ -582,6 +661,9 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                                 self._waiting_for_dance_cancel_release = false;
                             }
                         }
+
+                        let player_is_dancing =
+                            self._player.as_ref().is_some_and(|p| p.borrow().is_action(ActionAnimationState::Dance));
 
                         if player_is_dancing {
                             let ewa_dancing = self
@@ -631,6 +713,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                                 &Vector3::new(0.0, 0.0, 1.0),
                                 &mut self._ewa_eat_delay,
                                 has_eatable_item,
+                                has_eatable_item,
                                 game_ui_manager,
                             );
 
@@ -639,6 +722,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                                 &self._prop_table,
                                 &Vector3::new(-1.0, 0.0, 0.0),
                                 &mut self._koa_eat_delay,
+                                has_eatable_item,
                                 has_eatable_item,
                                 game_ui_manager,
                             );
@@ -656,6 +740,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                             let item_manager = get_game_scene_manager().get_item_manager_mut();
                             if let Some(actor) = &self._player {
                                 actor.borrow_mut().set_action_none();
+                                item_manager.detach_item(&mut actor.borrow_mut());
                             }
                             if let Some(actor) = &self._actor_ewa {
                                 actor.borrow_mut().set_action_none();

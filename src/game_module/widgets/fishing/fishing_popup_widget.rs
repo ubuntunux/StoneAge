@@ -167,6 +167,46 @@ impl<'a> FishingPopupWidget<'a> {
         name_ui.set_text(&item_name);
     }
 
+    pub fn show_cooking_popup(&mut self, item_data_name: &str) {
+        let (item_name, material_instance) = {
+            let game_resources = get_game_resources();
+            if game_resources.has_item_data(item_data_name) {
+                let item_data = game_resources.get_item_data(item_data_name).borrow();
+                let name = item_data._name.clone();
+                let material =
+                    get_engine_resources().get_material_instance_data(item_data._ui_material_instance.as_str()).clone();
+                (name, material)
+            } else {
+                (
+                    item_data_name.to_string(),
+                    get_engine_resources().get_material_instance_data("materials/ui/material_ui_none").clone(),
+                )
+            }
+        };
+
+        self._remaining_time = FISHING_POPUP_DISPLAY_DURATION;
+        self._is_perfect = true;
+
+        let container_ui = ptr_as_mut(self._container_widget).get_ui_component_mut();
+        container_ui.set_visible(true);
+        container_ui.set_border_color(get_color32(255, 215, 0, 255));
+
+        let title_ui = ptr_as_mut(self._title_widget).get_ui_component_mut();
+        title_ui.set_text("* COOKING COMPLETE! *");
+        title_ui.set_font_color(get_color32(255, 215, 0, 255));
+
+        let badge_ui = ptr_as_mut(self._perfect_badge_widget).get_ui_component_mut();
+        badge_ui.set_text("Delicious Meal Prepared!");
+        badge_ui.set_font_color(get_color32(255, 220, 100, 255));
+        badge_ui.set_visible(true);
+
+        let icon_ui = ptr_as_mut(self._icon_widget).get_ui_component_mut();
+        icon_ui.set_material_instance(Some(material_instance));
+
+        let name_ui = ptr_as_mut(self._name_widget).get_ui_component_mut();
+        name_ui.set_text(&item_name);
+    }
+
     pub fn update(&mut self, delta_time: f32) {
         if self._remaining_time <= 0.0 {
             return;

@@ -465,8 +465,9 @@ impl<'a> PropManager<'a> {
                             );
                             let is_wrap_up =
                                 get_game_scene_manager().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay);
-                            let is_in_player_range =
-                                is_available_interaction && is_wrap_up && to_player_distance <= CHARACTER_INTERACTION_DISTANCE;
+                            let is_in_player_range = is_available_interaction
+                                && is_wrap_up
+                                && to_player_distance <= CHARACTER_INTERACTION_DISTANCE;
 
                             if !is_interaction_object && is_in_player_range {
                                 player

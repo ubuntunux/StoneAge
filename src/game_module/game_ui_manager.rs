@@ -1,12 +1,13 @@
 use crate::game_module::actors::character::{ActorWrapper, Character};
-use crate::game_module::actors::props::Prop;
 use crate::game_module::actors::items::ItemDataType;
+use crate::game_module::actors::props::Prop;
 use crate::game_module::game_constants::{
     ITEM_ENERGY_BALL, ITEM_SPIRIT_BALL, MATERIAL_INTRO_IMAGE, MATERIAL_UI_NONE, RECORD_DEFAULT_INCREMENT,
 };
 use crate::game_module::game_service_locator::{get_character_manager, get_game_resources, get_game_scene_manager};
 use crate::game_module::save_data::save_data::PlayerRecords;
 use crate::game_module::widgets::controller_help::ControllerHelpWidget;
+use crate::game_module::widgets::cooking_minigame_widget::CookingMinigameWidget;
 use crate::game_module::widgets::cooking_widget::CookingWidget;
 use crate::game_module::widgets::cross_hair_widget::CrossHairWidget;
 use crate::game_module::widgets::debug_ui_widget::DebugUIWidget;
@@ -69,6 +70,7 @@ pub struct GameUIManager<'a> {
     pub _fishing_popup_widget: Option<Box<FishingPopupWidget<'a>>>,
     pub _toolbox_widget: Option<Box<ToolboxWidget<'a>>>,
     pub _cooking_widget: Option<Box<CookingWidget<'a>>>,
+    pub _cooking_minigame_widget: Option<Box<CookingMinigameWidget<'a>>>,
     pub _table_storage_widget: Option<Box<TableStorageWidget<'a>>>,
     pub _wrap_up_the_day_widget: Option<Box<WrapUpTheDayWidget<'a>>>,
     pub _npc_interaction_menu_widget: Option<Box<NpcInteractionMenuWidget<'a>>>,
@@ -153,6 +155,7 @@ impl<'a> GameUIManager<'a> {
             _controller_help_widget: None,
             _toolbox_widget: None,
             _cooking_widget: None,
+            _cooking_minigame_widget: None,
             _table_storage_widget: None,
             _wrap_up_the_day_widget: None,
             _npc_interaction_menu_widget: None,
@@ -225,6 +228,9 @@ impl<'a> GameUIManager<'a> {
         )));
         self._toolbox_widget = Some(Box::new(ToolboxWidget::create_toolbox_widget(game_ui_layout_mut)));
         self._cooking_widget = Some(Box::new(CookingWidget::create_cooking_widget(game_ui_layout_mut)));
+        self._cooking_minigame_widget = Some(CookingMinigameWidget::create_cooking_minigame_widget(
+            game_ui_layout_mut,
+        ));
         self._table_storage_widget = Some(TableStorageWidget::create_table_storage_widget(game_ui_layout_mut));
         self._npc_interaction_menu_widget = Some(Box::new(
             NpcInteractionMenuWidget::create_npc_interaction_menu_widget(game_ui_layout_mut),
@@ -522,6 +528,12 @@ impl<'a> GameUIManager<'a> {
     pub fn show_fishing_popup(&mut self, item_data_name: &str, is_perfect: bool) {
         if let Some(fishing_popup) = self._fishing_popup_widget.as_mut() {
             fishing_popup.show_popup(item_data_name, is_perfect);
+        }
+    }
+
+    pub fn show_cooking_popup(&mut self, item_data_name: &str) {
+        if let Some(fishing_popup) = self._fishing_popup_widget.as_mut() {
+            fishing_popup.show_cooking_popup(item_data_name);
         }
     }
 
@@ -930,6 +942,34 @@ impl<'a> GameUIManager<'a> {
         }
     }
 
+    // cooking minigame widget
+    pub fn start_cooking_minigame(&mut self, recipe_index: usize) {
+        if let Some(minigame) = self._cooking_minigame_widget.as_mut() {
+            minigame.start_minigame(recipe_index);
+        }
+    }
+
+    pub fn close_cooking_minigame(&mut self) {
+        if let Some(minigame) = self._cooking_minigame_widget.as_mut() {
+            minigame.close_minigame();
+        }
+    }
+
+    pub fn is_cooking_minigame_active(&self) -> bool {
+        self._cooking_minigame_widget.as_ref().is_some_and(|w| w.is_active())
+    }
+
+    pub fn update_cooking_minigame(
+        &mut self,
+        delta_time: f32,
+        keyboard: &KeyboardInputData,
+        joystick: &JoystickInputData,
+    ) {
+        if let Some(minigame) = self._cooking_minigame_widget.as_mut() {
+            minigame.update(delta_time, keyboard, joystick);
+        }
+    }
+
     // table storage widget
     pub fn open_table_storage(&mut self) {
         if let Some(table_storage_widget) = self._table_storage_widget.as_mut() {
@@ -1041,6 +1081,14 @@ impl<'a> GameUIManager<'a> {
             table_storage_widget.transfer_all_materials_from_player_with_details()
         } else {
             (0, Vec::new())
+        }
+    }
+
+    pub fn transfer_all_eatable_items_to_table_storage(&mut self) -> usize {
+        if let Some(table_storage_widget) = self._table_storage_widget.as_mut() {
+            table_storage_widget.transfer_all_eatable_items_from_player()
+        } else {
+            0
         }
     }
 

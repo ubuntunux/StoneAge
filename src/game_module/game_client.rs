@@ -540,12 +540,21 @@ impl<'a> GameClient<'a> {
                                 &mouse_delta,
                                 character_manager.get_player(),
                             );
+                        } else if game_ui_manager.is_cooking_minigame_active() {
+                            game_ui_manager.update_cooking_minigame(
+                                time_data._delta_time_with_scale as f32,
+                                keyboard_input_data,
+                                joystick_input_data,
+                            );
                         } else {
                             self.set_next_game_phase(GamePhase::GamePlay);
                         }
                     }
                     State::End => {
                         game_ui_manager.close_cooking();
+                        if game_ui_manager.is_cooking_minigame_active() {
+                            game_ui_manager.close_cooking_minigame();
+                        }
                         game_ui_manager.set_cross_hair_visible(false);
                     }
                 },

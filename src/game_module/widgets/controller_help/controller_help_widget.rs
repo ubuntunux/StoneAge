@@ -443,7 +443,11 @@ impl<'a> ControllerHelpWidget<'a> {
             InteractionObject::PropBed(prop) => {
                 let is_wrap_up = get_game_scene_manager().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay);
                 if is_wrap_up {
-                    (KeyBindingType::Interaction, prop.borrow()._prop_data.borrow()._name.clone(), RequestType::None)
+                    (
+                        KeyBindingType::Interaction,
+                        prop.borrow()._prop_data.borrow()._name.clone(),
+                        RequestType::None,
+                    )
                 } else {
                     (KeyBindingType::None, String::new(), RequestType::None)
                 }
