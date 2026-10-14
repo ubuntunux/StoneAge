@@ -115,6 +115,9 @@ pub trait ScenarioBase<'a> {
     fn is_available_sleep(&self) -> bool {
         false
     }
+    fn is_use_table_storage_as_player_inventory(&self) -> bool {
+        false
+    }
     fn request_sleep(&mut self) {}
     fn on_interaction_released(&mut self) {}
     fn is_end_of_scenario(&self) -> bool;

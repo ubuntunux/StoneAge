@@ -116,4 +116,6 @@ pub struct ItemBarWidget<'a> {
     pub _inventory_key_binding_widget_map: Rc<KeyBindingWidgetMap<'a>>,
     pub _quick_slot_key_binding_widget_map: Rc<KeyBindingWidgetMap<'a>>,
     pub _window_size: Vector2<i32>,
+    // WrapUpTheDay 동안 QuickSlot에 TableStorage 아이템을 표시
+    pub _show_table_storage_items: bool,
 }

@@ -399,6 +399,13 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
         matches!(self._scenario_track._scenario_phase, ScenarioPhase::Update)
     }
 
+    fn is_use_table_storage_as_player_inventory(&self) -> bool {
+        matches!(
+            self._scenario_track._scenario_phase,
+            ScenarioPhase::Cooking | ScenarioPhase::Update | ScenarioPhase::GoToSleep
+        )
+    }
+
     fn request_sleep(&mut self) {
         if self.is_available_sleep() {
             self._request_sleep = true;
@@ -418,6 +425,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
     fn destroy_game_scenario(&mut self) {
         get_game_client_mut().set_is_available_interaction(true);
         let game_ui_manager = get_game_ui_manager_mut();
+        game_ui_manager.get_item_bar_widget_mut().set_show_table_storage_items(false);
         if game_ui_manager.is_opened_daily_settlement() {
             game_ui_manager.close_daily_settlement();
         }
@@ -610,14 +618,10 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                 },
                 ScenarioPhase::Update => match state {
                     State::Begin => {
-                        if game_ui_manager.has_eatable_table_storage_item() {
-                            if let Some(player) = &self._player {
-                                let mut player_ref = player.borrow_mut();
-                                if let Some(item_data_name) = game_ui_manager.pop_eatable_table_storage_item() {
-                                    let item_manager = get_game_scene_manager().get_item_manager_mut();
-                                    item_manager.attach_item(&mut player_ref, item_data_name.as_str());
-                                    player_ref.set_action_eating();
-                                }
+                        if let Some(player) = &self._player {
+                            let mut player_ref = player.borrow_mut();
+                            if player_ref.get_attached_item_data_type().is_eatable() {
+                                player_ref.set_action_eating();
                             }
                         }
                     }

@@ -6,6 +6,7 @@ use crate::game_module::game_constants::{
 };
 use crate::game_module::game_service_locator::{get_character_manager, get_game_resources, get_game_scene_manager};
 use crate::game_module::save_data::save_data::PlayerRecords;
+use crate::game_module::scenario::scenario::ScenarioType;
 use crate::game_module::widgets::controller_help::ControllerHelpWidget;
 use crate::game_module::widgets::cooking_minigame_widget::CookingMinigameWidget;
 use crate::game_module::widgets::cooking_widget::CookingWidget;
@@ -1214,6 +1215,17 @@ impl<'a> GameUIManager<'a> {
 
         if let Some(key_binding_widget_manager) = self._key_binding_widget_manager.as_mut() {
             key_binding_widget_manager.update_key_binding_widget_manager(engine_core.is_keyboard_input_mode());
+        }
+
+        // ResourceSettlement 완료 후 WrapUpTheDay 동안 QuickSlot에 TableStorage 아이템을 플레이어 인벤토리로 표시 및 선택 가능하게 전환
+        let is_table_storage_inventory_mode = get_game_scene_manager()
+            .get_game_scenario(ScenarioType::ScenarioWrapUpTheDay)
+            .is_some_and(|scenario| scenario.borrow().is_use_table_storage_as_player_inventory());
+        if let Some(item_bar_widget) = self._item_bar_widget.as_mut() {
+            item_bar_widget.set_show_table_storage_items(is_table_storage_inventory_mode);
+            if is_table_storage_inventory_mode {
+                item_bar_widget.update_quick_slot_widgets();
+            }
         }
 
         if let Some(cross_hair) = self._cross_hair.as_mut()

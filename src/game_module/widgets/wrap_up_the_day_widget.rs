@@ -309,9 +309,8 @@ impl<'a> WrapUpTheDayWidget<'a> {
             // Aggregate item counts by item type (preserving first-appearance order)
             let mut aggregated_items: Vec<(&InventorySlotData<'a>, u32)> = Vec::new();
             for slot in transferred_items.iter() {
-                if let Some(entry) = aggregated_items
-                    .iter_mut()
-                    .find(|(s, _)| s._item_data_name == slot._item_data_name)
+                if let Some(entry) =
+                    aggregated_items.iter_mut().find(|(s, _)| s._item_data_name == slot._item_data_name)
                 {
                     entry.1 += slot._item_count as u32;
                 } else {
@@ -410,7 +409,11 @@ impl<'a> WrapUpTheDayWidget<'a> {
     fn set_ok_button_enabled(&mut self, enabled: bool) {
         let ok_btn_comp = ptr_as_mut(self._ok_btn.as_ref()).get_ui_component_mut();
         ok_btn_comp.set_touchable(enabled);
-        ok_btn_comp.set_color(if enabled { COLOR_OK_BTN_BG } else { COLOR_OK_BTN_DISABLED_BG });
+        ok_btn_comp.set_color(if enabled {
+            COLOR_OK_BTN_BG
+        } else {
+            COLOR_OK_BTN_DISABLED_BG
+        });
     }
 
     pub fn is_opened_daily_settlement(&self) -> bool {

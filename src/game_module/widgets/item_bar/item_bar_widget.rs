@@ -13,6 +13,7 @@ use crate::game_module::widgets::key_binding_widget::{
     KEY_BINDING_FONT_SIZE, KEY_BINDING_ICON_MARGIN, KEY_BINDING_TEXT_MARGIN, KEY_BINDING_UI_SIZE, KeyBindingWidget,
     KeyBindingWidgetManager, KeyBindingWidgetMap,
 };
+use crate::game_module::widgets::table_storage_widget::TABLE_STORAGE_ROWS;
 use nalgebra::Vector2;
 use rust_engine_3d::core::engine_service_locator::get_engine_resources;
 use rust_engine_3d::scene::material_instance::MaterialInstanceData;
@@ -183,6 +184,7 @@ impl<'a> ItemBarWidget<'a> {
             _inventory_key_binding_widget_map: Rc::new(KeyBindingWidgetMap::default()),
             _quick_slot_key_binding_widget_map: Rc::new(KeyBindingWidgetMap::default()),
             _window_size: *window_size,
+            _show_table_storage_items: false,
         };
 
         for item_index in 0..MAX_ITEM_COUNT {
@@ -303,7 +305,104 @@ impl<'a> ItemBarWidget<'a> {
         self.update_quick_slot_widgets();
     }
 
+    pub fn is_show_table_storage_items(&self) -> bool {
+        self._show_table_storage_items
+    }
+
+    pub fn set_show_table_storage_items(&mut self, show: bool) {
+        if self._show_table_storage_items != show {
+            self._show_table_storage_items = show;
+            self._active_row_index = 0;
+            self._selected_inventory_slot_index = INVALID_ITEM_INDEX;
+
+            if let Some(player) = get_character_manager().get_maybe_player() {
+                let player = ptr_as_mut(player.as_ptr());
+                get_item_manager_mut().detach_item(player);
+            }
+
+            self.update_quick_slot_widgets();
+
+            if self._show_table_storage_items {
+                if let Some(first_slot) = self.find_first_valid_table_storage_slot() {
+                    self.select_item(first_slot);
+                }
+            } else if let Some(hand_slot) = self.find_hand_item_slot_index() {
+                self.select_item(hand_slot);
+            }
+
+            self.update_item_selection_widget();
+        }
+    }
+
+    pub fn find_first_valid_table_storage_slot(&self) -> Option<usize> {
+        let table_storage_widget = get_game_ui_manager().get_table_storage_widget()?;
+        let table_slots = &table_storage_widget._table_inventory_slots;
+        // 1. eatable item first
+        for (idx, slot) in table_slots.iter().enumerate() {
+            if slot._item_count > 0 && slot._item_data_name != ITEM_NONE {
+                let item_data = get_game_resources().get_item_data(&slot._item_data_name).borrow();
+                if item_data._item_type.is_eatable() {
+                    return Some(idx);
+                }
+            }
+        }
+        // 2. any valid item
+        for (idx, slot) in table_slots.iter().enumerate() {
+            if slot._item_count > 0 && slot._item_data_name != ITEM_NONE {
+                return Some(idx);
+            }
+        }
+        None
+    }
+
+    // TableStorage의 현재 row 아이템을 QuickSlot에 표시 (변경된 슬롯만 갱신)
+    fn update_quick_slot_widgets_with_table_storage(&mut self) {
+        let Some(table_storage_widget) = get_game_ui_manager().get_table_storage_widget() else {
+            return;
+        };
+        let table_slots = &table_storage_widget._table_inventory_slots;
+        let start_slot = (self._active_row_index % TABLE_STORAGE_ROWS) * SLOTS_PER_ROW;
+        for i in 0..SLOTS_PER_ROW.min(self._item_widgets.len()) {
+            let slot_idx = start_slot + i;
+            let default_slot_data = InventorySlotData::default();
+            let slot_data = table_slots.get(slot_idx).unwrap_or(&default_slot_data);
+            let item_widget = &mut self._item_widgets[i];
+            let is_same = (item_widget._item_count == 0 && slot_data._item_count == 0)
+                || (item_widget._item_count == slot_data._item_count
+                    && item_widget._item_data_name == slot_data._item_data_name);
+            if !is_same {
+                item_widget.set_item_data(
+                    &slot_data._item_name,
+                    &slot_data._item_data_name,
+                    slot_data._item_data_type,
+                    slot_data._material_instance.clone(),
+                    slot_data._item_count,
+                );
+            }
+        }
+
+        // 선택된 슬롯이 비었거나 소진된 경우 선택 해제
+        if self._selected_inventory_slot_index != INVALID_ITEM_INDEX {
+            let is_still_valid = table_slots
+                .get(self._selected_inventory_slot_index)
+                .is_some_and(|slot| slot._item_count > 0 && slot._item_data_name != ITEM_NONE);
+            if !is_still_valid {
+                self._selected_inventory_slot_index = INVALID_ITEM_INDEX;
+                if let Some(player) = get_character_manager().get_maybe_player() {
+                    let player = ptr_as_mut(player.as_ptr());
+                    get_item_manager_mut().detach_item(player);
+                }
+                self.update_item_selection_widget();
+            }
+        }
+    }
+
     pub fn update_quick_slot_widgets(&mut self) {
+        if self._show_table_storage_items {
+            self.update_quick_slot_widgets_with_table_storage();
+            return;
+        }
+
         let start_slot = self._active_row_index * SLOTS_PER_ROW;
         for i in 0..SLOTS_PER_ROW {
             let slot_idx = start_slot + i;
@@ -319,14 +418,22 @@ impl<'a> ItemBarWidget<'a> {
     }
 
     pub fn update_item_selection_widget(&mut self) {
-        let start_slot = self._active_row_index * SLOTS_PER_ROW;
+        let start_slot = if self._show_table_storage_items {
+            (self._active_row_index % TABLE_STORAGE_ROWS) * SLOTS_PER_ROW
+        } else {
+            self._active_row_index * SLOTS_PER_ROW
+        };
         let selected_slot = self._selected_inventory_slot_index;
         if selected_slot != INVALID_ITEM_INDEX
             && selected_slot >= start_slot
             && selected_slot < start_slot + SLOTS_PER_ROW
         {
             let quick_idx = selected_slot - start_slot;
-            self._selected_item_widget.update_selected_item_widget(quick_idx, Some(&self._item_widgets[quick_idx]));
+            if quick_idx < self._item_widgets.len() {
+                self._selected_item_widget.update_selected_item_widget(quick_idx, Some(&self._item_widgets[quick_idx]));
+            } else {
+                self._selected_item_widget.update_selected_item_widget(INVALID_ITEM_INDEX, None);
+            }
         } else {
             self._selected_item_widget.update_selected_item_widget(INVALID_ITEM_INDEX, None);
         }
@@ -366,14 +473,26 @@ impl<'a> ItemBarWidget<'a> {
     }
 
     pub fn switch_active_row(&mut self) -> usize {
-        self._active_row_index = (self._active_row_index + 1) % self._inventory_rows;
+        let max_rows = if self._show_table_storage_items {
+            TABLE_STORAGE_ROWS
+        } else {
+            self._inventory_rows
+        };
+        self._active_row_index = (self._active_row_index + 1) % max_rows;
         self.update_quick_slot_widgets();
+        self.update_item_selection_widget();
         self._active_row_index
     }
 
     pub fn set_active_row_index(&mut self, row_index: usize) {
-        self._active_row_index = row_index % self._inventory_rows;
+        let max_rows = if self._show_table_storage_items {
+            TABLE_STORAGE_ROWS
+        } else {
+            self._inventory_rows
+        };
+        self._active_row_index = row_index % max_rows;
         self.update_quick_slot_widgets();
+        self.update_item_selection_widget();
     }
 
     pub fn get_active_row_index(&self) -> usize {
@@ -470,28 +589,58 @@ impl<'a> ItemBarWidget<'a> {
     }
 
     pub fn get_selected_item_data_name(&self) -> &str {
-        if self._selected_inventory_slot_index != INVALID_ITEM_INDEX
-            && self.is_valid_slot_index(self._selected_inventory_slot_index)
-        {
-            return self._inventory_slots[self._selected_inventory_slot_index]._item_data_name.as_str();
+        if self._selected_inventory_slot_index != INVALID_ITEM_INDEX {
+            if self._show_table_storage_items {
+                if let Some(table_storage_widget) = get_game_ui_manager().get_table_storage_widget() {
+                    if let Some(slot) =
+                        table_storage_widget._table_inventory_slots.get(self._selected_inventory_slot_index)
+                    {
+                        if slot._item_count > 0 && slot._item_data_name != ITEM_NONE {
+                            return slot._item_data_name.as_str();
+                        }
+                    }
+                }
+            } else if self.is_valid_slot_index(self._selected_inventory_slot_index) {
+                return self._inventory_slots[self._selected_inventory_slot_index]._item_data_name.as_str();
+            }
         }
         ITEM_NONE
     }
 
     pub fn get_selected_item_name(&self) -> &str {
-        if self._selected_inventory_slot_index != INVALID_ITEM_INDEX
-            && self.is_valid_slot_index(self._selected_inventory_slot_index)
-        {
-            return self._inventory_slots[self._selected_inventory_slot_index]._item_name.as_str();
+        if self._selected_inventory_slot_index != INVALID_ITEM_INDEX {
+            if self._show_table_storage_items {
+                if let Some(table_storage_widget) = get_game_ui_manager().get_table_storage_widget() {
+                    if let Some(slot) =
+                        table_storage_widget._table_inventory_slots.get(self._selected_inventory_slot_index)
+                    {
+                        if slot._item_count > 0 && slot._item_data_name != ITEM_NONE {
+                            return slot._item_name.as_str();
+                        }
+                    }
+                }
+            } else if self.is_valid_slot_index(self._selected_inventory_slot_index) {
+                return self._inventory_slots[self._selected_inventory_slot_index]._item_name.as_str();
+            }
         }
         ITEM_NONE
     }
 
     pub fn get_selected_item_data_type(&self) -> ItemDataType {
-        if self._selected_inventory_slot_index != INVALID_ITEM_INDEX
-            && self.is_valid_slot_index(self._selected_inventory_slot_index)
-        {
-            return self._inventory_slots[self._selected_inventory_slot_index]._item_data_type;
+        if self._selected_inventory_slot_index != INVALID_ITEM_INDEX {
+            if self._show_table_storage_items {
+                if let Some(table_storage_widget) = get_game_ui_manager().get_table_storage_widget() {
+                    if let Some(slot) =
+                        table_storage_widget._table_inventory_slots.get(self._selected_inventory_slot_index)
+                    {
+                        if slot._item_count > 0 && slot._item_data_name != ITEM_NONE {
+                            return slot._item_data_type;
+                        }
+                    }
+                }
+            } else if self.is_valid_slot_index(self._selected_inventory_slot_index) {
+                return self._inventory_slots[self._selected_inventory_slot_index]._item_data_type;
+            }
         }
         ItemDataType::None
     }
@@ -701,6 +850,37 @@ impl<'a> ItemBarWidget<'a> {
     pub fn select_item(&mut self, slot_index: usize) {
         if let Some(player) = get_character_manager().get_maybe_player() {
             let player = ptr_as_mut(player.as_ptr());
+
+            if self._show_table_storage_items {
+                let Some(table_storage_widget) = get_game_ui_manager().get_table_storage_widget() else {
+                    return;
+                };
+                let table_slots = &table_storage_widget._table_inventory_slots;
+                let total_table_slots = TABLE_STORAGE_ROWS * SLOTS_PER_ROW;
+
+                let mut target_slot = slot_index;
+                let is_valid = target_slot < table_slots.len()
+                    && target_slot < total_table_slots
+                    && table_slots[target_slot]._item_data_name != ITEM_NONE
+                    && table_slots[target_slot]._item_count > 0;
+
+                if !is_valid {
+                    target_slot = INVALID_ITEM_INDEX;
+                }
+
+                if target_slot != INVALID_ITEM_INDEX {
+                    self._active_row_index = target_slot / SLOTS_PER_ROW;
+                    self._selected_inventory_slot_index = target_slot;
+                    get_item_manager_mut().attach_item(player, table_slots[target_slot]._item_data_name.as_str());
+                } else {
+                    self._selected_inventory_slot_index = INVALID_ITEM_INDEX;
+                    get_item_manager_mut().detach_item(player);
+                }
+                self.update_quick_slot_widgets();
+                self.update_item_selection_widget();
+                return;
+            }
+
             let total_inv_slots = self.get_total_inventory_slots();
 
             let mut target_slot = slot_index;
@@ -730,30 +910,53 @@ impl<'a> ItemBarWidget<'a> {
                 get_item_manager_mut().detach_item(player);
             }
             self.update_quick_slot_widgets();
+            self.update_item_selection_widget();
         }
     }
 
     pub fn select_quick_slot(&mut self, quick_index: usize) {
         if quick_index < SLOTS_PER_ROW {
-            let slot_index = self._active_row_index * SLOTS_PER_ROW + quick_index;
+            let row = if self._show_table_storage_items {
+                self._active_row_index % TABLE_STORAGE_ROWS
+            } else {
+                self._active_row_index
+            };
+            let slot_index = row * SLOTS_PER_ROW + quick_index;
             self.select_item(slot_index);
         }
     }
 
     fn is_selectable_slot(&self, slot_index: usize) -> bool {
-        slot_index < self._inventory_slots.len()
-            && self._inventory_slots[slot_index]._item_data_name != ITEM_NONE
-            && self._inventory_slots[slot_index]._item_count > 0
+        if self._show_table_storage_items {
+            if let Some(table_storage_widget) = get_game_ui_manager().get_table_storage_widget() {
+                if let Some(slot) = table_storage_widget._table_inventory_slots.get(slot_index) {
+                    return slot._item_data_name != ITEM_NONE && slot._item_count > 0;
+                }
+            }
+            false
+        } else {
+            slot_index < self._inventory_slots.len()
+                && self._inventory_slots[slot_index]._item_data_name != ITEM_NONE
+                && self._inventory_slots[slot_index]._item_count > 0
+        }
     }
 
     // 현재 선택 슬롯 기준으로 전체 inventory를 순환 탐색 (row 범위를 벗어나면 다음/이전 row로 이동)
     fn find_cyclic_item_slot(&self, forward: bool) -> usize {
-        let total_inv_slots = self.get_total_inventory_slots().min(self._inventory_slots.len());
+        let total_inv_slots = if self._show_table_storage_items {
+            TABLE_STORAGE_ROWS * SLOTS_PER_ROW
+        } else {
+            self.get_total_inventory_slots().min(self._inventory_slots.len())
+        };
         if total_inv_slots == 0 {
             return INVALID_ITEM_INDEX;
         }
 
-        let row_start_index = (self._active_row_index * SLOTS_PER_ROW).min(total_inv_slots - 1);
+        let row_start_index = if self._show_table_storage_items {
+            ((self._active_row_index % TABLE_STORAGE_ROWS) * SLOTS_PER_ROW).min(total_inv_slots - 1)
+        } else {
+            (self._active_row_index * SLOTS_PER_ROW).min(total_inv_slots - 1)
+        };
         let curr_index = if self._selected_inventory_slot_index < total_inv_slots {
             self._selected_inventory_slot_index
         } else if forward {
