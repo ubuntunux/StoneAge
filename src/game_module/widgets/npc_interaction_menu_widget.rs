@@ -1,4 +1,5 @@
 use crate::game_module::actors::character::{Character, CharacterDataType, RequestType};
+use crate::game_module::actors::items::api::ItemCreateInfo;
 use crate::game_module::actors::props::Prop;
 use crate::game_module::game_client::GamePhase;
 use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, AUDIO_SELECT_ITEM, ITEM_NONE};
@@ -9,9 +10,9 @@ use crate::game_module::game_service_locator::{
 use crate::game_module::game_ui_manager::move_mouse_to_ui_component;
 use crate::game_module::scenario::game_scenarios::scenario_wrap_up_the_day::ScenarioWrapUpTheDay;
 use crate::game_module::scenario::scenario::{ScenarioBase, ScenarioType};
-use crate::game_module::widgets::cooking_widget::COOKING_RECIPES;
+use crate::game_module::widgets::item_bar::api::InventorySlotData;
 use crate::game_module::widgets::key_binding_widget::KEY_BINDING_FONT_SIZE;
-use nalgebra::Vector2;
+use nalgebra::{Vector2, Vector3};
 use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::core::engine_core::TimeData;
 use rust_engine_3d::core::engine_service_locator::{get_audio_manager_mut, get_scene_manager};
@@ -458,6 +459,7 @@ impl<'a> NpcInteractionMenuWidget<'a> {
     pub fn execute_option(&mut self, option: NpcInteractionOption) {
         let target_npc = self._target_npc.clone();
         let is_from_table = self._target_table.is_some();
+        let target_table = self._target_table.clone();
         self.close_npc_interaction_menu();
 
         let character_manager = get_character_manager();
@@ -512,23 +514,61 @@ impl<'a> NpcInteractionMenuWidget<'a> {
                 }
             }
             NpcInteractionOption::CookItem(slot_idx) => {
-                if let Some(table_storage_widget) = get_game_ui_manager().get_table_storage_widget() {
-                    if let Some(slot) = table_storage_widget._table_inventory_slots.get(slot_idx) {
-                        let item_data_type = slot._item_data_type;
-                        let recipe_idx =
-                            COOKING_RECIPES.iter().position(|r| r.item_type == item_data_type).or_else(|| {
-                                COOKING_RECIPES
-                                    .iter()
-                                    .position(|r| r.ingredients.iter().any(|ing| ing.item_type == item_data_type))
-                            });
+                let Some(table) = target_table
+                    .or_else(|| get_game_scene_manager().get_prop_manager().get_prop_by_name("table").cloned())
+                else {
+                    return;
+                };
 
-                        get_game_client_mut().set_next_game_phase(GamePhase::OpenCooking);
-                        if let Some(idx) = recipe_idx {
-                            get_game_ui_manager_mut().start_cooking_minigame(idx);
-                        } else {
-                            get_game_ui_manager_mut().start_cooking_minigame(0);
+                let table_borrow = table.borrow();
+                let bounding_box = table_borrow.get_bounding_box();
+                let table_center = bounding_box._center;
+                let table_top_y = bounding_box._max.y;
+
+                // 테이블 상판 위에 약간의 랜덤 오프셋을 두어 아이템들이 겹치지 않게 배치
+                let offset_x = (rand::random::<f32>() - 0.5) * 0.4;
+                let offset_z = (rand::random::<f32>() - 0.5) * 0.4;
+                let spawn_position = Vector3::new(table_center.x + offset_x, table_top_y, table_center.z + offset_z);
+
+                let mut item_to_spawn: Option<String> = None;
+
+                if let Some(table_storage_widget) = get_game_ui_manager_mut().get_table_storage_widget_mut() {
+                    if let Some(slot) = table_storage_widget._table_inventory_slots.get_mut(slot_idx) {
+                        if slot._item_count > 0 && slot._item_data_name != ITEM_NONE {
+                            item_to_spawn = Some(slot._item_data_name.clone());
+                            slot._item_count -= 1;
+                            if slot._item_count == 0 {
+                                *slot = InventorySlotData::default();
+                            }
                         }
                     }
+                    if table_storage_widget._is_opened {
+                        table_storage_widget.refresh_table_storage_widget();
+                    }
+                }
+
+                if let Some(item_data_name) = item_to_spawn {
+                    let item_manager = get_game_scene_manager().get_item_manager_mut();
+                    let item_create_info = ItemCreateInfo {
+                        _item_data_name: item_data_name.clone(),
+                        _position: spawn_position,
+                        _rotation: Vector3::new(0.0, rand::random::<f32>() * std::f32::consts::TAU, 0.0),
+                        _scale: Vector3::new(1.0, 1.0, 1.0),
+                        _velocity: Vector3::zeros(),
+                        _pickup_delay: 999999.0, // 플레이어가 자동 습득하지 않도록 방지
+                        ..Default::default()
+                    };
+                    let item = item_manager.create_item(&item_data_name, &item_create_info, None);
+                    item.borrow_mut()._item_properties._is_on_ground = true;
+                    item_manager._table_storage_item_ids.push(item.borrow().get_item_id());
+
+                    // QuickSlot UI 갱신
+                    let game_ui_manager = get_game_ui_manager_mut();
+                    let item_bar = game_ui_manager.get_item_bar_widget_mut();
+                    item_bar.update_quick_slot_widgets();
+                    item_bar.update_item_selection_widget();
+
+                    get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
                 }
             }
             NpcInteractionOption::Close => {}
