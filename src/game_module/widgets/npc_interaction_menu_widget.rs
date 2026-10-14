@@ -1,13 +1,15 @@
 use crate::game_module::actors::character::{Character, CharacterDataType, RequestType};
 use crate::game_module::actors::props::Prop;
 use crate::game_module::game_client::GamePhase;
-use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, AUDIO_SELECT_ITEM};
+use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, AUDIO_SELECT_ITEM, ITEM_NONE};
 use crate::game_module::game_service_locator::{
     get_character_manager, get_game_client_mut, get_game_scene_manager, get_game_scene_manager_mut,
+    get_game_ui_manager, get_game_ui_manager_mut,
 };
 use crate::game_module::game_ui_manager::move_mouse_to_ui_component;
 use crate::game_module::scenario::game_scenarios::scenario_wrap_up_the_day::ScenarioWrapUpTheDay;
 use crate::game_module::scenario::scenario::{ScenarioBase, ScenarioType};
+use crate::game_module::widgets::cooking_widget::COOKING_RECIPES;
 use crate::game_module::widgets::key_binding_widget::KEY_BINDING_FONT_SIZE;
 use nalgebra::Vector2;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
@@ -37,6 +39,7 @@ pub enum NpcInteractionOption {
     Dance,
     GiveItem,
     Sleep,
+    CookItem(usize),
     Close,
 }
 
@@ -63,6 +66,14 @@ impl NpcInteractionOption {
                 }
             }
             NpcInteractionOption::Sleep => String::from("Sleep"),
+            NpcInteractionOption::CookItem(slot_idx) => {
+                let item_name = get_game_ui_manager()
+                    .get_table_storage_widget()
+                    .and_then(|w| w._table_inventory_slots.get(*slot_idx))
+                    .map(|slot| slot._item_name.as_str())
+                    .unwrap_or("Food");
+                format!("Cook {}", item_name)
+            }
             NpcInteractionOption::Close => String::from("Close"),
         }
     }
@@ -269,8 +280,17 @@ impl<'a> NpcInteractionMenuWidget<'a> {
             options.push(NpcInteractionOption::Sleep);
             options.push(NpcInteractionOption::Close);
         } else if self._target_table.is_some() {
-            options.push(NpcInteractionOption::Cooking);
-            options.push(NpcInteractionOption::StorageTable);
+            if let Some(table_storage_widget) = get_game_ui_manager().get_table_storage_widget() {
+                let table_slots = &table_storage_widget._table_inventory_slots;
+                let mut seen_items = std::collections::HashSet::new();
+                for (slot_idx, slot) in table_slots.iter().enumerate() {
+                    if slot._item_count > 0 && slot._item_data_name != ITEM_NONE && slot._item_data_type.is_eatable() {
+                        if seen_items.insert(slot._item_data_name.clone()) {
+                            options.push(NpcInteractionOption::CookItem(slot_idx));
+                        }
+                    }
+                }
+            }
             options.push(NpcInteractionOption::Close);
         } else if let Some(target_npc_rc) = &self._target_npc {
             let target_npc_ref = target_npc_rc.borrow();
@@ -491,6 +511,26 @@ impl<'a> NpcInteractionMenuWidget<'a> {
                     get_game_scene_manager_mut().open_wrap_up_the_day_sleep();
                 }
             }
+            NpcInteractionOption::CookItem(slot_idx) => {
+                if let Some(table_storage_widget) = get_game_ui_manager().get_table_storage_widget() {
+                    if let Some(slot) = table_storage_widget._table_inventory_slots.get(slot_idx) {
+                        let item_data_type = slot._item_data_type;
+                        let recipe_idx =
+                            COOKING_RECIPES.iter().position(|r| r.item_type == item_data_type).or_else(|| {
+                                COOKING_RECIPES
+                                    .iter()
+                                    .position(|r| r.ingredients.iter().any(|ing| ing.item_type == item_data_type))
+                            });
+
+                        get_game_client_mut().set_next_game_phase(GamePhase::OpenCooking);
+                        if let Some(idx) = recipe_idx {
+                            get_game_ui_manager_mut().start_cooking_minigame(idx);
+                        } else {
+                            get_game_ui_manager_mut().start_cooking_minigame(0);
+                        }
+                    }
+                }
+            }
             NpcInteractionOption::Close => {}
         }
     }
@@ -598,6 +638,8 @@ impl<'a> NpcInteractionMenuWidget<'a> {
             KeyCode::Digit5,
             KeyCode::Digit6,
             KeyCode::Digit7,
+            KeyCode::Digit8,
+            KeyCode::Digit9,
         ];
 
         for (i, key_code) in key_codes.iter().enumerate() {
