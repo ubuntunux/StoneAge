@@ -3,6 +3,7 @@ use crate::game_module::actors::items::api::{
     Item, ItemCreateInfo, ItemData, ItemDataType, ItemID, ItemManager, ItemMap, ItemProperties, ItemSaveData,
 };
 use crate::game_module::actors::items::updater::create_item_updater;
+use crate::game_module::actors::props::Prop;
 use crate::game_module::game_constants::{
     AUDIO_ITEM_INVENTORY, AUDIO_PICKUP_ITEM, EAT_ITEM_DISTANCE, WEAPON_SOCKET_NAME,
 };
@@ -209,6 +210,10 @@ impl<'a> Item<'a> {
         &self._item_data_name
     }
 
+    pub fn get_position(&self) -> &Vector3<f32> {
+        &self._item_properties._position
+    }
+
     pub fn collide_point(&self, pos: &Vector3<f32>) -> bool {
         self._render_object.borrow()._collision.collide_point(pos)
     }
@@ -274,6 +279,88 @@ impl<'a> ItemManager<'a> {
 
     pub fn sync_table_storage_items_in_world(&mut self, _create_infos: &[InventoryItemCreateInfo]) {
         self.clear_table_storage_items_in_world();
+    }
+
+    pub fn has_item_on_table(&self, table_prop: &RcRefCell<Prop<'a>>) -> bool {
+        // 1. _table_storage_item_ids 중 유효하고 eatable인 아이템이 있는지 확인
+        let has_in_ids = self._table_storage_item_ids.iter().any(|id| {
+            self._items.get(id).is_some_and(|item| item.borrow()._item_data.borrow()._item_type.is_eatable())
+        });
+        if has_in_ids {
+            return true;
+        }
+
+        // 2. 테이블 바운딩 박스 주변에 놓인 eatable 아이템이 있는지 확인
+        let (table_center, table_min_y, table_max_y) = {
+            let b = table_prop.borrow();
+            let bbox = b.get_bounding_box();
+            (bbox._center, bbox._min.y, bbox._max.y)
+        };
+        for item_rc in self._items.values() {
+            let item = item_rc.borrow();
+            if item.is_attachment() {
+                continue;
+            }
+            if !item._item_data.borrow()._item_type.is_eatable() {
+                continue;
+            }
+            let pos = item.get_position();
+            let dist_xz = ((pos.x - table_center.x).powi(2) + (pos.z - table_center.z).powi(2)).sqrt();
+            if dist_xz < 1.5 && pos.y >= table_min_y - 0.5 && pos.y <= table_max_y + 1.5 {
+                return true;
+            }
+        }
+
+        false
+    }
+
+    pub fn pop_item_on_table(&mut self, table_prop: &RcRefCell<Prop<'a>>) -> Option<String> {
+        // 1. _table_storage_item_ids에서 유효한 eatable 아이템을 뒤에서부터 pop
+        while let Some(item_id) = self._table_storage_item_ids.pop() {
+            if let Some(item_refcell) = self._items.get(&item_id).cloned() {
+                let item_data_name = item_refcell.borrow()._item_data_name.clone();
+                let is_eatable = item_refcell.borrow()._item_data.borrow()._item_type.is_eatable();
+                self.remove_item(&item_refcell);
+                if is_eatable {
+                    return Some(item_data_name);
+                }
+            }
+        }
+
+        // 2. 테이블 바운딩 박스 주변의 eatable 아이템 탐색
+        let (table_center, table_min_y, table_max_y) = {
+            let b = table_prop.borrow();
+            let bbox = b.get_bounding_box();
+            (bbox._center, bbox._min.y, bbox._max.y)
+        };
+        let mut target_item_id = None;
+        let mut target_item_data_name = None;
+
+        for (id, item_rc) in &self._items {
+            let item = item_rc.borrow();
+            if item.is_attachment() {
+                continue;
+            }
+            if !item._item_data.borrow()._item_type.is_eatable() {
+                continue;
+            }
+            let pos = item.get_position();
+            let dist_xz = ((pos.x - table_center.x).powi(2) + (pos.z - table_center.z).powi(2)).sqrt();
+            if dist_xz < 1.5 && pos.y >= table_min_y - 0.5 && pos.y <= table_max_y + 1.5 {
+                target_item_id = Some(*id);
+                target_item_data_name = Some(item._item_data_name.clone());
+                break;
+            }
+        }
+
+        if let Some(id) = target_item_id {
+            if let Some(item_refcell) = self._items.get(&id).cloned() {
+                self.remove_item(&item_refcell);
+                return target_item_data_name;
+            }
+        }
+
+        None
     }
 
     pub fn initialize_item_manager(&mut self) {

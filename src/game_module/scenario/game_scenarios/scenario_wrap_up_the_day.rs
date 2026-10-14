@@ -244,7 +244,7 @@ fn update_actor_table_eating<'a>(
     eat_delay: &mut f32,
     has_eatable_item: bool,
     force_eat: bool,
-    game_ui_manager: &mut GameUIManager<'a>,
+    _game_ui_manager: &mut GameUIManager<'a>,
 ) {
     let Some(actor) = actor_opt.as_ref() else {
         return;
@@ -294,16 +294,18 @@ fn update_actor_table_eating<'a>(
                 };
 
                 if is_ready_to_eat {
-                    if let Some(item_data_name) = game_ui_manager.pop_eatable_table_storage_item() {
+                    if let Some(table_prop) = table_opt.as_ref() {
                         let item_manager = get_game_scene_manager().get_item_manager_mut();
-                        let mut actor_ref = actor.borrow_mut();
-                        item_manager.attach_item(&mut actor_ref, item_data_name.as_str());
-                        if actor_ref.is_player() {
-                            actor_ref.set_action_eating();
-                        } else {
-                            actor_ref.set_next_behavior(BehaviorState::Eating, true);
+                        if let Some(item_data_name) = item_manager.pop_item_on_table(table_prop) {
+                            let mut actor_ref = actor.borrow_mut();
+                            item_manager.attach_item(&mut actor_ref, item_data_name.as_str());
+                            if actor_ref.is_player() {
+                                actor_ref.set_action_eating();
+                            } else {
+                                actor_ref.set_next_behavior(BehaviorState::Eating, true);
+                            }
+                            *eat_delay = EAT_ITEM_DELAY_TIME;
                         }
-                        *eat_delay = EAT_ITEM_DELAY_TIME;
                     }
                 }
             }
@@ -709,15 +711,17 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                                 self._koa_eat_delay = (self._koa_eat_delay - delta_time as f32).max(0.0);
                             }
 
-                            let has_eatable_item = game_ui_manager.has_eatable_table_storage_item();
+                            let has_food_on_table = self._prop_table.as_ref().is_some_and(|table| {
+                                get_game_scene_manager().get_item_manager().has_item_on_table(table)
+                            });
 
                             update_actor_table_eating(
                                 &self._actor_ewa,
                                 &self._prop_table,
                                 &Vector3::new(0.0, 0.0, 1.0),
                                 &mut self._ewa_eat_delay,
-                                has_eatable_item,
-                                has_eatable_item,
+                                has_food_on_table,
+                                has_food_on_table,
                                 game_ui_manager,
                             );
 
@@ -726,8 +730,8 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                                 &self._prop_table,
                                 &Vector3::new(-1.0, 0.0, 0.0),
                                 &mut self._koa_eat_delay,
-                                has_eatable_item,
-                                has_eatable_item,
+                                has_food_on_table,
+                                has_food_on_table,
                                 game_ui_manager,
                             );
                         }
