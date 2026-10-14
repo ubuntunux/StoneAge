@@ -304,8 +304,21 @@ impl<'a> WrapUpTheDayWidget<'a> {
             items_container_mut.add_widget(&empty_widget);
             self._item_widgets.push(empty_widget);
         } else {
+            // Aggregate item counts by item type (preserving first-appearance order)
+            let mut aggregated_items: Vec<(&InventorySlotData<'a>, u32)> = Vec::new();
+            for slot in transferred_items.iter() {
+                if let Some(entry) = aggregated_items
+                    .iter_mut()
+                    .find(|(s, _)| s._item_data_name == slot._item_data_name)
+                {
+                    entry.1 += slot._item_count as u32;
+                } else {
+                    aggregated_items.push((slot, slot._item_count as u32));
+                }
+            }
+
             let engine_resources = get_engine_resources();
-            for (idx, slot) in transferred_items.iter().enumerate() {
+            for (idx, (slot, total_count)) in aggregated_items.iter().enumerate() {
                 let row_widget =
                     UIManager::create_widget(&format!("settlement_item_row_{}", idx), UIWidgetTypes::Default);
                 let ui_comp = ptr_as_mut(row_widget.as_ref()).get_ui_component_mut();
@@ -362,7 +375,7 @@ impl<'a> WrapUpTheDayWidget<'a> {
 
                 self._item_anim_data.push(SettlementItemAnimData {
                     _display_name: display_name,
-                    _target_count: slot._item_count as u32,
+                    _target_count: *total_count,
                     _current_count: 0,
                     _row_widget: row_widget.clone(),
                     _info_widget: item_info_widget,
@@ -508,17 +521,12 @@ impl<'a> WrapUpTheDayWidget<'a> {
                     get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
                 }
 
-                if anim_data._current_count < anim_data._target_count {
-                    let elapsed = self._anim_timer - start_time;
-                    let calculated_count = (elapsed * NUMBER_TICK_SPEED) as u32;
-                    let new_count = calculated_count.min(anim_data._target_count);
-                    if new_count != anim_data._current_count {
-                        anim_data._current_count = new_count;
-                        let text = format!("{} x {}", anim_data._display_name, anim_data._current_count);
-                        let ui_comp = ptr_as_mut(anim_data._info_widget.as_ref()).get_ui_component_mut();
-                        ui_comp.set_text(&text);
-                        get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
-                    }
+                // Settle the total count of this item type at once
+                if anim_data._current_count != anim_data._target_count {
+                    anim_data._current_count = anim_data._target_count;
+                    let text = format!("{} x {}", anim_data._display_name, anim_data._current_count);
+                    let ui_comp = ptr_as_mut(anim_data._info_widget.as_ref()).get_ui_component_mut();
+                    ui_comp.set_text(&text);
                 }
             }
         }
