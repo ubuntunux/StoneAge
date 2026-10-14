@@ -16,6 +16,7 @@ use std::ffi::c_void;
 use std::rc::Rc;
 use winit::keyboard::KeyCode;
 
+pub const COLOR_OK_BTN_DISABLED_BG: u32 = get_color32(130, 130, 130, 200);
 pub const COLOR_PANEL_BG: u32 = get_color32(240, 222, 186, 248);
 pub const COLOR_PANEL_BORDER: u32 = get_color32(135, 78, 42, 255);
 pub const COLOR_TITLE_BG: u32 = get_color32(195, 118, 58, 240);
@@ -31,7 +32,7 @@ pub const COLOR_ITEM_ROW_BORDER: u32 = get_color32(200, 165, 125, 200);
 pub const COLOR_ITEM_ROW_TEXT: u32 = get_color32(75, 45, 20, 255);
 pub const COLOR_EMPTY_TEXT: u32 = get_color32(155, 120, 90, 255);
 
-pub const ITEM_STAGGER_INTERVAL: f32 = 0.45;
+pub const ITEM_STAGGER_INTERVAL: f32 = 0.1;
 pub const NUMBER_TICK_SPEED: f32 = 6.0;
 
 pub struct SettlementItemAnimData<'a> {
@@ -58,6 +59,7 @@ pub struct WrapUpTheDayWidget<'a> {
     pub _is_opened: bool,
     pub _is_ok_clicked: bool,
     pub _is_settlement_started: bool,
+    pub _is_settlement_completed: bool,
     pub _is_transferring: bool,
     pub _transfer_timer: f32,
     pub _item_widgets: Vec<Rc<WidgetDefault<'a>>>,
@@ -241,6 +243,7 @@ impl<'a> WrapUpTheDayWidget<'a> {
             _is_opened: false,
             _is_ok_clicked: false,
             _is_settlement_started: false,
+            _is_settlement_completed: false,
             _is_transferring: false,
             _transfer_timer: 0.0,
             _item_widgets: Vec::new(),
@@ -259,15 +262,14 @@ impl<'a> WrapUpTheDayWidget<'a> {
         self._is_opened = true;
         self._is_ok_clicked = false;
         self._is_settlement_started = false;
+        self._is_settlement_completed = false;
         self._is_transferring = false;
         self._transfer_timer = 0.0;
         self._anim_timer = 0.0;
         self._item_anim_data.clear();
 
-        // Enable OK button
-        let ok_btn_comp = ptr_as_mut(self._ok_btn.as_ref()).get_ui_component_mut();
-        ok_btn_comp.set_touchable(true);
-        ok_btn_comp.set_color(COLOR_OK_BTN_BG);
+        // Disable OK button until the settlement is completed
+        self.set_ok_button_enabled(false);
 
         // Title update with Game Date
         let date = get_game_scene_manager().get_date();
@@ -405,6 +407,12 @@ impl<'a> WrapUpTheDayWidget<'a> {
         get_game_ui_manager_mut().set_cross_hair_visible(false);
     }
 
+    fn set_ok_button_enabled(&mut self, enabled: bool) {
+        let ok_btn_comp = ptr_as_mut(self._ok_btn.as_ref()).get_ui_component_mut();
+        ok_btn_comp.set_touchable(enabled);
+        ok_btn_comp.set_color(if enabled { COLOR_OK_BTN_BG } else { COLOR_OK_BTN_DISABLED_BG });
+    }
+
     pub fn is_opened_daily_settlement(&self) -> bool {
         self._is_opened
     }
@@ -426,6 +434,9 @@ impl<'a> WrapUpTheDayWidget<'a> {
         if !user_data.is_null() {
             let widget = unsafe { &*(user_data as *const WrapUpTheDayWidget<'a>) };
             let widget_mut = ptr_as_mut(widget);
+            if !widget_mut._is_settlement_completed {
+                return false;
+            }
             widget_mut._is_ok_clicked = true;
             get_audio_manager_mut().play_audio_bank(AUDIO_QUEST_COMPLETE, AudioLoop::ONCE, None);
             true
@@ -452,7 +463,7 @@ impl<'a> WrapUpTheDayWidget<'a> {
             self._transfer_timer = 0.0;
             let ok_comp = ptr_as_mut(self._ok_btn.as_ref()).get_ui_component_mut();
             ok_comp.set_touchable(false);
-            ok_comp.set_color(get_color32(130, 130, 130, 200));
+            ok_comp.set_color(COLOR_OK_BTN_DISABLED_BG);
         }
 
         // Fly To Storage Chest Animation
@@ -528,6 +539,20 @@ impl<'a> WrapUpTheDayWidget<'a> {
                     let ui_comp = ptr_as_mut(anim_data._info_widget.as_ref()).get_ui_component_mut();
                     ui_comp.set_text(&text);
                 }
+            }
+        }
+
+        // Enable OK button once every item row has been settled
+        if !self._is_settlement_completed {
+            let all_settled = self
+                ._item_anim_data
+                .iter()
+                .all(|anim_data| anim_data._is_visible && anim_data._current_count == anim_data._target_count);
+            if all_settled {
+                self._is_settlement_completed = true;
+                self.set_ok_button_enabled(true);
+            } else {
+                return;
             }
         }
 
