@@ -18,7 +18,7 @@ use crate::game_module::scenario::scenario::{
     GameScenarioCreateInfo, ScenarioBase, ScenarioDataCreateInfo, ScenarioType,
 };
 use crate::game_module::scenario::scenario_track::ScenarioTrack;
-use nalgebra::{Vector2, Vector3};
+use nalgebra::{Vector3};
 use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop};
 use rust_engine_3d::core::engine_service_locator::{get_audio_manager_mut, get_engine_core, get_scene_manager};
 use rust_engine_3d::core::input::ButtonState;
@@ -35,7 +35,6 @@ enum ScenarioPhase {
     None,
     Begin,
     ResourceSettlement,
-    Cooking,
     Update,
     GoToSleep,
     Sleep,
@@ -404,7 +403,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
     fn is_use_table_storage_as_player_inventory(&self) -> bool {
         matches!(
             self._scenario_track._scenario_phase,
-            ScenarioPhase::Cooking | ScenarioPhase::Update | ScenarioPhase::GoToSleep
+            ScenarioPhase::Update | ScenarioPhase::GoToSleep
         )
     }
 
@@ -574,49 +573,6 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                         }
                     }
                     State::End => {}
-                },
-                ScenarioPhase::Cooking => match state {
-                    State::Begin => {
-                        self.setup_bed_camera();
-                        game_ui_manager.open_cooking();
-                    }
-                    State::Update => {
-                        let engine_core = get_engine_core();
-                        if game_ui_manager.is_opened_cooking() {
-                            if let Some(player) = &self._player {
-                                let mouse_delta = Vector2::new(
-                                    engine_core._mouse_move_data._mouse_pos_delta.x as f32,
-                                    engine_core._mouse_move_data._mouse_pos_delta.y as f32,
-                                );
-                                game_ui_manager.update_cooking_widget(
-                                    &engine_core._time_data,
-                                    &engine_core._joystick_input_data,
-                                    &engine_core._keyboard_input_data,
-                                    &engine_core._mouse_move_data,
-                                    &engine_core._mouse_input_data,
-                                    &mouse_delta,
-                                    player,
-                                );
-                            }
-                        } else if game_ui_manager.is_cooking_minigame_active() {
-                            game_ui_manager.update_cooking_minigame(
-                                delta_time as f32,
-                                &engine_core._keyboard_input_data,
-                                &engine_core._joystick_input_data,
-                            );
-                        } else {
-                            game_ui_manager.transfer_all_eatable_items_to_table_storage();
-                            self._scenario_track.set_next_scenario_phase(ScenarioPhase::Update, None);
-                        }
-                    }
-                    State::End => {
-                        if game_ui_manager.is_opened_cooking() {
-                            game_ui_manager.close_cooking();
-                        }
-                        if game_ui_manager.is_cooking_minigame_active() {
-                            game_ui_manager.close_cooking_minigame();
-                        }
-                    }
                 },
                 ScenarioPhase::Update => match state {
                     State::Begin => {

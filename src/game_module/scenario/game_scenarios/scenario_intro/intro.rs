@@ -475,7 +475,7 @@ impl<'a> ScenarioIntro<'a> {
                     GatherItemData {
                         _item_data_name: String::from(ITEM_COCONUT),
                         _item_data: item_coconut.clone(),
-                        _gather_item_count: 3,
+                        _gather_item_count: 1,
                     },
                 )));
                 self._sub_quest_wrap_up_the_day = Some(quest.borrow_mut().add_quest_item(
