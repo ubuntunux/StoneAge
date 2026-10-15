@@ -8,6 +8,7 @@ use crate::game_module::game_service_locator::{
     get_game_ui_manager, get_game_ui_manager_mut,
 };
 use crate::game_module::game_ui_manager::move_mouse_to_ui_component;
+use crate::game_module::scenario::game_scenarios::scenario_intro::intro::ScenarioIntro;
 use crate::game_module::scenario::game_scenarios::scenario_wrap_up_the_day::ScenarioWrapUpTheDay;
 use crate::game_module::scenario::scenario::{ScenarioBase, ScenarioType};
 use crate::game_module::widgets::item_bar::api::InventorySlotData;
@@ -569,6 +570,13 @@ impl<'a> NpcInteractionMenuWidget<'a> {
                     item_bar.update_item_selection_widget();
 
                     get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
+
+                    if let Some(scenario) =
+                        get_game_scene_manager_mut().get_game_scenario(ScenarioType::ScenarioIntro_Intro)
+                    {
+                        let scenario_intro = ptr_as_mut(scenario.as_ptr() as *const ScenarioIntro);
+                        scenario_intro.complete_sub_quest_cooking();
+                    }
                 }
             }
             NpcInteractionOption::Close => {}

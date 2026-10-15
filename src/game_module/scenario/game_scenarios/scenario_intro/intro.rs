@@ -370,31 +370,6 @@ impl<'a> ScenarioIntro<'a> {
         self.complete_sub_quest_cooking();
     }
 
-    pub fn check_cooking_complete(&mut self) {
-        let is_wrap_up_completed =
-            self._sub_quest_wrap_up_the_day.as_ref().is_some_and(|q| q.borrow().is_completed_quest());
-        if !is_wrap_up_completed {
-            return;
-        }
-
-        let base_count = match self._base_cooking_count_for_quest {
-            Some(count) => count,
-            None => {
-                let current_cook_count = get_game_ui_manager_mut().get_player_records()._cooking_count;
-                self._base_cooking_count_for_quest = Some(current_cook_count);
-                current_cook_count
-            }
-        };
-
-        let cooking_not_completed = self._sub_quest_cooking.as_ref().is_none_or(|q| !q.borrow().is_completed_quest());
-        if cooking_not_completed {
-            let current_cook_count = get_game_ui_manager_mut().get_player_records()._cooking_count;
-            if current_cook_count > base_count {
-                self.complete_sub_quest_cooking();
-            }
-        }
-    }
-
     pub fn check_hit_the_tree_complete(&mut self) {
         if let Some(prop_tree) = &self._prop_tree {
             if prop_tree.borrow()._prop_stats._hit_blink_time > 0.0 {
@@ -1001,8 +976,6 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                             self.remove_prop_table_text_box();
                         }
                     } else if state == State::Update {
-                        self.check_cooking_complete();
-
                         if let Some(scenario_wrap_up_the_day) =
                             game_scene_manager.get_game_scenario(ScenarioType::ScenarioWrapUpTheDay).as_ref()
                         {
