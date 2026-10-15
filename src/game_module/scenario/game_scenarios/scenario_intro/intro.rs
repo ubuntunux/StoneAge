@@ -320,6 +320,13 @@ impl<'a> ScenarioIntro<'a> {
         self.complete_sub_quest_hit_the_tree();
     }
 
+    pub fn is_sub_quest_cooking_active(&self) -> bool {
+        let is_wrap_up_completed =
+            self._sub_quest_wrap_up_the_day.as_ref().is_some_and(|q| q.borrow().is_completed_quest());
+        let cooking_not_completed = self._sub_quest_cooking.as_ref().is_none_or(|q| !q.borrow().is_completed_quest());
+        is_wrap_up_completed && cooking_not_completed
+    }
+
     pub fn complete_sub_quest_wrap_up_the_day(&mut self) {
         if let Some(q) = &self._sub_quest_wrap_up_the_day {
             if !q.borrow().is_completed_quest() {
@@ -331,6 +338,10 @@ impl<'a> ScenarioIntro<'a> {
         if self._base_cooking_count_for_quest.is_none() {
             let current_cook_count = get_game_ui_manager_mut().get_player_records()._cooking_count;
             self._base_cooking_count_for_quest = Some(current_cook_count);
+        }
+
+        if self.is_sub_quest_cooking_active() {
+            self.create_prop_table_text_box();
         }
     }
 
@@ -344,6 +355,7 @@ impl<'a> ScenarioIntro<'a> {
         if let Some(q) = &self._sub_quest_cooking {
             if !q.borrow().is_completed_quest() {
                 q.borrow_mut().set_completed_quest();
+                self.remove_prop_table_text_box();
             }
         }
         self.complete_sub_quest_wrap_up_the_day();
@@ -714,7 +726,11 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                     }
                 }
             }
-            ScenarioPhase::WrapUpTheDay => {}
+            ScenarioPhase::WrapUpTheDay => {
+                if game_scene_data_name == Stages::Home.get_stage_data_name() && self.is_sub_quest_cooking_active() {
+                    self.create_prop_table_text_box();
+                }
+            }
             _ => (),
         }
     }
@@ -979,7 +995,11 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                 },
                 ScenarioPhase::WrapUpTheDay => {
                     if state == State::Begin {
-                        self.remove_prop_table_text_box();
+                        if self.is_sub_quest_cooking_active() {
+                            self.create_prop_table_text_box();
+                        } else {
+                            self.remove_prop_table_text_box();
+                        }
                     } else if state == State::Update {
                         self.check_cooking_complete();
 

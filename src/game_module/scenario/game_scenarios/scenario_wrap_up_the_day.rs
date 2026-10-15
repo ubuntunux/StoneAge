@@ -18,7 +18,7 @@ use crate::game_module::scenario::scenario::{
     GameScenarioCreateInfo, ScenarioBase, ScenarioDataCreateInfo, ScenarioType,
 };
 use crate::game_module::scenario::scenario_track::ScenarioTrack;
-use nalgebra::{Vector3};
+use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop};
 use rust_engine_3d::core::engine_service_locator::{get_audio_manager_mut, get_engine_core, get_scene_manager};
 use rust_engine_3d::core::input::ButtonState;
