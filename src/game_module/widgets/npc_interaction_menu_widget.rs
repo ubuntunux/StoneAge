@@ -5,7 +5,7 @@ use crate::game_module::actors::props::Prop;
 use crate::game_module::game_client::GamePhase;
 use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, AUDIO_SELECT_ITEM, ITEM_NONE};
 use crate::game_module::game_service_locator::{
-    get_character_manager, get_game_client_mut, get_game_scene_manager, get_game_scene_manager_mut,
+    get_character_manager, get_game_client_mut, get_game_resources, get_game_scene_manager, get_game_scene_manager_mut,
     get_game_ui_manager, get_game_ui_manager_mut,
 };
 use crate::game_module::game_ui_manager::move_mouse_to_ui_component;
@@ -581,6 +581,25 @@ impl<'a> NpcInteractionMenuWidget<'a> {
                         let scenario_intro = ptr_as_mut(scenario.as_ptr() as *const ScenarioIntro);
                         scenario_intro.complete_sub_quest_cooking();
                     }
+
+                    // 플레이어 자동 음식 섭취 액션 실행
+                    let player = character_manager.get_player();
+                    let mut player_ref = player.borrow_mut();
+                    player_ref.look_at(&spawn_position);
+                    player_ref.set_action_eating();
+
+                    let item_data = get_game_resources().get_item_data(item_data_name.as_str());
+                    let item_data = item_data.borrow();
+                    if item_data.get_hunger() != 0.0 {
+                        player_ref.get_stats_mut().add_hunger(item_data.get_hunger() as f32);
+                    }
+                    if item_data.get_hp() != 0 {
+                        player_ref.get_stats_mut().add_hp(item_data.get_hp());
+                    }
+                    if item_data.get_stamina() != 0.0 {
+                        player_ref.get_stats_mut().add_stamina(item_data.get_stamina());
+                    }
+                    get_game_ui_manager_mut().get_player_records_mut().add_food_eaten_count(1);
                 }
             }
             NpcInteractionOption::Close => {}
