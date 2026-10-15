@@ -9,8 +9,8 @@ use crate::game_module::game_constants::{
 };
 
 use crate::game_module::game_service_locator::{
-    get_game_client_mut, get_game_controller_mut, get_game_scene_manager, get_game_scene_manager_mut,
-    get_game_ui_manager_mut,
+    get_game_client_mut, get_game_controller_mut, get_game_resources, get_game_scene_manager,
+    get_game_scene_manager_mut, get_game_ui_manager_mut,
 };
 use crate::game_module::game_ui_manager::GameUIManager;
 
@@ -295,10 +295,22 @@ fn update_actor_table_eating<'a>(
                 if is_ready_to_eat {
                     if let Some(table_prop) = table_opt.as_ref() {
                         let item_manager = get_game_scene_manager().get_item_manager_mut();
-                        if let Some(item_data_name) = item_manager.pop_item_on_table(table_prop) {
+                        if let Some(item_data_name) = item_manager.consume_item_on_table(table_prop) {
                             let mut actor_ref = actor.borrow_mut();
-                            item_manager.attach_item(&mut actor_ref, item_data_name.as_str());
+                            let item_data = get_game_resources().get_item_data(item_data_name.as_str());
+                            let item_data = item_data.borrow();
+                            if item_data.get_hunger() != 0.0 {
+                                actor_ref.get_stats_mut().add_hunger(item_data.get_hunger() as f32);
+                            }
+                            if item_data.get_hp() != 0 {
+                                actor_ref.get_stats_mut().add_hp(item_data.get_hp());
+                            }
+                            if item_data.get_stamina() != 0.0 {
+                                actor_ref.get_stats_mut().add_stamina(item_data.get_stamina());
+                            }
+
                             if actor_ref.is_player() {
+                                item_manager.attach_item(&mut actor_ref, item_data_name.as_str());
                                 actor_ref.set_action_eating();
                             } else {
                                 actor_ref.set_next_behavior(BehaviorState::Eating, true);

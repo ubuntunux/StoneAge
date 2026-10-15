@@ -1,5 +1,6 @@
 use crate::game_module::actors::character::{Character, CharacterDataType, RequestType};
-use crate::game_module::actors::items::api::ItemCreateInfo;
+use crate::game_module::actors::items::api::{ItemCreateInfo, ItemDataType};
+use crate::game_module::actors::items::item::get_default_food_hp;
 use crate::game_module::actors::props::Prop;
 use crate::game_module::game_client::GamePhase;
 use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, AUDIO_SELECT_ITEM, ITEM_NONE};
@@ -550,6 +551,7 @@ impl<'a> NpcInteractionMenuWidget<'a> {
 
                 if let Some(item_data_name) = item_to_spawn {
                     let item_manager = get_game_scene_manager().get_item_manager_mut();
+                    let food_hp = get_default_food_hp(&item_data_name, ItemDataType::Food);
                     let item_create_info = ItemCreateInfo {
                         _item_data_name: item_data_name.clone(),
                         _position: spawn_position,
@@ -557,6 +559,8 @@ impl<'a> NpcInteractionMenuWidget<'a> {
                         _scale: Vector3::new(1.0, 1.0, 1.0),
                         _velocity: Vector3::zeros(),
                         _pickup_delay: 999999.0, // 플레이어가 자동 습득하지 않도록 방지
+                        _current_hp: food_hp,
+                        _max_hp: food_hp,
                         ..Default::default()
                     };
                     let item = item_manager.create_item(&item_data_name, &item_create_info, None);

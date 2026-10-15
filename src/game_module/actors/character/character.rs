@@ -14,8 +14,8 @@ use crate::game_module::game_client::GamePhase;
 use crate::game_module::game_constants::*;
 use crate::game_module::game_scene_manager::Stages;
 use crate::game_module::game_service_locator::{
-    get_character_manager, get_character_manager_mut, get_game_client, get_game_client_mut, get_game_scene_manager,
-    get_game_scene_manager_mut, get_game_ui_manager_mut, get_item_manager,
+    get_character_manager, get_character_manager_mut, get_game_client, get_game_client_mut, get_game_resources,
+    get_game_scene_manager, get_game_scene_manager_mut, get_game_ui_manager_mut, get_item_manager,
 };
 use crate::game_module::game_weather::WeatherType;
 use crate::game_module::scenario::scenario::ScenarioType;
@@ -1488,10 +1488,21 @@ impl<'a> Character<'a> {
 
             if let Some(item_data_name) = eatable_item_name {
                 item_manager.remove_inventory_item(item_data_name.as_str(), 1);
-                item_manager.attach_item(&mut target_npc.borrow_mut(), item_data_name.as_str());
-                target_npc.borrow_mut().look_at(self.get_position());
-                target_npc.borrow_mut().set_next_behavior(BehaviorState::Eating, true);
-                target_npc.borrow_mut().add_intimacy(INTIMACY_INTERACTION_ADD * INTIMACY_FEEDING_MULTIPLIER);
+                let item_data = get_game_resources().get_item_data(item_data_name.as_str());
+                let item_data = item_data.borrow();
+                let mut npc = target_npc.borrow_mut();
+                if item_data.get_hunger() != 0.0 {
+                    npc.get_stats_mut().add_hunger(item_data.get_hunger() as f32);
+                }
+                if item_data.get_hp() != 0 {
+                    npc.get_stats_mut().add_hp(item_data.get_hp());
+                }
+                if item_data.get_stamina() != 0.0 {
+                    npc.get_stats_mut().add_stamina(item_data.get_stamina());
+                }
+                npc.look_at(self.get_position());
+                npc.set_next_behavior(BehaviorState::Eating, true);
+                npc.add_intimacy(INTIMACY_INTERACTION_ADD * INTIMACY_FEEDING_MULTIPLIER);
             }
         }
     }

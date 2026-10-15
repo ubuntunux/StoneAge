@@ -5,7 +5,7 @@ use crate::game_module::actors::items::api::{
 use crate::game_module::actors::items::updater::create_item_updater;
 use crate::game_module::actors::props::Prop;
 use crate::game_module::game_constants::{
-    AUDIO_ITEM_INVENTORY, AUDIO_PICKUP_ITEM, EAT_ITEM_DISTANCE, WEAPON_SOCKET_NAME,
+    AUDIO_ITEM_INVENTORY, AUDIO_PICKUP_ITEM, DEFAULT_FOOD_HP, EAT_ITEM_DISTANCE, WEAPON_SOCKET_NAME,
 };
 use crate::game_module::game_scene_manager::{ItemCreateInfoMap, ItemSaveDataMap};
 use crate::game_module::game_service_locator::{
@@ -30,6 +30,10 @@ use rust_engine_3d::utilities::system::{
 use std::collections::HashMap;
 use uuid::Uuid;
 
+pub fn get_default_food_hp(_item_data_name: &str, _item_type: ItemDataType) -> i32 {
+    DEFAULT_FOOD_HP
+}
+
 impl Default for ItemCreateInfo {
     fn default() -> Self {
         ItemCreateInfo {
@@ -40,6 +44,8 @@ impl Default for ItemCreateInfo {
             _scale: Vector3::new(1.0, 1.0, 1.0),
             _velocity: Vector3::zeros(),
             _pickup_delay: 0.25,
+            _current_hp: 0,
+            _max_hp: 0,
         }
     }
 }
@@ -146,7 +152,18 @@ impl<'a> Item<'a> {
         scale: &Vector3<f32>,
         velocity: &Vector3<f32>,
         pickup_delay: f32,
+        current_hp: i32,
+        max_hp: i32,
     ) -> Item<'a> {
+        let (resolved_max_hp, resolved_current_hp) = if max_hp > 0 {
+            (max_hp, if current_hp > 0 { current_hp } else { max_hp })
+        } else if item_data.borrow()._item_type.is_eatable() {
+            let hp = get_default_food_hp(item_data_name, item_data.borrow()._item_type);
+            (hp, hp)
+        } else {
+            (1, 1)
+        };
+
         let mut item = Item {
             _item_id: item_id,
             _item_name: item_name.to_string(),
@@ -158,9 +175,12 @@ impl<'a> Item<'a> {
                 _position: *position,
                 _rotation: *rotation,
                 _scale: *scale,
+                _base_scale: *scale,
                 _velocity: *velocity,
                 _is_on_ground: false,
                 _pickup_delay: pickup_delay,
+                _current_hp: resolved_current_hp,
+                _max_hp: resolved_max_hp,
             }),
             _item_updater: create_item_updater(item_data.borrow()._item_type),
         };
@@ -185,9 +205,23 @@ impl<'a> Item<'a> {
                     _scale: self._item_properties._scale,
                     _velocity: self._item_properties._velocity,
                     _pickup_delay: self._item_properties._pickup_delay,
+                    _current_hp: self._item_properties._current_hp,
+                    _max_hp: self._item_properties._max_hp,
                 },
             },
         )
+    }
+
+    pub fn get_current_hp(&self) -> i32 {
+        self._item_properties._current_hp
+    }
+
+    pub fn get_max_hp(&self) -> i32 {
+        self._item_properties._max_hp
+    }
+
+    pub fn set_current_hp(&mut self, hp: i32) {
+        self._item_properties._current_hp = hp;
     }
 
     pub fn initialize_item(&mut self) {
@@ -282,9 +316,13 @@ impl<'a> ItemManager<'a> {
     }
 
     pub fn has_item_on_table(&self, table_prop: &RcRefCell<Prop<'a>>) -> bool {
-        // 1. _table_storage_item_ids 중 유효하고 eatable인 아이템이 있는지 확인
+        // 1. _table_storage_item_ids 중 유효하고 eatable이며 남은 HP가 있는 아이템이 있는지 확인
         let has_in_ids = self._table_storage_item_ids.iter().any(|id| {
-            self._items.get(id).is_some_and(|item| item.borrow()._item_data.borrow()._item_type.is_eatable())
+            self._items.get(id).is_some_and(|item| {
+                let item = item.borrow();
+                item._item_data.borrow()._item_type.is_eatable()
+                    && (item._item_properties._max_hp == 0 || item._item_properties._current_hp > 0)
+            })
         });
         if has_in_ids {
             return true;
@@ -304,6 +342,9 @@ impl<'a> ItemManager<'a> {
             if !item._item_data.borrow()._item_type.is_eatable() {
                 continue;
             }
+            if item._item_properties._max_hp > 0 && item._item_properties._current_hp <= 0 {
+                continue;
+            }
             let pos = item.get_position();
             let dist_xz = ((pos.x - table_center.x).powi(2) + (pos.z - table_center.z).powi(2)).sqrt();
             if dist_xz < 1.5 && pos.y >= table_min_y - 0.5 && pos.y <= table_max_y + 1.5 {
@@ -314,29 +355,60 @@ impl<'a> ItemManager<'a> {
         false
     }
 
-    pub fn pop_item_on_table(&mut self, table_prop: &RcRefCell<Prop<'a>>) -> Option<String> {
-        // 1. _table_storage_item_ids에서 유효한 eatable 아이템을 뒤에서부터 pop
-        while let Some(item_id) = self._table_storage_item_ids.pop() {
+    pub fn consume_item_on_table(&mut self, table_prop: &RcRefCell<Prop<'a>>) -> Option<String> {
+        // 1. _table_storage_item_ids에서 유효한 eatable 아이템을 뒤에서부터 확인하고 소비
+        while let Some(&item_id) = self._table_storage_item_ids.last() {
             if let Some(item_refcell) = self._items.get(&item_id).cloned() {
-                let item_data_name = item_refcell.borrow()._item_data_name.clone();
                 let is_eatable = item_refcell.borrow()._item_data.borrow()._item_type.is_eatable();
-                self.remove_item(&item_refcell);
-                if is_eatable {
-                    return Some(item_data_name);
+                if !is_eatable {
+                    self._table_storage_item_ids.pop();
+                    self.remove_item(&item_refcell);
+                    continue;
                 }
+
+                let (item_data_name, is_finished) = {
+                    let mut item = item_refcell.borrow_mut();
+                    let item_data_name = item._item_data_name.clone();
+                    if item._item_properties._max_hp <= 0 {
+                        let hp = get_default_food_hp(&item_data_name, item._item_data.borrow()._item_type);
+                        item._item_properties._max_hp = hp;
+                        item._item_properties._current_hp = hp;
+                    }
+                    item._item_properties._current_hp = item._item_properties._current_hp.saturating_sub(1);
+                    let current_hp = item._item_properties._current_hp;
+                    let max_hp = item._item_properties._max_hp;
+
+                    // 남은 음식 비율에 따라 스케일 조절 (점점 축소)
+                    if max_hp > 0 {
+                        let ratio = (current_hp as f32 / max_hp as f32).clamp(0.0, 1.0);
+                        let scale_factor = 0.5 + 0.5 * ratio;
+                        item._item_properties._scale = item._item_properties._base_scale * scale_factor;
+                        item.update_item_transform();
+                    }
+
+                    (item_data_name, current_hp <= 0)
+                };
+
+                if is_finished {
+                    self._table_storage_item_ids.pop();
+                    self.remove_item(&item_refcell);
+                }
+
+                return Some(item_data_name);
+            } else {
+                self._table_storage_item_ids.pop();
             }
         }
 
-        // 2. 테이블 바운딩 박스 주변의 eatable 아이템 탐색
+        // 2. 테이블 바운딩 박스 주변의 eatable 아이템 탐색 및 소비
         let (table_center, table_min_y, table_max_y) = {
             let b = table_prop.borrow();
             let bbox = b.get_bounding_box();
             (bbox._center, bbox._min.y, bbox._max.y)
         };
-        let mut target_item_id = None;
-        let mut target_item_data_name = None;
+        let mut target_item_rc = None;
 
-        for (id, item_rc) in &self._items {
+        for (_id, item_rc) in &self._items {
             let item = item_rc.borrow();
             if item.is_attachment() {
                 continue;
@@ -344,23 +416,53 @@ impl<'a> ItemManager<'a> {
             if !item._item_data.borrow()._item_type.is_eatable() {
                 continue;
             }
+            if item._item_properties._max_hp > 0 && item._item_properties._current_hp <= 0 {
+                continue;
+            }
             let pos = item.get_position();
             let dist_xz = ((pos.x - table_center.x).powi(2) + (pos.z - table_center.z).powi(2)).sqrt();
             if dist_xz < 1.5 && pos.y >= table_min_y - 0.5 && pos.y <= table_max_y + 1.5 {
-                target_item_id = Some(*id);
-                target_item_data_name = Some(item._item_data_name.clone());
+                target_item_rc = Some(item_rc.clone());
                 break;
             }
         }
 
-        if let Some(id) = target_item_id {
-            if let Some(item_refcell) = self._items.get(&id).cloned() {
+        if let Some(item_refcell) = target_item_rc {
+            let (item_data_name, is_finished, item_id) = {
+                let mut item = item_refcell.borrow_mut();
+                let item_data_name = item._item_data_name.clone();
+                if item._item_properties._max_hp <= 0 {
+                    let hp = get_default_food_hp(&item_data_name, item._item_data.borrow()._item_type);
+                    item._item_properties._max_hp = hp;
+                    item._item_properties._current_hp = hp;
+                }
+                item._item_properties._current_hp = item._item_properties._current_hp.saturating_sub(1);
+                let current_hp = item._item_properties._current_hp;
+                let max_hp = item._item_properties._max_hp;
+
+                if max_hp > 0 {
+                    let ratio = (current_hp as f32 / max_hp as f32).clamp(0.0, 1.0);
+                    let scale_factor = 0.5 + 0.5 * ratio;
+                    item._item_properties._scale = item._item_properties._base_scale * scale_factor;
+                    item.update_item_transform();
+                }
+
+                (item_data_name, current_hp <= 0, item.get_item_id())
+            };
+
+            if is_finished {
+                self._table_storage_item_ids.retain(|&id| id != item_id);
                 self.remove_item(&item_refcell);
-                return target_item_data_name;
             }
+
+            return Some(item_data_name);
         }
 
         None
+    }
+
+    pub fn pop_item_on_table(&mut self, table_prop: &RcRefCell<Prop<'a>>) -> Option<String> {
+        self.consume_item_on_table(table_prop)
     }
 
     pub fn initialize_item_manager(&mut self) {
@@ -425,6 +527,8 @@ impl<'a> ItemManager<'a> {
             &item_create_info._scale,
             &item_create_info._velocity,
             item_create_info._pickup_delay,
+            item_create_info._current_hp,
+            item_create_info._max_hp,
         ));
         self._items.insert(item_id, item.clone());
         if !self._item_name_map.contains_key(item_name.as_str()) {
