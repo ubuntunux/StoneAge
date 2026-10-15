@@ -430,12 +430,6 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
         if game_ui_manager.is_opened_daily_settlement() {
             game_ui_manager.close_daily_settlement();
         }
-        if game_ui_manager.is_opened_cooking() {
-            game_ui_manager.close_cooking();
-        }
-        if game_ui_manager.is_cooking_minigame_active() {
-            game_ui_manager.close_cooking_minigame();
-        }
     }
 
     fn on_close_game_scene(&mut self, _game_scene_data_name: &str) {}
