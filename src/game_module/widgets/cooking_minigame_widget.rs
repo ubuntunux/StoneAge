@@ -1,4 +1,4 @@
-use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, AUDIO_SELECT_ITEM};
+use crate::game_module::game_constants::AUDIO_SELECT_ITEM;
 use crate::game_module::game_service_locator::get_game_ui_manager_mut;
 use crate::game_module::widgets::cooking_widget::{COOKING_RECIPES, CookingWidget};
 use nalgebra::Vector2;
@@ -310,7 +310,6 @@ impl<'a> CookingMinigameWidget<'a> {
         let item_code = recipe.item_code();
 
         CookingWidget::try_cook_recipe(recipe_index);
-        get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
 
         get_game_ui_manager_mut().show_cooking_popup(item_code);
         self.close_minigame();

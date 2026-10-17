@@ -14,6 +14,7 @@ pub type PropNameMap<'a> = HashMap<String, RcRefCell<Prop<'a>>>;
 pub enum PropDataType {
     None,
     Bed,
+    Campfire,
     Ceiling,
     Destruction,
     Gate,
@@ -23,6 +24,16 @@ pub enum PropDataType {
     Building,
     Monolith,
     Table,
+}
+
+impl PropDataType {
+    pub fn is_heat_source(&self) -> bool {
+        matches!(self, PropDataType::Campfire)
+    }
+
+    pub fn is_shelter(&self) -> bool {
+        matches!(self, PropDataType::Ceiling | PropDataType::Building)
+    }
 }
 
 #[derive(Serialize, Deserialize, Default, Debug, Clone, PartialEq)]

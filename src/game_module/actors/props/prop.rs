@@ -149,6 +149,12 @@ impl<'a> Prop<'a> {
     pub fn is_alive(&self) -> bool {
         self._prop_stats._is_alive
     }
+    pub fn is_heat_source(&self) -> bool {
+        self._prop_data.borrow()._prop_type.is_heat_source()
+    }
+    pub fn is_shelter(&self) -> bool {
+        self._prop_data.borrow()._prop_type.is_shelter()
+    }
     pub fn set_dead(&mut self) {
         self._prop_stats._is_alive = false;
     }

@@ -66,6 +66,7 @@ pub const WETNESS_DRY_RATE: f32 = 0.25;
 pub const BODY_TEMP_COLD_DRAIN_RATE: f32 = 0.6;
 pub const BODY_TEMP_HEAT_RECOVERY_RATE: f32 = 1.2;
 pub const HEAT_SOURCE_RADIUS: f32 = 6.0;
+pub const SHELTER_PROTECTION_RADIUS: f32 = 3.0;
 
 // character
 pub const CHARACTER_DATA_NAME_ARU: &str = "characters/family/aru";
@@ -94,7 +95,11 @@ pub const MOVE_LIMIT: f32 = 2.0;
 pub const BLOCK_TOLERANCE: f32 = 0.5;
 pub const EAT_ITEM_DISTANCE: f32 = 1.0;
 pub const EAT_ITEM_DELAY_TIME: f32 = 3.0;
-pub const DEFAULT_FOOD_HP: i32 = 10;
+pub const DEFAULT_FOOD_HP: i32 = 5;
+pub const FOOD_HP_BASIC_COOKED: i32 = 6;
+pub const FOOD_HP_ENERGY_STEW: i32 = 8;
+pub const FOOD_HP_GOLDEN_FEAST: i32 = 10;
+pub const FOOD_MIN_SCALE_FACTOR: f32 = 0.5;
 pub const MAX_BED_RESTRICTION_DISTANCE: f32 = 7.0;
 pub const WRAP_UP_THE_DAY_HOLD_DURATION: f32 = 1.0;
 

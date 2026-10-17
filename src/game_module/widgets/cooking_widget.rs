@@ -1,6 +1,6 @@
 use crate::game_module::actors::character::Character;
 use crate::game_module::actors::items::ItemDataType;
-use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, AUDIO_SELECT_ITEM};
+use crate::game_module::game_constants::AUDIO_SELECT_ITEM;
 use crate::game_module::game_controller::WidgetNavRepeatController;
 use crate::game_module::game_service_locator::{
     get_character_manager_mut, get_game_ui_manager, get_game_ui_manager_mut, get_item_manager_mut,
@@ -363,23 +363,26 @@ impl<'a> CookingWidget<'a> {
             let widget_ptr = unsafe { (*item_ptr)._widget_ptr as *mut CookingWidget<'a> };
             let recipe_index = unsafe { (*item_ptr)._recipe_index };
             if !widget_ptr.is_null() {
-                ptr_as_mut(widget_ptr).select_recipe(recipe_index);
-            }
-            if Self::can_cook_recipe(recipe_index) {
-                if !widget_ptr.is_null() {
-                    ptr_as_mut(widget_ptr).close_cooking();
-                }
-                get_game_ui_manager_mut().start_cooking_minigame(recipe_index);
-            } else {
-                let recipe = &COOKING_RECIPES[recipe_index];
-                let recipe_name = Self::get_item_name_from_resource(recipe.item_code());
-                log::warn!("[CookingWidget] Cannot cook {}: insufficient ingredients", recipe_name);
-                if !widget_ptr.is_null() {
-                    ptr_as_mut(widget_ptr).refresh_recipe_labels();
-                }
+                ptr_as_mut(widget_ptr).request_cook_recipe(recipe_index);
             }
         }
         true
+    }
+
+    pub fn request_cook_recipe(&mut self, recipe_index: usize) {
+        if recipe_index >= COOKING_RECIPES.len() {
+            return;
+        }
+        self.select_recipe(recipe_index);
+        if Self::can_cook_recipe(recipe_index) {
+            self.close_cooking();
+            get_game_ui_manager_mut().start_cooking_minigame(recipe_index);
+        } else {
+            let recipe = &COOKING_RECIPES[recipe_index];
+            let recipe_name = Self::get_item_name_from_resource(recipe.item_code());
+            log::warn!("[CookingWidget] Cannot cook {}: insufficient ingredients", recipe_name);
+            self.refresh_recipe_labels();
+        }
     }
 
     pub fn can_cook_recipe(recipe_index: usize) -> bool {
@@ -434,11 +437,9 @@ impl<'a> CookingWidget<'a> {
             item_mgr.remove_inventory_item(req.item_code(), req._count);
         }
 
-        // Grant cooked item
+        // Grant cooked item (pick_item already triggers notify_item_acquired and plays AUDIO_PICKUP_ITEM)
         item_mgr.pick_item(recipe.item_code(), 1);
-        get_game_ui_manager_mut().notify_item_acquired(recipe.item_code(), 1, true);
         get_game_ui_manager_mut().get_player_records_mut().add_cooking_count(1);
-        get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
 
         let recipe_name = Self::get_item_name_from_resource(recipe.item_code());
         log::info!("[CookingWidget] Cooked {}", recipe_name);
@@ -627,9 +628,7 @@ impl<'a> CookingWidget<'a> {
             || joystick_input_data._btn_a == ButtonState::Pressed
             || joystick_input_data._btn_x == ButtonState::Pressed
         {
-            if Self::try_cook_recipe(self._selected_index) {
-                self.refresh_recipe_labels();
-            }
+            self.request_cook_recipe(self._selected_index);
         }
     }
 }

@@ -5,7 +5,8 @@ use crate::game_module::actors::items::api::{
 use crate::game_module::actors::items::updater::create_item_updater;
 use crate::game_module::actors::props::Prop;
 use crate::game_module::game_constants::{
-    AUDIO_ITEM_INVENTORY, AUDIO_PICKUP_ITEM, DEFAULT_FOOD_HP, EAT_ITEM_DISTANCE, TABLE_ITEM_SEARCH_MAX_Y_OFFSET,
+    AUDIO_ITEM_INVENTORY, AUDIO_PICKUP_ITEM, DEFAULT_FOOD_HP, EAT_ITEM_DISTANCE, FOOD_HP_BASIC_COOKED,
+    FOOD_HP_ENERGY_STEW, FOOD_HP_GOLDEN_FEAST, FOOD_MIN_SCALE_FACTOR, TABLE_ITEM_SEARCH_MAX_Y_OFFSET,
     TABLE_ITEM_SEARCH_MIN_Y_OFFSET, TABLE_ITEM_SEARCH_RADIUS_XZ, WEAPON_SOCKET_NAME,
 };
 use crate::game_module::game_scene_manager::{ItemCreateInfoMap, ItemSaveDataMap};
@@ -27,22 +28,21 @@ use rust_engine_3d::utilities::system::{
     RcRefCell, extract_name_and_uuid, format_name_with_uuid, newRcRefCell, ptr_as_mut,
 };
 use std::collections::HashMap;
+use strum::IntoEnumIterator;
 use uuid::Uuid;
 
 pub fn get_default_food_hp(item_data_name: &str, item_type: ItemDataType) -> i32 {
-    if item_data_name.contains("golden_feast") {
-        DEFAULT_FOOD_HP.max(10)
-    } else if item_data_name.contains("energy_stew") {
-        DEFAULT_FOOD_HP.max(8)
-    } else if item_data_name.contains("roast_meat")
-        || item_data_name.contains("fish_soup")
-        || item_data_name.contains("steamed_vegetables")
-    {
-        DEFAULT_FOOD_HP.max(6)
-    } else if item_type.is_eatable() {
-        DEFAULT_FOOD_HP.max(5)
+    let resolved_type = if item_type == ItemDataType::Food || item_type == ItemDataType::None {
+        ItemDataType::from_item_code(item_data_name).unwrap_or(item_type)
     } else {
-        DEFAULT_FOOD_HP
+        item_type
+    };
+
+    match resolved_type {
+        ItemDataType::GoldenFeast => FOOD_HP_GOLDEN_FEAST,
+        ItemDataType::EnergyStew => FOOD_HP_ENERGY_STEW,
+        ItemDataType::RoastMeat | ItemDataType::FishSoup | ItemDataType::SteamedVegetables => FOOD_HP_BASIC_COOKED,
+        _ => DEFAULT_FOOD_HP,
     }
 }
 
@@ -76,6 +76,15 @@ impl Default for ItemData {
 }
 
 impl ItemDataType {
+    pub fn from_item_code(item_code: &str) -> Option<ItemDataType> {
+        ItemDataType::iter().find(|&t| {
+            t != ItemDataType::None
+                && t != ItemDataType::Food
+                && t != ItemDataType::MeleeWeapon
+                && t.item_code() == item_code
+        })
+    }
+
     pub fn item_code(&self) -> &'static str {
         match self {
             ItemDataType::None => "",
@@ -236,6 +245,32 @@ impl<'a> Item<'a> {
         self._item_properties._current_hp = hp;
     }
 
+    pub fn is_valid_table_food(&self) -> bool {
+        self._item_data.borrow()._item_type.is_eatable()
+            && (self._item_properties._max_hp == 0 || self._item_properties._current_hp > 0)
+    }
+
+    pub fn consume_food_charge(&mut self) -> (String, bool) {
+        let item_data_name = self._item_data_name.clone();
+        if self._item_properties._max_hp <= 0 {
+            let hp = get_default_food_hp(&item_data_name, self._item_data.borrow()._item_type);
+            self._item_properties._max_hp = hp;
+            self._item_properties._current_hp = hp;
+        }
+        self._item_properties._current_hp = self._item_properties._current_hp.saturating_sub(1);
+        let current_hp = self._item_properties._current_hp;
+        let max_hp = self._item_properties._max_hp;
+
+        if max_hp > 0 {
+            let ratio = (current_hp as f32 / max_hp as f32).clamp(0.0, 1.0);
+            let scale_factor = FOOD_MIN_SCALE_FACTOR + (1.0 - FOOD_MIN_SCALE_FACTOR) * ratio;
+            self._item_properties._scale = self._item_properties._base_scale * scale_factor;
+            self.update_item_transform();
+        }
+
+        (item_data_name, current_hp <= 0)
+    }
+
     pub fn initialize_item(&mut self) {
         if self.is_attachment() {
             self.update_item_attach_transform();
@@ -318,16 +353,7 @@ impl<'a> ItemManager<'a> {
         let item_ids = std::mem::take(&mut self._table_storage_item_ids);
         for item_id in item_ids {
             if let Some(item_refcell) = self._items.get(&item_id).cloned() {
-                let (is_eatable, has_hp) = {
-                    let item = item_refcell.borrow();
-                    (
-                        item._item_data.borrow()._item_type.is_eatable(),
-                        item._item_properties._max_hp == 0 || item._item_properties._current_hp > 0,
-                    )
-                };
-
-                // 테이블 위에 차려진 음식 중 아직 HP가 남아있는 음식은 삭제하지 않고 보존
-                if is_eatable && has_hp {
+                if item_refcell.borrow().is_valid_table_food() {
                     self._table_storage_item_ids.push(item_id);
                     continue;
                 }
@@ -337,15 +363,12 @@ impl<'a> ItemManager<'a> {
         }
     }
 
-    pub fn get_item_on_table(&self, table_prop: &RcRefCell<Prop<'a>>) -> Option<String> {
+    fn find_eatable_item_on_table(&self, table_prop: &RcRefCell<Prop<'a>>) -> Option<RcRefCell<Item<'a>>> {
         // 1. _table_storage_item_ids 중 유효하고 eatable이며 남은 HP가 있는 아이템 확인
         for id in self._table_storage_item_ids.iter().rev() {
-            if let Some(item) = self._items.get(id) {
-                let item = item.borrow();
-                if item._item_data.borrow()._item_type.is_eatable()
-                    && (item._item_properties._max_hp == 0 || item._item_properties._current_hp > 0)
-                {
-                    return Some(item._item_data_name.clone());
+            if let Some(item_rc) = self._items.get(id) {
+                if item_rc.borrow().is_valid_table_food() {
+                    return Some(item_rc.clone());
                 }
             }
         }
@@ -358,13 +381,7 @@ impl<'a> ItemManager<'a> {
         };
         for item_rc in self._items.values() {
             let item = item_rc.borrow();
-            if item.is_attachment() {
-                continue;
-            }
-            if !item._item_data.borrow()._item_type.is_eatable() {
-                continue;
-            }
-            if item._item_properties._max_hp > 0 && item._item_properties._current_hp <= 0 {
+            if item.is_attachment() || !item.is_valid_table_food() {
                 continue;
             }
             let pos = item.get_position();
@@ -373,113 +390,29 @@ impl<'a> ItemManager<'a> {
                 && pos.y >= table_min_y - TABLE_ITEM_SEARCH_MIN_Y_OFFSET
                 && pos.y <= table_max_y + TABLE_ITEM_SEARCH_MAX_Y_OFFSET
             {
-                return Some(item._item_data_name.clone());
+                return Some(item_rc.clone());
             }
         }
 
         None
     }
 
+    pub fn get_item_on_table(&self, table_prop: &RcRefCell<Prop<'a>>) -> Option<String> {
+        self.find_eatable_item_on_table(table_prop).map(|item| item.borrow()._item_data_name.clone())
+    }
+
     pub fn has_item_on_table(&self, table_prop: &RcRefCell<Prop<'a>>) -> bool {
-        self.get_item_on_table(table_prop).is_some()
+        self.find_eatable_item_on_table(table_prop).is_some()
     }
 
     pub fn consume_item_on_table(&mut self, table_prop: &RcRefCell<Prop<'a>>) -> Option<String> {
-        // 1. _table_storage_item_ids에서 유효한 eatable 아이템을 뒤에서부터 확인하고 소비
-        while let Some(&item_id) = self._table_storage_item_ids.last() {
-            if let Some(item_refcell) = self._items.get(&item_id).cloned() {
-                let is_eatable = item_refcell.borrow()._item_data.borrow()._item_type.is_eatable();
-                if !is_eatable {
-                    self._table_storage_item_ids.pop();
-                    self.remove_item(&item_refcell);
-                    continue;
-                }
+        self.clear_table_storage_items_in_world();
 
-                let (item_data_name, is_finished) = {
-                    let mut item = item_refcell.borrow_mut();
-                    let item_data_name = item._item_data_name.clone();
-                    if item._item_properties._max_hp <= 0 {
-                        let hp = get_default_food_hp(&item_data_name, item._item_data.borrow()._item_type);
-                        item._item_properties._max_hp = hp;
-                        item._item_properties._current_hp = hp;
-                    }
-                    item._item_properties._current_hp = item._item_properties._current_hp.saturating_sub(1);
-                    let current_hp = item._item_properties._current_hp;
-                    let max_hp = item._item_properties._max_hp;
-
-                    // 남은 음식 비율에 따라 스케일 조절 (점점 축소)
-                    if max_hp > 0 {
-                        let ratio = (current_hp as f32 / max_hp as f32).clamp(0.0, 1.0);
-                        let scale_factor = 0.5 + 0.5 * ratio;
-                        item._item_properties._scale = item._item_properties._base_scale * scale_factor;
-                        item.update_item_transform();
-                    }
-
-                    (item_data_name, current_hp <= 0)
-                };
-
-                if is_finished {
-                    self._table_storage_item_ids.pop();
-                    self.remove_item(&item_refcell);
-                }
-
-                return Some(item_data_name);
-            } else {
-                self._table_storage_item_ids.pop();
-            }
-        }
-
-        // 2. 테이블 바운딩 박스 주변의 eatable 아이템 탐색 및 소비
-        let (table_center, table_min_y, table_max_y) = {
-            let b = table_prop.borrow();
-            let bbox = b.get_bounding_box();
-            (bbox._center, bbox._min.y, bbox._max.y)
-        };
-        let mut target_item_rc = None;
-
-        for (_id, item_rc) in &self._items {
-            let item = item_rc.borrow();
-            if item.is_attachment() {
-                continue;
-            }
-            if !item._item_data.borrow()._item_type.is_eatable() {
-                continue;
-            }
-            if item._item_properties._max_hp > 0 && item._item_properties._current_hp <= 0 {
-                continue;
-            }
-            let pos = item.get_position();
-            let dist_xz = ((pos.x - table_center.x).powi(2) + (pos.z - table_center.z).powi(2)).sqrt();
-            if dist_xz < TABLE_ITEM_SEARCH_RADIUS_XZ
-                && pos.y >= table_min_y - TABLE_ITEM_SEARCH_MIN_Y_OFFSET
-                && pos.y <= table_max_y + TABLE_ITEM_SEARCH_MAX_Y_OFFSET
-            {
-                target_item_rc = Some(item_rc.clone());
-                break;
-            }
-        }
-
-        if let Some(item_refcell) = target_item_rc {
+        if let Some(item_refcell) = self.find_eatable_item_on_table(table_prop) {
             let (item_data_name, is_finished, item_id) = {
                 let mut item = item_refcell.borrow_mut();
-                let item_data_name = item._item_data_name.clone();
-                if item._item_properties._max_hp <= 0 {
-                    let hp = get_default_food_hp(&item_data_name, item._item_data.borrow()._item_type);
-                    item._item_properties._max_hp = hp;
-                    item._item_properties._current_hp = hp;
-                }
-                item._item_properties._current_hp = item._item_properties._current_hp.saturating_sub(1);
-                let current_hp = item._item_properties._current_hp;
-                let max_hp = item._item_properties._max_hp;
-
-                if max_hp > 0 {
-                    let ratio = (current_hp as f32 / max_hp as f32).clamp(0.0, 1.0);
-                    let scale_factor = 0.5 + 0.5 * ratio;
-                    item._item_properties._scale = item._item_properties._base_scale * scale_factor;
-                    item.update_item_transform();
-                }
-
-                (item_data_name, current_hp <= 0, item.get_item_id())
+                let (name, finished) = item.consume_food_charge();
+                (name, finished, item.get_item_id())
             };
 
             if is_finished {

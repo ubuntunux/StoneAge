@@ -10,10 +10,9 @@ use crate::game_module::game_constants::{
 };
 
 use crate::game_module::game_service_locator::{
-    get_game_client_mut, get_game_controller_mut, get_game_resources, get_game_scene_manager,
-    get_game_scene_manager_mut, get_game_ui_manager_mut,
+    get_game_client_mut, get_game_controller_mut, get_game_scene_manager, get_game_scene_manager_mut,
+    get_game_ui_manager_mut,
 };
-use crate::game_module::game_ui_manager::GameUIManager;
 
 use crate::game_module::scenario::scenario::{
     GameScenarioCreateInfo, ScenarioBase, ScenarioDataCreateInfo, ScenarioType,
@@ -219,7 +218,6 @@ fn update_actor_table_eating<'a>(
     table_opt: &Option<RcRefCell<Prop<'a>>>,
     seat_direction: &Vector3<f32>,
     has_eatable_item: bool,
-    _game_ui_manager: &mut GameUIManager<'a>,
 ) {
     let Some(actor) = actor_opt.as_ref() else {
         return;
@@ -227,7 +225,7 @@ fn update_actor_table_eating<'a>(
 
     if actor.borrow().is_action(ActionAnimationState::Dance) {
         return;
-    }
+    };
 
     let is_hungry = actor.borrow().get_hunger() > TARGET_HUNGER_THRESHOLD;
     let should_eat = has_eatable_item || is_hungry;
@@ -280,17 +278,7 @@ fn update_actor_table_eating<'a>(
                         let item_manager = get_game_scene_manager().get_item_manager_mut();
                         if let Some(item_data_name) = item_manager.consume_item_on_table(table_prop) {
                             let mut actor_ref = actor.borrow_mut();
-                            let item_data = get_game_resources().get_item_data(item_data_name.as_str());
-                            let item_data = item_data.borrow();
-                            if item_data.get_hunger() != 0.0 {
-                                actor_ref.get_stats_mut().add_hunger(item_data.get_hunger() as f32);
-                            }
-                            if item_data.get_hp() != 0 {
-                                actor_ref.get_stats_mut().add_hp(item_data.get_hp());
-                            }
-                            if item_data.get_stamina() != 0.0 {
-                                actor_ref.get_stats_mut().add_stamina(item_data.get_stamina());
-                            }
+                            actor_ref.apply_food_item_stats(item_data_name.as_str());
 
                             if actor_ref.is_player() {
                                 item_manager.attach_item(&mut actor_ref, item_data_name.as_str());
@@ -665,7 +653,6 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                                 &self._prop_table,
                                 &Vector3::new(0.0, 0.0, 1.0),
                                 has_food_on_table_for_ewa,
-                                game_ui_manager,
                             );
 
                             let has_food_on_table_for_koa = self._prop_table.as_ref().is_some_and(|table| {
@@ -677,7 +664,6 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                                 &self._prop_table,
                                 &Vector3::new(-1.0, 0.0, 0.0),
                                 has_food_on_table_for_koa,
-                                game_ui_manager,
                             );
                         }
 

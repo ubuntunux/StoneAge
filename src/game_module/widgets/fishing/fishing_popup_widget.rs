@@ -117,6 +117,47 @@ impl<'a> FishingPopupWidget<'a> {
     }
 
     pub fn show_popup(&mut self, item_data_name: &str, is_perfect: bool) {
+        if is_perfect {
+            self.show_custom_popup(
+                item_data_name,
+                true,
+                "* PERFECT CATCH! *",
+                get_color32(255, 215, 0, 255),
+                get_color32(255, 215, 0, 255),
+                Some(("Perfect Alignment Bonus!", get_color32(255, 220, 100, 255))),
+            );
+        } else {
+            self.show_custom_popup(
+                item_data_name,
+                false,
+                "FISH CAUGHT!",
+                get_color32(100, 220, 255, 255),
+                get_color32(0, 200, 255, 255),
+                None,
+            );
+        }
+    }
+
+    pub fn show_cooking_popup(&mut self, item_data_name: &str) {
+        self.show_custom_popup(
+            item_data_name,
+            true,
+            "* COOKING COMPLETE! *",
+            get_color32(255, 215, 0, 255),
+            get_color32(255, 215, 0, 255),
+            Some(("Delicious Meal Prepared!", get_color32(255, 220, 100, 255))),
+        );
+    }
+
+    fn show_custom_popup(
+        &mut self,
+        item_data_name: &str,
+        is_perfect: bool,
+        title_text: &str,
+        title_color: u32,
+        border_color: u32,
+        badge: Option<(&str, u32)>,
+    ) {
         let (item_name, material_instance) = {
             let game_resources = get_game_resources();
             if game_resources.has_item_data(item_data_name) {
@@ -138,67 +179,21 @@ impl<'a> FishingPopupWidget<'a> {
 
         let container_ui = ptr_as_mut(self._container_widget).get_ui_component_mut();
         container_ui.set_visible(true);
+        container_ui.set_border_color(border_color);
 
-        if is_perfect {
-            container_ui.set_border_color(get_color32(255, 215, 0, 255));
-            let title_ui = ptr_as_mut(self._title_widget).get_ui_component_mut();
-            title_ui.set_text("* PERFECT CATCH! *");
-            title_ui.set_font_color(get_color32(255, 215, 0, 255));
+        let title_ui = ptr_as_mut(self._title_widget).get_ui_component_mut();
+        title_ui.set_text(title_text);
+        title_ui.set_font_color(title_color);
 
-            let badge_ui = ptr_as_mut(self._perfect_badge_widget).get_ui_component_mut();
-            badge_ui.set_text("Perfect Alignment Bonus!");
-            badge_ui.set_font_color(get_color32(255, 220, 100, 255));
+        let badge_ui = ptr_as_mut(self._perfect_badge_widget).get_ui_component_mut();
+        if let Some((badge_text, badge_color)) = badge {
+            badge_ui.set_text(badge_text);
+            badge_ui.set_font_color(badge_color);
             badge_ui.set_visible(true);
         } else {
-            container_ui.set_border_color(get_color32(0, 200, 255, 255));
-            let title_ui = ptr_as_mut(self._title_widget).get_ui_component_mut();
-            title_ui.set_text("FISH CAUGHT!");
-            title_ui.set_font_color(get_color32(100, 220, 255, 255));
-
-            let badge_ui = ptr_as_mut(self._perfect_badge_widget).get_ui_component_mut();
             badge_ui.set_text("");
             badge_ui.set_visible(false);
         }
-
-        let icon_ui = ptr_as_mut(self._icon_widget).get_ui_component_mut();
-        icon_ui.set_material_instance(Some(material_instance));
-
-        let name_ui = ptr_as_mut(self._name_widget).get_ui_component_mut();
-        name_ui.set_text(&item_name);
-    }
-
-    pub fn show_cooking_popup(&mut self, item_data_name: &str) {
-        let (item_name, material_instance) = {
-            let game_resources = get_game_resources();
-            if game_resources.has_item_data(item_data_name) {
-                let item_data = game_resources.get_item_data(item_data_name).borrow();
-                let name = item_data._name.clone();
-                let material =
-                    get_engine_resources().get_material_instance_data(item_data._ui_material_instance.as_str()).clone();
-                (name, material)
-            } else {
-                (
-                    item_data_name.to_string(),
-                    get_engine_resources().get_material_instance_data("materials/ui/material_ui_none").clone(),
-                )
-            }
-        };
-
-        self._remaining_time = FISHING_POPUP_DISPLAY_DURATION;
-        self._is_perfect = true;
-
-        let container_ui = ptr_as_mut(self._container_widget).get_ui_component_mut();
-        container_ui.set_visible(true);
-        container_ui.set_border_color(get_color32(255, 215, 0, 255));
-
-        let title_ui = ptr_as_mut(self._title_widget).get_ui_component_mut();
-        title_ui.set_text("* COOKING COMPLETE! *");
-        title_ui.set_font_color(get_color32(255, 215, 0, 255));
-
-        let badge_ui = ptr_as_mut(self._perfect_badge_widget).get_ui_component_mut();
-        badge_ui.set_text("Delicious Meal Prepared!");
-        badge_ui.set_font_color(get_color32(255, 220, 100, 255));
-        badge_ui.set_visible(true);
 
         let icon_ui = ptr_as_mut(self._icon_widget).get_ui_component_mut();
         icon_ui.set_material_instance(Some(material_instance));

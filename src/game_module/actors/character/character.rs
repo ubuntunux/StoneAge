@@ -8,7 +8,6 @@ use crate::game_module::actors::items::{Item, ItemCreateInfo, ItemID};
 use rust_engine_3d::audio::audio_manager::AudioInstance;
 
 use crate::game_module::actors::items::ItemDataType;
-use crate::game_module::actors::props::api::PropDataType;
 use crate::game_module::behavior::behavior_base::{BehaviorBase, BehaviorState, create_character_behavior};
 use crate::game_module::game_client::GamePhase;
 use crate::game_module::game_constants::*;
@@ -270,37 +269,13 @@ impl CharacterStats {
         for prop in get_game_scene_manager().get_prop_manager().get_props().values() {
             let prop_ref = prop.borrow();
             let distance = (prop_ref.get_position() - char_pos).norm();
-            let prop_name = prop_ref._prop_name.to_lowercase();
-            let prop_data_name = prop_ref._prop_data_name.to_lowercase();
-            let model_name = prop_ref._prop_data.borrow()._model_data_name.to_lowercase();
-            let prop_type = prop_ref._prop_data.borrow()._prop_type;
 
-            if distance <= HEAT_SOURCE_RADIUS {
-                if prop_name.contains("fire")
-                    || prop_name.contains("fireplace")
-                    || prop_name.contains("bonfire")
-                    || prop_name.contains("stove")
-                    || prop_data_name.contains("fire")
-                    || prop_data_name.contains("fireplace")
-                    || prop_data_name.contains("bonfire")
-                    || model_name.contains("fire")
-                    || model_name.contains("fireplace")
-                    || model_name.contains("bonfire")
-                    || model_name.contains("stove")
-                {
-                    is_near_heat_source = true;
-                }
+            if distance <= HEAT_SOURCE_RADIUS && prop_ref.is_heat_source() {
+                is_near_heat_source = true;
             }
 
-            if distance <= 3.0 {
-                if prop_type == PropDataType::Ceiling
-                    || prop_name.contains("shelter_roof")
-                    || prop_name.contains("leaf_house")
-                    || prop_data_name.contains("shelter_roof")
-                    || prop_data_name.contains("leaf_house")
-                {
-                    is_sheltered = true;
-                }
+            if distance <= SHELTER_PROTECTION_RADIUS && prop_ref.is_shelter() {
+                is_sheltered = true;
             }
         }
 
@@ -1223,6 +1198,20 @@ impl<'a> Character<'a> {
         self._character_stats.set_hunger(hunger)
     }
 
+    pub fn apply_food_item_stats(&mut self, item_data_name: &str) {
+        let item_data = get_game_resources().get_item_data(item_data_name);
+        let item_data = item_data.borrow();
+        if item_data.get_hunger() != 0.0 {
+            self._character_stats.add_hunger(item_data.get_hunger() as f32);
+        }
+        if item_data.get_hp() != 0 {
+            self._character_stats.add_hp(item_data.get_hp());
+        }
+        if item_data.get_stamina() != 0.0 {
+            self._character_stats.add_stamina(item_data.get_stamina());
+        }
+    }
+
     pub fn get_body_temperature(&self) -> f32 {
         self._character_stats.get_body_temperature()
     }
@@ -1377,17 +1366,7 @@ impl<'a> Character<'a> {
                         if item_manager.has_item_on_table(&prop) {
                             if let Some(item_data_name) = item_manager.consume_item_on_table(&prop) {
                                 self.set_action_eating();
-                                let item_data = get_game_resources().get_item_data(item_data_name.as_str());
-                                let item_data = item_data.borrow();
-                                if item_data.get_hunger() != 0.0 {
-                                    self.get_stats_mut().add_hunger(item_data.get_hunger() as f32);
-                                }
-                                if item_data.get_hp() != 0 {
-                                    self.get_stats_mut().add_hp(item_data.get_hp());
-                                }
-                                if item_data.get_stamina() != 0.0 {
-                                    self.get_stats_mut().add_stamina(item_data.get_stamina());
-                                }
+                                self.apply_food_item_stats(item_data_name.as_str());
                                 get_game_ui_manager_mut().get_player_records_mut().add_food_eaten_count(1);
                             }
                         } else {
@@ -1506,18 +1485,8 @@ impl<'a> Character<'a> {
 
             if let Some(item_data_name) = eatable_item_name {
                 item_manager.remove_inventory_item(item_data_name.as_str(), 1);
-                let item_data = get_game_resources().get_item_data(item_data_name.as_str());
-                let item_data = item_data.borrow();
                 let mut npc = target_npc.borrow_mut();
-                if item_data.get_hunger() != 0.0 {
-                    npc.get_stats_mut().add_hunger(item_data.get_hunger() as f32);
-                }
-                if item_data.get_hp() != 0 {
-                    npc.get_stats_mut().add_hp(item_data.get_hp());
-                }
-                if item_data.get_stamina() != 0.0 {
-                    npc.get_stats_mut().add_stamina(item_data.get_stamina());
-                }
+                npc.apply_food_item_stats(item_data_name.as_str());
                 npc.look_at(self.get_position());
                 npc.set_next_behavior(BehaviorState::Eating, true);
                 npc.add_intimacy(INTIMACY_INTERACTION_ADD * INTIMACY_FEEDING_MULTIPLIER);
@@ -2341,17 +2310,8 @@ impl<'a> Character<'a> {
                         if !self._is_player
                             && let Some(attached_item) = self.get_attached_item().clone()
                         {
-                            let item_data_ref = attached_item.borrow()._item_data.clone();
-                            let item_data = item_data_ref.borrow();
-                            if item_data.get_hunger() != 0.0 {
-                                self.get_stats_mut().add_hunger(item_data.get_hunger() as f32);
-                            }
-                            if item_data.get_hp() != 0 {
-                                self.get_stats_mut().add_hp(item_data.get_hp());
-                            }
-                            if item_data.get_stamina() != 0.0 {
-                                self.get_stats_mut().add_stamina(item_data.get_stamina());
-                            }
+                            let item_data_name = attached_item.borrow()._item_data_name.clone();
+                            self.apply_food_item_stats(item_data_name.as_str());
 
                             item_manager.detach_item(self);
                         }

@@ -22,11 +22,8 @@ pub fn begin_idle(data: &mut BehaviorData, owner: &mut Character) {
 
 /// Pick a random roam target around the spawn point, or around the player if intimacy-following or for Ewa/Koa during WrapUpTheDay phase.
 pub fn begin_roaming(data: &mut BehaviorData, owner: &mut Character, target: Option<&Character>) {
-    let name = owner.get_character_name().as_str();
-    let is_ewa_or_koa = name.contains("ewa") || name.contains("koa");
-
-    let is_wrap_up_the_day_for_partner =
-        is_ewa_or_koa && get_game_scene_manager().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay);
+    let is_wrap_up_the_day_for_partner = owner.get_character_type().is_family()
+        && get_game_scene_manager().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay);
 
     let is_intimate_following = owner.is_following_intimacy()
         && matches!(target, Some(t) if
