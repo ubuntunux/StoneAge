@@ -66,6 +66,7 @@ pub struct ScenarioWrapUpTheDay<'a> {
     _check_time_for_sleep: f32,
     _ewa_eat_delay: f32,
     _koa_eat_delay: f32,
+    _table_eat_delay: f32,
     _bed_camera_position: Vector3<f32>,
     _camera_target_position: Vector3<f32>,
     _camera_target_velocity: Vector3<f32>,
@@ -95,8 +96,9 @@ impl<'a> ScenarioWrapUpTheDay<'a> {
             _waiting_for_dance_cancel_release: false,
             _request_sleep: false,
             _check_time_for_sleep: 0.0,
-            _ewa_eat_delay: 0.0,
-            _koa_eat_delay: 0.0,
+            _ewa_eat_delay: 1.0,
+            _koa_eat_delay: 3.5,
+            _table_eat_delay: 1.0,
             _bed_camera_position: Vector3::default(),
             _camera_target_position: Vector3::default(),
             _camera_target_velocity: Vector3::default(),
@@ -113,6 +115,10 @@ impl<'a> ScenarioWrapUpTheDay<'a> {
 
     pub fn set_skip_wakeup(&mut self, skip_wakeup: bool) {
         self._skip_wakeup = skip_wakeup;
+    }
+
+    pub fn set_table_eat_delay(&mut self, delay: f32) {
+        self._table_eat_delay = delay;
     }
 
     pub fn is_sleeping(&self) -> bool {
@@ -241,6 +247,7 @@ fn update_actor_table_eating<'a>(
     table_opt: &Option<RcRefCell<Prop<'a>>>,
     seat_direction: &Vector3<f32>,
     eat_delay: &mut f32,
+    table_eat_delay: &mut f32,
     has_eatable_item: bool,
     force_eat: bool,
     _game_ui_manager: &mut GameUIManager<'a>,
@@ -288,6 +295,7 @@ fn update_actor_table_eating<'a>(
                 let is_ready_to_eat = {
                     let actor_ref = actor.borrow();
                     *eat_delay <= 0.0
+                        && *table_eat_delay <= 0.0
                         && actor_ref.get_attached_item().is_none()
                         && !actor_ref.is_action(ActionAnimationState::Eating)
                 };
@@ -315,7 +323,8 @@ fn update_actor_table_eating<'a>(
                             } else {
                                 actor_ref.set_next_behavior(BehaviorState::Eating, true);
                             }
-                            *eat_delay = EAT_ITEM_DELAY_TIME;
+                            *eat_delay = EAT_ITEM_DELAY_TIME + rand::random::<f32>() * 1.5;
+                            *table_eat_delay = 2.5;
                         }
                     }
                 }
@@ -672,6 +681,9 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                             if self._koa_eat_delay > 0.0 {
                                 self._koa_eat_delay = (self._koa_eat_delay - delta_time as f32).max(0.0);
                             }
+                            if self._table_eat_delay > 0.0 {
+                                self._table_eat_delay = (self._table_eat_delay - delta_time as f32).max(0.0);
+                            }
 
                             let has_food_on_table = self._prop_table.as_ref().is_some_and(|table| {
                                 get_game_scene_manager().get_item_manager().has_item_on_table(table)
@@ -682,6 +694,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                                 &self._prop_table,
                                 &Vector3::new(0.0, 0.0, 1.0),
                                 &mut self._ewa_eat_delay,
+                                &mut self._table_eat_delay,
                                 has_food_on_table,
                                 has_food_on_table,
                                 game_ui_manager,
@@ -692,6 +705,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                                 &self._prop_table,
                                 &Vector3::new(-1.0, 0.0, 0.0),
                                 &mut self._koa_eat_delay,
+                                &mut self._table_eat_delay,
                                 has_food_on_table,
                                 has_food_on_table,
                                 game_ui_manager,

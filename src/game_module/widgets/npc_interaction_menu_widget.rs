@@ -582,7 +582,16 @@ impl<'a> NpcInteractionMenuWidget<'a> {
                         scenario_intro.complete_sub_quest_cooking();
                     }
 
-                    // 플레이어 자동 음식 섭취 액션 실행
+                    if let Some(scenario) =
+                        get_game_scene_manager_mut().get_game_scenario(ScenarioType::ScenarioWrapUpTheDay)
+                    {
+                        let scenario_wrap_up = ptr_as_mut(scenario.as_ptr() as *const ScenarioWrapUpTheDay);
+                        scenario_wrap_up.set_table_eat_delay(3.5);
+                    }
+
+                    // 플레이어 자동 음식 섭취 액션 실행 (테이블 위 음식 1회 섭취 및 HP 1 차감)
+                    item_manager.consume_item_on_table(&table);
+
                     let player = character_manager.get_player();
                     let mut player_ref = player.borrow_mut();
                     player_ref.look_at(&spawn_position);

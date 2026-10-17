@@ -30,8 +30,21 @@ use rust_engine_3d::utilities::system::{
 use std::collections::HashMap;
 use uuid::Uuid;
 
-pub fn get_default_food_hp(_item_data_name: &str, _item_type: ItemDataType) -> i32 {
-    DEFAULT_FOOD_HP
+pub fn get_default_food_hp(item_data_name: &str, item_type: ItemDataType) -> i32 {
+    if item_data_name.contains("golden_feast") {
+        DEFAULT_FOOD_HP.max(10)
+    } else if item_data_name.contains("energy_stew") {
+        DEFAULT_FOOD_HP.max(8)
+    } else if item_data_name.contains("roast_meat")
+        || item_data_name.contains("fish_soup")
+        || item_data_name.contains("steamed_vegetables")
+    {
+        DEFAULT_FOOD_HP.max(6)
+    } else if item_type.is_eatable() {
+        DEFAULT_FOOD_HP.max(5)
+    } else {
+        DEFAULT_FOOD_HP
+    }
 }
 
 impl Default for ItemCreateInfo {
@@ -306,6 +319,20 @@ impl<'a> ItemManager<'a> {
         let item_ids = std::mem::take(&mut self._table_storage_item_ids);
         for item_id in item_ids {
             if let Some(item_refcell) = self._items.get(&item_id).cloned() {
+                let (is_eatable, has_hp) = {
+                    let item = item_refcell.borrow();
+                    (
+                        item._item_data.borrow()._item_type.is_eatable(),
+                        item._item_properties._max_hp == 0 || item._item_properties._current_hp > 0,
+                    )
+                };
+
+                // 테이블 위에 차려진 음식 중 아직 HP가 남아있는 음식은 삭제하지 않고 보존
+                if is_eatable && has_hp {
+                    self._table_storage_item_ids.push(item_id);
+                    continue;
+                }
+
                 self.remove_item(&item_refcell);
             }
         }
