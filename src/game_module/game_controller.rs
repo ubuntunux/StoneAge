@@ -806,8 +806,6 @@ impl<'a> GameController<'a> {
         } else if is_attack_or_use_item && is_available_attack {
             if item_type.is_fishing_item_type() {
                 player_mut.set_action_fishing_begin();
-            } else if item_type.is_eatable() {
-                player.borrow_mut().set_action_eating();
             } else {
                 player_mut.set_action_attack();
             }

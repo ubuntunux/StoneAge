@@ -4,8 +4,8 @@ use crate::game_module::actors::props::Prop;
 use crate::game_module::behavior::behavior_base::BehaviorState;
 use crate::game_module::game_constants::{
     AUDIO_QUEST_COMPLETE, AUDIO_ROOSTER, BED_FOR_ARU, CAMERA_DISTANCE_MIN, CAMERA_OFFSET_Y,
-    CHARACTER_INTERACTION_DISTANCE, DEFAULT_FADE_TIME, EAT_ITEM_DELAY_TIME, MATERIAL_UI_NONE,
-    MAX_BED_RESTRICTION_DISTANCE, SLEEP_TIMER, TARGET_HUNGER_THRESHOLD, TIME_OF_NIGHT,
+    CHARACTER_INTERACTION_DISTANCE, DEFAULT_FADE_TIME, MATERIAL_UI_NONE, MAX_BED_RESTRICTION_DISTANCE, SLEEP_TIMER,
+    TARGET_HUNGER_THRESHOLD, TIME_OF_NIGHT,
 };
 
 use crate::game_module::game_service_locator::{
@@ -97,9 +97,9 @@ impl<'a> ScenarioWrapUpTheDay<'a> {
             _waiting_for_dance_cancel_release: false,
             _request_sleep: false,
             _check_time_for_sleep: 0.0,
-            _ewa_eat_delay: 1.0,
-            _koa_eat_delay: 3.5,
-            _table_eat_delay: 1.0,
+            _ewa_eat_delay: 0.0,
+            _koa_eat_delay: 0.0,
+            _table_eat_delay: 0.0,
             _bed_camera_position: Vector3::default(),
             _camera_target_position: Vector3::default(),
             _camera_target_velocity: Vector3::default(),
@@ -266,6 +266,10 @@ fn update_actor_table_eating<'a>(
 
     if should_eat {
         if has_eatable_item {
+            if actor.borrow().is_action(ActionAnimationState::Hungry) {
+                actor.borrow_mut().set_action_none();
+            }
+
             let is_in_range = is_in_table_interaction_range(&actor.borrow(), table_opt);
 
             if !is_in_range {
@@ -277,7 +281,9 @@ fn update_actor_table_eating<'a>(
                     let (direction, dist) =
                         math::make_normalize_xz_with_norm(&(seat_pos - actor.borrow().get_position()));
                     if dist > 0.3 {
-                        actor.borrow_mut().set_move(&direction);
+                        let mut actor_ref = actor.borrow_mut();
+                        actor_ref.set_behavior_none();
+                        actor_ref.set_move(&direction);
                     } else {
                         if !actor.borrow().is_move_stop() {
                             actor.borrow_mut().set_move_idle();
@@ -295,10 +301,10 @@ fn update_actor_table_eating<'a>(
 
                 let is_ready_to_eat = {
                     let actor_ref = actor.borrow();
-                    *eat_delay <= 0.0
-                        && *table_eat_delay <= 0.0
-                        && actor_ref.get_attached_item().is_none()
+                    actor_ref.get_attached_item().is_none()
                         && !actor_ref.is_action(ActionAnimationState::Eating)
+                        && actor_ref._animation_state._next_action_animation_state != Some(ActionAnimationState::Eating)
+                        && actor_ref._behavior.get_behavior_data().get_next_behavior_state() != BehaviorState::Eating
                 };
 
                 if is_ready_to_eat {
@@ -324,8 +330,8 @@ fn update_actor_table_eating<'a>(
                             } else {
                                 actor_ref.set_next_behavior(BehaviorState::Eating, true);
                             }
-                            *eat_delay = EAT_ITEM_DELAY_TIME + rand::random::<f32>() * 1.5;
-                            *table_eat_delay = 2.5;
+                            *eat_delay = 0.0;
+                            *table_eat_delay = 0.0;
                         }
                     }
                 }
@@ -591,14 +597,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                     State::End => {}
                 },
                 ScenarioPhase::Update => match state {
-                    State::Begin => {
-                        if let Some(player) = &self._player {
-                            let mut player_ref = player.borrow_mut();
-                            if player_ref.get_attached_item_data_type().is_eatable() {
-                                player_ref.set_action_eating();
-                            }
-                        }
-                    }
+                    State::Begin => {}
                     State::Update => {
                         let engine_core = get_engine_core();
                         let is_dance_pressed = engine_core._keyboard_input_data.get_key_pressed(KeyCode::KeyG)
@@ -698,7 +697,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                                 self._table_eat_delay = (self._table_eat_delay - delta_time as f32).max(0.0);
                             }
 
-                            let has_food_on_table = self._prop_table.as_ref().is_some_and(|table| {
+                            let has_food_on_table_for_ewa = self._prop_table.as_ref().is_some_and(|table| {
                                 get_game_scene_manager().get_item_manager().has_item_on_table(table)
                             });
 
@@ -708,10 +707,14 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                                 &Vector3::new(0.0, 0.0, 1.0),
                                 &mut self._ewa_eat_delay,
                                 &mut self._table_eat_delay,
-                                has_food_on_table,
-                                has_food_on_table,
+                                has_food_on_table_for_ewa,
+                                has_food_on_table_for_ewa,
                                 game_ui_manager,
                             );
+
+                            let has_food_on_table_for_koa = self._prop_table.as_ref().is_some_and(|table| {
+                                get_game_scene_manager().get_item_manager().has_item_on_table(table)
+                            });
 
                             update_actor_table_eating(
                                 &self._actor_koa,
@@ -719,8 +722,8 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                                 &Vector3::new(-1.0, 0.0, 0.0),
                                 &mut self._koa_eat_delay,
                                 &mut self._table_eat_delay,
-                                has_food_on_table,
-                                has_food_on_table,
+                                has_food_on_table_for_koa,
+                                has_food_on_table_for_koa,
                                 game_ui_manager,
                             );
                         }

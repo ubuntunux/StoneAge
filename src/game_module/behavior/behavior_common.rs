@@ -121,8 +121,10 @@ pub fn begin_eating(data: &mut BehaviorData, owner: &mut Character, target: Opti
     if !owner.is_move_stop() {
         owner.set_move_idle();
     }
-    if let Some(target_actor) = target {
-        owner.look_at(target_actor.get_position());
+    if owner.get_attached_item().is_some() {
+        if let Some(target_actor) = target {
+            owner.look_at(target_actor.get_position());
+        }
     }
     owner.set_is_interacting(false);
     owner.set_action_eating();
@@ -130,7 +132,9 @@ pub fn begin_eating(data: &mut BehaviorData, owner: &mut Character, target: Opti
 }
 
 pub fn update_eating_should_idle(is_first_update: bool, owner: &Character) -> bool {
-    !is_first_update && !owner.is_action(ActionAnimationState::Eating)
+    !is_first_update
+        && !owner.is_action(ActionAnimationState::Eating)
+        && owner._animation_state._next_action_animation_state != Some(ActionAnimationState::Eating)
 }
 
 pub fn begin_interaction(data: &mut BehaviorData, owner: &mut Character, target: Option<&Character>) {

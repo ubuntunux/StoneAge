@@ -18,7 +18,6 @@ use crate::game_module::game_service_locator::{
     get_game_scene_manager, get_game_scene_manager_mut, get_game_ui_manager_mut, get_item_manager,
 };
 use crate::game_module::game_weather::WeatherType;
-use crate::game_module::scenario::game_scenarios::scenario_wrap_up_the_day::ScenarioWrapUpTheDay;
 use crate::game_module::scenario::scenario::ScenarioType;
 use crate::game_module::widgets::game_menu_widget::character_list_helper::{AffinityTier, get_affinity_tier};
 use nalgebra::{Vector3, Vector4};
@@ -1390,13 +1389,6 @@ impl<'a> Character<'a> {
                                     self.get_stats_mut().add_stamina(item_data.get_stamina());
                                 }
                                 get_game_ui_manager_mut().get_player_records_mut().add_food_eaten_count(1);
-
-                                if let Some(scenario) =
-                                    get_game_scene_manager_mut().get_game_scenario(ScenarioType::ScenarioWrapUpTheDay)
-                                {
-                                    let scenario_wrap_up = ptr_as_mut(scenario.as_ptr() as *const ScenarioWrapUpTheDay);
-                                    scenario_wrap_up.set_table_eat_delay(2.5);
-                                }
                             }
                         } else {
                             get_game_client_mut().set_next_game_phase(GamePhase::Interaction);
@@ -2346,7 +2338,9 @@ impl<'a> Character<'a> {
                         }
                     }
                     State::End => {
-                        if let Some(attached_item) = self.get_attached_item().clone() {
+                        if !self._is_player
+                            && let Some(attached_item) = self.get_attached_item().clone()
+                        {
                             let item_data_ref = attached_item.borrow()._item_data.clone();
                             let item_data = item_data_ref.borrow();
                             if item_data.get_hunger() != 0.0 {
@@ -2359,12 +2353,7 @@ impl<'a> Character<'a> {
                                 self.get_stats_mut().add_stamina(item_data.get_stamina());
                             }
 
-                            if self._is_player {
-                                item_manager.remove_inventory_item(attached_item.borrow()._item_data_name.as_str(), 1);
-                                get_game_ui_manager_mut().get_player_records_mut().add_food_eaten_count(1);
-                            } else {
-                                item_manager.detach_item(self);
-                            }
+                            item_manager.detach_item(self);
                         }
                     }
                 },
