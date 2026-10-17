@@ -3,7 +3,8 @@ use crate::game_module::actors::interaction_object::InteractionObject;
 use crate::game_module::game_client::GamePhase;
 use crate::game_module::game_controller::KeyBindingType;
 use crate::game_module::game_service_locator::{
-    get_character_manager, get_game_client, get_game_controller, get_game_scene_manager, get_game_ui_manager,
+    get_character_manager, get_game_client, get_game_controller, get_game_resources, get_game_scene_manager,
+    get_game_ui_manager,
 };
 use crate::game_module::scenario::scenario::ScenarioType;
 use crate::game_module::widgets::key_binding_widget::{
@@ -465,11 +466,22 @@ impl<'a> ControllerHelpWidget<'a> {
             InteractionObject::PropTable(prop) => {
                 let is_wrap_up = get_game_scene_manager().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay);
                 if is_wrap_up {
-                    (
-                        KeyBindingType::Interaction,
-                        prop.borrow()._prop_data.borrow()._name.clone(),
-                        RequestType::None,
-                    )
+                    let item_on_table = get_game_scene_manager().get_item_manager().get_item_on_table(&prop);
+                    if let Some(item_data_name) = item_on_table {
+                        let item_data = get_game_resources().get_item_data(&item_data_name);
+                        let item_name = item_data.borrow()._name.clone();
+                        (
+                            KeyBindingType::Interaction,
+                            format!("Eat a {}", item_name),
+                            RequestType::None,
+                        )
+                    } else {
+                        (
+                            KeyBindingType::Interaction,
+                            prop.borrow()._prop_data.borrow()._name.clone(),
+                            RequestType::None,
+                        )
+                    }
                 } else {
                     (
                         KeyBindingType::Interaction,

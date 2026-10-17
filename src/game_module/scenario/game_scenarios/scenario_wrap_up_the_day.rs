@@ -29,6 +29,7 @@ use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 use strum::IntoEnumIterator;
 use strum_macros::{Display, EnumCount, EnumIter, EnumString};
+use winit::keyboard::KeyCode;
 
 #[derive(Clone, PartialEq, Eq, Hash, Display, Debug, Copy, EnumIter, EnumString, EnumCount)]
 enum ScenarioPhase {
@@ -600,6 +601,18 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                     }
                     State::Update => {
                         let engine_core = get_engine_core();
+                        let is_dance_pressed = engine_core._keyboard_input_data.get_key_pressed(KeyCode::KeyG)
+                            || engine_core._joystick_input_data._btn_y == ButtonState::Pressed;
+                        let is_moving = engine_core._keyboard_input_data.get_key_pressed(KeyCode::KeyW)
+                            || engine_core._keyboard_input_data.get_key_pressed(KeyCode::KeyA)
+                            || engine_core._keyboard_input_data.get_key_pressed(KeyCode::KeyS)
+                            || engine_core._keyboard_input_data.get_key_pressed(KeyCode::KeyD)
+                            || engine_core._keyboard_input_data.get_key_hold(KeyCode::KeyW)
+                            || engine_core._keyboard_input_data.get_key_hold(KeyCode::KeyA)
+                            || engine_core._keyboard_input_data.get_key_hold(KeyCode::KeyS)
+                            || engine_core._keyboard_input_data.get_key_hold(KeyCode::KeyD)
+                            || engine_core._joystick_input_data._stick_left_direction.x.abs() > 3000
+                            || engine_core._joystick_input_data._stick_left_direction.y.abs() > 3000;
                         let is_any_input = engine_core._keyboard_input_data.is_any_key_pressed()
                             || engine_core._mouse_input_data._btn_l_pressed
                             || engine_core._mouse_input_data._btn_r_pressed
@@ -607,29 +620,29 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                             || engine_core._joystick_input_data._btn_b == ButtonState::Pressed
                             || engine_core._joystick_input_data._btn_x == ButtonState::Pressed
                             || engine_core._joystick_input_data._btn_y == ButtonState::Pressed
-                            || engine_core._joystick_input_data._stick_left_direction.x.abs() > 3000
-                            || engine_core._joystick_input_data._stick_left_direction.y.abs() > 3000;
+                            || is_moving;
 
-                        let mut player_is_acting = self._player.as_ref().is_some_and(|p| {
+                        if let Some(player) = &self._player {
+                            let mut player_ref = player.borrow_mut();
+                            if player_ref.is_move_state(MoveAnimationState::SitDownLoop) && is_moving {
+                                player_ref.set_move_idle();
+                            }
+                        }
+
+                        let player_is_acting = self._player.as_ref().is_some_and(|p| {
                             let p_ref = p.borrow();
-                            p_ref.is_action(ActionAnimationState::Dance)
-                                || p_ref.is_action(ActionAnimationState::Eating)
+                            (p_ref.is_action(ActionAnimationState::Dance) && !is_dance_pressed)
                                 || p_ref.is_action(ActionAnimationState::Hungry)
                         });
 
                         if player_is_acting && is_any_input {
                             if let Some(player) = &self._player {
                                 let mut player_ref = player.borrow_mut();
-                                if player_ref.is_action(ActionAnimationState::Eating) {
-                                    let item_manager = get_game_scene_manager().get_item_manager_mut();
-                                    item_manager.detach_item(&mut player_ref);
-                                }
                                 player_ref.set_action_none();
                                 if player_ref.is_move_state(MoveAnimationState::SitDownLoop) {
                                     player_ref.set_move_idle();
                                 }
                             }
-                            player_is_acting = false;
                             self._waiting_for_dance_cancel_release = true;
                         }
 

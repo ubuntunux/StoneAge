@@ -18,6 +18,7 @@ use crate::game_module::game_service_locator::{
     get_game_scene_manager, get_game_scene_manager_mut, get_game_ui_manager_mut, get_item_manager,
 };
 use crate::game_module::game_weather::WeatherType;
+use crate::game_module::scenario::game_scenarios::scenario_wrap_up_the_day::ScenarioWrapUpTheDay;
 use crate::game_module::scenario::scenario::ScenarioType;
 use crate::game_module::widgets::game_menu_widget::character_list_helper::{AffinityTier, get_affinity_tier};
 use nalgebra::{Vector3, Vector4};
@@ -1374,8 +1375,33 @@ impl<'a> Character<'a> {
                     self.look_at(prop.borrow().get_position());
                     self.set_move_idle();
                     if get_game_scene_manager().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay) {
-                        get_game_client_mut().set_next_game_phase(GamePhase::Interaction);
-                        get_game_ui_manager_mut().open_table_interaction_menu(prop.clone());
+                        if item_manager.has_item_on_table(&prop) {
+                            if let Some(item_data_name) = item_manager.consume_item_on_table(&prop) {
+                                self.set_action_eating();
+                                let item_data = get_game_resources().get_item_data(item_data_name.as_str());
+                                let item_data = item_data.borrow();
+                                if item_data.get_hunger() != 0.0 {
+                                    self.get_stats_mut().add_hunger(item_data.get_hunger() as f32);
+                                }
+                                if item_data.get_hp() != 0 {
+                                    self.get_stats_mut().add_hp(item_data.get_hp());
+                                }
+                                if item_data.get_stamina() != 0.0 {
+                                    self.get_stats_mut().add_stamina(item_data.get_stamina());
+                                }
+                                get_game_ui_manager_mut().get_player_records_mut().add_food_eaten_count(1);
+
+                                if let Some(scenario) =
+                                    get_game_scene_manager_mut().get_game_scenario(ScenarioType::ScenarioWrapUpTheDay)
+                                {
+                                    let scenario_wrap_up = ptr_as_mut(scenario.as_ptr() as *const ScenarioWrapUpTheDay);
+                                    scenario_wrap_up.set_table_eat_delay(2.5);
+                                }
+                            }
+                        } else {
+                            get_game_client_mut().set_next_game_phase(GamePhase::Interaction);
+                            get_game_ui_manager_mut().open_table_interaction_menu(prop.clone());
+                        }
                     }
                 }
                 InteractionObject::Npc(character) => {

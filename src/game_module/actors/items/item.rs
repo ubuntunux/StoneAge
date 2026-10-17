@@ -342,20 +342,20 @@ impl<'a> ItemManager<'a> {
         self.clear_table_storage_items_in_world();
     }
 
-    pub fn has_item_on_table(&self, table_prop: &RcRefCell<Prop<'a>>) -> bool {
-        // 1. _table_storage_item_ids 중 유효하고 eatable이며 남은 HP가 있는 아이템이 있는지 확인
-        let has_in_ids = self._table_storage_item_ids.iter().any(|id| {
-            self._items.get(id).is_some_and(|item| {
+    pub fn get_item_on_table(&self, table_prop: &RcRefCell<Prop<'a>>) -> Option<String> {
+        // 1. _table_storage_item_ids 중 유효하고 eatable이며 남은 HP가 있는 아이템 확인
+        for id in self._table_storage_item_ids.iter().rev() {
+            if let Some(item) = self._items.get(id) {
                 let item = item.borrow();
-                item._item_data.borrow()._item_type.is_eatable()
+                if item._item_data.borrow()._item_type.is_eatable()
                     && (item._item_properties._max_hp == 0 || item._item_properties._current_hp > 0)
-            })
-        });
-        if has_in_ids {
-            return true;
+                {
+                    return Some(item._item_data_name.clone());
+                }
+            }
         }
 
-        // 2. 테이블 바운딩 박스 주변에 놓인 eatable 아이템이 있는지 확인
+        // 2. 테이블 바운딩 박스 주변에 놓인 eatable 아이템 탐색
         let (table_center, table_min_y, table_max_y) = {
             let b = table_prop.borrow();
             let bbox = b.get_bounding_box();
@@ -375,11 +375,15 @@ impl<'a> ItemManager<'a> {
             let pos = item.get_position();
             let dist_xz = ((pos.x - table_center.x).powi(2) + (pos.z - table_center.z).powi(2)).sqrt();
             if dist_xz < 1.5 && pos.y >= table_min_y - 0.5 && pos.y <= table_max_y + 1.5 {
-                return true;
+                return Some(item._item_data_name.clone());
             }
         }
 
-        false
+        None
+    }
+
+    pub fn has_item_on_table(&self, table_prop: &RcRefCell<Prop<'a>>) -> bool {
+        self.get_item_on_table(table_prop).is_some()
     }
 
     pub fn consume_item_on_table(&mut self, table_prop: &RcRefCell<Prop<'a>>) -> Option<String> {
