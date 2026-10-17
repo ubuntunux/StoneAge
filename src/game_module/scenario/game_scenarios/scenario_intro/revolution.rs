@@ -1,7 +1,9 @@
 use crate::game_module::actors::character::{ActorWrapper, Character};
 use crate::game_module::game_constants::{
-    AUDIO_ALIEN_TALK, AUDIO_UFO_EXPERIMENT, AUDIO_UFO_LABORATORY, CHARACTER_DATA_NAME_ARU, CHARACTER_INTERACTION_TIME,
-    DEFAULT_FADE_TIME, MATERIAL_EMOJI_GOOD, MATERIAL_UI_NONE, TIME_OF_NOON,
+    ACTOR_NAME_ALIEN_ALPHA, ACTOR_NAME_ALIEN_BETA, ACTOR_NAME_ARU, ACTOR_NAME_EWA, ACTOR_NAME_KOA,
+    ACTOR_NAME_MONKEY_EWA, ACTOR_NAME_MONKEY_KOA, AUDIO_ALIEN_TALK, AUDIO_UFO_EXPERIMENT, AUDIO_UFO_LABORATORY,
+    CHARACTER_DATA_NAME_ARU, CHARACTER_INTERACTION_TIME, DEFAULT_FADE_TIME, MATERIAL_EMOJI_GOOD, MATERIAL_UI_NONE,
+    TIME_OF_NOON,
 };
 use crate::game_module::game_service_locator::{get_game_scene_manager_mut, get_game_ui_manager_mut};
 use crate::game_module::scenario::scenario::{
@@ -149,14 +151,14 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
             self._scenario_create_info.reset();
         }
 
-        self._alien_alpha = game_scene_manager.get_actor_by_name("alien_alpha").cloned();
-        self._alien_beta = game_scene_manager.get_actor_by_name("alien_beta").cloned();
+        self._alien_alpha = game_scene_manager.get_actor_by_name(ACTOR_NAME_ALIEN_ALPHA).cloned();
+        self._alien_beta = game_scene_manager.get_actor_by_name(ACTOR_NAME_ALIEN_BETA).cloned();
         self._player = game_scene_manager.get_maybe_player().clone();
-        self._monkey_ewa = game_scene_manager.get_actor_by_name("monkey_ewa").cloned();
-        self._monkey_koa = game_scene_manager.get_actor_by_name("monkey_koa").cloned();
-        self._actor_aru = game_scene_manager.get_actor_by_name("aru").cloned();
-        self._actor_ewa = game_scene_manager.get_actor_by_name("ewa").cloned();
-        self._actor_koa = game_scene_manager.get_actor_by_name("koa").cloned();
+        self._monkey_ewa = game_scene_manager.get_actor_by_name(ACTOR_NAME_MONKEY_EWA).cloned();
+        self._monkey_koa = game_scene_manager.get_actor_by_name(ACTOR_NAME_MONKEY_KOA).cloned();
+        self._actor_aru = game_scene_manager.get_actor_by_name(ACTOR_NAME_ARU).cloned();
+        self._actor_ewa = game_scene_manager.get_actor_by_name(ACTOR_NAME_EWA).cloned();
+        self._actor_koa = game_scene_manager.get_actor_by_name(ACTOR_NAME_KOA).cloned();
 
         if let Some(actor) = &self._alien_alpha {
             actor.borrow_mut().set_behavior_none();

@@ -3,8 +3,9 @@ use crate::game_module::actors::character::{ActionAnimationState, MoveAnimationS
 use crate::game_module::actors::props::Prop;
 use crate::game_module::behavior::behavior_base::BehaviorState;
 use crate::game_module::game_constants::{
-    AUDIO_QUEST_COMPLETE, AUDIO_ROOSTER, BED_FOR_ARU, CAMERA_DISTANCE_MIN, CAMERA_OFFSET_Y,
-    CHARACTER_INTERACTION_DISTANCE, DEFAULT_FADE_TIME, MATERIAL_UI_NONE, MAX_BED_RESTRICTION_DISTANCE, SLEEP_TIMER,
+    ACTOR_NAME_EWA, ACTOR_NAME_KOA, ACTOR_NAME_MONKEY_EWA, ACTOR_NAME_MONKEY_KOA, AUDIO_QUEST_COMPLETE, AUDIO_ROOSTER,
+    BED_FOR_ARU, BED_FOR_EWA, BED_FOR_KOA, CAMERA_DISTANCE_MIN, CAMERA_OFFSET_Y, CHARACTER_INTERACTION_DISTANCE,
+    DEFAULT_FADE_TIME, MATERIAL_UI_NONE, MAX_BED_RESTRICTION_DISTANCE, PROP_NAME_TABLE, SLEEP_TIMER,
     TARGET_HUNGER_THRESHOLD, TIME_OF_NIGHT,
 };
 
@@ -61,13 +62,8 @@ pub struct ScenarioWrapUpTheDay<'a> {
     _prop_bed_for_koa: Option<RcRefCell<Prop<'a>>>,
     _audio_bgm: Option<RcRefCell<AudioInstance>>,
     _skip_wakeup: bool,
-    _waiting_for_key_release: bool,
-    _waiting_for_dance_cancel_release: bool,
     _request_sleep: bool,
     _check_time_for_sleep: f32,
-    _ewa_eat_delay: f32,
-    _koa_eat_delay: f32,
-    _table_eat_delay: f32,
     _bed_camera_position: Vector3<f32>,
     _camera_target_position: Vector3<f32>,
     _camera_target_velocity: Vector3<f32>,
@@ -93,13 +89,8 @@ impl<'a> ScenarioWrapUpTheDay<'a> {
             _prop_bed_for_koa: None,
             _audio_bgm: None,
             _skip_wakeup: false,
-            _waiting_for_key_release: true,
-            _waiting_for_dance_cancel_release: false,
             _request_sleep: false,
             _check_time_for_sleep: 0.0,
-            _ewa_eat_delay: 0.0,
-            _koa_eat_delay: 0.0,
-            _table_eat_delay: 0.0,
             _bed_camera_position: Vector3::default(),
             _camera_target_position: Vector3::default(),
             _camera_target_velocity: Vector3::default(),
@@ -112,26 +103,6 @@ impl<'a> ScenarioWrapUpTheDay<'a> {
                 _next_phase_duration: None,
             },
         })
-    }
-
-    pub fn set_skip_wakeup(&mut self, skip_wakeup: bool) {
-        self._skip_wakeup = skip_wakeup;
-    }
-
-    pub fn set_table_eat_delay(&mut self, delay: f32) {
-        self._table_eat_delay = delay;
-    }
-
-    pub fn is_sleeping(&self) -> bool {
-        matches!(
-            self._scenario_track._scenario_phase,
-            ScenarioPhase::GoToSleep | ScenarioPhase::Sleep | ScenarioPhase::End
-        )
-    }
-
-    pub fn set_sleep_phase(&mut self) {
-        self._scenario_track.set_scenario_phase(ScenarioPhase::Sleep, None);
-        self._scenario_track.set_next_scenario_phase(ScenarioPhase::Sleep, None);
     }
 
     pub fn setup_bed_camera(&mut self) {
@@ -247,10 +218,7 @@ fn update_actor_table_eating<'a>(
     actor_opt: &Option<RcRefCell<Character<'a>>>,
     table_opt: &Option<RcRefCell<Prop<'a>>>,
     seat_direction: &Vector3<f32>,
-    eat_delay: &mut f32,
-    table_eat_delay: &mut f32,
     has_eatable_item: bool,
-    force_eat: bool,
     _game_ui_manager: &mut GameUIManager<'a>,
 ) {
     let Some(actor) = actor_opt.as_ref() else {
@@ -262,7 +230,7 @@ fn update_actor_table_eating<'a>(
     }
 
     let is_hungry = actor.borrow().get_hunger() > TARGET_HUNGER_THRESHOLD;
-    let should_eat = force_eat || is_hungry;
+    let should_eat = has_eatable_item || is_hungry;
 
     if should_eat {
         if has_eatable_item {
@@ -330,8 +298,6 @@ fn update_actor_table_eating<'a>(
                             } else {
                                 actor_ref.set_next_behavior(BehaviorState::Eating, true);
                             }
-                            *eat_delay = 0.0;
-                            *table_eat_delay = 0.0;
                         }
                     }
                 }
@@ -441,10 +407,20 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
         }
     }
 
-    fn on_interaction_released(&mut self) {
-        if self._waiting_for_key_release {
-            self._waiting_for_key_release = false;
-        }
+    fn set_sleep_phase(&mut self) {
+        self._scenario_track.set_scenario_phase(ScenarioPhase::Sleep, None);
+        self._scenario_track.set_next_scenario_phase(ScenarioPhase::Sleep, None);
+    }
+
+    fn set_skip_wakeup(&mut self, skip_wakeup: bool) {
+        self._skip_wakeup = skip_wakeup;
+    }
+
+    fn is_sleeping(&self) -> bool {
+        matches!(
+            self._scenario_track._scenario_phase,
+            ScenarioPhase::GoToSleep | ScenarioPhase::Sleep | ScenarioPhase::End
+        )
     }
 
     fn is_end_of_scenario(&self) -> bool {
@@ -466,17 +442,17 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
         let game_scene_manager = get_game_scene_manager();
         self._player = game_scene_manager.get_maybe_player().clone();
         self._actor_ewa = game_scene_manager
-            .get_actor_by_name("monkey_ewa")
+            .get_actor_by_name(ACTOR_NAME_MONKEY_EWA)
             .cloned()
-            .or_else(|| game_scene_manager.get_actor_by_name("ewa").cloned());
+            .or_else(|| game_scene_manager.get_actor_by_name(ACTOR_NAME_EWA).cloned());
         self._actor_koa = game_scene_manager
-            .get_actor_by_name("monkey_koa")
+            .get_actor_by_name(ACTOR_NAME_MONKEY_KOA)
             .cloned()
-            .or_else(|| game_scene_manager.get_actor_by_name("koa").cloned());
-        self._prop_table = game_scene_manager.get_prop_manager().get_prop_by_name("table").cloned();
+            .or_else(|| game_scene_manager.get_actor_by_name(ACTOR_NAME_KOA).cloned());
+        self._prop_table = game_scene_manager.get_prop_manager().get_prop_by_name(PROP_NAME_TABLE).cloned();
         self._prop_bed_for_aru = game_scene_manager.get_prop_manager().get_prop_by_name(BED_FOR_ARU).cloned();
-        self._prop_bed_for_ewa = game_scene_manager.get_prop_manager().get_prop_by_name("bed_for_ewa").cloned();
-        self._prop_bed_for_koa = game_scene_manager.get_prop_manager().get_prop_by_name("bed_for_koa").cloned();
+        self._prop_bed_for_ewa = game_scene_manager.get_prop_manager().get_prop_by_name(BED_FOR_EWA).cloned();
+        self._prop_bed_for_koa = game_scene_manager.get_prop_manager().get_prop_by_name(BED_FOR_KOA).cloned();
         self.setup_bed_camera();
     }
 
@@ -642,13 +618,6 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                                     player_ref.set_move_idle();
                                 }
                             }
-                            self._waiting_for_dance_cancel_release = true;
-                        }
-
-                        if self._waiting_for_dance_cancel_release {
-                            if !is_any_input {
-                                self._waiting_for_dance_cancel_release = false;
-                            }
                         }
 
                         let player_is_dancing =
@@ -687,16 +656,6 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                                 stand_in_place(&self._actor_koa);
                             }
 
-                            if self._ewa_eat_delay > 0.0 {
-                                self._ewa_eat_delay = (self._ewa_eat_delay - delta_time as f32).max(0.0);
-                            }
-                            if self._koa_eat_delay > 0.0 {
-                                self._koa_eat_delay = (self._koa_eat_delay - delta_time as f32).max(0.0);
-                            }
-                            if self._table_eat_delay > 0.0 {
-                                self._table_eat_delay = (self._table_eat_delay - delta_time as f32).max(0.0);
-                            }
-
                             let has_food_on_table_for_ewa = self._prop_table.as_ref().is_some_and(|table| {
                                 get_game_scene_manager().get_item_manager().has_item_on_table(table)
                             });
@@ -705,9 +664,6 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                                 &self._actor_ewa,
                                 &self._prop_table,
                                 &Vector3::new(0.0, 0.0, 1.0),
-                                &mut self._ewa_eat_delay,
-                                &mut self._table_eat_delay,
-                                has_food_on_table_for_ewa,
                                 has_food_on_table_for_ewa,
                                 game_ui_manager,
                             );
@@ -720,9 +676,6 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                                 &self._actor_koa,
                                 &self._prop_table,
                                 &Vector3::new(-1.0, 0.0, 0.0),
-                                &mut self._koa_eat_delay,
-                                &mut self._table_eat_delay,
-                                has_food_on_table_for_koa,
                                 has_food_on_table_for_koa,
                                 game_ui_manager,
                             );

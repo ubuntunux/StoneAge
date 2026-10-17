@@ -35,78 +35,78 @@ pub const COLOR_BTN_COOK_BG: u32 = get_color32(118, 168, 68, 240);
 pub const COLOR_BTN_COOK_BORDER: u32 = get_color32(72, 115, 38, 255);
 
 pub struct IngredientReq {
-    pub item_type: ItemDataType,
-    pub count: usize,
+    pub _item_type: ItemDataType,
+    pub _count: usize,
 }
 
 impl IngredientReq {
     pub fn item_code(&self) -> &'static str {
-        self.item_type.item_code()
+        self._item_type.item_code()
     }
 }
 
 pub struct CookingRecipeData {
-    pub id: &'static str,
-    pub item_type: ItemDataType,
-    pub ingredients: &'static [IngredientReq],
+    pub _id: &'static str,
+    pub _item_type: ItemDataType,
+    pub _ingredients: &'static [IngredientReq],
 }
 
 impl CookingRecipeData {
     pub fn item_code(&self) -> &'static str {
-        self.item_type.item_code()
+        self._item_type.item_code()
     }
 }
 
 pub const COOKING_RECIPES: [CookingRecipeData; 5] = [
     CookingRecipeData {
-        id: "roast_meat",
-        item_type: ItemDataType::RoastMeat,
-        ingredients: &[IngredientReq {
-            item_type: ItemDataType::Meat,
-            count: 1,
+        _id: "roast_meat",
+        _item_type: ItemDataType::RoastMeat,
+        _ingredients: &[IngredientReq {
+            _item_type: ItemDataType::Meat,
+            _count: 1,
         }],
     },
     CookingRecipeData {
-        id: "fish_soup",
-        item_type: ItemDataType::FishSoup,
-        ingredients: &[IngredientReq {
-            item_type: ItemDataType::Coconut,
-            count: 1,
+        _id: "fish_soup",
+        _item_type: ItemDataType::FishSoup,
+        _ingredients: &[IngredientReq {
+            _item_type: ItemDataType::Coconut,
+            _count: 1,
         }],
     },
     CookingRecipeData {
-        id: "steamed_veg",
-        item_type: ItemDataType::SteamedVegetables,
-        ingredients: &[IngredientReq {
-            item_type: ItemDataType::Coconut,
-            count: 1,
+        _id: "steamed_veg",
+        _item_type: ItemDataType::SteamedVegetables,
+        _ingredients: &[IngredientReq {
+            _item_type: ItemDataType::Coconut,
+            _count: 1,
         }],
     },
     CookingRecipeData {
-        id: "energy_stew",
-        item_type: ItemDataType::EnergyStew,
-        ingredients: &[
+        _id: "energy_stew",
+        _item_type: ItemDataType::EnergyStew,
+        _ingredients: &[
             IngredientReq {
-                item_type: ItemDataType::Meat,
-                count: 1,
+                _item_type: ItemDataType::Meat,
+                _count: 1,
             },
             IngredientReq {
-                item_type: ItemDataType::Coconut,
-                count: 1,
+                _item_type: ItemDataType::Coconut,
+                _count: 1,
             },
         ],
     },
     CookingRecipeData {
-        id: "golden_feast",
-        item_type: ItemDataType::GoldenFeast,
-        ingredients: &[
+        _id: "golden_feast",
+        _item_type: ItemDataType::GoldenFeast,
+        _ingredients: &[
             IngredientReq {
-                item_type: ItemDataType::Meat,
-                count: 2,
+                _item_type: ItemDataType::Meat,
+                _count: 2,
             },
             IngredientReq {
-                item_type: ItemDataType::Coconut,
-                count: 2,
+                _item_type: ItemDataType::Coconut,
+                _count: 2,
             },
         ],
     },
@@ -241,7 +241,7 @@ impl<'a> CookingWidget<'a> {
         let list_container_mut = ptr_as_mut(master_detail._list_container.as_ref());
         let mut items = Vec::new();
         for (idx, recipe) in COOKING_RECIPES.iter().enumerate() {
-            let row = UIManager::create_widget(&format!("cooking_row_{}", recipe.id), UIWidgetTypes::Default);
+            let row = UIManager::create_widget(&format!("cooking_row_{}", recipe._id), UIWidgetTypes::Default);
             let row_mut = ptr_as_mut(row.as_ref());
             let ui = row_mut.get_ui_component_mut();
             ui.set_layout_type(UILayoutType::BoxLayout);
@@ -262,7 +262,7 @@ impl<'a> CookingWidget<'a> {
             list_container_mut.add_widget(&row);
 
             // Icon
-            let icon = UIManager::create_widget(&format!("cooking_icon_{}", recipe.id), UIWidgetTypes::Default);
+            let icon = UIManager::create_widget(&format!("cooking_icon_{}", recipe._id), UIWidgetTypes::Default);
             let ui = ptr_as_mut(icon.as_ref()).get_ui_component_mut();
             ui.set_size(LIST_ITEM_ICON_SIZE, LIST_ITEM_ICON_SIZE);
             ui.set_valign(VerticalAlign::CENTER);
@@ -273,7 +273,7 @@ impl<'a> CookingWidget<'a> {
 
             // Name Label
             let item_name = Self::get_item_name_from_resource(recipe.item_code());
-            let name_lbl = UIManager::create_widget(&format!("cooking_name_{}", recipe.id), UIWidgetTypes::Default);
+            let name_lbl = UIManager::create_widget(&format!("cooking_name_{}", recipe._id), UIWidgetTypes::Default);
             let ui = ptr_as_mut(name_lbl.as_ref()).get_ui_component_mut();
             ui.set_size_hint_x(Some(1.0));
             ui.set_size_y(LIST_ITEM_NAME_HEIGHT);
@@ -285,7 +285,7 @@ impl<'a> CookingWidget<'a> {
             row_mut.add_widget(&name_lbl);
 
             // Action Button ("Cook")
-            let cook_btn = UIManager::create_widget(&format!("cooking_btn_{}", recipe.id), UIWidgetTypes::Default);
+            let cook_btn = UIManager::create_widget(&format!("cooking_btn_{}", recipe._id), UIWidgetTypes::Default);
             let ui = ptr_as_mut(cook_btn.as_ref()).get_ui_component_mut();
             ui.set_size(LIST_ITEM_BTN_WIDTH, LIST_ITEM_BTN_HEIGHT);
             ui.set_valign(VerticalAlign::CENTER);
@@ -387,9 +387,9 @@ impl<'a> CookingWidget<'a> {
             return false;
         }
         let recipe = &COOKING_RECIPES[recipe_index];
-        for req in recipe.ingredients {
+        for req in recipe._ingredients {
             let have_count = get_game_ui_manager().get_total_item_count(req.item_code());
-            if have_count < req.count {
+            if have_count < req._count {
                 return false;
             }
         }
@@ -412,9 +412,9 @@ impl<'a> CookingWidget<'a> {
         let recipe = &COOKING_RECIPES[recipe_index];
 
         // Check ingredient counts
-        for req in recipe.ingredients {
+        for req in recipe._ingredients {
             let have_count = get_game_ui_manager().get_total_item_count(req.item_code());
-            if have_count < req.count {
+            if have_count < req._count {
                 let recipe_name = Self::get_item_name_from_resource(recipe.item_code());
                 let ing_name = Self::get_item_name_from_resource(req.item_code());
                 log::warn!(
@@ -422,7 +422,7 @@ impl<'a> CookingWidget<'a> {
                     recipe_name,
                     ing_name,
                     have_count,
-                    req.count
+                    req._count
                 );
                 return false;
             }
@@ -430,8 +430,8 @@ impl<'a> CookingWidget<'a> {
 
         // Deduct ingredients
         let item_mgr = get_item_manager_mut();
-        for req in recipe.ingredients {
-            item_mgr.remove_inventory_item(req.item_code(), req.count);
+        for req in recipe._ingredients {
+            item_mgr.remove_inventory_item(req.item_code(), req._count);
         }
 
         // Grant cooked item
@@ -496,17 +496,17 @@ impl<'a> CookingWidget<'a> {
         let ui_mgr = get_game_ui_manager();
         for (i, ing_widget) in self._detail_ing_widgets.iter_mut().enumerate() {
             let layout_ui = ptr_as_mut(ing_widget._layout.as_ref()).get_ui_component_mut();
-            if i < recipe.ingredients.len() {
-                let req = &recipe.ingredients[i];
+            if i < recipe._ingredients.len() {
+                let req = &recipe._ingredients[i];
                 let req_code = req.item_code();
                 Self::setup_item_icon(&ing_widget._icon, req_code);
 
                 let have = ui_mgr.get_total_item_count(req_code);
                 let ing_name = Self::get_item_name_from_resource(req_code);
-                let text = format!("{} ({}/{})", ing_name, have, req.count);
+                let text = format!("{} ({}/{})", ing_name, have, req._count);
                 let lbl_ui = ptr_as_mut(ing_widget._label.as_ref()).get_ui_component_mut();
                 lbl_ui.set_text(&text);
-                if have >= req.count {
+                if have >= req._count {
                     lbl_ui.set_font_color(COLOR_TEXT_NORMAL);
                 } else {
                     lbl_ui.set_font_color(COLOR_TEXT_ERROR);
@@ -529,9 +529,9 @@ impl<'a> CookingWidget<'a> {
                 name_ui.set_text(&recipe_item_name);
 
                 let mut can_cook = true;
-                for req in recipe.ingredients.iter() {
+                for req in recipe._ingredients.iter() {
                     let have = ui_mgr.get_total_item_count(req.item_code());
-                    if have < req.count {
+                    if have < req._count {
                         can_cook = false;
                         break;
                     }

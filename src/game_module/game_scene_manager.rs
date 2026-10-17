@@ -13,7 +13,6 @@ use crate::game_module::game_service_locator::{
 };
 use crate::game_module::game_weather::Weather;
 use crate::game_module::save_data::save_data::GameSaveData;
-use crate::game_module::scenario::game_scenarios::scenario_wrap_up_the_day::ScenarioWrapUpTheDay;
 use crate::game_module::scenario::scenario::{ScenarioBase, ScenarioDataCreateInfo, ScenarioType, create_scenario};
 use crate::game_module::widgets::item_bar::{DEFAULT_INVENTORY_ROWS, INVALID_ITEM_INDEX, SLOTS_PER_ROW};
 use nalgebra::Vector2;
@@ -460,7 +459,7 @@ impl<'a> GameSceneManager<'a> {
             true,
         );
         scenario.borrow_mut().on_open_game_scene(&game_scene_data_name);
-        ptr_as_mut(scenario.as_ptr() as *const ScenarioWrapUpTheDay).set_sleep_phase();
+        scenario.borrow_mut().set_sleep_phase();
     }
 
     fn open_game_scenario_data(

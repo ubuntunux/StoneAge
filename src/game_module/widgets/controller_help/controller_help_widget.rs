@@ -1,6 +1,7 @@
 use crate::game_module::actors::character::{ActionAnimationState, RequestType};
 use crate::game_module::actors::interaction_object::InteractionObject;
 use crate::game_module::game_client::GamePhase;
+use crate::game_module::game_constants::WRAP_UP_THE_DAY_HOLD_DURATION;
 use crate::game_module::game_controller::KeyBindingType;
 use crate::game_module::game_service_locator::{
     get_character_manager, get_game_client, get_game_controller, get_game_resources, get_game_scene_manager,
@@ -26,12 +27,12 @@ use std::rc::Rc;
 const MAIN_LAYOUT_MARGIN: f32 = 10.0;
 
 struct ActiveInteractionContext {
-    is_corpse: bool,
-    primary_type: KeyBindingType,
-    primary_text: String,
-    request_type: RequestType,
-    position: Vector3<f32>,
-    object_key: *const c_void,
+    _is_corpse: bool,
+    _primary_type: KeyBindingType,
+    _primary_text: String,
+    _request_type: RequestType,
+    _position: Vector3<f32>,
+    _object_key: *const c_void,
 }
 
 pub fn create_player_control_key_binding_widget<'a>(
@@ -427,12 +428,12 @@ impl<'a> ControllerHelpWidget<'a> {
                 matches!(obj, InteractionObject::Taming(_)) || matches!(obj, InteractionObject::Farming(_))
             })?;
             return Some(ActiveInteractionContext {
-                is_corpse: true,
-                primary_type: KeyBindingType::None,
-                primary_text: String::new(),
-                request_type: RequestType::None,
-                position: corpse_obj.get_position(),
-                object_key: corpse_obj.get_key(),
+                _is_corpse: true,
+                _primary_type: KeyBindingType::None,
+                _primary_text: String::new(),
+                _request_type: RequestType::None,
+                _position: corpse_obj.get_position(),
+                _object_key: corpse_obj.get_key(),
             });
         }
 
@@ -513,12 +514,12 @@ impl<'a> ControllerHelpWidget<'a> {
         };
 
         Some(ActiveInteractionContext {
-            is_corpse: false,
-            primary_type,
-            primary_text,
-            request_type,
-            position,
-            object_key,
+            _is_corpse: false,
+            _primary_type: primary_type,
+            _primary_text: primary_text,
+            _request_type: request_type,
+            _position: position,
+            _object_key: object_key,
         })
     }
 
@@ -550,11 +551,11 @@ impl<'a> ControllerHelpWidget<'a> {
             }
         };
 
-        self._last_interaction_object_key = context.object_key;
+        self._last_interaction_object_key = context._object_key;
 
         // Calculate screen-space position once per update
         let main_camera = get_scene_manager().get_main_camera();
-        let screen_pos = main_camera.convert_world_to_screen(&context.position, true)
+        let screen_pos = main_camera.convert_world_to_screen(&context._position, true)
             / rust_engine_3d::scene::ui::get_global_dpi_scale();
 
         let widget_map = ptr_as_mut(self._interaction_key_binding_widget_map.as_ref());
@@ -580,7 +581,7 @@ impl<'a> ControllerHelpWidget<'a> {
                 let fill_ui = ptr_as_mut(fill_ptr).get_ui_component_mut();
 
                 if *key_type == KeyBindingType::Interaction && is_table_interaction && 0.0 < hold_timer {
-                    let progress_ratio = (hold_timer / 1.0).clamp(0.0, 1.0);
+                    let progress_ratio = (hold_timer / WRAP_UP_THE_DAY_HOLD_DURATION).clamp(0.0, 1.0);
                     bg_ui.set_visible(true);
                     fill_ui.set_size_hint_x(Some(progress_ratio));
                 } else {
@@ -589,7 +590,7 @@ impl<'a> ControllerHelpWidget<'a> {
                 }
             }
 
-            if context.is_corpse {
+            if context._is_corpse {
                 if *key_type == KeyBindingType::Taming || *key_type == KeyBindingType::Farming {
                     let offset_y = if *key_type == KeyBindingType::Taming {
                         -25.0
@@ -603,21 +604,21 @@ impl<'a> ControllerHelpWidget<'a> {
                     layout_widget._ui_component.set_visible(false);
                 }
             } else {
-                if *key_type == KeyBindingType::Request && context.request_type != RequestType::None {
+                if *key_type == KeyBindingType::Request && context._request_type != RequestType::None {
                     layout_widget._ui_component.set_pos(screen_pos.x, screen_pos.y + 25.0);
                     layout_widget._ui_component.set_visible(true);
                     ptr_as_mut(key_widget._binding_name_widget)
                         ._ui_component
-                        .set_text(context.request_type.to_string().as_str());
-                } else if *key_type == context.primary_type {
-                    let offset_y = if context.request_type != RequestType::None {
+                        .set_text(context._request_type.to_string().as_str());
+                } else if *key_type == context._primary_type {
+                    let offset_y = if context._request_type != RequestType::None {
                         -25.0
                     } else {
                         0.0
                     };
                     layout_widget._ui_component.set_pos(screen_pos.x, screen_pos.y + offset_y);
                     layout_widget._ui_component.set_visible(true);
-                    ptr_as_mut(key_widget._binding_name_widget)._ui_component.set_text(context.primary_text.as_str());
+                    ptr_as_mut(key_widget._binding_name_widget)._ui_component.set_text(context._primary_text.as_str());
                 } else {
                     layout_widget._ui_component.set_visible(false);
                 }

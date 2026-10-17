@@ -1098,8 +1098,7 @@ impl<'a> TableStorageWidget<'a> {
     }
 
     pub fn sync_3d_table_items(&self) {
-        let create_infos = self.get_table_storage_item_create_infos();
-        get_item_manager_mut().sync_table_storage_items_in_world(&create_infos);
+        get_item_manager_mut().clear_table_storage_items_in_world();
     }
 
     pub fn post_process_after_item_loading(&self) {

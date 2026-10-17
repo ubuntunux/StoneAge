@@ -773,16 +773,10 @@ impl<'a> GameController<'a> {
             self._is_wrap_up_holding = false;
         }
 
-        if is_wrap_up && !is_interaction_hold {
-            if let Some(scenario) = get_game_scene_manager_mut().get_game_scenario(ScenarioType::ScenarioWrapUpTheDay) {
-                scenario.borrow_mut().on_interaction_released();
-            }
-        }
-
         if is_near_table && !is_wrap_up && self._is_wrap_up_holding && is_interaction_hold {
             self._wrap_up_hold_timer += delta_time;
-            if 1.0 <= self._wrap_up_hold_timer {
-                self._wrap_up_hold_timer = 1.0;
+            if WRAP_UP_THE_DAY_HOLD_DURATION <= self._wrap_up_hold_timer {
+                self._wrap_up_hold_timer = WRAP_UP_THE_DAY_HOLD_DURATION;
                 self._is_wrap_up_holding = false;
                 player_mut.set_move_idle();
                 get_audio_manager_mut().play_audio_bank(AUDIO_QUEST_COMPLETE, AudioLoop::ONCE, None);

@@ -1,7 +1,7 @@
 use crate::game_module::actors::character::{ActorWrapper, Character};
 use crate::game_module::actors::items::ItemDataType;
 use crate::game_module::actors::props::Prop;
-use crate::game_module::game_constants::{ITEM_WOOD, MATERIAL_UI_POINTER};
+use crate::game_module::game_constants::{ITEM_WOOD, MATERIAL_UI_POINTER, PROP_NAME_MONOLITH};
 use crate::game_module::game_service_locator::{
     get_character_manager, get_game_resources, get_game_scene_manager_mut, get_game_ui_manager, get_game_ui_manager_mut,
 };
@@ -141,7 +141,8 @@ impl<'a> ScenarioWoodenClub<'a> {
 
     pub fn create_toolbox_text_box(&mut self) {
         if self._prop_monolith.is_none() {
-            self._prop_monolith = get_game_scene_manager_mut().get_prop_manager().get_prop_by_name("monolith").cloned();
+            self._prop_monolith =
+                get_game_scene_manager_mut().get_prop_manager().get_prop_by_name(PROP_NAME_MONOLITH).cloned();
         }
         if let Some(prop_monolith) = self._prop_monolith.as_ref() {
             let wrapper = ActorWrapper::Prop(prop_monolith.clone());
@@ -166,7 +167,8 @@ impl<'a> ScenarioWoodenClub<'a> {
 
     pub fn remove_toolbox_text_box(&mut self) {
         if self._prop_monolith.is_none() {
-            self._prop_monolith = get_game_scene_manager_mut().get_prop_manager().get_prop_by_name("monolith").cloned();
+            self._prop_monolith =
+                get_game_scene_manager_mut().get_prop_manager().get_prop_by_name(PROP_NAME_MONOLITH).cloned();
         }
         if let Some(prop_monolith) = self._prop_monolith.as_ref() {
             let wrapper = ActorWrapper::Prop(prop_monolith.clone());
@@ -295,7 +297,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWoodenClub<'a> {
         let game_scene_manager = get_game_scene_manager_mut();
         game_scene_manager.spawn_game_scenario_objects(&self._scenario_create_info);
         self._player = get_character_manager().get_maybe_player().clone();
-        self._prop_monolith = game_scene_manager.get_prop_manager().get_prop_by_name("monolith").cloned();
+        self._prop_monolith = game_scene_manager.get_prop_manager().get_prop_by_name(PROP_NAME_MONOLITH).cloned();
 
         self.create_quests();
 

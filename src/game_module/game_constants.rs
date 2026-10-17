@@ -70,7 +70,17 @@ pub const HEAT_SOURCE_RADIUS: f32 = 6.0;
 // character
 pub const CHARACTER_DATA_NAME_ARU: &str = "characters/family/aru";
 pub const CHARACTER_DATA_NAME_MONKEY_ARU: &str = "characters/family/monkey_aru";
+pub const ACTOR_NAME_ARU: &str = "aru";
+pub const ACTOR_NAME_EWA: &str = "ewa";
+pub const ACTOR_NAME_MONKEY_EWA: &str = "monkey_ewa";
+pub const ACTOR_NAME_KOA: &str = "koa";
+pub const ACTOR_NAME_MONKEY_KOA: &str = "monkey_koa";
+pub const ACTOR_NAME_UFO: &str = "ufo";
+pub const ACTOR_NAME_ALIEN_ALPHA: &str = "alien_alpha";
+pub const ACTOR_NAME_ALIEN_BETA: &str = "alien_beta";
 pub const BED_FOR_ARU: &str = "bed_for_aru";
+pub const BED_FOR_EWA: &str = "bed_for_ewa";
+pub const BED_FOR_KOA: &str = "bed_for_koa";
 
 // lantern
 pub const LANTERN_LIGHT_RADIUS: f32 = 12.0;
@@ -86,6 +96,7 @@ pub const EAT_ITEM_DISTANCE: f32 = 1.0;
 pub const EAT_ITEM_DELAY_TIME: f32 = 3.0;
 pub const DEFAULT_FOOD_HP: i32 = 10;
 pub const MAX_BED_RESTRICTION_DISTANCE: f32 = 7.0;
+pub const WRAP_UP_THE_DAY_HOLD_DURATION: f32 = 1.0;
 
 pub const CHARACTER_ROTATION_SPEED: f32 = 20.0;
 pub const FALLING_TIME: f32 = 0.3;
@@ -241,13 +252,18 @@ pub const ITEM_MEAT: &str = "items/meat";
 
 // props
 pub const DEFAULT_GATE_NAME: &str = "gate";
+pub const PROP_NAME_TABLE: &str = "table";
+pub const PROP_NAME_MONOLITH: &str = "monolith";
+pub const PROP_NAME_INTRO_TREE: &str = "birch_tree_00";
 
 // Record Constants
 pub const RECORD_DEFAULT_INCREMENT: u32 = 1;
 pub const RECORD_ITEM_TYPES_PER_ROW: usize = 3;
 pub const RECORD_MONSTER_KILLS_PER_ROW: usize = 2;
 
-// Table storage 3D placement
-pub const TABLE_STORAGE_ITEM_OFFSET_Y: f32 = 0.05;
-pub const TABLE_STORAGE_ITEM_GRID_SPAN_X: f32 = 0.4;
-pub const TABLE_STORAGE_ITEM_GRID_SPAN_Z: f32 = 0.4;
+// Table item placement & search
+pub const TABLE_ITEM_SPAWN_RANDOM_OFFSET_RANGE: f32 = 0.4;
+pub const TABLE_ITEM_PICKUP_DELAY_INFINITE: f32 = 999999.0;
+pub const TABLE_ITEM_SEARCH_RADIUS_XZ: f32 = 1.5;
+pub const TABLE_ITEM_SEARCH_MIN_Y_OFFSET: f32 = 0.5;
+pub const TABLE_ITEM_SEARCH_MAX_Y_OFFSET: f32 = 1.5;

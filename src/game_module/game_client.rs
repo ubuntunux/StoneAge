@@ -1,7 +1,8 @@
 use crate::game_module::actors::character::data::ActionAnimationState;
 use crate::game_module::game_constants::{
-    CAMERA_DISTANCE_MAX, DEFAULT_FADE_TIME, DEFAULT_GAME_SAVE_DATA, GAME_VIEW_MODE, GameViewMode, MATERIAL_INTRO_IMAGE,
-    MATERIAL_UI_NONE, MATERIAL_WORLDMAP_FADE_TIME,
+    ACTOR_NAME_EWA, ACTOR_NAME_KOA, ACTOR_NAME_MONKEY_EWA, ACTOR_NAME_MONKEY_KOA, AUDIO_ROOSTER, BED_FOR_EWA,
+    BED_FOR_KOA, CAMERA_DISTANCE_MAX, DEFAULT_FADE_TIME, DEFAULT_GAME_SAVE_DATA, GAME_VIEW_MODE, GameViewMode,
+    MATERIAL_INTRO_IMAGE, MATERIAL_UI_NONE, MATERIAL_WORLDMAP_FADE_TIME,
 };
 use crate::game_module::game_scene_manager::GameSceneState;
 use crate::game_module::game_service_locator::{
@@ -446,7 +447,7 @@ impl<'a> GameClient<'a> {
                             if !game_scene_manager.is_teleport_mode() {
                                 game_scene_manager.set_next_time_of_day();
                                 rust_engine_3d::core::engine_service_locator::get_audio_manager_mut().play_audio_bank(
-                                    crate::game_module::game_constants::AUDIO_ROOSTER,
+                                    AUDIO_ROOSTER,
                                     rust_engine_3d::audio::audio_manager::AudioLoop::ONCE,
                                     None,
                                 );
@@ -457,12 +458,12 @@ impl<'a> GameClient<'a> {
 
                                 // Wake up Ewa and Koa in their beds
                                 let ewa = character_manager
-                                    .get_character_by_name("monkey_ewa")
-                                    .or_else(|| character_manager.get_character_by_name("ewa"));
+                                    .get_character_by_name(ACTOR_NAME_MONKEY_EWA)
+                                    .or_else(|| character_manager.get_character_by_name(ACTOR_NAME_EWA));
                                 if let Some(actor) = ewa {
                                     actor.borrow_mut()._controller.set_flying_mode(false);
                                     if let Some(bed) =
-                                        game_scene_manager.get_prop_manager().get_prop_by_name("bed_for_ewa")
+                                        game_scene_manager.get_prop_manager().get_prop_by_name(BED_FOR_EWA)
                                     {
                                         actor.borrow_mut().set_position(bed.borrow().get_position());
                                     }
@@ -473,12 +474,12 @@ impl<'a> GameClient<'a> {
                                 }
 
                                 let koa = character_manager
-                                    .get_character_by_name("monkey_koa")
-                                    .or_else(|| character_manager.get_character_by_name("koa"));
+                                    .get_character_by_name(ACTOR_NAME_MONKEY_KOA)
+                                    .or_else(|| character_manager.get_character_by_name(ACTOR_NAME_KOA));
                                 if let Some(actor) = koa {
                                     actor.borrow_mut()._controller.set_flying_mode(false);
                                     if let Some(bed) =
-                                        game_scene_manager.get_prop_manager().get_prop_by_name("bed_for_koa")
+                                        game_scene_manager.get_prop_manager().get_prop_by_name(BED_FOR_KOA)
                                     {
                                         actor.borrow_mut().set_position(bed.borrow().get_position());
                                     }

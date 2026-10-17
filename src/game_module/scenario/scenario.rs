@@ -119,7 +119,12 @@ pub trait ScenarioBase<'a> {
         false
     }
     fn request_sleep(&mut self) {}
-    fn on_interaction_released(&mut self) {}
+    fn set_sleep_phase(&mut self) {}
+    fn set_skip_wakeup(&mut self, _skip_wakeup: bool) {}
+    fn is_sleeping(&self) -> bool {
+        false
+    }
+    fn complete_sub_quest_cooking(&mut self) {}
     fn is_end_of_scenario(&self) -> bool;
     fn destroy_game_scenario(&mut self);
     fn on_close_game_scene(&mut self, game_scene_data_name: &str);

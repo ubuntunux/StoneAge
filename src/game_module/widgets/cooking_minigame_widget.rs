@@ -256,10 +256,10 @@ impl<'a> CookingMinigameWidget<'a> {
         }
 
         let recipe = &COOKING_RECIPES[self._recipe_index];
-        let total_steps = recipe.ingredients.len();
+        let total_steps = recipe._ingredients.len();
 
         if self._current_step < total_steps {
-            let req = &recipe.ingredients[self._current_step];
+            let req = &recipe._ingredients[self._current_step];
             let ing_name = CookingWidget::get_item_name_from_resource(req.item_code());
 
             ptr_as_mut(self._step_lbl.as_ref()).get_ui_component_mut().set_text(&format!(
@@ -272,7 +272,7 @@ impl<'a> CookingMinigameWidget<'a> {
 
             ptr_as_mut(self._name_lbl.as_ref())
                 .get_ui_component_mut()
-                .set_text(&format!("{} x{}", ing_name, req.count));
+                .set_text(&format!("{} x{}", ing_name, req._count));
 
             let btn_text = if self._current_step + 1 == total_steps {
                 "Finish [Space]"
@@ -297,7 +297,7 @@ impl<'a> CookingMinigameWidget<'a> {
         self._current_step += 1;
         self._step_progress = 0.0;
 
-        if self._current_step >= recipe.ingredients.len() {
+        if self._current_step >= recipe._ingredients.len() {
             self.complete_cooking();
         } else {
             self.update_step_display();

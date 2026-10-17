@@ -3,15 +3,16 @@ use crate::game_module::actors::items::api::{ItemCreateInfo, ItemDataType};
 use crate::game_module::actors::items::item::get_default_food_hp;
 use crate::game_module::actors::props::Prop;
 use crate::game_module::game_client::GamePhase;
-use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, AUDIO_SELECT_ITEM, ITEM_NONE};
+use crate::game_module::game_constants::{
+    AUDIO_PICKUP_ITEM, AUDIO_SELECT_ITEM, ITEM_NONE, PROP_NAME_TABLE, TABLE_ITEM_PICKUP_DELAY_INFINITE,
+    TABLE_ITEM_SPAWN_RANDOM_OFFSET_RANGE,
+};
 use crate::game_module::game_service_locator::{
     get_character_manager, get_game_client_mut, get_game_scene_manager, get_game_scene_manager_mut,
     get_game_ui_manager, get_game_ui_manager_mut,
 };
 use crate::game_module::game_ui_manager::move_mouse_to_ui_component;
-use crate::game_module::scenario::game_scenarios::scenario_intro::intro::ScenarioIntro;
-use crate::game_module::scenario::game_scenarios::scenario_wrap_up_the_day::ScenarioWrapUpTheDay;
-use crate::game_module::scenario::scenario::{ScenarioBase, ScenarioType};
+use crate::game_module::scenario::scenario::ScenarioType;
 use crate::game_module::widgets::item_bar::api::InventorySlotData;
 use crate::game_module::widgets::key_binding_widget::KEY_BINDING_FONT_SIZE;
 use nalgebra::{Vector2, Vector3};
@@ -509,15 +510,14 @@ impl<'a> NpcInteractionMenuWidget<'a> {
                 if let Some(scenario) =
                     get_game_scene_manager_mut().get_game_scenario(ScenarioType::ScenarioWrapUpTheDay)
                 {
-                    let scenario_wrap_up = ptr_as_mut(scenario.as_ptr() as *const ScenarioWrapUpTheDay);
-                    scenario_wrap_up.request_sleep();
+                    scenario.borrow_mut().request_sleep();
                 } else {
                     get_game_scene_manager_mut().open_wrap_up_the_day_sleep();
                 }
             }
             NpcInteractionOption::CookItem(slot_idx) => {
                 let Some(table) = target_table
-                    .or_else(|| get_game_scene_manager().get_prop_manager().get_prop_by_name("table").cloned())
+                    .or_else(|| get_game_scene_manager().get_prop_manager().get_prop_by_name(PROP_NAME_TABLE).cloned())
                 else {
                     return;
                 };
@@ -528,8 +528,8 @@ impl<'a> NpcInteractionMenuWidget<'a> {
                 let table_top_y = bounding_box._max.y;
 
                 // 테이블 상판 위에 약간의 랜덤 오프셋을 두어 아이템들이 겹치지 않게 배치
-                let offset_x = (rand::random::<f32>() - 0.5) * 0.4;
-                let offset_z = (rand::random::<f32>() - 0.5) * 0.4;
+                let offset_x = (rand::random::<f32>() - 0.5) * TABLE_ITEM_SPAWN_RANDOM_OFFSET_RANGE;
+                let offset_z = (rand::random::<f32>() - 0.5) * TABLE_ITEM_SPAWN_RANDOM_OFFSET_RANGE;
                 let spawn_position = Vector3::new(table_center.x + offset_x, table_top_y, table_center.z + offset_z);
 
                 let mut item_to_spawn: Option<String> = None;
@@ -558,7 +558,7 @@ impl<'a> NpcInteractionMenuWidget<'a> {
                         _rotation: Vector3::new(0.0, rand::random::<f32>() * std::f32::consts::TAU, 0.0),
                         _scale: Vector3::new(1.0, 1.0, 1.0),
                         _velocity: Vector3::zeros(),
-                        _pickup_delay: 999999.0, // 플레이어가 자동 습득하지 않도록 방지
+                        _pickup_delay: TABLE_ITEM_PICKUP_DELAY_INFINITE, // 플레이어가 자동 습득하지 않도록 방지
                         _current_hp: food_hp,
                         _max_hp: food_hp,
                         ..Default::default()
@@ -578,8 +578,7 @@ impl<'a> NpcInteractionMenuWidget<'a> {
                     if let Some(scenario) =
                         get_game_scene_manager_mut().get_game_scenario(ScenarioType::ScenarioIntro_Intro)
                     {
-                        let scenario_intro = ptr_as_mut(scenario.as_ptr() as *const ScenarioIntro);
-                        scenario_intro.complete_sub_quest_cooking();
+                        scenario.borrow_mut().complete_sub_quest_cooking();
                     }
                 }
             }

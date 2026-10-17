@@ -5,14 +5,13 @@ use crate::game_module::actors::items::api::{
 use crate::game_module::actors::items::updater::create_item_updater;
 use crate::game_module::actors::props::Prop;
 use crate::game_module::game_constants::{
-    AUDIO_ITEM_INVENTORY, AUDIO_PICKUP_ITEM, DEFAULT_FOOD_HP, EAT_ITEM_DISTANCE, WEAPON_SOCKET_NAME,
+    AUDIO_ITEM_INVENTORY, AUDIO_PICKUP_ITEM, DEFAULT_FOOD_HP, EAT_ITEM_DISTANCE, TABLE_ITEM_SEARCH_MAX_Y_OFFSET,
+    TABLE_ITEM_SEARCH_MIN_Y_OFFSET, TABLE_ITEM_SEARCH_RADIUS_XZ, WEAPON_SOCKET_NAME,
 };
 use crate::game_module::game_scene_manager::{ItemCreateInfoMap, ItemSaveDataMap};
 use crate::game_module::game_service_locator::{
     get_character_manager, get_character_manager_mut, get_game_resources, get_game_ui_manager, get_game_ui_manager_mut,
 };
-
-use crate::game_module::widgets::item_bar::InventoryItemCreateInfo;
 
 use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
@@ -338,10 +337,6 @@ impl<'a> ItemManager<'a> {
         }
     }
 
-    pub fn sync_table_storage_items_in_world(&mut self, _create_infos: &[InventoryItemCreateInfo]) {
-        self.clear_table_storage_items_in_world();
-    }
-
     pub fn get_item_on_table(&self, table_prop: &RcRefCell<Prop<'a>>) -> Option<String> {
         // 1. _table_storage_item_ids 중 유효하고 eatable이며 남은 HP가 있는 아이템 확인
         for id in self._table_storage_item_ids.iter().rev() {
@@ -374,7 +369,10 @@ impl<'a> ItemManager<'a> {
             }
             let pos = item.get_position();
             let dist_xz = ((pos.x - table_center.x).powi(2) + (pos.z - table_center.z).powi(2)).sqrt();
-            if dist_xz < 1.5 && pos.y >= table_min_y - 0.5 && pos.y <= table_max_y + 1.5 {
+            if dist_xz < TABLE_ITEM_SEARCH_RADIUS_XZ
+                && pos.y >= table_min_y - TABLE_ITEM_SEARCH_MIN_Y_OFFSET
+                && pos.y <= table_max_y + TABLE_ITEM_SEARCH_MAX_Y_OFFSET
+            {
                 return Some(item._item_data_name.clone());
             }
         }
@@ -452,7 +450,10 @@ impl<'a> ItemManager<'a> {
             }
             let pos = item.get_position();
             let dist_xz = ((pos.x - table_center.x).powi(2) + (pos.z - table_center.z).powi(2)).sqrt();
-            if dist_xz < 1.5 && pos.y >= table_min_y - 0.5 && pos.y <= table_max_y + 1.5 {
+            if dist_xz < TABLE_ITEM_SEARCH_RADIUS_XZ
+                && pos.y >= table_min_y - TABLE_ITEM_SEARCH_MIN_Y_OFFSET
+                && pos.y <= table_max_y + TABLE_ITEM_SEARCH_MAX_Y_OFFSET
+            {
                 target_item_rc = Some(item_rc.clone());
                 break;
             }
@@ -490,10 +491,6 @@ impl<'a> ItemManager<'a> {
         }
 
         None
-    }
-
-    pub fn pop_item_on_table(&mut self, table_prop: &RcRefCell<Prop<'a>>) -> Option<String> {
-        self.consume_item_on_table(table_prop)
     }
 
     pub fn initialize_item_manager(&mut self) {
@@ -628,8 +625,7 @@ impl<'a> ItemManager<'a> {
         if let Some(table_storage_widget) = get_game_ui_manager().get_table_storage_widget() {
             table_storage_widget.post_process_after_item_loading();
         } else {
-            let create_infos = get_game_ui_manager().get_table_storage_item_create_infos();
-            self.sync_table_storage_items_in_world(&create_infos);
+            self.clear_table_storage_items_in_world();
         }
     }
 

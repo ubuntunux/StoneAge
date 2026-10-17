@@ -2,7 +2,9 @@ use crate::game_module::actors::character::Character;
 use crate::game_module::actors::props::Prop;
 use crate::game_module::behavior::behavior_base::BehaviorState;
 use crate::game_module::game_constants::{
-    AUDIO_UFO_BEAM, AUDIO_UFO_FLYING, BED_FOR_ARU, CAMERA_DISTANCE_MAX, CAMERA_OFFSET_Y, TIME_OF_EARLY_MORNING,
+    ACTOR_NAME_EWA, ACTOR_NAME_KOA, ACTOR_NAME_MONKEY_EWA, ACTOR_NAME_MONKEY_KOA, ACTOR_NAME_UFO, AUDIO_UFO_BEAM,
+    AUDIO_UFO_FLYING, BED_FOR_ARU, BED_FOR_EWA, BED_FOR_KOA, CAMERA_DISTANCE_MAX, CAMERA_OFFSET_Y, PROP_NAME_MONOLITH,
+    TIME_OF_EARLY_MORNING,
 };
 use crate::game_module::game_service_locator::{get_character_manager_mut, get_game_scene_manager_mut};
 use crate::game_module::scenario::scenario::{
@@ -201,21 +203,21 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
         // if let Some(actor) = game_scene_manager.get_actor_by_name("monkey_aru").cloned() {
         //     get_character_manager_mut().remove_character(&actor);
         // }
-        if let Some(actor) = game_scene_manager.get_actor_by_name("monkey_ewa").cloned() {
+        if let Some(actor) = game_scene_manager.get_actor_by_name(ACTOR_NAME_MONKEY_EWA).cloned() {
             get_character_manager_mut().remove_character(&actor);
         }
-        if let Some(actor) = game_scene_manager.get_actor_by_name("monkey_koa").cloned() {
+        if let Some(actor) = game_scene_manager.get_actor_by_name(ACTOR_NAME_MONKEY_KOA).cloned() {
             get_character_manager_mut().remove_character(&actor);
         }
 
-        self._actor_ufo = game_scene_manager.get_actor_by_name("ufo").cloned();
+        self._actor_ufo = game_scene_manager.get_actor_by_name(ACTOR_NAME_UFO).cloned();
         self._player = game_scene_manager.get_maybe_player().clone();
-        self._actor_ewa = game_scene_manager.get_actor_by_name("ewa").cloned();
-        self._actor_koa = game_scene_manager.get_actor_by_name("koa").cloned();
+        self._actor_ewa = game_scene_manager.get_actor_by_name(ACTOR_NAME_EWA).cloned();
+        self._actor_koa = game_scene_manager.get_actor_by_name(ACTOR_NAME_KOA).cloned();
         self._prop_bed_for_aru = game_scene_manager.get_prop_manager().get_prop_by_name(BED_FOR_ARU).cloned();
-        self._prop_bed_for_ewa = game_scene_manager.get_prop_manager().get_prop_by_name("bed_for_ewa").cloned();
-        self._prop_bed_for_koa = game_scene_manager.get_prop_manager().get_prop_by_name("bed_for_koa").cloned();
-        self._prop_monolith = game_scene_manager.get_prop_manager().get_prop_by_name("monolith").cloned();
+        self._prop_bed_for_ewa = game_scene_manager.get_prop_manager().get_prop_by_name(BED_FOR_EWA).cloned();
+        self._prop_bed_for_koa = game_scene_manager.get_prop_manager().get_prop_by_name(BED_FOR_KOA).cloned();
+        self._prop_monolith = game_scene_manager.get_prop_manager().get_prop_by_name(PROP_NAME_MONOLITH).cloned();
 
         if let Some(ufo) = &self._actor_ufo {
             if let Some(actor) = &self._player {
