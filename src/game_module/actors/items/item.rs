@@ -6,13 +6,16 @@ use crate::game_module::actors::items::updater::create_item_updater;
 use crate::game_module::actors::props::Prop;
 use crate::game_module::game_constants::{
     AUDIO_ITEM_INVENTORY, AUDIO_PICKUP_ITEM, DEFAULT_FOOD_HP, EAT_ITEM_DISTANCE, FOOD_HP_BASIC_COOKED,
-    FOOD_HP_ENERGY_STEW, FOOD_HP_GOLDEN_FEAST, FOOD_MIN_SCALE_FACTOR, TABLE_ITEM_SEARCH_MAX_Y_OFFSET,
-    TABLE_ITEM_SEARCH_MIN_Y_OFFSET, TABLE_ITEM_SEARCH_RADIUS_XZ, WEAPON_SOCKET_NAME,
+    FOOD_HP_ENERGY_STEW, FOOD_HP_GOLDEN_FEAST, FOOD_MIN_SCALE_FACTOR, PROP_NAME_TABLE,
+    TABLE_ITEM_PICKUP_DELAY_INFINITE, TABLE_ITEM_SEARCH_MAX_Y_OFFSET, TABLE_ITEM_SEARCH_MIN_Y_OFFSET,
+    TABLE_ITEM_SEARCH_RADIUS_XZ, TABLE_ITEM_SPAWN_RANDOM_OFFSET_RANGE, WEAPON_SOCKET_NAME,
 };
 use crate::game_module::game_scene_manager::{ItemCreateInfoMap, ItemSaveDataMap};
 use crate::game_module::game_service_locator::{
-    get_character_manager, get_character_manager_mut, get_game_resources, get_game_ui_manager, get_game_ui_manager_mut,
+    get_character_manager, get_character_manager_mut, get_game_resources, get_game_scene_manager,
+    get_game_scene_manager_mut, get_game_ui_manager, get_game_ui_manager_mut,
 };
+use crate::game_module::scenario::scenario::ScenarioType;
 
 use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
@@ -424,6 +427,67 @@ impl<'a> ItemManager<'a> {
         }
 
         None
+    }
+
+    pub fn place_table_storage_item_on_table(
+        &mut self,
+        target_table: Option<RcRefCell<Prop<'a>>>,
+        slot_idx: usize,
+    ) -> bool {
+        let Some(table) = target_table
+            .or_else(|| get_game_scene_manager().get_prop_manager().get_prop_by_name(PROP_NAME_TABLE).cloned())
+        else {
+            return false;
+        };
+
+        let item_to_spawn = get_game_ui_manager_mut()
+            .get_table_storage_widget_mut()
+            .and_then(|table_storage_widget| table_storage_widget.take_item_at_slot(slot_idx));
+
+        let Some(item_data_name) = item_to_spawn else {
+            return false;
+        };
+
+        let (table_center, table_top_y) = {
+            let table_borrow = table.borrow();
+            let bounding_box = table_borrow.get_bounding_box();
+            (bounding_box._center, bounding_box._max.y)
+        };
+
+        // 테이블 상판 위에 약간의 랜덤 오프셋을 두어 아이템들이 겹치지 않게 배치
+        let offset_x = (rand::random::<f32>() - 0.5) * TABLE_ITEM_SPAWN_RANDOM_OFFSET_RANGE;
+        let offset_z = (rand::random::<f32>() - 0.5) * TABLE_ITEM_SPAWN_RANDOM_OFFSET_RANGE;
+        let spawn_position = Vector3::new(table_center.x + offset_x, table_top_y, table_center.z + offset_z);
+
+        let food_hp = get_default_food_hp(&item_data_name, ItemDataType::Food);
+        let item_create_info = ItemCreateInfo {
+            _item_data_name: item_data_name.clone(),
+            _position: spawn_position,
+            _rotation: Vector3::new(0.0, rand::random::<f32>() * std::f32::consts::TAU, 0.0),
+            _scale: Vector3::new(1.0, 1.0, 1.0),
+            _velocity: Vector3::zeros(),
+            _pickup_delay: TABLE_ITEM_PICKUP_DELAY_INFINITE, // 플레이어가 자동 습득하지 않도록 방지
+            _current_hp: food_hp,
+            _max_hp: food_hp,
+            ..Default::default()
+        };
+        let item = self.create_item(&item_data_name, &item_create_info, None);
+        item.borrow_mut()._item_properties._is_on_ground = true;
+        self._table_storage_item_ids.push(item.borrow().get_item_id());
+
+        // QuickSlot UI 갱신
+        let game_ui_manager = get_game_ui_manager_mut();
+        let item_bar = game_ui_manager.get_item_bar_widget_mut();
+        item_bar.update_quick_slot_widgets();
+        item_bar.update_item_selection_widget();
+
+        get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
+
+        if let Some(scenario) = get_game_scene_manager_mut().get_game_scenario(ScenarioType::ScenarioIntro_Intro) {
+            scenario.borrow_mut().complete_sub_quest_cooking();
+        }
+
+        true
     }
 
     pub fn initialize_item_manager(&mut self) {
