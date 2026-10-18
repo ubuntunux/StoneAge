@@ -52,14 +52,22 @@ impl ToolboxTab {
         }
     }
 
-    pub fn from_str(s: &str) -> Self {
-        match s {
+}
+
+impl std::str::FromStr for ToolboxTab {
+    type Err = std::convert::Infallible;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(match s {
             "ItemCraft" => ToolboxTab::ItemCraft,
             "Npc" => ToolboxTab::Npc,
             "Teleport" => ToolboxTab::Teleport,
             _ => ToolboxTab::Skill,
-        }
+        })
     }
+}
+
+impl ToolboxTab {
 
     pub fn next(&self) -> Self {
         match self {
@@ -377,35 +385,32 @@ impl<'a> ToolboxWidget<'a> {
         self._teleport_tab.close();
 
         // Activate selected tab
-        let (active_btn, open_fn): (&Rc<WidgetDefault<'a>>, Box<dyn FnOnce(&mut ToolboxWidget<'a>)>) = match tab {
-            ToolboxTab::Skill => (
-                &self._tab_btn_skill,
-                Box::new(|w: &mut ToolboxWidget<'a>| w._skill_tab.open()),
-            ),
-            ToolboxTab::ItemCraft => (
-                &self._tab_btn_item_craft,
-                Box::new(|w: &mut ToolboxWidget<'a>| w._item_craft_tab.open()),
-            ),
-            ToolboxTab::Npc => (
-                &self._tab_btn_npc,
-                Box::new(|w: &mut ToolboxWidget<'a>| w._npc_tab.open()),
-            ),
-            ToolboxTab::Teleport => (
-                &self._tab_btn_teleport,
-                Box::new(|w: &mut ToolboxWidget<'a>| {
-                    let current_stage_name = get_game_scene_manager().get_current_game_scene_data_name().clone();
-                    if !current_stage_name.is_empty()
-                        && get_game_scene_manager().get_discovered_world_data(&current_stage_name).is_none()
-                    {
-                        get_game_scene_manager_mut().inspect_and_register_discovered_world_data();
-                    }
-                    w._teleport_tab.open();
-                }),
-            ),
+        let active_btn = match tab {
+            ToolboxTab::Skill => {
+                self._skill_tab.open();
+                &self._tab_btn_skill
+            }
+            ToolboxTab::ItemCraft => {
+                self._item_craft_tab.open();
+                &self._tab_btn_item_craft
+            }
+            ToolboxTab::Npc => {
+                self._npc_tab.open();
+                &self._tab_btn_npc
+            }
+            ToolboxTab::Teleport => {
+                let current_stage_name = get_game_scene_manager().get_current_game_scene_data_name().clone();
+                if !current_stage_name.is_empty()
+                    && get_game_scene_manager().get_discovered_world_data(&current_stage_name).is_none()
+                {
+                    get_game_scene_manager_mut().inspect_and_register_discovered_world_data();
+                }
+                self._teleport_tab.open();
+                &self._tab_btn_teleport
+            }
         };
 
         ptr_as_mut(active_btn.as_ref()).get_ui_component_mut().set_color(TAB_ACTIVE_COLOR);
-        open_fn(self);
 
         self._selected_item_index = 0;
         self.update_item_selection();
@@ -496,30 +501,28 @@ impl<'a> ToolboxWidget<'a> {
             self._nav_repeat_controller.update(keyboard_input_data, joystick_input_data, delta_time);
 
         let item_count = self.get_active_tab_mut()._items.len();
-        if should_move && item_count > 0 {
-            if let Some((_dir_x, dir_y)) = dir_opt {
-                if dir_y < 0 {
-                    if self._selected_item_index == 0 {
-                        self._selected_item_index = item_count - 1;
-                    } else {
-                        self._selected_item_index -= 1;
-                    }
-                    get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
-                    self.update_item_selection();
-                } else if dir_y > 0 {
-                    if self._selected_item_index + 1 >= item_count {
-                        self._selected_item_index = 0;
-                    } else {
-                        self._selected_item_index += 1;
-                    }
-                    get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
-                    self.update_item_selection();
+        if should_move && item_count > 0 && let Some((_dir_x, dir_y)) = dir_opt {
+            if dir_y < 0 {
+                if self._selected_item_index == 0 {
+                    self._selected_item_index = item_count - 1;
+                } else {
+                    self._selected_item_index -= 1;
                 }
-                let sel_idx = self._selected_item_index;
-                let active_tab = self.get_active_tab_mut();
-                if let Some(item) = active_tab._items.get(sel_idx) {
-                    move_mouse_to_ui_component(item._layout.get_ui_component());
+                get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
+                self.update_item_selection();
+            } else if dir_y > 0 {
+                if self._selected_item_index + 1 >= item_count {
+                    self._selected_item_index = 0;
+                } else {
+                    self._selected_item_index += 1;
                 }
+                get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
+                self.update_item_selection();
+            }
+            let sel_idx = self._selected_item_index;
+            let active_tab = self.get_active_tab_mut();
+            if let Some(item) = active_tab._items.get(sel_idx) {
+                move_mouse_to_ui_component(item._layout.get_ui_component());
             }
         }
 

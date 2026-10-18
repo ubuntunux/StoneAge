@@ -124,10 +124,10 @@ impl<'a> SaveLoadSlotWidget<'a> {
             slot_widget.delete_slot(slot_index);
             slot_widget._pending_delete_slot_index = None;
         }
-        if let Some(popup) = slot_widget._delete_confirm_popup.as_ref() {
-            if let Ok(mut popup_guard) = popup.try_borrow_mut() {
-                popup_guard.close();
-            }
+        if let Some(popup) = slot_widget._delete_confirm_popup.as_ref()
+            && let Ok(mut popup_guard) = popup.try_borrow_mut()
+        {
+            popup_guard.close();
         }
         true
     }
@@ -139,10 +139,10 @@ impl<'a> SaveLoadSlotWidget<'a> {
     ) -> bool {
         let slot_widget = ptr_as_mut(ui_component.get_user_data() as *const SaveLoadSlotWidget<'a>);
         slot_widget._pending_delete_slot_index = None;
-        if let Some(popup) = slot_widget._delete_confirm_popup.as_ref() {
-            if let Ok(mut popup_guard) = popup.try_borrow_mut() {
-                popup_guard.close();
-            }
+        if let Some(popup) = slot_widget._delete_confirm_popup.as_ref()
+            && let Ok(mut popup_guard) = popup.try_borrow_mut()
+        {
+            popup_guard.close();
         }
         true
     }
@@ -153,10 +153,10 @@ impl<'a> SaveLoadSlotWidget<'a> {
         _touched_pos_delta: &Vector2<f32>,
     ) -> bool {
         let slot_widget = ptr_as_mut(ui_component.get_user_data() as *const SaveLoadSlotWidget<'a>);
-        if let Some(popup) = slot_widget._save_complete_popup.as_ref() {
-            if let Ok(mut popup_guard) = popup.try_borrow_mut() {
-                popup_guard.close();
-            }
+        if let Some(popup) = slot_widget._save_complete_popup.as_ref()
+            && let Ok(mut popup_guard) = popup.try_borrow_mut()
+        {
+            popup_guard.close();
         }
         true
     }
@@ -376,15 +376,15 @@ impl<'a> SaveLoadSlotWidget<'a> {
 
     pub fn close_slot_widget(&mut self) {
         if self._is_opened {
-            if let Some(popup) = self._save_complete_popup.as_ref() {
-                if let Ok(mut popup_guard) = popup.try_borrow_mut() {
-                    popup_guard.close();
-                }
+            if let Some(popup) = self._save_complete_popup.as_ref()
+                && let Ok(mut popup_guard) = popup.try_borrow_mut()
+            {
+                popup_guard.close();
             }
-            if let Some(popup) = self._delete_confirm_popup.as_ref() {
-                if let Ok(mut popup_guard) = popup.try_borrow_mut() {
-                    popup_guard.close();
-                }
+            if let Some(popup) = self._delete_confirm_popup.as_ref()
+                && let Ok(mut popup_guard) = popup.try_borrow_mut()
+            {
+                popup_guard.close();
             }
             let parent_mut = ptr_as_mut::<WidgetDefault<'a>>(self._parent_widget);
             parent_mut.remove_widget(self._layer.as_ref());
@@ -693,10 +693,10 @@ impl<'a> SaveLoadSlotWidget<'a> {
             let slot_name = &self._slot_names[slot_index];
             if get_game_resources().has_game_save_data(slot_name) {
                 self._pending_delete_slot_index = Some(slot_index);
-                if let Some(popup) = self._delete_confirm_popup.as_ref() {
-                    if let Ok(mut popup_guard) = popup.try_borrow_mut() {
-                        popup_guard.open(popup);
-                    }
+                if let Some(popup) = self._delete_confirm_popup.as_ref()
+                    && let Ok(mut popup_guard) = popup.try_borrow_mut()
+                {
+                    popup_guard.open(popup);
                 }
             }
         }
@@ -744,10 +744,10 @@ impl<'a> SaveLoadSlotWidget<'a> {
             self.update_slot_item_ui(slot_index);
             self.ensure_empty_slot_exists();
             self.set_selected_slot(slot_index, true);
-            if let Some(popup) = self._save_complete_popup.as_ref() {
-                if let Ok(mut popup_guard) = popup.try_borrow_mut() {
-                    popup_guard.open(popup);
-                }
+            if let Some(popup) = self._save_complete_popup.as_ref()
+                && let Ok(mut popup_guard) = popup.try_borrow_mut()
+            {
+                popup_guard.open(popup);
             }
         }
     }
@@ -782,21 +782,19 @@ impl<'a> SaveLoadSlotWidget<'a> {
         let (should_move, dir_opt) =
             self._nav_repeat_controller.update(keyboard_input_data, joystick_input_data, delta_time);
 
-        if should_move {
-            if let Some((_dir_x, dir_y)) = dir_opt {
-                let next_index = if dir_y < 0 {
-                    Some(self._selected_slot_index.saturating_sub(1))
-                } else if dir_y > 0 {
-                    let max_index = self._slot_items.len().saturating_sub(1);
-                    Some((self._selected_slot_index + 1).min(max_index))
-                } else {
-                    None
-                };
-                if let Some(idx) = next_index {
-                    self.set_selected_slot(idx, false);
-                    if let Some(slot_item) = self._slot_items.get(idx) {
-                        move_mouse_to_ui_component(slot_item._item_widget.get_ui_component());
-                    }
+        if should_move && let Some((_dir_x, dir_y)) = dir_opt {
+            let next_index = if dir_y < 0 {
+                Some(self._selected_slot_index.saturating_sub(1))
+            } else if dir_y > 0 {
+                let max_index = self._slot_items.len().saturating_sub(1);
+                Some((self._selected_slot_index + 1).min(max_index))
+            } else {
+                None
+            };
+            if let Some(idx) = next_index {
+                self.set_selected_slot(idx, false);
+                if let Some(slot_item) = self._slot_items.get(idx) {
+                    move_mouse_to_ui_component(slot_item._item_widget.get_ui_component());
                 }
             }
         }

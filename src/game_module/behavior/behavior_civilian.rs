@@ -2,8 +2,8 @@ use crate::game_module::actors::character::Character;
 use crate::game_module::behavior::behavior_base::{BehaviorBase, BehaviorData, BehaviorState};
 use crate::game_module::behavior::behavior_common::{
     begin_idle, begin_roaming, is_enemy_in_range, is_player_too_far_for_intimacy, should_roaming_go_idle, step_attack,
-    step_chase, step_dance, step_eating, step_follow, step_hunger, step_interaction, step_wake_up,
-    update_idle_interacting,
+    step_chase, step_dance, step_dead_with_revive, step_eating, step_follow, step_hunger, step_interaction,
+    step_wake_up, update_idle_interacting,
 };
 use crate::game_module::game_constants::CIVILIAN_DEAD_TIME;
 use rust_engine_3d::utilities::system::State;
@@ -78,18 +78,9 @@ impl<'a> BehaviorBase<'a> for BehaviorCivilian<'a> {
             BehaviorState::Interaction => step_interaction(&mut self._behavior_data, state, owner, target),
             BehaviorState::Chase => step_chase(&mut self._behavior_data, state, owner, target),
             BehaviorState::Attack => step_attack(&mut self._behavior_data, state, owner, target, delta_time),
-            BehaviorState::Dead => match state {
-                State::Begin => {
-                    owner.set_action_dead();
-                    self._behavior_data.set_behavior_time(CIVILIAN_DEAD_TIME);
-                }
-                State::Update => {
-                    if self._behavior_data.is_end_behavior_time() {
-                        self.set_next_behavior(BehaviorState::WakeUp, true);
-                    }
-                }
-                State::End => {}
-            },
+            BehaviorState::Dead => {
+                step_dead_with_revive(&mut self._behavior_data, state, owner, CIVILIAN_DEAD_TIME)
+            }
             BehaviorState::WakeUp => step_wake_up(&mut self._behavior_data, state, is_first_update, owner, true),
             BehaviorState::Follow => step_follow(&mut self._behavior_data, state, owner, target),
             BehaviorState::Dance => step_dance(&mut self._behavior_data, state, owner),

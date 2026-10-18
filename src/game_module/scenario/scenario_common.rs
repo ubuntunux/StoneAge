@@ -66,13 +66,11 @@ pub fn load_quest_item_save_data(quest_item: &Option<QuestItem>, save_data: &Opt
 }
 
 pub fn set_actors_behavior_none(actors: &[&Option<RcRefCell<Character>>], clear_action: bool) {
-    for actor_opt in actors {
-        if let Some(actor) = actor_opt {
-            let mut actor_mut = actor.borrow_mut();
-            actor_mut.set_behavior_none();
-            if clear_action {
-                actor_mut.set_action_none();
-            }
+    for actor in actors.iter().copied().flatten() {
+        let mut actor_mut = actor.borrow_mut();
+        actor_mut.set_behavior_none();
+        if clear_action {
+            actor_mut.set_action_none();
         }
     }
 }
@@ -82,26 +80,22 @@ pub fn set_actors_flying_sleep_mode(
     clear_behavior: bool,
     position: Option<&Vector3<f32>>,
 ) {
-    for actor_opt in actors {
-        if let Some(actor) = actor_opt {
-            let mut actor_mut = actor.borrow_mut();
-            actor_mut._controller.set_flying_mode(true);
-            if clear_behavior {
-                actor_mut.set_behavior_none();
-            }
-            actor_mut.set_action_sleep_no_snoring();
-            if let Some(pos) = position {
-                actor_mut.set_position(pos);
-            }
+    for actor in actors.iter().copied().flatten() {
+        let mut actor_mut = actor.borrow_mut();
+        actor_mut._controller.set_flying_mode(true);
+        if clear_behavior {
+            actor_mut.set_behavior_none();
+        }
+        actor_mut.set_action_sleep_no_snoring();
+        if let Some(pos) = position {
+            actor_mut.set_position(pos);
         }
     }
 }
 
 pub fn set_actors_visible(actors: &[&Option<RcRefCell<Character>>], visible: bool) {
-    for actor_opt in actors {
-        if let Some(actor) = actor_opt {
-            actor.borrow()._render_object.borrow_mut().set_visible(visible);
-        }
+    for actor in actors.iter().copied().flatten() {
+        actor.borrow()._render_object.borrow_mut().set_visible(visible);
     }
 }
 

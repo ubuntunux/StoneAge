@@ -90,7 +90,7 @@ impl<'a> TextBoxItem<'a> {
     pub fn create_text_box_item(
         parent_widget: &mut WidgetDefault<'a>,
         actor: ActorWrapper<'a>,
-        contents: &Vec<TextBoxContent>,
+        contents: &[TextBoxContent],
         option: &TextBoxItemOption,
     ) -> TextBoxItem<'a> {
         let layout_widget = UIManager::create_widget("TextBoxItem", UIWidgetTypes::Default);
@@ -144,7 +144,7 @@ impl<'a> TextBoxItem<'a> {
         ptr_as_mut(self._layout_widget).clear_widgets();
     }
 
-    pub fn update_text_box_item(&mut self, contents: &Vec<TextBoxContent>, duration: Option<f32>, clear_widgets: bool) {
+    pub fn update_text_box_item(&mut self, contents: &[TextBoxContent], duration: Option<f32>, clear_widgets: bool) {
         let engine_resources = get_engine_resources();
         if clear_widgets {
             ptr_as_mut(self._layout_widget).clear_widgets();
@@ -367,10 +367,10 @@ impl<'a> TextBoxWidget<'a> {
         }
 
         for character_name in remove_items {
-            if let Some(item) = self._text_box_items.remove(&character_name) {
-                if let Some(parent_widget) = ptr_as_ref(item._layout_widget)._parent {
-                    ptr_as_mut(parent_widget).remove_widget(item._layout_widget);
-                }
+            if let Some(item) = self._text_box_items.remove(&character_name)
+                && let Some(parent_widget) = ptr_as_ref(item._layout_widget)._parent
+            {
+                ptr_as_mut(parent_widget).remove_widget(item._layout_widget);
             }
         }
     }

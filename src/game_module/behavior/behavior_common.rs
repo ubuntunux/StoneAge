@@ -431,3 +431,18 @@ pub fn step_attack(
         State::End => {}
     }
 }
+
+pub fn step_dead_with_revive(data: &mut BehaviorData, state: State, owner: &mut Character, revive_time: f32) {
+    match state {
+        State::Begin => {
+            owner.set_action_dead();
+            data.set_behavior_time(revive_time);
+        }
+        State::Update => {
+            if data.is_end_behavior_time() {
+                data.set_next_behavior_state(BehaviorState::WakeUp, true);
+            }
+        }
+        State::End => {}
+    }
+}

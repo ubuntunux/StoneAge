@@ -346,8 +346,8 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
         self._scenario_track._scenario_phase.to_string()
     }
 
-    fn set_scenario_phase_as_string(&mut self, scenario_phase: &String) {
-        self._scenario_track.set_phase_from_str(scenario_phase.as_str(), ScenarioPhase::None);
+    fn set_scenario_phase_as_string(&mut self, scenario_phase: &str) {
+        self._scenario_track.set_phase_from_str(scenario_phase, ScenarioPhase::None);
     }
 
     fn load_scenario_save_data(&mut self, scenario_save_data: &GameScenarioCreateInfo) {

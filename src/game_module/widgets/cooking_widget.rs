@@ -479,21 +479,19 @@ impl<'a> CookingWidget<'a> {
         let (should_move, dir_opt) =
             self._nav_repeat_controller.update(keyboard_input_data, joystick_input_data, delta_time);
 
-        if should_move {
-            if let Some((_dir_x, dir_y)) = dir_opt {
-                let selected_idx = if dir_y < 0 && self._selected_index > 0 {
-                    Some(self._selected_index - 1)
-                } else if dir_y > 0 && self._selected_index + 1 < self._items.len() {
-                    Some(self._selected_index + 1)
-                } else {
-                    None
-                };
-                if let Some(idx) = selected_idx {
-                    self.select_recipe(idx);
-                    get_audio_manager_mut().play_audio_bank(AUDIO_SELECT_ITEM, AudioLoop::ONCE, None);
-                    if let Some(item) = self._items.get(idx) {
-                        move_mouse_to_ui_component(item._layout.get_ui_component());
-                    }
+        if should_move && let Some((_dir_x, dir_y)) = dir_opt {
+            let selected_idx = if dir_y < 0 && self._selected_index > 0 {
+                Some(self._selected_index - 1)
+            } else if dir_y > 0 && self._selected_index + 1 < self._items.len() {
+                Some(self._selected_index + 1)
+            } else {
+                None
+            };
+            if let Some(idx) = selected_idx {
+                self.select_recipe(idx);
+                get_audio_manager_mut().play_audio_bank(AUDIO_SELECT_ITEM, AudioLoop::ONCE, None);
+                if let Some(item) = self._items.get(idx) {
+                    move_mouse_to_ui_component(item._layout.get_ui_component());
                 }
             }
         }

@@ -495,34 +495,31 @@ impl<'a> CraftWidget<'a> {
         let (should_move, dir_opt) =
             self._nav_repeat_controller.update(keyboard_input_data, joystick_input_data, delta_time);
 
-        if should_move {
-            if let Some((_dir_x, dir_y)) = dir_opt {
-                let selected_idx = if dir_y < 0 {
-                    self.get_prev_unlocked_index(self._selected_index)
-                } else if dir_y > 0 {
-                    self.get_next_unlocked_index(self._selected_index)
-                } else {
-                    None
-                };
-                if let Some(idx) = selected_idx {
-                    self.select_recipe(idx);
-                    get_audio_manager_mut().play_audio_bank(AUDIO_SELECT_ITEM, AudioLoop::ONCE, None);
-                    if let Some(item) = self._items.get(idx) {
-                        move_mouse_to_ui_component(item._layout.get_ui_component());
-                    }
+        if should_move && let Some((_dir_x, dir_y)) = dir_opt {
+            let selected_idx = if dir_y < 0 {
+                self.get_prev_unlocked_index(self._selected_index)
+            } else if dir_y > 0 {
+                self.get_next_unlocked_index(self._selected_index)
+            } else {
+                None
+            };
+            if let Some(idx) = selected_idx {
+                self.select_recipe(idx);
+                get_audio_manager_mut().play_audio_bank(AUDIO_SELECT_ITEM, AudioLoop::ONCE, None);
+                if let Some(item) = self._items.get(idx) {
+                    move_mouse_to_ui_component(item._layout.get_ui_component());
                 }
             }
         }
 
         // Enter or Space or Gamepad A/X to Craft selected item
-        if keyboard_input_data.get_key_pressed(KeyCode::Enter)
+        if (keyboard_input_data.get_key_pressed(KeyCode::Enter)
             || keyboard_input_data.get_key_pressed(KeyCode::Space)
             || joystick_input_data._btn_a == ButtonState::Pressed
-            || joystick_input_data._btn_x == ButtonState::Pressed
+            || joystick_input_data._btn_x == ButtonState::Pressed)
+            && Self::try_craft_recipe(self._selected_index)
         {
-            if Self::try_craft_recipe(self._selected_index) {
-                self.refresh_recipe_labels();
-            }
+            self.refresh_recipe_labels();
         }
     }
 }

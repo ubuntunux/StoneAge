@@ -110,7 +110,7 @@ pub struct GameScenarioCreateInfo {
 pub trait ScenarioBase<'a> {
     fn get_scenario_type(&self) -> ScenarioType;
     fn get_scenario_phase_as_string(&self) -> String;
-    fn set_scenario_phase_as_string(&mut self, scenario_phase: &String);
+    fn set_scenario_phase_as_string(&mut self, scenario_phase: &str);
     fn load_scenario_save_data(&mut self, scenario_save_data: &GameScenarioCreateInfo);
     fn get_scenario_save_data(&self) -> GameScenarioCreateInfo;
     fn is_play_scenario_mode(&self) -> bool;

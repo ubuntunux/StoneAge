@@ -467,7 +467,7 @@ impl<'a> ControllerHelpWidget<'a> {
             InteractionObject::PropTable(prop) => {
                 let is_wrap_up = get_game_scene_manager().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay);
                 if is_wrap_up {
-                    let item_on_table = get_game_scene_manager().get_item_manager().get_item_on_table(&prop);
+                    let item_on_table = get_game_scene_manager().get_item_manager().get_item_on_table(prop);
                     if let Some(item_data_name) = item_on_table {
                         let item_data = get_game_resources().get_item_data(&item_data_name);
                         let item_name = item_data.borrow()._name.clone();
@@ -496,7 +496,7 @@ impl<'a> ControllerHelpWidget<'a> {
                     (KeyBindingType::None, String::new(), RequestType::None)
                 } else {
                     let npc_borrow = npc.borrow();
-                    let interaction_text = format!("{}", npc_borrow._character_data.borrow()._name);
+                    let interaction_text = npc_borrow._character_data.borrow()._name.clone();
                     (KeyBindingType::Interaction, interaction_text, RequestType::None)
                 }
             }

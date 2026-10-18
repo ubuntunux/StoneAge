@@ -357,6 +357,169 @@ impl<'a> TableStorageWidget<'a> {
         row_layout
     }
 
+    fn get_slot_meta(
+        &self,
+        is_table: bool,
+        slot_idx: usize,
+    ) -> (String, ItemDataType, Option<RcRefCell<MaterialInstanceData<'a>>>, usize) {
+        if is_table {
+            if let Some(slot) = self._table_inventory_slots.get(slot_idx) {
+                (
+                    slot._item_data_name.clone(),
+                    slot._item_data_type,
+                    slot._material_instance.clone(),
+                    slot._item_count,
+                )
+            } else {
+                (String::new(), ItemDataType::None, None, 0)
+            }
+        } else {
+            let item_bar = get_game_ui_manager().get_item_bar_widget();
+            if slot_idx < item_bar.get_total_inventory_slots() {
+                let slot = item_bar.get_inventory_slot_data(slot_idx);
+                (
+                    slot._item_data_name.clone(),
+                    slot._item_data_type,
+                    slot._material_instance.clone(),
+                    slot._item_count,
+                )
+            } else {
+                (String::new(), ItemDataType::None, None, 0)
+            }
+        }
+    }
+
+    fn handle_drag_start(
+        &mut self,
+        is_table: bool,
+        slot_idx: usize,
+        touched_pos: &Vector2<f32>,
+        item_count: usize,
+    ) {
+        self._drag_source_is_table = is_table;
+        self._drag_source_slot_index = slot_idx;
+        self._focused_is_table_slot = is_table;
+        self._focused_slot_index = slot_idx;
+
+        let (_, _, material, _) = self.get_slot_meta(is_table, slot_idx);
+
+        let drag_ui = ptr_as_mut(self._drag_widget.as_ref()).get_ui_component_mut();
+        drag_ui.set_material_instance(material);
+        if item_count > 1 {
+            drag_ui.set_text(&format!("{}", item_count));
+        } else {
+            drag_ui.set_text("");
+        }
+        drag_ui.set_draggable(true);
+        drag_ui.set_visible(true);
+
+        let dpi_scale = rust_engine_3d::scene::ui::get_global_dpi_scale();
+        let parent_area = ptr_as_ref(self._layer.as_ref()).get_ui_component().get_ui_area();
+        drag_ui.set_pos(
+            (touched_pos.x - parent_area.x) / dpi_scale - ITEM_UI_SIZE * 0.5,
+            (touched_pos.y - parent_area.y) / dpi_scale - ITEM_UI_SIZE * 0.5,
+        );
+    }
+
+    fn handle_drag_drop(&mut self, clicked_is_table: bool, clicked_slot: usize) {
+        let src_is_table = self._drag_source_is_table;
+        let src_slot = self._drag_source_slot_index;
+
+        let (src_item_name, src_item_type, _, _) = self.get_slot_meta(src_is_table, src_slot);
+        let (dst_item_name, dst_item_type, _, _) = self.get_slot_meta(clicked_is_table, clicked_slot);
+
+        let is_src_hand = src_item_name == ITEM_HAND || src_item_type == ItemDataType::Hand;
+        let is_dst_hand = dst_item_name == ITEM_HAND || dst_item_type == ItemDataType::Hand;
+
+        if !is_src_hand && !is_dst_hand {
+            if src_is_table == clicked_is_table {
+                // Same container swap / stack
+                if src_is_table {
+                    if src_slot != clicked_slot
+                        && src_slot < self._table_inventory_slots.len()
+                        && clicked_slot < self._table_inventory_slots.len()
+                    {
+                        let src_data = &self._table_inventory_slots[src_slot];
+                        let dst_data = &self._table_inventory_slots[clicked_slot];
+                        let is_same_item = !src_data._item_data_name.is_empty()
+                            && src_data._item_data_name != ITEM_NONE
+                            && src_data._item_data_name == dst_data._item_data_name
+                            && src_data._item_count > 0
+                            && dst_data._item_count > 0;
+
+                        if is_same_item {
+                            let count_to_add = self._table_inventory_slots[src_slot]._item_count;
+                            self._table_inventory_slots[clicked_slot]._item_count += count_to_add;
+                            self._table_inventory_slots[src_slot] = InventorySlotData::default();
+                        } else {
+                            self._table_inventory_slots.swap(src_slot, clicked_slot);
+                        }
+                    }
+                } else if src_slot != clicked_slot {
+                    get_game_ui_manager_mut().swap_inventory_slots(src_slot, clicked_slot);
+                }
+            } else {
+                // Cross container transfer/swap/stack (Table <-> Player)
+                let (table_idx, player_idx) = if src_is_table {
+                    (src_slot, clicked_slot)
+                } else {
+                    (clicked_slot, src_slot)
+                };
+
+                if table_idx < self._table_inventory_slots.len() {
+                    let game_ui_manager = get_game_ui_manager_mut();
+                    let item_bar = game_ui_manager.get_item_bar_widget_mut();
+                    if player_idx < item_bar.get_total_inventory_slots() {
+                        let table_slot_data = self._table_inventory_slots[table_idx].clone();
+                        let player_slot_data = item_bar.get_inventory_slot_data(player_idx).clone();
+
+                        let is_same_item = !table_slot_data._item_data_name.is_empty()
+                            && table_slot_data._item_data_name != ITEM_NONE
+                            && table_slot_data._item_data_name == player_slot_data._item_data_name
+                            && table_slot_data._item_count > 0
+                            && player_slot_data._item_count > 0;
+
+                        if is_same_item {
+                            if src_is_table {
+                                let mut new_player_data = player_slot_data.clone();
+                                new_player_data._item_count += table_slot_data._item_count;
+                                item_bar.set_inventory_slot_data(player_idx, &new_player_data);
+                                self._table_inventory_slots[table_idx] = InventorySlotData::default();
+                            } else {
+                                self._table_inventory_slots[table_idx]._item_count += player_slot_data._item_count;
+                                item_bar.set_inventory_slot_data(player_idx, &InventorySlotData::default());
+                            }
+                        } else {
+                            self._table_inventory_slots[table_idx] = player_slot_data.clone();
+                            item_bar.set_inventory_slot_data(player_idx, &table_slot_data);
+                        }
+
+                        let item_moved_to_table = if !src_is_table {
+                            true
+                        } else {
+                            !is_same_item
+                                && !player_slot_data._item_data_name.is_empty()
+                                && player_slot_data._item_data_name != ITEM_NONE
+                                && player_slot_data._item_count > 0
+                        };
+
+                        if item_moved_to_table {
+                            Self::detach_player_item_if_needed(
+                                item_bar,
+                                player_idx,
+                                &player_slot_data._item_data_name,
+                            );
+                        }
+                    }
+                }
+            }
+        }
+
+        self.clear_drag_state();
+        self._focused_is_table_slot = clicked_is_table;
+        self._focused_slot_index = clicked_slot;
+    }
+
     pub fn callback_slot_click(
         ui_component: &UIComponentInstance<'a>,
         touched_pos: &Vector2<f32>,
@@ -384,193 +547,18 @@ impl<'a> TableStorageWidget<'a> {
         let clicked_slot = slot_item._slot_index;
 
         if table_widget._drag_source_slot_index == INVALID_ITEM_INDEX {
-            // Pick up / Start drag
             if slot_item._item_count > 0
                 && slot_item._item_data_name != ITEM_NONE
                 && slot_item._item_data_name != ITEM_HAND
                 && slot_item._item_data_type != ItemDataType::Hand
             {
-                table_widget._drag_source_is_table = clicked_is_table;
-                table_widget._drag_source_slot_index = clicked_slot;
-                table_widget._focused_is_table_slot = clicked_is_table;
-                table_widget._focused_slot_index = clicked_slot;
-
-                let material = if clicked_is_table {
-                    if clicked_slot < table_widget._table_inventory_slots.len() {
-                        table_widget._table_inventory_slots[clicked_slot]._material_instance.clone()
-                    } else {
-                        None
-                    }
-                } else {
-                    let item_bar = get_game_ui_manager().get_item_bar_widget();
-                    if clicked_slot < item_bar.get_total_inventory_slots() {
-                        item_bar.get_inventory_slot_data(clicked_slot)._material_instance.clone()
-                    } else {
-                        None
-                    }
-                };
-
-                let drag_ui = ptr_as_mut(table_widget._drag_widget.as_ref()).get_ui_component_mut();
-                drag_ui.set_material_instance(material);
-                if slot_item._item_count > 1 {
-                    drag_ui.set_text(&format!("{}", slot_item._item_count));
-                } else {
-                    drag_ui.set_text("");
-                }
-                drag_ui.set_draggable(true);
-                drag_ui.set_visible(true);
-
-                let dpi_scale = rust_engine_3d::scene::ui::get_global_dpi_scale();
-                let parent_area = ptr_as_ref(table_widget._layer.as_ref()).get_ui_component().get_ui_area();
-                drag_ui.set_pos(
-                    (touched_pos.x - parent_area.x) / dpi_scale - ITEM_UI_SIZE * 0.5,
-                    (touched_pos.y - parent_area.y) / dpi_scale - ITEM_UI_SIZE * 0.5,
-                );
+                table_widget.handle_drag_start(clicked_is_table, clicked_slot, touched_pos, slot_item._item_count);
             } else {
                 table_widget._focused_is_table_slot = clicked_is_table;
                 table_widget._focused_slot_index = clicked_slot;
             }
         } else {
-            // Drop / Transfer / Swap
-            let src_is_table = table_widget._drag_source_is_table;
-            let src_slot = table_widget._drag_source_slot_index;
-
-            // Retrieve source and destination item data to check for Hand item
-            let (src_item_name, src_item_type) = if src_is_table {
-                if src_slot < table_widget._table_inventory_slots.len() {
-                    (
-                        table_widget._table_inventory_slots[src_slot]._item_data_name.as_str(),
-                        table_widget._table_inventory_slots[src_slot]._item_data_type,
-                    )
-                } else {
-                    ("", ItemDataType::None)
-                }
-            } else {
-                let item_bar = get_game_ui_manager().get_item_bar_widget();
-                if src_slot < item_bar.get_total_inventory_slots() {
-                    let d = item_bar.get_inventory_slot_data(src_slot);
-                    (d._item_data_name.as_str(), d._item_data_type)
-                } else {
-                    ("", ItemDataType::None)
-                }
-            };
-
-            let (dst_item_name, dst_item_type) = if clicked_is_table {
-                if clicked_slot < table_widget._table_inventory_slots.len() {
-                    (
-                        table_widget._table_inventory_slots[clicked_slot]._item_data_name.as_str(),
-                        table_widget._table_inventory_slots[clicked_slot]._item_data_type,
-                    )
-                } else {
-                    ("", ItemDataType::None)
-                }
-            } else {
-                let item_bar = get_game_ui_manager().get_item_bar_widget();
-                if clicked_slot < item_bar.get_total_inventory_slots() {
-                    let d = item_bar.get_inventory_slot_data(clicked_slot);
-                    (d._item_data_name.as_str(), d._item_data_type)
-                } else {
-                    ("", ItemDataType::None)
-                }
-            };
-
-            let is_src_hand = src_item_name == ITEM_HAND || src_item_type == ItemDataType::Hand;
-            let is_dst_hand = dst_item_name == ITEM_HAND || dst_item_type == ItemDataType::Hand;
-
-            if !is_src_hand && !is_dst_hand {
-                if src_is_table == clicked_is_table {
-                    // Same container swap / stack
-                    if src_is_table {
-                        if src_slot != clicked_slot
-                            && src_slot < table_widget._table_inventory_slots.len()
-                            && clicked_slot < table_widget._table_inventory_slots.len()
-                        {
-                            let src_data = &table_widget._table_inventory_slots[src_slot];
-                            let dst_data = &table_widget._table_inventory_slots[clicked_slot];
-                            let is_same_item = !src_data._item_data_name.is_empty()
-                                && src_data._item_data_name != ITEM_NONE
-                                && src_data._item_data_name == dst_data._item_data_name
-                                && src_data._item_count > 0
-                                && dst_data._item_count > 0;
-
-                            if is_same_item {
-                                let count_to_add = table_widget._table_inventory_slots[src_slot]._item_count;
-                                table_widget._table_inventory_slots[clicked_slot]._item_count += count_to_add;
-                                table_widget._table_inventory_slots[src_slot] = InventorySlotData::default();
-                            } else {
-                                table_widget._table_inventory_slots.swap(src_slot, clicked_slot);
-                            }
-                        }
-                    } else {
-                        if src_slot != clicked_slot {
-                            get_game_ui_manager_mut().swap_inventory_slots(src_slot, clicked_slot);
-                        }
-                    }
-                } else {
-                    // Cross container transfer/swap/stack! (Table <-> Player)
-                    let (table_idx, player_idx) = if src_is_table {
-                        (src_slot, clicked_slot)
-                    } else {
-                        (clicked_slot, src_slot)
-                    };
-
-                    if table_idx < table_widget._table_inventory_slots.len() {
-                        let game_ui_manager = get_game_ui_manager_mut();
-                        let item_bar = game_ui_manager.get_item_bar_widget_mut();
-                        if player_idx < item_bar.get_total_inventory_slots() {
-                            let table_slot_data = table_widget._table_inventory_slots[table_idx].clone();
-                            let player_slot_data = item_bar.get_inventory_slot_data(player_idx).clone();
-
-                            let is_same_item = !table_slot_data._item_data_name.is_empty()
-                                && table_slot_data._item_data_name != ITEM_NONE
-                                && table_slot_data._item_data_name == player_slot_data._item_data_name
-                                && table_slot_data._item_count > 0
-                                && player_slot_data._item_count > 0;
-
-                            if is_same_item {
-                                if src_is_table {
-                                    // Move/Stack from Table to Player: player gets combined count, table becomes empty
-                                    let mut new_player_data = player_slot_data.clone();
-                                    new_player_data._item_count += table_slot_data._item_count;
-                                    item_bar.set_inventory_slot_data(player_idx, &new_player_data);
-                                    table_widget._table_inventory_slots[table_idx] = InventorySlotData::default();
-                                } else {
-                                    // Move/Stack from Player to Table: table gets combined count, player becomes empty
-                                    table_widget._table_inventory_slots[table_idx]._item_count +=
-                                        player_slot_data._item_count;
-                                    item_bar.set_inventory_slot_data(player_idx, &InventorySlotData::default());
-                                }
-                            } else {
-                                table_widget._table_inventory_slots[table_idx] = player_slot_data.clone();
-                                item_bar.set_inventory_slot_data(player_idx, &table_slot_data);
-                            }
-
-                            // If an item from player inventory was moved to table storage,
-                            // check if it was attached to the character or in the currently selected slot, and detach it if so.
-                            let item_moved_to_table = if !src_is_table {
-                                true
-                            } else {
-                                !is_same_item
-                                    && !player_slot_data._item_data_name.is_empty()
-                                    && player_slot_data._item_data_name != ITEM_NONE
-                                    && player_slot_data._item_count > 0
-                            };
-
-                            if item_moved_to_table {
-                                Self::detach_player_item_if_needed(
-                                    item_bar,
-                                    player_idx,
-                                    &player_slot_data._item_data_name,
-                                );
-                            }
-                        }
-                    }
-                }
-            }
-
-            table_widget.clear_drag_state();
-            table_widget._focused_is_table_slot = clicked_is_table;
-            table_widget._focused_slot_index = clicked_slot;
+            table_widget.handle_drag_drop(clicked_is_table, clicked_slot);
         }
 
         table_widget.refresh_table_storage_widget();
@@ -804,14 +792,10 @@ impl<'a> TableStorageWidget<'a> {
                         is_table = false;
                         idx = cur_col.min(SLOTS_PER_ROW - 1);
                     }
-                } else if dir_x < 0 {
-                    if cur_col > 0 {
-                        idx -= 1;
-                    }
-                } else if dir_x > 0 {
-                    if cur_col + 1 < TABLE_STORAGE_SLOTS_PER_ROW {
-                        idx += 1;
-                    }
+                } else if dir_x < 0 && cur_col > 0 {
+                    idx -= 1;
+                } else if dir_x > 0 && cur_col + 1 < TABLE_STORAGE_SLOTS_PER_ROW {
+                    idx += 1;
                 }
             } else {
                 let cur_row = idx / SLOTS_PER_ROW;
@@ -828,14 +812,10 @@ impl<'a> TableStorageWidget<'a> {
                     if cur_row + 1 < player_inv_rows {
                         idx += SLOTS_PER_ROW;
                     }
-                } else if dir_x < 0 {
-                    if cur_col > 0 {
-                        idx -= 1;
-                    }
-                } else if dir_x > 0 {
-                    if cur_col + 1 < SLOTS_PER_ROW {
-                        idx += 1;
-                    }
+                } else if dir_x < 0 && cur_col > 0 {
+                    idx -= 1;
+                } else if dir_x > 0 && cur_col + 1 < SLOTS_PER_ROW {
+                    idx += 1;
                 }
             }
 
@@ -1017,13 +997,14 @@ impl<'a> TableStorageWidget<'a> {
 
     pub fn take_item_at_slot(&mut self, slot_idx: usize) -> Option<String> {
         let mut taken_item_name = None;
-        if let Some(slot) = self._table_inventory_slots.get_mut(slot_idx) {
-            if slot._item_count > 0 && slot._item_data_name != ITEM_NONE {
-                taken_item_name = Some(slot._item_data_name.clone());
-                slot._item_count -= 1;
-                if slot._item_count == 0 {
-                    *slot = InventorySlotData::default();
-                }
+        if let Some(slot) = self._table_inventory_slots.get_mut(slot_idx)
+            && slot._item_count > 0
+            && slot._item_data_name != ITEM_NONE
+        {
+            taken_item_name = Some(slot._item_data_name.clone());
+            slot._item_count -= 1;
+            if slot._item_count == 0 {
+                *slot = InventorySlotData::default();
             }
         }
         if taken_item_name.is_some() && self._is_opened {
@@ -1032,15 +1013,13 @@ impl<'a> TableStorageWidget<'a> {
         taken_item_name
     }
 
-    pub fn get_table_storage_items(&self) -> &Vec<InventorySlotData<'a>> {
+    pub fn get_table_storage_items(&self) -> &[InventorySlotData<'a>] {
         &self._table_inventory_slots
     }
 
     pub fn set_table_storage_items(&mut self, items: &[InventorySlotData<'a>]) {
         let len = items.len().min(TOTAL_TABLE_STORAGE_SLOTS);
-        for i in 0..len {
-            self._table_inventory_slots[i] = items[i].clone();
-        }
+        self._table_inventory_slots[..len].clone_from_slice(&items[..len]);
         if self._is_opened {
             self.refresh_table_storage_widget();
         }
@@ -1158,43 +1137,32 @@ impl<'a> TableStorageWidget<'a> {
     }
 
     pub fn has_eatable_table_storage_item(&self) -> bool {
-        for slot in self._table_inventory_slots.iter() {
-            if slot._item_count > 0 && slot._item_data_name != ITEM_NONE {
-                if slot._item_data_type.is_eatable() {
-                    return true;
-                }
-            }
-        }
-        false
+        self._table_inventory_slots
+            .iter()
+            .any(|slot| slot._item_count > 0 && slot._item_data_name != ITEM_NONE && slot._item_data_type.is_eatable())
     }
 
     pub fn get_eatable_table_storage_item_count(&self) -> usize {
-        let mut count = 0;
-        for slot in self._table_inventory_slots.iter() {
-            if slot._item_count > 0 && slot._item_data_name != ITEM_NONE {
-                if slot._item_data_type.is_eatable() {
-                    count += slot._item_count;
-                }
-            }
-        }
-        count
+        self._table_inventory_slots
+            .iter()
+            .filter(|slot| slot._item_count > 0 && slot._item_data_name != ITEM_NONE && slot._item_data_type.is_eatable())
+            .map(|slot| slot._item_count)
+            .sum()
     }
 
     pub fn pop_eatable_table_storage_item(&mut self) -> Option<String> {
         for slot in self._table_inventory_slots.iter_mut() {
-            if slot._item_count > 0 && slot._item_data_name != ITEM_NONE {
-                if slot._item_data_type.is_eatable() {
-                    let item_data_name = slot._item_data_name.clone();
-                    slot._item_count -= 1;
-                    if slot._item_count == 0 {
-                        *slot = InventorySlotData::default();
-                    }
-                    if self._is_opened {
-                        self.refresh_table_storage_widget();
-                    }
-                    self.sync_3d_table_items();
-                    return Some(item_data_name);
+            if slot._item_count > 0 && slot._item_data_name != ITEM_NONE && slot._item_data_type.is_eatable() {
+                let item_data_name = slot._item_data_name.clone();
+                slot._item_count -= 1;
+                if slot._item_count == 0 {
+                    *slot = InventorySlotData::default();
                 }
+                if self._is_opened {
+                    self.refresh_table_storage_widget();
+                }
+                self.sync_3d_table_items();
+                return Some(item_data_name);
             }
         }
         None

@@ -19,8 +19,7 @@ pub fn format_entity_name(key: &str) -> String {
         .trim_start_matches("characters/")
         .trim_start_matches("monsters/")
         .trim_start_matches("items/")
-        .replace('_', " ")
-        .replace('-', " ");
+        .replace(['_', '-'], " ");
 
     let mut result = String::new();
     for word in clean.split_whitespace() {

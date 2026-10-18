@@ -55,7 +55,7 @@ impl NpcInteractionOption {
             NpcInteractionOption::Talk => String::from("Talk"),
             NpcInteractionOption::Request => {
                 if let Some(req) = request_name {
-                    format!("{}", req)
+                    req.to_string()
                 } else {
                     String::from("Request Menu")
                 }
@@ -260,10 +260,9 @@ impl<'a> NpcInteractionMenuWidget<'a> {
                         if slot._item_count > 0
                             && slot._item_data_name != ITEM_NONE
                             && slot._item_data_type.is_eatable()
+                            && seen_items.insert(slot._item_data_name.clone())
                         {
-                            if seen_items.insert(slot._item_data_name.clone()) {
-                                options.push(NpcInteractionOption::CookItem(slot_idx));
-                            }
+                            options.push(NpcInteractionOption::CookItem(slot_idx));
                         }
                     }
                 }
@@ -292,10 +291,10 @@ impl<'a> NpcInteractionMenuWidget<'a> {
 
                 options.push(NpcInteractionOption::Dance);
 
-                if let Some(p) = &player {
-                    if p.get_attached_item_data_type().is_eatable() {
-                        options.push(NpcInteractionOption::GiveItem);
-                    }
+                if let Some(p) = &player
+                    && p.get_attached_item_data_type().is_eatable()
+                {
+                    options.push(NpcInteractionOption::GiveItem);
                 }
 
                 options.push(NpcInteractionOption::Close);
@@ -603,14 +602,12 @@ impl<'a> NpcInteractionMenuWidget<'a> {
         ];
 
         for (i, key_code) in key_codes.iter().enumerate() {
-            if keyboard_input_data.get_key_pressed(*key_code) {
-                if i < self._buttons.len() {
-                    let option = self._buttons[i]._option;
-                    self._selected_index = i;
-                    self.update_selected_visuals();
-                    self.execute_option(option);
-                    return;
-                }
+            if keyboard_input_data.get_key_pressed(*key_code) && i < self._buttons.len() {
+                let option = self._buttons[i]._option;
+                self._selected_index = i;
+                self.update_selected_visuals();
+                self.execute_option(option);
+                return;
             }
         }
     }

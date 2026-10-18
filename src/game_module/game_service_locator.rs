@@ -8,13 +8,14 @@ use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::game_ui_manager::{EditorUIManager, GameUIManager};
 use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
+use std::ffi::c_void;
 use std::ptr;
 
-static mut APPLICATION_PTR: *const Application<'static> = ptr::null();
+static mut APPLICATION_PTR: *const c_void = ptr::null();
 
 pub fn set_application<'a>(application: *const Application<'a>) {
     unsafe {
-        APPLICATION_PTR = application as *const Application<'static>;
+        APPLICATION_PTR = application as *const c_void;
     }
 }
 
@@ -26,11 +27,11 @@ pub fn clear_game_service_locator() {
 
 // Global Getters
 pub fn get_application<'a>() -> &'a Application<'a> {
-    ptr_as_ref(unsafe { APPLICATION_PTR } as *const Application<'a>)
+    ptr_as_ref(unsafe { APPLICATION_PTR as *const Application<'a> })
 }
 
 pub fn get_application_mut<'a>() -> &'a mut Application<'a> {
-    ptr_as_mut(unsafe { APPLICATION_PTR } as *const Application<'a>)
+    ptr_as_mut(unsafe { APPLICATION_PTR as *const Application<'a> })
 }
 
 pub fn get_game_client<'a>() -> &'a GameClient<'a> {

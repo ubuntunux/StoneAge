@@ -304,7 +304,7 @@ impl<'a> GameUIManager<'a> {
     }
 
     pub fn unregister_popup_widget(&mut self, popup_ptr: *const PopupWindowWidget<'a>) {
-        self._registered_popups.retain(|p| p.as_ptr() as *const _ != popup_ptr);
+        self._registered_popups.retain(|p| !std::ptr::eq(p.as_ptr(), popup_ptr));
     }
 
     pub fn show_game_ui(&mut self, show: bool) {
@@ -519,10 +519,8 @@ impl<'a> GameUIManager<'a> {
             self._player_records.add_spirit_balls(amount);
         }
 
-        if show_notification {
-            if let Some(notification_widget) = self._item_acquire_notification_widget.as_mut() {
-                notification_widget.notify_item_acquired(item_data_name);
-            }
+        if show_notification && let Some(notification_widget) = self._item_acquire_notification_widget.as_mut() {
+            notification_widget.notify_item_acquired(item_data_name);
         }
     }
 
@@ -647,11 +645,9 @@ impl<'a> GameUIManager<'a> {
             self.remove_item(item_data_name, player_deduct);
         }
 
-        if remaining > 0 {
-            if let Some(table_storage_widget) = self._table_storage_widget.as_mut() {
-                let removed = table_storage_widget.remove_item(item_data_name, remaining);
-                remaining -= removed;
-            }
+        if remaining > 0 && let Some(table_storage_widget) = self._table_storage_widget.as_mut() {
+            let removed = table_storage_widget.remove_item(item_data_name, remaining);
+            remaining -= removed;
         }
 
         remaining == 0
@@ -1356,6 +1352,6 @@ pub fn move_mouse_to_ui_component(ui_component: &rust_engine_3d::scene::ui::UICo
     let render_area = ui_component.get_render_area();
     let center_x = ((render_area.x + render_area.z) * 0.5) as i32;
     let center_y = ((render_area.y + render_area.w) * 0.5) as i32;
-    let window_size = engine_core._window_size.clone();
+    let window_size = engine_core._window_size;
     engine_core._mouse_move_data.set_mouse_pos(&nalgebra::Vector2::new(center_x, center_y), &window_size);
 }

@@ -502,7 +502,7 @@ impl<'a> WrapUpTheDayWidget<'a> {
                 }
             }
 
-            if (self._transfer_timer * 10.0) as u32 % 2 == 0 {
+            if ((self._transfer_timer * 10.0) as u32).is_multiple_of(2) {
                 let storage_comp = ptr_as_mut(self._storage_icon.as_ref()).get_ui_component_mut();
                 storage_comp.set_color(get_color32(195, 128, 68, 250));
             }
