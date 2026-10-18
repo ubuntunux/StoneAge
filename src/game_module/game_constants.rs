@@ -294,6 +294,11 @@ pub const DEFAULT_GATE_NAME: &str = "gate";
 pub const PROP_NAME_TABLE: &str = "table";
 pub const PROP_NAME_MONOLITH: &str = "monolith";
 pub const PROP_NAME_INTRO_TREE: &str = "birch_tree_00";
+pub const PROP_DATA_CAMPFIRE: &str = "props/campfire";
+pub const PROP_DATA_WORKTABLE: &str = "props/worktable";
+pub const MATERIAL_PLACEMENT_PREVIEW: &str = "PolygonNatureBiomes/Glass_MAT";
+pub const PLACEMENT_DISTANCE: f32 = 2.5;
+pub const PLACEMENT_ROTATION_SPEED: f32 = 3.0;
 
 // Record Constants
 pub const RECORD_DEFAULT_INCREMENT: u32 = 1;

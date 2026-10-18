@@ -4,15 +4,17 @@ use crate::game_module::game_client::GamePhase;
 use crate::game_module::game_constants::*;
 use crate::game_module::game_input::{CameraInput, FishingInputState, GamePlayInputState};
 use crate::game_module::game_service_locator::{
-    get_character_manager, get_game_client, get_game_client_mut, get_game_scene_manager_mut, get_game_ui_manager_mut,
+    get_character_manager, get_game_client, get_game_client_mut, get_game_scene_manager_mut, get_game_ui_manager,
+    get_game_ui_manager_mut, get_prop_manager, get_prop_manager_mut,
 };
 use crate::game_module::scenario::scenario::ScenarioType;
 use crate::game_module::widgets::game_menu_widget::GameMenuTab;
+use crate::game_module::widgets::item_bar::INVALID_ITEM_INDEX;
 use nalgebra::{Matrix4, Vector2, Vector3};
 use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::core::engine_core::TimeData;
 use rust_engine_3d::core::engine_service_locator::{get_audio_manager_mut, get_scene_manager};
-use rust_engine_3d::core::input::{JoystickInputData, KeyboardInputData, MouseInputData, MouseMoveData};
+use rust_engine_3d::core::input::{ButtonState, JoystickInputData, KeyboardInputData, MouseInputData, MouseMoveData};
 use rust_engine_3d::scene::camera::CameraObjectData;
 use rust_engine_3d::scene::collision::{CollisionCreateInfo, CollisionData, CollisionType};
 use rust_engine_3d::utilities::math;
@@ -21,7 +23,7 @@ use strum_macros::{Display, EnumCount, EnumIter, EnumString};
 use winit::keyboard::KeyCode;
 
 pub use crate::game_module::game_input::{
-    HoldRepeatController, QuickSlotNavDirection, WidgetNavRepeatController, NAV_INITIAL_DELAY, NAV_REPEAT_INTERVAL,
+    HoldRepeatController, NAV_INITIAL_DELAY, NAV_REPEAT_INTERVAL, QuickSlotNavDirection, WidgetNavRepeatController,
 };
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Debug, Display, EnumIter, EnumString, EnumCount)]
@@ -571,6 +573,22 @@ impl<'a> GameController<'a> {
             self._wrap_up_hold_timer = 0.0;
         }
 
+        let is_placing = get_prop_manager().get_placement_preview().is_active();
+        if is_placing {
+            let mut rotate_input: f32 = 0.0;
+            if keyboard_input_data.get_key_hold(KeyCode::KeyQ)
+                || joystick_input_data._btn_left_shoulder == ButtonState::Hold
+            {
+                rotate_input -= 1.0;
+            }
+            if keyboard_input_data.get_key_hold(KeyCode::KeyE)
+                || joystick_input_data._btn_right_shoulder == ButtonState::Hold
+            {
+                rotate_input += 1.0;
+            }
+            get_prop_manager_mut().get_placement_preview_mut().update_placement(player_mut, delta_time, rotate_input);
+        }
+
         if input._dance {
             player_mut.set_action_dance();
         } else if input._request && player_mut.is_in_interaction_range() {
@@ -581,17 +599,43 @@ impl<'a> GameController<'a> {
             if get_game_client().is_available_interaction() {
                 player_mut.set_action_interaction();
             }
-        } else if input._attack_or_use_item && is_available_attack {
-            if item_type.is_fishing_item_type() {
-                player_mut.set_action_fishing_begin();
-            } else {
-                player_mut.set_action_attack();
+        } else if input._attack_or_use_item {
+            if is_placing {
+                if get_prop_manager_mut().get_placement_preview_mut().confirm_placement() {
+                    let selected_item_data_name =
+                        get_game_ui_manager().get_selected_inventory_item_data_name().to_string();
+                    let remaining = get_game_ui_manager().get_item_count(&selected_item_data_name);
+                    if remaining > 0
+                        && let Some(prop_data_name) = item_type.get_deploy_prop_data_name()
+                    {
+                        get_prop_manager_mut().get_placement_preview_mut().start_placement(
+                            &selected_item_data_name,
+                            prop_data_name,
+                            player_mut,
+                        );
+                    }
+                }
+            } else if is_available_attack {
+                if item_type.is_fishing_item_type() {
+                    player_mut.set_action_fishing_begin();
+                } else {
+                    player_mut.set_action_attack();
+                }
             }
-        } else if input._power_attack && is_available_attack {
-            if item_type.is_weapon_item_type() {
-                player_mut.set_action_power_attack();
-            } else {
-                player_mut.set_action_kick();
+        } else if input._power_attack {
+            if is_placing {
+                get_prop_manager_mut().get_placement_preview_mut().cancel_placement();
+                let hand_slot = get_game_ui_manager_mut()
+                    .get_item_bar_widget_mut()
+                    .find_hand_item_slot_index()
+                    .unwrap_or(INVALID_ITEM_INDEX);
+                get_game_ui_manager_mut().select_item(hand_slot);
+            } else if is_available_attack {
+                if item_type.is_weapon_item_type() {
+                    player_mut.set_action_power_attack();
+                } else {
+                    player_mut.set_action_kick();
+                }
             }
         }
 
@@ -705,6 +749,105 @@ impl<'a> GameController<'a> {
             player_mut.release_fishing_cast();
         }
 
+        self.process_camera_inputs(
+            joystick_input_data,
+            keyboard_input_data,
+            mouse_move_data,
+            delta_time,
+            main_camera,
+            &mut player_mut,
+        );
+    }
+
+    pub fn update_game_controller_deploy(
+        &mut self,
+        time_data: &TimeData,
+        joystick_input_data: &JoystickInputData,
+        keyboard_input_data: &KeyboardInputData,
+        mouse_move_data: &MouseMoveData,
+        mouse_input_data: &MouseInputData,
+        _mouse_delta: &Vector2<f32>,
+        main_camera: &mut CameraObjectData,
+        player: &RcRefCell<Character<'a>>,
+    ) {
+        let delta_time: f32 = time_data._delta_time_with_scale as f32;
+        let input = GamePlayInputState::from_input(keyboard_input_data, joystick_input_data, mouse_input_data);
+
+        let mut player_mut = player.borrow_mut();
+
+        // 1. Player movement during deploy mode
+        {
+            let mut move_direction: Vector3<f32> = Vector3::zeros();
+
+            if input._left || input._right {
+                move_direction.x = if input._stick_left_direction.x != 0.0 {
+                    input._stick_left_direction.x
+                } else if input._left {
+                    -1.0
+                } else {
+                    1.0
+                };
+            }
+
+            if input._up || input._down {
+                move_direction.z = if input._stick_left_direction.y != 0.0 {
+                    -input._stick_left_direction.y
+                } else if input._down {
+                    -1.0
+                } else {
+                    1.0
+                };
+            }
+
+            if move_direction.x != 0.0 || move_direction.z != 0.0 {
+                let mut camera_front = *main_camera._transform_object.get_front();
+                let mut camera_right = *main_camera._transform_object.get_right();
+                camera_front.y = 0.0;
+                camera_right.y = 0.0;
+                camera_front.normalize_mut();
+                camera_right.normalize_mut();
+
+                move_direction = camera_right * move_direction.x + camera_front * move_direction.z;
+                move_direction.normalize_mut();
+
+                player_mut.set_move(&move_direction);
+            } else {
+                player_mut.set_move_control_stop();
+            }
+        }
+
+        // 2. Rotate preview (Q / E keys or joystick shoulder buttons)
+        let mut rotate_input: f32 = 0.0;
+        if keyboard_input_data.get_key_hold(KeyCode::KeyQ)
+            || joystick_input_data._btn_left_shoulder == ButtonState::Hold
+        {
+            rotate_input -= 1.0;
+        }
+        if keyboard_input_data.get_key_hold(KeyCode::KeyE)
+            || joystick_input_data._btn_right_shoulder == ButtonState::Hold
+        {
+            rotate_input += 1.0;
+        }
+
+        // 3. Update preview placement on heightmap
+        get_prop_manager_mut().get_placement_preview_mut().update_placement(&player_mut, delta_time, rotate_input);
+
+        // 4. Confirm (Left click or Space or Gamepad A)
+        let is_confirm = input._attack_or_use_item || keyboard_input_data.get_key_pressed(KeyCode::Space);
+
+        // 5. Cancel (Right click or ESC or Gamepad B)
+        let is_cancel = input._power_attack || input._cancel || keyboard_input_data.get_key_pressed(KeyCode::Escape);
+
+        if is_confirm {
+            if get_prop_manager_mut().get_placement_preview_mut().confirm_placement() {
+                get_game_client_mut().set_next_game_phase(GamePhase::GamePlay);
+            }
+        } else if is_cancel {
+            get_prop_manager_mut().get_placement_preview_mut().cancel_placement();
+            get_game_client_mut().set_next_game_phase(GamePhase::GamePlay);
+        }
+
+        // 6. Camera control
         self.process_camera_inputs(
             joystick_input_data,
             keyboard_input_data,

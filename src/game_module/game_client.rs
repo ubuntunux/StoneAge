@@ -46,6 +46,7 @@ pub enum GamePhase {
     WorldMapClose,
     WrapUpTheDay,
     ExitGame,
+    DeployObject,
 }
 
 pub struct GameClient<'a> {
@@ -672,6 +673,34 @@ impl<'a> GameClient<'a> {
                         let controller = get_game_controller_mut();
                         controller._wrap_up_hold_timer = 0.0;
                         controller._is_wrap_up_holding = false;
+                    }
+                },
+                GamePhase::DeployObject => match state {
+                    State::Begin => {
+                        game_ui_manager.show_game_ui(true);
+                        game_ui_manager.set_cross_hair_visible(true);
+                    }
+                    State::Update => {
+                        if !character_manager.is_valid_player()
+                            || !game_scene_manager.get_prop_manager().get_placement_preview().is_active()
+                        {
+                            self.set_next_game_phase(GamePhase::GamePlay);
+                        } else {
+                            game_controller.update_game_controller_deploy(
+                                time_data,
+                                joystick_input_data,
+                                keyboard_input_data,
+                                mouse_move_data,
+                                mouse_input_data,
+                                &mouse_delta,
+                                scene_manager.get_main_camera_mut(),
+                                character_manager.get_player(),
+                            );
+                        }
+                    }
+                    State::End => {
+                        game_scene_manager.get_prop_manager_mut().get_placement_preview_mut().cancel_placement();
+                        game_ui_manager.set_cross_hair_visible(false);
                     }
                 },
                 GamePhase::ExitGame => {}

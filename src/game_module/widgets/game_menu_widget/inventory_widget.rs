@@ -7,8 +7,7 @@ use crate::game_module::game_ui_manager::move_mouse_to_ui_component;
 use crate::game_module::widgets::game_menu_widget::item_info_widget::ItemInfoWidget;
 use crate::game_module::widgets::game_menu_widget::player_stat_widget::PlayerStatWidget;
 use crate::game_module::widgets::item_bar::{
-    EQUIPMENT_SLOT_START_INDEX, EquipmentSlotType, INVALID_ITEM_INDEX, ITEM_UI_SIZE, NUM_EQUIPMENT_SLOTS,
-    SLOTS_PER_ROW,
+    EQUIPMENT_SLOT_START_INDEX, EquipmentSlotType, INVALID_ITEM_INDEX, ITEM_UI_SIZE, NUM_EQUIPMENT_SLOTS, SLOTS_PER_ROW,
 };
 use nalgebra::Vector2;
 use rust_engine_3d::audio::audio_manager::AudioLoop;

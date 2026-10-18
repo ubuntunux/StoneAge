@@ -26,8 +26,19 @@ impl<'a> PropManager<'a> {
         Box::new(PropManager {
             _props: HashMap::new(),
             _prop_name_map: HashMap::new(),
+            _placement_preview: crate::game_module::actors::props::placement::PlacementPreview::new(),
             _marker: std::marker::PhantomData,
         })
+    }
+
+    pub fn get_placement_preview(&self) -> &crate::game_module::actors::props::placement::PlacementPreview<'a> {
+        &self._placement_preview
+    }
+
+    pub fn get_placement_preview_mut(
+        &mut self,
+    ) -> &mut crate::game_module::actors::props::placement::PlacementPreview<'a> {
+        &mut self._placement_preview
     }
 
     pub fn initialize_prop_manager(&mut self) {

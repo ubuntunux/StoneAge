@@ -7,7 +7,7 @@ use crate::game_module::game_constants::{
     ITEM_BONE_SHIELD, ITEM_BOW, ITEM_CAMPFIRE, ITEM_COCONUT, ITEM_ENERGY_BALL, ITEM_ENERGY_STEW, ITEM_FISH_SOUP,
     ITEM_FISHING_ROD, ITEM_GOLDEN_FEAST, ITEM_HAND, ITEM_LEATHER_ARMOR, ITEM_MEAT, ITEM_NONE, ITEM_ROAST_MEAT,
     ITEM_ROCK, ITEM_SPEAR, ITEM_SPIRIT_BALL, ITEM_STEAMED_VEGETABLES, ITEM_STONE_AXE, ITEM_WOOD, ITEM_WOODEN_CLUB,
-    ITEM_WORKTABLE,
+    ITEM_WORKTABLE, PROP_DATA_CAMPFIRE, PROP_DATA_WORKTABLE,
 };
 use nalgebra::Vector3;
 use rust_engine_3d::scene::height_map::HeightMapData;
@@ -130,6 +130,18 @@ impl ItemDataType {
 
     pub fn is_fishing_item_type(&self) -> bool {
         *self == ItemDataType::FishingRod
+    }
+
+    pub fn is_deployable(&self) -> bool {
+        matches!(*self, ItemDataType::Campfire | ItemDataType::Worktable)
+    }
+
+    pub fn get_deploy_prop_data_name(&self) -> Option<&'static str> {
+        match *self {
+            ItemDataType::Campfire => Some(PROP_DATA_CAMPFIRE),
+            ItemDataType::Worktable => Some(PROP_DATA_WORKTABLE),
+            _ => None,
+        }
     }
 
     pub fn is_base_material(&self) -> bool {

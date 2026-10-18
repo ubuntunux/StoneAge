@@ -78,9 +78,7 @@ impl<'a> BehaviorBase<'a> for BehaviorCivilian<'a> {
             BehaviorState::Interaction => step_interaction(&mut self._behavior_data, state, owner, target),
             BehaviorState::Chase => step_chase(&mut self._behavior_data, state, owner, target),
             BehaviorState::Attack => step_attack(&mut self._behavior_data, state, owner, target, delta_time),
-            BehaviorState::Dead => {
-                step_dead_with_revive(&mut self._behavior_data, state, owner, CIVILIAN_DEAD_TIME)
-            }
+            BehaviorState::Dead => step_dead_with_revive(&mut self._behavior_data, state, owner, CIVILIAN_DEAD_TIME),
             BehaviorState::WakeUp => step_wake_up(&mut self._behavior_data, state, is_first_update, owner, true),
             BehaviorState::Follow => step_follow(&mut self._behavior_data, state, owner, target),
             BehaviorState::Dance => step_dance(&mut self._behavior_data, state, owner),

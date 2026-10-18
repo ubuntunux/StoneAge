@@ -2,7 +2,7 @@ use crate::game_module::actors::items::ItemDataType;
 use crate::game_module::game_constants::{ITEM_HAND, ITEM_NONE};
 use crate::game_module::game_controller::KeyBindingType;
 use crate::game_module::game_service_locator::{
-    get_character_manager, get_game_resources, get_game_ui_manager, get_item_manager_mut,
+    get_character_manager, get_game_resources, get_game_ui_manager, get_item_manager_mut, get_prop_manager_mut,
 };
 use crate::game_module::widgets::item_bar::{
     DEFAULT_INVENTORY_ROWS, EQUIPMENT_SLOT_START_INDEX, INVALID_ITEM_INDEX, ITEM_BAR_WIDGET_POS_Y_FROM_BOTTOM,
@@ -848,10 +848,25 @@ impl<'a> ItemBarWidget<'a> {
 
             if self.is_selectable_slot(target_slot) {
                 self._selected_inventory_slot_index = target_slot;
-                get_item_manager_mut().attach_item(player, self.get_selected_item_data_name());
+                let selected_item_data_name = self.get_selected_item_data_name().to_string();
+                get_item_manager_mut().attach_item(player, &selected_item_data_name);
+
+                let item_type = self.get_selected_item_data_type();
+                if item_type.is_deployable() {
+                    if let Some(prop_data_name) = item_type.get_deploy_prop_data_name() {
+                        get_prop_manager_mut().get_placement_preview_mut().start_placement(
+                            &selected_item_data_name,
+                            prop_data_name,
+                            player,
+                        );
+                    }
+                } else {
+                    get_prop_manager_mut().get_placement_preview_mut().cancel_placement();
+                }
             } else {
                 self._selected_inventory_slot_index = INVALID_ITEM_INDEX;
                 get_item_manager_mut().detach_item(player);
+                get_prop_manager_mut().get_placement_preview_mut().cancel_placement();
             }
             self.update_quick_slot_widgets();
             self.update_item_selection_widget();

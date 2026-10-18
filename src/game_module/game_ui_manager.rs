@@ -4,7 +4,9 @@ use crate::game_module::actors::props::Prop;
 use crate::game_module::game_constants::{
     ITEM_ENERGY_BALL, ITEM_SPIRIT_BALL, MATERIAL_INTRO_IMAGE, MATERIAL_UI_NONE, RECORD_DEFAULT_INCREMENT,
 };
-use crate::game_module::game_service_locator::{get_character_manager, get_game_resources, get_game_scene_manager};
+use crate::game_module::game_service_locator::{
+    get_character_manager, get_game_resources, get_game_scene_manager, get_prop_manager_mut,
+};
 use crate::game_module::save_data::save_data::PlayerRecords;
 use crate::game_module::scenario::scenario::ScenarioType;
 use crate::game_module::widgets::controller_help::ControllerHelpWidget;
@@ -386,6 +388,7 @@ impl<'a> GameUIManager<'a> {
         }
     }
     pub fn open_game_menu(&mut self, tab: Option<GameMenuTab>) {
+        get_prop_manager_mut().get_placement_preview_mut().cancel_placement();
         if let Some(game_menu_widget) = self._game_menu_widget.as_mut() {
             game_menu_widget.open_game_menu(tab);
         }
@@ -396,6 +399,10 @@ impl<'a> GameUIManager<'a> {
             game_menu_widget.close_game_menu();
         }
         self.set_cross_hair_visible(false);
+        if let Some(item_bar) = self._item_bar_widget.as_mut() {
+            let slot = item_bar.get_selected_item_index();
+            item_bar.select_item(slot);
+        }
     }
     pub fn update_game_menu_widget(
         &mut self,
@@ -631,7 +638,9 @@ impl<'a> GameUIManager<'a> {
             self.remove_item(item_data_name, player_deduct);
         }
 
-        if remaining > 0 && let Some(table_storage_widget) = self._table_storage_widget.as_mut() {
+        if remaining > 0
+            && let Some(table_storage_widget) = self._table_storage_widget.as_mut()
+        {
             let removed = table_storage_widget.remove_item(item_data_name, remaining);
             remaining -= removed;
         }

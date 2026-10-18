@@ -1,5 +1,5 @@
 {
-    "_item_type": "Wood",
+    "_item_type": "Worktable",
     "_model_data_name": "items/wood",
     "_name": "WORKTABLE",
     "_ui_material_instance": "ui/items/item_wood",

@@ -94,5 +94,6 @@ pub struct Prop<'a> {
 pub struct PropManager<'a> {
     pub _props: PropMap<'a>,
     pub _prop_name_map: PropNameMap<'a>,
+    pub _placement_preview: crate::game_module::actors::props::placement::PlacementPreview<'a>,
     pub _marker: std::marker::PhantomData<&'a ()>,
 }
