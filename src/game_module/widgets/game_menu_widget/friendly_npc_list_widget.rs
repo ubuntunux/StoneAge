@@ -1,11 +1,11 @@
-use crate::game_module::widgets::game_menu_widget::character_list_helper::{collect_all_characters, get_affinity_tier};
+use crate::game_module::widgets::game_menu_widget::character_list_helper::{
+    collect_all_characters, create_character_card, create_character_empty_card, create_character_list_panel,
+    get_affinity_tier, status_str,
+};
 use nalgebra::Vector2;
 use rust_engine_3d::core::input::{JoystickInputData, KeyboardInputData};
-use rust_engine_3d::scene::ui::{
-    HorizontalAlign, Orientation, PIVOT_CENTER, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault,
-};
+use rust_engine_3d::scene::ui::WidgetDefault;
 use rust_engine_3d::utilities::system::ptr_as_mut;
-use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use std::rc::Rc;
 
 pub struct FriendlyNpcListWidget<'a> {
@@ -17,49 +17,11 @@ pub struct FriendlyNpcListWidget<'a> {
 
 impl<'a> FriendlyNpcListWidget<'a> {
     pub fn create_friendly_npc_list_widget(parent_widget: &mut WidgetDefault<'a>) -> Box<FriendlyNpcListWidget<'a>> {
-        let layer = UIManager::create_widget("friendly_npc_list_widget", UIWidgetTypes::Default);
-        let layer_mut = ptr_as_mut(layer.as_ref());
-        let ui_component = layer_mut.get_ui_component_mut();
-        ui_component.set_layout_type(UILayoutType::BoxLayout);
-        ui_component.set_layout_orientation(Orientation::VERTICAL);
-        ui_component.set_halign(HorizontalAlign::CENTER);
-        ui_component.set_valign(VerticalAlign::TOP);
-        ui_component.set_pivot_preset(PIVOT_CENTER);
-        ui_component.set_expandable(false);
-        ui_component.set_size_hint_x(Some(1.0));
-        ui_component.set_size_hint_y(Some(1.0));
-        ui_component.set_padding(10.0);
-        ui_component.set_color(get_color32(240, 222, 186, 248));
-        ui_component.set_border_color(get_color32(135, 78, 42, 255));
-        ui_component.set_round(5.0);
-
-        // Title Header
-        let title_widget = UIManager::create_widget("friendly_npc_title", UIWidgetTypes::Default);
-        let ui_component = ptr_as_mut(title_widget.as_ref()).get_ui_component_mut();
-        ui_component.set_size(300.0, 30.0);
-        ui_component.set_halign(HorizontalAlign::CENTER);
-        ui_component.set_valign(VerticalAlign::CENTER);
-        ui_component.set_text("Friendly NPCs");
-        ui_component.set_font_size(25.0);
-        ui_component.set_font_color(get_color32(75, 45, 20, 255));
-        ui_component.set_color(get_color32(0, 0, 0, 0));
-        layer_mut.add_widget(&title_widget);
-
-        // List Container for Cards
-        let list_container = UIManager::create_widget("friendly_npc_list_container", UIWidgetTypes::Default);
-        let list_container_mut = ptr_as_mut(list_container.as_ref());
-        let ui_component = list_container_mut.get_ui_component_mut();
-        ui_component.set_layout_type(UILayoutType::BoxLayout);
-        ui_component.set_layout_orientation(Orientation::VERTICAL);
-        ui_component.set_halign(HorizontalAlign::LEFT);
-        ui_component.set_valign(VerticalAlign::TOP);
-        ui_component.set_expandable(false);
-        ui_component.set_scroll_y(true);
-        ui_component.set_enable_renderable_area(true);
-        ui_component.set_size_hint_x(Some(1.0));
-        ui_component.set_size_hint_y(Some(1.0));
-        ui_component.set_color(get_color32(252, 245, 226, 230));
-        layer_mut.add_widget(&list_container);
+        let (layer, list_container) = create_character_list_panel(
+            "friendly_npc_list_widget",
+            "friendly_npc_list_container",
+            "Friendly NPCs",
+        );
 
         Box::new(FriendlyNpcListWidget {
             _parent_widget: parent_widget,
@@ -97,68 +59,39 @@ impl<'a> FriendlyNpcListWidget<'a> {
         container_mut.clear_widgets();
 
         let all_characters = collect_all_characters();
-        let mut npc_list: Vec<_> = all_characters.into_iter().filter(|c| c.is_civilian).collect();
+        let mut npc_list: Vec<_> = all_characters.into_iter().filter(|c| c._is_civilian).collect();
 
         // Sort by intimacy descending, then by name
         npc_list.sort_by(|a, b| {
-            b.intimacy.partial_cmp(&a.intimacy).unwrap_or(std::cmp::Ordering::Equal).then_with(|| a.name.cmp(&b.name))
+            b._intimacy
+                .partial_cmp(&a._intimacy)
+                .unwrap_or(std::cmp::Ordering::Equal)
+                .then_with(|| a._name.cmp(&b._name))
         });
 
-        let npc_count = npc_list.len();
-
         for item in npc_list.iter() {
-            let card_widget = UIManager::create_widget("friendly_npc_card", UIWidgetTypes::Default);
-            let card_mut = ptr_as_mut(card_widget.as_ref());
-            let ui_comp = card_mut.get_ui_component_mut();
-            ui_comp.set_layout_type(UILayoutType::BoxLayout);
-            ui_comp.set_layout_orientation(Orientation::HORIZONTAL);
-            ui_comp.set_halign(HorizontalAlign::CENTER);
-            ui_comp.set_valign(VerticalAlign::CENTER);
-            ui_comp.set_size(620.0, 48.0);
-            ui_comp.set_margin(4.0);
-            ui_comp.set_padding(8.0);
-            ui_comp.set_color(get_color32(245, 232, 205, 230));
-            ui_comp.set_border_color(get_color32(200, 165, 125, 200));
-            ui_comp.set_round(5.0);
-
-            let status_str = if item.is_alive { "ALIVE" } else { "DEAD" };
-            let status_color = if item.is_alive {
-                get_color32(100, 255, 100, 255)
-            } else {
-                get_color32(255, 100, 100, 255)
-            };
-
-            let affinity_tier = get_affinity_tier(item.intimacy);
-            let tier_str = affinity_tier.get_display_name();
+            let status = status_str(item._is_alive);
+            let tier_str = get_affinity_tier(item._intimacy).get_display_name();
 
             let info_text = format!(
                 "[{}] [{}] {} ({}) | HP: {}/{} | Intimacy: {:.0} | Pos: ({:.0}, {:.0})",
-                status_str,
-                item.scene_display_name,
-                item.name,
+                status,
+                item._scene_display_name,
+                item._name,
                 tier_str,
-                item.hp,
-                item.max_hp,
-                item.intimacy,
-                item.position.x,
-                item.position.z
+                item._hp,
+                item._max_hp,
+                item._intimacy,
+                item._position.x,
+                item._position.z
             );
 
-            ui_comp.set_text(&info_text);
-            ui_comp.set_font_size(22.0);
-            ui_comp.set_font_color(status_color);
-
-            container_mut.add_widget(&card_widget);
+            let card = create_character_card("friendly_npc_card", &info_text, item._is_alive);
+            container_mut.add_widget(&card);
         }
 
-        if npc_count == 0 {
-            let empty_widget = UIManager::create_widget("friendly_npc_empty_info", UIWidgetTypes::Default);
-            let ui_comp = ptr_as_mut(empty_widget.as_ref()).get_ui_component_mut();
-            ui_comp.set_size(400.0, 60.0);
-            ui_comp.set_margin(20.0);
-            ui_comp.set_text("No friendly NPCs found.");
-            ui_comp.set_font_size(24.0);
-            ui_comp.set_font_color(get_color32(180, 180, 180, 255));
+        if npc_list.is_empty() {
+            let empty_widget = create_character_empty_card("friendly_npc_empty_info", "No friendly NPCs found.");
             container_mut.add_widget(&empty_widget);
         }
     }

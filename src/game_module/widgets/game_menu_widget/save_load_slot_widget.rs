@@ -20,6 +20,26 @@ use std::ffi::c_void;
 use std::rc::Rc;
 use winit::keyboard::KeyCode;
 
+const BTN_DISABLED_COLOR: u32 = get_color32(210, 185, 150, 255);
+const BTN_LOAD_COLOR: u32 = get_color32(70, 135, 200, 240);
+const BTN_DELETE_COLOR: u32 = get_color32(200, 75, 60, 255);
+
+fn is_popup_opened(popup: Option<&RcRefCell<PopupWindowWidget<'_>>>) -> bool {
+    if let Some(p) = popup {
+        if let Ok(guard) = p.try_borrow() {
+            return guard.is_opened();
+        }
+        return true;
+    }
+    false
+}
+
+fn set_button_enabled<'a>(button: &Rc<WidgetDefault<'a>>, enabled: bool, active_color: u32, disabled_color: u32) {
+    let ui = ptr_as_mut::<WidgetDefault<'a>>(button.as_ref()).get_ui_component_mut();
+    ui.set_color(if enabled { active_color } else { disabled_color });
+    ui.set_touchable(enabled);
+}
+
 pub struct SaveLoadSlotItem<'a> {
     pub _slot_widget: *const SaveLoadSlotWidget<'a>,
     pub _slot_index: usize,
@@ -612,23 +632,8 @@ impl<'a> SaveLoadSlotWidget<'a> {
             let text_ui = ptr_as_mut::<WidgetDefault<'a>>(item._text_widget.as_ref()).get_ui_component_mut();
             text_ui.set_text(&slot_info_text);
 
-            let load_ui = ptr_as_mut::<WidgetDefault<'a>>(item._load_btn.as_ref()).get_ui_component_mut();
-            if has_save_data {
-                load_ui.set_color(get_color32(70, 135, 200, 240));
-                load_ui.set_touchable(true);
-            } else {
-                load_ui.set_color(get_color32(210, 185, 150, 255));
-                load_ui.set_touchable(false);
-            }
-
-            let delete_ui = ptr_as_mut::<WidgetDefault<'a>>(item._delete_btn.as_ref()).get_ui_component_mut();
-            if has_save_data {
-                delete_ui.set_color(get_color32(200, 75, 60, 255));
-                delete_ui.set_touchable(true);
-            } else {
-                delete_ui.set_color(get_color32(210, 185, 150, 255));
-                delete_ui.set_touchable(false);
-            }
+            set_button_enabled(&item._load_btn, has_save_data, BTN_LOAD_COLOR, BTN_DISABLED_COLOR);
+            set_button_enabled(&item._delete_btn, has_save_data, BTN_DELETE_COLOR, BTN_DISABLED_COLOR);
         }
     }
 
@@ -757,24 +762,8 @@ impl<'a> SaveLoadSlotWidget<'a> {
             return;
         }
 
-        if let Some(popup) = self._save_complete_popup.as_ref() {
-            if let Ok(popup_guard) = popup.try_borrow() {
-                if popup_guard.is_opened() {
-                    return;
-                }
-            } else {
-                return;
-            }
-        }
-
-        if let Some(popup) = self._delete_confirm_popup.as_ref() {
-            if let Ok(popup_guard) = popup.try_borrow() {
-                if popup_guard.is_opened() {
-                    return;
-                }
-            } else {
-                return;
-            }
+        if is_popup_opened(self._save_complete_popup.as_ref()) || is_popup_opened(self._delete_confirm_popup.as_ref()) {
+            return;
         }
 
         if self._need_rebuild_slot_list {

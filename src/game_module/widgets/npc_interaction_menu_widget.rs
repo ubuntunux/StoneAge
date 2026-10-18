@@ -372,6 +372,18 @@ impl<'a> NpcInteractionMenuWidget<'a> {
         }
     }
 
+    fn find_button_index_by_ui_component(
+        &self,
+        clicked_comp: &rust_engine_3d::scene::ui::UIComponentInstance<'a>,
+    ) -> Option<usize> {
+        let clicked_ptr = clicked_comp as *const rust_engine_3d::scene::ui::UIComponentInstance<'a>;
+        self._buttons.iter().enumerate().find_map(|(idx, b)| {
+            let comp_ptr = ptr_as_ref(b._widget.as_ref()).get_ui_component()
+                as *const rust_engine_3d::scene::ui::UIComponentInstance<'a>;
+            if comp_ptr == clicked_ptr { Some(idx) } else { None }
+        })
+    }
+
     fn on_touch_over_option_button(
         widget: &rust_engine_3d::scene::ui::UIComponentInstance<'a>,
         _touch_pos: &Vector2<f32>,
@@ -382,15 +394,8 @@ impl<'a> NpcInteractionMenuWidget<'a> {
             return false;
         }
         let menu_widget = unsafe { &mut *(user_data as *mut NpcInteractionMenuWidget<'a>) };
-        let clicked_ptr = widget as *const rust_engine_3d::scene::ui::UIComponentInstance<'a>;
 
-        let matched = menu_widget._buttons.iter().enumerate().find_map(|(idx, b)| {
-            let comp_ptr = ptr_as_ref(b._widget.as_ref()).get_ui_component()
-                as *const rust_engine_3d::scene::ui::UIComponentInstance<'a>;
-            if comp_ptr == clicked_ptr { Some(idx) } else { None }
-        });
-
-        if let Some(idx) = matched {
+        if let Some(idx) = menu_widget.find_button_index_by_ui_component(widget) {
             if menu_widget._selected_index != idx {
                 menu_widget._selected_index = idx;
                 menu_widget.update_selected_visuals();
@@ -412,19 +417,9 @@ impl<'a> NpcInteractionMenuWidget<'a> {
             return false;
         }
         let menu_widget = unsafe { &mut *(user_data as *mut NpcInteractionMenuWidget<'a>) };
-        let clicked_ptr = widget as *const rust_engine_3d::scene::ui::UIComponentInstance<'a>;
 
-        let matched = menu_widget._buttons.iter().enumerate().find_map(|(idx, b)| {
-            let comp_ptr = ptr_as_ref(b._widget.as_ref()).get_ui_component()
-                as *const rust_engine_3d::scene::ui::UIComponentInstance<'a>;
-            if comp_ptr == clicked_ptr {
-                Some((idx, b._option))
-            } else {
-                None
-            }
-        });
-
-        if let Some((idx, option)) = matched {
+        if let Some(idx) = menu_widget.find_button_index_by_ui_component(widget) {
+            let option = menu_widget._buttons[idx]._option;
             menu_widget._selected_index = idx;
             menu_widget.update_selected_visuals();
             menu_widget.execute_option(option);

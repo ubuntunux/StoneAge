@@ -83,13 +83,18 @@ pub struct ScenarioDataCreateInfo {
 
 impl ScenarioDataCreateInfo {
     pub fn get_game_scene_data_name(&self) -> String {
-        if self._game_scenes.is_empty() {
-            return String::from("");
-        }
-        self._game_scenes.values().last().as_ref().unwrap()._game_scene_data_name.clone()
+        self._game_scenes.values().last().map(|scene| scene._game_scene_data_name.clone()).unwrap_or_default()
     }
+
     pub fn reset(&mut self) {
         *self = ScenarioDataCreateInfo::default();
+    }
+
+    pub fn spawn_and_reset_if_matching(&mut self, game_scene_data_name: &str) {
+        if self.get_game_scene_data_name() == game_scene_data_name {
+            crate::game_module::game_service_locator::get_game_scene_manager_mut().spawn_game_scenario_objects(self);
+            self.reset();
+        }
     }
 }
 

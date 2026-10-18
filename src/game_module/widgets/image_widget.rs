@@ -96,13 +96,23 @@ impl<'a> ImageLayout<'a> {
         fade_time: f32,
         auto_fade_inout: bool,
     ) {
-        if material_instance.is_some() {
-            let material_instance_refcell = material_instance.as_ref().unwrap();
+        if let Some(ref material_instance_refcell) = material_instance {
             let material_instance_ref = material_instance_refcell.borrow();
-            let texture_parameter = material_instance_ref._material_parameters.get("texture_color").unwrap();
-            let texture_name = texture_parameter.as_str().unwrap();
-            let texture = get_engine_resources().get_texture_data(texture_name);
-            self._next_image_aspect = texture.borrow()._image_width as f32 / texture.borrow()._image_height as f32;
+            let aspect = material_instance_ref
+                ._material_parameters
+                .get("texture_color")
+                .and_then(|param| param.as_str())
+                .map(|texture_name| {
+                    let texture = get_engine_resources().get_texture_data(texture_name);
+                    let tex_borrow = texture.borrow();
+                    if tex_borrow._image_height > 0 {
+                        tex_borrow._image_width as f32 / tex_borrow._image_height as f32
+                    } else {
+                        1.0
+                    }
+                })
+                .unwrap_or(1.0);
+            self._next_image_aspect = aspect;
             self._fadeout_opacity = 1.0;
             self._fadeout_image_brightness = 0.0;
             self._fadein_opacity = 1.0;

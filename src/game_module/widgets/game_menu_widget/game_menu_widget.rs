@@ -38,6 +38,32 @@ pub enum GameMenuTab {
     DebugMenu,
 }
 
+impl GameMenuTab {
+    pub fn next(&self) -> Self {
+        match self {
+            GameMenuTab::Inventory => GameMenuTab::Craft,
+            GameMenuTab::Craft => GameMenuTab::Records,
+            GameMenuTab::Records => GameMenuTab::TamingList,
+            GameMenuTab::TamingList => GameMenuTab::FriendlyNpcList,
+            GameMenuTab::FriendlyNpcList => GameMenuTab::SaveLoad,
+            GameMenuTab::SaveLoad => GameMenuTab::DebugMenu,
+            GameMenuTab::DebugMenu => GameMenuTab::Inventory,
+        }
+    }
+
+    pub fn prev(&self) -> Self {
+        match self {
+            GameMenuTab::Inventory => GameMenuTab::DebugMenu,
+            GameMenuTab::Craft => GameMenuTab::Inventory,
+            GameMenuTab::Records => GameMenuTab::Craft,
+            GameMenuTab::TamingList => GameMenuTab::Records,
+            GameMenuTab::FriendlyNpcList => GameMenuTab::TamingList,
+            GameMenuTab::SaveLoad => GameMenuTab::FriendlyNpcList,
+            GameMenuTab::DebugMenu => GameMenuTab::SaveLoad,
+        }
+    }
+}
+
 pub struct GameMenuWidget<'a> {
     pub _parent_widget: *const WidgetDefault<'a>,
     pub _layer: Rc<WidgetDefault<'a>>,
@@ -375,13 +401,7 @@ impl<'a> GameMenuWidget<'a> {
         }
 
         // Close all sub-widgets first
-        self._inventory_widget.close_inventory();
-        self._craft_widget.close_craft();
-        self._player_records_widget.close_player_records_widget();
-        self._taming_list_widget.close_taming_list_widget();
-        self._friendly_npc_list_widget.close_friendly_npc_list_widget();
-        self._save_load_widget.close_save_load_widget();
-        self._game_debug_menu_widget.close_game_debug_menu();
+        self.close_all_tabs();
 
         match tab {
             GameMenuTab::Inventory => self._inventory_widget.open_inventory(),
@@ -392,6 +412,16 @@ impl<'a> GameMenuWidget<'a> {
             GameMenuTab::SaveLoad => self._save_load_widget.open_save_load_widget(),
             GameMenuTab::DebugMenu => self._game_debug_menu_widget.open_game_debug_menu(),
         }
+    }
+
+    fn close_all_tabs(&mut self) {
+        self._inventory_widget.close_inventory();
+        self._craft_widget.close_craft();
+        self._player_records_widget.close_player_records_widget();
+        self._taming_list_widget.close_taming_list_widget();
+        self._friendly_npc_list_widget.close_friendly_npc_list_widget();
+        self._save_load_widget.close_save_load_widget();
+        self._game_debug_menu_widget.close_game_debug_menu();
     }
 
     pub fn open_game_menu(&mut self, tab: Option<GameMenuTab>) {
@@ -408,13 +438,7 @@ impl<'a> GameMenuWidget<'a> {
     pub fn close_game_menu(&mut self) {
         if self._is_opened_game_menu {
             get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
-            self._inventory_widget.close_inventory();
-            self._craft_widget.close_craft();
-            self._player_records_widget.close_player_records_widget();
-            self._taming_list_widget.close_taming_list_widget();
-            self._friendly_npc_list_widget.close_friendly_npc_list_widget();
-            self._save_load_widget.close_save_load_widget();
-            self._game_debug_menu_widget.close_game_debug_menu();
+            self.close_all_tabs();
             ptr_as_mut(self._layer.as_ref()).get_ui_component_mut().set_enable(false);
             self._is_opened_game_menu = false;
         }
@@ -436,27 +460,9 @@ impl<'a> GameMenuWidget<'a> {
         let switch_tab_prev = joystick_input_data._btn_left_shoulder == ButtonState::Pressed;
 
         if switch_tab_next {
-            let next_tab = match self._active_tab {
-                GameMenuTab::Inventory => GameMenuTab::Craft,
-                GameMenuTab::Craft => GameMenuTab::Records,
-                GameMenuTab::Records => GameMenuTab::TamingList,
-                GameMenuTab::TamingList => GameMenuTab::FriendlyNpcList,
-                GameMenuTab::FriendlyNpcList => GameMenuTab::SaveLoad,
-                GameMenuTab::SaveLoad => GameMenuTab::DebugMenu,
-                GameMenuTab::DebugMenu => GameMenuTab::Inventory,
-            };
-            self.set_active_tab(next_tab);
+            self.set_active_tab(self._active_tab.next());
         } else if switch_tab_prev {
-            let prev_tab = match self._active_tab {
-                GameMenuTab::Inventory => GameMenuTab::DebugMenu,
-                GameMenuTab::Craft => GameMenuTab::Inventory,
-                GameMenuTab::Records => GameMenuTab::Craft,
-                GameMenuTab::TamingList => GameMenuTab::Records,
-                GameMenuTab::FriendlyNpcList => GameMenuTab::TamingList,
-                GameMenuTab::SaveLoad => GameMenuTab::FriendlyNpcList,
-                GameMenuTab::DebugMenu => GameMenuTab::SaveLoad,
-            };
-            self.set_active_tab(prev_tab);
+            self.set_active_tab(self._active_tab.prev());
         }
 
         match self._active_tab {
@@ -470,44 +476,19 @@ impl<'a> GameMenuWidget<'a> {
                     mouse_delta,
                     player,
                 );
-                let close_game_menu = keyboard_input_data.get_key_pressed(KeyCode::Escape)
-                    || joystick_input_data._btn_b == ButtonState::Pressed;
-                if close_game_menu {
-                    self.close_game_menu();
-                }
             }
             GameMenuTab::Records => {
                 self._player_records_widget.update_player_records_widget(joystick_input_data, keyboard_input_data);
-                let close_game_menu = keyboard_input_data.get_key_pressed(KeyCode::Escape)
-                    || joystick_input_data._btn_b == ButtonState::Pressed;
-                if close_game_menu {
-                    self.close_game_menu();
-                }
             }
             GameMenuTab::TamingList => {
                 self._taming_list_widget.update_taming_list_widget(joystick_input_data, keyboard_input_data);
-                let close_game_menu = keyboard_input_data.get_key_pressed(KeyCode::Escape)
-                    || joystick_input_data._btn_b == ButtonState::Pressed;
-                if close_game_menu {
-                    self.close_game_menu();
-                }
             }
             GameMenuTab::FriendlyNpcList => {
                 self._friendly_npc_list_widget
                     .update_friendly_npc_list_widget(joystick_input_data, keyboard_input_data);
-                let close_game_menu = keyboard_input_data.get_key_pressed(KeyCode::Escape)
-                    || joystick_input_data._btn_b == ButtonState::Pressed;
-                if close_game_menu {
-                    self.close_game_menu();
-                }
             }
             GameMenuTab::SaveLoad => {
                 self._save_load_widget.update_save_load_widget(time_data, joystick_input_data, keyboard_input_data);
-                let close_game_menu = keyboard_input_data.get_key_pressed(KeyCode::Escape)
-                    || joystick_input_data._btn_b == ButtonState::Pressed;
-                if close_game_menu {
-                    self.close_game_menu();
-                }
             }
             GameMenuTab::Inventory => {
                 self._inventory_widget.update_inventory_widget(
@@ -519,21 +500,16 @@ impl<'a> GameMenuWidget<'a> {
                     mouse_delta,
                     player,
                 );
-
-                let close_game_menu = keyboard_input_data.get_key_pressed(KeyCode::Escape)
-                    || joystick_input_data._btn_b == ButtonState::Pressed;
-                if close_game_menu {
-                    self.close_game_menu();
-                }
             }
             GameMenuTab::DebugMenu => {
                 self._game_debug_menu_widget.update_game_debug_menu_widget(joystick_input_data, keyboard_input_data);
-                let close_game_menu = keyboard_input_data.get_key_pressed(KeyCode::Escape)
-                    || joystick_input_data._btn_b == ButtonState::Pressed;
-                if close_game_menu {
-                    self.close_game_menu();
-                }
             }
+        }
+
+        let close_game_menu =
+            keyboard_input_data.get_key_pressed(KeyCode::Escape) || joystick_input_data._btn_b == ButtonState::Pressed;
+        if close_game_menu {
+            self.close_game_menu();
         }
     }
 }

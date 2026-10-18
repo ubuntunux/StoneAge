@@ -17,7 +17,7 @@ use rust_engine_3d::utilities::system::{ptr_as_mut, ptr_as_ref};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use std::ffi::c_void;
 use std::rc::Rc;
-use strum::EnumCount;
+use strum::{EnumCount, IntoEnumIterator};
 use strum_macros::{Display, EnumCount, EnumIter, EnumString, FromRepr};
 use winit::keyboard::KeyCode;
 
@@ -31,6 +31,20 @@ pub enum GameDebugMenuType {
     DebugText,
     RainTest,
     TimeTest,
+}
+
+impl GameDebugMenuType {
+    pub fn prev(&self) -> Self {
+        let idx = *self as usize;
+        let prev_idx = if idx == 0 { Self::COUNT - 1 } else { idx - 1 };
+        Self::from_repr(prev_idx).unwrap_or(Self::DebugText)
+    }
+
+    pub fn next(&self) -> Self {
+        let idx = *self as usize;
+        let next_idx = if idx + 1 >= Self::COUNT { 0 } else { idx + 1 };
+        Self::from_repr(next_idx).unwrap_or(Self::DebugText)
+    }
 }
 
 pub struct GameDebugMenuItem<'a> {
@@ -134,28 +148,11 @@ impl<'a> GameDebugMenuWidget<'a> {
             _is_opened_game_debug_menu: false,
         });
 
-        let menu_items = vec![
-            GameDebugMenuItem::create_game_debug_menu_item(
-                game_debug_menu_widget.as_ref(),
-                layer_mut,
-                GameDebugMenuType::ToggleGameMode,
-            ),
-            GameDebugMenuItem::create_game_debug_menu_item(
-                game_debug_menu_widget.as_ref(),
-                layer_mut,
-                GameDebugMenuType::DebugText,
-            ),
-            GameDebugMenuItem::create_game_debug_menu_item(
-                game_debug_menu_widget.as_ref(),
-                layer_mut,
-                GameDebugMenuType::RainTest,
-            ),
-            GameDebugMenuItem::create_game_debug_menu_item(
-                game_debug_menu_widget.as_ref(),
-                layer_mut,
-                GameDebugMenuType::TimeTest,
-            ),
-        ];
+        let menu_items: Vec<_> = GameDebugMenuType::iter()
+            .map(|menu_type| {
+                GameDebugMenuItem::create_game_debug_menu_item(game_debug_menu_widget.as_ref(), layer_mut, menu_type)
+            })
+            .collect();
 
         game_debug_menu_widget.as_mut()._menu_items = menu_items;
         game_debug_menu_widget
@@ -233,23 +230,15 @@ impl<'a> GameDebugMenuWidget<'a> {
             || joystick_input_data._btn_a == ButtonState::Pressed;
 
         if move_menu_up {
-            let selected_menu_item: usize = if self._selected_menu_item as usize == 0 {
-                GameDebugMenuType::COUNT - 1
-            } else {
-                self._selected_menu_item as usize - 1
-            };
-            self.set_selected_menu_item(GameDebugMenuType::from_repr(selected_menu_item).unwrap(), false);
-            if let Some(item) = self._menu_items.get(selected_menu_item) {
+            let next_item = self._selected_menu_item.prev();
+            self.set_selected_menu_item(next_item, false);
+            if let Some(item) = self._menu_items.get(next_item as usize) {
                 move_mouse_to_ui_component(item._item_widget.get_ui_component());
             }
         } else if move_menu_down {
-            let selected_menu_item: usize = if self._selected_menu_item as usize == (GameDebugMenuType::COUNT - 1) {
-                0
-            } else {
-                self._selected_menu_item as usize + 1
-            };
-            self.set_selected_menu_item(GameDebugMenuType::from_repr(selected_menu_item).unwrap(), false);
-            if let Some(item) = self._menu_items.get(selected_menu_item) {
+            let next_item = self._selected_menu_item.next();
+            self.set_selected_menu_item(next_item, false);
+            if let Some(item) = self._menu_items.get(next_item as usize) {
                 move_mouse_to_ui_component(item._item_widget.get_ui_component());
             }
         }

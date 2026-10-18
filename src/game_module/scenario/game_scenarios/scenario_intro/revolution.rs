@@ -9,6 +9,9 @@ use crate::game_module::game_service_locator::{get_game_scene_manager_mut, get_g
 use crate::game_module::scenario::scenario::{
     GameScenarioCreateInfo, ScenarioBase, ScenarioDataCreateInfo, ScenarioType,
 };
+use crate::game_module::scenario::scenario_common::{
+    set_actors_behavior_none, set_actors_flying_sleep_mode, set_actors_visible,
+};
 use crate::game_module::scenario::scenario_track::ScenarioTrack;
 use crate::game_module::widgets::text_box_widget::{TextBoxContent, TextBoxItemOption, TextBoxLayerType};
 use nalgebra::Vector3;
@@ -16,9 +19,16 @@ use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop};
 use rust_engine_3d::core::engine_service_locator::{get_audio_manager, get_audio_manager_mut};
 use rust_engine_3d::utilities::system::{RcRefCell, State, newRcRefCell};
 use serde::{Deserialize, Serialize};
-use std::str::FromStr;
 use strum::IntoEnumIterator;
 use strum_macros::{Display, EnumCount, EnumIter, EnumString};
+
+const PHASE_DURATION_INVESTIGATE: f32 = 2.0;
+const PHASE_DURATION_DISCUSSION: f32 = 5.0;
+const PHASE_DURATION_REVOLUTION: f32 = 8.0;
+const ALIEN_TALK_SECOND_CUE_TIME: f32 = 2.0;
+const REVOLUTION_BLINK_END_RATIO: f32 = 0.9;
+const REVOLUTION_BLINK_FREQ: f32 = 100.0;
+const FLOATING_OFFSET_AMPLITUDE: f32 = 0.5;
 
 #[derive(Clone, PartialEq, Eq, Hash, Display, Debug, Copy, EnumIter, EnumString, EnumCount)]
 pub enum ScenarioPhase {
@@ -47,7 +57,6 @@ fn update_actor_position(actor: &mut Character, position_y: f32) {
 pub struct ScenarioRevolution<'a> {
     _scenario_type: ScenarioType,
     _scenario_create_info: ScenarioDataCreateInfo,
-
     _alien_alpha: Option<RcRefCell<Character<'a>>>,
     _alien_beta: Option<RcRefCell<Character<'a>>>,
     _actor_aru: Option<RcRefCell<Character<'a>>>,
@@ -58,9 +67,7 @@ pub struct ScenarioRevolution<'a> {
     _monkey_koa: Option<RcRefCell<Character<'a>>>,
     _position_timer: f32,
     _position_y: f32,
-    _audio_alien_talk: Option<RcRefCell<AudioInstance>>,
     _audio_ufo_laboratory: Option<RcRefCell<AudioInstance>>,
-    _audio_ufo_experiment: Option<RcRefCell<AudioInstance>>,
     _scenario_track: ScenarioTrack<ScenarioPhase>,
 }
 
@@ -82,16 +89,8 @@ impl<'a> ScenarioRevolution<'a> {
             _monkey_koa: None,
             _position_timer: 0.0,
             _position_y: 0.0,
-            _audio_alien_talk: None,
             _audio_ufo_laboratory: None,
-            _audio_ufo_experiment: None,
-            _scenario_track: ScenarioTrack {
-                _scenario_phase: ScenarioPhase::None,
-                _next_scenario_phase: ScenarioPhase::Begin,
-                _phase_time: 0.0,
-                _phase_duration: None,
-                _next_phase_duration: None,
-            },
+            _scenario_track: ScenarioTrack::new(ScenarioPhase::None, ScenarioPhase::Begin),
         })
     }
 }
@@ -106,8 +105,7 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
     }
 
     fn set_scenario_phase_as_string(&mut self, scenario_phase: &String) {
-        self._scenario_track._scenario_phase =
-            ScenarioPhase::from_str(scenario_phase.as_str()).unwrap_or(ScenarioPhase::None);
+        self._scenario_track.set_phase_from_str(scenario_phase.as_str(), ScenarioPhase::None);
     }
 
     fn load_scenario_save_data(&mut self, scenario_save_data: &GameScenarioCreateInfo) {
@@ -145,12 +143,9 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
     fn on_close_game_scene(&mut self, _game_scene_data_name: &str) {}
 
     fn on_open_game_scene(&mut self, game_scene_data_name: &str) {
-        let game_scene_manager = get_game_scene_manager_mut();
-        if self._scenario_create_info.get_game_scene_data_name() == game_scene_data_name {
-            game_scene_manager.spawn_game_scenario_objects(&self._scenario_create_info);
-            self._scenario_create_info.reset();
-        }
+        self._scenario_create_info.spawn_and_reset_if_matching(game_scene_data_name);
 
+        let game_scene_manager = get_game_scene_manager_mut();
         self._alien_alpha = game_scene_manager.get_actor_by_name(ACTOR_NAME_ALIEN_ALPHA).cloned();
         self._alien_beta = game_scene_manager.get_actor_by_name(ACTOR_NAME_ALIEN_BETA).cloned();
         self._player = game_scene_manager.get_maybe_player().clone();
@@ -160,44 +155,20 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
         self._actor_ewa = game_scene_manager.get_actor_by_name(ACTOR_NAME_EWA).cloned();
         self._actor_koa = game_scene_manager.get_actor_by_name(ACTOR_NAME_KOA).cloned();
 
-        if let Some(actor) = &self._alien_alpha {
-            actor.borrow_mut().set_behavior_none();
-        }
-        if let Some(actor) = &self._alien_beta {
-            actor.borrow_mut().set_behavior_none();
-        }
-        if let Some(actor) = &self._player {
-            actor.borrow_mut().set_action_sleep_no_snoring();
-            actor.borrow_mut()._controller.set_flying_mode(true);
-        }
-        if let Some(actor) = &self._monkey_ewa {
-            actor.borrow_mut().set_behavior_none();
-            actor.borrow_mut().set_action_sleep_no_snoring();
-            actor.borrow_mut()._controller.set_flying_mode(true);
-        }
-        if let Some(actor) = &self._monkey_koa {
-            actor.borrow_mut().set_behavior_none();
-            actor.borrow_mut().set_action_sleep_no_snoring();
-            actor.borrow_mut()._controller.set_flying_mode(true);
-        }
-        if let Some(actor) = &self._actor_aru {
-            actor.borrow_mut()._render_object.borrow_mut().set_visible(false);
-            actor.borrow_mut().set_behavior_none();
-            actor.borrow_mut().set_action_sleep_no_snoring();
-            actor.borrow_mut()._controller.set_flying_mode(true);
-        }
-        if let Some(actor) = &self._actor_ewa {
-            actor.borrow_mut()._render_object.borrow_mut().set_visible(false);
-            actor.borrow_mut().set_behavior_none();
-            actor.borrow_mut().set_action_sleep_no_snoring();
-            actor.borrow_mut()._controller.set_flying_mode(true);
-        }
-        if let Some(actor) = &self._actor_koa {
-            actor.borrow_mut()._render_object.borrow_mut().set_visible(false);
-            actor.borrow_mut().set_behavior_none();
-            actor.borrow_mut().set_action_sleep_no_snoring();
-            actor.borrow_mut()._controller.set_flying_mode(true);
-        }
+        set_actors_behavior_none(&[&self._alien_alpha, &self._alien_beta], false);
+        set_actors_flying_sleep_mode(&[&self._player], false, None);
+        set_actors_flying_sleep_mode(
+            &[
+                &self._monkey_ewa,
+                &self._monkey_koa,
+                &self._actor_aru,
+                &self._actor_ewa,
+                &self._actor_koa,
+            ],
+            true,
+            None,
+        );
+        set_actors_visible(&[&self._actor_aru, &self._actor_ewa, &self._actor_koa], false);
 
         if let Some(actor) = &self._player {
             self._position_y = actor.borrow().get_position().y;
@@ -213,17 +184,13 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
         let next_phase_duration = self._scenario_track._next_phase_duration;
 
         for state in State::iter() {
-            if prev_scenario_phase == next_scenario_phase && (state == State::End || state == State::Begin) {
+            let Some(update_scenario_phase) = self._scenario_track.resolve_state_phase(
+                state,
+                prev_scenario_phase,
+                next_scenario_phase,
+                next_phase_duration,
+            ) else {
                 continue;
-            }
-
-            let update_scenario_phase: ScenarioPhase = match state {
-                State::End => prev_scenario_phase,
-                State::Begin => {
-                    self._scenario_track.set_scenario_phase(next_scenario_phase, next_phase_duration);
-                    next_scenario_phase
-                }
-                State::Update => next_scenario_phase,
             };
 
             let phase_time = self._scenario_track.get_phase_time();
@@ -236,7 +203,8 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
                 ScenarioPhase::Begin => {
                     if state == State::Update {
                         game_scene_manager.set_time(TIME_OF_NOON, 0.0);
-                        self._scenario_track.set_next_scenario_phase(ScenarioPhase::Investigate, Some(2.0));
+                        self._scenario_track
+                            .set_next_scenario_phase(ScenarioPhase::Investigate, Some(PHASE_DURATION_INVESTIGATE));
                     }
                 }
                 ScenarioPhase::Investigate => match state {
@@ -246,7 +214,8 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
                     }
                     State::Update => {
                         if 1.0 <= phase_ratio {
-                            self._scenario_track.set_next_scenario_phase(ScenarioPhase::Discussion, Some(5.0));
+                            self._scenario_track
+                                .set_next_scenario_phase(ScenarioPhase::Discussion, Some(PHASE_DURATION_DISCUSSION));
                         }
                     }
                     _ => {}
@@ -257,20 +226,9 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
                             String::from(MATERIAL_EMOJI_GOOD),
                             None,
                         )];
-                        if let Some(alpha) = &self._alien_alpha {
+                        for alien in [&self._alien_alpha, &self._alien_beta].into_iter().flatten() {
                             game_ui_manager.add_text_box_item(
-                                ActorWrapper::Character(alpha.clone()),
-                                &contents,
-                                &TextBoxItemOption {
-                                    _layer_type: TextBoxLayerType::InteractionLayer,
-                                    _duration: Some(CHARACTER_INTERACTION_TIME),
-                                    ..Default::default()
-                                },
-                            );
-                        }
-                        if let Some(beta) = &self._alien_beta {
-                            game_ui_manager.add_text_box_item(
-                                ActorWrapper::Character(beta.clone()),
+                                ActorWrapper::Character(alien.clone()),
                                 &contents,
                                 &TextBoxItemOption {
                                     _layer_type: TextBoxLayerType::InteractionLayer,
@@ -285,14 +243,16 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
                         }
                     }
                     State::Update => {
-                        if phase_time == 0.0 {
-                            get_audio_manager_mut().play_audio_bank(AUDIO_ALIEN_TALK, AudioLoop::ONCE, Some(1.0));
-                        } else if phase_time <= 2.0 && 2.0 < (phase_time + delta_time as f32) {
+                        if phase_time == 0.0
+                            || (phase_time <= ALIEN_TALK_SECOND_CUE_TIME
+                                && ALIEN_TALK_SECOND_CUE_TIME < (phase_time + delta_time as f32))
+                        {
                             get_audio_manager_mut().play_audio_bank(AUDIO_ALIEN_TALK, AudioLoop::ONCE, Some(1.0));
                         }
 
                         if 1.0 <= phase_ratio {
-                            self._scenario_track.set_next_scenario_phase(ScenarioPhase::Revolution, Some(8.0));
+                            self._scenario_track
+                                .set_next_scenario_phase(ScenarioPhase::Revolution, Some(PHASE_DURATION_REVOLUTION));
                         }
                     }
                     _ => {}
@@ -301,39 +261,20 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
                     State::Begin => {
                         if let Some(aru) = &self._actor_aru {
                             let aru_pos = *aru.borrow().get_position();
-                            if let Some(alpha) = &self._alien_alpha {
-                                alpha.borrow_mut().look_at(&aru_pos);
-                            }
-                            if let Some(beta) = &self._alien_beta {
-                                beta.borrow_mut().look_at(&aru_pos);
+                            for alien in [&self._alien_alpha, &self._alien_beta].into_iter().flatten() {
+                                alien.borrow_mut().look_at(&aru_pos);
                             }
                         }
                         get_audio_manager_mut().play_audio_bank(AUDIO_UFO_EXPERIMENT, AudioLoop::ONCE, Some(1.0));
                     }
                     State::Update => {
-                        let visible_monkey = if phase_ratio < 0.9 {
-                            ((phase_ratio * phase_ratio * 100.0) as i32 % 2) == 0
+                        let visible_monkey = if phase_ratio < REVOLUTION_BLINK_END_RATIO {
+                            ((phase_ratio * phase_ratio * REVOLUTION_BLINK_FREQ) as i32 % 2) == 0
                         } else {
                             false
                         };
-                        if let Some(m) = &self._player {
-                            m.borrow()._render_object.borrow_mut().set_visible(visible_monkey);
-                        }
-                        if let Some(m) = &self._monkey_ewa {
-                            m.borrow()._render_object.borrow_mut().set_visible(visible_monkey);
-                        }
-                        if let Some(m) = &self._monkey_koa {
-                            m.borrow()._render_object.borrow_mut().set_visible(visible_monkey);
-                        }
-                        if let Some(a) = &self._actor_aru {
-                            a.borrow()._render_object.borrow_mut().set_visible(!visible_monkey);
-                        }
-                        if let Some(a) = &self._actor_ewa {
-                            a.borrow()._render_object.borrow_mut().set_visible(!visible_monkey);
-                        }
-                        if let Some(a) = &self._actor_koa {
-                            a.borrow()._render_object.borrow_mut().set_visible(!visible_monkey);
-                        }
+                        set_actors_visible(&[&self._player, &self._monkey_ewa, &self._monkey_koa], visible_monkey);
+                        set_actors_visible(&[&self._actor_aru, &self._actor_ewa, &self._actor_koa], !visible_monkey);
                         if 1.0 <= phase_ratio {
                             if game_ui_manager.is_done_manual_fade_out() {
                                 self._scenario_track.set_next_scenario_phase(ScenarioPhase::End, None);
@@ -369,23 +310,19 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
 
         if self._player.is_some() {
             self._position_timer += delta_time as f32;
-            let position_y = self._position_y + (self._position_timer.sin() * 0.5 + 0.5);
-            if let Some(actor) = &self._player {
-                update_actor_position(&mut actor.borrow_mut(), position_y);
-            }
-            if let Some(actor) = &self._monkey_ewa {
-                update_actor_position(&mut actor.borrow_mut(), position_y);
-            }
-            if let Some(actor) = &self._monkey_koa {
-                update_actor_position(&mut actor.borrow_mut(), position_y);
-            }
-            if let Some(actor) = &self._actor_aru {
-                update_actor_position(&mut actor.borrow_mut(), position_y);
-            }
-            if let Some(actor) = &self._actor_ewa {
-                update_actor_position(&mut actor.borrow_mut(), position_y);
-            }
-            if let Some(actor) = &self._actor_koa {
+            let position_y =
+                self._position_y + (self._position_timer.sin() * FLOATING_OFFSET_AMPLITUDE + FLOATING_OFFSET_AMPLITUDE);
+            for actor in [
+                &self._player,
+                &self._monkey_ewa,
+                &self._monkey_koa,
+                &self._actor_aru,
+                &self._actor_ewa,
+                &self._actor_koa,
+            ]
+            .into_iter()
+            .flatten()
+            {
                 update_actor_position(&mut actor.borrow_mut(), position_y);
             }
         }

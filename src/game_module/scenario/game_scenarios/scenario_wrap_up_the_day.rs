@@ -8,15 +8,14 @@ use crate::game_module::game_constants::{
     DEFAULT_FADE_TIME, MATERIAL_UI_NONE, MAX_BED_RESTRICTION_DISTANCE, PROP_NAME_TABLE, SLEEP_TIMER,
     TARGET_HUNGER_THRESHOLD, TIME_OF_NIGHT,
 };
-
 use crate::game_module::game_service_locator::{
     get_game_client_mut, get_game_controller_mut, get_game_scene_manager, get_game_scene_manager_mut,
     get_game_ui_manager_mut,
 };
-
 use crate::game_module::scenario::scenario::{
     GameScenarioCreateInfo, ScenarioBase, ScenarioDataCreateInfo, ScenarioType,
 };
+use crate::game_module::scenario::scenario_common::{set_actors_behavior_none, wake_up_npc_on_bed};
 use crate::game_module::scenario::scenario_track::ScenarioTrack;
 use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop};
@@ -26,10 +25,20 @@ use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{RcRefCell, State, newRcRefCell};
 use serde::{Deserialize, Serialize};
-use std::str::FromStr;
 use strum::IntoEnumIterator;
 use strum_macros::{Display, EnumCount, EnumIter, EnumString};
 use winit::keyboard::KeyCode;
+
+const BED_CAMERA_DEFAULT_ROT: Vector3<f32> = Vector3::new(0.4, -1.4, 0.0);
+const BED_CAMERA_EXTRA_DIST: f32 = 2.0;
+const CAMERA_ACCEL_SPEED: f32 = 25.0;
+const CAMERA_DAMPING: f32 = 8.0;
+const MIN_VECTOR_DIST: f32 = 0.0001;
+const TABLE_SEAT_INITIAL_DIST: f32 = 1.0;
+const TABLE_SEAT_EATING_DIST: f32 = 2.0;
+const TABLE_SEAT_ARRIVAL_DIST: f32 = 0.3;
+const SETTLEMENT_START_DELAY: f32 = 0.5;
+const JOYSTICK_MOVE_DEADZONE: i16 = 3000;
 
 #[derive(Clone, PartialEq, Eq, Hash, Display, Debug, Copy, EnumIter, EnumString, EnumCount)]
 enum ScenarioPhase {
@@ -94,13 +103,7 @@ impl<'a> ScenarioWrapUpTheDay<'a> {
             _camera_target_position: Vector3::default(),
             _camera_target_velocity: Vector3::default(),
             _is_camera_target_initialized: false,
-            _scenario_track: ScenarioTrack {
-                _scenario_phase: ScenarioPhase::None,
-                _next_scenario_phase: ScenarioPhase::Begin,
-                _phase_time: 0.0,
-                _phase_duration: None,
-                _next_phase_duration: None,
-            },
+            _scenario_track: ScenarioTrack::new(ScenarioPhase::None, ScenarioPhase::Begin),
         })
     }
 
@@ -108,11 +111,14 @@ impl<'a> ScenarioWrapUpTheDay<'a> {
         let mut pivot = Vector3::new(0.0, CAMERA_OFFSET_Y, 0.0);
         if let Some(prop_bed) = self._prop_bed_for_aru.as_ref() {
             pivot += prop_bed.borrow().get_position();
-        };
-        let camera_rotation = Vector3::new(0.4, -1.4, 0.0);
-        let camera_rotation_matrix =
-            math::make_rotation_matrix(camera_rotation.x, camera_rotation.y, camera_rotation.z);
-        self._bed_camera_position = pivot - camera_rotation_matrix.column(2).xyz() * (CAMERA_DISTANCE_MIN + 2.0);
+        }
+        let camera_rotation_matrix = math::make_rotation_matrix(
+            BED_CAMERA_DEFAULT_ROT.x,
+            BED_CAMERA_DEFAULT_ROT.y,
+            BED_CAMERA_DEFAULT_ROT.z,
+        );
+        self._bed_camera_position =
+            pivot - camera_rotation_matrix.column(2).xyz() * (CAMERA_DISTANCE_MIN + BED_CAMERA_EXTRA_DIST);
         get_game_controller_mut().set_camera_fixed(true);
         self._is_camera_target_initialized = false;
         self.update_bed_camera(0.0);
@@ -133,22 +139,20 @@ impl<'a> ScenarioWrapUpTheDay<'a> {
             self._is_camera_target_initialized = true;
         } else if 0.0 < delta_time {
             let diff = goal_target_position - self._camera_target_position;
-            const ACCEL_SPEED: f32 = 25.0;
-            const DAMPING: f32 = 8.0;
-            self._camera_target_velocity += diff * ACCEL_SPEED * delta_time;
-            self._camera_target_velocity *= (-DAMPING * delta_time).exp();
+            self._camera_target_velocity += diff * CAMERA_ACCEL_SPEED * delta_time;
+            self._camera_target_velocity *= (-CAMERA_DAMPING * delta_time).exp();
             self._camera_target_position += self._camera_target_velocity * delta_time;
         }
 
         let diff = self._bed_camera_position - self._camera_target_position;
         let dist = diff.magnitude();
-        let camera_rotation = if 0.0001 < dist {
+        let camera_rotation = if MIN_VECTOR_DIST < dist {
             let back = diff / dist;
             let pitch = back.y.clamp(-1.0, 1.0).asin();
             let yaw = back.x.atan2(back.z);
             Vector3::new(pitch, yaw + std::f32::consts::PI, 0.0)
         } else {
-            Vector3::new(0.4, -1.4, 0.0)
+            BED_CAMERA_DEFAULT_ROT
         };
 
         get_game_controller_mut().set_camera_fixed_position_and_rotation(&self._bed_camera_position, &camera_rotation);
@@ -164,7 +168,7 @@ fn clamp_actor_position_from_bed(actor: &Option<RcRefCell<Character>>, bed_pos: 
         let mut diff = current_pos - bed_pos;
         diff.y = 0.0;
         let dist_xz = diff.magnitude();
-        if max_distance < dist_xz && 0.0001 < dist_xz {
+        if max_distance < dist_xz && MIN_VECTOR_DIST < dist_xz {
             let clamped_diff = (diff / dist_xz) * max_distance;
             let mut new_pos = *bed_pos + clamped_diff;
             new_pos.y = current_pos.y;
@@ -180,37 +184,42 @@ fn set_actor_table_position(
     direction: &Vector3<f32>,
 ) {
     if let (Some(actor_ref), Some(table_ref)) = (actor.as_ref(), table.as_ref()) {
-        let mut pos = table_ref.borrow().get_position() - math::safe_normalize(direction) * 1.0;
+        let mut pos = table_ref.borrow().get_position() - math::safe_normalize(direction) * TABLE_SEAT_INITIAL_DIST;
         pos.y = scene_manager.get_height_bilinear(&pos, 0);
-        actor_ref.borrow_mut().set_position(&pos);
-        actor_ref.borrow_mut().look_at(table_ref.borrow().get_position());
-        actor_ref.borrow_mut().set_next_behavior(BehaviorState::Idle, true);
+        let mut actor_mut = actor_ref.borrow_mut();
+        actor_mut.set_position(&pos);
+        actor_mut.look_at(table_ref.borrow().get_position());
+        actor_mut.set_next_behavior(BehaviorState::Idle, true);
     }
 }
 
-fn dance_in_place(actor: &Option<RcRefCell<Character>>, player: &Option<RcRefCell<Character>>) {
-    if let (Some(actor_ref), Some(player_ref)) = (actor.as_ref(), player.as_ref()) {
-        actor_ref.borrow_mut().look_at(player_ref.borrow().get_position());
+fn sync_actor_dance_state(
+    actor: &Option<RcRefCell<Character>>,
+    player: &Option<RcRefCell<Character>>,
+    should_dance: bool,
+) {
+    let Some(actor_ref) = actor.as_ref() else {
+        return;
+    };
+    let is_dancing = actor_ref.borrow().is_action(ActionAnimationState::Dance);
+    if should_dance && !is_dancing {
+        if let Some(player_ref) = player.as_ref() {
+            actor_ref.borrow_mut().look_at(player_ref.borrow().get_position());
+        }
         actor_ref.borrow_mut().set_next_behavior(BehaviorState::Dance, true);
-    }
-}
-
-fn stand_in_place(actor: &Option<RcRefCell<Character>>) {
-    if let Some(actor_ref) = actor.as_ref() {
+    } else if !should_dance && is_dancing {
         actor_ref.borrow_mut().set_next_behavior(BehaviorState::Idle, true);
     }
 }
 
 fn is_in_table_interaction_range(actor: &Character, table: &Option<RcRefCell<Prop>>) -> bool {
-    if let Some(table_prop) = table.as_ref() {
+    table.as_ref().is_some_and(|table_prop| {
         actor.check_in_range(
             table_prop.borrow().get_collision(),
             CHARACTER_INTERACTION_DISTANCE * 2.0,
             false,
         )
-    } else {
-        false
-    }
+    })
 }
 
 fn update_actor_table_eating<'a>(
@@ -225,84 +234,84 @@ fn update_actor_table_eating<'a>(
 
     if actor.borrow().is_action(ActionAnimationState::Dance) {
         return;
-    };
+    }
 
     let is_hungry = actor.borrow().get_hunger() > TARGET_HUNGER_THRESHOLD;
     let should_eat = has_eatable_item || is_hungry;
 
-    if should_eat {
-        if has_eatable_item {
-            if actor.borrow().is_action(ActionAnimationState::Hungry) {
-                actor.borrow_mut().set_action_none();
-            }
+    if !should_eat {
+        return;
+    }
 
-            let is_in_range = is_in_table_interaction_range(&actor.borrow(), table_opt);
+    if has_eatable_item {
+        if actor.borrow().is_action(ActionAnimationState::Hungry) {
+            actor.borrow_mut().set_action_none();
+        }
 
-            if !is_in_range {
-                if let Some(table_prop) = table_opt.as_ref() {
-                    let scene_manager = get_scene_manager();
-                    let mut seat_pos = table_prop.borrow().get_position() - math::safe_normalize(seat_direction) * 2.0;
-                    seat_pos.y = scene_manager.get_height_bilinear(&seat_pos, 0);
+        let is_in_range = is_in_table_interaction_range(&actor.borrow(), table_opt);
 
-                    let (direction, dist) =
-                        math::make_normalize_xz_with_norm(&(seat_pos - actor.borrow().get_position()));
-                    if dist > 0.3 {
-                        let mut actor_ref = actor.borrow_mut();
-                        actor_ref.set_behavior_none();
-                        actor_ref.set_move(&direction);
-                    } else {
-                        if !actor.borrow().is_move_stop() {
-                            actor.borrow_mut().set_move_idle();
-                        }
-                        actor.borrow_mut().look_at(table_prop.borrow().get_position());
+        if !is_in_range {
+            if let Some(table_prop) = table_opt.as_ref() {
+                let scene_manager = get_scene_manager();
+                let mut seat_pos =
+                    table_prop.borrow().get_position() - math::safe_normalize(seat_direction) * TABLE_SEAT_EATING_DIST;
+                seat_pos.y = scene_manager.get_height_bilinear(&seat_pos, 0);
+
+                let (direction, dist) = math::make_normalize_xz_with_norm(&(seat_pos - actor.borrow().get_position()));
+                if dist > TABLE_SEAT_ARRIVAL_DIST {
+                    let mut actor_ref = actor.borrow_mut();
+                    actor_ref.set_behavior_none();
+                    actor_ref.set_move(&direction);
+                } else {
+                    if !actor.borrow().is_move_stop() {
+                        actor.borrow_mut().set_move_idle();
                     }
-                }
-            } else {
-                if !actor.borrow().is_move_stop() {
-                    actor.borrow_mut().set_move_idle();
-                }
-                if let Some(table_prop) = table_opt.as_ref() {
                     actor.borrow_mut().look_at(table_prop.borrow().get_position());
                 }
-
-                let is_ready_to_eat = {
-                    let actor_ref = actor.borrow();
-                    actor_ref.get_attached_item().is_none()
-                        && !actor_ref.is_action(ActionAnimationState::Eating)
-                        && actor_ref._animation_state._next_action_animation_state != Some(ActionAnimationState::Eating)
-                        && actor_ref._behavior.get_behavior_data().get_next_behavior_state() != BehaviorState::Eating
-                };
-
-                if is_ready_to_eat {
-                    if let Some(table_prop) = table_opt.as_ref() {
-                        let item_manager = get_game_scene_manager().get_item_manager_mut();
-                        if let Some(item_data_name) = item_manager.consume_item_on_table(table_prop) {
-                            let mut actor_ref = actor.borrow_mut();
-                            actor_ref.apply_food_item_stats(item_data_name.as_str());
-
-                            if actor_ref.is_player() {
-                                item_manager.attach_item(&mut actor_ref, item_data_name.as_str());
-                                actor_ref.set_action_eating();
-                            } else {
-                                actor_ref.set_next_behavior(BehaviorState::Eating, true);
-                            }
-                        }
-                    }
-                }
             }
-        } else if is_hungry {
+        } else {
             if !actor.borrow().is_move_stop() {
                 actor.borrow_mut().set_move_idle();
             }
-
-            let mut actor_ref = actor.borrow_mut();
-            if actor_ref.get_attached_item().is_none()
-                && !actor_ref.is_action(ActionAnimationState::Eating)
-                && !actor_ref.is_action(ActionAnimationState::Hungry)
-            {
-                actor_ref.set_action_hungry();
-                actor_ref.set_sit_down();
+            if let Some(table_prop) = table_opt.as_ref() {
+                actor.borrow_mut().look_at(table_prop.borrow().get_position());
             }
+
+            let is_ready_to_eat = {
+                let actor_ref = actor.borrow();
+                actor_ref.get_attached_item().is_none()
+                    && !actor_ref.is_action(ActionAnimationState::Eating)
+                    && actor_ref._animation_state._next_action_animation_state != Some(ActionAnimationState::Eating)
+                    && actor_ref._behavior.get_behavior_data().get_next_behavior_state() != BehaviorState::Eating
+            };
+
+            if is_ready_to_eat && let Some(table_prop) = table_opt.as_ref() {
+                let item_manager = get_game_scene_manager().get_item_manager_mut();
+                if let Some(item_data_name) = item_manager.consume_item_on_table(table_prop) {
+                    let mut actor_ref = actor.borrow_mut();
+                    actor_ref.apply_food_item_stats(item_data_name.as_str());
+
+                    if actor_ref.is_player() {
+                        item_manager.attach_item(&mut actor_ref, item_data_name.as_str());
+                        actor_ref.set_action_eating();
+                    } else {
+                        actor_ref.set_next_behavior(BehaviorState::Eating, true);
+                    }
+                }
+            }
+        }
+    } else if is_hungry {
+        if !actor.borrow().is_move_stop() {
+            actor.borrow_mut().set_move_idle();
+        }
+
+        let mut actor_ref = actor.borrow_mut();
+        if actor_ref.get_attached_item().is_none()
+            && !actor_ref.is_action(ActionAnimationState::Eating)
+            && !actor_ref.is_action(ActionAnimationState::Hungry)
+        {
+            actor_ref.set_action_hungry();
+            actor_ref.set_sit_down();
         }
     }
 }
@@ -338,8 +347,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
     }
 
     fn set_scenario_phase_as_string(&mut self, scenario_phase: &String) {
-        self._scenario_track._scenario_phase =
-            ScenarioPhase::from_str(scenario_phase.as_str()).unwrap_or(ScenarioPhase::None);
+        self._scenario_track.set_phase_from_str(scenario_phase.as_str(), ScenarioPhase::None);
     }
 
     fn load_scenario_save_data(&mut self, scenario_save_data: &GameScenarioCreateInfo) {
@@ -370,9 +378,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
 
     fn is_allow_player_control(&self) -> bool {
         if matches!(self._scenario_track._scenario_phase, ScenarioPhase::Update) {
-            let player_is_dancing =
-                self._player.as_ref().is_some_and(|p| p.borrow().is_action(ActionAnimationState::Dance));
-            !player_is_dancing
+            !self._player.as_ref().is_some_and(|p| p.borrow().is_action(ActionAnimationState::Dance))
         } else {
             false
         }
@@ -462,21 +468,14 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
         let next_phase_duration = self._scenario_track._next_phase_duration;
 
         for state in State::iter() {
-            if prev_scenario_phase == next_scenario_phase && (state == State::End || state == State::Begin) {
+            let Some(update_scenario_phase) = self._scenario_track.resolve_state_phase(
+                state,
+                prev_scenario_phase,
+                next_scenario_phase,
+                next_phase_duration,
+            ) else {
                 continue;
-            }
-
-            let update_scenario_phase: ScenarioPhase = match state {
-                State::End => prev_scenario_phase,
-                State::Begin => {
-                    self._scenario_track.set_scenario_phase(next_scenario_phase, next_phase_duration);
-                    next_scenario_phase
-                }
-                State::Update => next_scenario_phase,
             };
-
-            let _phase_time = self._scenario_track.get_phase_time();
-            let _phase_ratio = self._scenario_track.get_phase_ratio();
 
             match update_scenario_phase {
                 ScenarioPhase::None => {
@@ -485,36 +484,26 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                 }
                 ScenarioPhase::Begin => match state {
                     State::Begin => {
-                        if let Some(actor) = &self._player {
-                            actor.borrow_mut().set_behavior_none();
-                            actor.borrow_mut().set_action_none();
-                        }
-                        if let Some(actor) = &self._actor_ewa {
-                            actor.borrow_mut().set_behavior_none();
-                            actor.borrow_mut().set_action_none();
-                        }
-                        if let Some(actor) = &self._actor_koa {
-                            actor.borrow_mut().set_behavior_none();
-                            actor.borrow_mut().set_action_none();
-                        }
+                        set_actors_behavior_none(&[&self._player, &self._actor_ewa, &self._actor_koa], true);
                         game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, DEFAULT_FADE_TIME);
                     }
                     State::Update => {
                         if game_ui_manager.is_done_manual_fade_out() {
+                            let scene_manager = get_scene_manager();
                             set_actor_table_position(
-                                get_scene_manager(),
+                                scene_manager,
                                 &self._player,
                                 &self._prop_table,
                                 &Vector3::new(0.0, 0.0, -1.0),
                             );
                             set_actor_table_position(
-                                get_scene_manager(),
+                                scene_manager,
                                 &self._actor_ewa,
                                 &self._prop_table,
                                 &Vector3::new(1.0, 0.0, -1.0),
                             );
                             set_actor_table_position(
-                                get_scene_manager(),
+                                scene_manager,
                                 &self._actor_koa,
                                 &self._prop_table,
                                 &Vector3::new(1.0, 0.0, 0.0),
@@ -527,12 +516,10 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                 },
                 ScenarioPhase::ResourceSettlement => match state {
                     State::Begin => {
-                        // set time of day
                         if get_game_scene_manager().get_time_of_day() < TIME_OF_NIGHT {
                             get_game_scene_manager_mut().set_time_of_day(TIME_OF_NIGHT);
                         }
 
-                        // set camera
                         self.setup_bed_camera();
 
                         let (_count, transferred_items) =
@@ -541,7 +528,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                     }
                     State::Update => {
                         let phase_time = self._scenario_track.get_phase_time();
-                        if 0.5 <= phase_time && !game_ui_manager.is_settlement_started() {
+                        if SETTLEMENT_START_DELAY <= phase_time && !game_ui_manager.is_settlement_started() {
                             game_ui_manager.start_daily_settlement();
                         }
 
@@ -566,16 +553,14 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                         let engine_core = get_engine_core();
                         let is_dance_pressed = engine_core._keyboard_input_data.get_key_pressed(KeyCode::KeyG)
                             || engine_core._joystick_input_data._btn_y == ButtonState::Pressed;
-                        let is_moving = engine_core._keyboard_input_data.get_key_pressed(KeyCode::KeyW)
-                            || engine_core._keyboard_input_data.get_key_pressed(KeyCode::KeyA)
-                            || engine_core._keyboard_input_data.get_key_pressed(KeyCode::KeyS)
-                            || engine_core._keyboard_input_data.get_key_pressed(KeyCode::KeyD)
-                            || engine_core._keyboard_input_data.get_key_hold(KeyCode::KeyW)
-                            || engine_core._keyboard_input_data.get_key_hold(KeyCode::KeyA)
-                            || engine_core._keyboard_input_data.get_key_hold(KeyCode::KeyS)
-                            || engine_core._keyboard_input_data.get_key_hold(KeyCode::KeyD)
-                            || engine_core._joystick_input_data._stick_left_direction.x.abs() > 3000
-                            || engine_core._joystick_input_data._stick_left_direction.y.abs() > 3000;
+                        let is_moving =
+                            [KeyCode::KeyW, KeyCode::KeyA, KeyCode::KeyS, KeyCode::KeyD].iter().any(|&key| {
+                                engine_core._keyboard_input_data.get_key_pressed(key)
+                                    || engine_core._keyboard_input_data.get_key_hold(key)
+                            }) || engine_core._joystick_input_data._stick_left_direction.x.abs()
+                                > JOYSTICK_MOVE_DEADZONE
+                                || engine_core._joystick_input_data._stick_left_direction.y.abs()
+                                    > JOYSTICK_MOVE_DEADZONE;
                         let is_any_input = engine_core._keyboard_input_data.is_any_key_pressed()
                             || engine_core._mouse_input_data._btn_l_pressed
                             || engine_core._mouse_input_data._btn_r_pressed
@@ -598,72 +583,42 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                                 || p_ref.is_action(ActionAnimationState::Hungry)
                         });
 
-                        if player_is_acting && is_any_input {
-                            if let Some(player) = &self._player {
-                                let mut player_ref = player.borrow_mut();
-                                player_ref.set_action_none();
-                                if player_ref.is_move_state(MoveAnimationState::SitDownLoop) {
-                                    player_ref.set_move_idle();
-                                }
+                        if player_is_acting
+                            && is_any_input
+                            && let Some(player) = &self._player
+                        {
+                            let mut player_ref = player.borrow_mut();
+                            player_ref.set_action_none();
+                            if player_ref.is_move_state(MoveAnimationState::SitDownLoop) {
+                                player_ref.set_move_idle();
                             }
                         }
 
                         let player_is_dancing =
                             self._player.as_ref().is_some_and(|p| p.borrow().is_action(ActionAnimationState::Dance));
 
-                        if player_is_dancing {
-                            let ewa_dancing = self
-                                ._actor_ewa
-                                .as_ref()
-                                .is_some_and(|a| a.borrow().is_action(ActionAnimationState::Dance));
-                            if !ewa_dancing {
-                                dance_in_place(&self._actor_ewa, &self._player);
-                            }
+                        sync_actor_dance_state(&self._actor_ewa, &self._player, player_is_dancing);
+                        sync_actor_dance_state(&self._actor_koa, &self._player, player_is_dancing);
 
-                            let koa_dancing = self
-                                ._actor_koa
-                                .as_ref()
-                                .is_some_and(|a| a.borrow().is_action(ActionAnimationState::Dance));
-                            if !koa_dancing {
-                                dance_in_place(&self._actor_koa, &self._player);
-                            }
-                        } else {
-                            let ewa_dancing = self
-                                ._actor_ewa
-                                .as_ref()
-                                .is_some_and(|a| a.borrow().is_action(ActionAnimationState::Dance));
-                            if ewa_dancing {
-                                stand_in_place(&self._actor_ewa);
-                            }
-
-                            let koa_dancing = self
-                                ._actor_koa
-                                .as_ref()
-                                .is_some_and(|a| a.borrow().is_action(ActionAnimationState::Dance));
-                            if koa_dancing {
-                                stand_in_place(&self._actor_koa);
-                            }
-
-                            let has_food_on_table_for_ewa = self._prop_table.as_ref().is_some_and(|table| {
+                        if !player_is_dancing {
+                            let has_food_for_ewa = self._prop_table.as_ref().is_some_and(|table| {
                                 get_game_scene_manager().get_item_manager().has_item_on_table(table)
                             });
-
                             update_actor_table_eating(
                                 &self._actor_ewa,
                                 &self._prop_table,
                                 &Vector3::new(0.0, 0.0, 1.0),
-                                has_food_on_table_for_ewa,
+                                has_food_for_ewa,
                             );
 
-                            let has_food_on_table_for_koa = self._prop_table.as_ref().is_some_and(|table| {
+                            let has_food_for_koa = self._prop_table.as_ref().is_some_and(|table| {
                                 get_game_scene_manager().get_item_manager().has_item_on_table(table)
                             });
-
                             update_actor_table_eating(
                                 &self._actor_koa,
                                 &self._prop_table,
                                 &Vector3::new(-1.0, 0.0, 0.0),
-                                has_food_on_table_for_koa,
+                                has_food_for_koa,
                             );
                         }
 
@@ -677,17 +632,10 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                             }
                             get_audio_manager_mut().play_audio_bank(AUDIO_QUEST_COMPLETE, AudioLoop::ONCE, None);
                             let item_manager = get_game_scene_manager().get_item_manager_mut();
-                            if let Some(actor) = &self._player {
-                                actor.borrow_mut().set_action_none();
-                                item_manager.detach_item(&mut actor.borrow_mut());
-                            }
-                            if let Some(actor) = &self._actor_ewa {
-                                actor.borrow_mut().set_action_none();
-                                item_manager.detach_item(&mut actor.borrow_mut());
-                            }
-                            if let Some(actor) = &self._actor_koa {
-                                actor.borrow_mut().set_action_none();
-                                item_manager.detach_item(&mut actor.borrow_mut());
+                            for actor in [&self._player, &self._actor_ewa, &self._actor_koa].into_iter().flatten() {
+                                let mut actor_mut = actor.borrow_mut();
+                                actor_mut.set_action_none();
+                                item_manager.detach_item(&mut actor_mut);
                             }
                             self._scenario_track.set_next_scenario_phase(ScenarioPhase::GoToSleep, None);
                         }
@@ -718,17 +666,16 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                     State::Update => {
                         if game_ui_manager.is_done_manual_fade_out() && self._sleep_timer < SLEEP_TIMER {
                             if self._sleep_timer == 0.0 {
-                                if let Some(actor) = &self._actor_ewa {
-                                    if let Some(bed) = &self._prop_bed_for_ewa {
-                                        actor.borrow_mut().set_position(bed.borrow().get_position());
+                                for (actor_opt, bed_opt) in [
+                                    (&self._actor_ewa, &self._prop_bed_for_ewa),
+                                    (&self._actor_koa, &self._prop_bed_for_koa),
+                                ] {
+                                    if let Some(actor) = actor_opt {
+                                        if let Some(bed) = bed_opt {
+                                            actor.borrow_mut().set_position(bed.borrow().get_position());
+                                        }
+                                        actor.borrow_mut().set_action_sleep();
                                     }
-                                    actor.borrow_mut().set_action_sleep();
-                                }
-                                if let Some(actor) = &self._actor_koa {
-                                    if let Some(bed) = &self._prop_bed_for_koa {
-                                        actor.borrow_mut().set_position(bed.borrow().get_position());
-                                    }
-                                    actor.borrow_mut().set_action_sleep();
                                 }
                             }
 
@@ -745,14 +692,8 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                                 if let Some(actor) = &self._player {
                                     actor.borrow_mut().set_action_wake_up();
                                 }
-                                if let Some(actor) = &self._actor_ewa {
-                                    actor.borrow_mut()._controller.set_flying_mode(false);
-                                    actor.borrow_mut().set_next_behavior(BehaviorState::WakeUp, true);
-                                }
-                                if let Some(actor) = &self._actor_koa {
-                                    actor.borrow_mut()._controller.set_flying_mode(false);
-                                    actor.borrow_mut().set_next_behavior(BehaviorState::WakeUp, true);
-                                }
+                                wake_up_npc_on_bed(&self._actor_ewa, None);
+                                wake_up_npc_on_bed(&self._actor_koa, None);
                             }
                             self._scenario_track.set_next_scenario_phase(ScenarioPhase::End, None);
                         } else {

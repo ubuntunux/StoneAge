@@ -60,6 +60,24 @@ impl ToolboxTab {
             _ => ToolboxTab::Skill,
         }
     }
+
+    pub fn next(&self) -> Self {
+        match self {
+            ToolboxTab::Skill => ToolboxTab::ItemCraft,
+            ToolboxTab::ItemCraft => ToolboxTab::Npc,
+            ToolboxTab::Npc => ToolboxTab::Teleport,
+            ToolboxTab::Teleport => ToolboxTab::Skill,
+        }
+    }
+
+    pub fn prev(&self) -> Self {
+        match self {
+            ToolboxTab::Skill => ToolboxTab::Teleport,
+            ToolboxTab::ItemCraft => ToolboxTab::Skill,
+            ToolboxTab::Npc => ToolboxTab::ItemCraft,
+            ToolboxTab::Teleport => ToolboxTab::Npc,
+        }
+    }
 }
 
 // ────────────────────────────────────────────────────────────────
@@ -86,7 +104,6 @@ pub struct ToolboxWidget<'a> {
     pub _active_tab: ToolboxTab,
     pub _last_opened_tab: ToolboxTab,
     pub _selected_item_index: usize,
-    pub _last_lstick_y: i16,
     pub _nav_repeat_controller: WidgetNavRepeatController,
 }
 
@@ -316,23 +333,22 @@ impl<'a> ToolboxWidget<'a> {
             _active_tab: ToolboxTab::Skill,
             _last_opened_tab: ToolboxTab::Skill,
             _selected_item_index: 0,
-            _last_lstick_y: 0,
             _nav_repeat_controller: WidgetNavRepeatController::new(),
         };
 
-        // Wire user_data on tab buttons → they need *const ToolboxWidget
-        // (safe because ToolboxWidget is stored in a Box in GameUIManager)
-        let self_ptr = &widget as *const ToolboxWidget<'a> as *const c_void;
-        ptr_as_mut(widget._tab_btn_skill.as_ref()).get_ui_component_mut().set_user_data(self_ptr);
-        ptr_as_mut(widget._tab_btn_item_craft.as_ref()).get_ui_component_mut().set_user_data(self_ptr);
-        ptr_as_mut(widget._tab_btn_npc.as_ref()).get_ui_component_mut().set_user_data(self_ptr);
-        ptr_as_mut(widget._tab_btn_teleport.as_ref()).get_ui_component_mut().set_user_data(self_ptr);
-        ptr_as_mut(widget._close_btn.as_ref()).get_ui_component_mut().set_user_data(self_ptr);
-
+        widget.update_tab_buttons_user_data();
         widget
     }
 
     // ── Tab switching ─────────────────────────────────────────────
+
+    fn update_tab_buttons_user_data(&self) {
+        let self_ptr = self as *const ToolboxWidget<'a> as *const c_void;
+        for btn in self.all_tab_buttons() {
+            ptr_as_mut(btn.as_ref()).get_ui_component_mut().set_user_data(self_ptr);
+        }
+        ptr_as_mut(self._close_btn.as_ref()).get_ui_component_mut().set_user_data(self_ptr);
+    }
 
     fn all_tab_buttons(&self) -> [&Rc<WidgetDefault<'a>>; 4] {
         [
@@ -423,13 +439,7 @@ impl<'a> ToolboxWidget<'a> {
             ptr_as_mut(self._parent_widget).add_widget(&self._layer);
             self._is_opened_toolbox = true;
 
-            // Update self_ptr on all tab buttons after being placed in its final location
-            let self_ptr = self as *const ToolboxWidget<'a> as *const c_void;
-            ptr_as_mut(self._tab_btn_skill.as_ref()).get_ui_component_mut().set_user_data(self_ptr);
-            ptr_as_mut(self._tab_btn_item_craft.as_ref()).get_ui_component_mut().set_user_data(self_ptr);
-            ptr_as_mut(self._tab_btn_npc.as_ref()).get_ui_component_mut().set_user_data(self_ptr);
-            ptr_as_mut(self._tab_btn_teleport.as_ref()).get_ui_component_mut().set_user_data(self_ptr);
-            ptr_as_mut(self._close_btn.as_ref()).get_ui_component_mut().set_user_data(self_ptr);
+            self.update_tab_buttons_user_data();
 
             // Restore last opened tab
             let last_tab = self._last_opened_tab;
@@ -475,21 +485,9 @@ impl<'a> ToolboxWidget<'a> {
             (tab_pressed && is_shift) || joystick_input_data._btn_left_shoulder == ButtonState::Pressed;
 
         if switch_tab_next {
-            let next_tab = match self._active_tab {
-                ToolboxTab::Skill => ToolboxTab::ItemCraft,
-                ToolboxTab::ItemCraft => ToolboxTab::Npc,
-                ToolboxTab::Npc => ToolboxTab::Teleport,
-                ToolboxTab::Teleport => ToolboxTab::Skill,
-            };
-            self.set_active_tab(next_tab);
+            self.set_active_tab(self._active_tab.next());
         } else if switch_tab_prev {
-            let prev_tab = match self._active_tab {
-                ToolboxTab::Skill => ToolboxTab::Teleport,
-                ToolboxTab::ItemCraft => ToolboxTab::Skill,
-                ToolboxTab::Npc => ToolboxTab::ItemCraft,
-                ToolboxTab::Teleport => ToolboxTab::Npc,
-            };
-            self.set_active_tab(prev_tab);
+            self.set_active_tab(self._active_tab.prev());
         }
 
         // Item navigation (with hold repeat)
@@ -499,28 +497,29 @@ impl<'a> ToolboxWidget<'a> {
 
         let item_count = self.get_active_tab_mut()._items.len();
         if should_move && item_count > 0 {
-            let (_dir_x, dir_y) = dir_opt.unwrap();
-            if dir_y < 0 {
-                if self._selected_item_index == 0 {
-                    self._selected_item_index = item_count - 1;
-                } else {
-                    self._selected_item_index -= 1;
+            if let Some((_dir_x, dir_y)) = dir_opt {
+                if dir_y < 0 {
+                    if self._selected_item_index == 0 {
+                        self._selected_item_index = item_count - 1;
+                    } else {
+                        self._selected_item_index -= 1;
+                    }
+                    get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
+                    self.update_item_selection();
+                } else if dir_y > 0 {
+                    if self._selected_item_index + 1 >= item_count {
+                        self._selected_item_index = 0;
+                    } else {
+                        self._selected_item_index += 1;
+                    }
+                    get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
+                    self.update_item_selection();
                 }
-                get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
-                self.update_item_selection();
-            } else if dir_y > 0 {
-                if self._selected_item_index + 1 >= item_count {
-                    self._selected_item_index = 0;
-                } else {
-                    self._selected_item_index += 1;
+                let sel_idx = self._selected_item_index;
+                let active_tab = self.get_active_tab_mut();
+                if let Some(item) = active_tab._items.get(sel_idx) {
+                    move_mouse_to_ui_component(item._layout.get_ui_component());
                 }
-                get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
-                self.update_item_selection();
-            }
-            let sel_idx = self._selected_item_index;
-            let active_tab = self.get_active_tab_mut();
-            if let Some(item) = active_tab._items.get(sel_idx) {
-                move_mouse_to_ui_component(item._layout.get_ui_component());
             }
         }
 

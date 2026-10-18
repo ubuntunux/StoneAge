@@ -255,36 +255,15 @@ impl<'a> TableStorageWidget<'a> {
         bg_mut.add_widget(&title_widget);
 
         // --- TOP SECTION: Table Storage Inventory ---
-        let table_section = UIManager::create_widget("table_section", UIWidgetTypes::Default);
+        let table_section = Self::create_storage_section(
+            bg_mut,
+            "table_section",
+            "[ Table Inventory ]",
+            get_color32(45, 38, 30, 200),
+            get_color32(140, 110, 70, 255),
+            get_color32(230, 190, 100, 255),
+        );
         let table_section_mut = ptr_as_mut(table_section.as_ref());
-        let ui_component = table_section_mut.get_ui_component_mut();
-        ui_component.set_layout_type(UILayoutType::BoxLayout);
-        ui_component.set_layout_orientation(Orientation::VERTICAL);
-        ui_component.set_halign(HorizontalAlign::CENTER);
-        ui_component.set_valign(VerticalAlign::TOP);
-        ui_component.set_color(get_color32(45, 38, 30, 200));
-        ui_component.set_border_color(get_color32(140, 110, 70, 255));
-        ui_component.set_border(1.0);
-        ui_component.set_round(6.0);
-        ui_component.set_padding(8.0);
-        ui_component.set_margin_bottom(10.0);
-        ui_component.set_size_hint_x(Some(1.0));
-        ui_component.set_size_y(0.0);
-        ui_component.set_expandable(true);
-        bg_mut.add_widget(&table_section);
-
-        let table_label = UIManager::create_widget("table_sec_label", UIWidgetTypes::Default);
-        let ui_component = ptr_as_mut(table_label.as_ref()).get_ui_component_mut();
-        ui_component.set_halign(HorizontalAlign::LEFT);
-        ui_component.set_valign(VerticalAlign::CENTER);
-        ui_component.set_size_hint_x(Some(1.0));
-        ui_component.set_size_y(24.0);
-        ui_component.set_margin_bottom(4.0);
-        ui_component.set_text("[ Table Inventory ]");
-        ui_component.set_font_size(22.0);
-        ui_component.set_font_color(get_color32(230, 190, 100, 255));
-        ui_component.set_color(get_color32(0, 0, 0, 0));
-        table_section_mut.add_widget(&table_label);
 
         for row in 0..TABLE_STORAGE_ROWS {
             let row_layout = TableStorageWidget::create_row_layout(table_section_mut, &format!("tbl_row_{}", row));
@@ -296,35 +275,15 @@ impl<'a> TableStorageWidget<'a> {
         }
 
         // --- BOTTOM SECTION: Player Inventory ---
-        let player_section = UIManager::create_widget("player_section", UIWidgetTypes::Default);
+        let player_section = Self::create_storage_section(
+            bg_mut,
+            "player_section",
+            "[ Player Inventory ]",
+            get_color32(30, 40, 50, 200),
+            get_color32(70, 100, 130, 255),
+            get_color32(120, 210, 240, 255),
+        );
         let player_section_mut = ptr_as_mut(player_section.as_ref());
-        let ui_component = player_section_mut.get_ui_component_mut();
-        ui_component.set_layout_type(UILayoutType::BoxLayout);
-        ui_component.set_layout_orientation(Orientation::VERTICAL);
-        ui_component.set_halign(HorizontalAlign::CENTER);
-        ui_component.set_valign(VerticalAlign::TOP);
-        ui_component.set_color(get_color32(30, 40, 50, 200));
-        ui_component.set_border_color(get_color32(70, 100, 130, 255));
-        ui_component.set_border(1.0);
-        ui_component.set_round(6.0);
-        ui_component.set_padding(8.0);
-        ui_component.set_size_hint_x(Some(1.0));
-        ui_component.set_size_y(0.0);
-        ui_component.set_expandable(true);
-        bg_mut.add_widget(&player_section);
-
-        let player_label = UIManager::create_widget("player_sec_label", UIWidgetTypes::Default);
-        let ui_component = ptr_as_mut(player_label.as_ref()).get_ui_component_mut();
-        ui_component.set_halign(HorizontalAlign::LEFT);
-        ui_component.set_valign(VerticalAlign::CENTER);
-        ui_component.set_size_hint_x(Some(1.0));
-        ui_component.set_size_y(24.0);
-        ui_component.set_margin_bottom(4.0);
-        ui_component.set_text("[ Player Inventory ]");
-        ui_component.set_font_size(22.0);
-        ui_component.set_font_color(get_color32(120, 210, 240, 255));
-        ui_component.set_color(get_color32(0, 0, 0, 0));
-        player_section_mut.add_widget(&player_label);
 
         let item_bar = get_game_ui_manager().get_item_bar_widget();
         let player_inv_rows = item_bar.get_inventory_rows();
@@ -337,6 +296,48 @@ impl<'a> TableStorageWidget<'a> {
                 self._player_slot_widgets.push(slot_widget);
             }
         }
+    }
+
+    fn create_storage_section(
+        parent: &mut WidgetDefault<'a>,
+        name: &str,
+        label_text: &str,
+        bg_color: u32,
+        border_color: u32,
+        label_color: u32,
+    ) -> Rc<WidgetDefault<'a>> {
+        let section = UIManager::create_widget(name, UIWidgetTypes::Default);
+        let section_mut = ptr_as_mut(section.as_ref());
+        let ui_component = section_mut.get_ui_component_mut();
+        ui_component.set_layout_type(UILayoutType::BoxLayout);
+        ui_component.set_layout_orientation(Orientation::VERTICAL);
+        ui_component.set_halign(HorizontalAlign::CENTER);
+        ui_component.set_valign(VerticalAlign::TOP);
+        ui_component.set_color(bg_color);
+        ui_component.set_border_color(border_color);
+        ui_component.set_border(1.0);
+        ui_component.set_round(6.0);
+        ui_component.set_padding(8.0);
+        ui_component.set_margin_bottom(10.0);
+        ui_component.set_size_hint_x(Some(1.0));
+        ui_component.set_size_y(0.0);
+        ui_component.set_expandable(true);
+        parent.add_widget(&section);
+
+        let label = UIManager::create_widget(&format!("{}_label", name), UIWidgetTypes::Default);
+        let label_ui = ptr_as_mut(label.as_ref()).get_ui_component_mut();
+        label_ui.set_halign(HorizontalAlign::LEFT);
+        label_ui.set_valign(VerticalAlign::CENTER);
+        label_ui.set_size_hint_x(Some(1.0));
+        label_ui.set_size_y(24.0);
+        label_ui.set_margin_bottom(4.0);
+        label_ui.set_text(label_text);
+        label_ui.set_font_size(22.0);
+        label_ui.set_font_color(label_color);
+        label_ui.set_color(get_color32(0, 0, 0, 0));
+        section_mut.add_widget(&label);
+
+        section
     }
 
     fn create_row_layout(parent_widget: &mut WidgetDefault<'a>, name: &str) -> Rc<WidgetDefault<'a>> {
@@ -567,13 +568,9 @@ impl<'a> TableStorageWidget<'a> {
                 }
             }
 
-            table_widget._drag_source_slot_index = INVALID_ITEM_INDEX;
+            table_widget.clear_drag_state();
             table_widget._focused_is_table_slot = clicked_is_table;
             table_widget._focused_slot_index = clicked_slot;
-
-            let drag_ui = ptr_as_mut(table_widget._drag_widget.as_ref()).get_ui_component_mut();
-            drag_ui.set_draggable(false);
-            drag_ui.set_visible(false);
         }
 
         table_widget.refresh_table_storage_widget();
@@ -643,17 +640,21 @@ impl<'a> TableStorageWidget<'a> {
         }
     }
 
+    pub fn clear_drag_state(&mut self) {
+        if self._drag_source_slot_index != INVALID_ITEM_INDEX {
+            self._drag_source_slot_index = INVALID_ITEM_INDEX;
+            let drag_ui = ptr_as_mut(self._drag_widget.as_ref()).get_ui_component_mut();
+            drag_ui.set_draggable(false);
+            drag_ui.set_visible(false);
+        }
+    }
+
     pub fn close_table_storage(&mut self) {
         if self._is_opened {
             self._is_opened = false;
             self._nav_repeat_controller.reset();
             self._item_info_widget.hide_item_info();
-            if self._drag_source_slot_index != INVALID_ITEM_INDEX {
-                self._drag_source_slot_index = INVALID_ITEM_INDEX;
-                let drag_ui = ptr_as_mut(self._drag_widget.as_ref()).get_ui_component_mut();
-                drag_ui.set_draggable(false);
-                drag_ui.set_visible(false);
-            }
+            self.clear_drag_state();
             let parent_mut = ptr_as_mut(self._parent_widget);
             parent_mut.remove_widget(self._layer.as_ref());
         }
@@ -781,7 +782,7 @@ impl<'a> TableStorageWidget<'a> {
             self._nav_repeat_controller.update(keyboard_input_data, joystick_input_data, delta_time);
 
         if should_move_slot {
-            let (dir_x, dir_y) = dir_opt.unwrap();
+            let (dir_x, dir_y) = dir_opt.unwrap_or((0, 0));
             let item_bar = get_game_ui_manager().get_item_bar_widget();
             let player_inv_rows = item_bar.get_inventory_rows();
 
@@ -955,10 +956,7 @@ impl<'a> TableStorageWidget<'a> {
             if self._table_inventory_slots[table_slot_idx]._item_count == 0 {
                 self._table_inventory_slots[table_slot_idx] = InventorySlotData::default();
                 if self._drag_source_is_table && self._drag_source_slot_index == table_slot_idx {
-                    self._drag_source_slot_index = INVALID_ITEM_INDEX;
-                    let drag_ui = ptr_as_mut(self._drag_widget.as_ref()).get_ui_component_mut();
-                    drag_ui.set_draggable(false);
-                    drag_ui.set_visible(false);
+                    self.clear_drag_state();
                 }
             }
 
@@ -1000,10 +998,7 @@ impl<'a> TableStorageWidget<'a> {
             if updated_p_slot._item_count == 0 {
                 updated_p_slot = InventorySlotData::default();
                 if !self._drag_source_is_table && self._drag_source_slot_index == player_slot_idx {
-                    self._drag_source_slot_index = INVALID_ITEM_INDEX;
-                    let drag_ui = ptr_as_mut(self._drag_widget.as_ref()).get_ui_component_mut();
-                    drag_ui.set_draggable(false);
-                    drag_ui.set_visible(false);
+                    self.clear_drag_state();
                 }
             }
             item_bar.set_inventory_slot_data(player_slot_idx, &updated_p_slot);

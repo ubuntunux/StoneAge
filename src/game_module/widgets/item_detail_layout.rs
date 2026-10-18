@@ -1,11 +1,13 @@
 use crate::game_module::actors::items::ItemDataType;
-use crate::game_module::game_service_locator::get_game_resources;
+use crate::game_module::game_service_locator::{get_game_resources, get_game_ui_manager};
 use rust_engine_3d::core::engine_service_locator::get_engine_resources;
 use rust_engine_3d::scene::ui::{
-    HorizontalAlign, Orientation, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault,
+    CallbackTouchEvent, HorizontalAlign, Orientation, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign,
+    WidgetDefault,
 };
 use rust_engine_3d::utilities::system::ptr_as_mut;
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
+use std::ffi::c_void;
 use std::rc::Rc;
 
 // ────────────────────────────────────────────────────────────────
@@ -68,6 +70,29 @@ pub const COLOR_BTN_DEFAULT_BORDER: u32 = get_color32(115, 60, 28, 220);
 pub const MAX_INGREDIENT_ENTRIES: usize = 4;
 
 // ────────────────────────────────────────────────────────────────
+// Shared Recipe & Ingredient Types
+// ────────────────────────────────────────────────────────────────
+pub struct IngredientReq {
+    pub _item_type: ItemDataType,
+    pub _count: usize,
+}
+
+impl IngredientReq {
+    pub fn item_code(&self) -> &'static str {
+        self._item_type.item_code()
+    }
+}
+
+pub struct RecipeListRowItem<'a> {
+    pub _layout: Rc<WidgetDefault<'a>>,
+    pub _icon: Rc<WidgetDefault<'a>>,
+    pub _name_lbl: Rc<WidgetDefault<'a>>,
+    pub _action_btn: Rc<WidgetDefault<'a>>,
+    pub _recipe_index: usize,
+    pub _widget_ptr: *const c_void,
+}
+
+// ────────────────────────────────────────────────────────────────
 // Helper Functions
 // ────────────────────────────────────────────────────────────────
 pub fn get_item_name_from_resource(item_code: &str) -> String {
@@ -109,6 +134,139 @@ pub fn setup_item_icon<'a>(icon_widget: &Rc<WidgetDefault<'a>>, item_code: &str,
     ui.set_enable(enable && has_item_data);
 }
 
+pub fn has_all_ingredients(ingredients: &[IngredientReq]) -> bool {
+    let ui_mgr = get_game_ui_manager();
+    ingredients.iter().all(|req| ui_mgr.get_total_item_count(req.item_code()) >= req._count)
+}
+
+pub fn update_recipe_action_button_style<'a>(
+    btn_widget: &Rc<WidgetDefault<'a>>,
+    enabled: bool,
+    active_bg: u32,
+    active_border: u32,
+) {
+    let btn_ui = ptr_as_mut(btn_widget.as_ref()).get_ui_component_mut();
+    if enabled {
+        btn_ui.set_color(active_bg);
+        btn_ui.set_border_color(active_border);
+        btn_ui.set_font_color(COLOR_WHITE);
+        btn_ui.set_touchable(true);
+    } else {
+        btn_ui.set_color(COLOR_BTN_DISABLED_BG);
+        btn_ui.set_border_color(COLOR_BTN_DISABLED_BORDER);
+        btn_ui.set_font_color(COLOR_TEXT_DISABLED);
+        btn_ui.set_touchable(false);
+    }
+}
+
+pub fn update_ingredient_requirements_ui<'a>(
+    ing_widgets: &mut [IngredientWidgetItem<'a>],
+    ingredients: &[IngredientReq],
+) {
+    let ui_mgr = get_game_ui_manager();
+    for (i, ing_widget) in ing_widgets.iter_mut().enumerate() {
+        let layout_ui = ptr_as_mut(ing_widget._layout.as_ref()).get_ui_component_mut();
+        if let Some(req) = ingredients.get(i) {
+            let req_code = req.item_code();
+            setup_item_icon(&ing_widget._icon, req_code, true);
+
+            let have = ui_mgr.get_total_item_count(req_code);
+            let ing_name = get_item_name_from_resource(req_code);
+            let text = format!("{} ({}/{})", ing_name, have, req._count);
+            let lbl_ui = ptr_as_mut(ing_widget._label.as_ref()).get_ui_component_mut();
+            lbl_ui.set_text(&text);
+            lbl_ui.set_font_color(if have >= req._count {
+                COLOR_TEXT_NORMAL
+            } else {
+                COLOR_TEXT_ERROR
+            });
+            layout_ui.set_enable(true);
+        } else {
+            layout_ui.set_enable(false);
+        }
+    }
+}
+
+pub fn create_recipe_list_row<'a>(
+    prefix: &str,
+    recipe_id: &str,
+    item_code: &str,
+    action_text: &str,
+    recipe_index: usize,
+    list_container: &mut WidgetDefault<'a>,
+    on_touch_over: CallbackTouchEvent<'a>,
+    on_select: CallbackTouchEvent<'a>,
+    on_action: CallbackTouchEvent<'a>,
+) -> Box<RecipeListRowItem<'a>> {
+    let row = UIManager::create_widget(&format!("{}_row_{}", prefix, recipe_id), UIWidgetTypes::Default);
+    let row_mut = ptr_as_mut(row.as_ref());
+    let ui = row_mut.get_ui_component_mut();
+    ui.set_layout_type(UILayoutType::BoxLayout);
+    ui.set_layout_orientation(Orientation::HORIZONTAL);
+    ui.set_halign(HorizontalAlign::LEFT);
+    ui.set_valign(VerticalAlign::CENTER);
+    ui.set_size_hint_x(Some(1.0));
+    ui.set_size_y(LIST_ITEM_ROW_HEIGHT);
+    ui.set_padding(6.0);
+    ui.set_color(COLOR_ITEM_NORMAL_BG);
+    ui.set_border_color(COLOR_ITEM_NORMAL_BORDER);
+    ui.set_border(2.0);
+    ui.set_round(6.0);
+    ui.set_margin(2.0);
+    ui.set_touchable(true);
+    ui.set_callback_touch_over(Some(Box::new(on_touch_over)));
+    ui.set_callback_touch_down(Some(Box::new(on_select)));
+    list_container.add_widget(&row);
+
+    let icon = UIManager::create_widget(&format!("{}_icon_{}", prefix, recipe_id), UIWidgetTypes::Default);
+    let ui = ptr_as_mut(icon.as_ref()).get_ui_component_mut();
+    ui.set_size(LIST_ITEM_ICON_SIZE, LIST_ITEM_ICON_SIZE);
+    ui.set_valign(VerticalAlign::CENTER);
+    ui.set_margin_right(8.0);
+    ui.set_color(COLOR_WHITE);
+    row_mut.add_widget(&icon);
+    setup_item_icon(&icon, item_code, true);
+
+    let item_name = get_item_name_from_resource(item_code);
+    let name_lbl = UIManager::create_widget(&format!("{}_name_{}", prefix, recipe_id), UIWidgetTypes::Default);
+    let ui = ptr_as_mut(name_lbl.as_ref()).get_ui_component_mut();
+    ui.set_size_hint_x(Some(1.0));
+    ui.set_size_y(LIST_ITEM_NAME_HEIGHT);
+    ui.set_valign(VerticalAlign::CENTER);
+    ui.set_text(&item_name);
+    ui.set_font_size(FONT_SIZE_TITLE);
+    ui.set_font_color(COLOR_TEXT_TITLE);
+    ui.set_color(COLOR_TRANSPARENT);
+    row_mut.add_widget(&name_lbl);
+
+    let action_btn = UIManager::create_widget(&format!("{}_btn_{}", prefix, recipe_id), UIWidgetTypes::Default);
+    let ui = ptr_as_mut(action_btn.as_ref()).get_ui_component_mut();
+    ui.set_size(LIST_ITEM_BTN_WIDTH, LIST_ITEM_BTN_HEIGHT);
+    ui.set_valign(VerticalAlign::CENTER);
+    ui.set_halign(HorizontalAlign::CENTER);
+    ui.set_color(COLOR_BTN_DEFAULT_BG);
+    ui.set_border_color(COLOR_BTN_DEFAULT_BORDER);
+    ui.set_border(2.0);
+    ui.set_round(6.0);
+    ui.set_text(action_text);
+    ui.set_font_size(FONT_SIZE_BUTTON);
+    ui.set_font_color(COLOR_TEXT_NORMAL);
+    ui.set_margin_right(4.0);
+    ui.set_touchable(true);
+    ui.set_callback_touch_over(Some(Box::new(on_touch_over)));
+    ui.set_callback_touch_down(Some(Box::new(on_action)));
+    row_mut.add_widget(&action_btn);
+
+    Box::new(RecipeListRowItem {
+        _layout: row,
+        _icon: icon,
+        _name_lbl: name_lbl,
+        _action_btn: action_btn,
+        _recipe_index: recipe_index,
+        _widget_ptr: std::ptr::null(),
+    })
+}
+
 // ────────────────────────────────────────────────────────────────
 // Common Structs
 // ────────────────────────────────────────────────────────────────
@@ -145,6 +303,121 @@ pub struct MasterDetailComponents<'a> {
     pub _detail_desc_box: Rc<WidgetDefault<'a>>,
     pub _detail_req_box: Rc<WidgetDefault<'a>>,
     pub _detail_ing_widgets: Vec<IngredientWidgetItem<'a>>,
+}
+
+pub fn create_detail_header<'a>(
+    prefix: &str,
+    detail_container: &mut WidgetDefault<'a>,
+) -> (Rc<WidgetDefault<'a>>, Rc<WidgetDefault<'a>>) {
+    let detail_hdr = UIManager::create_widget(&format!("{}_detail_hdr", prefix), UIWidgetTypes::Default);
+    let detail_hdr_mut = ptr_as_mut(detail_hdr.as_ref());
+    let ui = detail_hdr_mut.get_ui_component_mut();
+    ui.set_layout_type(UILayoutType::BoxLayout);
+    ui.set_layout_orientation(Orientation::HORIZONTAL);
+    ui.set_size_hint_x(Some(1.0));
+    ui.set_size_y(DETAIL_HEADER_HEIGHT);
+    ui.set_valign(VerticalAlign::CENTER);
+    ui.set_margin_bottom(10.0);
+    ui.set_color(COLOR_TRANSPARENT);
+    detail_container.add_widget(&detail_hdr);
+
+    let detail_icon = UIManager::create_widget(&format!("{}_detail_icon", prefix), UIWidgetTypes::Default);
+    let ui = ptr_as_mut(detail_icon.as_ref()).get_ui_component_mut();
+    ui.set_size(DETAIL_ICON_SIZE, DETAIL_ICON_SIZE);
+    ui.set_valign(VerticalAlign::CENTER);
+    ui.set_margin_right(12.0);
+    ui.set_color(COLOR_TEXT_TITLE);
+    detail_hdr_mut.add_widget(&detail_icon);
+
+    let detail_name_lbl = UIManager::create_widget(&format!("{}_detail_name", prefix), UIWidgetTypes::Default);
+    let ui = ptr_as_mut(detail_name_lbl.as_ref()).get_ui_component_mut();
+    ui.set_size_hint_x(Some(1.0));
+    ui.set_size_y(DETAIL_NAME_LABEL_HEIGHT);
+    ui.set_valign(VerticalAlign::CENTER);
+    ui.set_font_size(FONT_SIZE_TITLE);
+    ui.set_font_color(COLOR_TEXT_TITLE);
+    ui.set_color(COLOR_TRANSPARENT);
+    detail_hdr_mut.add_widget(&detail_name_lbl);
+
+    (detail_icon, detail_name_lbl)
+}
+
+pub fn create_detail_requirements_section<'a>(
+    prefix: &str,
+    detail_container: &mut WidgetDefault<'a>,
+    border_width: f32,
+    margin_bottom: f32,
+) -> (Rc<WidgetDefault<'a>>, Rc<WidgetDefault<'a>>) {
+    let req_text = UIManager::create_widget(&format!("{}_req_text", prefix), UIWidgetTypes::Default);
+    let ui = ptr_as_mut(req_text.as_ref()).get_ui_component_mut();
+    ui.set_halign(HorizontalAlign::LEFT);
+    ui.set_valign(VerticalAlign::CENTER);
+    ui.set_size_hint_x(Some(1.0));
+    ui.set_size_y(REQUIREMENT_HEADER_HEIGHT);
+    ui.set_margin_bottom(4.0);
+    ui.set_color(COLOR_TRANSPARENT);
+    ui.set_font_size(FONT_SIZE_NORMAL);
+    ui.set_text("Requirements:");
+    ui.set_font_color(COLOR_TEXT_SUCCESS);
+    detail_container.add_widget(&req_text);
+
+    let detail_req_box = UIManager::create_widget(&format!("{}_req_box", prefix), UIWidgetTypes::Default);
+    let detail_req_box_mut = ptr_as_mut(detail_req_box.as_ref());
+    let ui = detail_req_box_mut.get_ui_component_mut();
+    ui.set_layout_type(UILayoutType::BoxLayout);
+    ui.set_layout_orientation(Orientation::VERTICAL);
+    ui.set_halign(HorizontalAlign::LEFT);
+    ui.set_valign(VerticalAlign::TOP);
+    ui.set_size_hint_x(Some(1.0));
+    ui.set_expandable_y(true);
+    ui.set_size_y(0.0);
+    ui.set_padding(8.0);
+    ui.set_color(COLOR_BOX_BG);
+    ui.set_border_color(COLOR_BOX_BORDER);
+    ui.set_border(border_width);
+    ui.set_round(6.0);
+    if margin_bottom > 0.0 {
+        ui.set_margin_bottom(margin_bottom);
+    }
+    detail_container.add_widget(&detail_req_box);
+
+    (req_text, detail_req_box)
+}
+
+pub fn create_ingredient_widget_item<'a>(
+    widget_suffix: &str,
+    detail_req_box: &mut WidgetDefault<'a>,
+    icon_color: u32,
+) -> IngredientWidgetItem<'a> {
+    let ing_set = UIManager::create_widget(&format!("{}_detail_ing_set", widget_suffix), UIWidgetTypes::Default);
+    let ing_set_mut = ptr_as_mut(ing_set.as_ref());
+    let ui = ing_set_mut.get_ui_component_mut();
+    ui.set_layout_type(UILayoutType::BoxLayout);
+    ui.set_layout_orientation(Orientation::HORIZONTAL);
+    ui.set_size_hint_x(Some(1.0));
+    ui.set_size_y(INGREDIENT_SET_HEIGHT);
+    ui.set_color(COLOR_TRANSPARENT);
+    detail_req_box.add_widget(&ing_set);
+
+    let ing_icon = UIManager::create_widget(&format!("{}_detail_ing_icon", widget_suffix), UIWidgetTypes::Default);
+    let ui = ptr_as_mut(ing_icon.as_ref()).get_ui_component_mut();
+    ui.set_size(INGREDIENT_ICON_SIZE, INGREDIENT_ICON_SIZE);
+    ui.set_valign(VerticalAlign::CENTER);
+    ui.set_margin_right(8.0);
+    ui.set_color(icon_color);
+    ing_set_mut.add_widget(&ing_icon);
+
+    let ing_lbl = UIManager::create_widget(&format!("{}_detail_ing_lbl", widget_suffix), UIWidgetTypes::Default);
+    let ui = ptr_as_mut(ing_lbl.as_ref()).get_ui_component_mut();
+    ui.set_size_hint_x(Some(1.0));
+    ui.set_size_y(INGREDIENT_LABEL_HEIGHT);
+    ui.set_valign(VerticalAlign::CENTER);
+    ui.set_font_size(FONT_SIZE_NORMAL);
+    ui.set_font_color(COLOR_TEXT_NORMAL);
+    ui.set_color(COLOR_TRANSPARENT);
+    ing_set_mut.add_widget(&ing_lbl);
+
+    IngredientWidgetItem::new(ing_set, ing_icon, ing_lbl)
 }
 
 pub fn create_master_detail_components<'a>(
@@ -191,36 +464,7 @@ pub fn create_master_detail_components<'a>(
     ui.set_round(6.0);
     parent_layout.add_widget(&detail_container);
 
-    // Detail Header: Icon + Name
-    let detail_hdr = UIManager::create_widget(&format!("{}_detail_hdr", prefix), UIWidgetTypes::Default);
-    let detail_hdr_mut = ptr_as_mut(detail_hdr.as_ref());
-    let ui = detail_hdr_mut.get_ui_component_mut();
-    ui.set_layout_type(UILayoutType::BoxLayout);
-    ui.set_layout_orientation(Orientation::HORIZONTAL);
-    ui.set_size_hint_x(Some(1.0));
-    ui.set_size_y(DETAIL_HEADER_HEIGHT);
-    ui.set_valign(VerticalAlign::CENTER);
-    ui.set_margin_bottom(10.0);
-    ui.set_color(COLOR_TRANSPARENT);
-    detail_container_mut.add_widget(&detail_hdr);
-
-    let detail_icon = UIManager::create_widget(&format!("{}_detail_icon", prefix), UIWidgetTypes::Default);
-    let ui = ptr_as_mut(detail_icon.as_ref()).get_ui_component_mut();
-    ui.set_size(DETAIL_ICON_SIZE, DETAIL_ICON_SIZE);
-    ui.set_valign(VerticalAlign::CENTER);
-    ui.set_margin_right(12.0);
-    ui.set_color(COLOR_TEXT_TITLE);
-    detail_hdr_mut.add_widget(&detail_icon);
-
-    let detail_name_lbl = UIManager::create_widget(&format!("{}_detail_name", prefix), UIWidgetTypes::Default);
-    let ui = ptr_as_mut(detail_name_lbl.as_ref()).get_ui_component_mut();
-    ui.set_size_hint_x(Some(1.0));
-    ui.set_size_y(DETAIL_NAME_LABEL_HEIGHT);
-    ui.set_valign(VerticalAlign::CENTER);
-    ui.set_font_size(FONT_SIZE_TITLE);
-    ui.set_font_color(COLOR_TEXT_TITLE);
-    ui.set_color(COLOR_TRANSPARENT);
-    detail_hdr_mut.add_widget(&detail_name_lbl);
+    let (detail_icon, detail_name_lbl) = create_detail_header(prefix, detail_container_mut);
 
     // Description Box
     let detail_desc_box = UIManager::create_widget(&format!("{}_detail_desc_box", prefix), UIWidgetTypes::Default);
@@ -253,65 +497,14 @@ pub fn create_master_detail_components<'a>(
     ui.set_color(COLOR_TRANSPARENT);
     detail_desc_box_mut.add_widget(&detail_desc_lbl);
 
-    // Requirements Header
-    let req_text = UIManager::create_widget(&format!("{}_req_text", prefix), UIWidgetTypes::Default);
-    let ui = ptr_as_mut(req_text.as_ref()).get_ui_component_mut();
-    ui.set_size_hint_x(Some(1.0));
-    ui.set_size_y(REQUIREMENT_HEADER_HEIGHT);
-    ui.set_margin_bottom(4.0);
-    ui.set_color(COLOR_TRANSPARENT);
-    ui.set_font_size(FONT_SIZE_NORMAL);
-    ui.set_text("Requirements:");
-    ui.set_font_color(COLOR_TEXT_SUCCESS);
-    detail_container_mut.add_widget(&req_text);
-
-    // Requirements Box
-    let detail_req_box = UIManager::create_widget(&format!("{}_req_box", prefix), UIWidgetTypes::Default);
+    let (_req_text, detail_req_box) = create_detail_requirements_section(prefix, detail_container_mut, 1.0, 0.0);
     let detail_req_box_mut = ptr_as_mut(detail_req_box.as_ref());
-    let ui = detail_req_box_mut.get_ui_component_mut();
-    ui.set_layout_type(UILayoutType::BoxLayout);
-    ui.set_layout_orientation(Orientation::VERTICAL);
-    ui.set_size_hint_x(Some(1.0));
-    ui.set_expandable_y(true);
-    ui.set_size_y(0.0);
-    ui.set_padding(8.0);
-    ui.set_color(COLOR_BOX_BG);
-    ui.set_border_color(COLOR_BOX_BORDER);
-    ui.set_border(1.0);
-    ui.set_round(6.0);
-    detail_container_mut.add_widget(&detail_req_box);
 
-    let mut detail_ing_widgets = Vec::new();
+    let mut detail_ing_widgets = Vec::with_capacity(max_ingredients);
     for i in 0..max_ingredients {
-        let ing_set = UIManager::create_widget(&format!("{}_detail_ing_set_{}", prefix, i), UIWidgetTypes::Default);
-        let ing_set_mut = ptr_as_mut(ing_set.as_ref());
-        let ui = ing_set_mut.get_ui_component_mut();
-        ui.set_layout_type(UILayoutType::BoxLayout);
-        ui.set_layout_orientation(Orientation::HORIZONTAL);
-        ui.set_size_hint_x(Some(1.0));
-        ui.set_size_y(INGREDIENT_SET_HEIGHT);
-        ui.set_color(COLOR_TRANSPARENT);
-        detail_req_box_mut.add_widget(&ing_set);
-
-        let ing_icon = UIManager::create_widget(&format!("{}_detail_ing_icon_{}", prefix, i), UIWidgetTypes::Default);
-        let ui = ptr_as_mut(ing_icon.as_ref()).get_ui_component_mut();
-        ui.set_size(INGREDIENT_ICON_SIZE, INGREDIENT_ICON_SIZE);
-        ui.set_valign(VerticalAlign::CENTER);
-        ui.set_margin_right(8.0);
-        ui.set_color(COLOR_TEXT_TITLE);
-        ing_set_mut.add_widget(&ing_icon);
-
-        let ing_lbl = UIManager::create_widget(&format!("{}_detail_ing_lbl_{}", prefix, i), UIWidgetTypes::Default);
-        let ui = ptr_as_mut(ing_lbl.as_ref()).get_ui_component_mut();
-        ui.set_size_hint_x(Some(1.0));
-        ui.set_size_y(INGREDIENT_LABEL_HEIGHT);
-        ui.set_valign(VerticalAlign::CENTER);
-        ui.set_font_size(FONT_SIZE_NORMAL);
-        ui.set_font_color(COLOR_TEXT_NORMAL);
-        ui.set_color(COLOR_TRANSPARENT);
-        ing_set_mut.add_widget(&ing_lbl);
-
-        detail_ing_widgets.push(IngredientWidgetItem::new(ing_set, ing_icon, ing_lbl));
+        let ing_widget =
+            create_ingredient_widget_item(&format!("{}_{}", prefix, i), detail_req_box_mut, COLOR_TEXT_TITLE);
+        detail_ing_widgets.push(ing_widget);
     }
 
     MasterDetailComponents {

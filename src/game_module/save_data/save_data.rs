@@ -3,13 +3,18 @@ use crate::game_module::game_scene_manager::{DiscoveredWorldData, GameSceneSaveD
 use crate::game_module::game_weather::WeatherType;
 use crate::game_module::scenario::scenario::{GameScenarioCreateInfo, ScenarioType};
 use crate::game_module::widgets::item_bar::{
-    DEFAULT_INVENTORY_ROWS, InventoryItemCreateInfo, InventoryItemCreateInfoList,
+    DEFAULT_INVENTORY_ROWS, INVALID_ITEM_INDEX, InventoryItemCreateInfo, InventoryItemCreateInfoList,
 };
 use crate::game_module::widgets::toolbox_widget::ToolboxTab;
 use crate::game_module::widgets::toolbox_widget::item_tab_widget::ToolboxIconType;
 use rust_engine_3d::scene::camera::CameraCreateInfo;
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
+
+fn add_saturating_map_count(map: &mut HashMap<String, u32>, key: &str, amount: u32) {
+    let entry = map.entry(key.to_string()).or_insert(0);
+    *entry = entry.saturating_add(amount);
+}
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq)]
 #[serde(default)]
@@ -39,7 +44,7 @@ impl PlayerRecords {
     }
 
     pub fn increment_activity_stat(&mut self, key: &str, amount: u32) {
-        *self._custom_activity_counts.entry(key.to_string()).or_insert(0) += amount;
+        add_saturating_map_count(&mut self._custom_activity_counts, key, amount);
     }
 
     pub fn get_activity_stat(&self, key: &str) -> u32 {
@@ -63,7 +68,7 @@ impl PlayerRecords {
     }
 
     pub fn add_item_type_count(&mut self, item_type_name: &str, amount: u32) {
-        *self._item_type_counts.entry(item_type_name.to_string()).or_insert(0) += amount;
+        add_saturating_map_count(&mut self._item_type_counts, item_type_name, amount);
     }
 
     pub fn add_craft_count(&mut self, amount: u32) {
@@ -105,7 +110,7 @@ impl PlayerRecords {
     }
 
     pub fn add_monster_kill(&mut self, monster_name: &str) {
-        *self._monster_kill_counts.entry(monster_name.to_string()).or_insert(0) += 1;
+        add_saturating_map_count(&mut self._monster_kill_counts, monster_name, 1);
     }
 
     pub fn add_energy_balls(&mut self, amount: u32) {
@@ -157,14 +162,14 @@ impl Default for GameSaveData {
             _weather_type: WeatherType::None,
             _inventory_rows: DEFAULT_INVENTORY_ROWS,
             _inventory_item_create_info_list: Default::default(),
-            _table_storage_item_create_info_list: vec![],
-            _selected_inventory_item_index: usize::MAX,
+            _table_storage_item_create_info_list: Vec::new(),
+            _selected_inventory_item_index: INVALID_ITEM_INDEX,
             _selected_quick_slot: None,
             _unlocked_toolbox_items: HashSet::new(),
             _last_opened_toolbox_tab: ToolboxTab::Skill,
-            _last_game_scene_data_name: "".to_string(),
+            _last_game_scene_data_name: String::new(),
             _game_scenes: Default::default(),
-            _game_scenarios: vec![],
+            _game_scenarios: Vec::new(),
             _completed_game_scenarios: Default::default(),
             _is_controls_visible: true,
             _player_records: Default::default(),

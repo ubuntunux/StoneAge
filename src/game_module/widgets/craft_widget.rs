@@ -22,30 +22,23 @@ use std::ffi::c_void;
 use std::rc::Rc;
 use winit::keyboard::KeyCode;
 
-pub struct IngredientReq {
-    pub item_type: ItemDataType,
-    pub count: usize,
-}
+const CRAFT_DESC_BOX_HEIGHT: f32 = 70.0;
 
-impl IngredientReq {
-    pub fn item_code(&self) -> &'static str {
-        self.item_type.item_code()
-    }
-}
+pub type CraftWidgetItem<'a> = RecipeListRowItem<'a>;
 
 pub struct CraftRecipeData {
-    pub id: &'static str,
-    pub item_type: ItemDataType,
-    pub materials: &'static [IngredientReq],
+    pub _id: &'static str,
+    pub _item_type: ItemDataType,
+    pub _materials: &'static [IngredientReq],
 }
 
 impl CraftRecipeData {
     pub fn item_code(&self) -> &'static str {
-        self.item_type.item_code()
+        self._item_type.item_code()
     }
 
     pub fn toolbox_icon_type(&self) -> ToolboxIconType {
-        match self.item_type {
+        match self._item_type {
             ItemDataType::WoodenClub => ToolboxIconType::WoodenClub,
             ItemDataType::StoneAxe => ToolboxIconType::StoneAxe,
             ItemDataType::Spear => ToolboxIconType::FlintSpear,
@@ -61,121 +54,112 @@ impl CraftRecipeData {
 
 pub const CRAFT_RECIPES: [CraftRecipeData; 8] = [
     CraftRecipeData {
-        id: "wooden_club",
-        item_type: ItemDataType::WoodenClub,
-        materials: &[IngredientReq {
-            item_type: ItemDataType::Wood,
-            count: 1,
+        _id: "wooden_club",
+        _item_type: ItemDataType::WoodenClub,
+        _materials: &[IngredientReq {
+            _item_type: ItemDataType::Wood,
+            _count: 1,
         }],
     },
     CraftRecipeData {
-        id: "stone_axe",
-        item_type: ItemDataType::StoneAxe,
-        materials: &[
+        _id: "stone_axe",
+        _item_type: ItemDataType::StoneAxe,
+        _materials: &[
             IngredientReq {
-                item_type: ItemDataType::Wood,
-                count: 2,
+                _item_type: ItemDataType::Wood,
+                _count: 2,
             },
             IngredientReq {
-                item_type: ItemDataType::Rock,
-                count: 2,
-            },
-        ],
-    },
-    CraftRecipeData {
-        id: "flint_spear",
-        item_type: ItemDataType::Spear,
-        materials: &[
-            IngredientReq {
-                item_type: ItemDataType::Wood,
-                count: 3,
-            },
-            IngredientReq {
-                item_type: ItemDataType::Rock,
-                count: 2,
+                _item_type: ItemDataType::Rock,
+                _count: 2,
             },
         ],
     },
     CraftRecipeData {
-        id: "hunting_bow",
-        item_type: ItemDataType::Bow,
-        materials: &[
+        _id: "flint_spear",
+        _item_type: ItemDataType::Spear,
+        _materials: &[
             IngredientReq {
-                item_type: ItemDataType::Wood,
-                count: 4,
+                _item_type: ItemDataType::Wood,
+                _count: 3,
             },
             IngredientReq {
-                item_type: ItemDataType::Rock,
-                count: 2,
-            },
-        ],
-    },
-    CraftRecipeData {
-        id: "leather_armor",
-        item_type: ItemDataType::LeatherArmor,
-        materials: &[
-            IngredientReq {
-                item_type: ItemDataType::Meat,
-                count: 3,
-            },
-            IngredientReq {
-                item_type: ItemDataType::Wood,
-                count: 2,
+                _item_type: ItemDataType::Rock,
+                _count: 2,
             },
         ],
     },
     CraftRecipeData {
-        id: "bone_shield",
-        item_type: ItemDataType::BoneShield,
-        materials: &[
+        _id: "hunting_bow",
+        _item_type: ItemDataType::Bow,
+        _materials: &[
             IngredientReq {
-                item_type: ItemDataType::Wood,
-                count: 4,
+                _item_type: ItemDataType::Wood,
+                _count: 4,
             },
             IngredientReq {
-                item_type: ItemDataType::Rock,
-                count: 2,
-            },
-        ],
-    },
-    CraftRecipeData {
-        id: "campfire",
-        item_type: ItemDataType::Campfire,
-        materials: &[
-            IngredientReq {
-                item_type: ItemDataType::Wood,
-                count: 5,
-            },
-            IngredientReq {
-                item_type: ItemDataType::Rock,
-                count: 5,
+                _item_type: ItemDataType::Rock,
+                _count: 2,
             },
         ],
     },
     CraftRecipeData {
-        id: "worktable",
-        item_type: ItemDataType::Worktable,
-        materials: &[
+        _id: "leather_armor",
+        _item_type: ItemDataType::LeatherArmor,
+        _materials: &[
             IngredientReq {
-                item_type: ItemDataType::Wood,
-                count: 8,
+                _item_type: ItemDataType::Meat,
+                _count: 3,
             },
             IngredientReq {
-                item_type: ItemDataType::Rock,
-                count: 4,
+                _item_type: ItemDataType::Wood,
+                _count: 2,
+            },
+        ],
+    },
+    CraftRecipeData {
+        _id: "bone_shield",
+        _item_type: ItemDataType::BoneShield,
+        _materials: &[
+            IngredientReq {
+                _item_type: ItemDataType::Wood,
+                _count: 4,
+            },
+            IngredientReq {
+                _item_type: ItemDataType::Rock,
+                _count: 2,
+            },
+        ],
+    },
+    CraftRecipeData {
+        _id: "campfire",
+        _item_type: ItemDataType::Campfire,
+        _materials: &[
+            IngredientReq {
+                _item_type: ItemDataType::Wood,
+                _count: 5,
+            },
+            IngredientReq {
+                _item_type: ItemDataType::Rock,
+                _count: 5,
+            },
+        ],
+    },
+    CraftRecipeData {
+        _id: "worktable",
+        _item_type: ItemDataType::Worktable,
+        _materials: &[
+            IngredientReq {
+                _item_type: ItemDataType::Wood,
+                _count: 8,
+            },
+            IngredientReq {
+                _item_type: ItemDataType::Rock,
+                _count: 4,
             },
         ],
     },
 ];
-
-pub struct CraftWidgetItem<'a> {
-    pub _layout: Rc<WidgetDefault<'a>>,
-    pub _icon: Rc<WidgetDefault<'a>>,
-    pub _name_lbl: Rc<WidgetDefault<'a>>,
-    pub _action_btn: Rc<WidgetDefault<'a>>,
-    pub _recipe_index: usize,
-    pub _widget_ptr: *const c_void,
-}
 
 pub struct CraftWidget<'a> {
     pub _parent_widget: *const WidgetDefault<'a>,
@@ -189,7 +173,6 @@ pub struct CraftWidget<'a> {
     pub _detail_ing_widgets: Vec<IngredientWidgetItem<'a>>,
     pub _is_opened: bool,
     pub _selected_index: usize,
-    pub _last_stick_y: i8,
     pub _nav_repeat_controller: WidgetNavRepeatController,
 }
 
@@ -224,82 +207,24 @@ impl<'a> CraftWidget<'a> {
         ui.set_renderable(true);
         ui.set_enable(true);
 
-        let master_detail = create_master_detail_components("craft", layer_mut, 70.0, MAX_INGREDIENT_ENTRIES);
+        let master_detail =
+            create_master_detail_components("craft", layer_mut, CRAFT_DESC_BOX_HEIGHT, MAX_INGREDIENT_ENTRIES);
 
         // Build Left List Items
         let list_container_mut = ptr_as_mut(master_detail._list_container.as_ref());
-        let mut items = Vec::new();
+        let mut items = Vec::with_capacity(CRAFT_RECIPES.len());
         for (idx, recipe) in CRAFT_RECIPES.iter().enumerate() {
-            let row = UIManager::create_widget(&format!("craft_row_{}", recipe.id), UIWidgetTypes::Default);
-            let row_mut = ptr_as_mut(row.as_ref());
-            let ui = row_mut.get_ui_component_mut();
-            ui.set_layout_type(UILayoutType::BoxLayout);
-            ui.set_layout_orientation(Orientation::HORIZONTAL);
-            ui.set_halign(HorizontalAlign::LEFT);
-            ui.set_valign(VerticalAlign::CENTER);
-            ui.set_size_hint_x(Some(1.0));
-            ui.set_size_y(LIST_ITEM_ROW_HEIGHT);
-            ui.set_padding(6.0);
-            ui.set_color(COLOR_ITEM_NORMAL_BG);
-            ui.set_border_color(COLOR_ITEM_NORMAL_BORDER);
-            ui.set_border(2.0);
-            ui.set_round(6.0);
-            ui.set_margin(2.0);
-            ui.set_touchable(true);
-            ui.set_callback_touch_over(Some(Box::new(Self::callback_item_touch_over)));
-            ui.set_callback_touch_down(Some(Box::new(Self::callback_item_select)));
-            list_container_mut.add_widget(&row);
-
-            // Icon
-            let icon = UIManager::create_widget(&format!("craft_icon_{}", recipe.id), UIWidgetTypes::Default);
-            let ui = ptr_as_mut(icon.as_ref()).get_ui_component_mut();
-            ui.set_size(LIST_ITEM_ICON_SIZE, LIST_ITEM_ICON_SIZE);
-            ui.set_valign(VerticalAlign::CENTER);
-            ui.set_margin_right(8.0);
-            ui.set_color(COLOR_WHITE);
-            row_mut.add_widget(&icon);
-            Self::setup_item_icon(&icon, recipe.item_code());
-
-            // Name Label
-            let item_name = Self::get_item_name_from_resource(recipe.item_code());
-            let name_lbl = UIManager::create_widget(&format!("craft_name_{}", recipe.id), UIWidgetTypes::Default);
-            let ui = ptr_as_mut(name_lbl.as_ref()).get_ui_component_mut();
-            ui.set_size_hint_x(Some(1.0));
-            ui.set_size_y(LIST_ITEM_NAME_HEIGHT);
-            ui.set_valign(VerticalAlign::CENTER);
-            ui.set_text(&item_name);
-            ui.set_font_size(FONT_SIZE_TITLE);
-            ui.set_font_color(COLOR_TEXT_TITLE);
-            ui.set_color(COLOR_TRANSPARENT);
-            row_mut.add_widget(&name_lbl);
-
-            // Action Button ("Craft")
-            let craft_btn = UIManager::create_widget(&format!("craft_btn_{}", recipe.id), UIWidgetTypes::Default);
-            let ui = ptr_as_mut(craft_btn.as_ref()).get_ui_component_mut();
-            ui.set_size(LIST_ITEM_BTN_WIDTH, LIST_ITEM_BTN_HEIGHT);
-            ui.set_valign(VerticalAlign::CENTER);
-            ui.set_halign(HorizontalAlign::CENTER);
-            ui.set_color(COLOR_BTN_DEFAULT_BG);
-            ui.set_border_color(COLOR_BTN_DEFAULT_BORDER);
-            ui.set_border(2.0);
-            ui.set_round(6.0);
-            ui.set_text("Craft");
-            ui.set_font_size(FONT_SIZE_BUTTON);
-            ui.set_font_color(COLOR_TEXT_NORMAL);
-            ui.set_margin_right(4.0);
-            ui.set_touchable(true);
-            ui.set_callback_touch_over(Some(Box::new(Self::callback_item_touch_over)));
-            ui.set_callback_touch_down(Some(Box::new(Self::callback_craft_action)));
-            row_mut.add_widget(&craft_btn);
-
-            items.push(Box::new(CraftWidgetItem {
-                _layout: row,
-                _icon: icon,
-                _name_lbl: name_lbl,
-                _action_btn: craft_btn,
-                _recipe_index: idx,
-                _widget_ptr: std::ptr::null(),
-            }));
+            items.push(create_recipe_list_row(
+                "craft",
+                recipe._id,
+                recipe.item_code(),
+                "Craft",
+                idx,
+                list_container_mut,
+                Self::callback_item_touch_over,
+                Self::callback_item_select,
+                Self::callback_craft_action,
+            ));
         }
 
         CraftWidget {
@@ -314,7 +239,6 @@ impl<'a> CraftWidget<'a> {
             _detail_ing_widgets: master_detail._detail_ing_widgets,
             _is_opened: false,
             _selected_index: 0,
-            _last_stick_y: 0,
             _nav_repeat_controller: WidgetNavRepeatController::new(),
         }
     }
@@ -354,9 +278,8 @@ impl<'a> CraftWidget<'a> {
     }
 
     pub fn is_recipe_unlocked(index: usize) -> bool {
-        if index < CRAFT_RECIPES.len() {
-            let unlocked = get_game_ui_manager().get_unlocked_toolbox_items();
-            unlocked.contains(&CRAFT_RECIPES[index].toolbox_icon_type())
+        if let Some(recipe) = CRAFT_RECIPES.get(index) {
+            get_game_ui_manager().get_unlocked_toolbox_items().contains(&recipe.toolbox_icon_type())
         } else {
             false
         }
@@ -393,9 +316,9 @@ impl<'a> CraftWidget<'a> {
         let recipe = &CRAFT_RECIPES[recipe_index];
 
         // Check ingredient counts
-        for req in recipe.materials {
+        for req in recipe._materials {
             let have_count = get_game_ui_manager().get_total_item_count(req.item_code());
-            if have_count < req.count {
+            if have_count < req._count {
                 let recipe_name = Self::get_item_name_from_resource(recipe.item_code());
                 let ing_name = Self::get_item_name_from_resource(req.item_code());
                 log::warn!(
@@ -403,7 +326,7 @@ impl<'a> CraftWidget<'a> {
                     recipe_name,
                     ing_name,
                     have_count,
-                    req.count
+                    req._count
                 );
                 return false;
             }
@@ -411,8 +334,8 @@ impl<'a> CraftWidget<'a> {
 
         // Deduct materials
         let item_mgr = get_item_manager_mut();
-        for req in recipe.materials {
-            item_mgr.remove_inventory_item(req.item_code(), req.count);
+        for req in recipe._materials {
+            item_mgr.remove_inventory_item(req.item_code(), req._count);
         }
 
         // Grant crafted item
@@ -473,8 +396,7 @@ impl<'a> CraftWidget<'a> {
                 ptr_as_mut(self._detail_name_lbl.as_ref()).get_ui_component_mut().set_text("");
                 ptr_as_mut(self._detail_desc_lbl.as_ref()).get_ui_component_mut().set_text("");
                 for ing_widget in self._detail_ing_widgets.iter_mut() {
-                    let layout_ui = ptr_as_mut(ing_widget._layout.as_ref()).get_ui_component_mut();
-                    layout_ui.set_enable(false);
+                    ptr_as_mut(ing_widget._layout.as_ref()).get_ui_component_mut().set_enable(false);
                 }
                 return;
             }
@@ -490,72 +412,30 @@ impl<'a> CraftWidget<'a> {
         let desc_text = Self::get_item_description_from_resource(item_code);
         ptr_as_mut(self._detail_desc_lbl.as_ref()).get_ui_component_mut().set_text(&desc_text);
 
-        let ui_mgr = get_game_ui_manager();
-        for (i, ing_widget) in self._detail_ing_widgets.iter_mut().enumerate() {
-            let layout_ui = ptr_as_mut(ing_widget._layout.as_ref()).get_ui_component_mut();
-            if i < recipe.materials.len() {
-                let req = &recipe.materials[i];
-                let req_code = req.item_code();
-                Self::setup_item_icon(&ing_widget._icon, req_code);
-
-                let have = ui_mgr.get_total_item_count(req_code);
-                let ing_name = Self::get_item_name_from_resource(req_code);
-                let text = format!("{} ({}/{})", ing_name, have, req.count);
-                let lbl_ui = ptr_as_mut(ing_widget._label.as_ref()).get_ui_component_mut();
-                lbl_ui.set_text(&text);
-                if have >= req.count {
-                    lbl_ui.set_font_color(COLOR_TEXT_NORMAL);
-                } else {
-                    lbl_ui.set_font_color(COLOR_TEXT_ERROR);
-                }
-                layout_ui.set_enable(true);
-            } else {
-                layout_ui.set_enable(false);
-            }
-        }
+        update_ingredient_requirements_ui(&mut self._detail_ing_widgets, recipe._materials);
     }
 
     pub fn refresh_recipe_labels(&mut self) {
-        let ui_mgr = get_game_ui_manager();
-        let unlocked_set = ui_mgr.get_unlocked_toolbox_items();
+        let unlocked_set = get_game_ui_manager().get_unlocked_toolbox_items();
 
         for item in self._items.iter_mut() {
-            if item._recipe_index < CRAFT_RECIPES.len() {
-                let recipe = &CRAFT_RECIPES[item._recipe_index];
+            if let Some(recipe) = CRAFT_RECIPES.get(item._recipe_index) {
                 let is_unlocked = unlocked_set.contains(&recipe.toolbox_icon_type());
-
-                let layout_ui = ptr_as_mut(item._layout.as_ref()).get_ui_component_mut();
-                layout_ui.set_enable(is_unlocked);
-
+                ptr_as_mut(item._layout.as_ref()).get_ui_component_mut().set_enable(is_unlocked);
                 if !is_unlocked {
                     continue;
                 }
 
                 let recipe_item_name = Self::get_item_name_from_resource(recipe.item_code());
-                let name_ui = ptr_as_mut(item._name_lbl.as_ref()).get_ui_component_mut();
-                name_ui.set_text(&recipe_item_name);
+                ptr_as_mut(item._name_lbl.as_ref()).get_ui_component_mut().set_text(&recipe_item_name);
 
-                let mut can_craft = true;
-                for req in recipe.materials.iter() {
-                    let have = ui_mgr.get_total_item_count(req.item_code());
-                    if have < req.count {
-                        can_craft = false;
-                        break;
-                    }
-                }
-
-                let btn_ui = ptr_as_mut(item._action_btn.as_ref()).get_ui_component_mut();
-                if can_craft {
-                    btn_ui.set_color(COLOR_BTN_CRAFT_BG);
-                    btn_ui.set_border_color(COLOR_BTN_CRAFT_BORDER);
-                    btn_ui.set_font_color(COLOR_WHITE);
-                    btn_ui.set_touchable(true);
-                } else {
-                    btn_ui.set_color(COLOR_BTN_DISABLED_BG);
-                    btn_ui.set_border_color(COLOR_BTN_DISABLED_BORDER);
-                    btn_ui.set_font_color(COLOR_TEXT_DISABLED);
-                    btn_ui.set_touchable(false);
-                }
+                let can_craft = has_all_ingredients(recipe._materials);
+                update_recipe_action_button_style(
+                    &item._action_btn,
+                    can_craft,
+                    COLOR_BTN_CRAFT_BG,
+                    COLOR_BTN_CRAFT_BORDER,
+                );
             }
         }
 
@@ -616,19 +496,20 @@ impl<'a> CraftWidget<'a> {
             self._nav_repeat_controller.update(keyboard_input_data, joystick_input_data, delta_time);
 
         if should_move {
-            let (_dir_x, dir_y) = dir_opt.unwrap();
-            let selected_idx = if dir_y < 0 {
-                self.get_prev_unlocked_index(self._selected_index)
-            } else if dir_y > 0 {
-                self.get_next_unlocked_index(self._selected_index)
-            } else {
-                None
-            };
-            if let Some(idx) = selected_idx {
-                self.select_recipe(idx);
-                get_audio_manager_mut().play_audio_bank(AUDIO_SELECT_ITEM, AudioLoop::ONCE, None);
-                if let Some(item) = self._items.get(idx) {
-                    move_mouse_to_ui_component(item._layout.get_ui_component());
+            if let Some((_dir_x, dir_y)) = dir_opt {
+                let selected_idx = if dir_y < 0 {
+                    self.get_prev_unlocked_index(self._selected_index)
+                } else if dir_y > 0 {
+                    self.get_next_unlocked_index(self._selected_index)
+                } else {
+                    None
+                };
+                if let Some(idx) = selected_idx {
+                    self.select_recipe(idx);
+                    get_audio_manager_mut().play_audio_bank(AUDIO_SELECT_ITEM, AudioLoop::ONCE, None);
+                    if let Some(item) = self._items.get(idx) {
+                        move_mouse_to_ui_component(item._layout.get_ui_component());
+                    }
                 }
             }
         }

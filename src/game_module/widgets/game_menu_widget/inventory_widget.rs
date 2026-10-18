@@ -315,7 +315,6 @@ impl<'a> InventoryWidget<'a> {
             ui_component.set_font_size(22.0);
             ui_component.set_font_color(get_color32(75, 45, 20, 255));
             equip_row_mut.add_widget(&equip_label);
-            equip_row_mut.add_widget(&equip_label);
 
             let slot_item = InventorySlotWidget::create(self, equip_row_mut, slot_idx);
             self._slot_widgets.push(slot_item);
@@ -427,12 +426,8 @@ impl<'a> InventoryWidget<'a> {
                     get_game_ui_manager_mut().swap_inventory_slots(src_slot, clicked_slot);
                 }
             }
-            inventory_widget._drag_source_slot_index = INVALID_ITEM_INDEX;
+            inventory_widget.clear_drag_state();
             inventory_widget._focused_slot_index = clicked_slot;
-
-            let drag_ui = ptr_as_mut(inventory_widget._drag_widget.as_ref()).get_ui_component_mut();
-            drag_ui.set_draggable(false);
-            drag_ui.set_visible(false);
         }
 
         inventory_widget.refresh_inventory_widget();
@@ -484,6 +479,33 @@ impl<'a> InventoryWidget<'a> {
         }
     }
 
+    pub fn clear_drag_state(&mut self) {
+        if self._drag_source_slot_index != INVALID_ITEM_INDEX {
+            self._drag_source_slot_index = INVALID_ITEM_INDEX;
+            let drag_ui = ptr_as_mut(self._drag_widget.as_ref()).get_ui_component_mut();
+            drag_ui.set_draggable(false);
+            drag_ui.set_visible(false);
+        }
+    }
+
+    fn try_drop_slot_item(&mut self, target_slot: usize) {
+        let item_bar = get_game_ui_manager().get_item_bar_widget();
+        if target_slot != INVALID_ITEM_INDEX && item_bar.is_valid_slot_index(target_slot) {
+            let slot_data = item_bar.get_inventory_slot_data(target_slot);
+            if slot_data._item_count > 0
+                && slot_data._item_data_name != ITEM_NONE
+                && slot_data._item_data_type.is_droppable()
+            {
+                let item_data_name = slot_data._item_data_name.clone();
+                get_item_manager_mut().drop_inventory_item(&item_data_name, 1);
+
+                if self._drag_source_slot_index == target_slot {
+                    self.clear_drag_state();
+                }
+            }
+        }
+    }
+
     pub fn close_inventory(&mut self) {
         if self._is_opened_inventory {
             self._is_opened_inventory = false;
@@ -491,12 +513,7 @@ impl<'a> InventoryWidget<'a> {
             self._hovered_slot_index = INVALID_ITEM_INDEX;
             self._nav_repeat_controller.reset();
             self._item_info_widget.hide_item_info();
-            if self._drag_source_slot_index != INVALID_ITEM_INDEX {
-                self._drag_source_slot_index = INVALID_ITEM_INDEX;
-                let drag_ui = ptr_as_mut(self._drag_widget.as_ref()).get_ui_component_mut();
-                drag_ui.set_draggable(false);
-                drag_ui.set_visible(false);
-            }
+            self.clear_drag_state();
             let parent_mut = ptr_as_mut(self._parent_widget);
             parent_mut.remove_widget(self._layer.as_ref());
         }
@@ -613,7 +630,7 @@ impl<'a> InventoryWidget<'a> {
             let new_focused_slot = if self._focused_slot_index == INVALID_ITEM_INDEX {
                 0
             } else {
-                let (dir_x, dir_y) = dir_opt.unwrap();
+                let (dir_x, dir_y) = dir_opt.unwrap_or((0, 0));
                 let is_equip_row = self._focused_slot_index >= EQUIPMENT_SLOT_START_INDEX;
                 let mut r = if is_equip_row {
                     inv_rows + (self._focused_slot_index - EQUIPMENT_SLOT_START_INDEX)
@@ -664,10 +681,7 @@ impl<'a> InventoryWidget<'a> {
                 if src_slot != new_focused_slot {
                     get_game_ui_manager_mut().swap_inventory_slots(src_slot, new_focused_slot);
                 }
-                self._drag_source_slot_index = INVALID_ITEM_INDEX;
-                let drag_ui = ptr_as_mut(self._drag_widget.as_ref()).get_ui_component_mut();
-                drag_ui.set_draggable(false);
-                drag_ui.set_visible(false);
+                self.clear_drag_state();
             }
 
             self._focused_slot_index = new_focused_slot;
@@ -701,48 +715,12 @@ impl<'a> InventoryWidget<'a> {
 
             // Only proceed if mouse pointer is directly over a valid slot
             if hovered_slot != INVALID_ITEM_INDEX && item_bar.is_valid_slot_index(hovered_slot) {
-                // Focus the slot under mouse pointer
                 self._focused_slot_index = hovered_slot;
                 self._hovered_slot_index = hovered_slot;
-
-                // Drop item if slot is not empty and is droppable
-                let slot_data = item_bar.get_inventory_slot_data(hovered_slot);
-                if slot_data._item_count > 0
-                    && slot_data._item_data_name != ITEM_NONE
-                    && slot_data._item_data_type.is_droppable()
-                {
-                    let item_data_name = slot_data._item_data_name.clone();
-                    get_item_manager_mut().drop_inventory_item(&item_data_name, 1);
-
-                    if self._drag_source_slot_index == hovered_slot {
-                        self._drag_source_slot_index = INVALID_ITEM_INDEX;
-                        let drag_ui = ptr_as_mut(self._drag_widget.as_ref()).get_ui_component_mut();
-                        drag_ui.set_draggable(false);
-                        drag_ui.set_visible(false);
-                    }
-                }
+                self.try_drop_slot_item(hovered_slot);
             }
         } else if is_controller_drop {
-            let target_slot = self._focused_slot_index;
-            if target_slot != INVALID_ITEM_INDEX && item_bar.is_valid_slot_index(target_slot) {
-                let game_ui_manager = get_game_ui_manager();
-                let item_bar = game_ui_manager.get_item_bar_widget();
-                let slot_data = item_bar.get_inventory_slot_data(target_slot);
-                if slot_data._item_count > 0
-                    && slot_data._item_data_name != ITEM_NONE
-                    && slot_data._item_data_type.is_droppable()
-                {
-                    let item_data_name = slot_data._item_data_name.clone();
-                    get_item_manager_mut().drop_inventory_item(&item_data_name, 1);
-
-                    if self._drag_source_slot_index == target_slot {
-                        self._drag_source_slot_index = INVALID_ITEM_INDEX;
-                        let drag_ui = ptr_as_mut(self._drag_widget.as_ref()).get_ui_component_mut();
-                        drag_ui.set_draggable(false);
-                        drag_ui.set_visible(false);
-                    }
-                }
-            }
+            self.try_drop_slot_item(self._focused_slot_index);
         }
 
         self.refresh_inventory_widget();

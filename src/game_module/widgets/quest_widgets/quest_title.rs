@@ -46,8 +46,8 @@ impl<'a> QuestTitle<'a> {
         ui_component.set_expandable(true);
         ui_component.set_color(get_color32(255, 255, 255, 0));
 
-        if self._text_widget.is_some() {
-            let ui_component = ptr_as_mut(self._text_widget.as_ref().unwrap().as_ref()).get_ui_component_mut();
+        if let (Some(text_widget), Some(quest_title)) = (self._text_widget.as_ref(), self._quest_title.as_ref()) {
+            let ui_component = ptr_as_mut(text_widget.as_ref()).get_ui_component_mut();
             ui_component.set_expandable_x(true);
             ui_component.set_halign(HorizontalAlign::LEFT);
             ui_component.set_valign(VerticalAlign::CENTER);
@@ -55,8 +55,8 @@ impl<'a> QuestTitle<'a> {
             ui_component.set_color(get_color32(255, 255, 255, 0));
             ui_component.set_font_color(get_color32(255, 255, 255, 255));
             ui_component.set_font_size(FONT_SIZE);
-            ui_component.set_text(self._quest_title.as_ref().unwrap().as_str());
-            ptr_as_mut(self._layout_widget.as_ref()).add_widget(self._text_widget.as_ref().unwrap());
+            ui_component.set_text(quest_title.as_str());
+            ptr_as_mut(self._layout_widget.as_ref()).add_widget(text_widget);
         }
     }
 

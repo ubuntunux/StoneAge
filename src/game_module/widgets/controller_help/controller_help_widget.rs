@@ -573,7 +573,9 @@ impl<'a> ControllerHelpWidget<'a> {
         let is_table_interaction = matches!(player.get_nearest_interaction_object(), InteractionObject::PropTable(_));
 
         for key_type in INTERACTION_WIDGETS.iter() {
-            let key_widget = widget_map.get_key_binding_widget(*key_type);
+            let Some(key_widget) = widget_map.get_key_binding_widget(*key_type) else {
+                continue;
+            };
             let layout_widget = ptr_as_mut(key_widget._layout_widget);
 
             if let (Some(bg_ptr), Some(fill_ptr)) = (key_widget._progress_bar_bg, key_widget._progress_bar_fill) {
@@ -637,8 +639,9 @@ impl<'a> ControllerHelpWidget<'a> {
             KeyBindingType::Farming,
         ];
         for key_type in INTERACTION_WIDGETS.iter() {
-            let key_widget = widget_map.get_key_binding_widget(*key_type);
-            ptr_as_mut(key_widget._layout_widget)._ui_component.set_visible(false);
+            if let Some(key_widget) = widget_map.get_key_binding_widget(*key_type) {
+                ptr_as_mut(key_widget._layout_widget)._ui_component.set_visible(false);
+            }
         }
     }
 

@@ -41,6 +41,62 @@ pub fn format_entity_name(key: &str) -> String {
     }
 }
 
+fn create_record_list_card<'a>(
+    card_name: &str,
+    header_name: &str,
+    header_text: &str,
+    header_color: u32,
+    entries: &[(&str, String)],
+    empty_text: &str,
+) -> Rc<WidgetDefault<'a>> {
+    let line_count = if entries.is_empty() { 1 } else { entries.len() };
+    let list_height = (line_count as f32) * 28.0;
+    let card_height = 36.0 + list_height;
+
+    let card = UIManager::create_widget(card_name, UIWidgetTypes::Default);
+    let card_mut = ptr_as_mut(card.as_ref());
+    let ui_comp = card_mut.get_ui_component_mut();
+    ui_comp.set_layout_type(UILayoutType::BoxLayout);
+    ui_comp.set_layout_orientation(Orientation::VERTICAL);
+    ui_comp.set_halign(HorizontalAlign::CENTER);
+    ui_comp.set_valign(VerticalAlign::TOP);
+    ui_comp.set_size_hint_x(Some(0.95));
+    ui_comp.set_size_y(card_height);
+    ui_comp.set_margin(4.0);
+    ui_comp.set_padding(6.0);
+    ui_comp.set_color(get_color32(245, 232, 205, 230));
+    ui_comp.set_border_color(get_color32(200, 165, 125, 200));
+    ui_comp.set_round(5.0);
+
+    let header = UIManager::create_widget(header_name, UIWidgetTypes::Default);
+    let ui = ptr_as_mut(header.as_ref()).get_ui_component_mut();
+    ui.set_size_hint_x(Some(1.0));
+    ui.set_size_y(24.0);
+    ui.set_text(header_text);
+    ui.set_font_size(HEADER_FONT_SIZE);
+    ui.set_font_color(header_color);
+    ui.set_color(get_color32(0, 0, 0, 0));
+    card_mut.add_widget(&header);
+
+    let content_text = if entries.is_empty() {
+        empty_text.to_string()
+    } else {
+        entries.iter().map(|(k, v)| format!("{}: {}", k, v)).collect::<Vec<_>>().join("\n")
+    };
+
+    let list_widget = UIManager::create_widget(&format!("{}_list", card_name), UIWidgetTypes::Default);
+    let ui = ptr_as_mut(list_widget.as_ref()).get_ui_component_mut();
+    ui.set_size_hint_x(Some(1.0));
+    ui.set_size_y(list_height);
+    ui.set_text(&content_text);
+    ui.set_font_size(LIST_FONT_SIZE);
+    ui.set_font_color(get_color32(75, 45, 20, 255));
+    ui.set_color(get_color32(0, 0, 0, 0));
+    card_mut.add_widget(&list_widget);
+
+    card
+}
+
 pub struct PlayerRecordsWidget<'a> {
     pub _parent_widget: *const WidgetDefault<'a>,
     pub _layer: Rc<WidgetDefault<'a>>,
@@ -153,18 +209,6 @@ impl<'a> PlayerRecordsWidget<'a> {
         ui_comp.set_size_y(STATS_CARD_HEIGHT);
         ui_comp.set_margin(4.0);
         ui_comp.set_padding(6.0);
-        // 1. General Records Section
-        let stats_card = UIManager::create_widget("stats_card", UIWidgetTypes::Default);
-        let card_mut = ptr_as_mut(stats_card.as_ref());
-        let ui_comp = card_mut.get_ui_component_mut();
-        ui_comp.set_layout_type(UILayoutType::BoxLayout);
-        ui_comp.set_layout_orientation(Orientation::VERTICAL);
-        ui_comp.set_halign(HorizontalAlign::CENTER);
-        ui_comp.set_valign(VerticalAlign::TOP);
-        ui_comp.set_size_hint_x(Some(0.95));
-        ui_comp.set_size_y(STATS_CARD_HEIGHT);
-        ui_comp.set_margin(4.0);
-        ui_comp.set_padding(6.0);
         ui_comp.set_color(get_color32(245, 232, 205, 230));
         ui_comp.set_border_color(get_color32(200, 165, 125, 200));
         ui_comp.set_round(5.0);
@@ -210,136 +254,47 @@ impl<'a> PlayerRecordsWidget<'a> {
 
         container_mut.add_widget(&stats_card);
 
-        // 2. Item Acquisitions by ItemType Section (Dynamic auto-recording for any ItemDataType)
-        let item_type_card = UIManager::create_widget("item_type_card", UIWidgetTypes::Default);
-        let card_mut = ptr_as_mut(item_type_card.as_ref());
-        let ui_comp = card_mut.get_ui_component_mut();
-        ui_comp.set_layout_type(UILayoutType::BoxLayout);
-        ui_comp.set_layout_orientation(Orientation::VERTICAL);
-        ui_comp.set_halign(HorizontalAlign::CENTER);
-        ui_comp.set_valign(VerticalAlign::TOP);
-        ui_comp.set_size_hint_x(Some(0.95));
-
+        // 2. Item Acquisitions by ItemType Section
         let mut item_type_entries: Vec<(&String, &u32)> =
             records._item_type_counts.iter().filter(|(k, v)| **v > 0 && k.as_str() != "None").collect();
         item_type_entries.sort_by(|a, b| b.1.cmp(a.1).then_with(|| a.0.cmp(b.0)));
+        let item_type_formatted: Vec<(&str, String)> =
+            item_type_entries.iter().map(|(k, v)| (k.as_str(), v.to_string())).collect();
 
-        let line_count = if item_type_entries.is_empty() {
-            1
-        } else {
-            item_type_entries.len()
-        };
-        let list_height = (line_count as f32) * 28.0;
-        let card_height = 36.0 + list_height;
-        ui_comp.set_size_y(card_height);
-        ui_comp.set_margin(4.0);
-        ui_comp.set_padding(6.0);
-        ui_comp.set_color(get_color32(245, 232, 205, 230));
-        ui_comp.set_border_color(get_color32(200, 165, 125, 200));
-        ui_comp.set_round(5.0);
-
-        let item_type_header = UIManager::create_widget("item_type_header", UIWidgetTypes::Default);
-        let ui = ptr_as_mut(item_type_header.as_ref()).get_ui_component_mut();
-        ui.set_size_hint_x(Some(1.0));
-        ui.set_size_y(24.0);
-        ui.set_text("Item Acquisitions by ItemType");
-        ui.set_font_size(HEADER_FONT_SIZE);
-        ui.set_font_color(get_color32(118, 168, 68, 255));
-        ui.set_color(get_color32(0, 0, 0, 0));
-        card_mut.add_widget(&item_type_header);
-
-        let mut item_type_text = String::new();
-        if item_type_entries.is_empty() {
-            item_type_text.push_str("No Item Acquisitions Recorded Yet");
-        } else {
-            let mut count_displayed = 0;
-            for (type_name, count) in item_type_entries {
-                if count_displayed > 0 {
-                    item_type_text.push('\n');
-                }
-                item_type_text.push_str(&format!("{}: {}", type_name, count));
-                count_displayed += 1;
-            }
-        }
-
-        let item_type_list_widget = UIManager::create_widget("item_type_list_widget", UIWidgetTypes::Default);
-        let ui = ptr_as_mut(item_type_list_widget.as_ref()).get_ui_component_mut();
-        ui.set_size_hint_x(Some(1.0));
-        ui.set_size_y(list_height);
-        ui.set_text(&item_type_text);
-        ui.set_font_size(LIST_FONT_SIZE);
-        ui.set_font_color(get_color32(75, 45, 20, 255));
-        ui.set_color(get_color32(0, 0, 0, 0));
-        card_mut.add_widget(&item_type_list_widget);
-
+        let item_type_card = create_record_list_card(
+            "item_type_card",
+            "item_type_header",
+            "Item Acquisitions by ItemType",
+            get_color32(118, 168, 68, 255),
+            &item_type_formatted,
+            "No Item Acquisitions Recorded Yet",
+        );
         container_mut.add_widget(&item_type_card);
 
-        // 3. Monster Kills Section (Dynamic name resolution for any present or future monster)
-        let kill_card = UIManager::create_widget("kill_card", UIWidgetTypes::Default);
-        let card_mut = ptr_as_mut(kill_card.as_ref());
-        let ui_comp = card_mut.get_ui_component_mut();
-        ui_comp.set_layout_type(UILayoutType::BoxLayout);
-        ui_comp.set_layout_orientation(Orientation::VERTICAL);
-        ui_comp.set_halign(HorizontalAlign::CENTER);
-        ui_comp.set_valign(VerticalAlign::TOP);
-        ui_comp.set_size_hint_x(Some(0.95));
-
-        let mut kill_entries: Vec<(String, u32)> = Vec::new();
+        // 3. Monster Kills Section
+        let mut kill_raw_entries: Vec<(String, u32)> = Vec::new();
         for (monster_key, &kills) in records._monster_kill_counts.iter() {
             if kills > 0 {
                 let display_name = format_entity_name(monster_key);
-                kill_entries.push((display_name, kills));
+                kill_raw_entries.push((display_name, kills));
             }
         }
-        kill_entries.sort_by(|a, b| b.1.cmp(&a.1).then_with(|| a.0.cmp(&b.0)));
+        kill_raw_entries.sort_by(|a, b| b.1.cmp(&a.1).then_with(|| a.0.cmp(&b.0)));
+        let kill_formatted: Vec<(&str, String)> =
+            kill_raw_entries.iter().map(|(name, kills)| (name.as_str(), format!("{} Kills", kills))).collect();
 
-        let line_count = if kill_entries.is_empty() { 1 } else { kill_entries.len() };
-        let list_height = (line_count as f32) * 28.0;
-        let card_height = 36.0 + list_height;
-        ui_comp.set_size_y(card_height);
-        ui_comp.set_margin(4.0);
-        ui_comp.set_padding(6.0);
-        ui_comp.set_color(get_color32(245, 232, 205, 230));
-        ui_comp.set_border_color(get_color32(200, 165, 125, 200));
-        ui_comp.set_round(5.0);
-
-        let kill_header = UIManager::create_widget("kill_header", UIWidgetTypes::Default);
-        let ui = ptr_as_mut(kill_header.as_ref()).get_ui_component_mut();
-        ui.set_size_hint_x(Some(1.0));
-        ui.set_size_y(24.0);
-        ui.set_text(&format!(
+        let kill_header_title = format!(
             "Monster Kills by Species (Total: {})",
             records.get_total_monster_kills()
-        ));
-        ui.set_font_size(HEADER_FONT_SIZE);
-        ui.set_font_color(get_color32(200, 75, 60, 255));
-        ui.set_color(get_color32(0, 0, 0, 0));
-        card_mut.add_widget(&kill_header);
-
-        let mut kill_items_text = String::new();
-        if kill_entries.is_empty() {
-            kill_items_text.push_str("No Monster Kills Recorded Yet");
-        } else {
-            let mut count_displayed = 0;
-            for (display_name, kills) in kill_entries {
-                if count_displayed > 0 {
-                    kill_items_text.push('\n');
-                }
-                kill_items_text.push_str(&format!("{}: {} Kills", display_name, kills));
-                count_displayed += 1;
-            }
-        }
-
-        let kill_list_widget = UIManager::create_widget("kill_list_widget", UIWidgetTypes::Default);
-        let ui = ptr_as_mut(kill_list_widget.as_ref()).get_ui_component_mut();
-        ui.set_size_hint_x(Some(1.0));
-        ui.set_size_y(list_height);
-        ui.set_text(&kill_items_text);
-        ui.set_font_size(LIST_FONT_SIZE);
-        ui.set_font_color(get_color32(75, 45, 20, 255));
-        ui.set_color(get_color32(0, 0, 0, 0));
-        card_mut.add_widget(&kill_list_widget);
-
+        );
+        let kill_card = create_record_list_card(
+            "kill_card",
+            "kill_header",
+            &kill_header_title,
+            get_color32(200, 75, 60, 255),
+            &kill_formatted,
+            "No Monster Kills Recorded Yet",
+        );
         container_mut.add_widget(&kill_card);
     }
 }

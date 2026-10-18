@@ -1,7 +1,7 @@
-use crate::game_module::actors::character::{ActorWrapper, Character};
+use crate::game_module::actors::character::Character;
 use crate::game_module::actors::items::ItemDataType;
 use crate::game_module::actors::props::Prop;
-use crate::game_module::game_constants::{ITEM_WOOD, MATERIAL_UI_POINTER, PROP_NAME_MONOLITH};
+use crate::game_module::game_constants::{ITEM_WOOD, PROP_NAME_MONOLITH};
 use crate::game_module::game_service_locator::{
     get_character_manager, get_game_resources, get_game_scene_manager_mut, get_game_ui_manager, get_game_ui_manager_mut,
 };
@@ -9,19 +9,22 @@ use crate::game_module::game_ui_manager::QuestItem;
 use crate::game_module::scenario::scenario::{
     GameScenarioCreateInfo, ScenarioBase, ScenarioDataCreateInfo, ScenarioType,
 };
+use crate::game_module::scenario::scenario_common::{
+    add_prop_pointer_text_box, complete_quest_item, get_quest_item_save_data, is_quest_item_completed,
+    load_quest_item_save_data, remove_prop_text_box,
+};
 use crate::game_module::scenario::scenario_track::ScenarioTrack;
 use crate::game_module::widgets::quest_widgets::quest_item_default::DefaultQuestData;
 use crate::game_module::widgets::quest_widgets::quest_item_gather_item::GatherItemData;
 use crate::game_module::widgets::quest_widgets::quest_title::QuestTitle;
 use crate::game_module::widgets::quest_widgets::quest_widget::{QuestCreateInfo, QuestItemSaveData};
-use crate::game_module::widgets::text_box_widget::{TextBoxContent, TextBoxItemOption, TextBoxLayerType};
 use crate::game_module::widgets::toolbox_widget::item_tab_widget::ToolboxIconType;
-use nalgebra::Vector2;
 use rust_engine_3d::utilities::system::{RcRefCell, State, newRcRefCell};
 use serde::{Deserialize, Serialize};
-use std::str::FromStr;
 use strum::IntoEnumIterator;
 use strum_macros::{Display, EnumCount, EnumIter, EnumString};
+
+const PHASE_END_DURATION: f32 = 1.0;
 
 #[derive(Clone, PartialEq, Eq, Hash, Display, Debug, Copy, EnumIter, EnumString, EnumCount)]
 pub enum ScenarioPhase {
@@ -87,13 +90,7 @@ impl<'a> ScenarioWoodenClub<'a> {
             _sub_quest_unlock_wooden_club: None,
             _sub_quest_gather_wood: None,
             _sub_quest_craft_wooden_club: None,
-            _scenario_track: ScenarioTrack {
-                _scenario_phase: ScenarioPhase::None,
-                _next_scenario_phase: ScenarioPhase::Begin,
-                _phase_duration: None,
-                _next_phase_duration: None,
-                _phase_time: 0.0,
-            },
+            _scenario_track: ScenarioTrack::new(ScenarioPhase::None, ScenarioPhase::Begin),
         })
     }
 
@@ -139,49 +136,26 @@ impl<'a> ScenarioWoodenClub<'a> {
         self._sub_quest_craft_wooden_club = None;
     }
 
-    pub fn create_toolbox_text_box(&mut self) {
+    fn ensure_monolith_prop(&mut self) {
         if self._prop_monolith.is_none() {
             self._prop_monolith =
                 get_game_scene_manager_mut().get_prop_manager().get_prop_by_name(PROP_NAME_MONOLITH).cloned();
         }
-        if let Some(prop_monolith) = self._prop_monolith.as_ref() {
-            let wrapper = ActorWrapper::Prop(prop_monolith.clone());
-            if !get_game_ui_manager().has_text_box_item(wrapper.get_key()) {
-                let contents = vec![TextBoxContent::MaterialInstance(
-                    MATERIAL_UI_POINTER.to_string(),
-                    Some(Vector2::new(50.0, 50.0)),
-                )];
-                get_game_ui_manager_mut().add_text_box_item(
-                    wrapper,
-                    &contents,
-                    &TextBoxItemOption {
-                        _layer_type: TextBoxLayerType::GamePlayLayer,
-                        _bounce: true,
-                        _visible_background: false,
-                        ..Default::default()
-                    },
-                );
-            }
-        }
+    }
+
+    pub fn create_toolbox_text_box(&mut self) {
+        self.ensure_monolith_prop();
+        add_prop_pointer_text_box(&self._prop_monolith, true);
     }
 
     pub fn remove_toolbox_text_box(&mut self) {
-        if self._prop_monolith.is_none() {
-            self._prop_monolith =
-                get_game_scene_manager_mut().get_prop_manager().get_prop_by_name(PROP_NAME_MONOLITH).cloned();
-        }
-        if let Some(prop_monolith) = self._prop_monolith.as_ref() {
-            let wrapper = ActorWrapper::Prop(prop_monolith.clone());
-            get_game_ui_manager_mut().remove_text_box_item(wrapper.get_key());
-        }
+        self.ensure_monolith_prop();
+        remove_prop_text_box(&self._prop_monolith);
     }
 
     pub fn complete_sub_quest_unlock_wooden_club(&mut self) {
-        if let Some(q) = &self._sub_quest_unlock_wooden_club {
-            if !q.borrow().is_completed_quest() {
-                q.borrow_mut().set_completed_quest();
-                self.remove_toolbox_text_box();
-            }
+        if complete_quest_item(&self._sub_quest_unlock_wooden_club) {
+            self.remove_toolbox_text_box();
         }
     }
 
@@ -189,15 +163,9 @@ impl<'a> ScenarioWoodenClub<'a> {
         ScenarioWoodenClubQuestSaveData {
             _has_quest: self._quest.is_some(),
             _quest_title: self._quest.as_ref().and_then(|q| q.borrow()._quest_title.clone()),
-            _sub_quest_unlock_wooden_club: self
-                ._sub_quest_unlock_wooden_club
-                .as_ref()
-                .map(|q| q.borrow().get_quest_item_save_data()),
-            _sub_quest_gather_wood: self._sub_quest_gather_wood.as_ref().map(|q| q.borrow().get_quest_item_save_data()),
-            _sub_quest_craft_wooden_club: self
-                ._sub_quest_craft_wooden_club
-                .as_ref()
-                .map(|q| q.borrow().get_quest_item_save_data()),
+            _sub_quest_unlock_wooden_club: get_quest_item_save_data(&self._sub_quest_unlock_wooden_club),
+            _sub_quest_gather_wood: get_quest_item_save_data(&self._sub_quest_gather_wood),
+            _sub_quest_craft_wooden_club: get_quest_item_save_data(&self._sub_quest_craft_wooden_club),
         }
     }
 
@@ -206,21 +174,15 @@ impl<'a> ScenarioWoodenClub<'a> {
             self.destroy_quest();
             self.create_quests();
 
-            if let Some(save_data) = &quest_save_data._sub_quest_unlock_wooden_club
-                && let Some(q) = &self._sub_quest_unlock_wooden_club
-            {
-                q.borrow_mut().load_quest_item_save_data(save_data);
-            }
-            if let Some(save_data) = &quest_save_data._sub_quest_gather_wood
-                && let Some(q) = &self._sub_quest_gather_wood
-            {
-                q.borrow_mut().load_quest_item_save_data(save_data);
-            }
-            if let Some(save_data) = &quest_save_data._sub_quest_craft_wooden_club
-                && let Some(q) = &self._sub_quest_craft_wooden_club
-            {
-                q.borrow_mut().load_quest_item_save_data(save_data);
-            }
+            load_quest_item_save_data(
+                &self._sub_quest_unlock_wooden_club,
+                &quest_save_data._sub_quest_unlock_wooden_club,
+            );
+            load_quest_item_save_data(&self._sub_quest_gather_wood, &quest_save_data._sub_quest_gather_wood);
+            load_quest_item_save_data(
+                &self._sub_quest_craft_wooden_club,
+                &quest_save_data._sub_quest_craft_wooden_club,
+            );
         }
     }
 }
@@ -235,23 +197,26 @@ impl<'a> ScenarioBase<'a> for ScenarioWoodenClub<'a> {
     }
 
     fn set_scenario_phase_as_string(&mut self, scenario_phase: &String) {
-        if let Ok(phase) = ScenarioPhase::from_str(scenario_phase.as_str()) {
-            self._scenario_track.set_scenario_phase(phase, None);
-        }
+        self._scenario_track.set_phase_from_str(scenario_phase.as_str(), ScenarioPhase::None);
     }
 
     fn load_scenario_save_data(&mut self, scenario_save_data: &GameScenarioCreateInfo) {
-        let scenario_save_data: ScenarioWoodenClubSaveData =
-            serde_json::from_str(&scenario_save_data._scenario_data).unwrap();
-        self._scenario_create_info = scenario_save_data._scenario_create_info;
-        let phase = ScenarioPhase::from_str(&scenario_save_data._scenario_phase).unwrap();
-        let next_phase = ScenarioPhase::from_str(&scenario_save_data._next_scenario_phase).unwrap();
-        self._scenario_track._scenario_phase = phase;
-        self._scenario_track._next_scenario_phase = next_phase;
-        self._scenario_track._phase_duration = scenario_save_data._phase_duration;
-        self._scenario_track._next_phase_duration = scenario_save_data._next_phase_duration;
-        self._scenario_track._phase_time = scenario_save_data._phase_time;
-        self.load_quest_save_data(&scenario_save_data._quest_save_data);
+        self._scenario_create_info = scenario_save_data._scenario_create_info.clone();
+        self._scenario_track.load_scenario_track_data(&scenario_save_data._scenario_track_create_info);
+
+        if let Ok(save_data) = serde_json::from_str::<ScenarioWoodenClubSaveData>(&scenario_save_data._scenario_data) {
+            self._scenario_create_info = save_data._scenario_create_info;
+            if let Ok(phase) = save_data._scenario_phase.parse::<ScenarioPhase>() {
+                self._scenario_track._scenario_phase = phase;
+            }
+            if let Ok(next_phase) = save_data._next_scenario_phase.parse::<ScenarioPhase>() {
+                self._scenario_track._next_scenario_phase = next_phase;
+            }
+            self._scenario_track._phase_duration = save_data._phase_duration;
+            self._scenario_track._next_phase_duration = save_data._next_phase_duration;
+            self._scenario_track._phase_time = save_data._phase_time;
+            self.load_quest_save_data(&save_data._quest_save_data);
+        }
     }
 
     fn get_scenario_save_data(&self) -> GameScenarioCreateInfo {
@@ -268,7 +233,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWoodenClub<'a> {
             _scenario_type: self.get_scenario_type(),
             _scenario_create_info: self._scenario_create_info.clone(),
             _scenario_track_create_info: self._scenario_track.save_scenario_track_data(),
-            _scenario_data: serde_json::to_string(&scenario_save_data).unwrap(),
+            _scenario_data: serde_json::to_string(&scenario_save_data).unwrap_or_default(),
         }
     }
 
@@ -301,9 +266,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWoodenClub<'a> {
 
         self.create_quests();
 
-        let unlock_not_completed =
-            self._sub_quest_unlock_wooden_club.as_ref().is_none_or(|q| !q.borrow().is_completed_quest());
-        if unlock_not_completed {
+        if !is_quest_item_completed(&self._sub_quest_unlock_wooden_club) {
             self.create_toolbox_text_box();
         }
     }
@@ -314,17 +277,13 @@ impl<'a> ScenarioBase<'a> for ScenarioWoodenClub<'a> {
         let next_phase_duration = self._scenario_track._next_phase_duration;
 
         for state in State::iter() {
-            if prev_scenario_phase == next_scenario_phase && (state == State::End || state == State::Begin) {
+            let Some(update_scenario_phase) = self._scenario_track.resolve_state_phase(
+                state,
+                prev_scenario_phase,
+                next_scenario_phase,
+                next_phase_duration,
+            ) else {
                 continue;
-            }
-
-            let update_scenario_phase: ScenarioPhase = match state {
-                State::End => prev_scenario_phase,
-                State::Begin => {
-                    self._scenario_track.set_scenario_phase(next_scenario_phase, next_phase_duration);
-                    next_scenario_phase
-                }
-                State::Update => next_scenario_phase,
             };
 
             match update_scenario_phase {
@@ -342,7 +301,6 @@ impl<'a> ScenarioBase<'a> for ScenarioWoodenClub<'a> {
                         self.create_toolbox_text_box();
                     }
                     State::Update => {
-                        // Check Step 1: Unlock Wooden Club in Toolbox
                         let is_unlocked =
                             get_game_ui_manager().get_unlocked_toolbox_items().contains(&ToolboxIconType::WoodenClub);
                         if is_unlocked {
@@ -351,22 +309,14 @@ impl<'a> ScenarioBase<'a> for ScenarioWoodenClub<'a> {
                             self.create_toolbox_text_box();
                         }
 
-                        // Check Step 3: Craft Wooden Club in Inventory
                         let has_wooden_club =
                             get_game_ui_manager().get_item_count(ItemDataType::WoodenClub.item_code()) >= 1;
                         if has_wooden_club {
-                            if let Some(q) = &self._sub_quest_craft_wooden_club {
-                                if !q.borrow().is_completed_quest() {
-                                    q.borrow_mut().set_completed_quest();
-                                }
-                            }
+                            complete_quest_item(&self._sub_quest_craft_wooden_club);
                         }
 
-                        let sub3_complete =
-                            self._sub_quest_craft_wooden_club.as_ref().is_some_and(|q| q.borrow().is_completed_quest());
-
-                        if sub3_complete {
-                            self._scenario_track.set_next_scenario_phase(ScenarioPhase::End, Some(1.0));
+                        if is_quest_item_completed(&self._sub_quest_craft_wooden_club) {
+                            self._scenario_track.set_next_scenario_phase(ScenarioPhase::End, Some(PHASE_END_DURATION));
                         }
                     }
                     _ => {}

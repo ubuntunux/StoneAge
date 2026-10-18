@@ -3,22 +3,37 @@ use crate::game_module::game_service_locator::{
     get_game_client, get_game_client_mut, get_game_resources, get_game_scene_manager,
 };
 use nalgebra::Vector3;
-use rust_engine_3d::utilities::system::extract_name_and_uuid;
+use rust_engine_3d::scene::ui::{
+    HorizontalAlign, Orientation, PIVOT_CENTER, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault,
+};
+use rust_engine_3d::utilities::system::{extract_name_and_uuid, ptr_as_mut};
+use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use std::collections::HashSet;
+use std::rc::Rc;
+
+pub const CHAR_PANEL_BG_COLOR: u32 = get_color32(240, 222, 186, 248);
+pub const CHAR_PANEL_BORDER_COLOR: u32 = get_color32(135, 78, 42, 255);
+pub const CHAR_PANEL_TITLE_COLOR: u32 = get_color32(75, 45, 20, 255);
+pub const CHAR_LIST_BG_COLOR: u32 = get_color32(252, 245, 226, 230);
+pub const CHAR_CARD_BG_COLOR: u32 = get_color32(245, 232, 205, 230);
+pub const CHAR_CARD_BORDER_COLOR: u32 = get_color32(200, 165, 125, 200);
+pub const CHAR_STATUS_ALIVE_COLOR: u32 = get_color32(100, 255, 100, 255);
+pub const CHAR_STATUS_DEAD_COLOR: u32 = get_color32(255, 100, 100, 255);
+pub const CHAR_EMPTY_TEXT_COLOR: u32 = get_color32(180, 180, 180, 255);
 
 #[derive(Clone, Debug)]
 pub struct DisplayCharacterInfo {
-    pub character_id: CharacterID,
-    pub name: String,
-    pub scene_data_name: String,
-    pub scene_display_name: String,
-    pub is_alive: bool,
-    pub is_tamed: bool,
-    pub is_civilian: bool,
-    pub hp: i32,
-    pub max_hp: i32,
-    pub intimacy: f32,
-    pub position: Vector3<f32>,
+    pub _character_id: CharacterID,
+    pub _name: String,
+    pub _scene_data_name: String,
+    pub _scene_display_name: String,
+    pub _is_alive: bool,
+    pub _is_tamed: bool,
+    pub _is_civilian: bool,
+    pub _hp: i32,
+    pub _max_hp: i32,
+    pub _intimacy: f32,
+    pub _position: Vector3<f32>,
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -104,17 +119,17 @@ pub fn collect_all_characters() -> Vec<DisplayCharacterInfo> {
 
         let scene_display = get_scene_display_name(&current_scene_data_name);
         result.push(DisplayCharacterInfo {
-            character_id: *char_id,
-            name: char_borrow._character_name.clone(),
-            scene_data_name: current_scene_data_name.clone(),
-            scene_display_name: scene_display,
-            is_alive: char_borrow.is_alive(),
-            is_tamed: char_borrow.is_tamed(),
-            is_civilian: char_borrow.is_civilian(),
-            hp: char_borrow._character_stats.get_hp(),
-            max_hp: char_borrow._character_stats.get_max_hp(),
-            intimacy: char_borrow.get_intimacy(),
-            position: *char_borrow.get_position(),
+            _character_id: *char_id,
+            _name: char_borrow._character_name.clone(),
+            _scene_data_name: current_scene_data_name.clone(),
+            _scene_display_name: scene_display,
+            _is_alive: char_borrow.is_alive(),
+            _is_tamed: char_borrow.is_tamed(),
+            _is_civilian: char_borrow.is_civilian(),
+            _hp: char_borrow._character_stats.get_hp(),
+            _max_hp: char_borrow._character_stats.get_max_hp(),
+            _intimacy: char_borrow.get_intimacy(),
+            _position: *char_borrow.get_position(),
         });
     }
 
@@ -147,20 +162,115 @@ pub fn collect_all_characters() -> Vec<DisplayCharacterInfo> {
             let scene_display = get_scene_display_name(scene_data_name);
 
             result.push(DisplayCharacterInfo {
-                character_id: char_id,
-                name,
-                scene_data_name: scene_data_name.clone(),
-                scene_display_name: scene_display,
-                is_alive: char_save._character_stats._is_alive,
-                is_tamed: char_save._character_stats._is_tamed,
-                is_civilian,
-                hp: char_save._character_stats._hp,
-                max_hp: char_save._character_stats._max_hp,
-                intimacy: char_save._character_stats._intimacy,
-                position: char_save._character_create_info._position,
+                _character_id: char_id,
+                _name: name,
+                _scene_data_name: scene_data_name.clone(),
+                _scene_display_name: scene_display,
+                _is_alive: char_save._character_stats._is_alive,
+                _is_tamed: char_save._character_stats._is_tamed,
+                _is_civilian: is_civilian,
+                _hp: char_save._character_stats._hp,
+                _max_hp: char_save._character_stats._max_hp,
+                _intimacy: char_save._character_stats._intimacy,
+                _position: char_save._character_create_info._position,
             });
         }
     }
 
     result
+}
+
+pub fn status_str(is_alive: bool) -> &'static str {
+    if is_alive { "ALIVE" } else { "DEAD" }
+}
+
+pub fn status_color(is_alive: bool) -> u32 {
+    if is_alive {
+        CHAR_STATUS_ALIVE_COLOR
+    } else {
+        CHAR_STATUS_DEAD_COLOR
+    }
+}
+
+pub fn create_character_list_panel<'a>(
+    panel_name: &str,
+    container_name: &str,
+    title_text: &str,
+) -> (Rc<WidgetDefault<'a>>, Rc<WidgetDefault<'a>>) {
+    let layer = UIManager::create_widget(panel_name, UIWidgetTypes::Default);
+    let layer_mut = ptr_as_mut(layer.as_ref());
+    let ui_component = layer_mut.get_ui_component_mut();
+    ui_component.set_layout_type(UILayoutType::BoxLayout);
+    ui_component.set_layout_orientation(Orientation::VERTICAL);
+    ui_component.set_halign(HorizontalAlign::CENTER);
+    ui_component.set_valign(VerticalAlign::TOP);
+    ui_component.set_pivot_preset(PIVOT_CENTER);
+    ui_component.set_expandable(false);
+    ui_component.set_size_hint_x(Some(1.0));
+    ui_component.set_size_hint_y(Some(1.0));
+    ui_component.set_padding(10.0);
+    ui_component.set_color(CHAR_PANEL_BG_COLOR);
+    ui_component.set_border_color(CHAR_PANEL_BORDER_COLOR);
+    ui_component.set_round(5.0);
+
+    let title_name = format!("{}_title", panel_name);
+    let title_widget = UIManager::create_widget(&title_name, UIWidgetTypes::Default);
+    let ui_component = ptr_as_mut(title_widget.as_ref()).get_ui_component_mut();
+    ui_component.set_size(300.0, 30.0);
+    ui_component.set_halign(HorizontalAlign::CENTER);
+    ui_component.set_valign(VerticalAlign::CENTER);
+    ui_component.set_text(title_text);
+    ui_component.set_font_size(25.0);
+    ui_component.set_font_color(CHAR_PANEL_TITLE_COLOR);
+    ui_component.set_color(get_color32(0, 0, 0, 0));
+    layer_mut.add_widget(&title_widget);
+
+    let list_container = UIManager::create_widget(container_name, UIWidgetTypes::Default);
+    let list_container_mut = ptr_as_mut(list_container.as_ref());
+    let ui_component = list_container_mut.get_ui_component_mut();
+    ui_component.set_layout_type(UILayoutType::BoxLayout);
+    ui_component.set_layout_orientation(Orientation::VERTICAL);
+    ui_component.set_halign(HorizontalAlign::LEFT);
+    ui_component.set_valign(VerticalAlign::TOP);
+    ui_component.set_expandable(false);
+    ui_component.set_scroll_y(true);
+    ui_component.set_enable_renderable_area(true);
+    ui_component.set_size_hint_x(Some(1.0));
+    ui_component.set_size_hint_y(Some(1.0));
+    ui_component.set_color(CHAR_LIST_BG_COLOR);
+    layer_mut.add_widget(&list_container);
+
+    (layer, list_container)
+}
+
+pub fn create_character_card<'a>(card_name: &str, info_text: &str, is_alive: bool) -> Rc<WidgetDefault<'a>> {
+    let card_widget = UIManager::create_widget(card_name, UIWidgetTypes::Default);
+    let card_mut = ptr_as_mut(card_widget.as_ref());
+    let ui_comp = card_mut.get_ui_component_mut();
+    ui_comp.set_layout_type(UILayoutType::BoxLayout);
+    ui_comp.set_layout_orientation(Orientation::HORIZONTAL);
+    ui_comp.set_halign(HorizontalAlign::CENTER);
+    ui_comp.set_valign(VerticalAlign::CENTER);
+    ui_comp.set_size(620.0, 48.0);
+    ui_comp.set_margin(4.0);
+    ui_comp.set_padding(8.0);
+    ui_comp.set_color(CHAR_CARD_BG_COLOR);
+    ui_comp.set_border_color(CHAR_CARD_BORDER_COLOR);
+    ui_comp.set_round(5.0);
+    ui_comp.set_text(info_text);
+    ui_comp.set_font_size(22.0);
+    ui_comp.set_font_color(status_color(is_alive));
+    card_widget
+}
+
+pub fn create_character_empty_card<'a>(card_name: &str, empty_text: &str) -> Rc<WidgetDefault<'a>> {
+    let empty_widget = UIManager::create_widget(card_name, UIWidgetTypes::Default);
+    let ui_comp = ptr_as_mut(empty_widget.as_ref()).get_ui_component_mut();
+    ui_comp.set_size(400.0, 60.0);
+    ui_comp.set_margin(20.0);
+    ui_comp.set_text(empty_text);
+    ui_comp.set_font_size(24.0);
+    ui_comp.set_font_color(CHAR_EMPTY_TEXT_COLOR);
+    ui_comp.set_color(get_color32(0, 0, 0, 0));
+    empty_widget
 }

@@ -27,6 +27,7 @@ use winit::keyboard::KeyCode;
 // ────────────────────────────────────────────────────────────────
 pub const COOKING_PANEL_WIDTH: f32 = 780.0;
 pub const COOKING_PANEL_HEIGHT: f32 = 520.0;
+const COOKING_DESC_BOX_HEIGHT: f32 = 80.0;
 
 pub const COLOR_PANEL_BG: u32 = get_color32(240, 222, 186, 248);
 pub const COLOR_PANEL_BORDER: u32 = get_color32(135, 78, 42, 255);
@@ -34,16 +35,7 @@ pub const COLOR_PANEL_BORDER: u32 = get_color32(135, 78, 42, 255);
 pub const COLOR_BTN_COOK_BG: u32 = get_color32(118, 168, 68, 240);
 pub const COLOR_BTN_COOK_BORDER: u32 = get_color32(72, 115, 38, 255);
 
-pub struct IngredientReq {
-    pub _item_type: ItemDataType,
-    pub _count: usize,
-}
-
-impl IngredientReq {
-    pub fn item_code(&self) -> &'static str {
-        self._item_type.item_code()
-    }
-}
+pub type CookingWidgetItem<'a> = RecipeListRowItem<'a>;
 
 pub struct CookingRecipeData {
     pub _id: &'static str,
@@ -112,15 +104,6 @@ pub const COOKING_RECIPES: [CookingRecipeData; 5] = [
     },
 ];
 
-pub struct CookingWidgetItem<'a> {
-    pub _layout: Rc<WidgetDefault<'a>>,
-    pub _icon: Rc<WidgetDefault<'a>>,
-    pub _name_lbl: Rc<WidgetDefault<'a>>,
-    pub _action_btn: Rc<WidgetDefault<'a>>,
-    pub _recipe_index: usize,
-    pub _widget_ptr: *const c_void,
-}
-
 pub struct CookingWidget<'a> {
     pub _parent_widget: *const WidgetDefault<'a>,
     pub _layer: Rc<WidgetDefault<'a>>,
@@ -134,7 +117,6 @@ pub struct CookingWidget<'a> {
     pub _detail_ing_widgets: Vec<IngredientWidgetItem<'a>>,
     pub _is_opened: bool,
     pub _selected_index: usize,
-    pub _last_stick_y: i8,
     pub _nav_repeat_controller: WidgetNavRepeatController,
 }
 
@@ -193,7 +175,7 @@ impl<'a> CookingWidget<'a> {
         ui.set_valign(VerticalAlign::CENTER);
         ui.set_text("Chef's Cooking Station");
         ui.set_font_size(FONT_SIZE_TITLE);
-        ui.set_font_color(get_color32(75, 45, 20, 255));
+        ui.set_font_color(COLOR_TEXT_TITLE);
         ui.set_color(COLOR_TRANSPARENT);
         header_mut.add_widget(&title_label);
 
@@ -219,7 +201,7 @@ impl<'a> CookingWidget<'a> {
         let ui = ptr_as_mut(separator.as_ref()).get_ui_component_mut();
         ui.set_size_hint_x(Some(1.0));
         ui.set_size_y(2.0);
-        ui.set_color(get_color32(188, 148, 105, 200));
+        ui.set_color(COLOR_LIST_BORDER);
         ui.set_margin(4.0);
         layer_mut.add_widget(&separator);
 
@@ -235,82 +217,28 @@ impl<'a> CookingWidget<'a> {
         ui.set_color(COLOR_TRANSPARENT);
         layer_mut.add_widget(&main_pane);
 
-        let master_detail = create_master_detail_components("cooking", main_pane_mut, 80.0, MAX_INGREDIENT_ENTRIES);
+        let master_detail = create_master_detail_components(
+            "cooking",
+            main_pane_mut,
+            COOKING_DESC_BOX_HEIGHT,
+            MAX_INGREDIENT_ENTRIES,
+        );
 
         // Build Left List Items
         let list_container_mut = ptr_as_mut(master_detail._list_container.as_ref());
-        let mut items = Vec::new();
+        let mut items = Vec::with_capacity(COOKING_RECIPES.len());
         for (idx, recipe) in COOKING_RECIPES.iter().enumerate() {
-            let row = UIManager::create_widget(&format!("cooking_row_{}", recipe._id), UIWidgetTypes::Default);
-            let row_mut = ptr_as_mut(row.as_ref());
-            let ui = row_mut.get_ui_component_mut();
-            ui.set_layout_type(UILayoutType::BoxLayout);
-            ui.set_layout_orientation(Orientation::HORIZONTAL);
-            ui.set_halign(HorizontalAlign::LEFT);
-            ui.set_valign(VerticalAlign::CENTER);
-            ui.set_size_hint_x(Some(1.0));
-            ui.set_size_y(LIST_ITEM_ROW_HEIGHT);
-            ui.set_padding(6.0);
-            ui.set_color(COLOR_ITEM_NORMAL_BG);
-            ui.set_border_color(COLOR_ITEM_NORMAL_BORDER);
-            ui.set_border(2.0);
-            ui.set_round(6.0);
-            ui.set_margin(2.0);
-            ui.set_touchable(true);
-            ui.set_callback_touch_over(Some(Box::new(Self::callback_item_touch_over)));
-            ui.set_callback_touch_down(Some(Box::new(Self::callback_item_select)));
-            list_container_mut.add_widget(&row);
-
-            // Icon
-            let icon = UIManager::create_widget(&format!("cooking_icon_{}", recipe._id), UIWidgetTypes::Default);
-            let ui = ptr_as_mut(icon.as_ref()).get_ui_component_mut();
-            ui.set_size(LIST_ITEM_ICON_SIZE, LIST_ITEM_ICON_SIZE);
-            ui.set_valign(VerticalAlign::CENTER);
-            ui.set_margin_right(8.0);
-            ui.set_color(COLOR_WHITE);
-            row_mut.add_widget(&icon);
-            Self::setup_item_icon(&icon, recipe.item_code());
-
-            // Name Label
-            let item_name = Self::get_item_name_from_resource(recipe.item_code());
-            let name_lbl = UIManager::create_widget(&format!("cooking_name_{}", recipe._id), UIWidgetTypes::Default);
-            let ui = ptr_as_mut(name_lbl.as_ref()).get_ui_component_mut();
-            ui.set_size_hint_x(Some(1.0));
-            ui.set_size_y(LIST_ITEM_NAME_HEIGHT);
-            ui.set_valign(VerticalAlign::CENTER);
-            ui.set_text(&item_name);
-            ui.set_font_size(FONT_SIZE_TITLE);
-            ui.set_font_color(COLOR_TEXT_TITLE);
-            ui.set_color(COLOR_TRANSPARENT);
-            row_mut.add_widget(&name_lbl);
-
-            // Action Button ("Cook")
-            let cook_btn = UIManager::create_widget(&format!("cooking_btn_{}", recipe._id), UIWidgetTypes::Default);
-            let ui = ptr_as_mut(cook_btn.as_ref()).get_ui_component_mut();
-            ui.set_size(LIST_ITEM_BTN_WIDTH, LIST_ITEM_BTN_HEIGHT);
-            ui.set_valign(VerticalAlign::CENTER);
-            ui.set_halign(HorizontalAlign::CENTER);
-            ui.set_color(COLOR_BTN_DEFAULT_BG);
-            ui.set_border_color(COLOR_BTN_DEFAULT_BORDER);
-            ui.set_border(2.0);
-            ui.set_round(6.0);
-            ui.set_text("Cook");
-            ui.set_font_size(FONT_SIZE_BUTTON);
-            ui.set_font_color(COLOR_TEXT_NORMAL);
-            ui.set_margin_right(4.0);
-            ui.set_touchable(true);
-            ui.set_callback_touch_over(Some(Box::new(Self::callback_item_touch_over)));
-            ui.set_callback_touch_down(Some(Box::new(Self::callback_cook_action)));
-            row_mut.add_widget(&cook_btn);
-
-            items.push(Box::new(CookingWidgetItem {
-                _layout: row,
-                _icon: icon,
-                _name_lbl: name_lbl,
-                _action_btn: cook_btn,
-                _recipe_index: idx,
-                _widget_ptr: std::ptr::null(),
-            }));
+            items.push(create_recipe_list_row(
+                "cooking",
+                recipe._id,
+                recipe.item_code(),
+                "Cook",
+                idx,
+                list_container_mut,
+                Self::callback_item_touch_over,
+                Self::callback_item_select,
+                Self::callback_cook_action,
+            ));
         }
 
         CookingWidget {
@@ -326,7 +254,6 @@ impl<'a> CookingWidget<'a> {
             _detail_ing_widgets: master_detail._detail_ing_widgets,
             _is_opened: false,
             _selected_index: 0,
-            _last_stick_y: 0,
             _nav_repeat_controller: WidgetNavRepeatController::new(),
         }
     }
@@ -386,17 +313,7 @@ impl<'a> CookingWidget<'a> {
     }
 
     pub fn can_cook_recipe(recipe_index: usize) -> bool {
-        if recipe_index >= COOKING_RECIPES.len() {
-            return false;
-        }
-        let recipe = &COOKING_RECIPES[recipe_index];
-        for req in recipe._ingredients {
-            let have_count = get_game_ui_manager().get_total_item_count(req.item_code());
-            if have_count < req._count {
-                return false;
-            }
-        }
-        true
+        COOKING_RECIPES.get(recipe_index).is_some_and(|recipe| has_all_ingredients(recipe._ingredients))
     }
 
     pub fn select_recipe(&mut self, index: usize) {
@@ -480,11 +397,9 @@ impl<'a> CookingWidget<'a> {
     }
 
     pub fn update_detail_panel(&mut self) {
-        if self._selected_index >= COOKING_RECIPES.len() {
+        let Some(recipe) = COOKING_RECIPES.get(self._selected_index) else {
             return;
-        }
-
-        let recipe = &COOKING_RECIPES[self._selected_index];
+        };
         let item_code = recipe.item_code();
 
         Self::setup_item_icon(&self._detail_icon, item_code);
@@ -494,62 +409,22 @@ impl<'a> CookingWidget<'a> {
         let desc_text = Self::get_item_description_from_resource(item_code);
         ptr_as_mut(self._detail_desc_lbl.as_ref()).get_ui_component_mut().set_text(&desc_text);
 
-        let ui_mgr = get_game_ui_manager();
-        for (i, ing_widget) in self._detail_ing_widgets.iter_mut().enumerate() {
-            let layout_ui = ptr_as_mut(ing_widget._layout.as_ref()).get_ui_component_mut();
-            if i < recipe._ingredients.len() {
-                let req = &recipe._ingredients[i];
-                let req_code = req.item_code();
-                Self::setup_item_icon(&ing_widget._icon, req_code);
-
-                let have = ui_mgr.get_total_item_count(req_code);
-                let ing_name = Self::get_item_name_from_resource(req_code);
-                let text = format!("{} ({}/{})", ing_name, have, req._count);
-                let lbl_ui = ptr_as_mut(ing_widget._label.as_ref()).get_ui_component_mut();
-                lbl_ui.set_text(&text);
-                if have >= req._count {
-                    lbl_ui.set_font_color(COLOR_TEXT_NORMAL);
-                } else {
-                    lbl_ui.set_font_color(COLOR_TEXT_ERROR);
-                }
-                layout_ui.set_enable(true);
-            } else {
-                layout_ui.set_enable(false);
-            }
-        }
+        update_ingredient_requirements_ui(&mut self._detail_ing_widgets, recipe._ingredients);
     }
 
     pub fn refresh_recipe_labels(&mut self) {
-        let ui_mgr = get_game_ui_manager();
         for item in self._items.iter_mut() {
-            if item._recipe_index < COOKING_RECIPES.len() {
-                let recipe = &COOKING_RECIPES[item._recipe_index];
-
+            if let Some(recipe) = COOKING_RECIPES.get(item._recipe_index) {
                 let recipe_item_name = Self::get_item_name_from_resource(recipe.item_code());
-                let name_ui = ptr_as_mut(item._name_lbl.as_ref()).get_ui_component_mut();
-                name_ui.set_text(&recipe_item_name);
+                ptr_as_mut(item._name_lbl.as_ref()).get_ui_component_mut().set_text(&recipe_item_name);
 
-                let mut can_cook = true;
-                for req in recipe._ingredients.iter() {
-                    let have = ui_mgr.get_total_item_count(req.item_code());
-                    if have < req._count {
-                        can_cook = false;
-                        break;
-                    }
-                }
-
-                let btn_ui = ptr_as_mut(item._action_btn.as_ref()).get_ui_component_mut();
-                if can_cook {
-                    btn_ui.set_color(COLOR_BTN_COOK_BG);
-                    btn_ui.set_border_color(COLOR_BTN_COOK_BORDER);
-                    btn_ui.set_font_color(COLOR_WHITE);
-                    btn_ui.set_touchable(true);
-                } else {
-                    btn_ui.set_color(COLOR_BTN_DISABLED_BG);
-                    btn_ui.set_border_color(COLOR_BTN_DISABLED_BORDER);
-                    btn_ui.set_font_color(COLOR_TEXT_DISABLED);
-                    btn_ui.set_touchable(false);
-                }
+                let can_cook = has_all_ingredients(recipe._ingredients);
+                update_recipe_action_button_style(
+                    &item._action_btn,
+                    can_cook,
+                    COLOR_BTN_COOK_BG,
+                    COLOR_BTN_COOK_BORDER,
+                );
             }
         }
 
@@ -605,19 +480,20 @@ impl<'a> CookingWidget<'a> {
             self._nav_repeat_controller.update(keyboard_input_data, joystick_input_data, delta_time);
 
         if should_move {
-            let (_dir_x, dir_y) = dir_opt.unwrap();
-            let selected_idx = if dir_y < 0 && self._selected_index > 0 {
-                Some(self._selected_index - 1)
-            } else if dir_y > 0 && self._selected_index + 1 < self._items.len() {
-                Some(self._selected_index + 1)
-            } else {
-                None
-            };
-            if let Some(idx) = selected_idx {
-                self.select_recipe(idx);
-                get_audio_manager_mut().play_audio_bank(AUDIO_SELECT_ITEM, AudioLoop::ONCE, None);
-                if let Some(item) = self._items.get(idx) {
-                    move_mouse_to_ui_component(item._layout.get_ui_component());
+            if let Some((_dir_x, dir_y)) = dir_opt {
+                let selected_idx = if dir_y < 0 && self._selected_index > 0 {
+                    Some(self._selected_index - 1)
+                } else if dir_y > 0 && self._selected_index + 1 < self._items.len() {
+                    Some(self._selected_index + 1)
+                } else {
+                    None
+                };
+                if let Some(idx) = selected_idx {
+                    self.select_recipe(idx);
+                    get_audio_manager_mut().play_audio_bank(AUDIO_SELECT_ITEM, AudioLoop::ONCE, None);
+                    if let Some(item) = self._items.get(idx) {
+                        move_mouse_to_ui_component(item._layout.get_ui_component());
+                    }
                 }
             }
         }
