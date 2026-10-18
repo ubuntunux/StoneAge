@@ -1,7 +1,9 @@
+pub mod animation;
 pub mod character;
 pub mod controller;
 pub mod data;
 pub mod fishing;
+pub mod interaction;
 pub mod lantern;
 pub mod manager;
 pub mod stats;

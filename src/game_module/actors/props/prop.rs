@@ -1,35 +1,21 @@
-use crate::game_module::actors::character::ActionEvent;
-use crate::game_module::actors::interaction_object::InteractionObject;
+use crate::game_module::actors::common::{
+    calculate_hit_shake_position, play_hit_effect_and_audio, update_actor_hit_blink_color,
+};
 use crate::game_module::actors::items::ItemCreateInfo;
 use crate::game_module::actors::props::api::{
-    Prop, PropCreateInfo, PropData, PropDataType, PropID, PropManager, PropMap, PropSaveData, PropStats,
+    Prop, PropCreateInfo, PropData, PropDataType, PropID, PropManager, PropSaveData, PropStats,
 };
-use crate::game_module::game_constants::{
-    AUDIO_HIT, CHARACTER_INTERACTION_DISTANCE, EFFECT_HIT, GAME_VIEW_MODE, GameViewMode, HIT_BLINK_INTENSITY,
-    HIT_BLINK_SPEED, HIT_BLINK_TIME, NPC_ATTACK_HIT_RANGE, OBJECT_SHAKE_INTENSITY, OBJECT_SHAKE_SPEED_X,
-    OBJECT_SHAKE_SPEED_Z,
-};
-use crate::game_module::game_scene_manager::{PropCreateInfoMap, PropSaveDataMap};
-use crate::game_module::game_service_locator::{
-    get_character_manager, get_game_client, get_game_resources, get_game_scene_manager, get_item_manager_mut,
-};
-use crate::game_module::scenario::scenario::ScenarioType;
-use nalgebra::{Vector3, Vector4};
-use rand;
-use rust_engine_3d::audio::audio_manager::AudioLoop;
-use rust_engine_3d::core::engine_service_locator::{get_audio_manager_mut, get_scene_manager, get_scene_manager_mut};
-use rust_engine_3d::effect::effect_data::EffectCreateInfo;
-use rust_engine_3d::renderer::push_constants::PushConstantParameter;
+use crate::game_module::game_constants::{GAME_VIEW_MODE, GameViewMode, HIT_BLINK_TIME};
+use nalgebra::Vector3;
 use rust_engine_3d::scene::bounding_box::BoundingBox;
 use rust_engine_3d::scene::collision::{CollisionData, CollisionType};
-use rust_engine_3d::scene::render_object::{RenderObjectCreateInfo, RenderObjectData};
+use rust_engine_3d::scene::render_object::RenderObjectData;
 use rust_engine_3d::utilities::math;
-use rust_engine_3d::utilities::system::{
-    RcRefCell, extract_name_and_uuid, format_name_with_uuid, newRcRefCell, ptr_as_ref,
-};
-use std::collections::HashMap;
-use std::ffi::c_void;
-use uuid::Uuid;
+use rust_engine_3d::utilities::system::{RcRefCell, format_name_with_uuid, ptr_as_ref};
+
+const HARVESTABLE_DROP_SPEED: f32 = 2.0;
+const DESTRUCTION_DROP_HORIZONTAL_SPEED: f32 = 5.0;
+const DESTRUCTION_DROP_VERTICAL_SPEED: f32 = 10.0;
 
 impl Default for PropData {
     fn default() -> Self {
@@ -103,7 +89,7 @@ impl<'a> Prop<'a> {
         self.update_transform();
     }
 
-    pub fn load_prop_save_date(&mut self, _prop_save_data: &PropSaveData) {}
+    pub fn load_prop_save_data(&mut self, _prop_save_data: &PropSaveData) {}
 
     pub fn get_prop_save_data(&self) -> (String, PropSaveData) {
         (
@@ -122,46 +108,57 @@ impl<'a> Prop<'a> {
     }
 
     pub fn post_process_after_prop_loading(&mut self) {}
+
     pub fn get_prop_id(&self) -> PropID {
         self._prop_id
     }
+
     pub fn get_prop_manager(&self) -> &PropManager<'a> {
         ptr_as_ref(self._prop_manager)
     }
+
     pub fn get_instance_parameters(&self, key: &str) -> Option<serde_json::Value> {
         self._instance_parameters.get(key).cloned()
     }
+
     pub fn can_drop_item(&self) -> bool {
         0 < self._prop_stats._item_count
     }
+
     pub fn get_position(&self) -> &Vector3<f32> {
         &self._prop_stats._position
     }
+
     pub fn set_position(&mut self, position: &Vector3<f32>) {
         self._prop_stats._position.clone_from(position);
     }
+
     pub fn get_bounding_box(&self) -> &BoundingBox {
         &ptr_as_ref(self._render_object.as_ptr())._bounding_box
     }
+
     pub fn get_collision(&self) -> &CollisionData {
         &ptr_as_ref(self._render_object.as_ptr())._collision
     }
+
     pub fn is_alive(&self) -> bool {
         self._prop_stats._is_alive
     }
+
     pub fn is_heat_source(&self) -> bool {
         self._prop_data.borrow()._prop_type.is_heat_source()
     }
+
     pub fn is_shelter(&self) -> bool {
         self._prop_data.borrow()._prop_type.is_shelter()
     }
+
     pub fn set_dead(&mut self) {
         self._prop_stats._is_alive = false;
     }
+
     pub fn set_hit_damage(&mut self, damage: i32) {
-        if PropDataType::Harvestable == self._prop_data.borrow()._prop_type {
-            // nothing to do
-        } else {
+        if PropDataType::Harvestable != self._prop_data.borrow()._prop_type {
             self._prop_stats._prop_hp -= damage;
             if self._prop_stats._prop_hp <= 0 {
                 self.set_dead();
@@ -169,15 +166,10 @@ impl<'a> Prop<'a> {
         }
 
         self._prop_stats._hit_blink_time = HIT_BLINK_TIME;
-
-        let effect_create_info = EffectCreateInfo {
-            _effect_position: *self.get_bounding_box().get_center(),
-            _effect_data_name: String::from(EFFECT_HIT),
-            ..Default::default()
-        };
-        get_scene_manager_mut().add_effect(EFFECT_HIT, &effect_create_info);
-        get_audio_manager_mut().play_audio_bank(AUDIO_HIT, AudioLoop::ONCE, None);
+        let center = *self.get_bounding_box().get_center();
+        play_hit_effect_and_audio(&center);
     }
+
     pub fn update_generate_item(&mut self, delta_time: f64) {
         if self._prop_data.borrow()._prop_type == PropDataType::Harvestable
             && self._prop_stats._item_count < self._prop_stats._item_count_max
@@ -191,6 +183,7 @@ impl<'a> Prop<'a> {
             }
         }
     }
+
     pub fn drop_items(&mut self, mut drop_count: i32, player_position: &Vector3<f32>) -> Vec<ItemCreateInfo> {
         if self._prop_stats._item_count <= drop_count {
             drop_count = self._prop_stats._item_count;
@@ -201,25 +194,26 @@ impl<'a> Prop<'a> {
         self.update_item_visible();
 
         let mut item_create_infos: Vec<ItemCreateInfo> = vec![];
+        let prop_type = self._prop_data.borrow()._prop_type;
+        let item_data_name = self._prop_data.borrow()._item_data_name.clone();
+
         for drop_index in 0..drop_count {
             let mut position = *self.get_bounding_box().get_center();
-            let mut velocity = Vector3::new(0.0, 0.0, 0.0);
+            let mut velocity = Vector3::zeros();
             if let Some(item_render_object) =
-                &self._item_render_objects.get((self._prop_stats._item_count + drop_index) as usize)
+                self._item_render_objects.get((self._prop_stats._item_count + drop_index) as usize)
             {
-                match self._prop_data.borrow()._prop_type {
+                match prop_type {
                     PropDataType::Harvestable => {
                         position = item_render_object.borrow().get_transform_object_data()._position;
-                        let mut to_item =
-                            item_render_object.borrow().get_transform_object_data()._position - self.get_position();
-                        to_item = math::make_normalize_xz(&to_item);
-                        velocity = Vector3::new(to_item.x, 1.0, to_item.z) * 2.0;
+                        let to_item = math::make_normalize_xz(&(position - self.get_position()));
+                        velocity = Vector3::new(to_item.x, 1.0, to_item.z) * HARVESTABLE_DROP_SPEED;
                     }
                     _ => {
                         velocity = Vector3::new(
-                            (rand::random::<f32>() * 2.0 - 1.0) * 5.0,
-                            rand::random::<f32>() * 10.0,
-                            (rand::random::<f32>() * 2.0 - 1.0) * 5.0,
+                            (rand::random::<f32>() * 2.0 - 1.0) * DESTRUCTION_DROP_HORIZONTAL_SPEED,
+                            rand::random::<f32>() * DESTRUCTION_DROP_VERTICAL_SPEED,
+                            (rand::random::<f32>() * 2.0 - 1.0) * DESTRUCTION_DROP_HORIZONTAL_SPEED,
                         );
                     }
                 };
@@ -231,7 +225,7 @@ impl<'a> Prop<'a> {
             }
 
             item_create_infos.push(ItemCreateInfo {
-                _item_data_name: self._prop_data.borrow()._item_data_name.clone(),
+                _item_data_name: item_data_name.clone(),
                 _position: position,
                 _velocity: velocity,
                 ..Default::default()
@@ -239,442 +233,35 @@ impl<'a> Prop<'a> {
         }
         item_create_infos
     }
+
     pub fn update_item_visible(&mut self) {
         for (i, item_render_object) in self._item_render_objects.iter().enumerate() {
             item_render_object.borrow_mut().set_visible(i < self._prop_stats._item_count as usize);
         }
     }
-    pub fn update_transform(&mut self) {
-        let hit_blink_time = self._prop_stats._hit_blink_time;
-        let position = if 0.0 < hit_blink_time {
-            let shake_ratio = hit_blink_time / HIT_BLINK_TIME;
-            let shake_amount = shake_ratio * OBJECT_SHAKE_INTENSITY;
-            let shake_x = (hit_blink_time * OBJECT_SHAKE_SPEED_X).sin() * shake_amount;
-            let shake_z = (hit_blink_time * OBJECT_SHAKE_SPEED_Z).cos() * shake_amount;
-            self._prop_stats._position + Vector3::new(shake_x, 0.0, shake_z)
-        } else {
-            self._prop_stats._position
-        };
 
+    pub fn update_transform(&mut self) {
+        let position = calculate_hit_shake_position(&self._prop_stats._position, self._prop_stats._hit_blink_time);
         self._render_object.borrow().get_transform_object_data_mut().set_position_rotation_scale(
             &position,
             &self._prop_stats._rotation,
             &self._prop_stats._scale,
         );
     }
+
     pub fn update_render_object(&mut self) {
         self._render_object.borrow_mut().update_render_object_data(0.0);
     }
-    fn update_hit_blink_color(&mut self, delta_time: f32) {
-        self._prop_stats._hit_blink_time -= delta_time;
-        if self._prop_stats._hit_blink_time <= 0.0 {
-            self._prop_stats._hit_blink_time = 0.0;
-        }
 
-        let blink_phase = 0.5 - (self._prop_stats._hit_blink_time * HIT_BLINK_SPEED).cos() * 0.5;
-        let hit_color = Vector4::new(
-            1.0 + blink_phase * HIT_BLINK_INTENSITY,
-            1.0 + blink_phase * HIT_BLINK_INTENSITY,
-            1.0 + blink_phase * HIT_BLINK_INTENSITY,
-            1.0,
-        );
-
-        self._render_object
-            .borrow_mut()
-            .set_push_constant_parameter("_color", &PushConstantParameter::Float4(hit_color));
-    }
     pub fn update_prop(&mut self, delta_time: f64) {
         if 0.0 < self._prop_stats._hit_blink_time {
-            self.update_hit_blink_color(delta_time as f32);
+            update_actor_hit_blink_color(
+                &self._render_object,
+                &mut self._prop_stats._hit_blink_time,
+                delta_time as f32,
+            );
         }
         self.update_generate_item(delta_time);
         self.update_transform();
-    }
-}
-
-impl<'a> PropManager<'a> {
-    pub fn create_prop_manager() -> Box<PropManager<'a>> {
-        Box::new(PropManager {
-            _props: HashMap::new(),
-            _prop_name_map: HashMap::new(),
-            _marker: std::marker::PhantomData,
-        })
-    }
-
-    pub fn initialize_prop_manager(&mut self) {
-        log::info!("initialize_prop_manager");
-    }
-    pub fn destroy_prop_manager(&mut self) {}
-
-    pub fn generate_id(&self) -> Uuid {
-        Uuid::new_v4()
-    }
-    pub fn get_prop(&self, prop_id: PropID) -> Option<&RcRefCell<Prop<'a>>> {
-        self._props.get(&prop_id)
-    }
-    pub fn get_prop_by_name(&self, prop_name: &str) -> Option<&RcRefCell<Prop<'a>>> {
-        self._prop_name_map.get(prop_name)
-    }
-    pub fn get_props(&self) -> &PropMap<'a> {
-        &self._props
-    }
-    pub fn create_prop(&mut self, prop_name: &str, prop_create_info: &PropCreateInfo) -> RcRefCell<Prop<'a>> {
-        let (prop_name, uuid) = extract_name_and_uuid(prop_name);
-        let game_resources = get_game_resources();
-        let prop_data = game_resources.get_prop_data(prop_create_info._prop_data_name.as_str());
-
-        let render_object_create_info = RenderObjectCreateInfo {
-            _model_data_name: prop_data.borrow()._model_data_name.clone(),
-            _position: prop_create_info._position,
-            _rotation: prop_create_info._rotation,
-            _scale: prop_create_info._scale,
-            ..Default::default()
-        };
-        let render_object_data =
-            get_scene_manager_mut().add_dynamic_render_object(prop_name.as_str(), &render_object_create_info, None);
-
-        let mut item_render_objects: Vec<RcRefCell<RenderObjectData<'a>>> = Vec::new();
-        for (_, socket) in render_object_data.borrow()._sockets.iter() {
-            let item_data = game_resources.get_item_data(prop_data.borrow()._item_data_name.as_str());
-            let render_object_create_info = RenderObjectCreateInfo {
-                _model_data_name: item_data.borrow()._model_data_name.clone(),
-                _position: math::extract_location(&socket.borrow()._transform),
-                _rotation: math::matrix_decompose_pitch_yaw_roll(&socket.borrow()._transform),
-                _scale: math::extract_scale(&socket.borrow()._transform),
-                ..Default::default()
-            };
-            let render_object_data = get_scene_manager_mut().add_dynamic_render_object(
-                render_object_create_info._model_data_name.as_str(),
-                &render_object_create_info,
-                None,
-            );
-            item_render_objects.push(render_object_data);
-        }
-
-        let prop_id = if prop_create_info._prop_id.is_nil() {
-            self.generate_id()
-        } else {
-            assert_eq!(prop_create_info._prop_id, uuid.unwrap());
-            prop_create_info._prop_id
-        };
-        let prop = newRcRefCell(Prop::create_prop(
-            self,
-            prop_id,
-            prop_name.as_str(),
-            prop_data,
-            &render_object_data,
-            item_render_objects,
-            prop_create_info,
-        ));
-
-        self._props.insert(prop_id, prop.clone());
-        if !self._prop_name_map.contains_key(prop_name.as_str()) {
-            self._prop_name_map.insert(prop_name.to_string(), prop.clone());
-        }
-        prop
-    }
-
-    pub fn remove_prop(&mut self, prop_ref: &RcRefCell<Prop<'a>>) {
-        let prop = prop_ref.borrow();
-        self._props.remove(&prop.get_prop_id());
-        if let Some(target) = self._prop_name_map.get(prop._prop_name.as_str())
-            && target.as_ptr() == prop_ref.as_ptr()
-        {
-            self._prop_name_map.remove(prop._prop_name.as_str());
-        }
-        get_scene_manager_mut().remove_static_render_object(prop._render_object.borrow()._object_id);
-    }
-
-    pub fn clear_props(&mut self) {
-        let props: Vec<RcRefCell<Prop<'a>>> = self._props.values().cloned().collect();
-        for prop in props {
-            self.remove_prop(&prop);
-        }
-    }
-
-    pub fn create_props(&mut self, prop_create_infos: &PropCreateInfoMap) {
-        for (prop_name, prop_create_info) in prop_create_infos.iter() {
-            self.create_prop(prop_name.as_str(), prop_create_info);
-        }
-    }
-
-    pub fn load_prop_save_data(&mut self, prop_name: &str, prop_save_data: &PropSaveData) {
-        let prop = self.create_prop(prop_name, &prop_save_data._prop_create_info);
-        prop.borrow_mut().load_prop_save_date(prop_save_data);
-    }
-
-    pub fn load_props_save_data(&mut self, props_save_data: &PropSaveDataMap) {
-        for (prop_name, prop_save_data) in props_save_data.iter() {
-            self.load_prop_save_data(prop_name.as_str(), prop_save_data);
-        }
-    }
-
-    pub fn get_props_save_data(&self) -> PropSaveDataMap {
-        self._props.values().map(|prop| prop.borrow().get_prop_save_data()).collect()
-    }
-
-    pub fn post_process_after_prop_loading(&mut self) {
-        for prop in self._props.values() {
-            prop.borrow_mut().post_process_after_prop_loading();
-        }
-    }
-
-    pub fn get_teleport_point(&self, gate_prop_name: &str) -> Option<Vector3<f32>> {
-        let gate = self.get_prop_by_name(gate_prop_name);
-        if gate.is_some() {
-            let prop = gate.unwrap().borrow();
-            let prop_bounding_box = prop.get_bounding_box();
-            let mut teleport_point =
-                prop.get_position() + prop_bounding_box.get_orientation().column(2) * (prop_bounding_box._mag_xz + 1.0);
-            teleport_point.y =
-                teleport_point.y.max(get_scene_manager().get_height_map_data().get_height_bilinear(&teleport_point, 0));
-            return Some(teleport_point);
-        }
-        None
-    }
-
-    pub fn update_prop_manager(&mut self, delta_time: f64) {
-        if !get_character_manager().is_valid_player() {
-            return;
-        }
-
-        for prop in self._props.values() {
-            prop.borrow_mut().update_prop(delta_time);
-        }
-
-        let player_refcell = get_character_manager().get_player().clone();
-        let mut player = player_refcell.borrow_mut();
-
-        let mut dead_props: Vec<RcRefCell<Prop>> = Vec::new();
-        {
-            let check_direction = false;
-            if player.is_alive() {
-                let is_available_interaction = get_game_client().is_available_interaction();
-                for prop_refcell in self._props.values() {
-                    let mut prop = prop_refcell.borrow_mut();
-                    let key = prop_refcell.as_ptr() as *const c_void;
-                    let is_interaction_object = player._controller.is_interaction_object(key);
-                    let prop_type = prop._prop_data.borrow()._prop_type;
-                    let bounding_box = prop.get_bounding_box();
-                    match prop_type {
-                        PropDataType::Bed => {
-                            let to_player = player.get_position() - prop.get_position();
-                            let (_to_player_dir, mut to_player_distance) =
-                                if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
-                                    math::make_normalize_xy_with_norm(&to_player)
-                                } else {
-                                    math::make_normalize_with_norm(&to_player)
-                                };
-                            to_player_distance = 0f32.max(
-                                to_player_distance
-                                    - (player.get_collision()._bounding_box._mag_xz + bounding_box._mag_xz) * 0.5,
-                            );
-                            let is_wrap_up =
-                                get_game_scene_manager().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay);
-                            let is_in_player_range = is_available_interaction
-                                && is_wrap_up
-                                && to_player_distance <= CHARACTER_INTERACTION_DISTANCE;
-
-                            if !is_interaction_object && is_in_player_range {
-                                player
-                                    ._controller
-                                    .add_interaction_object(InteractionObject::PropBed(prop_refcell.clone()));
-                            } else if is_interaction_object && !is_in_player_range {
-                                player
-                                    ._controller
-                                    .remove_interaction_object(InteractionObject::PropBed(prop_refcell.clone()));
-                            }
-                        }
-                        PropDataType::Ceiling => {
-                            prop._render_object
-                                .borrow_mut()
-                                .set_render_camera(!bounding_box.collide_point(player.get_position()));
-                        }
-                        PropDataType::Destruction => {
-                            let is_in_player_range = is_available_interaction
-                                && if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
-                                    player.check_in_range_xy(
-                                        prop.get_collision(),
-                                        NPC_ATTACK_HIT_RANGE,
-                                        check_direction,
-                                    )
-                                } else {
-                                    player.check_in_range(prop.get_collision(), NPC_ATTACK_HIT_RANGE, check_direction)
-                                };
-
-                            if player._animation_state.is_attack_event() && is_in_player_range {
-                                prop.set_hit_damage(player.get_power(player._animation_state.get_action_event()));
-                                if !prop.is_alive() {
-                                    let drop_count = prop._prop_stats._item_count;
-                                    for item_create_info in
-                                        prop.drop_items(drop_count, player.get_position()).iter_mut()
-                                    {
-                                        get_item_manager_mut().create_item(
-                                            item_create_info._item_data_name.as_str(),
-                                            item_create_info,
-                                            None,
-                                        );
-                                    }
-                                    dead_props.push(prop_refcell.clone());
-                                }
-                            }
-
-                            if !is_interaction_object && is_in_player_range && prop.is_alive() {
-                                player
-                                    ._controller
-                                    .add_interaction_object(InteractionObject::PropGathering(prop_refcell.clone()));
-                            } else if is_interaction_object && !is_in_player_range || !prop.is_alive() {
-                                player
-                                    ._controller
-                                    .remove_interaction_object(InteractionObject::PropGathering(prop_refcell.clone()));
-                            }
-                        }
-                        PropDataType::Harvestable => {
-                            let is_in_player_range = is_available_interaction
-                                && if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
-                                    player.check_in_range_xy(
-                                        prop.get_collision(),
-                                        NPC_ATTACK_HIT_RANGE,
-                                        check_direction,
-                                    )
-                                } else {
-                                    player.check_in_range(prop.get_collision(), NPC_ATTACK_HIT_RANGE, check_direction)
-                                };
-
-                            let can_drop_item = prop.can_drop_item();
-                            if can_drop_item && player._animation_state.is_attack_event() && is_in_player_range {
-                                prop.set_hit_damage(0);
-                                let drop_count = 1;
-                                for item_create_info in prop.drop_items(drop_count, player.get_position()).iter_mut() {
-                                    get_item_manager_mut().create_item(
-                                        item_create_info._item_data_name.as_str(),
-                                        item_create_info,
-                                        None,
-                                    );
-                                }
-                            }
-
-                            if !is_interaction_object && is_in_player_range && can_drop_item {
-                                player
-                                    ._controller
-                                    .add_interaction_object(InteractionObject::PropGathering(prop_refcell.clone()));
-                            } else if is_interaction_object && (!is_in_player_range || !can_drop_item) {
-                                player
-                                    ._controller
-                                    .remove_interaction_object(InteractionObject::PropGathering(prop_refcell.clone()));
-                            }
-                        }
-                        PropDataType::Gate => {
-                            let is_in_player_range = is_available_interaction
-                                && if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
-                                    bounding_box.collide_point_xy(player.get_center())
-                                } else {
-                                    bounding_box.collide_point(player.get_center())
-                                };
-
-                            if !is_interaction_object && is_in_player_range {
-                                player
-                                    ._controller
-                                    .add_interaction_object(InteractionObject::PropGate(prop_refcell.clone()));
-                            } else if is_interaction_object && !is_in_player_range {
-                                player
-                                    ._controller
-                                    .remove_interaction_object(InteractionObject::PropGate(prop_refcell.clone()));
-                            }
-                        }
-                        PropDataType::Pickup => {
-                            let mut is_in_player_range = is_available_interaction
-                                && if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
-                                    player
-                                        .get_bounding_box()
-                                        .collide_bound_box_xy(&bounding_box._min, &bounding_box._max)
-                                } else {
-                                    player.get_bounding_box().collide_bound_box(&bounding_box._min, &bounding_box._max)
-                                };
-
-                            if is_in_player_range && player._animation_state.is_action_event(ActionEvent::Pickup) {
-                                let mut pickup_items: bool = false;
-                                let drop_count = prop._prop_stats._item_count;
-                                for item_create_info in prop.drop_items(drop_count, player.get_position()).iter() {
-                                    pickup_items |= get_item_manager_mut().instance_pickup_item(item_create_info);
-                                }
-
-                                if pickup_items {
-                                    is_in_player_range = false;
-                                    dead_props.push(prop_refcell.clone());
-                                }
-                            }
-
-                            if !is_interaction_object && is_in_player_range {
-                                player
-                                    ._controller
-                                    .add_interaction_object(InteractionObject::PropPickup(prop_refcell.clone()));
-                            } else if is_interaction_object && !is_in_player_range {
-                                player
-                                    ._controller
-                                    .remove_interaction_object(InteractionObject::PropPickup(prop_refcell.clone()));
-                            }
-                        }
-                        PropDataType::Monolith => {
-                            let is_in_player_range = is_available_interaction
-                                && if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
-                                    player.check_in_range_xy(
-                                        prop.get_collision(),
-                                        CHARACTER_INTERACTION_DISTANCE,
-                                        check_direction,
-                                    )
-                                } else {
-                                    player.check_in_range(
-                                        prop.get_collision(),
-                                        CHARACTER_INTERACTION_DISTANCE,
-                                        check_direction,
-                                    )
-                                };
-
-                            if !is_interaction_object && is_in_player_range {
-                                player
-                                    ._controller
-                                    .add_interaction_object(InteractionObject::PropMonolith(prop_refcell.clone()));
-                            } else if is_interaction_object && !is_in_player_range {
-                                player
-                                    ._controller
-                                    .remove_interaction_object(InteractionObject::PropMonolith(prop_refcell.clone()));
-                            }
-                        }
-                        PropDataType::Table => {
-                            let is_in_player_range = is_available_interaction
-                                && if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
-                                    player.check_in_range_xy(
-                                        prop.get_collision(),
-                                        CHARACTER_INTERACTION_DISTANCE,
-                                        check_direction,
-                                    )
-                                } else {
-                                    player.check_in_range(
-                                        prop.get_collision(),
-                                        CHARACTER_INTERACTION_DISTANCE,
-                                        check_direction,
-                                    )
-                                };
-
-                            if !is_interaction_object && is_in_player_range {
-                                player
-                                    ._controller
-                                    .add_interaction_object(InteractionObject::PropTable(prop_refcell.clone()));
-                            } else if is_interaction_object && !is_in_player_range {
-                                player
-                                    ._controller
-                                    .remove_interaction_object(InteractionObject::PropTable(prop_refcell.clone()));
-                            }
-                        }
-                        _ => (),
-                    }
-                }
-            }
-        }
-
-        for prop_refcell in dead_props.iter() {
-            self.remove_prop(prop_refcell);
-        }
     }
 }

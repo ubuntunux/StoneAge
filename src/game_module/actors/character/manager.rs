@@ -1,25 +1,25 @@
 use crate::game_module::actors::character::ActionAnimationState;
 use crate::game_module::actors::character::character::Character;
 use crate::game_module::actors::character::controller::CharacterControllerSaveData;
-use crate::game_module::behavior::behavior_base::BehaviorState;
-
 use crate::game_module::actors::character::stats::*;
+use crate::game_module::actors::common::resolve_actor_id;
 use crate::game_module::actors::interaction_object::InteractionObject;
 use crate::game_module::actors::items::{ItemCreateInfo, ItemID};
-use crate::game_module::behavior::behavior_base::BehaviorSaveData;
+use crate::game_module::behavior::behavior_base::{BehaviorSaveData, BehaviorState};
 use crate::game_module::game_constants::{
     AUDIO_STOMACH_GROWLING, AUDIO_WRAP_UP_THE_DAY, CHARACTER_INTERACTION_DISTANCE, CHARACTER_INTERACTION_TIME,
-    CORPSE_AUTO_REMOVE_TIME, FARM_MEAT_COUNT, GAME_VIEW_MODE, GameViewMode, ITEM_HAND, ITEM_MEAT, ITEM_SPIRIT_BALL,
-    MATERIAL_EMOJI_GOOD, MATERIAL_EMOJI_HUNGRY, NPC_ATTACK_HIT_RANGE, NPC_TRACKING_RANGE,
+    CORPSE_AUTO_REMOVE_TIME, FARM_ITEM_PICKUP_DELAY, FARM_MEAT_BASE_SPEED, FARM_MEAT_BASE_VELOCITY_Y, FARM_MEAT_COUNT,
+    FARM_MEAT_RANDOM_SPEED, FARM_MEAT_RANDOM_VELOCITY_Y, FARM_SPIRIT_BALL_VELOCITY_Y, GAME_VIEW_MODE, GameViewMode,
+    ITEM_HAND, ITEM_MEAT, ITEM_SPIRIT_BALL, MATERIAL_EMOJI_GOOD, MATERIAL_EMOJI_HUNGRY, NPC_ATTACK_HIT_RANGE,
+    NPC_TRACKING_RANGE,
 };
 use crate::game_module::game_scene_manager::{CharacterCreateInfoMap, CharacterSaveDataMap};
-use crate::game_module::widgets::text_box_widget::{TextBoxContent, TextBoxItemOption, TextBoxLayerType};
-use nalgebra::Vector3;
-
 use crate::game_module::game_service_locator::{
     get_game_client, get_game_resources, get_game_scene_manager, get_game_ui_manager, get_game_ui_manager_mut,
 };
 use crate::game_module::widgets::game_menu_widget::character_list_helper::{AffinityTier, get_affinity_tier};
+use crate::game_module::widgets::text_box_widget::{TextBoxContent, TextBoxItemOption, TextBoxLayerType};
+use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop};
 use rust_engine_3d::core::engine_service_locator::{get_audio_manager_mut, get_scene_manager, get_scene_manager_mut};
 use rust_engine_3d::scene::render_object::{RenderObjectCreateInfo, RenderObjectSaveData, SceneObjectType};
@@ -33,6 +33,8 @@ use uuid::Uuid;
 pub type CharacterID = Uuid;
 pub type CharacterMap<'a> = HashMap<CharacterID, RcRefCell<Character<'a>>>;
 pub type CharacterNameMap<'a> = HashMap<String, RcRefCell<Character<'a>>>;
+
+const TARGET_FOCUS_TIME: f64 = 2.0;
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(default)]
@@ -48,7 +50,7 @@ impl Default for CharacterCreateInfo {
     fn default() -> Self {
         CharacterCreateInfo {
             _character_id: Default::default(),
-            _character_data_name: "".to_string(),
+            _character_data_name: String::new(),
             _position: Default::default(),
             _rotation: Default::default(),
             _scale: Vector3::new(1.0, 1.0, 1.0),
@@ -92,20 +94,25 @@ impl<'a> CharacterManager<'a> {
     pub fn initialize_character_manager(&mut self) {
         log::info!("initialize_character_manager");
     }
+
     pub fn destroy_character_manager(&mut self) {}
 
     pub fn generate_id(&self) -> CharacterID {
         Uuid::new_v4()
     }
+
     pub fn get_characters(&self) -> &CharacterMap<'a> {
         &self._characters
     }
+
     pub fn get_character(&self, character_id: CharacterID) -> Option<&RcRefCell<Character<'a>>> {
         self._characters.get(&character_id)
     }
+
     pub fn get_character_by_name(&self, character_name: &str) -> Option<&RcRefCell<Character<'a>>> {
         self._character_name_map.get(character_name)
     }
+
     pub fn create_character(
         &mut self,
         character_name: &str,
@@ -143,12 +150,7 @@ impl<'a> CharacterManager<'a> {
 
         let render_object_data =
             get_scene_manager_mut().add_skeletal_render_object(character_name.as_str(), &render_object_create_info);
-        let character_id = if character_create_info._character_id.is_nil() {
-            self.generate_id()
-        } else {
-            assert_eq!(character_create_info._character_id, uuid.unwrap());
-            character_create_info._character_id
-        };
+        let character_id = resolve_actor_id(character_create_info._character_id, uuid);
 
         let character = newRcRefCell(Character::create_character_instance(
             character_name.as_str(),
@@ -163,7 +165,6 @@ impl<'a> CharacterManager<'a> {
         ));
 
         if is_player {
-            // add hand item
             let game_ui_manager = get_game_ui_manager_mut();
             if game_ui_manager.get_item_count(ITEM_HAND) == 0 {
                 game_ui_manager.add_item(ITEM_HAND, 1, false);
@@ -173,7 +174,7 @@ impl<'a> CharacterManager<'a> {
 
         self._characters.insert(character_id, character.clone());
         if !is_player && !self._character_name_map.contains_key(character_name.as_str()) {
-            self._character_name_map.insert(character_name.clone(), character.clone());
+            self._character_name_map.insert(character_name, character.clone());
         }
         character
     }
@@ -191,6 +192,7 @@ impl<'a> CharacterManager<'a> {
 
         get_scene_manager_mut().remove_skeletal_render_object(character._render_object.borrow()._object_id);
     }
+
     pub fn clear_characters(&mut self, clear_player: bool) {
         let characters = self._characters.values().cloned().collect::<Vec<RcRefCell<Character>>>();
         for character in characters.iter() {
@@ -234,11 +236,13 @@ impl<'a> CharacterManager<'a> {
             .map(|character| character.borrow().get_character_save_data())
             .collect()
     }
+
     pub fn post_process_after_characters_loading(&mut self) {
         for character in self._characters.values() {
             character.borrow_mut().post_process_after_character_loading();
         }
     }
+
     pub fn change_character_data(&mut self, character: &RcRefCell<Character<'a>>, character_data_name: &str) {
         let mut character_save_data = character.borrow().get_character_save_data();
         character_save_data.1._character_create_info._character_data_name = character_data_name.to_string();
@@ -249,6 +253,7 @@ impl<'a> CharacterManager<'a> {
             character.borrow()._is_player,
         );
     }
+
     pub fn change_character_model(&self, character: &RcRefCell<Character<'a>>, model_data_name: &str) {
         let mut character = character.borrow_mut();
         get_scene_manager_mut().remove_skeletal_render_object(character._render_object.borrow()._object_id);
@@ -267,27 +272,34 @@ impl<'a> CharacterManager<'a> {
         render_object_data.borrow_mut().copy_render_object_date(&character._render_object.borrow());
         character.change_character_model(&render_object_data);
     }
+
     pub fn is_valid_player(&self) -> bool {
         self._player.is_some()
     }
+
     pub fn get_maybe_player(&self) -> &Option<RcRefCell<Character<'a>>> {
         &self._player
     }
+
     pub fn get_player(&self) -> &RcRefCell<Character<'a>> {
         self._player.as_ref().unwrap()
     }
+
     pub fn is_player_alive(&self) -> bool {
         if let Some(player) = self._player.as_ref() {
             return player.borrow().is_alive();
         }
         false
     }
+
     pub fn is_valid_target_character(&self) -> bool {
         self._target_character.is_some()
     }
+
     pub fn get_target_character(&self) -> &RcRefCell<Character<'a>> {
         self._target_character.as_ref().unwrap()
     }
+
     pub fn set_target_character(&mut self, target_character: Option<RcRefCell<Character<'a>>>) {
         self._target_character = target_character;
     }
@@ -336,25 +348,25 @@ impl<'a> CharacterManager<'a> {
         let item_create_info = ItemCreateInfo {
             _item_data_name: String::from(ITEM_SPIRIT_BALL),
             _position: pos,
-            _velocity: Vector3::new(0.0, 4.0, 0.0),
-            _pickup_delay: 0.3,
+            _velocity: Vector3::new(0.0, FARM_SPIRIT_BALL_VELOCITY_Y, 0.0),
+            _pickup_delay: FARM_ITEM_PICKUP_DELAY,
             ..Default::default()
         };
         item_manager.create_item(item_create_info._item_data_name.as_str(), &item_create_info, None);
 
         for i in 0..FARM_MEAT_COUNT {
-            let angle = (i as f32) * (std::f32::consts::TAU / 3.0) + rand::random::<f32>() * 0.5;
-            let speed = 1.5 + rand::random::<f32>() * 2.0;
+            let angle = (i as f32) * (std::f32::consts::TAU / FARM_MEAT_COUNT as f32) + rand::random::<f32>() * 0.5;
+            let speed = FARM_MEAT_BASE_SPEED + rand::random::<f32>() * FARM_MEAT_RANDOM_SPEED;
             let velocity = Vector3::new(
                 angle.cos() * speed,
-                3.0 + rand::random::<f32>() * 2.0,
+                FARM_MEAT_BASE_VELOCITY_Y + rand::random::<f32>() * FARM_MEAT_RANDOM_VELOCITY_Y,
                 angle.sin() * speed,
             );
             let meat_info = ItemCreateInfo {
                 _item_data_name: String::from(ITEM_MEAT),
                 _position: pos,
                 _velocity: velocity,
-                _pickup_delay: 0.3,
+                _pickup_delay: FARM_ITEM_PICKUP_DELAY,
                 ..Default::default()
             };
             item_manager.create_item(ITEM_MEAT, &meat_info, None);
@@ -377,7 +389,6 @@ impl<'a> CharacterManager<'a> {
         let character_ref = character.borrow();
 
         if character_ref.is_corpse() {
-            // Corpse: show Taming & Farming widgets
             let taming_obj = InteractionObject::Taming(character.clone());
             let farming_obj = InteractionObject::Farming(character.clone());
             let was_taming = player._controller.is_interaction_object(taming_obj.get_key());
@@ -452,11 +463,11 @@ impl<'a> CharacterManager<'a> {
                     .as_ref()
                     .is_some_and(|target| std::ptr::eq(target.as_ptr(), character.as_ptr()));
                 let mut character_mut = character.borrow_mut();
-                if character_mut.is_interacting() || is_target {
-                    if !character_mut.is_action(ActionAnimationState::Dance) {
-                        character_mut.look_at(&player_pos);
-                        character_mut.set_next_behavior(BehaviorState::Dance, true);
-                    }
+                if (character_mut.is_interacting() || is_target)
+                    && !character_mut.is_action(ActionAnimationState::Dance)
+                {
+                    character_mut.look_at(&player_pos);
+                    character_mut.set_next_behavior(BehaviorState::Dance, true);
                 }
             }
         } else {
@@ -479,6 +490,165 @@ impl<'a> CharacterManager<'a> {
         }
     }
 
+    fn find_nearest_character_in_range<'b>(
+        &'b self,
+        origin: &Vector3<f32>,
+        max_range: f32,
+        initial_candidate: Option<&'b Character<'a>>,
+        predicate: impl Fn(&Character<'a>) -> bool,
+    ) -> Option<&'b Character<'a>> {
+        let mut min_dist = f32::MAX;
+        let mut best_target: Option<&'b Character<'a>> = None;
+
+        if let Some(candidate) = initial_candidate {
+            let dist = (candidate.get_position() - origin).norm();
+            if dist <= max_range {
+                min_dist = dist;
+                best_target = Some(candidate);
+            }
+        }
+
+        for other in self._characters.values() {
+            let other_ref = ptr_as_ref(other.as_ptr());
+            if predicate(other_ref) {
+                let dist = (other_ref.get_position() - origin).norm();
+                if dist <= max_range && dist < min_dist {
+                    min_dist = dist;
+                    best_target = Some(other_ref);
+                }
+            }
+        }
+
+        best_target
+    }
+
+    fn select_ai_target<'b>(
+        &'b self,
+        character: &Character<'a>,
+        player: &'b Character<'a>,
+    ) -> Option<&'b Character<'a>> {
+        if character.is_player() {
+            return None;
+        }
+        if character.is_interacting() && player.is_alive() {
+            return Some(player);
+        }
+
+        if character.is_tamed() {
+            if get_affinity_tier(character.get_intimacy()) >= AffinityTier::CloseFriend {
+                let target =
+                    self.find_nearest_character_in_range(character.get_position(), NPC_TRACKING_RANGE, None, |other| {
+                        other.is_wild_hostile()
+                    });
+                if target.is_some() {
+                    return target;
+                }
+            }
+            if character.is_following_intimacy() {
+                return Some(player);
+            }
+            return None;
+        }
+
+        if character.is_civilian() {
+            return self.find_nearest_character_in_range(character.get_position(), NPC_TRACKING_RANGE, None, |other| {
+                other.is_wild_hostile()
+            });
+        }
+
+        if character.is_following_intimacy() {
+            return Some(player);
+        }
+
+        // Wild monster: targets player OR nearest alive active ally (tamed CloseFriend+ or civilian)
+        let initial_player = if player.is_alive() { Some(player) } else { None };
+        self.find_nearest_character_in_range(character.get_position(), NPC_TRACKING_RANGE, initial_player, |other| {
+            other.is_active_player_ally()
+        })
+    }
+
+    fn process_character_attack(
+        &self,
+        attacker: &Character<'a>,
+        player: &mut Character<'a>,
+        dead_characters: &mut Vec<RcRefCell<Character<'a>>>,
+        farmed_characters: &mut Vec<RcRefCell<Character<'a>>>,
+        register_target_character: &mut Option<RcRefCell<Character<'a>>>,
+    ) {
+        let check_direction = true;
+        let base_power = attacker.get_power(attacker._animation_state.get_action_event());
+
+        if attacker.is_player() {
+            let is_enable_knockback = 0.0 < attacker._character_stats.get_stamina();
+            let damage = if is_enable_knockback {
+                base_power
+            } else {
+                (base_power as f32 * 0.5) as i32
+            };
+
+            for target_character in self._characters.values() {
+                let target_mut = ptr_as_mut(target_character.as_ptr());
+                if !target_mut._is_player
+                    && !target_mut.is_tamed()
+                    && !target_mut._character_stats._invincibility
+                    && attacker.check_in_range(target_mut.get_collision(), NPC_ATTACK_HIT_RANGE, check_direction)
+                {
+                    *register_target_character = Some(target_character.clone());
+
+                    if target_mut.is_wild_hostile() {
+                        target_mut.set_hit_damage(damage, Some(attacker.get_position()), is_enable_knockback);
+                        if !target_mut.is_alive() {
+                            let char_name = target_mut._character_data_name.clone();
+                            get_game_ui_manager_mut().notify_monster_killed(&char_name);
+                            dead_characters.push(target_character.clone());
+                        }
+                    } else if target_mut.is_corpse() {
+                        target_mut.set_hit_damage(damage, Some(attacker.get_position()), is_enable_knockback);
+                        if target_mut.get_corpse_hit_count() <= 0 {
+                            farmed_characters.push(target_character.clone());
+                        }
+                    }
+                }
+            }
+        } else if attacker.is_active_player_ally() {
+            for target_character in self._characters.values() {
+                let target_mut = ptr_as_mut(target_character.as_ptr());
+                if target_mut.is_wild_hostile()
+                    && !target_mut._character_stats._invincibility
+                    && attacker.check_in_range(target_mut.get_collision(), NPC_ATTACK_HIT_RANGE, check_direction)
+                {
+                    target_mut.set_hit_damage(base_power, Some(attacker.get_position()), true);
+                    if !target_mut.is_alive() {
+                        let char_name = target_mut._character_data_name.clone();
+                        get_game_ui_manager_mut().notify_monster_killed(&char_name);
+                        dead_characters.push(target_character.clone());
+                    }
+                }
+            }
+        } else {
+            // Wild monster attacking player or allies
+            if player.is_alive()
+                && !player._character_stats._invincibility
+                && attacker.check_in_range(player.get_collision(), NPC_ATTACK_HIT_RANGE, check_direction)
+            {
+                player.set_hit_damage(base_power, Some(attacker.get_position()), true);
+            }
+
+            for target_character in self._characters.values() {
+                let target_mut = ptr_as_mut(target_character.as_ptr());
+                if target_mut.is_active_player_ally()
+                    && !target_mut._character_stats._invincibility
+                    && attacker.check_in_range(target_mut.get_collision(), NPC_ATTACK_HIT_RANGE, check_direction)
+                {
+                    target_mut.set_hit_damage(base_power, Some(attacker.get_position()), true);
+                    if !target_mut.is_alive() {
+                        dead_characters.push(target_character.clone());
+                    }
+                }
+            }
+        }
+    }
+
     pub fn update_character_manager(&mut self, delta_time: f64) {
         if self._player.is_none() {
             return;
@@ -491,88 +661,10 @@ impl<'a> CharacterManager<'a> {
         let mut farmed_characters: Vec<RcRefCell<Character<'a>>> = Vec::new();
         let mut expired_dead_characters: Vec<RcRefCell<Character<'a>>> = Vec::new();
         let mut register_target_character: Option<RcRefCell<Character<'a>>> = None;
+
         for character in self._characters.values() {
-            // update character
             let character_mut = ptr_as_mut(character.as_ptr());
-            let ai_target: Option<&Character<'a>> = if character_mut.is_player() {
-                None
-            } else if character_mut.is_interacting() && player.is_alive() {
-                Some(player)
-            } else if character_mut.is_tamed() {
-                // Tamed monster: targets nearest alive untamed monster within tracking range ONLY IF AffinityTier >= Friend
-                let mut target_ref: Option<&Character<'a>> = None;
-                if get_affinity_tier(character_mut.get_intimacy()) >= AffinityTier::CloseFriend {
-                    let mut min_dist = f32::MAX;
-                    for other in self._characters.values() {
-                        let other_mut = ptr_as_mut(other.as_ptr());
-                        if !other_mut.is_player()
-                            && !other_mut.is_tamed()
-                            && !other_mut.is_civilian()
-                            && other_mut.is_alive()
-                        {
-                            let dist = (other_mut.get_position() - character_mut.get_position()).norm();
-                            if dist <= NPC_TRACKING_RANGE && dist < min_dist {
-                                min_dist = dist;
-                                target_ref = Some(other_mut);
-                            }
-                        }
-                    }
-                }
-                if target_ref.is_some() {
-                    target_ref
-                } else if character_mut.is_following_intimacy() {
-                    Some(player)
-                } else {
-                    None
-                }
-            } else if character_mut.is_civilian() {
-                // Civilian (player ally): targets nearest alive wild untamed enemy monster within tracking range
-                let mut min_dist = f32::MAX;
-                let mut target_ref: Option<&Character<'a>> = None;
-                for other in self._characters.values() {
-                    let other_mut = ptr_as_mut(other.as_ptr());
-                    if !other_mut.is_player()
-                        && !other_mut.is_civilian()
-                        && !other_mut.is_tamed()
-                        && other_mut.is_alive()
-                    {
-                        let dist = (other_mut.get_position() - character_mut.get_position()).norm();
-                        if dist <= NPC_TRACKING_RANGE && dist < min_dist {
-                            min_dist = dist;
-                            target_ref = Some(other_mut);
-                        }
-                    }
-                }
-                target_ref
-            } else if character_mut.is_following_intimacy() {
-                Some(player)
-            } else {
-                // Wild monster: targets player OR nearest alive tamed monster OR nearest alive civilian within tracking range
-                let mut min_dist = f32::MAX;
-                let mut target_ref: Option<&Character<'a>> = None;
-                if player.is_alive() {
-                    let dist = (player.get_position() - character_mut.get_position()).norm();
-                    if dist <= NPC_TRACKING_RANGE {
-                        min_dist = dist;
-                        target_ref = Some(player);
-                    }
-                }
-                for other in self._characters.values() {
-                    let other_mut = ptr_as_mut(other.as_ptr());
-                    if ((other_mut.is_tamed()
-                        && get_affinity_tier(other_mut.get_intimacy()) >= AffinityTier::CloseFriend)
-                        || other_mut.is_civilian())
-                        && other_mut.is_alive()
-                    {
-                        let dist = (other_mut.get_position() - character_mut.get_position()).norm();
-                        if dist <= NPC_TRACKING_RANGE && dist < min_dist {
-                            min_dist = dist;
-                            target_ref = Some(other_mut);
-                        }
-                    }
-                }
-                target_ref
-            };
+            let ai_target = self.select_ai_target(character_mut, player);
 
             character_mut.update_character(get_scene_manager(), ai_target, delta_time as f32);
 
@@ -612,155 +704,14 @@ impl<'a> CharacterManager<'a> {
             }
 
             // check attack
-            let check_direction = true;
             if character_mut._animation_state.is_attack_event() {
-                if character_mut._is_player {
-                    // player attack to npc
-                    let is_enable_knockback = 0.0 < character_mut._character_stats.get_stamina();
-                    let mut damage = character_mut.get_power(character_mut._animation_state.get_action_event());
-                    if !is_enable_knockback {
-                        damage = (damage as f32 * 0.5) as i32;
-                    }
-
-                    for target_character in self._characters.values() {
-                        let target_character_mut = ptr_as_mut(target_character.as_ptr());
-                        if !target_character_mut._is_player
-                            && !target_character_mut.is_tamed()
-                            && !target_character_mut._character_stats._invincibility
-                            && character_mut.check_in_range(
-                                target_character_mut.get_collision(),
-                                NPC_ATTACK_HIT_RANGE,
-                                check_direction,
-                            )
-                        {
-                            register_target_character = Some(target_character.clone());
-
-                            if target_character_mut.is_alive()
-                                && !target_character_mut.is_tamed()
-                                && !target_character_mut.is_civilian()
-                            {
-                                // hit living monster..
-                                target_character_mut.set_hit_damage(
-                                    damage,
-                                    Some(character_mut.get_position()),
-                                    is_enable_knockback,
-                                );
-
-                                if !target_character_mut.is_alive() {
-                                    let char_name = target_character_mut._character_data_name.clone();
-                                    get_game_ui_manager_mut().notify_monster_killed(&char_name);
-                                    dead_characters.push(target_character.clone());
-                                }
-                            } else if target_character_mut.is_corpse() {
-                                // hit dead corpse (monsters only) -> set_hit_damage plays hit sound & effect and decrements _corpse_hit_count
-                                target_character_mut.set_hit_damage(
-                                    damage,
-                                    Some(character_mut.get_position()),
-                                    is_enable_knockback,
-                                );
-
-                                if target_character_mut.get_corpse_hit_count() <= 0 {
-                                    farmed_characters.push(target_character.clone());
-                                }
-                            }
-                        }
-                    }
-                } else if character_mut.is_tamed() {
-                    // tamed monster (AffinityTier >= Friend) attack to wild untamed monster
-                    if get_affinity_tier(character_mut.get_intimacy()) >= AffinityTier::CloseFriend {
-                        for target_character in self._characters.values() {
-                            let target_character_mut = ptr_as_mut(target_character.as_ptr());
-                            if !target_character_mut._is_player
-                                && !target_character_mut.is_tamed()
-                                && !target_character_mut.is_civilian()
-                                && target_character_mut.is_alive()
-                                && !target_character_mut._character_stats._invincibility
-                                && character_mut.check_in_range(
-                                    target_character_mut.get_collision(),
-                                    NPC_ATTACK_HIT_RANGE,
-                                    check_direction,
-                                )
-                            {
-                                target_character_mut.set_hit_damage(
-                                    character_mut.get_power(character_mut._animation_state.get_action_event()),
-                                    Some(character_mut.get_position()),
-                                    true,
-                                );
-
-                                if !target_character_mut.is_alive() {
-                                    let char_name = target_character_mut._character_data_name.clone();
-                                    get_game_ui_manager_mut().notify_monster_killed(&char_name);
-                                    dead_characters.push(target_character.clone());
-                                }
-                            }
-                        }
-                    }
-                } else if character_mut.is_civilian() {
-                    // civilian attack to wild untamed monster (Roamer)
-                    for target_character in self._characters.values() {
-                        let target_character_mut = ptr_as_mut(target_character.as_ptr());
-                        if !target_character_mut._is_player
-                            && !target_character_mut.is_tamed()
-                            && !target_character_mut.is_civilian()
-                            && target_character_mut.is_alive()
-                            && !target_character_mut._character_stats._invincibility
-                            && character_mut.check_in_range(
-                                target_character_mut.get_collision(),
-                                NPC_ATTACK_HIT_RANGE,
-                                check_direction,
-                            )
-                        {
-                            target_character_mut.set_hit_damage(
-                                character_mut.get_power(character_mut._animation_state.get_action_event()),
-                                Some(character_mut.get_position()),
-                                true,
-                            );
-
-                            if !target_character_mut.is_alive() {
-                                let char_name = target_character_mut._character_data_name.clone();
-                                get_game_ui_manager_mut().notify_monster_killed(&char_name);
-                                dead_characters.push(target_character.clone());
-                            }
-                        }
-                    }
-                } else {
-                    // wild monster attack to player OR tamed monster OR civilian
-                    if player.is_alive()
-                        && !player._character_stats._invincibility
-                        && character_mut.check_in_range(player.get_collision(), NPC_ATTACK_HIT_RANGE, check_direction)
-                    {
-                        player.set_hit_damage(
-                            character_mut.get_power(character_mut._animation_state.get_action_event()),
-                            Some(character_mut.get_position()),
-                            true,
-                        );
-                    }
-
-                    for target_character in self._characters.values() {
-                        let target_character_mut = ptr_as_mut(target_character.as_ptr());
-                        if ((target_character_mut.is_tamed()
-                            && get_affinity_tier(target_character_mut.get_intimacy()) >= AffinityTier::CloseFriend)
-                            || target_character_mut.is_civilian())
-                            && target_character_mut.is_alive()
-                            && !target_character_mut._character_stats._invincibility
-                            && character_mut.check_in_range(
-                                target_character_mut.get_collision(),
-                                NPC_ATTACK_HIT_RANGE,
-                                check_direction,
-                            )
-                        {
-                            target_character_mut.set_hit_damage(
-                                character_mut.get_power(character_mut._animation_state.get_action_event()),
-                                Some(character_mut.get_position()),
-                                true,
-                            );
-
-                            if !target_character_mut.is_alive() {
-                                dead_characters.push(target_character.clone());
-                            }
-                        }
-                    }
-                }
+                self.process_character_attack(
+                    character_mut,
+                    player,
+                    &mut dead_characters,
+                    &mut farmed_characters,
+                    &mut register_target_character,
+                );
             }
         }
 
@@ -777,7 +728,7 @@ impl<'a> CharacterManager<'a> {
             self.farm_character(character);
         }
 
-        // process expired dead characters (auto remove after 5s for non-civilians)
+        // process expired dead characters
         for character in expired_dead_characters.iter() {
             if let Some(player) = self._player.as_ref() {
                 player.borrow_mut()._controller.remove_character_interaction_objects(character);
@@ -789,13 +740,10 @@ impl<'a> CharacterManager<'a> {
         if register_target_character.is_some() {
             self.set_target_character(register_target_character);
             self._target_focus_time = 0.0;
-        } else {
-            const TARGET_FOCUS_TIME: f64 = 2.0;
-            if self._target_focus_time < TARGET_FOCUS_TIME {
-                self._target_focus_time += delta_time;
-                if TARGET_FOCUS_TIME <= self._target_focus_time {
-                    self.set_target_character(None);
-                }
+        } else if self._target_focus_time < TARGET_FOCUS_TIME {
+            self._target_focus_time += delta_time;
+            if TARGET_FOCUS_TIME <= self._target_focus_time {
+                self.set_target_character(None);
             }
         }
     }

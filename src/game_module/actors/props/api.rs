@@ -1,4 +1,3 @@
-use crate::game_module::actors::items::ItemID;
 use nalgebra::Vector3;
 use rust_engine_3d::scene::render_object::RenderObjectData;
 use rust_engine_3d::utilities::system::RcRefCell;
@@ -10,8 +9,9 @@ pub type PropID = Uuid;
 pub type PropMap<'a> = HashMap<PropID, RcRefCell<Prop<'a>>>;
 pub type PropNameMap<'a> = HashMap<String, RcRefCell<Prop<'a>>>;
 
-#[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Default)]
 pub enum PropDataType {
+    #[default]
     None,
     Bed,
     Campfire,
@@ -39,7 +39,7 @@ impl PropDataType {
 #[derive(Serialize, Deserialize, Default, Debug, Clone, PartialEq)]
 #[serde(default)]
 pub struct PropCreateInfo {
-    pub _prop_id: ItemID,
+    pub _prop_id: PropID,
     pub _prop_data_name: String,
     pub _position: Vector3<f32>,
     pub _rotation: Vector3<f32>,

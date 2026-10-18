@@ -52,53 +52,6 @@ pub enum ActionEvent {
     Fishing,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct CharacterFishingState {
-    pub _fishing_gauge: f32,
-    pub _fishing_gauge_dir: f32,
-    pub _is_fishing_button_held: bool,
-    pub _fishing_cast_distance: f32,
-    pub _fish_gauge: f32,
-    pub _fish_angle: f32,
-    pub _fish_target_angle: f32,
-    pub _fish_change_timer: f32,
-    pub _player_angle: f32,
-    pub _player_angular_velocity: f32,
-    pub _direction_dot: f32,
-    pub _is_pulling: bool,
-    pub _is_direction_matched: bool,
-    pub _is_minigame_active: bool,
-    pub _wait_timer: f32,
-    pub _minigame_success: Option<bool>,
-    pub _difficulty_angle_range: f32,
-    pub _is_perfect_fishing: bool,
-}
-
-impl Default for CharacterFishingState {
-    fn default() -> CharacterFishingState {
-        CharacterFishingState {
-            _fishing_gauge: 0.0,
-            _fishing_gauge_dir: 1.0,
-            _is_fishing_button_held: false,
-            _fishing_cast_distance: 2.0,
-            _fish_gauge: 0.5,
-            _fish_angle: 0.0,
-            _fish_target_angle: 0.0,
-            _fish_change_timer: 0.0,
-            _player_angle: 0.0,
-            _player_angular_velocity: 0.0,
-            _direction_dot: 1.0,
-            _is_pulling: false,
-            _is_direction_matched: false,
-            _is_minigame_active: false,
-            _wait_timer: 0.0,
-            _minigame_success: None,
-            _difficulty_angle_range: 70.0,
-            _is_perfect_fishing: true,
-        }
-    }
-}
-
 #[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq, Default)]
 pub enum MoveAnimationState {
     #[default]
@@ -144,10 +97,10 @@ pub enum RequestType {
 
 impl CharacterDataType {
     pub fn is_family(&self) -> bool {
-        match self {
-            CharacterDataType::Player | CharacterDataType::Wife | CharacterDataType::Daughter => true,
-            _ => false,
-        }
+        matches!(
+            self,
+            CharacterDataType::Player | CharacterDataType::Wife | CharacterDataType::Daughter
+        )
     }
 
     pub fn get_request_type(&self) -> RequestType {
@@ -215,10 +168,8 @@ pub struct CharacterAnimationDataCreateInfo {
     pub _run_animation_speed: f32,
     pub _running_jump_animation: String,
     pub _running_jump_animation_speed: f32,
-    pub _sit_down_animation: String,
     pub _sit_down_loop_animation: String,
     pub _sleep_animation: String,
-    pub _stand_up_animation: String,
     pub _upper_animation_layer: String,
     pub _wake_up_animation: String,
     pub _walk_animation: String,
@@ -256,10 +207,8 @@ impl Default for CharacterAnimationDataCreateInfo {
             _run_animation_speed: 1.0,
             _running_jump_animation: String::default(),
             _running_jump_animation_speed: 1.0,
-            _sit_down_animation: String::default(),
             _sit_down_loop_animation: String::default(),
             _sleep_animation: String::default(),
-            _stand_up_animation: String::default(),
             _upper_animation_layer: String::default(),
             _wake_up_animation: String::default(),
             _walk_animation: String::default(),
@@ -413,6 +362,95 @@ impl CharacterAnimationData {
             _upper_animation_layer: engine_resources
                 .get_animation_layer_data(&animation_data_create_info._upper_animation_layer)
                 .clone(),
+        }
+    }
+
+    pub fn get_move_animation_spec(
+        &self,
+        move_state: MoveAnimationState,
+        speed_multiplier: f32,
+    ) -> Option<(&RcRefCell<MeshData>, f32, bool)> {
+        match move_state {
+            MoveAnimationState::None => None,
+            MoveAnimationState::Idle => Some((
+                &self._idle_animation,
+                self._idle_animation_speed * speed_multiplier,
+                true,
+            )),
+            MoveAnimationState::Walk => Some((
+                &self._walk_animation,
+                self._walk_animation_speed * speed_multiplier,
+                true,
+            )),
+            MoveAnimationState::Run => Some((&self._run_animation, self._run_animation_speed * speed_multiplier, true)),
+            MoveAnimationState::Jump => Some((
+                &self._jump_animation,
+                self._jump_animation_speed * speed_multiplier,
+                false,
+            )),
+            MoveAnimationState::Roll => Some((
+                &self._roll_animation,
+                self._roll_animation_speed * speed_multiplier,
+                false,
+            )),
+            MoveAnimationState::RunningJump => Some((
+                &self._running_jump_animation,
+                self._running_jump_animation_speed * speed_multiplier,
+                false,
+            )),
+            MoveAnimationState::SitDownLoop => Some((&self._sit_down_loop_animation, speed_multiplier, true)),
+        }
+    }
+
+    pub fn get_action_animation_spec(
+        &self,
+        action_state: ActionAnimationState,
+        speed_multiplier: f32,
+    ) -> Option<(&RcRefCell<MeshData>, f32, bool, f32)> {
+        match action_state {
+            ActionAnimationState::None => None,
+            ActionAnimationState::Attack => Some((
+                &self._attack_animation,
+                self._attack_animation_speed * speed_multiplier,
+                false,
+                0.1,
+            )),
+            ActionAnimationState::Dance => Some((&self._dance_animation, speed_multiplier, false, 0.1)),
+            ActionAnimationState::Dead | ActionAnimationState::PassedOut => Some((
+                &self._dead_animation,
+                self._dead_animation_speed * speed_multiplier,
+                false,
+                0.0,
+            )),
+            ActionAnimationState::Eating => Some((&self._eating_animation, speed_multiplier, false, 0.1)),
+            ActionAnimationState::Hit => Some((
+                &self._hit_animation,
+                self._hit_animation_speed * speed_multiplier,
+                false,
+                0.1,
+            )),
+            ActionAnimationState::Hungry => Some((&self._hungry_animation, speed_multiplier, true, 0.1)),
+            ActionAnimationState::Kick => Some((
+                &self._kick_animation,
+                self._kick_animation_speed * speed_multiplier,
+                false,
+                0.1,
+            )),
+            ActionAnimationState::LayingDown => Some((&self._laying_down_animation, speed_multiplier, false, 0.0)),
+            ActionAnimationState::Pickup => Some((&self._pickup_animation, speed_multiplier, false, 0.1)),
+            ActionAnimationState::PowerAttack => Some((
+                &self._power_attack_animation,
+                self._power_attack_animation_speed * speed_multiplier,
+                false,
+                0.1,
+            )),
+            ActionAnimationState::Sleep | ActionAnimationState::SleepNoSnoring => {
+                Some((&self._sleep_animation, speed_multiplier, true, 0.0))
+            }
+            ActionAnimationState::WakeUp => Some((&self._wake_up_animation, speed_multiplier, false, 0.1)),
+            ActionAnimationState::FishingBegin => Some((&self._fishing_begin_animation, speed_multiplier, false, 0.1)),
+            ActionAnimationState::FishingLoop => Some((&self._fishing_loop_animation, speed_multiplier, true, 0.1)),
+            ActionAnimationState::FishingEnd => Some((&self._fishing_end_animation, speed_multiplier, false, 0.1)),
         }
     }
 }

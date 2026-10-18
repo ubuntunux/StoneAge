@@ -142,45 +142,59 @@ impl<'a> CharacterController<'a> {
         self._running_multiplier = 1.0;
         self._interaction_objects.clear();
     }
+
     pub fn set_flying_mode(&mut self, is_flying_mode: bool) {
         self._is_flying_mode = is_flying_mode
     }
+
     pub fn is_in_roll_delay(&self) -> bool {
         0.0 < self._roll_delay
     }
+
     pub fn set_roll_delay(&mut self) {
         self._roll_delay = ROLL_DELAY;
     }
+
     pub fn is_falling(&self) -> bool {
         self._is_falling
     }
+
     pub fn is_on_ground(&self) -> bool {
         self._is_ground && !self._is_jump_start
     }
+
     pub fn get_falling_height(&self) -> f32 {
         self._falling_height
     }
+
     pub fn get_last_ground_normal(&self) -> &Vector3<f32> {
         &self._last_ground_normal
     }
+
     pub fn is_slope_ground_normal(&self) -> bool {
         self._last_ground_normal.y < SLOPE_ANGLE
     }
+
     pub fn set_run(&mut self, is_running: bool) {
         self._is_running = is_running;
     }
+
     pub fn toggle_run(&mut self) {
         self._is_running = !self._is_running;
     }
+
     pub fn get_face_direction(&self) -> &Vector3<f32> {
         &self._face_direction
     }
+
     pub fn set_face_direction(&mut self, face_direction: &Vector3<f32>) {
         self._face_direction.clone_from(face_direction);
     }
+
     pub fn get_move_direction(&self) -> &Vector3<f32> {
         &self._move_direction
     }
+
     pub fn set_move_direction(&mut self, move_direction: &Vector3<f32>) {
         if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
             if move_direction.x.abs() >= move_direction.z.abs() {
@@ -196,38 +210,49 @@ impl<'a> CharacterController<'a> {
             self._face_direction.clone_from(&self._move_direction);
         }
     }
+
     pub fn set_jump_start(&mut self) {
         self._is_jump_start = true;
     }
+
     pub fn is_jump(&self) -> bool {
         self._is_jump
     }
+
     pub fn is_cliff(&self) -> bool {
         self._is_cliff
     }
+
     pub fn is_blocked(&self) -> bool {
         self._is_blocked
     }
+
     pub fn get_nearest_interaction_object(&self) -> &InteractionObject<'a> {
         &self._nearest_interaction_object
     }
+
     pub fn is_in_interaction_range(&self) -> bool {
         !self._interaction_objects.is_empty()
     }
+
     pub fn is_interaction_object(&self, key: *const c_void) -> bool {
-        self._interaction_objects.get(&key).is_some()
+        self._interaction_objects.contains_key(&key)
     }
+
     pub fn add_interaction_object(&mut self, object: InteractionObject<'a>) {
         self._interaction_objects.insert(object.get_key(), object);
     }
+
     pub fn remove_interaction_object(&mut self, object: InteractionObject<'a>) -> Option<InteractionObject<'a>> {
         self._interaction_objects.remove(&object.get_key())
     }
+
     pub fn remove_character_interaction_objects(&mut self, character: &RcRefCell<Character<'a>>) {
         self.remove_interaction_object(InteractionObject::Taming(character.clone()));
         self.remove_interaction_object(InteractionObject::Farming(character.clone()));
         self.remove_interaction_object(InteractionObject::Npc(character.clone()));
     }
+
     pub fn check_arrival_with_radius(&self, target_position: &Vector3<f32>, radius: f32, ignore_y_axis: bool) -> bool {
         math::check_arrival_with_radius(
             &self._prev_position,
@@ -237,29 +262,37 @@ impl<'a> CharacterController<'a> {
             ignore_y_axis,
         )
     }
+
     pub fn set_position(&mut self, position: &Vector3<f32>) {
         self._position = *position;
     }
+
     pub fn set_position_xy(&mut self, position: &Vector3<f32>) {
         self._position.x = position.x;
         self._position.y = position.y;
     }
+
     pub fn set_position_xz(&mut self, position: &Vector3<f32>) {
         self._position.x = position.x;
         self._position.z = position.z;
     }
+
     pub fn get_move_speed(&self) -> f32 {
         self._move_speed
     }
+
     pub fn set_move_speed(&mut self, move_speed: f32) {
         self._move_speed = move_speed;
     }
+
     pub fn get_rotation(&self) -> &Vector3<f32> {
         &self._rotation
     }
+
     pub fn set_direction(&mut self, direction: &Vector3<f32>) {
         self._rotation.y = direction.z.atan2(-direction.x) + HALF_PI;
     }
+
     pub fn rotate_to_direction(&mut self, direction: &Vector3<f32>, delta_time: f32) {
         let yaw: f32 = direction.z.atan2(-direction.x) + HALF_PI;
         let mut diff: f32 = yaw - self._rotation.y;
@@ -275,6 +308,7 @@ impl<'a> CharacterController<'a> {
             self._rotation.y += diff.abs().min(CHARACTER_ROTATION_SPEED * delta_time) * diff.signum();
         }
     }
+
     pub fn get_scale(&self) -> &Vector3<f32> {
         &self._scale
     }
@@ -302,15 +336,38 @@ impl<'a> CharacterController<'a> {
         }
     }
 
+    fn apply_hit_velocity(&mut self, delta_time: f32) {
+        begin_block!("apply hit velocity");
+        if self._hit_velocity.x != 0.0 || self._hit_velocity.z != 0.0 {
+            self._position += self._hit_velocity * delta_time;
+            let (hit_move_dir, hit_move_distance) = math::make_normalize_with_norm(&self._hit_velocity);
+            self._hit_velocity = hit_move_dir * (hit_move_distance - HIT_VELOCITY_DECAY * delta_time).max(0.0);
+        }
+    }
+
+    fn clamp_position_delta(&mut self) {
+        begin_block!("check delta limited - prevent pass block");
+        let delta = self._position - self._prev_position;
+        if MOVE_LIMIT < delta.x.abs() {
+            self._position.x = self._prev_position.x + delta.x.signum() * MOVE_LIMIT;
+        }
+        if MOVE_LIMIT < delta.y.abs() {
+            self._position.y = self._prev_position.y + delta.y.signum() * MOVE_LIMIT;
+        }
+        if MOVE_LIMIT < delta.z.abs() {
+            self._position.z = self._prev_position.z + delta.z.signum() * MOVE_LIMIT;
+        }
+    }
+
     pub fn update_interaction_objects(&mut self) -> bool {
         let mut dist_min = f32::MAX;
         let mut nearest_interaction_object = InteractionObject::None;
         for interaction_object in self._interaction_objects.values() {
             let dist = (interaction_object.get_position() - self._position).norm_squared();
-            let is_higher_priority = match (interaction_object, &nearest_interaction_object) {
-                (InteractionObject::Taming(_), InteractionObject::Farming(_)) => true,
-                _ => false,
-            };
+            let is_higher_priority = matches!(
+                (interaction_object, &nearest_interaction_object),
+                (InteractionObject::Taming(_), InteractionObject::Farming(_))
+            );
             if dist < dist_min || ((dist - dist_min).abs() < 1e-4 && is_higher_priority) {
                 dist_min = dist;
                 nearest_interaction_object = interaction_object.clone();
@@ -386,47 +443,21 @@ impl<'a> CharacterController<'a> {
             self._velocity.z = 0.0;
         }
 
-        begin_block!("apply hit velocity");
-        {
-            if self._hit_velocity.x != 0.0 || self._hit_velocity.z != 0.0 {
-                self._position += self._hit_velocity * delta_time;
-                let (hit_move_dir, hit_move_distance) = math::make_normalize_with_norm(&self._hit_velocity);
-                self._hit_velocity = hit_move_dir * (hit_move_distance - HIT_VELOCITY_DECAY * delta_time).max(0.0);
-            }
-        }
+        self.apply_hit_velocity(delta_time);
 
         // move
-        self._position.x += self._velocity.x * delta_time;
-        self._position.y += self._velocity.y * delta_time;
-        self._position.z += self._velocity.z * delta_time;
+        self._position += self._velocity * delta_time;
         self._falling_height = self._position.y;
 
         // update rotation
         self.rotate_to_direction(&move_direction, delta_time);
 
-        begin_block!("check delta limited - prevent pass block");
-        {
-            let delta = self._position - self._prev_position;
-            if MOVE_LIMIT < delta.x.abs() {
-                self._position.x = self._prev_position.x + delta.x.signum() * MOVE_LIMIT;
-            }
-
-            if MOVE_LIMIT < delta.y.abs() {
-                self._position.y = self._prev_position.y + delta.y.signum() * MOVE_LIMIT;
-            }
-
-            if MOVE_LIMIT < delta.z.abs() {
-                self._position.z = self._prev_position.z + delta.z.signum() * MOVE_LIMIT;
-            }
-        }
+        self.clamp_position_delta();
 
         // reset flags
-        let _was_on_ground = self._is_ground;
         self._is_cliff = false;
         self._is_blocked = false;
         self._is_ground = false;
-
-        // reset
         self._is_jump_start = false;
 
         if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
@@ -453,7 +484,6 @@ impl<'a> CharacterController<'a> {
                 self._is_high_speed_moving = false;
             }
         } else {
-            // reset
             self._final_move_speed = self._move_speed;
         }
         self._final_move_speed * self._running_multiplier
@@ -500,14 +530,7 @@ impl<'a> CharacterController<'a> {
             self._velocity.z = 0.0;
         }
 
-        begin_block!("apply hit velocity");
-        {
-            if self._hit_velocity.x != 0.0 || self._hit_velocity.z != 0.0 {
-                self._position += self._hit_velocity * delta_time;
-                let (hit_move_dir, hit_move_distance) = math::make_normalize_with_norm(&self._hit_velocity);
-                self._hit_velocity = hit_move_dir * (hit_move_distance - HIT_VELOCITY_DECAY * delta_time).max(0.0);
-            }
-        }
+        self.apply_hit_velocity(delta_time);
 
         begin_block!("apply slop velocity");
         {
@@ -569,24 +592,10 @@ impl<'a> CharacterController<'a> {
         }
         self._position.y += self._velocity.y * delta_time;
 
-        begin_block!("check delta limited - prevent pass block");
-        {
-            let delta = self._position - self._prev_position;
-            if MOVE_LIMIT < delta.x.abs() {
-                self._position.x = self._prev_position.x + delta.x.signum() * MOVE_LIMIT;
-            }
-
-            if MOVE_LIMIT < delta.y.abs() {
-                self._position.y = self._prev_position.y + delta.y.signum() * MOVE_LIMIT;
-            }
-
-            if MOVE_LIMIT < delta.z.abs() {
-                self._position.z = self._prev_position.z + delta.z.signum() * MOVE_LIMIT;
-            }
-        }
+        self.clamp_position_delta();
 
         // reset flags
-        let _was_on_ground = self._is_ground;
+        let was_on_ground = self._is_ground;
         self._is_cliff = false;
         self._is_blocked = false;
         self._is_ground = false;
@@ -596,7 +605,7 @@ impl<'a> CharacterController<'a> {
         {
             let ground_height = height_map_data.get_height_bilinear(&self._position, 0);
 
-            if _was_on_ground && !self._is_jump && self._velocity.y <= 0.0 {
+            if was_on_ground && !self._is_jump && self._velocity.y <= 0.0 {
                 let max_step_down = (move_speed * delta_time * 2.0).max(0.5);
                 if self._position.y > ground_height && self._position.y <= ground_height + max_step_down {
                     self._position.y = ground_height;
@@ -681,13 +690,11 @@ impl<'a> CharacterController<'a> {
 
             // Recheck whether the adjusted position due to a collision with a block collides with another blocks.
             if !collided_block.is_null() {
-                // update delta & bound_box
                 move_delta = self._position - self._prev_position;
                 current_actor_collision._bounding_box._center = actor_collision._bounding_box._center + move_delta;
                 current_actor_collision._bounding_box._min = actor_collision._bounding_box._min + move_delta;
                 current_actor_collision._bounding_box._max = actor_collision._bounding_box._max + move_delta;
 
-                // Recheck collide with another blocks
                 for recheck_collision_object in collision_objects.values() {
                     let recheck_block = ptr_as_ref(recheck_collision_object.as_ptr());
                     if collided_block != recheck_block {
@@ -696,7 +703,6 @@ impl<'a> CharacterController<'a> {
                             if self._velocity.y <= 0.0 && recheck_block_bound_box._max.y <= self._prev_position.y {
                                 self.set_on_ground(recheck_block_bound_box._max.y, &Vector3::new(0.0, 1.0, 0.0));
                             } else {
-                                // move back
                                 self._position.x = self._prev_position.x;
                                 self._position.z = self._prev_position.z;
                             }
@@ -801,6 +807,6 @@ impl<'a> CharacterController<'a> {
         self._is_cliff = controller_save_data._is_cliff;
         self._is_blocked = controller_save_data._is_blocked;
         self._is_flying_mode = controller_save_data._is_flying_mode;
-        self._running_multiplier = 1f32.max(controller_save_data._running_multiplier);
+        self._running_multiplier = controller_save_data._running_multiplier;
     }
 }

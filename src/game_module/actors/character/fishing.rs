@@ -5,6 +5,7 @@ use crate::game_module::game_constants::AUDIO_SELECT_ITEM;
 use crate::game_module::game_service_locator::{get_game_client_mut, get_game_ui_manager_mut};
 use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::core::engine_service_locator::{get_audio_manager_mut, get_scene_manager};
+use serde::{Deserialize, Serialize};
 
 // Fishing Cast & Gauge Constants
 pub const FISHING_CAST_DISTANCE_MIN: f32 = 2.0;
@@ -39,6 +40,53 @@ pub const FISHING_PRESS_PENALTY_MAX: f32 = 0.07;
 pub const FISHING_DIFFICULTY_EASY_ANGLE_RANGE: f32 = 45.0;
 pub const FISHING_DIFFICULTY_NORMAL_ANGLE_RANGE: f32 = 70.0;
 pub const FISHING_DIFFICULTY_HARD_ANGLE_RANGE: f32 = 90.0;
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct CharacterFishingState {
+    pub _fishing_gauge: f32,
+    pub _fishing_gauge_dir: f32,
+    pub _is_fishing_button_held: bool,
+    pub _fishing_cast_distance: f32,
+    pub _fish_gauge: f32,
+    pub _fish_angle: f32,
+    pub _fish_target_angle: f32,
+    pub _fish_change_timer: f32,
+    pub _player_angle: f32,
+    pub _player_angular_velocity: f32,
+    pub _direction_dot: f32,
+    pub _is_pulling: bool,
+    pub _is_direction_matched: bool,
+    pub _is_minigame_active: bool,
+    pub _wait_timer: f32,
+    pub _minigame_success: Option<bool>,
+    pub _difficulty_angle_range: f32,
+    pub _is_perfect_fishing: bool,
+}
+
+impl Default for CharacterFishingState {
+    fn default() -> CharacterFishingState {
+        CharacterFishingState {
+            _fishing_gauge: 0.0,
+            _fishing_gauge_dir: 1.0,
+            _is_fishing_button_held: false,
+            _fishing_cast_distance: FISHING_CAST_DISTANCE_MIN,
+            _fish_gauge: FISHING_MINIGAME_INITIAL_GAUGE,
+            _fish_angle: 0.0,
+            _fish_target_angle: 0.0,
+            _fish_change_timer: 0.0,
+            _player_angle: 0.0,
+            _player_angular_velocity: 0.0,
+            _direction_dot: 1.0,
+            _is_pulling: false,
+            _is_direction_matched: false,
+            _is_minigame_active: false,
+            _wait_timer: 0.0,
+            _minigame_success: None,
+            _difficulty_angle_range: FISHING_DIFFICULTY_NORMAL_ANGLE_RANGE,
+            _is_perfect_fishing: true,
+        }
+    }
+}
 
 impl<'a> Character<'a> {
     pub fn set_fishing_difficulty_angle_range(&mut self, range_degrees: f32) {
@@ -112,15 +160,6 @@ impl<'a> Character<'a> {
                 -FISHING_PLAYER_MAX_ANGULAR_VELOCITY,
                 FISHING_PLAYER_MAX_ANGULAR_VELOCITY,
             );
-        } else {
-            // let vel = self._fishing_state._player_angular_velocity;
-            // if vel > 0.0 {
-            //     self._fishing_state._player_angular_velocity =
-            //         (vel - FISHING_PLAYER_ANGULAR_DECELERATION * delta_time).max(0.0);
-            // } else if vel < 0.0 {
-            //     self._fishing_state._player_angular_velocity =
-            //         (vel + FISHING_PLAYER_ANGULAR_DECELERATION * delta_time).min(0.0);
-            // }
         }
 
         let new_angle = self._fishing_state._player_angle + self._fishing_state._player_angular_velocity * delta_time;
@@ -152,8 +191,7 @@ impl<'a> Character<'a> {
             FISHING_PRESS_PENALTY_MAX
         };
 
-        self._fishing_state._fish_gauge += impulse;
-        self._fishing_state._fish_gauge = self._fishing_state._fish_gauge.clamp(0.0, 1.0);
+        self._fishing_state._fish_gauge = (self._fishing_state._fish_gauge + impulse).clamp(0.0, 1.0);
     }
 
     pub fn update_fishing_minigame(&mut self, delta_time: f32) {
@@ -223,7 +261,7 @@ impl<'a> Character<'a> {
         } else {
             self._fishing_state._is_perfect_fishing = false;
             self._fishing_state._fish_gauge += FISHING_FAIL_INCREASE_SPEED * delta_time;
-        };
+        }
         self._fishing_state._fish_gauge = self._fishing_state._fish_gauge.clamp(0.0, 1.0);
 
         if self._fishing_state._fish_gauge <= 0.0 {

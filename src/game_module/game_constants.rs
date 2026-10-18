@@ -63,8 +63,19 @@ pub const HYPOTHERMIA_THRESHOLD: f32 = 34.0;
 pub const HYPOTHERMIA_RECOVERY_THRESHOLD: f32 = 35.5;
 pub const WETNESS_INCREASE_RATE: f32 = 0.33;
 pub const WETNESS_DRY_RATE: f32 = 0.25;
+pub const WETNESS_DRY_HEAT_SOURCE_MULTIPLIER: f32 = 4.0;
+pub const WETNESS_DRY_DEFAULT_MULTIPLIER: f32 = 1.5;
 pub const BODY_TEMP_COLD_DRAIN_RATE: f32 = 0.6;
 pub const BODY_TEMP_HEAT_RECOVERY_RATE: f32 = 1.2;
+pub const BODY_TEMP_DEFAULT_RECOVERY_RATE: f32 = 0.15;
+pub const BODY_TEMP_DEFAULT_DRAIN_RATE: f32 = 0.05;
+pub const BODY_TEMP_WET_DRAIN_FACTOR: f32 = 0.4;
+pub const BODY_TEMP_RAIN_MIN_WETNESS: f32 = 0.3;
+pub const BODY_TEMP_RAIN_DRAIN_MULTIPLIER: f32 = 1.5;
+pub const BODY_TEMP_HEAT_SOURCE_BONUS: f32 = 1.0;
+pub const BODY_TEMP_HEAT_SOURCE_MAX_OFFSET: f32 = 0.5;
+pub const BODY_TEMP_RAIN_PENALTY: f32 = 1.5;
+pub const BODY_TEMP_WETNESS_PENALTY_FACTOR: f32 = 3.0;
 pub const HEAT_SOURCE_RADIUS: f32 = 6.0;
 pub const SHELTER_PROTECTION_RADIUS: f32 = 3.0;
 
@@ -141,11 +152,19 @@ pub const STAMINA_JUMP: f32 = 25.0;
 pub const STAMINA_ROLL: f32 = 25.0;
 pub const ANIMATION_SPEED_BY_STAMINA: f32 = 1.0 / 1.5;
 
-// dead, taming
+// dead, taming, farming
 pub const MAX_CORPSE_HIT_COUNT: i32 = 3;
 pub const CORPSE_AUTO_REMOVE_TIME: f32 = 10.0;
 pub const CIVILIAN_DEAD_TIME: f32 = 5.0;
 pub const FARM_MEAT_COUNT: usize = 3;
+pub const FARM_SPIRIT_BALL_VELOCITY_Y: f32 = 4.0;
+pub const FARM_ITEM_PICKUP_DELAY: f32 = 0.3;
+pub const FARM_MEAT_BASE_SPEED: f32 = 1.5;
+pub const FARM_MEAT_RANDOM_SPEED: f32 = 2.0;
+pub const FARM_MEAT_BASE_VELOCITY_Y: f32 = 3.0;
+pub const FARM_MEAT_RANDOM_VELOCITY_Y: f32 = 2.0;
+pub const TAME_ENERGY_BALL_VELOCITY_Y: f32 = 3.0;
+pub const TAME_ENERGY_BALL_PICKUP_DELAY: f32 = 0.5;
 
 // object shake
 pub const OBJECT_SHAKE_INTENSITY: f32 = 0.05;
@@ -250,10 +269,25 @@ pub const EFFECT_RAIN: &str = "rain";
 pub const ITEM_NONE: &str = "";
 pub const ITEM_COCONUT: &str = "items/coconut";
 pub const ITEM_WOOD: &str = "items/wood";
+pub const ITEM_ROCK: &str = "items/rock";
 pub const ITEM_HAND: &str = "items/hand";
 pub const ITEM_SPIRIT_BALL: &str = "items/spirit_ball";
 pub const ITEM_ENERGY_BALL: &str = "items/energy_ball";
 pub const ITEM_MEAT: &str = "items/meat";
+pub const ITEM_BOW: &str = "items/equipment/hunting_bow";
+pub const ITEM_STONE_AXE: &str = "items/equipment/stone_axe";
+pub const ITEM_SPEAR: &str = "items/equipment/flint_spear";
+pub const ITEM_FISHING_ROD: &str = "items/fishing_rod";
+pub const ITEM_LEATHER_ARMOR: &str = "items/equipment/leather_armor";
+pub const ITEM_BONE_SHIELD: &str = "items/equipment/bone_shield";
+pub const ITEM_CAMPFIRE: &str = "items/equipment/campfire";
+pub const ITEM_WORKTABLE: &str = "items/equipment/worktable";
+pub const ITEM_ROAST_MEAT: &str = "items/foods/roast_meat";
+pub const ITEM_FISH_SOUP: &str = "items/foods/fish_soup";
+pub const ITEM_STEAMED_VEGETABLES: &str = "items/foods/steamed_vegetables";
+pub const ITEM_ENERGY_STEW: &str = "items/foods/energy_stew";
+pub const ITEM_GOLDEN_FEAST: &str = "items/foods/golden_feast";
+pub const ITEM_WOODEN_CLUB: &str = "items/wooden_club";
 
 // props
 pub const DEFAULT_GATE_NAME: &str = "gate";

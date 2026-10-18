@@ -1,8 +1,13 @@
 use crate::game_module::actors::character::Character;
 use crate::game_module::actors::props::Prop;
 use nalgebra::Vector3;
+use rust_engine_3d::scene::bounding_box::BoundingBox;
 use rust_engine_3d::utilities::system::{RcRefCell, ptr_as_ref};
 use std::ffi::c_void;
+
+pub const INTERACTION_OBJECT_UI_OFFSET_Y: f32 = 1.0;
+const INTERACTION_KEY_TAG_TAMING: usize = 1;
+const INTERACTION_KEY_TAG_FARMING: usize = 2;
 
 #[derive(Clone)]
 pub enum InteractionObject<'a> {
@@ -29,8 +34,12 @@ impl<'a> InteractionObject<'a> {
             | InteractionObject::PropMonolith(prop)
             | InteractionObject::PropTable(prop) => prop.as_ptr() as *const c_void,
             InteractionObject::Npc(character) => character.as_ptr() as *const c_void,
-            InteractionObject::Taming(character) => ((character.as_ptr() as usize) | 1) as *const c_void,
-            InteractionObject::Farming(character) => ((character.as_ptr() as usize) | 2) as *const c_void,
+            InteractionObject::Taming(character) => {
+                ((character.as_ptr() as usize) | INTERACTION_KEY_TAG_TAMING) as *const c_void
+            }
+            InteractionObject::Farming(character) => {
+                ((character.as_ptr() as usize) | INTERACTION_KEY_TAG_FARMING) as *const c_void
+            }
         }
     }
 
@@ -43,31 +52,29 @@ impl<'a> InteractionObject<'a> {
         }
     }
 
+    fn position_from_bounding_box(bounding_box: &BoundingBox) -> Vector3<f32> {
+        Vector3::new(
+            bounding_box._center.x,
+            bounding_box._min.y + INTERACTION_OBJECT_UI_OFFSET_Y,
+            bounding_box._center.z,
+        )
+    }
+
     pub fn get_position(&self) -> Vector3<f32> {
         match self {
-            InteractionObject::None => Vector3::new(0.0, 0.0, 0.0),
+            InteractionObject::None => Vector3::zeros(),
             InteractionObject::PropBed(prop)
             | InteractionObject::PropPickup(prop)
             | InteractionObject::PropGate(prop)
             | InteractionObject::PropGathering(prop)
             | InteractionObject::PropMonolith(prop)
             | InteractionObject::PropTable(prop) => {
-                let bounding_box = ptr_as_ref(prop.as_ptr()).get_bounding_box();
-                Vector3::new(
-                    bounding_box._center.x,
-                    bounding_box._min.y + 1.0,
-                    bounding_box._center.z,
-                )
+                Self::position_from_bounding_box(ptr_as_ref(prop.as_ptr()).get_bounding_box())
             }
             InteractionObject::Npc(character)
             | InteractionObject::Taming(character)
             | InteractionObject::Farming(character) => {
-                let bounding_box = ptr_as_ref(character.as_ptr()).get_bounding_box();
-                Vector3::new(
-                    bounding_box._center.x,
-                    bounding_box._min.y + 1.0,
-                    bounding_box._center.z,
-                )
+                Self::position_from_bounding_box(ptr_as_ref(character.as_ptr()).get_bounding_box())
             }
         }
     }
