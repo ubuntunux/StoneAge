@@ -3,7 +3,162 @@ use nalgebra::Vector2;
 use rust_engine_3d::core::input::{ButtonState, JoystickInputData, KeyboardInputData, MouseInputData, MouseMoveData};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::sync::LazyLock;
 use winit::keyboard::KeyCode;
+
+// Hold Repeat Navigation Utility
+pub const NAV_INITIAL_DELAY: f32 = 0.3;
+pub const NAV_REPEAT_INTERVAL: f32 = 0.05;
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum QuickSlotNavDirection {
+    Previous,
+    Next,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct HoldRepeatController<T: PartialEq + Copy> {
+    pub _initial_delay: f32,
+    pub _repeat_interval: f32,
+    pub _timer: f32,
+    pub _is_repeating: bool,
+    pub _last_state: Option<T>,
+}
+
+impl<T: PartialEq + Copy> HoldRepeatController<T> {
+    pub fn new(initial_delay: f32, repeat_interval: f32) -> Self {
+        Self {
+            _initial_delay: initial_delay,
+            _repeat_interval: repeat_interval,
+            _timer: 0.0,
+            _is_repeating: false,
+            _last_state: None,
+        }
+    }
+
+    pub fn reset(&mut self) {
+        self._timer = 0.0;
+        self._is_repeating = false;
+        self._last_state = None;
+    }
+
+    pub fn update(&mut self, current_state: Option<T>, delta_time: f32) -> (bool, Option<T>) {
+        if let Some(state) = current_state {
+            if Some(state) != self._last_state {
+                self._last_state = Some(state);
+                self._timer = self._initial_delay;
+                self._is_repeating = false;
+                (true, Some(state))
+            } else {
+                self._timer -= delta_time;
+                if self._timer <= 0.0 {
+                    if !self._is_repeating {
+                        self._is_repeating = true;
+                        self._timer = self._repeat_interval;
+                    } else {
+                        self._timer += self._repeat_interval;
+                    }
+                    (true, Some(state))
+                } else {
+                    (false, None)
+                }
+            }
+        } else {
+            self.reset();
+            (false, None)
+        }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct WidgetNavRepeatController {
+    pub _controller: HoldRepeatController<(i32, i32)>,
+}
+
+impl Default for WidgetNavRepeatController {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl WidgetNavRepeatController {
+    pub fn new() -> Self {
+        Self {
+            _controller: HoldRepeatController::new(NAV_INITIAL_DELAY, NAV_REPEAT_INTERVAL),
+        }
+    }
+
+    pub fn with_delay_and_interval(initial_delay: f32, repeat_interval: f32) -> Self {
+        Self {
+            _controller: HoldRepeatController::new(initial_delay, repeat_interval),
+        }
+    }
+
+    pub fn reset(&mut self) {
+        self._controller.reset();
+    }
+
+    pub fn get_direction(
+        keyboard_input_data: &KeyboardInputData,
+        joystick_input_data: &JoystickInputData,
+    ) -> Option<(i32, i32)> {
+        let is_left = keyboard_input_data.get_key_pressed(KeyCode::ArrowLeft)
+            || keyboard_input_data.get_key_hold(KeyCode::ArrowLeft)
+            || keyboard_input_data.get_key_pressed(KeyCode::KeyA)
+            || keyboard_input_data.get_key_hold(KeyCode::KeyA)
+            || joystick_input_data._btn_left == ButtonState::Pressed
+            || joystick_input_data._btn_left == ButtonState::Hold
+            || joystick_input_data._stick_left_direction.x < -10000;
+
+        let is_right = keyboard_input_data.get_key_pressed(KeyCode::ArrowRight)
+            || keyboard_input_data.get_key_hold(KeyCode::ArrowRight)
+            || keyboard_input_data.get_key_pressed(KeyCode::KeyD)
+            || keyboard_input_data.get_key_hold(KeyCode::KeyD)
+            || joystick_input_data._btn_right == ButtonState::Pressed
+            || joystick_input_data._btn_right == ButtonState::Hold
+            || joystick_input_data._stick_left_direction.x > 10000;
+
+        let is_up = keyboard_input_data.get_key_pressed(KeyCode::ArrowUp)
+            || keyboard_input_data.get_key_hold(KeyCode::ArrowUp)
+            || keyboard_input_data.get_key_pressed(KeyCode::KeyW)
+            || keyboard_input_data.get_key_hold(KeyCode::KeyW)
+            || joystick_input_data._btn_up == ButtonState::Pressed
+            || joystick_input_data._btn_up == ButtonState::Hold
+            || joystick_input_data._stick_left_direction.y > 10000;
+
+        let is_down = keyboard_input_data.get_key_pressed(KeyCode::ArrowDown)
+            || keyboard_input_data.get_key_hold(KeyCode::ArrowDown)
+            || keyboard_input_data.get_key_pressed(KeyCode::KeyS)
+            || keyboard_input_data.get_key_hold(KeyCode::KeyS)
+            || joystick_input_data._btn_down == ButtonState::Pressed
+            || joystick_input_data._btn_down == ButtonState::Hold
+            || joystick_input_data._stick_left_direction.y < -10000;
+
+        if is_left {
+            Some((-1, 0))
+        } else if is_right {
+            Some((1, 0))
+        } else if is_up {
+            Some((0, -1))
+        } else if is_down {
+            Some((0, 1))
+        } else {
+            None
+        }
+    }
+
+    pub fn update(
+        &mut self,
+        keyboard_input_data: &KeyboardInputData,
+        joystick_input_data: &JoystickInputData,
+        delta_time: f32,
+    ) -> (bool, Option<(i32, i32)>) {
+        let current_dir = Self::get_direction(keyboard_input_data, joystick_input_data);
+        self._controller.update(current_dir, delta_time)
+    }
+}
+
+pub static DEFAULT_BINDINGS: LazyLock<InputBindings> = LazyLock::new(InputBindings::default);
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum UiAction {
@@ -404,17 +559,7 @@ pub struct UiInputState {
 
 impl UiInputState {
     pub fn from_input(keyboard: &KeyboardInputData, joystick: &JoystickInputData) -> Self {
-        Self {
-            _confirm: UiInput::is_confirm(keyboard, joystick),
-            _cancel: UiInput::is_cancel(keyboard, joystick),
-            _up: UiInput::is_up(keyboard, joystick),
-            _down: UiInput::is_down(keyboard, joystick),
-            _left: UiInput::is_left(keyboard, joystick),
-            _right: UiInput::is_right(keyboard, joystick),
-            _next_tab: UiInput::is_next_tab(keyboard, joystick),
-            _prev_tab: UiInput::is_prev_tab(keyboard, joystick),
-            _delete: UiInput::is_delete(keyboard, joystick),
-        }
+        Self::from_input_with_bindings(&DEFAULT_BINDINGS, keyboard, joystick)
     }
 
     pub fn from_input_with_bindings(
@@ -440,56 +585,39 @@ pub struct UiInput;
 
 impl UiInput {
     pub fn is_confirm(keyboard: &KeyboardInputData, joystick: &JoystickInputData) -> bool {
-        keyboard.get_key_pressed(KeyCode::Enter)
-            || keyboard.get_key_pressed(KeyCode::Space)
-            || keyboard.get_key_pressed(KeyCode::NumpadEnter)
-            || joystick._btn_a == ButtonState::Pressed
+        DEFAULT_BINDINGS.is_ui_action_pressed(UiAction::Confirm, keyboard, joystick)
     }
 
     pub fn is_cancel(keyboard: &KeyboardInputData, joystick: &JoystickInputData) -> bool {
-        keyboard.get_key_pressed(KeyCode::Escape)
-            || keyboard.get_key_pressed(KeyCode::KeyB)
-            || joystick._btn_b == ButtonState::Pressed
+        DEFAULT_BINDINGS.is_ui_action_pressed(UiAction::Cancel, keyboard, joystick)
     }
 
     pub fn is_up(keyboard: &KeyboardInputData, joystick: &JoystickInputData) -> bool {
-        keyboard.get_key_pressed(KeyCode::ArrowUp)
-            || keyboard.get_key_pressed(KeyCode::KeyW)
-            || joystick._btn_up == ButtonState::Pressed
+        DEFAULT_BINDINGS.is_ui_action_pressed(UiAction::Up, keyboard, joystick)
     }
 
     pub fn is_down(keyboard: &KeyboardInputData, joystick: &JoystickInputData) -> bool {
-        keyboard.get_key_pressed(KeyCode::ArrowDown)
-            || keyboard.get_key_pressed(KeyCode::KeyS)
-            || joystick._btn_down == ButtonState::Pressed
+        DEFAULT_BINDINGS.is_ui_action_pressed(UiAction::Down, keyboard, joystick)
     }
 
     pub fn is_left(keyboard: &KeyboardInputData, joystick: &JoystickInputData) -> bool {
-        keyboard.get_key_pressed(KeyCode::ArrowLeft)
-            || keyboard.get_key_pressed(KeyCode::KeyA)
-            || joystick._btn_left == ButtonState::Pressed
+        DEFAULT_BINDINGS.is_ui_action_pressed(UiAction::Left, keyboard, joystick)
     }
 
     pub fn is_right(keyboard: &KeyboardInputData, joystick: &JoystickInputData) -> bool {
-        keyboard.get_key_pressed(KeyCode::ArrowRight)
-            || keyboard.get_key_pressed(KeyCode::KeyD)
-            || joystick._btn_right == ButtonState::Pressed
+        DEFAULT_BINDINGS.is_ui_action_pressed(UiAction::Right, keyboard, joystick)
     }
 
     pub fn is_next_tab(keyboard: &KeyboardInputData, joystick: &JoystickInputData) -> bool {
-        let is_shift = keyboard.get_key_hold(KeyCode::ShiftLeft) || keyboard.get_key_hold(KeyCode::ShiftRight);
-        (keyboard.get_key_pressed(KeyCode::Tab) && !is_shift) || joystick._btn_right_shoulder == ButtonState::Pressed
+        DEFAULT_BINDINGS.is_ui_action_pressed(UiAction::NextTab, keyboard, joystick)
     }
 
     pub fn is_prev_tab(keyboard: &KeyboardInputData, joystick: &JoystickInputData) -> bool {
-        let is_shift = keyboard.get_key_hold(KeyCode::ShiftLeft) || keyboard.get_key_hold(KeyCode::ShiftRight);
-        (keyboard.get_key_pressed(KeyCode::Tab) && is_shift) || joystick._btn_left_shoulder == ButtonState::Pressed
+        DEFAULT_BINDINGS.is_ui_action_pressed(UiAction::PrevTab, keyboard, joystick)
     }
 
     pub fn is_delete(keyboard: &KeyboardInputData, joystick: &JoystickInputData) -> bool {
-        keyboard.get_key_pressed(KeyCode::Delete)
-            || keyboard.get_key_pressed(KeyCode::KeyF)
-            || joystick._btn_x == ButtonState::Pressed
+        DEFAULT_BINDINGS.is_ui_action_pressed(UiAction::Delete, keyboard, joystick)
     }
 }
 
@@ -525,57 +653,7 @@ impl GamePlayInputState {
         joystick: &JoystickInputData,
         mouse_input: &MouseInputData,
     ) -> Self {
-        let is_left = keyboard.get_key_hold(KeyCode::KeyA) || joystick._stick_left_direction.x < 0;
-        let is_right = keyboard.get_key_hold(KeyCode::KeyD) || 0 < joystick._stick_left_direction.x;
-        let is_down = keyboard.get_key_hold(KeyCode::KeyS) || joystick._stick_left_direction.y < 0;
-        let is_up = keyboard.get_key_hold(KeyCode::KeyW) || 0 < joystick._stick_left_direction.y;
-
-        let stick_left_direction = Vector2::<f32>::new(
-            joystick._stick_left_direction.x as f32,
-            joystick._stick_left_direction.y as f32,
-        ) * JOYSTICK_SENSITIVITY;
-
-        let is_interaction_hold = keyboard.get_key_hold(KeyCode::KeyF)
-            || keyboard.get_key_pressed(KeyCode::KeyF)
-            || joystick._btn_x == ButtonState::Hold
-            || joystick._btn_x == ButtonState::Pressed;
-
-        Self {
-            _attack_or_use_item: mouse_input._btn_l_pressed || joystick._btn_right_shoulder == ButtonState::Pressed,
-            _power_attack: mouse_input._btn_r_pressed || joystick._btn_right_trigger == ButtonState::Pressed,
-            _cancel: keyboard.get_key_pressed(KeyCode::KeyB)
-                || keyboard.get_key_pressed(KeyCode::Escape)
-                || joystick._btn_b == ButtonState::Pressed,
-            _left: is_left,
-            _right: is_right,
-            _up: is_up,
-            _down: is_down,
-            _jump: keyboard.get_key_pressed(KeyCode::Space) || joystick._btn_a == ButtonState::Pressed,
-            _run: keyboard.get_key_pressed(KeyCode::ShiftLeft) || joystick._btn_left_shoulder == ButtonState::Pressed,
-            _roll: keyboard.get_key_pressed(KeyCode::AltLeft) || joystick._btn_b == ButtonState::Pressed,
-            _interaction: keyboard.get_key_pressed(KeyCode::KeyF) || joystick._btn_x == ButtonState::Pressed,
-            _interaction_hold: is_interaction_hold,
-            _request: keyboard.get_key_pressed(KeyCode::KeyC) || joystick._btn_y == ButtonState::Pressed,
-            _previous_item: keyboard.get_key_pressed(KeyCode::ArrowLeft)
-                || keyboard.get_key_hold(KeyCode::ArrowLeft)
-                || keyboard.get_key_pressed(KeyCode::KeyQ)
-                || keyboard.get_key_hold(KeyCode::KeyQ)
-                || joystick._btn_left == ButtonState::Pressed
-                || joystick._btn_left == ButtonState::Hold,
-            _next_item: keyboard.get_key_pressed(KeyCode::ArrowRight)
-                || keyboard.get_key_hold(KeyCode::ArrowRight)
-                || keyboard.get_key_pressed(KeyCode::KeyE)
-                || keyboard.get_key_hold(KeyCode::KeyE)
-                || joystick._btn_right == ButtonState::Pressed
-                || joystick._btn_right == ButtonState::Hold,
-            _help: keyboard.get_key_pressed(KeyCode::F1) || joystick._btn_back == ButtonState::Pressed,
-            _open_inventory: keyboard.get_key_pressed(KeyCode::KeyI) || joystick._btn_start == ButtonState::Pressed,
-            _open_menu: keyboard.get_key_pressed(KeyCode::Escape) || joystick._btn_start == ButtonState::Pressed,
-            _prev_quick_slot_row: joystick._btn_up == ButtonState::Pressed,
-            _next_quick_slot_row: keyboard.get_key_pressed(KeyCode::Tab) || joystick._btn_down == ButtonState::Pressed,
-            _dance: keyboard.get_key_pressed(KeyCode::KeyG) || joystick._btn_y == ButtonState::Pressed,
-            _stick_left_direction: stick_left_direction,
-        }
+        Self::from_input_with_bindings(&DEFAULT_BINDINGS, keyboard, joystick, mouse_input)
     }
 
     pub fn from_input_with_bindings(

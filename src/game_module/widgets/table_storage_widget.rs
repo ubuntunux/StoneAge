@@ -10,8 +10,7 @@ use crate::game_module::game_ui_manager::move_mouse_to_ui_component;
 use crate::game_module::game_input::UiInput;
 use crate::game_module::widgets::game_menu_widget::item_info_widget::ItemInfoWidget;
 use crate::game_module::widgets::item_bar::{
-    INVALID_ITEM_INDEX, ITEM_UI_SIZE, ITEM_WIDGET_UI_MARGIN, InventoryItemCreateInfo, InventorySlotData, ItemBarWidget,
-    SLOTS_PER_ROW,
+    INVALID_ITEM_INDEX, ITEM_UI_SIZE, InventoryItemCreateInfo, InventorySlotData, ItemBarWidget, SLOTS_PER_ROW,
 };
 use nalgebra::Vector2;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
@@ -32,15 +31,26 @@ pub const TABLE_STORAGE_ROWS: usize = 2;
 pub const TABLE_STORAGE_SLOTS_PER_ROW: usize = SLOTS_PER_ROW;
 pub const TOTAL_TABLE_STORAGE_SLOTS: usize = TABLE_STORAGE_ROWS * TABLE_STORAGE_SLOTS_PER_ROW;
 
+use crate::game_module::widgets::item_slot_widget::ItemSlotWidgetBase;
+use std::ops::{Deref, DerefMut};
+
 pub struct TableStorageSlotWidget<'a> {
     pub _table_storage_widget: *const TableStorageWidget<'a>,
     pub _is_table_slot: bool,
-    pub _slot_index: usize,
-    pub _widget: Rc<WidgetDefault<'a>>,
-    pub _item_data_name: String,
-    pub _item_name: String,
-    pub _item_data_type: ItemDataType,
-    pub _item_count: usize,
+    pub _base: ItemSlotWidgetBase<'a>,
+}
+
+impl<'a> Deref for TableStorageSlotWidget<'a> {
+    type Target = ItemSlotWidgetBase<'a>;
+    fn deref(&self) -> &Self::Target {
+        &self._base
+    }
+}
+
+impl<'a> DerefMut for TableStorageSlotWidget<'a> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self._base
+    }
 }
 
 impl<'a> TableStorageSlotWidget<'a> {
@@ -51,39 +61,23 @@ impl<'a> TableStorageSlotWidget<'a> {
         slot_index: usize,
     ) -> Box<TableStorageSlotWidget<'a>> {
         let prefix = if is_table_slot { "table" } else { "player" };
-        let slot_widget =
-            UIManager::create_widget(&format!("{}_tbl_slot_{}", prefix, slot_index), UIWidgetTypes::Default);
-        let slot_widget_mut = ptr_as_mut(slot_widget.as_ref());
-        let ui_component = slot_widget_mut.get_ui_component_mut();
-        ui_component.set_size(ITEM_UI_SIZE, ITEM_UI_SIZE);
-        ui_component.set_margin(ITEM_WIDGET_UI_MARGIN);
-        ui_component.set_round(5.0);
-        ui_component.set_border(2.0);
-        ui_component.set_border_color(get_color32(100, 100, 120, 255));
-        ui_component.set_font_size(24.0);
-        ui_component.set_font_color(get_color32(255, 255, 255, 255));
-        ui_component.set_halign(HorizontalAlign::CENTER);
-        ui_component.set_valign(VerticalAlign::CENTER);
-        ui_component.set_touchable(true);
-
-        parent_widget.add_widget(&slot_widget);
-
         let slot = Box::new(TableStorageSlotWidget {
             _table_storage_widget: table_storage_widget,
             _is_table_slot: is_table_slot,
-            _slot_index: slot_index,
-            _widget: slot_widget,
-            _item_data_name: String::new(),
-            _item_name: String::new(),
-            _item_data_type: ItemDataType::None,
-            _item_count: 0,
+            _base: ItemSlotWidgetBase::create(
+                &format!("{}_tbl_slot_{}", prefix, slot_index),
+                parent_widget,
+                slot_index,
+                get_color32(100, 100, 120, 255),
+                Some(Box::new(TableStorageWidget::callback_slot_click)),
+                Some(Box::new(TableStorageWidget::callback_slot_touch_over)),
+                Some(Box::new(TableStorageWidget::callback_slot_touch_out)),
+                std::ptr::null(),
+            ),
         });
 
-        let ui_component = ptr_as_mut(slot._widget.as_ref()).get_ui_component_mut();
-        ui_component.set_callback_touch_down(Some(Box::new(TableStorageWidget::callback_slot_click)));
-        ui_component.set_callback_touch_over(Some(Box::new(TableStorageWidget::callback_slot_touch_over)));
-        ui_component.set_callback_touch_out(Some(Box::new(TableStorageWidget::callback_slot_touch_out)));
-        ui_component.set_user_data(slot.as_ref() as *const TableStorageSlotWidget<'a> as *const c_void);
+        let user_data = slot.as_ref() as *const TableStorageSlotWidget<'a> as *const c_void;
+        ptr_as_mut(slot._widget.as_ref()).get_ui_component_mut().set_user_data(user_data);
 
         slot
     }
@@ -97,45 +91,37 @@ impl<'a> TableStorageSlotWidget<'a> {
         item_count: usize,
         is_selected_item: bool,
     ) {
-        self._item_name = item_name.to_string();
-        self._item_data_name = item_data_name.to_string();
-        self._item_data_type = item_data_type;
-        self._item_count = item_count;
-
-        let ui_component = ptr_as_mut(self._widget.as_ref()).get_ui_component_mut();
-        if material_instance.is_some() {
-            ui_component.set_color(get_color32(255, 255, 255, 255));
+        let bg_color = if material_instance.is_some() {
+            get_color32(255, 255, 255, 255)
         } else if self._is_table_slot {
-            ui_component.set_color(get_color32(50, 40, 30, 200));
+            get_color32(50, 40, 30, 200)
         } else {
-            ui_component.set_color(get_color32(35, 45, 55, 200));
-        }
+            get_color32(35, 45, 55, 200)
+        };
 
-        if is_selected_item {
-            ui_component.set_border_color(get_color32(255, 255, 0, 255));
+        let border_color = if is_selected_item {
+            get_color32(255, 255, 0, 255)
         } else if self._is_table_slot {
             if item_count > 0 && item_data_name != ITEM_NONE {
-                ui_component.set_border_color(get_color32(230, 180, 80, 255));
+                get_color32(230, 180, 80, 255)
             } else {
-                ui_component.set_border_color(get_color32(120, 100, 80, 255));
+                get_color32(120, 100, 80, 255)
             }
+        } else if item_count > 0 && item_data_name != ITEM_NONE {
+            get_color32(80, 200, 240, 255)
         } else {
-            if item_count > 0 && item_data_name != ITEM_NONE {
-                ui_component.set_border_color(get_color32(80, 200, 240, 255));
-            } else {
-                ui_component.set_border_color(get_color32(80, 90, 110, 255));
-            }
-        }
+            get_color32(80, 90, 110, 255)
+        };
 
-        if item_count > 1 && item_data_name != ITEM_NONE {
-            ui_component.set_font_size(24.0);
-            ui_component.set_font_color(get_color32(255, 255, 255, 255));
-            ui_component.set_text(&format!("{}", item_count));
-        } else {
-            ui_component.set_text("");
-        }
-
-        ui_component.set_material_instance(material_instance);
+        self._base.set_data(
+            item_name,
+            item_data_name,
+            item_data_type,
+            material_instance,
+            item_count,
+            bg_color,
+            border_color,
+        );
     }
 }
 

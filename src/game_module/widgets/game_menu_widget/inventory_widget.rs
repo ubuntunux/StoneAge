@@ -7,8 +7,8 @@ use crate::game_module::game_ui_manager::move_mouse_to_ui_component;
 use crate::game_module::widgets::game_menu_widget::item_info_widget::ItemInfoWidget;
 use crate::game_module::widgets::game_menu_widget::player_stat_widget::PlayerStatWidget;
 use crate::game_module::widgets::item_bar::{
-    EQUIPMENT_SLOT_START_INDEX, EquipmentSlotType, INVALID_ITEM_INDEX, ITEM_UI_SIZE, ITEM_WIDGET_UI_MARGIN,
-    NUM_EQUIPMENT_SLOTS, SLOTS_PER_ROW,
+    EQUIPMENT_SLOT_START_INDEX, EquipmentSlotType, INVALID_ITEM_INDEX, ITEM_UI_SIZE, NUM_EQUIPMENT_SLOTS,
+    SLOTS_PER_ROW,
 };
 use nalgebra::Vector2;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
@@ -26,14 +26,25 @@ use std::ffi::c_void;
 use std::rc::Rc;
 use winit::keyboard::KeyCode;
 
+use crate::game_module::widgets::item_slot_widget::ItemSlotWidgetBase;
+use std::ops::{Deref, DerefMut};
+
 pub struct InventorySlotWidget<'a> {
     pub _inventory_widget: *const InventoryWidget<'a>,
-    pub _slot_index: usize,
-    pub _widget: Rc<WidgetDefault<'a>>,
-    pub _item_data_name: String,
-    pub _item_name: String,
-    pub _item_data_type: ItemDataType,
-    pub _item_count: usize,
+    pub _base: ItemSlotWidgetBase<'a>,
+}
+
+impl<'a> Deref for InventorySlotWidget<'a> {
+    type Target = ItemSlotWidgetBase<'a>;
+    fn deref(&self) -> &Self::Target {
+        &self._base
+    }
+}
+
+impl<'a> DerefMut for InventorySlotWidget<'a> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self._base
+    }
 }
 
 impl<'a> InventorySlotWidget<'a> {
@@ -42,37 +53,22 @@ impl<'a> InventorySlotWidget<'a> {
         parent_widget: &mut WidgetDefault<'a>,
         slot_index: usize,
     ) -> Box<InventorySlotWidget<'a>> {
-        let slot_widget = UIManager::create_widget(&format!("inv_slot_{}", slot_index), UIWidgetTypes::Default);
-        let slot_widget_mut = ptr_as_mut(slot_widget.as_ref());
-        let ui_component = slot_widget_mut.get_ui_component_mut();
-        ui_component.set_size(ITEM_UI_SIZE, ITEM_UI_SIZE);
-        ui_component.set_margin(ITEM_WIDGET_UI_MARGIN);
-        ui_component.set_round(5.0);
-        ui_component.set_border(2.0);
-        ui_component.set_border_color(get_color32(188, 148, 105, 200));
-        ui_component.set_font_size(24.0);
-        ui_component.set_font_color(get_color32(255, 255, 255, 255));
-        ui_component.set_halign(HorizontalAlign::CENTER);
-        ui_component.set_valign(VerticalAlign::CENTER);
-        ui_component.set_touchable(true);
-
-        parent_widget.add_widget(&slot_widget);
-
         let inv_slot = Box::new(InventorySlotWidget {
             _inventory_widget: inventory_widget,
-            _slot_index: slot_index,
-            _widget: slot_widget,
-            _item_data_name: String::new(),
-            _item_name: String::new(),
-            _item_data_type: ItemDataType::None,
-            _item_count: 0,
+            _base: ItemSlotWidgetBase::create(
+                &format!("inv_slot_{}", slot_index),
+                parent_widget,
+                slot_index,
+                get_color32(188, 148, 105, 200),
+                Some(Box::new(InventoryWidget::callback_slot_click)),
+                Some(Box::new(InventoryWidget::callback_slot_touch_over)),
+                Some(Box::new(InventoryWidget::callback_slot_touch_out)),
+                std::ptr::null(),
+            ),
         });
 
-        let ui_component = ptr_as_mut(inv_slot._widget.as_ref()).get_ui_component_mut();
-        ui_component.set_callback_touch_down(Some(Box::new(InventoryWidget::callback_slot_click)));
-        ui_component.set_callback_touch_over(Some(Box::new(InventoryWidget::callback_slot_touch_over)));
-        ui_component.set_callback_touch_out(Some(Box::new(InventoryWidget::callback_slot_touch_out)));
-        ui_component.set_user_data(inv_slot.as_ref() as *const InventorySlotWidget<'a> as *const c_void);
+        let user_data = inv_slot.as_ref() as *const InventorySlotWidget<'a> as *const c_void;
+        ptr_as_mut(inv_slot._widget.as_ref()).get_ui_component_mut().set_user_data(user_data);
 
         inv_slot
     }
@@ -87,45 +83,39 @@ impl<'a> InventorySlotWidget<'a> {
         is_active_quick_row: bool,
         is_selected_item: bool,
     ) {
-        self._item_name = item_name.to_string();
-        self._item_data_name = item_data_name.to_string();
-        self._item_data_type = item_data_type;
-        self._item_count = item_count;
-
         let is_equipment_slot = self._slot_index >= EQUIPMENT_SLOT_START_INDEX;
 
-        let ui_component = ptr_as_mut(self._widget.as_ref()).get_ui_component_mut();
-        if material_instance.is_some() {
-            ui_component.set_color(get_color32(255, 255, 255, 255));
+        let bg_color = if material_instance.is_some() {
+            get_color32(255, 255, 255, 255)
         } else if is_equipment_slot {
-            ui_component.set_color(get_color32(220, 190, 140, 220));
+            get_color32(220, 190, 140, 220)
         } else {
-            ui_component.set_color(get_color32(255, 255, 255, 0));
-        }
+            get_color32(255, 255, 255, 0)
+        };
 
-        if is_selected_item {
-            ui_component.set_border_color(get_color32(255, 195, 40, 255));
+        let border_color = if is_selected_item {
+            get_color32(255, 195, 40, 255)
         } else if is_equipment_slot && item_count > 0 && item_data_name != ITEM_NONE {
-            ui_component.set_border_color(get_color32(70, 135, 200, 255));
+            get_color32(70, 135, 200, 255)
         } else if is_equipment_slot {
-            ui_component.set_border_color(get_color32(188, 148, 105, 200));
+            get_color32(188, 148, 105, 200)
         } else if is_active_quick_row {
-            ui_component.set_border_color(get_color32(118, 168, 68, 255));
+            get_color32(118, 168, 68, 255)
         } else {
-            ui_component.set_border_color(get_color32(165, 130, 90, 200));
-        }
+            get_color32(165, 130, 90, 200)
+        };
 
-        if is_equipment_slot {
-            ui_component.set_text("");
-        } else if item_count > 1 && item_data_name != ITEM_NONE {
-            ui_component.set_font_size(24.0);
-            ui_component.set_font_color(get_color32(255, 255, 255, 255));
-            ui_component.set_text(&format!("{}", item_count));
-        } else {
-            ui_component.set_text("");
-        }
+        let displayed_count = if is_equipment_slot { 0 } else { item_count };
 
-        ui_component.set_material_instance(material_instance);
+        self._base.set_data(
+            item_name,
+            item_data_name,
+            item_data_type,
+            material_instance,
+            displayed_count,
+            bg_color,
+            border_color,
+        );
     }
 }
 

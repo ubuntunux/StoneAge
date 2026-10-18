@@ -12,7 +12,7 @@ use nalgebra::{Matrix4, Vector2, Vector3};
 use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::core::engine_core::TimeData;
 use rust_engine_3d::core::engine_service_locator::{get_audio_manager_mut, get_scene_manager};
-use rust_engine_3d::core::input::{ButtonState, JoystickInputData, KeyboardInputData, MouseInputData, MouseMoveData};
+use rust_engine_3d::core::input::{JoystickInputData, KeyboardInputData, MouseInputData, MouseMoveData};
 use rust_engine_3d::scene::camera::CameraObjectData;
 use rust_engine_3d::scene::collision::{CollisionCreateInfo, CollisionData, CollisionType};
 use rust_engine_3d::utilities::math;
@@ -20,157 +20,9 @@ use rust_engine_3d::utilities::system::{RcRefCell, ptr_as_mut, ptr_as_ref};
 use strum_macros::{Display, EnumCount, EnumIter, EnumString};
 use winit::keyboard::KeyCode;
 
-// Hold Repeat Navigation Utility
-pub const NAV_INITIAL_DELAY: f32 = 0.3;
-pub const NAV_REPEAT_INTERVAL: f32 = 0.05;
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum QuickSlotNavDirection {
-    Previous,
-    Next,
-}
-
-#[derive(Clone, Debug, PartialEq)]
-pub struct HoldRepeatController<T: PartialEq + Copy> {
-    pub _initial_delay: f32,
-    pub _repeat_interval: f32,
-    pub _timer: f32,
-    pub _is_repeating: bool,
-    pub _last_state: Option<T>,
-}
-
-impl<T: PartialEq + Copy> HoldRepeatController<T> {
-    pub fn new(initial_delay: f32, repeat_interval: f32) -> Self {
-        Self {
-            _initial_delay: initial_delay,
-            _repeat_interval: repeat_interval,
-            _timer: 0.0,
-            _is_repeating: false,
-            _last_state: None,
-        }
-    }
-
-    pub fn reset(&mut self) {
-        self._timer = 0.0;
-        self._is_repeating = false;
-        self._last_state = None;
-    }
-
-    pub fn update(&mut self, current_state: Option<T>, delta_time: f32) -> (bool, Option<T>) {
-        if let Some(state) = current_state {
-            if Some(state) != self._last_state {
-                self._last_state = Some(state);
-                self._timer = self._initial_delay;
-                self._is_repeating = false;
-                (true, Some(state))
-            } else {
-                self._timer -= delta_time;
-                if self._timer <= 0.0 {
-                    if !self._is_repeating {
-                        self._is_repeating = true;
-                        self._timer = self._repeat_interval;
-                    } else {
-                        self._timer += self._repeat_interval;
-                    }
-                    (true, Some(state))
-                } else {
-                    (false, None)
-                }
-            }
-        } else {
-            self.reset();
-            (false, None)
-        }
-    }
-}
-
-#[derive(Clone, Debug, PartialEq)]
-pub struct WidgetNavRepeatController {
-    pub _controller: HoldRepeatController<(i32, i32)>,
-}
-
-impl Default for WidgetNavRepeatController {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-impl WidgetNavRepeatController {
-    pub fn new() -> Self {
-        Self {
-            _controller: HoldRepeatController::new(NAV_INITIAL_DELAY, NAV_REPEAT_INTERVAL),
-        }
-    }
-
-    pub fn with_delay_and_interval(initial_delay: f32, repeat_interval: f32) -> Self {
-        Self {
-            _controller: HoldRepeatController::new(initial_delay, repeat_interval),
-        }
-    }
-
-    pub fn reset(&mut self) {
-        self._controller.reset();
-    }
-
-    pub fn get_direction(
-        keyboard_input_data: &KeyboardInputData,
-        joystick_input_data: &JoystickInputData,
-    ) -> Option<(i32, i32)> {
-        let is_left = keyboard_input_data.get_key_pressed(KeyCode::ArrowLeft)
-            || keyboard_input_data.get_key_hold(KeyCode::ArrowLeft)
-            || keyboard_input_data.get_key_pressed(KeyCode::KeyA)
-            || keyboard_input_data.get_key_hold(KeyCode::KeyA)
-            || joystick_input_data._btn_left == ButtonState::Pressed
-            || joystick_input_data._btn_left == ButtonState::Hold
-            || joystick_input_data._stick_left_direction.x < -10000;
-
-        let is_right = keyboard_input_data.get_key_pressed(KeyCode::ArrowRight)
-            || keyboard_input_data.get_key_hold(KeyCode::ArrowRight)
-            || keyboard_input_data.get_key_pressed(KeyCode::KeyD)
-            || keyboard_input_data.get_key_hold(KeyCode::KeyD)
-            || joystick_input_data._btn_right == ButtonState::Pressed
-            || joystick_input_data._btn_right == ButtonState::Hold
-            || joystick_input_data._stick_left_direction.x > 10000;
-
-        let is_up = keyboard_input_data.get_key_pressed(KeyCode::ArrowUp)
-            || keyboard_input_data.get_key_hold(KeyCode::ArrowUp)
-            || keyboard_input_data.get_key_pressed(KeyCode::KeyW)
-            || keyboard_input_data.get_key_hold(KeyCode::KeyW)
-            || joystick_input_data._btn_up == ButtonState::Pressed
-            || joystick_input_data._btn_up == ButtonState::Hold
-            || joystick_input_data._stick_left_direction.y > 10000;
-
-        let is_down = keyboard_input_data.get_key_pressed(KeyCode::ArrowDown)
-            || keyboard_input_data.get_key_hold(KeyCode::ArrowDown)
-            || keyboard_input_data.get_key_pressed(KeyCode::KeyS)
-            || keyboard_input_data.get_key_hold(KeyCode::KeyS)
-            || joystick_input_data._btn_down == ButtonState::Pressed
-            || joystick_input_data._btn_down == ButtonState::Hold
-            || joystick_input_data._stick_left_direction.y < -10000;
-
-        if is_left {
-            Some((-1, 0))
-        } else if is_right {
-            Some((1, 0))
-        } else if is_up {
-            Some((0, -1))
-        } else if is_down {
-            Some((0, 1))
-        } else {
-            None
-        }
-    }
-
-    pub fn update(
-        &mut self,
-        keyboard_input_data: &KeyboardInputData,
-        joystick_input_data: &JoystickInputData,
-        delta_time: f32,
-    ) -> (bool, Option<(i32, i32)>) {
-        let current_dir = Self::get_direction(keyboard_input_data, joystick_input_data);
-        self._controller.update(current_dir, delta_time)
-    }
-}
+pub use crate::game_module::game_input::{
+    HoldRepeatController, QuickSlotNavDirection, WidgetNavRepeatController, NAV_INITIAL_DELAY, NAV_REPEAT_INTERVAL,
+};
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Debug, Display, EnumIter, EnumString, EnumCount)]
 pub enum KeyBindingType {

@@ -448,24 +448,10 @@ impl<'a> GameUIManager<'a> {
             toolbox_widget.set_active_tab(ToolboxTab::Teleport);
         }
     }
-    pub fn is_requested_close_world_map(&self) -> bool {
-        !self.is_opened_world_map()
-    }
     pub fn close_world_map(&mut self) {
         if let Some(toolbox_widget) = self._toolbox_widget.as_mut() {
             toolbox_widget.close_toolbox();
         }
-    }
-    pub fn get_selected_world_map_stage_data_name(&self) -> &String {
-        get_game_scene_manager().get_current_game_scene_data_name()
-    }
-    pub fn set_selected_world_map_stage(&mut self, _selected_stage_name: &String) {}
-    pub fn unset_selected_world_map_stage(&mut self) {}
-    pub fn update_world_map_widget(
-        &mut self,
-        _joystick_input_data: &JoystickInputData,
-        _keyboard_input_data: &KeyboardInputData,
-    ) {
     }
 
     // item bar
@@ -584,7 +570,7 @@ impl<'a> GameUIManager<'a> {
         }
     }
 
-    pub fn find_eatable_inventory_item_data_name(&self) -> Option<String> {
+    fn for_each_eatable_inventory_item<F: FnMut(&str, usize)>(&self, mut f: F) {
         let item_create_info_rows = self.get_inventory_item_create_infos();
         let game_resources = get_game_resources();
         for (_row, items) in item_create_info_rows {
@@ -592,28 +578,28 @@ impl<'a> GameUIManager<'a> {
                 if info._item_count > 0 {
                     let item_data = game_resources.get_item_data(&info._item_data_name);
                     if item_data.borrow()._item_type.is_eatable() {
-                        return Some(info._item_data_name);
+                        f(&info._item_data_name, info._item_count);
                     }
                 }
             }
         }
-        None
+    }
+
+    pub fn find_eatable_inventory_item_data_name(&self) -> Option<String> {
+        let mut found = None;
+        self.for_each_eatable_inventory_item(|name, _| {
+            if found.is_none() {
+                found = Some(name.to_string());
+            }
+        });
+        found
     }
 
     pub fn get_eatable_inventory_item_count(&self) -> usize {
-        let item_create_info_rows = self.get_inventory_item_create_infos();
-        let game_resources = get_game_resources();
         let mut total_count = 0;
-        for (_row, items) in item_create_info_rows {
-            for info in items {
-                if info._item_count > 0 {
-                    let item_data = game_resources.get_item_data(&info._item_data_name);
-                    if item_data.borrow()._item_type.is_eatable() {
-                        total_count += info._item_count;
-                    }
-                }
-            }
-        }
+        self.for_each_eatable_inventory_item(|_, count| {
+            total_count += count;
+        });
         total_count
     }
 
