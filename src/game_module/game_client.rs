@@ -669,11 +669,7 @@ impl<'a> GameClient<'a> {
                             self.set_next_game_phase(GamePhase::GamePlay);
                         }
                     }
-                    State::End => {
-                        let controller = get_game_controller_mut();
-                        controller._wrap_up_hold_timer = 0.0;
-                        controller._is_wrap_up_holding = false;
-                    }
+                    State::End => {}
                 },
                 GamePhase::DeployObject => match state {
                     State::Begin => {

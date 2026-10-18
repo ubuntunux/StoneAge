@@ -1,5 +1,41 @@
 {
     "_characters": {
+        "alien_alpha": {
+            "_character_data_name": "characters/alien",
+            "_position": [
+                19.578035354614258,
+                2.6767125129699707,
+                21.247203826904297
+            ],
+            "_rotation": [
+                0.0,
+                3.6971595287323,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "alien_beta": {
+            "_character_data_name": "characters/alien",
+            "_position": [
+                22.188283920288086,
+                2.5091962814331055,
+                21.254806518554688
+            ],
+            "_rotation": [
+                0.0,
+                -3.818469285964966,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
         "ufo": {
             "_character_data_name": "characters/ufo",
             "_position": [
@@ -40,7 +76,26 @@
         }
     },
     "_items": {},
-    "_player": {},
+    "_player": {
+        "monkey_aru": {
+            "_character_data_name": "characters/family/monkey_aru",
+            "_position": [
+                21.73575210571289,
+                3.6966590881347656,
+                19.237384796142578
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        }
+    },
     "_props": {},
     "_scene": {
         "_cameras": {},

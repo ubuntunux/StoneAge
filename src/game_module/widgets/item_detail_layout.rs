@@ -223,7 +223,6 @@ pub fn create_recipe_list_row<'a>(
     ui.set_size(LIST_ITEM_ICON_SIZE, LIST_ITEM_ICON_SIZE);
     ui.set_valign(VerticalAlign::CENTER);
     ui.set_margin_right(8.0);
-    ui.set_color(COLOR_WHITE);
     row_mut.add_widget(&icon);
     setup_item_icon(&icon, item_code, true);
 
@@ -326,7 +325,6 @@ pub fn create_detail_header<'a>(
     ui.set_size(DETAIL_ICON_SIZE, DETAIL_ICON_SIZE);
     ui.set_valign(VerticalAlign::CENTER);
     ui.set_margin_right(12.0);
-    ui.set_color(COLOR_TEXT_TITLE);
     detail_hdr_mut.add_widget(&detail_icon);
 
     let detail_name_lbl = UIManager::create_widget(&format!("{}_detail_name", prefix), UIWidgetTypes::Default);
@@ -387,7 +385,6 @@ pub fn create_detail_requirements_section<'a>(
 pub fn create_ingredient_widget_item<'a>(
     widget_suffix: &str,
     detail_req_box: &mut WidgetDefault<'a>,
-    icon_color: u32,
 ) -> IngredientWidgetItem<'a> {
     let ing_set = UIManager::create_widget(&format!("{}_detail_ing_set", widget_suffix), UIWidgetTypes::Default);
     let ing_set_mut = ptr_as_mut(ing_set.as_ref());
@@ -404,7 +401,6 @@ pub fn create_ingredient_widget_item<'a>(
     ui.set_size(INGREDIENT_ICON_SIZE, INGREDIENT_ICON_SIZE);
     ui.set_valign(VerticalAlign::CENTER);
     ui.set_margin_right(8.0);
-    ui.set_color(icon_color);
     ing_set_mut.add_widget(&ing_icon);
 
     let ing_lbl = UIManager::create_widget(&format!("{}_detail_ing_lbl", widget_suffix), UIWidgetTypes::Default);
@@ -502,8 +498,7 @@ pub fn create_master_detail_components<'a>(
 
     let mut detail_ing_widgets = Vec::with_capacity(max_ingredients);
     for i in 0..max_ingredients {
-        let ing_widget =
-            create_ingredient_widget_item(&format!("{}_{}", prefix, i), detail_req_box_mut, COLOR_TEXT_TITLE);
+        let ing_widget = create_ingredient_widget_item(&format!("{}_{}", prefix, i), detail_req_box_mut);
         detail_ing_widgets.push(ing_widget);
     }
 

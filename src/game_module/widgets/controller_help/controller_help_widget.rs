@@ -1,11 +1,10 @@
 use crate::game_module::actors::character::{ActionAnimationState, RequestType};
 use crate::game_module::actors::interaction_object::{INTERACTION_OBJECT_UI_OFFSET_Y, InteractionObject};
 use crate::game_module::game_client::GamePhase;
-use crate::game_module::game_constants::WRAP_UP_THE_DAY_HOLD_DURATION;
 use crate::game_module::game_controller::KeyBindingType;
 use crate::game_module::game_service_locator::{
-    get_character_manager, get_game_client, get_game_controller, get_game_resources, get_game_scene_manager,
-    get_game_ui_manager, get_prop_manager,
+    get_character_manager, get_game_client, get_game_resources, get_game_scene_manager, get_game_ui_manager,
+    get_prop_manager,
 };
 use crate::game_module::scenario::scenario::ScenarioType;
 use crate::game_module::widgets::key_binding_widget::{
@@ -500,16 +499,10 @@ impl<'a> ControllerHelpWidget<'a> {
                             RequestType::None,
                         )
                     }
-                } else if prop.borrow().is_deployed_prop() {
-                    (
-                        KeyBindingType::Interaction,
-                        prop.borrow()._prop_data.borrow()._name.clone(),
-                        RequestType::None,
-                    )
                 } else {
                     (
                         KeyBindingType::Interaction,
-                        String::from("Hold to Wrap up the day"),
+                        prop.borrow()._prop_data.borrow()._name.clone(),
                         RequestType::None,
                     )
                 }
@@ -659,9 +652,6 @@ impl<'a> ControllerHelpWidget<'a> {
 
         let widget_map = ptr_as_mut(self._interaction_key_binding_widget_map.as_ref());
 
-        let hold_timer = get_game_controller()._wrap_up_hold_timer;
-        let is_table_interaction = matches!(player.get_nearest_interaction_object(), InteractionObject::PropTable(_));
-
         for key_type in INTERACTION_WIDGETS.iter() {
             let Some(key_widget) = widget_map.get_key_binding_widget(*key_type) else {
                 continue;
@@ -671,15 +661,8 @@ impl<'a> ControllerHelpWidget<'a> {
             if let (Some(bg_ptr), Some(fill_ptr)) = (key_widget._progress_bar_bg, key_widget._progress_bar_fill) {
                 let bg_ui = ptr_as_mut(bg_ptr).get_ui_component_mut();
                 let fill_ui = ptr_as_mut(fill_ptr).get_ui_component_mut();
-
-                if *key_type == KeyBindingType::Interaction && is_table_interaction && 0.0 < hold_timer {
-                    let progress_ratio = (hold_timer / WRAP_UP_THE_DAY_HOLD_DURATION).clamp(0.0, 1.0);
-                    bg_ui.set_visible(true);
-                    fill_ui.set_size_hint_x(Some(progress_ratio));
-                } else {
-                    bg_ui.set_visible(false);
-                    fill_ui.set_size_hint_x(Some(0.0));
-                }
+                bg_ui.set_visible(false);
+                fill_ui.set_size_hint_x(Some(0.0));
             }
 
             if context._is_corpse {

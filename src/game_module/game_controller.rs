@@ -1,19 +1,16 @@
 use crate::game_module::actors::character::{ActionAnimationState, Character};
-use crate::game_module::actors::interaction_object::InteractionObject;
 use crate::game_module::game_client::GamePhase;
 use crate::game_module::game_constants::*;
 use crate::game_module::game_input::{CameraInput, FishingInputState, GamePlayInputState};
 use crate::game_module::game_service_locator::{
-    get_character_manager, get_game_client, get_game_client_mut, get_game_scene_manager_mut, get_game_ui_manager,
-    get_game_ui_manager_mut, get_prop_manager, get_prop_manager_mut,
+    get_character_manager, get_game_client, get_game_client_mut, get_game_ui_manager, get_game_ui_manager_mut,
+    get_prop_manager, get_prop_manager_mut,
 };
-use crate::game_module::scenario::scenario::ScenarioType;
 use crate::game_module::widgets::game_menu_widget::GameMenuTab;
 use crate::game_module::widgets::item_bar::INVALID_ITEM_INDEX;
 use nalgebra::{Matrix4, Vector2, Vector3};
-use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::core::engine_core::TimeData;
-use rust_engine_3d::core::engine_service_locator::{get_audio_manager_mut, get_engine_core, get_scene_manager};
+use rust_engine_3d::core::engine_service_locator::{get_engine_core, get_scene_manager};
 use rust_engine_3d::core::input::{ButtonState, JoystickInputData, KeyboardInputData, MouseInputData, MouseMoveData};
 use rust_engine_3d::scene::camera::CameraObjectData;
 use rust_engine_3d::scene::collision::{CollisionCreateInfo, CollisionData, CollisionType};
@@ -73,8 +70,6 @@ pub struct GameController<'a> {
     pub _camera_fixed_position: Vector3<f32>,
     pub _camera_fixed_rotation: Vector3<f32>,
     pub _quick_slot_repeat_controller: HoldRepeatController<QuickSlotNavDirection>,
-    pub _wrap_up_hold_timer: f32,
-    pub _is_wrap_up_holding: bool,
     pub _marker: std::marker::PhantomData<&'a ()>,
 }
 
@@ -94,8 +89,6 @@ impl<'a> GameController<'a> {
             _camera_fixed_position: Default::default(),
             _camera_fixed_rotation: Default::default(),
             _quick_slot_repeat_controller: HoldRepeatController::new(NAV_INITIAL_DELAY, NAV_REPEAT_INTERVAL),
-            _wrap_up_hold_timer: 0.0,
-            _is_wrap_up_holding: false,
             _marker: std::marker::PhantomData,
         })
     }
@@ -545,36 +538,6 @@ impl<'a> GameController<'a> {
 
         let is_available_attack = player_mut.is_available_attack();
         let item_type = player_mut.get_attached_item_data_type();
-
-        let is_near_table = matches!(
-            player_mut.get_nearest_interaction_object(),
-            InteractionObject::PropTable(_)
-        ) && player_mut.is_in_interaction_range();
-        let is_wrap_up = get_game_scene_manager_mut().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay);
-
-        if is_near_table && !is_wrap_up {
-            if input._interaction {
-                self._is_wrap_up_holding = true;
-            } else if !input._interaction_hold {
-                self._is_wrap_up_holding = false;
-            }
-        } else {
-            self._is_wrap_up_holding = false;
-        }
-
-        if is_near_table && !is_wrap_up && self._is_wrap_up_holding && input._interaction_hold {
-            self._wrap_up_hold_timer += delta_time;
-            if WRAP_UP_THE_DAY_HOLD_DURATION <= self._wrap_up_hold_timer {
-                self._wrap_up_hold_timer = WRAP_UP_THE_DAY_HOLD_DURATION;
-                self._is_wrap_up_holding = false;
-                player_mut.set_move_idle();
-                get_audio_manager_mut().play_audio_bank(AUDIO_QUEST_COMPLETE, AudioLoop::ONCE, None);
-                get_game_scene_manager_mut().request_open_game_scenario(ScenarioType::ScenarioWrapUpTheDay);
-                get_game_client_mut().set_next_game_phase(GamePhase::WrapUpTheDay);
-            }
-        } else {
-            self._wrap_up_hold_timer = 0.0;
-        }
 
         if is_placing {
             let mut rotate_input: f32 = 0.0;

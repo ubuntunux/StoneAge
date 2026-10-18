@@ -334,7 +334,6 @@ impl<'a> DetailInfoEntryWidget<'a> {
         ui.set_size(DESCRIPTION_LABEL_HEIGHT, DESCRIPTION_LABEL_HEIGHT);
         ui.set_valign(VerticalAlign::CENTER);
         ui.set_margin_right(6.0);
-        ui.set_color(COLOR_WHITE);
         entry_layout_mut.add_widget(&entry_icon);
 
         let entry_label = UIManager::create_widget(
@@ -965,7 +964,7 @@ impl<'a> ToolboxTabWidget<'a> {
         let first_req_type = first_item_data.as_ref().map(|d| d._item_data_type).unwrap_or(ItemDataType::None);
         let first_req_count = first_item_data.as_ref().map(|d| d._item_data_count).unwrap_or(0);
 
-        let mut ing_widget = create_ingredient_widget_item(tab_id, detail_req_box_mut, COLOR_WHITE);
+        let mut ing_widget = create_ingredient_widget_item(tab_id, detail_req_box_mut);
         ing_widget._item_type = first_req_type;
         ing_widget._count = first_req_count;
 

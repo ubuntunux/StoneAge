@@ -123,6 +123,7 @@ pub struct GameSceneManager<'a> {
     pub _item_manager: Box<ItemManager<'a>>,
     pub _prop_manager: Box<PropManager<'a>>,
     pub _reservation_scenarios: Vec<ScenarioType>,
+    pub _reservation_game_scene: Option<String>,
     pub _scenarios: ScenarioMap<'a>,
     pub _completed_game_scenarios: HashSet<ScenarioType>,
     pub _is_play_scenario_mode: bool,
@@ -188,6 +189,7 @@ impl<'a> GameSceneManager<'a> {
             _item_manager: ItemManager::create_item_manager(),
             _prop_manager: PropManager::create_prop_manager(),
             _reservation_scenarios: Default::default(),
+            _reservation_game_scene: None,
             _scenarios: Default::default(),
             _completed_game_scenarios: Default::default(),
             _is_play_scenario_mode: false,
@@ -449,6 +451,10 @@ impl<'a> GameSceneManager<'a> {
         self._reservation_scenarios.push(scenario_type);
     }
 
+    pub fn request_open_game_scene(&mut self, game_scene_data_name: &str) {
+        self._reservation_game_scene = Some(String::from(game_scene_data_name));
+    }
+
     pub fn open_wrap_up_the_day_sleep(&mut self) {
         let game_scene_data_name = self.get_current_game_scene_data_name().to_string();
         let scenario_data_create_info =
@@ -514,7 +520,9 @@ impl<'a> GameSceneManager<'a> {
 
         if self.has_scenarios() {
             self._scenarios.values_mut().for_each(|scenario| {
-                scenario.borrow_mut().on_close_game_scene(self._current_game_scene_data_name.as_str());
+                if let Ok(mut scenario_mut) = scenario.try_borrow_mut() {
+                    scenario_mut.on_close_game_scene(self._current_game_scene_data_name.as_str());
+                }
             });
         }
         self.clear_game_object_data();
@@ -738,6 +746,9 @@ impl<'a> GameSceneManager<'a> {
                     true
                 }
             });
+        }
+        if let Some(game_scene_data_name) = self._reservation_game_scene.take() {
+            self.open_game_scene_data(&game_scene_data_name);
         }
     }
 

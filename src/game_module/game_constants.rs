@@ -82,6 +82,8 @@ pub const SHELTER_PROTECTION_RADIUS: f32 = 3.0;
 // character
 pub const CHARACTER_DATA_NAME_ARU: &str = "characters/family/aru";
 pub const CHARACTER_DATA_NAME_MONKEY_ARU: &str = "characters/family/monkey_aru";
+pub const CHARACTER_DATA_NAME_EWA: &str = "characters/family/ewa";
+pub const CHARACTER_DATA_NAME_KOA: &str = "characters/family/koa";
 pub const ACTOR_NAME_ARU: &str = "aru";
 pub const ACTOR_NAME_EWA: &str = "ewa";
 pub const ACTOR_NAME_MONKEY_EWA: &str = "monkey_ewa";

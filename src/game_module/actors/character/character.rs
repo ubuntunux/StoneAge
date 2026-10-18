@@ -46,6 +46,7 @@ pub struct Character<'a> {
     pub _fishing_state: Box<CharacterFishingState>,
     pub _dead_time: f32,
     pub _lantern: Option<Box<Lantern>>,
+    pub _is_enable_update: bool,
 }
 
 impl<'a> Character<'a> {
@@ -86,6 +87,7 @@ impl<'a> Character<'a> {
             _fishing_state: Box::new(CharacterFishingState::default()),
             _dead_time: 0.0,
             _lantern: lantern,
+            _is_enable_update: true,
         };
 
         character.initialize_character(position, rotation, scale);
@@ -924,6 +926,21 @@ impl<'a> Character<'a> {
         transform.set_scale(&self._controller._scale);
     }
 
+    pub fn is_enable_update(&self) -> bool {
+        self._is_enable_update
+    }
+
+    pub fn set_enable_update(&mut self, is_enable_update: bool) {
+        self._is_enable_update = is_enable_update;
+    }
+
+    pub fn set_visible(&self, visible: bool) {
+        self._render_object.borrow_mut().set_visible(visible);
+        if let Some(attached_item) = &self._attached_item {
+            attached_item.borrow()._render_object.borrow_mut().set_visible(visible);
+        }
+    }
+
     pub fn update_render_object(&mut self) {
         let mut render_object = self._render_object.borrow_mut();
         render_object.update_render_object_data(0.0);
@@ -935,6 +952,10 @@ impl<'a> Character<'a> {
         target: Option<&Character<'a>>,
         delta_time: f32,
     ) {
+        if !self._is_enable_update {
+            return;
+        }
+
         let was_on_ground = self.is_on_ground();
         let falling_height = self._controller.get_falling_height();
 

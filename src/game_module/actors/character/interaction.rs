@@ -61,7 +61,7 @@ impl<'a> Character<'a> {
                             self.apply_food_item_stats(item_data_name.as_str());
                             get_game_ui_manager_mut().get_player_records_mut().add_food_eaten_count(1);
                         }
-                    } else if is_wrap_up || prop.borrow().is_deployed_prop() {
+                    } else {
                         get_game_client_mut().set_next_game_phase(GamePhase::Interaction);
                         get_game_ui_manager_mut().open_table_interaction_menu(prop);
                     }

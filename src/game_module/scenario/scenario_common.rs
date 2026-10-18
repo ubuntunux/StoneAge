@@ -95,7 +95,7 @@ pub fn set_actors_flying_sleep_mode(
 
 pub fn set_actors_visible(actors: &[&Option<RcRefCell<Character>>], visible: bool) {
     for actor in actors.iter().copied().flatten() {
-        actor.borrow()._render_object.borrow_mut().set_visible(visible);
+        actor.borrow().set_visible(visible);
     }
 }
 

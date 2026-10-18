@@ -587,7 +587,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                 }
             }
             ScenarioPhase::WrapUpTheDay => {
-                if game_scene_data_name == Stages::Home.get_stage_data_name() && self.is_sub_quest_cooking_active() {
+                if game_scene_data_name == Stages::Cave.get_stage_data_name() && self.is_sub_quest_cooking_active() {
                     self.create_prop_table_text_box();
                 }
             }

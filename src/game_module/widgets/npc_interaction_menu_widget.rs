@@ -2,7 +2,7 @@ use crate::game_module::actors::character::{Character, CharacterDataType, Reques
 use crate::game_module::actors::interaction_object::InteractionObject;
 use crate::game_module::actors::props::Prop;
 use crate::game_module::game_client::GamePhase;
-use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, AUDIO_SELECT_ITEM, ITEM_NONE};
+use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, AUDIO_QUEST_COMPLETE, AUDIO_SELECT_ITEM, ITEM_NONE};
 use crate::game_module::game_input::UiInput;
 use crate::game_module::game_service_locator::{
     get_character_manager, get_game_client_mut, get_game_scene_manager, get_game_scene_manager_mut,
@@ -46,6 +46,7 @@ pub enum NpcInteractionOption {
     Cooking,
     StorageTable,
     GiveAllResources,
+    WrapUpTheDay,
     Dance,
     GiveItem,
     Sleep,
@@ -68,6 +69,7 @@ impl NpcInteractionOption {
             NpcInteractionOption::Cooking => String::from("Cooking"),
             NpcInteractionOption::StorageTable => String::from("Supply Ingredients"),
             NpcInteractionOption::GiveAllResources => String::from("Give All Resources"),
+            NpcInteractionOption::WrapUpTheDay => String::from("Wrap Up the Day"),
             NpcInteractionOption::Dance => String::from("Dance"),
             NpcInteractionOption::GiveItem => {
                 if let Some(name) = item_name {
@@ -204,11 +206,6 @@ impl<'a> NpcInteractionMenuWidget<'a> {
     }
 
     pub fn open_table_interaction_menu(&mut self, target_table: RcRefCell<Prop<'a>>) {
-        if !get_game_scene_manager().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay)
-            && !target_table.borrow().is_deployed_prop()
-        {
-            return;
-        }
         self.open_with_target(InteractionMenuTarget::Table(target_table));
     }
 
@@ -315,6 +312,9 @@ impl<'a> NpcInteractionMenuWidget<'a> {
                 if is_wife {
                     options.push(NpcInteractionOption::StorageTable);
                     options.push(NpcInteractionOption::GiveAllResources);
+                    if !get_game_scene_manager().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay) {
+                        options.push(NpcInteractionOption::WrapUpTheDay);
+                    }
                 }
 
                 options.push(NpcInteractionOption::Dance);
@@ -505,6 +505,14 @@ impl<'a> NpcInteractionMenuWidget<'a> {
                 if let Some(target_npc) = &target_npc {
                     character_manager.get_player().borrow_mut().execute_npc_give_all_materials(target_npc);
                 }
+            }
+            NpcInteractionOption::WrapUpTheDay => {
+                if let Some(player) = character_manager.get_maybe_player() {
+                    player.borrow_mut().set_move_idle();
+                }
+                get_audio_manager_mut().play_audio_bank(AUDIO_QUEST_COMPLETE, AudioLoop::ONCE, None);
+                get_game_scene_manager_mut().request_open_game_scenario(ScenarioType::ScenarioWrapUpTheDay);
+                get_game_client_mut().set_next_game_phase(GamePhase::WrapUpTheDay);
             }
             NpcInteractionOption::Dance => {
                 if let Some(target_npc) = &target_npc {

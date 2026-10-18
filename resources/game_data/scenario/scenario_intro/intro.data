@@ -3,9 +3,9 @@
         "monkey_ewa": {
             "_character_data_name": "characters/family/monkey_ewa",
             "_position": [
-                16.395343780517578,
-                2.9496304988861084,
-                12.052227020263672
+                -5.611700534820557,
+                10.296703338623047,
+                -3.5305206775665283
             ],
             "_rotation": [
                 0.0,
@@ -21,9 +21,9 @@
         "monkey_koa": {
             "_character_data_name": "characters/family/monkey_koa",
             "_position": [
-                18.020801544189453,
-                2.5001397132873535,
-                10.799436569213867
+                -3.9862427711486816,
+                9.847211837768555,
+                -4.783310890197754
             ],
             "_rotation": [
                 0.0,
@@ -38,8 +38,8 @@
         }
     },
     "_game_scenes": {
-        "intro_stage": {
-            "_game_scene_data_name": "game_scenes/intro_stage",
+        "stage_cave": {
+            "_game_scene_data_name": "game_scenes/stage_cave",
             "_position": [
                 0.0,
                 0.0,
@@ -62,9 +62,9 @@
         "monkey_aru": {
             "_character_data_name": "characters/family/monkey_aru",
             "_position": [
-                19.868873596191406,
-                2.7635936737060547,
-                11.655028343200684
+                -2.1381707191467285,
+                10.110666275024414,
+                -3.9277193546295166
             ],
             "_rotation": [
                 0.0,
@@ -83,9 +83,9 @@
         "_cameras": {
             "Camera": {
                 "position": [
-                    22.23931121826172,
-                    5.083066463470459,
-                    3.3626582622528076
+                    0.23226690292358398,
+                    12.430137634277344,
+                    -12.22008991241455
                 ],
                 "rotation": [
                     0.20152302185562654,

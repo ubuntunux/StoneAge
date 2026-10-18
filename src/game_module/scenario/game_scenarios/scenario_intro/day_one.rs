@@ -1,15 +1,18 @@
-use crate::game_module::actors::character::Character;
+use crate::game_module::actors::character::{Character, CharacterCreateInfo};
 use crate::game_module::actors::props::Prop;
+use crate::game_module::behavior::behavior_base::BehaviorState;
 use crate::game_module::game_constants::{
-    ACTOR_NAME_EWA, ACTOR_NAME_KOA, ACTOR_NAME_MONKEY_EWA, ACTOR_NAME_MONKEY_KOA, ACTOR_NAME_UFO, AUDIO_UFO_BEAM,
-    AUDIO_UFO_FLYING, BED_FOR_ARU, BED_FOR_EWA, BED_FOR_KOA, CAMERA_DISTANCE_MAX, CAMERA_OFFSET_Y, PROP_NAME_MONOLITH,
-    TIME_OF_EARLY_MORNING,
+    ACTOR_NAME_ALIEN_ALPHA, ACTOR_NAME_ALIEN_BETA, ACTOR_NAME_EWA, ACTOR_NAME_KOA, ACTOR_NAME_MONKEY_EWA,
+    ACTOR_NAME_MONKEY_KOA, ACTOR_NAME_UFO, AUDIO_ROOSTER, AUDIO_UFO_BEAM, AUDIO_UFO_FLYING, BED_FOR_ARU, BED_FOR_EWA,
+    BED_FOR_KOA, CAMERA_DISTANCE_MAX, CAMERA_OFFSET_Y, CHARACTER_DATA_NAME_EWA, CHARACTER_DATA_NAME_KOA,
+    PROP_NAME_MONOLITH, TIME_OF_EARLY_MORNING,
 };
+use crate::game_module::game_scene_manager::Stages;
 use crate::game_module::game_service_locator::{get_character_manager_mut, get_game_scene_manager_mut};
 use crate::game_module::scenario::scenario::{
     GameScenarioCreateInfo, ScenarioBase, ScenarioDataCreateInfo, ScenarioType,
 };
-use crate::game_module::scenario::scenario_common::{set_actors_flying_sleep_mode, wake_up_npc_on_bed};
+use crate::game_module::scenario::scenario_common::{set_actors_behavior_none, set_actors_visible};
 use crate::game_module::scenario::scenario_track::ScenarioTrack;
 use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop};
@@ -22,28 +25,27 @@ use strum_macros::{Display, EnumCount, EnumIter, EnumString};
 
 const AROUND_START_ROT: Vector3<f32> = Vector3::new(0.4, 0.0, 0.0);
 const AROUND_END_ROT: Vector3<f32> = Vector3::new(0.35, 0.0, 0.0);
-const INITIAL_CAMERA_POS: Vector3<f32> = Vector3::new(13.48, 26.56, -5.02);
-const INITIAL_CAMERA_ROT: Vector3<f32> = Vector3::new(0.76, 0.33, 0.0);
+const INITIAL_CAMERA_POS: Vector3<f32> = Vector3::new(35.48, 26.56, -5.02);
+const INITIAL_CAMERA_ROT: Vector3<f32> = Vector3::new(0.76, -0.33, 0.0);
 const AROUND_CAMERA_EXTRA_DIST: f32 = 6.0;
-const RELEASE_ACTOR_SPEED: f32 = 4.0;
+const ABDUCTION_ARRIVAL_DIST_SQ: f32 = 1.0;
+const ABDUCTION_MOVE_SPEED: f32 = 4.0;
 const MONOLITH_DROP_SPEED: f32 = 10.0;
 const ARRIVAL_RADIUS: f32 = 0.1;
 const MONOLITH_INITIAL_SCALE: f32 = 0.1;
-const PHASE_DURATION_RELEASE_FAMILY: f32 = 6.0;
+const PHASE_DURATION_ABDUCT_ALIENS: f32 = 5.0;
 const PHASE_DURATION_DROP_MONOLITH: f32 = 3.0;
 const PHASE_DURATION_UFO_GONE: f32 = 3.0;
-const PHASE_DURATION_CLOSE_UP: f32 = 3.0;
-const PHASE_DURATION_AWAKE: f32 = 5.0;
+const PHASE_DURATION_CLOSE_UP: f32 = 5.0;
 
 #[derive(Clone, PartialEq, Eq, Hash, Display, Debug, Copy, EnumIter, EnumString, EnumCount)]
 enum ScenarioPhase {
     None,
     Begin,
-    ReleaseFamily,
+    AbductAliens,
     DropMonolith,
     ReallyUfoGone,
     CloseUpShot,
-    Awake,
     End,
 }
 
@@ -58,6 +60,8 @@ pub struct ScenarioDayOne<'a> {
     _around_start_rotation: Vector3<f32>,
     _around_end_rotation: Vector3<f32>,
     _actor_ufo: Option<RcRefCell<Character<'a>>>,
+    _alien_alpha: Option<RcRefCell<Character<'a>>>,
+    _alien_beta: Option<RcRefCell<Character<'a>>>,
     _player: Option<RcRefCell<Character<'a>>>,
     _actor_ewa: Option<RcRefCell<Character<'a>>>,
     _actor_koa: Option<RcRefCell<Character<'a>>>,
@@ -83,6 +87,8 @@ impl<'a> ScenarioDayOne<'a> {
             _around_start_rotation: AROUND_START_ROT,
             _around_end_rotation: AROUND_END_ROT,
             _actor_ufo: None,
+            _alien_alpha: None,
+            _alien_beta: None,
             _player: None,
             _actor_ewa: None,
             _actor_koa: None,
@@ -96,43 +102,45 @@ impl<'a> ScenarioDayOne<'a> {
         })
     }
 
-    pub fn update_release_actor(
-        &mut self,
-        actor: RcRefCell<Character>,
-        target: RcRefCell<Prop>,
-        delta_time: f64,
-    ) -> bool {
-        let pos_before = *actor.borrow().get_position();
-        let target_position = *target.borrow().get_position();
-        let to_target = target_position - pos_before;
-        let move_dist = RELEASE_ACTOR_SPEED * delta_time as f32;
-        let moved_pos = pos_before + math::safe_normalize(&to_target) * move_dist;
-        if math::check_arrival_with_radius(&pos_before, &moved_pos, &target_position, ARRIVAL_RADIUS, false) {
-            actor.borrow_mut().set_position(&target_position);
-            return true;
+    pub fn update_abduct_actor(actor: &RcRefCell<Character>, ufo_pos: &Vector3<f32>, delta_time: f64) -> bool {
+        let current_pos = *actor.borrow().get_position();
+        let to_target = ufo_pos - current_pos;
+        let dist_sq = to_target.magnitude_squared();
+        if dist_sq <= ABDUCTION_ARRIVAL_DIST_SQ {
+            actor.borrow().set_visible(false);
+            true
+        } else {
+            let step = ABDUCTION_MOVE_SPEED * delta_time as f32;
+            let dist = dist_sq.sqrt();
+            if dist <= step {
+                actor.borrow().set_visible(false);
+                true
+            } else {
+                let next_pos = current_pos + (to_target / dist) * step;
+                actor.borrow_mut().set_position(&next_pos);
+                false
+            }
         }
-
-        actor.borrow_mut().set_position(&moved_pos);
-        false
     }
 
-    pub fn update_release_family(&mut self, delta_time: f64) -> bool {
-        let player = self._player.clone();
-        let bed_aru = self._prop_bed_for_aru.clone();
-        let actor_ewa = self._actor_ewa.clone();
-        let bed_ewa = self._prop_bed_for_ewa.clone();
-        let actor_koa = self._actor_koa.clone();
-        let bed_koa = self._prop_bed_for_koa.clone();
+    pub fn update_abduct_aliens(&mut self, delta_time: f64) -> bool {
+        let Some(ufo) = &self._actor_ufo else {
+            return true;
+        };
+        let ufo_pos = *ufo.borrow().get_position();
 
-        if let (Some(player), Some(bed_aru), Some(actor_ewa), Some(bed_ewa), Some(actor_koa), Some(bed_koa)) =
-            (player, bed_aru, actor_ewa, bed_ewa, actor_koa, bed_koa)
-        {
-            let arrived_aru = self.update_release_actor(player, bed_aru, delta_time);
-            let arrived_ewa = self.update_release_actor(actor_ewa, bed_ewa, delta_time);
-            let arrived_koa = self.update_release_actor(actor_koa, bed_koa, delta_time);
-            arrived_aru && arrived_ewa && arrived_koa
-        } else {
-            false
+        let alpha = self._alien_alpha.clone();
+        let beta = self._alien_beta.clone();
+
+        match (alpha, beta) {
+            (Some(alpha), Some(beta)) => {
+                let arrived_alpha = Self::update_abduct_actor(&alpha, &ufo_pos, delta_time);
+                let arrived_beta = Self::update_abduct_actor(&beta, &ufo_pos, delta_time);
+                arrived_alpha && arrived_beta
+            }
+            (Some(alpha), None) => Self::update_abduct_actor(&alpha, &ufo_pos, delta_time),
+            (None, Some(beta)) => Self::update_abduct_actor(&beta, &ufo_pos, delta_time),
+            (None, None) => true,
         }
     }
 
@@ -160,6 +168,14 @@ impl<'a> ScenarioDayOne<'a> {
             false
         } else {
             false
+        }
+    }
+
+    pub fn set_player_active(is_active: bool) {
+        if let Some(player) = get_game_scene_manager_mut().get_maybe_player() {
+            let mut player_mut = player.borrow_mut();
+            player_mut.set_visible(is_active);
+            player_mut.set_enable_update(is_active);
         }
     }
 }
@@ -200,63 +216,151 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
         self._scenario_track._scenario_phase == ScenarioPhase::End
     }
 
-    fn destroy_game_scenario(&mut self) {}
+    fn destroy_game_scenario(&mut self) {
+        Self::set_player_active(true);
+    }
 
-    fn on_close_game_scene(&mut self, _game_scene_data_name: &str) {}
+    fn on_close_game_scene(&mut self, _game_scene_data_name: &str) {
+        self._actor_ufo = None;
+        self._alien_alpha = None;
+        self._alien_beta = None;
+        self._player = None;
+        self._actor_ewa = None;
+        self._actor_koa = None;
+        self._prop_bed_for_aru = None;
+        self._prop_bed_for_ewa = None;
+        self._prop_bed_for_koa = None;
+        self._prop_monolith = None;
+        Self::set_player_active(true);
+    }
 
     fn on_open_game_scene(&mut self, game_scene_data_name: &str) {
         self._scenario_create_info.spawn_and_reset_if_matching(game_scene_data_name);
 
         let game_scene_manager = get_game_scene_manager_mut();
-        for monkey_name in [ACTOR_NAME_MONKEY_EWA, ACTOR_NAME_MONKEY_KOA] {
-            if let Some(actor) = game_scene_manager.get_actor_by_name(monkey_name).cloned() {
-                get_character_manager_mut().remove_character(&actor);
-            }
-        }
 
-        self._actor_ufo = game_scene_manager.get_actor_by_name(ACTOR_NAME_UFO).cloned();
-        self._player = game_scene_manager.get_maybe_player().clone();
-        self._actor_ewa = game_scene_manager.get_actor_by_name(ACTOR_NAME_EWA).cloned();
-        self._actor_koa = game_scene_manager.get_actor_by_name(ACTOR_NAME_KOA).cloned();
-        self._prop_bed_for_aru = game_scene_manager.get_prop_manager().get_prop_by_name(BED_FOR_ARU).cloned();
-        self._prop_bed_for_ewa = game_scene_manager.get_prop_manager().get_prop_by_name(BED_FOR_EWA).cloned();
-        self._prop_bed_for_koa = game_scene_manager.get_prop_manager().get_prop_by_name(BED_FOR_KOA).cloned();
-        self._prop_monolith = game_scene_manager.get_prop_manager().get_prop_by_name(PROP_NAME_MONOLITH).cloned();
+        if game_scene_data_name == Stages::Cave.get_stage_data_name() {
+            Self::set_player_active(true);
+            self._player = game_scene_manager.get_maybe_player().clone();
 
-        if let Some(ufo) = &self._actor_ufo {
-            let ufo_pos = *ufo.borrow().get_position();
-            set_actors_flying_sleep_mode(
-                &[&self._player, &self._actor_ewa, &self._actor_koa],
-                true,
-                Some(&ufo_pos),
-            );
-        }
-
-        let main_camera = get_scene_manager().get_main_camera_mut();
-        main_camera._transform_object.set_position(&INITIAL_CAMERA_POS);
-        main_camera._transform_object.set_rotation(&INITIAL_CAMERA_ROT);
-
-        let pivot =
-            self._prop_bed_for_aru.as_ref().map(|prop| *prop.borrow().get_position()).unwrap_or_else(Vector3::zeros);
-        let start_rotation_matrix = math::make_rotation_matrix(
-            self._around_start_rotation.x,
-            self._around_start_rotation.y,
-            self._around_start_rotation.z,
-        );
-        self._around_start_position =
-            pivot - start_rotation_matrix.column(2).xyz() * (CAMERA_DISTANCE_MAX + AROUND_CAMERA_EXTRA_DIST);
-
-        if let Some(prop) = &self._prop_monolith {
-            self._monolith_start_position = *prop.borrow().get_position();
-            prop.borrow()._render_object.borrow_mut().set_visible(false);
-
-            if let Some(ufo) = &self._actor_ufo {
-                prop.borrow_mut()._prop_stats._scale = Vector3::repeat(MONOLITH_INITIAL_SCALE);
-                prop.borrow_mut().set_position(&Vector3::new(
-                    self._monolith_start_position.x,
-                    ufo.borrow().get_position().y,
-                    self._monolith_start_position.z,
+            self._actor_ewa = game_scene_manager
+                .get_actor_by_name(ACTOR_NAME_EWA)
+                .cloned()
+                .or_else(|| game_scene_manager.get_actor_by_name(ACTOR_NAME_MONKEY_EWA).cloned());
+            if self._actor_ewa.is_none() {
+                let create_info = CharacterCreateInfo {
+                    _character_data_name: CHARACTER_DATA_NAME_EWA.to_string(),
+                    ..Default::default()
+                };
+                self._actor_ewa = Some(game_scene_manager.get_character_manager_mut().create_character(
+                    ACTOR_NAME_EWA,
+                    &create_info,
+                    false,
                 ));
+            }
+
+            self._actor_koa = game_scene_manager
+                .get_actor_by_name(ACTOR_NAME_KOA)
+                .cloned()
+                .or_else(|| game_scene_manager.get_actor_by_name(ACTOR_NAME_MONKEY_KOA).cloned());
+            if self._actor_koa.is_none() {
+                let create_info = CharacterCreateInfo {
+                    _character_data_name: CHARACTER_DATA_NAME_KOA.to_string(),
+                    ..Default::default()
+                };
+                self._actor_koa = Some(game_scene_manager.get_character_manager_mut().create_character(
+                    ACTOR_NAME_KOA,
+                    &create_info,
+                    false,
+                ));
+            }
+
+            self._prop_bed_for_aru = game_scene_manager.get_prop_manager().get_prop_by_name(BED_FOR_ARU).cloned();
+            self._prop_bed_for_ewa = game_scene_manager.get_prop_manager().get_prop_by_name(BED_FOR_EWA).cloned();
+            self._prop_bed_for_koa = game_scene_manager.get_prop_manager().get_prop_by_name(BED_FOR_KOA).cloned();
+
+            if let Some(actor) = &self._player {
+                actor.borrow_mut()._controller.set_flying_mode(false);
+                if let Some(bed) = &self._prop_bed_for_aru {
+                    actor.borrow_mut().set_position(bed.borrow().get_position());
+                }
+                actor.borrow_mut().set_action_wake_up();
+            }
+
+            if let Some(actor) = &self._actor_ewa {
+                actor.borrow_mut()._controller.set_flying_mode(false);
+                if let Some(bed) = &self._prop_bed_for_ewa {
+                    actor.borrow_mut().set_position(bed.borrow().get_position());
+                }
+                actor.borrow_mut().set_next_behavior(BehaviorState::WakeUp, true);
+            }
+
+            if let Some(actor) = &self._actor_koa {
+                actor.borrow_mut()._controller.set_flying_mode(false);
+                if let Some(bed) = &self._prop_bed_for_koa {
+                    actor.borrow_mut().set_position(bed.borrow().get_position());
+                }
+                actor.borrow_mut().set_next_behavior(BehaviorState::WakeUp, true);
+            }
+
+            get_audio_manager_mut().play_audio_bank(AUDIO_ROOSTER, AudioLoop::ONCE, None);
+
+            self._around_start_rotation = AROUND_START_ROT;
+            self._around_end_rotation = AROUND_END_ROT;
+
+            let pivot = if let Some(actor) = &self._player {
+                *actor.borrow().get_center() + Vector3::new(0.0, CAMERA_OFFSET_Y, 0.0)
+            } else {
+                Vector3::zeros()
+            };
+            let start_rotation_matrix = math::make_rotation_matrix(
+                self._around_start_rotation.x,
+                self._around_start_rotation.y,
+                self._around_start_rotation.z,
+            );
+            self._around_start_position =
+                pivot - start_rotation_matrix.column(2).xyz() * (CAMERA_DISTANCE_MAX + AROUND_CAMERA_EXTRA_DIST);
+
+            let main_camera = get_scene_manager().get_main_camera_mut();
+            main_camera._transform_object.set_position(&self._around_start_position);
+            main_camera._transform_object.set_rotation(&self._around_start_rotation);
+        } else {
+            self._actor_ufo = game_scene_manager.get_actor_by_name(ACTOR_NAME_UFO).cloned();
+            self._alien_alpha = game_scene_manager.get_actor_by_name(ACTOR_NAME_ALIEN_ALPHA).cloned();
+            self._alien_beta = game_scene_manager.get_actor_by_name(ACTOR_NAME_ALIEN_BETA).cloned();
+            self._prop_monolith = game_scene_manager.get_prop_manager().get_prop_by_name(PROP_NAME_MONOLITH).cloned();
+
+            set_actors_behavior_none(&[&self._alien_alpha, &self._alien_beta], false);
+            set_actors_visible(&[&self._alien_alpha, &self._alien_beta], true);
+
+            Self::set_player_active(false);
+
+            let main_camera = get_scene_manager().get_main_camera_mut();
+            main_camera._transform_object.set_position(&INITIAL_CAMERA_POS);
+            main_camera._transform_object.set_rotation(&INITIAL_CAMERA_ROT);
+
+            let pivot =
+                self._prop_monolith.as_ref().map(|prop| *prop.borrow().get_position()).unwrap_or_else(Vector3::zeros);
+            let start_rotation_matrix = math::make_rotation_matrix(
+                self._around_start_rotation.x,
+                self._around_start_rotation.y,
+                self._around_start_rotation.z,
+            );
+            self._around_start_position =
+                pivot - start_rotation_matrix.column(2).xyz() * (CAMERA_DISTANCE_MAX + AROUND_CAMERA_EXTRA_DIST);
+
+            if let Some(prop) = &self._prop_monolith {
+                self._monolith_start_position = *prop.borrow().get_position();
+                prop.borrow()._render_object.borrow_mut().set_visible(false);
+
+                if let Some(ufo) = &self._actor_ufo {
+                    prop.borrow_mut()._prop_stats._scale = Vector3::repeat(MONOLITH_INITIAL_SCALE);
+                    prop.borrow_mut().set_position(&Vector3::new(
+                        self._monolith_start_position.x,
+                        ufo.borrow().get_position().y,
+                        self._monolith_start_position.z,
+                    ));
+                }
             }
         }
     }
@@ -286,6 +390,7 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
                 }
                 ScenarioPhase::Begin => {
                     if state == State::Begin {
+                        Self::set_player_active(false);
                         if let Some(ufo) = &self._actor_ufo {
                             let mut ufo_position = *ufo.borrow().get_position();
                             ufo_position.x = self._around_start_position.x;
@@ -295,20 +400,29 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
                     } else if state == State::Update {
                         game_scene_manager.set_time(TIME_OF_EARLY_MORNING, 0.0);
                         self._scenario_track
-                            .set_next_scenario_phase(ScenarioPhase::ReleaseFamily, Some(PHASE_DURATION_RELEASE_FAMILY));
+                            .set_next_scenario_phase(ScenarioPhase::AbductAliens, Some(PHASE_DURATION_ABDUCT_ALIENS));
                     }
                 }
-                ScenarioPhase::ReleaseFamily => match state {
+                ScenarioPhase::AbductAliens => match state {
                     State::Begin => {
-                        if let (Some(ufo), Some(bed_aru)) = (&self._actor_ufo, &self._prop_bed_for_aru) {
-                            let prop_bed_position = *bed_aru.borrow().get_position();
+                        Self::set_player_active(false);
+                        if let Some(ufo) = &self._actor_ufo {
                             let mut ufo_position = *ufo.borrow().get_position();
-                            ufo_position.x = prop_bed_position.x;
-                            ufo_position.z = prop_bed_position.z;
-                            ufo.borrow_mut().set_position(&ufo_position);
-                            for actor in [&self._player, &self._actor_ewa, &self._actor_koa].into_iter().flatten() {
-                                actor.borrow_mut().set_position(&ufo_position);
+                            if let (Some(alpha), Some(beta)) = (&self._alien_alpha, &self._alien_beta) {
+                                let center = (*alpha.borrow().get_position() + *beta.borrow().get_position()) * 0.5;
+                                ufo_position.x = center.x;
+                                ufo_position.z = center.z;
+                            } else if let Some(target) = self._alien_beta.as_ref().or(self._alien_alpha.as_ref()) {
+                                let pos = *target.borrow().get_position();
+                                ufo_position.x = pos.x;
+                                ufo_position.z = pos.z;
                             }
+                            ufo.borrow_mut().set_position(&ufo_position);
+                        }
+
+                        for alien in [&self._alien_alpha, &self._alien_beta].into_iter().flatten() {
+                            alien.borrow_mut()._controller.set_flying_mode(true);
+                            alien.borrow_mut().set_behavior_none();
                         }
 
                         self._audio_ufo_flying =
@@ -316,7 +430,7 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
                         get_audio_manager_mut().play_audio_bank(AUDIO_UFO_BEAM, AudioLoop::ONCE, Some(1.0));
                     }
                     State::Update => {
-                        if self.update_release_family(delta_time) {
+                        if self.update_abduct_aliens(delta_time) {
                             self._scenario_track.set_next_scenario_phase(
                                 ScenarioPhase::DropMonolith,
                                 Some(PHASE_DURATION_DROP_MONOLITH),
@@ -376,45 +490,22 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
                 },
                 ScenarioPhase::CloseUpShot => match state {
                     State::Begin => {
-                        let main_camera = get_scene_manager().get_main_camera_mut();
-                        main_camera._transform_object.set_position(&self._around_start_position);
-                        main_camera._transform_object.set_rotation(&self._around_start_rotation);
-                        if let Some(actor) = &self._player {
-                            actor.borrow_mut().set_action_sleep();
-                        }
-                    }
-                    State::Update => {
-                        if 1.0 <= phase_ratio {
-                            self._scenario_track
-                                .set_next_scenario_phase(ScenarioPhase::Awake, Some(PHASE_DURATION_AWAKE));
-                        }
-                    }
-                    _ => {}
-                },
-                ScenarioPhase::Awake => match state {
-                    State::Begin => {
+                        Self::set_player_active(false);
                         if let Some(ufo) = &self._actor_ufo {
                             get_character_manager_mut().remove_character(ufo);
                         }
-
-                        if let Some(actor) = &self._player {
-                            actor.borrow_mut()._controller.set_flying_mode(false);
-                            if let Some(bed) = &self._prop_bed_for_aru {
-                                actor.borrow_mut().set_position(bed.borrow().get_position());
-                            }
-                            actor.borrow_mut().set_action_wake_up();
+                        for alien in [&self._alien_alpha, &self._alien_beta].into_iter().flatten() {
+                            get_character_manager_mut().remove_character(alien);
                         }
-
-                        wake_up_npc_on_bed(&self._actor_ewa, Some(&self._prop_bed_for_ewa));
-                        wake_up_npc_on_bed(&self._actor_koa, Some(&self._prop_bed_for_koa));
+                        get_game_scene_manager_mut().request_open_game_scene(Stages::Cave.get_stage_data_name());
                     }
                     State::Update => {
                         let main_camera = get_scene_manager().get_main_camera_mut();
-                        let pivot = self
-                            ._player
-                            .as_ref()
-                            .map(|actor| *actor.borrow().get_center() + Vector3::new(0.0, CAMERA_OFFSET_Y, 0.0))
-                            .unwrap_or_else(Vector3::zeros);
+                        let pivot = if let Some(actor) = &self._player {
+                            *actor.borrow().get_center() + Vector3::new(0.0, CAMERA_OFFSET_Y, 0.0)
+                        } else {
+                            Vector3::zeros()
+                        };
                         self._around_end_position =
                             pivot - main_camera._transform_object.get_front() * CAMERA_DISTANCE_MAX;
 
@@ -432,6 +523,7 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
                 },
                 ScenarioPhase::End => {
                     if state == State::Begin {
+                        Self::set_player_active(true);
                         get_game_scene_manager_mut().request_open_game_scenario(ScenarioType::ScenarioWoodenClub);
                     }
                 }
