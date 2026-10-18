@@ -496,7 +496,7 @@ impl<'a> ControllerHelpWidget<'a> {
                     } else {
                         (
                             KeyBindingType::Interaction,
-                            prop.borrow()._prop_data.borrow()._name.clone(),
+                            format!("Cook on {}", prop.borrow()._prop_data.borrow()._name.as_str()),
                             RequestType::None,
                         )
                     }
