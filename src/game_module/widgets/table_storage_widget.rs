@@ -7,6 +7,7 @@ use crate::game_module::game_service_locator::{
 };
 use crate::game_module::game_ui_manager::move_mouse_to_ui_component;
 
+use crate::game_module::game_input::UiInput;
 use crate::game_module::widgets::game_menu_widget::item_info_widget::ItemInfoWidget;
 use crate::game_module::widgets::item_bar::{
     INVALID_ITEM_INDEX, ITEM_UI_SIZE, ITEM_WIDGET_UI_MARGIN, InventoryItemCreateInfo, InventorySlotData, ItemBarWidget,
@@ -16,7 +17,7 @@ use nalgebra::Vector2;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::core::engine_core::TimeData;
 use rust_engine_3d::core::engine_service_locator::{get_audio_manager_mut, get_engine_core};
-use rust_engine_3d::core::input::{ButtonState, JoystickInputData, KeyboardInputData, MouseInputData, MouseMoveData};
+use rust_engine_3d::core::input::{JoystickInputData, KeyboardInputData, MouseInputData, MouseMoveData};
 use rust_engine_3d::scene::material_instance::MaterialInstanceData;
 use rust_engine_3d::scene::ui::{
     HorizontalAlign, Orientation, PIVOT_CENTER, UIComponentInstance, UILayoutType, UIManager, UIWidgetTypes,
@@ -26,7 +27,6 @@ use rust_engine_3d::utilities::system::{RcRefCell, ptr_as_mut, ptr_as_ref};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use std::ffi::c_void;
 use std::rc::Rc;
-use winit::keyboard::KeyCode;
 
 pub const TABLE_STORAGE_ROWS: usize = 2;
 pub const TABLE_STORAGE_SLOTS_PER_ROW: usize = SLOTS_PER_ROW;
@@ -389,13 +389,7 @@ impl<'a> TableStorageWidget<'a> {
         }
     }
 
-    fn handle_drag_start(
-        &mut self,
-        is_table: bool,
-        slot_idx: usize,
-        touched_pos: &Vector2<f32>,
-        item_count: usize,
-    ) {
+    fn handle_drag_start(&mut self, is_table: bool, slot_idx: usize, touched_pos: &Vector2<f32>, item_count: usize) {
         self._drag_source_is_table = is_table;
         self._drag_source_slot_index = slot_idx;
         self._focused_is_table_slot = is_table;
@@ -504,11 +498,7 @@ impl<'a> TableStorageWidget<'a> {
                         };
 
                         if item_moved_to_table {
-                            Self::detach_player_item_if_needed(
-                                item_bar,
-                                player_idx,
-                                &player_slot_data._item_data_name,
-                            );
+                            Self::detach_player_item_if_needed(item_bar, player_idx, &player_slot_data._item_data_name);
                         }
                     }
                 }
@@ -712,7 +702,7 @@ impl<'a> TableStorageWidget<'a> {
         }
 
         // ESC, KeyB or Joystick B button to close
-        if keyboard_input_data.get_key_pressed(KeyCode::Escape) || joystick_input_data._btn_b == ButtonState::Pressed {
+        if UiInput::is_cancel(keyboard_input_data, joystick_input_data) {
             self.close_table_storage();
             return;
         }
@@ -1145,7 +1135,9 @@ impl<'a> TableStorageWidget<'a> {
     pub fn get_eatable_table_storage_item_count(&self) -> usize {
         self._table_inventory_slots
             .iter()
-            .filter(|slot| slot._item_count > 0 && slot._item_data_name != ITEM_NONE && slot._item_data_type.is_eatable())
+            .filter(|slot| {
+                slot._item_count > 0 && slot._item_data_name != ITEM_NONE && slot._item_data_type.is_eatable()
+            })
             .map(|slot| slot._item_count)
             .sum()
     }

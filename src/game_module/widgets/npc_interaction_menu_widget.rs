@@ -2,6 +2,7 @@ use crate::game_module::actors::character::{Character, CharacterDataType, Reques
 use crate::game_module::actors::props::Prop;
 use crate::game_module::game_client::GamePhase;
 use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, AUDIO_SELECT_ITEM, ITEM_NONE};
+use crate::game_module::game_input::UiInput;
 use crate::game_module::game_service_locator::{
     get_character_manager, get_game_client_mut, get_game_scene_manager, get_game_scene_manager_mut, get_game_ui_manager,
 };
@@ -12,7 +13,7 @@ use nalgebra::{Vector2, Vector3};
 use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::core::engine_core::TimeData;
 use rust_engine_3d::core::engine_service_locator::{get_audio_manager_mut, get_scene_manager};
-use rust_engine_3d::core::input::{ButtonState, JoystickInputData, KeyboardInputData};
+use rust_engine_3d::core::input::{JoystickInputData, KeyboardInputData};
 use rust_engine_3d::scene::ui::{
     HorizontalAlign, Orientation, PIVOT_CENTER_LEFT, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign,
     WidgetDefault,
@@ -540,29 +541,18 @@ impl<'a> NpcInteractionMenuWidget<'a> {
             return;
         }
 
-        // Cancel (ESC, B key, Joystick Button B) - Disable user cancel if it's player menu
-        let press_cancel = keyboard_input_data.get_key_pressed(KeyCode::Escape)
-            || keyboard_input_data.get_key_pressed(KeyCode::KeyB)
-            || joystick_input_data._btn_b == ButtonState::Pressed;
-
-        if press_cancel {
+        // Cancel (ESC, B key, Joystick Button B)
+        if UiInput::is_cancel(keyboard_input_data, joystick_input_data) {
             self.close_npc_interaction_menu();
             return;
         }
 
         // Navigation (Up/Down / WS / DPad)
-        let press_up = keyboard_input_data.get_key_pressed(KeyCode::KeyW)
-            || keyboard_input_data.get_key_pressed(KeyCode::ArrowUp)
-            || joystick_input_data._btn_up == ButtonState::Pressed;
+        let press_up = UiInput::is_up(keyboard_input_data, joystick_input_data);
+        let press_down = UiInput::is_down(keyboard_input_data, joystick_input_data);
 
-        let press_down = keyboard_input_data.get_key_pressed(KeyCode::KeyS)
-            || keyboard_input_data.get_key_pressed(KeyCode::ArrowDown)
-            || joystick_input_data._btn_down == ButtonState::Pressed;
-
-        // Execution (Enter, Space, E key, Joystick Button A)
-        let press_execute = keyboard_input_data.get_key_pressed(KeyCode::Enter)
-            || keyboard_input_data.get_key_pressed(KeyCode::Space)
-            || joystick_input_data._btn_a == ButtonState::Pressed;
+        // Execution (Enter, Space, Joystick Button A)
+        let press_execute = UiInput::is_confirm(keyboard_input_data, joystick_input_data);
 
         if press_up {
             if self._selected_index == 0 {

@@ -1,11 +1,12 @@
 use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, AUDIO_QUEST_COMPLETE};
+use crate::game_module::game_input::UiInput;
 use crate::game_module::game_service_locator::{get_game_resources, get_game_scene_manager, get_game_ui_manager_mut};
 use crate::game_module::widgets::item_bar::InventorySlotData;
 use nalgebra::Vector2;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::core::engine_core::TimeData;
 use rust_engine_3d::core::engine_service_locator::{get_audio_manager_mut, get_engine_resources};
-use rust_engine_3d::core::input::{ButtonState, JoystickInputData, KeyboardInputData, MouseInputData, MouseMoveData};
+use rust_engine_3d::core::input::{JoystickInputData, KeyboardInputData, MouseInputData, MouseMoveData};
 use rust_engine_3d::scene::ui::{
     HorizontalAlign, Orientation, PIVOT_CENTER, UIComponentInstance, UILayoutType, UIManager, UIWidgetTypes,
     VerticalAlign, WidgetDefault,
@@ -560,11 +561,8 @@ impl<'a> WrapUpTheDayWidget<'a> {
         }
 
         // Key interactions (Confirm with Space, Return/Enter, KeyE, or Joypad Button A)
-        if keyboard_input_data.get_key_pressed(KeyCode::Space)
-            || keyboard_input_data.get_key_pressed(KeyCode::Enter)
-            || keyboard_input_data.get_key_pressed(KeyCode::NumpadEnter)
+        if UiInput::is_confirm(keyboard_input_data, joystick_input_data)
             || keyboard_input_data.get_key_pressed(KeyCode::KeyE)
-            || joystick_input_data._btn_a == ButtonState::Pressed
         {
             self._is_ok_clicked = true;
             get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);

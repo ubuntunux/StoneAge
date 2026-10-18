@@ -1,5 +1,6 @@
 use crate::game_module::actors::character::Character;
 use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, AUDIO_SELECT_ITEM};
+use crate::game_module::game_input::UiInput;
 use crate::game_module::widgets::craft_widget::CraftWidget;
 use crate::game_module::widgets::game_menu_widget::friendly_npc_list_widget::FriendlyNpcListWidget;
 use crate::game_module::widgets::game_menu_widget::game_debug_menu_widget::GameDebugMenuWidget;
@@ -11,7 +12,7 @@ use nalgebra::Vector2;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::core::engine_core::TimeData;
 use rust_engine_3d::core::engine_service_locator::get_audio_manager_mut;
-use rust_engine_3d::core::input::{ButtonState, JoystickInputData, KeyboardInputData, MouseInputData, MouseMoveData};
+use rust_engine_3d::core::input::{JoystickInputData, KeyboardInputData, MouseInputData, MouseMoveData};
 use rust_engine_3d::scene::ui::{
     HorizontalAlign, Orientation, PIVOT_CENTER, UIComponentInstance, UILayoutType, UIManager, UIWidgetTypes,
     VerticalAlign, WidgetDefault,
@@ -20,7 +21,6 @@ use rust_engine_3d::utilities::system::{RcRefCell, ptr_as_mut};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use std::ffi::c_void;
 use std::rc::Rc;
-use winit::keyboard::KeyCode;
 
 const TAB_BUTTON_WIDTH: f32 = 92.0;
 const TAB_BUTTON_HEIGHT: f32 = 35.0;
@@ -455,9 +455,8 @@ impl<'a> GameMenuWidget<'a> {
         player: &RcRefCell<Character>,
     ) {
         // Tab switching via Tab key or Joystick Shoulders (LB / RB)
-        let switch_tab_next = keyboard_input_data.get_key_pressed(KeyCode::Tab)
-            || joystick_input_data._btn_right_shoulder == ButtonState::Pressed;
-        let switch_tab_prev = joystick_input_data._btn_left_shoulder == ButtonState::Pressed;
+        let switch_tab_next = UiInput::is_next_tab(keyboard_input_data, joystick_input_data);
+        let switch_tab_prev = UiInput::is_prev_tab(keyboard_input_data, joystick_input_data);
 
         if switch_tab_next {
             self.set_active_tab(self._active_tab.next());
@@ -506,9 +505,7 @@ impl<'a> GameMenuWidget<'a> {
             }
         }
 
-        let close_game_menu =
-            keyboard_input_data.get_key_pressed(KeyCode::Escape) || joystick_input_data._btn_b == ButtonState::Pressed;
-        if close_game_menu {
+        if UiInput::is_cancel(keyboard_input_data, joystick_input_data) {
             self.close_game_menu();
         }
     }

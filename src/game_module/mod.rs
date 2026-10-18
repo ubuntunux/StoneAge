@@ -4,6 +4,7 @@ pub mod game_audio_manager;
 pub mod game_client;
 pub mod game_constants;
 pub mod game_controller;
+pub mod game_input;
 pub mod game_resource;
 pub mod game_scene_manager;
 pub mod game_service_locator;

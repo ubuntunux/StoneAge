@@ -2,6 +2,7 @@ use crate::game_module::actors::character::{ActionAnimationState, Character};
 use crate::game_module::actors::interaction_object::InteractionObject;
 use crate::game_module::game_client::GamePhase;
 use crate::game_module::game_constants::*;
+use crate::game_module::game_input::{CameraInput, FishingInputState, GamePlayInputState};
 use crate::game_module::game_service_locator::{
     get_character_manager, get_game_client, get_game_client_mut, get_game_scene_manager_mut, get_game_ui_manager_mut,
 };
@@ -546,76 +547,27 @@ impl<'a> GameController<'a> {
         player: &RcRefCell<Character<'a>>,
     ) {
         let delta_time: f32 = time_data._delta_time_with_scale as f32;
-        let is_attack_or_use_item: bool =
-            mouse_input_data._btn_l_pressed || joystick_input_data._btn_right_shoulder == ButtonState::Pressed;
-        let is_power_attack: bool =
-            mouse_input_data._btn_r_pressed || joystick_input_data._btn_right_trigger == ButtonState::Pressed;
-        let _is_cancel = keyboard_input_data.get_key_pressed(KeyCode::KeyB)
-            || keyboard_input_data.get_key_pressed(KeyCode::Escape)
-            || joystick_input_data._btn_b == ButtonState::Pressed;
-        let is_left =
-            keyboard_input_data.get_key_hold(KeyCode::KeyA) || joystick_input_data._stick_left_direction.x < 0;
-        let is_right =
-            keyboard_input_data.get_key_hold(KeyCode::KeyD) || 0 < joystick_input_data._stick_left_direction.x;
-        let is_down =
-            keyboard_input_data.get_key_hold(KeyCode::KeyS) || joystick_input_data._stick_left_direction.y < 0;
-        let is_up = keyboard_input_data.get_key_hold(KeyCode::KeyW) || 0 < joystick_input_data._stick_left_direction.y;
-        let is_jump =
-            keyboard_input_data.get_key_pressed(KeyCode::Space) || joystick_input_data._btn_a == ButtonState::Pressed;
-        let is_run = keyboard_input_data.get_key_pressed(KeyCode::ShiftLeft)
-            || joystick_input_data._btn_left_shoulder == ButtonState::Pressed;
-        let is_roll =
-            keyboard_input_data.get_key_pressed(KeyCode::AltLeft) || joystick_input_data._btn_b == ButtonState::Pressed;
-        let is_interaction =
-            keyboard_input_data.get_key_pressed(KeyCode::KeyF) || joystick_input_data._btn_x == ButtonState::Pressed;
-        let is_request =
-            keyboard_input_data.get_key_pressed(KeyCode::KeyC) || joystick_input_data._btn_y == ButtonState::Pressed;
-        let is_previous_item = keyboard_input_data.get_key_pressed(KeyCode::ArrowLeft)
-            || keyboard_input_data.get_key_hold(KeyCode::ArrowLeft)
-            || keyboard_input_data.get_key_pressed(KeyCode::KeyQ)
-            || keyboard_input_data.get_key_hold(KeyCode::KeyQ)
-            || joystick_input_data._btn_left == ButtonState::Pressed
-            || joystick_input_data._btn_left == ButtonState::Hold;
-        let is_next_item = keyboard_input_data.get_key_pressed(KeyCode::ArrowRight)
-            || keyboard_input_data.get_key_hold(KeyCode::ArrowRight)
-            || keyboard_input_data.get_key_pressed(KeyCode::KeyE)
-            || keyboard_input_data.get_key_hold(KeyCode::KeyE)
-            || joystick_input_data._btn_right == ButtonState::Pressed
-            || joystick_input_data._btn_right == ButtonState::Hold;
-        let is_help =
-            keyboard_input_data.get_key_pressed(KeyCode::F1) || joystick_input_data._btn_back == ButtonState::Pressed;
-        let open_inventory = keyboard_input_data.get_key_pressed(KeyCode::KeyI)
-            || joystick_input_data._btn_start == ButtonState::Pressed;
-        let open_menu = keyboard_input_data.get_key_pressed(KeyCode::Escape)
-            || joystick_input_data._btn_start == ButtonState::Pressed;
-        let prev_quick_slot_row = joystick_input_data._btn_up == ButtonState::Pressed;
-        let next_quick_slot_row =
-            keyboard_input_data.get_key_pressed(KeyCode::Tab) || joystick_input_data._btn_down == ButtonState::Pressed;
+        let input = GamePlayInputState::from_input(keyboard_input_data, joystick_input_data, mouse_input_data);
 
-        let stick_left_direction = Vector2::<f32>::new(
-            joystick_input_data._stick_left_direction.x as f32,
-            joystick_input_data._stick_left_direction.y as f32,
-        ) * JOYSTICK_SENSITIVITY;
-
-        if is_help {
+        if input._help {
             get_game_ui_manager_mut().toggle_controls_visibility();
         }
 
         // game menu, inventory, quick slot
-        if open_menu {
+        if input._open_menu {
             get_game_ui_manager_mut().open_game_menu(None);
             get_game_client_mut().set_next_game_phase(GamePhase::GameMenu);
-        } else if open_inventory {
+        } else if input._open_inventory {
             get_game_ui_manager_mut().open_game_menu(Some(GameMenuTab::Inventory));
             get_game_client_mut().set_next_game_phase(GamePhase::GameMenu);
-        } else if prev_quick_slot_row || next_quick_slot_row {
+        } else if input._prev_quick_slot_row || input._next_quick_slot_row {
             get_game_ui_manager_mut().switch_quick_slot_row();
         }
 
         // item control
-        let quick_nav_state = if is_previous_item {
+        let quick_nav_state = if input._previous_item {
             Some(QuickSlotNavDirection::Previous)
-        } else if is_next_item {
+        } else if input._next_item {
             Some(QuickSlotNavDirection::Next)
         } else {
             None
@@ -663,26 +615,8 @@ impl<'a> GameController<'a> {
         // set action & move
         let player_mut = ptr_as_mut(player.as_ptr());
 
-        let is_dance_pressed =
-            keyboard_input_data.get_key_pressed(KeyCode::KeyG) || joystick_input_data._btn_y == ButtonState::Pressed;
-
-        if player_mut.is_action(ActionAnimationState::Dance) && !is_dance_pressed {
-            let is_moving = is_left
-                || is_right
-                || is_up
-                || is_down
-                || stick_left_direction.x != 0.0
-                || stick_left_direction.y != 0.0;
-            let is_any_input = is_moving
-                || is_run
-                || is_jump
-                || is_roll
-                || is_interaction
-                || is_request
-                || is_attack_or_use_item
-                || is_power_attack
-                || keyboard_input_data.is_any_key_pressed();
-            if is_any_input {
+        if player_mut.is_action(ActionAnimationState::Dance) && !input._dance {
+            if input.is_any_input(keyboard_input_data.is_any_key_pressed()) {
                 player_mut.set_action_none();
             }
         }
@@ -690,19 +624,23 @@ impl<'a> GameController<'a> {
         {
             let mut move_direction: Vector3<f32> = Vector3::zeros();
 
-            if is_left || is_right {
-                move_direction.x = if stick_left_direction.x != 0.0 {
-                    stick_left_direction.x
+            if input._left || input._right {
+                move_direction.x = if input._stick_left_direction.x != 0.0 {
+                    input._stick_left_direction.x
+                } else if input._left {
+                    -1.0
                 } else {
-                    if is_left { -1.0 } else { 1.0 }
+                    1.0
                 };
             }
 
-            if is_up || is_down {
-                move_direction.z = if stick_left_direction.y != 0.0 {
-                    -stick_left_direction.y
+            if input._up || input._down {
+                move_direction.z = if input._stick_left_direction.y != 0.0 {
+                    -input._stick_left_direction.y
+                } else if input._down {
+                    -1.0
                 } else {
-                    if is_down { -1.0 } else { 1.0 }
+                    1.0
                 };
             }
 
@@ -736,15 +674,15 @@ impl<'a> GameController<'a> {
             }
         }
 
-        if is_run {
+        if input._run {
             player_mut.toggle_run();
         }
 
-        if is_jump {
+        if input._jump {
             player_mut.set_jump();
         }
 
-        if is_roll {
+        if input._roll {
             player_mut.set_roll();
         }
 
@@ -756,24 +694,18 @@ impl<'a> GameController<'a> {
             InteractionObject::PropTable(_)
         ) && player_mut.is_in_interaction_range();
         let is_wrap_up = get_game_scene_manager_mut().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay);
-        let is_interaction_pressed =
-            keyboard_input_data.get_key_pressed(KeyCode::KeyF) || joystick_input_data._btn_x == ButtonState::Pressed;
-        let is_interaction_hold = keyboard_input_data.get_key_hold(KeyCode::KeyF)
-            || keyboard_input_data.get_key_pressed(KeyCode::KeyF)
-            || joystick_input_data._btn_x == ButtonState::Hold
-            || joystick_input_data._btn_x == ButtonState::Pressed;
 
         if is_near_table && !is_wrap_up {
-            if is_interaction_pressed {
+            if input._interaction {
                 self._is_wrap_up_holding = true;
-            } else if !is_interaction_hold {
+            } else if !input._interaction_hold {
                 self._is_wrap_up_holding = false;
             }
         } else {
             self._is_wrap_up_holding = false;
         }
 
-        if is_near_table && !is_wrap_up && self._is_wrap_up_holding && is_interaction_hold {
+        if is_near_table && !is_wrap_up && self._is_wrap_up_holding && input._interaction_hold {
             self._wrap_up_hold_timer += delta_time;
             if WRAP_UP_THE_DAY_HOLD_DURATION <= self._wrap_up_hold_timer {
                 self._wrap_up_hold_timer = WRAP_UP_THE_DAY_HOLD_DURATION;
@@ -787,23 +719,23 @@ impl<'a> GameController<'a> {
             self._wrap_up_hold_timer = 0.0;
         }
 
-        if is_dance_pressed {
+        if input._dance {
             player_mut.set_action_dance();
-        } else if is_request && player_mut.is_in_interaction_range() {
+        } else if input._request && player_mut.is_in_interaction_range() {
             if get_game_client().is_available_interaction() {
                 player_mut.set_action_request();
             }
-        } else if is_interaction && player_mut.is_in_interaction_range() {
+        } else if input._interaction && player_mut.is_in_interaction_range() {
             if get_game_client().is_available_interaction() {
                 player_mut.set_action_interaction();
             }
-        } else if is_attack_or_use_item && is_available_attack {
+        } else if input._attack_or_use_item && is_available_attack {
             if item_type.is_fishing_item_type() {
                 player_mut.set_action_fishing_begin();
             } else {
                 player_mut.set_action_attack();
             }
-        } else if is_power_attack && is_available_attack {
+        } else if input._power_attack && is_available_attack {
             if item_type.is_weapon_item_type() {
                 player_mut.set_action_power_attack();
             } else {
@@ -855,12 +787,8 @@ impl<'a> GameController<'a> {
             joystick_input_data._stick_right_direction.y as f32,
         ) * JOYSTICK_SENSITIVITY;
 
-        let is_zoom_in = keyboard_input_data.get_key_hold(KeyCode::ArrowUp)
-            || 0 < mouse_move_data._scroll_delta.y
-            || joystick_input_data._btn_up == ButtonState::Hold;
-        let is_zoom_out = keyboard_input_data.get_key_hold(KeyCode::ArrowDown)
-            || mouse_move_data._scroll_delta.y < 0
-            || joystick_input_data._btn_down == ButtonState::Hold;
+        let is_zoom_in = CameraInput::is_zoom_in(keyboard_input_data, joystick_input_data, mouse_move_data);
+        let is_zoom_out = CameraInput::is_zoom_out(keyboard_input_data, joystick_input_data, mouse_move_data);
 
         let pitch_control: f32 = if mouse_pos_delta.y != 0.0 {
             mouse_pos_delta.y
@@ -900,39 +828,28 @@ impl<'a> GameController<'a> {
         player: &RcRefCell<Character<'a>>,
     ) {
         let delta_time: f32 = time_data._delta_time_with_scale as f32;
-        let is_attack: bool =
-            mouse_input_data._btn_l_pressed || joystick_input_data._btn_right_shoulder == ButtonState::Pressed;
-        let is_attack_hold: bool =
-            mouse_input_data._btn_l_hold || joystick_input_data._btn_right_shoulder == ButtonState::Hold;
-        let is_cancel = mouse_input_data._btn_r_pressed
-            || keyboard_input_data.get_key_pressed(KeyCode::Escape)
-            || joystick_input_data._btn_right_trigger == ButtonState::Pressed
-            || joystick_input_data._btn_b == ButtonState::Pressed;
-        let is_left =
-            keyboard_input_data.get_key_hold(KeyCode::KeyA) || joystick_input_data._stick_left_direction.x < 0;
-        let is_right =
-            keyboard_input_data.get_key_hold(KeyCode::KeyD) || 0 < joystick_input_data._stick_left_direction.x;
+        let fishing_input = FishingInputState::from_input(keyboard_input_data, joystick_input_data, mouse_input_data);
 
         let mut player_mut = player.borrow_mut();
         if player_mut.is_action(ActionAnimationState::FishingLoop) {
-            if is_cancel {
+            if fishing_input._cancel {
                 player_mut.set_action_fishing_end();
             } else {
-                if is_left {
+                if fishing_input._left {
                     player_mut.rotate_player_angle(-1.0, delta_time);
-                } else if is_right {
+                } else if fishing_input._right {
                     player_mut.rotate_player_angle(1.0, delta_time);
                 } else {
                     player_mut.rotate_player_angle(0.0, delta_time);
                 }
 
-                if is_attack {
+                if fishing_input._attack {
                     player_mut.on_pull_press();
                 }
 
-                player_mut.set_pulling(is_attack_hold);
+                player_mut.set_pulling(fishing_input._attack_hold);
             }
-        } else if player_mut.is_action(ActionAnimationState::FishingBegin) && !is_attack_hold {
+        } else if player_mut.is_action(ActionAnimationState::FishingBegin) && !fishing_input._attack_hold {
             player_mut.release_fishing_cast();
         }
 

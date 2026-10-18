@@ -2,6 +2,7 @@ use crate::game_module::actors::character::Character;
 use crate::game_module::actors::items::ItemDataType;
 use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, AUDIO_SELECT_ITEM};
 use crate::game_module::game_controller::WidgetNavRepeatController;
+use crate::game_module::game_input::UiInput;
 use crate::game_module::game_service_locator::{
     get_game_resources, get_game_scene_manager, get_game_scene_manager_mut,
 };
@@ -13,7 +14,7 @@ use nalgebra::Vector2;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::core::engine_core::TimeData;
 use rust_engine_3d::core::engine_service_locator::get_audio_manager_mut;
-use rust_engine_3d::core::input::{ButtonState, JoystickInputData, KeyboardInputData, MouseInputData, MouseMoveData};
+use rust_engine_3d::core::input::{JoystickInputData, KeyboardInputData, MouseInputData, MouseMoveData};
 use rust_engine_3d::scene::ui::{
     HorizontalAlign, Orientation, PIVOT_CENTER, UIComponentInstance, UILayoutType, UIManager, UIWidgetTypes,
     VerticalAlign, WidgetDefault,
@@ -24,7 +25,6 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 use std::ffi::c_void;
 use std::rc::Rc;
-use winit::keyboard::KeyCode;
 
 const TAB_BUTTON_HEIGHT: f32 = 44.0;
 const TAB_ACTIVE_COLOR: u32 = get_color32(195, 118, 58, 240);
@@ -51,7 +51,6 @@ impl ToolboxTab {
             ToolboxTab::Teleport => "Teleport",
         }
     }
-
 }
 
 impl std::str::FromStr for ToolboxTab {
@@ -68,7 +67,6 @@ impl std::str::FromStr for ToolboxTab {
 }
 
 impl ToolboxTab {
-
     pub fn next(&self) -> Self {
         match self {
             ToolboxTab::Skill => ToolboxTab::ItemCraft,
@@ -480,14 +478,8 @@ impl<'a> ToolboxWidget<'a> {
         self.get_active_tab_mut().update_detail_panel();
 
         // Tab navigation (Keyboard Tab / Shift+Tab, Joystick LB / RB)
-        let tab_pressed = keyboard_input_data.get_key_pressed(KeyCode::Tab);
-        let is_shift = keyboard_input_data.get_key_hold(KeyCode::ShiftLeft)
-            || keyboard_input_data.get_key_hold(KeyCode::ShiftRight);
-
-        let switch_tab_next =
-            (tab_pressed && !is_shift) || joystick_input_data._btn_right_shoulder == ButtonState::Pressed;
-        let switch_tab_prev =
-            (tab_pressed && is_shift) || joystick_input_data._btn_left_shoulder == ButtonState::Pressed;
+        let switch_tab_next = UiInput::is_next_tab(keyboard_input_data, joystick_input_data);
+        let switch_tab_prev = UiInput::is_prev_tab(keyboard_input_data, joystick_input_data);
 
         if switch_tab_next {
             self.set_active_tab(self._active_tab.next());
@@ -501,7 +493,10 @@ impl<'a> ToolboxWidget<'a> {
             self._nav_repeat_controller.update(keyboard_input_data, joystick_input_data, delta_time);
 
         let item_count = self.get_active_tab_mut()._items.len();
-        if should_move && item_count > 0 && let Some((_dir_x, dir_y)) = dir_opt {
+        if should_move
+            && item_count > 0
+            && let Some((_dir_x, dir_y)) = dir_opt
+        {
             if dir_y < 0 {
                 if self._selected_item_index == 0 {
                     self._selected_item_index = item_count - 1;
@@ -527,19 +522,14 @@ impl<'a> ToolboxWidget<'a> {
         }
 
         // Action / Unlock / Teleport confirm (Keyboard Enter/Space, Joystick A/X)
-        let action_pressed = keyboard_input_data.get_key_pressed(KeyCode::Enter)
-            || keyboard_input_data.get_key_pressed(KeyCode::Space)
-            || joystick_input_data._btn_a == ButtonState::Pressed
-            || joystick_input_data._btn_x == ButtonState::Pressed;
+        let action_pressed = UiInput::is_confirm(keyboard_input_data, joystick_input_data)
+            || UiInput::is_delete(keyboard_input_data, joystick_input_data);
 
         if action_pressed {
             self.get_active_tab_mut().execute_selected_action();
         }
 
-        let close =
-            keyboard_input_data.get_key_pressed(KeyCode::Escape) || joystick_input_data._btn_b == ButtonState::Pressed;
-
-        if close {
+        if UiInput::is_cancel(keyboard_input_data, joystick_input_data) {
             self.close_toolbox();
         }
     }

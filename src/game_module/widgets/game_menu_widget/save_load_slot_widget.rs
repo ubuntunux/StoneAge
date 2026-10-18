@@ -1,5 +1,6 @@
 use crate::game_module::game_constants::AUDIO_PICKUP_ITEM;
 use crate::game_module::game_controller::WidgetNavRepeatController;
+use crate::game_module::game_input::UiInput;
 use crate::game_module::game_service_locator::{
     get_game_client_mut, get_game_resources, get_game_resources_mut, get_game_ui_manager_mut,
 };
@@ -9,7 +10,7 @@ use nalgebra::Vector2;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::core::engine_core::TimeData;
 use rust_engine_3d::core::engine_service_locator::get_audio_manager_mut;
-use rust_engine_3d::core::input::{ButtonState, JoystickInputData, KeyboardInputData};
+use rust_engine_3d::core::input::{JoystickInputData, KeyboardInputData};
 use rust_engine_3d::scene::ui::{
     HorizontalAlign, Orientation, PIVOT_CENTER, UIComponentInstance, UILayoutType, UIManager, UIWidgetTypes,
     VerticalAlign, WidgetDefault,
@@ -18,7 +19,6 @@ use rust_engine_3d::utilities::system::{RcRefCell, ptr_as_mut, ptr_as_ref};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use std::ffi::c_void;
 use std::rc::Rc;
-use winit::keyboard::KeyCode;
 
 const BTN_DISABLED_COLOR: u32 = get_color32(210, 185, 150, 255);
 const BTN_LOAD_COLOR: u32 = get_color32(70, 135, 200, 240);
@@ -799,10 +799,7 @@ impl<'a> SaveLoadSlotWidget<'a> {
             }
         }
 
-        let close_widget =
-            keyboard_input_data.get_key_pressed(KeyCode::Escape) || joystick_input_data._btn_b == ButtonState::Pressed;
-
-        if close_widget {
+        if UiInput::is_cancel(keyboard_input_data, joystick_input_data) {
             self.close_slot_widget();
             get_game_ui_manager_mut().close_game_menu();
         }

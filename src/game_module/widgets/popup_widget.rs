@@ -1,9 +1,10 @@
 use crate::game_module::game_constants::AUDIO_PICKUP_ITEM;
+use crate::game_module::game_input::UiInput;
 use crate::game_module::game_service_locator::get_game_ui_manager_mut;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::core::engine_core::TimeData;
 use rust_engine_3d::core::engine_service_locator::get_audio_manager_mut;
-use rust_engine_3d::core::input::{ButtonState, JoystickInputData, KeyboardInputData};
+use rust_engine_3d::core::input::{JoystickInputData, KeyboardInputData};
 use rust_engine_3d::scene::ui::{
     CallbackTouchEvent, HorizontalAlign, Orientation, PIVOT_CENTER, UILayoutType, UIManager, UIWidgetTypes,
     VerticalAlign, WidgetDefault,
@@ -12,7 +13,6 @@ use rust_engine_3d::utilities::system::{RcRefCell, newRcRefCell, ptr_as_mut, ptr
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use std::ffi::c_void;
 use std::rc::Rc;
-use winit::keyboard::KeyCode;
 
 pub struct PopupWindowWidget<'a> {
     pub _parent_widget: *const WidgetDefault<'a>,
@@ -198,12 +198,8 @@ impl<'a> PopupWindowWidget<'a> {
             return false;
         }
 
-        let press_cancel =
-            keyboard_input_data.get_key_pressed(KeyCode::Escape) || joystick_input_data._btn_b == ButtonState::Pressed;
-
-        let press_ok = keyboard_input_data.get_key_pressed(KeyCode::Space)
-            || keyboard_input_data.get_key_pressed(KeyCode::Enter)
-            || joystick_input_data._btn_a == ButtonState::Pressed;
+        let press_cancel = UiInput::is_cancel(keyboard_input_data, joystick_input_data);
+        let press_ok = UiInput::is_confirm(keyboard_input_data, joystick_input_data);
 
         if self._cancel_btn.is_some() {
             if press_cancel {
@@ -228,7 +224,7 @@ impl<'a> PopupWindowWidget<'a> {
                 return true;
             }
         } else {
-            let close_popup = press_cancel || press_ok || joystick_input_data._btn_x == ButtonState::Pressed;
+            let close_popup = press_cancel || press_ok || UiInput::is_delete(keyboard_input_data, joystick_input_data);
 
             if close_popup {
                 let ok_callback = self._ok_callback;

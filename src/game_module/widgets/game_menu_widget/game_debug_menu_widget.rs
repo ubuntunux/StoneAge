@@ -1,4 +1,5 @@
 use crate::game_module::game_constants::AUDIO_PICKUP_ITEM;
+use crate::game_module::game_input::UiInput;
 use crate::game_module::game_service_locator::{
     get_application_mut, get_game_scene_manager, get_game_scene_manager_mut, get_game_ui_manager_mut,
 };
@@ -8,7 +9,7 @@ use nalgebra::Vector2;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::constants::SHOW_DEBUG_TEXT;
 use rust_engine_3d::core::engine_service_locator::get_audio_manager_mut;
-use rust_engine_3d::core::input::{ButtonState, JoystickInputData, KeyboardInputData};
+use rust_engine_3d::core::input::{JoystickInputData, KeyboardInputData};
 use rust_engine_3d::scene::ui::{
     HorizontalAlign, Orientation, PIVOT_CENTER, UIComponentInstance, UILayoutType, UIManager, UIWidgetTypes,
     VerticalAlign, WidgetDefault,
@@ -19,7 +20,6 @@ use std::ffi::c_void;
 use std::rc::Rc;
 use strum::{EnumCount, IntoEnumIterator};
 use strum_macros::{Display, EnumCount, EnumIter, EnumString, FromRepr};
-use winit::keyboard::KeyCode;
 
 const ITEM_WIDTH: f32 = 250.0;
 const ITEM_HEIGHT: f32 = 60.0;
@@ -218,16 +218,10 @@ impl<'a> GameDebugMenuWidget<'a> {
         joystick_input_data: &JoystickInputData,
         keyboard_input_data: &KeyboardInputData,
     ) {
-        let move_menu_up = keyboard_input_data.get_key_pressed(KeyCode::ArrowUp)
-            || keyboard_input_data.get_key_pressed(KeyCode::KeyW)
-            || joystick_input_data._btn_up == ButtonState::Pressed;
-        let move_menu_down = keyboard_input_data.get_key_pressed(KeyCode::ArrowDown)
-            || keyboard_input_data.get_key_pressed(KeyCode::KeyS)
-            || joystick_input_data._btn_down == ButtonState::Pressed;
-        let press_game_debug_menu = keyboard_input_data.get_key_pressed(KeyCode::Enter)
-            || keyboard_input_data.get_key_pressed(KeyCode::Space)
-            || joystick_input_data._btn_x == ButtonState::Pressed
-            || joystick_input_data._btn_a == ButtonState::Pressed;
+        let move_menu_up = UiInput::is_up(keyboard_input_data, joystick_input_data);
+        let move_menu_down = UiInput::is_down(keyboard_input_data, joystick_input_data);
+        let press_game_debug_menu = UiInput::is_confirm(keyboard_input_data, joystick_input_data)
+            || UiInput::is_delete(keyboard_input_data, joystick_input_data);
 
         if move_menu_up {
             let next_item = self._selected_menu_item.prev();
