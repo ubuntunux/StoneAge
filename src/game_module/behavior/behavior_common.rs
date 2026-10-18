@@ -6,18 +6,39 @@ use crate::game_module::game_constants::{
     NPC_ATTACK_IDLE_RANGE, NPC_ATTACK_TERM_MAX, NPC_ATTACK_TERM_MIN, NPC_AVAILABLE_MOVING_ATTACK, NPC_IDLE_TERM_MAX,
     NPC_IDLE_TERM_MIN, NPC_ROAMING_RADIUS, NPC_ROAMING_TIME, NPC_TRACKING_RANGE,
 };
+use crate::game_module::game_service_locator::get_game_scene_manager;
+use crate::game_module::scenario::scenario::ScenarioType;
 use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::core::engine_service_locator::get_audio_manager_mut;
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::math::lerp;
-
-use crate::game_module::game_service_locator::get_game_scene_manager;
-use crate::game_module::scenario::scenario::ScenarioType;
+use rust_engine_3d::utilities::system::State;
 
 pub fn begin_idle(data: &mut BehaviorData, owner: &mut Character) {
     owner.set_move_idle();
     data.set_behavior_time(lerp(NPC_IDLE_TERM_MIN, NPC_IDLE_TERM_MAX, rand::random::<f32>()));
+}
+
+pub fn update_idle_interacting(owner: &mut Character, target: Option<&Character>) {
+    if !owner.is_move_state(MoveAnimationState::SitDownLoop) {
+        owner.set_move_idle();
+    }
+    if let Some(target_actor) = target {
+        owner.look_at(target_actor.get_position());
+    }
+}
+
+/// Checks if `target` is a valid hostile enemy within `NPC_TRACKING_RANGE` for `owner`.
+/// Civilian, tamed, or intimacy-following characters only treat wild hostile characters as enemies.
+pub fn is_enemy_in_range(owner: &Character, target: Option<&Character>) -> bool {
+    let Some(target) = target.filter(|t| t.is_alive()) else {
+        return false;
+    };
+    if (owner.is_civilian() || owner.is_tamed() || owner.is_following_intimacy()) && !target.is_wild_hostile() {
+        return false;
+    }
+    owner.check_in_range(target.get_collision(), NPC_TRACKING_RANGE, false)
 }
 
 /// Pick a random roam target around the spawn point, or around the player if intimacy-following or for Ewa/Koa during WrapUpTheDay phase.
@@ -25,12 +46,15 @@ pub fn begin_roaming(data: &mut BehaviorData, owner: &mut Character, target: Opt
     let is_wrap_up_the_day_for_partner = owner.get_character_type().is_family()
         && get_game_scene_manager().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay);
 
-    let is_intimate_following = owner.is_following_intimacy()
-        && matches!(target, Some(t) if
-            t.is_alive() && (t.get_position() - owner.get_position()).norm() <= INTIMACY_FOLLOW_RANGE
-        );
+    let intimate_target_pos = target
+        .filter(|t| {
+            owner.is_following_intimacy()
+                && t.is_alive()
+                && (t.get_position() - owner.get_position()).norm() <= INTIMACY_FOLLOW_RANGE
+        })
+        .map(|t| *t.get_position());
 
-    let roam_radius = if is_wrap_up_the_day_for_partner || is_intimate_following {
+    let roam_radius = if is_wrap_up_the_day_for_partner || intimate_target_pos.is_some() {
         INTIMACY_ROAMING_RADIUS
     } else {
         NPC_ROAMING_RADIUS
@@ -52,8 +76,8 @@ pub fn begin_roaming(data: &mut BehaviorData, owner: &mut Character, target: Opt
 
     let center_point = if is_wrap_up_the_day_for_partner {
         player_pos.unwrap_or(data._spawn_point)
-    } else if is_intimate_following {
-        *target.unwrap().get_position()
+    } else if let Some(target_pos) = intimate_target_pos {
+        target_pos
     } else {
         data._spawn_point
     };
@@ -99,17 +123,17 @@ pub fn update_intimacy_follow(owner: &mut Character, target: Option<&Character>)
     if !owner.is_following_intimacy() {
         return IntimacyFollowResult::NotFollowing;
     }
-    if let Some(target_ref) = target {
-        if target_ref.is_alive() {
-            let to_target = target_ref.get_position() - owner.get_position();
-            let dist = (to_target.x * to_target.x + to_target.z * to_target.z).sqrt();
-            if dist <= INTIMACY_ARRIVE_RANGE {
-                return IntimacyFollowResult::Arrived;
-            }
-            owner.set_move(&to_target);
-            owner.set_run(true);
-            return IntimacyFollowResult::Moving;
+    if let Some(target_ref) = target
+        && target_ref.is_alive()
+    {
+        let to_target = target_ref.get_position() - owner.get_position();
+        let dist = (to_target.x * to_target.x + to_target.z * to_target.z).sqrt();
+        if dist <= INTIMACY_ARRIVE_RANGE {
+            return IntimacyFollowResult::Arrived;
         }
+        owner.set_move(&to_target);
+        owner.set_run(true);
+        return IntimacyFollowResult::Moving;
     }
     IntimacyFollowResult::NotFollowing
 }
@@ -118,10 +142,10 @@ pub fn begin_eating(data: &mut BehaviorData, owner: &mut Character, target: Opti
     if !owner.is_move_stop() {
         owner.set_move_idle();
     }
-    if owner.get_attached_item().is_some() {
-        if let Some(target_actor) = target {
-            owner.look_at(target_actor.get_position());
-        }
+    if owner.get_attached_item().is_some()
+        && let Some(target_actor) = target
+    {
+        owner.look_at(target_actor.get_position());
     }
     owner.set_is_interacting(false);
     owner.set_action_eating();
@@ -150,12 +174,7 @@ pub fn update_interaction_should_idle(data: &BehaviorData, owner: &mut Character
         return true;
     }
     if owner.is_interacting() {
-        if !owner.is_move_state(MoveAnimationState::SitDownLoop) {
-            owner.set_move_idle();
-        }
-        if let Some(target_actor) = target {
-            owner.look_at(target_actor.get_position());
-        }
+        update_idle_interacting(owner, target);
         return false;
     }
     true
@@ -182,7 +201,7 @@ pub fn update_chase(owner: &mut Character, target: Option<&Character>) -> Behavi
                 IntimacyFollowResult::Moving | IntimacyFollowResult::NotFollowing => {}
             }
             do_idle = false;
-        } else if owner.is_tamed() && (target_ref._is_player || target_ref.is_civilian() || target_ref.is_tamed()) {
+        } else if (owner.is_civilian() || owner.is_tamed()) && !target_ref.is_wild_hostile() {
             return BehaviorState::Idle;
         } else if owner.check_in_range(target_ref.get_collision(), NPC_TRACKING_RANGE, false) {
             if owner.check_in_range(target_ref.get_collision(), NPC_ATTACK_HIT_RANGE, false) {
@@ -237,10 +256,7 @@ pub fn update_attack(
     delta_time: f32,
 ) -> BehaviorState {
     let mut next_state = BehaviorState::Attack;
-    if target.is_none_or(|target| !target.is_alive()) {
-        next_state = BehaviorState::Idle;
-    } else {
-        let target = target.unwrap();
+    if let Some(target) = target.filter(|target| target.is_alive()) {
         if *is_in_attack_range {
             if !owner.check_in_range(target.get_collision(), NPC_ATTACK_CHASE_RANGE, false) {
                 *is_in_attack_range = false;
@@ -264,6 +280,8 @@ pub fn update_attack(
                 next_state = BehaviorState::Idle;
             }
         }
+    } else {
+        next_state = BehaviorState::Idle;
     }
 
     if owner.is_available_attack() {
@@ -271,4 +289,145 @@ pub fn update_attack(
     }
 
     next_state
+}
+
+pub fn step_hunger(data: &mut BehaviorData, state: State, owner: &mut Character) {
+    match state {
+        State::Begin => {
+            owner.set_action_hungry();
+            owner.set_sit_down();
+        }
+        State::Update => {
+            if !owner.get_stats().is_hungry() {
+                data.set_next_behavior_state(BehaviorState::Idle, true);
+            }
+        }
+        State::End => {}
+    }
+}
+
+pub fn step_eating(
+    data: &mut BehaviorData,
+    state: State,
+    is_first_update: bool,
+    owner: &mut Character,
+    target: Option<&Character>,
+) {
+    match state {
+        State::Begin => begin_eating(data, owner, target),
+        State::Update => {
+            if update_eating_should_idle(is_first_update, owner) {
+                if owner.get_stats().is_hungry() {
+                    data.set_next_behavior_state(BehaviorState::Hunger, true);
+                } else {
+                    data.set_next_behavior_state(BehaviorState::Idle, false);
+                }
+            }
+        }
+        State::End => {}
+    }
+}
+
+pub fn step_interaction(data: &mut BehaviorData, state: State, owner: &mut Character, target: Option<&Character>) {
+    match state {
+        State::Begin => begin_interaction(data, owner, target),
+        State::Update => {
+            if owner.get_attached_item_data_type().is_eatable() {
+                data.set_next_behavior_state(BehaviorState::Eating, true);
+            } else if update_interaction_should_idle(data, owner, target) {
+                if owner.get_stats().is_hungry() {
+                    data.set_next_behavior_state(BehaviorState::Hunger, true);
+                } else {
+                    data.set_next_behavior_state(BehaviorState::Idle, false);
+                }
+            }
+        }
+        State::End => {}
+    }
+}
+
+pub fn step_wake_up(
+    data: &mut BehaviorData,
+    state: State,
+    is_first_update: bool,
+    owner: &mut Character,
+    revive_on_begin: bool,
+) {
+    match state {
+        State::Begin => {
+            begin_wake_up(owner);
+            if revive_on_begin {
+                owner._character_stats._is_alive = true;
+                let max_hp = owner._character_stats.get_max_hp();
+                owner._character_stats.set_hp(max_hp);
+            }
+        }
+        State::Update => {
+            if update_wake_up_should_idle(is_first_update, owner) {
+                data.set_next_behavior_state(BehaviorState::Idle, false);
+            }
+        }
+        State::End => {}
+    }
+}
+
+pub fn step_follow(data: &mut BehaviorData, state: State, owner: &mut Character, target: Option<&Character>) {
+    if state == State::Update {
+        match update_intimacy_follow(owner, target) {
+            IntimacyFollowResult::Arrived => data.set_next_behavior_state(BehaviorState::Roaming, false),
+            IntimacyFollowResult::Moving => {}
+            IntimacyFollowResult::NotFollowing => data.set_next_behavior_state(BehaviorState::Idle, false),
+        }
+    }
+}
+
+pub fn step_dance(data: &mut BehaviorData, state: State, owner: &mut Character) {
+    match state {
+        State::Begin => owner.set_action_dance(),
+        State::Update => {
+            if !owner.is_action(ActionAnimationState::Dance) {
+                data.set_next_behavior_state(BehaviorState::Idle, false);
+            }
+        }
+        State::End => {}
+    }
+}
+
+pub fn step_chase(data: &mut BehaviorData, state: State, owner: &mut Character, target: Option<&Character>) {
+    if state == State::Update {
+        let next_state = update_chase(owner, target);
+        if next_state != BehaviorState::Chase {
+            data.set_next_behavior_state(next_state, false);
+        }
+    }
+}
+
+pub fn step_attack(
+    data: &mut BehaviorData,
+    state: State,
+    owner: &mut Character,
+    target: Option<&Character>,
+    delta_time: f32,
+) {
+    match state {
+        State::Begin => {
+            let next_state = begin_attack(owner, target, &mut data._attack_time, &mut data._is_in_attack_range);
+            if next_state != BehaviorState::Attack {
+                data.set_next_behavior_state(next_state, false);
+            }
+        }
+        State::Update => {
+            let next_state = update_attack(
+                owner,
+                target,
+                &mut data._attack_time,
+                &mut data._is_in_attack_range,
+                delta_time,
+            );
+            if next_state != BehaviorState::Attack {
+                data.set_next_behavior_state(next_state, false);
+            }
+        }
+        State::End => {}
+    }
 }

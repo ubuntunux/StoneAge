@@ -6,9 +6,9 @@ use crate::game_module::behavior::behavior_default::BehaviorDefault;
 use crate::game_module::behavior::behavior_roamer::BehaviorRoamer;
 use crate::game_module::behavior::behavior_ufo::BehaviorUfo;
 use nalgebra::Vector3;
-use rust_engine_3d::utilities::system::RcRefCell;
-
+use rust_engine_3d::utilities::system::{RcRefCell, State};
 use serde::{Deserialize, Serialize};
+use strum::IntoEnumIterator;
 
 #[derive(Serialize, Deserialize, Clone, PartialEq, Eq, Hash, Debug, Copy, Default)]
 pub enum BehaviorState {
@@ -51,6 +51,8 @@ pub struct BehaviorData<'a> {
     pub _spawn_point: Vector3<f32>,
     pub _target_point: Vector3<f32>,
     pub _behavior_target: Option<RcRefCell<Character<'a>>>,
+    pub _attack_time: f32,
+    pub _is_in_attack_range: bool,
 }
 
 impl<'a> Default for BehaviorData<'a> {
@@ -64,6 +66,8 @@ impl<'a> Default for BehaviorData<'a> {
             _spawn_point: Vector3::zeros(),
             _target_point: Vector3::zeros(),
             _behavior_target: None,
+            _attack_time: 0.0,
+            _is_in_attack_range: false,
         }
     }
 }
@@ -145,18 +149,76 @@ impl<'a> BehaviorData<'a> {
 }
 
 pub trait BehaviorBase<'a> {
-    fn initialize_behavior(&mut self, position: &Vector3<f32>);
     fn get_behavior_data(&self) -> &BehaviorData<'a>;
     fn get_behavior_data_mut(&mut self) -> &mut BehaviorData<'a>;
+
+    fn initialize_behavior(&mut self, position: &Vector3<f32>) {
+        self.get_behavior_data_mut().initialize_behavior_data(position);
+        self.set_next_behavior(BehaviorState::Idle, true);
+    }
+
     fn get_behavior_state(&self) -> BehaviorState {
         self.get_behavior_data().get_behavior_state()
     }
+
     fn set_next_behavior(&mut self, next_behavior_state: BehaviorState, is_force: bool) {
         self.get_behavior_data_mut().set_next_behavior_state(next_behavior_state, is_force);
     }
-    fn update_behavior(&mut self, owner: &mut Character<'a>, behavior_target: Option<&Character<'a>>, delta_time: f32);
-    fn get_behavior_save_data(&self) -> BehaviorSaveData;
-    fn load_behavior_save_data(&mut self, save_data: &BehaviorSaveData);
+
+    fn step_behavior_state(
+        &mut self,
+        state: State,
+        behavior_state: BehaviorState,
+        is_first_update: bool,
+        owner: &mut Character<'a>,
+        target: Option<&Character<'a>>,
+        delta_time: f32,
+    );
+
+    fn update_behavior(&mut self, owner: &mut Character<'a>, behavior_target: Option<&Character<'a>>, delta_time: f32) {
+        let prev_behavior_state = self.get_behavior_data().get_behavior_state();
+        let next_behavior_state = self.get_behavior_data().get_next_behavior_state();
+        let is_force = self.get_behavior_data_mut().is_force_behavior_state_changed_and_reset();
+
+        for state in State::iter() {
+            if !is_force && prev_behavior_state == next_behavior_state && (state == State::End || state == State::Begin)
+            {
+                continue;
+            }
+
+            let update_behavior_state: BehaviorState = match state {
+                State::End => prev_behavior_state,
+                State::Begin => {
+                    self.get_behavior_data_mut().set_behavior_state(next_behavior_state);
+                    next_behavior_state
+                }
+                State::Update => next_behavior_state,
+            };
+
+            let is_first_update = prev_behavior_state != next_behavior_state && state == State::Update;
+
+            self.step_behavior_state(
+                state,
+                update_behavior_state,
+                is_first_update,
+                owner,
+                behavior_target,
+                delta_time,
+            );
+
+            if state == State::Update {
+                self.get_behavior_data_mut().update_behavior_time(delta_time);
+            }
+        }
+    }
+
+    fn get_behavior_save_data(&self) -> BehaviorSaveData {
+        self.get_behavior_data().get_behavior_save_data()
+    }
+
+    fn load_behavior_save_data(&mut self, save_data: &BehaviorSaveData) {
+        self.get_behavior_data_mut().load_behavior_save_data(save_data);
+    }
 }
 
 pub fn create_character_behavior<'a>(character_type: CharacterDataType) -> Box<dyn BehaviorBase<'a> + 'a> {
@@ -164,9 +226,9 @@ pub fn create_character_behavior<'a>(character_type: CharacterDataType) -> Box<d
         CharacterDataType::Civilian
         | CharacterDataType::Wife
         | CharacterDataType::Daughter
-        | CharacterDataType::Player => Box::new(BehaviorCivilian { ..Default::default() }),
-        CharacterDataType::Roamer => Box::new(BehaviorRoamer { ..Default::default() }),
-        CharacterDataType::Ufo => Box::new(BehaviorUfo { ..Default::default() }),
-        _ => Box::new(BehaviorDefault { ..Default::default() }),
+        | CharacterDataType::Player => Box::<BehaviorCivilian>::default(),
+        CharacterDataType::Roamer => Box::<BehaviorRoamer>::default(),
+        CharacterDataType::Ufo => Box::<BehaviorUfo>::default(),
+        _ => Box::<BehaviorDefault>::default(),
     }
 }
