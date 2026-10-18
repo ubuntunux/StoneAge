@@ -2,10 +2,10 @@ use crate::game_module::actors::character::{Character, CharacterCreateInfo};
 use crate::game_module::actors::props::Prop;
 use crate::game_module::behavior::behavior_base::BehaviorState;
 use crate::game_module::game_constants::{
-    ACTOR_NAME_ALIEN_ALPHA, ACTOR_NAME_ALIEN_BETA, ACTOR_NAME_EWA, ACTOR_NAME_KOA, ACTOR_NAME_MONKEY_EWA,
-    ACTOR_NAME_MONKEY_KOA, ACTOR_NAME_UFO, AUDIO_ROOSTER, AUDIO_UFO_BEAM, AUDIO_UFO_FLYING, BED_FOR_ARU, BED_FOR_EWA,
-    BED_FOR_KOA, CAMERA_DISTANCE_MAX, CAMERA_OFFSET_Y, CHARACTER_DATA_NAME_EWA, CHARACTER_DATA_NAME_KOA,
-    PROP_NAME_MONOLITH, TIME_OF_EARLY_MORNING,
+    ACTOR_NAME_ALIEN_ALPHA, ACTOR_NAME_ALIEN_BETA, ACTOR_NAME_ARU, ACTOR_NAME_EWA, ACTOR_NAME_KOA,
+    ACTOR_NAME_MONKEY_EWA, ACTOR_NAME_MONKEY_KOA, ACTOR_NAME_UFO, AUDIO_ROOSTER, AUDIO_UFO_BEAM, AUDIO_UFO_FLYING,
+    BED_FOR_ARU, BED_FOR_EWA, BED_FOR_KOA, CAMERA_DISTANCE_MAX, CAMERA_OFFSET_Y, CHARACTER_DATA_NAME_EWA,
+    CHARACTER_DATA_NAME_KOA, PROP_NAME_MONOLITH, TIME_OF_EARLY_MORNING,
 };
 use crate::game_module::game_scene_manager::Stages;
 use crate::game_module::game_service_locator::{get_character_manager_mut, get_game_scene_manager_mut};
@@ -38,7 +38,7 @@ const PHASE_DURATION_DROP_MONOLITH: f32 = 3.0;
 const PHASE_DURATION_UFO_GONE: f32 = 3.0;
 const PHASE_DURATION_CLOSE_UP: f32 = 5.0;
 
-#[derive(Clone, PartialEq, Eq, Hash, Display, Debug, Copy, EnumIter, EnumString, EnumCount)]
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Display, Debug, Copy, EnumIter, EnumString, EnumCount)]
 enum ScenarioPhase {
     None,
     Begin,
@@ -172,10 +172,16 @@ impl<'a> ScenarioDayOne<'a> {
     }
 
     pub fn set_player_active(is_active: bool) {
-        if let Some(player) = get_game_scene_manager_mut().get_maybe_player() {
+        let game_scene_manager = get_game_scene_manager_mut();
+        if let Some(player) = game_scene_manager.get_maybe_player() {
             let mut player_mut = player.borrow_mut();
             player_mut.set_visible(is_active);
             player_mut.set_enable_update(is_active);
+        }
+        if let Some(aru) = game_scene_manager.get_actor_by_name(ACTOR_NAME_ARU) {
+            let mut aru_mut = aru.borrow_mut();
+            aru_mut.set_visible(is_active);
+            aru_mut.set_enable_update(is_active);
         }
     }
 }
@@ -231,7 +237,9 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
         self._prop_bed_for_ewa = None;
         self._prop_bed_for_koa = None;
         self._prop_monolith = None;
-        Self::set_player_active(true);
+        if self._scenario_track._scenario_phase == ScenarioPhase::End {
+            Self::set_player_active(true);
+        }
     }
 
     fn on_open_game_scene(&mut self, game_scene_data_name: &str) {
@@ -334,6 +342,9 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
             set_actors_visible(&[&self._alien_alpha, &self._alien_beta], true);
 
             Self::set_player_active(false);
+            if let Some(aru) = game_scene_manager.get_actor_by_name(ACTOR_NAME_ARU).cloned() {
+                get_character_manager_mut().remove_character(&aru);
+            }
 
             let main_camera = get_scene_manager().get_main_camera_mut();
             main_camera._transform_object.set_position(&INITIAL_CAMERA_POS);
@@ -367,6 +378,10 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
 
     fn update_game_scenario(&mut self, _any_key_hold: bool, _any_key_pressed: bool, delta_time: f64) {
         let game_scene_manager = get_game_scene_manager_mut();
+
+        if self._scenario_track._scenario_phase < ScenarioPhase::CloseUpShot {
+            Self::set_player_active(false);
+        }
 
         let prev_scenario_phase = self._scenario_track._scenario_phase;
         let next_scenario_phase = self._scenario_track._next_scenario_phase;

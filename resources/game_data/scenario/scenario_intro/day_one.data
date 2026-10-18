@@ -36,24 +36,6 @@
                 1.0
             ]
         },
-        "aru": {
-            "_character_data_name": "characters/family/aru",
-            "_position": [
-                21.61305046081543,
-                3.5749073028564453,
-                19.122821807861328
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
         "ufo": {
             "_character_data_name": "characters/ufo",
             "_position": [

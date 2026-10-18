@@ -5,7 +5,9 @@ use crate::game_module::game_constants::{
     CHARACTER_DATA_NAME_ARU, CHARACTER_INTERACTION_TIME, DEFAULT_FADE_TIME, MATERIAL_EMOJI_GOOD, MATERIAL_UI_NONE,
     TIME_OF_NOON,
 };
-use crate::game_module::game_service_locator::{get_game_scene_manager_mut, get_game_ui_manager_mut};
+use crate::game_module::game_service_locator::{
+    get_character_manager_mut, get_game_scene_manager_mut, get_game_ui_manager_mut,
+};
 use crate::game_module::scenario::scenario::{
     GameScenarioCreateInfo, ScenarioBase, ScenarioDataCreateInfo, ScenarioType,
 };
@@ -93,6 +95,30 @@ impl<'a> ScenarioRevolution<'a> {
             _scenario_track: ScenarioTrack::new(ScenarioPhase::None, ScenarioPhase::Begin),
         })
     }
+
+    pub fn remove_non_player_characters(&mut self) {
+        let character_manager = get_character_manager_mut();
+        for actor_opt in [
+            &self._alien_alpha,
+            &self._alien_beta,
+            &self._actor_aru,
+            &self._actor_ewa,
+            &self._actor_koa,
+            &self._monkey_ewa,
+            &self._monkey_koa,
+        ] {
+            if let Some(actor) = actor_opt {
+                character_manager.remove_character(actor);
+            }
+        }
+        self._alien_alpha = None;
+        self._alien_beta = None;
+        self._actor_aru = None;
+        self._actor_ewa = None;
+        self._actor_koa = None;
+        self._monkey_ewa = None;
+        self._monkey_koa = None;
+    }
 }
 
 impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
@@ -138,9 +164,13 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
         self._scenario_track._scenario_phase == ScenarioPhase::End
     }
 
-    fn destroy_game_scenario(&mut self) {}
+    fn destroy_game_scenario(&mut self) {
+        self.remove_non_player_characters();
+    }
 
-    fn on_close_game_scene(&mut self, _game_scene_data_name: &str) {}
+    fn on_close_game_scene(&mut self, _game_scene_data_name: &str) {
+        self.remove_non_player_characters();
+    }
 
     fn on_open_game_scene(&mut self, game_scene_data_name: &str) {
         self._scenario_create_info.spawn_and_reset_if_matching(game_scene_data_name);
@@ -292,6 +322,8 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
                                 .get_character_manager_mut()
                                 .change_character_data(player, CHARACTER_DATA_NAME_ARU);
                         }
+
+                        self.remove_non_player_characters();
 
                         if let Some(audio_instance) = self._audio_ufo_laboratory.as_ref() {
                             get_audio_manager().stop_audio_instance(audio_instance);
