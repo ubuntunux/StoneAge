@@ -1,11 +1,11 @@
 use crate::game_module::actors::character::{ActionAnimationState, RequestType};
-use crate::game_module::actors::interaction_object::InteractionObject;
+use crate::game_module::actors::interaction_object::{INTERACTION_OBJECT_UI_OFFSET_Y, InteractionObject};
 use crate::game_module::game_client::GamePhase;
 use crate::game_module::game_constants::WRAP_UP_THE_DAY_HOLD_DURATION;
 use crate::game_module::game_controller::KeyBindingType;
 use crate::game_module::game_service_locator::{
     get_character_manager, get_game_client, get_game_controller, get_game_resources, get_game_scene_manager,
-    get_game_ui_manager,
+    get_game_ui_manager, get_prop_manager,
 };
 use crate::game_module::scenario::scenario::ScenarioType;
 use crate::game_module::widgets::key_binding_widget::{
@@ -14,7 +14,7 @@ use crate::game_module::widgets::key_binding_widget::{
 };
 use crate::game_module::widgets::key_binding_widget::{KEY_BINDING_UI_SIZE, KeyBindingWidget};
 use nalgebra::{Vector2, Vector3};
-use rust_engine_3d::core::engine_service_locator::{get_engine_resources, get_scene_manager};
+use rust_engine_3d::core::engine_service_locator::{get_engine_core, get_engine_resources, get_scene_manager};
 use rust_engine_3d::scene::material_instance::MaterialInstanceData;
 use rust_engine_3d::scene::ui::{
     HorizontalAlign, Orientation, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault,
@@ -25,6 +25,15 @@ use std::ffi::c_void;
 use std::rc::Rc;
 
 const MAIN_LAYOUT_MARGIN: f32 = 10.0;
+const INTERACTION_WIDGETS: [KeyBindingType; 7] = [
+    KeyBindingType::Interaction,
+    KeyBindingType::Request,
+    KeyBindingType::EnterGate,
+    KeyBindingType::Gathering,
+    KeyBindingType::Taming,
+    KeyBindingType::Farming,
+    KeyBindingType::Deploy,
+];
 
 struct ActiveInteractionContext {
     _is_corpse: bool,
@@ -379,6 +388,14 @@ impl<'a> ControllerHelpWidget<'a> {
             vec![engine_resources.get_material_instance_data("ui/controller/mouse_l").clone()],
             vec![engine_resources.get_material_instance_data("ui/controller/joystick_rb").clone()],
         ));
+        interaction_key_binding_widget_map.register_key_binding_widget(create_interaction_key_binding_widget(
+            ptr_as_mut(self._root_widget),
+            KeyBindingType::Deploy,
+            "deploy_key_binding",
+            "Deploy",
+            vec![engine_resources.get_material_instance_data("ui/controller/mouse_l").clone()],
+            vec![engine_resources.get_material_instance_data("ui/controller/joystick_a").clone()],
+        ));
     }
 
     pub fn get_controls_visibility(&self) -> bool {
@@ -538,7 +555,78 @@ impl<'a> ControllerHelpWidget<'a> {
         }
 
         let player = character_manager.get_player().borrow();
-        if Self::is_player_interaction_disabled(&player) || !player.is_in_interaction_range() {
+        if Self::is_player_interaction_disabled(&player) {
+            self.hide_all_interaction_widgets();
+            return;
+        }
+
+        let placement_preview = get_prop_manager().get_placement_preview();
+        if placement_preview.is_active() {
+            let item_data_name = placement_preview.get_item_data_name();
+            let item_name = if get_game_resources().has_item_data(item_data_name) {
+                get_game_resources().get_item_data(item_data_name).borrow()._name.clone()
+            } else {
+                String::from("Item")
+            };
+
+            let mut preview_pos = *placement_preview.get_position();
+            preview_pos.y += INTERACTION_OBJECT_UI_OFFSET_Y;
+
+            let main_camera = get_scene_manager().get_main_camera();
+            let screen_pos = main_camera.convert_world_to_screen(&preview_pos, true)
+                / rust_engine_3d::scene::ui::get_global_dpi_scale();
+
+            let is_keyboard_input_mode = get_engine_core().is_keyboard_input_mode();
+            let widget_map = ptr_as_mut(self._interaction_key_binding_widget_map.as_ref());
+            for key_type in INTERACTION_WIDGETS.iter() {
+                let Some(key_widget) = widget_map.get_key_binding_widget_mut(*key_type) else {
+                    continue;
+                };
+                let layout_widget = ptr_as_mut(key_widget._layout_widget);
+                if *key_type == KeyBindingType::Deploy {
+                    key_widget.update_icon_material_instance(is_keyboard_input_mode);
+                    layout_widget._ui_component.set_pos(screen_pos.x, screen_pos.y);
+                    layout_widget._ui_component.set_visible(true);
+                    ptr_as_mut(key_widget._binding_name_widget)
+                        ._ui_component
+                        .set_text(&format!("Deploy {}", item_name));
+                } else {
+                    layout_widget._ui_component.set_visible(false);
+                }
+            }
+
+            let player_ctrl_map = ptr_as_mut(self._player_control_key_binding_widget_map.as_ref());
+            if is_keyboard_input_mode {
+                if let Some(attack_widget) = player_ctrl_map.get_key_binding_widget(KeyBindingType::Attack) {
+                    ptr_as_mut(attack_widget._binding_name_widget)
+                        ._ui_component
+                        .set_text(&format!("Deploy {}", item_name));
+                }
+                if let Some(jump_widget) = player_ctrl_map.get_key_binding_widget(KeyBindingType::Jump) {
+                    ptr_as_mut(jump_widget._binding_name_widget)._ui_component.set_text("Jump");
+                }
+            } else {
+                if let Some(jump_widget) = player_ctrl_map.get_key_binding_widget(KeyBindingType::Jump) {
+                    ptr_as_mut(jump_widget._binding_name_widget)
+                        ._ui_component
+                        .set_text(&format!("Deploy {}", item_name));
+                }
+                if let Some(attack_widget) = player_ctrl_map.get_key_binding_widget(KeyBindingType::Attack) {
+                    ptr_as_mut(attack_widget._binding_name_widget)._ui_component.set_text("Attack / Use Item");
+                }
+            }
+            return;
+        }
+
+        let player_ctrl_map = ptr_as_mut(self._player_control_key_binding_widget_map.as_ref());
+        if let Some(attack_widget) = player_ctrl_map.get_key_binding_widget(KeyBindingType::Attack) {
+            ptr_as_mut(attack_widget._binding_name_widget)._ui_component.set_text("Attack / Use Item");
+        }
+        if let Some(jump_widget) = player_ctrl_map.get_key_binding_widget(KeyBindingType::Jump) {
+            ptr_as_mut(jump_widget._binding_name_widget)._ui_component.set_text("Jump");
+        }
+
+        if !player.is_in_interaction_range() {
             self.hide_all_interaction_widgets();
             return;
         }
@@ -559,15 +647,6 @@ impl<'a> ControllerHelpWidget<'a> {
             / rust_engine_3d::scene::ui::get_global_dpi_scale();
 
         let widget_map = ptr_as_mut(self._interaction_key_binding_widget_map.as_ref());
-
-        const INTERACTION_WIDGETS: [KeyBindingType; 6] = [
-            KeyBindingType::Interaction,
-            KeyBindingType::Request,
-            KeyBindingType::EnterGate,
-            KeyBindingType::Gathering,
-            KeyBindingType::Taming,
-            KeyBindingType::Farming,
-        ];
 
         let hold_timer = get_game_controller()._wrap_up_hold_timer;
         let is_table_interaction = matches!(player.get_nearest_interaction_object(), InteractionObject::PropTable(_));
@@ -630,14 +709,6 @@ impl<'a> ControllerHelpWidget<'a> {
 
     fn hide_all_interaction_widgets(&mut self) {
         let widget_map = ptr_as_mut(self._interaction_key_binding_widget_map.as_ref());
-        const INTERACTION_WIDGETS: [KeyBindingType; 6] = [
-            KeyBindingType::Interaction,
-            KeyBindingType::Request,
-            KeyBindingType::EnterGate,
-            KeyBindingType::Gathering,
-            KeyBindingType::Taming,
-            KeyBindingType::Farming,
-        ];
         for key_type in INTERACTION_WIDGETS.iter() {
             if let Some(key_widget) = widget_map.get_key_binding_widget(*key_type) {
                 ptr_as_mut(key_widget._layout_widget)._ui_component.set_visible(false);

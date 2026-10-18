@@ -13,7 +13,7 @@ use crate::game_module::widgets::item_bar::INVALID_ITEM_INDEX;
 use nalgebra::{Matrix4, Vector2, Vector3};
 use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::core::engine_core::TimeData;
-use rust_engine_3d::core::engine_service_locator::{get_audio_manager_mut, get_scene_manager};
+use rust_engine_3d::core::engine_service_locator::{get_audio_manager_mut, get_engine_core, get_scene_manager};
 use rust_engine_3d::core::input::{ButtonState, JoystickInputData, KeyboardInputData, MouseInputData, MouseMoveData};
 use rust_engine_3d::scene::camera::CameraObjectData;
 use rust_engine_3d::scene::collision::{CollisionCreateInfo, CollisionData, CollisionType};
@@ -38,6 +38,7 @@ pub enum KeyBindingType {
     Gathering,
     Taming,
     Farming,
+    Deploy,
     CameraRotation,
     Zoom,
     Move,
@@ -528,15 +529,17 @@ impl<'a> GameController<'a> {
             }
         }
 
-        if input._run {
+        let is_placing = get_prop_manager().get_placement_preview().is_active();
+
+        if !is_placing && input._run {
             player_mut.toggle_run();
         }
 
-        if input._jump {
+        if !is_placing && input._jump {
             player_mut.set_jump();
         }
 
-        if input._roll {
+        if !is_placing && input._roll {
             player_mut.set_roll();
         }
 
@@ -573,7 +576,6 @@ impl<'a> GameController<'a> {
             self._wrap_up_hold_timer = 0.0;
         }
 
-        let is_placing = get_prop_manager().get_placement_preview().is_active();
         if is_placing {
             let mut rotate_input: f32 = 0.0;
             if keyboard_input_data.get_key_hold(KeyCode::KeyQ)
@@ -589,7 +591,56 @@ impl<'a> GameController<'a> {
             get_prop_manager_mut().get_placement_preview_mut().update_placement(player_mut, delta_time, rotate_input);
         }
 
-        if input._dance {
+        let is_keyboard_input_mode = get_engine_core().is_keyboard_input_mode();
+        let is_deploy_confirm = if is_placing {
+            if is_keyboard_input_mode {
+                input._attack_or_use_item || keyboard_input_data.get_key_pressed(KeyCode::Space)
+            } else {
+                joystick_input_data._btn_a == ButtonState::Pressed
+            }
+        } else {
+            false
+        };
+
+        let is_deploy_cancel = if is_placing {
+            if is_keyboard_input_mode {
+                input._power_attack || keyboard_input_data.get_key_pressed(KeyCode::Escape)
+            } else {
+                joystick_input_data._btn_b == ButtonState::Pressed || input._cancel
+            }
+        } else {
+            false
+        };
+
+        if is_deploy_confirm {
+            if get_prop_manager_mut().get_placement_preview_mut().confirm_placement() {
+                let selected_item_data_name = get_game_ui_manager().get_selected_inventory_item_data_name().to_string();
+                let selected_item_type = get_game_ui_manager().get_selected_inventory_item_data_type();
+                let remaining = get_game_ui_manager().get_item_count(&selected_item_data_name);
+                if remaining > 0
+                    && let Some(prop_data_name) = selected_item_type.get_deploy_prop_data_name()
+                {
+                    get_prop_manager_mut().get_placement_preview_mut().start_placement(
+                        &selected_item_data_name,
+                        prop_data_name,
+                        player_mut,
+                    );
+                } else {
+                    let hand_slot = get_game_ui_manager_mut()
+                        .get_item_bar_widget_mut()
+                        .find_hand_item_slot_index()
+                        .unwrap_or(INVALID_ITEM_INDEX);
+                    get_game_ui_manager_mut().select_item(hand_slot);
+                }
+            }
+        } else if is_deploy_cancel {
+            get_prop_manager_mut().get_placement_preview_mut().cancel_placement();
+            let hand_slot = get_game_ui_manager_mut()
+                .get_item_bar_widget_mut()
+                .find_hand_item_slot_index()
+                .unwrap_or(INVALID_ITEM_INDEX);
+            get_game_ui_manager_mut().select_item(hand_slot);
+        } else if input._dance {
             player_mut.set_action_dance();
         } else if input._request && player_mut.is_in_interaction_range() {
             if get_game_client().is_available_interaction() {
@@ -600,29 +651,7 @@ impl<'a> GameController<'a> {
                 player_mut.set_action_interaction();
             }
         } else if input._attack_or_use_item {
-            if is_placing {
-                if get_prop_manager_mut().get_placement_preview_mut().confirm_placement() {
-                    let selected_item_data_name =
-                        get_game_ui_manager().get_selected_inventory_item_data_name().to_string();
-                    let selected_item_type = get_game_ui_manager().get_selected_inventory_item_data_type();
-                    let remaining = get_game_ui_manager().get_item_count(&selected_item_data_name);
-                    if remaining > 0
-                        && let Some(prop_data_name) = selected_item_type.get_deploy_prop_data_name()
-                    {
-                        get_prop_manager_mut().get_placement_preview_mut().start_placement(
-                            &selected_item_data_name,
-                            prop_data_name,
-                            player_mut,
-                        );
-                    } else {
-                        let hand_slot = get_game_ui_manager_mut()
-                            .get_item_bar_widget_mut()
-                            .find_hand_item_slot_index()
-                            .unwrap_or(INVALID_ITEM_INDEX);
-                        get_game_ui_manager_mut().select_item(hand_slot);
-                    }
-                }
-            } else if is_available_attack {
+            if is_available_attack {
                 if item_type.is_fishing_item_type() {
                     player_mut.set_action_fishing_begin();
                 } else {
@@ -630,14 +659,7 @@ impl<'a> GameController<'a> {
                 }
             }
         } else if input._power_attack {
-            if is_placing {
-                get_prop_manager_mut().get_placement_preview_mut().cancel_placement();
-                let hand_slot = get_game_ui_manager_mut()
-                    .get_item_bar_widget_mut()
-                    .find_hand_item_slot_index()
-                    .unwrap_or(INVALID_ITEM_INDEX);
-                get_game_ui_manager_mut().select_item(hand_slot);
-            } else if is_available_attack {
+            if is_available_attack {
                 if item_type.is_weapon_item_type() {
                     player_mut.set_action_power_attack();
                 } else {

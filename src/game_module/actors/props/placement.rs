@@ -68,6 +68,14 @@ impl<'a> PlacementPreview<'a> {
         self._is_valid_location
     }
 
+    pub fn get_position(&self) -> &Vector3<f32> {
+        &self._position
+    }
+
+    pub fn get_rotation(&self) -> &Vector3<f32> {
+        &self._rotation
+    }
+
     pub fn get_item_data_name(&self) -> &str {
         &self._item_data_name
     }
