@@ -18,6 +18,7 @@ pub enum InteractionObject<'a> {
     PropGathering(RcRefCell<Prop<'a>>),
     PropMonolith(RcRefCell<Prop<'a>>),
     PropTable(RcRefCell<Prop<'a>>),
+    PropDeployed(RcRefCell<Prop<'a>>),
     Npc(RcRefCell<Character<'a>>),
     Taming(RcRefCell<Character<'a>>),
     Farming(RcRefCell<Character<'a>>),
@@ -32,7 +33,8 @@ impl<'a> InteractionObject<'a> {
             | InteractionObject::PropGate(prop)
             | InteractionObject::PropGathering(prop)
             | InteractionObject::PropMonolith(prop)
-            | InteractionObject::PropTable(prop) => prop.as_ptr() as *const c_void,
+            | InteractionObject::PropTable(prop)
+            | InteractionObject::PropDeployed(prop) => prop.as_ptr() as *const c_void,
             InteractionObject::Npc(character) => character.as_ptr() as *const c_void,
             InteractionObject::Taming(character) => {
                 ((character.as_ptr() as usize) | INTERACTION_KEY_TAG_TAMING) as *const c_void
@@ -68,7 +70,8 @@ impl<'a> InteractionObject<'a> {
             | InteractionObject::PropGate(prop)
             | InteractionObject::PropGathering(prop)
             | InteractionObject::PropMonolith(prop)
-            | InteractionObject::PropTable(prop) => {
+            | InteractionObject::PropTable(prop)
+            | InteractionObject::PropDeployed(prop) => {
                 Self::position_from_bounding_box(ptr_as_ref(prop.as_ptr()).get_bounding_box())
             }
             InteractionObject::Npc(character)

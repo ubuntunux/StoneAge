@@ -461,7 +461,7 @@ impl<'a> ControllerHelpWidget<'a> {
         let (primary_type, primary_text, request_type) = match interaction_object {
             InteractionObject::PropBed(prop) => {
                 let is_wrap_up = get_game_scene_manager().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay);
-                if is_wrap_up {
+                if is_wrap_up || prop.borrow().is_deployed_prop() {
                     (
                         KeyBindingType::Interaction,
                         prop.borrow()._prop_data.borrow()._name.clone(),
@@ -500,6 +500,12 @@ impl<'a> ControllerHelpWidget<'a> {
                             RequestType::None,
                         )
                     }
+                } else if prop.borrow().is_deployed_prop() {
+                    (
+                        KeyBindingType::Interaction,
+                        prop.borrow()._prop_data.borrow()._name.clone(),
+                        RequestType::None,
+                    )
                 } else {
                     (
                         KeyBindingType::Interaction,
@@ -508,6 +514,11 @@ impl<'a> ControllerHelpWidget<'a> {
                     )
                 }
             }
+            InteractionObject::PropDeployed(prop) => (
+                KeyBindingType::Interaction,
+                prop.borrow()._prop_data.borrow()._name.clone(),
+                RequestType::None,
+            ),
             InteractionObject::Npc(npc) => {
                 if !get_game_client().is_available_interaction() {
                     (KeyBindingType::None, String::new(), RequestType::None)

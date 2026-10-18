@@ -260,6 +260,7 @@ impl<'a> PlacementPreview<'a> {
             _position: self._position,
             _rotation: self._rotation,
             _scale: self._scale,
+            _deployed_item_data_name: self._item_data_name.clone(),
             ..Default::default()
         };
 

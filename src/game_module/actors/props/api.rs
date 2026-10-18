@@ -45,6 +45,7 @@ pub struct PropCreateInfo {
     pub _rotation: Vector3<f32>,
     pub _scale: Vector3<f32>,
     pub _instance_parameters: serde_json::Map<String, serde_json::Value>,
+    pub _deployed_item_data_name: String,
 }
 
 #[derive(Serialize, Deserialize, Default, Debug, Clone, PartialEq)]
@@ -89,6 +90,7 @@ pub struct Prop<'a> {
     pub _prop_data: RcRefCell<PropData>,
     pub _prop_stats: Box<PropStats>,
     pub _instance_parameters: serde_json::Map<String, serde_json::Value>,
+    pub _deployed_item_data_name: String,
 }
 
 pub struct PropManager<'a> {

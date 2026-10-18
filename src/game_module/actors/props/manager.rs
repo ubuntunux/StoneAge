@@ -244,7 +244,7 @@ impl<'a> PropManager<'a> {
                         );
                         let is_wrap_up = get_game_scene_manager().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay);
                         let is_in_player_range = is_available_interaction
-                            && is_wrap_up
+                            && (is_wrap_up || prop.is_deployed_prop())
                             && to_player_distance <= CHARACTER_INTERACTION_DISTANCE;
 
                         Self::sync_interaction_object(
@@ -361,7 +361,19 @@ impl<'a> PropManager<'a> {
                             InteractionObject::PropTable(prop_refcell.clone()),
                         );
                     }
-                    _ => (),
+                    _ => {
+                        if prop.is_deployed_prop() {
+                            let is_in_player_range = is_available_interaction
+                                && Self::check_player_in_prop_range(&player, &prop, CHARACTER_INTERACTION_DISTANCE);
+
+                            Self::sync_interaction_object(
+                                &mut player,
+                                is_interaction_object,
+                                is_in_player_range,
+                                InteractionObject::PropDeployed(prop_refcell.clone()),
+                            );
+                        }
+                    }
                 }
             }
         }

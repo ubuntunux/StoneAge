@@ -1,10 +1,12 @@
 use crate::game_module::actors::character::{Character, CharacterDataType, RequestType};
+use crate::game_module::actors::interaction_object::InteractionObject;
 use crate::game_module::actors::props::Prop;
 use crate::game_module::game_client::GamePhase;
 use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, AUDIO_SELECT_ITEM, ITEM_NONE};
 use crate::game_module::game_input::UiInput;
 use crate::game_module::game_service_locator::{
-    get_character_manager, get_game_client_mut, get_game_scene_manager, get_game_scene_manager_mut, get_game_ui_manager,
+    get_character_manager, get_game_client_mut, get_game_scene_manager, get_game_scene_manager_mut,
+    get_game_ui_manager, get_item_manager_mut, get_prop_manager_mut,
 };
 use crate::game_module::game_ui_manager::move_mouse_to_ui_component;
 use crate::game_module::scenario::scenario::ScenarioType;
@@ -34,6 +36,7 @@ pub enum InteractionMenuTarget<'a> {
     Npc(RcRefCell<Character<'a>>),
     Bed(RcRefCell<Prop<'a>>),
     Table(RcRefCell<Prop<'a>>),
+    Prop(RcRefCell<Prop<'a>>),
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -47,6 +50,7 @@ pub enum NpcInteractionOption {
     GiveItem,
     Sleep,
     CookItem(usize),
+    Retrieve,
     Close,
 }
 
@@ -81,6 +85,7 @@ impl NpcInteractionOption {
                     .unwrap_or("Food");
                 format!("Cook {}", item_name)
             }
+            NpcInteractionOption::Retrieve => String::from("Retrieve to Quick Slot"),
             NpcInteractionOption::Close => String::from("Close"),
         }
     }
@@ -190,17 +195,25 @@ impl<'a> NpcInteractionMenuWidget<'a> {
     }
 
     pub fn open_bed_interaction_menu(&mut self, target_bed: RcRefCell<Prop<'a>>) {
-        if !get_game_scene_manager().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay) {
+        if !get_game_scene_manager().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay)
+            && !target_bed.borrow().is_deployed_prop()
+        {
             return;
         }
         self.open_with_target(InteractionMenuTarget::Bed(target_bed));
     }
 
     pub fn open_table_interaction_menu(&mut self, target_table: RcRefCell<Prop<'a>>) {
-        if !get_game_scene_manager().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay) {
+        if !get_game_scene_manager().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay)
+            && !target_table.borrow().is_deployed_prop()
+        {
             return;
         }
         self.open_with_target(InteractionMenuTarget::Table(target_table));
+    }
+
+    pub fn open_prop_interaction_menu(&mut self, target_prop: RcRefCell<Prop<'a>>) {
+        self.open_with_target(InteractionMenuTarget::Prop(target_prop));
     }
 
     pub fn close_npc_interaction_menu(&mut self) {
@@ -249,11 +262,16 @@ impl<'a> NpcInteractionMenuWidget<'a> {
         let mut options = Vec::new();
 
         match &self._target {
-            InteractionMenuTarget::Bed(_) => {
-                options.push(NpcInteractionOption::Sleep);
+            InteractionMenuTarget::Bed(prop) => {
+                if get_game_scene_manager().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay) {
+                    options.push(NpcInteractionOption::Sleep);
+                }
+                if prop.borrow().is_deployed_prop() {
+                    options.push(NpcInteractionOption::Retrieve);
+                }
                 options.push(NpcInteractionOption::Close);
             }
-            InteractionMenuTarget::Table(_) => {
+            InteractionMenuTarget::Table(prop) => {
                 if let Some(table_storage_widget) = get_game_ui_manager().get_table_storage_widget() {
                     let table_slots = &table_storage_widget._table_inventory_slots;
                     let mut seen_items = std::collections::HashSet::new();
@@ -266,6 +284,15 @@ impl<'a> NpcInteractionMenuWidget<'a> {
                             options.push(NpcInteractionOption::CookItem(slot_idx));
                         }
                     }
+                }
+                if prop.borrow().is_deployed_prop() {
+                    options.push(NpcInteractionOption::Retrieve);
+                }
+                options.push(NpcInteractionOption::Close);
+            }
+            InteractionMenuTarget::Prop(prop) => {
+                if prop.borrow().is_deployed_prop() {
+                    options.push(NpcInteractionOption::Retrieve);
                 }
                 options.push(NpcInteractionOption::Close);
             }
@@ -446,6 +473,12 @@ impl<'a> NpcInteractionMenuWidget<'a> {
             InteractionMenuTarget::Table(table) => Some(table.clone()),
             _ => None,
         };
+        let target_prop = match &previous_target {
+            InteractionMenuTarget::Bed(prop)
+            | InteractionMenuTarget::Table(prop)
+            | InteractionMenuTarget::Prop(prop) => Some(prop.clone()),
+            _ => None,
+        };
 
         match option {
             NpcInteractionOption::Cooking => {
@@ -497,6 +530,27 @@ impl<'a> NpcInteractionMenuWidget<'a> {
                     .get_item_manager_mut()
                     .place_table_storage_item_on_table(target_table, slot_idx);
             }
+            NpcInteractionOption::Retrieve => {
+                if let Some(target_prop) = target_prop {
+                    let deployed_item_name = target_prop.borrow()._deployed_item_data_name.clone();
+                    if !deployed_item_name.is_empty() {
+                        let success = get_item_manager_mut().pick_item(&deployed_item_name, 1);
+                        if success {
+                            let mut player = character_manager.get_player().borrow_mut();
+                            player
+                                ._controller
+                                .remove_interaction_object(InteractionObject::PropDeployed(target_prop.clone()));
+                            player
+                                ._controller
+                                .remove_interaction_object(InteractionObject::PropTable(target_prop.clone()));
+                            player
+                                ._controller
+                                .remove_interaction_object(InteractionObject::PropBed(target_prop.clone()));
+                            get_prop_manager_mut().remove_prop(&target_prop);
+                        }
+                    }
+                }
+            }
             NpcInteractionOption::Close => {}
         }
     }
@@ -513,7 +567,9 @@ impl<'a> NpcInteractionMenuWidget<'a> {
 
         let target_pos = match &self._target {
             InteractionMenuTarget::Npc(npc) => *npc.borrow().get_position() + Vector3::new(0.0, 1.8, 0.0),
-            InteractionMenuTarget::Bed(prop) | InteractionMenuTarget::Table(prop) => {
+            InteractionMenuTarget::Bed(prop)
+            | InteractionMenuTarget::Table(prop)
+            | InteractionMenuTarget::Prop(prop) => {
                 let prop_borrow = prop.borrow();
                 let bounding_box = prop_borrow.get_bounding_box();
                 Vector3::new(

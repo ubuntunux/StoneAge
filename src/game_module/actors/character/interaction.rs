@@ -36,7 +36,9 @@ impl<'a> Character<'a> {
 
             match target_interaction {
                 InteractionObject::PropBed(prop) => {
-                    if get_game_scene_manager().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay) {
+                    if get_game_scene_manager().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay)
+                        || prop.borrow().is_deployed_prop()
+                    {
                         self.set_move_idle();
                         get_game_client_mut().set_next_game_phase(GamePhase::Interaction);
                         get_game_ui_manager_mut().open_bed_interaction_menu(prop);
@@ -52,18 +54,23 @@ impl<'a> Character<'a> {
                 InteractionObject::PropTable(prop) => {
                     self.look_at(prop.borrow().get_position());
                     self.set_move_idle();
-                    if get_game_scene_manager().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay) {
-                        if item_manager.has_item_on_table(&prop) {
-                            if let Some(item_data_name) = item_manager.consume_item_on_table(&prop) {
-                                self.set_action_eating();
-                                self.apply_food_item_stats(item_data_name.as_str());
-                                get_game_ui_manager_mut().get_player_records_mut().add_food_eaten_count(1);
-                            }
-                        } else {
-                            get_game_client_mut().set_next_game_phase(GamePhase::Interaction);
-                            get_game_ui_manager_mut().open_table_interaction_menu(prop);
+                    let is_wrap_up = get_game_scene_manager().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay);
+                    if is_wrap_up && item_manager.has_item_on_table(&prop) {
+                        if let Some(item_data_name) = item_manager.consume_item_on_table(&prop) {
+                            self.set_action_eating();
+                            self.apply_food_item_stats(item_data_name.as_str());
+                            get_game_ui_manager_mut().get_player_records_mut().add_food_eaten_count(1);
                         }
+                    } else if is_wrap_up || prop.borrow().is_deployed_prop() {
+                        get_game_client_mut().set_next_game_phase(GamePhase::Interaction);
+                        get_game_ui_manager_mut().open_table_interaction_menu(prop);
                     }
+                }
+                InteractionObject::PropDeployed(prop) => {
+                    self.look_at(prop.borrow().get_position());
+                    self.set_move_idle();
+                    get_game_client_mut().set_next_game_phase(GamePhase::Interaction);
+                    get_game_ui_manager_mut().open_prop_interaction_menu(prop);
                 }
                 InteractionObject::Npc(character) => {
                     if get_game_client().is_available_interaction() {

@@ -71,6 +71,7 @@ impl<'a> Prop<'a> {
                 _hit_blink_time: 0.0,
             }),
             _instance_parameters: prop_create_info._instance_parameters.clone(),
+            _deployed_item_data_name: prop_create_info._deployed_item_data_name.clone(),
         };
 
         if prop_data_ref._prop_type == PropDataType::Ceiling || prop_data_ref._prop_type == PropDataType::Gate {
@@ -79,6 +80,10 @@ impl<'a> Prop<'a> {
 
         prop.initialize_prop();
         prop
+    }
+
+    pub fn is_deployed_prop(&self) -> bool {
+        !self._deployed_item_data_name.is_empty()
     }
 
     pub fn initialize_prop(&mut self) {
@@ -102,6 +107,7 @@ impl<'a> Prop<'a> {
                     _rotation: self._prop_stats._rotation,
                     _scale: self._prop_stats._scale,
                     _instance_parameters: self._instance_parameters.clone(),
+                    _deployed_item_data_name: self._deployed_item_data_name.clone(),
                 },
             },
         )
