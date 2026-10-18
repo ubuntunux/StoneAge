@@ -604,15 +604,22 @@ impl<'a> GameController<'a> {
                 if get_prop_manager_mut().get_placement_preview_mut().confirm_placement() {
                     let selected_item_data_name =
                         get_game_ui_manager().get_selected_inventory_item_data_name().to_string();
+                    let selected_item_type = get_game_ui_manager().get_selected_inventory_item_data_type();
                     let remaining = get_game_ui_manager().get_item_count(&selected_item_data_name);
                     if remaining > 0
-                        && let Some(prop_data_name) = item_type.get_deploy_prop_data_name()
+                        && let Some(prop_data_name) = selected_item_type.get_deploy_prop_data_name()
                     {
                         get_prop_manager_mut().get_placement_preview_mut().start_placement(
                             &selected_item_data_name,
                             prop_data_name,
                             player_mut,
                         );
+                    } else {
+                        let hand_slot = get_game_ui_manager_mut()
+                            .get_item_bar_widget_mut()
+                            .find_hand_item_slot_index()
+                            .unwrap_or(INVALID_ITEM_INDEX);
+                        get_game_ui_manager_mut().select_item(hand_slot);
                     }
                 }
             } else if is_available_attack {

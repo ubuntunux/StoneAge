@@ -849,10 +849,10 @@ impl<'a> ItemBarWidget<'a> {
             if self.is_selectable_slot(target_slot) {
                 self._selected_inventory_slot_index = target_slot;
                 let selected_item_data_name = self.get_selected_item_data_name().to_string();
-                get_item_manager_mut().attach_item(player, &selected_item_data_name);
-
                 let item_type = self.get_selected_item_data_type();
+
                 if item_type.is_deployable() {
+                    get_item_manager_mut().detach_item(player);
                     if let Some(prop_data_name) = item_type.get_deploy_prop_data_name() {
                         get_prop_manager_mut().get_placement_preview_mut().start_placement(
                             &selected_item_data_name,
@@ -861,6 +861,7 @@ impl<'a> ItemBarWidget<'a> {
                         );
                     }
                 } else {
+                    get_item_manager_mut().attach_item(player, &selected_item_data_name);
                     get_prop_manager_mut().get_placement_preview_mut().cancel_placement();
                 }
             } else {

@@ -370,6 +370,11 @@ impl<'a> ItemManager<'a> {
             }
         }
 
+        let item_data = get_game_resources().get_item_data(item_data_name);
+        if item_data.borrow()._item_type.is_deployable() {
+            return;
+        }
+
         let item_create_info = ItemCreateInfo {
             _item_data_name: String::from(item_data_name),
             ..Default::default()

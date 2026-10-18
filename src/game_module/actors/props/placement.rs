@@ -1,24 +1,23 @@
 use crate::game_module::actors::character::Character;
 use crate::game_module::actors::props::api::PropCreateInfo;
 use crate::game_module::game_constants::{
-    AUDIO_PICKUP_ITEM, MATERIAL_PLACEMENT_PREVIEW, PLACEMENT_DISTANCE, PLACEMENT_ROTATION_SPEED,
+    AUDIO_PICKUP_ITEM, AUDIO_WRONG, PLACEMENT_DISTANCE, PLACEMENT_ROTATION_SPEED,
 };
 use crate::game_module::game_service_locator::{
     get_game_resources, get_game_ui_manager_mut, get_item_manager_mut, get_prop_manager_mut,
 };
 use nalgebra::{Vector2, Vector3, Vector4};
 use rust_engine_3d::audio::audio_manager::AudioLoop;
-use rust_engine_3d::core::engine_service_locator::{
-    get_audio_manager_mut, get_engine_resources, get_scene_manager, get_scene_manager_mut,
-};
+use rust_engine_3d::core::engine_service_locator::{get_audio_manager_mut, get_scene_manager, get_scene_manager_mut};
 use rust_engine_3d::renderer::push_constants::PushConstantParameter;
-use rust_engine_3d::scene::collision::CollisionType;
+use rust_engine_3d::scene::collision::{CollisionData, CollisionType};
 use rust_engine_3d::scene::render_object::{RenderObjectCreateInfo, RenderObjectData};
-use rust_engine_3d::utilities::system::RcRefCell;
+use rust_engine_3d::utilities::math;
+use rust_engine_3d::utilities::system::{RcRefCell, ptr_as_ref};
 use uuid::Uuid;
 
-pub const PREVIEW_COLOR_VALID: Vector4<f32> = Vector4::new(0.4, 1.2, 0.4, 0.6);
-pub const PREVIEW_COLOR_INVALID: Vector4<f32> = Vector4::new(1.2, 0.3, 0.3, 0.6);
+pub const PREVIEW_BLINK_SPEED: f32 = 12.0;
+pub const PREVIEW_BLINK_INTENSITY: f32 = 2.0;
 pub const PLACEMENT_MIN_DISTANCE: f32 = 0.8;
 pub const PLACEMENT_MAX_DISTANCE: f32 = 6.0;
 
@@ -31,7 +30,9 @@ pub struct PlacementPreview<'a> {
     pub _rotation: Vector3<f32>,
     pub _scale: Vector3<f32>,
     pub _yaw_rotation: f32,
+    pub _yaw_offset: f32,
     pub _is_valid_location: bool,
+    pub _blink_timer: f32,
     pub _marker: std::marker::PhantomData<&'a ()>,
 }
 
@@ -46,7 +47,9 @@ impl<'a> Default for PlacementPreview<'a> {
             _rotation: Vector3::zeros(),
             _scale: Vector3::new(1.0, 1.0, 1.0),
             _yaw_rotation: 0.0,
+            _yaw_offset: 0.0,
             _is_valid_location: false,
+            _blink_timer: 0.0,
             _marker: std::marker::PhantomData,
         }
     }
@@ -88,6 +91,7 @@ impl<'a> PlacementPreview<'a> {
 
         self._item_data_name = item_data_name.to_string();
         self._prop_data_name = prop_data_name.to_string();
+        self._yaw_offset = 0.0;
         self._yaw_rotation = player.get_rotation().y;
         self._scale = Vector3::new(1.0, 1.0, 1.0);
 
@@ -95,7 +99,7 @@ impl<'a> PlacementPreview<'a> {
         let target_xz = player.get_position() + face_dir * PLACEMENT_DISTANCE;
         let ground_y = get_scene_manager().get_height_map_data().get_height_bilinear(&target_xz, 0);
         self._position = Vector3::new(target_xz.x, ground_y, target_xz.z);
-        self._rotation = Vector3::new(0.0, self._yaw_rotation, 0.0);
+        self._rotation = Vector3::new(player.get_rotation().x, self._yaw_rotation, player.get_rotation().z);
 
         let render_create_info = RenderObjectCreateInfo {
             _model_data_name: model_data_name,
@@ -112,18 +116,22 @@ impl<'a> PlacementPreview<'a> {
             Some(CollisionType::NONE),
         );
 
-        let preview_mat = get_engine_resources().get_material_instance_data(MATERIAL_PLACEMENT_PREVIEW);
-        for mat in render_object.borrow_mut().get_material_instance_data_list_mut().iter_mut() {
-            *mat = preview_mat.clone();
+        let model_collision = render_object.borrow().get_model_data().borrow()._collision.clone();
+        if model_collision.is_valid_collision() {
+            render_object.borrow_mut()._collision = model_collision;
+        } else {
+            let mut col = CollisionData::default();
+            col._collision_type = CollisionType::BOX;
+            col._bounding_box = render_object.borrow().get_bounding_box().clone();
+            render_object.borrow_mut()._collision = col;
         }
-
-        render_object
-            .borrow_mut()
-            .set_push_constant_parameter("_Color", &PushConstantParameter::Float4(PREVIEW_COLOR_VALID));
 
         self._render_object = Some(render_object);
         self._is_active = true;
         self._is_valid_location = true;
+        self._blink_timer = 0.0;
+
+        self.update_placement(player, 0.0, 0.0);
 
         log::info!(
             "Started placement preview: item={}, prop={}",
@@ -138,10 +146,14 @@ impl<'a> PlacementPreview<'a> {
             return;
         }
 
+        self._blink_timer += delta_time;
+
         if rotate_input != 0.0 {
-            self._yaw_rotation += rotate_input * PLACEMENT_ROTATION_SPEED * delta_time;
-            self._yaw_rotation = self._yaw_rotation % std::f32::consts::TAU;
+            self._yaw_offset += rotate_input * PLACEMENT_ROTATION_SPEED * delta_time;
+            self._yaw_offset = self._yaw_offset % std::f32::consts::TAU;
         }
+
+        self._yaw_rotation = (player.get_rotation().y + self._yaw_offset) % std::f32::consts::TAU;
 
         let player_pos = player.get_position();
         let face_dir = player.get_face_direction();
@@ -150,29 +162,87 @@ impl<'a> PlacementPreview<'a> {
         let ground_y = height_map.get_height_bilinear(&target_xz, 0);
 
         self._position = Vector3::new(target_xz.x, ground_y, target_xz.z);
-        self._rotation = Vector3::new(0.0, self._yaw_rotation, 0.0);
+        self._rotation = Vector3::new(player.get_rotation().x, self._yaw_rotation, player.get_rotation().z);
 
         let dist_from_player =
             (Vector2::new(self._position.x, self._position.z) - Vector2::new(player_pos.x, player_pos.z)).magnitude();
 
-        self._is_valid_location =
+        let is_valid_distance_and_ground =
             dist_from_player >= PLACEMENT_MIN_DISTANCE && dist_from_player <= PLACEMENT_MAX_DISTANCE && ground_y >= 0.0;
 
         if let Some(render_obj) = &self._render_object {
-            render_obj.borrow_mut().get_transform_object_data_mut().set_position(&self._position);
-            render_obj.borrow_mut().get_transform_object_data_mut().set_yaw(self._yaw_rotation);
+            let mut render_obj_mut = render_obj.borrow_mut();
+            {
+                let transform = render_obj_mut.get_transform_object_data_mut();
+                transform.set_position(&self._position);
+                transform.set_rotation(&self._rotation);
+            }
+            render_obj_mut.update_render_object_data(0.0);
 
+            let preview_obj_id = render_obj_mut.get_object_id();
+            let preview_collision = render_obj_mut.get_collision();
+
+            let bound_min = math::get_min(
+                &preview_collision._bounding_box._min,
+                &preview_collision._bounding_box._max,
+            );
+            let bound_max = math::get_max(
+                &preview_collision._bounding_box._min,
+                &preview_collision._bounding_box._max,
+            );
+
+            let scene_manager = get_scene_manager();
+            let collision_objects = scene_manager.collect_collision_objects(&bound_min, &bound_max);
+
+            let mut has_collision = false;
+            for collision_object in collision_objects.values() {
+                let block_render_object = ptr_as_ref(collision_object.as_ptr());
+                if block_render_object.get_object_id() == preview_obj_id {
+                    continue;
+                }
+                if preview_collision.collide_collision(&block_render_object._collision) {
+                    has_collision = true;
+                    break;
+                }
+            }
+
+            if !has_collision && preview_collision.collide_collision(player.get_collision()) {
+                has_collision = true;
+            }
+
+            self._is_valid_location = is_valid_distance_and_ground && !has_collision;
+
+            let blink_phase = 0.5 - (self._blink_timer * PREVIEW_BLINK_SPEED).cos() * 0.5;
             let color = if self._is_valid_location {
-                PREVIEW_COLOR_VALID
+                // 노란색 깜빡임 (Yellow blink: R & G boost, B reduce)
+                Vector4::new(
+                    1.0 + blink_phase * PREVIEW_BLINK_INTENSITY,
+                    1.0 + blink_phase * PREVIEW_BLINK_INTENSITY,
+                    (1.0 - blink_phase * 0.8).max(0.0),
+                    1.0,
+                )
             } else {
-                PREVIEW_COLOR_INVALID
+                // 빨간색 깜빡임 (Red blink: R boost, G & B reduce)
+                Vector4::new(
+                    1.0 + blink_phase * PREVIEW_BLINK_INTENSITY,
+                    (1.0 - blink_phase * 0.8).max(0.0),
+                    (1.0 - blink_phase * 0.8).max(0.0),
+                    1.0,
+                )
             };
-            render_obj.borrow_mut().set_push_constant_parameter("_Color", &PushConstantParameter::Float4(color));
+
+            render_obj_mut.set_push_constant_parameter("_color", &PushConstantParameter::Float4(color));
+            render_obj_mut.set_push_constant_parameter("_Color", &PushConstantParameter::Float4(color));
         }
     }
 
     pub fn confirm_placement(&mut self) -> bool {
-        if !self._is_active || !self._is_valid_location {
+        if !self._is_active {
+            return false;
+        }
+
+        if !self._is_valid_location {
+            get_audio_manager_mut().play_audio_bank(AUDIO_WRONG, AudioLoop::ONCE, None);
             return false;
         }
 
@@ -215,6 +285,9 @@ impl<'a> PlacementPreview<'a> {
         }
         self._is_active = false;
         self._is_valid_location = false;
+        self._blink_timer = 0.0;
+        self._yaw_offset = 0.0;
+        self._yaw_rotation = 0.0;
         self._item_data_name.clear();
         self._prop_data_name.clear();
     }
