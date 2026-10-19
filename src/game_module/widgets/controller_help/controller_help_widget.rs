@@ -492,12 +492,14 @@ impl<'a> ControllerHelpWidget<'a> {
                             format!("Eat a {}", item_name),
                             RequestType::None,
                         )
-                    } else {
+                    } else if get_game_ui_manager().has_eatable_table_storage_item() {
                         (
                             KeyBindingType::Interaction,
                             String::from("Make Dinner"),
                             RequestType::None,
                         )
+                    } else {
+                        (KeyBindingType::None, String::new(), RequestType::None)
                     }
                 } else {
                     (

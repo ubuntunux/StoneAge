@@ -351,7 +351,9 @@ impl<'a> PropManager<'a> {
                         );
                     }
                     PropDataType::Table => {
+                        let is_wrap_up = get_game_scene_manager().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay);
                         let is_in_player_range = is_available_interaction
+                            && is_wrap_up
                             && Self::check_player_in_prop_range(&player, &prop, CHARACTER_INTERACTION_DISTANCE);
 
                         Self::sync_interaction_object(

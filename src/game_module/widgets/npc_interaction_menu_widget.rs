@@ -205,6 +205,11 @@ impl<'a> NpcInteractionMenuWidget<'a> {
     }
 
     pub fn open_table_interaction_menu(&mut self, target_table: RcRefCell<Prop<'a>>) {
+        if get_game_scene_manager().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay)
+            && !get_game_ui_manager().has_eatable_table_storage_item()
+        {
+            return;
+        }
         self.open_with_target(InteractionMenuTarget::Table(target_table));
     }
 

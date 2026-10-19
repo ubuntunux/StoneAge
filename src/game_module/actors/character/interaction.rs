@@ -10,7 +10,7 @@ use crate::game_module::game_constants::{
 };
 use crate::game_module::game_service_locator::{
     get_character_manager_mut, get_game_client, get_game_client_mut, get_game_scene_manager,
-    get_game_scene_manager_mut, get_game_ui_manager_mut,
+    get_game_scene_manager_mut, get_game_ui_manager, get_game_ui_manager_mut,
 };
 use crate::game_module::scenario::scenario::ScenarioType;
 use nalgebra::Vector3;
@@ -53,16 +53,22 @@ impl<'a> Character<'a> {
                     self.set_move_idle();
                 }
                 InteractionObject::PropTable(prop) => {
+                    let is_wrap_up = get_game_scene_manager().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay);
+                    if !is_wrap_up {
+                        return;
+                    }
                     self.look_at(prop.borrow().get_position());
                     self.set_move_idle();
-                    let is_wrap_up = get_game_scene_manager().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay);
-                    if is_wrap_up && item_manager.has_item_on_table(&prop) {
+                    if item_manager.has_item_on_table(&prop) {
                         if let Some(item_data_name) = item_manager.consume_item_on_table(&prop) {
                             self.set_action_eating();
                             self.apply_food_item_stats(item_data_name.as_str());
                             get_game_ui_manager_mut().get_player_records_mut().add_food_eaten_count(1);
                         }
                     } else {
+                        if !get_game_ui_manager().has_eatable_table_storage_item() {
+                            return;
+                        }
                         get_game_client_mut().set_next_game_phase(GamePhase::Interaction);
                         get_game_ui_manager_mut().open_table_interaction_menu(prop);
                     }

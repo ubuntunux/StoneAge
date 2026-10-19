@@ -157,6 +157,22 @@ impl<'a> ScenarioWrapUpTheDay<'a> {
         let main_camera = get_scene_manager().get_main_camera_mut();
         get_game_controller_mut().update_fixed_camera_transform(main_camera);
     }
+
+    /// 플레이어가 테이블로 이동된 위치에 맞춰 게임 카메라를 즉시 갱신한다.
+    /// (ResourceSettlement 동안에는 game controller가 업데이트되지 않아 카메라가 이전 위치에 남아있기 때문)
+    pub fn snap_game_camera_to_player(&self) {
+        if let Some(player) = self._player.as_ref() {
+            let mut player_mut = player.borrow_mut();
+            // set_position 직후에는 render object의 bounding box가 갱신되지 않았으므로 먼저 갱신한다.
+            player_mut.update_transform();
+            player_mut.update_render_object();
+
+            let game_controller = get_game_controller_mut();
+            game_controller.set_camera_fixed(false);
+            game_controller.set_game_camera_auto_blend_mode(false);
+            game_controller.apply_game_camera_transform(get_scene_manager().get_main_camera_mut(), &mut player_mut);
+        }
+    }
 }
 
 fn clamp_actor_position_from_bed(actor: &Option<RcRefCell<Character>>, bed_pos: &Vector3<f32>, max_distance: f32) {
@@ -445,14 +461,14 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
         self._prop_bed_for_aru = game_scene_manager.get_prop_manager().get_prop_by_name(BED_FOR_ARU).cloned();
         self._prop_bed_for_ewa = game_scene_manager.get_prop_manager().get_prop_by_name(BED_FOR_EWA).cloned();
         self._prop_bed_for_koa = game_scene_manager.get_prop_manager().get_prop_by_name(BED_FOR_KOA).cloned();
-        self.setup_bed_camera();
+        //self.setup_bed_camera();
     }
 
     fn update_game_scenario(&mut self, _any_key_hold: bool, _any_key_pressed: bool, delta_time: f64) {
         let game_scene_manager = get_game_scene_manager_mut();
         let game_ui_manager = get_game_ui_manager_mut();
 
-        self.update_bed_camera(delta_time as f32);
+        //self.update_bed_camera(delta_time as f32);
 
         if let Some(prop_table) = self._prop_table.as_ref() {
             let table_pos = *prop_table.borrow().get_position();
@@ -506,6 +522,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                                 &self._prop_table,
                                 &Vector3::new(1.0, 0.0, 0.0),
                             );
+                            self.snap_game_camera_to_player();
                             game_ui_manager.set_auto_fade_inout(true);
                             self._scenario_track.set_next_scenario_phase(ScenarioPhase::ResourceSettlement, None);
                         }
@@ -518,13 +535,16 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                             get_game_scene_manager_mut().set_time_of_day(TIME_OF_NIGHT);
                         }
 
-                        self.setup_bed_camera();
+                        //self.setup_bed_camera();
 
                         let (_count, transferred_items) =
                             game_ui_manager.transfer_all_materials_to_table_storage_with_details();
                         game_ui_manager.open_daily_settlement(&transferred_items);
                     }
                     State::Update => {
+                        // 정산 중에는 game controller가 업데이트되지 않으므로 카메라를 플레이어에 맞춰 유지한다.
+                        self.snap_game_camera_to_player();
+
                         let phase_time = self._scenario_track.get_phase_time();
                         if SETTLEMENT_START_DELAY <= phase_time && !game_ui_manager.is_settlement_started() {
                             game_ui_manager.start_daily_settlement();
@@ -647,7 +667,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                 ScenarioPhase::Sleep => match state {
                     State::Begin => {
                         self._sleep_timer = 0.0;
-                        self.setup_bed_camera();
+                        //self.setup_bed_camera();
                         game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, DEFAULT_FADE_TIME);
                     }
                     State::Update => {
@@ -692,7 +712,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                 },
                 ScenarioPhase::End => {
                     if state == State::Begin {
-                        get_game_controller_mut().set_camera_fixed(false);
+                        //get_game_controller_mut().set_camera_fixed(false);
                     }
                 }
             }
