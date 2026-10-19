@@ -1,7 +1,7 @@
 use crate::game_module::actors::character::{ActionAnimationState, Character};
 use crate::game_module::game_client::GamePhase;
 use crate::game_module::game_constants::*;
-use crate::game_module::game_input::{CameraInput, FishingInputState, GamePlayInputState};
+use crate::game_module::game_input::{CameraInput, DeployInputState, FishingInputState, GameInput, GamePlayInputState};
 use crate::game_module::game_service_locator::{
     get_character_manager, get_game_client, get_game_client_mut, get_game_ui_manager, get_game_ui_manager_mut,
     get_prop_manager, get_prop_manager_mut,
@@ -11,13 +11,12 @@ use crate::game_module::widgets::item_bar::INVALID_ITEM_INDEX;
 use nalgebra::{Matrix4, Vector2, Vector3};
 use rust_engine_3d::core::engine_core::TimeData;
 use rust_engine_3d::core::engine_service_locator::{get_engine_core, get_scene_manager};
-use rust_engine_3d::core::input::{ButtonState, JoystickInputData, KeyboardInputData, MouseInputData, MouseMoveData};
+use rust_engine_3d::core::input::{JoystickInputData, KeyboardInputData, MouseInputData, MouseMoveData};
 use rust_engine_3d::scene::camera::CameraObjectData;
 use rust_engine_3d::scene::collision::{CollisionCreateInfo, CollisionData, CollisionType};
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{RcRefCell, ptr_as_mut, ptr_as_ref};
 use strum_macros::{Display, EnumCount, EnumIter, EnumString};
-use winit::keyboard::KeyCode;
 
 pub use crate::game_module::game_input::{
     HoldRepeatController, NAV_INITIAL_DELAY, NAV_REPEAT_INTERVAL, QuickSlotNavDirection, WidgetNavRepeatController,
@@ -437,33 +436,17 @@ impl<'a> GameController<'a> {
                     }
                     None => {}
                 }
-            } else if keyboard_input_data.is_any_key_pressed() {
-                const NUMPAD_KEY_MAP: [KeyCode; 10] = [
-                    KeyCode::Digit1,
-                    KeyCode::Digit2,
-                    KeyCode::Digit3,
-                    KeyCode::Digit4,
-                    KeyCode::Digit5,
-                    KeyCode::Digit6,
-                    KeyCode::Digit7,
-                    KeyCode::Digit8,
-                    KeyCode::Digit9,
-                    KeyCode::Digit0,
-                ];
-
-                for (item_index, numpad_key) in NUMPAD_KEY_MAP.iter().enumerate() {
-                    if keyboard_input_data.get_key_pressed(*numpad_key) {
-                        game_ui_manager.select_quick_slot(item_index);
-                        break;
-                    }
-                }
+            } else if let Some(item_index) = GameInput::get_pressed_quick_slot_index(keyboard_input_data) {
+                game_ui_manager.select_quick_slot(item_index);
             }
         }
 
         // set action & move
         let player_mut = ptr_as_mut(player.as_ptr());
 
-        if player_mut.is_action(ActionAnimationState::Dance) && input.is_any_input(keyboard_input_data.is_any_key_pressed()) {
+        if player_mut.is_action(ActionAnimationState::Dance)
+            && input.is_any_input(GameInput::is_any_key_pressed(keyboard_input_data))
+        {
             player_mut.set_action_none()
         }
 
@@ -537,41 +520,27 @@ impl<'a> GameController<'a> {
         let is_available_attack = player_mut.is_available_attack();
         let item_type = player_mut.get_attached_item_data_type();
 
+        let deploy_input = if is_placing {
+            DeployInputState::from_input(
+                keyboard_input_data,
+                joystick_input_data,
+                mouse_input_data,
+                get_engine_core().is_keyboard_input_mode(),
+            )
+        } else {
+            DeployInputState::default()
+        };
+
         if is_placing {
-            let mut rotate_input: f32 = 0.0;
-            if keyboard_input_data.get_key_hold(KeyCode::KeyQ)
-                || joystick_input_data._btn_left_shoulder == ButtonState::Hold
-            {
-                rotate_input -= 1.0;
-            }
-            if keyboard_input_data.get_key_hold(KeyCode::KeyE)
-                || joystick_input_data._btn_right_shoulder == ButtonState::Hold
-            {
-                rotate_input += 1.0;
-            }
-            get_prop_manager_mut().get_placement_preview_mut().update_placement(player_mut, delta_time, rotate_input);
+            get_prop_manager_mut().get_placement_preview_mut().update_placement(
+                player_mut,
+                delta_time,
+                deploy_input._rotate,
+            );
         }
 
-        let is_keyboard_input_mode = get_engine_core().is_keyboard_input_mode();
-        let is_deploy_confirm = if is_placing {
-            if is_keyboard_input_mode {
-                input._attack_or_use_item || keyboard_input_data.get_key_pressed(KeyCode::Space)
-            } else {
-                joystick_input_data._btn_a == ButtonState::Pressed
-            }
-        } else {
-            false
-        };
-
-        let is_deploy_cancel = if is_placing {
-            if is_keyboard_input_mode {
-                input._power_attack || keyboard_input_data.get_key_pressed(KeyCode::Escape)
-            } else {
-                joystick_input_data._btn_b == ButtonState::Pressed || input._cancel
-            }
-        } else {
-            false
-        };
+        let is_deploy_confirm = is_placing && deploy_input._confirm;
+        let is_deploy_cancel = is_placing && deploy_input._cancel;
 
         if is_deploy_confirm {
             if get_prop_manager_mut().get_placement_preview_mut().confirm_placement() {
@@ -656,47 +625,15 @@ impl<'a> GameController<'a> {
             return;
         }
 
-        let mouse_sensitivity: f32 = 0.001;
-        let mouse_pos_delta = Vector2::<f32>::new(
-            mouse_move_data._mouse_pos_delta.x as f32,
-            mouse_move_data._mouse_pos_delta.y as f32,
-        ) * mouse_sensitivity;
-        let mouse_scroll_delta = Vector2::<f32>::new(
-            mouse_move_data._scroll_delta.x as f32,
-            mouse_move_data._scroll_delta.y as f32,
+        let camera_control =
+            CameraInput::get_camera_control_state(keyboard_input_data, joystick_input_data, mouse_move_data);
+
+        self.update_game_camera(
+            camera_control._pitch,
+            camera_control._yaw,
+            camera_control._zoom,
+            delta_time,
         );
-
-        let stick_right_direction = Vector2::<f32>::new(
-            joystick_input_data._stick_right_direction.x as f32,
-            joystick_input_data._stick_right_direction.y as f32,
-        ) * JOYSTICK_SENSITIVITY;
-
-        let is_zoom_in = CameraInput::is_zoom_in(keyboard_input_data, joystick_input_data, mouse_move_data);
-        let is_zoom_out = CameraInput::is_zoom_out(keyboard_input_data, joystick_input_data, mouse_move_data);
-
-        let pitch_control: f32 = if mouse_pos_delta.y != 0.0 {
-            mouse_pos_delta.y
-        } else {
-            stick_right_direction.y
-        };
-
-        let yaw_control: f32 = if mouse_pos_delta.x != 0.0 {
-            mouse_pos_delta.x
-        } else {
-            stick_right_direction.x
-        };
-
-        let zoom_control: f32 = if is_zoom_in || is_zoom_out {
-            if mouse_scroll_delta.y != 0.0 {
-                -mouse_scroll_delta.y
-            } else {
-                if is_zoom_in { -0.5 } else { 0.5 }
-            }
-        } else {
-            0.0
-        };
-
-        self.update_game_camera(pitch_control, yaw_control, zoom_control, delta_time);
         self.apply_game_camera_transform(main_camera, player_mut);
     }
 
@@ -804,33 +741,26 @@ impl<'a> GameController<'a> {
             }
         }
 
-        // 2. Rotate preview (Q / E keys or joystick shoulder buttons)
-        let mut rotate_input: f32 = 0.0;
-        if keyboard_input_data.get_key_hold(KeyCode::KeyQ)
-            || joystick_input_data._btn_left_shoulder == ButtonState::Hold
-        {
-            rotate_input -= 1.0;
-        }
-        if keyboard_input_data.get_key_hold(KeyCode::KeyE)
-            || joystick_input_data._btn_right_shoulder == ButtonState::Hold
-        {
-            rotate_input += 1.0;
-        }
+        let deploy_input = DeployInputState::from_input(
+            keyboard_input_data,
+            joystick_input_data,
+            mouse_input_data,
+            get_engine_core().is_keyboard_input_mode(),
+        );
 
-        // 3. Update preview placement on heightmap
-        get_prop_manager_mut().get_placement_preview_mut().update_placement(&player_mut, delta_time, rotate_input);
+        // 2. Rotate preview & 3. Update preview placement on heightmap
+        get_prop_manager_mut().get_placement_preview_mut().update_placement(
+            &player_mut,
+            delta_time,
+            deploy_input._rotate,
+        );
 
-        // 4. Confirm (Left click or Space or Gamepad A)
-        let is_confirm = input._attack_or_use_item || keyboard_input_data.get_key_pressed(KeyCode::Space);
-
-        // 5. Cancel (Right click or ESC or Gamepad B)
-        let is_cancel = input._power_attack || input._cancel || keyboard_input_data.get_key_pressed(KeyCode::Escape);
-
-        if is_confirm {
+        // 4. Confirm & 5. Cancel
+        if deploy_input._confirm {
             if get_prop_manager_mut().get_placement_preview_mut().confirm_placement() {
                 get_game_client_mut().set_next_game_phase(GamePhase::GamePlay);
             }
-        } else if is_cancel {
+        } else if deploy_input._cancel {
             get_prop_manager_mut().get_placement_preview_mut().cancel_placement();
             get_game_client_mut().set_next_game_phase(GamePhase::GamePlay);
         }

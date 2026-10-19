@@ -189,7 +189,7 @@ pub enum GamePlayAction {
     OpenInventory,
     OpenMenu,
     PrevQuickSlotRow,
-    NextQuickSlotRow
+    NextQuickSlotRow,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -672,6 +672,35 @@ impl CookingMinigameInput {
 pub struct GameInput;
 
 impl GameInput {
+    pub fn is_any_key_pressed(keyboard: &KeyboardInputData) -> bool {
+        keyboard.is_any_key_pressed()
+    }
+
+    pub fn get_pressed_quick_slot_index(keyboard: &KeyboardInputData) -> Option<usize> {
+        if !keyboard.is_any_key_pressed() {
+            return None;
+        }
+
+        const QUICK_SLOT_KEY_CODES: [KeyCode; 10] = [
+            KeyCode::Digit1,
+            KeyCode::Digit2,
+            KeyCode::Digit3,
+            KeyCode::Digit4,
+            KeyCode::Digit5,
+            KeyCode::Digit6,
+            KeyCode::Digit7,
+            KeyCode::Digit8,
+            KeyCode::Digit9,
+            KeyCode::Digit0,
+        ];
+
+        for (item_index, key_code) in QUICK_SLOT_KEY_CODES.iter().enumerate() {
+            if keyboard.get_key_pressed(*key_code) {
+                return Some(item_index);
+            }
+        }
+        None
+    }
     pub fn is_moving(keyboard: &KeyboardInputData, joystick: &JoystickInputData) -> bool {
         let is_key_move = [
             KeyCode::KeyW,
@@ -891,9 +920,81 @@ impl FishingInputState {
     }
 }
 
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
+pub struct DeployInputState {
+    pub _rotate: f32,
+    pub _confirm: bool,
+    pub _cancel: bool,
+}
+
+impl DeployInputState {
+    pub fn from_input(
+        keyboard: &KeyboardInputData,
+        joystick: &JoystickInputData,
+        mouse: &MouseInputData,
+        is_keyboard_input_mode: bool,
+    ) -> Self {
+        Self {
+            _rotate: DeployInput::get_rotate_input(keyboard, joystick),
+            _confirm: DeployInput::is_confirm(keyboard, joystick, mouse, is_keyboard_input_mode),
+            _cancel: DeployInput::is_cancel(keyboard, joystick, mouse, is_keyboard_input_mode),
+        }
+    }
+}
+
+pub struct DeployInput;
+
+impl DeployInput {
+    pub fn get_rotate_input(keyboard: &KeyboardInputData, joystick: &JoystickInputData) -> f32 {
+        let mut rotate_input: f32 = 0.0;
+        if keyboard.get_key_hold(KeyCode::KeyQ) || joystick._btn_left_shoulder == ButtonState::Hold {
+            rotate_input -= 1.0;
+        }
+        if keyboard.get_key_hold(KeyCode::KeyE) || joystick._btn_right_shoulder == ButtonState::Hold {
+            rotate_input += 1.0;
+        }
+        rotate_input
+    }
+
+    pub fn is_confirm(
+        keyboard: &KeyboardInputData,
+        joystick: &JoystickInputData,
+        mouse: &MouseInputData,
+        is_keyboard_input_mode: bool,
+    ) -> bool {
+        if is_keyboard_input_mode {
+            mouse._btn_l_pressed || keyboard.get_key_pressed(KeyCode::Space)
+        } else {
+            joystick._btn_a == ButtonState::Pressed
+        }
+    }
+
+    pub fn is_cancel(
+        keyboard: &KeyboardInputData,
+        joystick: &JoystickInputData,
+        mouse: &MouseInputData,
+        is_keyboard_input_mode: bool,
+    ) -> bool {
+        if is_keyboard_input_mode {
+            mouse._btn_r_pressed || keyboard.get_key_pressed(KeyCode::Escape)
+        } else {
+            joystick._btn_b == ButtonState::Pressed || keyboard.get_key_pressed(KeyCode::KeyB)
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
+pub struct CameraControlState {
+    pub _pitch: f32,
+    pub _yaw: f32,
+    pub _zoom: f32,
+}
+
 pub struct CameraInput;
 
 impl CameraInput {
+    pub const MOUSE_SENSITIVITY: f32 = 0.001;
+
     pub fn is_zoom_in(keyboard: &KeyboardInputData, joystick: &JoystickInputData, mouse_move: &MouseMoveData) -> bool {
         keyboard.get_key_hold(KeyCode::ArrowUp)
             || 0 < mouse_move._scroll_delta.y
@@ -904,6 +1005,57 @@ impl CameraInput {
         keyboard.get_key_hold(KeyCode::ArrowDown)
             || mouse_move._scroll_delta.y < 0
             || joystick._btn_down == ButtonState::Hold
+    }
+
+    pub fn get_camera_control_state(
+        keyboard: &KeyboardInputData,
+        joystick: &JoystickInputData,
+        mouse_move: &MouseMoveData,
+    ) -> CameraControlState {
+        let mouse_pos_delta = Vector2::<f32>::new(
+            mouse_move._mouse_pos_delta.x as f32,
+            mouse_move._mouse_pos_delta.y as f32,
+        ) * Self::MOUSE_SENSITIVITY;
+        let mouse_scroll_delta =
+            Vector2::<f32>::new(mouse_move._scroll_delta.x as f32, mouse_move._scroll_delta.y as f32);
+
+        let stick_right_direction = Vector2::<f32>::new(
+            joystick._stick_right_direction.x as f32,
+            joystick._stick_right_direction.y as f32,
+        ) * JOYSTICK_SENSITIVITY;
+
+        let is_zoom_in = Self::is_zoom_in(keyboard, joystick, mouse_move);
+        let is_zoom_out = Self::is_zoom_out(keyboard, joystick, mouse_move);
+
+        let pitch = if mouse_pos_delta.y != 0.0 {
+            mouse_pos_delta.y
+        } else {
+            stick_right_direction.y
+        };
+
+        let yaw = if mouse_pos_delta.x != 0.0 {
+            mouse_pos_delta.x
+        } else {
+            stick_right_direction.x
+        };
+
+        let zoom = if is_zoom_in || is_zoom_out {
+            if mouse_scroll_delta.y != 0.0 {
+                -mouse_scroll_delta.y
+            } else if is_zoom_in {
+                -0.5
+            } else {
+                0.5
+            }
+        } else {
+            0.0
+        };
+
+        CameraControlState {
+            _pitch: pitch,
+            _yaw: yaw,
+            _zoom: zoom,
+        }
     }
 }
 
@@ -1148,5 +1300,85 @@ mod tests {
         // Toggle game mode
         keyboard.set_key_pressed(KeyCode::Backquote);
         assert!(GameInput::is_toggle_game_mode(&keyboard, &joystick));
+    }
+
+    #[test]
+    fn test_game_input_quick_slots_and_any_key() {
+        let mut keyboard = create_keyboard_input_data();
+
+        assert!(!GameInput::is_any_key_pressed(&keyboard));
+        assert_eq!(GameInput::get_pressed_quick_slot_index(&keyboard), None);
+
+        keyboard.set_key_pressed(KeyCode::Digit1);
+        assert!(GameInput::is_any_key_pressed(&keyboard));
+        assert_eq!(GameInput::get_pressed_quick_slot_index(&keyboard), Some(0));
+        keyboard.clear_key_pressed();
+
+        keyboard.set_key_pressed(KeyCode::Digit0);
+        assert_eq!(GameInput::get_pressed_quick_slot_index(&keyboard), Some(9));
+    }
+
+    #[test]
+    fn test_deploy_input_state() {
+        let mut keyboard = create_keyboard_input_data();
+        let mut joystick = create_test_joystick();
+        let mut mouse = create_mouse_input_data();
+
+        // Idle
+        let idle = DeployInputState::from_input(&keyboard, &joystick, &mouse, true);
+        assert_eq!(idle._rotate, 0.0);
+        assert!(!idle._confirm);
+        assert!(!idle._cancel);
+
+        // Rotation: Q -> -1.0, E -> +1.0
+        keyboard.set_key_hold(KeyCode::KeyQ, true);
+        assert_eq!(DeployInput::get_rotate_input(&keyboard, &joystick), -1.0);
+        keyboard.clear_key_hold();
+
+        joystick._btn_right_shoulder = ButtonState::Hold;
+        assert_eq!(DeployInput::get_rotate_input(&keyboard, &joystick), 1.0);
+        joystick._btn_right_shoulder = ButtonState::None;
+
+        // Keyboard mode confirm/cancel
+        keyboard.set_key_pressed(KeyCode::Space);
+        assert!(DeployInput::is_confirm(&keyboard, &joystick, &mouse, true));
+        assert!(!DeployInput::is_confirm(&keyboard, &joystick, &mouse, false));
+        keyboard.clear_key_pressed();
+
+        mouse.btn_r_pressed(true);
+        assert!(DeployInput::is_cancel(&keyboard, &joystick, &mouse, true));
+        mouse.btn_r_pressed(false);
+
+        // Gamepad mode confirm/cancel
+        joystick._btn_a = ButtonState::Pressed;
+        assert!(DeployInput::is_confirm(&keyboard, &joystick, &mouse, false));
+        joystick._btn_a = ButtonState::None;
+
+        joystick._btn_b = ButtonState::Pressed;
+        assert!(DeployInput::is_cancel(&keyboard, &joystick, &mouse, false));
+    }
+
+    #[test]
+    fn test_camera_control_state() {
+        let keyboard = create_keyboard_input_data();
+        let mut joystick = create_test_joystick();
+        let mut mouse_move = create_mouse_move_data(100, 100);
+
+        mouse_move._mouse_pos_delta = Vector2::new(10, -20);
+        mouse_move._scroll_delta.y = 2;
+
+        let control = CameraInput::get_camera_control_state(&keyboard, &joystick, &mouse_move);
+        assert_eq!(control._yaw, 10.0 * CameraInput::MOUSE_SENSITIVITY);
+        assert_eq!(control._pitch, -20.0 * CameraInput::MOUSE_SENSITIVITY);
+        assert_eq!(control._zoom, -2.0);
+
+        mouse_move._mouse_pos_delta = Vector2::zeros();
+        mouse_move._scroll_delta.y = 0;
+        joystick._stick_right_direction = Vector2::new(5000, 3000);
+
+        let stick_control = CameraInput::get_camera_control_state(&keyboard, &joystick, &mouse_move);
+        assert_eq!(stick_control._yaw, 5000.0 * JOYSTICK_SENSITIVITY);
+        assert_eq!(stick_control._pitch, 3000.0 * JOYSTICK_SENSITIVITY);
+        assert_eq!(stick_control._zoom, 0.0);
     }
 }
