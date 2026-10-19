@@ -59,8 +59,8 @@
         },
         "gate": {
             "_instance_parameters": {
-                "_linked_gate": "gate_stage_cave",
-                "_linked_stage": "game_scenes/world_map"
+                "_linked_gate": "gate",
+                "_linked_stage": "game_scenes/intro_stage"
             },
             "_position": [
                 0.13453584909439087,

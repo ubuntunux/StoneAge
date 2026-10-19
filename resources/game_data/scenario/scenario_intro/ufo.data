@@ -76,26 +76,7 @@
         }
     },
     "_items": {},
-    "_player": {
-        "monkey_aru": {
-            "_character_data_name": "characters/family/monkey_aru",
-            "_position": [
-                21.73575210571289,
-                3.6966590881347656,
-                19.237384796142578
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        }
-    },
+    "_player": {},
     "_props": {},
     "_scene": {
         "_cameras": {},
