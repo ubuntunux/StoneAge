@@ -414,7 +414,7 @@ impl<'a> Character<'a> {
                                 let game_scene_manager = get_game_scene_manager_mut();
                                 if !game_scene_manager.is_teleport_mode() {
                                     game_scene_manager
-                                        .set_teleport_spawn_point(Stages::Home.get_stage_data_name(), BED_FOR_ARU);
+                                        .set_teleport_spawn_point(Stages::Cave.get_stage_data_name(), BED_FOR_ARU);
                                     let next_phase = if update_action_animation_state == ActionAnimationState::Dead {
                                         GamePhase::Respawn
                                     } else {
