@@ -5,11 +5,12 @@ use crate::game_module::actors::items::ItemCreateInfo;
 use crate::game_module::behavior::behavior_base::BehaviorState;
 use crate::game_module::game_client::GamePhase;
 use crate::game_module::game_constants::{
-    AUDIO_PICKUP_ITEM, INTIMACY_FEEDING_MULTIPLIER, INTIMACY_INTERACTION_ADD, ITEM_ENERGY_BALL,
+    AUDIO_PICKUP_ITEM, DEFAULT_GATE_NAME, INTIMACY_FEEDING_MULTIPLIER, INTIMACY_INTERACTION_ADD, ITEM_ENERGY_BALL,
     TAME_ENERGY_BALL_PICKUP_DELAY, TAME_ENERGY_BALL_VELOCITY_Y,
 };
 use crate::game_module::game_service_locator::{
-    get_character_manager_mut, get_game_client, get_game_client_mut, get_game_scene_manager, get_game_ui_manager_mut,
+    get_character_manager_mut, get_game_client, get_game_client_mut, get_game_scene_manager,
+    get_game_scene_manager_mut, get_game_ui_manager_mut,
 };
 use crate::game_module::scenario::scenario::ScenarioType;
 use nalgebra::Vector3;
@@ -213,9 +214,26 @@ impl<'a> Character<'a> {
         if !get_game_client().is_available_interaction() {
             return;
         }
-        if let InteractionObject::PropGate(_) = self._controller._nearest_interaction_object.clone() {
-            get_game_client_mut().set_next_game_phase(GamePhase::WorldMapOpen);
-            self.set_move_idle();
+        if let InteractionObject::PropGate(prop) = self._controller._nearest_interaction_object.clone() {
+            let prop_borrow = prop.borrow();
+            let linked_stage =
+                prop_borrow.get_instance_parameters("_linked_stage").and_then(|v| v.as_str().map(String::from));
+            let linked_gate =
+                prop_borrow.get_instance_parameters("_linked_gate").and_then(|v| v.as_str().map(String::from));
+
+            if linked_stage.is_some() || linked_gate.is_some() {
+                let stage_name = linked_stage
+                    .as_deref()
+                    .unwrap_or_else(|| get_game_scene_manager().get_current_game_scene_data_name());
+                let gate_name = linked_gate.as_deref().unwrap_or(DEFAULT_GATE_NAME);
+
+                get_game_scene_manager_mut().set_teleport_stage(stage_name, gate_name);
+                get_game_client_mut().set_next_game_phase(GamePhase::Teleport);
+                self.set_move_idle();
+            } else {
+                get_game_client_mut().set_next_game_phase(GamePhase::WorldMapOpen);
+                self.set_move_idle();
+            }
         }
     }
 }
