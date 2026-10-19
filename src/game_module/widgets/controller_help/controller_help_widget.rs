@@ -495,7 +495,7 @@ impl<'a> ControllerHelpWidget<'a> {
                     } else {
                         (
                             KeyBindingType::Interaction,
-                            format!("Cook on {}", prop.borrow()._prop_data.borrow()._name.as_str()),
+                            String::from("Make Dinner"),
                             RequestType::None,
                         )
                     }

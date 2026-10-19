@@ -129,6 +129,7 @@ pub trait ScenarioBase<'a> {
     fn is_sleeping(&self) -> bool {
         false
     }
+    fn complete_sub_quest_wrap_up_the_day(&mut self) {}
     fn complete_sub_quest_cooking(&mut self) {}
     fn is_end_of_scenario(&self) -> bool;
     fn destroy_game_scenario(&mut self);

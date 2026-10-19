@@ -86,6 +86,16 @@ impl<'a> QuestTitle<'a> {
         quest_item
     }
 
+    pub fn remove_quest_item(&mut self, target_quest_item: &QuestItem<'a>) {
+        if let Some(index) = self._quest_items.iter().position(|item| {
+            Rc::ptr_eq(item, target_quest_item)
+                || std::ptr::addr_eq(item.as_ref() as *const _, target_quest_item.as_ref() as *const _)
+        }) {
+            let quest_item = self._quest_items.remove(index);
+            quest_item.borrow_mut().destroy_quest_item();
+        }
+    }
+
     pub fn is_completed_quest(&self) -> bool {
         for quest_item in self._quest_items.iter() {
             if !quest_item.borrow().is_completed_quest() {

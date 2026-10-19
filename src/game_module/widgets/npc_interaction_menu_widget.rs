@@ -511,6 +511,11 @@ impl<'a> NpcInteractionMenuWidget<'a> {
                     player.borrow_mut().set_move_idle();
                 }
                 get_audio_manager_mut().play_audio_bank(AUDIO_QUEST_COMPLETE, AudioLoop::ONCE, None);
+                if let Some(scenario) =
+                    get_game_scene_manager_mut().get_game_scenario(ScenarioType::ScenarioIntro_Intro)
+                {
+                    scenario.borrow_mut().complete_sub_quest_wrap_up_the_day();
+                }
                 get_game_scene_manager_mut().request_open_game_scenario(ScenarioType::ScenarioWrapUpTheDay);
                 get_game_client_mut().set_next_game_phase(GamePhase::WrapUpTheDay);
             }
