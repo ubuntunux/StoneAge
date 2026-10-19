@@ -5,7 +5,7 @@ use crate::game_module::game_constants::{
     ACTOR_NAME_ALIEN_ALPHA, ACTOR_NAME_ALIEN_BETA, ACTOR_NAME_ARU, ACTOR_NAME_EWA, ACTOR_NAME_KOA,
     ACTOR_NAME_MONKEY_EWA, ACTOR_NAME_MONKEY_KOA, ACTOR_NAME_UFO, AUDIO_ROOSTER, AUDIO_UFO_BEAM, AUDIO_UFO_FLYING,
     BED_FOR_ARU, BED_FOR_EWA, BED_FOR_KOA, CAMERA_DISTANCE_MAX, CAMERA_OFFSET_Y, CHARACTER_DATA_NAME_EWA,
-    CHARACTER_DATA_NAME_KOA, PROP_NAME_MONOLITH, TIME_OF_EARLY_MORNING,
+    CHARACTER_DATA_NAME_KOA, DEFAULT_GATE_NAME, PROP_NAME_MONOLITH, TIME_OF_EARLY_MORNING,
 };
 use crate::game_module::game_scene_manager::Stages;
 use crate::game_module::game_service_locator::{get_character_manager_mut, get_game_scene_manager_mut};
@@ -27,7 +27,7 @@ const AROUND_START_ROT: Vector3<f32> = Vector3::new(0.4, 0.0, 0.0);
 const AROUND_END_ROT: Vector3<f32> = Vector3::new(0.35, 0.0, 0.0);
 const INITIAL_CAMERA_POS: Vector3<f32> = Vector3::new(35.48, 26.56, -5.02);
 const INITIAL_CAMERA_ROT: Vector3<f32> = Vector3::new(0.76, -0.33, 0.0);
-const AROUND_CAMERA_EXTRA_DIST: f32 = 6.0;
+const AROUND_CAMERA_EXTRA_DIST: f32 = 0.0;
 const ABDUCTION_ARRIVAL_DIST_SQ: f32 = 1.0;
 const ABDUCTION_MOVE_SPEED: f32 = 4.0;
 const MONOLITH_DROP_SPEED: f32 = 10.0;
@@ -42,6 +42,7 @@ const PHASE_DURATION_CLOSE_UP: f32 = 5.0;
 enum ScenarioPhase {
     None,
     Begin,
+    MoveAliens,
     AbductAliens,
     DropMonolith,
     ReallyUfoGone,
@@ -50,7 +51,10 @@ enum ScenarioPhase {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
-struct ScenarioDayOneSaveData {}
+struct ScenarioDayOneSaveData {
+    _load_pos_alien_alpha: Vector3<f32>,
+    _load_pos_alien_beta: Vector3<f32>,
+}
 
 pub struct ScenarioDayOne<'a> {
     _scenario_type: ScenarioType,
@@ -62,6 +66,8 @@ pub struct ScenarioDayOne<'a> {
     _actor_ufo: Option<RcRefCell<Character<'a>>>,
     _alien_alpha: Option<RcRefCell<Character<'a>>>,
     _alien_beta: Option<RcRefCell<Character<'a>>>,
+    _load_pos_alien_alpha: Vector3<f32>,
+    _load_pos_alien_beta: Vector3<f32>,
     _player: Option<RcRefCell<Character<'a>>>,
     _actor_ewa: Option<RcRefCell<Character<'a>>>,
     _actor_koa: Option<RcRefCell<Character<'a>>>,
@@ -69,6 +75,7 @@ pub struct ScenarioDayOne<'a> {
     _prop_bed_for_ewa: Option<RcRefCell<Prop<'a>>>,
     _prop_bed_for_koa: Option<RcRefCell<Prop<'a>>>,
     _prop_monolith: Option<RcRefCell<Prop<'a>>>,
+    _prop_gate: Option<RcRefCell<Prop<'a>>>,
     _monolith_start_position: Vector3<f32>,
     _audio_ufo_flying: Option<RcRefCell<AudioInstance>>,
     _scenario_track: ScenarioTrack<ScenarioPhase>,
@@ -89,6 +96,8 @@ impl<'a> ScenarioDayOne<'a> {
             _actor_ufo: None,
             _alien_alpha: None,
             _alien_beta: None,
+            _load_pos_alien_alpha: Vector3::zeros(),
+            _load_pos_alien_beta: Vector3::zeros(),
             _player: None,
             _actor_ewa: None,
             _actor_koa: None,
@@ -96,6 +105,7 @@ impl<'a> ScenarioDayOne<'a> {
             _prop_bed_for_ewa: None,
             _prop_bed_for_koa: None,
             _prop_monolith: None,
+            _prop_gate: None,
             _monolith_start_position: Vector3::zeros(),
             _audio_ufo_flying: None,
             _scenario_track: ScenarioTrack::new(ScenarioPhase::None, ScenarioPhase::Begin),
@@ -141,6 +151,66 @@ impl<'a> ScenarioDayOne<'a> {
             (Some(alpha), None) => Self::update_abduct_actor(&alpha, &ufo_pos, delta_time),
             (None, Some(beta)) => Self::update_abduct_actor(&beta, &ufo_pos, delta_time),
             (None, None) => true,
+        }
+    }
+
+    pub fn update_move_aliens(&mut self, delta_time: f32) -> bool {
+        let alpha_arrived = if let Some(alpha) = &self._alien_alpha {
+            if self._load_pos_alien_alpha != Vector3::zeros() {
+                let arrived =
+                    alpha.borrow_mut().move_to_target(&self._load_pos_alien_alpha, ARRIVAL_RADIUS, delta_time);
+                if arrived {
+                    alpha.borrow_mut().set_move_idle();
+                }
+                arrived
+            } else {
+                true
+            }
+        } else {
+            true
+        };
+
+        let beta_arrived = if let Some(beta) = &self._alien_beta {
+            if self._load_pos_alien_beta != Vector3::zeros() {
+                let arrived =
+                    beta.borrow_mut().move_to_target(&self._load_pos_alien_beta, ARRIVAL_RADIUS, delta_time);
+                if arrived {
+                    beta.borrow_mut().set_move_idle();
+                }
+                arrived
+            } else {
+                true
+            }
+        } else {
+            true
+        };
+
+        alpha_arrived && beta_arrived
+    }
+
+    pub fn get_alien_pickup_position(&self) -> Vector3<f32> {
+        if self._load_pos_alien_alpha != Vector3::zeros() && self._load_pos_alien_beta != Vector3::zeros() {
+            (self._load_pos_alien_alpha + self._load_pos_alien_beta) * 0.5
+        } else if self._load_pos_alien_alpha != Vector3::zeros() {
+            self._load_pos_alien_alpha
+        } else if self._load_pos_alien_beta != Vector3::zeros() {
+            self._load_pos_alien_beta
+        } else if let (Some(alpha), Some(beta)) = (&self._alien_alpha, &self._alien_beta) {
+            (*alpha.borrow().get_position() + *beta.borrow().get_position()) * 0.5
+        } else if let Some(target) = self._alien_beta.as_ref().or(self._alien_alpha.as_ref()) {
+            *target.borrow().get_position()
+        } else {
+            self._around_start_position
+        }
+    }
+
+    pub fn set_ufo_pickup_position(&mut self) {
+        if let Some(ufo) = &self._actor_ufo {
+            let pickup_pos = self.get_alien_pickup_position();
+            let mut ufo_position = *ufo.borrow().get_position();
+            ufo_position.x = pickup_pos.x;
+            ufo_position.z = pickup_pos.z;
+            ufo.borrow_mut().set_position(&ufo_position);
         }
     }
 
@@ -202,10 +272,17 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
     fn load_scenario_save_data(&mut self, scenario_save_data: &GameScenarioCreateInfo) {
         self._scenario_create_info = scenario_save_data._scenario_create_info.clone();
         self._scenario_track.load_scenario_track_data(&scenario_save_data._scenario_track_create_info);
+        if let Ok(data) = serde_json::from_str::<ScenarioDayOneSaveData>(&scenario_save_data._scenario_data) {
+            self._load_pos_alien_alpha = data._load_pos_alien_alpha;
+            self._load_pos_alien_beta = data._load_pos_alien_beta;
+        }
     }
 
     fn get_scenario_save_data(&self) -> GameScenarioCreateInfo {
-        let save_data = ScenarioDayOneSaveData {};
+        let save_data = ScenarioDayOneSaveData {
+            _load_pos_alien_alpha: self._load_pos_alien_alpha,
+            _load_pos_alien_beta: self._load_pos_alien_beta,
+        };
         GameScenarioCreateInfo {
             _scenario_type: self.get_scenario_type(),
             _scenario_create_info: self._scenario_create_info.clone(),
@@ -224,6 +301,7 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
 
     fn destroy_game_scenario(&mut self) {
         Self::set_player_active(true);
+        self._prop_gate = None;
     }
 
     fn on_close_game_scene(&mut self, _game_scene_data_name: &str) {
@@ -237,6 +315,7 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
         self._prop_bed_for_ewa = None;
         self._prop_bed_for_koa = None;
         self._prop_monolith = None;
+        self._prop_gate = None;
         if self._scenario_track._scenario_phase == ScenarioPhase::End {
             Self::set_player_active(true);
         }
@@ -337,9 +416,36 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
             self._alien_alpha = game_scene_manager.get_actor_by_name(ACTOR_NAME_ALIEN_ALPHA).cloned();
             self._alien_beta = game_scene_manager.get_actor_by_name(ACTOR_NAME_ALIEN_BETA).cloned();
             self._prop_monolith = game_scene_manager.get_prop_manager().get_prop_by_name(PROP_NAME_MONOLITH).cloned();
+            self._prop_gate = game_scene_manager.get_prop_manager().get_prop_by_name(DEFAULT_GATE_NAME).cloned();
+
+            if self._load_pos_alien_alpha == Vector3::zeros() {
+                if let Some(alpha) = &self._alien_alpha {
+                    self._load_pos_alien_alpha = *alpha.borrow().get_position();
+                }
+            }
+            if self._load_pos_alien_beta == Vector3::zeros() {
+                if let Some(beta) = &self._alien_beta {
+                    self._load_pos_alien_beta = *beta.borrow().get_position();
+                }
+            }
+
+            if self._scenario_track._scenario_phase <= ScenarioPhase::MoveAliens {
+                if let Some(gate) = &self._prop_gate {
+                    let gate_pos = *gate.borrow().get_position();
+                    for alien in [&self._alien_alpha, &self._alien_beta].into_iter().flatten() {
+                        alien.borrow_mut().set_position(&gate_pos);
+                        alien.borrow_mut()._controller.set_flying_mode(false);
+                        alien.borrow_mut().set_move_idle();
+                    }
+                }
+            }
 
             set_actors_behavior_none(&[&self._alien_alpha, &self._alien_beta], false);
             set_actors_visible(&[&self._alien_alpha, &self._alien_beta], true);
+
+            if self._scenario_track._scenario_phase < ScenarioPhase::DropMonolith {
+                self.set_ufo_pickup_position();
+            }
 
             Self::set_player_active(false);
             if let Some(aru) = game_scene_manager.get_actor_by_name(ACTOR_NAME_ARU).cloned() {
@@ -406,42 +512,54 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
                 ScenarioPhase::Begin => {
                     if state == State::Begin {
                         Self::set_player_active(false);
-                        if let Some(ufo) = &self._actor_ufo {
-                            let mut ufo_position = *ufo.borrow().get_position();
-                            ufo_position.x = self._around_start_position.x;
-                            ufo_position.z = self._around_start_position.z;
-                            ufo.borrow_mut().set_position(&ufo_position);
+                        self.set_ufo_pickup_position();
+                        if self._audio_ufo_flying.is_none() {
+                            self._audio_ufo_flying =
+                                get_audio_manager_mut().play_audio_bank(AUDIO_UFO_FLYING, AudioLoop::LOOP, Some(1.0));
+                        }
+                        if let Some(gate) = &self._prop_gate {
+                            let gate_pos = *gate.borrow().get_position();
+                            for alien in [&self._alien_alpha, &self._alien_beta].into_iter().flatten() {
+                                alien.borrow_mut().set_position(&gate_pos);
+                                alien.borrow_mut()._controller.set_flying_mode(false);
+                                alien.borrow_mut().set_behavior_none();
+                                alien.borrow_mut().set_move_idle();
+                            }
                         }
                     } else if state == State::Update {
                         game_scene_manager.set_time(TIME_OF_EARLY_MORNING, 0.0);
-                        self._scenario_track
-                            .set_next_scenario_phase(ScenarioPhase::AbductAliens, Some(PHASE_DURATION_ABDUCT_ALIENS));
+                        self._scenario_track.set_next_scenario_phase(ScenarioPhase::MoveAliens, None);
                     }
                 }
+                ScenarioPhase::MoveAliens => match state {
+                    State::Begin => {
+                        for alien in [&self._alien_alpha, &self._alien_beta].into_iter().flatten() {
+                            alien.borrow_mut()._controller.set_flying_mode(false);
+                            alien.borrow_mut().set_behavior_none();
+                        }
+                    }
+                    State::Update => {
+                        if self.update_move_aliens(delta_time as f32) {
+                            self._scenario_track
+                                .set_next_scenario_phase(ScenarioPhase::AbductAliens, Some(PHASE_DURATION_ABDUCT_ALIENS));
+                        }
+                    }
+                    _ => {}
+                },
                 ScenarioPhase::AbductAliens => match state {
                     State::Begin => {
                         Self::set_player_active(false);
-                        if let Some(ufo) = &self._actor_ufo {
-                            let mut ufo_position = *ufo.borrow().get_position();
-                            if let (Some(alpha), Some(beta)) = (&self._alien_alpha, &self._alien_beta) {
-                                let center = (*alpha.borrow().get_position() + *beta.borrow().get_position()) * 0.5;
-                                ufo_position.x = center.x;
-                                ufo_position.z = center.z;
-                            } else if let Some(target) = self._alien_beta.as_ref().or(self._alien_alpha.as_ref()) {
-                                let pos = *target.borrow().get_position();
-                                ufo_position.x = pos.x;
-                                ufo_position.z = pos.z;
-                            }
-                            ufo.borrow_mut().set_position(&ufo_position);
-                        }
+                        self.set_ufo_pickup_position();
 
                         for alien in [&self._alien_alpha, &self._alien_beta].into_iter().flatten() {
                             alien.borrow_mut()._controller.set_flying_mode(true);
                             alien.borrow_mut().set_behavior_none();
                         }
 
-                        self._audio_ufo_flying =
-                            get_audio_manager_mut().play_audio_bank(AUDIO_UFO_FLYING, AudioLoop::LOOP, Some(1.0));
+                        if self._audio_ufo_flying.is_none() {
+                            self._audio_ufo_flying =
+                                get_audio_manager_mut().play_audio_bank(AUDIO_UFO_FLYING, AudioLoop::LOOP, Some(1.0));
+                        }
                         get_audio_manager_mut().play_audio_bank(AUDIO_UFO_BEAM, AudioLoop::ONCE, Some(1.0));
                     }
                     State::Update => {

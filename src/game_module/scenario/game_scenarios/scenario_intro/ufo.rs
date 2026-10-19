@@ -1,10 +1,13 @@
 use crate::game_module::actors::character::Character;
+use crate::game_module::actors::props::Prop;
 use crate::game_module::game_constants::{
     ACTOR_NAME_ALIEN_ALPHA, ACTOR_NAME_ALIEN_BETA, ACTOR_NAME_UFO, AUDIO_UFO_BEAM, AUDIO_UFO_FLYING, DEFAULT_FADE_TIME,
-    MATERIAL_UI_NONE, TIME_OF_DAWN,
+    DEFAULT_GATE_NAME, MATERIAL_UI_NONE, TIME_OF_DAWN,
 };
 use crate::game_module::game_scene_manager::Stages;
-use crate::game_module::game_service_locator::{get_game_scene_manager_mut, get_game_ui_manager_mut};
+use crate::game_module::game_service_locator::{
+    get_character_manager_mut, get_game_scene_manager_mut, get_game_ui_manager_mut,
+};
 use crate::game_module::scenario::scenario::{
     GameScenarioCreateInfo, ScenarioBase, ScenarioDataCreateInfo, ScenarioType,
 };
@@ -20,6 +23,8 @@ use strum_macros::{Display, EnumCount, EnumIter, EnumString};
 
 const DESCEND_ARRIVAL_DIST_SQ: f32 = 0.05;
 const DESCEND_MOVE_SPEED: f32 = 4.0;
+const GATE_ARRIVAL_DIST: f32 = 1.0;
+const PHASE_DURATION_WAIT_AFTER_DESCEND: f32 = 1.0;
 const UFO_LONG_SHOT_CAMERA_POS: Vector3<f32> = Vector3::new(35.48, 26.56, -5.02);
 const UFO_LONG_SHOT_CAMERA_ROT: Vector3<f32> = Vector3::new(0.76, -0.33, 0.0);
 
@@ -28,6 +33,8 @@ enum ScenarioPhase {
     None,
     UfoLongShot,
     DescendAliens,
+    WaitAfterDescend,
+    MoveToGate,
     End,
 }
 
@@ -43,6 +50,7 @@ pub struct ScenarioUfo<'a> {
     _actor_ufo: Option<RcRefCell<Character<'a>>>,
     _alien_alpha: Option<RcRefCell<Character<'a>>>,
     _alien_beta: Option<RcRefCell<Character<'a>>>,
+    _prop_gate: Option<RcRefCell<Prop<'a>>>,
     _ground_pos_alien_alpha: Vector3<f32>,
     _ground_pos_alien_beta: Vector3<f32>,
     _audio_ufo_flying: Option<RcRefCell<AudioInstance>>,
@@ -61,6 +69,7 @@ impl<'a> ScenarioUfo<'a> {
             _actor_ufo: None,
             _alien_alpha: None,
             _alien_beta: None,
+            _prop_gate: None,
             _ground_pos_alien_alpha: Vector3::zeros(),
             _ground_pos_alien_beta: Vector3::zeros(),
             _audio_ufo_flying: None,
@@ -137,6 +146,45 @@ impl<'a> ScenarioUfo<'a> {
             player_mut.set_enable_update(is_active);
         }
     }
+
+    pub fn remove_aliens(&mut self) {
+        let character_manager = get_character_manager_mut();
+        for alien_opt in [&self._alien_alpha, &self._alien_beta] {
+            if let Some(alien) = alien_opt {
+                alien.borrow_mut().set_visible(false);
+                character_manager.remove_character(alien);
+            }
+        }
+        self._alien_alpha = None;
+        self._alien_beta = None;
+    }
+
+    pub fn update_move_to_gate(&mut self, delta_time: f32) -> bool {
+        let gate_pos = if let Some(gate) = &self._prop_gate {
+            *gate.borrow().get_position()
+        } else {
+            self.remove_aliens();
+            return true;
+        };
+
+        if let Some(alpha) = self._alien_alpha.clone() {
+            if alpha.borrow_mut().move_to_target(&gate_pos, GATE_ARRIVAL_DIST, delta_time) {
+                alpha.borrow_mut().set_visible(false);
+                get_character_manager_mut().remove_character(&alpha);
+                self._alien_alpha = None;
+            }
+        }
+
+        if let Some(beta) = self._alien_beta.clone() {
+            if beta.borrow_mut().move_to_target(&gate_pos, GATE_ARRIVAL_DIST, delta_time) {
+                beta.borrow_mut().set_visible(false);
+                get_character_manager_mut().remove_character(&beta);
+                self._alien_beta = None;
+            }
+        }
+
+        self._alien_alpha.is_none() && self._alien_beta.is_none()
+    }
 }
 
 impl<'a> ScenarioBase<'a> for ScenarioUfo<'a> {
@@ -184,10 +232,14 @@ impl<'a> ScenarioBase<'a> for ScenarioUfo<'a> {
 
     fn destroy_game_scenario(&mut self) {
         Self::set_player_active(true);
+        self.remove_aliens();
+        self._prop_gate = None;
     }
 
     fn on_close_game_scene(&mut self, _game_scene_data_name: &str) {
         Self::set_player_active(true);
+        self.remove_aliens();
+        self._prop_gate = None;
     }
 
     fn on_open_game_scene(&mut self, game_scene_data_name: &str) {
@@ -204,6 +256,7 @@ impl<'a> ScenarioBase<'a> for ScenarioUfo<'a> {
 
             self._alien_alpha = game_scene_manager.get_actor_by_name(ACTOR_NAME_ALIEN_ALPHA).cloned();
             self._alien_beta = game_scene_manager.get_actor_by_name(ACTOR_NAME_ALIEN_BETA).cloned();
+            self._prop_gate = game_scene_manager.get_prop_manager().get_prop_by_name(DEFAULT_GATE_NAME).cloned();
 
             if self._ground_pos_alien_alpha == Vector3::zeros() {
                 if let Some(alpha) = &self._alien_alpha {
@@ -280,6 +333,23 @@ impl<'a> ScenarioBase<'a> for ScenarioUfo<'a> {
                     }
                     State::Update => {
                         if self.update_descend_aliens(delta_time) {
+                            self._scenario_track.set_next_scenario_phase(
+                                ScenarioPhase::WaitAfterDescend,
+                                Some(PHASE_DURATION_WAIT_AFTER_DESCEND),
+                            );
+                        }
+                    }
+                    _ => {}
+                },
+                ScenarioPhase::WaitAfterDescend => {
+                    if state == State::Update && 1.0 <= self._scenario_track.get_phase_ratio() {
+                        self._scenario_track.set_next_scenario_phase(ScenarioPhase::MoveToGate, None);
+                    }
+                }
+                ScenarioPhase::MoveToGate => match state {
+                    State::Begin => {}
+                    State::Update => {
+                        if self.update_move_to_gate(delta_time as f32) {
                             if game_ui_manager.is_done_manual_fade_out() {
                                 self._scenario_track.set_next_scenario_phase(ScenarioPhase::End, None);
                             } else {
