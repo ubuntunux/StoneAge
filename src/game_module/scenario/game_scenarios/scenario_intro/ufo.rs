@@ -193,7 +193,7 @@ impl<'a> ScenarioBase<'a> for ScenarioUfo<'a> {
     fn on_open_game_scene(&mut self, game_scene_data_name: &str) {
         self._scenario_create_info.spawn_and_reset_if_matching(game_scene_data_name);
 
-        if game_scene_data_name == Stages::Home.get_stage_data_name() {
+        if game_scene_data_name == Stages::Forest.get_stage_data_name() {
             let game_scene_manager = get_game_scene_manager_mut();
             self._actor_ufo = game_scene_manager.get_actor_by_name(ACTOR_NAME_UFO).cloned();
             if let Some(ufo) = self._actor_ufo.as_ref() {
