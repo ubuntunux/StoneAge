@@ -1,6 +1,7 @@
 use crate::game_module::game_client::GameClient;
 use crate::game_module::game_constants;
 use crate::game_module::game_controller::GameController;
+use crate::game_module::game_input::GameInput;
 use crate::game_module::game_resource::GameResources;
 use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::game_service_locator;
@@ -19,7 +20,6 @@ use rust_engine_3d::core::engine_core::{self, ApplicationBase, WindowMode};
 use rust_engine_3d::core::engine_service_locator::{
     get_engine_core_mut, get_font_manager_mut, get_renderer_data_mut, get_scene_manager, get_ui_manager_mut,
 };
-use rust_engine_3d::core::input::ButtonState;
 use rust_engine_3d::renderer::renderer_data::{RenderOption, RenderQualityLevel};
 use rust_engine_3d::resource::resource::CallbackLoadRenderPassCreateInfo;
 use rust_engine_3d::utilities::logger;
@@ -82,12 +82,10 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
 
         if unsafe { DEVELOPMENT } {
             if !self._is_game_mode {
-                let is_toggle_game_mode = (engine_core._joystick_input_data._btn_left_trigger == ButtonState::Hold
-                    && engine_core._joystick_input_data._btn_right_trigger == ButtonState::Hold
-                    && engine_core._joystick_input_data._btn_left_shoulder == ButtonState::Hold
-                    && engine_core._joystick_input_data._btn_right_shoulder == ButtonState::Hold)
-                    || engine_core._keyboard_input_data.get_key_pressed(KeyCode::Backquote)
-                    || engine_core._keyboard_input_data.get_key_pressed(KeyCode::Escape);
+                let is_toggle_game_mode = GameInput::is_toggle_game_mode(
+                    &engine_core._keyboard_input_data,
+                    &engine_core._joystick_input_data,
+                );
 
                 if is_toggle_game_mode {
                     self.set_game_mode(true);

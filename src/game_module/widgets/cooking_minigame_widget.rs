@@ -1,10 +1,11 @@
 use crate::game_module::game_constants::AUDIO_SELECT_ITEM;
+use crate::game_module::game_input::CookingMinigameInput;
 use crate::game_module::game_service_locator::get_game_ui_manager_mut;
 use crate::game_module::widgets::cooking_widget::{COOKING_RECIPES, CookingWidget};
 use nalgebra::Vector2;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::core::engine_service_locator::get_audio_manager_mut;
-use rust_engine_3d::core::input::{ButtonState, JoystickInputData, KeyboardInputData};
+use rust_engine_3d::core::input::{JoystickInputData, KeyboardInputData};
 use rust_engine_3d::scene::ui::{
     HorizontalAlign, Orientation, PIVOT_CENTER, UIComponentInstance, UILayoutType, UIManager, UIWidgetTypes,
     VerticalAlign, WidgetDefault,
@@ -13,7 +14,6 @@ use rust_engine_3d::utilities::system::ptr_as_mut;
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use std::ffi::c_void;
 use std::rc::Rc;
-use winit::keyboard::KeyCode;
 
 pub const COOKING_MINIGAME_WIDTH: f32 = 380.0;
 pub const COOKING_MINIGAME_HEIGHT: f32 = 250.0;
@@ -33,10 +33,7 @@ pub struct CookingMinigameWidget<'a> {
     pub _recipe_index: usize,
     pub _current_step: usize,
     pub _step_progress: f32,
-    pub _last_space_pressed: bool,
-    pub _last_enter_pressed: bool,
-    pub _last_e_pressed: bool,
-    pub _last_joy_a_pressed: bool,
+    pub _last_advance_pressed: bool,
 }
 
 impl<'a> CookingMinigameWidget<'a> {
@@ -200,10 +197,7 @@ impl<'a> CookingMinigameWidget<'a> {
             _recipe_index: 0,
             _current_step: 0,
             _step_progress: 0.0,
-            _last_space_pressed: false,
-            _last_enter_pressed: false,
-            _last_e_pressed: false,
-            _last_joy_a_pressed: false,
+            _last_advance_pressed: false,
         });
 
         let self_ptr = widget.as_ref() as *const CookingMinigameWidget<'a> as *const c_void;
@@ -325,21 +319,10 @@ impl<'a> CookingMinigameWidget<'a> {
         let fill_ratio = self._step_progress.clamp(0.0, 1.0);
         ptr_as_mut(self._progress_fill.as_ref()).get_ui_component_mut().set_size_hint_x(Some(fill_ratio));
 
-        // Key presses (Trigger on press edge)
-        let space_pressed = keyboard.get_key_pressed(KeyCode::Space);
-        let enter_pressed = keyboard.get_key_pressed(KeyCode::Enter);
-        let e_pressed = keyboard.get_key_pressed(KeyCode::KeyE);
-        let joy_a_pressed = joystick._btn_a == ButtonState::Pressed;
-
-        let is_button_advance = (space_pressed && !self._last_space_pressed)
-            || (enter_pressed && !self._last_enter_pressed)
-            || (e_pressed && !self._last_e_pressed)
-            || (joy_a_pressed && !self._last_joy_a_pressed);
-
-        self._last_space_pressed = space_pressed;
-        self._last_enter_pressed = enter_pressed;
-        self._last_e_pressed = e_pressed;
-        self._last_joy_a_pressed = joy_a_pressed;
+        // Advance action (Trigger on press edge)
+        let advance_pressed = CookingMinigameInput::is_advance(keyboard, joystick);
+        let is_button_advance = advance_pressed && !self._last_advance_pressed;
+        self._last_advance_pressed = advance_pressed;
 
         let is_progress_full = 1.0 <= self._step_progress;
 

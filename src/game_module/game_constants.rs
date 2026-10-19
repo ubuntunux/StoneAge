@@ -35,6 +35,7 @@ pub const GAME_VIEW_MODE: GameViewMode = GameViewMode::GameViewMode3D;
 pub const DEFAULT_GAME_SAVE_DATA: &str = "save_data/00";
 
 pub const JOYSTICK_SENSITIVITY: f32 = 0.1 / 32767.0;
+pub const JOYSTICK_MOVE_DEADZONE: i16 = 3000;
 
 // time
 pub const TIME_OF_DAWN: f32 = 6.0;

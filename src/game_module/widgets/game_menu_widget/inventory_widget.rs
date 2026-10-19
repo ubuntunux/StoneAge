@@ -2,6 +2,7 @@ use crate::game_module::actors::character::Character;
 use crate::game_module::actors::items::ItemDataType;
 use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, ITEM_HAND, ITEM_NONE};
 use crate::game_module::game_controller::WidgetNavRepeatController;
+use crate::game_module::game_input::UiInput;
 use crate::game_module::game_service_locator::{get_game_ui_manager, get_game_ui_manager_mut, get_item_manager_mut};
 use crate::game_module::game_ui_manager::move_mouse_to_ui_component;
 use crate::game_module::widgets::game_menu_widget::item_info_widget::ItemInfoWidget;
@@ -13,7 +14,7 @@ use nalgebra::Vector2;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::core::engine_core::TimeData;
 use rust_engine_3d::core::engine_service_locator::get_audio_manager_mut;
-use rust_engine_3d::core::input::{ButtonState, JoystickInputData, KeyboardInputData, MouseInputData, MouseMoveData};
+use rust_engine_3d::core::input::{JoystickInputData, KeyboardInputData, MouseInputData, MouseMoveData};
 use rust_engine_3d::scene::material_instance::MaterialInstanceData;
 use rust_engine_3d::scene::ui::{
     HorizontalAlign, Orientation, PIVOT_CENTER, UIComponentInstance, UILayoutType, UIManager, UIWidgetTypes,
@@ -23,7 +24,6 @@ use rust_engine_3d::utilities::system::{RcRefCell, ptr_as_mut, ptr_as_ref};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use std::ffi::c_void;
 use std::rc::Rc;
-use winit::keyboard::KeyCode;
 
 use crate::game_module::widgets::item_slot_widget::ItemSlotWidgetBase;
 use std::ops::{Deref, DerefMut};
@@ -681,10 +681,8 @@ impl<'a> InventoryWidget<'a> {
         }
 
         // Mouse Right Click OR Keyboard/Joystick Drop Input
-        let is_mouse_drop = _mouse_input_data._btn_r_pressed;
-        let is_controller_drop = joystick_input_data._btn_b == ButtonState::Pressed
-            || keyboard_input_data.get_key_pressed(KeyCode::KeyF)
-            || keyboard_input_data.get_key_pressed(KeyCode::Delete);
+        let is_mouse_drop = UiInput::is_mouse_drop(_mouse_input_data);
+        let is_controller_drop = UiInput::is_item_drop(keyboard_input_data, joystick_input_data);
 
         let item_bar = get_game_ui_manager().get_item_bar_widget();
 

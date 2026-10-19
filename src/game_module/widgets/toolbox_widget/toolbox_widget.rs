@@ -522,8 +522,7 @@ impl<'a> ToolboxWidget<'a> {
         }
 
         // Action / Unlock / Teleport confirm (Keyboard Enter/Space, Joystick A/X)
-        let action_pressed = UiInput::is_confirm(keyboard_input_data, joystick_input_data)
-            || UiInput::is_delete(keyboard_input_data, joystick_input_data);
+        let action_pressed = UiInput::is_execute(keyboard_input_data, joystick_input_data);
 
         if action_pressed {
             self.get_active_tab_mut().execute_selected_action();

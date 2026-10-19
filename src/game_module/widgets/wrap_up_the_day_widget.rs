@@ -15,7 +15,6 @@ use rust_engine_3d::utilities::system::ptr_as_mut;
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use std::ffi::c_void;
 use std::rc::Rc;
-use winit::keyboard::KeyCode;
 
 pub const COLOR_OK_BTN_DISABLED_BG: u32 = get_color32(130, 130, 130, 200);
 pub const COLOR_PANEL_BG: u32 = get_color32(240, 222, 186, 248);
@@ -561,9 +560,7 @@ impl<'a> WrapUpTheDayWidget<'a> {
         }
 
         // Key interactions (Confirm with Space, Return/Enter, KeyE, or Joypad Button A)
-        if UiInput::is_confirm(keyboard_input_data, joystick_input_data)
-            || keyboard_input_data.get_key_pressed(KeyCode::KeyE)
-        {
+        if UiInput::is_confirm(keyboard_input_data, joystick_input_data) {
             self._is_ok_clicked = true;
             get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
         }

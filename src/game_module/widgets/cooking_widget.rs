@@ -2,6 +2,7 @@ use crate::game_module::actors::character::Character;
 use crate::game_module::actors::items::ItemDataType;
 use crate::game_module::game_constants::AUDIO_SELECT_ITEM;
 use crate::game_module::game_controller::WidgetNavRepeatController;
+use crate::game_module::game_input::UiInput;
 use crate::game_module::game_service_locator::{
     get_character_manager_mut, get_game_ui_manager, get_game_ui_manager_mut, get_item_manager_mut,
 };
@@ -11,7 +12,7 @@ use nalgebra::Vector2;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::core::engine_core::TimeData;
 use rust_engine_3d::core::engine_service_locator::get_audio_manager_mut;
-use rust_engine_3d::core::input::{ButtonState, JoystickInputData, KeyboardInputData, MouseInputData, MouseMoveData};
+use rust_engine_3d::core::input::{JoystickInputData, KeyboardInputData, MouseInputData, MouseMoveData};
 use rust_engine_3d::scene::ui::{
     HorizontalAlign, Orientation, PIVOT_CENTER, UIComponentInstance, UILayoutType, UIManager, UIWidgetTypes,
     VerticalAlign, WidgetDefault,
@@ -20,7 +21,6 @@ use rust_engine_3d::utilities::system::{RcRefCell, ptr_as_mut};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use std::ffi::c_void;
 use std::rc::Rc;
-use winit::keyboard::KeyCode;
 
 // ────────────────────────────────────────────────────────────────
 // Cooking Specific UI Layout & Dimension Constants
@@ -465,11 +465,7 @@ impl<'a> CookingWidget<'a> {
         self.refresh_recipe_labels();
 
         // ESC or KeyB or Gamepad Start/Back to close
-        if keyboard_input_data.get_key_pressed(KeyCode::Escape)
-            || keyboard_input_data.get_key_pressed(KeyCode::KeyB)
-            || joystick_input_data._btn_b == ButtonState::Pressed
-            || joystick_input_data._btn_start == ButtonState::Pressed
-        {
+        if UiInput::is_cancel(keyboard_input_data, joystick_input_data) {
             self.close_cooking();
             return;
         }
@@ -497,11 +493,7 @@ impl<'a> CookingWidget<'a> {
         }
 
         // Enter or Space or Gamepad A/X to Cook selected item
-        if keyboard_input_data.get_key_pressed(KeyCode::Enter)
-            || keyboard_input_data.get_key_pressed(KeyCode::Space)
-            || joystick_input_data._btn_a == ButtonState::Pressed
-            || joystick_input_data._btn_x == ButtonState::Pressed
-        {
+        if UiInput::is_execute(keyboard_input_data, joystick_input_data) {
             self.request_cook_recipe(self._selected_index);
         }
     }

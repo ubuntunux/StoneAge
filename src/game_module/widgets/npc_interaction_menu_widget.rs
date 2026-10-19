@@ -24,7 +24,6 @@ use rust_engine_3d::utilities::system::{RcRefCell, ptr_as_mut, ptr_as_ref};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use std::ffi::c_void;
 use std::rc::Rc;
-use winit::keyboard::KeyCode;
 
 pub const NPC_INTERACTION_MENU_WIDTH: f32 = 280.0;
 pub const NPC_INTERACTION_MENU_BUTTON_HEIGHT: f32 = 36.0;
@@ -648,20 +647,9 @@ impl<'a> NpcInteractionMenuWidget<'a> {
         }
 
         // Digit shortcut selection (1, 2, 3, 4, etc.)
-        let key_codes = [
-            KeyCode::Digit1,
-            KeyCode::Digit2,
-            KeyCode::Digit3,
-            KeyCode::Digit4,
-            KeyCode::Digit5,
-            KeyCode::Digit6,
-            KeyCode::Digit7,
-            KeyCode::Digit8,
-            KeyCode::Digit9,
-        ];
-
-        for (i, key_code) in key_codes.iter().enumerate() {
-            if keyboard_input_data.get_key_pressed(*key_code) && i < self._buttons.len() {
+        if let Some(digit) = UiInput::get_pressed_digit(keyboard_input_data) {
+            let i = digit.saturating_sub(1);
+            if i < self._buttons.len() {
                 let option = self._buttons[i]._option;
                 self._selected_index = i;
                 self.update_selected_visuals();

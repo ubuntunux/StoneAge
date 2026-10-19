@@ -220,8 +220,7 @@ impl<'a> GameDebugMenuWidget<'a> {
     ) {
         let move_menu_up = UiInput::is_up(keyboard_input_data, joystick_input_data);
         let move_menu_down = UiInput::is_down(keyboard_input_data, joystick_input_data);
-        let press_game_debug_menu = UiInput::is_confirm(keyboard_input_data, joystick_input_data)
-            || UiInput::is_delete(keyboard_input_data, joystick_input_data);
+        let press_game_debug_menu = UiInput::is_execute(keyboard_input_data, joystick_input_data);
 
         if move_menu_up {
             let next_item = self._selected_menu_item.prev();

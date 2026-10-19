@@ -4,6 +4,7 @@ use crate::game_module::game_constants::{
     BED_FOR_KOA, CAMERA_DISTANCE_MAX, DEFAULT_FADE_TIME, DEFAULT_GAME_SAVE_DATA, GAME_VIEW_MODE, GameViewMode,
     MATERIAL_INTRO_IMAGE, MATERIAL_UI_NONE, MATERIAL_WORLDMAP_FADE_TIME,
 };
+use crate::game_module::game_input::GameInput;
 use crate::game_module::game_scene_manager::GameSceneState;
 use crate::game_module::game_service_locator::{
     get_character_manager, get_character_manager_mut, get_editor_ui_manager_mut, get_game_controller_mut,
@@ -174,12 +175,9 @@ impl<'a> GameClient<'a> {
             mouse_move_data._mouse_pos_delta.x as f32 / mouse_speed_ratio,
             mouse_move_data._mouse_pos_delta.y as f32 / mouse_speed_ratio,
         );
-        let any_key_pressed = joystick_input_data.is_any_button_pressed()
-            || mouse_input_data.is_any_button_pressed()
-            || keyboard_input_data.is_any_key_pressed();
-        let any_key_hold = joystick_input_data.is_any_button_hold()
-            || mouse_input_data.is_any_button_hold()
-            || keyboard_input_data.is_any_key_hold();
+        let any_key_pressed =
+            GameInput::is_any_input_pressed(keyboard_input_data, joystick_input_data, mouse_input_data);
+        let any_key_hold = GameInput::is_any_input_hold(keyboard_input_data, joystick_input_data, mouse_input_data);
 
         let game_phase = self._game_phase;
         let next_game_phase = self._next_game_phase;

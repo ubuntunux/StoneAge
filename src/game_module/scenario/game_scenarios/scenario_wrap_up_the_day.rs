@@ -8,6 +8,7 @@ use crate::game_module::game_constants::{
     DEFAULT_FADE_TIME, MATERIAL_UI_NONE, MAX_BED_RESTRICTION_DISTANCE, PROP_NAME_TABLE, SLEEP_TIMER,
     TARGET_HUNGER_THRESHOLD, TIME_OF_NIGHT,
 };
+use crate::game_module::game_input::GameInput;
 use crate::game_module::game_service_locator::{
     get_game_client_mut, get_game_controller_mut, get_game_scene_manager, get_game_scene_manager_mut,
     get_game_ui_manager_mut,
@@ -20,14 +21,12 @@ use crate::game_module::scenario::scenario_track::ScenarioTrack;
 use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop};
 use rust_engine_3d::core::engine_service_locator::{get_audio_manager_mut, get_engine_core, get_scene_manager};
-use rust_engine_3d::core::input::ButtonState;
 use rust_engine_3d::scene::scene_manager::SceneManager;
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{RcRefCell, State, newRcRefCell};
 use serde::{Deserialize, Serialize};
 use strum::IntoEnumIterator;
 use strum_macros::{Display, EnumCount, EnumIter, EnumString};
-use winit::keyboard::KeyCode;
 
 const BED_CAMERA_DEFAULT_ROT: Vector3<f32> = Vector3::new(0.4, -1.4, 0.0);
 const BED_CAMERA_EXTRA_DIST: f32 = 2.0;
@@ -38,7 +37,6 @@ const TABLE_SEAT_INITIAL_DIST: f32 = 1.0;
 const TABLE_SEAT_EATING_DIST: f32 = 2.0;
 const TABLE_SEAT_ARRIVAL_DIST: f32 = 0.3;
 const SETTLEMENT_START_DELAY: f32 = 0.5;
-const JOYSTICK_MOVE_DEADZONE: i16 = 3000;
 
 #[derive(Clone, PartialEq, Eq, Hash, Display, Debug, Copy, EnumIter, EnumString, EnumCount)]
 enum ScenarioPhase {
@@ -551,24 +549,13 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                     State::Begin => {}
                     State::Update => {
                         let engine_core = get_engine_core();
-                        let is_dance_pressed = engine_core._keyboard_input_data.get_key_pressed(KeyCode::KeyG)
-                            || engine_core._joystick_input_data._btn_y == ButtonState::Pressed;
                         let is_moving =
-                            [KeyCode::KeyW, KeyCode::KeyA, KeyCode::KeyS, KeyCode::KeyD].iter().any(|&key| {
-                                engine_core._keyboard_input_data.get_key_pressed(key)
-                                    || engine_core._keyboard_input_data.get_key_hold(key)
-                            }) || engine_core._joystick_input_data._stick_left_direction.x.abs()
-                                > JOYSTICK_MOVE_DEADZONE
-                                || engine_core._joystick_input_data._stick_left_direction.y.abs()
-                                    > JOYSTICK_MOVE_DEADZONE;
-                        let is_any_input = engine_core._keyboard_input_data.is_any_key_pressed()
-                            || engine_core._mouse_input_data._btn_l_pressed
-                            || engine_core._mouse_input_data._btn_r_pressed
-                            || engine_core._joystick_input_data._btn_a == ButtonState::Pressed
-                            || engine_core._joystick_input_data._btn_b == ButtonState::Pressed
-                            || engine_core._joystick_input_data._btn_x == ButtonState::Pressed
-                            || engine_core._joystick_input_data._btn_y == ButtonState::Pressed
-                            || is_moving;
+                            GameInput::is_moving(&engine_core._keyboard_input_data, &engine_core._joystick_input_data);
+                        let is_any_input = GameInput::is_any_input(
+                            &engine_core._keyboard_input_data,
+                            &engine_core._joystick_input_data,
+                            &engine_core._mouse_input_data,
+                        );
 
                         if let Some(player) = &self._player {
                             let mut player_ref = player.borrow_mut();
@@ -579,7 +566,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
 
                         let player_is_acting = self._player.as_ref().is_some_and(|p| {
                             let p_ref = p.borrow();
-                            (p_ref.is_action(ActionAnimationState::Dance) && !is_dance_pressed)
+                            p_ref.is_action(ActionAnimationState::Dance)
                                 || p_ref.is_action(ActionAnimationState::Hungry)
                         });
 

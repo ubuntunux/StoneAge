@@ -463,10 +463,8 @@ impl<'a> GameController<'a> {
         // set action & move
         let player_mut = ptr_as_mut(player.as_ptr());
 
-        if player_mut.is_action(ActionAnimationState::Dance) && !input._dance {
-            if input.is_any_input(keyboard_input_data.is_any_key_pressed()) {
-                player_mut.set_action_none();
-            }
+        if player_mut.is_action(ActionAnimationState::Dance) && input.is_any_input(keyboard_input_data.is_any_key_pressed()) {
+            player_mut.set_action_none()
         }
 
         {
@@ -603,8 +601,6 @@ impl<'a> GameController<'a> {
                 .find_hand_item_slot_index()
                 .unwrap_or(INVALID_ITEM_INDEX);
             get_game_ui_manager_mut().select_item(hand_slot);
-        } else if input._dance {
-            player_mut.set_action_dance();
         } else if input._request && player_mut.is_in_interaction_range() {
             if get_game_client().is_available_interaction() {
                 player_mut.set_action_request();

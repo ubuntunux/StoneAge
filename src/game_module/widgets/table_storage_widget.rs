@@ -694,7 +694,7 @@ impl<'a> TableStorageWidget<'a> {
         }
 
         // Mouse Right Click handling for 1-item transfer between Table Storage and Player Inventory
-        if mouse_input_data._btn_r_pressed {
+        if UiInput::is_mouse_sub_action(mouse_input_data) {
             let engine_core = get_engine_core();
             let mouse_pos = &engine_core._mouse_move_data._mouse_pos;
             let mouse_pos_f32 = Vector2::new(mouse_pos.x as f32, mouse_pos.y as f32);

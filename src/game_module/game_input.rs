@@ -1,4 +1,4 @@
-use crate::game_module::game_constants::JOYSTICK_SENSITIVITY;
+use crate::game_module::game_constants::{JOYSTICK_MOVE_DEADZONE, JOYSTICK_SENSITIVITY};
 use nalgebra::Vector2;
 use rust_engine_3d::core::input::{ButtonState, JoystickInputData, KeyboardInputData, MouseInputData, MouseMoveData};
 use serde::{Deserialize, Serialize};
@@ -189,8 +189,7 @@ pub enum GamePlayAction {
     OpenInventory,
     OpenMenu,
     PrevQuickSlotRow,
-    NextQuickSlotRow,
-    Dance,
+    NextQuickSlotRow
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -325,14 +324,18 @@ impl Default for InputBindings {
         ui_bindings.insert(
             UiAction::Confirm,
             ActionBinding::new(
-                vec![KeyCode::Enter, KeyCode::Space, KeyCode::NumpadEnter],
+                vec![KeyCode::Enter, KeyCode::Space, KeyCode::NumpadEnter, KeyCode::KeyE],
                 vec![GamepadButton::A],
                 vec![],
             ),
         );
         ui_bindings.insert(
             UiAction::Cancel,
-            ActionBinding::new(vec![KeyCode::Escape, KeyCode::KeyB], vec![GamepadButton::B], vec![]),
+            ActionBinding::new(
+                vec![KeyCode::Escape, KeyCode::KeyB],
+                vec![GamepadButton::B, GamepadButton::Start],
+                vec![],
+            ),
         );
         ui_bindings.insert(
             UiAction::Up,
@@ -447,10 +450,6 @@ impl Default for InputBindings {
         gameplay_bindings.insert(
             GamePlayAction::NextQuickSlotRow,
             ActionBinding::new(vec![KeyCode::Tab], vec![GamepadButton::DpadDown], vec![]),
-        );
-        gameplay_bindings.insert(
-            GamePlayAction::Dance,
-            ActionBinding::new(vec![KeyCode::KeyG], vec![GamepadButton::Y], vec![]),
         );
 
         Self {
@@ -619,6 +618,108 @@ impl UiInput {
     pub fn is_delete(keyboard: &KeyboardInputData, joystick: &JoystickInputData) -> bool {
         DEFAULT_BINDINGS.is_ui_action_pressed(UiAction::Delete, keyboard, joystick)
     }
+
+    pub fn is_execute(keyboard: &KeyboardInputData, joystick: &JoystickInputData) -> bool {
+        Self::is_confirm(keyboard, joystick) || Self::is_delete(keyboard, joystick)
+    }
+
+    pub fn get_pressed_digit(keyboard: &KeyboardInputData) -> Option<usize> {
+        let key_codes = [
+            KeyCode::Digit1,
+            KeyCode::Digit2,
+            KeyCode::Digit3,
+            KeyCode::Digit4,
+            KeyCode::Digit5,
+            KeyCode::Digit6,
+            KeyCode::Digit7,
+            KeyCode::Digit8,
+            KeyCode::Digit9,
+        ];
+        for (i, key_code) in key_codes.iter().enumerate() {
+            if keyboard.get_key_pressed(*key_code) {
+                return Some(i + 1);
+            }
+        }
+        None
+    }
+
+    pub fn is_item_drop(keyboard: &KeyboardInputData, joystick: &JoystickInputData) -> bool {
+        Self::is_delete(keyboard, joystick)
+            || keyboard.get_key_pressed(KeyCode::KeyF)
+            || keyboard.get_key_pressed(KeyCode::Delete)
+            || joystick._btn_b == ButtonState::Pressed
+    }
+
+    pub fn is_mouse_drop(mouse: &MouseInputData) -> bool {
+        mouse._btn_r_pressed
+    }
+
+    pub fn is_mouse_sub_action(mouse: &MouseInputData) -> bool {
+        mouse._btn_r_pressed
+    }
+}
+
+pub struct CookingMinigameInput;
+
+impl CookingMinigameInput {
+    pub fn is_advance(keyboard: &KeyboardInputData, joystick: &JoystickInputData) -> bool {
+        UiInput::is_confirm(keyboard, joystick)
+            || keyboard.get_key_pressed(KeyCode::KeyE)
+            || joystick._btn_a == ButtonState::Pressed
+    }
+}
+
+pub struct GameInput;
+
+impl GameInput {
+    pub fn is_moving(keyboard: &KeyboardInputData, joystick: &JoystickInputData) -> bool {
+        let is_key_move = [
+            KeyCode::KeyW,
+            KeyCode::KeyA,
+            KeyCode::KeyS,
+            KeyCode::KeyD,
+            KeyCode::ArrowUp,
+            KeyCode::ArrowLeft,
+            KeyCode::ArrowDown,
+            KeyCode::ArrowRight,
+        ]
+        .iter()
+        .any(|&key| keyboard.get_key_pressed(key) || keyboard.get_key_hold(key));
+
+        let is_stick_move = joystick._stick_left_direction.x.abs() > JOYSTICK_MOVE_DEADZONE
+            || joystick._stick_left_direction.y.abs() > JOYSTICK_MOVE_DEADZONE;
+
+        is_key_move || is_stick_move
+    }
+
+    pub fn is_any_input(keyboard: &KeyboardInputData, joystick: &JoystickInputData, mouse: &MouseInputData) -> bool {
+        Self::is_any_input_pressed(keyboard, joystick, mouse) || Self::is_moving(keyboard, joystick)
+    }
+
+    pub fn is_any_input_pressed(
+        keyboard: &KeyboardInputData,
+        joystick: &JoystickInputData,
+        mouse: &MouseInputData,
+    ) -> bool {
+        keyboard.is_any_key_pressed() || mouse.is_any_button_pressed() || joystick.is_any_button_pressed()
+    }
+
+    pub fn is_any_input_hold(
+        keyboard: &KeyboardInputData,
+        joystick: &JoystickInputData,
+        mouse: &MouseInputData,
+    ) -> bool {
+        keyboard.is_any_key_hold() || mouse.is_any_button_hold() || joystick.is_any_button_hold()
+    }
+
+    pub fn is_toggle_game_mode(keyboard: &KeyboardInputData, joystick: &JoystickInputData) -> bool {
+        (joystick._btn_left_trigger == ButtonState::Hold
+            && joystick._btn_right_trigger == ButtonState::Hold
+            && joystick._btn_left_shoulder == ButtonState::Hold
+            && joystick._btn_right_shoulder == ButtonState::Hold)
+            || keyboard.get_key_pressed(KeyCode::Backquote)
+            || keyboard.get_key_pressed(KeyCode::Escape)
+    }
 }
 
 #[derive(Clone, Debug, Default)]
@@ -643,7 +744,6 @@ pub struct GamePlayInputState {
     pub _open_menu: bool,
     pub _prev_quick_slot_row: bool,
     pub _next_quick_slot_row: bool,
-    pub _dance: bool,
     pub _stick_left_direction: Vector2<f32>,
 }
 
@@ -737,7 +837,6 @@ impl GamePlayInputState {
                 joystick,
                 mouse_input,
             ),
-            _dance: bindings.is_gameplay_action_pressed(GamePlayAction::Dance, keyboard, joystick, mouse_input),
             _stick_left_direction: stick_left_direction,
         }
     }
@@ -972,5 +1071,82 @@ mod tests {
         mouse_move._scroll_delta.y = -5;
         assert!(!CameraInput::is_zoom_in(&keyboard, &joystick, &mouse_move));
         assert!(CameraInput::is_zoom_out(&keyboard, &joystick, &mouse_move));
+    }
+
+    #[test]
+    fn test_ui_input_execute_and_digit() {
+        let mut keyboard = create_keyboard_input_data();
+        let mut joystick = create_test_joystick();
+
+        assert!(!UiInput::is_execute(&keyboard, &joystick));
+        assert_eq!(UiInput::get_pressed_digit(&keyboard), None);
+
+        keyboard.set_key_pressed(KeyCode::KeyE);
+        assert!(UiInput::is_confirm(&keyboard, &joystick));
+        assert!(UiInput::is_execute(&keyboard, &joystick));
+        keyboard.clear_key_pressed();
+
+        joystick._btn_start = ButtonState::Pressed;
+        assert!(UiInput::is_cancel(&keyboard, &joystick));
+        joystick._btn_start = ButtonState::None;
+
+        keyboard.set_key_pressed(KeyCode::Digit3);
+        assert_eq!(UiInput::get_pressed_digit(&keyboard), Some(3));
+        keyboard.clear_key_pressed();
+    }
+
+    #[test]
+    fn test_cooking_minigame_input_and_drops() {
+        let mut keyboard = create_keyboard_input_data();
+        let mut joystick = create_test_joystick();
+        let mut mouse = create_mouse_input_data();
+
+        assert!(!CookingMinigameInput::is_advance(&keyboard, &joystick));
+        keyboard.set_key_pressed(KeyCode::KeyE);
+        assert!(CookingMinigameInput::is_advance(&keyboard, &joystick));
+        keyboard.clear_key_pressed();
+
+        joystick._btn_a = ButtonState::Pressed;
+        assert!(CookingMinigameInput::is_advance(&keyboard, &joystick));
+        joystick._btn_a = ButtonState::None;
+
+        assert!(!UiInput::is_item_drop(&keyboard, &joystick));
+        keyboard.set_key_pressed(KeyCode::KeyF);
+        assert!(UiInput::is_item_drop(&keyboard, &joystick));
+        keyboard.clear_key_pressed();
+
+        assert!(!UiInput::is_mouse_drop(&mouse));
+        mouse.btn_r_pressed(true);
+        assert!(UiInput::is_mouse_drop(&mouse));
+        assert!(UiInput::is_mouse_sub_action(&mouse));
+    }
+
+    #[test]
+    fn test_game_input_movement_and_any_input() {
+        let mut keyboard = create_keyboard_input_data();
+        let mut joystick = create_test_joystick();
+        let mut mouse = create_mouse_input_data();
+
+        assert!(!GameInput::is_moving(&keyboard, &joystick));
+        assert!(!GameInput::is_any_input(&keyboard, &joystick, &mouse));
+
+        keyboard.set_key_hold(KeyCode::KeyW, true);
+        assert!(GameInput::is_moving(&keyboard, &joystick));
+        assert!(GameInput::is_any_input(&keyboard, &joystick, &mouse));
+        keyboard.clear_key_hold();
+
+        joystick._stick_left_direction.x = 4000;
+        assert!(GameInput::is_moving(&keyboard, &joystick));
+        assert!(GameInput::is_any_input(&keyboard, &joystick, &mouse));
+        joystick._stick_left_direction.x = 0;
+
+        mouse.btn_l_pressed(true);
+        assert!(GameInput::is_any_input_pressed(&keyboard, &joystick, &mouse));
+        assert!(GameInput::is_any_input(&keyboard, &joystick, &mouse));
+        mouse.btn_l_pressed(false);
+
+        // Toggle game mode
+        keyboard.set_key_pressed(KeyCode::Backquote);
+        assert!(GameInput::is_toggle_game_mode(&keyboard, &joystick));
     }
 }
