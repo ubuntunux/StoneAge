@@ -1386,9 +1386,9 @@
             "SM_Env_Bush_Tropical_02.009": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Bush_Tropical_02",
                 "_position": [
-                    15.31445026397705,
-                    2.0118114948272705,
-                    10.364421844482422
+                    22.30691909790039,
+                    2.9278945922851562,
+                    22.177919387817383
                 ],
                 "_rotation": [
                     0.0,
@@ -1405,9 +1405,9 @@
             "SM_Env_Bush_Tropical_02.010": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Bush_Tropical_02",
                 "_position": [
-                    16.209861755371094,
-                    2.3647620677948,
-                    12.237295150756836
+                    18.42225456237793,
+                    2.7386527061462402,
+                    22.14438247680664
                 ],
                 "_rotation": [
                     0.0,
@@ -1443,9 +1443,9 @@
             "SM_Env_Bush_Tropical_02.013": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Bush_Tropical_02",
                 "_position": [
-                    22.013010025024414,
-                    2.250310182571411,
-                    19.667009353637695
+                    20.23548698425293,
+                    2.5904903411865234,
+                    21.21184539794922
                 ],
                 "_rotation": [
                     0.0,
@@ -1462,9 +1462,9 @@
             "SM_Env_Bush_Tropical_02.015": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Bush_Tropical_02",
                 "_position": [
-                    27.158193588256836,
-                    1.2743504047393799,
-                    19.89972496032715
+                    22.53409194946289,
+                    2.4316534996032715,
+                    23.124900817871094
                 ],
                 "_rotation": [
                     0.0,
@@ -5072,9 +5072,9 @@
             "mushroom_01": {
                 "_model_data_name": "environments/mushroom_01",
                 "_position": [
-                    22.208351135253906,
-                    2.2956175804138184,
-                    21.35924530029297
+                    22.48426055908203,
+                    2.1848702430725098,
+                    19.956052780151367
                 ],
                 "_rotation": [
                     0.0,

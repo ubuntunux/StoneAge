@@ -73,8 +73,7 @@ pub fn get_affinity_tier(intimacy: f32) -> AffinityTier {
 
 pub fn get_scene_display_name(scene_data_name: &str) -> String {
     match scene_data_name {
-        "game_scenes/intro_stage" => "HOME".to_string(),
-        "game_scenes/stage_01" => "FOREST".to_string(),
+        "game_scenes/intro_stage" => "FOREST".to_string(),
         "game_scenes/stage_cave" => "CAVE".to_string(),
         "game_scenes/world_map" => "WORLD MAP".to_string(),
         "game_scenes/stage_ufo" => "UFO".to_string(),
