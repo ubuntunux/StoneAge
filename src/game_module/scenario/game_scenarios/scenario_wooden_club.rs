@@ -241,10 +241,6 @@ impl<'a> ScenarioBase<'a> for ScenarioWoodenClub<'a> {
         false
     }
 
-    fn is_allow_player_control(&self) -> bool {
-        true
-    }
-
     fn is_end_of_scenario(&self) -> bool {
         self._scenario_track._scenario_phase == ScenarioPhase::End
     }

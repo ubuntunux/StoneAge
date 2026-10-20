@@ -311,9 +311,7 @@ impl<'a> GameClient<'a> {
                                         character_manager.get_player(),
                                         time_data._delta_time_with_scale as f32,
                                     );
-                                } else if game_scene_manager.is_allow_player_control()
-                                    && !game_ui_manager.is_opened_popup()
-                                {
+                                } else {
                                     game_controller.update_game_controller(
                                         time_data,
                                         joystick_input_data,

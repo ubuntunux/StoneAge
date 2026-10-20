@@ -312,15 +312,6 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
         )
     }
 
-    fn is_allow_player_control(&self) -> bool {
-        match self._scenario_track._scenario_phase {
-            ScenarioPhase::Update => {
-                true
-            }
-            _ => false,
-        }
-    }
-
     fn is_available_sleep(&self) -> bool {
         matches!(self._scenario_track._scenario_phase, ScenarioPhase::Update)
     }

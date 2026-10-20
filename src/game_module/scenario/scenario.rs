@@ -114,9 +114,6 @@ pub trait ScenarioBase<'a> {
     fn load_scenario_save_data(&mut self, scenario_save_data: &GameScenarioCreateInfo);
     fn get_scenario_save_data(&self) -> GameScenarioCreateInfo;
     fn is_play_scenario_mode(&self) -> bool;
-    fn is_allow_player_control(&self) -> bool {
-        false
-    }
     fn is_available_sleep(&self) -> bool {
         false
     }

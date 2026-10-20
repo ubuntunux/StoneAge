@@ -122,7 +122,6 @@ pub struct GameSceneManager<'a> {
     pub _scenarios: ScenarioMap<'a>,
     pub _completed_game_scenarios: HashSet<ScenarioType>,
     pub _is_play_scenario_mode: bool,
-    pub _is_allow_player_control: bool,
     pub _current_game_scene_data_name: String,
     pub _current_game_scene_data: Option<RcRefCell<GameSceneDataCreateInfo>>,
     pub _teleport_stage: Option<String>,
@@ -189,7 +188,6 @@ impl<'a> GameSceneManager<'a> {
             _scenarios: Default::default(),
             _completed_game_scenarios: Default::default(),
             _is_play_scenario_mode: false,
-            _is_allow_player_control: true,
             _teleport_stage: None,
             _teleport_gate: None,
             _teleport_spawn_point: None,
@@ -492,7 +490,6 @@ impl<'a> GameSceneManager<'a> {
             self._scenarios.clear();
         }
         self._is_play_scenario_mode = true;
-        self._is_allow_player_control = true;
     }
 
     // game scene
@@ -692,10 +689,6 @@ impl<'a> GameSceneManager<'a> {
         self._is_play_scenario_mode
     }
 
-    pub fn is_allow_player_control(&self) -> bool {
-        self._is_allow_player_control
-    }
-
     pub fn get_game_scene_state(&self) -> GameSceneState {
         self._game_scene_state
     }
@@ -730,7 +723,6 @@ impl<'a> GameSceneManager<'a> {
             self._reservation_scenarios.clear();
         }
 
-        self._is_allow_player_control = true;
         self._is_play_scenario_mode = false;
         if self.has_scenarios() {
             self._scenarios.retain(|_scenario_type, scenario_refcell| {
@@ -739,10 +731,6 @@ impl<'a> GameSceneManager<'a> {
 
                 if scenario.is_play_scenario_mode() {
                     self._is_play_scenario_mode = true;
-                }
-
-                if !scenario.is_allow_player_control() {
-                    self._is_allow_player_control = false;
                 }
 
                 if scenario.is_end_of_scenario() {
