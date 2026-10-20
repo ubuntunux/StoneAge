@@ -2019,25 +2019,6 @@
                 ],
                 "_scene_object_type": "Collision"
             },
-            "gate.001": {
-                "_model_data_name": "props/gate",
-                "_position": [
-                    -6.528539657592773,
-                    10.0,
-                    -7.164751052856445
-                ],
-                "_rotation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "_scale": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "_scene_object_type": "Default"
-            },
             "hyacinth.001": {
                 "_model_data_name": "environments/hyacinth",
                 "_position": [

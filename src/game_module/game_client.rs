@@ -310,7 +310,9 @@ impl<'a> GameClient<'a> {
                                         character_manager.get_player(),
                                         time_data._delta_time_with_scale as f32,
                                     );
-                                } else {
+                                } else if game_scene_manager.is_allow_player_control()
+                                    && !game_ui_manager.is_opened_popup()
+                                {
                                     game_controller.update_game_controller(
                                         time_data,
                                         joystick_input_data,
@@ -360,36 +362,14 @@ impl<'a> GameClient<'a> {
                     State::End => {}
                 },
                 GamePhase::PlayGameScenario => match state {
-                    State::Begin => {
-                        if game_scene_manager.has_game_scenario(ScenarioType::ScenarioWrapUpTheDay) {
-                            game_ui_manager.show_game_ui(true);
-                        } else {
-                            game_ui_manager.show_game_ui(false);
-                        }
-                    }
+                    State::Begin => {}
                     State::Update => {
-                        if !game_scene_manager.is_play_scenario_mode() {
-                            self.set_next_game_phase(GamePhase::GamePlay);
-                        } else if game_scene_manager.has_game_scenario(ScenarioType::ScenarioWrapUpTheDay)
-                            && character_manager.is_valid_player()
-                        {
-                            game_ui_manager.show_game_ui(true);
-                            let is_allow_control = game_scene_manager
-                                .get_game_scenario(ScenarioType::ScenarioWrapUpTheDay)
-                                .as_ref()
-                                .is_some_and(|s| s.borrow().is_allow_player_control());
-                            if is_allow_control {
-                                game_controller.update_game_controller(
-                                    time_data,
-                                    joystick_input_data,
-                                    keyboard_input_data,
-                                    mouse_move_data,
-                                    mouse_input_data,
-                                    &mouse_delta,
-                                    scene_manager.get_main_camera_mut(),
-                                    character_manager.get_player(),
-                                );
+                        if game_scene_manager.is_play_scenario_mode() {
+                            if game_ui_manager.is_show_game_ui() {
+                                game_ui_manager.show_game_ui(false);
                             }
+                        } else {
+                            self.set_next_game_phase(GamePhase::GamePlay);
                         }
                     }
                     State::End => {

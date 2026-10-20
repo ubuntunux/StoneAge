@@ -753,6 +753,10 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
         )
     }
 
+    fn is_allow_player_control(&self) -> bool {
+        !self.is_play_scenario_mode()
+    }
+
     fn complete_sub_quest_wrap_up_the_day(&mut self) {
         self.complete_sub_quest_wrap_up_the_day();
     }

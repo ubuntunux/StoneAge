@@ -306,14 +306,18 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
     }
 
     fn is_play_scenario_mode(&self) -> bool {
-        true
+        !matches!(
+            self._scenario_track._scenario_phase,
+            ScenarioPhase::ResourceSettlement | ScenarioPhase::Update
+        )
     }
 
     fn is_allow_player_control(&self) -> bool {
-        if matches!(self._scenario_track._scenario_phase, ScenarioPhase::Update) {
-            !self._player.as_ref().is_some_and(|p| p.borrow().is_action(ActionAnimationState::Dance))
-        } else {
-            false
+        match self._scenario_track._scenario_phase {
+            ScenarioPhase::Update => {
+                true
+            }
+            _ => false,
         }
     }
 
@@ -449,7 +453,6 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                         game_ui_manager.open_daily_settlement(&transferred_items);
                     }
                     State::Update => {
-                        // 정산 중에는 game controller가 업데이트되지 않으므로 카메라를 플레이어에 맞춰 유지한다.
                         self.snap_game_camera_to_player();
 
                         let phase_time = self._scenario_track.get_phase_time();

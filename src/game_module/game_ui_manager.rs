@@ -309,6 +309,22 @@ impl<'a> GameUIManager<'a> {
         self._registered_popups.retain(|p| !std::ptr::eq(p.as_ptr(), popup_ptr));
     }
 
+    pub fn is_opened_popup(&self) -> bool {
+        self._registered_popups.iter().any(|popup| popup.try_borrow().map_or(false, |guard| guard._is_opened))
+    }
+
+    pub fn has_active_popup(&self) -> bool {
+        self.is_opened_popup()
+    }
+
+    pub fn is_show_game_ui(&mut self) -> bool {
+        if !self._game_ui_layout.is_null() {
+            let game_ui_layout_mut = ptr_as_mut(self._game_ui_layout);
+            return game_ui_layout_mut.get_ui_component_mut().get_visible();
+        }
+        false
+    }
+
     pub fn show_game_ui(&mut self, show: bool) {
         if !self._game_ui_layout.is_null() {
             let game_ui_layout_mut = ptr_as_mut(self._game_ui_layout);
