@@ -101,7 +101,6 @@ pub enum ToolboxIconType {
     NpcGuard,
     NpcHunter,
     WoodenClub,
-    MapHome,
     MapForest,
     MapCave,
     MapUfo,
@@ -188,7 +187,6 @@ impl ToolboxIconType {
             ToolboxIconType::NpcGuard => "[GUARD]",
             ToolboxIconType::NpcHunter => "[HUNTER]",
             ToolboxIconType::WoodenClub => "[CLUB]",
-            ToolboxIconType::MapHome => "[HOME]",
             ToolboxIconType::MapForest => "[FOREST]",
             ToolboxIconType::MapCave => "[CAVE]",
             ToolboxIconType::MapUfo => "[UFO]",
@@ -197,8 +195,7 @@ impl ToolboxIconType {
 
     pub fn stage_data_name(&self) -> Option<&'static str> {
         match self {
-            ToolboxIconType::MapHome => Some("game_scenes/intro_stage"),
-            ToolboxIconType::MapForest => Some("game_scenes/stage_01"),
+            ToolboxIconType::MapForest => Some("game_scenes/intro_stage"),
             ToolboxIconType::MapCave => Some("game_scenes/stage_cave"),
             ToolboxIconType::MapUfo => Some("game_scenes/stage_ufo"),
             _ => None,
