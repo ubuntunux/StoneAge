@@ -2,7 +2,7 @@ use crate::game_module::actors::character::data::ActionAnimationState;
 use crate::game_module::game_constants::{
     ACTOR_NAME_EWA, ACTOR_NAME_KOA, ACTOR_NAME_MONKEY_EWA, ACTOR_NAME_MONKEY_KOA, AUDIO_ROOSTER, BED_FOR_EWA,
     BED_FOR_KOA, CAMERA_DISTANCE_MAX, DEFAULT_FADE_TIME, DEFAULT_GAME_SAVE_DATA, GAME_VIEW_MODE, GameViewMode,
-    MATERIAL_INTRO_IMAGE, MATERIAL_UI_NONE, MATERIAL_WORLDMAP_FADE_TIME,
+    MATERIAL_INTRO_IMAGE, MATERIAL_UI_NONE, MATERIAL_WORLDMAP_FADE_TIME, TIME_OF_NIGHT,
 };
 use crate::game_module::game_input::GameInput;
 use crate::game_module::game_scene_manager::GameSceneState;
@@ -46,6 +46,7 @@ pub enum GamePhase {
     WorldMapUpdate,
     WorldMapClose,
     WrapUpTheDay,
+    ResourceSettlement,
     ExitGame,
     DeployObject,
 }
@@ -648,6 +649,47 @@ impl<'a> GameClient<'a> {
                         }
                     }
                     State::End => {}
+                },
+                GamePhase::ResourceSettlement => match state {
+                    State::Begin => {
+                        game_ui_manager.show_game_ui(true);
+                        if game_scene_manager.get_time_of_day() < TIME_OF_NIGHT {
+                            game_scene_manager.set_time_of_day(TIME_OF_NIGHT);
+                        }
+                        game_ui_manager.set_cross_hair_visible(true);
+                        if !game_ui_manager.is_opened_daily_settlement() {
+                            game_ui_manager.open_wrap_up_the_day_widget();
+                        }
+                    }
+                    State::Update => {
+                        if let Some(player) = character_manager.get_maybe_player() {
+                            let mut player_mut = player.borrow_mut();
+                            player_mut.update_transform();
+                            player_mut.update_render_object();
+                            game_controller.set_camera_fixed(false);
+                            game_controller.set_game_camera_auto_blend_mode(false);
+                            game_controller.apply_game_camera_transform(
+                                scene_manager.get_main_camera_mut(),
+                                &mut player_mut,
+                            );
+                        }
+
+                        if game_ui_manager.is_opened_daily_settlement() {
+                            game_ui_manager.update_wrap_up_the_day_widget(
+                                time_data,
+                                joystick_input_data,
+                                keyboard_input_data,
+                                mouse_move_data,
+                                mouse_input_data,
+                            );
+                        } else {
+                            self.set_next_game_phase(GamePhase::GamePlay);
+                        }
+                    }
+                    State::End => {
+                        game_ui_manager.close_daily_settlement();
+                        game_ui_manager.set_cross_hair_visible(false);
+                    }
                 },
                 GamePhase::DeployObject => match state {
                     State::Begin => {

@@ -34,6 +34,7 @@ pub const COLOR_EMPTY_TEXT: u32 = get_color32(155, 120, 90, 255);
 
 pub const ITEM_STAGGER_INTERVAL: f32 = 0.1;
 pub const NUMBER_TICK_SPEED: f32 = 6.0;
+pub const SETTLEMENT_START_DELAY: f32 = 0.5;
 
 pub struct SettlementItemAnimData<'a> {
     pub _display_name: String,
@@ -62,6 +63,7 @@ pub struct WrapUpTheDayWidget<'a> {
     pub _is_settlement_completed: bool,
     pub _is_transferring: bool,
     pub _transfer_timer: f32,
+    pub _start_delay_timer: f32,
     pub _item_widgets: Vec<Rc<WidgetDefault<'a>>>,
     pub _anim_timer: f32,
     pub _item_anim_data: Vec<SettlementItemAnimData<'a>>,
@@ -246,6 +248,7 @@ impl<'a> WrapUpTheDayWidget<'a> {
             _is_settlement_completed: false,
             _is_transferring: false,
             _transfer_timer: 0.0,
+            _start_delay_timer: 0.0,
             _item_widgets: Vec::new(),
             _anim_timer: 0.0,
             _item_anim_data: Vec::new(),
@@ -265,6 +268,7 @@ impl<'a> WrapUpTheDayWidget<'a> {
         self._is_settlement_completed = false;
         self._is_transferring = false;
         self._transfer_timer = 0.0;
+        self._start_delay_timer = 0.0;
         self._anim_timer = 0.0;
         self._item_anim_data.clear();
 
@@ -520,7 +524,12 @@ impl<'a> WrapUpTheDayWidget<'a> {
         }
 
         if !self._is_settlement_started {
-            return;
+            self._start_delay_timer += time_data._delta_time as f32;
+            if SETTLEMENT_START_DELAY <= self._start_delay_timer {
+                self.start_daily_settlement();
+            } else {
+                return;
+            }
         }
 
         // Staggered fade-in & count ticker update

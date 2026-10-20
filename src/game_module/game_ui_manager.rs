@@ -1,11 +1,12 @@
 use crate::game_module::actors::character::{ActorWrapper, Character};
 use crate::game_module::actors::items::ItemDataType;
 use crate::game_module::actors::props::Prop;
+use crate::game_module::game_client::GamePhase;
 use crate::game_module::game_constants::{
     ITEM_ENERGY_BALL, ITEM_SPIRIT_BALL, MATERIAL_INTRO_IMAGE, MATERIAL_UI_NONE, RECORD_DEFAULT_INCREMENT,
 };
 use crate::game_module::game_service_locator::{
-    get_character_manager, get_game_resources, get_game_scene_manager, get_prop_manager_mut,
+    get_character_manager, get_game_client_mut, get_game_resources, get_game_scene_manager, get_prop_manager_mut,
 };
 use crate::game_module::save_data::save_data::PlayerRecords;
 use crate::game_module::scenario::scenario::ScenarioType;
@@ -1106,6 +1107,20 @@ impl<'a> GameUIManager<'a> {
             widget.open_daily_settlement(transferred_items);
         }
         self.set_cross_hair_visible(true);
+        get_game_client_mut().set_next_game_phase(GamePhase::ResourceSettlement);
+    }
+
+    pub fn open_wrap_up_the_day_widget(&mut self) {
+        let (_count, transferred_items) = self.transfer_all_materials_to_table_storage_with_details();
+        self.open_daily_settlement(&transferred_items);
+    }
+
+    pub fn close_wrap_up_the_day_widget(&mut self) {
+        self.close_daily_settlement();
+    }
+
+    pub fn is_opened_wrap_up_the_day_widget(&self) -> bool {
+        self.is_opened_daily_settlement()
     }
 
     pub fn close_daily_settlement(&mut self) {

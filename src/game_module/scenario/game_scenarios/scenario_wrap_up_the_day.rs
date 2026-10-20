@@ -5,8 +5,9 @@ use crate::game_module::behavior::behavior_base::BehaviorState;
 use crate::game_module::game_constants::{
     ACTOR_NAME_EWA, ACTOR_NAME_KOA, ACTOR_NAME_MONKEY_EWA, ACTOR_NAME_MONKEY_KOA, AUDIO_QUEST_COMPLETE, AUDIO_ROOSTER,
     BED_FOR_ARU, BED_FOR_EWA, BED_FOR_KOA, CHARACTER_INTERACTION_DISTANCE, DEFAULT_FADE_TIME, MATERIAL_UI_NONE,
-    PROP_NAME_TABLE, SLEEP_TIMER, TARGET_HUNGER_THRESHOLD, TIME_OF_NIGHT,
+    PROP_NAME_TABLE, SLEEP_TIMER, TARGET_HUNGER_THRESHOLD,
 };
+use crate::game_module::game_client::GamePhase;
 use crate::game_module::game_input::GameInput;
 use crate::game_module::game_service_locator::{
     get_game_client_mut, get_game_controller_mut, get_game_scene_manager, get_game_scene_manager_mut,
@@ -30,7 +31,6 @@ use strum_macros::{Display, EnumCount, EnumIter, EnumString};
 const TABLE_SEAT_INITIAL_DIST: f32 = 1.0;
 const TABLE_SEAT_EATING_DIST: f32 = 2.0;
 const TABLE_SEAT_ARRIVAL_DIST: f32 = 0.3;
-const SETTLEMENT_START_DELAY: f32 = 0.5;
 
 #[derive(Clone, PartialEq, Eq, Hash, Display, Debug, Copy, EnumIter, EnumString, EnumCount)]
 enum ScenarioPhase {
@@ -438,37 +438,14 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                             self.snap_game_camera_to_player();
                             game_ui_manager.set_auto_fade_inout(true);
                             self._scenario_track.set_next_scenario_phase(ScenarioPhase::ResourceSettlement, None);
+                            get_game_client_mut().set_next_game_phase(GamePhase::ResourceSettlement);
                         }
                     }
                     _ => {}
                 },
                 ScenarioPhase::ResourceSettlement => match state {
-                    State::Begin => {
-                        if get_game_scene_manager().get_time_of_day() < TIME_OF_NIGHT {
-                            get_game_scene_manager_mut().set_time_of_day(TIME_OF_NIGHT);
-                        }
-
-                        let (_count, transferred_items) =
-                            game_ui_manager.transfer_all_materials_to_table_storage_with_details();
-                        game_ui_manager.open_daily_settlement(&transferred_items);
-                    }
+                    State::Begin => {}
                     State::Update => {
-                        self.snap_game_camera_to_player();
-
-                        let phase_time = self._scenario_track.get_phase_time();
-                        if SETTLEMENT_START_DELAY <= phase_time && !game_ui_manager.is_settlement_started() {
-                            game_ui_manager.start_daily_settlement();
-                        }
-
-                        let engine_core = get_engine_core();
-                        game_ui_manager.update_wrap_up_the_day_widget(
-                            &engine_core._time_data,
-                            &engine_core._joystick_input_data,
-                            &engine_core._keyboard_input_data,
-                            &engine_core._mouse_move_data,
-                            &engine_core._mouse_input_data,
-                        );
-
                         if !game_ui_manager.is_opened_daily_settlement() {
                             self._scenario_track.set_next_scenario_phase(ScenarioPhase::Update, None);
                         }
