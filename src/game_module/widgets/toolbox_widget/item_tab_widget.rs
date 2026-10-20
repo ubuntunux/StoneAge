@@ -129,7 +129,6 @@ impl ToolboxIconType {
             ToolboxIconType::NpcGuard => "Guard NPC",
             ToolboxIconType::NpcHunter => "Hunter NPC",
             ToolboxIconType::WoodenClub => "Wooden Club",
-            ToolboxIconType::MapHome => "Home",
             ToolboxIconType::MapForest => "Forest",
             ToolboxIconType::MapCave => "Cave",
             ToolboxIconType::MapUfo => "UFO",
