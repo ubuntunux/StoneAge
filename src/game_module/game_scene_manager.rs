@@ -37,7 +37,7 @@ pub type ScenarioMap<'a> = HashMap<ScenarioType, RcRefCell<dyn ScenarioBase<'a> 
 pub enum Stages {
     None,
     Forest,
-    Cave,
+    Home,
     WorldMap,
     Ufo,
 }
@@ -47,7 +47,7 @@ impl Stages {
         match *self {
             Stages::None => "",
             Stages::Forest => "FOREST",
-            Stages::Cave => "CAVE",
+            Stages::Home => "HOME",
             Stages::WorldMap => "WORLD MAP",
             Stages::Ufo => "UFO",
         }
@@ -57,7 +57,7 @@ impl Stages {
         match *self {
             Stages::None => "",
             Stages::Forest => "game_scenes/intro_stage",
-            Stages::Cave => "game_scenes/stage_cave",
+            Stages::Home => "game_scenes/stage_cave",
             Stages::WorldMap => "game_scenes/world_map",
             Stages::Ufo => "game_scenes/stage_ufo",
         }
@@ -68,8 +68,8 @@ impl Stages {
             return Stages::None;
         } else if stage_data_name == Stages::Forest.get_stage_data_name() {
             return Stages::Forest;
-        } else if stage_data_name == Stages::Cave.get_stage_data_name() {
-            return Stages::Cave;
+        } else if stage_data_name == Stages::Home.get_stage_data_name() {
+            return Stages::Home;
         } else if stage_data_name == Stages::WorldMap.get_stage_data_name() {
             return Stages::WorldMap;
         } else if stage_data_name == Stages::Ufo.get_stage_data_name() {

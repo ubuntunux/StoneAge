@@ -318,7 +318,6 @@ impl<'a> ToolboxWidget<'a> {
             vec![
                 get_toolbox_item_data(ToolboxIconType::MapHome),
                 get_toolbox_item_data(ToolboxIconType::MapForest),
-                get_toolbox_item_data(ToolboxIconType::MapCave),
                 get_toolbox_item_data(ToolboxIconType::MapUfo),
             ],
         );

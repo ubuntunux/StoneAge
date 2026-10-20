@@ -825,7 +825,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                 self._scenario_track.set_next_scenario_phase(ScenarioPhase::StoryBoard, None);
             }
             ScenarioPhase::GoToTheForest => {
-                if game_scene_data_name == Stages::Cave.get_stage_data_name()
+                if game_scene_data_name == Stages::Home.get_stage_data_name()
                     && !is_quest_item_completed(&self._sub_quest_go_to_the_forest)
                 {
                     self.create_move_to_forest_text_box();
@@ -846,7 +846,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                 }
             }
             ScenarioPhase::WrapUpTheDay => {
-                if game_scene_data_name == Stages::Cave.get_stage_data_name() {
+                if game_scene_data_name == Stages::Home.get_stage_data_name() {
                     if !is_quest_item_completed(&self._sub_quest_wrap_up_the_day) {
                         self.create_actor_ewa_text_box();
                     }
@@ -1102,7 +1102,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                             self.complete_sub_quest_return_home();
                         }
 
-                        if game_scene_manager.get_current_game_scene_data_name() == Stages::Cave.get_stage_data_name()
+                        if game_scene_manager.get_current_game_scene_data_name() == Stages::Home.get_stage_data_name()
                             && !game_scene_manager.is_teleport_mode()
                         {
                             self.complete_sub_quest_return_home();

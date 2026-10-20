@@ -102,7 +102,7 @@ pub enum ToolboxIconType {
     NpcHunter,
     WoodenClub,
     MapForest,
-    MapCave,
+    MapHome,
     MapUfo,
 }
 
@@ -130,7 +130,7 @@ impl ToolboxIconType {
             ToolboxIconType::NpcHunter => "Hunter NPC",
             ToolboxIconType::WoodenClub => "Wooden Club",
             ToolboxIconType::MapForest => "Forest",
-            ToolboxIconType::MapCave => "Cave",
+            ToolboxIconType::MapHome => "Home",
             ToolboxIconType::MapUfo => "UFO",
         }
     }
@@ -159,7 +159,6 @@ impl ToolboxIconType {
             ToolboxIconType::WoodenClub => "items/wooden_club",
             ToolboxIconType::MapHome => "items/wood",
             ToolboxIconType::MapForest => "items/wood",
-            ToolboxIconType::MapCave => "items/wood",
             ToolboxIconType::MapUfo => "items/wood",
         }
     }
@@ -187,7 +186,7 @@ impl ToolboxIconType {
             ToolboxIconType::NpcHunter => "[HUNTER]",
             ToolboxIconType::WoodenClub => "[CLUB]",
             ToolboxIconType::MapForest => "[FOREST]",
-            ToolboxIconType::MapCave => "[CAVE]",
+            ToolboxIconType::MapHome => "[HOME]",
             ToolboxIconType::MapUfo => "[UFO]",
         }
     }
@@ -195,7 +194,7 @@ impl ToolboxIconType {
     pub fn stage_data_name(&self) -> Option<&'static str> {
         match self {
             ToolboxIconType::MapForest => Some("game_scenes/intro_stage"),
-            ToolboxIconType::MapCave => Some("game_scenes/stage_cave"),
+            ToolboxIconType::MapHome => Some("game_scenes/stage_cave"),
             ToolboxIconType::MapUfo => Some("game_scenes/stage_ufo"),
             _ => None,
         }
@@ -246,7 +245,6 @@ impl ToolboxIconType {
             ToolboxIconType::WoodenClub => "toolbox_items/craft/wooden_club",
             ToolboxIconType::MapHome => "toolbox_items/teleport/map_home",
             ToolboxIconType::MapForest => "toolbox_items/teleport/map_forest",
-            ToolboxIconType::MapCave => "toolbox_items/teleport/map_cave",
             ToolboxIconType::MapUfo => "toolbox_items/teleport/map_ufo",
         }
     }

@@ -325,7 +325,7 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
 
         let game_scene_manager = get_game_scene_manager_mut();
 
-        if game_scene_data_name == Stages::Cave.get_stage_data_name() {
+        if game_scene_data_name == Stages::Home.get_stage_data_name() {
             Self::set_player_active(true);
             self._player = game_scene_manager.get_maybe_player().clone();
 
@@ -632,7 +632,7 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
                         for alien in [&self._alien_alpha, &self._alien_beta].into_iter().flatten() {
                             get_character_manager_mut().remove_character(alien);
                         }
-                        get_game_scene_manager_mut().request_open_game_scene(Stages::Cave.get_stage_data_name());
+                        get_game_scene_manager_mut().request_open_game_scene(Stages::Home.get_stage_data_name());
                     }
                     State::Update => {
                         let main_camera = get_scene_manager().get_main_camera_mut();
