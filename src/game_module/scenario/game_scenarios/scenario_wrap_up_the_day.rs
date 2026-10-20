@@ -603,27 +603,27 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
 
                             self._sleep_timer += delta_time as f32;
                             if SLEEP_TIMER <= self._sleep_timer {
-                                game_ui_manager.set_auto_fade_inout(true);
-                                game_scene_manager.set_next_time_of_day();
-                            }
-                        } else if game_ui_manager.is_done_game_image_progress() {
-                            if self._skip_wakeup {
-                                self._skip_wakeup = false;
-                            } else {
-                                get_audio_manager_mut().play_audio_bank(AUDIO_ROOSTER, AudioLoop::ONCE, None);
-                                if let Some(actor) = &self._player {
-                                    actor.borrow_mut().set_action_wake_up();
+                                if self._skip_wakeup {
+                                    self._skip_wakeup = false;
+                                    self._scenario_track.set_next_scenario_phase(ScenarioPhase::End, None);
+                                } else {
+                                    game_ui_manager.set_auto_fade_inout(true);
+                                    game_scene_manager.set_next_time_of_day();
                                 }
-                                wake_up_npc_on_bed(&self._actor_ewa, None);
-                                wake_up_npc_on_bed(&self._actor_koa, None);
                             }
+                        } else if !self._skip_wakeup && game_ui_manager.is_done_game_image_progress() {
+                            get_audio_manager_mut().play_audio_bank(AUDIO_ROOSTER, AudioLoop::ONCE, None);
+                            if let Some(actor) = &self._player {
+                                actor.borrow_mut().set_action_wake_up();
+                            }
+                            wake_up_npc_on_bed(&self._actor_ewa, None);
+                            wake_up_npc_on_bed(&self._actor_koa, None);
                             self._scenario_track.set_next_scenario_phase(ScenarioPhase::End, None);
                         }
                     }
                     _ => {}
                 },
-                ScenarioPhase::End => {
-                }
+                ScenarioPhase::End => {}
             }
 
             if state == State::Update {

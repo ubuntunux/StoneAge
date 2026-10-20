@@ -1133,23 +1133,13 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                         let wrap_up_the_day_not_completed =
                             self._sub_quest_wrap_up_the_day.as_ref().is_some_and(|q| !q.borrow().is_completed_quest());
 
-                        if wrap_up_the_day_not_completed
-                            && let Some(scenario_wrap_up_the_day) =
-                                game_scene_manager.get_game_scenario(ScenarioType::ScenarioWrapUpTheDay).as_ref()
-                        {
-                            scenario_wrap_up_the_day.borrow_mut().set_skip_wakeup(true);
-                            self.complete_sub_quest_wrap_up_the_day();
-                        }
-
-                        if self.is_sub_quest_sleep_active() {
-                            self.create_prop_bed_for_aru_text_box();
-                        } else {
-                            self.remove_prop_bed_for_aru_text_box();
-                        }
-
                         if let Some(scenario_wrap_up_the_day) =
                             game_scene_manager.get_game_scenario(ScenarioType::ScenarioWrapUpTheDay).as_ref()
                         {
+                            scenario_wrap_up_the_day.borrow_mut().set_skip_wakeup(true);
+                            if wrap_up_the_day_not_completed {
+                                self.complete_sub_quest_wrap_up_the_day();
+                            }
                             if scenario_wrap_up_the_day.borrow().is_sleeping() {
                                 self.complete_sub_quest_sleep();
                             }
@@ -1157,6 +1147,12 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                             self.clear_all();
                             game_scene_manager.request_open_game_scenario(ScenarioType::ScenarioIntro_Ufo);
                             self._scenario_track.set_next_scenario_phase(ScenarioPhase::End, None);
+                        }
+
+                        if self.is_sub_quest_sleep_active() {
+                            self.create_prop_bed_for_aru_text_box();
+                        } else {
+                            self.remove_prop_bed_for_aru_text_box();
                         }
                     }
                     _ => {}

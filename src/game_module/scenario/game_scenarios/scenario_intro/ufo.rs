@@ -300,6 +300,7 @@ impl<'a> ScenarioBase<'a> for ScenarioUfo<'a> {
                 }
                 ScenarioPhase::UfoLongShot => match state {
                     State::Begin => {
+                        game_ui_manager.set_auto_fade_inout(true);
                         game_scene_manager.set_time(TIME_OF_NIGHT, 0.0);
                         self._audio_ufo_flying =
                             get_audio_manager_mut().play_audio_bank(AUDIO_UFO_FLYING, AudioLoop::LOOP, Some(1.0));
