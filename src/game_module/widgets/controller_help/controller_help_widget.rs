@@ -523,7 +523,14 @@ impl<'a> ControllerHelpWidget<'a> {
                     (KeyBindingType::Interaction, interaction_text, RequestType::None)
                 }
             }
-            InteractionObject::PropGate(_) => (KeyBindingType::None, String::from("Enter Gate"), RequestType::None),
+            InteractionObject::PropGate(_) => {
+                let is_wrap_up = get_game_scene_manager().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay);
+                if is_wrap_up {
+                    (KeyBindingType::None, String::new(), RequestType::None)
+                } else {
+                    (KeyBindingType::None, String::from("Enter Gate"), RequestType::None)
+                }
+            }
             InteractionObject::PropGathering(prop) => (
                 KeyBindingType::Gathering,
                 format!("Hit the {}", prop.borrow()._prop_data.borrow()._name.as_str()),

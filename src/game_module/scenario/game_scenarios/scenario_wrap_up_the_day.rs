@@ -4,9 +4,8 @@ use crate::game_module::actors::props::Prop;
 use crate::game_module::behavior::behavior_base::BehaviorState;
 use crate::game_module::game_constants::{
     ACTOR_NAME_EWA, ACTOR_NAME_KOA, ACTOR_NAME_MONKEY_EWA, ACTOR_NAME_MONKEY_KOA, AUDIO_QUEST_COMPLETE, AUDIO_ROOSTER,
-    BED_FOR_ARU, BED_FOR_EWA, BED_FOR_KOA, CAMERA_DISTANCE_MIN, CAMERA_OFFSET_Y, CHARACTER_INTERACTION_DISTANCE,
-    DEFAULT_FADE_TIME, MATERIAL_UI_NONE, MAX_BED_RESTRICTION_DISTANCE, PROP_NAME_TABLE, SLEEP_TIMER,
-    TARGET_HUNGER_THRESHOLD, TIME_OF_NIGHT,
+    BED_FOR_ARU, BED_FOR_EWA, BED_FOR_KOA, CHARACTER_INTERACTION_DISTANCE, DEFAULT_FADE_TIME, MATERIAL_UI_NONE,
+    PROP_NAME_TABLE, SLEEP_TIMER, TARGET_HUNGER_THRESHOLD, TIME_OF_NIGHT,
 };
 use crate::game_module::game_input::GameInput;
 use crate::game_module::game_service_locator::{
@@ -28,11 +27,6 @@ use serde::{Deserialize, Serialize};
 use strum::IntoEnumIterator;
 use strum_macros::{Display, EnumCount, EnumIter, EnumString};
 
-const BED_CAMERA_DEFAULT_ROT: Vector3<f32> = Vector3::new(0.4, -1.4, 0.0);
-const BED_CAMERA_EXTRA_DIST: f32 = 2.0;
-const CAMERA_ACCEL_SPEED: f32 = 25.0;
-const CAMERA_DAMPING: f32 = 8.0;
-const MIN_VECTOR_DIST: f32 = 0.0001;
 const TABLE_SEAT_INITIAL_DIST: f32 = 1.0;
 const TABLE_SEAT_EATING_DIST: f32 = 2.0;
 const TABLE_SEAT_ARRIVAL_DIST: f32 = 0.3;
@@ -70,7 +64,6 @@ pub struct ScenarioWrapUpTheDay<'a> {
     _skip_wakeup: bool,
     _request_sleep: bool,
     _check_time_for_sleep: f32,
-    _bed_camera_position: Vector3<f32>,
     _camera_target_position: Vector3<f32>,
     _camera_target_velocity: Vector3<f32>,
     _is_camera_target_initialized: bool,
@@ -97,7 +90,6 @@ impl<'a> ScenarioWrapUpTheDay<'a> {
             _skip_wakeup: false,
             _request_sleep: false,
             _check_time_for_sleep: 0.0,
-            _bed_camera_position: Vector3::default(),
             _camera_target_position: Vector3::default(),
             _camera_target_velocity: Vector3::default(),
             _is_camera_target_initialized: false,
@@ -105,65 +97,9 @@ impl<'a> ScenarioWrapUpTheDay<'a> {
         })
     }
 
-    pub fn setup_bed_camera(&mut self) {
-        let mut pivot = Vector3::new(0.0, CAMERA_OFFSET_Y, 0.0);
-        if let Some(prop_bed) = self._prop_bed_for_aru.as_ref() {
-            pivot += prop_bed.borrow().get_position();
-        }
-        let camera_rotation_matrix = math::make_rotation_matrix(
-            BED_CAMERA_DEFAULT_ROT.x,
-            BED_CAMERA_DEFAULT_ROT.y,
-            BED_CAMERA_DEFAULT_ROT.z,
-        );
-        self._bed_camera_position =
-            pivot - camera_rotation_matrix.column(2).xyz() * (CAMERA_DISTANCE_MIN + BED_CAMERA_EXTRA_DIST);
-        get_game_controller_mut().set_camera_fixed(true);
-        self._is_camera_target_initialized = false;
-        self.update_bed_camera(0.0);
-    }
-
-    pub fn update_bed_camera(&mut self, delta_time: f32) {
-        let goal_target_position = if let Some(player) = self._player.as_ref() {
-            player.borrow().get_bounding_box()._center + Vector3::new(0.0, CAMERA_OFFSET_Y, 0.0)
-        } else if let Some(prop_bed) = self._prop_bed_for_aru.as_ref() {
-            prop_bed.borrow().get_position() + Vector3::new(0.0, CAMERA_OFFSET_Y, 0.0)
-        } else {
-            Vector3::new(0.0, CAMERA_OFFSET_Y, 0.0)
-        };
-
-        if !self._is_camera_target_initialized {
-            self._camera_target_position = goal_target_position;
-            self._camera_target_velocity = Vector3::zeros();
-            self._is_camera_target_initialized = true;
-        } else if 0.0 < delta_time {
-            let diff = goal_target_position - self._camera_target_position;
-            self._camera_target_velocity += diff * CAMERA_ACCEL_SPEED * delta_time;
-            self._camera_target_velocity *= (-CAMERA_DAMPING * delta_time).exp();
-            self._camera_target_position += self._camera_target_velocity * delta_time;
-        }
-
-        let diff = self._bed_camera_position - self._camera_target_position;
-        let dist = diff.magnitude();
-        let camera_rotation = if MIN_VECTOR_DIST < dist {
-            let back = diff / dist;
-            let pitch = back.y.clamp(-1.0, 1.0).asin();
-            let yaw = back.x.atan2(back.z);
-            Vector3::new(pitch, yaw + std::f32::consts::PI, 0.0)
-        } else {
-            BED_CAMERA_DEFAULT_ROT
-        };
-
-        get_game_controller_mut().set_camera_fixed_position_and_rotation(&self._bed_camera_position, &camera_rotation);
-        let main_camera = get_scene_manager().get_main_camera_mut();
-        get_game_controller_mut().update_fixed_camera_transform(main_camera);
-    }
-
-    /// 플레이어가 테이블로 이동된 위치에 맞춰 게임 카메라를 즉시 갱신한다.
-    /// (ResourceSettlement 동안에는 game controller가 업데이트되지 않아 카메라가 이전 위치에 남아있기 때문)
     pub fn snap_game_camera_to_player(&self) {
         if let Some(player) = self._player.as_ref() {
             let mut player_mut = player.borrow_mut();
-            // set_position 직후에는 render object의 bounding box가 갱신되지 않았으므로 먼저 갱신한다.
             player_mut.update_transform();
             player_mut.update_render_object();
 
@@ -174,23 +110,6 @@ impl<'a> ScenarioWrapUpTheDay<'a> {
         }
     }
 }
-
-fn clamp_actor_position_from_bed(actor: &Option<RcRefCell<Character>>, bed_pos: &Vector3<f32>, max_distance: f32) {
-    if let Some(actor_ref) = actor.as_ref() {
-        let mut actor_mut = actor_ref.borrow_mut();
-        let current_pos = *actor_mut.get_position();
-        let mut diff = current_pos - bed_pos;
-        diff.y = 0.0;
-        let dist_xz = diff.magnitude();
-        if max_distance < dist_xz && MIN_VECTOR_DIST < dist_xz {
-            let clamped_diff = (diff / dist_xz) * max_distance;
-            let mut new_pos = *bed_pos + clamped_diff;
-            new_pos.y = current_pos.y;
-            actor_mut.set_position(&new_pos);
-        }
-    }
-}
-
 fn set_actor_table_position(
     scene_manager: &SceneManager,
     actor: &Option<RcRefCell<Character>>,
@@ -461,21 +380,11 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
         self._prop_bed_for_aru = game_scene_manager.get_prop_manager().get_prop_by_name(BED_FOR_ARU).cloned();
         self._prop_bed_for_ewa = game_scene_manager.get_prop_manager().get_prop_by_name(BED_FOR_EWA).cloned();
         self._prop_bed_for_koa = game_scene_manager.get_prop_manager().get_prop_by_name(BED_FOR_KOA).cloned();
-        //self.setup_bed_camera();
     }
 
     fn update_game_scenario(&mut self, _any_key_hold: bool, _any_key_pressed: bool, delta_time: f64) {
         let game_scene_manager = get_game_scene_manager_mut();
         let game_ui_manager = get_game_ui_manager_mut();
-
-        //self.update_bed_camera(delta_time as f32);
-
-        if let Some(prop_table) = self._prop_table.as_ref() {
-            let table_pos = *prop_table.borrow().get_position();
-            clamp_actor_position_from_bed(&self._player, &table_pos, MAX_BED_RESTRICTION_DISTANCE);
-            clamp_actor_position_from_bed(&self._actor_ewa, &table_pos, MAX_BED_RESTRICTION_DISTANCE);
-            clamp_actor_position_from_bed(&self._actor_koa, &table_pos, MAX_BED_RESTRICTION_DISTANCE);
-        }
 
         let prev_scenario_phase = self._scenario_track._scenario_phase;
         let next_scenario_phase = self._scenario_track._next_scenario_phase;
@@ -534,8 +443,6 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                         if get_game_scene_manager().get_time_of_day() < TIME_OF_NIGHT {
                             get_game_scene_manager_mut().set_time_of_day(TIME_OF_NIGHT);
                         }
-
-                        //self.setup_bed_camera();
 
                         let (_count, transferred_items) =
                             game_ui_manager.transfer_all_materials_to_table_storage_with_details();
@@ -667,7 +574,6 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                 ScenarioPhase::Sleep => match state {
                     State::Begin => {
                         self._sleep_timer = 0.0;
-                        //self.setup_bed_camera();
                         game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, DEFAULT_FADE_TIME);
                     }
                     State::Update => {
@@ -711,9 +617,6 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                     _ => {}
                 },
                 ScenarioPhase::End => {
-                    if state == State::Begin {
-                        //get_game_controller_mut().set_camera_fixed(false);
-                    }
                 }
             }
 

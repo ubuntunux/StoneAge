@@ -236,9 +236,9 @@
             "SM_Env_Bush_Tropical_03": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Bush_Tropical_03",
                 "_position": [
-                    -3.125,
+                    3.3040757179260254,
                     10.0,
-                    16.875001907348633
+                    7.7808122634887695
                 ],
                 "_rotation": [
                     0.0,
@@ -255,9 +255,9 @@
             "SM_Env_Bush_Tropical_04": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Bush_Tropical_04",
                 "_position": [
-                    -6.25,
+                    0.33687543869018555,
                     10.0,
-                    11.875
+                    5.7444167137146
                 ],
                 "_rotation": [
                     0.0,
@@ -293,9 +293,9 @@
             "SM_Env_Bush_Tropical_04.002": {
                 "_model_data_name": "PolygonNatureBiomes/SM_Env_Bush_Tropical_04",
                 "_position": [
-                    -3.75,
+                    -3.005382776260376,
                     10.0,
-                    14.339324951171875
+                    11.680514335632324
                 ],
                 "_rotation": [
                     0.0,
@@ -1997,6 +1997,25 @@
                     3.2161221504211426,
                     9.574706077575684,
                     12.681937217712402
+                ],
+                "_scene_object_type": "Collision"
+            },
+            "cube.005": {
+                "_model_data_name": "props/cube",
+                "_position": [
+                    -0.25243425369262695,
+                    13.470745086669922,
+                    8.488813400268555
+                ],
+                "_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "_scale": [
+                    4.900290012359619,
+                    9.574706077575684,
+                    3.178618907928467
                 ],
                 "_scene_object_type": "Collision"
             },

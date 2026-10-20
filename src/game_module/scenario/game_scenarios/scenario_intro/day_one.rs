@@ -5,7 +5,7 @@ use crate::game_module::game_constants::{
     ACTOR_NAME_ALIEN_ALPHA, ACTOR_NAME_ALIEN_BETA, ACTOR_NAME_ARU, ACTOR_NAME_EWA, ACTOR_NAME_KOA,
     ACTOR_NAME_MONKEY_EWA, ACTOR_NAME_MONKEY_KOA, ACTOR_NAME_UFO, AUDIO_ROOSTER, AUDIO_UFO_BEAM, AUDIO_UFO_FLYING,
     BED_FOR_ARU, BED_FOR_EWA, BED_FOR_KOA, CAMERA_DISTANCE_MAX, CAMERA_OFFSET_Y, CHARACTER_DATA_NAME_EWA,
-    CHARACTER_DATA_NAME_KOA, DEFAULT_GATE_NAME, PROP_NAME_MONOLITH, TIME_OF_EARLY_MORNING,
+    CHARACTER_DATA_NAME_KOA, DEFAULT_GATE_NAME, PROP_NAME_MONOLITH, TIME_OF_EARLY_MORNING, TIME_OF_NIGHT,
 };
 use crate::game_module::game_scene_manager::Stages;
 use crate::game_module::game_service_locator::{get_character_manager_mut, get_game_scene_manager_mut};
@@ -27,7 +27,7 @@ const AROUND_START_ROT: Vector3<f32> = Vector3::new(0.4, 0.0, 0.0);
 const AROUND_END_ROT: Vector3<f32> = Vector3::new(0.35, 0.0, 0.0);
 const INITIAL_CAMERA_POS: Vector3<f32> = Vector3::new(35.48, 26.56, -5.02);
 const INITIAL_CAMERA_ROT: Vector3<f32> = Vector3::new(0.76, -0.33, 0.0);
-const AROUND_CAMERA_EXTRA_DIST: f32 = 0.0;
+const AROUND_CAMERA_EXTRA_DIST: f32 = 2.0;
 const ABDUCTION_ARRIVAL_DIST_SQ: f32 = 1.0;
 const ABDUCTION_MOVE_SPEED: f32 = 4.0;
 const MONOLITH_DROP_SPEED: f32 = 10.0;
@@ -172,8 +172,7 @@ impl<'a> ScenarioDayOne<'a> {
 
         let beta_arrived = if let Some(beta) = &self._alien_beta {
             if self._load_pos_alien_beta != Vector3::zeros() {
-                let arrived =
-                    beta.borrow_mut().move_to_target(&self._load_pos_alien_beta, ARRIVAL_RADIUS, delta_time);
+                let arrived = beta.borrow_mut().move_to_target(&self._load_pos_alien_beta, ARRIVAL_RADIUS, delta_time);
                 if arrived {
                     beta.borrow_mut().set_move_idle();
                 }
@@ -511,6 +510,7 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
                 }
                 ScenarioPhase::Begin => {
                     if state == State::Begin {
+                        game_scene_manager.set_time(TIME_OF_NIGHT, 0.0);
                         Self::set_player_active(false);
                         self.set_ufo_pickup_position();
                         if self._audio_ufo_flying.is_none() {
@@ -527,7 +527,6 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
                             }
                         }
                     } else if state == State::Update {
-                        game_scene_manager.set_time(TIME_OF_EARLY_MORNING, 0.0);
                         self._scenario_track.set_next_scenario_phase(ScenarioPhase::MoveAliens, None);
                     }
                 }
@@ -540,8 +539,10 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
                     }
                     State::Update => {
                         if self.update_move_aliens(delta_time as f32) {
-                            self._scenario_track
-                                .set_next_scenario_phase(ScenarioPhase::AbductAliens, Some(PHASE_DURATION_ABDUCT_ALIENS));
+                            self._scenario_track.set_next_scenario_phase(
+                                ScenarioPhase::AbductAliens,
+                                Some(PHASE_DURATION_ABDUCT_ALIENS),
+                            );
                         }
                     }
                     _ => {}
@@ -623,6 +624,7 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
                 },
                 ScenarioPhase::CloseUpShot => match state {
                     State::Begin => {
+                        game_scene_manager.set_time(TIME_OF_EARLY_MORNING, 0.0);
                         Self::set_player_active(false);
                         if let Some(ufo) = &self._actor_ufo {
                             get_character_manager_mut().remove_character(ufo);
@@ -639,6 +641,9 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
                         } else {
                             Vector3::zeros()
                         };
+                        self._around_start_position = pivot
+                            - main_camera._transform_object.get_front()
+                                * (CAMERA_DISTANCE_MAX + AROUND_CAMERA_EXTRA_DIST);
                         self._around_end_position =
                             pivot - main_camera._transform_object.get_front() * CAMERA_DISTANCE_MAX;
 

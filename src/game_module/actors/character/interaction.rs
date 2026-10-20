@@ -221,6 +221,9 @@ impl<'a> Character<'a> {
             return;
         }
         if let InteractionObject::PropGate(prop) = self._controller._nearest_interaction_object.clone() {
+            if get_game_scene_manager().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay) {
+                return;
+            }
             let prop_borrow = prop.borrow();
             let linked_stage =
                 prop_borrow.get_instance_parameters("_linked_stage").and_then(|v| v.as_str().map(String::from));

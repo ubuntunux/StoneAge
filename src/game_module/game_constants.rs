@@ -102,6 +102,9 @@ pub const LANTERN_LIGHT_RADIUS: f32 = 12.0;
 pub const LANTERN_LIGHT_COLOR: [f32; 3] = [2.0, 1.5, 0.8];
 pub const LANTERN_OFFSET_Y: f32 = 3.0;
 pub const LANTERN_FADE_SPEED: f32 = 4.0;
+pub const UFO_LANTERN_OFFSET_Y: f32 = -10.0;
+pub const UFO_LANTERN_LIGHT_RADIUS: f32 = 15.0;
+pub const UFO_LANTERN_LIGHT_COLOR: [f32; 3] = [5.0, 5.0, 15.0];
 
 // player
 pub const GRAVITY: f32 = 30.0;

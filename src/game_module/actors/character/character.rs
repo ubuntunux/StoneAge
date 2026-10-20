@@ -61,7 +61,13 @@ impl<'a> Character<'a> {
         rotation: &Vector3<f32>,
         scale: &Vector3<f32>,
     ) -> Character<'a> {
-        let lantern = if is_player {
+        let is_ufo = character_data.borrow()._character_type == CharacterDataType::Ufo;
+        let lantern = if is_ufo {
+            Some(Box::new(Lantern::create_ufo_lantern(
+                format!("{}_lantern", character_name).as_str(),
+                position,
+            )))
+        } else if is_player {
             Some(Box::new(Lantern::create_lantern(
                 format!("{}_lantern", character_name).as_str(),
                 position,
@@ -238,6 +244,34 @@ impl<'a> Character<'a> {
 
     pub fn detach_item(&mut self) {
         self._attached_item = None;
+    }
+
+    pub fn attach_lantern(&mut self) {
+        if self._lantern.is_none() {
+            let is_ufo = self.get_character_type() == CharacterDataType::Ufo;
+            let lantern = if is_ufo {
+                Lantern::create_ufo_lantern(
+                    format!("{}_lantern", self._character_name).as_str(),
+                    self.get_position(),
+                )
+            } else {
+                Lantern::create_lantern(
+                    format!("{}_lantern", self._character_name).as_str(),
+                    self.get_position(),
+                )
+            };
+            self._lantern = Some(Box::new(lantern));
+        }
+    }
+
+    pub fn detach_lantern(&mut self) {
+        if let Some(mut lantern) = self._lantern.take() {
+            lantern.destroy_lantern();
+        }
+    }
+
+    pub fn has_lantern(&self) -> bool {
+        self._lantern.is_some()
     }
 
     pub fn set_weapon_visible(&self, visible: bool) {

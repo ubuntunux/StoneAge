@@ -3,7 +3,7 @@ use crate::game_module::game_constants::{
     ACTOR_NAME_ALIEN_ALPHA, ACTOR_NAME_ALIEN_BETA, ACTOR_NAME_ARU, ACTOR_NAME_EWA, ACTOR_NAME_KOA,
     ACTOR_NAME_MONKEY_EWA, ACTOR_NAME_MONKEY_KOA, AUDIO_ALIEN_TALK, AUDIO_UFO_EXPERIMENT, AUDIO_UFO_LABORATORY,
     CHARACTER_DATA_NAME_ARU, CHARACTER_INTERACTION_TIME, DEFAULT_FADE_TIME, MATERIAL_EMOJI_GOOD, MATERIAL_UI_NONE,
-    TIME_OF_NOON,
+    TIME_OF_NIGHT,
 };
 use crate::game_module::game_service_locator::{
     get_character_manager_mut, get_game_scene_manager_mut, get_game_ui_manager_mut,
@@ -232,7 +232,7 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
                 }
                 ScenarioPhase::Begin => {
                     if state == State::Update {
-                        game_scene_manager.set_time(TIME_OF_NOON, 0.0);
+                        game_scene_manager.set_time(TIME_OF_NIGHT, 0.0);
                         self._scenario_track
                             .set_next_scenario_phase(ScenarioPhase::Investigate, Some(PHASE_DURATION_INVESTIGATE));
                     }

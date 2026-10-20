@@ -1,5 +1,6 @@
 use crate::game_module::game_constants::{
-    LANTERN_FADE_SPEED, LANTERN_LIGHT_COLOR, LANTERN_LIGHT_RADIUS, LANTERN_OFFSET_Y,
+    LANTERN_FADE_SPEED, LANTERN_LIGHT_COLOR, LANTERN_LIGHT_RADIUS, LANTERN_OFFSET_Y, UFO_LANTERN_LIGHT_COLOR,
+    UFO_LANTERN_LIGHT_RADIUS, UFO_LANTERN_OFFSET_Y,
 };
 use nalgebra::Vector3;
 use rust_engine_3d::core::engine_service_locator::get_scene_manager_mut;
@@ -24,6 +25,42 @@ impl Lantern {
             _max_radius: LANTERN_LIGHT_RADIUS,
             _current_radius: 0.0,
             _offset: Vector3::new(0.0, LANTERN_OFFSET_Y, 0.0),
+        };
+        lantern.initialize_lantern(name, position);
+        lantern
+    }
+
+    pub fn create_ufo_lantern(name: &str, position: &Vector3<f32>) -> Lantern {
+        let mut lantern = Lantern {
+            _point_light: None,
+            _is_on: false,
+            _light_color: Vector3::new(
+                UFO_LANTERN_LIGHT_COLOR[0],
+                UFO_LANTERN_LIGHT_COLOR[1],
+                UFO_LANTERN_LIGHT_COLOR[2],
+            ),
+            _max_radius: UFO_LANTERN_LIGHT_RADIUS,
+            _current_radius: 0.0,
+            _offset: Vector3::new(0.0, UFO_LANTERN_OFFSET_Y, 0.0),
+        };
+        lantern.initialize_lantern(name, position);
+        lantern
+    }
+
+    pub fn create_custom_lantern(
+        name: &str,
+        position: &Vector3<f32>,
+        offset: &Vector3<f32>,
+        light_color: &Vector3<f32>,
+        max_radius: f32,
+    ) -> Lantern {
+        let mut lantern = Lantern {
+            _point_light: None,
+            _is_on: false,
+            _light_color: *light_color,
+            _max_radius: max_radius,
+            _current_radius: 0.0,
+            _offset: *offset,
         };
         lantern.initialize_lantern(name, position);
         lantern

@@ -2,7 +2,7 @@ use crate::game_module::actors::character::Character;
 use crate::game_module::actors::props::Prop;
 use crate::game_module::game_constants::{
     ACTOR_NAME_ALIEN_ALPHA, ACTOR_NAME_ALIEN_BETA, ACTOR_NAME_UFO, AUDIO_UFO_BEAM, AUDIO_UFO_FLYING, DEFAULT_FADE_TIME,
-    DEFAULT_GATE_NAME, MATERIAL_UI_NONE, TIME_OF_DAWN,
+    DEFAULT_GATE_NAME, MATERIAL_UI_NONE, TIME_OF_NIGHT,
 };
 use crate::game_module::game_scene_manager::Stages;
 use crate::game_module::game_service_locator::{
@@ -300,7 +300,7 @@ impl<'a> ScenarioBase<'a> for ScenarioUfo<'a> {
                 }
                 ScenarioPhase::UfoLongShot => match state {
                     State::Begin => {
-                        game_scene_manager.set_time(TIME_OF_DAWN, 0.0);
+                        game_scene_manager.set_time(TIME_OF_NIGHT, 0.0);
                         self._audio_ufo_flying =
                             get_audio_manager_mut().play_audio_bank(AUDIO_UFO_FLYING, AudioLoop::LOOP, Some(1.0));
                         let main_camera = get_scene_manager().get_main_camera_mut();
