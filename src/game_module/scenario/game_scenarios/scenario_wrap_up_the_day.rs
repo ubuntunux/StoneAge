@@ -574,6 +574,15 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                 ScenarioPhase::Sleep => match state {
                     State::Begin => {
                         self._sleep_timer = 0.0;
+                        if let Some(actor) = self._player.as_ref() {
+                            actor.borrow_mut().set_action_sleep_no_snoring();
+                        }
+                        if let Some(actor) = self._actor_ewa.as_ref() {
+                            actor.borrow_mut().set_action_sleep_no_snoring();
+                        }
+                        if let Some(actor) = self._actor_koa.as_ref() {
+                            actor.borrow_mut().set_action_sleep_no_snoring();
+                        }
                         game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, DEFAULT_FADE_TIME);
                     }
                     State::Update => {
@@ -609,9 +618,6 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                                 wake_up_npc_on_bed(&self._actor_koa, None);
                             }
                             self._scenario_track.set_next_scenario_phase(ScenarioPhase::End, None);
-                        } else {
-                            go_to_sleep(&self._actor_ewa, &self._prop_bed_for_ewa);
-                            go_to_sleep(&self._actor_koa, &self._prop_bed_for_koa);
                         }
                     }
                     _ => {}

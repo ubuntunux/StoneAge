@@ -743,7 +743,7 @@ impl<'a> GameSceneManager<'a> {
             });
         }
         if let Some(game_scene_data_name) = self._reservation_game_scene.take() {
-            self.open_game_scene_data(&game_scene_data_name);
+            self.goto_game_scene(&game_scene_data_name);
         }
     }
 
