@@ -75,7 +75,7 @@ pub fn begin_roaming(data: &mut BehaviorData, owner: &mut Character, target: Opt
         NPC_ROAMING_RADIUS
     };
 
-    let move_area = Vector3::new(
+    let mut move_area = Vector3::new(
         (rand::random::<f32>() - 0.5) * 2.0,
         0.0,
         if GAME_VIEW_MODE == GameViewMode::GameViewMode2D {
@@ -89,7 +89,14 @@ pub fn begin_roaming(data: &mut BehaviorData, owner: &mut Character, target: Opt
         .map(|t| *t.get_position())
         .or_else(|| get_game_scene_manager().get_maybe_player().as_ref().map(|p| *p.borrow().get_position()));
 
-    let center_point = if is_wrap_up_the_day_for_partner {
+    // If the previous roaming failed (blocked or timeout), roam around the current position
+    // and avoid the failed direction so the npc doesn't keep walking into the same obstacle.
+    let center_point = if let Some(failed_direction) = data._roaming_failed_direction.take() {
+        if move_area.dot(&failed_direction) > 0.0 {
+            move_area = -move_area;
+        }
+        *owner.get_position()
+    } else if is_wrap_up_the_day_for_partner {
         player_pos.unwrap_or(data._spawn_point)
     } else if let Some(target_pos) = intimate_target_pos {
         target_pos
@@ -104,17 +111,21 @@ pub fn begin_roaming(data: &mut BehaviorData, owner: &mut Character, target: Opt
     owner.set_run(false);
 }
 
-/// Returns true when roaming should end: timeout, arrived, or blocked.
-pub fn should_roaming_go_idle(data: &BehaviorData, owner: &Character) -> bool {
-    if data.is_end_behavior_time() {
-        return true;
-    }
+/// Returns true when roaming should end: arrived, timeout, or blocked.
+/// On timeout or blocked, remembers the move direction so the next roaming avoids it.
+pub fn should_roaming_go_idle(data: &mut BehaviorData, owner: &Character) -> bool {
     let offset = data._target_point - owner.get_position();
     let dist_sq = offset.x * offset.x + offset.z * offset.z;
     if dist_sq < ARRIVAL_DISTANCE_THRESHOLD {
+        data._roaming_failed_direction = None;
         return true;
     }
-    (owner._controller._is_blocked || owner._controller._is_cliff) && !owner.is_falling()
+    let is_blocked = (owner._controller._is_blocked || owner._controller._is_cliff) && !owner.is_falling();
+    if data.is_end_behavior_time() || is_blocked {
+        data._roaming_failed_direction = Some(data._move_direction);
+        return true;
+    }
+    false
 }
 
 /// Returns true when the owner is intimacy-following and the player has moved beyond INTIMACY_FOLLOW_RANGE.

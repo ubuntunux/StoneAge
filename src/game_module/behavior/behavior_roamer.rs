@@ -60,7 +60,7 @@ impl<'a> BehaviorBase<'a> for BehaviorRoamer<'a> {
                         self.set_next_behavior(BehaviorState::Interaction, true);
                     } else if is_enemy_in_range(owner, target) || is_player_too_far_for_intimacy(owner, target) {
                         self.set_next_behavior(BehaviorState::Chase, false);
-                    } else if should_roaming_go_idle(&self._behavior_data, owner) {
+                    } else if should_roaming_go_idle(&mut self._behavior_data, owner) {
                         self.set_next_behavior(BehaviorState::Idle, false);
                     }
                 }

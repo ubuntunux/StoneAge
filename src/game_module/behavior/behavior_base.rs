@@ -53,6 +53,8 @@ pub struct BehaviorData<'a> {
     pub _behavior_target: Option<RcRefCell<Character<'a>>>,
     pub _attack_time: f32,
     pub _is_in_attack_range: bool,
+    /// Move direction of the last roaming that ended without arriving (blocked or timeout).
+    pub _roaming_failed_direction: Option<Vector3<f32>>,
 }
 
 impl<'a> Default for BehaviorData<'a> {
@@ -68,6 +70,7 @@ impl<'a> Default for BehaviorData<'a> {
             _behavior_target: None,
             _attack_time: 0.0,
             _is_in_attack_range: false,
+            _roaming_failed_direction: None,
         }
     }
 }
