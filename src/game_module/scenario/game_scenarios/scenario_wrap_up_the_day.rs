@@ -122,7 +122,7 @@ fn set_actor_table_position(
         let mut actor_mut = actor_ref.borrow_mut();
         actor_mut.set_position(&pos);
         actor_mut.look_at(table_ref.borrow().get_position());
-        actor_mut.set_next_behavior(BehaviorState::Idle, true);
+        actor_mut.set_next_behavior(BehaviorState::None, true);
     }
 }
 
@@ -410,13 +410,13 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                                 scene_manager,
                                 &self._player,
                                 &self._prop_table,
-                                &Vector3::new(0.0, 0.0, -1.0),
+                                &Vector3::new(-1.0, 0.0, 0.0),
                             );
                             set_actor_table_position(
                                 scene_manager,
                                 &self._actor_ewa,
                                 &self._prop_table,
-                                &Vector3::new(1.0, 0.0, -1.0),
+                                &Vector3::new(0.0, 0.0, -1.0),
                             );
                             set_actor_table_position(
                                 scene_manager,
