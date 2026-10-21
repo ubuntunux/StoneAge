@@ -15,8 +15,22 @@ use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::math::lerp;
 use rust_engine_3d::utilities::system::State;
 
+pub fn update_hunger_action(owner: &mut Character) {
+    if owner.get_stats().is_hungry() {
+        if owner.is_move_state(MoveAnimationState::SitDownLoop) {
+            owner.set_move_idle();
+        }
+        if owner.is_idle_action() && !owner.is_action(ActionAnimationState::Hungry) {
+            owner.set_action_hungry();
+        }
+    } else if owner.is_action(ActionAnimationState::Hungry) {
+        owner.set_action_none();
+    }
+}
+
 pub fn begin_idle(data: &mut BehaviorData, owner: &mut Character) {
     owner.set_move_idle();
+    update_hunger_action(owner);
     data.set_behavior_time(lerp(NPC_IDLE_TERM_MIN, NPC_IDLE_TERM_MAX, rand::random::<f32>()));
 }
 
@@ -43,6 +57,7 @@ pub fn is_enemy_in_range(owner: &Character, target: Option<&Character>) -> bool 
 
 /// Pick a random roam target around the spawn point, or around the player if intimacy-following or for Ewa/Koa during WrapUpTheDay phase.
 pub fn begin_roaming(data: &mut BehaviorData, owner: &mut Character, target: Option<&Character>) {
+    update_hunger_action(owner);
     let is_wrap_up_the_day_for_partner = owner.get_character_type().is_family()
         && get_game_scene_manager().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay);
 
@@ -291,19 +306,9 @@ pub fn update_attack(
     next_state
 }
 
-pub fn step_hunger(data: &mut BehaviorData, state: State, owner: &mut Character) {
-    match state {
-        State::Begin => {
-            owner.set_action_hungry();
-            owner.set_sit_down();
-        }
-        State::Update => {
-            if !owner.get_stats().is_hungry() {
-                data.set_next_behavior_state(BehaviorState::Idle, true);
-            }
-        }
-        State::End => {}
-    }
+pub fn step_hunger(data: &mut BehaviorData, _state: State, owner: &mut Character) {
+    update_hunger_action(owner);
+    data.set_next_behavior_state(BehaviorState::Idle, true);
 }
 
 pub fn step_eating(
@@ -317,11 +322,8 @@ pub fn step_eating(
         State::Begin => begin_eating(data, owner, target),
         State::Update => {
             if update_eating_should_idle(is_first_update, owner) {
-                if owner.get_stats().is_hungry() {
-                    data.set_next_behavior_state(BehaviorState::Hunger, true);
-                } else {
-                    data.set_next_behavior_state(BehaviorState::Idle, false);
-                }
+                update_hunger_action(owner);
+                data.set_next_behavior_state(BehaviorState::Idle, false);
             }
         }
         State::End => {}
@@ -335,11 +337,8 @@ pub fn step_interaction(data: &mut BehaviorData, state: State, owner: &mut Chara
             if owner.get_attached_item_data_type().is_eatable() {
                 data.set_next_behavior_state(BehaviorState::Eating, true);
             } else if update_interaction_should_idle(data, owner, target) {
-                if owner.get_stats().is_hungry() {
-                    data.set_next_behavior_state(BehaviorState::Hunger, true);
-                } else {
-                    data.set_next_behavior_state(BehaviorState::Idle, false);
-                }
+                update_hunger_action(owner);
+                data.set_next_behavior_state(BehaviorState::Idle, false);
             }
         }
         State::End => {}
@@ -389,7 +388,12 @@ pub fn step_dance(data: &mut BehaviorData, state: State, owner: &mut Character) 
                 data.set_next_behavior_state(BehaviorState::Idle, false);
             }
         }
-        State::End => {}
+        State::End => {
+            if owner.is_action(ActionAnimationState::Dance) {
+                owner.set_action_none();
+            }
+            owner.set_is_interacting(false);
+        }
     }
 }
 

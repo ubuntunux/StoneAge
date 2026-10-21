@@ -81,7 +81,7 @@ impl<'a> Character<'a> {
                 }
                 InteractionObject::Npc(character) => {
                     if get_game_client().is_available_interaction() {
-                        self.set_move_idle();
+                        self.prepare_npc_for_interaction(&mut character.borrow_mut(), BehaviorState::Idle);
                         get_game_client_mut().set_next_game_phase(GamePhase::Interaction);
                         get_game_ui_manager_mut().open_npc_interaction_menu(character);
                     }
@@ -188,7 +188,8 @@ impl<'a> Character<'a> {
     }
 
     pub fn execute_npc_table_storage(&mut self, target_npc: &RcRefCell<Character<'a>>) {
-        self.look_at(target_npc.borrow().get_position());
+        let mut npc = target_npc.borrow_mut();
+        self.prepare_npc_for_interaction(&mut npc, BehaviorState::Idle);
         get_game_client_mut().set_next_game_phase(GamePhase::OpenTableStorage);
         self.set_move_idle();
     }

@@ -484,6 +484,10 @@ impl<'a> CharacterManager<'a> {
                 if character_mut.is_action(ActionAnimationState::Dance)
                     || character_mut._behavior.get_behavior_state() == BehaviorState::Dance
                 {
+                    if character_mut.is_action(ActionAnimationState::Dance) {
+                        character_mut.set_action_none();
+                    }
+                    character_mut.set_is_interacting(false);
                     character_mut.set_next_behavior(BehaviorState::Idle, true);
                 }
             }
@@ -695,7 +699,10 @@ impl<'a> CharacterManager<'a> {
             if !character_mut.is_player() {
                 if character_mut.is_interacting() && to_player_distance > CHARACTER_INTERACTION_DISTANCE * 2.0 {
                     let ui_mgr = get_game_ui_manager();
-                    if !ui_mgr.is_opened_cooking() && !ui_mgr.is_opened_craft() {
+                    if !ui_mgr.is_opened_cooking()
+                        && !ui_mgr.is_opened_craft()
+                        && !ui_mgr.is_opened_npc_interaction_menu()
+                    {
                         character_mut.set_is_interacting(false);
                     }
                 }

@@ -1,6 +1,7 @@
 use crate::game_module::actors::character::{Character, CharacterDataType, RequestType};
 use crate::game_module::actors::interaction_object::InteractionObject;
 use crate::game_module::actors::props::Prop;
+use crate::game_module::behavior::behavior_base::BehaviorState;
 use crate::game_module::game_client::GamePhase;
 use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, AUDIO_QUEST_COMPLETE, AUDIO_SELECT_ITEM, ITEM_NONE};
 use crate::game_module::game_input::UiInput;
@@ -192,6 +193,17 @@ impl<'a> NpcInteractionMenuWidget<'a> {
     }
 
     pub fn open_npc_interaction_menu(&mut self, target_npc: RcRefCell<Character<'a>>) {
+        let character_manager = get_character_manager();
+        if let Some(player) = character_manager.get_maybe_player() {
+            let mut player_mut = player.borrow_mut();
+            let mut npc_mut = target_npc.borrow_mut();
+            player_mut.look_at(npc_mut.get_position());
+            player_mut.set_move_idle();
+            npc_mut.look_at(player_mut.get_position());
+            npc_mut.set_move_idle();
+            npc_mut.set_is_interacting(true);
+            npc_mut.set_next_behavior(BehaviorState::Idle, true);
+        }
         self.open_with_target(InteractionMenuTarget::Npc(target_npc));
     }
 
@@ -223,6 +235,9 @@ impl<'a> NpcInteractionMenuWidget<'a> {
             let parent_mut = ptr_as_mut(self._parent_widget);
             parent_mut.remove_widget(self._layer.as_ref());
             ptr_as_mut(self._layer.as_ref()).get_ui_component_mut().set_enable(false);
+            if let InteractionMenuTarget::Npc(npc) = &self._target {
+                npc.borrow_mut().set_is_interacting(false);
+            }
             self._target = InteractionMenuTarget::None;
             get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
             if get_game_client_mut().is_game_phase(GamePhase::Interaction) {
@@ -580,6 +595,16 @@ impl<'a> NpcInteractionMenuWidget<'a> {
     ) {
         if !self._is_opened {
             return;
+        }
+
+        if let InteractionMenuTarget::Npc(npc) = &self._target {
+            if let Some(player) = get_character_manager().get_maybe_player() {
+                let mut npc_mut = npc.borrow_mut();
+                npc_mut.look_at(player.borrow().get_position());
+                if !npc_mut.is_move_stop() {
+                    npc_mut.set_move_idle();
+                }
+            }
         }
 
         let target_pos = match &self._target {

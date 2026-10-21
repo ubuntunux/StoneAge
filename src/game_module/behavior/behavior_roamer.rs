@@ -2,7 +2,8 @@ use crate::game_module::actors::character::Character;
 use crate::game_module::behavior::behavior_base::{BehaviorBase, BehaviorData, BehaviorState};
 use crate::game_module::behavior::behavior_common::{
     begin_idle, begin_roaming, is_enemy_in_range, is_player_too_far_for_intimacy, should_roaming_go_idle, step_attack,
-    step_chase, step_dance, step_eating, step_hunger, step_interaction, step_wake_up, update_idle_interacting,
+    step_chase, step_dance, step_eating, step_hunger, step_interaction, step_wake_up, update_hunger_action,
+    update_idle_interacting,
 };
 use rust_engine_3d::utilities::system::State;
 
@@ -33,12 +34,11 @@ impl<'a> BehaviorBase<'a> for BehaviorRoamer<'a> {
             BehaviorState::Idle => match state {
                 State::Begin => begin_idle(&mut self._behavior_data, owner),
                 State::Update => {
+                    update_hunger_action(owner);
                     if owner.get_attached_item_data_type().is_eatable() {
                         self.set_next_behavior(BehaviorState::Eating, true);
                     } else if owner.is_interacting() {
                         update_idle_interacting(owner, target);
-                    } else if owner.get_stats().is_hungry() {
-                        self.set_next_behavior(BehaviorState::Hunger, true);
                     } else if is_enemy_in_range(owner, target) || is_player_too_far_for_intimacy(owner, target) {
                         self.set_next_behavior(BehaviorState::Chase, false);
                     } else if self._behavior_data.is_end_behavior_time() {
@@ -53,12 +53,11 @@ impl<'a> BehaviorBase<'a> for BehaviorRoamer<'a> {
             BehaviorState::Roaming => match state {
                 State::Begin => begin_roaming(&mut self._behavior_data, owner, target),
                 State::Update => {
+                    update_hunger_action(owner);
                     if owner.get_attached_item_data_type().is_eatable() {
                         self.set_next_behavior(BehaviorState::Eating, false);
                     } else if owner.is_interacting() {
                         self.set_next_behavior(BehaviorState::Interaction, true);
-                    } else if owner.get_stats().is_hungry() {
-                        self.set_next_behavior(BehaviorState::Hunger, true);
                     } else if is_enemy_in_range(owner, target) || is_player_too_far_for_intimacy(owner, target) {
                         self.set_next_behavior(BehaviorState::Chase, false);
                     } else if should_roaming_go_idle(&self._behavior_data, owner) {

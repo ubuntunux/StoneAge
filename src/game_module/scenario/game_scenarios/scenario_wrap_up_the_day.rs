@@ -2,12 +2,12 @@ use crate::game_module::actors::character::Character;
 use crate::game_module::actors::character::{ActionAnimationState, MoveAnimationState};
 use crate::game_module::actors::props::Prop;
 use crate::game_module::behavior::behavior_base::BehaviorState;
+use crate::game_module::game_client::GamePhase;
 use crate::game_module::game_constants::{
     ACTOR_NAME_EWA, ACTOR_NAME_KOA, ACTOR_NAME_MONKEY_EWA, ACTOR_NAME_MONKEY_KOA, AUDIO_QUEST_COMPLETE, AUDIO_ROOSTER,
     BED_FOR_ARU, BED_FOR_EWA, BED_FOR_KOA, CHARACTER_INTERACTION_DISTANCE, DEFAULT_FADE_TIME, MATERIAL_UI_NONE,
     PROP_NAME_TABLE, SLEEP_TIMER, TARGET_HUNGER_THRESHOLD,
 };
-use crate::game_module::game_client::GamePhase;
 use crate::game_module::game_input::GameInput;
 use crate::game_module::game_service_locator::{
     get_game_client_mut, get_game_controller_mut, get_game_scene_manager, get_game_scene_manager_mut,
@@ -141,7 +141,10 @@ fn sync_actor_dance_state(
         }
         actor_ref.borrow_mut().set_next_behavior(BehaviorState::Dance, true);
     } else if !should_dance && is_dancing {
-        actor_ref.borrow_mut().set_next_behavior(BehaviorState::Idle, true);
+        let mut actor_mut = actor_ref.borrow_mut();
+        actor_mut.set_action_none();
+        actor_mut.set_is_interacting(false);
+        actor_mut.set_next_behavior(BehaviorState::Idle, true);
     }
 }
 
@@ -165,7 +168,7 @@ fn update_actor_table_eating<'a>(
         return;
     };
 
-    if actor.borrow().is_action(ActionAnimationState::Dance) {
+    if actor.borrow().is_action(ActionAnimationState::Dance) || actor.borrow().is_interacting() {
         return;
     }
 
@@ -234,17 +237,12 @@ fn update_actor_table_eating<'a>(
             }
         }
     } else if is_hungry {
-        if !actor.borrow().is_move_stop() {
-            actor.borrow_mut().set_move_idle();
-        }
-
         let mut actor_ref = actor.borrow_mut();
         if actor_ref.get_attached_item().is_none()
             && !actor_ref.is_action(ActionAnimationState::Eating)
             && !actor_ref.is_action(ActionAnimationState::Hungry)
         {
             actor_ref.set_action_hungry();
-            actor_ref.set_sit_down();
         }
     }
 }
