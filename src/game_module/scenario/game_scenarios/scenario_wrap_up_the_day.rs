@@ -5,8 +5,8 @@ use crate::game_module::behavior::behavior_base::BehaviorState;
 use crate::game_module::game_client::GamePhase;
 use crate::game_module::game_constants::{
     ACTOR_NAME_EWA, ACTOR_NAME_KOA, ACTOR_NAME_MONKEY_EWA, ACTOR_NAME_MONKEY_KOA, AUDIO_QUEST_COMPLETE, AUDIO_ROOSTER,
-    BED_FOR_ARU, BED_FOR_EWA, BED_FOR_KOA, CHARACTER_INTERACTION_DISTANCE, DEFAULT_FADE_TIME, MATERIAL_UI_NONE,
-    PROP_NAME_TABLE, SLEEP_TIMER, TARGET_HUNGER_THRESHOLD,
+    BED_FOR_ARU, BED_FOR_EWA, BED_FOR_KOA, DEFAULT_FADE_TIME, MATERIAL_UI_NONE,
+    PROP_NAME_TABLE, SLEEP_TIMER,
 };
 use crate::game_module::game_input::GameInput;
 use crate::game_module::game_service_locator::{
@@ -29,7 +29,7 @@ use strum::IntoEnumIterator;
 use strum_macros::{Display, EnumCount, EnumIter, EnumString};
 
 const TABLE_SEAT_INITIAL_DIST: f32 = 1.0;
-const TABLE_SEAT_EATING_DIST: f32 = 2.0;
+const TABLE_SEAT_EATING_DIST: f32 = 1.0;
 const TABLE_SEAT_ARRIVAL_DIST: f32 = 0.3;
 
 #[derive(Clone, PartialEq, Eq, Hash, Display, Debug, Copy, EnumIter, EnumString, EnumCount)]
@@ -152,7 +152,7 @@ fn is_in_table_interaction_range(actor: &Character, table: &Option<RcRefCell<Pro
     table.as_ref().is_some_and(|table_prop| {
         actor.check_in_range(
             table_prop.borrow().get_collision(),
-            CHARACTER_INTERACTION_DISTANCE * 2.0,
+            TABLE_SEAT_ARRIVAL_DIST,
             false,
         )
     })
@@ -172,37 +172,30 @@ fn update_actor_table_eating<'a>(
         return;
     }
 
-    let is_hungry = actor.borrow().get_hunger() > TARGET_HUNGER_THRESHOLD;
-    let should_eat = has_eatable_item || is_hungry;
-
-    if !should_eat {
-        return;
-    }
-
     if has_eatable_item {
-        if actor.borrow().is_action(ActionAnimationState::Hungry) {
-            actor.borrow_mut().set_action_none();
-        }
-
         let is_in_range = is_in_table_interaction_range(&actor.borrow(), table_opt);
-
         if !is_in_range {
             if let Some(table_prop) = table_opt.as_ref() {
-                let scene_manager = get_scene_manager();
-                let mut seat_pos =
-                    table_prop.borrow().get_position() - math::safe_normalize(seat_direction) * TABLE_SEAT_EATING_DIST;
-                seat_pos.y = scene_manager.get_height_bilinear(&seat_pos, 0);
+                let is_in_range = actor.borrow().check_in_range(
+                    table_prop.borrow().get_collision(),
+                    TABLE_SEAT_ARRIVAL_DIST,
+                    false,
+                );
 
-                let (direction, dist) = math::make_normalize_xz_with_norm(&(seat_pos - actor.borrow().get_position()));
-                if dist > TABLE_SEAT_ARRIVAL_DIST {
-                    let mut actor_ref = actor.borrow_mut();
-                    actor_ref.set_behavior_none();
-                    actor_ref.set_move(&direction);
-                } else {
+                if is_in_range {
                     if !actor.borrow().is_move_stop() {
                         actor.borrow_mut().set_move_idle();
                     }
                     actor.borrow_mut().look_at(table_prop.borrow().get_position());
+                } else {
+                    let scene_manager = get_scene_manager();
+                    let mut seat_pos =
+                        table_prop.borrow().get_position() - math::safe_normalize(seat_direction) * TABLE_SEAT_EATING_DIST;
+                    seat_pos.y = scene_manager.get_height_bilinear(&seat_pos, 0);
+                    let direction = math::make_normalize_xz(&(seat_pos - actor.borrow().get_position()));
+                    let mut actor_ref = actor.borrow_mut();
+                    actor_ref.set_behavior_none();
+                    actor_ref.set_move(&direction);
                 }
             }
         } else {
@@ -235,14 +228,6 @@ fn update_actor_table_eating<'a>(
                     }
                 }
             }
-        }
-    } else if is_hungry {
-        let mut actor_ref = actor.borrow_mut();
-        if actor_ref.get_attached_item().is_none()
-            && !actor_ref.is_action(ActionAnimationState::Eating)
-            && !actor_ref.is_action(ActionAnimationState::Hungry)
-        {
-            actor_ref.set_action_hungry();
         }
     }
 }
