@@ -7,7 +7,6 @@ use crate::game_module::game_constants::{
     NPC_IDLE_TERM_MIN, NPC_ROAMING_RADIUS, NPC_ROAMING_TIME, NPC_TRACKING_RANGE,
 };
 use crate::game_module::game_service_locator::get_game_scene_manager;
-use crate::game_module::scenario::scenario::ScenarioType;
 use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::core::engine_service_locator::get_audio_manager_mut;
@@ -55,11 +54,28 @@ pub fn is_enemy_in_range(owner: &Character, target: Option<&Character>) -> bool 
     owner.check_in_range(target.get_collision(), NPC_TRACKING_RANGE, false)
 }
 
-/// Pick a random roam target around the spawn point, or around the player if intimacy-following or for Ewa/Koa during WrapUpTheDay phase.
+/// Returns the current alive player's position.
+fn get_alive_player_position() -> Option<Vector3<f32>> {
+    get_game_scene_manager().get_maybe_player().as_ref().and_then(|player| {
+        let player_ref = player.borrow();
+        if player_ref.is_alive() {
+            Some(*player_ref.get_position())
+        } else {
+            None
+        }
+    })
+}
+
+/// Pick a random roam target around the spawn point, or around the player if intimacy-following or family npc.
 pub fn begin_roaming(data: &mut BehaviorData, owner: &mut Character, target: Option<&Character>) {
     update_hunger_action(owner);
-    let is_wrap_up_the_day_for_partner = owner.get_character_type().is_family()
-        && get_game_scene_manager().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay);
+
+    // Family npcs have high intimacy with the player, so they always roam around the player.
+    let family_player_pos = if owner.is_family_npc() {
+        get_alive_player_position()
+    } else {
+        None
+    };
 
     let intimate_target_pos = target
         .filter(|t| {
@@ -69,7 +85,7 @@ pub fn begin_roaming(data: &mut BehaviorData, owner: &mut Character, target: Opt
         })
         .map(|t| *t.get_position());
 
-    let roam_radius = if is_wrap_up_the_day_for_partner || intimate_target_pos.is_some() {
+    let roam_radius = if family_player_pos.is_some() || intimate_target_pos.is_some() {
         INTIMACY_ROAMING_RADIUS
     } else {
         NPC_ROAMING_RADIUS
@@ -85,10 +101,6 @@ pub fn begin_roaming(data: &mut BehaviorData, owner: &mut Character, target: Opt
         },
     ) * roam_radius;
 
-    let player_pos = target
-        .map(|t| *t.get_position())
-        .or_else(|| get_game_scene_manager().get_maybe_player().as_ref().map(|p| *p.borrow().get_position()));
-
     // If the previous roaming failed (blocked or timeout), roam around the current position
     // and avoid the failed direction so the npc doesn't keep walking into the same obstacle.
     let center_point = if let Some(failed_direction) = data._roaming_failed_direction.take() {
@@ -96,8 +108,8 @@ pub fn begin_roaming(data: &mut BehaviorData, owner: &mut Character, target: Opt
             move_area = -move_area;
         }
         *owner.get_position()
-    } else if is_wrap_up_the_day_for_partner {
-        player_pos.unwrap_or(data._spawn_point)
+    } else if let Some(player_pos) = family_player_pos {
+        player_pos
     } else if let Some(target_pos) = intimate_target_pos {
         target_pos
     } else {
@@ -128,13 +140,25 @@ pub fn should_roaming_go_idle(data: &mut BehaviorData, owner: &Character) -> boo
     false
 }
 
-/// Returns true when the owner is intimacy-following and the player has moved beyond INTIMACY_FOLLOW_RANGE.
+/// Returns the position the owner should follow: the player for family npcs,
+/// or the intimacy target (player) for intimacy-following characters.
+fn get_follow_target_position(owner: &Character, target: Option<&Character>) -> Option<Vector3<f32>> {
+    if owner.is_family_npc() {
+        if !owner.is_alive() {
+            return None;
+        }
+        return get_alive_player_position();
+    }
+    if owner.is_following_intimacy() {
+        return target.filter(|t| t.is_alive() && t._is_player).map(|t| *t.get_position());
+    }
+    None
+}
+
+/// Returns true when the owner is intimacy-following (or a family npc) and the player has moved beyond INTIMACY_FOLLOW_RANGE.
 pub fn is_player_too_far_for_intimacy(owner: &Character, target: Option<&Character>) -> bool {
-    owner.is_following_intimacy()
-        && matches!(target, Some(t) if
-            t.is_alive() && t._is_player
-            && (t.get_position() - owner.get_position()).norm() > INTIMACY_FOLLOW_RANGE
-        )
+    get_follow_target_position(owner, target)
+        .is_some_and(|target_pos| (target_pos - owner.get_position()).norm() > INTIMACY_FOLLOW_RANGE)
 }
 
 pub enum IntimacyFollowResult {
@@ -146,22 +170,17 @@ pub enum IntimacyFollowResult {
 }
 
 pub fn update_intimacy_follow(owner: &mut Character, target: Option<&Character>) -> IntimacyFollowResult {
-    if !owner.is_following_intimacy() {
+    let Some(target_pos) = get_follow_target_position(owner, target) else {
         return IntimacyFollowResult::NotFollowing;
+    };
+    let to_target = target_pos - owner.get_position();
+    let dist = (to_target.x * to_target.x + to_target.z * to_target.z).sqrt();
+    if dist <= INTIMACY_ARRIVE_RANGE {
+        return IntimacyFollowResult::Arrived;
     }
-    if let Some(target_ref) = target
-        && target_ref.is_alive()
-    {
-        let to_target = target_ref.get_position() - owner.get_position();
-        let dist = (to_target.x * to_target.x + to_target.z * to_target.z).sqrt();
-        if dist <= INTIMACY_ARRIVE_RANGE {
-            return IntimacyFollowResult::Arrived;
-        }
-        owner.set_move(&to_target);
-        owner.set_run(true);
-        return IntimacyFollowResult::Moving;
-    }
-    IntimacyFollowResult::NotFollowing
+    owner.set_move(&to_target);
+    owner.set_run(true);
+    IntimacyFollowResult::Moving
 }
 
 pub fn begin_eating(data: &mut BehaviorData, owner: &mut Character, target: Option<&Character>) {

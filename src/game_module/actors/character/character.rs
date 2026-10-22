@@ -349,6 +349,11 @@ impl<'a> Character<'a> {
         self._character_data.borrow()._character_type
     }
 
+    /// Family members other than the player itself (e.g. Wife, Daughter). They always stay close to the player.
+    pub fn is_family_npc(&self) -> bool {
+        !self._is_player && self.get_character_type().is_family()
+    }
+
     pub fn get_request_type(&self) -> RequestType {
         self._character_data.borrow()._character_type.get_request_type()
     }
