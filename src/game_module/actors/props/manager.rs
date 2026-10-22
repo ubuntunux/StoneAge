@@ -9,7 +9,8 @@ use crate::game_module::game_constants::{
 };
 use crate::game_module::game_scene_manager::{PropCreateInfoMap, PropSaveDataMap};
 use crate::game_module::game_service_locator::{
-    get_character_manager, get_game_client, get_game_resources, get_game_scene_manager, get_item_manager_mut,
+    get_character_manager, get_game_client, get_game_resources, get_game_scene_manager, get_game_ui_manager,
+    get_item_manager_mut,
 };
 use crate::game_module::scenario::scenario::ScenarioType;
 use nalgebra::Vector3;
@@ -351,8 +352,14 @@ impl<'a> PropManager<'a> {
                         );
                     }
                     PropDataType::Table => {
-                        let is_in_player_range = is_available_interaction
+                        let in_range = is_available_interaction
                             && Self::check_player_in_prop_range(&player, &prop, CHARACTER_INTERACTION_DISTANCE * 1.5);
+                        drop(prop);
+
+                        let has_food = in_range && get_game_scene_manager().get_item_manager().has_item_on_table(&prop_refcell);
+                        let is_wrap_up = get_game_scene_manager().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay);
+                        let should_interact = has_food || (is_wrap_up && get_game_ui_manager().has_eatable_table_storage_item());
+                        let is_in_player_range = in_range && should_interact;
 
                         Self::sync_interaction_object(
                             &mut player,

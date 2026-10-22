@@ -492,11 +492,7 @@ impl<'a> ControllerHelpWidget<'a> {
                             RequestType::None,
                         )
                     } else {
-                        (
-                            KeyBindingType::Interaction,
-                            prop.borrow()._prop_data.borrow()._name.clone(),
-                            RequestType::None,
-                        )
+                        (KeyBindingType::None, String::new(), RequestType::None)
                     }
                 }
             }

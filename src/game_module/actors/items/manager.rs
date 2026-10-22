@@ -25,7 +25,7 @@ use rust_engine_3d::scene::collision::CollisionType;
 use rust_engine_3d::scene::render_object::RenderObjectCreateInfo;
 use rust_engine_3d::scene::socket::Socket;
 use rust_engine_3d::utilities::math;
-use rust_engine_3d::utilities::system::{RcRefCell, extract_name_and_uuid, newRcRefCell};
+use rust_engine_3d::utilities::system::{RcRefCell, extract_name_and_uuid, newRcRefCell, ptr_as_ref};
 use std::collections::HashMap;
 use uuid::Uuid;
 
@@ -68,8 +68,11 @@ impl<'a> ItemManager<'a> {
         }
 
         // 2. 테이블 바운딩 박스 주변에 놓인 eatable 아이템 탐색
-        let (table_center, table_min_y, table_max_y) = {
-            let b = table_prop.borrow();
+        let (table_center, table_min_y, table_max_y) = if let Ok(b) = table_prop.try_borrow() {
+            let bbox = b.get_bounding_box();
+            (bbox._center, bbox._min.y, bbox._max.y)
+        } else {
+            let b = ptr_as_ref(table_prop.as_ptr());
             let bbox = b.get_bounding_box();
             (bbox._center, bbox._min.y, bbox._max.y)
         };
