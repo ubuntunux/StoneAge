@@ -59,6 +59,7 @@ pub struct GameClient<'a> {
     pub _request_load_game_save_data: bool,
     pub _request_new_game: bool,
     pub _is_available_interaction: bool,
+    pub _sleep_timer: f32,
     pub _marker: std::marker::PhantomData<&'a ()>,
 }
 
@@ -72,6 +73,7 @@ impl<'a> GameClient<'a> {
             _request_load_game_save_data: true,
             _request_new_game: false,
             _is_available_interaction: true,
+            _sleep_timer: 0.0,
             _marker: std::marker::PhantomData,
         })
     }

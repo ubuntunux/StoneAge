@@ -208,11 +208,6 @@ impl<'a> NpcInteractionMenuWidget<'a> {
     }
 
     pub fn open_bed_interaction_menu(&mut self, target_bed: RcRefCell<Prop<'a>>) {
-        if !get_game_scene_manager().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay)
-            && !target_bed.borrow().is_deployed_prop()
-        {
-            return;
-        }
         self.open_with_target(InteractionMenuTarget::Bed(target_bed));
     }
 
@@ -279,9 +274,7 @@ impl<'a> NpcInteractionMenuWidget<'a> {
 
         match &self._target {
             InteractionMenuTarget::Bed(prop) => {
-                if get_game_scene_manager().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay) {
-                    options.push(NpcInteractionOption::Sleep);
-                }
+                options.push(NpcInteractionOption::Sleep);
                 if prop.borrow().is_deployed_prop() {
                     options.push(NpcInteractionOption::Retrieve);
                 }
@@ -331,9 +324,6 @@ impl<'a> NpcInteractionMenuWidget<'a> {
                 if is_wife {
                     options.push(NpcInteractionOption::StorageTable);
                     options.push(NpcInteractionOption::GiveAllResources);
-                    if !get_game_scene_manager().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay) {
-                        options.push(NpcInteractionOption::WrapUpTheDay);
-                    }
                 }
 
                 options.push(NpcInteractionOption::Dance);
@@ -549,13 +539,8 @@ impl<'a> NpcInteractionMenuWidget<'a> {
                 }
             }
             NpcInteractionOption::Sleep => {
-                if let Some(scenario) =
-                    get_game_scene_manager_mut().get_game_scenario(ScenarioType::ScenarioWrapUpTheDay)
-                {
-                    scenario.borrow_mut().request_sleep();
-                } else {
-                    get_game_scene_manager_mut().open_wrap_up_the_day_sleep();
-                }
+                get_game_scene_manager_mut().request_open_game_scenario(ScenarioType::ScenarioWrapUpTheDay);
+                get_game_client_mut().set_next_game_phase(GamePhase::WrapUpTheDay);
             }
             NpcInteractionOption::CookItem(slot_idx) => {
                 get_game_scene_manager()
@@ -613,12 +598,7 @@ impl<'a> NpcInteractionMenuWidget<'a> {
             | InteractionMenuTarget::Table(prop)
             | InteractionMenuTarget::Prop(prop) => {
                 let prop_borrow = prop.borrow();
-                let bounding_box = prop_borrow.get_bounding_box();
-                Vector3::new(
-                    bounding_box._center.x,
-                    bounding_box._min.y + 1.0,
-                    bounding_box._center.z,
-                )
+                *prop_borrow.get_position() + Vector3::new(0.0, 1.0, 0.0)
             }
             InteractionMenuTarget::None => {
                 self.close_npc_interaction_menu();

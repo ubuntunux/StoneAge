@@ -37,13 +37,9 @@ impl<'a> Character<'a> {
 
             match target_interaction {
                 InteractionObject::PropBed(prop) => {
-                    if get_game_scene_manager().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay)
-                        || prop.borrow().is_deployed_prop()
-                    {
-                        self.set_move_idle();
-                        get_game_client_mut().set_next_game_phase(GamePhase::Interaction);
-                        get_game_ui_manager_mut().open_bed_interaction_menu(prop);
-                    }
+                    self.set_move_idle();
+                    get_game_client_mut().set_next_game_phase(GamePhase::Interaction);
+                    get_game_ui_manager_mut().open_bed_interaction_menu(prop);
                 }
                 InteractionObject::PropPickup(_) => {
                     self.set_next_action_animation(ActionAnimationState::Pickup, PICKUP_ANIMATION_SPEED);

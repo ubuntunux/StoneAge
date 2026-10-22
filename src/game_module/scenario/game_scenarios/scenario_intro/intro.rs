@@ -447,7 +447,6 @@ impl<'a> ScenarioIntro<'a> {
     pub fn is_sub_quest_sleep_active(&self) -> bool {
         self._sub_quest_sleep.is_some()
             && !is_quest_item_completed(&self._sub_quest_sleep)
-            && is_quest_item_completed(&self._sub_quest_wrap_up_the_day)
             && (self._sub_quest_cooking.is_none() || is_quest_item_completed(&self._sub_quest_cooking))
     }
 
@@ -766,6 +765,10 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
             self.remove_prop_table_text_box();
         }
         self.complete_sub_quest_wrap_up_the_day();
+    }
+
+    fn complete_sub_quest_sleep(&mut self) {
+        self.complete_sub_quest_sleep();
     }
 
     fn is_end_of_scenario(&self) -> bool {

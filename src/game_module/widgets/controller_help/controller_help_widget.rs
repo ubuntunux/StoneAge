@@ -458,18 +458,11 @@ impl<'a> ControllerHelpWidget<'a> {
         let object_key = interaction_object.get_key();
 
         let (primary_type, primary_text, request_type) = match interaction_object {
-            InteractionObject::PropBed(prop) => {
-                let is_wrap_up = get_game_scene_manager().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay);
-                if is_wrap_up || prop.borrow().is_deployed_prop() {
-                    (
-                        KeyBindingType::Interaction,
-                        prop.borrow()._prop_data.borrow()._name.clone(),
-                        RequestType::None,
-                    )
-                } else {
-                    (KeyBindingType::None, String::new(), RequestType::None)
-                }
-            }
+            InteractionObject::PropBed(prop) => (
+                KeyBindingType::Interaction,
+                prop.borrow()._prop_data.borrow()._name.clone(),
+                RequestType::None,
+            ),
             InteractionObject::PropPickup(prop) => (
                 KeyBindingType::Interaction,
                 format!("Pick up a {}", prop.borrow()._prop_data.borrow()._name.as_str()),
