@@ -506,8 +506,8 @@ impl<'a> Character<'a> {
                 ActionAnimationState::Sleep | ActionAnimationState::SleepNoSnoring => match state {
                     State::Begin => {
                         if self._is_player && update_action_animation_state == ActionAnimationState::Sleep {
-                            if let Some(audio_instance) = self._audio_snoring.as_ref() {
-                                get_audio_manager().stop_audio_instance(audio_instance)
+                            if let Some(audio_instance) = self._audio_snoring.take() {
+                                get_audio_manager().stop_audio_instance(&audio_instance);
                             }
                             self._audio_snoring =
                                 get_audio_manager_mut().play_audio_bank(AUDIO_SNORING, AudioLoop::LOOP, Some(1.0));
@@ -516,9 +516,9 @@ impl<'a> Character<'a> {
                     }
                     State::End => {
                         if self._is_player
-                            && let Some(audio_instance) = self._audio_snoring.as_ref()
+                            && let Some(audio_instance) = self._audio_snoring.take()
                         {
-                            get_audio_manager().stop_audio_instance(audio_instance)
+                            get_audio_manager().stop_audio_instance(&audio_instance);
                         }
                         self.set_weapon_visible(true);
                     }

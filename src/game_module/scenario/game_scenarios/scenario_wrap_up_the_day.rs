@@ -249,7 +249,6 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                         game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, DEFAULT_FADE_TIME);
                     }
                     State::Update => {
-                        log::info!("self._skip_wakeup: {:?}", self._skip_wakeup);
                         if game_ui_manager.is_done_manual_fade_out() && self._sleep_timer < SLEEP_TIMER {
                             if self._sleep_timer == 0.0 {
                                 for (actor_opt, bed_opt) in [
@@ -271,12 +270,12 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                                     self._skip_wakeup = false;
                                     self._scenario_track.set_next_scenario_phase(ScenarioPhase::End, None);
                                 } else {
+                                    get_audio_manager_mut().play_audio_bank(AUDIO_ROOSTER, AudioLoop::ONCE, None);
                                     game_ui_manager.set_auto_fade_inout(true);
                                     game_scene_manager.set_next_time_of_day();
                                 }
                             }
                         } else if game_ui_manager.is_done_game_image_progress() {
-                            get_audio_manager_mut().play_audio_bank(AUDIO_ROOSTER, AudioLoop::ONCE, None);
                             if let Some(actor) = &self._player {
                                 actor.borrow_mut().set_action_wake_up();
                             }
