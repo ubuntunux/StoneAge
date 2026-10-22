@@ -474,32 +474,30 @@ impl<'a> ControllerHelpWidget<'a> {
                 RequestType::None,
             ),
             InteractionObject::PropTable(prop) => {
-                let is_wrap_up = get_game_scene_manager().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay);
-                if is_wrap_up {
-                    let item_on_table = get_game_scene_manager().get_item_manager().get_item_on_table(prop);
-                    if let Some(item_data_name) = item_on_table {
-                        let item_data = get_game_resources().get_item_data(&item_data_name);
-                        let item_name = item_data.borrow()._name.clone();
-                        (
-                            KeyBindingType::Interaction,
-                            format!("Eat a {}", item_name),
-                            RequestType::None,
-                        )
-                    } else if get_game_ui_manager().has_eatable_table_storage_item() {
+                let item_on_table = get_game_scene_manager().get_item_manager().get_item_on_table(prop);
+                if let Some(item_data_name) = item_on_table {
+                    let item_data = get_game_resources().get_item_data(&item_data_name);
+                    let item_name = item_data.borrow()._name.clone();
+                    (
+                        KeyBindingType::Interaction,
+                        format!("Eat a {}", item_name),
+                        RequestType::None,
+                    )
+                } else {
+                    let is_wrap_up = get_game_scene_manager().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay);
+                    if is_wrap_up && get_game_ui_manager().has_eatable_table_storage_item() {
                         (
                             KeyBindingType::Interaction,
                             String::from("Make Dinner"),
                             RequestType::None,
                         )
                     } else {
-                        (KeyBindingType::None, String::new(), RequestType::None)
+                        (
+                            KeyBindingType::Interaction,
+                            prop.borrow()._prop_data.borrow()._name.clone(),
+                            RequestType::None,
+                        )
                     }
-                } else {
-                    (
-                        KeyBindingType::Interaction,
-                        prop.borrow()._prop_data.borrow()._name.clone(),
-                        RequestType::None,
-                    )
                 }
             }
             InteractionObject::PropDeployed(prop) => (

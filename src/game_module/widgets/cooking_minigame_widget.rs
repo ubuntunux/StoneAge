@@ -34,6 +34,7 @@ pub struct CookingMinigameWidget<'a> {
     pub _current_step: usize,
     pub _step_progress: f32,
     pub _last_advance_pressed: bool,
+    pub _is_npc_mode: bool,
 }
 
 impl<'a> CookingMinigameWidget<'a> {
@@ -198,6 +199,7 @@ impl<'a> CookingMinigameWidget<'a> {
             _current_step: 0,
             _step_progress: 0.0,
             _last_advance_pressed: false,
+            _is_npc_mode: false,
         });
 
         let self_ptr = widget.as_ref() as *const CookingMinigameWidget<'a> as *const c_void;
@@ -227,10 +229,14 @@ impl<'a> CookingMinigameWidget<'a> {
         self._current_step = 0;
         self._step_progress = 0.0;
         self._is_active = true;
+        self._is_npc_mode = false;
 
         let recipe = &COOKING_RECIPES[recipe_index];
         let recipe_name = CookingWidget::get_item_name_from_resource(recipe.item_code());
         ptr_as_mut(self._title_lbl.as_ref()).get_ui_component_mut().set_text(&format!("Cooking: {}", recipe_name));
+
+        let next_btn_ui = ptr_as_mut(self._next_btn.as_ref()).get_ui_component_mut();
+        next_btn_ui.set_touchable(true);
 
         let container_ui = ptr_as_mut(self._container.as_ref()).get_ui_component_mut();
         container_ui.set_visible(true);
@@ -238,8 +244,57 @@ impl<'a> CookingMinigameWidget<'a> {
         self.update_step_display();
     }
 
+    pub fn start_npc_cooking(&mut self, recipe_index: usize) {
+        if recipe_index >= COOKING_RECIPES.len() {
+            return;
+        }
+
+        self._recipe_index = recipe_index;
+        self._current_step = 0;
+        self._step_progress = 0.0;
+        self._is_active = true;
+        self._is_npc_mode = true;
+
+        let recipe = &COOKING_RECIPES[recipe_index];
+        let recipe_name = CookingWidget::get_item_name_from_resource(recipe.item_code());
+        ptr_as_mut(self._title_lbl.as_ref())
+            .get_ui_component_mut()
+            .set_text(&format!("Ewa's Cooking: {}", recipe_name));
+
+        ptr_as_mut(self._step_lbl.as_ref())
+            .get_ui_component_mut()
+            .set_text("Cooking in progress...");
+
+        CookingWidget::setup_item_icon(&self._icon, recipe.item_code());
+        ptr_as_mut(self._name_lbl.as_ref()).get_ui_component_mut().set_text(&recipe_name);
+
+        let next_btn_ui = ptr_as_mut(self._next_btn.as_ref()).get_ui_component_mut();
+        next_btn_ui.set_text("Cooking...");
+        next_btn_ui.set_touchable(false);
+
+        ptr_as_mut(self._progress_fill.as_ref())
+            .get_ui_component_mut()
+            .set_size_hint_x(Some(0.0));
+
+        let container_ui = ptr_as_mut(self._container.as_ref()).get_ui_component_mut();
+        container_ui.set_visible(true);
+    }
+
+    pub fn set_npc_cooking_progress(&mut self, progress: f32) {
+        if !self._is_active || !self._is_npc_mode {
+            return;
+        }
+        self._step_progress = progress.clamp(0.0, 1.0);
+        ptr_as_mut(self._progress_fill.as_ref())
+            .get_ui_component_mut()
+            .set_size_hint_x(Some(self._step_progress));
+    }
+
     pub fn close_minigame(&mut self) {
         self._is_active = false;
+        self._is_npc_mode = false;
+        let next_btn_ui = ptr_as_mut(self._next_btn.as_ref()).get_ui_component_mut();
+        next_btn_ui.set_touchable(true);
         let container_ui = ptr_as_mut(self._container.as_ref()).get_ui_component_mut();
         container_ui.set_visible(false);
     }
@@ -310,7 +365,7 @@ impl<'a> CookingMinigameWidget<'a> {
     }
 
     pub fn update(&mut self, delta_time: f32, keyboard: &KeyboardInputData, joystick: &JoystickInputData) {
-        if !self._is_active {
+        if !self._is_active || self._is_npc_mode {
             return;
         }
 

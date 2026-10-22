@@ -49,10 +49,6 @@ impl<'a> Character<'a> {
                     self.set_move_idle();
                 }
                 InteractionObject::PropTable(prop) => {
-                    let is_wrap_up = get_game_scene_manager().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay);
-                    if !is_wrap_up {
-                        return;
-                    }
                     self.look_at(prop.borrow().get_position());
                     self.set_move_idle();
                     if item_manager.has_item_on_table(&prop) {
@@ -62,7 +58,8 @@ impl<'a> Character<'a> {
                             get_game_ui_manager_mut().get_player_records_mut().add_food_eaten_count(1);
                         }
                     } else {
-                        if !get_game_ui_manager().has_eatable_table_storage_item() {
+                        let is_wrap_up = get_game_scene_manager().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay);
+                        if !is_wrap_up || !get_game_ui_manager().has_eatable_table_storage_item() {
                             return;
                         }
                         get_game_client_mut().set_next_game_phase(GamePhase::Interaction);

@@ -120,22 +120,14 @@ impl<'a> ItemManager<'a> {
         None
     }
 
-    pub fn place_table_storage_item_on_table(
+    pub fn place_item_name_on_table(
         &mut self,
         target_table: Option<RcRefCell<Prop<'a>>>,
-        slot_idx: usize,
+        item_data_name: &str,
     ) -> bool {
         let Some(table) = target_table
             .or_else(|| get_game_scene_manager().get_prop_manager().get_prop_by_name(PROP_NAME_TABLE).cloned())
         else {
-            return false;
-        };
-
-        let item_to_spawn = get_game_ui_manager_mut()
-            .get_table_storage_widget_mut()
-            .and_then(|table_storage_widget| table_storage_widget.take_item_at_slot(slot_idx));
-
-        let Some(item_data_name) = item_to_spawn else {
             return false;
         };
 
@@ -150,9 +142,9 @@ impl<'a> ItemManager<'a> {
         let offset_z = (rand::random::<f32>() - 0.5) * TABLE_ITEM_SPAWN_RANDOM_OFFSET_RANGE;
         let spawn_position = Vector3::new(table_center.x + offset_x, table_top_y, table_center.z + offset_z);
 
-        let food_hp = get_default_food_hp(&item_data_name, ItemDataType::Food);
+        let food_hp = get_default_food_hp(item_data_name, ItemDataType::Food);
         let item_create_info = ItemCreateInfo {
-            _item_data_name: item_data_name.clone(),
+            _item_data_name: String::from(item_data_name),
             _position: spawn_position,
             _rotation: Vector3::new(0.0, rand::random::<f32>() * std::f32::consts::TAU, 0.0),
             _scale: Vector3::new(1.0, 1.0, 1.0),
@@ -162,7 +154,7 @@ impl<'a> ItemManager<'a> {
             _max_hp: food_hp,
             ..Default::default()
         };
-        let item = self.create_item(&item_data_name, &item_create_info, None);
+        let item = self.create_item(item_data_name, &item_create_info, None);
         item.borrow_mut()._item_properties._is_on_ground = true;
         self._table_storage_item_ids.push(item.borrow().get_item_id());
 
@@ -177,8 +169,23 @@ impl<'a> ItemManager<'a> {
         if let Some(scenario) = get_game_scene_manager_mut().get_game_scenario(ScenarioType::ScenarioIntro_Intro) {
             scenario.borrow_mut().complete_sub_quest_cooking();
         }
-
         true
+    }
+
+    pub fn place_table_storage_item_on_table(
+        &mut self,
+        target_table: Option<RcRefCell<Prop<'a>>>,
+        slot_idx: usize,
+    ) -> bool {
+        let item_to_spawn = get_game_ui_manager_mut()
+            .get_table_storage_widget_mut()
+            .and_then(|table_storage_widget| table_storage_widget.take_item_at_slot(slot_idx));
+
+        let Some(item_data_name) = item_to_spawn else {
+            return false;
+        };
+
+        self.place_item_name_on_table(target_table, &item_data_name)
     }
 
     pub fn initialize_item_manager(&mut self) {

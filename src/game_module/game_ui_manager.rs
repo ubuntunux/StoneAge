@@ -958,6 +958,29 @@ impl<'a> GameUIManager<'a> {
         }
     }
 
+    pub fn start_npc_cooking(&mut self, recipe_index: usize) {
+        if let Some(minigame) = self._cooking_minigame_widget.as_mut() {
+            minigame.start_npc_cooking(recipe_index);
+        }
+    }
+
+    pub fn set_npc_cooking_progress(&mut self, progress: f32) {
+        if let Some(minigame) = self._cooking_minigame_widget.as_mut() {
+            minigame.set_npc_cooking_progress(progress);
+        }
+    }
+
+    pub fn complete_npc_cooking(&mut self, item_code: &str) {
+        if let Some(minigame) = self._cooking_minigame_widget.as_mut() {
+            minigame.close_minigame();
+        }
+        self.show_cooking_popup(item_code);
+    }
+
+    pub fn is_npc_cooking_active(&self) -> bool {
+        self._cooking_minigame_widget.as_ref().is_some_and(|w| w.is_active() && w._is_npc_mode)
+    }
+
     pub fn close_cooking_minigame(&mut self) {
         if let Some(minigame) = self._cooking_minigame_widget.as_mut() {
             minigame.close_minigame();

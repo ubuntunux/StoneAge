@@ -47,6 +47,8 @@ pub struct Character<'a> {
     pub _dead_time: f32,
     pub _lantern: Option<Box<Lantern>>,
     pub _is_enable_update: bool,
+    pub _cooking_recipe_index: Option<usize>,
+    pub _cooking_progress: f32,
 }
 
 impl<'a> Character<'a> {
@@ -94,6 +96,8 @@ impl<'a> Character<'a> {
             _dead_time: 0.0,
             _lantern: lantern,
             _is_enable_update: true,
+            _cooking_recipe_index: None,
+            _cooking_progress: 0.0,
         };
 
         character.initialize_character(position, rotation, scale);
@@ -244,6 +248,12 @@ impl<'a> Character<'a> {
 
     pub fn detach_item(&mut self) {
         self._attached_item = None;
+    }
+
+    pub fn start_cooking(&mut self, recipe_index: usize) {
+        self._cooking_recipe_index = Some(recipe_index);
+        self._cooking_progress = 0.0;
+        self.set_next_behavior(crate::game_module::behavior::behavior_base::BehaviorState::Cooking, true);
     }
 
     pub fn attach_lantern(&mut self) {

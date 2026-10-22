@@ -1,15 +1,20 @@
-use crate::game_module::actors::character::{ActionAnimationState, Character, MoveAnimationState};
+use crate::game_module::actors::character::{ActionAnimationState, Character, CharacterDataType, MoveAnimationState};
+use crate::game_module::actors::props::api::PropDataType;
 use crate::game_module::behavior::behavior_base::{BehaviorData, BehaviorState};
 use crate::game_module::game_constants::{
-    ARRIVAL_DISTANCE_THRESHOLD, CHARACTER_INTERACTION_TIME, GAME_VIEW_MODE, GameViewMode, INTIMACY_ARRIVE_RANGE,
-    INTIMACY_FOLLOW_RANGE, INTIMACY_ROAMING_RADIUS, NPC_ATTACK_CHASE_RANGE, NPC_ATTACK_HIT_RANGE,
-    NPC_ATTACK_IDLE_RANGE, NPC_ATTACK_TERM_MAX, NPC_ATTACK_TERM_MIN, NPC_AVAILABLE_MOVING_ATTACK, NPC_IDLE_TERM_MAX,
-    NPC_IDLE_TERM_MIN, NPC_ROAMING_RADIUS, NPC_ROAMING_TIME, NPC_TRACKING_RANGE,
+    ARRIVAL_DISTANCE_THRESHOLD, AUDIO_QUEST_COMPLETE, CHARACTER_INTERACTION_TIME, GAME_VIEW_MODE, GameViewMode,
+    INTIMACY_ARRIVE_RANGE, INTIMACY_FOLLOW_RANGE, INTIMACY_ROAMING_RADIUS, NPC_ATTACK_CHASE_RANGE,
+    NPC_ATTACK_HIT_RANGE, NPC_ATTACK_IDLE_RANGE, NPC_ATTACK_TERM_MAX, NPC_ATTACK_TERM_MIN,
+    NPC_AVAILABLE_MOVING_ATTACK, NPC_IDLE_TERM_MAX, NPC_IDLE_TERM_MIN, NPC_ROAMING_RADIUS, NPC_ROAMING_TIME,
+    NPC_TRACKING_RANGE, PROP_NAME_TABLE,
 };
-use crate::game_module::game_service_locator::get_game_scene_manager;
-use nalgebra::Vector3;
+use crate::game_module::game_service_locator::{
+    get_game_scene_manager, get_game_ui_manager, get_game_ui_manager_mut, get_item_manager_mut,
+};
+use crate::game_module::widgets::cooking_widget::COOKING_RECIPES;
+use nalgebra::{Vector2, Vector3};
 use rust_engine_3d::audio::audio_manager::AudioLoop;
-use rust_engine_3d::core::engine_service_locator::get_audio_manager_mut;
+use rust_engine_3d::core::engine_service_locator::{get_audio_manager_mut, get_scene_manager};
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::math::lerp;
 use rust_engine_3d::utilities::system::State;
@@ -478,5 +483,183 @@ pub fn step_dead_with_revive(data: &mut BehaviorData, state: State, owner: &mut 
             }
         }
         State::End => {}
+    }
+}
+
+pub const NPC_COOKING_DURATION: f32 = 4.0;
+pub const NPC_COOKING_TABLE_APPROACH_DISTANCE: f32 = 1.3;
+
+pub fn step_cooking(
+    data: &mut BehaviorData,
+    state: State,
+    owner: &mut Character,
+    delta_time: f32,
+) {
+    match state {
+        State::Begin => {
+            owner._cooking_progress = 0.0;
+        }
+        State::Update => {
+            let Some(recipe_idx) = owner._cooking_recipe_index else {
+                data.set_next_behavior_state(BehaviorState::Idle, false);
+                return;
+            };
+
+            let table = get_game_scene_manager()
+                .get_prop_manager()
+                .get_prop_by_name(PROP_NAME_TABLE)
+                .cloned()
+                .or_else(|| {
+                    get_game_scene_manager()
+                        .get_prop_manager()
+                        .get_props()
+                        .values()
+                        .find(|p| p.borrow()._prop_data.borrow()._prop_type == PropDataType::Table)
+                        .cloned()
+                });
+
+            let Some(table) = table else {
+                owner._cooking_recipe_index = None;
+                data.set_next_behavior_state(BehaviorState::Idle, false);
+                return;
+            };
+
+            let table_center = table.borrow().get_bounding_box()._center;
+            let current_pos = *owner.get_position();
+            let dist_to_table = (Vector2::new(current_pos.x, current_pos.z) - Vector2::new(table_center.x, table_center.z)).norm();
+
+            if dist_to_table > NPC_COOKING_TABLE_APPROACH_DISTANCE {
+                owner.move_to_target(&table_center, NPC_COOKING_TABLE_APPROACH_DISTANCE, delta_time);
+            } else {
+                owner.set_move_idle();
+                owner.look_at(&table_center);
+
+                if !owner.is_action(ActionAnimationState::Pickup) {
+                    owner.set_action_interaction();
+                }
+
+                let ui_mgr = get_game_ui_manager_mut();
+                if !ui_mgr.is_npc_cooking_active() {
+                    ui_mgr.start_npc_cooking(recipe_idx);
+                }
+
+                owner._cooking_progress += delta_time / NPC_COOKING_DURATION;
+                ui_mgr.set_npc_cooking_progress(owner._cooking_progress);
+
+                if owner._cooking_progress >= 1.0 {
+                    owner._cooking_progress = 0.0;
+                    owner.set_action_none();
+
+                    if recipe_idx < COOKING_RECIPES.len() {
+                        let recipe = &COOKING_RECIPES[recipe_idx];
+                        let item_name = recipe.item_code();
+
+                        get_item_manager_mut().place_item_name_on_table(Some(table), item_name);
+                        get_audio_manager_mut().play_audio_bank(AUDIO_QUEST_COMPLETE, AudioLoop::ONCE, None);
+                        ui_mgr.complete_npc_cooking(item_name);
+                    } else {
+                        ui_mgr.close_cooking_minigame();
+                    }
+
+                    owner._cooking_recipe_index = None;
+                    data.set_next_behavior_state(BehaviorState::Idle, false);
+                }
+            }
+        }
+        State::End => {
+            if get_game_ui_manager().is_npc_cooking_active() {
+                get_game_ui_manager_mut().close_cooking_minigame();
+            }
+            if owner.is_action(ActionAnimationState::Pickup) {
+                owner.set_action_none();
+            }
+            owner.set_move_idle();
+            owner.set_is_interacting(false);
+        }
+    }
+}
+
+pub const TABLE_SEAT_EATING_DIST: f32 = 1.0;
+pub const TABLE_SEAT_ARRIVAL_DIST: f32 = 0.35;
+pub const TABLE_EATING_SEARCH_RADIUS: f32 = 30.0;
+
+pub fn try_table_eating(owner: &mut Character, _delta_time: f32) -> bool {
+    if !owner.is_family_npc() && !owner.is_civilian() {
+        return false;
+    }
+
+    if owner.is_interacting()
+        || owner.is_action(ActionAnimationState::Dance)
+        || owner.is_action(ActionAnimationState::Dead)
+        || owner.is_action(ActionAnimationState::PassedOut)
+        || owner.is_action(ActionAnimationState::Eating)
+    {
+        return false;
+    }
+
+    let table = get_game_scene_manager()
+        .get_prop_manager()
+        .get_prop_by_name(PROP_NAME_TABLE)
+        .cloned()
+        .or_else(|| {
+            get_game_scene_manager()
+                .get_prop_manager()
+                .get_props()
+                .values()
+                .find(|p| p.borrow()._prop_data.borrow()._prop_type == PropDataType::Table)
+                .cloned()
+        });
+
+    let Some(table) = table else {
+        return false;
+    };
+
+    let has_food = get_game_scene_manager().get_item_manager().has_item_on_table(&table);
+    if !has_food {
+        return false;
+    }
+
+    let table_pos = *table.borrow().get_position();
+    let current_pos = *owner.get_position();
+    let dist_to_table = (Vector2::new(current_pos.x, current_pos.z) - Vector2::new(table_pos.x, table_pos.z)).norm();
+
+    if dist_to_table > TABLE_EATING_SEARCH_RADIUS {
+        return false;
+    }
+
+    let seat_direction = match owner.get_character_type() {
+        CharacterDataType::Wife => Vector3::new(0.0, 0.0, 1.0),
+        CharacterDataType::Daughter => Vector3::new(-1.0, 0.0, 0.0),
+        _ => Vector3::new(1.0, 0.0, 0.0),
+    };
+
+    let scene_manager = get_scene_manager();
+    let mut seat_pos = table_pos - math::safe_normalize(&seat_direction) * TABLE_SEAT_EATING_DIST;
+    seat_pos.y = scene_manager.get_height_bilinear(&seat_pos, 0);
+
+    let (direction, dist) = math::make_normalize_xz_with_norm(&(seat_pos - current_pos));
+
+    if dist > TABLE_SEAT_ARRIVAL_DIST {
+        owner.set_move(&direction);
+        true
+    } else {
+        if !owner.is_move_stop() {
+            owner.set_move_idle();
+        }
+        owner.look_at(&table_pos);
+
+        let is_ready_to_eat = owner.get_attached_item().is_none()
+            && !owner.is_action(ActionAnimationState::Eating)
+            && owner._animation_state._next_action_animation_state != Some(ActionAnimationState::Eating)
+            && owner._behavior.get_behavior_data().get_next_behavior_state() != BehaviorState::Eating;
+
+        if is_ready_to_eat {
+            let item_manager = get_game_scene_manager().get_item_manager_mut();
+            if let Some(item_data_name) = item_manager.consume_item_on_table(&table) {
+                owner.apply_food_item_stats(item_data_name.as_str());
+                owner.set_next_behavior(BehaviorState::Eating, true);
+            }
+        }
+        true
     }
 }

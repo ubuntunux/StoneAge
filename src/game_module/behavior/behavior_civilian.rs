@@ -2,8 +2,8 @@ use crate::game_module::actors::character::Character;
 use crate::game_module::behavior::behavior_base::{BehaviorBase, BehaviorData, BehaviorState};
 use crate::game_module::behavior::behavior_common::{
     begin_idle, begin_roaming, is_enemy_in_range, is_player_too_far_for_intimacy, should_roaming_go_idle, step_attack,
-    step_chase, step_dance, step_dead_with_revive, step_eating, step_follow, step_hunger, step_interaction,
-    step_wake_up, update_hunger_action, update_idle_interacting,
+    step_chase, step_cooking, step_dance, step_dead_with_revive, step_eating, step_follow, step_hunger, step_interaction,
+    step_wake_up, try_table_eating, update_hunger_action, update_idle_interacting,
 };
 use crate::game_module::game_constants::CIVILIAN_DEAD_TIME;
 use rust_engine_3d::utilities::system::State;
@@ -37,6 +37,9 @@ impl<'a> BehaviorBase<'a> for BehaviorCivilian<'a> {
                     begin_idle(&mut self._behavior_data, owner);
                 }
                 State::Update => {
+                    if try_table_eating(owner, delta_time) {
+                        return;
+                    }
                     update_hunger_action(owner);
                     if owner.get_attached_item_data_type().is_eatable() {
                         self.set_next_behavior(BehaviorState::Eating, true);
@@ -57,6 +60,9 @@ impl<'a> BehaviorBase<'a> for BehaviorCivilian<'a> {
             BehaviorState::Roaming => match state {
                 State::Begin => begin_roaming(&mut self._behavior_data, owner, target),
                 State::Update => {
+                    if try_table_eating(owner, delta_time) {
+                        return;
+                    }
                     update_hunger_action(owner);
                     if owner.get_attached_item_data_type().is_eatable() {
                         self.set_next_behavior(BehaviorState::Eating, false);
@@ -79,6 +85,7 @@ impl<'a> BehaviorBase<'a> for BehaviorCivilian<'a> {
             BehaviorState::WakeUp => step_wake_up(&mut self._behavior_data, state, is_first_update, owner, true),
             BehaviorState::Follow => step_follow(&mut self._behavior_data, state, owner, target),
             BehaviorState::Dance => step_dance(&mut self._behavior_data, state, owner),
+            BehaviorState::Cooking => step_cooking(&mut self._behavior_data, state, owner, delta_time),
             _ => {}
         }
     }
