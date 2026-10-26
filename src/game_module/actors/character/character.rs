@@ -935,7 +935,9 @@ impl<'a> Character<'a> {
         let (target_dir, target_dist) = math::make_normalize_xz_with_norm(&diff);
         let move_dist = self.get_walk_speed() * delta_time;
         if (target_dist - 0.1f32.max(radius)) <= move_dist {
-            self.set_position_xz(target_position);
+            if radius <= 0.0 {
+                self.set_position_xz(target_position);
+            }
             return true;
         }
         self.set_move(&target_dir);

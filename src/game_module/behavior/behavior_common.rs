@@ -522,17 +522,17 @@ pub fn step_cooking(data: &mut BehaviorData, state: State, owner: &mut Character
 
             let table_center = table.borrow().get_bounding_box()._center;
             let current_pos = *owner.get_position();
-            let dist_to_table =
-                (Vector2::new(current_pos.x, current_pos.z) - Vector2::new(table_center.x, table_center.z)).norm();
+            let diff = table_center - current_pos;
+            let (target_dir, dist_to_table) = math::make_normalize_xz_with_norm(&diff);
 
             if dist_to_table > NPC_COOKING_TABLE_APPROACH_DISTANCE {
-                owner.move_to_target(&table_center, NPC_COOKING_TABLE_APPROACH_DISTANCE, delta_time);
+                owner.set_move(&target_dir);
             } else {
                 owner.set_move_idle();
                 owner.look_at(&table_center);
 
                 if !owner.is_action(ActionAnimationState::Pickup) {
-                    owner.set_action_interaction();
+                    owner.set_next_action_animation(ActionAnimationState::Pickup, 1.0);
                 }
 
                 owner._cooking_progress += delta_time / NPC_COOKING_DURATION;
