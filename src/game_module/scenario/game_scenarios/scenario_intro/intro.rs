@@ -75,12 +75,9 @@ pub struct ScenarioIntroQuestSaveData {
     pub _sub_quest_hit_the_tree: Option<QuestItemSaveData>,
     pub _sub_quest_gather_food: Option<QuestItemSaveData>,
     pub _sub_quest_return_home: Option<QuestItemSaveData>,
-    #[serde(
-        alias = "_sub_quest_cooking",
-        alias = "_sub_quest_eat_food",
-        alias = "_sub_quest_have_dinner"
-    )]
+    #[serde(alias = "_sub_quest_cooking", alias = "_sub_quest_have_dinner")]
     pub _sub_quest_ask_ewa_to_cook: Option<QuestItemSaveData>,
+    pub _sub_quest_eat_food: Option<QuestItemSaveData>,
     pub _sub_quest_sleep: Option<QuestItemSaveData>,
 }
 
@@ -92,6 +89,7 @@ impl ScenarioIntroQuestSaveData {
             || self._sub_quest_gather_food.is_some()
             || self._sub_quest_return_home.is_some()
             || self._sub_quest_ask_ewa_to_cook.is_some()
+            || self._sub_quest_eat_food.is_some()
             || self._sub_quest_sleep.is_some()
     }
 }
@@ -131,7 +129,9 @@ pub struct ScenarioIntro<'a> {
     _sub_quest_gather_food: Option<QuestItem<'a>>,
     _sub_quest_return_home: Option<QuestItem<'a>>,
     _sub_quest_ask_ewa_to_cook: Option<QuestItem<'a>>,
+    _sub_quest_eat_food: Option<QuestItem<'a>>,
     _sub_quest_sleep: Option<QuestItem<'a>>,
+    _table_had_food: bool,
     _tree_fruit_items: HashMap<*const c_void, ActorWrapper<'a>>,
     _wakeup_delay_aru: f32,
     _wakeup_delay_ewa: f32,
@@ -168,7 +168,9 @@ impl<'a> ScenarioIntro<'a> {
             _sub_quest_gather_food: None,
             _sub_quest_return_home: None,
             _sub_quest_ask_ewa_to_cook: None,
+            _sub_quest_eat_food: None,
             _sub_quest_sleep: None,
+            _table_had_food: false,
             _tree_fruit_items: HashMap::new(),
             _wakeup_delay_aru: WAKEUP_DELAY_ARU_DEFAULT,
             _wakeup_delay_ewa: WAKEUP_DELAY_EWA_DEFAULT,
@@ -348,6 +350,7 @@ impl<'a> ScenarioIntro<'a> {
             self.remove_return_home_text_box();
             if !self.has_any_food() {
                 self.remove_sub_quest_ask_ewa_to_cook();
+                self.remove_sub_quest_eat_food();
             }
             self.remove_uncompleted_sub_quests_before_return_home();
 
@@ -355,6 +358,12 @@ impl<'a> ScenarioIntro<'a> {
                 self.create_actor_ewa_text_box();
             } else {
                 self.remove_actor_ewa_text_box();
+            }
+
+            if self.is_sub_quest_eat_food_active() {
+                self.create_prop_table_text_box();
+            } else {
+                self.remove_prop_table_text_box();
             }
 
             if self.is_sub_quest_sleep_active() {
@@ -460,11 +469,66 @@ impl<'a> ScenarioIntro<'a> {
             && !is_quest_item_completed(&self._sub_quest_ask_ewa_to_cook)
     }
 
+    pub fn remove_sub_quest_eat_food(&mut self) {
+        if let Some(eat_quest) = self._sub_quest_eat_food.take() {
+            if let Some(quest) = self._quest.as_ref() {
+                quest.borrow_mut().remove_quest_item(&eat_quest);
+            }
+            self.remove_prop_table_text_box();
+        }
+    }
+
+    pub fn is_sub_quest_eat_food_active(&self) -> bool {
+        self._sub_quest_eat_food.is_some()
+            && is_quest_item_completed(&self._sub_quest_return_home)
+            && (self._sub_quest_ask_ewa_to_cook.is_none() || is_quest_item_completed(&self._sub_quest_ask_ewa_to_cook))
+            && !is_quest_item_completed(&self._sub_quest_eat_food)
+    }
+
     pub fn is_sub_quest_sleep_active(&self) -> bool {
         self._sub_quest_sleep.is_some()
             && is_quest_item_completed(&self._sub_quest_return_home)
             && !is_quest_item_completed(&self._sub_quest_sleep)
             && (self._sub_quest_ask_ewa_to_cook.is_none() || is_quest_item_completed(&self._sub_quest_ask_ewa_to_cook))
+            && (self._sub_quest_eat_food.is_none() || is_quest_item_completed(&self._sub_quest_eat_food))
+    }
+
+    pub fn complete_sub_quest_ask_ewa_to_cook(&mut self) {
+        if !is_quest_item_completed(&self._sub_quest_return_home) {
+            return;
+        }
+
+        if complete_quest_item(&self._sub_quest_ask_ewa_to_cook) {
+            self.remove_actor_ewa_text_box();
+        }
+
+        if self.is_sub_quest_eat_food_active() {
+            self.create_prop_table_text_box();
+        } else {
+            self.remove_prop_table_text_box();
+        }
+
+        if self.is_sub_quest_sleep_active() {
+            self.create_prop_bed_for_aru_text_box();
+        } else {
+            self.remove_prop_bed_for_aru_text_box();
+        }
+    }
+
+    pub fn complete_sub_quest_eat_food(&mut self) {
+        if !is_quest_item_completed(&self._sub_quest_return_home) {
+            return;
+        }
+
+        if complete_quest_item(&self._sub_quest_eat_food) {
+            self.remove_prop_table_text_box();
+        }
+
+        if self.is_sub_quest_sleep_active() {
+            self.create_prop_bed_for_aru_text_box();
+        } else {
+            self.remove_prop_bed_for_aru_text_box();
+        }
     }
 
     pub fn complete_sub_quest_sleep(&mut self) {
@@ -472,6 +536,7 @@ impl<'a> ScenarioIntro<'a> {
             self.remove_prop_bed_for_aru_text_box();
         }
         self.complete_sub_quest_ask_ewa_to_cook();
+        self.complete_sub_quest_eat_food();
     }
 
     pub fn check_hit_the_tree_complete(&mut self) {
@@ -580,6 +645,12 @@ impl<'a> ScenarioIntro<'a> {
                         _quest_description: Some(String::from("Ask Ewa to cook.")),
                     }),
                 ));
+                self._sub_quest_eat_food = Some(quest.borrow_mut().add_quest_item(QuestCreateInfo::DefaultQuest(
+                    DefaultQuestData {
+                        _quest_icon_name: None,
+                        _quest_description: Some(String::from("Eat food.")),
+                    },
+                )));
                 self._sub_quest_sleep = Some(quest.borrow_mut().add_quest_item(QuestCreateInfo::DefaultQuest(
                     DefaultQuestData {
                         _quest_icon_name: None,
@@ -600,7 +671,9 @@ impl<'a> ScenarioIntro<'a> {
         self._sub_quest_gather_food = None;
         self._sub_quest_return_home = None;
         self._sub_quest_ask_ewa_to_cook = None;
+        self._sub_quest_eat_food = None;
         self._sub_quest_sleep = None;
+        self._table_had_food = false;
     }
 
     pub fn reset_actors_to_bed_positions(&mut self) {
@@ -624,6 +697,7 @@ impl<'a> ScenarioIntro<'a> {
             _sub_quest_gather_food: get_quest_item_save_data(&self._sub_quest_gather_food),
             _sub_quest_return_home: get_quest_item_save_data(&self._sub_quest_return_home),
             _sub_quest_ask_ewa_to_cook: get_quest_item_save_data(&self._sub_quest_ask_ewa_to_cook),
+            _sub_quest_eat_food: get_quest_item_save_data(&self._sub_quest_eat_food),
             _sub_quest_sleep: get_quest_item_save_data(&self._sub_quest_sleep),
         }
     }
@@ -644,6 +718,7 @@ impl<'a> ScenarioIntro<'a> {
                 &self._sub_quest_ask_ewa_to_cook,
                 &quest_save_data._sub_quest_ask_ewa_to_cook,
             );
+            load_quest_item_save_data(&self._sub_quest_eat_food, &quest_save_data._sub_quest_eat_food);
             load_quest_item_save_data(&self._sub_quest_sleep, &quest_save_data._sub_quest_sleep);
 
             if is_quest_item_completed(&self._sub_quest_return_home) {
@@ -664,6 +739,9 @@ impl<'a> ScenarioIntro<'a> {
                 }
                 if quest_save_data._sub_quest_ask_ewa_to_cook.is_none() {
                     self.remove_sub_quest_ask_ewa_to_cook();
+                }
+                if quest_save_data._sub_quest_eat_food.is_none() {
+                    self.remove_sub_quest_eat_food();
                 }
             }
         }
@@ -730,19 +808,11 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
     }
 
     fn complete_sub_quest_ask_ewa_to_cook(&mut self) {
-        if !is_quest_item_completed(&self._sub_quest_return_home) {
-            return;
-        }
+        self.complete_sub_quest_ask_ewa_to_cook();
+    }
 
-        if complete_quest_item(&self._sub_quest_ask_ewa_to_cook) {
-            self.remove_actor_ewa_text_box();
-        }
-
-        if self.is_sub_quest_sleep_active() {
-            self.create_prop_bed_for_aru_text_box();
-        } else {
-            self.remove_prop_bed_for_aru_text_box();
-        }
+    fn complete_sub_quest_eat_food(&mut self) {
+        self.complete_sub_quest_eat_food();
     }
 
     fn complete_sub_quest_sleep(&mut self) {
@@ -827,6 +897,9 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                 } else if game_scene_data_name == Stages::Home.get_stage_data_name() {
                     if self.is_sub_quest_ask_ewa_to_cook_active() {
                         self.create_actor_ewa_text_box();
+                    }
+                    if self.is_sub_quest_eat_food_active() {
+                        self.create_prop_table_text_box();
                     }
                     if self.is_sub_quest_sleep_active() {
                         self.create_prop_bed_for_aru_text_box();
@@ -1077,6 +1150,12 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                             self.remove_actor_ewa_text_box();
                         }
 
+                        if self.is_sub_quest_eat_food_active() {
+                            self.create_prop_table_text_box();
+                        } else {
+                            self.remove_prop_table_text_box();
+                        }
+
                         if self.is_sub_quest_sleep_active() {
                             self.create_prop_bed_for_aru_text_box();
                         } else {
@@ -1092,6 +1171,25 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                             && !game_scene_manager.is_teleport_mode()
                         {
                             self.complete_sub_quest_return_home();
+                        }
+
+                        if self.is_sub_quest_eat_food_active() {
+                            let table_has_food = self._prop_table.as_ref().is_some_and(|table| {
+                                get_game_scene_manager().get_item_manager().has_item_on_table(table)
+                            });
+                            if table_has_food {
+                                self._table_had_food = true;
+                            } else if self._table_had_food {
+                                self.complete_sub_quest_eat_food();
+                            }
+
+                            let is_player_eating = self
+                                ._player
+                                .as_ref()
+                                .is_some_and(|p| p.borrow().is_action(ActionAnimationState::Eating));
+                            if is_player_eating {
+                                self.complete_sub_quest_eat_food();
+                            }
                         }
 
                         if let Some(scenario_wrap_up_the_day) =

@@ -131,6 +131,7 @@ pub trait ScenarioBase<'a> {
         self.complete_sub_quest_ask_ewa_to_cook();
     }
     fn complete_sub_quest_ask_ewa_to_cook(&mut self) {}
+    fn complete_sub_quest_eat_food(&mut self) {}
     fn complete_sub_quest_sleep(&mut self) {}
     fn is_end_of_scenario(&self) -> bool;
     fn destroy_game_scenario(&mut self);

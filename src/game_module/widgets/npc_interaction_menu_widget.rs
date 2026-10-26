@@ -598,6 +598,11 @@ impl<'a> NpcInteractionMenuWidget<'a> {
                         player_ref.set_action_eating();
                         player_ref.apply_food_item_stats(item_data_name.as_str());
                         get_game_ui_manager_mut().get_player_records_mut().add_food_eaten_count(1);
+                        if let Some(scenario) =
+                            get_game_scene_manager_mut().get_game_scenario(ScenarioType::ScenarioIntro_Intro)
+                        {
+                            scenario.borrow_mut().complete_sub_quest_eat_food();
+                        }
                     }
                 }
             }
