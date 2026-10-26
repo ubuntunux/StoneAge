@@ -261,9 +261,7 @@ impl<'a> CookingMinigameWidget<'a> {
             .get_ui_component_mut()
             .set_text(&format!("Ewa's Cooking: {}", recipe_name));
 
-        ptr_as_mut(self._step_lbl.as_ref())
-            .get_ui_component_mut()
-            .set_text("Cooking in progress...");
+        ptr_as_mut(self._step_lbl.as_ref()).get_ui_component_mut().set_text("Cooking in progress...");
 
         CookingWidget::setup_item_icon(&self._icon, recipe.item_code());
         ptr_as_mut(self._name_lbl.as_ref()).get_ui_component_mut().set_text(&recipe_name);
@@ -272,9 +270,7 @@ impl<'a> CookingMinigameWidget<'a> {
         next_btn_ui.set_text("Cooking...");
         next_btn_ui.set_touchable(false);
 
-        ptr_as_mut(self._progress_fill.as_ref())
-            .get_ui_component_mut()
-            .set_size_hint_x(Some(0.0));
+        ptr_as_mut(self._progress_fill.as_ref()).get_ui_component_mut().set_size_hint_x(Some(0.0));
 
         let container_ui = ptr_as_mut(self._container.as_ref()).get_ui_component_mut();
         container_ui.set_visible(true);
@@ -285,9 +281,7 @@ impl<'a> CookingMinigameWidget<'a> {
             return;
         }
         self._step_progress = progress.clamp(0.0, 1.0);
-        ptr_as_mut(self._progress_fill.as_ref())
-            .get_ui_component_mut()
-            .set_size_hint_x(Some(self._step_progress));
+        ptr_as_mut(self._progress_fill.as_ref()).get_ui_component_mut().set_size_hint_x(Some(self._step_progress));
     }
 
     pub fn close_minigame(&mut self) {

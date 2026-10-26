@@ -253,7 +253,10 @@ impl<'a> Character<'a> {
     pub fn start_cooking(&mut self, recipe_index: usize) {
         self._cooking_recipe_index = Some(recipe_index);
         self._cooking_progress = 0.0;
-        self.set_next_behavior(crate::game_module::behavior::behavior_base::BehaviorState::Cooking, true);
+        self.set_next_behavior(
+            crate::game_module::behavior::behavior_base::BehaviorState::Cooking,
+            true,
+        );
     }
 
     pub fn attach_lantern(&mut self) {

@@ -356,9 +356,11 @@ impl<'a> PropManager<'a> {
                             && Self::check_player_in_prop_range(&player, &prop, CHARACTER_INTERACTION_DISTANCE * 1.5);
                         drop(prop);
 
-                        let has_food = in_range && get_game_scene_manager().get_item_manager().has_item_on_table(&prop_refcell);
+                        let has_food =
+                            in_range && get_game_scene_manager().get_item_manager().has_item_on_table(&prop_refcell);
                         let is_wrap_up = get_game_scene_manager().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay);
-                        let should_interact = has_food || (is_wrap_up && get_game_ui_manager().has_eatable_table_storage_item());
+                        let should_interact =
+                            has_food || (is_wrap_up && get_game_ui_manager().has_eatable_table_storage_item());
                         let is_in_player_range = in_range && should_interact;
 
                         Self::sync_interaction_object(

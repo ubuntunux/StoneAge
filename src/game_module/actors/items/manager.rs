@@ -170,7 +170,7 @@ impl<'a> ItemManager<'a> {
         get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
 
         if let Some(scenario) = get_game_scene_manager_mut().get_game_scenario(ScenarioType::ScenarioIntro_Intro) {
-            scenario.borrow_mut().complete_sub_quest_cooking();
+            scenario.borrow_mut().complete_sub_quest_ask_ewa_to_cook();
         }
         true
     }

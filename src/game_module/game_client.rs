@@ -668,10 +668,8 @@ impl<'a> GameClient<'a> {
                             player_mut.update_render_object();
                             game_controller.set_camera_fixed(false);
                             game_controller.set_game_camera_auto_blend_mode(false);
-                            game_controller.apply_game_camera_transform(
-                                scene_manager.get_main_camera_mut(),
-                                &mut player_mut,
-                            );
+                            game_controller
+                                .apply_game_camera_transform(scene_manager.get_main_camera_mut(), &mut player_mut);
                         }
 
                         if game_ui_manager.is_opened_daily_settlement() {

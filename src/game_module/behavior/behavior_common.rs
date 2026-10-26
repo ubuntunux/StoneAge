@@ -4,9 +4,8 @@ use crate::game_module::behavior::behavior_base::{BehaviorData, BehaviorState};
 use crate::game_module::game_constants::{
     ARRIVAL_DISTANCE_THRESHOLD, AUDIO_QUEST_COMPLETE, CHARACTER_INTERACTION_TIME, GAME_VIEW_MODE, GameViewMode,
     INTIMACY_ARRIVE_RANGE, INTIMACY_FOLLOW_RANGE, INTIMACY_ROAMING_RADIUS, NPC_ATTACK_CHASE_RANGE,
-    NPC_ATTACK_HIT_RANGE, NPC_ATTACK_IDLE_RANGE, NPC_ATTACK_TERM_MAX, NPC_ATTACK_TERM_MIN,
-    NPC_AVAILABLE_MOVING_ATTACK, NPC_IDLE_TERM_MAX, NPC_IDLE_TERM_MIN, NPC_ROAMING_RADIUS, NPC_ROAMING_TIME,
-    NPC_TRACKING_RANGE, PROP_NAME_TABLE,
+    NPC_ATTACK_HIT_RANGE, NPC_ATTACK_IDLE_RANGE, NPC_ATTACK_TERM_MAX, NPC_ATTACK_TERM_MIN, NPC_AVAILABLE_MOVING_ATTACK,
+    NPC_IDLE_TERM_MAX, NPC_IDLE_TERM_MIN, NPC_ROAMING_RADIUS, NPC_ROAMING_TIME, NPC_TRACKING_RANGE, PROP_NAME_TABLE,
 };
 use crate::game_module::game_service_locator::{
     get_game_scene_manager, get_game_ui_manager, get_game_ui_manager_mut, get_item_manager_mut,
@@ -489,12 +488,7 @@ pub fn step_dead_with_revive(data: &mut BehaviorData, state: State, owner: &mut 
 pub const NPC_COOKING_DURATION: f32 = 4.0;
 pub const NPC_COOKING_TABLE_APPROACH_DISTANCE: f32 = 1.3;
 
-pub fn step_cooking(
-    data: &mut BehaviorData,
-    state: State,
-    owner: &mut Character,
-    delta_time: f32,
-) {
+pub fn step_cooking(data: &mut BehaviorData, state: State, owner: &mut Character, delta_time: f32) {
     match state {
         State::Begin => {
             owner._cooking_progress = 0.0;
@@ -505,11 +499,8 @@ pub fn step_cooking(
                 return;
             };
 
-            let table = get_game_scene_manager()
-                .get_prop_manager()
-                .get_prop_by_name(PROP_NAME_TABLE)
-                .cloned()
-                .or_else(|| {
+            let table =
+                get_game_scene_manager().get_prop_manager().get_prop_by_name(PROP_NAME_TABLE).cloned().or_else(|| {
                     get_game_scene_manager()
                         .get_prop_manager()
                         .get_props()
@@ -526,7 +517,8 @@ pub fn step_cooking(
 
             let table_center = table.borrow().get_bounding_box()._center;
             let current_pos = *owner.get_position();
-            let dist_to_table = (Vector2::new(current_pos.x, current_pos.z) - Vector2::new(table_center.x, table_center.z)).norm();
+            let dist_to_table =
+                (Vector2::new(current_pos.x, current_pos.z) - Vector2::new(table_center.x, table_center.z)).norm();
 
             if dist_to_table > NPC_COOKING_TABLE_APPROACH_DISTANCE {
                 owner.move_to_target(&table_center, NPC_COOKING_TABLE_APPROACH_DISTANCE, delta_time);
@@ -597,18 +589,14 @@ pub fn try_table_eating(owner: &mut Character, _delta_time: f32) -> bool {
         return false;
     }
 
-    let table = get_game_scene_manager()
-        .get_prop_manager()
-        .get_prop_by_name(PROP_NAME_TABLE)
-        .cloned()
-        .or_else(|| {
-            get_game_scene_manager()
-                .get_prop_manager()
-                .get_props()
-                .values()
-                .find(|p| p.borrow()._prop_data.borrow()._prop_type == PropDataType::Table)
-                .cloned()
-        });
+    let table = get_game_scene_manager().get_prop_manager().get_prop_by_name(PROP_NAME_TABLE).cloned().or_else(|| {
+        get_game_scene_manager()
+            .get_prop_manager()
+            .get_props()
+            .values()
+            .find(|p| p.borrow()._prop_data.borrow()._prop_type == PropDataType::Table)
+            .cloned()
+    });
 
     let Some(table) = table else {
         return false;

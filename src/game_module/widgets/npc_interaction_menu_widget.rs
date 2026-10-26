@@ -8,9 +8,8 @@ use crate::game_module::game_constants::{
 };
 use crate::game_module::game_input::UiInput;
 use crate::game_module::game_service_locator::{
-    get_character_manager, get_game_client_mut, get_game_resources, get_game_scene_manager,
-    get_game_scene_manager_mut, get_game_ui_manager, get_game_ui_manager_mut, get_item_manager_mut,
-    get_prop_manager_mut,
+    get_character_manager, get_game_client_mut, get_game_resources, get_game_scene_manager, get_game_scene_manager_mut,
+    get_game_ui_manager, get_game_ui_manager_mut, get_item_manager_mut, get_prop_manager_mut,
 };
 use crate::game_module::game_ui_manager::move_mouse_to_ui_component;
 use crate::game_module::scenario::scenario::ScenarioType;
@@ -340,11 +339,6 @@ impl<'a> NpcInteractionMenuWidget<'a> {
                     options.push(NpcInteractionOption::Request);
                 }
 
-                if is_wife {
-                    options.push(NpcInteractionOption::StorageTable);
-                    options.push(NpcInteractionOption::GiveAllResources);
-                }
-
                 options.push(NpcInteractionOption::Dance);
 
                 if let Some(p) = &player
@@ -362,17 +356,14 @@ impl<'a> NpcInteractionMenuWidget<'a> {
 
         let eatable_item_name = match &self._target {
             InteractionMenuTarget::Table(prop) => {
-                get_game_scene_manager()
-                    .get_item_manager()
-                    .get_item_on_table(prop)
-                    .map(|item_code| {
-                        let item_data = get_game_resources().get_item_data(&item_code);
-                        item_data.borrow()._name.clone()
-                    })
+                get_game_scene_manager().get_item_manager().get_item_on_table(prop).map(|item_code| {
+                    let item_data = get_game_resources().get_item_data(&item_code);
+                    item_data.borrow()._name.clone()
+                })
             }
-            _ => player
-                .as_ref()
-                .and_then(|p| p.get_attached_item().as_ref().map(|item| item.borrow()._item_data.borrow()._name.clone())),
+            _ => player.as_ref().and_then(|p| {
+                p.get_attached_item().as_ref().map(|item| item.borrow()._item_data.borrow()._name.clone())
+            }),
         };
 
         for (index, option) in options.into_iter().enumerate() {
