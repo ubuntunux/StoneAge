@@ -1,4 +1,6 @@
-use crate::game_module::actors::character::{ActionAnimationState, Character, CharacterDataType, MoveAnimationState};
+use crate::game_module::actors::character::{
+    ActionAnimationState, ActorWrapper, Character, CharacterDataType, MoveAnimationState,
+};
 use crate::game_module::actors::props::api::PropDataType;
 use crate::game_module::behavior::behavior_base::{BehaviorData, BehaviorState};
 use crate::game_module::game_constants::{
@@ -8,15 +10,16 @@ use crate::game_module::game_constants::{
     NPC_IDLE_TERM_MAX, NPC_IDLE_TERM_MIN, NPC_ROAMING_RADIUS, NPC_ROAMING_TIME, NPC_TRACKING_RANGE, PROP_NAME_TABLE,
 };
 use crate::game_module::game_service_locator::{
-    get_game_scene_manager, get_game_ui_manager, get_game_ui_manager_mut, get_item_manager_mut,
+    get_character_manager, get_game_resources, get_game_scene_manager, get_game_ui_manager_mut, get_item_manager_mut,
 };
 use crate::game_module::widgets::cooking_widget::COOKING_RECIPES;
+use crate::game_module::widgets::text_box_widget::{TextBoxContent, TextBoxItemOption, TextBoxLayerType};
 use nalgebra::{Vector2, Vector3};
 use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::core::engine_service_locator::{get_audio_manager_mut, get_scene_manager};
 use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::math::lerp;
-use rust_engine_3d::utilities::system::State;
+use rust_engine_3d::utilities::system::{RcRefCell, State};
 
 pub fn update_hunger_action(owner: &mut Character) {
     if owner.get_stats().is_hungry() {
@@ -530,13 +533,11 @@ pub fn step_cooking(data: &mut BehaviorData, state: State, owner: &mut Character
                     owner.set_action_interaction();
                 }
 
-                let ui_mgr = get_game_ui_manager_mut();
-                if !ui_mgr.is_npc_cooking_active() {
-                    ui_mgr.start_npc_cooking(recipe_idx);
-                }
-
                 owner._cooking_progress += delta_time / NPC_COOKING_DURATION;
-                ui_mgr.set_npc_cooking_progress(owner._cooking_progress);
+
+                if let Some(actor) = get_character_manager().get_character(owner.get_character_id()) {
+                    emoji_cooking(actor, recipe_idx, owner._cooking_progress);
+                }
 
                 if owner._cooking_progress >= 1.0 {
                     owner._cooking_progress = 0.0;
@@ -548,9 +549,10 @@ pub fn step_cooking(data: &mut BehaviorData, state: State, owner: &mut Character
 
                         get_item_manager_mut().place_item_name_on_table(Some(table), item_name);
                         get_audio_manager_mut().play_audio_bank(AUDIO_QUEST_COMPLETE, AudioLoop::ONCE, None);
-                        ui_mgr.complete_npc_cooking(item_name);
-                    } else {
-                        ui_mgr.close_cooking_minigame();
+                    }
+
+                    if let Some(actor) = get_character_manager().get_character(owner.get_character_id()) {
+                        remove_emoji_cooking(actor);
                     }
 
                     owner._cooking_recipe_index = None;
@@ -559,8 +561,8 @@ pub fn step_cooking(data: &mut BehaviorData, state: State, owner: &mut Character
             }
         }
         State::End => {
-            if get_game_ui_manager().is_npc_cooking_active() {
-                get_game_ui_manager_mut().close_cooking_minigame();
+            if let Some(actor) = get_character_manager().get_character(owner.get_character_id()) {
+                remove_emoji_cooking(actor);
             }
             if owner.is_action(ActionAnimationState::Pickup) {
                 owner.set_action_none();
@@ -569,6 +571,49 @@ pub fn step_cooking(data: &mut BehaviorData, state: State, owner: &mut Character
             owner.set_is_interacting(false);
         }
     }
+}
+
+pub fn emoji_cooking<'a>(actor: &RcRefCell<Character<'a>>, recipe_index: usize, progress: f32) {
+    if recipe_index >= COOKING_RECIPES.len() {
+        return;
+    }
+    let recipe = &COOKING_RECIPES[recipe_index];
+    let item_code = recipe.item_code();
+
+    let resources = get_game_resources();
+    let mut contents = Vec::new();
+
+    if resources.has_item_data(item_code) {
+        let item_data = resources.get_item_data(item_code).borrow();
+        let mat_name = item_data._ui_material_instance.clone();
+        if !mat_name.is_empty() {
+            contents.push(TextBoxContent::MaterialInstance(
+                mat_name,
+                Some(Vector2::new(60.0, 60.0)),
+            ));
+        }
+    }
+
+    contents.push(TextBoxContent::ProgressBar(
+        progress.clamp(0.0, 1.0),
+        Some(Vector2::new(80.0, 12.0)),
+    ));
+
+    get_game_ui_manager_mut().add_text_box_item(
+        ActorWrapper::Character(actor.clone()),
+        &contents,
+        &TextBoxItemOption {
+            _layer_type: TextBoxLayerType::InteractionLayer,
+            _duration: None,
+            _bounce: false,
+            _visible_background: true,
+            ..Default::default()
+        },
+    );
+}
+
+pub fn remove_emoji_cooking<'a>(actor: &RcRefCell<Character<'a>>) {
+    get_game_ui_manager_mut().remove_text_box_item(ActorWrapper::Character(actor.clone()).get_key());
 }
 
 pub const TABLE_SEAT_EATING_DIST: f32 = 1.0;

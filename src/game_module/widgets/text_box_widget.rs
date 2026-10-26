@@ -41,6 +41,7 @@ pub enum TextBoxContent {
     Text(String),
     StatWidget((String, f32)),
     Audio(String),
+    ProgressBar(f32, Option<Vector2<f32>>),
 }
 
 #[derive(Clone, Debug)]
@@ -185,6 +186,30 @@ impl<'a> TextBoxItem<'a> {
                         ui_component.set_font_size(FONT_SIZE);
                         ui_component.set_text(text);
                     }
+                    TextBoxContent::ProgressBar(ratio, custom_size) => {
+                        let bar_size = custom_size.unwrap_or(Vector2::new(80.0, 12.0));
+                        ui_component.set_layout_type(UILayoutType::BoxLayout);
+                        ui_component.set_layout_orientation(Orientation::HORIZONTAL);
+                        ui_component.set_size_x(bar_size.x);
+                        ui_component.set_size_y(bar_size.y);
+                        ui_component.set_halign(HorizontalAlign::LEFT);
+                        ui_component.set_valign(VerticalAlign::CENTER);
+                        ui_component.set_color(get_color32(30, 25, 20, 220));
+                        ui_component.set_border_color(get_color32(0, 0, 0, 200));
+                        ui_component.set_border(2.0);
+                        ui_component.set_round(bar_size.y * 0.5);
+
+                        let fill_widget = UIManager::create_widget("ProgressBarFill", UIWidgetTypes::Default);
+                        let fill_ui = ptr_as_mut(fill_widget.as_ref()).get_ui_component_mut();
+                        fill_ui.set_size_hint_x(Some(ratio.clamp(0.0, 1.0)));
+                        fill_ui.set_size_hint_y(Some(1.0));
+                        fill_ui.set_valign(VerticalAlign::CENTER);
+                        fill_ui.set_halign(HorizontalAlign::LEFT);
+                        fill_ui.set_padding(4.0);
+                        fill_ui.set_color(get_color32(235, 135, 45, 255));
+                        fill_ui.set_round(bar_size.y * 0.5);
+                        ptr_as_mut(binding_widget.as_ref()).add_widget(&fill_widget);
+                    }
                     TextBoxContent::Audio(_) => (),
                 }
                 widget_height += ui_component.get_size_y();
@@ -260,7 +285,9 @@ impl<'a> TextBoxWidget<'a> {
             item.update_visible_background(option);
             item._is_bounce = option._bounce;
             item._offset = option._offset;
-            item.set_animation_state(TextBoxAnimationState::None);
+            if item._animation_state == TextBoxAnimationState::Shrinking {
+                item.set_animation_state(TextBoxAnimationState::None);
+            }
         } else {
             self._text_box_items.insert(
                 actor.get_key(),

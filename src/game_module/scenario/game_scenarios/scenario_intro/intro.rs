@@ -75,7 +75,11 @@ pub struct ScenarioIntroQuestSaveData {
     pub _sub_quest_hit_the_tree: Option<QuestItemSaveData>,
     pub _sub_quest_gather_food: Option<QuestItemSaveData>,
     pub _sub_quest_return_home: Option<QuestItemSaveData>,
-    #[serde(alias = "_sub_quest_cooking", alias = "_sub_quest_eat_food")]
+    #[serde(
+        alias = "_sub_quest_cooking",
+        alias = "_sub_quest_eat_food",
+        alias = "_sub_quest_have_dinner"
+    )]
     pub _sub_quest_ask_ewa_to_cook: Option<QuestItemSaveData>,
     pub _sub_quest_sleep: Option<QuestItemSaveData>,
 }
@@ -216,6 +220,10 @@ impl<'a> ScenarioIntro<'a> {
             },
         );
         actor.borrow_mut().set_move_idle();
+    }
+
+    pub fn emoji_cooking(&self, actor: &RcRefCell<Character<'a>>, recipe_index: usize, progress: f32) {
+        crate::game_module::behavior::behavior_common::emoji_cooking(actor, recipe_index, progress);
     }
 
     pub fn create_move_to_forest_text_box(&self) {
@@ -654,9 +662,7 @@ impl<'a> ScenarioIntro<'a> {
                 {
                     self.remove_sub_quest_gather_food();
                 }
-                if quest_save_data._sub_quest_ask_ewa_to_cook.is_none()
-                    || (!self.has_any_food() && !is_quest_item_completed(&self._sub_quest_ask_ewa_to_cook))
-                {
+                if quest_save_data._sub_quest_ask_ewa_to_cook.is_none() {
                     self.remove_sub_quest_ask_ewa_to_cook();
                 }
             }
