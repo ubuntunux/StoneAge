@@ -191,6 +191,8 @@ impl<'a> Character<'a> {
         self._behavior.load_behavior_save_data(&character_save_data._behavior);
         *self._animation_state = character_save_data._animation_state.clone();
         self._attached_item_id = character_save_data._attached_item;
+        self._cooking_recipe_index = character_save_data._cooking_recipe_index;
+        self._cooking_progress = character_save_data._cooking_progress;
     }
 
     pub fn get_character_save_data(&self) -> (String, CharacterSaveData) {
@@ -210,6 +212,8 @@ impl<'a> Character<'a> {
                 _behavior: self._behavior.get_behavior_save_data(),
                 _animation_state: *self._animation_state.clone(),
                 _attached_item: self._attached_item.as_ref().map(|item| item.borrow().get_item_id()),
+                _cooking_recipe_index: self._cooking_recipe_index,
+                _cooking_progress: self._cooking_progress,
             },
         )
     }
@@ -751,6 +755,14 @@ impl<'a> Character<'a> {
 
     pub fn set_behavior_none(&mut self) {
         self.set_next_behavior(BehaviorState::None, true);
+    }
+
+    pub fn get_behavior_state(&self) -> BehaviorState {
+        self._behavior.get_behavior_state()
+    }
+
+    pub fn is_behavior(&self, behavior_state: BehaviorState) -> bool {
+        self._behavior.get_behavior_state() == behavior_state
     }
 
     pub fn set_next_behavior(&mut self, behavior_state: BehaviorState, is_force: bool) {

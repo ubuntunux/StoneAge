@@ -1181,6 +1181,11 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                                 self._table_had_food = true;
                             } else if self._table_had_food {
                                 self.complete_sub_quest_eat_food();
+                            } else if let Some(actor_ewa) = &self._actor_ewa {
+                                let mut ewa = actor_ewa.borrow_mut();
+                                if ewa._cooking_recipe_index.is_none() || !ewa.is_behavior(BehaviorState::Cooking) {
+                                    ewa.start_cooking(0);
+                                }
                             }
 
                             let is_player_eating = self

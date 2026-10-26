@@ -68,6 +68,8 @@ pub struct CharacterSaveData {
     pub _behavior: BehaviorSaveData,
     pub _animation_state: CharacterAnimationState,
     pub _attached_item: Option<ItemID>,
+    pub _cooking_recipe_index: Option<usize>,
+    pub _cooking_progress: f32,
 }
 
 pub struct CharacterManager<'a> {

@@ -494,7 +494,9 @@ pub const NPC_COOKING_TABLE_APPROACH_DISTANCE: f32 = 1.3;
 pub fn step_cooking(data: &mut BehaviorData, state: State, owner: &mut Character, delta_time: f32) {
     match state {
         State::Begin => {
-            owner._cooking_progress = 0.0;
+            if owner._cooking_progress <= 0.0 {
+                owner._cooking_progress = 0.0;
+            }
         }
         State::Update => {
             let Some(recipe_idx) = owner._cooking_recipe_index else {
