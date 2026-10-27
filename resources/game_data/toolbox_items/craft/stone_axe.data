@@ -1,6 +1,6 @@
 {
     "_icon_type": "StoneAxe",
-    "_description": "Essential harvesting tool for wood and stone",
+    "_description": "Knowledge of binding sharp stone to wood for harvesting tools.",
     "_item_data_type": "EnergyBall",
     "_item_data_count": 1
 }

@@ -53,7 +53,7 @@ impl ToolboxTab {
     pub fn display_name(&self) -> &'static str {
         match self {
             ToolboxTab::Skill => "Skill",
-            ToolboxTab::ItemCraft => "Craft",
+            ToolboxTab::ItemCraft => "Knowledge",
             ToolboxTab::Teleport => "Teleport",
         }
     }
@@ -235,11 +235,24 @@ impl<'a> ToolboxWidget<'a> {
         ui.set_padding(4.0);
         body_mut.add_widget(&header);
 
-        let tab_btn_skill = Self::create_tab_button("tb_skill", "Skill", Self::callback_tab_skill, header_mut);
-        let tab_btn_item_craft =
-            Self::create_tab_button("tb_item_craft", "Craft", Self::callback_tab_item_craft, header_mut);
-        let tab_btn_teleport =
-            Self::create_tab_button("tb_teleport", "Teleport", Self::callback_tab_teleport, header_mut);
+        let tab_btn_skill = Self::create_tab_button(
+            "tb_skill",
+            ToolboxTab::Skill.display_name(),
+            Self::callback_tab_skill,
+            header_mut,
+        );
+        let tab_btn_item_craft = Self::create_tab_button(
+            "tb_item_craft",
+            ToolboxTab::ItemCraft.display_name(),
+            Self::callback_tab_item_craft,
+            header_mut,
+        );
+        let tab_btn_teleport = Self::create_tab_button(
+            "tb_teleport",
+            ToolboxTab::Teleport.display_name(),
+            Self::callback_tab_teleport,
+            header_mut,
+        );
 
         let close_btn = UIManager::create_widget("close_btn", UIWidgetTypes::Default);
         let ui_component = ptr_as_mut(close_btn.as_ref()).get_ui_component_mut();

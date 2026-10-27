@@ -111,7 +111,7 @@ impl<'a> ScenarioWoodenClub<'a> {
                 self._sub_quest_unlock_wooden_club = Some(quest.borrow_mut().add_quest_item(
                     QuestCreateInfo::DefaultQuest(DefaultQuestData {
                         _quest_icon_name: None,
-                        _quest_description: Some(String::from("Unlock Wooden Club in Toolbox")),
+                        _quest_description: Some(String::from("Unlock Wooden Weapon Knowledge in Toolbox")),
                     }),
                 ));
 

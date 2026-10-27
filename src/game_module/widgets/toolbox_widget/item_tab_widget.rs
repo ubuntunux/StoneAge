@@ -24,6 +24,7 @@ pub const ACTION_BUTTON_WIDTH: f32 = 150.0;
 pub const ACTION_BUTTON_HEIGHT: f32 = 40.0;
 pub const ACTION_BUTTON_BOX_HEIGHT: f32 = ACTION_BUTTON_HEIGHT + 10.0;
 pub const DESCRIPTION_LABEL_FONT_SIZE: f32 = 22.0;
+pub const LIST_KNOWLEDGE_NAME_FONT_SIZE: f32 = 18.0;
 
 pub const TAB_PADDING: f32 = 8.0;
 pub const LIST_CONTAINER_PADDING: f32 = 4.0;
@@ -80,23 +81,37 @@ impl ToolboxIconType {
         match self {
             ToolboxIconType::HandSkill => "Hand Skill",
             ToolboxIconType::QuickGather => "Quick Gather",
-            ToolboxIconType::StoneShelter => "Stone Shelter",
-            ToolboxIconType::Watchtower => "Watchtower",
-            ToolboxIconType::RoastMeat => "Roast Meat",
-            ToolboxIconType::FishSoup => "Fish Soup",
-            ToolboxIconType::StoneAxe => "Stone Axe",
-            ToolboxIconType::Worktable => "Worktable",
-            ToolboxIconType::Campfire => "Campfire",
-            ToolboxIconType::WoodenCart => "Wooden Cart",
-            ToolboxIconType::RidingMammoth => "Riding Mammoth",
-            ToolboxIconType::FlintSpear => "Flint Spear",
-            ToolboxIconType::HuntingBow => "Hunting Bow",
-            ToolboxIconType::LeatherArmor => "Leather Armor",
-            ToolboxIconType::BoneShield => "Bone Shield",
-            ToolboxIconType::WoodenClub => "Wooden Club",
+            ToolboxIconType::StoneShelter => "Shelter Building Knowledge",
+            ToolboxIconType::Watchtower => "Watchtower Knowledge",
+            ToolboxIconType::RoastMeat => "Meat Roasting Knowledge",
+            ToolboxIconType::FishSoup => "Soup Cooking Knowledge",
+            ToolboxIconType::StoneAxe => "Tool Crafting Knowledge",
+            ToolboxIconType::Worktable => "Worktable Knowledge",
+            ToolboxIconType::Campfire => "Fire Making Knowledge",
+            ToolboxIconType::WoodenCart => "Cart Making Knowledge",
+            ToolboxIconType::RidingMammoth => "Mammoth Taming Knowledge",
+            ToolboxIconType::FlintSpear => "Spear Crafting Knowledge",
+            ToolboxIconType::HuntingBow => "Bow Crafting Knowledge",
+            ToolboxIconType::LeatherArmor => "Leather Clothes Knowledge",
+            ToolboxIconType::BoneShield => "Bone Shield Knowledge",
+            ToolboxIconType::WoodenClub => "Wooden Weapon Knowledge",
             ToolboxIconType::MapForest => "Forest",
             ToolboxIconType::MapHome => "Home",
             ToolboxIconType::MapUfo => "UFO",
+        }
+    }
+
+    pub fn unlocked_craft_items(&self) -> &'static [&'static str] {
+        match self {
+            ToolboxIconType::WoodenClub => &["items/wooden_club"],
+            ToolboxIconType::StoneAxe => &["items/equipment/stone_axe"],
+            ToolboxIconType::FlintSpear => &["items/equipment/flint_spear"],
+            ToolboxIconType::HuntingBow => &["items/equipment/hunting_bow"],
+            ToolboxIconType::LeatherArmor => &["items/equipment/leather_armor"],
+            ToolboxIconType::BoneShield => &["items/equipment/bone_shield"],
+            ToolboxIconType::Campfire => &["items/equipment/campfire"],
+            ToolboxIconType::Worktable => &["items/equipment/worktable"],
+            _ => &[],
         }
     }
 
@@ -193,11 +208,7 @@ impl ToolboxIconType {
     }
 
     pub fn get_display_name(&self) -> String {
-        if self.stage_data_name().is_some() {
-            self.as_str().to_string()
-        } else {
-            ToolboxItemWidget::resolve_display_name(self.item_code())
-        }
+        self.as_str().to_string()
     }
 }
 
@@ -443,7 +454,9 @@ impl<'a> ToolboxItemWidget<'a> {
             Self::callback_item_select,
             Self::callback_item_action_btn,
         );
-        ptr_as_mut(row_item._name_lbl.as_ref()).get_ui_component_mut().set_text(&display_name);
+        let name_lbl_ui = ptr_as_mut(row_item._name_lbl.as_ref()).get_ui_component_mut();
+        name_lbl_ui.set_text(&display_name);
+        name_lbl_ui.set_font_size(LIST_KNOWLEDGE_NAME_FONT_SIZE);
         ptr_as_mut(row_item._action_btn.as_ref()).get_ui_component_mut().set_touchable(false);
 
         let mut item = Box::new(ToolboxItemWidget {
@@ -646,15 +659,15 @@ impl<'a> ToolboxTabWidget<'a> {
         // 2. Setup Description & Info Labels/Lists
         if let Some(desc_lbl) = self._detail_info_labels.get(INFO_LABEL_INDEX_DESC) {
             let desc_ui = ptr_as_mut(desc_lbl.as_ref()).get_ui_component_mut();
-            if is_map_item {
+            if !item_data._description.is_empty() {
                 desc_ui.set_text(&item_data._description);
             } else {
                 let item_code = item_data._icon_type.item_code();
                 let desc_text = ToolboxItemWidget::get_item_description_from_resource(item_code);
                 if !desc_text.is_empty() && desc_text != item_code {
                     desc_ui.set_text(&desc_text);
-                } else if !item_data._description.is_empty() {
-                    desc_ui.set_text(&item_data._description);
+                } else {
+                    desc_ui.set_text("");
                 }
             }
         }
@@ -694,6 +707,7 @@ impl<'a> ToolboxTabWidget<'a> {
             ToolboxItemWidget::setup_item_icon(&ing_widget._icon, item_code, show_req);
         }
 
+        let unlocked_craft_items = item_data._icon_type.unlocked_craft_items();
         if is_map_item {
             if let Some((items, chars)) = item_data._icon_type.world_discovered_info() {
                 if let Some(unexp_lbl) = self._detail_info_labels.get(INFO_LABEL_INDEX_UNEXP) {
@@ -715,6 +729,15 @@ impl<'a> ToolboxTabWidget<'a> {
                     ui.set_enable(true);
                 }
             }
+        } else if !unlocked_craft_items.is_empty() {
+            self.disable_all_map_info();
+            if let Some(items_hdr) = self._detail_info_labels.get(INFO_LABEL_INDEX_ITEMS_HDR) {
+                let hdr_ui = ptr_as_mut(items_hdr.as_ref()).get_ui_component_mut();
+                hdr_ui.set_enable(true);
+                hdr_ui.set_text("Unlocks Crafting:");
+            }
+            let craft_item_codes: Vec<String> = unlocked_craft_items.iter().map(|&s| s.to_string()).collect();
+            update_detail_info_entry_list(&self._detail_info_item_entries, &craft_item_codes);
         } else {
             self.disable_all_map_info();
         }

@@ -1,6 +1,6 @@
 {
     "_icon_type": "Worktable",
-    "_description": "Unlocks advanced recipe crafting",
+    "_description": "Knowledge of assembling a dedicated workbench for advanced crafting.",
     "_item_data_type": "EnergyBall",
     "_item_data_count": 2
 }
