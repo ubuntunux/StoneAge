@@ -1,4 +1,4 @@
-use crate::game_module::actors::character::{ActionAnimationState, RequestType};
+use crate::game_module::actors::character::ActionAnimationState;
 use crate::game_module::actors::interaction_object::{INTERACTION_OBJECT_UI_OFFSET_Y, InteractionObject};
 use crate::game_module::game_client::GamePhase;
 use crate::game_module::game_controller::KeyBindingType;
@@ -24,9 +24,8 @@ use std::ffi::c_void;
 use std::rc::Rc;
 
 const MAIN_LAYOUT_MARGIN: f32 = 10.0;
-const INTERACTION_WIDGETS: [KeyBindingType; 7] = [
+const INTERACTION_WIDGETS: [KeyBindingType; 6] = [
     KeyBindingType::Interaction,
-    KeyBindingType::Request,
     KeyBindingType::EnterGate,
     KeyBindingType::Gathering,
     KeyBindingType::Taming,
@@ -38,7 +37,6 @@ struct ActiveInteractionContext {
     _is_corpse: bool,
     _primary_type: KeyBindingType,
     _primary_text: String,
-    _request_type: RequestType,
     _position: Vector3<f32>,
     _object_key: *const c_void,
 }
@@ -349,14 +347,6 @@ impl<'a> ControllerHelpWidget<'a> {
         ));
         interaction_key_binding_widget_map.register_key_binding_widget(create_interaction_key_binding_widget(
             ptr_as_mut(self._root_widget),
-            KeyBindingType::Request,
-            "request_key_binding",
-            "Request",
-            vec![engine_resources.get_material_instance_data("ui/controller/keycode_c").clone()],
-            vec![engine_resources.get_material_instance_data("ui/controller/joystick_y").clone()],
-        ));
-        interaction_key_binding_widget_map.register_key_binding_widget(create_interaction_key_binding_widget(
-            ptr_as_mut(self._root_widget),
             KeyBindingType::EnterGate,
             "enter_gate_key_binding",
             "Enter",
@@ -447,7 +437,6 @@ impl<'a> ControllerHelpWidget<'a> {
                 _is_corpse: true,
                 _primary_type: KeyBindingType::None,
                 _primary_text: String::new(),
-                _request_type: RequestType::None,
                 _position: corpse_obj.get_position(),
                 _object_key: corpse_obj.get_key(),
             });
@@ -457,84 +446,66 @@ impl<'a> ControllerHelpWidget<'a> {
         let position = interaction_object.get_position();
         let object_key = interaction_object.get_key();
 
-        let (primary_type, primary_text, request_type) = match interaction_object {
+        let (primary_type, primary_text) = match interaction_object {
             InteractionObject::PropBed(prop) => (
                 KeyBindingType::Interaction,
                 prop.borrow()._prop_data.borrow()._name.clone(),
-                RequestType::None,
             ),
             InteractionObject::PropPickup(prop) => (
                 KeyBindingType::Interaction,
                 format!("Pick up a {}", prop.borrow()._prop_data.borrow()._name.as_str()),
-                RequestType::None,
             ),
             InteractionObject::PropMonolith(prop) => (
                 KeyBindingType::Interaction,
                 prop.borrow()._prop_data.borrow()._name.clone(),
-                RequestType::None,
             ),
             InteractionObject::PropTable(prop) => {
                 let item_on_table = get_game_scene_manager().get_item_manager().get_item_on_table(prop);
                 if let Some(item_data_name) = item_on_table {
                     let item_data = get_game_resources().get_item_data(&item_data_name);
                     let item_name = item_data.borrow()._name.clone();
-                    (
-                        KeyBindingType::Interaction,
-                        format!("Eat a {}", item_name),
-                        RequestType::None,
-                    )
+                    (KeyBindingType::Interaction, format!("Eat a {}", item_name))
                 } else {
                     let is_wrap_up = get_game_scene_manager().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay);
                     if is_wrap_up && get_game_ui_manager().has_eatable_table_storage_item() {
-                        (
-                            KeyBindingType::Interaction,
-                            String::from("Make Dinner"),
-                            RequestType::None,
-                        )
+                        (KeyBindingType::Interaction, String::from("Make Dinner"))
                     } else {
-                        (KeyBindingType::None, String::new(), RequestType::None)
+                        (KeyBindingType::None, String::new())
                     }
                 }
             }
             InteractionObject::PropDeployed(prop) => (
                 KeyBindingType::Interaction,
                 prop.borrow()._prop_data.borrow()._name.clone(),
-                RequestType::None,
             ),
             InteractionObject::Npc(npc) => {
                 if !get_game_client().is_available_interaction() {
-                    (KeyBindingType::None, String::new(), RequestType::None)
+                    (KeyBindingType::None, String::new())
                 } else {
                     let npc_borrow = npc.borrow();
                     let interaction_text = npc_borrow._character_data.borrow()._name.clone();
-                    (KeyBindingType::Interaction, interaction_text, RequestType::None)
+                    (KeyBindingType::Interaction, interaction_text)
                 }
             }
             InteractionObject::PropGate(_) => {
                 let is_wrap_up = get_game_scene_manager().has_game_scenario(ScenarioType::ScenarioWrapUpTheDay);
                 if is_wrap_up {
-                    (KeyBindingType::None, String::new(), RequestType::None)
+                    (KeyBindingType::None, String::new())
                 } else {
-                    (KeyBindingType::None, String::from("Enter Gate"), RequestType::None)
+                    (KeyBindingType::None, String::from("Enter Gate"))
                 }
             }
             InteractionObject::PropGathering(prop) => (
                 KeyBindingType::Gathering,
                 format!("Hit the {}", prop.borrow()._prop_data.borrow()._name.as_str()),
-                RequestType::None,
             ),
-            _ => (
-                KeyBindingType::Interaction,
-                String::from("interaction"),
-                RequestType::None,
-            ),
+            _ => (KeyBindingType::Interaction, String::from("interaction")),
         };
 
         Some(ActiveInteractionContext {
             _is_corpse: false,
             _primary_type: primary_type,
             _primary_text: primary_text,
-            _request_type: request_type,
             _position: position,
             _object_key: object_key,
         })
@@ -675,19 +646,8 @@ impl<'a> ControllerHelpWidget<'a> {
                     layout_widget._ui_component.set_visible(false);
                 }
             } else {
-                if *key_type == KeyBindingType::Request && context._request_type != RequestType::None {
-                    layout_widget._ui_component.set_pos(screen_pos.x, screen_pos.y + 25.0);
-                    layout_widget._ui_component.set_visible(true);
-                    ptr_as_mut(key_widget._binding_name_widget)
-                        ._ui_component
-                        .set_text(context._request_type.to_string().as_str());
-                } else if *key_type == context._primary_type {
-                    let offset_y = if context._request_type != RequestType::None {
-                        -25.0
-                    } else {
-                        0.0
-                    };
-                    layout_widget._ui_component.set_pos(screen_pos.x, screen_pos.y + offset_y);
+                if *key_type == context._primary_type {
+                    layout_widget._ui_component.set_pos(screen_pos.x, screen_pos.y);
                     layout_widget._ui_component.set_visible(true);
                     ptr_as_mut(key_widget._binding_name_widget)._ui_component.set_text(context._primary_text.as_str());
                 } else {

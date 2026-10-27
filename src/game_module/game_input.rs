@@ -182,7 +182,6 @@ pub enum GamePlayAction {
     Run,
     Roll,
     Interact,
-    Request,
     PreviousItem,
     NextItem,
     Help,
@@ -410,10 +409,6 @@ impl Default for InputBindings {
         gameplay_bindings.insert(
             GamePlayAction::Interact,
             ActionBinding::new(vec![KeyCode::KeyF], vec![GamepadButton::X], vec![]),
-        );
-        gameplay_bindings.insert(
-            GamePlayAction::Request,
-            ActionBinding::new(vec![KeyCode::KeyC], vec![GamepadButton::Y], vec![]),
         );
         gameplay_bindings.insert(
             GamePlayAction::PreviousItem,
@@ -765,7 +760,6 @@ pub struct GamePlayInputState {
     pub _roll: bool,
     pub _interaction: bool,
     pub _interaction_hold: bool,
-    pub _request: bool,
     pub _previous_item: bool,
     pub _next_item: bool,
     pub _help: bool,
@@ -832,7 +826,6 @@ impl GamePlayInputState {
                 mouse_input,
             ),
             _interaction_hold: is_interaction_hold,
-            _request: bindings.is_gameplay_action_pressed(GamePlayAction::Request, keyboard, joystick, mouse_input),
             _previous_item: bindings.is_gameplay_action_pressed(
                 GamePlayAction::PreviousItem,
                 keyboard,
@@ -885,7 +878,6 @@ impl GamePlayInputState {
             || self._jump
             || self._roll
             || self._interaction
-            || self._request
             || self._attack_or_use_item
             || self._power_attack
             || is_any_key

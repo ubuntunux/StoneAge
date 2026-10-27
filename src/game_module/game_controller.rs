@@ -29,7 +29,6 @@ pub enum KeyBindingType {
     Attack,
     PowerAttack,
     Interaction,
-    Request,
     EnterGate,
     Gathering,
     Taming,
@@ -570,10 +569,6 @@ impl<'a> GameController<'a> {
                 .find_hand_item_slot_index()
                 .unwrap_or(INVALID_ITEM_INDEX);
             get_game_ui_manager_mut().select_item(hand_slot);
-        } else if input._request && player_mut.is_in_interaction_range() {
-            if get_game_client().is_available_interaction() {
-                player_mut.set_action_request();
-            }
         } else if input._interaction && player_mut.is_in_interaction_range() {
             if get_game_client().is_available_interaction() {
                 player_mut.set_action_interaction();

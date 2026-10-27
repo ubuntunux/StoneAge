@@ -205,18 +205,6 @@ impl<'a> Character<'a> {
         }
     }
 
-    pub fn set_action_request(&mut self) {
-        if !get_game_client().is_available_interaction() {
-            return;
-        }
-        if self._controller.is_on_ground() && self.is_available_move() && self.is_idle_action() {
-            let target_interaction = self._controller._nearest_interaction_object.clone();
-            if let InteractionObject::Npc(character) = target_interaction {
-                self.execute_npc_request(&character);
-            }
-        }
-    }
-
     pub fn callback_changed_interaction_object(&mut self) {
         if !get_game_client().is_available_interaction() {
             return;
