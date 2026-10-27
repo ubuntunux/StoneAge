@@ -1,12 +1,9 @@
-use crate::game_module::actors::character::CharacterCreateInfo;
 use crate::game_module::actors::items::ItemDataType;
 use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, AUDIO_QUEST_COMPLETE, DEFAULT_GATE_NAME};
 use crate::game_module::game_service_locator::{
-    get_character_manager, get_character_manager_mut, get_game_scene_manager, get_game_scene_manager_mut,
-    get_game_ui_manager, get_game_ui_manager_mut,
+    get_game_scene_manager, get_game_scene_manager_mut, get_game_ui_manager, get_game_ui_manager_mut,
 };
 use crate::game_module::widgets::item_detail_layout::*;
-use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::core::engine_service_locator::get_audio_manager_mut;
 use rust_engine_3d::scene::ui::{
@@ -54,30 +51,6 @@ pub const COLOR_BTN_TELEPORT_BORDER: u32 = get_color32(40, 95, 150, 255);
 pub const COLOR_BTN_UNLOCKED_BG: u32 = get_color32(220, 195, 160, 200);
 pub const COLOR_BTN_UNLOCKED_BORDER: u32 = get_color32(180, 145, 105, 200);
 
-fn spawn_npc_near_monolith(character_data_name: &str, offset: Vector3<f32>) {
-    let monolith_pos = if let Some(monolith) = get_game_scene_manager().get_prop_manager().get_prop_by_name("monolith")
-    {
-        *monolith.borrow().get_position()
-    } else if get_character_manager().is_valid_player() {
-        *get_character_manager().get_player().borrow().get_position()
-    } else {
-        Vector3::zeros()
-    };
-
-    let spawn_pos = monolith_pos + offset;
-
-    let character_create_info = CharacterCreateInfo {
-        _character_id: Default::default(),
-        _character_data_name: character_data_name.to_string(),
-        _position: spawn_pos,
-        _rotation: Vector3::zeros(),
-        _scale: Vector3::new(1.0, 1.0, 1.0),
-    };
-
-    let character_name = format!("npc_{}", character_data_name.replace('/', "_"));
-    get_character_manager_mut().create_character(&character_name, &character_create_info, false);
-}
-
 #[derive(Serialize, Deserialize, Copy, Clone, Debug, PartialEq, Eq, Hash, Default)]
 pub enum ToolboxIconType {
     #[default]
@@ -96,10 +69,6 @@ pub enum ToolboxIconType {
     HuntingBow,
     LeatherArmor,
     BoneShield,
-    NpcGatherer,
-    NpcCrafter,
-    NpcGuard,
-    NpcHunter,
     WoodenClub,
     MapForest,
     MapHome,
@@ -124,10 +93,6 @@ impl ToolboxIconType {
             ToolboxIconType::HuntingBow => "Hunting Bow",
             ToolboxIconType::LeatherArmor => "Leather Armor",
             ToolboxIconType::BoneShield => "Bone Shield",
-            ToolboxIconType::NpcGatherer => "Gatherer NPC",
-            ToolboxIconType::NpcCrafter => "Crafter NPC",
-            ToolboxIconType::NpcGuard => "Guard NPC",
-            ToolboxIconType::NpcHunter => "Hunter NPC",
             ToolboxIconType::WoodenClub => "Wooden Club",
             ToolboxIconType::MapForest => "Forest",
             ToolboxIconType::MapHome => "Home",
@@ -152,10 +117,6 @@ impl ToolboxIconType {
             ToolboxIconType::HuntingBow => "items/equipment/hunting_bow",
             ToolboxIconType::LeatherArmor => "items/equipment/leather_armor",
             ToolboxIconType::BoneShield => "items/equipment/bone_shield",
-            ToolboxIconType::NpcGatherer => "items/hand",
-            ToolboxIconType::NpcCrafter => "items/equipment/worktable",
-            ToolboxIconType::NpcGuard => "items/equipment/flint_spear",
-            ToolboxIconType::NpcHunter => "items/equipment/hunting_bow",
             ToolboxIconType::WoodenClub => "items/wooden_club",
             ToolboxIconType::MapHome => "items/wood",
             ToolboxIconType::MapForest => "items/wood",
@@ -180,10 +141,6 @@ impl ToolboxIconType {
             ToolboxIconType::HuntingBow => "[BOW]",
             ToolboxIconType::LeatherArmor => "[ARMOR]",
             ToolboxIconType::BoneShield => "[SHIELD]",
-            ToolboxIconType::NpcGatherer => "[GATHERER]",
-            ToolboxIconType::NpcCrafter => "[CRAFTER]",
-            ToolboxIconType::NpcGuard => "[GUARD]",
-            ToolboxIconType::NpcHunter => "[HUNTER]",
             ToolboxIconType::WoodenClub => "[CLUB]",
             ToolboxIconType::MapForest => "[FOREST]",
             ToolboxIconType::MapHome => "[HOME]",
@@ -211,16 +168,6 @@ impl ToolboxIconType {
         None
     }
 
-    pub fn npc_character_info(&self) -> Option<(&'static str, Vector3<f32>)> {
-        match self {
-            ToolboxIconType::NpcGatherer => Some(("characters/villager_00", Vector3::new(3.0, 0.0, 3.0))),
-            ToolboxIconType::NpcCrafter => Some(("characters/jack", Vector3::new(-3.0, 0.0, 3.0))),
-            ToolboxIconType::NpcGuard => Some(("characters/neanderthal", Vector3::new(3.0, 0.0, -3.0))),
-            ToolboxIconType::NpcHunter => Some(("characters/family/aru", Vector3::new(-3.0, 0.0, -3.0))),
-            _ => None,
-        }
-    }
-
     pub fn toolbox_data_name(&self) -> &'static str {
         match self {
             ToolboxIconType::HandSkill => "toolbox_items/skill/hand_skill",
@@ -238,10 +185,6 @@ impl ToolboxIconType {
             ToolboxIconType::HuntingBow => "toolbox_items/craft/hunting_bow",
             ToolboxIconType::LeatherArmor => "toolbox_items/craft/leather_armor",
             ToolboxIconType::BoneShield => "toolbox_items/craft/bone_shield",
-            ToolboxIconType::NpcGatherer => "toolbox_items/npc/npc_gatherer",
-            ToolboxIconType::NpcCrafter => "toolbox_items/npc/npc_crafter",
-            ToolboxIconType::NpcGuard => "toolbox_items/npc/npc_guard",
-            ToolboxIconType::NpcHunter => "toolbox_items/npc/npc_hunter",
             ToolboxIconType::WoodenClub => "toolbox_items/craft/wooden_club",
             ToolboxIconType::MapHome => "toolbox_items/teleport/map_home",
             ToolboxIconType::MapForest => "toolbox_items/teleport/map_forest",
@@ -610,9 +553,6 @@ impl<'a> ToolboxTabWidget<'a> {
         let reward_item_code = item._data._icon_type.item_code();
         get_game_ui_manager_mut().notify_item_acquired(reward_item_code, 1, true);
         get_audio_manager_mut().play_audio_bank(AUDIO_QUEST_COMPLETE, AudioLoop::ONCE, None);
-        if let Some((char_data_name, offset)) = item._data._icon_type.npc_character_info() {
-            spawn_npc_near_monolith(char_data_name, offset);
-        }
         self.update_detail_panel();
     }
 
