@@ -1,4 +1,4 @@
-use crate::game_module::game_constants::AUDIO_PICKUP_ITEM;
+use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, AUDIO_SELECT_ITEM};
 use crate::game_module::game_controller::WidgetNavRepeatController;
 use crate::game_module::game_input::UiInput;
 use crate::game_module::game_service_locator::{
@@ -78,6 +78,15 @@ impl<'a> SaveLoadSlotWidget<'a> {
         let slot_item = ptr_as_ref(ui_component.get_user_data() as *const SaveLoadSlotItem<'a>);
         let slot_widget = ptr_as_mut(slot_item._slot_widget);
         slot_widget.set_selected_slot(slot_item._slot_index, false);
+        true
+    }
+
+    pub fn callback_button_touch_over(
+        _ui_component: &UIComponentInstance<'a>,
+        _touched_pos: &Vector2<f32>,
+        _touched_pos_delta: &Vector2<f32>,
+    ) -> bool {
+        get_audio_manager_mut().play_audio_bank(AUDIO_SELECT_ITEM, AudioLoop::ONCE, None);
         true
     }
 
@@ -246,6 +255,7 @@ impl<'a> SaveLoadSlotWidget<'a> {
             ui_comp.set_round(5.0);
             ui_comp.set_touchable(true);
             ui_comp.set_callback_touch_down(Some(Box::new(SaveLoadSlotWidget::callback_touch_down_new_game)));
+            ui_comp.set_callback_touch_over(Some(Box::new(SaveLoadSlotWidget::callback_button_touch_over)));
         }
         header_mut.add_widget(&new_game_btn);
 
@@ -264,6 +274,7 @@ impl<'a> SaveLoadSlotWidget<'a> {
             ui_comp.set_round(5.0);
             ui_comp.set_touchable(true);
             ui_comp.set_callback_touch_down(Some(Box::new(SaveLoadSlotWidget::callback_touch_down_exit_game)));
+            ui_comp.set_callback_touch_over(Some(Box::new(SaveLoadSlotWidget::callback_button_touch_over)));
         }
         header_mut.add_widget(&exit_game_btn);
 
@@ -536,12 +547,14 @@ impl<'a> SaveLoadSlotWidget<'a> {
         {
             let load_ui = ptr_as_mut(load_btn.as_ref()).get_ui_component_mut();
             load_ui.set_callback_touch_down(Some(Box::new(SaveLoadSlotWidget::callback_touch_down_slot_load)));
+            load_ui.set_callback_touch_over(Some(Box::new(SaveLoadSlotWidget::callback_button_touch_over)));
             load_ui.set_user_data(item_ptr);
         }
 
         {
             let save_ui = ptr_as_mut(save_btn.as_ref()).get_ui_component_mut();
             save_ui.set_callback_touch_down(Some(Box::new(SaveLoadSlotWidget::callback_touch_down_slot_save)));
+            save_ui.set_callback_touch_over(Some(Box::new(SaveLoadSlotWidget::callback_button_touch_over)));
             save_ui.set_user_data(item_ptr);
         }
 
