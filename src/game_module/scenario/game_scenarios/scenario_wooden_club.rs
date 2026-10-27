@@ -24,13 +24,16 @@ use serde::{Deserialize, Serialize};
 use strum::IntoEnumIterator;
 use strum_macros::{Display, EnumCount, EnumIter, EnumString};
 
-const PHASE_END_DURATION: f32 = 1.0;
+const PHASE_END_DURATION: f32 = 2.0;
 
 #[derive(Clone, PartialEq, Eq, Hash, Display, Debug, Copy, EnumIter, EnumString, EnumCount)]
 pub enum ScenarioPhase {
     None,
     Begin,
+    UnlockWoodenClub,
+    GatherWood,
     CraftWoodenClub,
+    EquipAndSwing,
     End,
 }
 
@@ -41,6 +44,7 @@ pub struct ScenarioWoodenClubQuestSaveData {
     pub _sub_quest_unlock_wooden_club: Option<QuestItemSaveData>,
     pub _sub_quest_gather_wood: Option<QuestItemSaveData>,
     pub _sub_quest_craft_wooden_club: Option<QuestItemSaveData>,
+    pub _sub_quest_equip_and_swing: Option<QuestItemSaveData>,
 }
 
 impl ScenarioWoodenClubQuestSaveData {
@@ -49,6 +53,7 @@ impl ScenarioWoodenClubQuestSaveData {
             || self._sub_quest_unlock_wooden_club.is_some()
             || self._sub_quest_gather_wood.is_some()
             || self._sub_quest_craft_wooden_club.is_some()
+            || self._sub_quest_equip_and_swing.is_some()
     }
 }
 
@@ -73,6 +78,7 @@ pub struct ScenarioWoodenClub<'a> {
     _sub_quest_unlock_wooden_club: Option<QuestItem<'a>>,
     _sub_quest_gather_wood: Option<QuestItem<'a>>,
     _sub_quest_craft_wooden_club: Option<QuestItem<'a>>,
+    _sub_quest_equip_and_swing: Option<QuestItem<'a>>,
     _scenario_track: ScenarioTrack<ScenarioPhase>,
 }
 
@@ -90,6 +96,7 @@ impl<'a> ScenarioWoodenClub<'a> {
             _sub_quest_unlock_wooden_club: None,
             _sub_quest_gather_wood: None,
             _sub_quest_craft_wooden_club: None,
+            _sub_quest_equip_and_swing: None,
             _scenario_track: ScenarioTrack::new(ScenarioPhase::None, ScenarioPhase::Begin),
         })
     }
@@ -122,6 +129,13 @@ impl<'a> ScenarioWoodenClub<'a> {
                         _quest_description: Some(String::from("Open Craft Menu & Craft Wooden Club")),
                     }),
                 ));
+
+                self._sub_quest_equip_and_swing = Some(quest.borrow_mut().add_quest_item(
+                    QuestCreateInfo::DefaultQuest(DefaultQuestData {
+                        _quest_icon_name: None,
+                        _quest_description: Some(String::from("Equip Wooden Club & Attack")),
+                    }),
+                ));
             }
         }
     }
@@ -134,6 +148,13 @@ impl<'a> ScenarioWoodenClub<'a> {
         self._sub_quest_unlock_wooden_club = None;
         self._sub_quest_gather_wood = None;
         self._sub_quest_craft_wooden_club = None;
+        self._sub_quest_equip_and_swing = None;
+    }
+
+    fn ensure_player(&mut self) {
+        if self._player.is_none() {
+            self._player = get_character_manager().get_maybe_player().clone();
+        }
     }
 
     fn ensure_monolith_prop(&mut self) {
@@ -166,6 +187,7 @@ impl<'a> ScenarioWoodenClub<'a> {
             _sub_quest_unlock_wooden_club: get_quest_item_save_data(&self._sub_quest_unlock_wooden_club),
             _sub_quest_gather_wood: get_quest_item_save_data(&self._sub_quest_gather_wood),
             _sub_quest_craft_wooden_club: get_quest_item_save_data(&self._sub_quest_craft_wooden_club),
+            _sub_quest_equip_and_swing: get_quest_item_save_data(&self._sub_quest_equip_and_swing),
         }
     }
 
@@ -182,6 +204,10 @@ impl<'a> ScenarioWoodenClub<'a> {
             load_quest_item_save_data(
                 &self._sub_quest_craft_wooden_club,
                 &quest_save_data._sub_quest_craft_wooden_club,
+            );
+            load_quest_item_save_data(
+                &self._sub_quest_equip_and_swing,
+                &quest_save_data._sub_quest_equip_and_swing,
             );
         }
     }
@@ -268,6 +294,25 @@ impl<'a> ScenarioBase<'a> for ScenarioWoodenClub<'a> {
     }
 
     fn update_game_scenario(&mut self, _any_key_hold: bool, _any_key_pressed: bool, delta_time: f64) {
+        self.ensure_player();
+
+        let is_unlocked = get_game_ui_manager().get_unlocked_toolbox_items().contains(&ToolboxIconType::WoodenClub);
+        if is_unlocked {
+            self.complete_sub_quest_unlock_wooden_club();
+        }
+
+        let has_wooden_club = get_game_ui_manager().get_item_count(ItemDataType::WoodenClub.item_code()) >= 1;
+        if has_wooden_club {
+            complete_quest_item(&self._sub_quest_craft_wooden_club);
+        }
+
+        let is_wooden_club_equipped =
+            get_game_ui_manager().get_item_bar_widget().get_selected_item_data_type() == ItemDataType::WoodenClub;
+        let is_player_attacking = self._player.as_ref().is_some_and(|p| p.borrow().is_attack_animation());
+        if is_wooden_club_equipped && is_player_attacking {
+            complete_quest_item(&self._sub_quest_equip_and_swing);
+        }
+
         let prev_scenario_phase = self._scenario_track._scenario_phase;
         let next_scenario_phase = self._scenario_track._next_scenario_phase;
         let next_phase_duration = self._scenario_track._next_phase_duration;
@@ -289,34 +334,55 @@ impl<'a> ScenarioBase<'a> for ScenarioWoodenClub<'a> {
                 ScenarioPhase::Begin => {
                     self.create_quests();
                     self.create_toolbox_text_box();
-                    self._scenario_track.set_next_scenario_phase(ScenarioPhase::CraftWoodenClub, None);
+                    self._scenario_track.set_next_scenario_phase(ScenarioPhase::UnlockWoodenClub, None);
                 }
-                ScenarioPhase::CraftWoodenClub => match state {
+                ScenarioPhase::UnlockWoodenClub => match state {
                     State::Begin => {
                         self.create_quests();
-                        self.create_toolbox_text_box();
-                    }
-                    State::Update => {
-                        let is_unlocked =
-                            get_game_ui_manager().get_unlocked_toolbox_items().contains(&ToolboxIconType::WoodenClub);
-                        if is_unlocked {
-                            self.complete_sub_quest_unlock_wooden_club();
-                        } else {
+                        if !is_quest_item_completed(&self._sub_quest_unlock_wooden_club) {
                             self.create_toolbox_text_box();
                         }
-
-                        let has_wooden_club =
-                            get_game_ui_manager().get_item_count(ItemDataType::WoodenClub.item_code()) >= 1;
-                        if has_wooden_club {
-                            complete_quest_item(&self._sub_quest_craft_wooden_club);
-                        }
-
-                        if is_quest_item_completed(&self._sub_quest_craft_wooden_club) {
-                            self._scenario_track.set_next_scenario_phase(ScenarioPhase::End, Some(PHASE_END_DURATION));
+                    }
+                    State::Update => {
+                        if is_quest_item_completed(&self._sub_quest_unlock_wooden_club) {
+                            if is_quest_item_completed(&self._sub_quest_craft_wooden_club) {
+                                self._scenario_track.set_next_scenario_phase(ScenarioPhase::EquipAndSwing, None);
+                            } else if is_quest_item_completed(&self._sub_quest_gather_wood) {
+                                self._scenario_track.set_next_scenario_phase(ScenarioPhase::CraftWoodenClub, None);
+                            } else {
+                                self._scenario_track.set_next_scenario_phase(ScenarioPhase::GatherWood, None);
+                            }
+                        } else {
+                            self.create_toolbox_text_box();
                         }
                     }
                     _ => {}
                 },
+                ScenarioPhase::GatherWood => {
+                    if state == State::Update {
+                        if is_quest_item_completed(&self._sub_quest_gather_wood) {
+                            if is_quest_item_completed(&self._sub_quest_craft_wooden_club) {
+                                self._scenario_track.set_next_scenario_phase(ScenarioPhase::EquipAndSwing, None);
+                            } else {
+                                self._scenario_track.set_next_scenario_phase(ScenarioPhase::CraftWoodenClub, None);
+                            }
+                        }
+                    }
+                }
+                ScenarioPhase::CraftWoodenClub => {
+                    if state == State::Update {
+                        if is_quest_item_completed(&self._sub_quest_craft_wooden_club) {
+                            self._scenario_track.set_next_scenario_phase(ScenarioPhase::EquipAndSwing, None);
+                        }
+                    }
+                }
+                ScenarioPhase::EquipAndSwing => {
+                    if state == State::Update {
+                        if is_quest_item_completed(&self._sub_quest_equip_and_swing) {
+                            self._scenario_track.set_next_scenario_phase(ScenarioPhase::End, Some(PHASE_END_DURATION));
+                        }
+                    }
+                }
                 ScenarioPhase::End => {
                     if state == State::Begin {
                         self.remove_toolbox_text_box();

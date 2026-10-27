@@ -44,9 +44,11 @@ impl<'a> Character<'a> {
                 InteractionObject::PropPickup(_) => {
                     self.set_next_action_animation(ActionAnimationState::Pickup, PICKUP_ANIMATION_SPEED);
                 }
-                InteractionObject::PropMonolith(_) => {
-                    get_game_client_mut().set_next_game_phase(GamePhase::OpenToolbox);
+                InteractionObject::PropMonolith(prop) => {
+                    self.look_at(prop.borrow().get_position());
                     self.set_move_idle();
+                    get_game_client_mut().set_next_game_phase(GamePhase::Interaction);
+                    get_game_ui_manager_mut().open_toolbox_interaction_menu(prop);
                 }
                 InteractionObject::PropTable(prop) => {
                     self.look_at(prop.borrow().get_position());

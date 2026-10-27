@@ -15,6 +15,7 @@ use crate::game_module::game_ui_manager::move_mouse_to_ui_component;
 use crate::game_module::scenario::scenario::ScenarioType;
 use crate::game_module::widgets::cooking_widget::{COOKING_RECIPES, CookingWidget};
 use crate::game_module::widgets::key_binding_widget::KEY_BINDING_FONT_SIZE;
+use crate::game_module::widgets::toolbox_widget::toolbox_widget::ToolboxTab;
 use nalgebra::{Vector2, Vector3};
 use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::core::engine_core::TimeData;
@@ -39,6 +40,7 @@ pub enum InteractionMenuTarget<'a> {
     Npc(RcRefCell<Character<'a>>),
     Bed(RcRefCell<Prop<'a>>),
     Table(RcRefCell<Prop<'a>>),
+    Toolbox(RcRefCell<Prop<'a>>),
     Prop(RcRefCell<Prop<'a>>),
 }
 
@@ -55,6 +57,7 @@ pub enum NpcInteractionOption {
     Sleep,
     Eat,
     CookItem(usize),
+    ToolboxTab(ToolboxTab),
     Retrieve,
     Close,
 }
@@ -98,6 +101,7 @@ impl NpcInteractionOption {
                     .unwrap_or("Food");
                 format!("Cook {}", item_name)
             }
+            NpcInteractionOption::ToolboxTab(tab) => String::from(tab.display_name()),
             NpcInteractionOption::Retrieve => String::from("Retrieve to Quick Slot"),
             NpcInteractionOption::Close => String::from("Close"),
         }
@@ -237,6 +241,10 @@ impl<'a> NpcInteractionMenuWidget<'a> {
         self.open_with_target(InteractionMenuTarget::Prop(target_prop));
     }
 
+    pub fn open_toolbox_interaction_menu(&mut self, target_toolbox: RcRefCell<Prop<'a>>) {
+        self.open_with_target(InteractionMenuTarget::Toolbox(target_toolbox));
+    }
+
     pub fn close_npc_interaction_menu(&mut self) {
         if self._is_opened {
             self._is_opened = false;
@@ -310,6 +318,16 @@ impl<'a> NpcInteractionMenuWidget<'a> {
                         }
                     }
                 }
+                if prop.borrow().is_deployed_prop() {
+                    options.push(NpcInteractionOption::Retrieve);
+                }
+                options.push(NpcInteractionOption::Close);
+            }
+            InteractionMenuTarget::Toolbox(prop) => {
+                options.push(NpcInteractionOption::ToolboxTab(ToolboxTab::Skill));
+                options.push(NpcInteractionOption::ToolboxTab(ToolboxTab::ItemCraft));
+                options.push(NpcInteractionOption::ToolboxTab(ToolboxTab::Npc));
+                options.push(NpcInteractionOption::ToolboxTab(ToolboxTab::Teleport));
                 if prop.borrow().is_deployed_prop() {
                     options.push(NpcInteractionOption::Retrieve);
                 }
@@ -506,6 +524,7 @@ impl<'a> NpcInteractionMenuWidget<'a> {
         let target_prop = match &previous_target {
             InteractionMenuTarget::Bed(prop)
             | InteractionMenuTarget::Table(prop)
+            | InteractionMenuTarget::Toolbox(prop)
             | InteractionMenuTarget::Prop(prop) => Some(prop.clone()),
             _ => None,
         };
@@ -611,6 +630,10 @@ impl<'a> NpcInteractionMenuWidget<'a> {
                     .get_item_manager_mut()
                     .place_table_storage_item_on_table(target_table, slot_idx);
             }
+            NpcInteractionOption::ToolboxTab(tab) => {
+                get_game_ui_manager_mut().set_last_opened_toolbox_tab(tab);
+                get_game_client_mut().set_next_game_phase(GamePhase::OpenToolbox);
+            }
             NpcInteractionOption::Retrieve => {
                 if let Some(target_prop) = target_prop {
                     let deployed_item_name = target_prop.borrow()._deployed_item_data_name.clone();
@@ -660,6 +683,7 @@ impl<'a> NpcInteractionMenuWidget<'a> {
             InteractionMenuTarget::Npc(npc) => *npc.borrow().get_position() + Vector3::new(0.0, 1.8, 0.0),
             InteractionMenuTarget::Bed(prop)
             | InteractionMenuTarget::Table(prop)
+            | InteractionMenuTarget::Toolbox(prop)
             | InteractionMenuTarget::Prop(prop) => {
                 let prop_borrow = prop.borrow();
                 *prop_borrow.get_position() + Vector3::new(0.0, 1.0, 0.0)

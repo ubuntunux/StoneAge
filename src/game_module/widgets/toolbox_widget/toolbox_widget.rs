@@ -51,6 +51,15 @@ impl ToolboxTab {
             ToolboxTab::Teleport => "Teleport",
         }
     }
+
+    pub fn display_name(&self) -> &'static str {
+        match self {
+            ToolboxTab::Skill => "Skill",
+            ToolboxTab::ItemCraft => "Craft",
+            ToolboxTab::Npc => "NPC",
+            ToolboxTab::Teleport => "Teleport",
+        }
+    }
 }
 
 impl std::str::FromStr for ToolboxTab {
