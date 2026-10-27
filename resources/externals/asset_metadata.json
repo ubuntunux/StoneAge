@@ -8171,16 +8171,6 @@
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/game_data/props/monolith.blend": [
-        {
-            "asset_type": "GAME_PROP",
-            "asset_path": "monolith",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/props/monolith.blend",
-            "guid": "",
-            "mtime": 1788703835.4223642,
-            "data": {}
-        }
-    ],
     "/mnt/Workspace/StoneAge/resources/externals/game_data/props/table.blend": [
         {
             "asset_type": "GAME_PROP",
@@ -8188,6 +8178,16 @@
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/props/table.blend",
             "guid": "",
             "mtime": 1788703554.9536462,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/props/monolith.blend": [
+        {
+            "asset_type": "GAME_PROP",
+            "asset_path": "monolith",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/props/monolith.blend",
+            "guid": "",
+            "mtime": 1793107550.5449297,
             "data": {}
         }
     ],

@@ -468,9 +468,9 @@ impl<'a> ControllerHelpWidget<'a> {
                 format!("Pick up a {}", prop.borrow()._prop_data.borrow()._name.as_str()),
                 RequestType::None,
             ),
-            InteractionObject::PropMonolith(_) => (
+            InteractionObject::PropMonolith(prop) => (
                 KeyBindingType::Interaction,
-                String::from("Open Toolbox"),
+                prop.borrow()._prop_data.borrow()._name.clone(),
                 RequestType::None,
             ),
             InteractionObject::PropTable(prop) => {
