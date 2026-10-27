@@ -24,7 +24,8 @@ use strum_macros::{Display, EnumCount, EnumIter, EnumString};
 const DESCEND_ARRIVAL_DIST_SQ: f32 = 0.05;
 const DESCEND_MOVE_SPEED: f32 = 4.0;
 const GATE_ARRIVAL_DIST: f32 = 1.0;
-const PHASE_DURATION_WAIT_AFTER_DESCEND: f32 = 1.0;
+const PHASE_DURATION_WAIT_AFTER_DESCEND: f32 = 0.5;
+const ALIEN_BETA_MOVE_DELAY: f32 = 1.0;
 const UFO_LONG_SHOT_CAMERA_POS: Vector3<f32> = Vector3::new(35.48, 26.56, -5.02);
 const UFO_LONG_SHOT_CAMERA_ROT: Vector3<f32> = Vector3::new(0.76, -0.33, 0.0);
 
@@ -175,11 +176,13 @@ impl<'a> ScenarioUfo<'a> {
             }
         }
 
-        if let Some(beta) = self._alien_beta.clone() {
-            if beta.borrow_mut().move_to_target(&gate_pos, GATE_ARRIVAL_DIST, delta_time) {
-                beta.borrow_mut().set_visible(false);
-                get_character_manager_mut().remove_character(&beta);
-                self._alien_beta = None;
+        if ALIEN_BETA_MOVE_DELAY <= self._scenario_track.get_phase_time() {
+            if let Some(beta) = self._alien_beta.clone() {
+                if beta.borrow_mut().move_to_target(&gate_pos, GATE_ARRIVAL_DIST, delta_time) {
+                    beta.borrow_mut().set_visible(false);
+                    get_character_manager_mut().remove_character(&beta);
+                    self._alien_beta = None;
+                }
             }
         }
 

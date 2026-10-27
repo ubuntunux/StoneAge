@@ -33,6 +33,7 @@ const ABDUCTION_MOVE_SPEED: f32 = 4.0;
 const MONOLITH_DROP_SPEED: f32 = 10.0;
 const ARRIVAL_RADIUS: f32 = 0.1;
 const MONOLITH_INITIAL_SCALE: f32 = 0.1;
+const ALIEN_BETA_MOVE_DELAY: f32 = 1.0;
 const PHASE_DURATION_ABDUCT_ALIENS: f32 = 5.0;
 const PHASE_DURATION_DROP_MONOLITH: f32 = 3.0;
 const PHASE_DURATION_UFO_GONE: f32 = 3.0;
@@ -172,11 +173,16 @@ impl<'a> ScenarioDayOne<'a> {
 
         let beta_arrived = if let Some(beta) = &self._alien_beta {
             if self._load_pos_alien_beta != Vector3::zeros() {
-                let arrived = beta.borrow_mut().move_to_target(&self._load_pos_alien_beta, ARRIVAL_RADIUS, delta_time);
-                if arrived {
-                    beta.borrow_mut().set_move_idle();
+                if ALIEN_BETA_MOVE_DELAY <= self._scenario_track.get_phase_time() {
+                    let arrived =
+                        beta.borrow_mut().move_to_target(&self._load_pos_alien_beta, ARRIVAL_RADIUS, delta_time);
+                    if arrived {
+                        beta.borrow_mut().set_move_idle();
+                    }
+                    arrived
+                } else {
+                    false
                 }
-                arrived
             } else {
                 true
             }
