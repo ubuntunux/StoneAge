@@ -535,8 +535,35 @@ impl<'a> ScenarioIntro<'a> {
         if complete_quest_item(&self._sub_quest_sleep) {
             self.remove_prop_bed_for_aru_text_box();
         }
-        self.complete_sub_quest_ask_ewa_to_cook();
-        self.complete_sub_quest_eat_food();
+        if let Some(quest) = &self._quest {
+            quest.borrow_mut().set_completed_quest();
+        }
+        self.remove_move_to_forest_text_box();
+        self.remove_return_home_text_box();
+        self.remove_hit_this_tree_text_box();
+        self.remove_prop_table_text_box();
+        self.remove_actor_ewa_text_box();
+        self.remove_all_tree_fruit_text_boxes();
+    }
+
+    pub fn check_sleep_and_complete_scenario(&mut self) -> bool {
+        let game_scene_manager = get_game_scene_manager_mut();
+        if let Some(scenario_wrap_up_the_day) =
+            game_scene_manager.get_game_scenario(ScenarioType::ScenarioWrapUpTheDay).as_ref()
+        {
+            scenario_wrap_up_the_day.borrow_mut().set_skip_wakeup(true);
+            if scenario_wrap_up_the_day.borrow().is_sleeping() {
+                self.complete_sub_quest_sleep();
+            }
+            return true;
+        } else if is_quest_item_completed(&self._sub_quest_sleep) {
+            self.complete_sub_quest_sleep();
+            self.clear_all();
+            game_scene_manager.request_open_game_scenario(ScenarioType::ScenarioIntro_Ufo);
+            self._scenario_track.set_next_scenario_phase(ScenarioPhase::End, None);
+            return true;
+        }
+        false
     }
 
     pub fn check_hit_the_tree_complete(&mut self) {
@@ -1095,15 +1122,18 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                         self.create_move_to_forest_text_box();
                     }
                     State::Update => {
-                        if game_scene_manager.is_teleport_mode() {
-                            self.complete_sub_quest_go_to_the_forest();
-                        }
+                        if !self.check_sleep_and_complete_scenario() {
+                            if game_scene_manager.is_teleport_mode() {
+                                self.complete_sub_quest_go_to_the_forest();
+                            }
 
-                        if game_scene_manager.get_current_game_scene_data_name() == Stages::Forest.get_stage_data_name()
-                            && !game_scene_manager.is_teleport_mode()
-                        {
-                            self.complete_sub_quest_go_to_the_forest();
-                            self._scenario_track.set_next_scenario_phase(ScenarioPhase::GatheringFood, None);
+                            if game_scene_manager.get_current_game_scene_data_name()
+                                == Stages::Forest.get_stage_data_name()
+                                && !game_scene_manager.is_teleport_mode()
+                            {
+                                self.complete_sub_quest_go_to_the_forest();
+                                self._scenario_track.set_next_scenario_phase(ScenarioPhase::GatheringFood, None);
+                            }
                         }
                     }
                     _ => {}
@@ -1118,16 +1148,9 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                         self.create_hit_this_tree_text_box();
                     }
                     State::Update => {
-                        self.update_tree_fruit_text_boxes();
+                        if !self.check_sleep_and_complete_scenario() {
+                            self.update_tree_fruit_text_boxes();
 
-                        if let Some(scenario_wrap_up_the_day) =
-                            game_scene_manager.get_game_scenario(ScenarioType::ScenarioWrapUpTheDay).as_ref()
-                        {
-                            scenario_wrap_up_the_day.borrow_mut().set_skip_wakeup(true);
-                            self.complete_sub_quest_gather_food();
-                            self.complete_sub_quest_return_home();
-                            self._scenario_track.set_next_scenario_phase(ScenarioPhase::ReturnHome, None);
-                        } else {
                             if is_quest_item_completed(&self._sub_quest_gather_food) {
                                 self.complete_sub_quest_gather_food();
                                 self._scenario_track.set_next_scenario_phase(ScenarioPhase::ReturnHome, None);
@@ -1197,23 +1220,12 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                             }
                         }
 
-                        if let Some(scenario_wrap_up_the_day) =
-                            game_scene_manager.get_game_scenario(ScenarioType::ScenarioWrapUpTheDay).as_ref()
-                        {
-                            scenario_wrap_up_the_day.borrow_mut().set_skip_wakeup(true);
-                            if scenario_wrap_up_the_day.borrow().is_sleeping() {
-                                self.complete_sub_quest_sleep();
+                        if !self.check_sleep_and_complete_scenario() {
+                            if self.is_sub_quest_sleep_active() {
+                                self.create_prop_bed_for_aru_text_box();
+                            } else {
+                                self.remove_prop_bed_for_aru_text_box();
                             }
-                        } else if is_quest_item_completed(&self._sub_quest_sleep) {
-                            self.clear_all();
-                            game_scene_manager.request_open_game_scenario(ScenarioType::ScenarioIntro_Ufo);
-                            self._scenario_track.set_next_scenario_phase(ScenarioPhase::End, None);
-                        }
-
-                        if self.is_sub_quest_sleep_active() {
-                            self.create_prop_bed_for_aru_text_box();
-                        } else {
-                            self.remove_prop_bed_for_aru_text_box();
                         }
                     }
                     _ => {}
