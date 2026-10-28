@@ -975,9 +975,8 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                         self.reset_actors_to_bed_positions();
                         game_scene_manager.set_time(TIME_OF_DAWN, 0.0);
                         set_actors_behavior_none(&[&self._actor_ewa, &self._actor_koa], false);
-                        let forward_x = Vector3::new(1.0, 0.0, 0.0);
                         for actor in [&self._player, &self._actor_ewa, &self._actor_koa].into_iter().flatten() {
-                            actor.borrow_mut().set_move_direction(&forward_x, true);
+                            actor.borrow_mut().set_move_direction(&Vector3::new(0.0, 0.0, -1.0), true);
                         }
                     }
                     State::Update => {

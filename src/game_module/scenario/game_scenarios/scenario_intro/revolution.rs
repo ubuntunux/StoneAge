@@ -1,7 +1,7 @@
 use crate::game_module::actors::character::{ActorWrapper, Character};
 use crate::game_module::game_constants::{
     ACTOR_NAME_ALIEN_ALPHA, ACTOR_NAME_ALIEN_BETA, ACTOR_NAME_ARU, ACTOR_NAME_EWA, ACTOR_NAME_KOA,
-    ACTOR_NAME_MONKEY_EWA, ACTOR_NAME_MONKEY_KOA, AUDIO_ALIEN_TALK, AUDIO_UFO_EXPERIMENT, AUDIO_UFO_LABORATORY,
+    ACTOR_NAME_MONKEY_EWA, ACTOR_NAME_MONKEY_KOA, AUDIO_ALIEN_TALK, AUDIO_UFO_EXPERIMENT,
     CHARACTER_DATA_NAME_ARU, CHARACTER_INTERACTION_TIME, DEFAULT_FADE_TIME, MATERIAL_EMOJI_GOOD, MATERIAL_UI_NONE,
     TIME_OF_NIGHT,
 };
@@ -239,8 +239,8 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
                 }
                 ScenarioPhase::Investigate => match state {
                     State::Begin => {
-                        self._audio_ufo_laboratory =
-                            get_audio_manager_mut().play_audio_bank(AUDIO_UFO_LABORATORY, AudioLoop::LOOP, Some(0.2));
+                        // self._audio_ufo_laboratory =
+                        //     get_audio_manager_mut().play_audio_bank(AUDIO_UFO_LABORATORY, AudioLoop::LOOP, Some(0.2));
                     }
                     State::Update => {
                         if 1.0 <= phase_ratio {

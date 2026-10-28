@@ -25,7 +25,7 @@ const DESCEND_ARRIVAL_DIST_SQ: f32 = 0.05;
 const DESCEND_MOVE_SPEED: f32 = 4.0;
 const GATE_ARRIVAL_DIST: f32 = 1.0;
 const PHASE_DURATION_WAIT_AFTER_DESCEND: f32 = 0.5;
-const ALIEN_BETA_MOVE_DELAY: f32 = 1.0;
+const ALIEN_BETA_MOVE_DELAY: f32 = 0.5;
 const UFO_LONG_SHOT_CAMERA_POS: Vector3<f32> = Vector3::new(35.48, 26.56, -5.02);
 const UFO_LONG_SHOT_CAMERA_ROT: Vector3<f32> = Vector3::new(0.76, -0.33, 0.0);
 

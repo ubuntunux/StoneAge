@@ -686,30 +686,30 @@ impl<'a> CharacterController<'a> {
                         collided_block = collision_object.as_ptr();
 
                         // slide
-                        // if GAME_VIEW_MODE != GameViewMode::GameViewMode2D
-                        //     && (move_direction.x != 0.0 || move_direction.z != 0.0)
-                        // {
-                        //     let push_normal = math::safe_normalize(&Vector3::new(push_vec.x, 0.0, push_vec.z));
-                        //     let move_normal =
-                        //         math::safe_normalize(&Vector3::new(move_direction.x, 0.0, move_direction.z));
-                        //     let dot = move_normal.dot(&push_normal);
-                        //
-                        //     if dot < -COLLISION_HEAD_ON_THRESHOLD {
-                        //         let tangent = Vector3::new(push_normal.z, 0.0, -push_normal.x);
-                        //         let tangent_dot = move_normal.dot(&tangent);
-                        //
-                        //         let slide_dir = if tangent_dot.abs() > 0.05 {
-                        //             if tangent_dot > 0.0 { tangent } else { -tangent }
-                        //         } else {
-                        //             let to_char = self._position - block_bound_box._center;
-                        //             let angular_dir = to_char.x * move_normal.z - to_char.z * move_normal.x;
-                        //             if angular_dir <= 0.0 { tangent } else { -tangent }
-                        //         };
-                        //
-                        //         let slide_dist = move_speed * COLLISION_SLIDE_SPEED_RATIO * delta_time;
-                        //         self._position += slide_dir * slide_dist;
-                        //     }
-                        // }
+                        if !owner._is_player && GAME_VIEW_MODE != GameViewMode::GameViewMode2D
+                            && (move_direction.x != 0.0 || move_direction.z != 0.0)
+                        {
+                            let push_normal = math::safe_normalize(&Vector3::new(push_vec.x, 0.0, push_vec.z));
+                            let move_normal =
+                                math::safe_normalize(&Vector3::new(move_direction.x, 0.0, move_direction.z));
+                            let dot = move_normal.dot(&push_normal);
+
+                            if dot < -COLLISION_HEAD_ON_THRESHOLD {
+                                let tangent = Vector3::new(push_normal.z, 0.0, -push_normal.x);
+                                let tangent_dot = move_normal.dot(&tangent);
+
+                                let slide_dir = if tangent_dot.abs() > 0.05 {
+                                    if tangent_dot > 0.0 { tangent } else { -tangent }
+                                } else {
+                                    let to_char = self._position - block_bound_box._center;
+                                    let angular_dir = to_char.x * move_normal.z - to_char.z * move_normal.x;
+                                    if angular_dir <= 0.0 { tangent } else { -tangent }
+                                };
+
+                                let slide_dist = move_speed * COLLISION_SLIDE_SPEED_RATIO * delta_time;
+                                self._position += slide_dir * slide_dist;
+                            }
+                        }
                     }
                 }
             }
