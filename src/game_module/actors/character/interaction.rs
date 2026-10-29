@@ -80,7 +80,7 @@ impl<'a> Character<'a> {
                     get_game_ui_manager_mut().open_prop_interaction_menu(prop);
                 }
                 InteractionObject::Npc(character) => {
-                    if get_game_client().is_available_interaction() {
+                    if get_game_client().is_available_interaction() && character.borrow().is_available_interaction() {
                         self.prepare_npc_for_interaction(&mut character.borrow_mut(), BehaviorState::Idle);
                         get_game_client_mut().set_next_game_phase(GamePhase::Interaction);
                         get_game_ui_manager_mut().open_npc_interaction_menu(character);
@@ -144,7 +144,7 @@ impl<'a> Character<'a> {
 
     pub fn execute_npc_request(&mut self, target_npc: &RcRefCell<Character<'a>>) {
         let mut npc = target_npc.borrow_mut();
-        if !npc.is_action(ActionAnimationState::Eating) && npc._behavior.get_behavior_state() != BehaviorState::Eating {
+        if npc.is_available_interaction() {
             let next_phase = match npc.get_request_type() {
                 RequestType::Cooking => Some(GamePhase::OpenCooking),
                 RequestType::Craft => Some(GamePhase::OpenCraft),

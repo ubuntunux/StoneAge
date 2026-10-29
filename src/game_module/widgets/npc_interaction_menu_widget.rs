@@ -208,6 +208,9 @@ impl<'a> NpcInteractionMenuWidget<'a> {
     }
 
     pub fn open_npc_interaction_menu(&mut self, target_npc: RcRefCell<Character<'a>>) {
+        if !target_npc.borrow().is_available_interaction() {
+            return;
+        }
         let character_manager = get_character_manager();
         if let Some(player) = character_manager.get_maybe_player() {
             let mut player_mut = player.borrow_mut();
@@ -669,6 +672,10 @@ impl<'a> NpcInteractionMenuWidget<'a> {
         }
 
         if let InteractionMenuTarget::Npc(npc) = &self._target {
+            if !npc.borrow().is_available_interaction() {
+                self.close_npc_interaction_menu();
+                return;
+            }
             if let Some(player) = get_character_manager().get_maybe_player() {
                 let mut npc_mut = npc.borrow_mut();
                 npc_mut.look_at(player.borrow().get_position());

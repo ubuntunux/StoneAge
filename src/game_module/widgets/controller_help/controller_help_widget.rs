@@ -479,10 +479,10 @@ impl<'a> ControllerHelpWidget<'a> {
                 prop.borrow()._prop_data.borrow()._name.clone(),
             ),
             InteractionObject::Npc(npc) => {
-                if !get_game_client().is_available_interaction() {
+                let npc_borrow = npc.borrow();
+                if !get_game_client().is_available_interaction() || !npc_borrow.is_available_interaction() {
                     (KeyBindingType::None, String::new())
                 } else {
-                    let npc_borrow = npc.borrow();
                     let interaction_text = npc_borrow._character_data.borrow()._name.clone();
                     (KeyBindingType::Interaction, interaction_text)
                 }

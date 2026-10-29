@@ -415,12 +415,9 @@ impl<'a> CharacterManager<'a> {
                 player._controller.remove_interaction_object(farming_obj);
             }
 
-            let is_eating = character_ref.is_action(ActionAnimationState::Eating)
-                || character_ref._behavior.get_behavior_state() == BehaviorState::Eating;
             let is_available_interaction = get_game_client().is_available_interaction();
 
-            if character_ref.is_alive()
-                && !is_eating
+            if character_ref.is_available_interaction()
                 && is_available_interaction
                 && (character_ref.is_civilian() || character_ref.is_tamed())
             {

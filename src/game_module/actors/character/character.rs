@@ -494,6 +494,22 @@ impl<'a> Character<'a> {
         !self.is_falling() && self.is_available_attack() && !self.is_move_state(MoveAnimationState::Roll)
     }
 
+    pub fn is_available_interaction(&self) -> bool {
+        self.is_alive()
+            && !matches!(
+                self._animation_state._action_animation_state,
+                ActionAnimationState::Eating
+            )
+            && !matches!(
+                self.get_behavior_state(),
+                BehaviorState::Eating | BehaviorState::Cooking
+            )
+            && !matches!(
+                self._behavior.get_behavior_data().get_next_behavior_state(),
+                BehaviorState::Eating | BehaviorState::Cooking
+            )
+    }
+
     pub fn is_speed_running(&self) -> bool {
         self.is_move_state(MoveAnimationState::Run) || self.is_move_state(MoveAnimationState::RunningJump)
     }
