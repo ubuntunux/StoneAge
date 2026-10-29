@@ -1,11 +1,13 @@
 use crate::game_module::actors::character::{Character, CharacterCreateInfo};
+use crate::game_module::actors::items::Item;
 use crate::game_module::actors::props::Prop;
 use crate::game_module::behavior::behavior_base::BehaviorState;
 use crate::game_module::game_constants::{
     ACTOR_NAME_ALIEN_ALPHA, ACTOR_NAME_ALIEN_BETA, ACTOR_NAME_ARU, ACTOR_NAME_EWA, ACTOR_NAME_KOA,
     ACTOR_NAME_MONKEY_EWA, ACTOR_NAME_MONKEY_KOA, ACTOR_NAME_UFO, AUDIO_ROOSTER, AUDIO_UFO_BEAM, AUDIO_UFO_FLYING,
     BED_FOR_ARU, BED_FOR_EWA, BED_FOR_KOA, CAMERA_DISTANCE_MAX, CAMERA_OFFSET_Y, CHARACTER_DATA_NAME_EWA,
-    CHARACTER_DATA_NAME_KOA, DEFAULT_GATE_NAME, PROP_NAME_MONOLITH, TIME_OF_EARLY_MORNING, TIME_OF_NIGHT,
+    CHARACTER_DATA_NAME_KOA, DEFAULT_GATE_NAME, ITEM_NAME_ENERGY_BALL, ITEM_NAME_SPIRIT_BALL, ITEM_NAME_WOOD,
+    PROP_NAME_MONOLITH, TIME_OF_EARLY_MORNING, TIME_OF_NIGHT,
 };
 use crate::game_module::game_scene_manager::Stages;
 use crate::game_module::game_service_locator::{get_character_manager_mut, get_game_scene_manager_mut};
@@ -78,6 +80,12 @@ pub struct ScenarioDayOne<'a> {
     _prop_monolith: Option<RcRefCell<Prop<'a>>>,
     _prop_gate: Option<RcRefCell<Prop<'a>>>,
     _monolith_start_position: Vector3<f32>,
+    _item_energy_ball: Option<RcRefCell<Item<'a>>>,
+    _item_spirit_ball: Option<RcRefCell<Item<'a>>>,
+    _item_wood: Option<RcRefCell<Item<'a>>>,
+    _energy_ball_start_position: Vector3<f32>,
+    _spirit_ball_start_position: Vector3<f32>,
+    _wood_start_position: Vector3<f32>,
     _audio_ufo_flying: Option<RcRefCell<AudioInstance>>,
     _scenario_track: ScenarioTrack<ScenarioPhase>,
 }
@@ -108,6 +116,12 @@ impl<'a> ScenarioDayOne<'a> {
             _prop_monolith: None,
             _prop_gate: None,
             _monolith_start_position: Vector3::zeros(),
+            _item_energy_ball: None,
+            _item_spirit_ball: None,
+            _item_wood: None,
+            _energy_ball_start_position: Vector3::zeros(),
+            _spirit_ball_start_position: Vector3::zeros(),
+            _wood_start_position: Vector3::zeros(),
             _audio_ufo_flying: None,
             _scenario_track: ScenarioTrack::new(ScenarioPhase::None, ScenarioPhase::Begin),
         })
@@ -219,8 +233,29 @@ impl<'a> ScenarioDayOne<'a> {
         }
     }
 
+    pub fn drop_item(item: &RcRefCell<Item<'a>>, start_position: &Vector3<f32>, delta_time: f64) -> bool {
+        let mut item_mut = item.borrow_mut();
+        let pos_before = item_mut._item_properties._position;
+        let to_target = start_position - pos_before;
+        let move_dist = MONOLITH_DROP_SPEED * delta_time as f32;
+        let moved_pos = pos_before + math::safe_normalize(&to_target) * move_dist;
+        if math::check_arrival_with_radius(&pos_before, &moved_pos, start_position, ARRIVAL_RADIUS, false) {
+            item_mut._item_properties._scale = Vector3::new(1.0, 1.0, 1.0);
+            item_mut._item_properties._position = *start_position;
+            item_mut.set_enable_update(true);
+            item_mut.update_item_transform();
+            return true;
+        }
+
+        let scale = 1.0f32.min(item_mut._item_properties._scale.x + delta_time as f32);
+        item_mut._item_properties._scale = Vector3::new(scale, scale, scale);
+        item_mut._item_properties._position = moved_pos;
+        item_mut.update_item_transform();
+        false
+    }
+
     pub fn drop_monolith(&mut self, delta_time: f64) -> bool {
-        if let Some(prop) = &self._prop_monolith {
+        let monolith_dropped = if let Some(prop) = &self._prop_monolith {
             let pos_before = *prop.borrow().get_position();
             let to_target = self._monolith_start_position - pos_before;
             let move_dist = MONOLITH_DROP_SPEED * delta_time as f32;
@@ -234,16 +269,29 @@ impl<'a> ScenarioDayOne<'a> {
             ) {
                 prop.borrow_mut()._prop_stats._scale = Vector3::new(1.0, 1.0, 1.0);
                 prop.borrow_mut().set_position(&moved_pos);
-                return true;
+                true
+            } else {
+                let scale = 1.0f32.min(prop.borrow_mut()._prop_stats._scale.x + delta_time as f32);
+                prop.borrow_mut()._prop_stats._scale = Vector3::new(scale, scale, scale);
+                prop.borrow_mut().set_position(&moved_pos);
+                false
             }
-
-            let scale = 1.0f32.min(prop.borrow_mut()._prop_stats._scale.x + delta_time as f32);
-            prop.borrow_mut()._prop_stats._scale = Vector3::new(scale, scale, scale);
-            prop.borrow_mut().set_position(&moved_pos);
-            false
         } else {
             false
-        }
+        };
+
+        let energy_ball_dropped = self
+            ._item_energy_ball
+            .as_ref()
+            .is_none_or(|item| Self::drop_item(item, &self._energy_ball_start_position, delta_time));
+        let spirit_ball_dropped = self
+            ._item_spirit_ball
+            .as_ref()
+            .is_none_or(|item| Self::drop_item(item, &self._spirit_ball_start_position, delta_time));
+        let wood_dropped =
+            self._item_wood.as_ref().is_none_or(|item| Self::drop_item(item, &self._wood_start_position, delta_time));
+
+        monolith_dropped && energy_ball_dropped && spirit_ball_dropped && wood_dropped
     }
 
     pub fn set_player_active(is_active: bool) {
@@ -321,6 +369,9 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
         self._prop_bed_for_koa = None;
         self._prop_monolith = None;
         self._prop_gate = None;
+        self._item_energy_ball = None;
+        self._item_spirit_ball = None;
+        self._item_wood = None;
         if self._scenario_track._scenario_phase == ScenarioPhase::End {
             Self::set_player_active(true);
         }
@@ -425,6 +476,11 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
             self._alien_beta = game_scene_manager.get_actor_by_name(ACTOR_NAME_ALIEN_BETA).cloned();
             self._prop_monolith = game_scene_manager.get_prop_manager().get_prop_by_name(PROP_NAME_MONOLITH).cloned();
             self._prop_gate = game_scene_manager.get_prop_manager().get_prop_by_name(DEFAULT_GATE_NAME).cloned();
+            self._item_energy_ball =
+                game_scene_manager.get_item_manager().get_item_by_name(ITEM_NAME_ENERGY_BALL).cloned();
+            self._item_spirit_ball =
+                game_scene_manager.get_item_manager().get_item_by_name(ITEM_NAME_SPIRIT_BALL).cloned();
+            self._item_wood = game_scene_manager.get_item_manager().get_item_by_name(ITEM_NAME_WOOD).cloned();
 
             if self._load_pos_alien_alpha == Vector3::zeros() {
                 if let Some(alpha) = &self._alien_alpha {
@@ -485,6 +541,26 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
                         ufo.borrow().get_position().y,
                         self._monolith_start_position.z,
                     ));
+                }
+            }
+
+            let ufo_y = self._actor_ufo.as_ref().map(|ufo| ufo.borrow().get_position().y);
+            for (item_opt, start_pos) in [
+                (&self._item_energy_ball, &mut self._energy_ball_start_position),
+                (&self._item_spirit_ball, &mut self._spirit_ball_start_position),
+                (&self._item_wood, &mut self._wood_start_position),
+            ] {
+                if let Some(item) = item_opt {
+                    let mut item_mut = item.borrow_mut();
+                    *start_pos = *item_mut.get_position();
+                    item_mut._render_object.borrow_mut().set_visible(false);
+                    item_mut.set_enable_update(false);
+
+                    if let Some(y) = ufo_y {
+                        item_mut._item_properties._scale = Vector3::repeat(MONOLITH_INITIAL_SCALE);
+                        item_mut._item_properties._position = Vector3::new(start_pos.x, y, start_pos.z);
+                        item_mut.update_item_transform();
+                    }
                 }
             }
         }
@@ -597,10 +673,22 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
                                 .as_ref()
                                 .is_some_and(|prop| prop.borrow()._render_object.borrow().is_visible());
                             if !is_visible {
+                                let ufo_pos = self._actor_ufo.as_ref().map(|ufo| *ufo.borrow().get_position());
                                 if let Some(prop) = &self._prop_monolith {
                                     prop.borrow()._render_object.borrow_mut().set_visible(true);
-                                    if let Some(ufo) = &self._actor_ufo {
-                                        prop.borrow_mut().set_position(ufo.borrow().get_position());
+                                    if let Some(pos) = &ufo_pos {
+                                        prop.borrow_mut().set_position(pos);
+                                    }
+                                }
+                                for item in [&self._item_energy_ball, &self._item_spirit_ball, &self._item_wood]
+                                    .into_iter()
+                                    .flatten()
+                                {
+                                    let mut item_mut = item.borrow_mut();
+                                    item_mut._render_object.borrow_mut().set_visible(true);
+                                    if let Some(pos) = ufo_pos {
+                                        item_mut._item_properties._position = pos;
+                                        item_mut.update_item_transform();
                                     }
                                 }
                                 get_audio_manager_mut().play_audio_bank(AUDIO_UFO_BEAM, AudioLoop::ONCE, Some(1.0));
