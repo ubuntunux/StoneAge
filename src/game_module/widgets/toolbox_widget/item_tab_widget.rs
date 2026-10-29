@@ -459,12 +459,18 @@ impl<'a> ToolboxItemWidget<'a> {
         name_lbl_ui.set_font_size(LIST_KNOWLEDGE_NAME_FONT_SIZE);
         ptr_as_mut(row_item._action_btn.as_ref()).get_ui_component_mut().set_touchable(false);
 
+        let initial_state = if data._icon_type.stage_data_name().is_some() {
+            ToolboxItemState::Unlocked
+        } else {
+            ToolboxItemState::Locked
+        };
+
         let mut item = Box::new(ToolboxItemWidget {
             _layout: row_item._layout,
             _icon: row_item._icon,
             _name_lbl: row_item._name_lbl,
             _action_btn: row_item._action_btn,
-            _state: ToolboxItemState::Locked,
+            _state: initial_state,
             _data: data,
             _tab_ptr: std::ptr::null_mut(),
             _item_index: item_index,

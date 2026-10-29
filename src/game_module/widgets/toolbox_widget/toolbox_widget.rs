@@ -520,7 +520,7 @@ impl<'a> ToolboxWidget<'a> {
 
     pub fn get_unlocked_items(&self) -> HashSet<ToolboxIconType> {
         let mut unlocked = HashSet::new();
-        let tabs = [&self._skill_tab, &self._item_craft_tab, &self._teleport_tab];
+        let tabs = [&self._skill_tab, &self._item_craft_tab];
         for tab in tabs {
             for item in &tab._items {
                 if item._state == ToolboxItemState::Unlocked {
@@ -532,7 +532,7 @@ impl<'a> ToolboxWidget<'a> {
     }
 
     pub fn load_unlocked_items(&mut self, unlocked_set: &HashSet<ToolboxIconType>) {
-        let tabs = [&mut self._skill_tab, &mut self._item_craft_tab, &mut self._teleport_tab];
+        let tabs = [&mut self._skill_tab, &mut self._item_craft_tab];
         for tab in tabs {
             for item in &mut tab._items {
                 if unlocked_set.contains(&item._data._icon_type) {
@@ -543,6 +543,10 @@ impl<'a> ToolboxWidget<'a> {
             }
             tab.update_detail_panel();
         }
+        for item in &mut self._teleport_tab._items {
+            item._state = ToolboxItemState::Unlocked;
+        }
+        self._teleport_tab.update_detail_panel();
     }
 
     pub fn get_last_opened_tab(&self) -> ToolboxTab {
