@@ -686,7 +686,8 @@ impl<'a> CharacterController<'a> {
                         collided_block = collision_object.as_ptr();
 
                         // slide
-                        if !owner._is_player && GAME_VIEW_MODE != GameViewMode::GameViewMode2D
+                        if !owner._is_player
+                            && GAME_VIEW_MODE != GameViewMode::GameViewMode2D
                             && (move_direction.x != 0.0 || move_direction.z != 0.0)
                         {
                             let push_normal = math::safe_normalize(&Vector3::new(push_vec.x, 0.0, push_vec.z));

@@ -8,7 +8,6 @@ const SPIRIT_BALL_FLOATING_RADIUS: f32 = 0.5;
 
 pub fn create_item_updater(item_type: ItemDataType) -> Box<dyn ItemUpdaterBase> {
     match item_type {
-        ItemDataType::SpiritBall => Box::new(ItemSpiritBallUpdater::default()),
         _ => Box::new(ItemDefaultUpdater::default()),
     }
 }
@@ -60,13 +59,17 @@ impl ItemUpdaterBase for ItemSpiritBallUpdater {
             owner.update_pickup_delay_time(delta_time);
 
             if self._floating {
+                let item_height = owner._render_object.borrow()._bounding_box._extents.y;
                 let floating_speed = self._floating_timer * SPIRIT_BALL_FLOATING_SPEED;
                 let floating_offset = Vector3::new(
                     floating_speed.cos() * SPIRIT_BALL_FLOATING_RADIUS,
-                    floating_speed.sin() * SPIRIT_BALL_FLOATING_RADIUS,
+                    floating_speed.sin() * SPIRIT_BALL_FLOATING_RADIUS + SPIRIT_BALL_FLOATING_RADIUS,
                     floating_speed.sin() * SPIRIT_BALL_FLOATING_RADIUS,
                 );
-                owner._item_properties._position = self._spawn_point + floating_offset;
+                let mut next_position = self._spawn_point + floating_offset;
+                let ground_height = height_map_data.get_height_bilinear(&next_position, 0);
+                next_position.y = self._spawn_point.y.max(ground_height) + item_height + floating_offset.y;
+                owner._item_properties._position = next_position;
                 owner.update_item_transform();
                 self._floating_timer += delta_time as f32;
             } else {

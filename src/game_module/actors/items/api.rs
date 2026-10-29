@@ -136,6 +136,7 @@ pub struct ItemProperties {
     pub _base_scale: Vector3<f32>,
     pub _velocity: Vector3<f32>,
     pub _is_on_ground: bool,
+    pub _enable_update: bool,
     pub _pickup_delay: f32,
     pub _current_hp: i32,
     pub _max_hp: i32,

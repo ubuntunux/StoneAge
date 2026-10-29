@@ -196,6 +196,7 @@ impl<'a> Item<'a> {
                 _base_scale: *scale,
                 _velocity: *velocity,
                 _is_on_ground: false,
+                _enable_update: true,
                 _pickup_delay: pickup_delay,
                 _current_hp: resolved_current_hp,
                 _max_hp: resolved_max_hp,
@@ -292,6 +293,10 @@ impl<'a> Item<'a> {
         &self._item_properties._position
     }
 
+    pub fn set_enable_update(&mut self, enable: bool) {
+        self._item_properties._enable_update = enable;
+    }
+
     pub fn collide_point(&self, pos: &Vector3<f32>) -> bool {
         self._render_object.borrow()._collision.collide_point(pos)
     }
@@ -334,6 +339,9 @@ impl<'a> Item<'a> {
     }
 
     pub fn update_item(&mut self, height_map_data: &HeightMapData, delta_time: f64) {
+        if !self._item_properties._enable_update {
+            return;
+        }
         let owner = ptr_as_mut(self);
         self._item_updater.update_item_updater(owner, height_map_data, delta_time);
     }

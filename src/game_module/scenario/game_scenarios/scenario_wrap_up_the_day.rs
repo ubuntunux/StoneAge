@@ -1,4 +1,3 @@
-use nalgebra::Vector3;
 use crate::game_module::actors::character::ActionAnimationState;
 use crate::game_module::actors::character::Character;
 use crate::game_module::actors::props::Prop;
@@ -14,6 +13,7 @@ use crate::game_module::scenario::scenario::{
 };
 use crate::game_module::scenario::scenario_common::wake_up_npc_on_bed;
 use crate::game_module::scenario::scenario_track::ScenarioTrack;
+use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::core::engine_service_locator::get_audio_manager_mut;
 use rust_engine_3d::utilities::system::{RcRefCell, State, newRcRefCell};

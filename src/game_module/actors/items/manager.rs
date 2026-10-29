@@ -216,9 +216,6 @@ impl<'a> ItemManager<'a> {
         attach_socket: Option<RcRefCell<Socket>>,
     ) -> RcRefCell<Item<'a>> {
         let (item_name, uuid) = extract_name_and_uuid(item_name);
-        let mut spawn_point = item_create_info._position;
-        spawn_point.y =
-            spawn_point.y.max(get_scene_manager().get_height_map_data().get_height_bilinear(&spawn_point, 0));
 
         let game_resource = get_game_resources();
         let item_data = game_resource.get_item_data(item_create_info._item_data_name.as_str());
@@ -239,6 +236,11 @@ impl<'a> ItemManager<'a> {
             )
         };
 
+        let mut spawn_point = item_create_info._position;
+        let item_height = render_object_data.borrow()._bounding_box._extents.y;
+        let ground_height = get_scene_manager().get_height_map_data().get_height_bilinear(&spawn_point, 0);
+        spawn_point.y = spawn_point.y.max(ground_height + item_height);
+
         let item_id = resolve_actor_id(item_create_info._item_id, uuid);
 
         let item = newRcRefCell(Item::create_item(
@@ -257,9 +259,7 @@ impl<'a> ItemManager<'a> {
             item_create_info._max_hp,
         ));
         self._items.insert(item_id, item.clone());
-        if !self._item_name_map.contains_key(item_name.as_str()) {
-            self._item_name_map.insert(item_name, item.clone());
-        }
+        self._item_name_map.insert(item_name, item.clone());
         item
     }
 
