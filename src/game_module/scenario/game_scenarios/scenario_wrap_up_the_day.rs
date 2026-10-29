@@ -1,3 +1,4 @@
+use nalgebra::Vector3;
 use crate::game_module::actors::character::ActionAnimationState;
 use crate::game_module::actors::character::Character;
 use crate::game_module::actors::props::Prop;
@@ -15,7 +16,6 @@ use crate::game_module::scenario::scenario_common::wake_up_npc_on_bed;
 use crate::game_module::scenario::scenario_track::ScenarioTrack;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::core::engine_service_locator::get_audio_manager_mut;
-use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{RcRefCell, State, newRcRefCell};
 use serde::{Deserialize, Serialize};
 use strum::IntoEnumIterator;
@@ -70,14 +70,9 @@ impl<'a> ScenarioWrapUpTheDay<'a> {
     }
 }
 
-fn go_to_sleep(actor: &Option<RcRefCell<Character>>, bed: &Option<RcRefCell<Prop>>) {
+fn go_to_sleep(actor: &Option<RcRefCell<Character>>, bed: &Option<RcRefCell<Prop>>, delta_time: f32) {
     if let (Some(actor), Some(bed_ref)) = (actor.as_ref(), bed.as_ref()) {
-        let radius = bed_ref.borrow().get_collision()._bounding_box._mag_xz * 0.5;
-        let (direction, dist) =
-            math::make_normalize_xz_with_norm(&(bed_ref.borrow().get_position() - actor.borrow().get_position()));
-        if radius < dist {
-            actor.borrow_mut().set_move(&direction);
-        } else {
+        if actor.borrow_mut().move_to_target(&bed_ref.borrow().get_position(), 0.0, delta_time) {
             if !actor.borrow().is_move_stop() {
                 actor.borrow_mut().set_move_idle();
             }
@@ -85,6 +80,7 @@ fn go_to_sleep(actor: &Option<RcRefCell<Character>>, bed: &Option<RcRefCell<Prop
             if !actor.borrow().is_action(ActionAnimationState::LayingDown)
                 && !actor.borrow().is_action(ActionAnimationState::Sleep)
             {
+                actor.borrow_mut().set_move_direction(&Vector3::new(0.0, 0.0, -1.0), true);
                 actor.borrow_mut().set_action_laying_down();
             }
         }
@@ -220,9 +216,9 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                         }
                     }
                     State::Update => {
-                        go_to_sleep(&self._player, &self._prop_bed_for_aru);
-                        go_to_sleep(&self._actor_ewa, &self._prop_bed_for_ewa);
-                        go_to_sleep(&self._actor_koa, &self._prop_bed_for_koa);
+                        go_to_sleep(&self._player, &self._prop_bed_for_aru, delta_time as f32);
+                        go_to_sleep(&self._actor_ewa, &self._prop_bed_for_ewa, delta_time as f32);
+                        go_to_sleep(&self._actor_koa, &self._prop_bed_for_koa, delta_time as f32);
 
                         let aru_is_sleeping = self
                             ._player
@@ -237,15 +233,6 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
                 ScenarioPhase::Sleep => match state {
                     State::Begin => {
                         self._sleep_timer = 0.0;
-                        if let Some(actor) = self._player.as_ref() {
-                            actor.borrow_mut().set_action_sleep_no_snoring();
-                        }
-                        if let Some(actor) = self._actor_ewa.as_ref() {
-                            actor.borrow_mut().set_action_sleep_no_snoring();
-                        }
-                        if let Some(actor) = self._actor_koa.as_ref() {
-                            actor.borrow_mut().set_action_sleep_no_snoring();
-                        }
                         game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, DEFAULT_FADE_TIME);
                     }
                     State::Update => {
