@@ -375,6 +375,7 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
                 actor.borrow_mut()._controller.set_flying_mode(false);
                 if let Some(bed) = &self._prop_bed_for_aru {
                     actor.borrow_mut().set_position(bed.borrow().get_position());
+                    actor.borrow_mut().set_move_direction(&Vector3::new(0.0, 0.0, -1.0), true);
                 }
                 actor.borrow_mut().set_action_wake_up();
             }
@@ -383,6 +384,7 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
                 actor.borrow_mut()._controller.set_flying_mode(false);
                 if let Some(bed) = &self._prop_bed_for_ewa {
                     actor.borrow_mut().set_position(bed.borrow().get_position());
+                    actor.borrow_mut().set_move_direction(&Vector3::new(0.0, 0.0, -1.0), true);
                 }
                 actor.borrow_mut().set_next_behavior(BehaviorState::WakeUp, true);
             }
@@ -391,6 +393,7 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
                 actor.borrow_mut()._controller.set_flying_mode(false);
                 if let Some(bed) = &self._prop_bed_for_koa {
                     actor.borrow_mut().set_position(bed.borrow().get_position());
+                    actor.borrow_mut().set_move_direction(&Vector3::new(0.0, 0.0, -1.0), true);
                 }
                 actor.borrow_mut().set_next_behavior(BehaviorState::WakeUp, true);
             }
