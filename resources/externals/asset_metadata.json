@@ -8187,7 +8187,7 @@
             "asset_path": "monolith",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/props/monolith.blend",
             "guid": "",
-            "mtime": 1793107550.5449297,
+            "mtime": 1793107598.4150412,
             "data": {}
         }
     ],
@@ -8385,7 +8385,7 @@
             "asset_path": "intro_stage",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/intro_stage.blend",
             "guid": "",
-            "mtime": 1792518304.8742113,
+            "mtime": 1793285488.7633605,
             "data": {}
         }
     ],
@@ -8525,7 +8525,7 @@
             "asset_path": "scenario_intro/day_one",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/scenario/scenario_intro/day_one.blend",
             "guid": "",
-            "mtime": 1792427718.5441556,
+            "mtime": 1793124223.1445603,
             "data": {}
         }
     ]
