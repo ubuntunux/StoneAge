@@ -8,6 +8,7 @@ const SPIRIT_BALL_FLOATING_RADIUS: f32 = 0.5;
 
 pub fn create_item_updater(item_type: ItemDataType) -> Box<dyn ItemUpdaterBase> {
     match item_type {
+        ItemDataType::EnergyBall | ItemDataType::SpiritBall => Box::new(ItemSpiritBallUpdater::default()),
         _ => Box::new(ItemDefaultUpdater::default()),
     }
 }
