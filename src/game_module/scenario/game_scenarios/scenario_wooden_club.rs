@@ -1,17 +1,21 @@
 use crate::game_module::actors::character::Character;
-use crate::game_module::actors::items::ItemDataType;
+use crate::game_module::actors::items::{Item, ItemDataType};
 use crate::game_module::actors::props::Prop;
-use crate::game_module::game_constants::{ITEM_WOOD, PROP_NAME_MONOLITH};
+use crate::game_module::game_constants::{
+    ITEM_ENERGY_BALL, ITEM_NAME_ENERGY_BALL, ITEM_NAME_SPIRIT_BALL, ITEM_NAME_WOOD, ITEM_SPIRIT_BALL, ITEM_WOOD,
+    PROP_NAME_MONOLITH,
+};
 use crate::game_module::game_service_locator::{
-    get_character_manager, get_game_resources, get_game_scene_manager_mut, get_game_ui_manager, get_game_ui_manager_mut,
+    get_character_manager, get_game_resources, get_game_scene_manager, get_game_scene_manager_mut, get_game_ui_manager,
+    get_game_ui_manager_mut,
 };
 use crate::game_module::game_ui_manager::QuestItem;
 use crate::game_module::scenario::scenario::{
     GameScenarioCreateInfo, ScenarioBase, ScenarioDataCreateInfo, ScenarioType,
 };
 use crate::game_module::scenario::scenario_common::{
-    add_prop_pointer_text_box, complete_quest_item, get_quest_item_save_data, is_quest_item_completed,
-    load_quest_item_save_data, remove_prop_text_box,
+    add_item_pointer_text_box, add_prop_pointer_text_box, complete_quest_item, get_quest_item_save_data,
+    is_quest_item_completed, load_quest_item_save_data, remove_item_text_box, remove_prop_text_box,
 };
 use crate::game_module::scenario::scenario_track::ScenarioTrack;
 use crate::game_module::widgets::quest_widgets::quest_item_default::DefaultQuestData;
@@ -30,8 +34,8 @@ const PHASE_END_DURATION: f32 = 2.0;
 pub enum ScenarioPhase {
     None,
     Begin,
-    UnlockWoodenClub,
     GatherWood,
+    UnlockWoodenClub,
     CraftWoodenClub,
     EquipAndSwing,
     End,
@@ -43,6 +47,8 @@ pub struct ScenarioWoodenClubQuestSaveData {
     pub _quest_title: Option<String>,
     pub _sub_quest_unlock_wooden_club: Option<QuestItemSaveData>,
     pub _sub_quest_gather_wood: Option<QuestItemSaveData>,
+    pub _sub_quest_gather_energy_ball: Option<QuestItemSaveData>,
+    pub _sub_quest_gather_spirit_ball: Option<QuestItemSaveData>,
     pub _sub_quest_craft_wooden_club: Option<QuestItemSaveData>,
     pub _sub_quest_equip_and_swing: Option<QuestItemSaveData>,
 }
@@ -52,6 +58,8 @@ impl ScenarioWoodenClubQuestSaveData {
         self._has_quest
             || self._sub_quest_unlock_wooden_club.is_some()
             || self._sub_quest_gather_wood.is_some()
+            || self._sub_quest_gather_energy_ball.is_some()
+            || self._sub_quest_gather_spirit_ball.is_some()
             || self._sub_quest_craft_wooden_club.is_some()
             || self._sub_quest_equip_and_swing.is_some()
     }
@@ -74,9 +82,14 @@ pub struct ScenarioWoodenClub<'a> {
     _scenario_create_info: ScenarioDataCreateInfo,
     _player: Option<RcRefCell<Character<'a>>>,
     _prop_monolith: Option<RcRefCell<Prop<'a>>>,
+    _item_wood: Option<RcRefCell<Item<'a>>>,
+    _item_energy_ball: Option<RcRefCell<Item<'a>>>,
+    _item_spirit_ball: Option<RcRefCell<Item<'a>>>,
     _quest: Option<RcRefCell<QuestTitle<'a>>>,
-    _sub_quest_unlock_wooden_club: Option<QuestItem<'a>>,
     _sub_quest_gather_wood: Option<QuestItem<'a>>,
+    _sub_quest_gather_energy_ball: Option<QuestItem<'a>>,
+    _sub_quest_gather_spirit_ball: Option<QuestItem<'a>>,
+    _sub_quest_unlock_wooden_club: Option<QuestItem<'a>>,
     _sub_quest_craft_wooden_club: Option<QuestItem<'a>>,
     _sub_quest_equip_and_swing: Option<QuestItem<'a>>,
     _scenario_track: ScenarioTrack<ScenarioPhase>,
@@ -92,9 +105,14 @@ impl<'a> ScenarioWoodenClub<'a> {
             _scenario_create_info: scenario_create_info.clone(),
             _player: None,
             _prop_monolith: None,
+            _item_wood: None,
+            _item_energy_ball: None,
+            _item_spirit_ball: None,
             _quest: None,
-            _sub_quest_unlock_wooden_club: None,
             _sub_quest_gather_wood: None,
+            _sub_quest_gather_energy_ball: None,
+            _sub_quest_gather_spirit_ball: None,
+            _sub_quest_unlock_wooden_club: None,
             _sub_quest_craft_wooden_club: None,
             _sub_quest_equip_and_swing: None,
             _scenario_track: ScenarioTrack::new(ScenarioPhase::None, ScenarioPhase::Begin),
@@ -104,17 +122,13 @@ impl<'a> ScenarioWoodenClub<'a> {
     pub fn create_quests(&mut self) {
         if self._quest.is_none() {
             let game_ui_manager = get_game_ui_manager_mut();
-            let item_wood = get_game_resources().get_item_data(ITEM_WOOD);
+            let game_resources = get_game_resources();
+            let item_wood = game_resources.get_item_data(ITEM_WOOD);
+            let item_energy_ball = game_resources.get_item_data(ITEM_ENERGY_BALL);
+            let item_spirit_ball = game_resources.get_item_data(ITEM_SPIRIT_BALL);
 
             self._quest = Some(game_ui_manager.add_quest(Some(String::from("Crafting a Wooden Club"))));
             if let Some(quest) = &self._quest {
-                self._sub_quest_unlock_wooden_club = Some(quest.borrow_mut().add_quest_item(
-                    QuestCreateInfo::DefaultQuest(DefaultQuestData {
-                        _quest_icon_name: None,
-                        _quest_description: Some(String::from("Unlock Wooden Weapon Knowledge in Toolbox")),
-                    }),
-                ));
-
                 self._sub_quest_gather_wood = Some(quest.borrow_mut().add_quest_item(QuestCreateInfo::GatherItem(
                     GatherItemData {
                         _item_data_name: String::from(ITEM_WOOD),
@@ -122,6 +136,29 @@ impl<'a> ScenarioWoodenClub<'a> {
                         _gather_item_count: 1,
                     },
                 )));
+
+                self._sub_quest_gather_energy_ball = Some(quest.borrow_mut().add_quest_item(
+                    QuestCreateInfo::GatherItem(GatherItemData {
+                        _item_data_name: String::from(ITEM_ENERGY_BALL),
+                        _item_data: item_energy_ball.clone(),
+                        _gather_item_count: 1,
+                    }),
+                ));
+
+                self._sub_quest_gather_spirit_ball = Some(quest.borrow_mut().add_quest_item(
+                    QuestCreateInfo::GatherItem(GatherItemData {
+                        _item_data_name: String::from(ITEM_SPIRIT_BALL),
+                        _item_data: item_spirit_ball.clone(),
+                        _gather_item_count: 1,
+                    }),
+                ));
+
+                self._sub_quest_unlock_wooden_club = Some(quest.borrow_mut().add_quest_item(
+                    QuestCreateInfo::DefaultQuest(DefaultQuestData {
+                        _quest_icon_name: None,
+                        _quest_description: Some(String::from("Unlock Wooden Weapon Knowledge in Toolbox")),
+                    }),
+                ));
 
                 self._sub_quest_craft_wooden_club = Some(quest.borrow_mut().add_quest_item(
                     QuestCreateInfo::DefaultQuest(DefaultQuestData {
@@ -145,8 +182,10 @@ impl<'a> ScenarioWoodenClub<'a> {
             quest.borrow_mut().destroy_quest();
         }
         self._quest = None;
-        self._sub_quest_unlock_wooden_club = None;
         self._sub_quest_gather_wood = None;
+        self._sub_quest_gather_energy_ball = None;
+        self._sub_quest_gather_spirit_ball = None;
+        self._sub_quest_unlock_wooden_club = None;
         self._sub_quest_craft_wooden_club = None;
         self._sub_quest_equip_and_swing = None;
     }
@@ -162,6 +201,64 @@ impl<'a> ScenarioWoodenClub<'a> {
             self._prop_monolith =
                 get_game_scene_manager_mut().get_prop_manager().get_prop_by_name(PROP_NAME_MONOLITH).cloned();
         }
+    }
+
+    fn ensure_items(&mut self) {
+        let item_manager = get_game_scene_manager().get_item_manager();
+        if self._item_wood.is_none() {
+            self._item_wood = item_manager.get_item_by_name(ITEM_NAME_WOOD).cloned();
+        }
+        if self._item_energy_ball.is_none() {
+            self._item_energy_ball = item_manager.get_item_by_name(ITEM_NAME_ENERGY_BALL).cloned();
+        }
+        if self._item_spirit_ball.is_none() {
+            self._item_spirit_ball = item_manager.get_item_by_name(ITEM_NAME_SPIRIT_BALL).cloned();
+        }
+    }
+
+    pub fn create_item_text_boxes(&mut self) {
+        self.ensure_items();
+        if !is_quest_item_completed(&self._sub_quest_gather_wood) {
+            add_item_pointer_text_box(&self._item_wood, true);
+        }
+        if !is_quest_item_completed(&self._sub_quest_gather_energy_ball) {
+            add_item_pointer_text_box(&self._item_energy_ball, true);
+        }
+        if !is_quest_item_completed(&self._sub_quest_gather_spirit_ball) {
+            add_item_pointer_text_box(&self._item_spirit_ball, true);
+        }
+    }
+
+    pub fn remove_item_text_boxes(&mut self) {
+        self.ensure_items();
+        remove_item_text_box(&self._item_wood);
+        remove_item_text_box(&self._item_energy_ball);
+        remove_item_text_box(&self._item_spirit_ball);
+    }
+
+    pub fn update_item_text_boxes(&mut self) {
+        self.ensure_items();
+        if is_quest_item_completed(&self._sub_quest_gather_wood) {
+            remove_item_text_box(&self._item_wood);
+        } else {
+            add_item_pointer_text_box(&self._item_wood, true);
+        }
+        if is_quest_item_completed(&self._sub_quest_gather_energy_ball) {
+            remove_item_text_box(&self._item_energy_ball);
+        } else {
+            add_item_pointer_text_box(&self._item_energy_ball, true);
+        }
+        if is_quest_item_completed(&self._sub_quest_gather_spirit_ball) {
+            remove_item_text_box(&self._item_spirit_ball);
+        } else {
+            add_item_pointer_text_box(&self._item_spirit_ball, true);
+        }
+    }
+
+    pub fn is_all_gather_quests_completed(&self) -> bool {
+        is_quest_item_completed(&self._sub_quest_gather_wood)
+            && is_quest_item_completed(&self._sub_quest_gather_energy_ball)
+            && is_quest_item_completed(&self._sub_quest_gather_spirit_ball)
     }
 
     pub fn create_toolbox_text_box(&mut self) {
@@ -184,8 +281,10 @@ impl<'a> ScenarioWoodenClub<'a> {
         ScenarioWoodenClubQuestSaveData {
             _has_quest: self._quest.is_some(),
             _quest_title: self._quest.as_ref().and_then(|q| q.borrow()._quest_title.clone()),
-            _sub_quest_unlock_wooden_club: get_quest_item_save_data(&self._sub_quest_unlock_wooden_club),
             _sub_quest_gather_wood: get_quest_item_save_data(&self._sub_quest_gather_wood),
+            _sub_quest_gather_energy_ball: get_quest_item_save_data(&self._sub_quest_gather_energy_ball),
+            _sub_quest_gather_spirit_ball: get_quest_item_save_data(&self._sub_quest_gather_spirit_ball),
+            _sub_quest_unlock_wooden_club: get_quest_item_save_data(&self._sub_quest_unlock_wooden_club),
             _sub_quest_craft_wooden_club: get_quest_item_save_data(&self._sub_quest_craft_wooden_club),
             _sub_quest_equip_and_swing: get_quest_item_save_data(&self._sub_quest_equip_and_swing),
         }
@@ -196,11 +295,19 @@ impl<'a> ScenarioWoodenClub<'a> {
             self.destroy_quest();
             self.create_quests();
 
+            load_quest_item_save_data(&self._sub_quest_gather_wood, &quest_save_data._sub_quest_gather_wood);
+            load_quest_item_save_data(
+                &self._sub_quest_gather_energy_ball,
+                &quest_save_data._sub_quest_gather_energy_ball,
+            );
+            load_quest_item_save_data(
+                &self._sub_quest_gather_spirit_ball,
+                &quest_save_data._sub_quest_gather_spirit_ball,
+            );
             load_quest_item_save_data(
                 &self._sub_quest_unlock_wooden_club,
                 &quest_save_data._sub_quest_unlock_wooden_club,
             );
-            load_quest_item_save_data(&self._sub_quest_gather_wood, &quest_save_data._sub_quest_gather_wood);
             load_quest_item_save_data(
                 &self._sub_quest_craft_wooden_club,
                 &quest_save_data._sub_quest_craft_wooden_club,
@@ -272,11 +379,13 @@ impl<'a> ScenarioBase<'a> for ScenarioWoodenClub<'a> {
     }
 
     fn destroy_game_scenario(&mut self) {
+        self.remove_item_text_boxes();
         self.remove_toolbox_text_box();
         self.destroy_quest();
     }
 
     fn on_close_game_scene(&mut self, _game_scene_data_name: &str) {
+        self.remove_item_text_boxes();
         self.remove_toolbox_text_box();
     }
 
@@ -288,7 +397,9 @@ impl<'a> ScenarioBase<'a> for ScenarioWoodenClub<'a> {
 
         self.create_quests();
 
-        if !is_quest_item_completed(&self._sub_quest_unlock_wooden_club) {
+        if !self.is_all_gather_quests_completed() {
+            self.create_item_text_boxes();
+        } else if !is_quest_item_completed(&self._sub_quest_unlock_wooden_club) {
             self.create_toolbox_text_box();
         }
     }
@@ -333,12 +444,27 @@ impl<'a> ScenarioBase<'a> for ScenarioWoodenClub<'a> {
                 }
                 ScenarioPhase::Begin => {
                     self.create_quests();
-                    self.create_toolbox_text_box();
-                    self._scenario_track.set_next_scenario_phase(ScenarioPhase::UnlockWoodenClub, None);
+                    self.create_item_text_boxes();
+                    self._scenario_track.set_next_scenario_phase(ScenarioPhase::GatherWood, None);
                 }
-                ScenarioPhase::UnlockWoodenClub => match state {
+                ScenarioPhase::GatherWood => match state {
                     State::Begin => {
                         self.create_quests();
+                        self.create_item_text_boxes();
+                    }
+                    State::Update => {
+                        self.update_item_text_boxes();
+                        if self.is_all_gather_quests_completed() {
+                            self.remove_item_text_boxes();
+                            self._scenario_track.set_next_scenario_phase(ScenarioPhase::UnlockWoodenClub, None);
+                        }
+                    }
+                    State::End => {
+                        self.remove_item_text_boxes();
+                    }
+                },
+                ScenarioPhase::UnlockWoodenClub => match state {
+                    State::Begin => {
                         if !is_quest_item_completed(&self._sub_quest_unlock_wooden_club) {
                             self.create_toolbox_text_box();
                         }
@@ -347,10 +473,8 @@ impl<'a> ScenarioBase<'a> for ScenarioWoodenClub<'a> {
                         if is_quest_item_completed(&self._sub_quest_unlock_wooden_club) {
                             if is_quest_item_completed(&self._sub_quest_craft_wooden_club) {
                                 self._scenario_track.set_next_scenario_phase(ScenarioPhase::EquipAndSwing, None);
-                            } else if is_quest_item_completed(&self._sub_quest_gather_wood) {
-                                self._scenario_track.set_next_scenario_phase(ScenarioPhase::CraftWoodenClub, None);
                             } else {
-                                self._scenario_track.set_next_scenario_phase(ScenarioPhase::GatherWood, None);
+                                self._scenario_track.set_next_scenario_phase(ScenarioPhase::CraftWoodenClub, None);
                             }
                         } else {
                             self.create_toolbox_text_box();
@@ -358,17 +482,6 @@ impl<'a> ScenarioBase<'a> for ScenarioWoodenClub<'a> {
                     }
                     _ => {}
                 },
-                ScenarioPhase::GatherWood => {
-                    if state == State::Update {
-                        if is_quest_item_completed(&self._sub_quest_gather_wood) {
-                            if is_quest_item_completed(&self._sub_quest_craft_wooden_club) {
-                                self._scenario_track.set_next_scenario_phase(ScenarioPhase::EquipAndSwing, None);
-                            } else {
-                                self._scenario_track.set_next_scenario_phase(ScenarioPhase::CraftWoodenClub, None);
-                            }
-                        }
-                    }
-                }
                 ScenarioPhase::CraftWoodenClub => {
                     if state == State::Update {
                         if is_quest_item_completed(&self._sub_quest_craft_wooden_club) {
@@ -385,6 +498,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWoodenClub<'a> {
                 }
                 ScenarioPhase::End => {
                     if state == State::Begin {
+                        self.remove_item_text_boxes();
                         self.remove_toolbox_text_box();
                         self.destroy_quest();
                     }

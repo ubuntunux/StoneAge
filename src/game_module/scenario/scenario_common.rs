@@ -41,6 +41,39 @@ pub fn remove_prop_text_box(prop: &Option<RcRefCell<Prop>>) {
     }
 }
 
+pub fn add_item_pointer_text_box(
+    item: &Option<RcRefCell<crate::game_module::actors::items::Item>>,
+    check_existing: bool,
+) {
+    if let Some(item_ref) = item.as_ref() {
+        let wrapper = ActorWrapper::RenderObject(item_ref.borrow()._render_object.clone());
+        if check_existing && get_game_ui_manager().has_text_box_item(wrapper.get_key()) {
+            return;
+        }
+        let contents = vec![TextBoxContent::MaterialInstance(
+            MATERIAL_UI_POINTER.to_string(),
+            Some(POINTER_ICON_SIZE),
+        )];
+        get_game_ui_manager_mut().add_text_box_item(
+            wrapper,
+            &contents,
+            &TextBoxItemOption {
+                _layer_type: TextBoxLayerType::GamePlayLayer,
+                _bounce: true,
+                _visible_background: false,
+                ..Default::default()
+            },
+        );
+    }
+}
+
+pub fn remove_item_text_box(item: &Option<RcRefCell<crate::game_module::actors::items::Item>>) {
+    if let Some(item_ref) = item.as_ref() {
+        let wrapper = ActorWrapper::RenderObject(item_ref.borrow()._render_object.clone());
+        get_game_ui_manager_mut().remove_text_box_item(wrapper.get_key());
+    }
+}
+
 pub fn is_quest_item_completed(quest_item: &Option<QuestItem>) -> bool {
     quest_item.as_ref().is_some_and(|q| q.borrow().is_completed_quest())
 }
