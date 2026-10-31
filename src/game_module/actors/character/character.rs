@@ -12,10 +12,11 @@ use crate::game_module::actors::items::{Item, ItemDataType, ItemID};
 use crate::game_module::behavior::behavior_base::{BehaviorBase, BehaviorState, create_character_behavior};
 use crate::game_module::game_constants::*;
 use crate::game_module::game_service_locator::{
-    get_character_manager, get_game_resources, get_game_scene_manager, get_game_ui_manager_mut, get_item_manager,
-    get_item_manager_mut,
+    get_character_manager, get_game_resources, get_game_scene_manager, get_game_ui_manager, get_game_ui_manager_mut,
+    get_item_manager, get_item_manager_mut,
 };
 use crate::game_module::widgets::game_menu_widget::character_list_helper::{AffinityTier, get_affinity_tier};
+use crate::game_module::widgets::toolbox_widget::item_tab_widget::ToolboxIconType;
 use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::{AudioInstance, AudioLoop};
 use rust_engine_3d::core::engine_service_locator::{get_audio_manager_mut, get_scene_manager, get_scene_manager_mut};
@@ -616,7 +617,7 @@ impl<'a> Character<'a> {
     }
 
     pub fn get_power(&self, attack_event: ActionEvent) -> i32 {
-        match attack_event {
+        let base_damage = match attack_event {
             ActionEvent::Attack => self.get_character_data()._stat_data._attack_damage,
             ActionEvent::PowerAttack => self.get_character_data()._stat_data._power_attack_damage,
             ActionEvent::Kick => self.get_character_data()._stat_data._kick_damage,
@@ -624,6 +625,24 @@ impl<'a> Character<'a> {
                 log::warn!("get_power not implemented for {:?}", attack_event);
                 0
             }
+        };
+
+        if self.is_player() && matches!(attack_event, ActionEvent::Attack | ActionEvent::PowerAttack) {
+            let mut total_damage = base_damage;
+            let ui_mgr = get_game_ui_manager();
+            let is_upgraded = ui_mgr.get_unlocked_toolbox_items().contains(&ToolboxIconType::WoodenWeaponDamage1);
+            if is_upgraded {
+                if let Some(item_bar) = ui_mgr._item_bar_widget.as_ref() {
+                    let selected_item = item_bar.get_selected_item_data_type();
+                    if matches!(selected_item, ItemDataType::WoodenClub) {
+                        let bonus = ((base_damage as f32 * WOODEN_WEAPON_DAMAGE_1_BONUS_RATIO).round() as i32).max(1);
+                        total_damage += bonus;
+                    }
+                }
+            }
+            total_damage
+        } else {
+            base_damage
         }
     }
 

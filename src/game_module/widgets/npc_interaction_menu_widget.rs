@@ -328,7 +328,7 @@ impl<'a> NpcInteractionMenuWidget<'a> {
             }
             InteractionMenuTarget::Toolbox(prop) => {
                 options.push(NpcInteractionOption::ToolboxTab(ToolboxTab::Ability));
-                options.push(NpcInteractionOption::ToolboxTab(ToolboxTab::ItemCraft));
+                options.push(NpcInteractionOption::ToolboxTab(ToolboxTab::Knowledge));
                 options.push(NpcInteractionOption::ToolboxTab(ToolboxTab::Teleport));
                 if prop.borrow().is_deployed_prop() {
                     options.push(NpcInteractionOption::Retrieve);

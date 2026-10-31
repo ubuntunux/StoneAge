@@ -39,7 +39,7 @@ impl CraftRecipeData {
 
     pub fn toolbox_icon_type(&self) -> ToolboxIconType {
         match self._item_type {
-            ItemDataType::WoodenClub => ToolboxIconType::WoodenClub,
+            ItemDataType::WoodenClub => ToolboxIconType::WoodenWeapon,
             ItemDataType::StoneAxe => ToolboxIconType::StoneAxe,
             ItemDataType::Spear => ToolboxIconType::FlintSpear,
             ItemDataType::Bow => ToolboxIconType::HuntingBow,
@@ -47,7 +47,7 @@ impl CraftRecipeData {
             ItemDataType::BoneShield => ToolboxIconType::BoneShield,
             ItemDataType::Campfire => ToolboxIconType::Campfire,
             ItemDataType::Worktable => ToolboxIconType::Worktable,
-            _ => ToolboxIconType::WoodenClub,
+            _ => ToolboxIconType::WoodenWeapon,
         }
     }
 }

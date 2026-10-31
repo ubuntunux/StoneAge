@@ -55,8 +55,7 @@ pub const COLOR_BTN_UNLOCKED_BORDER: u32 = get_color32(180, 145, 105, 200);
 #[derive(Serialize, Deserialize, Copy, Clone, Debug, PartialEq, Eq, Hash, Default)]
 pub enum ToolboxIconType {
     #[default]
-    HandSkill,
-    QuickGather,
+    WoodenWeaponDamage1,
     StoneShelter,
     Watchtower,
     RoastMeat,
@@ -71,6 +70,7 @@ pub enum ToolboxIconType {
     LeatherArmor,
     BoneShield,
     WoodenClub,
+    WoodenWeapon,
     MapForest,
     MapHome,
     MapUfo,
@@ -79,8 +79,7 @@ pub enum ToolboxIconType {
 impl ToolboxIconType {
     pub fn as_str(&self) -> &'static str {
         match self {
-            ToolboxIconType::HandSkill => "Hand Skill",
-            ToolboxIconType::QuickGather => "Quick Gather",
+            ToolboxIconType::WoodenWeaponDamage1 => "Wooden Weapon Damage I",
             ToolboxIconType::StoneShelter => "Shelter Building Knowledge",
             ToolboxIconType::Watchtower => "Watchtower Knowledge",
             ToolboxIconType::RoastMeat => "Meat Roasting Knowledge",
@@ -94,7 +93,8 @@ impl ToolboxIconType {
             ToolboxIconType::HuntingBow => "Bow Crafting Knowledge",
             ToolboxIconType::LeatherArmor => "Leather Clothes Knowledge",
             ToolboxIconType::BoneShield => "Bone Shield Knowledge",
-            ToolboxIconType::WoodenClub => "Wooden Weapon Knowledge",
+            ToolboxIconType::WoodenClub => "Wooden Club Knowledge",
+            ToolboxIconType::WoodenWeapon => "Wooden Weapon Knowledge",
             ToolboxIconType::MapForest => "Forest",
             ToolboxIconType::MapHome => "Home",
             ToolboxIconType::MapUfo => "UFO",
@@ -103,22 +103,14 @@ impl ToolboxIconType {
 
     pub fn unlocked_craft_items(&self) -> &'static [&'static str] {
         match self {
-            ToolboxIconType::WoodenClub => &["items/wooden_club"],
-            ToolboxIconType::StoneAxe => &["items/equipment/stone_axe"],
-            ToolboxIconType::FlintSpear => &["items/equipment/flint_spear"],
-            ToolboxIconType::HuntingBow => &["items/equipment/hunting_bow"],
-            ToolboxIconType::LeatherArmor => &["items/equipment/leather_armor"],
-            ToolboxIconType::BoneShield => &["items/equipment/bone_shield"],
-            ToolboxIconType::Campfire => &["items/equipment/campfire"],
-            ToolboxIconType::Worktable => &["items/equipment/worktable"],
+            ToolboxIconType::WoodenWeapon | ToolboxIconType::WoodenClub => &["items/wooden_club"],
             _ => &[],
         }
     }
 
     pub fn item_code(&self) -> &'static str {
         match self {
-            ToolboxIconType::HandSkill => "items/hand",
-            ToolboxIconType::QuickGather => "items/hand",
+            ToolboxIconType::WoodenWeaponDamage1 => "items/wooden_club",
             ToolboxIconType::StoneShelter => "items/rock",
             ToolboxIconType::Watchtower => "items/wood",
             ToolboxIconType::RoastMeat => "items/foods/roast_meat",
@@ -132,7 +124,7 @@ impl ToolboxIconType {
             ToolboxIconType::HuntingBow => "items/equipment/hunting_bow",
             ToolboxIconType::LeatherArmor => "items/equipment/leather_armor",
             ToolboxIconType::BoneShield => "items/equipment/bone_shield",
-            ToolboxIconType::WoodenClub => "items/wooden_club",
+            ToolboxIconType::WoodenClub | ToolboxIconType::WoodenWeapon => "items/wooden_club",
             ToolboxIconType::MapHome => "items/wood",
             ToolboxIconType::MapForest => "items/wood",
             ToolboxIconType::MapUfo => "items/wood",
@@ -141,8 +133,7 @@ impl ToolboxIconType {
 
     pub fn icon_str(&self) -> &'static str {
         match self {
-            ToolboxIconType::HandSkill => "[HAND]",
-            ToolboxIconType::QuickGather => "[GATHER]",
+            ToolboxIconType::WoodenWeaponDamage1 => "[DMG]",
             ToolboxIconType::StoneShelter => "[SHELTER]",
             ToolboxIconType::Watchtower => "[TOWER]",
             ToolboxIconType::RoastMeat => "[MEAT]",
@@ -157,6 +148,7 @@ impl ToolboxIconType {
             ToolboxIconType::LeatherArmor => "[ARMOR]",
             ToolboxIconType::BoneShield => "[SHIELD]",
             ToolboxIconType::WoodenClub => "[CLUB]",
+            ToolboxIconType::WoodenWeapon => "[WOOD_WEAPON]",
             ToolboxIconType::MapForest => "[FOREST]",
             ToolboxIconType::MapHome => "[HOME]",
             ToolboxIconType::MapUfo => "[UFO]",
@@ -185,26 +177,29 @@ impl ToolboxIconType {
 
     pub fn toolbox_data_name(&self) -> &'static str {
         match self {
-            ToolboxIconType::HandSkill => "toolbox_items/ability/hand_skill",
-            ToolboxIconType::QuickGather => "toolbox_items/ability/quick_gather",
-            ToolboxIconType::StoneShelter => "toolbox_items/craft/stone_shelter",
-            ToolboxIconType::Watchtower => "toolbox_items/craft/watchtower",
-            ToolboxIconType::RoastMeat => "toolbox_items/craft/roast_meat",
-            ToolboxIconType::FishSoup => "toolbox_items/craft/fish_soup",
-            ToolboxIconType::StoneAxe => "toolbox_items/craft/stone_axe",
-            ToolboxIconType::Worktable => "toolbox_items/craft/worktable",
-            ToolboxIconType::Campfire => "toolbox_items/craft/campfire",
-            ToolboxIconType::WoodenCart => "toolbox_items/craft/wooden_cart",
-            ToolboxIconType::RidingMammoth => "toolbox_items/craft/riding_mammoth",
-            ToolboxIconType::FlintSpear => "toolbox_items/craft/flint_spear",
-            ToolboxIconType::HuntingBow => "toolbox_items/craft/hunting_bow",
-            ToolboxIconType::LeatherArmor => "toolbox_items/craft/leather_armor",
-            ToolboxIconType::BoneShield => "toolbox_items/craft/bone_shield",
-            ToolboxIconType::WoodenClub => "toolbox_items/craft/wooden_club",
+            ToolboxIconType::WoodenWeaponDamage1 => "toolbox_items/ability/wooden_weapon_damage_1",
+            ToolboxIconType::StoneShelter => "toolbox_items/knowledge/stone_shelter",
+            ToolboxIconType::Watchtower => "toolbox_items/knowledge/watchtower",
+            ToolboxIconType::RoastMeat => "toolbox_items/knowledge/roast_meat",
+            ToolboxIconType::FishSoup => "toolbox_items/knowledge/fish_soup",
+            ToolboxIconType::StoneAxe => "toolbox_items/knowledge/stone_axe",
+            ToolboxIconType::Worktable => "toolbox_items/knowledge/worktable",
+            ToolboxIconType::Campfire => "toolbox_items/knowledge/campfire",
+            ToolboxIconType::WoodenCart => "toolbox_items/knowledge/wooden_cart",
+            ToolboxIconType::RidingMammoth => "toolbox_items/knowledge/riding_mammoth",
+            ToolboxIconType::FlintSpear => "toolbox_items/knowledge/flint_spear",
+            ToolboxIconType::HuntingBow => "toolbox_items/knowledge/hunting_bow",
+            ToolboxIconType::LeatherArmor => "toolbox_items/knowledge/leather_armor",
+            ToolboxIconType::BoneShield => "toolbox_items/knowledge/bone_shield",
+            ToolboxIconType::WoodenClub | ToolboxIconType::WoodenWeapon => "toolbox_items/knowledge/wooden_weapon",
             ToolboxIconType::MapHome => "toolbox_items/teleport/map_home",
             ToolboxIconType::MapForest => "toolbox_items/teleport/map_forest",
             ToolboxIconType::MapUfo => "toolbox_items/teleport/map_ufo",
         }
+    }
+
+    pub fn is_ability(&self) -> bool {
+        matches!(self, ToolboxIconType::WoodenWeaponDamage1)
     }
 
     pub fn get_display_name(&self) -> String {
@@ -393,6 +388,7 @@ impl<'a> ToolboxItemWidget<'a> {
         }
 
         let is_map_item = self._data._icon_type.stage_data_name().is_some();
+        let is_ability = self._data._icon_type.is_ability();
         let ui_mgr = get_game_ui_manager();
 
         match self._state {
@@ -413,7 +409,8 @@ impl<'a> ToolboxItemWidget<'a> {
                     COLOR_BTN_UNLOCK_BORDER,
                 );
                 let btn_ui = ptr_as_mut(self._action_btn.as_ref()).get_ui_component_mut();
-                btn_ui.set_text("Unlock");
+                let action_text = if is_ability { "Upgrade" } else { "Learn" };
+                btn_ui.set_text(action_text);
                 btn_ui.set_enable(true);
             }
             ToolboxItemState::Unlocked => {
@@ -426,7 +423,8 @@ impl<'a> ToolboxItemWidget<'a> {
                     btn_ui.set_touchable(true);
                     btn_ui.set_enable(true);
                 } else {
-                    btn_ui.set_text("Unlocked");
+                    let completed_text = if is_ability { "Upgraded" } else { "Learned" };
+                    btn_ui.set_text(completed_text);
                     btn_ui.set_color(COLOR_BTN_UNLOCKED_BG);
                     btn_ui.set_border_color(COLOR_BTN_UNLOCKED_BORDER);
                     btn_ui.set_font_color(COLOR_TEXT_DISABLED_ALT);
@@ -693,12 +691,19 @@ impl<'a> ToolboxTabWidget<'a> {
             let item_code = ing_widget.item_code();
             let have_count = ui_mgr.get_total_item_count(item_code);
             let mat_name = ToolboxItemWidget::get_item_name_from_resource(item_code);
+            let is_ability = item_data._icon_type.is_ability();
             let text = if unlocked {
-                "Unlocked".to_string()
+                if is_ability {
+                    "Upgraded".to_string()
+                } else {
+                    "Learned".to_string()
+                }
             } else if show_req {
                 format!("{} ({}/{})", mat_name, have_count, ing_widget._count)
+            } else if is_ability {
+                "Upgrade for Free".to_string()
             } else {
-                "Unlock for Free".to_string()
+                "Learn for Free".to_string()
             };
             let lbl_ui = ptr_as_mut(ing_widget._label.as_ref()).get_ui_component_mut();
             lbl_ui.set_text(&text);
