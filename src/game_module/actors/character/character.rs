@@ -13,6 +13,7 @@ use crate::game_module::behavior::behavior_base::{BehaviorBase, BehaviorState, c
 use crate::game_module::game_constants::*;
 use crate::game_module::game_service_locator::{
     get_character_manager, get_game_resources, get_game_scene_manager, get_game_ui_manager_mut, get_item_manager,
+    get_item_manager_mut,
 };
 use crate::game_module::widgets::game_menu_widget::character_list_helper::{AffinityTier, get_affinity_tier};
 use nalgebra::Vector3;
@@ -136,6 +137,7 @@ impl<'a> Character<'a> {
     }
 
     pub fn destroy_character(&mut self) {
+        get_item_manager_mut().detach_item(self);
         if let Some(lantern) = &mut self._lantern {
             lantern.destroy_lantern();
         }

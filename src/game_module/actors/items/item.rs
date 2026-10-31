@@ -306,7 +306,9 @@ impl<'a> Item<'a> {
     }
 
     pub fn pickable_item(&self) -> bool {
-        self._item_properties._pickup_delay <= 0.0 && !self.is_attachment()
+        self._item_properties._pickup_delay <= 0.0
+            && !self.is_attachment()
+            && self.get_item_data_type() != ItemDataType::Hand
     }
 
     pub fn update_pickup_delay_time(&mut self, delta_time: f64) {

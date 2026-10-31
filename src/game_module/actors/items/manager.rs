@@ -6,9 +6,9 @@ use crate::game_module::actors::items::api::{
 use crate::game_module::actors::items::item::get_default_food_hp;
 use crate::game_module::actors::props::Prop;
 use crate::game_module::game_constants::{
-    AUDIO_ITEM_INVENTORY, AUDIO_PICKUP_ITEM, EAT_ITEM_DISTANCE, PROP_NAME_TABLE, TABLE_ITEM_PICKUP_DELAY_INFINITE,
-    TABLE_ITEM_SEARCH_MAX_Y_OFFSET, TABLE_ITEM_SEARCH_MIN_Y_OFFSET, TABLE_ITEM_SEARCH_RADIUS_XZ,
-    TABLE_ITEM_SPAWN_RANDOM_OFFSET_RANGE, WEAPON_SOCKET_NAME,
+    AUDIO_ITEM_INVENTORY, AUDIO_PICKUP_ITEM, EAT_ITEM_DISTANCE, ITEM_HAND, PROP_NAME_TABLE,
+    TABLE_ITEM_PICKUP_DELAY_INFINITE, TABLE_ITEM_SEARCH_MAX_Y_OFFSET, TABLE_ITEM_SEARCH_MIN_Y_OFFSET,
+    TABLE_ITEM_SEARCH_RADIUS_XZ, TABLE_ITEM_SPAWN_RANDOM_OFFSET_RANGE, WEAPON_SOCKET_NAME,
 };
 use crate::game_module::game_scene_manager::{ItemCreateInfoMap, ItemSaveDataMap};
 use crate::game_module::game_service_locator::{
@@ -301,6 +301,9 @@ impl<'a> ItemManager<'a> {
     }
 
     pub fn load_item_save_data(&mut self, item_name: &str, item_save_data: &ItemSaveData) {
+        if item_save_data._item_create_info._item_data_name == ITEM_HAND {
+            return;
+        }
         let item = self.create_item(item_name, &item_save_data._item_create_info, None);
         item.borrow_mut().load_item_save_data(item_save_data);
     }
@@ -312,7 +315,11 @@ impl<'a> ItemManager<'a> {
     }
 
     pub fn get_items_save_data(&self) -> ItemSaveDataMap {
-        self._items.values().map(|item| item.borrow().get_item_save_data()).collect()
+        self._items
+            .values()
+            .filter(|item| !item.borrow().is_attachment())
+            .map(|item| item.borrow().get_item_save_data())
+            .collect()
     }
 
     pub fn post_process_after_item_loading(&mut self) {

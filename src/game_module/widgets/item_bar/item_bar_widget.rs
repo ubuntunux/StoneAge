@@ -695,12 +695,17 @@ impl<'a> ItemBarWidget<'a> {
             if slot_index >= self._inventory_slots.len() {
                 self._inventory_slots.resize_with(slot_index + 1, InventorySlotData::default);
             }
+            let resolved_item_count = if item_data_name == ITEM_HAND || item_data._item_type == ItemDataType::Hand {
+                item_count.min(1)
+            } else {
+                item_count
+            };
             let slot = &mut self._inventory_slots[slot_index];
             slot._item_name = item_data._name.clone();
             slot._item_data_name = item_data_name.to_string();
             slot._item_data_type = item_data._item_type;
             slot._material_instance = Some(material.clone());
-            slot._item_count = item_count;
+            slot._item_count = resolved_item_count;
             self._item_count += 1;
             self.update_quick_slot_widgets();
             return true;
@@ -728,7 +733,11 @@ impl<'a> ItemBarWidget<'a> {
             // 1. If item already exists in inventory, stack count to existing slot
             for (idx, slot) in self._inventory_slots.iter_mut().enumerate() {
                 if slot._item_data_name == item_data_name && slot._item_count > 0 {
-                    slot._item_count += item_count;
+                    if item_data_name == ITEM_HAND || slot._item_data_type == ItemDataType::Hand {
+                        slot._item_count = 1;
+                    } else {
+                        slot._item_count += item_count;
+                    }
                     target_slot_index = idx;
                     break;
                 }
@@ -763,12 +772,18 @@ impl<'a> ItemBarWidget<'a> {
                     let item_data = get_game_resources().get_item_data(item_data_name).borrow();
                     let material =
                         get_engine_resources().get_material_instance_data(item_data._ui_material_instance.as_str());
+                    let resolved_item_count =
+                        if item_data_name == ITEM_HAND || item_data._item_type == ItemDataType::Hand {
+                            item_count.min(1)
+                        } else {
+                            item_count
+                        };
                     let slot = &mut self._inventory_slots[target_slot_index];
                     slot._item_name = item_data._name.clone();
                     slot._item_data_name = item_data_name.to_string();
                     slot._item_data_type = item_data._item_type;
                     slot._material_instance = Some(material.clone());
-                    slot._item_count = item_count;
+                    slot._item_count = resolved_item_count;
                     self._item_count += 1;
                 }
             }
