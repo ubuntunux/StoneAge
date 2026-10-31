@@ -186,6 +186,7 @@ pub enum GamePlayAction {
     NextItem,
     Help,
     OpenInventory,
+    OpenCraft,
     OpenMenu,
     PrevQuickSlotRow,
     NextQuickSlotRow,
@@ -433,6 +434,10 @@ impl Default for InputBindings {
         gameplay_bindings.insert(
             GamePlayAction::OpenInventory,
             ActionBinding::new(vec![KeyCode::KeyI], vec![GamepadButton::Start], vec![]),
+        );
+        gameplay_bindings.insert(
+            GamePlayAction::OpenCraft,
+            ActionBinding::new(vec![KeyCode::KeyC], vec![GamepadButton::Y], vec![]),
         );
         gameplay_bindings.insert(
             GamePlayAction::OpenMenu,
@@ -764,6 +769,7 @@ pub struct GamePlayInputState {
     pub _next_item: bool,
     pub _help: bool,
     pub _open_inventory: bool,
+    pub _open_craft: bool,
     pub _open_menu: bool,
     pub _prev_quick_slot_row: bool,
     pub _next_quick_slot_row: bool,
@@ -842,6 +848,12 @@ impl GamePlayInputState {
             _help: bindings.is_gameplay_action_pressed(GamePlayAction::Help, keyboard, joystick, mouse_input),
             _open_inventory: bindings.is_gameplay_action_pressed(
                 GamePlayAction::OpenInventory,
+                keyboard,
+                joystick,
+                mouse_input,
+            ),
+            _open_craft: bindings.is_gameplay_action_pressed(
+                GamePlayAction::OpenCraft,
                 keyboard,
                 joystick,
                 mouse_input,

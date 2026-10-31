@@ -645,12 +645,16 @@ impl<'a> ScenarioIntro<'a> {
                     QuestCreateInfo::DefaultQuest(DefaultQuestData {
                         _quest_icon_name: None,
                         _quest_description: Some(String::from("Go to the forest.")),
+                        _key_binding_type: None,
+                        _key_binding_text: None,
                     }),
                 ));
                 self._sub_quest_hit_the_tree = Some(quest.borrow_mut().add_quest_item(QuestCreateInfo::DefaultQuest(
                     DefaultQuestData {
                         _quest_icon_name: None,
                         _quest_description: Some(String::from("Hit the tree.")),
+                        _key_binding_type: None,
+                        _key_binding_text: None,
                     },
                 )));
                 self._sub_quest_gather_food = Some(quest.borrow_mut().add_quest_item(QuestCreateInfo::GatherItem(
@@ -664,24 +668,32 @@ impl<'a> ScenarioIntro<'a> {
                     DefaultQuestData {
                         _quest_icon_name: None,
                         _quest_description: Some(String::from("Return home.")),
+                        _key_binding_type: None,
+                        _key_binding_text: None,
                     },
                 )));
                 self._sub_quest_ask_ewa_to_cook = Some(quest.borrow_mut().add_quest_item(
                     QuestCreateInfo::DefaultQuest(DefaultQuestData {
                         _quest_icon_name: None,
                         _quest_description: Some(String::from("Ask Ewa to cook.")),
+                        _key_binding_type: None,
+                        _key_binding_text: None,
                     }),
                 ));
                 self._sub_quest_eat_food = Some(quest.borrow_mut().add_quest_item(QuestCreateInfo::DefaultQuest(
                     DefaultQuestData {
                         _quest_icon_name: None,
                         _quest_description: Some(String::from("Eat food.")),
+                        _key_binding_type: None,
+                        _key_binding_text: None,
                     },
                 )));
                 self._sub_quest_sleep = Some(quest.borrow_mut().add_quest_item(QuestCreateInfo::DefaultQuest(
                     DefaultQuestData {
                         _quest_icon_name: None,
                         _quest_description: Some(String::from("Sleep.")),
+                        _key_binding_type: None,
+                        _key_binding_text: None,
                     },
                 )));
             }

@@ -40,6 +40,7 @@ pub enum KeyBindingType {
     Sprint,
     Jump,
     Roll,
+    Craft,
     SelectPrevItem,
     SelectNextItem,
     SelectItem01,
@@ -405,6 +406,9 @@ impl<'a> GameController<'a> {
             get_game_client_mut().set_next_game_phase(GamePhase::GameMenu);
         } else if input._open_inventory {
             get_game_ui_manager_mut().open_game_menu(Some(GameMenuTab::Inventory));
+            get_game_client_mut().set_next_game_phase(GamePhase::GameMenu);
+        } else if input._open_craft {
+            get_game_ui_manager_mut().open_game_menu(Some(GameMenuTab::Craft));
             get_game_client_mut().set_next_game_phase(GamePhase::GameMenu);
         } else if input._prev_quick_slot_row || input._next_quick_slot_row {
             get_game_ui_manager_mut().switch_quick_slot_row();

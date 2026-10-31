@@ -5,6 +5,7 @@ use crate::game_module::game_constants::{
     ITEM_ENERGY_BALL, ITEM_NAME_ENERGY_BALL, ITEM_NAME_SPIRIT_BALL, ITEM_NAME_WOOD, ITEM_SPIRIT_BALL, ITEM_WOOD,
     PROP_NAME_MONOLITH,
 };
+use crate::game_module::game_controller::KeyBindingType;
 use crate::game_module::game_service_locator::{
     get_character_manager, get_game_resources, get_game_scene_manager, get_game_scene_manager_mut, get_game_ui_manager,
     get_game_ui_manager_mut,
@@ -157,6 +158,8 @@ impl<'a> ScenarioWoodenClub<'a> {
                     QuestCreateInfo::DefaultQuest(DefaultQuestData {
                         _quest_icon_name: None,
                         _quest_description: Some(String::from("Upgrade Wooden Weapon Damage I from OUMUAMUA")),
+                        _key_binding_type: None,
+                        _key_binding_text: None,
                     }),
                 ));
 
@@ -164,13 +167,17 @@ impl<'a> ScenarioWoodenClub<'a> {
                     QuestCreateInfo::DefaultQuest(DefaultQuestData {
                         _quest_icon_name: None,
                         _quest_description: Some(String::from("Learn Wooden Weapon Knowledge from OUMUAMUA")),
+                        _key_binding_type: None,
+                        _key_binding_text: None,
                     }),
                 ));
 
                 self._sub_quest_craft_wooden_club = Some(quest.borrow_mut().add_quest_item(
                     QuestCreateInfo::DefaultQuest(DefaultQuestData {
                         _quest_icon_name: None,
-                        _quest_description: Some(String::from("Open Craft Menu & Craft Wooden Club")),
+                        _quest_description: Some(String::from("Craft a Wooden Club (")),
+                        _key_binding_type: Some(KeyBindingType::Craft),
+                        _key_binding_text: Some(String::from("Open craft menu )")),
                     }),
                 ));
             }
@@ -528,13 +535,17 @@ impl<'a> ScenarioBase<'a> for ScenarioWoodenClub<'a> {
                     }
                     _ => {}
                 },
-                ScenarioPhase::CraftWoodenClub => {
-                    if state == State::Update {
+                ScenarioPhase::CraftWoodenClub => match state {
+                    State::Begin => {
+                        get_game_ui_manager_mut().set_controls_visibility(true);
+                    }
+                    State::Update => {
                         if is_quest_item_completed(&self._sub_quest_craft_wooden_club) {
                             self._scenario_track.set_next_scenario_phase(ScenarioPhase::End, Some(PHASE_END_DURATION));
                         }
                     }
-                }
+                    _ => {}
+                },
                 ScenarioPhase::End => {
                     if state == State::Begin {
                         self.remove_item_text_boxes();

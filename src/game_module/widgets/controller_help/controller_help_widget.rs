@@ -328,6 +328,14 @@ impl<'a> ControllerHelpWidget<'a> {
         ));
         player_control_key_binding_widget_map.register_key_binding_widget(create_player_control_key_binding_widget(
             ptr_as_mut(self._player_controller_help_widget),
+            KeyBindingType::Craft,
+            "craft_key_binding",
+            "Craft",
+            vec![engine_resources.get_material_instance_data("ui/controller/keycode_c").clone()],
+            vec![engine_resources.get_material_instance_data("ui/controller/joystick_y").clone()],
+        ));
+        player_control_key_binding_widget_map.register_key_binding_widget(create_player_control_key_binding_widget(
+            ptr_as_mut(self._player_controller_help_widget),
             KeyBindingType::Help,
             "help_key_binding",
             "Help",
