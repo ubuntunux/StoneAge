@@ -36,7 +36,8 @@ const TAB_INACTIVE_COLOR: u32 = get_color32(165, 130, 90, 230);
 #[derive(Serialize, Deserialize, Copy, Clone, Debug, PartialEq, Eq, Default)]
 pub enum ToolboxTab {
     #[default]
-    Skill,
+    #[serde(alias = "Skill")]
+    Ability,
     ItemCraft,
     Teleport,
 }
@@ -44,7 +45,7 @@ pub enum ToolboxTab {
 impl ToolboxTab {
     pub fn as_str(&self) -> &'static str {
         match self {
-            ToolboxTab::Skill => "Skill",
+            ToolboxTab::Ability => "Ability",
             ToolboxTab::ItemCraft => "ItemCraft",
             ToolboxTab::Teleport => "Teleport",
         }
@@ -52,7 +53,7 @@ impl ToolboxTab {
 
     pub fn display_name(&self) -> &'static str {
         match self {
-            ToolboxTab::Skill => "Skill",
+            ToolboxTab::Ability => "Ability",
             ToolboxTab::ItemCraft => "Knowledge",
             ToolboxTab::Teleport => "Teleport",
         }
@@ -66,7 +67,7 @@ impl std::str::FromStr for ToolboxTab {
         Ok(match s {
             "ItemCraft" => ToolboxTab::ItemCraft,
             "Teleport" => ToolboxTab::Teleport,
-            _ => ToolboxTab::Skill,
+            _ => ToolboxTab::Ability,
         })
     }
 }
@@ -74,16 +75,16 @@ impl std::str::FromStr for ToolboxTab {
 impl ToolboxTab {
     pub fn next(&self) -> Self {
         match self {
-            ToolboxTab::Skill => ToolboxTab::ItemCraft,
+            ToolboxTab::Ability => ToolboxTab::ItemCraft,
             ToolboxTab::ItemCraft => ToolboxTab::Teleport,
-            ToolboxTab::Teleport => ToolboxTab::Skill,
+            ToolboxTab::Teleport => ToolboxTab::Ability,
         }
     }
 
     pub fn prev(&self) -> Self {
         match self {
-            ToolboxTab::Skill => ToolboxTab::Teleport,
-            ToolboxTab::ItemCraft => ToolboxTab::Skill,
+            ToolboxTab::Ability => ToolboxTab::Teleport,
+            ToolboxTab::ItemCraft => ToolboxTab::Ability,
             ToolboxTab::Teleport => ToolboxTab::ItemCraft,
         }
     }
@@ -98,13 +99,13 @@ pub struct ToolboxWidget<'a> {
     pub _is_opened_toolbox: bool,
 
     // Tab buttons
-    pub _tab_btn_skill: Rc<WidgetDefault<'a>>,
+    pub _tab_btn_ability: Rc<WidgetDefault<'a>>,
     pub _tab_btn_item_craft: Rc<WidgetDefault<'a>>,
     pub _tab_btn_teleport: Rc<WidgetDefault<'a>>,
     pub _close_btn: Rc<WidgetDefault<'a>>,
 
     // Content panes
-    pub _skill_tab: Box<ToolboxTabWidget<'a>>,
+    pub _ability_tab: Box<ToolboxTabWidget<'a>>,
     pub _item_craft_tab: Box<ToolboxTabWidget<'a>>,
     pub _teleport_tab: Box<ToolboxTabWidget<'a>>,
 
@@ -132,8 +133,8 @@ fn get_toolbox_item_data(icon_type: ToolboxIconType) -> ToolboxItemData {
 impl<'a> ToolboxWidget<'a> {
     // ── Tab-button callbacks ──────────────────────────────────────
 
-    pub fn callback_tab_skill(ui: &UIComponentInstance<'a>, _pos: &Vector2<f32>, _delta: &Vector2<f32>) -> bool {
-        ptr_as_mut(ui.get_user_data() as *const ToolboxWidget<'a>).set_active_tab(ToolboxTab::Skill);
+    pub fn callback_tab_ability(ui: &UIComponentInstance<'a>, _pos: &Vector2<f32>, _delta: &Vector2<f32>) -> bool {
+        ptr_as_mut(ui.get_user_data() as *const ToolboxWidget<'a>).set_active_tab(ToolboxTab::Ability);
         true
     }
     pub fn callback_tab_item_craft(ui: &UIComponentInstance<'a>, _pos: &Vector2<f32>, _delta: &Vector2<f32>) -> bool {
@@ -235,10 +236,10 @@ impl<'a> ToolboxWidget<'a> {
         ui.set_padding(4.0);
         body_mut.add_widget(&header);
 
-        let tab_btn_skill = Self::create_tab_button(
-            "tb_skill",
-            ToolboxTab::Skill.display_name(),
-            Self::callback_tab_skill,
+        let tab_btn_ability = Self::create_tab_button(
+            "tb_ability",
+            ToolboxTab::Ability.display_name(),
+            Self::callback_tab_ability,
             header_mut,
         );
         let tab_btn_item_craft = Self::create_tab_button(
@@ -288,8 +289,8 @@ impl<'a> ToolboxWidget<'a> {
         body_mut.add_widget(&content);
 
         // Build content panes for each tab with items requiring EnergyBall
-        let skill_tab = ToolboxTabWidget::create_toolbox_tab_widget(
-            "skill",
+        let ability_tab = ToolboxTabWidget::create_toolbox_tab_widget(
+            "ability",
             content_mut,
             vec![
                 get_toolbox_item_data(ToolboxIconType::HandSkill),
@@ -325,15 +326,15 @@ impl<'a> ToolboxWidget<'a> {
             _parent_widget: parent_widget,
             _layer: layer,
             _is_opened_toolbox: false,
-            _tab_btn_skill: tab_btn_skill,
+            _tab_btn_ability: tab_btn_ability,
             _tab_btn_item_craft: tab_btn_item_craft,
             _tab_btn_teleport: tab_btn_teleport,
             _close_btn: close_btn,
-            _skill_tab: skill_tab,
+            _ability_tab: ability_tab,
             _item_craft_tab: item_craft_tab,
             _teleport_tab: teleport_tab,
-            _active_tab: ToolboxTab::Skill,
-            _last_opened_tab: ToolboxTab::Skill,
+            _active_tab: ToolboxTab::Ability,
+            _last_opened_tab: ToolboxTab::Ability,
             _selected_item_index: 0,
             _nav_repeat_controller: WidgetNavRepeatController::new(),
         };
@@ -353,7 +354,11 @@ impl<'a> ToolboxWidget<'a> {
     }
 
     fn all_tab_buttons(&self) -> [&Rc<WidgetDefault<'a>>; 3] {
-        [&self._tab_btn_skill, &self._tab_btn_item_craft, &self._tab_btn_teleport]
+        [
+            &self._tab_btn_ability,
+            &self._tab_btn_item_craft,
+            &self._tab_btn_teleport,
+        ]
     }
 
     pub fn set_active_tab(&mut self, tab: ToolboxTab) {
@@ -368,15 +373,15 @@ impl<'a> ToolboxWidget<'a> {
         }
 
         // Close all panes
-        self._skill_tab.close();
+        self._ability_tab.close();
         self._item_craft_tab.close();
         self._teleport_tab.close();
 
         // Activate selected tab
         let active_btn = match tab {
-            ToolboxTab::Skill => {
-                self._skill_tab.open();
-                &self._tab_btn_skill
+            ToolboxTab::Ability => {
+                self._ability_tab.open();
+                &self._tab_btn_ability
             }
             ToolboxTab::ItemCraft => {
                 self._item_craft_tab.open();
@@ -402,7 +407,7 @@ impl<'a> ToolboxWidget<'a> {
 
     pub fn get_active_tab_mut(&mut self) -> &mut ToolboxTabWidget<'a> {
         match self._active_tab {
-            ToolboxTab::Skill => &mut self._skill_tab,
+            ToolboxTab::Ability => &mut self._ability_tab,
             ToolboxTab::ItemCraft => &mut self._item_craft_tab,
             ToolboxTab::Teleport => &mut self._teleport_tab,
         }
@@ -520,7 +525,7 @@ impl<'a> ToolboxWidget<'a> {
 
     pub fn get_unlocked_items(&self) -> HashSet<ToolboxIconType> {
         let mut unlocked = HashSet::new();
-        let tabs = [&self._skill_tab, &self._item_craft_tab];
+        let tabs = [&self._ability_tab, &self._item_craft_tab];
         for tab in tabs {
             for item in &tab._items {
                 if item._state == ToolboxItemState::Unlocked {
@@ -532,7 +537,7 @@ impl<'a> ToolboxWidget<'a> {
     }
 
     pub fn load_unlocked_items(&mut self, unlocked_set: &HashSet<ToolboxIconType>) {
-        let tabs = [&mut self._skill_tab, &mut self._item_craft_tab];
+        let tabs = [&mut self._ability_tab, &mut self._item_craft_tab];
         for tab in tabs {
             for item in &mut tab._items {
                 if unlocked_set.contains(&item._data._icon_type) {

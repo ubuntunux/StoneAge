@@ -291,7 +291,7 @@ impl<'a> GameUIManager<'a> {
         self.set_controls_visibility(true);
         self.clear_player_records();
         self.load_unlocked_toolbox_items(&std::collections::HashSet::new());
-        self.set_last_opened_toolbox_tab(ToolboxTab::Skill);
+        self.set_last_opened_toolbox_tab(ToolboxTab::Ability);
         self.close_toolbox();
         self._registered_popups.clear();
     }
@@ -885,7 +885,7 @@ impl<'a> GameUIManager<'a> {
         if let Some(toolbox_widget) = self._toolbox_widget.as_ref() {
             toolbox_widget.get_last_opened_tab()
         } else {
-            ToolboxTab::Skill
+            ToolboxTab::Ability
         }
     }
     pub fn set_last_opened_toolbox_tab(&mut self, tab: ToolboxTab) {

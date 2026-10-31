@@ -185,8 +185,8 @@ impl ToolboxIconType {
 
     pub fn toolbox_data_name(&self) -> &'static str {
         match self {
-            ToolboxIconType::HandSkill => "toolbox_items/skill/hand_skill",
-            ToolboxIconType::QuickGather => "toolbox_items/skill/quick_gather",
+            ToolboxIconType::HandSkill => "toolbox_items/ability/hand_skill",
+            ToolboxIconType::QuickGather => "toolbox_items/ability/quick_gather",
             ToolboxIconType::StoneShelter => "toolbox_items/craft/stone_shelter",
             ToolboxIconType::Watchtower => "toolbox_items/craft/watchtower",
             ToolboxIconType::RoastMeat => "toolbox_items/craft/roast_meat",

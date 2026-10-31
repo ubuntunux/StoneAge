@@ -166,7 +166,7 @@ impl Default for GameSaveData {
             _selected_inventory_item_index: INVALID_ITEM_INDEX,
             _selected_quick_slot: None,
             _unlocked_toolbox_items: HashSet::new(),
-            _last_opened_toolbox_tab: ToolboxTab::Skill,
+            _last_opened_toolbox_tab: ToolboxTab::Ability,
             _last_game_scene_data_name: String::new(),
             _game_scenes: Default::default(),
             _game_scenarios: Vec::new(),
