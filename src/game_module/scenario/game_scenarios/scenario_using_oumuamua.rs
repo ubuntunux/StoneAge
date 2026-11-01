@@ -6,6 +6,7 @@ use crate::game_module::game_constants::{
     PROP_NAME_MONOLITH,
 };
 use crate::game_module::game_controller::KeyBindingType;
+use crate::game_module::game_scene_manager::Stages;
 use crate::game_module::game_service_locator::{
     get_character_manager, get_game_resources, get_game_scene_manager, get_game_scene_manager_mut, get_game_ui_manager,
     get_game_ui_manager_mut,
@@ -31,19 +32,32 @@ use strum_macros::{Display, EnumCount, EnumIter, EnumString};
 
 const PHASE_END_DURATION: f32 = 2.0;
 
+const QUEST_TITLE_GATHER_GIFTS: &str = "Gather Alien's Gifts";
+const QUEST_TITLE_UPGRADE_ABILITY: &str = "Upgrade Weapon Ability";
+const QUEST_TITLE_LEARN_AND_CRAFT: &str = "Learn Knowledge & Craft Wooden Club";
+const QUEST_TITLE_TELEPORT: &str = "Teleport via OUMUAMUA";
+
+const QUEST_DESC_UPGRADE_ABILITY: &str = "Upgrade Wooden Weapon Damage I from OUMUAMUA";
+const QUEST_DESC_UNLOCK_WOODEN_CLUB: &str = "Learn Wooden Weapon Knowledge from OUMUAMUA";
+const QUEST_DESC_CRAFT_WOODEN_CLUB: &str = "Craft a Wooden Club (";
+const QUEST_HINT_CRAFT_WOODEN_CLUB: &str = "Open craft menu )";
+const QUEST_DESC_TELEPORT: &str = "Teleport to Cave Home via OUMUAMUA";
+
 #[derive(Clone, PartialEq, Eq, Hash, Display, Debug, Copy, EnumIter, EnumString, EnumCount)]
 pub enum ScenarioPhase {
     None,
     Begin,
-    GatherWood,
+    GatherMaterials,
+    UsingOumuamua,
     UpgradeWoodenWeaponDamage,
     UnlockWoodenClub,
     CraftWoodenClub,
+    Teleport,
     End,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
-pub struct ScenarioWoodenClubQuestSaveData {
+pub struct ScenarioUsingOumuamuaQuestSaveData {
     pub _has_quest: bool,
     pub _quest_title: Option<String>,
     pub _sub_quest_gather_wood: Option<QuestItemSaveData>,
@@ -52,9 +66,10 @@ pub struct ScenarioWoodenClubQuestSaveData {
     pub _sub_quest_upgrade_wooden_weapon_damage: Option<QuestItemSaveData>,
     pub _sub_quest_unlock_wooden_club: Option<QuestItemSaveData>,
     pub _sub_quest_craft_wooden_club: Option<QuestItemSaveData>,
+    pub _sub_quest_teleport: Option<QuestItemSaveData>,
 }
 
-impl ScenarioWoodenClubQuestSaveData {
+impl ScenarioUsingOumuamuaQuestSaveData {
     pub fn has_any_quest(&self) -> bool {
         self._has_quest
             || self._sub_quest_gather_wood.is_some()
@@ -63,11 +78,12 @@ impl ScenarioWoodenClubQuestSaveData {
             || self._sub_quest_upgrade_wooden_weapon_damage.is_some()
             || self._sub_quest_unlock_wooden_club.is_some()
             || self._sub_quest_craft_wooden_club.is_some()
+            || self._sub_quest_teleport.is_some()
     }
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
-pub struct ScenarioWoodenClubSaveData {
+pub struct ScenarioUsingOumuamuaSaveData {
     pub _scenario_create_info: ScenarioDataCreateInfo,
     pub _scenario_phase: String,
     pub _next_scenario_phase: String,
@@ -75,10 +91,10 @@ pub struct ScenarioWoodenClubSaveData {
     pub _next_phase_duration: Option<f32>,
     pub _phase_time: f32,
     #[serde(default)]
-    pub _quest_save_data: ScenarioWoodenClubQuestSaveData,
+    pub _quest_save_data: ScenarioUsingOumuamuaQuestSaveData,
 }
 
-pub struct ScenarioWoodenClub<'a> {
+pub struct ScenarioUsingOumuamua<'a> {
     _scenario_type: ScenarioType,
     _scenario_create_info: ScenarioDataCreateInfo,
     _player: Option<RcRefCell<Character<'a>>>,
@@ -86,22 +102,26 @@ pub struct ScenarioWoodenClub<'a> {
     _item_wood: Option<RcRefCell<Item<'a>>>,
     _item_energy_ball: Option<RcRefCell<Item<'a>>>,
     _item_spirit_ball: Option<RcRefCell<Item<'a>>>,
-    _quest: Option<RcRefCell<QuestTitle<'a>>>,
+    _quest_gather_materials: Option<RcRefCell<QuestTitle<'a>>>,
+    _quest_upgrade_ability: Option<RcRefCell<QuestTitle<'a>>>,
+    _quest_learn_and_craft: Option<RcRefCell<QuestTitle<'a>>>,
+    _quest_teleport: Option<RcRefCell<QuestTitle<'a>>>,
     _sub_quest_gather_wood: Option<QuestItem<'a>>,
     _sub_quest_gather_energy_ball: Option<QuestItem<'a>>,
     _sub_quest_gather_spirit_ball: Option<QuestItem<'a>>,
     _sub_quest_upgrade_wooden_weapon_damage: Option<QuestItem<'a>>,
     _sub_quest_unlock_wooden_club: Option<QuestItem<'a>>,
     _sub_quest_craft_wooden_club: Option<QuestItem<'a>>,
+    _sub_quest_teleport: Option<QuestItem<'a>>,
     _scenario_track: ScenarioTrack<ScenarioPhase>,
 }
 
-impl<'a> ScenarioWoodenClub<'a> {
+impl<'a> ScenarioUsingOumuamua<'a> {
     pub fn create_game_scenario(
         scenario_type: ScenarioType,
         scenario_create_info: &ScenarioDataCreateInfo,
-    ) -> RcRefCell<ScenarioWoodenClub<'a>> {
-        newRcRefCell(ScenarioWoodenClub {
+    ) -> RcRefCell<ScenarioUsingOumuamua<'a>> {
+        newRcRefCell(ScenarioUsingOumuamua {
             _scenario_type: scenario_type,
             _scenario_create_info: scenario_create_info.clone(),
             _player: None,
@@ -109,92 +129,177 @@ impl<'a> ScenarioWoodenClub<'a> {
             _item_wood: None,
             _item_energy_ball: None,
             _item_spirit_ball: None,
-            _quest: None,
+            _quest_gather_materials: None,
+            _quest_upgrade_ability: None,
+            _quest_learn_and_craft: None,
+            _quest_teleport: None,
             _sub_quest_gather_wood: None,
             _sub_quest_gather_energy_ball: None,
             _sub_quest_gather_spirit_ball: None,
             _sub_quest_upgrade_wooden_weapon_damage: None,
             _sub_quest_unlock_wooden_club: None,
             _sub_quest_craft_wooden_club: None,
+            _sub_quest_teleport: None,
             _scenario_track: ScenarioTrack::new(ScenarioPhase::None, ScenarioPhase::Begin),
         })
     }
 
-    pub fn create_quests(&mut self) {
-        if self._quest.is_none() {
+    pub fn create_quest_gather_materials(&mut self) {
+        if self._quest_gather_materials.is_none() {
             let game_ui_manager = get_game_ui_manager_mut();
             let game_resources = get_game_resources();
             let item_wood = game_resources.get_item_data(ITEM_WOOD);
             let item_energy_ball = game_resources.get_item_data(ITEM_ENERGY_BALL);
             let item_spirit_ball = game_resources.get_item_data(ITEM_SPIRIT_BALL);
 
-            self._quest = Some(game_ui_manager.add_quest(Some(String::from("Crafting a Wooden Club"))));
-            if let Some(quest) = &self._quest {
-                self._sub_quest_gather_wood = Some(quest.borrow_mut().add_quest_item(QuestCreateInfo::GatherItem(
-                    GatherItemData {
-                        _item_data_name: String::from(ITEM_WOOD),
-                        _item_data: item_wood.clone(),
-                        _gather_item_count: 1,
-                    },
-                )));
+            let quest = game_ui_manager.add_quest(Some(String::from(QUEST_TITLE_GATHER_GIFTS)));
+            self._sub_quest_gather_wood = Some(quest.borrow_mut().add_quest_item(QuestCreateInfo::GatherItem(
+                GatherItemData {
+                    _item_data_name: String::from(ITEM_WOOD),
+                    _item_data: item_wood.clone(),
+                    _gather_item_count: 1,
+                },
+            )));
 
-                self._sub_quest_gather_energy_ball = Some(quest.borrow_mut().add_quest_item(
-                    QuestCreateInfo::GatherItem(GatherItemData {
-                        _item_data_name: String::from(ITEM_ENERGY_BALL),
-                        _item_data: item_energy_ball.clone(),
-                        _gather_item_count: 1,
-                    }),
-                ));
+            self._sub_quest_gather_energy_ball = Some(quest.borrow_mut().add_quest_item(QuestCreateInfo::GatherItem(
+                GatherItemData {
+                    _item_data_name: String::from(ITEM_ENERGY_BALL),
+                    _item_data: item_energy_ball.clone(),
+                    _gather_item_count: 1,
+                },
+            )));
 
-                self._sub_quest_gather_spirit_ball = Some(quest.borrow_mut().add_quest_item(
-                    QuestCreateInfo::GatherItem(GatherItemData {
-                        _item_data_name: String::from(ITEM_SPIRIT_BALL),
-                        _item_data: item_spirit_ball.clone(),
-                        _gather_item_count: 1,
-                    }),
-                ));
+            self._sub_quest_gather_spirit_ball = Some(quest.borrow_mut().add_quest_item(QuestCreateInfo::GatherItem(
+                GatherItemData {
+                    _item_data_name: String::from(ITEM_SPIRIT_BALL),
+                    _item_data: item_spirit_ball.clone(),
+                    _gather_item_count: 1,
+                },
+            )));
 
-                self._sub_quest_upgrade_wooden_weapon_damage = Some(quest.borrow_mut().add_quest_item(
-                    QuestCreateInfo::DefaultQuest(DefaultQuestData {
-                        _quest_icon_name: None,
-                        _quest_description: Some(String::from("Upgrade Wooden Weapon Damage I from OUMUAMUA")),
-                        _key_binding_type: None,
-                        _key_binding_text: None,
-                    }),
-                ));
-
-                self._sub_quest_unlock_wooden_club = Some(quest.borrow_mut().add_quest_item(
-                    QuestCreateInfo::DefaultQuest(DefaultQuestData {
-                        _quest_icon_name: None,
-                        _quest_description: Some(String::from("Learn Wooden Weapon Knowledge from OUMUAMUA")),
-                        _key_binding_type: None,
-                        _key_binding_text: None,
-                    }),
-                ));
-
-                self._sub_quest_craft_wooden_club = Some(quest.borrow_mut().add_quest_item(
-                    QuestCreateInfo::DefaultQuest(DefaultQuestData {
-                        _quest_icon_name: None,
-                        _quest_description: Some(String::from("Craft a Wooden Club (")),
-                        _key_binding_type: Some(KeyBindingType::Craft),
-                        _key_binding_text: Some(String::from("Open craft menu )")),
-                    }),
-                ));
-            }
+            self._quest_gather_materials = Some(quest);
         }
     }
 
-    pub fn destroy_quest(&mut self) {
-        if let Some(quest) = &self._quest {
+    pub fn create_quest_upgrade_ability(&mut self) {
+        if self._quest_upgrade_ability.is_none() {
+            let game_ui_manager = get_game_ui_manager_mut();
+            let quest = game_ui_manager.add_quest(Some(String::from(QUEST_TITLE_UPGRADE_ABILITY)));
+            self._sub_quest_upgrade_wooden_weapon_damage = Some(quest.borrow_mut().add_quest_item(
+                QuestCreateInfo::DefaultQuest(DefaultQuestData {
+                    _quest_icon_name: None,
+                    _quest_description: Some(String::from(QUEST_DESC_UPGRADE_ABILITY)),
+                    _key_binding_type: None,
+                    _key_binding_text: None,
+                }),
+            ));
+            self._quest_upgrade_ability = Some(quest);
+        }
+    }
+
+    pub fn create_quest_learn_and_craft(&mut self) {
+        if self._quest_learn_and_craft.is_none() {
+            let game_ui_manager = get_game_ui_manager_mut();
+            let quest = game_ui_manager.add_quest(Some(String::from(QUEST_TITLE_LEARN_AND_CRAFT)));
+            self._sub_quest_unlock_wooden_club = Some(quest.borrow_mut().add_quest_item(
+                QuestCreateInfo::DefaultQuest(DefaultQuestData {
+                    _quest_icon_name: None,
+                    _quest_description: Some(String::from(QUEST_DESC_UNLOCK_WOODEN_CLUB)),
+                    _key_binding_type: None,
+                    _key_binding_text: None,
+                }),
+            ));
+
+            self._sub_quest_craft_wooden_club = Some(quest.borrow_mut().add_quest_item(QuestCreateInfo::DefaultQuest(
+                DefaultQuestData {
+                    _quest_icon_name: None,
+                    _quest_description: Some(String::from(QUEST_DESC_CRAFT_WOODEN_CLUB)),
+                    _key_binding_type: Some(KeyBindingType::Craft),
+                    _key_binding_text: Some(String::from(QUEST_HINT_CRAFT_WOODEN_CLUB)),
+                },
+            )));
+            self._quest_learn_and_craft = Some(quest);
+        }
+    }
+
+    pub fn create_quest_teleport(&mut self) {
+        if self._quest_teleport.is_none() {
+            let game_ui_manager = get_game_ui_manager_mut();
+            let quest = game_ui_manager.add_quest(Some(String::from(QUEST_TITLE_TELEPORT)));
+            self._sub_quest_teleport = Some(quest.borrow_mut().add_quest_item(QuestCreateInfo::DefaultQuest(
+                DefaultQuestData {
+                    _quest_icon_name: None,
+                    _quest_description: Some(String::from(QUEST_DESC_TELEPORT)),
+                    _key_binding_type: None,
+                    _key_binding_text: None,
+                },
+            )));
+            self._quest_teleport = Some(quest);
+        }
+    }
+
+    pub fn create_parallel_quests(&mut self) {
+        self.create_quest_upgrade_ability();
+        self.create_quest_learn_and_craft();
+        self.create_quest_teleport();
+    }
+
+    pub fn create_quests(&mut self) {
+        match self._scenario_track._scenario_phase {
+            ScenarioPhase::None | ScenarioPhase::Begin | ScenarioPhase::GatherMaterials => {
+                self.create_quest_gather_materials();
+            }
+            ScenarioPhase::UsingOumuamua
+            | ScenarioPhase::UpgradeWoodenWeaponDamage
+            | ScenarioPhase::UnlockWoodenClub
+            | ScenarioPhase::CraftWoodenClub
+            | ScenarioPhase::Teleport => {
+                self.create_parallel_quests();
+            }
+            ScenarioPhase::End => {}
+        }
+    }
+
+    pub fn destroy_quest_gather_materials(&mut self) {
+        if let Some(quest) = &self._quest_gather_materials {
             quest.borrow_mut().destroy_quest();
         }
-        self._quest = None;
+        self._quest_gather_materials = None;
         self._sub_quest_gather_wood = None;
         self._sub_quest_gather_energy_ball = None;
         self._sub_quest_gather_spirit_ball = None;
+    }
+
+    pub fn destroy_quest_upgrade_ability(&mut self) {
+        if let Some(quest) = &self._quest_upgrade_ability {
+            quest.borrow_mut().destroy_quest();
+        }
+        self._quest_upgrade_ability = None;
         self._sub_quest_upgrade_wooden_weapon_damage = None;
+    }
+
+    pub fn destroy_quest_learn_and_craft(&mut self) {
+        if let Some(quest) = &self._quest_learn_and_craft {
+            quest.borrow_mut().destroy_quest();
+        }
+        self._quest_learn_and_craft = None;
         self._sub_quest_unlock_wooden_club = None;
         self._sub_quest_craft_wooden_club = None;
+    }
+
+    pub fn destroy_quest_teleport(&mut self) {
+        if let Some(quest) = &self._quest_teleport {
+            quest.borrow_mut().destroy_quest();
+        }
+        self._quest_teleport = None;
+        self._sub_quest_teleport = None;
+    }
+
+    pub fn destroy_all_quests(&mut self) {
+        self.destroy_quest_gather_materials();
+        self.destroy_quest_upgrade_ability();
+        self.destroy_quest_learn_and_craft();
+        self.destroy_quest_teleport();
     }
 
     fn ensure_player(&mut self) {
@@ -268,9 +373,17 @@ impl<'a> ScenarioWoodenClub<'a> {
             && is_quest_item_completed(&self._sub_quest_gather_spirit_ball)
     }
 
-    pub fn is_all_toolbox_quests_completed(&self) -> bool {
+    pub fn is_all_parallel_quests_completed(&self) -> bool {
         is_quest_item_completed(&self._sub_quest_upgrade_wooden_weapon_damage)
             && is_quest_item_completed(&self._sub_quest_unlock_wooden_club)
+            && is_quest_item_completed(&self._sub_quest_craft_wooden_club)
+            && is_quest_item_completed(&self._sub_quest_teleport)
+    }
+
+    pub fn is_monolith_interaction_needed(&self) -> bool {
+        !is_quest_item_completed(&self._sub_quest_upgrade_wooden_weapon_damage)
+            || !is_quest_item_completed(&self._sub_quest_unlock_wooden_club)
+            || !is_quest_item_completed(&self._sub_quest_teleport)
     }
 
     pub fn create_toolbox_text_box(&mut self) {
@@ -284,30 +397,22 @@ impl<'a> ScenarioWoodenClub<'a> {
     }
 
     pub fn update_toolbox_text_box(&mut self) {
-        if self.is_all_toolbox_quests_completed() {
-            self.remove_toolbox_text_box();
-        } else {
+        if self.is_monolith_interaction_needed() {
             self.create_toolbox_text_box();
-        }
-    }
-
-    pub fn complete_sub_quest_upgrade_wooden_weapon_damage(&mut self) {
-        if complete_quest_item(&self._sub_quest_upgrade_wooden_weapon_damage) && self.is_all_toolbox_quests_completed()
-        {
+        } else {
             self.remove_toolbox_text_box();
         }
     }
 
-    pub fn complete_sub_quest_unlock_wooden_club(&mut self) {
-        if complete_quest_item(&self._sub_quest_unlock_wooden_club) && self.is_all_toolbox_quests_completed() {
-            self.remove_toolbox_text_box();
-        }
-    }
+    pub fn get_quest_save_data(&self) -> ScenarioUsingOumuamuaQuestSaveData {
+        let has_quest = self._quest_gather_materials.is_some()
+            || self._quest_upgrade_ability.is_some()
+            || self._quest_learn_and_craft.is_some()
+            || self._quest_teleport.is_some();
 
-    pub fn get_quest_save_data(&self) -> ScenarioWoodenClubQuestSaveData {
-        ScenarioWoodenClubQuestSaveData {
-            _has_quest: self._quest.is_some(),
-            _quest_title: self._quest.as_ref().and_then(|q| q.borrow()._quest_title.clone()),
+        ScenarioUsingOumuamuaQuestSaveData {
+            _has_quest: has_quest,
+            _quest_title: None,
             _sub_quest_gather_wood: get_quest_item_save_data(&self._sub_quest_gather_wood),
             _sub_quest_gather_energy_ball: get_quest_item_save_data(&self._sub_quest_gather_energy_ball),
             _sub_quest_gather_spirit_ball: get_quest_item_save_data(&self._sub_quest_gather_spirit_ball),
@@ -316,12 +421,13 @@ impl<'a> ScenarioWoodenClub<'a> {
             ),
             _sub_quest_unlock_wooden_club: get_quest_item_save_data(&self._sub_quest_unlock_wooden_club),
             _sub_quest_craft_wooden_club: get_quest_item_save_data(&self._sub_quest_craft_wooden_club),
+            _sub_quest_teleport: get_quest_item_save_data(&self._sub_quest_teleport),
         }
     }
 
-    pub fn load_quest_save_data(&mut self, quest_save_data: &ScenarioWoodenClubQuestSaveData) {
+    pub fn load_quest_save_data(&mut self, quest_save_data: &ScenarioUsingOumuamuaQuestSaveData) {
         if quest_save_data.has_any_quest() {
-            self.destroy_quest();
+            self.destroy_all_quests();
             self.create_quests();
 
             load_quest_item_save_data(&self._sub_quest_gather_wood, &quest_save_data._sub_quest_gather_wood);
@@ -345,13 +451,14 @@ impl<'a> ScenarioWoodenClub<'a> {
                 &self._sub_quest_craft_wooden_club,
                 &quest_save_data._sub_quest_craft_wooden_club,
             );
+            load_quest_item_save_data(&self._sub_quest_teleport, &quest_save_data._sub_quest_teleport);
         }
     }
 }
 
-impl<'a> ScenarioBase<'a> for ScenarioWoodenClub<'a> {
+impl<'a> ScenarioBase<'a> for ScenarioUsingOumuamua<'a> {
     fn get_scenario_type(&self) -> ScenarioType {
-        ScenarioType::ScenarioWoodenClub
+        ScenarioType::ScenarioUsingOumuamua
     }
 
     fn get_scenario_phase_as_string(&self) -> String {
@@ -366,7 +473,8 @@ impl<'a> ScenarioBase<'a> for ScenarioWoodenClub<'a> {
         self._scenario_create_info = scenario_save_data._scenario_create_info.clone();
         self._scenario_track.load_scenario_track_data(&scenario_save_data._scenario_track_create_info);
 
-        if let Ok(save_data) = serde_json::from_str::<ScenarioWoodenClubSaveData>(&scenario_save_data._scenario_data) {
+        if let Ok(save_data) = serde_json::from_str::<ScenarioUsingOumuamuaSaveData>(&scenario_save_data._scenario_data)
+        {
             self._scenario_create_info = save_data._scenario_create_info;
             if let Ok(phase) = save_data._scenario_phase.parse::<ScenarioPhase>() {
                 self._scenario_track._scenario_phase = phase;
@@ -382,7 +490,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWoodenClub<'a> {
     }
 
     fn get_scenario_save_data(&self) -> GameScenarioCreateInfo {
-        let scenario_save_data = ScenarioWoodenClubSaveData {
+        let scenario_save_data = ScenarioUsingOumuamuaSaveData {
             _scenario_create_info: self._scenario_create_info.clone(),
             _scenario_phase: self._scenario_track._scenario_phase.to_string(),
             _next_scenario_phase: self._scenario_track._next_scenario_phase.to_string(),
@@ -410,7 +518,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWoodenClub<'a> {
     fn destroy_game_scenario(&mut self) {
         self.remove_item_text_boxes();
         self.remove_toolbox_text_box();
-        self.destroy_quest();
+        self.destroy_all_quests();
     }
 
     fn on_close_game_scene(&mut self, _game_scene_data_name: &str) {
@@ -426,32 +534,30 @@ impl<'a> ScenarioBase<'a> for ScenarioWoodenClub<'a> {
 
         self.create_quests();
 
-        if !self.is_all_gather_quests_completed() {
-            self.create_item_text_boxes();
-        } else if !self.is_all_toolbox_quests_completed() {
-            self.create_toolbox_text_box();
+        match self._scenario_track._scenario_phase {
+            ScenarioPhase::None | ScenarioPhase::Begin | ScenarioPhase::GatherMaterials => {
+                if !self.is_all_gather_quests_completed() {
+                    self.create_item_text_boxes();
+                }
+            }
+            ScenarioPhase::UsingOumuamua
+            | ScenarioPhase::UpgradeWoodenWeaponDamage
+            | ScenarioPhase::UnlockWoodenClub
+            | ScenarioPhase::CraftWoodenClub
+            | ScenarioPhase::Teleport => {
+                if self.is_monolith_interaction_needed() {
+                    self.create_toolbox_text_box();
+                }
+                if is_quest_item_completed(&self._sub_quest_unlock_wooden_club) {
+                    get_game_ui_manager_mut().set_controls_visibility(true);
+                }
+            }
+            ScenarioPhase::End => {}
         }
     }
 
     fn update_game_scenario(&mut self, _any_key_hold: bool, _any_key_pressed: bool, delta_time: f64) {
         self.ensure_player();
-
-        let is_ability_upgraded =
-            get_game_ui_manager().get_unlocked_toolbox_items().contains(&ToolboxIconType::WoodenWeaponDamage1);
-        if is_ability_upgraded {
-            self.complete_sub_quest_upgrade_wooden_weapon_damage();
-        }
-
-        let is_unlocked = get_game_ui_manager().get_unlocked_toolbox_items().contains(&ToolboxIconType::WoodenWeapon)
-            || get_game_ui_manager().get_unlocked_toolbox_items().contains(&ToolboxIconType::WoodenClub);
-        if is_unlocked {
-            self.complete_sub_quest_unlock_wooden_club();
-        }
-
-        let has_wooden_club = get_game_ui_manager().get_item_count(ItemDataType::WoodenClub.item_code()) >= 1;
-        if has_wooden_club {
-            complete_quest_item(&self._sub_quest_craft_wooden_club);
-        }
 
         let prev_scenario_phase = self._scenario_track._scenario_phase;
         let next_scenario_phase = self._scenario_track._next_scenario_phase;
@@ -472,85 +578,90 @@ impl<'a> ScenarioBase<'a> for ScenarioWoodenClub<'a> {
                     self._scenario_track.set_next_scenario_phase(ScenarioPhase::Begin, None);
                 }
                 ScenarioPhase::Begin => {
-                    self.create_quests();
+                    self.create_quest_gather_materials();
                     self.create_item_text_boxes();
-                    self._scenario_track.set_next_scenario_phase(ScenarioPhase::GatherWood, None);
+                    self._scenario_track.set_next_scenario_phase(ScenarioPhase::GatherMaterials, None);
                 }
-                ScenarioPhase::GatherWood => match state {
+                ScenarioPhase::GatherMaterials => match state {
                     State::Begin => {
-                        self.create_quests();
+                        self.create_quest_gather_materials();
                         self.create_item_text_boxes();
                     }
                     State::Update => {
                         self.update_item_text_boxes();
                         if self.is_all_gather_quests_completed() {
                             self.remove_item_text_boxes();
-                            self._scenario_track
-                                .set_next_scenario_phase(ScenarioPhase::UpgradeWoodenWeaponDamage, None);
+                            self.destroy_quest_gather_materials();
+                            self._scenario_track.set_next_scenario_phase(ScenarioPhase::UsingOumuamua, None);
                         }
                     }
                     State::End => {
                         self.remove_item_text_boxes();
                     }
                 },
-                ScenarioPhase::UpgradeWoodenWeaponDamage => match state {
+                ScenarioPhase::UsingOumuamua
+                | ScenarioPhase::UpgradeWoodenWeaponDamage
+                | ScenarioPhase::UnlockWoodenClub
+                | ScenarioPhase::CraftWoodenClub
+                | ScenarioPhase::Teleport => match state {
                     State::Begin => {
-                        if !self.is_all_toolbox_quests_completed() {
-                            self.create_toolbox_text_box();
-                        }
+                        self.create_parallel_quests();
+                        self.create_toolbox_text_box();
                     }
                     State::Update => {
+                        // Quest 2: 무기 공격력 강화 체크
+                        let is_ability_upgraded = get_game_ui_manager()
+                            .get_unlocked_toolbox_items()
+                            .contains(&ToolboxIconType::WoodenWeaponDamage1);
+                        if is_ability_upgraded {
+                            complete_quest_item(&self._sub_quest_upgrade_wooden_weapon_damage);
+                        }
+
+                        // Quest 3-1: 무기 제작 지식 습득 체크
+                        let is_unlocked =
+                            get_game_ui_manager().get_unlocked_toolbox_items().contains(&ToolboxIconType::WoodenWeapon)
+                                || get_game_ui_manager()
+                                    .get_unlocked_toolbox_items()
+                                    .contains(&ToolboxIconType::WoodenClub);
+                        if is_unlocked {
+                            complete_quest_item(&self._sub_quest_unlock_wooden_club);
+                            get_game_ui_manager_mut().set_controls_visibility(true);
+                        }
+
+                        // Quest 3-2: 무기 제작 체크
+                        let has_wooden_club =
+                            get_game_ui_manager().get_item_count(ItemDataType::WoodenClub.item_code()) >= 1;
+                        if has_wooden_club {
+                            complete_quest_item(&self._sub_quest_craft_wooden_club);
+                        }
+
+                        // Quest 4: 텔레포트 체크
+                        let game_scene_manager = get_game_scene_manager();
+                        let is_teleporting = game_scene_manager.is_teleport_mode();
+                        let reached_jungle =
+                            game_scene_manager.get_current_game_scene_data_name() == Stages::Jungle.get_stage_data_name();
+                        if is_teleporting || reached_jungle {
+                            complete_quest_item(&self._sub_quest_teleport);
+                        }
+
+                        // 모놀리스 포인터 갱신
                         self.update_toolbox_text_box();
-                        if is_quest_item_completed(&self._sub_quest_upgrade_wooden_weapon_damage) {
-                            if is_quest_item_completed(&self._sub_quest_unlock_wooden_club) {
-                                if is_quest_item_completed(&self._sub_quest_craft_wooden_club) {
-                                    self._scenario_track
-                                        .set_next_scenario_phase(ScenarioPhase::End, Some(PHASE_END_DURATION));
-                                } else {
-                                    self._scenario_track.set_next_scenario_phase(ScenarioPhase::CraftWoodenClub, None);
-                                }
-                            } else {
-                                self._scenario_track.set_next_scenario_phase(ScenarioPhase::UnlockWoodenClub, None);
-                            }
-                        }
-                    }
-                    _ => {}
-                },
-                ScenarioPhase::UnlockWoodenClub => match state {
-                    State::Begin => {
-                        if !self.is_all_toolbox_quests_completed() {
-                            self.create_toolbox_text_box();
-                        }
-                    }
-                    State::Update => {
-                        self.update_toolbox_text_box();
-                        if is_quest_item_completed(&self._sub_quest_unlock_wooden_club) {
-                            if is_quest_item_completed(&self._sub_quest_craft_wooden_club) {
-                                self._scenario_track
-                                    .set_next_scenario_phase(ScenarioPhase::End, Some(PHASE_END_DURATION));
-                            } else {
-                                self._scenario_track.set_next_scenario_phase(ScenarioPhase::CraftWoodenClub, None);
-                            }
-                        }
-                    }
-                    _ => {}
-                },
-                ScenarioPhase::CraftWoodenClub => match state {
-                    State::Begin => {
-                        get_game_ui_manager_mut().set_controls_visibility(true);
-                    }
-                    State::Update => {
-                        if is_quest_item_completed(&self._sub_quest_craft_wooden_club) {
+
+                        // 3개 퀘스트 모두 완료 시 종료 단계로 전환
+                        if self.is_all_parallel_quests_completed() {
+                            self.remove_toolbox_text_box();
                             self._scenario_track.set_next_scenario_phase(ScenarioPhase::End, Some(PHASE_END_DURATION));
                         }
                     }
-                    _ => {}
+                    State::End => {
+                        self.remove_toolbox_text_box();
+                    }
                 },
                 ScenarioPhase::End => {
                     if state == State::Begin {
                         self.remove_item_text_boxes();
                         self.remove_toolbox_text_box();
-                        self.destroy_quest();
+                        self.destroy_all_quests();
                     }
                 }
             }

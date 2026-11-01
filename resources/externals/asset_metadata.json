@@ -4145,24 +4145,6 @@
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/meshes/props/spirit_ball.blend": [
-        {
-            "asset_type": "MATERIAL_INSTANCE",
-            "asset_path": "props/spirit_ball",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/props/spirit_ball.blend",
-            "guid": "",
-            "mtime": 1788703556.199502,
-            "data": {}
-        },
-        {
-            "asset_type": "MESH",
-            "asset_path": "props/spirit_ball",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/props/spirit_ball.blend",
-            "guid": "",
-            "mtime": 1788703556.199502,
-            "data": {}
-        }
-    ],
     "/mnt/Workspace/StoneAge/resources/externals/meshes/props/stage_ufo.blend": [
         {
             "asset_type": "MATERIAL_INSTANCE",
@@ -4388,6 +4370,24 @@
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/aru/aru.blend",
             "guid": "",
             "mtime": 1790510944.2824087,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/meshes/props/spirit_ball.blend": [
+        {
+            "asset_type": "MATERIAL_INSTANCE",
+            "asset_path": "props/spirit_ball",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/props/spirit_ball.blend",
+            "guid": "",
+            "mtime": 1793538426.7066326,
+            "data": {}
+        },
+        {
+            "asset_type": "MESH",
+            "asset_path": "props/spirit_ball",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/props/spirit_ball.blend",
+            "guid": "",
+            "mtime": 1793538426.7066326,
             "data": {}
         }
     ],
@@ -7571,16 +7571,6 @@
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/meshes/props/energy_ball.blend": [
-        {
-            "asset_type": "MESH",
-            "asset_path": "props/energy_ball",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/props/energy_ball.blend",
-            "guid": "",
-            "mtime": 1788703556.1958106,
-            "data": {}
-        }
-    ],
     "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/aru/aru_dance_00.blend": [
         {
             "asset_type": "MESH",
@@ -7798,6 +7788,16 @@
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/koa/koa_wake_up.blend",
             "guid": "",
             "mtime": 1788703556.164227,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/meshes/props/energy_ball.blend": [
+        {
+            "asset_type": "MESH",
+            "asset_path": "props/energy_ball",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/props/energy_ball.blend",
+            "guid": "",
+            "mtime": 1793538433.9583097,
             "data": {}
         }
     ],
@@ -8359,16 +8359,6 @@
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/stage_01.blend": [
-        {
-            "asset_type": "GAME_SCENE",
-            "asset_path": "stage_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/stage_01.blend",
-            "guid": "",
-            "mtime": 1789930115.316542,
-            "data": {}
-        }
-    ],
     "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/stage_cave.blend": [
         {
             "asset_type": "GAME_SCENE",
@@ -8386,6 +8376,16 @@
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/intro_stage.blend",
             "guid": "",
             "mtime": 1793465659.5921535,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/jungle.blend": [
+        {
+            "asset_type": "GAME_SCENE",
+            "asset_path": "jungle",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/jungle.blend",
+            "guid": "",
+            "mtime": 1793532156.2803338,
             "data": {}
         }
     ],

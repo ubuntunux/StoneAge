@@ -162,12 +162,66 @@
                 1.0
             ]
         },
-        "velociraptor_01.001": {
-            "_character_data_name": "characters/velociraptor_01.001",
+        "velociraptor": {
+            "_character_data_name": "characters/velociraptor",
             "_position": [
-                28.975494384765625,
-                1.073683500289917,
-                20.83255386352539
+                -6.439484596252441,
+                2.549166202545166,
+                38.187374114990234
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "velociraptor.001": {
+            "_character_data_name": "characters/velociraptor",
+            "_position": [
+                -23.754831314086914,
+                3.2649686336517334,
+                -6.699161529541016
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "velociraptor_01": {
+            "_character_data_name": "characters/velociraptor_01",
+            "_position": [
+                35.17145538330078,
+                2.30002498626709,
+                52.873443603515625
+            ],
+            "_rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "_scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "velociraptor_01.001": {
+            "_character_data_name": "characters/velociraptor_01",
+            "_position": [
+                28.996496200561523,
+                2.4002788066864014,
+                13.025542259216309
             ],
             "_rotation": [
                 0.0,
@@ -181,29 +235,11 @@
             ]
         },
         "velociraptor_01.002": {
-            "_character_data_name": "characters/velociraptor_01.001",
+            "_character_data_name": "characters/velociraptor_01",
             "_position": [
-                39.139583587646484,
-                1.798414945602417,
-                6.769634246826172
-            ],
-            "_rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "_scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "velociraptor_01.003": {
-            "_character_data_name": "characters/velociraptor_01.001",
-            "_position": [
-                35.34311294555664,
-                1.8686206340789795,
-                52.03401565551758
+                45.348793029785156,
+                2.833446741104126,
+                -0.9652547836303711
             ],
             "_rotation": [
                 0.0,

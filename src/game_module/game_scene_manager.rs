@@ -38,7 +38,7 @@ pub enum Stages {
     None,
     Forest,
     Home,
-    WorldMap,
+    Jungle,
     Ufo,
 }
 
@@ -48,7 +48,7 @@ impl Stages {
             Stages::None => "",
             Stages::Forest => "FOREST",
             Stages::Home => "HOME",
-            Stages::WorldMap => "WORLD MAP",
+            Stages::Jungle => "JUNGLE",
             Stages::Ufo => "UFO",
         }
     }
@@ -58,7 +58,7 @@ impl Stages {
             Stages::None => "",
             Stages::Forest => "game_scenes/intro_stage",
             Stages::Home => "game_scenes/stage_cave",
-            Stages::WorldMap => "game_scenes/world_map",
+            Stages::Jungle => "game_scenes/jungle",
             Stages::Ufo => "game_scenes/stage_ufo",
         }
     }
@@ -70,8 +70,8 @@ impl Stages {
             return Stages::Forest;
         } else if stage_data_name == Stages::Home.get_stage_data_name() {
             return Stages::Home;
-        } else if stage_data_name == Stages::WorldMap.get_stage_data_name() {
-            return Stages::WorldMap;
+        } else if stage_data_name == Stages::Jungle.get_stage_data_name() {
+            return Stages::Jungle;
         } else if stage_data_name == Stages::Ufo.get_stage_data_name() {
             return Stages::Ufo;
         }

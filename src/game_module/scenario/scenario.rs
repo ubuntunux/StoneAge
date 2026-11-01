@@ -3,7 +3,7 @@ use crate::game_module::scenario::game_scenarios::scenario_intro::day_one::Scena
 use crate::game_module::scenario::game_scenarios::scenario_intro::intro::ScenarioIntro;
 use crate::game_module::scenario::game_scenarios::scenario_intro::revolution::ScenarioRevolution;
 use crate::game_module::scenario::game_scenarios::scenario_intro::ufo::ScenarioUfo;
-use crate::game_module::scenario::game_scenarios::scenario_wooden_club::ScenarioWoodenClub;
+use crate::game_module::scenario::game_scenarios::scenario_using_oumuamua::ScenarioUsingOumuamua;
 use crate::game_module::scenario::game_scenarios::scenario_wrap_up_the_day::ScenarioWrapUpTheDay;
 use crate::game_module::scenario::scenario_track::ScenarioTrackCreateInfo;
 use nalgebra::Vector3;
@@ -25,7 +25,7 @@ pub enum ScenarioType {
     ScenarioIntro_Revolution,
     ScenarioIntro_DayOne,
     ScenarioWrapUpTheDay,
-    ScenarioWoodenClub,
+    ScenarioUsingOumuamua,
 }
 
 impl ScenarioType {
@@ -36,7 +36,7 @@ impl ScenarioType {
             ScenarioType::ScenarioIntro_Revolution => "scenario/scenario_intro/revolution",
             ScenarioType::ScenarioIntro_DayOne => "scenario/scenario_intro/day_one",
             ScenarioType::ScenarioWrapUpTheDay => "scenario/wrap_up_the_day",
-            ScenarioType::ScenarioWoodenClub => "scenario/wooden_club",
+            ScenarioType::ScenarioUsingOumuamua => "scenario/using_oumuamua",
         }
     }
 }
@@ -55,8 +55,8 @@ pub fn create_scenario<'a>(
         ScenarioType::ScenarioWrapUpTheDay => {
             ScenarioWrapUpTheDay::create_game_scenario(scenario_type, scenario_create_info)
         }
-        ScenarioType::ScenarioWoodenClub => {
-            ScenarioWoodenClub::create_game_scenario(scenario_type, scenario_create_info)
+        ScenarioType::ScenarioUsingOumuamua => {
+            ScenarioUsingOumuamua::create_game_scenario(scenario_type, scenario_create_info)
         }
     }
 }

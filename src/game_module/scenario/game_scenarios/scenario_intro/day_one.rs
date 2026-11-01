@@ -759,7 +759,7 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
                 ScenarioPhase::End => {
                     if state == State::Begin {
                         Self::set_player_active(true);
-                        get_game_scene_manager_mut().request_open_game_scenario(ScenarioType::ScenarioWoodenClub);
+                        get_game_scene_manager_mut().request_open_game_scenario(ScenarioType::ScenarioUsingOumuamua);
                     }
                 }
             }

@@ -1,6 +1,6 @@
 {
     "_icon_type": "WoodenWeapon",
     "_description": "Knowledge of crafting various wooden weapons and tools using wood.",
-    "_item_data_type": "EnergyBall",
-    "_item_data_count": 0
+    "_item_data_type": "SpiritBall",
+    "_item_data_count": 1
 }
