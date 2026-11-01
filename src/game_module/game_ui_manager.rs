@@ -126,16 +126,21 @@ impl<'a> EditorUIManager<'a> {
     }
 
     pub fn changed_window_size(&mut self, window_size: &Vector2<i32>) {
+        if window_size.x <= 0 || window_size.y <= 0 {
+            return;
+        }
         log::info!("EditorUIComponents::changed_window_size: {:?}", window_size);
         self._window_size = *window_size;
     }
 
     pub fn update_editor_ui(&mut self, _delta_time: f64) {
         let ui_manager = get_ui_manager();
-        if self._need_to_refresh || self._window_size != ui_manager._window_size {
-            self._window_size = ui_manager._window_size;
-            self.changed_window_size(&ui_manager._window_size);
-            self._need_to_refresh = false;
+        if 0 < ui_manager._window_size.x && 0 < ui_manager._window_size.y {
+            if self._need_to_refresh || self._window_size != ui_manager._window_size {
+                self._window_size = ui_manager._window_size;
+                self.changed_window_size(&ui_manager._window_size);
+                self._need_to_refresh = false;
+            }
         }
     }
 }
@@ -196,6 +201,7 @@ impl<'a> GameUIManager<'a> {
 
     pub fn build_game_ui(&mut self, window_size: &Vector2<i32>) {
         log::info!("build_game_ui");
+        self._window_size = *window_size;
         let _game_scene_manager = get_game_scene_manager();
         let root_widget = ptr_as_mut(get_ui_manager().get_root_ptr());
 
@@ -1234,6 +1240,9 @@ impl<'a> GameUIManager<'a> {
 
     // game ui manager
     pub fn changed_window_size(&mut self, window_size: &Vector2<i32>) {
+        if window_size.x <= 0 || window_size.y <= 0 {
+            return;
+        }
         log::info!("GameUIComponents::changed_window_size: {:?}", window_size);
 
         self._game_image.as_mut().unwrap().changed_window_size(window_size);
@@ -1252,10 +1261,12 @@ impl<'a> GameUIManager<'a> {
         let mouse_pos = &engine_core._mouse_move_data._mouse_pos;
 
         // changed window size
-        if self._need_to_refresh || self._window_size != ui_manager._window_size {
-            self._window_size = ui_manager._window_size;
-            self.changed_window_size(&ui_manager._window_size);
-            self._need_to_refresh = false;
+        if 0 < ui_manager._window_size.x && 0 < ui_manager._window_size.y {
+            if self._need_to_refresh || self._window_size != ui_manager._window_size {
+                self._window_size = ui_manager._window_size;
+                self.changed_window_size(&ui_manager._window_size);
+                self._need_to_refresh = false;
+            }
         }
 
         if let Some(key_binding_widget_manager) = self._key_binding_widget_manager.as_mut() {

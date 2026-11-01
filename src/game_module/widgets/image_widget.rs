@@ -185,6 +185,9 @@ impl<'a> ImageLayout<'a> {
     }
 
     pub fn changed_window_size(&mut self, window_size: &Vector2<i32>) {
+        if window_size.x <= 0 || window_size.y <= 0 {
+            return;
+        }
         self._window_size = *window_size;
         let window_aspect: f32 = window_size.x as f32 / window_size.y as f32;
         let image_widget = ptr_as_mut(self._image_layout.as_ref());

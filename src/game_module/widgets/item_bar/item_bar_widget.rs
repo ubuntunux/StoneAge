@@ -953,6 +953,9 @@ impl<'a> ItemBarWidget<'a> {
     }
 
     pub fn changed_window_size(&mut self, window_size: &Vector2<i32>) {
+        if window_size.x <= 0 || window_size.y <= 0 {
+            return;
+        }
         self._window_size = *window_size;
         self.update_selected_item_helper_widget(true);
         self.select_item(self.get_selected_item_index());

@@ -369,6 +369,9 @@ impl<'a> GameMenuWidget<'a> {
     }
 
     pub fn changed_window_size(&mut self, window_size: &Vector2<i32>) {
+        if window_size.x <= 0 || window_size.y <= 0 {
+            return;
+        }
         self._inventory_widget.changed_window_size(window_size);
         self._craft_widget.changed_window_size(window_size);
         self._player_records_widget.changed_window_size(window_size);
