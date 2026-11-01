@@ -860,6 +860,7 @@ impl<'a> ToolboxTabWidget<'a> {
         ui.set_font_color(COLOR_TEXT_MUTED);
         ui.set_color(COLOR_TRANSPARENT);
         ui.set_margin_bottom(12.0);
+        ui.set_wrap(true);
         detail_desc_box_mut.add_widget(&detail_desc_lbl);
         detail_info_labels.push(detail_desc_lbl);
 

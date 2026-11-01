@@ -638,8 +638,8 @@ impl<'a> ScenarioBase<'a> for ScenarioUsingOumuamua<'a> {
                         // Quest 4: 텔레포트 체크
                         let game_scene_manager = get_game_scene_manager();
                         let is_teleporting = game_scene_manager.is_teleport_mode();
-                        let reached_jungle =
-                            game_scene_manager.get_current_game_scene_data_name() == Stages::Jungle.get_stage_data_name();
+                        let reached_jungle = game_scene_manager.get_current_game_scene_data_name()
+                            == Stages::Jungle.get_stage_data_name();
                         if is_teleporting || reached_jungle {
                             complete_quest_item(&self._sub_quest_teleport);
                         }
