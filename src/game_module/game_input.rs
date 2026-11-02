@@ -998,6 +998,7 @@ pub struct CameraInput;
 
 impl CameraInput {
     pub const MOUSE_SENSITIVITY: f32 = 0.001;
+    pub const MAX_CAMERA_MOUSE_DELTA: f32 = 200.0;
 
     pub fn is_zoom_in(keyboard: &KeyboardInputData, joystick: &JoystickInputData, mouse_move: &MouseMoveData) -> bool {
         keyboard.get_key_hold(KeyCode::ArrowUp)
@@ -1016,10 +1017,12 @@ impl CameraInput {
         joystick: &JoystickInputData,
         mouse_move: &MouseMoveData,
     ) -> CameraControlState {
-        let mouse_pos_delta = Vector2::<f32>::new(
-            mouse_move._mouse_pos_delta.x as f32,
-            mouse_move._mouse_pos_delta.y as f32,
-        ) * Self::MOUSE_SENSITIVITY;
+        let clamped_delta_x =
+            (mouse_move._mouse_pos_delta.x as f32).clamp(-Self::MAX_CAMERA_MOUSE_DELTA, Self::MAX_CAMERA_MOUSE_DELTA);
+        let clamped_delta_y =
+            (mouse_move._mouse_pos_delta.y as f32).clamp(-Self::MAX_CAMERA_MOUSE_DELTA, Self::MAX_CAMERA_MOUSE_DELTA);
+
+        let mouse_pos_delta = Vector2::<f32>::new(clamped_delta_x, clamped_delta_y) * Self::MOUSE_SENSITIVITY;
         let mouse_scroll_delta =
             Vector2::<f32>::new(mouse_move._scroll_delta.x as f32, mouse_move._scroll_delta.y as f32);
 
@@ -1384,5 +1387,18 @@ mod tests {
         assert_eq!(stick_control._yaw, 5000.0 * JOYSTICK_SENSITIVITY);
         assert_eq!(stick_control._pitch, 3000.0 * JOYSTICK_SENSITIVITY);
         assert_eq!(stick_control._zoom, 0.0);
+
+        // test spike delta clamping
+        mouse_move._mouse_pos_delta = Vector2::new(1000, -1000);
+        joystick._stick_right_direction = Vector2::zeros();
+        let clamped_control = CameraInput::get_camera_control_state(&keyboard, &joystick, &mouse_move);
+        assert_eq!(
+            clamped_control._yaw,
+            CameraInput::MAX_CAMERA_MOUSE_DELTA * CameraInput::MOUSE_SENSITIVITY
+        );
+        assert_eq!(
+            clamped_control._pitch,
+            -CameraInput::MAX_CAMERA_MOUSE_DELTA * CameraInput::MOUSE_SENSITIVITY
+        );
     }
 }
