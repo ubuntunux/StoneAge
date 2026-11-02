@@ -22,7 +22,55 @@ use std::rc::Rc;
 
 const BTN_DISABLED_COLOR: u32 = get_color32(210, 185, 150, 255);
 const BTN_LOAD_COLOR: u32 = get_color32(70, 135, 200, 240);
+const BTN_LOAD_FOCUSED_COLOR: u32 = get_color32(100, 175, 245, 255);
+const BTN_SAVE_COLOR: u32 = get_color32(118, 168, 68, 240);
+const BTN_SAVE_FOCUSED_COLOR: u32 = get_color32(150, 210, 85, 255);
 const BTN_DELETE_COLOR: u32 = get_color32(200, 75, 60, 255);
+const BTN_DELETE_FOCUSED_COLOR: u32 = get_color32(240, 105, 90, 255);
+const BTN_NEW_GAME_COLOR: u32 = get_color32(118, 168, 68, 240);
+const BTN_NEW_GAME_FOCUSED_COLOR: u32 = get_color32(150, 210, 85, 255);
+const BTN_EXIT_GAME_COLOR: u32 = get_color32(200, 75, 60, 255);
+const BTN_EXIT_GAME_FOCUSED_COLOR: u32 = get_color32(230, 100, 85, 255);
+const SLOT_CARD_NORMAL_COLOR: u32 = get_color32(245, 232, 205, 230);
+const SLOT_CARD_SELECTED_COLOR: u32 = get_color32(235, 205, 155, 240);
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum SlotButtonFocus {
+    Load,
+    Save,
+    Delete,
+}
+
+impl SlotButtonFocus {
+    pub fn next(self, has_save_data: bool) -> Self {
+        if !has_save_data {
+            return SlotButtonFocus::Save;
+        }
+        match self {
+            SlotButtonFocus::Load => SlotButtonFocus::Save,
+            SlotButtonFocus::Save => SlotButtonFocus::Delete,
+            SlotButtonFocus::Delete => SlotButtonFocus::Delete,
+        }
+    }
+
+    pub fn prev(self, has_save_data: bool) -> Self {
+        if !has_save_data {
+            return SlotButtonFocus::Save;
+        }
+        match self {
+            SlotButtonFocus::Load => SlotButtonFocus::Load,
+            SlotButtonFocus::Save => SlotButtonFocus::Load,
+            SlotButtonFocus::Delete => SlotButtonFocus::Save,
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum SaveLoadFocusTarget {
+    Slot(usize, SlotButtonFocus),
+    NewGame,
+    ExitGame,
+}
 
 fn is_popup_opened(popup: Option<&RcRefCell<PopupWindowWidget<'_>>>) -> bool {
     if let Some(p) = popup {
@@ -64,6 +112,7 @@ pub struct SaveLoadSlotWidget<'a> {
     pub _slot_items: Vec<Box<SaveLoadSlotItem<'a>>>,
     pub _slot_names: Vec<String>,
     pub _selected_slot_index: usize,
+    pub _focus_target: SaveLoadFocusTarget,
     pub _is_opened: bool,
     pub _nav_repeat_controller: WidgetNavRepeatController,
     pub _need_rebuild_slot_list: bool,
@@ -77,7 +126,9 @@ impl<'a> SaveLoadSlotWidget<'a> {
     ) -> bool {
         let slot_item = ptr_as_ref(ui_component.get_user_data() as *const SaveLoadSlotItem<'a>);
         let slot_widget = ptr_as_mut(slot_item._slot_widget);
-        slot_widget.set_selected_slot(slot_item._slot_index, false);
+        if slot_widget._selected_slot_index != slot_item._slot_index {
+            slot_widget.set_selected_slot(slot_item._slot_index, false);
+        }
         true
     }
 
@@ -87,6 +138,52 @@ impl<'a> SaveLoadSlotWidget<'a> {
         _touched_pos_delta: &Vector2<f32>,
     ) -> bool {
         get_audio_manager_mut().play_audio_bank(AUDIO_SELECT_ITEM, AudioLoop::ONCE, None);
+        true
+    }
+
+    pub fn callback_touch_over_slot_load(
+        ui_component: &UIComponentInstance<'a>,
+        _touched_pos: &Vector2<f32>,
+        _touched_pos_delta: &Vector2<f32>,
+    ) -> bool {
+        let slot_item = ptr_as_ref(ui_component.get_user_data() as *const SaveLoadSlotItem<'a>);
+        let slot_widget = ptr_as_mut(slot_item._slot_widget);
+        if slot_widget.has_save_data_at(slot_item._slot_index) {
+            slot_widget.set_focus_target(
+                SaveLoadFocusTarget::Slot(slot_item._slot_index, SlotButtonFocus::Load),
+                false,
+            );
+        }
+        true
+    }
+
+    pub fn callback_touch_over_slot_save(
+        ui_component: &UIComponentInstance<'a>,
+        _touched_pos: &Vector2<f32>,
+        _touched_pos_delta: &Vector2<f32>,
+    ) -> bool {
+        let slot_item = ptr_as_ref(ui_component.get_user_data() as *const SaveLoadSlotItem<'a>);
+        let slot_widget = ptr_as_mut(slot_item._slot_widget);
+        slot_widget.set_focus_target(
+            SaveLoadFocusTarget::Slot(slot_item._slot_index, SlotButtonFocus::Save),
+            false,
+        );
+        true
+    }
+
+    pub fn callback_touch_over_slot_delete(
+        ui_component: &UIComponentInstance<'a>,
+        _touched_pos: &Vector2<f32>,
+        _touched_pos_delta: &Vector2<f32>,
+    ) -> bool {
+        let slot_item = ptr_as_ref(ui_component.get_user_data() as *const SaveLoadSlotItem<'a>);
+        let slot_widget = ptr_as_mut(slot_item._slot_widget);
+        if slot_widget.has_save_data_at(slot_item._slot_index) {
+            slot_widget.set_focus_target(
+                SaveLoadFocusTarget::Slot(slot_item._slot_index, SlotButtonFocus::Delete),
+                false,
+            );
+        }
         true
     }
 
@@ -167,6 +264,26 @@ impl<'a> SaveLoadSlotWidget<'a> {
         {
             popup_guard.close();
         }
+        true
+    }
+
+    pub fn callback_touch_over_new_game(
+        ui_component: &UIComponentInstance<'a>,
+        _touched_pos: &Vector2<f32>,
+        _touched_pos_delta: &Vector2<f32>,
+    ) -> bool {
+        let slot_widget = ptr_as_mut(ui_component.get_user_data() as *const SaveLoadSlotWidget<'a>);
+        slot_widget.set_focus_target(SaveLoadFocusTarget::NewGame, false);
+        true
+    }
+
+    pub fn callback_touch_over_exit_game(
+        ui_component: &UIComponentInstance<'a>,
+        _touched_pos: &Vector2<f32>,
+        _touched_pos_delta: &Vector2<f32>,
+    ) -> bool {
+        let slot_widget = ptr_as_mut(ui_component.get_user_data() as *const SaveLoadSlotWidget<'a>);
+        slot_widget.set_focus_target(SaveLoadFocusTarget::ExitGame, false);
         true
     }
 
@@ -251,11 +368,11 @@ impl<'a> SaveLoadSlotWidget<'a> {
             ui_comp.set_text("New Game");
             ui_comp.set_font_size(22.0);
             ui_comp.set_font_color(get_color32(255, 255, 255, 255));
-            ui_comp.set_color(get_color32(118, 168, 68, 240));
+            ui_comp.set_color(BTN_NEW_GAME_COLOR);
             ui_comp.set_round(5.0);
             ui_comp.set_touchable(true);
             ui_comp.set_callback_touch_down(Some(Box::new(SaveLoadSlotWidget::callback_touch_down_new_game)));
-            ui_comp.set_callback_touch_over(Some(Box::new(SaveLoadSlotWidget::callback_button_touch_over)));
+            ui_comp.set_callback_touch_over(Some(Box::new(SaveLoadSlotWidget::callback_touch_over_new_game)));
         }
         header_mut.add_widget(&new_game_btn);
 
@@ -270,11 +387,11 @@ impl<'a> SaveLoadSlotWidget<'a> {
             ui_comp.set_text("Exit Game");
             ui_comp.set_font_size(22.0);
             ui_comp.set_font_color(get_color32(255, 255, 255, 255));
-            ui_comp.set_color(get_color32(200, 75, 60, 255));
+            ui_comp.set_color(BTN_EXIT_GAME_COLOR);
             ui_comp.set_round(5.0);
             ui_comp.set_touchable(true);
             ui_comp.set_callback_touch_down(Some(Box::new(SaveLoadSlotWidget::callback_touch_down_exit_game)));
-            ui_comp.set_callback_touch_over(Some(Box::new(SaveLoadSlotWidget::callback_button_touch_over)));
+            ui_comp.set_callback_touch_over(Some(Box::new(SaveLoadSlotWidget::callback_touch_over_exit_game)));
         }
         header_mut.add_widget(&exit_game_btn);
 
@@ -329,6 +446,7 @@ impl<'a> SaveLoadSlotWidget<'a> {
             _slot_items: Vec::new(),
             _slot_names: Vec::new(),
             _selected_slot_index: 0,
+            _focus_target: SaveLoadFocusTarget::Slot(0, SlotButtonFocus::Save),
             _is_opened: false,
             _nav_repeat_controller: WidgetNavRepeatController::new(),
             _need_rebuild_slot_list: false,
@@ -376,12 +494,19 @@ impl<'a> SaveLoadSlotWidget<'a> {
             let parent_mut = ptr_as_mut::<WidgetDefault<'a>>(self._parent_widget);
             parent_mut.add_widget(&self._layer);
             self._is_opened = true;
+            self._nav_repeat_controller.reset();
             self._selected_slot_index = 0;
             if self._slot_items.is_empty() {
                 self.init_slot_list();
             } else {
                 self.refresh_slot_states();
             }
+            let default_btn = if self.has_save_data_at(0) {
+                SlotButtonFocus::Load
+            } else {
+                SlotButtonFocus::Save
+            };
+            self.set_focus_target(SaveLoadFocusTarget::Slot(0, default_btn), true);
         }
     }
 
@@ -407,11 +532,11 @@ impl<'a> SaveLoadSlotWidget<'a> {
         let container_mut = ptr_as_mut::<WidgetDefault<'a>>(self._slot_container.as_ref());
         let slot_card = UIManager::create_widget("slot_card", UIWidgetTypes::Default);
 
-        let is_selected = index == self._selected_slot_index;
+        let is_selected = matches!(self._focus_target, SaveLoadFocusTarget::Slot(idx, _) if idx == index);
         let card_color = if is_selected {
-            get_color32(235, 205, 155, 240)
+            SLOT_CARD_SELECTED_COLOR
         } else {
-            get_color32(245, 232, 205, 230)
+            SLOT_CARD_NORMAL_COLOR
         };
 
         {
@@ -547,20 +672,21 @@ impl<'a> SaveLoadSlotWidget<'a> {
         {
             let load_ui = ptr_as_mut(load_btn.as_ref()).get_ui_component_mut();
             load_ui.set_callback_touch_down(Some(Box::new(SaveLoadSlotWidget::callback_touch_down_slot_load)));
-            load_ui.set_callback_touch_over(Some(Box::new(SaveLoadSlotWidget::callback_button_touch_over)));
+            load_ui.set_callback_touch_over(Some(Box::new(SaveLoadSlotWidget::callback_touch_over_slot_load)));
             load_ui.set_user_data(item_ptr);
         }
 
         {
             let save_ui = ptr_as_mut(save_btn.as_ref()).get_ui_component_mut();
             save_ui.set_callback_touch_down(Some(Box::new(SaveLoadSlotWidget::callback_touch_down_slot_save)));
-            save_ui.set_callback_touch_over(Some(Box::new(SaveLoadSlotWidget::callback_button_touch_over)));
+            save_ui.set_callback_touch_over(Some(Box::new(SaveLoadSlotWidget::callback_touch_over_slot_save)));
             save_ui.set_user_data(item_ptr);
         }
 
         {
             let delete_ui = ptr_as_mut(delete_btn.as_ref()).get_ui_component_mut();
             delete_ui.set_callback_touch_down(Some(Box::new(SaveLoadSlotWidget::callback_touch_down_slot_delete)));
+            delete_ui.set_callback_touch_over(Some(Box::new(SaveLoadSlotWidget::callback_touch_over_slot_delete)));
             delete_ui.set_user_data(item_ptr);
         }
 
@@ -650,28 +776,121 @@ impl<'a> SaveLoadSlotWidget<'a> {
         }
     }
 
-    pub fn set_selected_slot(&mut self, index: usize, force: bool) {
-        if index < self._slot_items.len() && (self._selected_slot_index != index || force) {
-            let prev_index = self._selected_slot_index;
-            self._selected_slot_index = index;
+    pub fn has_save_data_at(&self, slot_index: usize) -> bool {
+        if slot_index < self._slot_names.len() {
+            get_game_resources().has_game_save_data(&self._slot_names[slot_index])
+        } else {
+            false
+        }
+    }
 
-            if prev_index < self._slot_items.len() {
-                let prev_card = &self._slot_items[prev_index]._item_widget;
-                ptr_as_mut::<WidgetDefault<'a>>(prev_card.as_ref())
-                    .get_ui_component_mut()
-                    .set_color(get_color32(245, 232, 205, 230));
+    fn update_slot_buttons_highlight(&self, slot_index: usize, focused_btn: Option<SlotButtonFocus>) {
+        if slot_index < self._slot_items.len() && slot_index < self._slot_names.len() {
+            let has_save_data = self.has_save_data_at(slot_index);
+            let item = &self._slot_items[slot_index];
+
+            let load_color = if !has_save_data {
+                BTN_DISABLED_COLOR
+            } else if focused_btn == Some(SlotButtonFocus::Load) {
+                BTN_LOAD_FOCUSED_COLOR
+            } else {
+                BTN_LOAD_COLOR
+            };
+            ptr_as_mut::<WidgetDefault<'a>>(item._load_btn.as_ref()).get_ui_component_mut().set_color(load_color);
+
+            let save_color = if focused_btn == Some(SlotButtonFocus::Save) {
+                BTN_SAVE_FOCUSED_COLOR
+            } else {
+                BTN_SAVE_COLOR
+            };
+            ptr_as_mut::<WidgetDefault<'a>>(item._save_btn.as_ref()).get_ui_component_mut().set_color(save_color);
+
+            let delete_color = if !has_save_data {
+                BTN_DISABLED_COLOR
+            } else if focused_btn == Some(SlotButtonFocus::Delete) {
+                BTN_DELETE_FOCUSED_COLOR
+            } else {
+                BTN_DELETE_COLOR
+            };
+            ptr_as_mut::<WidgetDefault<'a>>(item._delete_btn.as_ref()).get_ui_component_mut().set_color(delete_color);
+        }
+    }
+
+    pub fn set_focus_target(&mut self, target: SaveLoadFocusTarget, force: bool) {
+        if self._focus_target != target || force {
+            let prev_target = self._focus_target;
+            self._focus_target = target;
+
+            match prev_target {
+                SaveLoadFocusTarget::Slot(prev_index, _) => {
+                    if prev_index < self._slot_items.len() {
+                        let prev_card = &self._slot_items[prev_index]._item_widget;
+                        ptr_as_mut::<WidgetDefault<'a>>(prev_card.as_ref())
+                            .get_ui_component_mut()
+                            .set_color(SLOT_CARD_NORMAL_COLOR);
+                        self.update_slot_buttons_highlight(prev_index, None);
+                    }
+                }
+                SaveLoadFocusTarget::NewGame => {
+                    ptr_as_mut::<WidgetDefault<'a>>(self._new_game_btn.as_ref())
+                        .get_ui_component_mut()
+                        .set_color(BTN_NEW_GAME_COLOR);
+                }
+                SaveLoadFocusTarget::ExitGame => {
+                    ptr_as_mut::<WidgetDefault<'a>>(self._exit_game_btn.as_ref())
+                        .get_ui_component_mut()
+                        .set_color(BTN_EXIT_GAME_COLOR);
+                }
             }
 
-            let curr_card = &self._slot_items[index]._item_widget;
-            let curr_card_mut = ptr_as_mut::<WidgetDefault<'a>>(curr_card.as_ref());
-            curr_card_mut.get_ui_component_mut().set_color(get_color32(235, 205, 155, 240));
+            match target {
+                SaveLoadFocusTarget::Slot(index, btn) => {
+                    if index < self._slot_items.len() {
+                        self._selected_slot_index = index;
+                        let curr_card = &self._slot_items[index]._item_widget;
+                        let curr_card_mut = ptr_as_mut::<WidgetDefault<'a>>(curr_card.as_ref());
+                        curr_card_mut.get_ui_component_mut().set_color(SLOT_CARD_SELECTED_COLOR);
 
-            let container_mut = ptr_as_mut::<WidgetDefault<'a>>(self._slot_container.as_ref());
-            container_mut.get_ui_component_mut().scroll_into_view(curr_card_mut.get_ui_component());
+                        let container_mut = ptr_as_mut::<WidgetDefault<'a>>(self._slot_container.as_ref());
+                        container_mut.get_ui_component_mut().scroll_into_view(curr_card_mut.get_ui_component());
+
+                        self.update_slot_buttons_highlight(index, Some(btn));
+
+                        let item = &self._slot_items[index];
+                        let target_widget = match btn {
+                            SlotButtonFocus::Load => &item._load_btn,
+                            SlotButtonFocus::Save => &item._save_btn,
+                            SlotButtonFocus::Delete => &item._delete_btn,
+                        };
+                        move_mouse_to_ui_component(target_widget.get_ui_component());
+                    }
+                }
+                SaveLoadFocusTarget::NewGame => {
+                    let btn_mut = ptr_as_mut::<WidgetDefault<'a>>(self._new_game_btn.as_ref());
+                    btn_mut.get_ui_component_mut().set_color(BTN_NEW_GAME_FOCUSED_COLOR);
+                    move_mouse_to_ui_component(btn_mut.get_ui_component());
+                }
+                SaveLoadFocusTarget::ExitGame => {
+                    let btn_mut = ptr_as_mut::<WidgetDefault<'a>>(self._exit_game_btn.as_ref());
+                    btn_mut.get_ui_component_mut().set_color(BTN_EXIT_GAME_FOCUSED_COLOR);
+                    move_mouse_to_ui_component(btn_mut.get_ui_component());
+                }
+            }
 
             if !force {
-                get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
+                get_audio_manager_mut().play_audio_bank(AUDIO_SELECT_ITEM, AudioLoop::ONCE, None);
             }
+        }
+    }
+
+    pub fn set_selected_slot(&mut self, index: usize, force: bool) {
+        if index < self._slot_items.len() {
+            let default_btn = if self.has_save_data_at(index) {
+                SlotButtonFocus::Load
+            } else {
+                SlotButtonFocus::Save
+            };
+            self.set_focus_target(SaveLoadFocusTarget::Slot(index, default_btn), force);
         }
     }
 
@@ -756,7 +975,7 @@ impl<'a> SaveLoadSlotWidget<'a> {
             get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
             self.update_slot_item_ui(slot_index);
             self.ensure_empty_slot_exists();
-            self.set_selected_slot(slot_index, true);
+            self.set_focus_target(SaveLoadFocusTarget::Slot(slot_index, SlotButtonFocus::Save), true);
             if let Some(popup) = self._save_complete_popup.as_ref()
                 && let Ok(mut popup_guard) = popup.try_borrow_mut()
             {
@@ -795,20 +1014,40 @@ impl<'a> SaveLoadSlotWidget<'a> {
         let (should_move, dir_opt) =
             self._nav_repeat_controller.update(keyboard_input_data, joystick_input_data, delta_time);
 
-        if should_move && let Some((_dir_x, dir_y)) = dir_opt {
-            let next_index = if dir_y < 0 {
-                Some(self._selected_slot_index.saturating_sub(1))
-            } else if dir_y > 0 {
-                let max_index = self._slot_items.len().saturating_sub(1);
-                Some((self._selected_slot_index + 1).min(max_index))
-            } else {
-                None
-            };
-            if let Some(idx) = next_index {
-                self.set_selected_slot(idx, false);
-                if let Some(slot_item) = self._slot_items.get(idx) {
-                    move_mouse_to_ui_component(slot_item._item_widget.get_ui_component());
+        if should_move && let Some((dir_x, dir_y)) = dir_opt {
+            let next_target =
+                Self::compute_next_focus_target(self._focus_target, dir_x, dir_y, self._slot_items.len(), |idx| {
+                    self.has_save_data_at(idx)
+                });
+
+            if let Some(target) = next_target {
+                self.set_focus_target(target, false);
+            }
+        }
+
+        if UiInput::is_confirm(keyboard_input_data, joystick_input_data) {
+            match self._focus_target {
+                SaveLoadFocusTarget::NewGame => {
+                    self.new_game();
                 }
+                SaveLoadFocusTarget::ExitGame => {
+                    self.exit_game();
+                }
+                SaveLoadFocusTarget::Slot(idx, btn) => match btn {
+                    SlotButtonFocus::Load => {
+                        if self.has_save_data_at(idx) {
+                            self.load_slot(idx);
+                        }
+                    }
+                    SlotButtonFocus::Save => {
+                        self.save_slot(idx);
+                    }
+                    SlotButtonFocus::Delete => {
+                        if self.has_save_data_at(idx) {
+                            self.request_delete_slot(idx);
+                        }
+                    }
+                },
             }
         }
 
@@ -816,5 +1055,274 @@ impl<'a> SaveLoadSlotWidget<'a> {
             self.close_slot_widget();
             get_game_ui_manager_mut().close_game_menu();
         }
+    }
+
+    pub fn compute_next_focus_target(
+        curr_target: SaveLoadFocusTarget,
+        dir_x: i32,
+        dir_y: i32,
+        slot_count: usize,
+        has_save_data: impl Fn(usize) -> bool,
+    ) -> Option<SaveLoadFocusTarget> {
+        match curr_target {
+            SaveLoadFocusTarget::NewGame => {
+                if dir_y > 0 {
+                    let btn = if has_save_data(0) {
+                        SlotButtonFocus::Load
+                    } else {
+                        SlotButtonFocus::Save
+                    };
+                    Some(SaveLoadFocusTarget::Slot(0, btn))
+                } else if dir_x != 0 {
+                    Some(SaveLoadFocusTarget::ExitGame)
+                } else {
+                    None
+                }
+            }
+            SaveLoadFocusTarget::ExitGame => {
+                if dir_y > 0 {
+                    let btn = if has_save_data(0) {
+                        SlotButtonFocus::Load
+                    } else {
+                        SlotButtonFocus::Save
+                    };
+                    Some(SaveLoadFocusTarget::Slot(0, btn))
+                } else if dir_x != 0 {
+                    Some(SaveLoadFocusTarget::NewGame)
+                } else {
+                    None
+                }
+            }
+            SaveLoadFocusTarget::Slot(idx, btn) => {
+                if dir_y < 0 {
+                    if idx == 0 {
+                        Some(SaveLoadFocusTarget::NewGame)
+                    } else {
+                        let target_idx = idx - 1;
+                        let next_btn = if has_save_data(target_idx) {
+                            btn
+                        } else {
+                            SlotButtonFocus::Save
+                        };
+                        Some(SaveLoadFocusTarget::Slot(target_idx, next_btn))
+                    }
+                } else if dir_y > 0 {
+                    let max_index = slot_count.saturating_sub(1);
+                    let target_idx = (idx + 1).min(max_index);
+                    let next_btn = if has_save_data(target_idx) {
+                        btn
+                    } else {
+                        SlotButtonFocus::Save
+                    };
+                    Some(SaveLoadFocusTarget::Slot(target_idx, next_btn))
+                } else if dir_x != 0 {
+                    let has_data = has_save_data(idx);
+                    let next_btn = if dir_x > 0 {
+                        btn.next(has_data)
+                    } else {
+                        btn.prev(has_data)
+                    };
+                    Some(SaveLoadFocusTarget::Slot(idx, next_btn))
+                } else {
+                    None
+                }
+            }
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_save_load_navigation_vertical_and_horizontal() {
+        let slot_count = 3;
+        let has_save_data = |idx| idx == 0; // slot 0만 세이브 데이터 있음
+
+        // 1. 슬롯 최상단(0)에서 위쪽 방향키 -> New Game으로 이동
+        let next = SaveLoadSlotWidget::compute_next_focus_target(
+            SaveLoadFocusTarget::Slot(0, SlotButtonFocus::Load),
+            0,
+            -1,
+            slot_count,
+            has_save_data,
+        );
+        assert_eq!(next, Some(SaveLoadFocusTarget::NewGame));
+
+        // 2. 슬롯 1번에서 위쪽 방향키 -> 슬롯 0번으로 이동 (0번은 데이터가 있으므로 포커스 버튼 유지)
+        let next = SaveLoadSlotWidget::compute_next_focus_target(
+            SaveLoadFocusTarget::Slot(1, SlotButtonFocus::Save),
+            0,
+            -1,
+            slot_count,
+            has_save_data,
+        );
+        assert_eq!(next, Some(SaveLoadFocusTarget::Slot(0, SlotButtonFocus::Save)));
+
+        // 3. New Game에서 아래쪽 방향키 -> 슬롯 0번으로 이동 (데이터가 있으므로 기본 Load)
+        let next = SaveLoadSlotWidget::compute_next_focus_target(
+            SaveLoadFocusTarget::NewGame,
+            0,
+            1,
+            slot_count,
+            has_save_data,
+        );
+        assert_eq!(next, Some(SaveLoadFocusTarget::Slot(0, SlotButtonFocus::Load)));
+
+        // 4. Exit Game에서 아래쪽 방향키 -> 슬롯 0번으로 이동
+        let next = SaveLoadSlotWidget::compute_next_focus_target(
+            SaveLoadFocusTarget::ExitGame,
+            0,
+            1,
+            slot_count,
+            has_save_data,
+        );
+        assert_eq!(next, Some(SaveLoadFocusTarget::Slot(0, SlotButtonFocus::Load)));
+
+        // 5. New Game에서 오른쪽 방향키 -> Exit Game으로 이동
+        let next = SaveLoadSlotWidget::compute_next_focus_target(
+            SaveLoadFocusTarget::NewGame,
+            1,
+            0,
+            slot_count,
+            has_save_data,
+        );
+        assert_eq!(next, Some(SaveLoadFocusTarget::ExitGame));
+
+        // 6. New Game에서 왼쪽 방향키 -> Exit Game으로 이동
+        let next = SaveLoadSlotWidget::compute_next_focus_target(
+            SaveLoadFocusTarget::NewGame,
+            -1,
+            0,
+            slot_count,
+            has_save_data,
+        );
+        assert_eq!(next, Some(SaveLoadFocusTarget::ExitGame));
+
+        // 7. Exit Game에서 왼쪽 방향키 -> New Game으로 이동
+        let next = SaveLoadSlotWidget::compute_next_focus_target(
+            SaveLoadFocusTarget::ExitGame,
+            -1,
+            0,
+            slot_count,
+            has_save_data,
+        );
+        assert_eq!(next, Some(SaveLoadFocusTarget::NewGame));
+
+        // 8. Exit Game에서 오른쪽 방향키 -> New Game으로 이동
+        let next = SaveLoadSlotWidget::compute_next_focus_target(
+            SaveLoadFocusTarget::ExitGame,
+            1,
+            0,
+            slot_count,
+            has_save_data,
+        );
+        assert_eq!(next, Some(SaveLoadFocusTarget::NewGame));
+
+        // 9. 슬롯 0번에서 아래쪽 방향키 -> 슬롯 1번으로 이동 (슬롯 1번은 데이터가 없으므로 Save로 조정됨)
+        let next = SaveLoadSlotWidget::compute_next_focus_target(
+            SaveLoadFocusTarget::Slot(0, SlotButtonFocus::Load),
+            0,
+            1,
+            slot_count,
+            has_save_data,
+        );
+        assert_eq!(next, Some(SaveLoadFocusTarget::Slot(1, SlotButtonFocus::Save)));
+
+        // 10. 슬롯 최하단(2)에서 아래쪽 방향키 -> 최하단 유지
+        let next = SaveLoadSlotWidget::compute_next_focus_target(
+            SaveLoadFocusTarget::Slot(2, SlotButtonFocus::Save),
+            0,
+            1,
+            slot_count,
+            has_save_data,
+        );
+        assert_eq!(next, Some(SaveLoadFocusTarget::Slot(2, SlotButtonFocus::Save)));
+    }
+
+    #[test]
+    fn test_slot_button_focus_horizontal() {
+        let slot_count = 3;
+
+        // 세이브 데이터가 있는 슬롯 (Load <-> Save <-> Delete 양 끝 멈춤)
+        let has_save_data = |_idx| true;
+
+        // Load -> Save -> Delete -> Delete 유지 (오른쪽 이동)
+        let next = SaveLoadSlotWidget::compute_next_focus_target(
+            SaveLoadFocusTarget::Slot(0, SlotButtonFocus::Load),
+            1,
+            0,
+            slot_count,
+            has_save_data,
+        );
+        assert_eq!(next, Some(SaveLoadFocusTarget::Slot(0, SlotButtonFocus::Save)));
+
+        let next = SaveLoadSlotWidget::compute_next_focus_target(
+            SaveLoadFocusTarget::Slot(0, SlotButtonFocus::Save),
+            1,
+            0,
+            slot_count,
+            has_save_data,
+        );
+        assert_eq!(next, Some(SaveLoadFocusTarget::Slot(0, SlotButtonFocus::Delete)));
+
+        let next = SaveLoadSlotWidget::compute_next_focus_target(
+            SaveLoadFocusTarget::Slot(0, SlotButtonFocus::Delete),
+            1,
+            0,
+            slot_count,
+            has_save_data,
+        );
+        assert_eq!(next, Some(SaveLoadFocusTarget::Slot(0, SlotButtonFocus::Delete)));
+
+        // Delete -> Save -> Load -> Load 유지 (왼쪽 이동)
+        let next = SaveLoadSlotWidget::compute_next_focus_target(
+            SaveLoadFocusTarget::Slot(0, SlotButtonFocus::Delete),
+            -1,
+            0,
+            slot_count,
+            has_save_data,
+        );
+        assert_eq!(next, Some(SaveLoadFocusTarget::Slot(0, SlotButtonFocus::Save)));
+
+        let next = SaveLoadSlotWidget::compute_next_focus_target(
+            SaveLoadFocusTarget::Slot(0, SlotButtonFocus::Save),
+            -1,
+            0,
+            slot_count,
+            has_save_data,
+        );
+        assert_eq!(next, Some(SaveLoadFocusTarget::Slot(0, SlotButtonFocus::Load)));
+
+        let next = SaveLoadSlotWidget::compute_next_focus_target(
+            SaveLoadFocusTarget::Slot(0, SlotButtonFocus::Load),
+            -1,
+            0,
+            slot_count,
+            has_save_data,
+        );
+        assert_eq!(next, Some(SaveLoadFocusTarget::Slot(0, SlotButtonFocus::Load)));
+
+        // 세이브 데이터가 없는 빈 슬롯 (Save 버튼만 활성화되므로 좌우 이동해도 Save 유지)
+        let has_no_save_data = |_idx| false;
+
+        let next = SaveLoadSlotWidget::compute_next_focus_target(
+            SaveLoadFocusTarget::Slot(0, SlotButtonFocus::Save),
+            1,
+            0,
+            slot_count,
+            has_no_save_data,
+        );
+        assert_eq!(next, Some(SaveLoadFocusTarget::Slot(0, SlotButtonFocus::Save)));
+
+        let next = SaveLoadSlotWidget::compute_next_focus_target(
+            SaveLoadFocusTarget::Slot(0, SlotButtonFocus::Save),
+            -1,
+            0,
+            slot_count,
+            has_no_save_data,
+        );
+        assert_eq!(next, Some(SaveLoadFocusTarget::Slot(0, SlotButtonFocus::Save)));
     }
 }

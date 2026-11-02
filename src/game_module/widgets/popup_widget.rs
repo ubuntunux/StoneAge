@@ -23,6 +23,7 @@ pub struct PopupWindowWidget<'a> {
     pub _ok_callback: Option<(CallbackTouchEvent<'a>, *const c_void)>,
     pub _cancel_callback: Option<(CallbackTouchEvent<'a>, *const c_void)>,
     pub _is_opened: bool,
+    pub _just_opened: bool,
 }
 
 impl<'a> PopupWindowWidget<'a> {
@@ -160,6 +161,7 @@ impl<'a> PopupWindowWidget<'a> {
             _ok_callback: ok_callback,
             _cancel_callback: cancel_callback,
             _is_opened: false,
+            _just_opened: false,
         })
     }
 
@@ -170,6 +172,7 @@ impl<'a> PopupWindowWidget<'a> {
     pub fn open(&mut self, self_rc: &RcRefCell<PopupWindowWidget<'a>>) {
         if !self._is_opened {
             self._is_opened = true;
+            self._just_opened = true;
             let parent_mut = ptr_as_mut(self._parent_widget);
             parent_mut.add_widget(&self._layer);
             ptr_as_mut(self._layer.as_ref()).get_ui_component_mut().set_enable(true);
@@ -180,6 +183,7 @@ impl<'a> PopupWindowWidget<'a> {
     pub fn close(&mut self) {
         if self._is_opened {
             self._is_opened = false;
+            self._just_opened = false;
             let parent_mut = ptr_as_mut(self._parent_widget);
             parent_mut.remove_widget(self._layer.as_ref());
             ptr_as_mut(self._layer.as_ref()).get_ui_component_mut().set_enable(false);
@@ -196,6 +200,11 @@ impl<'a> PopupWindowWidget<'a> {
     ) -> bool {
         if !self._is_opened {
             return false;
+        }
+
+        if self._just_opened {
+            self._just_opened = false;
+            return true;
         }
 
         let press_cancel = UiInput::is_cancel(keyboard_input_data, joystick_input_data);
