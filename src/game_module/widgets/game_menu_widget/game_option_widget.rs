@@ -57,7 +57,6 @@ pub enum OptionItemType {
     MuteAudio,
     MouseSensitivity,
     InvertMouseY,
-    ShowDebugText,
 }
 
 impl OptionItemType {
@@ -69,15 +68,11 @@ impl OptionItemType {
             OptionItemType::MuteAudio => "Mute All Audio",
             OptionItemType::MouseSensitivity => "Mouse Sensitivity",
             OptionItemType::InvertMouseY => "Invert Mouse Y-Axis",
-            OptionItemType::ShowDebugText => "Show Debug Text",
         }
     }
 
     pub fn is_toggle(&self) -> bool {
-        matches!(
-            self,
-            OptionItemType::MuteAudio | OptionItemType::InvertMouseY | OptionItemType::ShowDebugText
-        )
+        matches!(self, OptionItemType::MuteAudio | OptionItemType::InvertMouseY)
     }
 }
 
@@ -546,9 +541,6 @@ impl<'a> GameOptionWidget<'a> {
             OptionItemType::InvertMouseY => {
                 self._game_option_data._invert_mouse_y = !self._game_option_data._invert_mouse_y;
             }
-            OptionItemType::ShowDebugText => {
-                self._game_option_data._show_debug_text = !self._game_option_data._show_debug_text;
-            }
         }
         self._game_option_data.apply();
         self.refresh_all_values();
@@ -581,9 +573,6 @@ impl<'a> GameOptionWidget<'a> {
             OptionItemType::InvertMouseY => {
                 self._game_option_data._invert_mouse_y = !self._game_option_data._invert_mouse_y;
             }
-            OptionItemType::ShowDebugText => {
-                self._game_option_data._show_debug_text = !self._game_option_data._show_debug_text;
-            }
         }
         self._game_option_data.apply();
         self.refresh_all_values();
@@ -598,9 +587,6 @@ impl<'a> GameOptionWidget<'a> {
             }
             OptionItemType::InvertMouseY => {
                 self._game_option_data._invert_mouse_y = !self._game_option_data._invert_mouse_y;
-            }
-            OptionItemType::ShowDebugText => {
-                self._game_option_data._show_debug_text = !self._game_option_data._show_debug_text;
             }
             _ => {
                 self.increment_option(item_type);
@@ -655,18 +641,6 @@ impl<'a> GameOptionWidget<'a> {
                 OptionItemType::InvertMouseY => {
                     if let Some(toggle_btn) = row._toggle_btn.as_ref() {
                         let is_on = self._game_option_data._invert_mouse_y;
-                        let ui = ptr_as_mut(toggle_btn.as_ref()).get_ui_component_mut();
-                        ui.set_text(if is_on { "ON" } else { "OFF" });
-                        ui.set_color(if is_on {
-                            COLOR_BTN_TOGGLE_ON
-                        } else {
-                            COLOR_BTN_TOGGLE_OFF
-                        });
-                    }
-                }
-                OptionItemType::ShowDebugText => {
-                    if let Some(toggle_btn) = row._toggle_btn.as_ref() {
-                        let is_on = self._game_option_data._show_debug_text;
                         let ui = ptr_as_mut(toggle_btn.as_ref()).get_ui_component_mut();
                         ui.set_text(if is_on { "ON" } else { "OFF" });
                         ui.set_color(if is_on {

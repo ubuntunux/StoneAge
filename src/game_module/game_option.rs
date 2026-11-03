@@ -1,4 +1,3 @@
-use rust_engine_3d::constants::SHOW_DEBUG_TEXT;
 use rust_engine_3d::core::engine_service_locator::get_audio_manager_mut;
 use serde::{Deserialize, Serialize};
 
@@ -8,7 +7,6 @@ pub const DEFAULT_SFX_VOLUME: f32 = 1.0;
 pub const DEFAULT_IS_MUTE: bool = false;
 pub const DEFAULT_MOUSE_SENSITIVITY: f32 = 1.0;
 pub const DEFAULT_INVERT_MOUSE_Y: bool = false;
-pub const DEFAULT_SHOW_DEBUG_TEXT: bool = false;
 
 pub const MIN_VOLUME: f32 = 0.0;
 pub const MAX_VOLUME: f32 = 1.0;
@@ -29,7 +27,6 @@ pub struct GameOptionData {
     pub _is_mute: bool,
     pub _mouse_sensitivity: f32,
     pub _invert_mouse_y: bool,
-    pub _show_debug_text: bool,
 }
 
 impl Default for GameOptionData {
@@ -41,7 +38,6 @@ impl Default for GameOptionData {
             _is_mute: DEFAULT_IS_MUTE,
             _mouse_sensitivity: DEFAULT_MOUSE_SENSITIVITY,
             _invert_mouse_y: DEFAULT_INVERT_MOUSE_Y,
-            _show_debug_text: DEFAULT_SHOW_DEBUG_TEXT,
         }
     }
 }
@@ -63,10 +59,6 @@ impl GameOptionData {
         let audio_manager = get_audio_manager_mut();
         audio_manager.set_bgm_volume(effective_bgm_volume);
         audio_manager._volume = (effective_sfx_volume * MAX_AUDIO_MIXER_VOLUME) as i32;
-
-        unsafe {
-            SHOW_DEBUG_TEXT = self._show_debug_text;
-        }
     }
 
     pub fn set_master_volume(&mut self, volume: f32) {
@@ -99,7 +91,6 @@ mod tests {
         assert_eq!(default_option._is_mute, DEFAULT_IS_MUTE);
         assert_eq!(default_option._mouse_sensitivity, DEFAULT_MOUSE_SENSITIVITY);
         assert_eq!(default_option._invert_mouse_y, DEFAULT_INVERT_MOUSE_Y);
-        assert_eq!(default_option._show_debug_text, DEFAULT_SHOW_DEBUG_TEXT);
 
         let json_str = serde_json::to_string_pretty(&default_option).expect("Serialization failed");
         let deserialized: GameOptionData = serde_json::from_str(&json_str).expect("Deserialization failed");
