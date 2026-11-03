@@ -1,4 +1,6 @@
-use rust_engine_3d::core::engine_service_locator::get_audio_manager_mut;
+use nalgebra::Vector2;
+use rust_engine_3d::core::engine_core::WindowMode;
+use rust_engine_3d::core::engine_service_locator::{get_audio_manager_mut, get_engine_core_mut};
 use rust_engine_3d::scene::ui::set_global_dpi_scale;
 use serde::{Deserialize, Serialize};
 use std::sync::atomic::{AtomicU32, Ordering};
@@ -12,6 +14,11 @@ pub const DEFAULT_INVERT_MOUSE_Y: bool = false;
 pub const DEFAULT_R_STICK_SENSITIVITY: f32 = 1.0;
 pub const DEFAULT_L_STICK_SENSITIVITY: f32 = 1.0;
 pub const DEFAULT_FONT_SCALE: f32 = 1.0;
+pub const DEFAULT_WINDOW_MODE: WindowMode = WindowMode::FullScreenBorderlessMode;
+pub const DEFAULT_MONITOR_INDEX: usize = 0;
+pub const DEFAULT_RESOLUTION_WIDTH: u32 = 1920;
+pub const DEFAULT_RESOLUTION_HEIGHT: u32 = 1080;
+pub const DEFAULT_RESOLUTION: Vector2<u32> = Vector2::new(DEFAULT_RESOLUTION_WIDTH, DEFAULT_RESOLUTION_HEIGHT);
 
 pub const MIN_VOLUME: f32 = 0.0;
 pub const MAX_VOLUME: f32 = 1.0;
@@ -59,6 +66,9 @@ pub struct GameOptionData {
     pub _r_stick_sensitivity: f32,
     pub _l_stick_sensitivity: f32,
     pub _font_scale: f32,
+    pub _window_mode: WindowMode,
+    pub _monitor_index: usize,
+    pub _resolution: Vector2<u32>,
 }
 
 impl Default for GameOptionData {
@@ -73,6 +83,9 @@ impl Default for GameOptionData {
             _r_stick_sensitivity: DEFAULT_R_STICK_SENSITIVITY,
             _l_stick_sensitivity: DEFAULT_L_STICK_SENSITIVITY,
             _font_scale: DEFAULT_FONT_SCALE,
+            _window_mode: DEFAULT_WINDOW_MODE,
+            _monitor_index: DEFAULT_MONITOR_INDEX,
+            _resolution: DEFAULT_RESOLUTION,
         }
     }
 }
@@ -100,6 +113,10 @@ impl GameOptionData {
         GLOBAL_FONT_SCALE.store(self._font_scale.to_bits(), Ordering::Relaxed);
 
         set_global_dpi_scale(self._font_scale);
+        let engine_core = get_engine_core_mut();
+        engine_core.set_window_mode(self._window_mode);
+        engine_core.set_monitor_index(self._monitor_index);
+        engine_core.set_resolution(self._resolution);
     }
 
     pub fn set_master_volume(&mut self, volume: f32) {
@@ -129,6 +146,18 @@ impl GameOptionData {
     pub fn set_font_scale(&mut self, scale: f32) {
         self._font_scale = scale.clamp(MIN_FONT_SCALE, MAX_FONT_SCALE);
     }
+
+    pub fn set_window_mode(&mut self, window_mode: WindowMode) {
+        self._window_mode = window_mode;
+    }
+
+    pub fn set_monitor_index(&mut self, monitor_index: usize) {
+        self._monitor_index = monitor_index;
+    }
+
+    pub fn set_resolution(&mut self, resolution: Vector2<u32>) {
+        self._resolution = resolution;
+    }
 }
 
 #[cfg(test)]
@@ -147,6 +176,9 @@ mod tests {
         assert_eq!(default_option._r_stick_sensitivity, DEFAULT_R_STICK_SENSITIVITY);
         assert_eq!(default_option._l_stick_sensitivity, DEFAULT_L_STICK_SENSITIVITY);
         assert_eq!(default_option._font_scale, DEFAULT_FONT_SCALE);
+        assert_eq!(default_option._window_mode, DEFAULT_WINDOW_MODE);
+        assert_eq!(default_option._monitor_index, DEFAULT_MONITOR_INDEX);
+        assert_eq!(default_option._resolution, DEFAULT_RESOLUTION);
 
         let json_str = serde_json::to_string_pretty(&default_option).expect("Serialization failed");
         let deserialized: GameOptionData = serde_json::from_str(&json_str).expect("Deserialization failed");

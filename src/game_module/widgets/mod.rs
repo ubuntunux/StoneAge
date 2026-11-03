@@ -4,6 +4,7 @@ pub mod cooking_widget;
 pub mod craft_widget;
 pub mod cross_hair_widget;
 pub mod debug_ui_widget;
+pub mod drop_down_combo_box_widget;
 pub mod fishing;
 pub mod game_menu_widget;
 pub mod image_widget;

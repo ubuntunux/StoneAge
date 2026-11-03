@@ -6,9 +6,11 @@ use crate::game_module::game_option::{
     STICK_SENSITIVITY_STEP, VOLUME_STEP,
 };
 use crate::game_module::game_service_locator::{get_game_resources, get_game_resources_mut};
+use crate::game_module::widgets::drop_down_combo_box_widget::DropDownComboBoxWidget;
 use nalgebra::Vector2;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
-use rust_engine_3d::core::engine_service_locator::get_audio_manager_mut;
+use rust_engine_3d::core::engine_core::WindowMode;
+use rust_engine_3d::core::engine_service_locator::{get_audio_manager_mut, get_engine_core};
 use rust_engine_3d::core::input::{JoystickInputData, KeyboardInputData};
 use rust_engine_3d::scene::ui::{
     HorizontalAlign, Orientation, PIVOT_CENTER, UIComponentInstance, UILayoutType, UIManager, UIWidgetTypes,
@@ -26,10 +28,19 @@ const ROW_HEIGHT: f32 = 42.0;
 const LABEL_WIDTH: f32 = 280.0;
 const STEPPER_BTN_SIZE: f32 = 34.0;
 const VALUE_WIDTH: f32 = 140.0;
+const COMBO_BOX_WIDTH: f32 = 240.0;
 const TOGGLE_BTN_WIDTH: f32 = 100.0;
 const ACTION_BTN_WIDTH: f32 = 160.0;
 const ACTION_BTN_HEIGHT: f32 = 38.0;
 const ROWS_CONTAINER_HEIGHT: f32 = 350.0;
+
+const WINDOW_MODE_ITEMS: [WindowMode; 3] = [
+    WindowMode::WindowMode,
+    WindowMode::FullScreenExclusiveMode,
+    WindowMode::FullScreenBorderlessMode,
+];
+
+const WINDOW_MODE_NAMES: [&str; 3] = ["Windowed", "Full Screen (Exclusive)", "Full Screen (Borderless)"];
 
 const COLOR_ROW_BG_NORMAL: u32 = get_color32(245, 232, 205, 230);
 const COLOR_ROW_BG_SELECTED: u32 = get_color32(255, 245, 220, 255);
@@ -53,6 +64,9 @@ const NAV_INDEX_SAVE: usize = OptionItemType::COUNT + 1;
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Display, FromRepr, EnumCount, EnumIter, EnumString)]
 #[repr(usize)]
 pub enum OptionItemType {
+    WindowMode,
+    Monitor,
+    Resolution,
     MasterVolume,
     BgmVolume,
     SfxVolume,
@@ -67,6 +81,9 @@ pub enum OptionItemType {
 impl OptionItemType {
     pub fn display_name(&self) -> &'static str {
         match self {
+            OptionItemType::WindowMode => "Window Mode",
+            OptionItemType::Monitor => "Display Monitor",
+            OptionItemType::Resolution => "Resolution",
             OptionItemType::MasterVolume => "Master Volume",
             OptionItemType::BgmVolume => "BGM Volume",
             OptionItemType::SfxVolume => "SFX Volume",
@@ -82,6 +99,13 @@ impl OptionItemType {
     pub fn is_toggle(&self) -> bool {
         matches!(self, OptionItemType::MuteAudio | OptionItemType::InvertMouseY)
     }
+
+    pub fn is_combo(&self) -> bool {
+        matches!(
+            self,
+            OptionItemType::WindowMode | OptionItemType::Monitor | OptionItemType::Resolution
+        )
+    }
 }
 
 pub struct OptionRowUserData<'a> {
@@ -96,6 +120,7 @@ pub struct OptionRow<'a> {
     pub _dec_btn: Option<Rc<WidgetDefault<'a>>>,
     pub _inc_btn: Option<Rc<WidgetDefault<'a>>>,
     pub _toggle_btn: Option<Rc<WidgetDefault<'a>>>,
+    pub _combo_box: Option<Box<DropDownComboBoxWidget<'a>>>,
     pub _item_type: OptionItemType,
     pub _user_data: Box<OptionRowUserData<'a>>,
 }
@@ -194,6 +219,51 @@ impl<'a> GameOptionWidget<'a> {
         let widget = ptr_as_mut(ui_component.get_user_data() as *const GameOptionWidget<'a>);
         widget.save_options();
         true
+    }
+
+    pub fn callback_window_mode_changed(user_data: *const c_void, index: usize) {
+        let widget = ptr_as_mut(user_data as *const GameOptionWidget<'a>);
+        if index < WINDOW_MODE_ITEMS.len() {
+            widget._game_option_data.set_window_mode(WINDOW_MODE_ITEMS[index]);
+            widget._game_option_data.apply();
+            widget.refresh_all_values();
+            widget.clear_status_message();
+        }
+    }
+
+    pub fn callback_monitor_changed(user_data: *const c_void, index: usize) {
+        let widget = ptr_as_mut(user_data as *const GameOptionWidget<'a>);
+        widget._game_option_data.set_monitor_index(index);
+        widget._game_option_data.apply();
+        widget.update_resolution_combo_items();
+        widget.refresh_all_values();
+        widget.clear_status_message();
+    }
+
+    pub fn callback_resolution_changed(user_data: *const c_void, index: usize) {
+        let widget = ptr_as_mut(user_data as *const GameOptionWidget<'a>);
+        let resolutions = get_engine_core().get_available_resolutions(widget._game_option_data._monitor_index);
+        if let Some(res) = resolutions.get(index) {
+            widget._game_option_data.set_resolution(*res);
+            widget._game_option_data.apply();
+            widget.refresh_all_values();
+            widget.clear_status_message();
+        }
+    }
+
+    pub fn update_resolution_combo_items(&mut self) {
+        let resolutions = get_engine_core().get_available_resolutions(self._game_option_data._monitor_index);
+        let res_names: Vec<String> = resolutions.iter().map(|r| format!("{} x {}", r.x, r.y)).collect();
+        let current_res = self._game_option_data._resolution;
+        let res_idx = resolutions.iter().position(|r| *r == current_res).unwrap_or(0);
+        if let Some(res) = resolutions.get(res_idx) {
+            self._game_option_data.set_resolution(*res);
+        }
+        if let Some(row) = self._rows.iter_mut().find(|r| r._item_type == OptionItemType::Resolution) {
+            if let Some(combo) = row._combo_box.as_mut() {
+                combo.set_items(res_names, res_idx);
+            }
+        }
     }
 
     pub fn create_game_option_widget(parent_widget: &mut WidgetDefault<'a>) -> Box<GameOptionWidget<'a>> {
@@ -316,7 +386,7 @@ impl<'a> GameOptionWidget<'a> {
             _save_btn: save_btn,
             _status_label: status_label,
             _selected_index: 0,
-            _game_option_data: initial_option,
+            _game_option_data: initial_option.clone(),
             _is_opened: false,
         });
 
@@ -363,7 +433,113 @@ impl<'a> GameOptionWidget<'a> {
             label_ui.set_color(get_color32(0, 0, 0, 0));
             row_mut.add_widget(&label_widget);
 
-            if item_type.is_toggle() {
+            if item_type.is_combo() {
+                let dec_btn = UIManager::create_widget(&format!("dec_{:?}", item_type), UIWidgetTypes::Default);
+                let dec_ui = ptr_as_mut(dec_btn.as_ref()).get_ui_component_mut();
+                dec_ui.set_halign(HorizontalAlign::CENTER);
+                dec_ui.set_valign(VerticalAlign::CENTER);
+                dec_ui.set_size(STEPPER_BTN_SIZE, STEPPER_BTN_SIZE);
+                dec_ui.set_margin(4.0);
+                dec_ui.set_text("<");
+                dec_ui.set_font_size(22.0);
+                dec_ui.set_font_color(get_color32(255, 255, 255, 255));
+                dec_ui.set_round(4.0);
+                dec_ui.set_color(COLOR_BTN_STEPPER);
+                dec_ui.set_touchable(true);
+                dec_ui.set_callback_touch_down(Some(Box::new(Self::callback_dec)));
+                dec_ui.set_callback_touch_over(Some(Box::new(Self::callback_btn_touch_over)));
+                dec_ui.set_user_data(user_data.as_ref() as *const OptionRowUserData<'a> as *const c_void);
+                row_mut.add_widget(&dec_btn);
+
+                let combo_box = match item_type {
+                    OptionItemType::WindowMode => {
+                        let mut combo = DropDownComboBoxWidget::create_from_enum(
+                            row_mut,
+                            widget._layer.as_ref() as *const WidgetDefault<'a>,
+                            "window_mode_combo",
+                            &WINDOW_MODE_ITEMS,
+                            &WINDOW_MODE_NAMES,
+                            initial_option._window_mode,
+                            COMBO_BOX_WIDTH,
+                            STEPPER_BTN_SIZE,
+                        );
+                        combo.set_callback_selection_changed(Some((
+                            Self::callback_window_mode_changed,
+                            widget_ptr as *const c_void,
+                        )));
+                        combo
+                    }
+                    OptionItemType::Monitor => {
+                        let monitors = get_engine_core().get_monitor_names();
+                        let initial_idx =
+                            initial_option._monitor_index.min(if monitors.is_empty() { 0 } else { monitors.len() - 1 });
+                        let mut combo = DropDownComboBoxWidget::create_drop_down_combo_box(
+                            row_mut,
+                            widget._layer.as_ref() as *const WidgetDefault<'a>,
+                            "monitor_combo",
+                            monitors,
+                            initial_idx,
+                            COMBO_BOX_WIDTH,
+                            STEPPER_BTN_SIZE,
+                        );
+                        combo.set_callback_selection_changed(Some((
+                            Self::callback_monitor_changed,
+                            widget_ptr as *const c_void,
+                        )));
+                        combo
+                    }
+                    OptionItemType::Resolution => {
+                        let resolutions = get_engine_core().get_available_resolutions(initial_option._monitor_index);
+                        let res_names: Vec<String> = resolutions.iter().map(|r| format!("{} x {}", r.x, r.y)).collect();
+                        let initial_idx =
+                            resolutions.iter().position(|r| *r == initial_option._resolution).unwrap_or(0);
+                        let mut combo = DropDownComboBoxWidget::create_drop_down_combo_box(
+                            row_mut,
+                            widget._layer.as_ref() as *const WidgetDefault<'a>,
+                            "resolution_combo",
+                            res_names,
+                            initial_idx,
+                            COMBO_BOX_WIDTH,
+                            STEPPER_BTN_SIZE,
+                        );
+                        combo.set_callback_selection_changed(Some((
+                            Self::callback_resolution_changed,
+                            widget_ptr as *const c_void,
+                        )));
+                        combo
+                    }
+                    _ => unreachable!(),
+                };
+
+                let inc_btn = UIManager::create_widget(&format!("inc_{:?}", item_type), UIWidgetTypes::Default);
+                let inc_ui = ptr_as_mut(inc_btn.as_ref()).get_ui_component_mut();
+                inc_ui.set_halign(HorizontalAlign::CENTER);
+                inc_ui.set_valign(VerticalAlign::CENTER);
+                inc_ui.set_size(STEPPER_BTN_SIZE, STEPPER_BTN_SIZE);
+                inc_ui.set_margin(4.0);
+                inc_ui.set_text(">");
+                inc_ui.set_font_size(22.0);
+                inc_ui.set_font_color(get_color32(255, 255, 255, 255));
+                inc_ui.set_round(4.0);
+                inc_ui.set_color(COLOR_BTN_STEPPER);
+                inc_ui.set_touchable(true);
+                inc_ui.set_callback_touch_down(Some(Box::new(Self::callback_inc)));
+                inc_ui.set_callback_touch_over(Some(Box::new(Self::callback_btn_touch_over)));
+                inc_ui.set_user_data(user_data.as_ref() as *const OptionRowUserData<'a> as *const c_void);
+                row_mut.add_widget(&inc_btn);
+
+                widget._rows.push(OptionRow {
+                    _row_widget: row_widget,
+                    _label_widget: label_widget,
+                    _value_widget: None,
+                    _dec_btn: Some(dec_btn),
+                    _inc_btn: Some(inc_btn),
+                    _toggle_btn: None,
+                    _combo_box: Some(combo_box),
+                    _item_type: item_type,
+                    _user_data: user_data,
+                });
+            } else if item_type.is_toggle() {
                 // Toggle Button
                 let toggle_btn = UIManager::create_widget(&format!("toggle_{:?}", item_type), UIWidgetTypes::Default);
                 let toggle_ui = ptr_as_mut(toggle_btn.as_ref()).get_ui_component_mut();
@@ -389,6 +565,7 @@ impl<'a> GameOptionWidget<'a> {
                     _dec_btn: None,
                     _inc_btn: None,
                     _toggle_btn: Some(toggle_btn),
+                    _combo_box: None,
                     _item_type: item_type,
                     _user_data: user_data,
                 });
@@ -447,6 +624,7 @@ impl<'a> GameOptionWidget<'a> {
                     _dec_btn: Some(dec_btn),
                     _inc_btn: Some(inc_btn),
                     _toggle_btn: None,
+                    _combo_box: None,
                     _item_type: item_type,
                     _user_data: user_data,
                 });
@@ -479,6 +657,11 @@ impl<'a> GameOptionWidget<'a> {
 
     pub fn close_game_option_widget(&mut self) {
         if self._is_opened {
+            for row in self._rows.iter_mut() {
+                if let Some(combo) = row._combo_box.as_mut() {
+                    combo.close_dropdown();
+                }
+            }
             let parent_mut = ptr_as_mut(self._parent_widget);
             parent_mut.remove_widget(self._layer.as_ref());
             self.clear_status_message();
@@ -540,6 +723,40 @@ impl<'a> GameOptionWidget<'a> {
 
     pub fn decrement_option(&mut self, item_type: OptionItemType) {
         match item_type {
+            OptionItemType::WindowMode => {
+                let current_idx =
+                    WINDOW_MODE_ITEMS.iter().position(|&m| m == self._game_option_data._window_mode).unwrap_or(0);
+                let prev_idx = if current_idx == 0 {
+                    WINDOW_MODE_ITEMS.len() - 1
+                } else {
+                    current_idx - 1
+                };
+                self._game_option_data.set_window_mode(WINDOW_MODE_ITEMS[prev_idx]);
+            }
+            OptionItemType::Monitor => {
+                let monitor_count = get_engine_core().get_monitor_names().len().max(1);
+                let current_idx = self._game_option_data._monitor_index;
+                let prev_idx = if current_idx == 0 {
+                    monitor_count - 1
+                } else {
+                    (current_idx - 1).min(monitor_count - 1)
+                };
+                self._game_option_data.set_monitor_index(prev_idx);
+                self.update_resolution_combo_items();
+            }
+            OptionItemType::Resolution => {
+                let resolutions = get_engine_core().get_available_resolutions(self._game_option_data._monitor_index);
+                if !resolutions.is_empty() {
+                    let current_idx =
+                        resolutions.iter().position(|r| *r == self._game_option_data._resolution).unwrap_or(0);
+                    let prev_idx = if current_idx == 0 {
+                        resolutions.len() - 1
+                    } else {
+                        current_idx - 1
+                    };
+                    self._game_option_data.set_resolution(resolutions[prev_idx]);
+                }
+            }
             OptionItemType::MasterVolume => {
                 let val = (self._game_option_data._master_volume - VOLUME_STEP).max(MIN_VOLUME);
                 self._game_option_data.set_master_volume(val);
@@ -586,6 +803,28 @@ impl<'a> GameOptionWidget<'a> {
 
     pub fn increment_option(&mut self, item_type: OptionItemType) {
         match item_type {
+            OptionItemType::WindowMode => {
+                let current_idx =
+                    WINDOW_MODE_ITEMS.iter().position(|&m| m == self._game_option_data._window_mode).unwrap_or(0);
+                let next_idx = (current_idx + 1) % WINDOW_MODE_ITEMS.len();
+                self._game_option_data.set_window_mode(WINDOW_MODE_ITEMS[next_idx]);
+            }
+            OptionItemType::Monitor => {
+                let monitor_count = get_engine_core().get_monitor_names().len().max(1);
+                let current_idx = self._game_option_data._monitor_index;
+                let next_idx = (current_idx + 1) % monitor_count;
+                self._game_option_data.set_monitor_index(next_idx);
+                self.update_resolution_combo_items();
+            }
+            OptionItemType::Resolution => {
+                let resolutions = get_engine_core().get_available_resolutions(self._game_option_data._monitor_index);
+                if !resolutions.is_empty() {
+                    let current_idx =
+                        resolutions.iter().position(|r| *r == self._game_option_data._resolution).unwrap_or(0);
+                    let next_idx = (current_idx + 1) % resolutions.len();
+                    self._game_option_data.set_resolution(resolutions[next_idx]);
+                }
+            }
             OptionItemType::MasterVolume => {
                 let val = (self._game_option_data._master_volume + VOLUME_STEP).min(MAX_VOLUME);
                 self._game_option_data.set_master_volume(val);
@@ -632,6 +871,14 @@ impl<'a> GameOptionWidget<'a> {
 
     pub fn toggle_option(&mut self, item_type: OptionItemType) {
         match item_type {
+            OptionItemType::WindowMode | OptionItemType::Monitor | OptionItemType::Resolution => {
+                if let Some(row) = self._rows.iter_mut().find(|r| r._item_type == item_type) {
+                    if let Some(combo) = row._combo_box.as_mut() {
+                        combo.toggle_dropdown();
+                    }
+                }
+                return;
+            }
             OptionItemType::MuteAudio => {
                 self._game_option_data._is_mute = !self._game_option_data._is_mute;
             }
@@ -652,6 +899,29 @@ impl<'a> GameOptionWidget<'a> {
     pub fn refresh_all_values(&mut self) {
         for row in self._rows.iter_mut() {
             match row._item_type {
+                OptionItemType::WindowMode => {
+                    if let Some(combo) = row._combo_box.as_mut() {
+                        let current_idx = WINDOW_MODE_ITEMS
+                            .iter()
+                            .position(|&m| m == self._game_option_data._window_mode)
+                            .unwrap_or(0);
+                        combo.set_selected_index(current_idx);
+                    }
+                }
+                OptionItemType::Monitor => {
+                    if let Some(combo) = row._combo_box.as_mut() {
+                        combo.set_selected_index(self._game_option_data._monitor_index);
+                    }
+                }
+                OptionItemType::Resolution => {
+                    if let Some(combo) = row._combo_box.as_mut() {
+                        let resolutions =
+                            get_engine_core().get_available_resolutions(self._game_option_data._monitor_index);
+                        let current_idx =
+                            resolutions.iter().position(|r| *r == self._game_option_data._resolution).unwrap_or(0);
+                        combo.set_selected_index(current_idx);
+                    }
+                }
                 OptionItemType::MasterVolume => {
                     if let Some(val_widget) = row._value_widget.as_ref() {
                         let text = format!("{:.0}%", self._game_option_data._master_volume * 100.0);
@@ -750,6 +1020,24 @@ impl<'a> GameOptionWidget<'a> {
         joystick_input_data: &JoystickInputData,
         keyboard_input_data: &KeyboardInputData,
     ) {
+        // If any combo box dropdown is opened, handle modal dropdown input
+        for row in self._rows.iter_mut() {
+            if let Some(combo) = row._combo_box.as_mut() {
+                if combo.is_opened() {
+                    if UiInput::is_up(keyboard_input_data, joystick_input_data) {
+                        combo.move_hover_prev();
+                    } else if UiInput::is_down(keyboard_input_data, joystick_input_data) {
+                        combo.move_hover_next();
+                    } else if UiInput::is_confirm(keyboard_input_data, joystick_input_data) {
+                        combo.confirm_hovered();
+                    } else if UiInput::is_cancel(keyboard_input_data, joystick_input_data) {
+                        combo.close_dropdown();
+                    }
+                    return;
+                }
+            }
+        }
+
         if UiInput::is_up(keyboard_input_data, joystick_input_data) {
             let next_index = if self._selected_index == 0 {
                 TOTAL_NAV_ITEMS - 1
@@ -791,5 +1079,50 @@ impl<'a> GameOptionWidget<'a> {
                 self.save_options();
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_option_item_types() {
+        assert_eq!(OptionItemType::from_repr(0), Some(OptionItemType::WindowMode));
+        assert_eq!(OptionItemType::WindowMode.display_name(), "Window Mode");
+        assert!(OptionItemType::WindowMode.is_combo());
+        assert!(!OptionItemType::WindowMode.is_toggle());
+
+        assert_eq!(OptionItemType::from_repr(1), Some(OptionItemType::Monitor));
+        assert_eq!(OptionItemType::Monitor.display_name(), "Display Monitor");
+        assert!(OptionItemType::Monitor.is_combo());
+        assert!(!OptionItemType::Monitor.is_toggle());
+
+        assert_eq!(OptionItemType::from_repr(2), Some(OptionItemType::Resolution));
+        assert_eq!(OptionItemType::Resolution.display_name(), "Resolution");
+        assert!(OptionItemType::Resolution.is_combo());
+        assert!(!OptionItemType::Resolution.is_toggle());
+
+        assert!(OptionItemType::MuteAudio.is_toggle());
+        assert!(!OptionItemType::MuteAudio.is_combo());
+    }
+
+    #[test]
+    fn test_window_mode_items_consistency() {
+        assert_eq!(WINDOW_MODE_ITEMS.len(), WINDOW_MODE_NAMES.len());
+        assert_eq!(WINDOW_MODE_ITEMS.len(), 3);
+        assert_eq!(WINDOW_MODE_NAMES[0], "Windowed");
+        assert_eq!(WINDOW_MODE_NAMES[1], "Full Screen (Exclusive)");
+        assert_eq!(WINDOW_MODE_NAMES[2], "Full Screen (Borderless)");
+
+        assert_eq!(WindowMode::WindowMode.display_name(), "Windowed");
+        assert_eq!(
+            WindowMode::FullScreenExclusiveMode.display_name(),
+            "Full Screen (Exclusive)"
+        );
+        assert_eq!(
+            WindowMode::FullScreenBorderlessMode.display_name(),
+            "Full Screen (Borderless)"
+        );
     }
 }

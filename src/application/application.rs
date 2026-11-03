@@ -16,7 +16,7 @@ use log::LevelFilter;
 use nalgebra::Vector2;
 use rust_engine_3d::constants;
 use rust_engine_3d::constants::DEVELOPMENT;
-use rust_engine_3d::core::engine_core::{self, ApplicationBase, WindowMode};
+use rust_engine_3d::core::engine_core::{self, ApplicationBase};
 use rust_engine_3d::core::engine_service_locator::{
     get_engine_core_mut, get_font_manager_mut, get_renderer_data_mut, get_scene_manager, get_ui_manager_mut,
 };
@@ -51,6 +51,7 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
         self._game_ui_manager.build_game_ui(window_size);
         self._editor_ui_manager.build_editor_ui(window_size);
         self.set_game_mode(true);
+        get_engine_core_mut().center_mouse_pos();
     }
 
     fn will_terminate_application(&self) -> bool {
@@ -221,14 +222,27 @@ impl<'a> Application<'a> {
         self._game_client.set_game_mode(is_game_mode);
         get_engine_core_mut().set_grab_mode(is_game_mode);
         get_ui_manager_mut().set_visible_world_axis(!is_game_mode);
+        if is_game_mode {
+            get_engine_core_mut().center_mouse_pos();
+        }
     }
 }
 
 pub fn run_application() {
     let app_name: String = "Stone Age".to_string();
     let app_version: u32 = 1;
-    let initial_window_size: Option<Vector2<u32>> = None; // Some(Vector2::new(1024, 768));
-    let window_mode = WindowMode::FullScreenBorderlessMode;
+    let initial_option_filepath = GameResources::get_game_option_data_filepath();
+    let saved_option = if initial_option_filepath.exists() {
+        let loaded_contents = rust_engine_3d::utilities::system::load(&initial_option_filepath);
+        serde_json::from_reader::<_, crate::game_module::game_option::GameOptionData>(loaded_contents).ok()
+    } else {
+        None
+    };
+    let window_mode = saved_option
+        .as_ref()
+        .map(|opt| opt._window_mode)
+        .unwrap_or(crate::game_module::game_option::DEFAULT_WINDOW_MODE);
+    let initial_window_size: Option<Vector2<u32>> = saved_option.as_ref().map(|opt| opt._resolution);
 
     // Graphics Settings
     unsafe {
