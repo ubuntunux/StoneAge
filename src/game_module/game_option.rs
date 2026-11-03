@@ -15,7 +15,7 @@ pub const DEFAULT_R_STICK_SENSITIVITY: f32 = 1.0;
 pub const DEFAULT_L_STICK_SENSITIVITY: f32 = 1.0;
 pub const DEFAULT_FONT_SCALE: f32 = 1.0;
 pub const DEFAULT_WINDOW_MODE: WindowMode = WindowMode::FullScreenBorderlessMode;
-pub const DEFAULT_MONITOR_INDEX: usize = 0;
+pub const DEFAULT_MONITOR_INDEX: Option<usize> = None;
 pub const DEFAULT_RESOLUTION_WIDTH: u32 = 1920;
 pub const DEFAULT_RESOLUTION_HEIGHT: u32 = 1080;
 pub const DEFAULT_RESOLUTION: Vector2<u32> = Vector2::new(DEFAULT_RESOLUTION_WIDTH, DEFAULT_RESOLUTION_HEIGHT);
@@ -67,7 +67,7 @@ pub struct GameOptionData {
     pub _l_stick_sensitivity: f32,
     pub _font_scale: f32,
     pub _window_mode: WindowMode,
-    pub _monitor_index: usize,
+    pub _monitor_index: Option<usize>,
     pub _resolution: Vector2<u32>,
 }
 
@@ -151,7 +151,7 @@ impl GameOptionData {
         self._window_mode = window_mode;
     }
 
-    pub fn set_monitor_index(&mut self, monitor_index: usize) {
+    pub fn set_monitor_index(&mut self, monitor_index: Option<usize>) {
         self._monitor_index = monitor_index;
     }
 
@@ -177,12 +177,19 @@ mod tests {
         assert_eq!(default_option._l_stick_sensitivity, DEFAULT_L_STICK_SENSITIVITY);
         assert_eq!(default_option._font_scale, DEFAULT_FONT_SCALE);
         assert_eq!(default_option._window_mode, DEFAULT_WINDOW_MODE);
-        assert_eq!(default_option._monitor_index, DEFAULT_MONITOR_INDEX);
+        assert_eq!(default_option._monitor_index, None);
         assert_eq!(default_option._resolution, DEFAULT_RESOLUTION);
 
         let json_str = serde_json::to_string_pretty(&default_option).expect("Serialization failed");
         let deserialized: GameOptionData = serde_json::from_str(&json_str).expect("Deserialization failed");
         assert_eq!(default_option, deserialized);
+        assert_eq!(deserialized._monitor_index, None);
+
+        let mut custom_option = default_option.clone();
+        custom_option.set_monitor_index(Some(2));
+        let custom_json = serde_json::to_string(&custom_option).expect("Serialization failed");
+        let custom_deserialized: GameOptionData = serde_json::from_str(&custom_json).expect("Deserialization failed");
+        assert_eq!(custom_deserialized._monitor_index, Some(2));
     }
 
     #[test]

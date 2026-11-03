@@ -233,7 +233,7 @@ impl<'a> GameOptionWidget<'a> {
 
     pub fn callback_monitor_changed(user_data: *const c_void, index: usize) {
         let widget = ptr_as_mut(user_data as *const GameOptionWidget<'a>);
-        widget._game_option_data.set_monitor_index(index);
+        widget._game_option_data.set_monitor_index(Some(index));
         widget._game_option_data.apply();
         widget.update_resolution_combo_items();
         widget.refresh_all_values();
@@ -471,8 +471,11 @@ impl<'a> GameOptionWidget<'a> {
                     }
                     OptionItemType::Monitor => {
                         let monitors = get_engine_core().get_monitor_names();
-                        let initial_idx =
-                            initial_option._monitor_index.min(if monitors.is_empty() { 0 } else { monitors.len() - 1 });
+                        let primary_idx = get_engine_core().get_primary_monitor_index();
+                        let initial_idx = initial_option
+                            ._monitor_index
+                            .unwrap_or(primary_idx)
+                            .min(if monitors.is_empty() { 0 } else { monitors.len() - 1 });
                         let mut combo = DropDownComboBoxWidget::create_drop_down_combo_box(
                             row_mut,
                             widget._layer.as_ref() as *const WidgetDefault<'a>,
@@ -735,13 +738,16 @@ impl<'a> GameOptionWidget<'a> {
             }
             OptionItemType::Monitor => {
                 let monitor_count = get_engine_core().get_monitor_names().len().max(1);
-                let current_idx = self._game_option_data._monitor_index;
+                let current_idx = self
+                    ._game_option_data
+                    ._monitor_index
+                    .unwrap_or_else(|| get_engine_core().get_primary_monitor_index());
                 let prev_idx = if current_idx == 0 {
                     monitor_count - 1
                 } else {
                     (current_idx - 1).min(monitor_count - 1)
                 };
-                self._game_option_data.set_monitor_index(prev_idx);
+                self._game_option_data.set_monitor_index(Some(prev_idx));
                 self.update_resolution_combo_items();
             }
             OptionItemType::Resolution => {
@@ -811,9 +817,12 @@ impl<'a> GameOptionWidget<'a> {
             }
             OptionItemType::Monitor => {
                 let monitor_count = get_engine_core().get_monitor_names().len().max(1);
-                let current_idx = self._game_option_data._monitor_index;
+                let current_idx = self
+                    ._game_option_data
+                    ._monitor_index
+                    .unwrap_or_else(|| get_engine_core().get_primary_monitor_index());
                 let next_idx = (current_idx + 1) % monitor_count;
-                self._game_option_data.set_monitor_index(next_idx);
+                self._game_option_data.set_monitor_index(Some(next_idx));
                 self.update_resolution_combo_items();
             }
             OptionItemType::Resolution => {
@@ -910,7 +919,9 @@ impl<'a> GameOptionWidget<'a> {
                 }
                 OptionItemType::Monitor => {
                     if let Some(combo) = row._combo_box.as_mut() {
-                        combo.set_selected_index(self._game_option_data._monitor_index);
+                        let primary_idx = get_engine_core().get_primary_monitor_index();
+                        let target_idx = self._game_option_data._monitor_index.unwrap_or(primary_idx);
+                        combo.set_selected_index(target_idx);
                     }
                 }
                 OptionItemType::Resolution => {
