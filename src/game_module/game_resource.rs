@@ -3,6 +3,7 @@ use crate::game_module::actors::items::ItemData;
 use crate::game_module::actors::props::PropData;
 use crate::game_module::actors::weapons::WeaponData;
 use crate::game_module::actors::weapons::WeaponDataCreateInfo;
+use crate::game_module::game_option::GameOptionData;
 use crate::game_module::game_scene_manager::GameSceneDataCreateInfo;
 use crate::game_module::save_data::save_data::GameSaveData;
 use crate::game_module::scenario::scenario::ScenarioDataCreateInfo;
@@ -26,6 +27,8 @@ pub const SCENARIO_FILE_PATH: &str = "game_data/scenario";
 pub const WEAPON_DATA_FILE_PATH: &str = "game_data/weapons";
 pub const GAME_SAVE_DATA_FILE_PATH: &str = "game_data/save_data";
 pub const TOOLBOX_ITEM_DATA_FILE_PATH: &str = "game_data/toolbox_items";
+pub const GAME_OPTION_DATA_FILE_PATH: &str = "game_data/game_option";
+pub const GAME_OPTION_DATA_FILE_NAME: &str = "game_option";
 
 pub const EXT_GAME_DATA: &str = "data";
 
@@ -50,6 +53,7 @@ pub struct GameResources<'a> {
     _prop_data_map: PropDataMap,
     _weapon_data_map: WeaponDataMap<'a>,
     _toolbox_item_data_map: ToolboxItemDataMap,
+    pub _game_option_data: RcRefCell<GameOptionData>,
 }
 
 impl<'a> GameResources<'a> {
@@ -63,6 +67,7 @@ impl<'a> GameResources<'a> {
             _prop_data_map: PropDataMap::new(),
             _weapon_data_map: WeaponDataMap::new(),
             _toolbox_item_data_map: ToolboxItemDataMap::new(),
+            _game_option_data: newRcRefCell(GameOptionData::default()),
         };
         Box::new(game_resources)
     }
@@ -239,6 +244,83 @@ impl<'a> GameResources<'a> {
         }
     }
 
+    // game option data
+    pub fn get_game_option_data_filepath() -> PathBuf {
+        let mut game_option_filepath = PathBuf::from(APPLICATION_RESOURCE_PATH);
+        game_option_filepath.push(GAME_OPTION_DATA_FILE_PATH);
+        game_option_filepath.push(GAME_OPTION_DATA_FILE_NAME);
+        game_option_filepath.set_extension(EXT_GAME_DATA);
+        game_option_filepath
+    }
+
+    pub fn load_game_option_data(&mut self) {
+        log::info!("    load_game_option_data");
+        let game_option_filepath = Self::get_game_option_data_filepath();
+        if game_option_filepath.exists() {
+            let loaded_contents = system::load(&game_option_filepath);
+            match serde_json::from_reader(loaded_contents) {
+                Ok(loaded_option) => {
+                    *self._game_option_data.borrow_mut() = loaded_option;
+                    log::info!("Loaded game option from {:?}", game_option_filepath);
+                }
+                Err(err) => {
+                    log::warn!(
+                        "Failed to deserialize game option file {:?}: {:?}",
+                        game_option_filepath,
+                        err
+                    );
+                }
+            }
+        } else {
+            log::info!(
+                "Game option file not found at {:?}, creating with default settings.",
+                game_option_filepath
+            );
+            let default_option = GameOptionData::default();
+            self.save_game_option_data(&default_option);
+        }
+        self._game_option_data.borrow().apply();
+    }
+
+    pub fn unload_game_option_data(&mut self) {
+        *self._game_option_data.borrow_mut() = GameOptionData::default();
+    }
+
+    pub fn get_game_option_data(&self) -> &RcRefCell<GameOptionData> {
+        &self._game_option_data
+    }
+
+    pub fn save_game_option_data(&mut self, game_option_data: &GameOptionData) {
+        *self._game_option_data.borrow_mut() = game_option_data.clone();
+
+        let game_option_filepath = Self::get_game_option_data_filepath();
+        if let Some(parent) = game_option_filepath.parent() {
+            if !parent.exists() {
+                let _ = std::fs::create_dir_all(parent);
+            }
+        }
+
+        match File::create(&game_option_filepath) {
+            Ok(mut write_file) => match serde_json::to_string_pretty(game_option_data) {
+                Ok(write_contents) => {
+                    if let Err(e) = write_file.write_all(write_contents.as_bytes()) {
+                        log::warn!("Failed to write game option file {:?}: {:?}", game_option_filepath, e);
+                    } else {
+                        log::info!("Saved game option to {:?}", game_option_filepath);
+                    }
+                }
+                Err(e) => {
+                    log::warn!("Failed to serialize game option data: {:?}", e);
+                }
+            },
+            Err(e) => {
+                log::warn!("Failed to create game option file {:?}: {:?}", game_option_filepath, e);
+            }
+        }
+
+        game_option_data.apply();
+    }
+
     // Game Data
     fn load_game_data(&mut self) {
         log::info!("    load_game_data");
@@ -248,9 +330,11 @@ impl<'a> GameResources<'a> {
         self.load_weapon_data();
         self.load_toolbox_item_data();
         self.load_game_save_data();
+        self.load_game_option_data();
     }
 
     fn unload_game_data(&mut self) {
+        self.unload_game_option_data();
         self.unload_game_save_data();
         self.unload_toolbox_item_data();
         self.unload_weapon_data();
