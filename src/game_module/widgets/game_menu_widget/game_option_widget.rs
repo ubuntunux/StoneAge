@@ -1,8 +1,9 @@
 use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, AUDIO_SELECT_ITEM};
 use crate::game_module::game_input::UiInput;
 use crate::game_module::game_option::{
-    GameOptionData, MAX_MOUSE_SENSITIVITY, MAX_VOLUME, MIN_MOUSE_SENSITIVITY, MIN_VOLUME, MOUSE_SENSITIVITY_STEP,
-    VOLUME_STEP,
+    FONT_SCALE_STEP, GameOptionData, MAX_FONT_SCALE, MAX_MOUSE_SENSITIVITY, MAX_STICK_SENSITIVITY, MAX_VOLUME,
+    MIN_FONT_SCALE, MIN_MOUSE_SENSITIVITY, MIN_STICK_SENSITIVITY, MIN_VOLUME, MOUSE_SENSITIVITY_STEP,
+    STICK_SENSITIVITY_STEP, VOLUME_STEP,
 };
 use crate::game_module::game_service_locator::{get_game_resources, get_game_resources_mut};
 use nalgebra::Vector2;
@@ -20,14 +21,15 @@ use std::rc::Rc;
 use strum::{EnumCount, IntoEnumIterator};
 use strum_macros::{Display, EnumCount, EnumIter, EnumString, FromRepr};
 
-const ROW_WIDTH: f32 = 680.0;
+const ROW_WIDTH: f32 = 660.0;
 const ROW_HEIGHT: f32 = 42.0;
 const LABEL_WIDTH: f32 = 280.0;
 const STEPPER_BTN_SIZE: f32 = 34.0;
 const VALUE_WIDTH: f32 = 140.0;
 const TOGGLE_BTN_WIDTH: f32 = 100.0;
 const ACTION_BTN_WIDTH: f32 = 160.0;
-const ACTION_BTN_HEIGHT: f32 = 40.0;
+const ACTION_BTN_HEIGHT: f32 = 38.0;
+const ROWS_CONTAINER_HEIGHT: f32 = 350.0;
 
 const COLOR_ROW_BG_NORMAL: u32 = get_color32(245, 232, 205, 230);
 const COLOR_ROW_BG_SELECTED: u32 = get_color32(255, 245, 220, 255);
@@ -57,6 +59,9 @@ pub enum OptionItemType {
     MuteAudio,
     MouseSensitivity,
     InvertMouseY,
+    RStickSensitivity,
+    LStickSensitivity,
+    FontScale,
 }
 
 impl OptionItemType {
@@ -68,6 +73,9 @@ impl OptionItemType {
             OptionItemType::MuteAudio => "Mute All Audio",
             OptionItemType::MouseSensitivity => "Mouse Sensitivity",
             OptionItemType::InvertMouseY => "Invert Mouse Y-Axis",
+            OptionItemType::RStickSensitivity => "R-Stick Sensitivity",
+            OptionItemType::LStickSensitivity => "L-Stick Sensitivity",
+            OptionItemType::FontScale => "Font Scale",
         }
     }
 
@@ -200,7 +208,7 @@ impl<'a> GameOptionWidget<'a> {
         ui_comp.set_expandable(false);
         ui_comp.set_size_hint_x(Some(1.0));
         ui_comp.set_size_hint_y(Some(1.0));
-        ui_comp.set_padding(8.0);
+        ui_comp.set_padding(6.0);
         ui_comp.set_color(get_color32(0, 0, 0, 0));
 
         // Title Header
@@ -209,14 +217,14 @@ impl<'a> GameOptionWidget<'a> {
         title_ui.set_halign(HorizontalAlign::CENTER);
         title_ui.set_valign(VerticalAlign::CENTER);
         title_ui.set_size_hint_x(Some(1.0));
-        title_ui.set_size_y(30.0);
+        title_ui.set_size_y(26.0);
         title_ui.set_text("GAME SETTINGS");
-        title_ui.set_font_size(24.0);
+        title_ui.set_font_size(22.0);
         title_ui.set_font_color(get_color32(110, 60, 25, 255));
         title_ui.set_color(get_color32(0, 0, 0, 0));
         layer_mut.add_widget(&title_widget);
 
-        // Rows Container
+        // Rows Container with scroll_y enabled
         let rows_container = UIManager::create_widget("option_rows_container", UIWidgetTypes::Default);
         let rows_container_mut = ptr_as_mut(rows_container.as_ref());
         let rows_ui = rows_container_mut.get_ui_component_mut();
@@ -224,9 +232,14 @@ impl<'a> GameOptionWidget<'a> {
         rows_ui.set_layout_orientation(Orientation::VERTICAL);
         rows_ui.set_halign(HorizontalAlign::CENTER);
         rows_ui.set_valign(VerticalAlign::TOP);
+        rows_ui.set_expandable(false);
+        rows_ui.set_scroll_y(true);
+        rows_ui.set_enable_renderable_area(true);
+        rows_ui.set_touchable(false);
         rows_ui.set_size_hint_x(Some(1.0));
-        rows_ui.set_size_y(350.0);
-        rows_ui.set_margin(4.0);
+        rows_ui.set_size_y(ROWS_CONTAINER_HEIGHT);
+        rows_ui.set_margin(3.0);
+        rows_ui.set_padding(4.0);
         rows_ui.set_color(get_color32(0, 0, 0, 0));
         layer_mut.add_widget(&rows_container);
 
@@ -239,8 +252,8 @@ impl<'a> GameOptionWidget<'a> {
         footer_ui.set_halign(HorizontalAlign::CENTER);
         footer_ui.set_valign(VerticalAlign::CENTER);
         footer_ui.set_size_hint_x(Some(1.0));
-        footer_ui.set_size_y(50.0);
-        footer_ui.set_margin(5.0);
+        footer_ui.set_size_y(46.0);
+        footer_ui.set_margin(4.0);
         footer_ui.set_color(get_color32(0, 0, 0, 0));
         layer_mut.add_widget(&footer_layout);
 
@@ -252,7 +265,7 @@ impl<'a> GameOptionWidget<'a> {
         reset_ui.set_size(ACTION_BTN_WIDTH, ACTION_BTN_HEIGHT);
         reset_ui.set_margin(8.0);
         reset_ui.set_text("Reset Defaults");
-        reset_ui.set_font_size(20.0);
+        reset_ui.set_font_size(18.0);
         reset_ui.set_font_color(get_color32(255, 255, 255, 255));
         reset_ui.set_round(5.0);
         reset_ui.set_color(COLOR_BTN_RESET);
@@ -269,7 +282,7 @@ impl<'a> GameOptionWidget<'a> {
         save_ui.set_size(ACTION_BTN_WIDTH, ACTION_BTN_HEIGHT);
         save_ui.set_margin(8.0);
         save_ui.set_text("Save Options");
-        save_ui.set_font_size(20.0);
+        save_ui.set_font_size(18.0);
         save_ui.set_font_color(get_color32(255, 255, 255, 255));
         save_ui.set_round(5.0);
         save_ui.set_color(COLOR_BTN_SAVE);
@@ -284,9 +297,9 @@ impl<'a> GameOptionWidget<'a> {
         status_ui.set_halign(HorizontalAlign::CENTER);
         status_ui.set_valign(VerticalAlign::CENTER);
         status_ui.set_size_hint_x(Some(1.0));
-        status_ui.set_size_y(24.0);
+        status_ui.set_size_y(22.0);
         status_ui.set_text("");
-        status_ui.set_font_size(18.0);
+        status_ui.set_font_size(16.0);
         status_ui.set_font_color(COLOR_STATUS_TEXT);
         status_ui.set_color(get_color32(0, 0, 0, 0));
         layer_mut.add_widget(&status_label);
@@ -458,6 +471,7 @@ impl<'a> GameOptionWidget<'a> {
             self._game_option_data = get_game_resources().get_game_option_data().borrow().clone();
             self.refresh_all_values();
             self.clear_status_message();
+            ptr_as_mut(self._rows_container.as_ref()).get_ui_component_mut().set_scroll_pos_y(0.0);
             self.update_selection_visuals();
             self._is_opened = true;
         }
@@ -496,6 +510,14 @@ impl<'a> GameOptionWidget<'a> {
             } else {
                 COLOR_ROW_BORDER_NORMAL
             });
+        }
+
+        // Scroll into view if an option row is selected
+        if self._selected_index < self._rows.len() {
+            let container_mut = ptr_as_mut(self._rows_container.as_ref());
+            let target_row = &self._rows[self._selected_index]._row_widget;
+            let target_row_ui = ptr_as_mut(target_row.as_ref()).get_ui_component_mut();
+            container_mut.get_ui_component_mut().scroll_into_view(target_row_ui);
         }
 
         let is_reset_selected = self._selected_index == NAV_INDEX_RESET;
@@ -541,6 +563,20 @@ impl<'a> GameOptionWidget<'a> {
             OptionItemType::InvertMouseY => {
                 self._game_option_data._invert_mouse_y = !self._game_option_data._invert_mouse_y;
             }
+            OptionItemType::RStickSensitivity => {
+                let val =
+                    (self._game_option_data._r_stick_sensitivity - STICK_SENSITIVITY_STEP).max(MIN_STICK_SENSITIVITY);
+                self._game_option_data.set_r_stick_sensitivity(val);
+            }
+            OptionItemType::LStickSensitivity => {
+                let val =
+                    (self._game_option_data._l_stick_sensitivity - STICK_SENSITIVITY_STEP).max(MIN_STICK_SENSITIVITY);
+                self._game_option_data.set_l_stick_sensitivity(val);
+            }
+            OptionItemType::FontScale => {
+                let val = (self._game_option_data._font_scale - FONT_SCALE_STEP).max(MIN_FONT_SCALE);
+                self._game_option_data.set_font_scale(val);
+            }
         }
         self._game_option_data.apply();
         self.refresh_all_values();
@@ -572,6 +608,20 @@ impl<'a> GameOptionWidget<'a> {
             }
             OptionItemType::InvertMouseY => {
                 self._game_option_data._invert_mouse_y = !self._game_option_data._invert_mouse_y;
+            }
+            OptionItemType::RStickSensitivity => {
+                let val =
+                    (self._game_option_data._r_stick_sensitivity + STICK_SENSITIVITY_STEP).min(MAX_STICK_SENSITIVITY);
+                self._game_option_data.set_r_stick_sensitivity(val);
+            }
+            OptionItemType::LStickSensitivity => {
+                let val =
+                    (self._game_option_data._l_stick_sensitivity + STICK_SENSITIVITY_STEP).min(MAX_STICK_SENSITIVITY);
+                self._game_option_data.set_l_stick_sensitivity(val);
+            }
+            OptionItemType::FontScale => {
+                let val = (self._game_option_data._font_scale + FONT_SCALE_STEP).min(MAX_FONT_SCALE);
+                self._game_option_data.set_font_scale(val);
             }
         }
         self._game_option_data.apply();
@@ -648,6 +698,24 @@ impl<'a> GameOptionWidget<'a> {
                         } else {
                             COLOR_BTN_TOGGLE_OFF
                         });
+                    }
+                }
+                OptionItemType::RStickSensitivity => {
+                    if let Some(val_widget) = row._value_widget.as_ref() {
+                        let text = format!("{:.1}x", self._game_option_data._r_stick_sensitivity);
+                        ptr_as_mut(val_widget.as_ref()).get_ui_component_mut().set_text(&text);
+                    }
+                }
+                OptionItemType::LStickSensitivity => {
+                    if let Some(val_widget) = row._value_widget.as_ref() {
+                        let text = format!("{:.1}x", self._game_option_data._l_stick_sensitivity);
+                        ptr_as_mut(val_widget.as_ref()).get_ui_component_mut().set_text(&text);
+                    }
+                }
+                OptionItemType::FontScale => {
+                    if let Some(val_widget) = row._value_widget.as_ref() {
+                        let text = format!("{:.0}%", self._game_option_data._font_scale * 100.0);
+                        ptr_as_mut(val_widget.as_ref()).get_ui_component_mut().set_text(&text);
                     }
                 }
             }

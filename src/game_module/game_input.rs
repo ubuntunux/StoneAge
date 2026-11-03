@@ -1,4 +1,5 @@
 use crate::game_module::game_constants::{JOYSTICK_MOVE_DEADZONE, JOYSTICK_SENSITIVITY};
+use crate::game_module::game_option::{get_global_l_stick_sensitivity, get_global_r_stick_sensitivity};
 use nalgebra::Vector2;
 use rust_engine_3d::core::input::{ButtonState, JoystickInputData, KeyboardInputData, MouseInputData, MouseMoveData};
 use serde::{Deserialize, Serialize};
@@ -799,7 +800,7 @@ impl GamePlayInputState {
         let stick_left_direction = Vector2::<f32>::new(
             joystick._stick_left_direction.x as f32,
             joystick._stick_left_direction.y as f32,
-        ) * JOYSTICK_SENSITIVITY;
+        ) * (JOYSTICK_SENSITIVITY * get_global_l_stick_sensitivity());
 
         let is_interaction_hold =
             bindings.is_gameplay_action_hold(GamePlayAction::Interact, keyboard, joystick, mouse_input);
@@ -1029,7 +1030,7 @@ impl CameraInput {
         let stick_right_direction = Vector2::<f32>::new(
             joystick._stick_right_direction.x as f32,
             joystick._stick_right_direction.y as f32,
-        ) * JOYSTICK_SENSITIVITY;
+        ) * (JOYSTICK_SENSITIVITY * get_global_r_stick_sensitivity());
 
         let is_zoom_in = Self::is_zoom_in(keyboard, joystick, mouse_move);
         let is_zoom_out = Self::is_zoom_out(keyboard, joystick, mouse_move);
