@@ -32,11 +32,11 @@ pub fn get_quest_key_binding_icons<'a>(
         ),
         KeyBindingType::Interaction => (
             vec![engine_resources.get_material_instance_data("ui/controller/keycode_f").clone()],
-            vec![engine_resources.get_material_instance_data("ui/controller/joystick_x").clone()],
+            vec![engine_resources.get_material_instance_data("ui/controller/joystick_a").clone()],
         ),
         KeyBindingType::Jump => (
             vec![engine_resources.get_material_instance_data("ui/controller/keycode_space").clone()],
-            vec![engine_resources.get_material_instance_data("ui/controller/joystick_a").clone()],
+            vec![engine_resources.get_material_instance_data("ui/controller/joystick_x").clone()],
         ),
         _ => (Vec::new(), Vec::new()),
     }

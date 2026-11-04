@@ -398,7 +398,7 @@ impl Default for InputBindings {
         );
         gameplay_bindings.insert(
             GamePlayAction::Jump,
-            ActionBinding::new(vec![KeyCode::Space], vec![GamepadButton::A], vec![]),
+            ActionBinding::new(vec![KeyCode::Space], vec![GamepadButton::X], vec![]),
         );
         gameplay_bindings.insert(
             GamePlayAction::Run,
@@ -410,7 +410,7 @@ impl Default for InputBindings {
         );
         gameplay_bindings.insert(
             GamePlayAction::Interact,
-            ActionBinding::new(vec![KeyCode::KeyF], vec![GamepadButton::X], vec![]),
+            ActionBinding::new(vec![KeyCode::KeyF], vec![GamepadButton::A], vec![]),
         );
         gameplay_bindings.insert(
             GamePlayAction::PreviousItem,
@@ -1204,8 +1204,8 @@ mod tests {
         assert!(state_attack._attack_or_use_item);
         mouse.btn_l_pressed(false);
 
-        // Jump via gamepad A
-        joystick._btn_a = ButtonState::Pressed;
+        // Jump via gamepad X
+        joystick._btn_x = ButtonState::Pressed;
         let state_jump = GamePlayInputState::from_input(&keyboard, &joystick, &mouse);
         assert!(state_jump._jump);
     }

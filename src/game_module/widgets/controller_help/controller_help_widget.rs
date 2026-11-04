@@ -316,7 +316,7 @@ impl<'a> ControllerHelpWidget<'a> {
             "jump_key_binding",
             "Jump",
             vec![engine_resources.get_material_instance_data("ui/controller/keycode_space").clone()],
-            vec![engine_resources.get_material_instance_data("ui/controller/joystick_a").clone()],
+            vec![engine_resources.get_material_instance_data("ui/controller/joystick_x").clone()],
         ));
         player_control_key_binding_widget_map.register_key_binding_widget(create_player_control_key_binding_widget(
             ptr_as_mut(self._player_controller_help_widget),
@@ -351,7 +351,7 @@ impl<'a> ControllerHelpWidget<'a> {
             "interaction_key_binding",
             "Interaction",
             vec![engine_resources.get_material_instance_data("ui/controller/keycode_f").clone()],
-            vec![engine_resources.get_material_instance_data("ui/controller/joystick_x").clone()],
+            vec![engine_resources.get_material_instance_data("ui/controller/joystick_a").clone()],
         ));
         interaction_key_binding_widget_map.register_key_binding_widget(create_interaction_key_binding_widget(
             ptr_as_mut(self._root_widget),
@@ -375,7 +375,7 @@ impl<'a> ControllerHelpWidget<'a> {
             "taming_key_binding",
             "Taming",
             vec![engine_resources.get_material_instance_data("ui/controller/keycode_f").clone()],
-            vec![engine_resources.get_material_instance_data("ui/controller/joystick_x").clone()],
+            vec![engine_resources.get_material_instance_data("ui/controller/joystick_a").clone()],
         ));
         interaction_key_binding_widget_map.register_key_binding_widget(create_interaction_key_binding_widget(
             ptr_as_mut(self._root_widget),
