@@ -49,6 +49,7 @@ pub const TIME_OF_DAY_SPEED: f32 = 14.0 / (20.0 * 60.0); // Minute 14 per day fo
 
 pub const SLEEP_TIMER: f32 = 1.5;
 pub const CHARACTER_INTERACTION_TIME: f32 = 3.0;
+pub const FAST_FORWARD_TIME_SCALE: f64 = 4.0;
 
 // temperature
 pub const TEMPERATURE_MIN: f32 = 12.0;

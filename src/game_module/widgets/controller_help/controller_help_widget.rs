@@ -202,7 +202,9 @@ pub fn create_interaction_key_binding_widget<'a>(
 pub struct ControllerHelpWidget<'a> {
     pub _root_widget: *const WidgetDefault<'a>,
     pub _player_controller_help_widget: *const WidgetDefault<'a>,
+    pub _scenario_controller_help_widget: *const WidgetDefault<'a>,
     pub _player_control_key_binding_widget_map: Rc<KeyBindingWidgetMap<'a>>,
+    pub _scenario_control_key_binding_widget_map: Rc<KeyBindingWidgetMap<'a>>,
     pub _interaction_key_binding_widget_map: Rc<KeyBindingWidgetMap<'a>>,
     pub _last_interaction_object_key: *const c_void,
     pub _is_controls_visible: bool,
@@ -212,6 +214,7 @@ impl<'a> ControllerHelpWidget<'a> {
     pub fn create_controller_help_widget(
         key_binding_widget_manager: *const KeyBindingWidgetManager<'a>,
         root_widget: &mut WidgetDefault<'a>,
+        notify_widget: &mut WidgetDefault<'a>,
         _3window_size: &Vector2<i32>,
     ) -> ControllerHelpWidget<'a> {
         let player_controller_help_widget =
@@ -233,10 +236,32 @@ impl<'a> ControllerHelpWidget<'a> {
         ui_component.set_margin_bottom(MAIN_LAYOUT_MARGIN * 2.0);
         root_widget.add_widget(&player_controller_help_widget);
 
+        let scenario_controller_help_widget =
+            UIManager::create_widget("scenario_controller_help_widget", UIWidgetTypes::Default);
+        let scenario_controller_help_widget_mut = ptr_as_mut(scenario_controller_help_widget.as_ref());
+        let ui_component = scenario_controller_help_widget_mut.get_ui_component_mut();
+        ui_component.set_layout_type(UILayoutType::BoxLayout);
+        ui_component.set_layout_orientation(Orientation::VERTICAL);
+        ui_component.set_halign(HorizontalAlign::LEFT);
+        ui_component.set_valign(VerticalAlign::TOP);
+        ui_component.set_expandable(true);
+        ui_component.set_padding(10.0);
+        ui_component.set_round(15.0);
+        ui_component.set_size(KEY_BINDING_UI_SIZE, KEY_BINDING_UI_SIZE);
+        ui_component.set_color(get_color32(0, 0, 0, 128));
+        ui_component.set_pivot_preset(rust_engine_3d::scene::ui::PIVOT_BOTTOM_RIGHT);
+        ui_component.set_pos_hint(Some(1.0), Some(1.0));
+        ui_component.set_margin_right(MAIN_LAYOUT_MARGIN * 2.0);
+        ui_component.set_margin_bottom(MAIN_LAYOUT_MARGIN * 2.0);
+        ui_component.set_visible(false);
+        notify_widget.add_widget(&scenario_controller_help_widget);
+
         let mut player_controller_help_widget = ControllerHelpWidget {
             _root_widget: root_widget,
             _player_controller_help_widget: player_controller_help_widget_mut,
+            _scenario_controller_help_widget: scenario_controller_help_widget_mut,
             _player_control_key_binding_widget_map: Rc::new(KeyBindingWidgetMap::default()),
+            _scenario_control_key_binding_widget_map: Rc::new(KeyBindingWidgetMap::default()),
             _interaction_key_binding_widget_map: Rc::new(KeyBindingWidgetMap::default()),
             _last_interaction_object_key: std::ptr::null(),
             _is_controls_visible: true,
@@ -250,7 +275,20 @@ impl<'a> ControllerHelpWidget<'a> {
         let engine_resources = get_engine_resources();
         let key_binding_widget_manager = ptr_as_mut(key_binding_widget_manager);
         key_binding_widget_manager.register_key_binding_widget_map(&self._player_control_key_binding_widget_map);
+        key_binding_widget_manager.register_key_binding_widget_map(&self._scenario_control_key_binding_widget_map);
         key_binding_widget_manager.register_key_binding_widget_map(&self._interaction_key_binding_widget_map);
+
+        // scenario control ui
+        let scenario_control_key_binding_widget_map =
+            ptr_as_mut(self._scenario_control_key_binding_widget_map.as_ref());
+        scenario_control_key_binding_widget_map.register_key_binding_widget(create_player_control_key_binding_widget(
+            ptr_as_mut(self._scenario_controller_help_widget),
+            KeyBindingType::FastForward,
+            "fast_forward_key_binding",
+            "Fast Forward",
+            vec![engine_resources.get_material_instance_data("ui/controller/keycode_space").clone()],
+            vec![engine_resources.get_material_instance_data("ui/controller/joystick_a").clone()],
+        ));
 
         // player control ui
         let player_control_key_binding_widget_map = ptr_as_mut(self._player_control_key_binding_widget_map.as_ref());
@@ -675,6 +713,14 @@ impl<'a> ControllerHelpWidget<'a> {
     }
 
     pub fn update_controller_help_widget(&mut self) {
-        self.update_interaction_widget();
+        let is_play_scenario_mode = get_game_scene_manager().is_play_scenario_mode();
+        ptr_as_mut(self._scenario_controller_help_widget)._ui_component.set_visible(is_play_scenario_mode);
+        ptr_as_mut(self._player_controller_help_widget)._ui_component.set_visible(!is_play_scenario_mode);
+
+        if is_play_scenario_mode {
+            self.hide_all_interaction_widgets();
+        } else {
+            self.update_interaction_widget();
+        }
     }
 }

@@ -191,6 +191,7 @@ pub enum GamePlayAction {
     OpenMenu,
     PrevQuickSlotRow,
     NextQuickSlotRow,
+    FastForward,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -451,6 +452,10 @@ impl Default for InputBindings {
         gameplay_bindings.insert(
             GamePlayAction::NextQuickSlotRow,
             ActionBinding::new(vec![KeyCode::Tab], vec![GamepadButton::DpadDown], vec![]),
+        );
+        gameplay_bindings.insert(
+            GamePlayAction::FastForward,
+            ActionBinding::new(vec![KeyCode::Space], vec![GamepadButton::A], vec![]),
         );
 
         Self {
@@ -749,6 +754,13 @@ impl GameInput {
             && joystick._btn_right_shoulder == ButtonState::Hold)
             || keyboard.get_key_pressed(KeyCode::Backquote)
             || keyboard.get_key_pressed(KeyCode::Escape)
+    }
+
+    pub fn is_fast_forward(keyboard: &KeyboardInputData, joystick: &JoystickInputData) -> bool {
+        DEFAULT_BINDINGS
+            ._gameplay_bindings
+            .get(&GamePlayAction::FastForward)
+            .is_some_and(|binding| binding.is_hold(keyboard, joystick, None))
     }
 }
 
@@ -1401,5 +1413,21 @@ mod tests {
             clamped_control._pitch,
             -CameraInput::MAX_CAMERA_MOUSE_DELTA * CameraInput::MOUSE_SENSITIVITY
         );
+    }
+
+    #[test]
+    fn test_fast_forward_input() {
+        let mut keyboard = create_keyboard_input_data();
+        let mut joystick = create_test_joystick();
+
+        assert!(!GameInput::is_fast_forward(&keyboard, &joystick));
+
+        keyboard.set_key_hold(KeyCode::Space, true);
+        assert!(GameInput::is_fast_forward(&keyboard, &joystick));
+        keyboard.clear_key_hold();
+
+        joystick._btn_a = ButtonState::Hold;
+        assert!(GameInput::is_fast_forward(&keyboard, &joystick));
+        joystick._btn_a = ButtonState::None;
     }
 }

@@ -249,6 +249,7 @@ impl<'a> GameUIManager<'a> {
         self._controller_help_widget = Some(Box::new(ControllerHelpWidget::create_controller_help_widget(
             self._key_binding_widget_manager.as_ref().unwrap().as_ref(),
             game_ui_layout_mut,
+            game_notify_layout_mut,
             window_size,
         )));
         self._item_acquire_notification_widget = Some(ItemAcquireNotificationWidget::create(game_ui_layout_mut));

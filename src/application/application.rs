@@ -8,7 +8,7 @@ use crate::game_module::game_service_locator;
 use crate::game_module::game_ui_manager::{EditorUIManager, GameUIManager};
 
 use crate::game_module::game_service_locator::{
-    get_editor_ui_manager_mut, get_game_ui_manager, get_game_ui_manager_mut,
+    get_editor_ui_manager_mut, get_game_scene_manager, get_game_ui_manager, get_game_ui_manager_mut,
 };
 use crate::render_pass;
 use ash::vk;
@@ -94,6 +94,14 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
                     self.set_game_mode(true);
                 }
             }
+        }
+
+        if self._is_game_mode
+            && get_game_scene_manager().is_play_scenario_mode()
+            && GameInput::is_fast_forward(&engine_core._keyboard_input_data, &engine_core._joystick_input_data)
+        {
+            engine_core._time_data._delta_time_with_scale =
+                0.1_f64.min(engine_core._time_data._delta_time) * game_constants::FAST_FORWARD_TIME_SCALE;
         }
 
         if !self._is_game_mode {

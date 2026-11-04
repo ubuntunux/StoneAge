@@ -53,6 +53,7 @@ pub enum KeyBindingType {
     SelectItem08,
     SelectItem09,
     SelectItem10,
+    FastForward,
 }
 
 pub struct GameController<'a> {
