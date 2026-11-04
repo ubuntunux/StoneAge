@@ -1376,7 +1376,11 @@ impl<'a> GameUIManager<'a> {
     }
 
     /// UI가 열린 직후에는 레이아웃이 아직 계산되지 않으므로, 다음 레이아웃 갱신 이후에 마우스를 스냅하도록 예약한다.
+    /// 마우스/키보드 모드(is_keyboard_input_mode == true)일 때는 스냅하지 않고, 게임패드 모드일 때만 스냅한다.
     pub fn request_mouse_snap_to_widget(&mut self, widget: &Rc<WidgetDefault<'a>>) {
+        if get_engine_core().is_keyboard_input_mode() {
+            return;
+        }
         self._pending_mouse_snap_widget = Some(widget.clone());
         self._pending_mouse_snap_delay_frames = MOUSE_SNAP_DELAY_FRAMES;
         self._pending_mouse_snap_retry_count = 0;
@@ -1389,6 +1393,10 @@ impl<'a> GameUIManager<'a> {
     }
 
     fn update_pending_mouse_snap(&mut self) {
+        if get_engine_core().is_keyboard_input_mode() {
+            self.clear_pending_mouse_snap();
+            return;
+        }
         if let Some(widget) = &self._pending_mouse_snap_widget {
             if !widget.has_parent() {
                 self.clear_pending_mouse_snap();

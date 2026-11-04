@@ -219,7 +219,7 @@ impl<'a> DropDownComboBoxWidget<'a> {
             menu_ui.set_border(DROPDOWN_MENU_BORDER);
             menu_ui.set_border_color(COLOR_MENU_BORDER);
             menu_ui.set_color(COLOR_MENU_BG);
-            menu_ui.set_touchable(true);
+            menu_ui.set_touchable(false);
             menu_ui.set_ignore_parent_renderable_area(true);
         }
         ptr_as_mut(overlay_layer.as_ref()).add_widget(&menu_container);
