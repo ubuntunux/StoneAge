@@ -7,7 +7,7 @@ use crate::game_module::game_ui_manager::move_mouse_to_ui_component;
 use crate::game_module::game_weather::WeatherType;
 use nalgebra::Vector2;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
-use rust_engine_3d::constants::SHOW_DEBUG_TEXT;
+use rust_engine_3d::constants::{ENABLE_DYNAMIC_TARGET_FPS, SHOW_DEBUG_TEXT};
 use rust_engine_3d::core::engine_service_locator::get_audio_manager_mut;
 use rust_engine_3d::core::input::{JoystickInputData, KeyboardInputData};
 use rust_engine_3d::scene::ui::{
@@ -21,7 +21,7 @@ use std::rc::Rc;
 use strum::{EnumCount, IntoEnumIterator};
 use strum_macros::{Display, EnumCount, EnumIter, EnumString, FromRepr};
 
-const ITEM_WIDTH: f32 = 250.0;
+const ITEM_WIDTH: f32 = 320.0;
 const ITEM_HEIGHT: f32 = 60.0;
 
 #[derive(Clone, PartialEq, Eq, Hash, Debug, Display, FromRepr, EnumCount, EnumIter, EnumString, Copy)]
@@ -31,6 +31,7 @@ pub enum GameDebugMenuType {
     DebugText,
     RainTest,
     TimeTest,
+    ToggleDynamicTargetFps,
 }
 
 impl GameDebugMenuType {
@@ -73,7 +74,7 @@ impl<'a> GameDebugMenuItem<'a> {
         ui_component.set_margin(10.0);
         ui_component.set_round(5.0);
         ui_component.set_text(game_debug_menu_type.to_string().as_str());
-        ui_component.set_font_size(40.0);
+        ui_component.set_font_size(30.0);
         ui_component.set_font_color(get_color32(255, 255, 255, 255));
         parent_widget.add_widget(&item_widget);
 
@@ -212,6 +213,9 @@ impl<'a> GameDebugMenuWidget<'a> {
             GameDebugMenuType::TimeTest => {
                 get_game_scene_manager_mut().set_time_of_day(get_game_scene_manager_mut().get_time_of_day() + 6.0);
             }
+            GameDebugMenuType::ToggleDynamicTargetFps => unsafe {
+                ENABLE_DYNAMIC_TARGET_FPS = !ENABLE_DYNAMIC_TARGET_FPS;
+            },
         }
         self.set_selected_menu_item(selected_menu_item, false);
         self.close_game_debug_menu();
