@@ -1,9 +1,8 @@
 use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, AUDIO_SELECT_ITEM};
 use crate::game_module::game_input::UiInput;
 use crate::game_module::game_option::{
-    FONT_SCALE_STEP, GameOptionData, MAX_FONT_SCALE, MAX_MOUSE_SENSITIVITY, MAX_STICK_SENSITIVITY, MAX_VOLUME,
-    MIN_FONT_SCALE, MIN_MOUSE_SENSITIVITY, MIN_STICK_SENSITIVITY, MIN_VOLUME, MOUSE_SENSITIVITY_STEP,
-    STICK_SENSITIVITY_STEP, VOLUME_STEP,
+    CAMERA_ROTATION_SPEED_STEP, FONT_SCALE_STEP, GameOptionData, MAX_CAMERA_ROTATION_SPEED, MAX_FONT_SCALE, MAX_VOLUME,
+    MIN_CAMERA_ROTATION_SPEED, MIN_FONT_SCALE, MIN_VOLUME, VOLUME_STEP,
 };
 use crate::game_module::game_service_locator::{get_game_resources, get_game_resources_mut};
 use crate::game_module::widgets::drop_down_combo_box_widget::DropDownComboBoxWidget;
@@ -89,10 +88,8 @@ pub enum OptionItemType {
     BgmVolume,
     SfxVolume,
     MuteAudio,
-    MouseSensitivity,
+    CameraRotationSpeed,
     InvertMouseY,
-    RStickSensitivity,
-    LStickSensitivity,
     FontScale,
 }
 
@@ -106,10 +103,8 @@ impl OptionItemType {
             OptionItemType::BgmVolume => "BGM Volume",
             OptionItemType::SfxVolume => "SFX Volume",
             OptionItemType::MuteAudio => "Mute All Audio",
-            OptionItemType::MouseSensitivity => "Mouse Sensitivity",
+            OptionItemType::CameraRotationSpeed => "Camera Rotation Speed",
             OptionItemType::InvertMouseY => "Invert Mouse Y-Axis",
-            OptionItemType::RStickSensitivity => "R-Stick Sensitivity",
-            OptionItemType::LStickSensitivity => "L-Stick Sensitivity",
             OptionItemType::FontScale => "Font Scale",
         }
     }
@@ -868,23 +863,13 @@ impl<'a> GameOptionWidget<'a> {
             OptionItemType::MuteAudio => {
                 self._game_option_data._is_mute = !self._game_option_data._is_mute;
             }
-            OptionItemType::MouseSensitivity => {
-                let val =
-                    (self._game_option_data._mouse_sensitivity - MOUSE_SENSITIVITY_STEP).max(MIN_MOUSE_SENSITIVITY);
-                self._game_option_data.set_mouse_sensitivity(val);
+            OptionItemType::CameraRotationSpeed => {
+                let val = (self._game_option_data._camera_rotation_speed - CAMERA_ROTATION_SPEED_STEP)
+                    .max(MIN_CAMERA_ROTATION_SPEED);
+                self._game_option_data.set_camera_rotation_speed(val);
             }
             OptionItemType::InvertMouseY => {
                 self._game_option_data._invert_mouse_y = !self._game_option_data._invert_mouse_y;
-            }
-            OptionItemType::RStickSensitivity => {
-                let val =
-                    (self._game_option_data._r_stick_sensitivity - STICK_SENSITIVITY_STEP).max(MIN_STICK_SENSITIVITY);
-                self._game_option_data.set_r_stick_sensitivity(val);
-            }
-            OptionItemType::LStickSensitivity => {
-                let val =
-                    (self._game_option_data._l_stick_sensitivity - STICK_SENSITIVITY_STEP).max(MIN_STICK_SENSITIVITY);
-                self._game_option_data.set_l_stick_sensitivity(val);
             }
             OptionItemType::FontScale => {
                 let val = (self._game_option_data._font_scale - FONT_SCALE_STEP).max(MIN_FONT_SCALE);
@@ -942,23 +927,13 @@ impl<'a> GameOptionWidget<'a> {
             OptionItemType::MuteAudio => {
                 self._game_option_data._is_mute = !self._game_option_data._is_mute;
             }
-            OptionItemType::MouseSensitivity => {
-                let val =
-                    (self._game_option_data._mouse_sensitivity + MOUSE_SENSITIVITY_STEP).min(MAX_MOUSE_SENSITIVITY);
-                self._game_option_data.set_mouse_sensitivity(val);
+            OptionItemType::CameraRotationSpeed => {
+                let val = (self._game_option_data._camera_rotation_speed + CAMERA_ROTATION_SPEED_STEP)
+                    .min(MAX_CAMERA_ROTATION_SPEED);
+                self._game_option_data.set_camera_rotation_speed(val);
             }
             OptionItemType::InvertMouseY => {
                 self._game_option_data._invert_mouse_y = !self._game_option_data._invert_mouse_y;
-            }
-            OptionItemType::RStickSensitivity => {
-                let val =
-                    (self._game_option_data._r_stick_sensitivity + STICK_SENSITIVITY_STEP).min(MAX_STICK_SENSITIVITY);
-                self._game_option_data.set_r_stick_sensitivity(val);
-            }
-            OptionItemType::LStickSensitivity => {
-                let val =
-                    (self._game_option_data._l_stick_sensitivity + STICK_SENSITIVITY_STEP).min(MAX_STICK_SENSITIVITY);
-                self._game_option_data.set_l_stick_sensitivity(val);
             }
             OptionItemType::FontScale => {
                 let val = (self._game_option_data._font_scale + FONT_SCALE_STEP).min(MAX_FONT_SCALE);
@@ -1102,9 +1077,9 @@ impl<'a> GameOptionWidget<'a> {
                         });
                     }
                 }
-                OptionItemType::MouseSensitivity => {
+                OptionItemType::CameraRotationSpeed => {
                     if let Some(val_widget) = row._value_widget.as_ref() {
-                        let text = format!("{:.1}x", self._game_option_data._mouse_sensitivity);
+                        let text = format!("{:.1}x", self._game_option_data._camera_rotation_speed);
                         ptr_as_mut(val_widget.as_ref()).get_ui_component_mut().set_text(&text);
                     }
                 }
@@ -1118,18 +1093,6 @@ impl<'a> GameOptionWidget<'a> {
                         } else {
                             COLOR_BTN_TOGGLE_OFF
                         });
-                    }
-                }
-                OptionItemType::RStickSensitivity => {
-                    if let Some(val_widget) = row._value_widget.as_ref() {
-                        let text = format!("{:.1}x", self._game_option_data._r_stick_sensitivity);
-                        ptr_as_mut(val_widget.as_ref()).get_ui_component_mut().set_text(&text);
-                    }
-                }
-                OptionItemType::LStickSensitivity => {
-                    if let Some(val_widget) = row._value_widget.as_ref() {
-                        let text = format!("{:.1}x", self._game_option_data._l_stick_sensitivity);
-                        ptr_as_mut(val_widget.as_ref()).get_ui_component_mut().set_text(&text);
                     }
                 }
                 OptionItemType::FontScale => {

@@ -1,5 +1,5 @@
 use crate::game_module::game_constants::{JOYSTICK_MOVE_DEADZONE, JOYSTICK_SENSITIVITY};
-use crate::game_module::game_option::{get_global_l_stick_sensitivity, get_global_r_stick_sensitivity};
+use crate::game_module::game_option::get_global_camera_rotation_speed;
 use nalgebra::Vector2;
 use rust_engine_3d::core::input::{ButtonState, JoystickInputData, KeyboardInputData, MouseInputData, MouseMoveData};
 use serde::{Deserialize, Serialize};
@@ -812,7 +812,7 @@ impl GamePlayInputState {
         let stick_left_direction = Vector2::<f32>::new(
             joystick._stick_left_direction.x as f32,
             joystick._stick_left_direction.y as f32,
-        ) * (JOYSTICK_SENSITIVITY * get_global_l_stick_sensitivity());
+        ) * JOYSTICK_SENSITIVITY;
 
         let is_interaction_hold =
             bindings.is_gameplay_action_hold(GamePlayAction::Interact, keyboard, joystick, mouse_input);
@@ -1030,19 +1030,21 @@ impl CameraInput {
         joystick: &JoystickInputData,
         mouse_move: &MouseMoveData,
     ) -> CameraControlState {
+        let camera_rotation_speed = get_global_camera_rotation_speed();
         let clamped_delta_x =
             (mouse_move._mouse_pos_delta.x as f32).clamp(-Self::MAX_CAMERA_MOUSE_DELTA, Self::MAX_CAMERA_MOUSE_DELTA);
         let clamped_delta_y =
             (mouse_move._mouse_pos_delta.y as f32).clamp(-Self::MAX_CAMERA_MOUSE_DELTA, Self::MAX_CAMERA_MOUSE_DELTA);
 
-        let mouse_pos_delta = Vector2::<f32>::new(clamped_delta_x, clamped_delta_y) * Self::MOUSE_SENSITIVITY;
+        let mouse_pos_delta =
+            Vector2::<f32>::new(clamped_delta_x, clamped_delta_y) * (Self::MOUSE_SENSITIVITY * camera_rotation_speed);
         let mouse_scroll_delta =
             Vector2::<f32>::new(mouse_move._scroll_delta.x as f32, mouse_move._scroll_delta.y as f32);
 
         let stick_right_direction = Vector2::<f32>::new(
             joystick._stick_right_direction.x as f32,
             joystick._stick_right_direction.y as f32,
-        ) * (JOYSTICK_SENSITIVITY * get_global_r_stick_sensitivity());
+        ) * (JOYSTICK_SENSITIVITY * camera_rotation_speed);
 
         let is_zoom_in = Self::is_zoom_in(keyboard, joystick, mouse_move);
         let is_zoom_out = Self::is_zoom_out(keyboard, joystick, mouse_move);
