@@ -18,7 +18,8 @@ use rust_engine_3d::constants;
 use rust_engine_3d::constants::DEVELOPMENT;
 use rust_engine_3d::core::engine_core::{self, ApplicationBase};
 use rust_engine_3d::core::engine_service_locator::{
-    get_engine_core_mut, get_font_manager_mut, get_renderer_data_mut, get_scene_manager, get_ui_manager_mut,
+    get_engine_core, get_engine_core_mut, get_font_manager_mut, get_renderer_data_mut, get_scene_manager,
+    get_ui_manager_mut,
 };
 use rust_engine_3d::renderer::renderer_data::{RenderOption, RenderQualityLevel};
 use rust_engine_3d::resource::resource::CallbackLoadRenderPassCreateInfo;
@@ -37,19 +38,20 @@ pub struct Application<'a> {
 }
 
 impl<'a> ApplicationBase<'a> for Application<'a> {
-    fn initialize_application(&'a mut self, window_size: &Vector2<i32>) {
+    fn initialize_application(&'a mut self, _window_size: &Vector2<i32>) {
         self._game_resources.initialize_game_resources();
         self._game_resources.load_game_resources();
+        let current_window_size = get_engine_core()._window_size;
         self._game_client.initialize_game_client();
         self._game_controller.initialize_game_controller();
         self._game_ui_manager.initialize_game_ui_manager();
-        self._game_scene_manager.initialize_game_scene_manager(window_size);
+        self._game_scene_manager.initialize_game_scene_manager(&current_window_size);
         self._editor_ui_manager.initialize_editor_ui_manager();
 
         // start game
         get_renderer_data_mut().set_render_scene(false);
-        self._game_ui_manager.build_game_ui(window_size);
-        self._editor_ui_manager.build_editor_ui(window_size);
+        self._game_ui_manager.build_game_ui(&current_window_size);
+        self._editor_ui_manager.build_editor_ui(&current_window_size);
         self.set_game_mode(true);
         get_engine_core_mut().center_mouse_pos();
     }
@@ -231,19 +233,6 @@ impl<'a> Application<'a> {
 pub fn run_application() {
     let app_name: String = "Stone Age".to_string();
     let app_version: u32 = 1;
-    let initial_option_filepath = GameResources::get_game_option_data_filepath();
-    let saved_option = if initial_option_filepath.exists() {
-        let loaded_contents = rust_engine_3d::utilities::system::load(&initial_option_filepath);
-        serde_json::from_reader::<_, crate::game_module::game_option::GameOptionData>(loaded_contents).ok()
-    } else {
-        None
-    };
-    let window_mode = saved_option
-        .as_ref()
-        .map(|opt| opt._window_mode)
-        .unwrap_or(crate::game_module::game_option::DEFAULT_WINDOW_MODE);
-    let initial_monitor_index: Option<usize> = saved_option.as_ref().and_then(|opt| opt._monitor_index);
-    let initial_window_size: Option<Vector2<u32>> = saved_option.as_ref().map(|opt| opt._resolution);
 
     // Graphics Settings
     unsafe {
@@ -321,7 +310,16 @@ pub fn run_application() {
     });
 
     // create project application & managers
-    let game_resources = GameResources::create_game_resources();
+    let mut game_resources = GameResources::create_game_resources();
+    game_resources.load_game_option_data();
+    let (initial_window_size, initial_monitor_index, window_mode) = {
+        let game_option_data = game_resources.get_game_option_data().borrow();
+        (
+            Some(game_option_data._resolution),
+            game_option_data._monitor_index,
+            game_option_data._window_mode,
+        )
+    };
     let game_scene_manager = GameSceneManager::create_game_scene_manager();
     let game_ui_manager = GameUIManager::create_game_ui_manager();
     let editor_ui_manager = EditorUIManager::create_editor_ui_manager();

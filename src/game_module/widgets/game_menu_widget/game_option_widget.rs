@@ -44,12 +44,18 @@ const WINDOW_MODE_NAMES: [&str; 3] = ["Windowed", "Full Screen (Exclusive)", "Fu
 
 const COLOR_ROW_BG_NORMAL: u32 = get_color32(245, 232, 205, 230);
 const COLOR_ROW_BG_SELECTED: u32 = get_color32(255, 245, 220, 255);
+const COLOR_ROW_BG_DISABLED: u32 = get_color32(225, 215, 200, 180);
 const COLOR_ROW_BORDER_NORMAL: u32 = get_color32(200, 165, 125, 200);
 const COLOR_ROW_BORDER_SELECTED: u32 = get_color32(195, 118, 58, 255);
+const COLOR_ROW_BORDER_DISABLED: u32 = get_color32(185, 170, 150, 160);
 const COLOR_TEXT_LABEL: u32 = get_color32(75, 45, 20, 255);
+const COLOR_TEXT_LABEL_DISABLED: u32 = get_color32(140, 120, 100, 180);
 const COLOR_TEXT_VALUE: u32 = get_color32(50, 30, 10, 255);
 
 const COLOR_BTN_STEPPER: u32 = get_color32(195, 140, 85, 230);
+const COLOR_BTN_STEPPER_DISABLED: u32 = get_color32(180, 165, 145, 140);
+const COLOR_BTN_TEXT_ENABLED: u32 = get_color32(255, 255, 255, 255);
+const COLOR_BTN_TEXT_DISABLED: u32 = get_color32(220, 215, 205, 150);
 const COLOR_BTN_TOGGLE_ON: u32 = get_color32(80, 150, 80, 240);
 const COLOR_BTN_TOGGLE_OFF: u32 = get_color32(165, 130, 90, 230);
 
@@ -60,6 +66,10 @@ const COLOR_STATUS_TEXT: u32 = get_color32(50, 120, 50, 255);
 const TOTAL_NAV_ITEMS: usize = OptionItemType::COUNT + 2;
 const NAV_INDEX_RESET: usize = OptionItemType::COUNT;
 const NAV_INDEX_SAVE: usize = OptionItemType::COUNT + 1;
+
+pub fn is_resolution_selectable(window_mode: WindowMode) -> bool {
+    window_mode == WindowMode::WindowMode
+}
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Display, FromRepr, EnumCount, EnumIter, EnumString)]
 #[repr(usize)]
@@ -141,9 +151,27 @@ pub struct GameOptionWidget<'a> {
 }
 
 impl<'a> GameOptionWidget<'a> {
+    pub fn is_item_enabled(&self, item_type: OptionItemType) -> bool {
+        match item_type {
+            OptionItemType::Resolution => is_resolution_selectable(self._game_option_data._window_mode),
+            _ => true,
+        }
+    }
+
+    pub fn is_nav_index_enabled(&self, index: usize) -> bool {
+        if let Some(item_type) = OptionItemType::from_repr(index) {
+            self.is_item_enabled(item_type)
+        } else {
+            index < TOTAL_NAV_ITEMS
+        }
+    }
+
     pub fn callback_dec(ui_component: &UIComponentInstance<'a>, _pos: &Vector2<f32>, _delta: &Vector2<f32>) -> bool {
         let user_data = ptr_as_ref(ui_component.get_user_data() as *const OptionRowUserData<'a>);
         let widget = ptr_as_mut(user_data._widget_ptr);
+        if !widget.is_item_enabled(user_data._item_type) {
+            return false;
+        }
         widget.decrement_option(user_data._item_type);
         true
     }
@@ -151,6 +179,9 @@ impl<'a> GameOptionWidget<'a> {
     pub fn callback_inc(ui_component: &UIComponentInstance<'a>, _pos: &Vector2<f32>, _delta: &Vector2<f32>) -> bool {
         let user_data = ptr_as_ref(ui_component.get_user_data() as *const OptionRowUserData<'a>);
         let widget = ptr_as_mut(user_data._widget_ptr);
+        if !widget.is_item_enabled(user_data._item_type) {
+            return false;
+        }
         widget.increment_option(user_data._item_type);
         true
     }
@@ -158,6 +189,9 @@ impl<'a> GameOptionWidget<'a> {
     pub fn callback_toggle(ui_component: &UIComponentInstance<'a>, _pos: &Vector2<f32>, _delta: &Vector2<f32>) -> bool {
         let user_data = ptr_as_ref(ui_component.get_user_data() as *const OptionRowUserData<'a>);
         let widget = ptr_as_mut(user_data._widget_ptr);
+        if !widget.is_item_enabled(user_data._item_type) {
+            return false;
+        }
         widget.toggle_option(user_data._item_type);
         true
     }
@@ -169,6 +203,9 @@ impl<'a> GameOptionWidget<'a> {
     ) -> bool {
         let user_data = ptr_as_ref(ui_component.get_user_data() as *const OptionRowUserData<'a>);
         let widget = ptr_as_mut(user_data._widget_ptr);
+        if !widget.is_item_enabled(user_data._item_type) {
+            return false;
+        }
         widget.set_selected_index(user_data._item_type as usize, false);
         true
     }
@@ -243,6 +280,9 @@ impl<'a> GameOptionWidget<'a> {
 
     pub fn callback_resolution_changed(user_data: *const c_void, index: usize) {
         let widget = ptr_as_mut(user_data as *const GameOptionWidget<'a>);
+        if !widget.is_item_enabled(OptionItemType::Resolution) {
+            return;
+        }
         let resolutions = get_engine_core().get_available_resolutions(widget._game_option_data._monitor_index);
         if let Some(res) = resolutions.get(index) {
             widget._game_option_data.set_resolution(*res);
@@ -703,7 +743,7 @@ impl<'a> GameOptionWidget<'a> {
     }
 
     pub fn set_selected_index(&mut self, index: usize, play_audio: bool) {
-        if index < TOTAL_NAV_ITEMS && self._selected_index != index {
+        if index < TOTAL_NAV_ITEMS && self.is_nav_index_enabled(index) && self._selected_index != index {
             self._selected_index = index;
             self.update_selection_visuals();
             if play_audio {
@@ -713,15 +753,24 @@ impl<'a> GameOptionWidget<'a> {
     }
 
     fn update_selection_visuals(&mut self) {
+        let res_enabled = is_resolution_selectable(self._game_option_data._window_mode);
         for (i, row) in self._rows.iter_mut().enumerate() {
-            let is_selected = i == self._selected_index;
+            let is_enabled = match row._item_type {
+                OptionItemType::Resolution => res_enabled,
+                _ => true,
+            };
+            let is_selected = is_enabled && i == self._selected_index;
             let row_ui = ptr_as_mut(row._row_widget.as_ref()).get_ui_component_mut();
-            row_ui.set_color(if is_selected {
+            row_ui.set_color(if !is_enabled {
+                COLOR_ROW_BG_DISABLED
+            } else if is_selected {
                 COLOR_ROW_BG_SELECTED
             } else {
                 COLOR_ROW_BG_NORMAL
             });
-            row_ui.set_border_color(if is_selected {
+            row_ui.set_border_color(if !is_enabled {
+                COLOR_ROW_BORDER_DISABLED
+            } else if is_selected {
                 COLOR_ROW_BORDER_SELECTED
             } else {
                 COLOR_ROW_BORDER_NORMAL
@@ -755,6 +804,9 @@ impl<'a> GameOptionWidget<'a> {
     }
 
     pub fn decrement_option(&mut self, item_type: OptionItemType) {
+        if !self.is_item_enabled(item_type) {
+            return;
+        }
         match item_type {
             OptionItemType::WindowMode => {
                 let current_idx =
@@ -838,6 +890,9 @@ impl<'a> GameOptionWidget<'a> {
     }
 
     pub fn increment_option(&mut self, item_type: OptionItemType) {
+        if !self.is_item_enabled(item_type) {
+            return;
+        }
         match item_type {
             OptionItemType::WindowMode => {
                 let current_idx =
@@ -909,6 +964,9 @@ impl<'a> GameOptionWidget<'a> {
     }
 
     pub fn toggle_option(&mut self, item_type: OptionItemType) {
+        if !self.is_item_enabled(item_type) {
+            return;
+        }
         match item_type {
             OptionItemType::WindowMode | OptionItemType::Monitor | OptionItemType::Resolution => {
                 for row in self._rows.iter_mut() {
@@ -940,6 +998,7 @@ impl<'a> GameOptionWidget<'a> {
     }
 
     pub fn refresh_all_values(&mut self) {
+        let res_enabled = is_resolution_selectable(self._game_option_data._window_mode);
         for row in self._rows.iter_mut() {
             match row._item_type {
                 OptionItemType::WindowMode => {
@@ -959,11 +1018,49 @@ impl<'a> GameOptionWidget<'a> {
                     }
                 }
                 OptionItemType::Resolution => {
+                    ptr_as_mut(row._row_widget.as_ref()).get_ui_component_mut().set_touchable(res_enabled);
+                    ptr_as_mut(row._label_widget.as_ref()).get_ui_component_mut().set_font_color(if res_enabled {
+                        COLOR_TEXT_LABEL
+                    } else {
+                        COLOR_TEXT_LABEL_DISABLED
+                    });
+                    if let Some(dec_btn) = row._dec_btn.as_ref() {
+                        let dec_ui = ptr_as_mut(dec_btn.as_ref()).get_ui_component_mut();
+                        dec_ui.set_touchable(res_enabled);
+                        dec_ui.set_color(if res_enabled {
+                            COLOR_BTN_STEPPER
+                        } else {
+                            COLOR_BTN_STEPPER_DISABLED
+                        });
+                        dec_ui.set_font_color(if res_enabled {
+                            COLOR_BTN_TEXT_ENABLED
+                        } else {
+                            COLOR_BTN_TEXT_DISABLED
+                        });
+                    }
+                    if let Some(inc_btn) = row._inc_btn.as_ref() {
+                        let inc_ui = ptr_as_mut(inc_btn.as_ref()).get_ui_component_mut();
+                        inc_ui.set_touchable(res_enabled);
+                        inc_ui.set_color(if res_enabled {
+                            COLOR_BTN_STEPPER
+                        } else {
+                            COLOR_BTN_STEPPER_DISABLED
+                        });
+                        inc_ui.set_font_color(if res_enabled {
+                            COLOR_BTN_TEXT_ENABLED
+                        } else {
+                            COLOR_BTN_TEXT_DISABLED
+                        });
+                    }
                     if let Some(combo) = row._combo_box.as_mut() {
+                        combo.set_enabled(res_enabled);
                         let resolutions =
                             get_engine_core().get_available_resolutions(self._game_option_data._monitor_index);
-                        let current_idx =
-                            resolutions.iter().position(|r| *r == self._game_option_data._resolution).unwrap_or(0);
+                        let current_idx = if res_enabled {
+                            resolutions.iter().position(|r| *r == self._game_option_data._resolution).unwrap_or(0)
+                        } else {
+                            0
+                        };
                         combo.set_selected_index(current_idx);
                     }
                 }
@@ -1035,6 +1132,10 @@ impl<'a> GameOptionWidget<'a> {
                 }
             }
         }
+        if !self.is_nav_index_enabled(self._selected_index) {
+            self._selected_index = OptionItemType::WindowMode as usize;
+        }
+        self.update_selection_visuals();
     }
 
     pub fn save_options(&mut self) {
@@ -1087,19 +1188,31 @@ impl<'a> GameOptionWidget<'a> {
         }
 
         if UiInput::is_up(keyboard_input_data, joystick_input_data) {
-            let next_index = if self._selected_index == 0 {
-                TOTAL_NAV_ITEMS - 1
-            } else {
-                self._selected_index - 1
-            };
-            self.set_selected_index(next_index, true);
+            let mut candidate = self._selected_index;
+            for _ in 0..TOTAL_NAV_ITEMS {
+                candidate = if candidate == 0 {
+                    TOTAL_NAV_ITEMS - 1
+                } else {
+                    candidate - 1
+                };
+                if self.is_nav_index_enabled(candidate) {
+                    self.set_selected_index(candidate, true);
+                    break;
+                }
+            }
         } else if UiInput::is_down(keyboard_input_data, joystick_input_data) {
-            let next_index = if self._selected_index + 1 >= TOTAL_NAV_ITEMS {
-                0
-            } else {
-                self._selected_index + 1
-            };
-            self.set_selected_index(next_index, true);
+            let mut candidate = self._selected_index;
+            for _ in 0..TOTAL_NAV_ITEMS {
+                candidate = if candidate + 1 >= TOTAL_NAV_ITEMS {
+                    0
+                } else {
+                    candidate + 1
+                };
+                if self.is_nav_index_enabled(candidate) {
+                    self.set_selected_index(candidate, true);
+                    break;
+                }
+            }
         } else if UiInput::is_left(keyboard_input_data, joystick_input_data) {
             if self._selected_index < OptionItemType::COUNT {
                 if let Some(item_type) = OptionItemType::from_repr(self._selected_index) {
@@ -1174,5 +1287,9 @@ mod tests {
             WindowMode::FullScreenBorderlessMode.display_name(),
             "Full Screen (Borderless)"
         );
+
+        assert!(is_resolution_selectable(WindowMode::WindowMode));
+        assert!(!is_resolution_selectable(WindowMode::FullScreenExclusiveMode));
+        assert!(!is_resolution_selectable(WindowMode::FullScreenBorderlessMode));
     }
 }

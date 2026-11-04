@@ -34,6 +34,9 @@ const COLOR_HEADER_BG: u32 = get_color32(240, 222, 192, 240);
 const COLOR_HEADER_BG_HOVER: u32 = get_color32(250, 235, 210, 255);
 const COLOR_HEADER_BORDER: u32 = get_color32(185, 130, 75, 255);
 const COLOR_HEADER_TEXT: u32 = get_color32(50, 30, 10, 255);
+const COLOR_HEADER_BG_DISABLED: u32 = get_color32(215, 205, 190, 180);
+const COLOR_HEADER_BORDER_DISABLED: u32 = get_color32(170, 155, 135, 180);
+const COLOR_HEADER_TEXT_DISABLED: u32 = get_color32(130, 115, 100, 180);
 
 const COLOR_MENU_BG: u32 = get_color32(248, 238, 220, 255);
 const COLOR_MENU_BORDER: u32 = get_color32(170, 110, 60, 255);
@@ -65,6 +68,7 @@ pub struct DropDownComboBoxWidget<'a> {
     pub _selected_index: usize,
     pub _hovered_index: usize,
     pub _is_open: bool,
+    pub _is_enabled: bool,
     pub _combo_width: f32,
     pub _combo_height: f32,
     pub _item_height: f32,
@@ -78,6 +82,9 @@ impl<'a> DropDownComboBoxWidget<'a> {
         _delta: &Vector2<f32>,
     ) -> bool {
         let combo = ptr_as_mut(ui_component.get_user_data() as *const DropDownComboBoxWidget<'a>);
+        if !combo._is_enabled {
+            return false;
+        }
         combo.toggle_dropdown();
         true
     }
@@ -87,6 +94,10 @@ impl<'a> DropDownComboBoxWidget<'a> {
         _pos: &Vector2<f32>,
         _delta: &Vector2<f32>,
     ) -> bool {
+        let combo = ptr_as_ref(ui_component.get_user_data() as *const DropDownComboBoxWidget<'a>);
+        if !combo._is_enabled {
+            return false;
+        }
         let ui = ptr_as_mut(ui_component);
         ui.set_color(COLOR_HEADER_BG_HOVER);
         get_audio_manager_mut().play_audio_bank(AUDIO_SELECT_ITEM, AudioLoop::ONCE, None);
@@ -98,6 +109,10 @@ impl<'a> DropDownComboBoxWidget<'a> {
         _pos: &Vector2<f32>,
         _delta: &Vector2<f32>,
     ) -> bool {
+        let combo = ptr_as_ref(ui_component.get_user_data() as *const DropDownComboBoxWidget<'a>);
+        if !combo._is_enabled {
+            return false;
+        }
         let ui = ptr_as_mut(ui_component);
         ui.set_color(COLOR_HEADER_BG);
         true
@@ -181,6 +196,7 @@ impl<'a> DropDownComboBoxWidget<'a> {
             overlay_ui.set_size_hint_x(Some(1.0));
             overlay_ui.set_size_hint_y(Some(1.0));
             overlay_ui.set_color(COLOR_OVERLAY_BG);
+            overlay_ui.set_renderable(false);
             overlay_ui.set_touchable(true);
             overlay_ui.set_callback_touch_down(Some(Box::new(Self::callback_overlay_click)));
             overlay_ui.set_ignore_parent_renderable_area(true);
@@ -222,6 +238,7 @@ impl<'a> DropDownComboBoxWidget<'a> {
             _selected_index: selected,
             _hovered_index: selected,
             _is_open: false,
+            _is_enabled: true,
             _combo_width: width,
             _combo_height: height,
             _item_height: DEFAULT_ITEM_HEIGHT,
@@ -340,13 +357,48 @@ impl<'a> DropDownComboBoxWidget<'a> {
 
     pub fn update_header_text(&mut self) {
         let text = if let Some(selected) = self._items.get(self._selected_index) {
-            let arrow = if self._is_open { "▲" } else { "▼" };
-            format!("{}  {}", selected, arrow)
-        } else {
+            if self._is_enabled {
+                let arrow = if self._is_open { "▲" } else { "▼" };
+                format!("{}  {}", selected, arrow)
+            } else {
+                selected.clone()
+            }
+        } else if self._is_enabled {
             "None ▼".to_string()
+        } else {
+            "None".to_string()
         };
         let header_ui = ptr_as_mut(self._header_widget.as_ref()).get_ui_component_mut();
         header_ui.set_text(&text);
+    }
+
+    pub fn is_enabled(&self) -> bool {
+        self._is_enabled
+    }
+
+    pub fn set_enabled(&mut self, enabled: bool) {
+        if !enabled {
+            self.close_dropdown();
+        }
+        self._is_enabled = enabled;
+        let header_ui = ptr_as_mut(self._header_widget.as_ref()).get_ui_component_mut();
+        header_ui.set_touchable(enabled);
+        header_ui.set_color(if enabled {
+            COLOR_HEADER_BG
+        } else {
+            COLOR_HEADER_BG_DISABLED
+        });
+        header_ui.set_border_color(if enabled {
+            COLOR_HEADER_BORDER
+        } else {
+            COLOR_HEADER_BORDER_DISABLED
+        });
+        header_ui.set_font_color(if enabled {
+            COLOR_HEADER_TEXT
+        } else {
+            COLOR_HEADER_TEXT_DISABLED
+        });
+        self.update_header_text();
     }
 
     pub fn update_item_visuals(&mut self) {
@@ -419,6 +471,9 @@ impl<'a> DropDownComboBoxWidget<'a> {
     }
 
     pub fn open_dropdown(&mut self) {
+        if !self._is_enabled {
+            return;
+        }
         if !self._is_open {
             self._is_open = true;
             self._hovered_index = self._selected_index;
@@ -441,6 +496,9 @@ impl<'a> DropDownComboBoxWidget<'a> {
     }
 
     pub fn toggle_dropdown(&mut self) {
+        if !self._is_enabled {
+            return;
+        }
         if self._is_open {
             self.close_dropdown();
         } else {

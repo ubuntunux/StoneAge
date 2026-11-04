@@ -1,6 +1,6 @@
 use nalgebra::Vector2;
 use rust_engine_3d::core::engine_core::WindowMode;
-use rust_engine_3d::core::engine_service_locator::{get_audio_manager_mut, get_engine_core_mut};
+use rust_engine_3d::core::engine_service_locator::{get_audio_manager_mut, get_engine_core_mut, is_engine_core_valid};
 use rust_engine_3d::scene::ui::set_global_font_scale;
 use serde::{Deserialize, Serialize};
 use std::sync::atomic::{AtomicU32, Ordering};
@@ -104,17 +104,20 @@ impl GameOptionData {
             (self._sfx_volume * self._master_volume).clamp(MIN_VOLUME, MAX_VOLUME)
         };
 
-        let audio_manager = get_audio_manager_mut();
-        audio_manager.set_bgm_volume(effective_bgm_volume);
-        audio_manager._volume = (effective_sfx_volume * MAX_AUDIO_MIXER_VOLUME) as i32;
-
         GLOBAL_R_STICK_SENSITIVITY.store(self._r_stick_sensitivity.to_bits(), Ordering::Relaxed);
         GLOBAL_L_STICK_SENSITIVITY.store(self._l_stick_sensitivity.to_bits(), Ordering::Relaxed);
         GLOBAL_FONT_SCALE.store(self._font_scale.to_bits(), Ordering::Relaxed);
 
         set_global_font_scale(self._font_scale);
-        let engine_core = get_engine_core_mut();
-        engine_core.set_display_options(self._window_mode, self._monitor_index, self._resolution);
+
+        if is_engine_core_valid() {
+            let audio_manager = get_audio_manager_mut();
+            audio_manager.set_bgm_volume(effective_bgm_volume);
+            audio_manager._volume = (effective_sfx_volume * MAX_AUDIO_MIXER_VOLUME) as i32;
+
+            let engine_core = get_engine_core_mut();
+            engine_core.set_display_options(self._window_mode, self._monitor_index, self._resolution);
+        }
     }
 
     pub fn set_master_volume(&mut self, volume: f32) {
