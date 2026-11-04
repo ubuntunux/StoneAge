@@ -242,6 +242,7 @@ pub fn run_application() {
         .as_ref()
         .map(|opt| opt._window_mode)
         .unwrap_or(crate::game_module::game_option::DEFAULT_WINDOW_MODE);
+    let initial_monitor_index: Option<usize> = saved_option.as_ref().and_then(|opt| opt._monitor_index);
     let initial_window_size: Option<Vector2<u32>> = saved_option.as_ref().map(|opt| opt._resolution);
 
     // Graphics Settings
@@ -346,6 +347,7 @@ pub fn run_application() {
         app_name,
         app_version,
         initial_window_size,
+        initial_monitor_index,
         window_mode,
         &application, // TODO: Remove
     );

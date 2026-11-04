@@ -127,6 +127,7 @@ pub struct OptionRow<'a> {
 
 pub struct GameOptionWidget<'a> {
     pub _parent_widget: *const WidgetDefault<'a>,
+    pub _overlay_root: *const WidgetDefault<'a>,
     pub _layer: Rc<WidgetDefault<'a>>,
     pub _title_widget: Rc<WidgetDefault<'a>>,
     pub _rows_container: Rc<WidgetDefault<'a>>,
@@ -234,8 +235,8 @@ impl<'a> GameOptionWidget<'a> {
     pub fn callback_monitor_changed(user_data: *const c_void, index: usize) {
         let widget = ptr_as_mut(user_data as *const GameOptionWidget<'a>);
         widget._game_option_data.set_monitor_index(Some(index));
-        widget._game_option_data.apply();
         widget.update_resolution_combo_items();
+        widget._game_option_data.apply();
         widget.refresh_all_values();
         widget.clear_status_message();
     }
@@ -248,6 +249,23 @@ impl<'a> GameOptionWidget<'a> {
             widget._game_option_data.apply();
             widget.refresh_all_values();
             widget.clear_status_message();
+        }
+    }
+
+    pub fn update_monitor_combo_items(&mut self) {
+        let monitors = get_engine_core().get_monitor_names();
+        let primary_idx = get_engine_core().get_primary_monitor_index();
+        let max_idx = monitors.len().saturating_sub(1);
+        let monitor_idx = self._game_option_data._monitor_index.unwrap_or(primary_idx).min(max_idx);
+        if let Some(saved_idx) = self._game_option_data._monitor_index {
+            if !monitors.is_empty() && saved_idx >= monitors.len() {
+                self._game_option_data.set_monitor_index(Some(monitor_idx));
+            }
+        }
+        if let Some(row) = self._rows.iter_mut().find(|r| r._item_type == OptionItemType::Monitor) {
+            if let Some(combo) = row._combo_box.as_mut() {
+                combo.set_items(monitors, monitor_idx);
+            }
         }
     }
 
@@ -266,7 +284,10 @@ impl<'a> GameOptionWidget<'a> {
         }
     }
 
-    pub fn create_game_option_widget(parent_widget: &mut WidgetDefault<'a>) -> Box<GameOptionWidget<'a>> {
+    pub fn create_game_option_widget(
+        parent_widget: &mut WidgetDefault<'a>,
+        overlay_root: *const WidgetDefault<'a>,
+    ) -> Box<GameOptionWidget<'a>> {
         let layer = UIManager::create_widget("game_option_widget", UIWidgetTypes::Default);
         let layer_mut = ptr_as_mut(layer.as_ref());
         let ui_comp = layer_mut.get_ui_component_mut();
@@ -378,6 +399,7 @@ impl<'a> GameOptionWidget<'a> {
 
         let mut widget = Box::new(GameOptionWidget {
             _parent_widget: parent_widget,
+            _overlay_root: overlay_root,
             _layer: layer,
             _title_widget: title_widget,
             _rows_container: rows_container,
@@ -455,7 +477,7 @@ impl<'a> GameOptionWidget<'a> {
                     OptionItemType::WindowMode => {
                         let mut combo = DropDownComboBoxWidget::create_from_enum(
                             row_mut,
-                            widget._layer.as_ref() as *const WidgetDefault<'a>,
+                            overlay_root,
                             "window_mode_combo",
                             &WINDOW_MODE_ITEMS,
                             &WINDOW_MODE_NAMES,
@@ -478,7 +500,7 @@ impl<'a> GameOptionWidget<'a> {
                             .min(if monitors.is_empty() { 0 } else { monitors.len() - 1 });
                         let mut combo = DropDownComboBoxWidget::create_drop_down_combo_box(
                             row_mut,
-                            widget._layer.as_ref() as *const WidgetDefault<'a>,
+                            overlay_root,
                             "monitor_combo",
                             monitors,
                             initial_idx,
@@ -498,7 +520,7 @@ impl<'a> GameOptionWidget<'a> {
                             resolutions.iter().position(|r| *r == initial_option._resolution).unwrap_or(0);
                         let mut combo = DropDownComboBoxWidget::create_drop_down_combo_box(
                             row_mut,
-                            widget._layer.as_ref() as *const WidgetDefault<'a>,
+                            overlay_root,
                             "resolution_combo",
                             res_names,
                             initial_idx,
@@ -639,7 +661,17 @@ impl<'a> GameOptionWidget<'a> {
         widget
     }
 
-    pub fn changed_window_size(&mut self, _window_size: &Vector2<i32>) {}
+    pub fn close_all_dropdowns(&mut self) {
+        for row in self._rows.iter_mut() {
+            if let Some(combo) = row._combo_box.as_mut() {
+                combo.close_dropdown();
+            }
+        }
+    }
+
+    pub fn changed_window_size(&mut self, _window_size: &Vector2<i32>) {
+        self.close_all_dropdowns();
+    }
 
     pub fn is_opened_game_option_widget(&self) -> bool {
         self._is_opened
@@ -650,6 +682,8 @@ impl<'a> GameOptionWidget<'a> {
             let parent_mut = ptr_as_mut(self._parent_widget);
             parent_mut.add_widget(&self._layer);
             self._game_option_data = get_game_resources().get_game_option_data().borrow().clone();
+            self.update_monitor_combo_items();
+            self.update_resolution_combo_items();
             self.refresh_all_values();
             self.clear_status_message();
             ptr_as_mut(self._rows_container.as_ref()).get_ui_component_mut().set_scroll_pos_y(0.0);
@@ -660,11 +694,7 @@ impl<'a> GameOptionWidget<'a> {
 
     pub fn close_game_option_widget(&mut self) {
         if self._is_opened {
-            for row in self._rows.iter_mut() {
-                if let Some(combo) = row._combo_box.as_mut() {
-                    combo.close_dropdown();
-                }
-            }
+            self.close_all_dropdowns();
             let parent_mut = ptr_as_mut(self._parent_widget);
             parent_mut.remove_widget(self._layer.as_ref());
             self.clear_status_message();
@@ -881,9 +911,13 @@ impl<'a> GameOptionWidget<'a> {
     pub fn toggle_option(&mut self, item_type: OptionItemType) {
         match item_type {
             OptionItemType::WindowMode | OptionItemType::Monitor | OptionItemType::Resolution => {
-                if let Some(row) = self._rows.iter_mut().find(|r| r._item_type == item_type) {
+                for row in self._rows.iter_mut() {
                     if let Some(combo) = row._combo_box.as_mut() {
-                        combo.toggle_dropdown();
+                        if row._item_type == item_type {
+                            combo.toggle_dropdown();
+                        } else {
+                            combo.close_dropdown();
+                        }
                     }
                 }
                 return;
@@ -1012,7 +1046,10 @@ impl<'a> GameOptionWidget<'a> {
     }
 
     pub fn reset_to_defaults(&mut self) {
+        self.close_all_dropdowns();
         self._game_option_data = GameOptionData::default();
+        self.update_monitor_combo_items();
+        self.update_resolution_combo_items();
         self._game_option_data.apply();
         self.refresh_all_values();
         let status_ui = ptr_as_mut(self._status_label.as_ref()).get_ui_component_mut();
@@ -1030,7 +1067,7 @@ impl<'a> GameOptionWidget<'a> {
         &mut self,
         joystick_input_data: &JoystickInputData,
         keyboard_input_data: &KeyboardInputData,
-    ) {
+    ) -> bool {
         // If any combo box dropdown is opened, handle modal dropdown input
         for row in self._rows.iter_mut() {
             if let Some(combo) = row._combo_box.as_mut() {
@@ -1044,7 +1081,7 @@ impl<'a> GameOptionWidget<'a> {
                     } else if UiInput::is_cancel(keyboard_input_data, joystick_input_data) {
                         combo.close_dropdown();
                     }
-                    return;
+                    return true;
                 }
             }
         }
@@ -1090,6 +1127,8 @@ impl<'a> GameOptionWidget<'a> {
                 self.save_options();
             }
         }
+
+        false
     }
 }
 

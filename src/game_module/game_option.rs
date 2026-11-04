@@ -1,7 +1,7 @@
 use nalgebra::Vector2;
 use rust_engine_3d::core::engine_core::WindowMode;
 use rust_engine_3d::core::engine_service_locator::{get_audio_manager_mut, get_engine_core_mut};
-use rust_engine_3d::scene::ui::set_global_dpi_scale;
+use rust_engine_3d::scene::ui::set_global_font_scale;
 use serde::{Deserialize, Serialize};
 use std::sync::atomic::{AtomicU32, Ordering};
 
@@ -112,11 +112,9 @@ impl GameOptionData {
         GLOBAL_L_STICK_SENSITIVITY.store(self._l_stick_sensitivity.to_bits(), Ordering::Relaxed);
         GLOBAL_FONT_SCALE.store(self._font_scale.to_bits(), Ordering::Relaxed);
 
-        set_global_dpi_scale(self._font_scale);
+        set_global_font_scale(self._font_scale);
         let engine_core = get_engine_core_mut();
-        engine_core.set_window_mode(self._window_mode);
-        engine_core.set_monitor_index(self._monitor_index);
-        engine_core.set_resolution(self._resolution);
+        engine_core.set_display_options(self._window_mode, self._monitor_index, self._resolution);
     }
 
     pub fn set_master_volume(&mut self, volume: f32) {

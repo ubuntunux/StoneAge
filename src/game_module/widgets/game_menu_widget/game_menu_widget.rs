@@ -346,7 +346,7 @@ impl<'a> GameMenuWidget<'a> {
         let taming_list_widget = TamingListWidget::create_taming_list_widget(content_layout_mut);
         let friendly_npc_list_widget = FriendlyNpcListWidget::create_friendly_npc_list_widget(content_layout_mut);
         let save_load_widget = SaveLoadWidget::create_save_load_widget(content_layout_mut, parent_widget);
-        let game_option_widget = GameOptionWidget::create_game_option_widget(content_layout_mut);
+        let game_option_widget = GameOptionWidget::create_game_option_widget(content_layout_mut, parent_widget);
         let game_debug_menu_widget = GameDebugMenuWidget::create_game_debug_menu_widget(content_layout_mut);
 
         let game_menu_widget = Box::new(GameMenuWidget {
@@ -497,6 +497,8 @@ impl<'a> GameMenuWidget<'a> {
             self.set_active_tab(self._active_tab.prev());
         }
 
+        let mut modal_consumed = false;
+
         match self._active_tab {
             GameMenuTab::Craft => {
                 self._craft_widget.update_craft_widget(
@@ -523,7 +525,8 @@ impl<'a> GameMenuWidget<'a> {
                 self._save_load_widget.update_save_load_widget(time_data, joystick_input_data, keyboard_input_data);
             }
             GameMenuTab::GameOption => {
-                self._game_option_widget.update_game_option_widget(joystick_input_data, keyboard_input_data);
+                modal_consumed =
+                    self._game_option_widget.update_game_option_widget(joystick_input_data, keyboard_input_data);
             }
             GameMenuTab::Inventory => {
                 self._inventory_widget.update_inventory_widget(
@@ -541,7 +544,7 @@ impl<'a> GameMenuWidget<'a> {
             }
         }
 
-        if UiInput::is_cancel(keyboard_input_data, joystick_input_data) {
+        if !modal_consumed && UiInput::is_cancel(keyboard_input_data, joystick_input_data) {
             self.close_game_menu();
         }
     }
