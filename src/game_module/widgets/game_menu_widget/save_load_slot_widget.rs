@@ -855,30 +855,41 @@ impl<'a> SaveLoadSlotWidget<'a> {
                         container_mut.get_ui_component_mut().scroll_into_view(curr_card_mut.get_ui_component());
 
                         self.update_slot_buttons_highlight(index, Some(btn));
-
-                        let item = &self._slot_items[index];
-                        let target_widget = match btn {
-                            SlotButtonFocus::Load => &item._load_btn,
-                            SlotButtonFocus::Save => &item._save_btn,
-                            SlotButtonFocus::Delete => &item._delete_btn,
-                        };
-                        move_mouse_to_ui_component(target_widget.get_ui_component());
                     }
                 }
                 SaveLoadFocusTarget::NewGame => {
                     let btn_mut = ptr_as_mut::<WidgetDefault<'a>>(self._new_game_btn.as_ref());
                     btn_mut.get_ui_component_mut().set_color(BTN_NEW_GAME_FOCUSED_COLOR);
-                    move_mouse_to_ui_component(btn_mut.get_ui_component());
                 }
                 SaveLoadFocusTarget::ExitGame => {
                     let btn_mut = ptr_as_mut::<WidgetDefault<'a>>(self._exit_game_btn.as_ref());
                     btn_mut.get_ui_component_mut().set_color(BTN_EXIT_GAME_FOCUSED_COLOR);
-                    move_mouse_to_ui_component(btn_mut.get_ui_component());
                 }
             }
 
             if !force {
                 get_audio_manager_mut().play_audio_bank(AUDIO_SELECT_ITEM, AudioLoop::ONCE, None);
+            }
+        }
+    }
+
+    fn move_mouse_to_focus_target(&self, target: SaveLoadFocusTarget) {
+        match target {
+            SaveLoadFocusTarget::Slot(index, btn) => {
+                if let Some(item) = self._slot_items.get(index) {
+                    let target_widget = match btn {
+                        SlotButtonFocus::Load => &item._load_btn,
+                        SlotButtonFocus::Save => &item._save_btn,
+                        SlotButtonFocus::Delete => &item._delete_btn,
+                    };
+                    move_mouse_to_ui_component(target_widget.get_ui_component());
+                }
+            }
+            SaveLoadFocusTarget::NewGame => {
+                move_mouse_to_ui_component(self._new_game_btn.get_ui_component());
+            }
+            SaveLoadFocusTarget::ExitGame => {
+                move_mouse_to_ui_component(self._exit_game_btn.get_ui_component());
             }
         }
     }
@@ -1022,6 +1033,7 @@ impl<'a> SaveLoadSlotWidget<'a> {
 
             if let Some(target) = next_target {
                 self.set_focus_target(target, false);
+                self.move_mouse_to_focus_target(target);
             }
         }
 
