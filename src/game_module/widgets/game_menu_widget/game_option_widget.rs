@@ -34,6 +34,14 @@ const ACTION_BTN_WIDTH: f32 = 160.0;
 const ACTION_BTN_HEIGHT: f32 = 38.0;
 const ROWS_CONTAINER_HEIGHT: f32 = 350.0;
 
+const TITLE_FONT_SIZE: f32 = 26.0;
+const LABEL_FONT_SIZE: f32 = 22.0;
+const VALUE_FONT_SIZE: f32 = 22.0;
+const STEPPER_BTN_FONT_SIZE: f32 = 24.0;
+const TOGGLE_BTN_FONT_SIZE: f32 = 20.0;
+const ACTION_BTN_FONT_SIZE: f32 = 20.0;
+const STATUS_FONT_SIZE: f32 = 18.0;
+
 const WINDOW_MODE_ITEMS: [WindowMode; 3] = [
     WindowMode::WindowMode,
     WindowMode::FullScreenExclusiveMode,
@@ -348,9 +356,9 @@ impl<'a> GameOptionWidget<'a> {
         title_ui.set_halign(HorizontalAlign::CENTER);
         title_ui.set_valign(VerticalAlign::CENTER);
         title_ui.set_size_hint_x(Some(1.0));
-        title_ui.set_size_y(26.0);
+        title_ui.set_size_y(30.0);
         title_ui.set_text("GAME SETTINGS");
-        title_ui.set_font_size(22.0);
+        title_ui.set_font_size(TITLE_FONT_SIZE);
         title_ui.set_font_color(get_color32(110, 60, 25, 255));
         title_ui.set_color(get_color32(0, 0, 0, 0));
         layer_mut.add_widget(&title_widget);
@@ -396,7 +404,7 @@ impl<'a> GameOptionWidget<'a> {
         reset_ui.set_size(ACTION_BTN_WIDTH, ACTION_BTN_HEIGHT);
         reset_ui.set_margin(8.0);
         reset_ui.set_text("Reset Defaults");
-        reset_ui.set_font_size(18.0);
+        reset_ui.set_font_size(ACTION_BTN_FONT_SIZE);
         reset_ui.set_font_color(get_color32(255, 255, 255, 255));
         reset_ui.set_round(5.0);
         reset_ui.set_color(COLOR_BTN_RESET);
@@ -413,7 +421,7 @@ impl<'a> GameOptionWidget<'a> {
         save_ui.set_size(ACTION_BTN_WIDTH, ACTION_BTN_HEIGHT);
         save_ui.set_margin(8.0);
         save_ui.set_text("Save Options");
-        save_ui.set_font_size(18.0);
+        save_ui.set_font_size(ACTION_BTN_FONT_SIZE);
         save_ui.set_font_color(get_color32(255, 255, 255, 255));
         save_ui.set_round(5.0);
         save_ui.set_color(COLOR_BTN_SAVE);
@@ -428,9 +436,9 @@ impl<'a> GameOptionWidget<'a> {
         status_ui.set_halign(HorizontalAlign::CENTER);
         status_ui.set_valign(VerticalAlign::CENTER);
         status_ui.set_size_hint_x(Some(1.0));
-        status_ui.set_size_y(22.0);
+        status_ui.set_size_y(24.0);
         status_ui.set_text("");
-        status_ui.set_font_size(16.0);
+        status_ui.set_font_size(STATUS_FONT_SIZE);
         status_ui.set_font_color(COLOR_STATUS_TEXT);
         status_ui.set_color(get_color32(0, 0, 0, 0));
         layer_mut.add_widget(&status_label);
@@ -490,7 +498,7 @@ impl<'a> GameOptionWidget<'a> {
             label_ui.set_size(LABEL_WIDTH, ROW_HEIGHT - 8.0);
             label_ui.set_margin(4.0);
             label_ui.set_text(item_type.display_name());
-            label_ui.set_font_size(20.0);
+            label_ui.set_font_size(LABEL_FONT_SIZE);
             label_ui.set_font_color(COLOR_TEXT_LABEL);
             label_ui.set_color(get_color32(0, 0, 0, 0));
             row_mut.add_widget(&label_widget);
@@ -503,7 +511,7 @@ impl<'a> GameOptionWidget<'a> {
                 dec_ui.set_size(STEPPER_BTN_SIZE, STEPPER_BTN_SIZE);
                 dec_ui.set_margin(4.0);
                 dec_ui.set_text("<");
-                dec_ui.set_font_size(22.0);
+                dec_ui.set_font_size(STEPPER_BTN_FONT_SIZE);
                 dec_ui.set_font_color(get_color32(255, 255, 255, 255));
                 dec_ui.set_round(4.0);
                 dec_ui.set_color(COLOR_BTN_STEPPER);
@@ -583,7 +591,7 @@ impl<'a> GameOptionWidget<'a> {
                 inc_ui.set_size(STEPPER_BTN_SIZE, STEPPER_BTN_SIZE);
                 inc_ui.set_margin(4.0);
                 inc_ui.set_text(">");
-                inc_ui.set_font_size(22.0);
+                inc_ui.set_font_size(STEPPER_BTN_FONT_SIZE);
                 inc_ui.set_font_color(get_color32(255, 255, 255, 255));
                 inc_ui.set_round(4.0);
                 inc_ui.set_color(COLOR_BTN_STEPPER);
@@ -613,7 +621,7 @@ impl<'a> GameOptionWidget<'a> {
                 toggle_ui.set_size(TOGGLE_BTN_WIDTH, STEPPER_BTN_SIZE);
                 toggle_ui.set_margin(4.0);
                 toggle_ui.set_text("OFF");
-                toggle_ui.set_font_size(18.0);
+                toggle_ui.set_font_size(TOGGLE_BTN_FONT_SIZE);
                 toggle_ui.set_font_color(get_color32(255, 255, 255, 255));
                 toggle_ui.set_round(4.0);
                 toggle_ui.set_color(COLOR_BTN_TOGGLE_OFF);
@@ -643,7 +651,7 @@ impl<'a> GameOptionWidget<'a> {
                 dec_ui.set_size(STEPPER_BTN_SIZE, STEPPER_BTN_SIZE);
                 dec_ui.set_margin(4.0);
                 dec_ui.set_text("<");
-                dec_ui.set_font_size(22.0);
+                dec_ui.set_font_size(STEPPER_BTN_FONT_SIZE);
                 dec_ui.set_font_color(get_color32(255, 255, 255, 255));
                 dec_ui.set_round(4.0);
                 dec_ui.set_color(COLOR_BTN_STEPPER);
@@ -660,7 +668,7 @@ impl<'a> GameOptionWidget<'a> {
                 val_ui.set_size(VALUE_WIDTH, ROW_HEIGHT - 8.0);
                 val_ui.set_margin(4.0);
                 val_ui.set_text("100%");
-                val_ui.set_font_size(20.0);
+                val_ui.set_font_size(VALUE_FONT_SIZE);
                 val_ui.set_font_color(COLOR_TEXT_VALUE);
                 val_ui.set_color(get_color32(0, 0, 0, 0));
                 row_mut.add_widget(&value_widget);
@@ -672,7 +680,7 @@ impl<'a> GameOptionWidget<'a> {
                 inc_ui.set_size(STEPPER_BTN_SIZE, STEPPER_BTN_SIZE);
                 inc_ui.set_margin(4.0);
                 inc_ui.set_text(">");
-                inc_ui.set_font_size(22.0);
+                inc_ui.set_font_size(STEPPER_BTN_FONT_SIZE);
                 inc_ui.set_font_color(get_color32(255, 255, 255, 255));
                 inc_ui.set_round(4.0);
                 inc_ui.set_color(COLOR_BTN_STEPPER);
