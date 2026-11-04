@@ -326,7 +326,13 @@ impl Default for InputBindings {
         ui_bindings.insert(
             UiAction::Confirm,
             ActionBinding::new(
-                vec![KeyCode::Enter, KeyCode::Space, KeyCode::NumpadEnter, KeyCode::KeyE],
+                vec![
+                    KeyCode::Enter,
+                    KeyCode::Space,
+                    KeyCode::NumpadEnter,
+                    KeyCode::KeyE,
+                    KeyCode::KeyF,
+                ],
                 vec![GamepadButton::A],
                 vec![],
             ),
@@ -381,7 +387,7 @@ impl Default for InputBindings {
         );
         ui_bindings.insert(
             UiAction::Delete,
-            ActionBinding::new(vec![KeyCode::Delete, KeyCode::KeyF], vec![GamepadButton::X], vec![]),
+            ActionBinding::new(vec![KeyCode::Delete], vec![GamepadButton::X], vec![]),
         );
 
         let mut gameplay_bindings = HashMap::new();
@@ -455,7 +461,7 @@ impl Default for InputBindings {
         );
         gameplay_bindings.insert(
             GamePlayAction::FastForward,
-            ActionBinding::new(vec![KeyCode::Space], vec![GamepadButton::A], vec![]),
+            ActionBinding::new(vec![KeyCode::Space, KeyCode::KeyF], vec![GamepadButton::A], vec![]),
         );
 
         Self {
@@ -486,6 +492,19 @@ impl InputBindings {
 
         if let Some(binding) = self._ui_bindings.get(&action) {
             binding.is_pressed(keyboard, joystick, None)
+        } else {
+            false
+        }
+    }
+
+    pub fn is_ui_action_hold(
+        &self,
+        action: UiAction,
+        keyboard: &KeyboardInputData,
+        joystick: &JoystickInputData,
+    ) -> bool {
+        if let Some(binding) = self._ui_bindings.get(&action) {
+            binding.is_hold(keyboard, joystick, None)
         } else {
             false
         }
@@ -591,6 +610,10 @@ pub struct UiInput;
 impl UiInput {
     pub fn is_confirm(keyboard: &KeyboardInputData, joystick: &JoystickInputData) -> bool {
         DEFAULT_BINDINGS.is_ui_action_pressed(UiAction::Confirm, keyboard, joystick)
+    }
+
+    pub fn is_confirm_hold(keyboard: &KeyboardInputData, joystick: &JoystickInputData) -> bool {
+        DEFAULT_BINDINGS.is_ui_action_hold(UiAction::Confirm, keyboard, joystick)
     }
 
     pub fn is_cancel(keyboard: &KeyboardInputData, joystick: &JoystickInputData) -> bool {
@@ -980,7 +1003,7 @@ impl DeployInput {
         is_keyboard_input_mode: bool,
     ) -> bool {
         if is_keyboard_input_mode {
-            mouse._btn_l_pressed || keyboard.get_key_pressed(KeyCode::Space)
+            mouse._btn_l_pressed || keyboard.get_key_pressed(KeyCode::Space) || keyboard.get_key_pressed(KeyCode::KeyF)
         } else {
             joystick._btn_a == ButtonState::Pressed
         }
@@ -1146,16 +1169,33 @@ mod tests {
 
         // Initial state: nothing pressed
         assert!(!UiInput::is_confirm(&keyboard, &joystick));
+        assert!(!UiInput::is_confirm_hold(&keyboard, &joystick));
         assert!(!UiInput::is_cancel(&keyboard, &joystick));
 
         // Space confirms
         keyboard.set_key_pressed(KeyCode::Space);
         assert!(UiInput::is_confirm(&keyboard, &joystick));
+        assert!(UiInput::is_confirm_hold(&keyboard, &joystick));
         keyboard.clear_key_pressed();
+
+        // KeyF confirms
+        keyboard.set_key_pressed(KeyCode::KeyF);
+        assert!(UiInput::is_confirm(&keyboard, &joystick));
+        assert!(UiInput::is_confirm_hold(&keyboard, &joystick));
+        keyboard.clear_key_pressed();
+
+        keyboard.set_key_hold(KeyCode::KeyF, true);
+        assert!(!UiInput::is_confirm(&keyboard, &joystick));
+        assert!(UiInput::is_confirm_hold(&keyboard, &joystick));
+        keyboard.clear_key_hold();
 
         // Gamepad A confirms
         joystick._btn_a = ButtonState::Pressed;
         assert!(UiInput::is_confirm(&keyboard, &joystick));
+        assert!(UiInput::is_confirm_hold(&keyboard, &joystick));
+        joystick._btn_a = ButtonState::Hold;
+        assert!(!UiInput::is_confirm(&keyboard, &joystick));
+        assert!(UiInput::is_confirm_hold(&keyboard, &joystick));
         joystick._btn_a = ButtonState::None;
 
         // Escape cancels
@@ -1256,6 +1296,11 @@ mod tests {
         assert_eq!(UiInput::get_pressed_digit(&keyboard), None);
 
         keyboard.set_key_pressed(KeyCode::KeyE);
+        assert!(UiInput::is_confirm(&keyboard, &joystick));
+        assert!(UiInput::is_execute(&keyboard, &joystick));
+        keyboard.clear_key_pressed();
+
+        keyboard.set_key_pressed(KeyCode::KeyF);
         assert!(UiInput::is_confirm(&keyboard, &joystick));
         assert!(UiInput::is_execute(&keyboard, &joystick));
         keyboard.clear_key_pressed();
@@ -1367,6 +1412,11 @@ mod tests {
         assert!(!DeployInput::is_confirm(&keyboard, &joystick, &mouse, false));
         keyboard.clear_key_pressed();
 
+        keyboard.set_key_pressed(KeyCode::KeyF);
+        assert!(DeployInput::is_confirm(&keyboard, &joystick, &mouse, true));
+        assert!(!DeployInput::is_confirm(&keyboard, &joystick, &mouse, false));
+        keyboard.clear_key_pressed();
+
         mouse.btn_r_pressed(true);
         assert!(DeployInput::is_cancel(&keyboard, &joystick, &mouse, true));
         mouse.btn_r_pressed(false);
@@ -1425,6 +1475,10 @@ mod tests {
         assert!(!GameInput::is_fast_forward(&keyboard, &joystick));
 
         keyboard.set_key_hold(KeyCode::Space, true);
+        assert!(GameInput::is_fast_forward(&keyboard, &joystick));
+        keyboard.clear_key_hold();
+
+        keyboard.set_key_hold(KeyCode::KeyF, true);
         assert!(GameInput::is_fast_forward(&keyboard, &joystick));
         keyboard.clear_key_hold();
 

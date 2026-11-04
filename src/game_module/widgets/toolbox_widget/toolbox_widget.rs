@@ -506,7 +506,7 @@ impl<'a> ToolboxWidget<'a> {
             }
         }
 
-        // Action / Unlock / Teleport confirm (Keyboard Enter/Space, Joystick A/X)
+        // Action / Unlock / Teleport confirm (Keyboard Enter/Space/F, Joystick A/X)
         let action_pressed = UiInput::is_execute(keyboard_input_data, joystick_input_data);
 
         if action_pressed {

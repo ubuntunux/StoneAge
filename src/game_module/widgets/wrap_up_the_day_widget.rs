@@ -568,7 +568,7 @@ impl<'a> WrapUpTheDayWidget<'a> {
             }
         }
 
-        // Key interactions (Confirm with Space, Return/Enter, KeyE, or Joypad Button A)
+        // Key interactions (Confirm with Space, F, Return/Enter, KeyE, or Joypad Button A)
         if UiInput::is_confirm(keyboard_input_data, joystick_input_data) {
             self._is_ok_clicked = true;
             get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);

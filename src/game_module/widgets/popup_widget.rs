@@ -203,6 +203,9 @@ impl<'a> PopupWindowWidget<'a> {
         }
 
         if self._just_opened {
+            if UiInput::is_confirm_hold(keyboard_input_data, joystick_input_data) {
+                return true;
+            }
             self._just_opened = false;
             return true;
         }

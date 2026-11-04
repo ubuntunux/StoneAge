@@ -496,7 +496,7 @@ impl<'a> CookingWidget<'a> {
             }
         }
 
-        // Enter or Space or Gamepad A/X to Cook selected item
+        // Enter or Space or F or Gamepad A/X to Cook selected item
         if UiInput::is_execute(keyboard_input_data, joystick_input_data) {
             self.request_cook_recipe(self._selected_index);
         }

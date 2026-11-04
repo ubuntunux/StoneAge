@@ -512,7 +512,7 @@ impl<'a> CraftWidget<'a> {
             }
         }
 
-        // Enter or Space or Gamepad A/X to Craft selected item
+        // Enter or Space or F or Gamepad A/X to Craft selected item
         if UiInput::is_execute(keyboard_input_data, joystick_input_data) && Self::try_craft_recipe(self._selected_index)
         {
             self.refresh_recipe_labels();

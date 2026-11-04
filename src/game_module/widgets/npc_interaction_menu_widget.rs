@@ -129,6 +129,7 @@ pub struct NpcInteractionMenuWidget<'a> {
     pub _target: InteractionMenuTarget<'a>,
     pub _selected_index: usize,
     pub _is_opened: bool,
+    pub _just_opened: bool,
 }
 
 impl<'a> NpcInteractionMenuWidget<'a> {
@@ -184,6 +185,7 @@ impl<'a> NpcInteractionMenuWidget<'a> {
             _target: InteractionMenuTarget::None,
             _selected_index: 0,
             _is_opened: false,
+            _just_opened: false,
         }
     }
 
@@ -216,6 +218,7 @@ impl<'a> NpcInteractionMenuWidget<'a> {
     fn open_with_target(&mut self, target: InteractionMenuTarget<'a>) {
         self._target = target;
         self._selected_index = 0;
+        self._just_opened = true;
 
         self.update_screen_position();
         self.rebuild_buttons();
@@ -278,6 +281,7 @@ impl<'a> NpcInteractionMenuWidget<'a> {
     pub fn close_npc_interaction_menu(&mut self) {
         if self._is_opened {
             self._is_opened = false;
+            self._just_opened = false;
             get_game_ui_manager_mut().clear_pending_mouse_snap();
             let parent_mut = ptr_as_mut(self._parent_widget);
             parent_mut.remove_widget(self._layer.as_ref());
@@ -718,6 +722,14 @@ impl<'a> NpcInteractionMenuWidget<'a> {
             return;
         }
 
+        if self._just_opened {
+            if UiInput::is_confirm_hold(keyboard_input_data, joystick_input_data) {
+                return;
+            }
+            self._just_opened = false;
+            return;
+        }
+
         let btn_count = self._buttons.len();
         if btn_count == 0 {
             return;
@@ -733,7 +745,7 @@ impl<'a> NpcInteractionMenuWidget<'a> {
         let press_up = UiInput::is_up(keyboard_input_data, joystick_input_data);
         let press_down = UiInput::is_down(keyboard_input_data, joystick_input_data);
 
-        // Execution (Enter, Space, Joystick Button A)
+        // Execution (Enter, Space, F, Joystick Button A)
         let press_execute = UiInput::is_confirm(keyboard_input_data, joystick_input_data);
 
         if press_up {
