@@ -5,7 +5,7 @@ use rust_engine_3d::scene::ui::set_global_font_scale;
 use serde::{Deserialize, Serialize};
 use std::sync::atomic::{AtomicU32, Ordering};
 
-pub const DEFAULT_MASTER_VOLUME: f32 = 0.75;
+pub const DEFAULT_MASTER_VOLUME: f32 = 0.5;
 pub const DEFAULT_BGM_VOLUME: f32 = 1.0;
 pub const DEFAULT_SFX_VOLUME: f32 = 1.0;
 pub const DEFAULT_IS_MUTE: bool = false;

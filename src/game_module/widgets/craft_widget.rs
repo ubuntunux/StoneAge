@@ -370,6 +370,9 @@ impl<'a> CraftWidget<'a> {
 
             if let Some(first_unlocked_idx) = self.get_first_unlocked_index() {
                 self.select_recipe(first_unlocked_idx);
+                if let Some(item) = self._items.get(first_unlocked_idx) {
+                    get_game_ui_manager_mut().request_mouse_snap_to_widget(&item._layout);
+                }
             } else {
                 self.update_detail_panel();
             }
@@ -378,6 +381,7 @@ impl<'a> CraftWidget<'a> {
 
     pub fn close_craft(&mut self) {
         if self._is_opened {
+            get_game_ui_manager_mut().clear_pending_mouse_snap();
             ptr_as_mut(self._parent_widget).remove_widget(self._layer.as_ref());
             self._is_opened = false;
             get_character_manager_mut().reset_all_npc_interacting();

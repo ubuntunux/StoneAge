@@ -51,6 +51,10 @@ use std::rc::Rc;
 
 pub type QuestItem<'a> = RcRefCell<dyn QuestItemBase<'a> + 'a>;
 
+/// UI 오픈 후 레이아웃이 한 번 갱신될 때까지 마우스 스냅을 지연시키는 프레임 수
+pub const MOUSE_SNAP_DELAY_FRAMES: u32 = 1;
+pub const MAX_MOUSE_SNAP_RETRY_COUNT: u32 = 10;
+
 pub struct EditorUIManager<'a> {
     pub _editor_ui_layout: *const WidgetDefault<'a>,
     pub _window_size: Vector2<i32>,
@@ -84,6 +88,9 @@ pub struct GameUIManager<'a> {
     pub _window_size: Vector2<i32>,
     pub _need_to_refresh: bool,
     pub _player_records: PlayerRecords,
+    pub _pending_mouse_snap_widget: Option<Rc<WidgetDefault<'a>>>,
+    pub _pending_mouse_snap_delay_frames: u32,
+    pub _pending_mouse_snap_retry_count: u32,
 }
 
 impl<'a> EditorUIManager<'a> {
@@ -174,6 +181,9 @@ impl<'a> GameUIManager<'a> {
             _window_size: Vector2::new(0, 0),
             _need_to_refresh: true,
             _player_records: PlayerRecords::default(),
+            _pending_mouse_snap_widget: None,
+            _pending_mouse_snap_delay_frames: 0,
+            _pending_mouse_snap_retry_count: 0,
         })
     }
 
@@ -1361,6 +1371,42 @@ impl<'a> GameUIManager<'a> {
                 );
             }
         }
+
+        self.update_pending_mouse_snap();
+    }
+
+    /// UI가 열린 직후에는 레이아웃이 아직 계산되지 않으므로, 다음 레이아웃 갱신 이후에 마우스를 스냅하도록 예약한다.
+    pub fn request_mouse_snap_to_widget(&mut self, widget: &Rc<WidgetDefault<'a>>) {
+        self._pending_mouse_snap_widget = Some(widget.clone());
+        self._pending_mouse_snap_delay_frames = MOUSE_SNAP_DELAY_FRAMES;
+        self._pending_mouse_snap_retry_count = 0;
+    }
+
+    pub fn clear_pending_mouse_snap(&mut self) {
+        self._pending_mouse_snap_widget = None;
+        self._pending_mouse_snap_delay_frames = 0;
+        self._pending_mouse_snap_retry_count = 0;
+    }
+
+    fn update_pending_mouse_snap(&mut self) {
+        if let Some(widget) = &self._pending_mouse_snap_widget {
+            if !widget.has_parent() {
+                self.clear_pending_mouse_snap();
+                return;
+            }
+            if 0 < self._pending_mouse_snap_delay_frames {
+                self._pending_mouse_snap_delay_frames -= 1;
+                return;
+            }
+            if move_mouse_to_ui_component(widget.get_ui_component()) {
+                self.clear_pending_mouse_snap();
+            } else {
+                self._pending_mouse_snap_retry_count += 1;
+                if self._pending_mouse_snap_retry_count > MAX_MOUSE_SNAP_RETRY_COUNT {
+                    self.clear_pending_mouse_snap();
+                }
+            }
+        }
     }
 
     pub fn open_npc_interaction_menu(&mut self, target_npc: RcRefCell<Character<'a>>) {
@@ -1420,17 +1466,18 @@ impl<'a> GameUIManager<'a> {
     }
 }
 
-pub fn move_mouse_to_ui_component(ui_component: &rust_engine_3d::scene::ui::UIComponentInstance) {
+pub fn move_mouse_to_ui_component(ui_component: &rust_engine_3d::scene::ui::UIComponentInstance) -> bool {
     if ui_component._ui_layout_state != rust_engine_3d::scene::ui::UILayoutState::Complete {
-        return;
+        return false;
     }
     let render_area = ui_component.get_render_area();
     if render_area.z <= render_area.x || render_area.w <= render_area.y {
-        return;
+        return false;
     }
     let engine_core = rust_engine_3d::core::engine_service_locator::get_engine_core_mut();
     let center_x = ((render_area.x + render_area.z) * 0.5) as i32;
     let center_y = ((render_area.y + render_area.w) * 0.5) as i32;
     let window_size = engine_core._window_size;
     engine_core._mouse_move_data.set_mouse_pos(&nalgebra::Vector2::new(center_x, center_y), &window_size);
+    true
 }

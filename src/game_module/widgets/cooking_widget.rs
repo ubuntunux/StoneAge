@@ -385,11 +385,15 @@ impl<'a> CookingWidget<'a> {
 
             self.select_recipe(0);
             self.refresh_recipe_labels();
+            if let Some(item) = self._items.get(self._selected_index) {
+                get_game_ui_manager_mut().request_mouse_snap_to_widget(&item._layout);
+            }
         }
     }
 
     pub fn close_cooking(&mut self) {
         if self._is_opened {
+            get_game_ui_manager_mut().clear_pending_mouse_snap();
             ptr_as_mut(self._parent_widget).remove_widget(self._layer.as_ref());
             self._is_opened = false;
             get_character_manager_mut().reset_all_npc_interacting();

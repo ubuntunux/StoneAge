@@ -4,7 +4,7 @@ use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, AUDIO_SELECT_ITEM};
 use crate::game_module::game_controller::WidgetNavRepeatController;
 use crate::game_module::game_input::UiInput;
 use crate::game_module::game_service_locator::{
-    get_game_resources, get_game_scene_manager, get_game_scene_manager_mut,
+    get_game_resources, get_game_scene_manager, get_game_scene_manager_mut, get_game_ui_manager_mut,
 };
 use crate::game_module::game_ui_manager::move_mouse_to_ui_component;
 use crate::game_module::widgets::toolbox_widget::item_tab_widget::{
@@ -392,6 +392,11 @@ impl<'a> ToolboxWidget<'a> {
 
         self._selected_item_index = 0;
         self.update_item_selection();
+
+        let sel_idx = self._selected_item_index;
+        if let Some(item) = self.get_active_tab_mut()._items.get(sel_idx) {
+            get_game_ui_manager_mut().request_mouse_snap_to_widget(&item._layout);
+        }
     }
 
     pub fn get_active_tab_mut(&mut self) -> &mut ToolboxTabWidget<'a> {
@@ -431,6 +436,7 @@ impl<'a> ToolboxWidget<'a> {
 
     pub fn close_toolbox(&mut self) {
         if self._is_opened_toolbox {
+            get_game_ui_manager_mut().clear_pending_mouse_snap();
             self._teleport_tab.close();
             ptr_as_mut(self._parent_widget).remove_widget(self._layer.as_ref());
             self._is_opened_toolbox = false;

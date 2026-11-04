@@ -507,11 +507,28 @@ impl<'a> SaveLoadSlotWidget<'a> {
                 SlotButtonFocus::Save
             };
             self.set_focus_target(SaveLoadFocusTarget::Slot(0, default_btn), true);
+            self.request_mouse_snap_to_focus_target(self._focus_target);
+        }
+    }
+
+    fn request_mouse_snap_to_focus_target(&self, target: SaveLoadFocusTarget) {
+        let target_widget = match target {
+            SaveLoadFocusTarget::Slot(index, btn) => self._slot_items.get(index).map(|item| match btn {
+                SlotButtonFocus::Load => &item._load_btn,
+                SlotButtonFocus::Save => &item._save_btn,
+                SlotButtonFocus::Delete => &item._delete_btn,
+            }),
+            SaveLoadFocusTarget::NewGame => Some(&self._new_game_btn),
+            SaveLoadFocusTarget::ExitGame => Some(&self._exit_game_btn),
+        };
+        if let Some(widget) = target_widget {
+            get_game_ui_manager_mut().request_mouse_snap_to_widget(widget);
         }
     }
 
     pub fn close_slot_widget(&mut self) {
         if self._is_opened {
+            get_game_ui_manager_mut().clear_pending_mouse_snap();
             if let Some(popup) = self._save_complete_popup.as_ref()
                 && let Ok(mut popup_guard) = popup.try_borrow_mut()
             {

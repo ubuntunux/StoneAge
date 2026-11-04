@@ -601,6 +601,9 @@ impl<'a> TableStorageWidget<'a> {
             let parent_mut = ptr_as_mut(self._parent_widget);
             parent_mut.add_widget(&self._layer);
             self.refresh_table_storage_widget();
+            if let Some(slot_widget) = self._table_slot_widgets.get(self._focused_slot_index) {
+                get_game_ui_manager_mut().request_mouse_snap_to_widget(&slot_widget._widget);
+            }
         }
     }
 
@@ -616,6 +619,7 @@ impl<'a> TableStorageWidget<'a> {
     pub fn close_table_storage(&mut self) {
         if self._is_opened {
             self._is_opened = false;
+            get_game_ui_manager_mut().clear_pending_mouse_snap();
             self._nav_repeat_controller.reset();
             self._item_info_widget.hide_item_info();
             self.clear_drag_state();

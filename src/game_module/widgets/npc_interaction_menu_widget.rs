@@ -191,10 +191,33 @@ impl<'a> NpcInteractionMenuWidget<'a> {
         self._is_opened
     }
 
+    fn update_screen_position(&mut self) -> bool {
+        let target_pos = match &self._target {
+            InteractionMenuTarget::Npc(npc) => *npc.borrow().get_position() + Vector3::new(0.0, 1.8, 0.0),
+            InteractionMenuTarget::Bed(prop)
+            | InteractionMenuTarget::Table(prop)
+            | InteractionMenuTarget::Toolbox(prop)
+            | InteractionMenuTarget::Prop(prop) => {
+                let prop_borrow = prop.borrow();
+                *prop_borrow.get_position() + Vector3::new(0.0, 1.0, 0.0)
+            }
+            InteractionMenuTarget::None => return false,
+        };
+
+        let main_camera = get_scene_manager().get_main_camera();
+        let screen_pos =
+            main_camera.convert_world_to_screen(&target_pos, true) / rust_engine_3d::scene::ui::get_global_dpi_scale();
+
+        let layer_ui = ptr_as_mut(self._layer.as_ref()).get_ui_component_mut();
+        layer_ui.set_pos(screen_pos.x, screen_pos.y);
+        true
+    }
+
     fn open_with_target(&mut self, target: InteractionMenuTarget<'a>) {
         self._target = target;
         self._selected_index = 0;
 
+        self.update_screen_position();
         self.rebuild_buttons();
         self.update_selected_visuals();
 
@@ -204,6 +227,10 @@ impl<'a> NpcInteractionMenuWidget<'a> {
             parent_mut.add_widget(&self._layer);
             ptr_as_mut(self._layer.as_ref()).get_ui_component_mut().set_enable(true);
             get_game_client_mut().set_next_game_phase(GamePhase::Interaction);
+        }
+
+        if let Some(btn) = self._buttons.get(self._selected_index) {
+            get_game_ui_manager_mut().request_mouse_snap_to_widget(&btn._widget);
         }
     }
 
@@ -251,6 +278,7 @@ impl<'a> NpcInteractionMenuWidget<'a> {
     pub fn close_npc_interaction_menu(&mut self) {
         if self._is_opened {
             self._is_opened = false;
+            get_game_ui_manager_mut().clear_pending_mouse_snap();
             let parent_mut = ptr_as_mut(self._parent_widget);
             parent_mut.remove_widget(self._layer.as_ref());
             ptr_as_mut(self._layer.as_ref()).get_ui_component_mut().set_enable(false);
@@ -685,28 +713,10 @@ impl<'a> NpcInteractionMenuWidget<'a> {
             }
         }
 
-        let target_pos = match &self._target {
-            InteractionMenuTarget::Npc(npc) => *npc.borrow().get_position() + Vector3::new(0.0, 1.8, 0.0),
-            InteractionMenuTarget::Bed(prop)
-            | InteractionMenuTarget::Table(prop)
-            | InteractionMenuTarget::Toolbox(prop)
-            | InteractionMenuTarget::Prop(prop) => {
-                let prop_borrow = prop.borrow();
-                *prop_borrow.get_position() + Vector3::new(0.0, 1.0, 0.0)
-            }
-            InteractionMenuTarget::None => {
-                self.close_npc_interaction_menu();
-                return;
-            }
-        };
-
-        // Update screen position tracking based on target world position
-        let main_camera = get_scene_manager().get_main_camera();
-        let screen_pos =
-            main_camera.convert_world_to_screen(&target_pos, true) / rust_engine_3d::scene::ui::get_global_dpi_scale();
-
-        let layer_ui = ptr_as_mut(self._layer.as_ref()).get_ui_component_mut();
-        layer_ui.set_pos(screen_pos.x, screen_pos.y);
+        if !self.update_screen_position() {
+            self.close_npc_interaction_menu();
+            return;
+        }
 
         let btn_count = self._buttons.len();
         if btn_count == 0 {

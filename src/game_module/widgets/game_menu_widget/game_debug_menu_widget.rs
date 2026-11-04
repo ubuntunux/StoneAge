@@ -167,10 +167,14 @@ impl<'a> GameDebugMenuWidget<'a> {
             parent_mut.add_widget(&self._layer);
             self.set_selected_menu_item(self._selected_menu_item, true);
             self._is_opened_game_debug_menu = true;
+            if let Some(item) = self._menu_items.get(self._selected_menu_item as usize) {
+                get_game_ui_manager_mut().request_mouse_snap_to_widget(&item._item_widget);
+            }
         }
     }
     pub fn close_game_debug_menu(&mut self) {
         if self._is_opened_game_debug_menu {
+            get_game_ui_manager_mut().clear_pending_mouse_snap();
             let parent_mut = ptr_as_mut(self._parent_widget);
             parent_mut.remove_widget(self._layer.as_ref());
             self._is_opened_game_debug_menu = false;

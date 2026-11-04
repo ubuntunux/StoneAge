@@ -460,11 +460,14 @@ impl<'a> InventoryWidget<'a> {
     pub fn open_inventory(&mut self) {
         if !self._is_opened_inventory {
             self._is_opened_inventory = true;
-            self._focused_slot_index = INVALID_ITEM_INDEX;
-            self._hovered_slot_index = INVALID_ITEM_INDEX;
+            self._focused_slot_index = 0;
+            self._hovered_slot_index = 0;
             let parent_mut = ptr_as_mut(self._parent_widget);
             parent_mut.add_widget(&self._layer);
             self.refresh_inventory_widget();
+            if let Some(slot_widget) = self._slot_widgets.get(self._focused_slot_index) {
+                get_game_ui_manager_mut().request_mouse_snap_to_widget(&slot_widget._widget);
+            }
         }
     }
 
@@ -498,6 +501,7 @@ impl<'a> InventoryWidget<'a> {
     pub fn close_inventory(&mut self) {
         if self._is_opened_inventory {
             self._is_opened_inventory = false;
+            get_game_ui_manager_mut().clear_pending_mouse_snap();
             self._focused_slot_index = INVALID_ITEM_INDEX;
             self._hovered_slot_index = INVALID_ITEM_INDEX;
             self._nav_repeat_controller.reset();
