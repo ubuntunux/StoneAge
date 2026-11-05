@@ -21,7 +21,6 @@ use rust_engine_3d::core::engine_service_locator::{
     get_engine_core, get_engine_core_mut, get_font_manager_mut, get_renderer_data_mut, get_scene_manager,
     get_ui_manager_mut,
 };
-use rust_engine_3d::renderer::renderer_data::{RenderOption, RenderQualityLevel};
 use rust_engine_3d::resource::resource::CallbackLoadRenderPassCreateInfo;
 use rust_engine_3d::utilities::logger;
 use winit::keyboard::KeyCode;
@@ -242,6 +241,18 @@ pub fn run_application() {
     let app_name: String = "Stone Age".to_string();
     let app_version: u32 = 1;
 
+    // Load game option data
+    let mut game_resources = GameResources::create_game_resources();
+    game_resources.load_game_option_data();
+    let (initial_window_size, initial_monitor_index, window_mode) = {
+        let game_option_data = game_resources.get_game_option_data().borrow();
+        (
+            Some(game_option_data._resolution),
+            game_option_data._monitor_index,
+            game_option_data._window_mode,
+        )
+    };
+
     // Graphics Settings
     unsafe {
         #[cfg(target_os = "android")]
@@ -283,31 +294,6 @@ pub fn run_application() {
             "VK_KHR_ray_tracing_pipeline".to_string(),
             "VK_KHR_acceleration_structure".to_string(),
         ];
-
-        // render options
-        const RENDER_QUALITY_LEVEL: RenderQualityLevel = RenderQualityLevel::Medium;
-        match RENDER_QUALITY_LEVEL {
-            RenderQualityLevel::Low => {
-                constants::ENABLE_UPSCALE = true;
-                constants::CURRENT_RENDER_OPTION = std::mem::transmute(
-                    RenderOption::RenderOcean as u32
-                        | RenderOption::RenderAtmosphere as u32
-                        | RenderOption::RenderSky as u32
-                        | RenderOption::RenderShadow as u32,
-                );
-            }
-            RenderQualityLevel::Medium => {
-                constants::CURRENT_RENDER_OPTION = std::mem::transmute(
-                    RenderOption::RenderOcean as u32
-                        | RenderOption::RenderAtmosphere as u32
-                        | RenderOption::RenderSky as u32
-                        | RenderOption::RenderShadow as u32,
-                );
-            }
-            RenderQualityLevel::High => {
-                constants::CURRENT_RENDER_OPTION = RenderOption::ALL;
-            }
-        }
     }
 
     // logger
@@ -317,17 +303,6 @@ pub fn run_application() {
         LevelFilter::Error
     });
 
-    // create project application & managers
-    let mut game_resources = GameResources::create_game_resources();
-    game_resources.load_game_option_data();
-    let (initial_window_size, initial_monitor_index, window_mode) = {
-        let game_option_data = game_resources.get_game_option_data().borrow();
-        (
-            Some(game_option_data._resolution),
-            game_option_data._monitor_index,
-            game_option_data._window_mode,
-        )
-    };
     let game_scene_manager = GameSceneManager::create_game_scene_manager();
     let game_ui_manager = GameUIManager::create_game_ui_manager();
     let editor_ui_manager = EditorUIManager::create_editor_ui_manager();

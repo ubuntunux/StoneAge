@@ -1,6 +1,10 @@
 use nalgebra::Vector2;
+use rust_engine_3d::constants;
 use rust_engine_3d::core::engine_core::WindowMode;
-use rust_engine_3d::core::engine_service_locator::{get_audio_manager_mut, get_engine_core_mut, is_engine_core_valid};
+use rust_engine_3d::core::engine_service_locator::{
+    get_audio_manager_mut, get_engine_core_mut, get_renderer_context_mut, get_renderer_data_mut, is_engine_core_valid,
+};
+use rust_engine_3d::renderer::renderer_data::{RenderOption, RenderQualityLevel};
 use rust_engine_3d::scene::ui::set_global_font_scale;
 use serde::{Deserialize, Serialize};
 use std::sync::atomic::{AtomicU32, Ordering};
@@ -17,6 +21,7 @@ pub const DEFAULT_MONITOR_INDEX: Option<usize> = None;
 pub const DEFAULT_RESOLUTION_WIDTH: u32 = 1920;
 pub const DEFAULT_RESOLUTION_HEIGHT: u32 = 1080;
 pub const DEFAULT_RESOLUTION: Vector2<u32> = Vector2::new(DEFAULT_RESOLUTION_WIDTH, DEFAULT_RESOLUTION_HEIGHT);
+pub const DEFAULT_RENDER_QUALITY_LEVEL: RenderQualityLevel = RenderQualityLevel::Medium;
 
 pub const MIN_VOLUME: f32 = 0.0;
 pub const MAX_VOLUME: f32 = 1.0;
@@ -43,6 +48,38 @@ pub fn get_global_font_scale() -> f32 {
     f32::from_bits(GLOBAL_FONT_SCALE.load(Ordering::Relaxed))
 }
 
+pub fn apply_render_quality_level(quality_level: RenderQualityLevel) {
+    let prev_upscale = unsafe { constants::ENABLE_UPSCALE };
+    let new_upscale = matches!(quality_level, RenderQualityLevel::Low);
+
+    unsafe {
+        constants::RENDER_QUALITY_LEVEL = quality_level;
+        constants::ENABLE_UPSCALE = new_upscale;
+        match quality_level {
+            RenderQualityLevel::Low | RenderQualityLevel::Medium => {
+                constants::CURRENT_RENDER_OPTION = std::mem::transmute(
+                    RenderOption::RenderOcean as u32
+                        | RenderOption::RenderAtmosphere as u32
+                        | RenderOption::RenderSky as u32
+                        | RenderOption::RenderShadow as u32,
+                );
+            }
+            RenderQualityLevel::High => {
+                constants::CURRENT_RENDER_OPTION = RenderOption::ALL;
+            }
+        }
+    }
+
+    if is_engine_core_valid() {
+        let renderer_data = get_renderer_data_mut();
+        renderer_data._render_option = unsafe { constants::CURRENT_RENDER_OPTION as u32 };
+
+        if prev_upscale != new_upscale {
+            get_renderer_context_mut().set_need_recreate_swapchain(true);
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(default)]
 pub struct GameOptionData {
@@ -56,6 +93,7 @@ pub struct GameOptionData {
     pub _window_mode: WindowMode,
     pub _monitor_index: Option<usize>,
     pub _resolution: Vector2<u32>,
+    pub _render_quality_level: RenderQualityLevel,
 }
 
 impl Default for GameOptionData {
@@ -71,6 +109,7 @@ impl Default for GameOptionData {
             _window_mode: DEFAULT_WINDOW_MODE,
             _monitor_index: DEFAULT_MONITOR_INDEX,
             _resolution: DEFAULT_RESOLUTION,
+            _render_quality_level: DEFAULT_RENDER_QUALITY_LEVEL,
         }
     }
 }
@@ -93,6 +132,8 @@ impl GameOptionData {
         GLOBAL_FONT_SCALE.store(self._font_scale.to_bits(), Ordering::Relaxed);
 
         set_global_font_scale(self._font_scale);
+
+        apply_render_quality_level(self._render_quality_level);
 
         if is_engine_core_valid() {
             let audio_manager = get_audio_manager_mut();
@@ -135,6 +176,10 @@ impl GameOptionData {
     pub fn set_resolution(&mut self, resolution: Vector2<u32>) {
         self._resolution = resolution;
     }
+
+    pub fn set_render_quality_level(&mut self, level: RenderQualityLevel) {
+        self._render_quality_level = level;
+    }
 }
 
 #[cfg(test)]
@@ -154,17 +199,21 @@ mod tests {
         assert_eq!(default_option._window_mode, DEFAULT_WINDOW_MODE);
         assert_eq!(default_option._monitor_index, None);
         assert_eq!(default_option._resolution, DEFAULT_RESOLUTION);
+        assert_eq!(default_option._render_quality_level, DEFAULT_RENDER_QUALITY_LEVEL);
 
         let json_str = serde_json::to_string_pretty(&default_option).expect("Serialization failed");
         let deserialized: GameOptionData = serde_json::from_str(&json_str).expect("Deserialization failed");
         assert_eq!(default_option, deserialized);
         assert_eq!(deserialized._monitor_index, None);
+        assert_eq!(deserialized._render_quality_level, DEFAULT_RENDER_QUALITY_LEVEL);
 
         let mut custom_option = default_option.clone();
         custom_option.set_monitor_index(Some(2));
+        custom_option.set_render_quality_level(RenderQualityLevel::High);
         let custom_json = serde_json::to_string(&custom_option).expect("Serialization failed");
         let custom_deserialized: GameOptionData = serde_json::from_str(&custom_json).expect("Deserialization failed");
         assert_eq!(custom_deserialized._monitor_index, Some(2));
+        assert_eq!(custom_deserialized._render_quality_level, RenderQualityLevel::High);
     }
 
     #[test]

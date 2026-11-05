@@ -11,6 +11,7 @@ use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::core::engine_core::WindowMode;
 use rust_engine_3d::core::engine_service_locator::{get_audio_manager_mut, get_engine_core};
 use rust_engine_3d::core::input::{JoystickInputData, KeyboardInputData};
+use rust_engine_3d::renderer::renderer_data::RenderQualityLevel;
 use rust_engine_3d::scene::ui::{
     HorizontalAlign, Orientation, PIVOT_CENTER, UIComponentInstance, UILayoutType, UIManager, UIWidgetTypes,
     VerticalAlign, WidgetDefault,
@@ -49,6 +50,14 @@ const WINDOW_MODE_ITEMS: [WindowMode; 3] = [
 
 const WINDOW_MODE_NAMES: [&str; 3] = ["Windowed", "Full Screen (Exclusive)", "Full Screen (Borderless)"];
 
+const RENDER_QUALITY_LEVEL_ITEMS: [RenderQualityLevel; 3] = [
+    RenderQualityLevel::Low,
+    RenderQualityLevel::Medium,
+    RenderQualityLevel::High,
+];
+
+const RENDER_QUALITY_LEVEL_NAMES: [&str; 3] = ["Low", "Medium", "High"];
+
 const COLOR_ROW_BG_NORMAL: u32 = get_color32(245, 232, 205, 230);
 const COLOR_ROW_BG_SELECTED: u32 = get_color32(255, 245, 220, 255);
 const COLOR_ROW_BG_DISABLED: u32 = get_color32(225, 215, 200, 180);
@@ -84,6 +93,7 @@ pub enum OptionItemType {
     WindowMode,
     Monitor,
     Resolution,
+    RenderQualityLevel,
     MasterVolume,
     BgmVolume,
     SfxVolume,
@@ -99,6 +109,7 @@ impl OptionItemType {
             OptionItemType::WindowMode => "Window Mode",
             OptionItemType::Monitor => "Display Monitor",
             OptionItemType::Resolution => "Resolution",
+            OptionItemType::RenderQualityLevel => "Render Quality",
             OptionItemType::MasterVolume => "Master Volume",
             OptionItemType::BgmVolume => "BGM Volume",
             OptionItemType::SfxVolume => "SFX Volume",
@@ -116,7 +127,10 @@ impl OptionItemType {
     pub fn is_combo(&self) -> bool {
         matches!(
             self,
-            OptionItemType::WindowMode | OptionItemType::Monitor | OptionItemType::Resolution
+            OptionItemType::WindowMode
+                | OptionItemType::Monitor
+                | OptionItemType::Resolution
+                | OptionItemType::RenderQualityLevel
         )
     }
 }
@@ -289,6 +303,16 @@ impl<'a> GameOptionWidget<'a> {
         let resolutions = get_engine_core().get_available_resolutions(widget._game_option_data._monitor_index);
         if let Some(res) = resolutions.get(index) {
             widget._game_option_data.set_resolution(*res);
+            widget._game_option_data.apply();
+            widget.refresh_all_values();
+            widget.clear_status_message();
+        }
+    }
+
+    pub fn callback_render_quality_changed(user_data: *const c_void, index: usize) {
+        let widget = ptr_as_mut(user_data as *const GameOptionWidget<'a>);
+        if index < RENDER_QUALITY_LEVEL_ITEMS.len() {
+            widget._game_option_data.set_render_quality_level(RENDER_QUALITY_LEVEL_ITEMS[index]);
             widget._game_option_data.apply();
             widget.refresh_all_values();
             widget.clear_status_message();
@@ -576,6 +600,23 @@ impl<'a> GameOptionWidget<'a> {
                         )));
                         combo
                     }
+                    OptionItemType::RenderQualityLevel => {
+                        let mut combo = DropDownComboBoxWidget::create_from_enum(
+                            row_mut,
+                            overlay_root,
+                            "render_quality_combo",
+                            &RENDER_QUALITY_LEVEL_ITEMS,
+                            &RENDER_QUALITY_LEVEL_NAMES,
+                            initial_option._render_quality_level,
+                            COMBO_BOX_WIDTH,
+                            STEPPER_BTN_SIZE,
+                        );
+                        combo.set_callback_selection_changed(Some((
+                            Self::callback_render_quality_changed,
+                            widget_ptr as *const c_void,
+                        )));
+                        combo
+                    }
                     _ => unreachable!(),
                 };
 
@@ -848,6 +889,18 @@ impl<'a> GameOptionWidget<'a> {
                     self._game_option_data.set_resolution(resolutions[prev_idx]);
                 }
             }
+            OptionItemType::RenderQualityLevel => {
+                let current_idx = RENDER_QUALITY_LEVEL_ITEMS
+                    .iter()
+                    .position(|&q| q == self._game_option_data._render_quality_level)
+                    .unwrap_or(0);
+                let prev_idx = if current_idx == 0 {
+                    RENDER_QUALITY_LEVEL_ITEMS.len() - 1
+                } else {
+                    current_idx - 1
+                };
+                self._game_option_data.set_render_quality_level(RENDER_QUALITY_LEVEL_ITEMS[prev_idx]);
+            }
             OptionItemType::MasterVolume => {
                 let val = (self._game_option_data._master_volume - VOLUME_STEP).max(MIN_VOLUME);
                 self._game_option_data.set_master_volume(val);
@@ -912,6 +965,14 @@ impl<'a> GameOptionWidget<'a> {
                     self._game_option_data.set_resolution(resolutions[next_idx]);
                 }
             }
+            OptionItemType::RenderQualityLevel => {
+                let current_idx = RENDER_QUALITY_LEVEL_ITEMS
+                    .iter()
+                    .position(|&q| q == self._game_option_data._render_quality_level)
+                    .unwrap_or(0);
+                let next_idx = (current_idx + 1) % RENDER_QUALITY_LEVEL_ITEMS.len();
+                self._game_option_data.set_render_quality_level(RENDER_QUALITY_LEVEL_ITEMS[next_idx]);
+            }
             OptionItemType::MasterVolume => {
                 let val = (self._game_option_data._master_volume + VOLUME_STEP).min(MAX_VOLUME);
                 self._game_option_data.set_master_volume(val);
@@ -951,7 +1012,10 @@ impl<'a> GameOptionWidget<'a> {
             return;
         }
         match item_type {
-            OptionItemType::WindowMode | OptionItemType::Monitor | OptionItemType::Resolution => {
+            OptionItemType::WindowMode
+            | OptionItemType::Monitor
+            | OptionItemType::Resolution
+            | OptionItemType::RenderQualityLevel => {
                 for row in self._rows.iter_mut() {
                     if let Some(combo) = row._combo_box.as_mut() {
                         if row._item_type == item_type {
@@ -1044,6 +1108,15 @@ impl<'a> GameOptionWidget<'a> {
                         } else {
                             0
                         };
+                        combo.set_selected_index(current_idx);
+                    }
+                }
+                OptionItemType::RenderQualityLevel => {
+                    if let Some(combo) = row._combo_box.as_mut() {
+                        let current_idx = RENDER_QUALITY_LEVEL_ITEMS
+                            .iter()
+                            .position(|&q| q == self._game_option_data._render_quality_level)
+                            .unwrap_or(0);
                         combo.set_selected_index(current_idx);
                     }
                 }
@@ -1237,8 +1310,26 @@ mod tests {
         assert!(OptionItemType::Resolution.is_combo());
         assert!(!OptionItemType::Resolution.is_toggle());
 
+        assert_eq!(OptionItemType::from_repr(3), Some(OptionItemType::RenderQualityLevel));
+        assert_eq!(OptionItemType::RenderQualityLevel.display_name(), "Render Quality");
+        assert!(OptionItemType::RenderQualityLevel.is_combo());
+        assert!(!OptionItemType::RenderQualityLevel.is_toggle());
+
         assert!(OptionItemType::MuteAudio.is_toggle());
         assert!(!OptionItemType::MuteAudio.is_combo());
+    }
+
+    #[test]
+    fn test_render_quality_level_items_consistency() {
+        assert_eq!(RENDER_QUALITY_LEVEL_ITEMS.len(), RENDER_QUALITY_LEVEL_NAMES.len());
+        assert_eq!(RENDER_QUALITY_LEVEL_ITEMS.len(), 3);
+        assert_eq!(RENDER_QUALITY_LEVEL_NAMES[0], "Low");
+        assert_eq!(RENDER_QUALITY_LEVEL_NAMES[1], "Medium");
+        assert_eq!(RENDER_QUALITY_LEVEL_NAMES[2], "High");
+
+        assert_eq!(RenderQualityLevel::Low.display_name(), "Low");
+        assert_eq!(RenderQualityLevel::Medium.display_name(), "Medium");
+        assert_eq!(RenderQualityLevel::High.display_name(), "High");
     }
 
     #[test]
