@@ -8,8 +8,8 @@ use crate::game_module::game_constants::{
     TIME_OF_DAY_SPEED, TIME_OF_MORNING, TIME_OF_NIGHT,
 };
 use crate::game_module::game_service_locator::{
-    get_game_client, get_game_client_mut, get_game_controller_mut, get_game_resources, get_game_ui_manager,
-    get_game_ui_manager_mut,
+    get_game_client, get_game_client_mut, get_game_controller_mut, get_game_resources, get_game_resources_mut,
+    get_game_ui_manager, get_game_ui_manager_mut,
 };
 use crate::game_module::game_weather::Weather;
 use crate::game_module::save_data::save_data::GameSaveData;
@@ -803,6 +803,7 @@ impl<'a> GameSceneManager<'a> {
         }
 
         self._game_audio_manager.update_game_sound();
+        get_game_resources_mut().update_garbage_collection(delta_time);
     }
 
     pub fn inspect_and_register_discovered_world_data(&mut self) {

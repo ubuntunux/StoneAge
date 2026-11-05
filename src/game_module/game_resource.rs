@@ -10,8 +10,9 @@ use crate::game_module::scenario::scenario::ScenarioDataCreateInfo;
 use crate::game_module::widgets::toolbox_widget::item_tab_widget::ToolboxItemData;
 use rust_engine_3d::core::engine_service_locator::get_engine_resources;
 use rust_engine_3d::resource::resource::{
-    APPLICATION_RESOURCE_PATH, MetaData, ResourceDataContainer, ResourceEntry, ResourceEntryMap,
-    get_resource_entry_data_must, get_unique_resource_name,
+    APPLICATION_RESOURCE_PATH, DEFAULT_RESOURCE_GC_TIMEOUT_SEC, LOG_RESOURCE_LIFECYCLE, MetaData,
+    RESOURCE_GC_CHECK_INTERVAL_SEC, ResourceDataContainer, ResourceEntry, ResourceEntryMap,
+    get_resource_entry_data_must, get_unique_resource_name, update_resource_entry_map_gc,
 };
 use rust_engine_3d::utilities::system::{self, RcRefCell, newRcRefCell};
 use serde_json::{self};
@@ -61,6 +62,8 @@ pub struct GameResources<'a> {
     _weapon_data_map: WeaponDataMap<'a>,
     _toolbox_item_data_map: ToolboxItemDataMap,
     pub _game_option_data: RcRefCell<GameOptionData>,
+    pub _gc_check_timer: f32,
+    pub _gc_timeout_sec: f32,
 }
 
 impl<'a> GameResources<'a> {
@@ -75,6 +78,8 @@ impl<'a> GameResources<'a> {
             _weapon_data_map: WeaponDataMap::new(),
             _toolbox_item_data_map: ToolboxItemDataMap::new(),
             _game_option_data: newRcRefCell(GameOptionData::default()),
+            _gc_check_timer: 0.0,
+            _gc_timeout_sec: DEFAULT_RESOURCE_GC_TIMEOUT_SEC,
         };
         Box::new(game_resources)
     }
@@ -92,6 +97,39 @@ impl<'a> GameResources<'a> {
         self.unload_scenario_data();
         self.unload_game_scene_data();
         self.unload_game_data();
+    }
+
+    pub fn update_garbage_collection(&mut self, delta_time: f64) -> u32 {
+        self._gc_check_timer += delta_time as f32;
+        if self._gc_check_timer < RESOURCE_GC_CHECK_INTERVAL_SEC {
+            return 0;
+        }
+        self._gc_check_timer = 0.0;
+
+        let now = std::time::Instant::now();
+        let timeout = std::time::Duration::from_secs_f32(self._gc_timeout_sec);
+
+        let mut evicted = 0;
+        evicted += update_resource_entry_map_gc(&mut self._character_data_map, now, timeout);
+        evicted += update_resource_entry_map_gc(&mut self._item_data_map, now, timeout);
+        evicted += update_resource_entry_map_gc(&mut self._prop_data_map, now, timeout);
+        evicted += update_resource_entry_map_gc(&mut self._weapon_data_map, now, timeout);
+        evicted += update_resource_entry_map_gc(&mut self._scenario_data_create_info_map, now, timeout);
+        evicted += update_resource_entry_map_gc(&mut self._game_scene_data_create_info_map, now, timeout);
+        evicted += update_resource_entry_map_gc(&mut self._toolbox_item_data_map, now, timeout);
+
+        if LOG_RESOURCE_LIFECYCLE && 0 < evicted {
+            log::info!("[GameResources GC] Evicted total {} unused resources", evicted);
+        }
+        evicted
+    }
+
+    pub fn get_gc_timeout_sec(&self) -> f32 {
+        self._gc_timeout_sec
+    }
+
+    pub fn set_gc_timeout_sec(&mut self, timeout_sec: f32) {
+        self._gc_timeout_sec = timeout_sec;
     }
 
     // scenario data
@@ -805,5 +843,84 @@ mod tests {
         entry.unload();
         assert!(!entry.is_loaded());
         assert!(entry.get_loaded_data().is_none());
+    }
+
+    #[test]
+    fn test_resource_entry_time_delayed_gc() {
+        use std::time::{Duration, Instant};
+
+        let _ = std::panic::catch_unwind(|| {
+            rust_engine_3d::utilities::logger::initialize_logger(log::LevelFilter::Info);
+        });
+
+        let meta_data = MetaData::default();
+        let mut entry: ResourceEntry<String> = ResourceEntry::new(String::from("test_gc_entry"), meta_data);
+
+        // 1. 리소스 로드
+        entry.get_or_load_ref(|_meta| Some(String::from("gc_value")));
+        assert!(entry.is_loaded());
+
+        let timeout = Duration::from_secs(30);
+        let t0 = Instant::now();
+
+        // 2. 외부 참조(handle)가 살아있을 때는 GC 되지 않음
+        let external_handle = entry.get_loaded_data().unwrap();
+        // strong_count == 2 (entry 캐시 + external_handle)
+        assert!(!entry.check_and_update_gc(t0, timeout));
+        assert!(entry.is_loaded());
+        assert!(entry._unused_start_time.is_none());
+
+        // 3. 외부 참조 해제 후 첫 검사: unused_start_time 기록 (아직 언로드 안 됨)
+        drop(external_handle);
+        // strong_count == 1 (entry 캐시만 보유)
+        assert!(!entry.check_and_update_gc(t0, timeout));
+        assert!(entry.is_loaded());
+        assert_eq!(entry._unused_start_time, Some(t0));
+
+        // 4. 유예 시간 도중 다시 외부에서 참조 발생: unused_start_time 리셋 (스래싱 방지)
+        let t_interrupted = t0 + Duration::from_secs(10);
+        let new_handle = entry.get_loaded_data().unwrap();
+        assert!(!entry.check_and_update_gc(t_interrupted, timeout));
+        assert!(entry.is_loaded());
+        assert!(entry._unused_start_time.is_none()); // 타이머 리셋 확인
+
+        // 5. 다시 외부 참조 해제 및 유예 시간(30초) 경과 후 언로드
+        drop(new_handle);
+        let t1 = t0 + Duration::from_secs(15);
+        assert!(!entry.check_and_update_gc(t1, timeout)); // t1에 다시 타이머 시작
+        assert_eq!(entry._unused_start_time, Some(t1));
+
+        // 아직 20초 경과 (30초 미만)
+        let t2 = t1 + Duration::from_secs(20);
+        assert!(!entry.check_and_update_gc(t2, timeout));
+        assert!(entry.is_loaded());
+
+        // 30초 경과: 언로드 수행 및 true 반환
+        let t3 = t1 + Duration::from_secs(30);
+        assert!(entry.check_and_update_gc(t3, timeout));
+        assert!(!entry.is_loaded());
+        assert!(entry.get_loaded_data().is_none());
+        assert!(entry._unused_start_time.is_none());
+    }
+
+    #[test]
+    fn test_pinned_resource_never_gc() {
+        use std::time::{Duration, Instant};
+
+        let meta_data = MetaData::default();
+        let mut entry: ResourceEntry<String> = ResourceEntry::new_pinned(String::from("pinned_entry"), meta_data);
+
+        // 로드
+        entry.get_or_load_ref(|_meta| Some(String::from("pinned_value")));
+        assert!(entry.is_loaded());
+
+        let timeout = Duration::from_secs(5);
+        let t0 = Instant::now();
+        let t_future = t0 + Duration::from_secs(9999);
+
+        // 외부 참조가 없어도 pinned 리소스는 절대 GC되지 않음
+        assert!(!entry.check_and_update_gc(t_future, timeout));
+        assert!(entry.is_loaded());
+        assert!(entry._unused_start_time.is_none());
     }
 }
