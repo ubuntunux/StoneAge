@@ -30,6 +30,12 @@ pub const TOOLBOX_ITEM_DATA_FILE_PATH: &str = "game_data/toolbox_items";
 pub const GAME_OPTION_DATA_FILE_PATH: &str = "game_data/game_option";
 pub const GAME_OPTION_DATA_FILE_NAME: &str = "game_option";
 
+pub const APP_QUALIFIER: &str = "";
+pub const APP_ORGANIZATION: &str = "";
+pub const APP_NAME: &str = "StoneAge";
+pub const SAVE_DATA_DIRECTORY_NAME: &str = "save_data";
+pub const GAME_OPTION_DIRECTORY_NAME: &str = "game_option";
+
 pub const EXT_GAME_DATA: &str = "data";
 
 pub const DEFAULT_GAME_DATA_NAME: &str = "default";
@@ -173,18 +179,153 @@ impl<'a> GameResources<'a> {
         get_resource_data_must("game_scene_data", &self._game_scene_data_create_info_map, resource_name)
     }
 
+    // user directories & file paths (Steam Cloud compatible)
+    pub fn get_user_data_directory() -> PathBuf {
+        if let Some(project_dirs) = directories::ProjectDirs::from(APP_QUALIFIER, APP_ORGANIZATION, APP_NAME) {
+            project_dirs.data_dir().to_path_buf()
+        } else {
+            PathBuf::from(APPLICATION_RESOURCE_PATH).join(GAME_DATA_DIRECTORY)
+        }
+    }
+
+    pub fn get_user_config_directory() -> PathBuf {
+        if let Some(project_dirs) = directories::ProjectDirs::from(APP_QUALIFIER, APP_ORGANIZATION, APP_NAME) {
+            project_dirs.config_dir().to_path_buf()
+        } else {
+            PathBuf::from(APPLICATION_RESOURCE_PATH).join(GAME_DATA_DIRECTORY)
+        }
+    }
+
+    pub fn get_game_save_data_directory() -> PathBuf {
+        Self::get_user_data_directory().join(SAVE_DATA_DIRECTORY_NAME)
+    }
+
+    pub fn get_game_save_data_filepath(game_save_data_name: &str) -> PathBuf {
+        let save_dir = Self::get_game_save_data_directory();
+        let relative_name = if let Some(stripped) = game_save_data_name.strip_prefix("save_data/") {
+            stripped
+        } else {
+            game_save_data_name
+        };
+        let mut filepath = save_dir.join(relative_name);
+        filepath.set_extension(EXT_GAME_DATA);
+        filepath
+    }
+
+    pub fn get_legacy_game_save_data_directory() -> PathBuf {
+        let mut path = PathBuf::from(APPLICATION_RESOURCE_PATH);
+        path.push(GAME_SAVE_DATA_FILE_PATH);
+        path
+    }
+
+    pub fn get_legacy_game_option_data_filepath() -> PathBuf {
+        let mut game_option_filepath = PathBuf::from(APPLICATION_RESOURCE_PATH);
+        game_option_filepath.push(GAME_OPTION_DATA_FILE_PATH);
+        game_option_filepath.push(GAME_OPTION_DATA_FILE_NAME);
+        game_option_filepath.set_extension(EXT_GAME_DATA);
+        game_option_filepath
+    }
+
+    fn migrate_legacy_data_if_needed() {
+        // 1. Migrate option data
+        let new_option_filepath = Self::get_game_option_data_filepath();
+        if !new_option_filepath.exists() {
+            let legacy_option_filepath = Self::get_legacy_game_option_data_filepath();
+            if legacy_option_filepath.exists() {
+                if let Some(parent) = new_option_filepath.parent() {
+                    let _ = std::fs::create_dir_all(parent);
+                }
+                if let Err(e) = std::fs::copy(&legacy_option_filepath, &new_option_filepath) {
+                    log::warn!(
+                        "Failed to migrate legacy game option from {:?} to {:?}: {:?}",
+                        legacy_option_filepath,
+                        new_option_filepath,
+                        e
+                    );
+                } else {
+                    log::info!(
+                        "Successfully migrated game option from {:?} to {:?}",
+                        legacy_option_filepath,
+                        new_option_filepath
+                    );
+                }
+            }
+        }
+
+        // 2. Migrate save data
+        let new_save_dir = Self::get_game_save_data_directory();
+        let legacy_save_dir = Self::get_legacy_game_save_data_directory();
+        if legacy_save_dir.exists() {
+            if !new_save_dir.exists() {
+                let _ = std::fs::create_dir_all(&new_save_dir);
+            }
+            if let Ok(entries) = std::fs::read_dir(&legacy_save_dir) {
+                for entry in entries.flatten() {
+                    let path = entry.path();
+                    if path.is_file() && path.extension().and_then(|s| s.to_str()) == Some(EXT_GAME_DATA) {
+                        if let Some(file_name) = path.file_name() {
+                            let new_file_path = new_save_dir.join(file_name);
+                            if !new_file_path.exists() {
+                                if let Err(e) = std::fs::copy(&path, &new_file_path) {
+                                    log::warn!(
+                                        "Failed to migrate legacy save file {:?} to {:?}: {:?}",
+                                        path,
+                                        new_file_path,
+                                        e
+                                    );
+                                } else {
+                                    log::info!("Migrated save file {:?} to {:?}", path, new_file_path);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     // game save data
     pub fn load_game_save_data(&mut self) {
-        let game_data_directory = PathBuf::from(GAME_DATA_DIRECTORY);
-        let game_save_directory = PathBuf::from(GAME_SAVE_DATA_FILE_PATH);
-        let game_save_data_files: Vec<PathBuf> = self.collect_resources(&game_save_directory, &[EXT_GAME_DATA]);
-        for game_save_data_file in game_save_data_files {
-            let game_save_data_name =
-                get_unique_resource_name(&self._game_save_data_map, &game_data_directory, &game_save_data_file);
-            let loaded_contents = system::load(&game_save_data_file);
-            let game_save_data_create_info: GameSaveData =
-                serde_json::from_reader(loaded_contents).expect("Failed to deserialize.");
-            self._game_save_data_map.insert(game_save_data_name.clone(), newRcRefCell(game_save_data_create_info));
+        Self::migrate_legacy_data_if_needed();
+
+        let game_save_directory = Self::get_game_save_data_directory();
+        if !game_save_directory.exists() {
+            let _ = std::fs::create_dir_all(&game_save_directory);
+            return;
+        }
+
+        match std::fs::read_dir(&game_save_directory) {
+            Ok(entries) => {
+                for entry in entries.flatten() {
+                    let file_path = entry.path();
+                    if file_path.is_file() && file_path.extension().and_then(|ext| ext.to_str()) == Some(EXT_GAME_DATA)
+                    {
+                        if let Some(file_stem) = file_path.file_stem().and_then(|stem| stem.to_str()) {
+                            let game_save_data_name = format!("{}/{}", SAVE_DATA_DIRECTORY_NAME, file_stem);
+                            match File::open(&file_path) {
+                                Ok(file) => match serde_json::from_reader(file) {
+                                    Ok(save_data) => {
+                                        self._game_save_data_map.insert(game_save_data_name, newRcRefCell(save_data));
+                                    }
+                                    Err(err) => {
+                                        log::warn!("Failed to deserialize save file {:?}: {:?}", file_path, err);
+                                    }
+                                },
+                                Err(err) => {
+                                    log::warn!("Failed to open save file {:?}: {:?}", file_path, err);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            Err(err) => {
+                log::warn!(
+                    "Failed to read game save directory {:?}: {:?}",
+                    game_save_directory,
+                    err
+                );
+            }
         }
     }
 
@@ -203,23 +344,41 @@ impl<'a> GameResources<'a> {
     pub fn save_game_save_data(&mut self, game_save_data_name: &str, game_save_data: &GameSaveData) {
         self._game_save_data_map.insert(game_save_data_name.to_string(), newRcRefCell(game_save_data.clone()));
 
-        let mut game_save_data_filepath = PathBuf::from(APPLICATION_RESOURCE_PATH);
-        game_save_data_filepath.push(GAME_DATA_DIRECTORY);
-        game_save_data_filepath.push(game_save_data_name);
-        game_save_data_filepath.set_extension(EXT_GAME_DATA);
-        let mut write_file = File::create(&game_save_data_filepath).expect("Failed to create file");
-        let write_contents: String = serde_json::to_string_pretty(game_save_data).expect("Failed to serialize.");
-        write_file.write_all(write_contents.as_bytes()).expect("Failed to write");
+        let game_save_data_filepath = Self::get_game_save_data_filepath(game_save_data_name);
+        if let Some(parent) = game_save_data_filepath.parent() {
+            if !parent.exists() {
+                let _ = std::fs::create_dir_all(parent);
+            }
+        }
+
+        match File::create(&game_save_data_filepath) {
+            Ok(mut write_file) => match serde_json::to_string_pretty(game_save_data) {
+                Ok(write_contents) => {
+                    if let Err(e) = write_file.write_all(write_contents.as_bytes()) {
+                        log::warn!("Failed to write save file {:?}: {:?}", game_save_data_filepath, e);
+                    } else {
+                        log::info!("Saved game data to {:?}", game_save_data_filepath);
+                    }
+                }
+                Err(e) => {
+                    log::warn!("Failed to serialize game save data: {:?}", e);
+                }
+            },
+            Err(e) => {
+                log::warn!("Failed to create save file {:?}: {:?}", game_save_data_filepath, e);
+            }
+        }
     }
 
     pub fn remove_game_save_data(&mut self, resource_name: &str) {
         if self._game_save_data_map.remove(resource_name).is_some() {
-            let mut game_save_data_filepath = PathBuf::from(APPLICATION_RESOURCE_PATH);
-            game_save_data_filepath.push(GAME_DATA_DIRECTORY);
-            game_save_data_filepath.push(resource_name);
-            game_save_data_filepath.set_extension(EXT_GAME_DATA);
+            let game_save_data_filepath = Self::get_game_save_data_filepath(resource_name);
             if game_save_data_filepath.exists() {
-                let _ = std::fs::remove_file(game_save_data_filepath);
+                if let Err(e) = std::fs::remove_file(&game_save_data_filepath) {
+                    log::warn!("Failed to remove save file {:?}: {:?}", game_save_data_filepath, e);
+                } else {
+                    log::info!("Removed game save file {:?}", game_save_data_filepath);
+                }
             }
         }
     }
@@ -228,26 +387,33 @@ impl<'a> GameResources<'a> {
         if let Some(save_data) = self._game_save_data_map.remove(old_name) {
             self._game_save_data_map.insert(new_name.to_string(), save_data);
 
-            let mut old_filepath = PathBuf::from(APPLICATION_RESOURCE_PATH);
-            old_filepath.push(GAME_DATA_DIRECTORY);
-            old_filepath.push(old_name);
-            old_filepath.set_extension(EXT_GAME_DATA);
-
-            let mut new_filepath = PathBuf::from(APPLICATION_RESOURCE_PATH);
-            new_filepath.push(GAME_DATA_DIRECTORY);
-            new_filepath.push(new_name);
-            new_filepath.set_extension(EXT_GAME_DATA);
+            let old_filepath = Self::get_game_save_data_filepath(old_name);
+            let new_filepath = Self::get_game_save_data_filepath(new_name);
 
             if old_filepath.exists() {
-                let _ = std::fs::rename(old_filepath, new_filepath);
+                if let Some(parent) = new_filepath.parent() {
+                    if !parent.exists() {
+                        let _ = std::fs::create_dir_all(parent);
+                    }
+                }
+                if let Err(e) = std::fs::rename(&old_filepath, &new_filepath) {
+                    log::warn!(
+                        "Failed to rename save file {:?} to {:?}: {:?}",
+                        old_filepath,
+                        new_filepath,
+                        e
+                    );
+                } else {
+                    log::info!("Renamed save file {:?} to {:?}", old_filepath, new_filepath);
+                }
             }
         }
     }
 
     // game option data
     pub fn get_game_option_data_filepath() -> PathBuf {
-        let mut game_option_filepath = PathBuf::from(APPLICATION_RESOURCE_PATH);
-        game_option_filepath.push(GAME_OPTION_DATA_FILE_PATH);
+        let mut game_option_filepath = Self::get_user_config_directory();
+        game_option_filepath.push(GAME_OPTION_DIRECTORY_NAME);
         game_option_filepath.push(GAME_OPTION_DATA_FILE_NAME);
         game_option_filepath.set_extension(EXT_GAME_DATA);
         game_option_filepath
@@ -255,20 +421,26 @@ impl<'a> GameResources<'a> {
 
     pub fn load_game_option_data(&mut self) {
         log::info!("    load_game_option_data");
+        Self::migrate_legacy_data_if_needed();
+
         let game_option_filepath = Self::get_game_option_data_filepath();
         if game_option_filepath.exists() {
-            let loaded_contents = system::load(&game_option_filepath);
-            match serde_json::from_reader(loaded_contents) {
-                Ok(loaded_option) => {
-                    *self._game_option_data.borrow_mut() = loaded_option;
-                    log::info!("Loaded game option from {:?}", game_option_filepath);
-                }
+            match File::open(&game_option_filepath) {
+                Ok(file) => match serde_json::from_reader(file) {
+                    Ok(loaded_option) => {
+                        *self._game_option_data.borrow_mut() = loaded_option;
+                        log::info!("Loaded game option from {:?}", game_option_filepath);
+                    }
+                    Err(err) => {
+                        log::warn!(
+                            "Failed to deserialize game option file {:?}: {:?}",
+                            game_option_filepath,
+                            err
+                        );
+                    }
+                },
                 Err(err) => {
-                    log::warn!(
-                        "Failed to deserialize game option file {:?}: {:?}",
-                        game_option_filepath,
-                        err
-                    );
+                    log::warn!("Failed to open game option file {:?}: {:?}", game_option_filepath, err);
                 }
             }
         } else {
@@ -484,5 +656,43 @@ impl<'a> GameResources<'a> {
 
     pub fn get_toolbox_item_data(&self, resource_name: &str) -> &RcRefCell<ToolboxItemData> {
         get_resource_data_must("toolbox_item_data", &self._toolbox_item_data_map, resource_name)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_game_save_data_filepath() {
+        let path1 = GameResources::get_game_save_data_filepath("save_data/00");
+        let path2 = GameResources::get_game_save_data_filepath("00");
+        assert_eq!(path1, path2);
+        assert_eq!(path1.extension().and_then(|s| s.to_str()), Some(EXT_GAME_DATA));
+        assert!(path1.ends_with(format!("save_data/00.{}", EXT_GAME_DATA)));
+    }
+
+    #[test]
+    fn test_game_option_data_filepath() {
+        let option_path = GameResources::get_game_option_data_filepath();
+        assert_eq!(
+            option_path.file_name().and_then(|s| s.to_str()),
+            Some(format!("{}.{}", GAME_OPTION_DATA_FILE_NAME, EXT_GAME_DATA).as_str())
+        );
+        assert_eq!(
+            option_path.parent().and_then(|p| p.file_name()).and_then(|s| s.to_str()),
+            Some(GAME_OPTION_DIRECTORY_NAME)
+        );
+    }
+
+    #[test]
+    fn test_user_directories_valid() {
+        let data_dir = GameResources::get_user_data_directory();
+        let config_dir = GameResources::get_user_config_directory();
+        let save_dir = GameResources::get_game_save_data_directory();
+
+        assert!(!data_dir.as_os_str().is_empty());
+        assert!(!config_dir.as_os_str().is_empty());
+        assert_eq!(save_dir, data_dir.join(SAVE_DATA_DIRECTORY_NAME));
     }
 }
