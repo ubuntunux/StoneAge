@@ -60,16 +60,19 @@ const RENDER_QUALITY_LEVEL_ITEMS: [RenderQualityLevel; 3] = [
 const RENDER_QUALITY_LEVEL_NAMES: [&str; 3] = ["Low", "Medium", "High"];
 
 const COLOR_ROW_BG_NORMAL: u32 = get_color32(245, 232, 205, 230);
-const COLOR_ROW_BG_SELECTED: u32 = get_color32(255, 245, 220, 255);
+const COLOR_ROW_BG_SELECTED: u32 = get_color32(255, 220, 145, 255);
 const COLOR_ROW_BG_DISABLED: u32 = get_color32(225, 215, 200, 180);
 const COLOR_ROW_BORDER_NORMAL: u32 = get_color32(200, 165, 125, 200);
-const COLOR_ROW_BORDER_SELECTED: u32 = get_color32(195, 118, 58, 255);
+const COLOR_ROW_BORDER_SELECTED: u32 = get_color32(255, 160, 40, 255);
 const COLOR_ROW_BORDER_DISABLED: u32 = get_color32(185, 170, 150, 160);
 const COLOR_TEXT_LABEL: u32 = get_color32(75, 45, 20, 255);
+const COLOR_TEXT_LABEL_SELECTED: u32 = get_color32(35, 18, 5, 255);
 const COLOR_TEXT_LABEL_DISABLED: u32 = get_color32(140, 120, 100, 180);
 const COLOR_TEXT_VALUE: u32 = get_color32(50, 30, 10, 255);
+const COLOR_TEXT_VALUE_SELECTED: u32 = get_color32(160, 60, 10, 255);
 
 const COLOR_BTN_STEPPER: u32 = get_color32(195, 140, 85, 230);
+const COLOR_BTN_STEPPER_SELECTED: u32 = get_color32(220, 145, 75, 255);
 const COLOR_BTN_STEPPER_DISABLED: u32 = get_color32(180, 165, 145, 140);
 const COLOR_BTN_TEXT_ENABLED: u32 = get_color32(255, 255, 255, 255);
 const COLOR_BTN_TEXT_DISABLED: u32 = get_color32(220, 215, 205, 150);
@@ -77,15 +80,99 @@ const COLOR_BTN_TOGGLE_ON: u32 = get_color32(80, 150, 80, 240);
 const COLOR_BTN_TOGGLE_OFF: u32 = get_color32(165, 130, 90, 230);
 
 const COLOR_BTN_SAVE: u32 = get_color32(76, 145, 65, 240);
+const COLOR_BTN_SAVE_FOCUSED: u32 = get_color32(105, 185, 75, 255);
+const COLOR_BTN_SAVE_BORDER: u32 = get_color32(50, 110, 40, 200);
 const COLOR_BTN_RESET: u32 = get_color32(185, 95, 65, 240);
+const COLOR_BTN_RESET_FOCUSED: u32 = get_color32(235, 95, 65, 255);
+const COLOR_BTN_RESET_BORDER: u32 = get_color32(145, 65, 40, 200);
+const COLOR_BTN_BORDER_FOCUSED: u32 = get_color32(255, 240, 120, 255);
+const COLOR_BTN_TEXT_FOCUSED: u32 = get_color32(255, 255, 220, 255);
 const COLOR_STATUS_TEXT: u32 = get_color32(50, 120, 50, 255);
 
-const TOTAL_NAV_ITEMS: usize = OptionItemType::COUNT + 2;
-const NAV_INDEX_RESET: usize = OptionItemType::COUNT;
-const NAV_INDEX_SAVE: usize = OptionItemType::COUNT + 1;
+const ROW_BORDER_WIDTH: f32 = 2.0;
+const ACTION_BTN_BORDER_WIDTH: f32 = 2.5;
+
+pub const TOTAL_NAV_ITEMS: usize = OptionItemType::COUNT + 2;
+pub const NAV_INDEX_RESET: usize = OptionItemType::COUNT;
+pub const NAV_INDEX_SAVE: usize = OptionItemType::COUNT + 1;
 
 pub fn is_resolution_selectable(window_mode: WindowMode) -> bool {
     window_mode == WindowMode::WindowMode
+}
+
+pub fn get_next_nav_index(
+    current_index: usize,
+    dir_x: i32,
+    dir_y: i32,
+    is_nav_index_enabled: impl Fn(usize) -> bool,
+) -> Option<usize> {
+    if dir_y > 0 {
+        if current_index >= OptionItemType::COUNT {
+            // 하단 버튼(Reset/Save)에서 아래로 더 가면 첫 번째 활성화된 옵션 아이템으로 순환
+            for idx in 0..OptionItemType::COUNT {
+                if is_nav_index_enabled(idx) {
+                    return Some(idx);
+                }
+            }
+            Some(NAV_INDEX_RESET)
+        } else {
+            // 옵션 목록 내에서 다음 활성화된 아이템 탐색
+            for idx in (current_index + 1)..OptionItemType::COUNT {
+                if is_nav_index_enabled(idx) {
+                    return Some(idx);
+                }
+            }
+            // 마지막 옵션 아이템에서 아래로 더 가면 Reset Defaults 버튼으로 이동
+            if is_nav_index_enabled(NAV_INDEX_RESET) {
+                Some(NAV_INDEX_RESET)
+            } else {
+                None
+            }
+        }
+    } else if dir_y < 0 {
+        if current_index >= OptionItemType::COUNT {
+            // 하단 버튼(Reset/Save)에서 위로 가면 마지막 활성화된 옵션 아이템으로 이동
+            for idx in (0..OptionItemType::COUNT).rev() {
+                if is_nav_index_enabled(idx) {
+                    return Some(idx);
+                }
+            }
+            Some(NAV_INDEX_RESET)
+        } else {
+            // 옵션 목록 내에서 이전 활성화된 아이템 탐색
+            for idx in (0..current_index).rev() {
+                if is_nav_index_enabled(idx) {
+                    return Some(idx);
+                }
+            }
+            // 최상단 옵션 아이템에서 위로 더 가면 Reset Defaults 버튼으로 순환
+            if is_nav_index_enabled(NAV_INDEX_RESET) {
+                Some(NAV_INDEX_RESET)
+            } else {
+                None
+            }
+        }
+    } else if dir_x != 0 {
+        if current_index == NAV_INDEX_RESET {
+            // Reset Defaults 버튼에서 양옆으로 이동하면 Save Options 버튼으로 focus
+            if is_nav_index_enabled(NAV_INDEX_SAVE) {
+                Some(NAV_INDEX_SAVE)
+            } else {
+                None
+            }
+        } else if current_index == NAV_INDEX_SAVE {
+            // Save Options 버튼에서 양옆으로 이동하면 Reset Defaults 버튼으로 focus
+            if is_nav_index_enabled(NAV_INDEX_RESET) {
+                Some(NAV_INDEX_RESET)
+            } else {
+                None
+            }
+        } else {
+            None
+        }
+    } else {
+        None
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Display, FromRepr, EnumCount, EnumIter, EnumString)]
@@ -429,6 +516,8 @@ impl<'a> GameOptionWidget<'a> {
         reset_ui.set_font_size(ACTION_BTN_FONT_SIZE);
         reset_ui.set_font_color(get_color32(255, 255, 255, 255));
         reset_ui.set_round(5.0);
+        reset_ui.set_border(ACTION_BTN_BORDER_WIDTH);
+        reset_ui.set_border_color(COLOR_BTN_RESET_BORDER);
         reset_ui.set_color(COLOR_BTN_RESET);
         reset_ui.set_touchable(true);
         reset_ui.set_callback_touch_down(Some(Box::new(Self::callback_reset_click)));
@@ -446,6 +535,8 @@ impl<'a> GameOptionWidget<'a> {
         save_ui.set_font_size(ACTION_BTN_FONT_SIZE);
         save_ui.set_font_color(get_color32(255, 255, 255, 255));
         save_ui.set_round(5.0);
+        save_ui.set_border(ACTION_BTN_BORDER_WIDTH);
+        save_ui.set_border_color(COLOR_BTN_SAVE_BORDER);
         save_ui.set_color(COLOR_BTN_SAVE);
         save_ui.set_touchable(true);
         save_ui.set_callback_touch_down(Some(Box::new(Self::callback_save_click)));
@@ -505,6 +596,7 @@ impl<'a> GameOptionWidget<'a> {
             row_ui.set_margin(3.0);
             row_ui.set_padding(4.0);
             row_ui.set_color(COLOR_ROW_BG_NORMAL);
+            row_ui.set_border(ROW_BORDER_WIDTH);
             row_ui.set_border_color(COLOR_ROW_BORDER_NORMAL);
             row_ui.set_round(5.0);
             row_ui.set_touchable(true);
@@ -822,13 +914,49 @@ impl<'a> GameOptionWidget<'a> {
             } else {
                 COLOR_ROW_BORDER_NORMAL
             });
+
+            let label_ui = ptr_as_mut(row._label_widget.as_ref()).get_ui_component_mut();
+            label_ui.set_font_color(if !is_enabled {
+                COLOR_TEXT_LABEL_DISABLED
+            } else if is_selected {
+                COLOR_TEXT_LABEL_SELECTED
+            } else {
+                COLOR_TEXT_LABEL
+            });
+
+            if let Some(val_widget) = row._value_widget.as_ref() {
+                let val_ui = ptr_as_mut(val_widget.as_ref()).get_ui_component_mut();
+                val_ui.set_font_color(if is_selected {
+                    COLOR_TEXT_VALUE_SELECTED
+                } else {
+                    COLOR_TEXT_VALUE
+                });
+            }
+
+            if is_enabled {
+                let stepper_color = if is_selected {
+                    COLOR_BTN_STEPPER_SELECTED
+                } else {
+                    COLOR_BTN_STEPPER
+                };
+                if let Some(dec_btn) = row._dec_btn.as_ref() {
+                    ptr_as_mut(dec_btn.as_ref()).get_ui_component_mut().set_color(stepper_color);
+                }
+                if let Some(inc_btn) = row._inc_btn.as_ref() {
+                    ptr_as_mut(inc_btn.as_ref()).get_ui_component_mut().set_color(stepper_color);
+                }
+            }
         }
 
-        // Scroll into view if an option row is selected
+        // Scroll into view if an option row is selected, or scroll to bottom if action buttons are selected
         if self._selected_index < self._rows.len() {
             let container_mut = ptr_as_mut(self._rows_container.as_ref());
             let target_row = &self._rows[self._selected_index]._row_widget;
             let target_row_ui = ptr_as_mut(target_row.as_ref()).get_ui_component_mut();
+            container_mut.get_ui_component_mut().scroll_into_view(target_row_ui);
+        } else if let Some(last_row) = self._rows.last() {
+            let container_mut = ptr_as_mut(self._rows_container.as_ref());
+            let target_row_ui = ptr_as_mut(last_row._row_widget.as_ref()).get_ui_component_mut();
             container_mut.get_ui_component_mut().scroll_into_view(target_row_ui);
         }
 
@@ -836,17 +964,37 @@ impl<'a> GameOptionWidget<'a> {
         let is_save_selected = self._selected_index == NAV_INDEX_SAVE;
 
         let reset_ui = ptr_as_mut(self._reset_btn.as_ref()).get_ui_component_mut();
-        reset_ui.set_border_color(if is_reset_selected {
-            COLOR_ROW_BORDER_SELECTED
+        reset_ui.set_color(if is_reset_selected {
+            COLOR_BTN_RESET_FOCUSED
         } else {
-            get_color32(0, 0, 0, 0)
+            COLOR_BTN_RESET
+        });
+        reset_ui.set_border_color(if is_reset_selected {
+            COLOR_BTN_BORDER_FOCUSED
+        } else {
+            COLOR_BTN_RESET_BORDER
+        });
+        reset_ui.set_font_color(if is_reset_selected {
+            COLOR_BTN_TEXT_FOCUSED
+        } else {
+            COLOR_BTN_TEXT_ENABLED
         });
 
         let save_ui = ptr_as_mut(self._save_btn.as_ref()).get_ui_component_mut();
-        save_ui.set_border_color(if is_save_selected {
-            COLOR_ROW_BORDER_SELECTED
+        save_ui.set_color(if is_save_selected {
+            COLOR_BTN_SAVE_FOCUSED
         } else {
-            get_color32(0, 0, 0, 0)
+            COLOR_BTN_SAVE
+        });
+        save_ui.set_border_color(if is_save_selected {
+            COLOR_BTN_BORDER_FOCUSED
+        } else {
+            COLOR_BTN_SAVE_BORDER
+        });
+        save_ui.set_font_color(if is_save_selected {
+            COLOR_BTN_TEXT_FOCUSED
+        } else {
+            COLOR_BTN_TEXT_ENABLED
         });
     }
 
@@ -1249,46 +1397,35 @@ impl<'a> GameOptionWidget<'a> {
         }
 
         if UiInput::is_up(keyboard_input_data, joystick_input_data) {
-            let mut candidate = self._selected_index;
-            for _ in 0..TOTAL_NAV_ITEMS {
-                candidate = if candidate == 0 {
-                    TOTAL_NAV_ITEMS - 1
-                } else {
-                    candidate - 1
-                };
-                if self.is_nav_index_enabled(candidate) {
-                    self.set_selected_index(candidate, true);
-                    break;
-                }
+            if let Some(next_idx) =
+                get_next_nav_index(self._selected_index, 0, -1, |idx| self.is_nav_index_enabled(idx))
+            {
+                self.set_selected_index(next_idx, true);
             }
         } else if UiInput::is_down(keyboard_input_data, joystick_input_data) {
-            let mut candidate = self._selected_index;
-            for _ in 0..TOTAL_NAV_ITEMS {
-                candidate = if candidate + 1 >= TOTAL_NAV_ITEMS {
-                    0
-                } else {
-                    candidate + 1
-                };
-                if self.is_nav_index_enabled(candidate) {
-                    self.set_selected_index(candidate, true);
-                    break;
-                }
+            if let Some(next_idx) = get_next_nav_index(self._selected_index, 0, 1, |idx| self.is_nav_index_enabled(idx))
+            {
+                self.set_selected_index(next_idx, true);
             }
         } else if UiInput::is_left(keyboard_input_data, joystick_input_data) {
             if self._selected_index < OptionItemType::COUNT {
                 if let Some(item_type) = OptionItemType::from_repr(self._selected_index) {
                     self.decrement_option(item_type);
                 }
-            } else if self._selected_index == NAV_INDEX_SAVE {
-                self.set_selected_index(NAV_INDEX_RESET, true);
+            } else if let Some(next_idx) =
+                get_next_nav_index(self._selected_index, -1, 0, |idx| self.is_nav_index_enabled(idx))
+            {
+                self.set_selected_index(next_idx, true);
             }
         } else if UiInput::is_right(keyboard_input_data, joystick_input_data) {
             if self._selected_index < OptionItemType::COUNT {
                 if let Some(item_type) = OptionItemType::from_repr(self._selected_index) {
                     self.increment_option(item_type);
                 }
-            } else if self._selected_index == NAV_INDEX_RESET {
-                self.set_selected_index(NAV_INDEX_SAVE, true);
+            } else if let Some(next_idx) =
+                get_next_nav_index(self._selected_index, 1, 0, |idx| self.is_nav_index_enabled(idx))
+            {
+                self.set_selected_index(next_idx, true);
             }
         } else if UiInput::is_confirm(keyboard_input_data, joystick_input_data) {
             if self._selected_index < OptionItemType::COUNT {
@@ -1380,5 +1517,69 @@ mod tests {
         assert!(is_resolution_selectable(WindowMode::WindowMode));
         assert!(!is_resolution_selectable(WindowMode::FullScreenExclusiveMode));
         assert!(!is_resolution_selectable(WindowMode::FullScreenBorderlessMode));
+    }
+
+    #[test]
+    fn test_option_navigation_vertical_and_horizontal() {
+        let is_all_enabled = |_idx: usize| true;
+
+        // Down from the last option item moves to Reset Default button
+        let last_option_idx = OptionItemType::COUNT - 1;
+        assert_eq!(
+            get_next_nav_index(last_option_idx, 0, 1, is_all_enabled),
+            Some(NAV_INDEX_RESET)
+        );
+
+        // Down from Reset or Save button wraps back to the first option item
+        assert_eq!(get_next_nav_index(NAV_INDEX_RESET, 0, 1, is_all_enabled), Some(0));
+        assert_eq!(get_next_nav_index(NAV_INDEX_SAVE, 0, 1, is_all_enabled), Some(0));
+
+        // Up from Reset or Save button moves up to the last option item
+        assert_eq!(
+            get_next_nav_index(NAV_INDEX_RESET, 0, -1, is_all_enabled),
+            Some(last_option_idx)
+        );
+        assert_eq!(
+            get_next_nav_index(NAV_INDEX_SAVE, 0, -1, is_all_enabled),
+            Some(last_option_idx)
+        );
+
+        // Up from the first option item wraps around to Reset Default button
+        assert_eq!(get_next_nav_index(0, 0, -1, is_all_enabled), Some(NAV_INDEX_RESET));
+
+        // Horizontal navigation between Reset and Save buttons in both directions
+        assert_eq!(
+            get_next_nav_index(NAV_INDEX_RESET, 1, 0, is_all_enabled),
+            Some(NAV_INDEX_SAVE)
+        );
+        assert_eq!(
+            get_next_nav_index(NAV_INDEX_RESET, -1, 0, is_all_enabled),
+            Some(NAV_INDEX_SAVE)
+        );
+        assert_eq!(
+            get_next_nav_index(NAV_INDEX_SAVE, -1, 0, is_all_enabled),
+            Some(NAV_INDEX_RESET)
+        );
+        assert_eq!(
+            get_next_nav_index(NAV_INDEX_SAVE, 1, 0, is_all_enabled),
+            Some(NAV_INDEX_RESET)
+        );
+
+        // Horizontal navigation inside option rows returns None (values change instead)
+        assert_eq!(get_next_nav_index(0, 1, 0, is_all_enabled), None);
+        assert_eq!(get_next_nav_index(0, -1, 0, is_all_enabled), None);
+
+        // Navigation skips disabled option item
+        let is_res_disabled = |idx: usize| idx != OptionItemType::Resolution as usize;
+        let monitor_idx = OptionItemType::Monitor as usize;
+        let quality_idx = OptionItemType::RenderQualityLevel as usize;
+        assert_eq!(
+            get_next_nav_index(monitor_idx, 0, 1, is_res_disabled),
+            Some(quality_idx)
+        );
+        assert_eq!(
+            get_next_nav_index(quality_idx, 0, -1, is_res_disabled),
+            Some(monitor_idx)
+        );
     }
 }
