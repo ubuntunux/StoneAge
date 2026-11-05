@@ -1,8 +1,9 @@
 use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, AUDIO_SELECT_ITEM};
 use crate::game_module::game_input::UiInput;
 use crate::game_module::game_option::{
-    CAMERA_ROTATION_SPEED_STEP, FONT_SCALE_STEP, GameOptionData, MAX_CAMERA_ROTATION_SPEED, MAX_FONT_SCALE, MAX_VOLUME,
-    MIN_CAMERA_ROTATION_SPEED, MIN_FONT_SCALE, MIN_VOLUME, VOLUME_STEP,
+    CAMERA_ROTATION_SPEED_STEP, FONT_SCALE_STEP, GameOptionData, MAX_CAMERA_ROTATION_SPEED, MAX_FONT_SCALE,
+    MAX_UI_SCALE, MAX_VOLUME, MIN_CAMERA_ROTATION_SPEED, MIN_FONT_SCALE, MIN_UI_SCALE, MIN_VOLUME, UI_SCALE_STEP,
+    VOLUME_STEP,
 };
 use crate::game_module::game_service_locator::{get_game_resources, get_game_resources_mut};
 use crate::game_module::widgets::drop_down_combo_box_widget::DropDownComboBoxWidget;
@@ -100,6 +101,7 @@ pub enum OptionItemType {
     MuteAudio,
     CameraRotationSpeed,
     InvertMouseY,
+    UiScale,
     FontScale,
 }
 
@@ -116,6 +118,7 @@ impl OptionItemType {
             OptionItemType::MuteAudio => "Mute All Audio",
             OptionItemType::CameraRotationSpeed => "Camera Rotation Speed",
             OptionItemType::InvertMouseY => "Invert Mouse Y-Axis",
+            OptionItemType::UiScale => "UI Scale",
             OptionItemType::FontScale => "Font Scale",
         }
     }
@@ -924,6 +927,10 @@ impl<'a> GameOptionWidget<'a> {
             OptionItemType::InvertMouseY => {
                 self._game_option_data._invert_mouse_y = !self._game_option_data._invert_mouse_y;
             }
+            OptionItemType::UiScale => {
+                let val = (self._game_option_data._ui_scale - UI_SCALE_STEP).max(MIN_UI_SCALE);
+                self._game_option_data.set_ui_scale(val);
+            }
             OptionItemType::FontScale => {
                 let val = (self._game_option_data._font_scale - FONT_SCALE_STEP).max(MIN_FONT_SCALE);
                 self._game_option_data.set_font_scale(val);
@@ -995,6 +1002,10 @@ impl<'a> GameOptionWidget<'a> {
             }
             OptionItemType::InvertMouseY => {
                 self._game_option_data._invert_mouse_y = !self._game_option_data._invert_mouse_y;
+            }
+            OptionItemType::UiScale => {
+                let val = (self._game_option_data._ui_scale + UI_SCALE_STEP).min(MAX_UI_SCALE);
+                self._game_option_data.set_ui_scale(val);
             }
             OptionItemType::FontScale => {
                 let val = (self._game_option_data._font_scale + FONT_SCALE_STEP).min(MAX_FONT_SCALE);
@@ -1168,6 +1179,12 @@ impl<'a> GameOptionWidget<'a> {
                         });
                     }
                 }
+                OptionItemType::UiScale => {
+                    if let Some(val_widget) = row._value_widget.as_ref() {
+                        let text = format!("{:.0}%", self._game_option_data._ui_scale * 100.0);
+                        ptr_as_mut(val_widget.as_ref()).get_ui_component_mut().set_text(&text);
+                    }
+                }
                 OptionItemType::FontScale => {
                     if let Some(val_widget) = row._value_widget.as_ref() {
                         let text = format!("{:.0}%", self._game_option_data._font_scale * 100.0);
@@ -1317,6 +1334,16 @@ mod tests {
 
         assert!(OptionItemType::MuteAudio.is_toggle());
         assert!(!OptionItemType::MuteAudio.is_combo());
+
+        assert_eq!(OptionItemType::from_repr(10), Some(OptionItemType::UiScale));
+        assert_eq!(OptionItemType::UiScale.display_name(), "UI Scale");
+        assert!(!OptionItemType::UiScale.is_combo());
+        assert!(!OptionItemType::UiScale.is_toggle());
+
+        assert_eq!(OptionItemType::from_repr(11), Some(OptionItemType::FontScale));
+        assert_eq!(OptionItemType::FontScale.display_name(), "Font Scale");
+        assert!(!OptionItemType::FontScale.is_combo());
+        assert!(!OptionItemType::FontScale.is_toggle());
     }
 
     #[test]
