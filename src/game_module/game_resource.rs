@@ -1157,4 +1157,190 @@ mod tests {
         }
         assert!(model_map.get("rock").unwrap().is_loaded());
     }
+
+    #[test]
+    fn test_vram_budget_lru_eviction() {
+        use rust_engine_3d::resource::resource::{MetaData, ResourceEntry, ResourceEntryMap};
+        use rust_engine_3d::vulkan_context::texture::TextureData;
+        use std::collections::HashMap;
+        use std::time::{Duration, Instant};
+
+        let create_dummy_texture = |name: &str, width: u32, height: u32| {
+            newRcRefCell(TextureData {
+                _texture_data_name: name.to_string(),
+                _image_width: width,
+                _image_height: height,
+                _image_layers: 1,
+                _image_mip_levels: 1,
+                _image_format: ash::vk::Format::R8G8B8A8_UNORM, // 4 bytes per pixel
+                ..Default::default()
+            })
+        };
+
+        // 1024 * 1024 * 4 = 4MB 텍스처
+        let tex_a = create_dummy_texture("tex_a", 1024, 1024);
+        let tex_b = create_dummy_texture("tex_b", 1024, 1024);
+        let tex_pinned = create_dummy_texture("tex_pinned", 1024, 1024);
+
+        assert_eq!(tex_a.borrow().get_memory_usage_bytes(), 4 * 1024 * 1024);
+
+        let mut tex_map: ResourceEntryMap<TextureData> = HashMap::new();
+
+        let mut entry_a = ResourceEntry::new(String::from("tex_a"), MetaData::default());
+        entry_a.set_loaded_data(tex_a.clone());
+
+        let mut entry_b = ResourceEntry::new(String::from("tex_b"), MetaData::default());
+        entry_b.set_loaded_data(tex_b.clone());
+
+        let entry_pinned = ResourceEntry::new_pinned(String::from("tex_pinned"), MetaData::default());
+        entry_pinned.set_loaded_data(tex_pinned.clone());
+
+        let t0 = Instant::now();
+        // A가 B보다 먼저 미사용 상태에 진입 (LRU: A가 더 오래됨)
+        entry_a._unused_start_time = Some(t0);
+        entry_b._unused_start_time = Some(t0 + Duration::from_secs(5));
+
+        tex_map.insert(String::from("tex_a"), entry_a);
+        tex_map.insert(String::from("tex_b"), entry_b);
+        tex_map.insert(String::from("tex_pinned"), entry_pinned);
+
+        // 총 12MB의 VRAM 중 버짓을 6MB로 설정 (목표: 90% = 5.4MB)
+        // tex_a는 Rc strong_count = 2 (tex_a 로컬 변수 소유) -> drop하여 strong_count = 1로 만듦
+        drop(tex_a);
+        drop(tex_b);
+        drop(tex_pinned);
+
+        let total_vram: usize =
+            tex_map.values().filter_map(|e| e.get_loaded_data()).map(|t| t.borrow().get_memory_usage_bytes()).sum();
+        assert_eq!(total_vram, 12 * 1024 * 1024); // 12MB
+
+        // LRU 정렬 및 회수 로직 시뮬레이션
+        let budget_bytes = 6 * 1024 * 1024;
+        let target_bytes = (budget_bytes * 9) / 10;
+        let mut bytes_to_free = total_vram.saturating_sub(target_bytes);
+
+        struct Cand {
+            _name: String,
+            _unused_time: Instant,
+            _bytes: usize,
+        }
+
+        let mut candidates = Vec::new();
+        for (name, entry) in tex_map.iter() {
+            if entry.is_pinned() || entry.is_loading() {
+                continue;
+            }
+            let strong_count = unsafe {
+                match *entry._cached_data.get() {
+                    Some(ref data) => std::rc::Rc::strong_count(data),
+                    None => 0,
+                }
+            };
+            if strong_count == 1 {
+                if let Some(tex) = entry.get_loaded_data() {
+                    candidates.push(Cand {
+                        _name: name.clone(),
+                        _unused_time: entry._unused_start_time.unwrap_or(t0),
+                        _bytes: tex.borrow().get_memory_usage_bytes(),
+                    });
+                }
+            }
+        }
+
+        // LRU 오름차순 정렬
+        candidates.sort_by_key(|c| c._unused_time);
+        assert_eq!(candidates.len(), 2);
+        assert_eq!(candidates[0]._name, "tex_a"); // 더 오래 미사용된 tex_a가 최우선
+        assert_eq!(candidates[1]._name, "tex_b");
+
+        let mut evicted_count = 0;
+        for c in candidates {
+            if bytes_to_free == 0 {
+                break;
+            }
+            if let Some(entry) = tex_map.get_mut(&c._name) {
+                entry.unload();
+                evicted_count += 1;
+                bytes_to_free = bytes_to_free.saturating_sub(c._bytes);
+            }
+        }
+
+        // tex_a (4MB) 및 tex_b (4MB) 회수로 목표 달성
+        assert_eq!(evicted_count, 2);
+        assert!(!tex_map.get("tex_a").unwrap().is_loaded());
+        assert!(!tex_map.get("tex_b").unwrap().is_loaded());
+        assert!(tex_map.get("tex_pinned").unwrap().is_loaded()); // pinned는 영구 보존!
+    }
+
+    #[test]
+    fn test_async_resource_loader_pending_and_metrics() {
+        use rust_engine_3d::resource::async_loader::{AsyncLoadRequest, AsyncResourceLoader};
+        use rust_engine_3d::resource::resource::ResourceStreamingMetrics;
+
+        let loader = AsyncResourceLoader::new(2);
+        assert_eq!(loader.get_pending_count(), 0);
+
+        // 요청 전송 시 pending 카운트 즉시 증가
+        let req = AsyncLoadRequest::Texture {
+            _texture_name: String::from("dummy_tex"),
+            _meta_data: Default::default(),
+        };
+        loader.send_request(req);
+        assert_eq!(loader.get_pending_count(), 1);
+
+        // 메트릭 구조체 기본값 및 동작 검증
+        let mut metrics = ResourceStreamingMetrics::default();
+        metrics._loaded_textures = 10;
+        metrics._total_textures = 50;
+        metrics._texture_memory_bytes = 40 * 1024 * 1024;
+        metrics._vram_budget_bytes = 1024 * 1024 * 1024;
+        metrics._pending_async_requests = loader.get_pending_count();
+
+        assert_eq!(metrics._pending_async_requests, 1);
+        assert_eq!(metrics._loaded_textures, 10);
+        assert_eq!(metrics._texture_memory_bytes, 40 * 1024 * 1024);
+    }
+
+    #[test]
+    fn test_render_target_memory_calculation() {
+        use rust_engine_3d::renderer::render_target::RenderTargetType;
+        use rust_engine_3d::renderer::renderer_data::RenderTargetDataMap;
+        use rust_engine_3d::vulkan_context::texture::TextureData;
+
+        let mut rt_map: RenderTargetDataMap = std::collections::HashMap::new();
+
+        // SceneColor: 1920x1080 RGBA16F (8 bytes per pixel)
+        let rt_scenecolor = TextureData {
+            _texture_data_name: String::from("SceneColor"),
+            _image_width: 1920,
+            _image_height: 1080,
+            _image_layers: 1,
+            _image_mip_levels: 1,
+            _image_format: ash::vk::Format::R16G16B16A16_SFLOAT, // 8 bytes
+            ..Default::default()
+        };
+        // 1920 * 1080 * 8 = 16,588,800 bytes (~15.82MB)
+        assert_eq!(rt_scenecolor.get_memory_usage_bytes(), 1920 * 1080 * 8);
+
+        // ShadowMap: 2048x2048 Depth (4 bytes per pixel)
+        let rt_shadow = TextureData {
+            _texture_data_name: String::from("Shadow"),
+            _image_width: 2048,
+            _image_height: 2048,
+            _image_layers: 1,
+            _image_mip_levels: 1,
+            _image_format: ash::vk::Format::D32_SFLOAT, // 4 bytes
+            ..Default::default()
+        };
+        // 2048 * 2048 * 4 = 16,777,216 bytes (16.0MB)
+        assert_eq!(rt_shadow.get_memory_usage_bytes(), 2048 * 2048 * 4);
+
+        rt_map.insert(RenderTargetType::SceneColor, rt_scenecolor);
+        rt_map.insert(RenderTargetType::Shadow, rt_shadow);
+
+        let total_rt_bytes: usize = rt_map.values().map(|t| t.get_memory_usage_bytes()).sum();
+        let expected_total = (1920 * 1080 * 8) + (2048 * 2048 * 4);
+        assert_eq!(total_rt_bytes, expected_total);
+        assert_eq!(rt_map.len(), 2);
+    }
 }
