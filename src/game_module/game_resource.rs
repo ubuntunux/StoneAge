@@ -10,11 +10,11 @@ use crate::game_module::scenario::scenario::ScenarioDataCreateInfo;
 use crate::game_module::widgets::toolbox_widget::item_tab_widget::ToolboxItemData;
 use rust_engine_3d::core::engine_service_locator::get_engine_resources;
 use rust_engine_3d::resource::resource::{
-    get_resource_entry_data_must, get_unique_resource_name, update_resource_entry_map_gc, MetaData,
-    ResourceDataContainer, ResourceEntry, ResourceEntryMap, APPLICATION_RESOURCE_PATH, DEFAULT_RESOURCE_GC_TIMEOUT_SEC,
-    LOG_RESOURCE_LIFECYCLE, RESOURCE_GC_CHECK_INTERVAL_SEC,
+    APPLICATION_RESOURCE_PATH, DEFAULT_RESOURCE_GC_TIMEOUT_SEC, LOG_RESOURCE_LIFECYCLE, MetaData,
+    RESOURCE_GC_CHECK_INTERVAL_SEC, ResourceDataContainer, ResourceEntry, ResourceEntryMap,
+    get_resource_entry_data_must, get_unique_resource_name, update_resource_entry_map_gc,
 };
-use rust_engine_3d::utilities::system::{self, newRcRefCell, RcRefCell};
+use rust_engine_3d::utilities::system::{self, RcRefCell, newRcRefCell};
 use serde_json::{self};
 use std::fs::File;
 use std::io::prelude::*;
@@ -1052,5 +1052,109 @@ mod tests {
         assert!(render_object.check_and_update_ready_state());
         assert!(render_object.is_ready());
         assert!(render_object.is_visible()); // 비로소 화면에 노출됨!
+    }
+
+    #[test]
+    fn test_model_data_lazy_loading_and_gc() {
+        use rust_engine_3d::resource::resource::{
+            MetaData, ResourceEntry, ResourceEntryMap, get_resource_entry_data, update_resource_entry_map_gc,
+        };
+        use rust_engine_3d::scene::bounding_box::BoundingBox;
+        use rust_engine_3d::scene::mesh::MeshData;
+        use rust_engine_3d::scene::model::ModelData;
+        use std::cell::Cell;
+        use std::collections::HashMap;
+        use std::time::{Duration, Instant};
+
+        let dummy_mesh = newRcRefCell(MeshData {
+            _name: String::from("quad"),
+            _bound_box: BoundingBox::default(),
+            _skeleton_data_list: Vec::new(),
+            _animation_data_list: Vec::new(),
+            _geometry_data_list: Vec::new(),
+        });
+
+        let create_dummy_model = |name: &str| ModelData {
+            _model_data_name: name.to_string(),
+            _local_transform: nalgebra::Matrix4::identity(),
+            _mesh_data: dummy_mesh.clone(),
+            _is_render_camera: true,
+            _is_render_shadow: true,
+            _material_instance_data_list: Vec::new(),
+            _collision: rust_engine_3d::scene::collision::CollisionData::default(),
+            _socket_data_map: std::collections::HashMap::new(),
+        };
+
+        let mut model_map: ResourceEntryMap<ModelData> = HashMap::new();
+
+        // 1. 카탈로그 메타데이터만 등록 (Lazy Loading 상태: 미로드)
+        let quad_entry = ResourceEntry::new_pinned(String::from("quad"), MetaData::default());
+        let rock_entry = ResourceEntry::new(String::from("rock"), MetaData::default());
+
+        model_map.insert(String::from("quad"), quad_entry);
+        model_map.insert(String::from("rock"), rock_entry);
+
+        assert!(!model_map.get("quad").unwrap().is_loaded());
+        assert!(!model_map.get("rock").unwrap().is_loaded());
+        assert!(model_map.get("quad").unwrap().is_pinned());
+        assert!(!model_map.get("rock").unwrap().is_pinned());
+
+        // 2. On-demand 지연 로딩 검증
+        let load_count = Cell::new(0);
+        {
+            let loaded_rock = get_resource_entry_data("model_data", &model_map, "rock", "quad", |name, _meta| {
+                load_count.set(load_count.get() + 1);
+                Some(create_dummy_model(name))
+            });
+            assert_eq!(loaded_rock.borrow()._model_data_name, "rock");
+            assert_eq!(load_count.get(), 1);
+        }
+
+        // 로드 완료 상태 확인
+        assert!(model_map.get("rock").unwrap().is_loaded());
+
+        // 캐시 히트 검증 (동일 리소스 재조회 시 로더 호출 안 됨)
+        {
+            let _cached_rock = get_resource_entry_data("model_data", &model_map, "rock", "quad", |_name, _meta| {
+                load_count.set(load_count.get() + 1);
+                None
+            });
+            assert_eq!(load_count.get(), 1); // 증가하지 않음
+        }
+
+        // quad도 로딩
+        {
+            let _quad = get_resource_entry_data("model_data", &model_map, "quad", "quad", |name, _meta| {
+                Some(create_dummy_model(name))
+            });
+        }
+        assert!(model_map.get("quad").unwrap().is_loaded());
+
+        // 3. Time-delayed GC 검증
+        let t0 = Instant::now();
+        let timeout = Duration::from_secs(30);
+
+        // 즉시 GC 수행 시 아직 미사용 타이머 시작/타임아웃 안 됨
+        let evicted = update_resource_entry_map_gc(&mut model_map, t0, timeout);
+        assert_eq!(evicted, 0);
+        assert!(model_map.get("rock").unwrap().is_loaded());
+
+        // 31초 후: rock은 unpinned이며 외부 참조(Rc 강한 참조 = 1)가 없으므로 회수 대상
+        let t_future = t0 + Duration::from_secs(31);
+        let evicted = update_resource_entry_map_gc(&mut model_map, t_future, timeout);
+        assert_eq!(evicted, 1);
+        assert!(!model_map.get("rock").unwrap().is_loaded()); // 언로드 완료!
+        assert!(model_map.get("quad").unwrap().is_loaded()); // pinned quad는 영구 보존!
+
+        // 4. 언로드 후 필요 시 투명한 재로딩(Re-loading) 검증
+        {
+            let reloaded_rock = get_resource_entry_data("model_data", &model_map, "rock", "quad", |name, _meta| {
+                load_count.set(load_count.get() + 1);
+                Some(create_dummy_model(name))
+            });
+            assert_eq!(reloaded_rock.borrow()._model_data_name, "rock");
+            assert_eq!(load_count.get(), 2);
+        }
+        assert!(model_map.get("rock").unwrap().is_loaded());
     }
 }
