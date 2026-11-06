@@ -29,7 +29,7 @@ const ROW_HEIGHT: f32 = 42.0;
 const LABEL_WIDTH: f32 = 280.0;
 const STEPPER_BTN_SIZE: f32 = 34.0;
 const VALUE_WIDTH: f32 = 140.0;
-const COMBO_BOX_WIDTH: f32 = 240.0;
+const COMBO_BOX_WIDTH: f32 = 320.0;
 const TOGGLE_BTN_WIDTH: f32 = 100.0;
 const ACTION_BTN_WIDTH: f32 = 160.0;
 const ACTION_BTN_HEIGHT: f32 = 38.0;
@@ -580,23 +580,6 @@ impl<'a> GameOptionWidget<'a> {
             row_mut.add_widget(&label_widget);
 
             if item_type.is_combo() {
-                let dec_btn = UIManager::create_widget(&format!("dec_{:?}", item_type), UIWidgetTypes::Default);
-                let dec_ui = ptr_as_mut(dec_btn.as_ref()).get_ui_component_mut();
-                dec_ui.set_halign(HorizontalAlign::CENTER);
-                dec_ui.set_valign(VerticalAlign::CENTER);
-                dec_ui.set_size(STEPPER_BTN_SIZE, STEPPER_BTN_SIZE);
-                dec_ui.set_margin(4.0);
-                dec_ui.set_text("<");
-                dec_ui.set_font_size(STEPPER_BTN_FONT_SIZE);
-                dec_ui.set_font_color(get_color32(255, 255, 255, 255));
-                dec_ui.set_round(4.0);
-                dec_ui.set_color(COLOR_BTN_STEPPER);
-                dec_ui.set_touchable(true);
-                dec_ui.set_callback_touch_down(Some(Box::new(Self::callback_dec)));
-                dec_ui.set_callback_touch_over(Some(Box::new(Self::callback_btn_touch_over)));
-                dec_ui.set_user_data(user_data.as_ref() as *const OptionRowUserData<'a> as *const c_void);
-                row_mut.add_widget(&dec_btn);
-
                 let combo_box = match item_type {
                     OptionItemType::WindowMode => {
                         let mut combo = DropDownComboBoxWidget::create_from_enum(
@@ -677,29 +660,12 @@ impl<'a> GameOptionWidget<'a> {
                     _ => unreachable!(),
                 };
 
-                let inc_btn = UIManager::create_widget(&format!("inc_{:?}", item_type), UIWidgetTypes::Default);
-                let inc_ui = ptr_as_mut(inc_btn.as_ref()).get_ui_component_mut();
-                inc_ui.set_halign(HorizontalAlign::CENTER);
-                inc_ui.set_valign(VerticalAlign::CENTER);
-                inc_ui.set_size(STEPPER_BTN_SIZE, STEPPER_BTN_SIZE);
-                inc_ui.set_margin(4.0);
-                inc_ui.set_text(">");
-                inc_ui.set_font_size(STEPPER_BTN_FONT_SIZE);
-                inc_ui.set_font_color(get_color32(255, 255, 255, 255));
-                inc_ui.set_round(4.0);
-                inc_ui.set_color(COLOR_BTN_STEPPER);
-                inc_ui.set_touchable(true);
-                inc_ui.set_callback_touch_down(Some(Box::new(Self::callback_inc)));
-                inc_ui.set_callback_touch_over(Some(Box::new(Self::callback_btn_touch_over)));
-                inc_ui.set_user_data(user_data.as_ref() as *const OptionRowUserData<'a> as *const c_void);
-                row_mut.add_widget(&inc_btn);
-
                 widget._rows.push(OptionRow {
                     _row_widget: row_widget,
                     _label_widget: label_widget,
                     _value_widget: None,
-                    _dec_btn: Some(dec_btn),
-                    _inc_btn: Some(inc_btn),
+                    _dec_btn: None,
+                    _inc_btn: None,
                     _toggle_btn: None,
                     _combo_box: Some(combo_box),
                     _item_type: item_type,

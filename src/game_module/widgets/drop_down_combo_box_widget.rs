@@ -357,14 +357,7 @@ impl<'a> DropDownComboBoxWidget<'a> {
 
     pub fn update_header_text(&mut self) {
         let text = if let Some(selected) = self._items.get(self._selected_index) {
-            if self._is_enabled {
-                let arrow = if self._is_open { "▲" } else { "▼" };
-                format!("{}  {}", selected, arrow)
-            } else {
-                selected.clone()
-            }
-        } else if self._is_enabled {
-            "None ▼".to_string()
+            selected.clone()
         } else {
             "None".to_string()
         };
@@ -407,9 +400,8 @@ impl<'a> DropDownComboBoxWidget<'a> {
             let is_hovered = i == self._hovered_index;
             let item_ui = ptr_as_mut(item_widget.as_ref()).get_ui_component_mut();
 
-            let prefix = if is_selected { "✓ " } else { "   " };
             if let Some(text) = self._items.get(i) {
-                item_ui.set_text(&format!("{}{}", prefix, text));
+                item_ui.set_text(&text);
             }
 
             if is_selected {
