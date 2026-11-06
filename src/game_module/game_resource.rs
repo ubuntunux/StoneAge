@@ -10,11 +10,11 @@ use crate::game_module::scenario::scenario::ScenarioDataCreateInfo;
 use crate::game_module::widgets::toolbox_widget::item_tab_widget::ToolboxItemData;
 use rust_engine_3d::core::engine_service_locator::get_engine_resources;
 use rust_engine_3d::resource::resource::{
-    APPLICATION_RESOURCE_PATH, DEFAULT_RESOURCE_GC_TIMEOUT_SEC, LOG_RESOURCE_LIFECYCLE, MetaData,
-    RESOURCE_GC_CHECK_INTERVAL_SEC, ResourceDataContainer, ResourceEntry, ResourceEntryMap,
-    get_resource_entry_data_must, get_unique_resource_name, update_resource_entry_map_gc,
+    get_resource_entry_data_must, get_unique_resource_name, update_resource_entry_map_gc, MetaData,
+    ResourceDataContainer, ResourceEntry, ResourceEntryMap, APPLICATION_RESOURCE_PATH, DEFAULT_RESOURCE_GC_TIMEOUT_SEC,
+    LOG_RESOURCE_LIFECYCLE, RESOURCE_GC_CHECK_INTERVAL_SEC,
 };
-use rust_engine_3d::utilities::system::{self, RcRefCell, newRcRefCell};
+use rust_engine_3d::utilities::system::{self, newRcRefCell, RcRefCell};
 use serde_json::{self};
 use std::fs::File;
 use std::io::prelude::*;
@@ -163,12 +163,16 @@ impl<'a> GameResources<'a> {
             "scenario_data",
             &self._scenario_data_create_info_map,
             resource_name,
-            |meta| {
+            |_resource_name, meta| {
                 let loaded_contents = system::load(&meta._resource_file_path);
                 match serde_json::from_reader(loaded_contents) {
                     Ok(data) => Some(data),
                     Err(err) => {
-                        log::error!("Failed to deserialize scenario data {:?}: {:?}", meta._resource_file_path, err);
+                        log::error!(
+                            "Failed to deserialize scenario data {:?}: {:?}",
+                            meta._resource_file_path,
+                            err
+                        );
                         None
                     }
                 }
@@ -228,12 +232,16 @@ impl<'a> GameResources<'a> {
             "game_scene_data",
             &self._game_scene_data_create_info_map,
             resource_name,
-            |meta| {
+            |_resource_name, meta| {
                 let loaded_contents = system::load(&meta._resource_file_path);
                 match serde_json::from_reader(loaded_contents) {
                     Ok(data) => Some(data),
                     Err(err) => {
-                        log::error!("Failed to deserialize game scene data {:?}: {:?}", meta._resource_file_path, err);
+                        log::error!(
+                            "Failed to deserialize game scene data {:?}: {:?}",
+                            meta._resource_file_path,
+                            err
+                        );
                         None
                     }
                 }
@@ -600,16 +608,25 @@ impl<'a> GameResources<'a> {
     }
 
     pub fn get_prop_data(&self, resource_name: &str) -> &RcRefCell<PropData> {
-        get_resource_entry_data_must("prop_data", &self._prop_data_map, resource_name, |meta| {
-            let loaded_contents = system::load(&meta._resource_file_path);
-            match serde_json::from_reader(loaded_contents) {
-                Ok(data) => Some(data),
-                Err(err) => {
-                    log::error!("Failed to deserialize prop data {:?}: {:?}", meta._resource_file_path, err);
-                    None
+        get_resource_entry_data_must(
+            "prop_data",
+            &self._prop_data_map,
+            resource_name,
+            |_resource_name, meta| {
+                let loaded_contents = system::load(&meta._resource_file_path);
+                match serde_json::from_reader(loaded_contents) {
+                    Ok(data) => Some(data),
+                    Err(err) => {
+                        log::error!(
+                            "Failed to deserialize prop data {:?}: {:?}",
+                            meta._resource_file_path,
+                            err
+                        );
+                        None
+                    }
                 }
-            }
-        })
+            },
+        )
     }
 
     // weapon data
@@ -636,20 +653,32 @@ impl<'a> GameResources<'a> {
     }
 
     pub fn get_weapon_data(&self, resource_name: &str) -> &RcRefCell<WeaponData<'a>> {
-        get_resource_entry_data_must("weapon_data", &self._weapon_data_map, resource_name, |meta| {
-            let loaded_contents = system::load(&meta._resource_file_path);
-            match serde_json::from_reader::<_, WeaponDataCreateInfo>(loaded_contents) {
-                Ok(weapon_data_create_info) => {
-                    let weapon_model_data =
-                        get_engine_resources().get_model_data(&weapon_data_create_info._model_data_name);
-                    Some(WeaponData::create_weapon_data(&weapon_data_create_info, weapon_model_data))
+        get_resource_entry_data_must(
+            "weapon_data",
+            &self._weapon_data_map,
+            resource_name,
+            |_resource_name, meta| {
+                let loaded_contents = system::load(&meta._resource_file_path);
+                match serde_json::from_reader::<_, WeaponDataCreateInfo>(loaded_contents) {
+                    Ok(weapon_data_create_info) => {
+                        let weapon_model_data =
+                            get_engine_resources().get_model_data(&weapon_data_create_info._model_data_name);
+                        Some(WeaponData::create_weapon_data(
+                            &weapon_data_create_info,
+                            weapon_model_data,
+                        ))
+                    }
+                    Err(err) => {
+                        log::error!(
+                            "Failed to deserialize weapon data {:?}: {:?}",
+                            meta._resource_file_path,
+                            err
+                        );
+                        None
+                    }
                 }
-                Err(err) => {
-                    log::error!("Failed to deserialize weapon data {:?}: {:?}", meta._resource_file_path, err);
-                    None
-                }
-            }
-        })
+            },
+        )
     }
 
     // character data
@@ -676,18 +705,27 @@ impl<'a> GameResources<'a> {
     }
 
     pub fn get_character_data(&self, resource_name: &str) -> &RcRefCell<CharacterData> {
-        get_resource_entry_data_must("character_data", &self._character_data_map, resource_name, |meta| {
-            let loaded_contents = system::load(&meta._resource_file_path);
-            match serde_json::from_reader::<_, CharacterDataCreateInfo>(loaded_contents) {
-                Ok(character_data_create_info) => {
-                    Some(CharacterData::create_character_data(&character_data_create_info))
+        get_resource_entry_data_must(
+            "character_data",
+            &self._character_data_map,
+            resource_name,
+            |_resource_name, meta| {
+                let loaded_contents = system::load(&meta._resource_file_path);
+                match serde_json::from_reader::<_, CharacterDataCreateInfo>(loaded_contents) {
+                    Ok(character_data_create_info) => {
+                        Some(CharacterData::create_character_data(&character_data_create_info))
+                    }
+                    Err(err) => {
+                        log::error!(
+                            "Failed to deserialize character data {:?}: {:?}",
+                            meta._resource_file_path,
+                            err
+                        );
+                        None
+                    }
                 }
-                Err(err) => {
-                    log::error!("Failed to deserialize character data {:?}: {:?}", meta._resource_file_path, err);
-                    None
-                }
-            }
-        })
+            },
+        )
     }
 
     // item data
@@ -713,16 +751,25 @@ impl<'a> GameResources<'a> {
     }
 
     pub fn get_item_data(&self, resource_name: &str) -> &RcRefCell<ItemData> {
-        get_resource_entry_data_must("item_data", &self._item_data_map, resource_name, |meta| {
-            let loaded_contents = system::load(&meta._resource_file_path);
-            match serde_json::from_reader(loaded_contents) {
-                Ok(data) => Some(data),
-                Err(err) => {
-                    log::error!("Failed to deserialize item data {:?}: {:?}", meta._resource_file_path, err);
-                    None
+        get_resource_entry_data_must(
+            "item_data",
+            &self._item_data_map,
+            resource_name,
+            |_resource_name, meta| {
+                let loaded_contents = system::load(&meta._resource_file_path);
+                match serde_json::from_reader(loaded_contents) {
+                    Ok(data) => Some(data),
+                    Err(err) => {
+                        log::error!(
+                            "Failed to deserialize item data {:?}: {:?}",
+                            meta._resource_file_path,
+                            err
+                        );
+                        None
+                    }
                 }
-            }
-        })
+            },
+        )
     }
 
     // toolbox item data
@@ -749,20 +796,25 @@ impl<'a> GameResources<'a> {
     }
 
     pub fn get_toolbox_item_data(&self, resource_name: &str) -> &RcRefCell<ToolboxItemData> {
-        get_resource_entry_data_must("toolbox_item_data", &self._toolbox_item_data_map, resource_name, |meta| {
-            let loaded_contents = system::load(&meta._resource_file_path);
-            match serde_json::from_reader(loaded_contents) {
-                Ok(data) => Some(data),
-                Err(err) => {
-                    log::error!(
-                        "Failed to deserialize toolbox item data {:?}: {:?}",
-                        meta._resource_file_path,
-                        err
-                    );
-                    None
+        get_resource_entry_data_must(
+            "toolbox_item_data",
+            &self._toolbox_item_data_map,
+            resource_name,
+            |_resource_name, meta| {
+                let loaded_contents = system::load(&meta._resource_file_path);
+                match serde_json::from_reader(loaded_contents) {
+                    Ok(data) => Some(data),
+                    Err(err) => {
+                        log::error!(
+                            "Failed to deserialize toolbox item data {:?}: {:?}",
+                            meta._resource_file_path,
+                            err
+                        );
+                        None
+                    }
                 }
-            }
-        })
+            },
+        )
     }
 }
 
@@ -815,7 +867,7 @@ mod tests {
         // 첫 호출 시 loader 실행
         let mut load_count = 0;
         {
-            let loaded = entry.get_or_load_ref(|_meta| {
+            let loaded = entry.get_or_load_ref(|_name, _meta| {
                 load_count += 1;
                 Some(String::from("loaded_value"))
             });
@@ -830,7 +882,7 @@ mod tests {
 
         // 재호출 시 loader가 다시 호출되지 않고 캐시 반환
         {
-            let cached = entry.get_or_load_ref(|_meta| {
+            let cached = entry.get_or_load_ref(|_name, _meta| {
                 load_count += 1;
                 Some(String::from("never_called"))
             });
@@ -857,7 +909,7 @@ mod tests {
         let mut entry: ResourceEntry<String> = ResourceEntry::new(String::from("test_gc_entry"), meta_data);
 
         // 1. 리소스 로드
-        entry.get_or_load_ref(|_meta| Some(String::from("gc_value")));
+        entry.get_or_load_ref(|_name, _meta| Some(String::from("gc_value")));
         assert!(entry.is_loaded());
 
         let timeout = Duration::from_secs(30);
@@ -911,7 +963,7 @@ mod tests {
         let mut entry: ResourceEntry<String> = ResourceEntry::new_pinned(String::from("pinned_entry"), meta_data);
 
         // 로드
-        entry.get_or_load_ref(|_meta| Some(String::from("pinned_value")));
+        entry.get_or_load_ref(|_name, _meta| Some(String::from("pinned_value")));
         assert!(entry.is_loaded());
 
         let timeout = Duration::from_secs(5);
