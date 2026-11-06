@@ -975,4 +975,82 @@ mod tests {
         assert!(entry.is_loaded());
         assert!(entry._unused_start_time.is_none());
     }
+
+    #[test]
+    fn test_visibility_gating_unready_resource() {
+        use rust_engine_3d::scene::bounding_box::BoundingBox;
+        use rust_engine_3d::scene::mesh::MeshData;
+        use rust_engine_3d::scene::model::ModelData;
+        use rust_engine_3d::scene::render_object::{RenderObjectCreateInfo, RenderObjectData, SceneObjectType};
+
+        // 1. 지오메트리 버퍼가 없는 빈 MeshData (로딩 중 상태 모사)
+        let unready_mesh = newRcRefCell(MeshData {
+            _name: String::from("unready_mesh"),
+            _bound_box: BoundingBox::default(),
+            _skeleton_data_list: Vec::new(),
+            _animation_data_list: Vec::new(),
+            _geometry_data_list: Vec::new(), // 빈 상태 -> is_ready() == false
+        });
+        assert!(!unready_mesh.borrow().is_ready());
+
+        // 2. 모델 데이터 생성
+        let model_data = newRcRefCell(ModelData {
+            _model_data_name: String::from("test_model"),
+            _local_transform: nalgebra::Matrix4::identity(),
+            _mesh_data: unready_mesh.clone(),
+            _is_render_camera: true,
+            _is_render_shadow: true,
+            _material_instance_data_list: Vec::new(),
+            _collision: rust_engine_3d::scene::collision::CollisionData::default(),
+            _socket_data_map: std::collections::HashMap::new(),
+        });
+
+        // 하위 메시가 준비되지 않았으므로 model_data도 준비되지 않음
+        assert!(!model_data.borrow().is_ready());
+
+        // 3. RenderObject 생성
+        let create_info = RenderObjectCreateInfo {
+            _scene_object_type: SceneObjectType::Default,
+            _model_data_name: String::from("test_model"),
+            _position: nalgebra::Vector3::zeros(),
+            _rotation: nalgebra::Vector3::zeros(),
+            _scale: nalgebra::Vector3::new(1.0, 1.0, 1.0),
+        };
+
+        let (mut render_object, _transform) = RenderObjectData::create_render_object_data(
+            uuid::Uuid::new_v4(),
+            &String::from("test_render_object"),
+            &model_data,
+            &create_info,
+            None,
+        );
+
+        // 하위 리소스가 미완료이므로 _is_ready == false, is_visible() == false (가시성 게이팅 작동)
+        assert!(!render_object.is_ready());
+        assert!(!render_object.is_visible());
+        assert!(render_object._is_visible); // 사용자 가시성 플래그 자체는 true이지만 게이팅에 의해 숨겨짐
+
+        // 4. 아직 준비되지 않은 상태에서 ready state 체크 시 여전히 false 유지
+        assert!(!render_object.check_and_update_ready_state());
+        assert!(!render_object.is_visible());
+
+        // 5. 비동기 로딩 완료 모사: MeshData에 지오메트리 버퍼가 채워짐
+        let dummy_geometry = newRcRefCell(rust_engine_3d::vulkan_context::geometry_buffer::GeometryData {
+            _geometry_name: String::from("geom_0"),
+            _vertex_buffer_data: rust_engine_3d::vulkan_context::buffer::BufferData::default(),
+            _index_buffer_data: rust_engine_3d::vulkan_context::buffer::BufferData::default(),
+            _vertex_index_count: 3,
+            _geometry_bounding_box: BoundingBox::default(),
+        });
+        unready_mesh.borrow_mut()._geometry_data_list.push(dummy_geometry);
+
+        // 이제 메시와 모델이 ready 상태가 됨
+        assert!(unready_mesh.borrow().is_ready());
+        assert!(model_data.borrow().is_ready());
+
+        // 6. 다음 프레임 업데이트 시 RenderObject가 완료를 감지하고 가시화 승격!
+        assert!(render_object.check_and_update_ready_state());
+        assert!(render_object.is_ready());
+        assert!(render_object.is_visible()); // 비로소 화면에 노출됨!
+    }
 }
