@@ -471,6 +471,7 @@ impl<'a> GameMenuWidget<'a> {
     pub fn close_game_menu(&mut self) {
         if self._is_opened_game_menu {
             get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
+            self._game_option_widget.save_options();
             self.close_all_tabs();
             ptr_as_mut(self._layer.as_ref()).get_ui_component_mut().set_enable(false);
             self._is_opened_game_menu = false;

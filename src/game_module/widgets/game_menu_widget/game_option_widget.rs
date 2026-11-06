@@ -79,9 +79,6 @@ const COLOR_BTN_TEXT_DISABLED: u32 = get_color32(220, 215, 205, 150);
 const COLOR_BTN_TOGGLE_ON: u32 = get_color32(80, 150, 80, 240);
 const COLOR_BTN_TOGGLE_OFF: u32 = get_color32(165, 130, 90, 230);
 
-const COLOR_BTN_SAVE: u32 = get_color32(76, 145, 65, 240);
-const COLOR_BTN_SAVE_FOCUSED: u32 = get_color32(105, 185, 75, 255);
-const COLOR_BTN_SAVE_BORDER: u32 = get_color32(50, 110, 40, 200);
 const COLOR_BTN_RESET: u32 = get_color32(185, 95, 65, 240);
 const COLOR_BTN_RESET_FOCUSED: u32 = get_color32(235, 95, 65, 255);
 const COLOR_BTN_RESET_BORDER: u32 = get_color32(145, 65, 40, 200);
@@ -92,9 +89,8 @@ const COLOR_STATUS_TEXT: u32 = get_color32(50, 120, 50, 255);
 const ROW_BORDER_WIDTH: f32 = 2.0;
 const ACTION_BTN_BORDER_WIDTH: f32 = 2.5;
 
-pub const TOTAL_NAV_ITEMS: usize = OptionItemType::COUNT + 2;
+pub const TOTAL_NAV_ITEMS: usize = OptionItemType::COUNT + 1;
 pub const NAV_INDEX_RESET: usize = OptionItemType::COUNT;
-pub const NAV_INDEX_SAVE: usize = OptionItemType::COUNT + 1;
 
 pub fn is_resolution_selectable(window_mode: WindowMode) -> bool {
     window_mode == WindowMode::WindowMode
@@ -102,13 +98,13 @@ pub fn is_resolution_selectable(window_mode: WindowMode) -> bool {
 
 pub fn get_next_nav_index(
     current_index: usize,
-    dir_x: i32,
+    _dir_x: i32,
     dir_y: i32,
     is_nav_index_enabled: impl Fn(usize) -> bool,
 ) -> Option<usize> {
     if dir_y > 0 {
         if current_index >= OptionItemType::COUNT {
-            // 하단 버튼(Reset/Save)에서 아래로 더 가면 첫 번째 활성화된 옵션 아이템으로 순환
+            // 하단 버튼(Reset)에서 아래로 더 가면 첫 번째 활성화된 옵션 아이템으로 순환
             for idx in 0..OptionItemType::COUNT {
                 if is_nav_index_enabled(idx) {
                     return Some(idx);
@@ -131,7 +127,7 @@ pub fn get_next_nav_index(
         }
     } else if dir_y < 0 {
         if current_index >= OptionItemType::COUNT {
-            // 하단 버튼(Reset/Save)에서 위로 가면 마지막 활성화된 옵션 아이템으로 이동
+            // 하단 버튼(Reset)에서 위로 가면 마지막 활성화된 옵션 아이템으로 이동
             for idx in (0..OptionItemType::COUNT).rev() {
                 if is_nav_index_enabled(idx) {
                     return Some(idx);
@@ -151,24 +147,6 @@ pub fn get_next_nav_index(
             } else {
                 None
             }
-        }
-    } else if dir_x != 0 {
-        if current_index == NAV_INDEX_RESET {
-            // Reset Defaults 버튼에서 양옆으로 이동하면 Save Options 버튼으로 focus
-            if is_nav_index_enabled(NAV_INDEX_SAVE) {
-                Some(NAV_INDEX_SAVE)
-            } else {
-                None
-            }
-        } else if current_index == NAV_INDEX_SAVE {
-            // Save Options 버튼에서 양옆으로 이동하면 Reset Defaults 버튼으로 focus
-            if is_nav_index_enabled(NAV_INDEX_RESET) {
-                Some(NAV_INDEX_RESET)
-            } else {
-                None
-            }
-        } else {
-            None
         }
     } else {
         None
@@ -255,7 +233,6 @@ pub struct GameOptionWidget<'a> {
     pub _rows_container: Rc<WidgetDefault<'a>>,
     pub _rows: Vec<OptionRow<'a>>,
     pub _reset_btn: Rc<WidgetDefault<'a>>,
-    pub _save_btn: Rc<WidgetDefault<'a>>,
     pub _status_label: Rc<WidgetDefault<'a>>,
     pub _selected_index: usize,
     pub _game_option_data: GameOptionData,
@@ -311,6 +288,23 @@ impl<'a> GameOptionWidget<'a> {
     pub fn callback_row_touch_over(
         ui_component: &UIComponentInstance<'a>,
         _pos: &Vector2<f32>,
+        delta: &Vector2<f32>,
+    ) -> bool {
+        if delta.x == 0.0 && delta.y == 0.0 {
+            return false;
+        }
+        let user_data = ptr_as_ref(ui_component.get_user_data() as *const OptionRowUserData<'a>);
+        let widget = ptr_as_mut(user_data._widget_ptr);
+        if !widget.is_item_enabled(user_data._item_type) {
+            return false;
+        }
+        widget.set_selected_index(user_data._item_type as usize, false);
+        true
+    }
+
+    pub fn callback_row_click(
+        ui_component: &UIComponentInstance<'a>,
+        _pos: &Vector2<f32>,
         _delta: &Vector2<f32>,
     ) -> bool {
         let user_data = ptr_as_ref(ui_component.get_user_data() as *const OptionRowUserData<'a>);
@@ -318,7 +312,7 @@ impl<'a> GameOptionWidget<'a> {
         if !widget.is_item_enabled(user_data._item_type) {
             return false;
         }
-        widget.set_selected_index(user_data._item_type as usize, false);
+        widget.set_selected_index(user_data._item_type as usize, true);
         true
     }
 
@@ -336,18 +330,11 @@ impl<'a> GameOptionWidget<'a> {
         pos: &Vector2<f32>,
         delta: &Vector2<f32>,
     ) -> bool {
+        if delta.x == 0.0 && delta.y == 0.0 {
+            return false;
+        }
         let widget = ptr_as_mut(ui_component.get_user_data() as *const GameOptionWidget<'a>);
         widget.set_selected_index(NAV_INDEX_RESET, false);
-        Self::callback_btn_touch_over(ui_component, pos, delta)
-    }
-
-    pub fn callback_save_touch_over(
-        ui_component: &UIComponentInstance<'a>,
-        pos: &Vector2<f32>,
-        delta: &Vector2<f32>,
-    ) -> bool {
-        let widget = ptr_as_mut(ui_component.get_user_data() as *const GameOptionWidget<'a>);
-        widget.set_selected_index(NAV_INDEX_SAVE, false);
         Self::callback_btn_touch_over(ui_component, pos, delta)
     }
 
@@ -358,16 +345,6 @@ impl<'a> GameOptionWidget<'a> {
     ) -> bool {
         let widget = ptr_as_mut(ui_component.get_user_data() as *const GameOptionWidget<'a>);
         widget.reset_to_defaults();
-        true
-    }
-
-    pub fn callback_save_click(
-        ui_component: &UIComponentInstance<'a>,
-        _pos: &Vector2<f32>,
-        _delta: &Vector2<f32>,
-    ) -> bool {
-        let widget = ptr_as_mut(ui_component.get_user_data() as *const GameOptionWidget<'a>);
-        widget.save_options();
         true
     }
 
@@ -529,25 +506,6 @@ impl<'a> GameOptionWidget<'a> {
         reset_ui.set_callback_touch_over(Some(Box::new(Self::callback_reset_touch_over)));
         footer_mut.add_widget(&reset_btn);
 
-        // Save Button
-        let save_btn = UIManager::create_widget("option_save_btn", UIWidgetTypes::Default);
-        let save_ui = ptr_as_mut(save_btn.as_ref()).get_ui_component_mut();
-        save_ui.set_halign(HorizontalAlign::CENTER);
-        save_ui.set_valign(VerticalAlign::CENTER);
-        save_ui.set_size(ACTION_BTN_WIDTH, ACTION_BTN_HEIGHT);
-        save_ui.set_margin(8.0);
-        save_ui.set_text("Save Options");
-        save_ui.set_font_size(ACTION_BTN_FONT_SIZE);
-        save_ui.set_font_color(get_color32(255, 255, 255, 255));
-        save_ui.set_round(5.0);
-        save_ui.set_border(ACTION_BTN_BORDER_WIDTH);
-        save_ui.set_border_color(COLOR_BTN_SAVE_BORDER);
-        save_ui.set_color(COLOR_BTN_SAVE);
-        save_ui.set_touchable(true);
-        save_ui.set_callback_touch_down(Some(Box::new(Self::callback_save_click)));
-        save_ui.set_callback_touch_over(Some(Box::new(Self::callback_save_touch_over)));
-        footer_mut.add_widget(&save_btn);
-
         // Status Label
         let status_label = UIManager::create_widget("option_status_label", UIWidgetTypes::Default);
         let status_ui = ptr_as_mut(status_label.as_ref()).get_ui_component_mut();
@@ -571,7 +529,6 @@ impl<'a> GameOptionWidget<'a> {
             _rows_container: rows_container,
             _rows: Vec::new(),
             _reset_btn: reset_btn,
-            _save_btn: save_btn,
             _status_label: status_label,
             _selected_index: 0,
             _game_option_data: initial_option.clone(),
@@ -580,7 +537,6 @@ impl<'a> GameOptionWidget<'a> {
 
         let widget_ptr = widget.as_ref() as *const GameOptionWidget<'a>;
         ptr_as_mut(widget._reset_btn.as_ref()).get_ui_component_mut().set_user_data(widget_ptr as *const c_void);
-        ptr_as_mut(widget._save_btn.as_ref()).get_ui_component_mut().set_user_data(widget_ptr as *const c_void);
 
         // Build option rows
         let rows_container_mut = ptr_as_mut(widget._rows_container.as_ref());
@@ -606,6 +562,7 @@ impl<'a> GameOptionWidget<'a> {
             row_ui.set_round(5.0);
             row_ui.set_touchable(true);
             row_ui.set_callback_touch_over(Some(Box::new(Self::callback_row_touch_over)));
+            row_ui.set_callback_touch_down(Some(Box::new(Self::callback_row_click)));
             row_ui.set_user_data(user_data.as_ref() as *const OptionRowUserData<'a> as *const c_void);
             rows_container_mut.add_widget(&row_widget);
 
@@ -870,6 +827,7 @@ impl<'a> GameOptionWidget<'a> {
             self.update_resolution_combo_items();
             self.refresh_all_values();
             self.clear_status_message();
+            self._selected_index = 0;
             ptr_as_mut(self._rows_container.as_ref()).get_ui_component_mut().set_scroll_pos_y(0.0);
             self.update_selection_visuals();
             self._is_opened = true;
@@ -966,7 +924,6 @@ impl<'a> GameOptionWidget<'a> {
         }
 
         let is_reset_selected = self._selected_index == NAV_INDEX_RESET;
-        let is_save_selected = self._selected_index == NAV_INDEX_SAVE;
 
         let reset_ui = ptr_as_mut(self._reset_btn.as_ref()).get_ui_component_mut();
         reset_ui.set_color(if is_reset_selected {
@@ -980,23 +937,6 @@ impl<'a> GameOptionWidget<'a> {
             COLOR_BTN_RESET_BORDER
         });
         reset_ui.set_font_color(if is_reset_selected {
-            COLOR_BTN_TEXT_FOCUSED
-        } else {
-            COLOR_BTN_TEXT_ENABLED
-        });
-
-        let save_ui = ptr_as_mut(self._save_btn.as_ref()).get_ui_component_mut();
-        save_ui.set_color(if is_save_selected {
-            COLOR_BTN_SAVE_FOCUSED
-        } else {
-            COLOR_BTN_SAVE
-        });
-        save_ui.set_border_color(if is_save_selected {
-            COLOR_BTN_BORDER_FOCUSED
-        } else {
-            COLOR_BTN_SAVE_BORDER
-        });
-        save_ui.set_font_color(if is_save_selected {
             COLOR_BTN_TEXT_FOCUSED
         } else {
             COLOR_BTN_TEXT_ENABLED
@@ -1375,10 +1315,6 @@ impl<'a> GameOptionWidget<'a> {
 
     pub fn save_options(&mut self) {
         get_game_resources_mut().save_game_option_data(&self._game_option_data);
-        let status_ui = ptr_as_mut(self._status_label.as_ref()).get_ui_component_mut();
-        status_ui.set_text("Options Saved Successfully!");
-        status_ui.set_font_color(COLOR_STATUS_TEXT);
-        get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
     }
 
     pub fn reset_to_defaults(&mut self) {
@@ -1460,8 +1396,6 @@ impl<'a> GameOptionWidget<'a> {
                 }
             } else if self._selected_index == NAV_INDEX_RESET {
                 self.reset_to_defaults();
-            } else if self._selected_index == NAV_INDEX_SAVE {
-                self.save_options();
             }
         }
 
@@ -1554,49 +1488,44 @@ mod tests {
     fn test_option_navigation_vertical_and_horizontal() {
         let is_all_enabled = |_idx: usize| true;
 
-        // Down from the last option item moves to Reset Default button
+        // Down through all option items sequentially (0 to 12) without skipping or premature cycling
         let last_option_idx = OptionItemType::COUNT - 1;
+        let mut curr = 0;
+        for expected_next in 1..=last_option_idx {
+            let next = get_next_nav_index(curr, 0, 1, is_all_enabled);
+            assert_eq!(next, Some(expected_next));
+            curr = next.unwrap();
+        }
+
+        // Down from the last option item (12) moves to Reset Default button (13)
         assert_eq!(
             get_next_nav_index(last_option_idx, 0, 1, is_all_enabled),
             Some(NAV_INDEX_RESET)
         );
 
-        // Down from Reset or Save button wraps back to the first option item
+        // Down from Reset button wraps back to the first option item (0)
         assert_eq!(get_next_nav_index(NAV_INDEX_RESET, 0, 1, is_all_enabled), Some(0));
-        assert_eq!(get_next_nav_index(NAV_INDEX_SAVE, 0, 1, is_all_enabled), Some(0));
 
-        // Up from Reset or Save button moves up to the last option item
+        // Up from Reset button moves up to the last option item (12)
         assert_eq!(
             get_next_nav_index(NAV_INDEX_RESET, 0, -1, is_all_enabled),
             Some(last_option_idx)
         );
-        assert_eq!(
-            get_next_nav_index(NAV_INDEX_SAVE, 0, -1, is_all_enabled),
-            Some(last_option_idx)
-        );
+
+        // Up through all option items sequentially (12 down to 0)
+        let mut curr_up = last_option_idx;
+        for expected_prev in (0..last_option_idx).rev() {
+            let prev = get_next_nav_index(curr_up, 0, -1, is_all_enabled);
+            assert_eq!(prev, Some(expected_prev));
+            curr_up = prev.unwrap();
+        }
 
         // Up from the first option item wraps around to Reset Default button
         assert_eq!(get_next_nav_index(0, 0, -1, is_all_enabled), Some(NAV_INDEX_RESET));
 
-        // Horizontal navigation between Reset and Save buttons in both directions
-        assert_eq!(
-            get_next_nav_index(NAV_INDEX_RESET, 1, 0, is_all_enabled),
-            Some(NAV_INDEX_SAVE)
-        );
-        assert_eq!(
-            get_next_nav_index(NAV_INDEX_RESET, -1, 0, is_all_enabled),
-            Some(NAV_INDEX_SAVE)
-        );
-        assert_eq!(
-            get_next_nav_index(NAV_INDEX_SAVE, -1, 0, is_all_enabled),
-            Some(NAV_INDEX_RESET)
-        );
-        assert_eq!(
-            get_next_nav_index(NAV_INDEX_SAVE, 1, 0, is_all_enabled),
-            Some(NAV_INDEX_RESET)
-        );
-
-        // Horizontal navigation inside option rows returns None (values change instead)
+        // Horizontal navigation returns None (values change instead or only 1 bottom button exists)
+        assert_eq!(get_next_nav_index(NAV_INDEX_RESET, 1, 0, is_all_enabled), None);
+        assert_eq!(get_next_nav_index(NAV_INDEX_RESET, -1, 0, is_all_enabled), None);
         assert_eq!(get_next_nav_index(0, 1, 0, is_all_enabled), None);
         assert_eq!(get_next_nav_index(0, -1, 0, is_all_enabled), None);
 
