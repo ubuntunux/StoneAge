@@ -36,6 +36,7 @@ pub const DEFAULT_GAME_SAVE_DATA: &str = "save_data/00";
 
 pub const JOYSTICK_SENSITIVITY: f32 = 0.1 / 32767.0;
 pub const JOYSTICK_MOVE_DEADZONE: i16 = 3000;
+pub const GAMEPAD_CURSOR_SPEED: f32 = 1000.0; // pixels per second at full stick tilt
 
 // time
 pub const TIME_OF_DAWN: f32 = 6.0;

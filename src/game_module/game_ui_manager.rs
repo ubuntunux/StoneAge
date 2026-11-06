@@ -3,7 +3,8 @@ use crate::game_module::actors::items::ItemDataType;
 use crate::game_module::actors::props::Prop;
 use crate::game_module::game_client::GamePhase;
 use crate::game_module::game_constants::{
-    ITEM_ENERGY_BALL, ITEM_SPIRIT_BALL, MATERIAL_INTRO_IMAGE, MATERIAL_UI_NONE, RECORD_DEFAULT_INCREMENT,
+    GAMEPAD_CURSOR_SPEED, ITEM_ENERGY_BALL, ITEM_SPIRIT_BALL, JOYSTICK_MOVE_DEADZONE, MATERIAL_INTRO_IMAGE,
+    MATERIAL_UI_NONE, RECORD_DEFAULT_INCREMENT,
 };
 use crate::game_module::game_service_locator::{
     get_character_manager, get_game_client_mut, get_game_resources, get_game_scene_manager, get_prop_manager_mut,
@@ -41,7 +42,9 @@ use crate::game_module::widgets::wrap_up_the_day_widget::WrapUpTheDayWidget;
 use nalgebra::Vector2;
 use rust_engine_3d::constants::DEVELOPMENT;
 use rust_engine_3d::core::engine_core::TimeData;
-use rust_engine_3d::core::engine_service_locator::{get_engine_core, get_engine_resources, get_ui_manager};
+use rust_engine_3d::core::engine_service_locator::{
+    get_engine_core, get_engine_core_mut, get_engine_resources, get_ui_manager,
+};
 use rust_engine_3d::core::input::{JoystickInputData, KeyboardInputData, MouseInputData, MouseMoveData};
 use rust_engine_3d::scene::ui::{UIComponentInstance, UIManager, UIWidgetTypes, WidgetDefault};
 use rust_engine_3d::utilities::system::{RcRefCell, ptr_as_mut, ptr_as_ref};
@@ -1269,7 +1272,6 @@ impl<'a> GameUIManager<'a> {
     pub fn update_game_ui(&mut self, delta_time: f64) {
         let ui_manager = get_ui_manager();
         let engine_core = get_engine_core();
-        let mouse_pos = &engine_core._mouse_move_data._mouse_pos;
 
         // changed window size
         if 0 < ui_manager._window_size.x && 0 < ui_manager._window_size.y {
@@ -1298,6 +1300,36 @@ impl<'a> GameUIManager<'a> {
         if let Some(cross_hair) = self._cross_hair.as_mut()
             && cross_hair.get_cross_hair_visible()
         {
+            let engine_core_mut = get_engine_core_mut();
+            let joystick = &engine_core_mut._joystick_input_data;
+            let stick_x = if joystick._stick_left_direction.x.abs() > JOYSTICK_MOVE_DEADZONE {
+                joystick._stick_left_direction.x as f32 / 32767.0
+            } else if joystick._stick_right_direction.x.abs() > JOYSTICK_MOVE_DEADZONE {
+                joystick._stick_right_direction.x as f32 / 32767.0
+            } else {
+                0.0
+            };
+            let stick_y = if joystick._stick_left_direction.y.abs() > JOYSTICK_MOVE_DEADZONE {
+                joystick._stick_left_direction.y as f32 / 32767.0
+            } else if joystick._stick_right_direction.y.abs() > JOYSTICK_MOVE_DEADZONE {
+                joystick._stick_right_direction.y as f32 / 32767.0
+            } else {
+                0.0
+            };
+
+            if stick_x != 0.0 || stick_y != 0.0 {
+                let delta = (
+                    (stick_x * GAMEPAD_CURSOR_SPEED * delta_time as f32) as f64,
+                    (stick_y * GAMEPAD_CURSOR_SPEED * delta_time as f32) as f64,
+                );
+                let window_size = engine_core_mut._window_size;
+                let update_mouse_pos = true;
+                engine_core_mut
+                    ._mouse_move_data
+                    .update_mouse_move_f64(&delta, &window_size, update_mouse_pos);
+            }
+
+            let mouse_pos = &get_engine_core()._mouse_move_data._mouse_pos;
             cross_hair.update_cross_hair(mouse_pos);
         }
 
