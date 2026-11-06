@@ -182,6 +182,7 @@ pub enum OptionItemType {
     Monitor,
     Resolution,
     RenderQualityLevel,
+    Vsync,
     MasterVolume,
     BgmVolume,
     SfxVolume,
@@ -199,6 +200,7 @@ impl OptionItemType {
             OptionItemType::Monitor => "Display Monitor",
             OptionItemType::Resolution => "Resolution",
             OptionItemType::RenderQualityLevel => "Render Quality",
+            OptionItemType::Vsync => "VSync",
             OptionItemType::MasterVolume => "Master Volume",
             OptionItemType::BgmVolume => "BGM Volume",
             OptionItemType::SfxVolume => "SFX Volume",
@@ -211,7 +213,10 @@ impl OptionItemType {
     }
 
     pub fn is_toggle(&self) -> bool {
-        matches!(self, OptionItemType::MuteAudio | OptionItemType::InvertMouseY)
+        matches!(
+            self,
+            OptionItemType::Vsync | OptionItemType::MuteAudio | OptionItemType::InvertMouseY
+        )
     }
 
     pub fn is_combo(&self) -> bool {
@@ -1052,6 +1057,9 @@ impl<'a> GameOptionWidget<'a> {
                 };
                 self._game_option_data.set_render_quality_level(RENDER_QUALITY_LEVEL_ITEMS[prev_idx]);
             }
+            OptionItemType::Vsync => {
+                self._game_option_data.set_vsync(!self._game_option_data._vsync);
+            }
             OptionItemType::MasterVolume => {
                 let val = (self._game_option_data._master_volume - VOLUME_STEP).max(MIN_VOLUME);
                 self._game_option_data.set_master_volume(val);
@@ -1128,6 +1136,9 @@ impl<'a> GameOptionWidget<'a> {
                 let next_idx = (current_idx + 1) % RENDER_QUALITY_LEVEL_ITEMS.len();
                 self._game_option_data.set_render_quality_level(RENDER_QUALITY_LEVEL_ITEMS[next_idx]);
             }
+            OptionItemType::Vsync => {
+                self._game_option_data.set_vsync(!self._game_option_data._vsync);
+            }
             OptionItemType::MasterVolume => {
                 let val = (self._game_option_data._master_volume + VOLUME_STEP).min(MAX_VOLUME);
                 self._game_option_data.set_master_volume(val);
@@ -1185,6 +1196,9 @@ impl<'a> GameOptionWidget<'a> {
                     }
                 }
                 return;
+            }
+            OptionItemType::Vsync => {
+                self._game_option_data.set_vsync(!self._game_option_data._vsync);
             }
             OptionItemType::MuteAudio => {
                 self._game_option_data._is_mute = !self._game_option_data._is_mute;
@@ -1277,6 +1291,18 @@ impl<'a> GameOptionWidget<'a> {
                             .position(|&q| q == self._game_option_data._render_quality_level)
                             .unwrap_or(0);
                         combo.set_selected_index(current_idx);
+                    }
+                }
+                OptionItemType::Vsync => {
+                    if let Some(toggle_btn) = row._toggle_btn.as_ref() {
+                        let is_on = self._game_option_data._vsync;
+                        let ui = ptr_as_mut(toggle_btn.as_ref()).get_ui_component_mut();
+                        ui.set_text(if is_on { "ON" } else { "OFF" });
+                        ui.set_color(if is_on {
+                            COLOR_BTN_TOGGLE_ON
+                        } else {
+                            COLOR_BTN_TOGGLE_OFF
+                        });
                     }
                 }
                 OptionItemType::MasterVolume => {
@@ -1469,15 +1495,20 @@ mod tests {
         assert!(OptionItemType::RenderQualityLevel.is_combo());
         assert!(!OptionItemType::RenderQualityLevel.is_toggle());
 
+        assert_eq!(OptionItemType::from_repr(4), Some(OptionItemType::Vsync));
+        assert_eq!(OptionItemType::Vsync.display_name(), "VSync");
+        assert!(!OptionItemType::Vsync.is_combo());
+        assert!(OptionItemType::Vsync.is_toggle());
+
         assert!(OptionItemType::MuteAudio.is_toggle());
         assert!(!OptionItemType::MuteAudio.is_combo());
 
-        assert_eq!(OptionItemType::from_repr(10), Some(OptionItemType::UiScale));
+        assert_eq!(OptionItemType::from_repr(11), Some(OptionItemType::UiScale));
         assert_eq!(OptionItemType::UiScale.display_name(), "UI Scale");
         assert!(!OptionItemType::UiScale.is_combo());
         assert!(!OptionItemType::UiScale.is_toggle());
 
-        assert_eq!(OptionItemType::from_repr(11), Some(OptionItemType::FontScale));
+        assert_eq!(OptionItemType::from_repr(12), Some(OptionItemType::FontScale));
         assert_eq!(OptionItemType::FontScale.display_name(), "Font Scale");
         assert!(!OptionItemType::FontScale.is_combo());
         assert!(!OptionItemType::FontScale.is_toggle());

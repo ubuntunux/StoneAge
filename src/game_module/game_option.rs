@@ -23,6 +23,7 @@ pub const DEFAULT_RESOLUTION_WIDTH: u32 = 1920;
 pub const DEFAULT_RESOLUTION_HEIGHT: u32 = 1080;
 pub const DEFAULT_RESOLUTION: Vector2<u32> = Vector2::new(DEFAULT_RESOLUTION_WIDTH, DEFAULT_RESOLUTION_HEIGHT);
 pub const DEFAULT_RENDER_QUALITY_LEVEL: RenderQualityLevel = RenderQualityLevel::Medium;
+pub const DEFAULT_VSYNC: bool = false;
 
 pub const MIN_VOLUME: f32 = 0.0;
 pub const MAX_VOLUME: f32 = 1.0;
@@ -105,6 +106,7 @@ pub struct GameOptionData {
     pub _monitor_index: Option<usize>,
     pub _resolution: Vector2<u32>,
     pub _render_quality_level: RenderQualityLevel,
+    pub _vsync: bool,
 }
 
 impl Default for GameOptionData {
@@ -122,6 +124,7 @@ impl Default for GameOptionData {
             _monitor_index: DEFAULT_MONITOR_INDEX,
             _resolution: DEFAULT_RESOLUTION,
             _render_quality_level: DEFAULT_RENDER_QUALITY_LEVEL,
+            _vsync: DEFAULT_VSYNC,
         }
     }
 }
@@ -146,6 +149,10 @@ impl GameOptionData {
 
         set_global_ui_scale(self._ui_scale);
         set_global_font_scale(self._font_scale);
+
+        unsafe {
+            constants::IGNORE_MONITOR_REFRESH_RATE = !self._vsync;
+        }
 
         apply_render_quality_level(self._render_quality_level);
 
@@ -198,6 +205,10 @@ impl GameOptionData {
     pub fn set_render_quality_level(&mut self, level: RenderQualityLevel) {
         self._render_quality_level = level;
     }
+
+    pub fn set_vsync(&mut self, vsync: bool) {
+        self._vsync = vsync;
+    }
 }
 
 #[cfg(test)]
@@ -219,20 +230,24 @@ mod tests {
         assert_eq!(default_option._monitor_index, None);
         assert_eq!(default_option._resolution, DEFAULT_RESOLUTION);
         assert_eq!(default_option._render_quality_level, DEFAULT_RENDER_QUALITY_LEVEL);
+        assert_eq!(default_option._vsync, DEFAULT_VSYNC);
 
         let json_str = serde_json::to_string_pretty(&default_option).expect("Serialization failed");
         let deserialized: GameOptionData = serde_json::from_str(&json_str).expect("Deserialization failed");
         assert_eq!(default_option, deserialized);
         assert_eq!(deserialized._monitor_index, None);
         assert_eq!(deserialized._render_quality_level, DEFAULT_RENDER_QUALITY_LEVEL);
+        assert_eq!(deserialized._vsync, DEFAULT_VSYNC);
 
         let mut custom_option = default_option.clone();
         custom_option.set_monitor_index(Some(2));
         custom_option.set_render_quality_level(RenderQualityLevel::High);
+        custom_option.set_vsync(true);
         let custom_json = serde_json::to_string(&custom_option).expect("Serialization failed");
         let custom_deserialized: GameOptionData = serde_json::from_str(&custom_json).expect("Deserialization failed");
         assert_eq!(custom_deserialized._monitor_index, Some(2));
         assert_eq!(custom_deserialized._render_quality_level, RenderQualityLevel::High);
+        assert_eq!(custom_deserialized._vsync, true);
     }
 
     #[test]
