@@ -108,32 +108,28 @@ impl WidgetNavRepeatController {
             || keyboard_input_data.get_key_pressed(KeyCode::KeyA)
             || keyboard_input_data.get_key_hold(KeyCode::KeyA)
             || joystick_input_data._btn_left == ButtonState::Pressed
-            || joystick_input_data._btn_left == ButtonState::Hold
-            || joystick_input_data._stick_left_direction.x < -10000;
+            || joystick_input_data._btn_left == ButtonState::Hold;
 
         let is_right = keyboard_input_data.get_key_pressed(KeyCode::ArrowRight)
             || keyboard_input_data.get_key_hold(KeyCode::ArrowRight)
             || keyboard_input_data.get_key_pressed(KeyCode::KeyD)
             || keyboard_input_data.get_key_hold(KeyCode::KeyD)
             || joystick_input_data._btn_right == ButtonState::Pressed
-            || joystick_input_data._btn_right == ButtonState::Hold
-            || joystick_input_data._stick_left_direction.x > 10000;
+            || joystick_input_data._btn_right == ButtonState::Hold;
 
         let is_up = keyboard_input_data.get_key_pressed(KeyCode::ArrowUp)
             || keyboard_input_data.get_key_hold(KeyCode::ArrowUp)
             || keyboard_input_data.get_key_pressed(KeyCode::KeyW)
             || keyboard_input_data.get_key_hold(KeyCode::KeyW)
             || joystick_input_data._btn_up == ButtonState::Pressed
-            || joystick_input_data._btn_up == ButtonState::Hold
-            || joystick_input_data._stick_left_direction.y > 10000;
+            || joystick_input_data._btn_up == ButtonState::Hold;
 
         let is_down = keyboard_input_data.get_key_pressed(KeyCode::ArrowDown)
             || keyboard_input_data.get_key_hold(KeyCode::ArrowDown)
             || keyboard_input_data.get_key_pressed(KeyCode::KeyS)
             || keyboard_input_data.get_key_hold(KeyCode::KeyS)
             || joystick_input_data._btn_down == ButtonState::Pressed
-            || joystick_input_data._btn_down == ButtonState::Hold
-            || joystick_input_data._stick_left_direction.y < -10000;
+            || joystick_input_data._btn_down == ButtonState::Hold;
 
         if is_left {
             Some((-1, 0))
@@ -1485,5 +1481,54 @@ mod tests {
         joystick._btn_a = ButtonState::Hold;
         assert!(GameInput::is_fast_forward(&keyboard, &joystick));
         joystick._btn_a = ButtonState::None;
+    }
+
+    #[test]
+    fn test_widget_nav_repeat_controller_ignores_l_stick() {
+        let keyboard = create_keyboard_input_data();
+        let mut joystick = create_test_joystick();
+
+        // L-stick tilt should not produce widget navigation direction
+        joystick._stick_left_direction = Vector2::new(-20000, 0);
+        assert_eq!(WidgetNavRepeatController::get_direction(&keyboard, &joystick), None);
+
+        joystick._stick_left_direction = Vector2::new(20000, 0);
+        assert_eq!(WidgetNavRepeatController::get_direction(&keyboard, &joystick), None);
+
+        joystick._stick_left_direction = Vector2::new(0, 20000);
+        assert_eq!(WidgetNavRepeatController::get_direction(&keyboard, &joystick), None);
+
+        joystick._stick_left_direction = Vector2::new(0, -20000);
+        assert_eq!(WidgetNavRepeatController::get_direction(&keyboard, &joystick), None);
+
+        // D-pad buttons should still produce directions
+        joystick._stick_left_direction = Vector2::zeros();
+        joystick._btn_left = ButtonState::Pressed;
+        assert_eq!(
+            WidgetNavRepeatController::get_direction(&keyboard, &joystick),
+            Some((-1, 0))
+        );
+        joystick._btn_left = ButtonState::None;
+
+        joystick._btn_right = ButtonState::Pressed;
+        assert_eq!(
+            WidgetNavRepeatController::get_direction(&keyboard, &joystick),
+            Some((1, 0))
+        );
+        joystick._btn_right = ButtonState::None;
+
+        joystick._btn_up = ButtonState::Pressed;
+        assert_eq!(
+            WidgetNavRepeatController::get_direction(&keyboard, &joystick),
+            Some((0, -1))
+        );
+        joystick._btn_up = ButtonState::None;
+
+        joystick._btn_down = ButtonState::Pressed;
+        assert_eq!(
+            WidgetNavRepeatController::get_direction(&keyboard, &joystick),
+            Some((0, 1))
+        );
+        joystick._btn_down = ButtonState::None;
     }
 }
