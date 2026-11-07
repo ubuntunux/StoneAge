@@ -1604,4 +1604,67 @@ mod tests {
         assert!(render_object.is_ready());
         assert!(render_object._pending_push_constants.is_empty());
     }
+
+    #[test]
+    fn test_skeletal_material_detection_with_placeholder_mesh_and_safe_render_pass_lookup() {
+        use nalgebra::Vector3;
+        use rust_engine_3d::scene::bounding_box::BoundingBox;
+        use rust_engine_3d::scene::material::MaterialData;
+        use rust_engine_3d::scene::material_instance::{MaterialInstanceData, SKELETAL_GBUFFER_RENDER_PASS_NAME};
+        use rust_engine_3d::scene::mesh::MeshData;
+        use rust_engine_3d::scene::model::ModelData;
+        use std::collections::HashMap;
+
+        let placeholder_mesh = newRcRefCell(MeshData {
+            _name: String::from("quad"),
+            _bound_box: BoundingBox::create_bounding_box(&Vector3::new(-1.0, -1.0, -1.0), &Vector3::new(1.0, 1.0, 1.0)),
+            _skeleton_data_list: Vec::new(),
+            _animation_data_list: Vec::new(),
+            _geometry_data_list: Vec::new(),
+        });
+
+        let skeletal_material = newRcRefCell(MaterialData {
+            _material_data_name: String::from("common/render_skeletal_object"),
+            _render_pass_pipeline_data_map: HashMap::new(),
+            _material_parameters: serde_json::Map::new(),
+        });
+
+        let mut render_pass_map = HashMap::new();
+        render_pass_map.insert(
+            String::from(SKELETAL_GBUFFER_RENDER_PASS_NAME),
+            vec![String::from("render_pass_skeletal_gbuffer/render_object")],
+        );
+
+        let skeletal_mat_inst = newRcRefCell(MaterialInstanceData {
+            _material_instance_data_name: String::from("weapons/wooden_club"),
+            _material_data: skeletal_material,
+            _material_parameters: serde_json::Map::new(),
+            _render_pass_pipeline_data_names_map: render_pass_map,
+            _pipeline_binding_data_map: HashMap::new(),
+            _default_pipeline_binding_name: String::new(),
+        });
+
+        // 존재하지 않는 렌더 패스 조회 시 패닉하지 않고 빈 슬라이스를 반환하는지 검증
+        assert!(skeletal_mat_inst.borrow().get_render_pass_pipeline_data_names("depth_prepass_static").is_empty());
+        assert_eq!(
+            skeletal_mat_inst.borrow().get_render_pass_pipeline_data_names(SKELETAL_GBUFFER_RENDER_PASS_NAME).len(),
+            1
+        );
+        assert!(skeletal_mat_inst.borrow().is_skeletal_material_instance());
+
+        // 메쉬가 아직 placeholder("quad")여서 애니메이션 데이터가 없더라도 스켈레탈 머티리얼로 판별되는지 검증
+        let weapon_model = ModelData {
+            _model_data_name: String::from("weapons/wooden_club"),
+            _mesh_name: String::from("weapons/wooden_club"),
+            _local_transform: nalgebra::Matrix4::identity(),
+            _mesh_data: placeholder_mesh,
+            _is_render_camera: true,
+            _is_render_shadow: true,
+            _material_instance_data_list: vec![skeletal_mat_inst],
+            _collision: rust_engine_3d::scene::collision::CollisionData::default(),
+            _socket_data_map: HashMap::new(),
+        };
+        assert!(!weapon_model._mesh_data.borrow().has_animation_data());
+        assert!(weapon_model.has_skeletal_animation_or_material());
+    }
 }
