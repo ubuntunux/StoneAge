@@ -3,8 +3,8 @@ use crate::game_module::actors::items::ItemDataType;
 use crate::game_module::actors::props::Prop;
 use crate::game_module::game_client::GamePhase;
 use crate::game_module::game_constants::{
-    GAMEPAD_CURSOR_SPEED, ITEM_ENERGY_BALL, ITEM_SPIRIT_BALL, JOYSTICK_MOVE_DEADZONE, MATERIAL_INTRO_IMAGE,
-    MATERIAL_UI_NONE, RECORD_DEFAULT_INCREMENT,
+    GAMEPAD_CURSOR_SPEED, ITEM_ENERGY_BALL, ITEM_SPIRIT_BALL, JOYSTICK_MAX_VALUE, JOYSTICK_MOVE_DEADZONE,
+    MATERIAL_INTRO_IMAGE, MATERIAL_UI_NONE, RECORD_DEFAULT_INCREMENT,
 };
 use crate::game_module::game_service_locator::{
     get_character_manager, get_game_client_mut, get_game_resources, get_game_scene_manager, get_prop_manager_mut,
@@ -1302,17 +1302,17 @@ impl<'a> GameUIManager<'a> {
         {
             let engine_core_mut = get_engine_core_mut();
             let joystick = &engine_core_mut._joystick_input_data;
-            let stick_x = if joystick._stick_left_direction.x.abs() > JOYSTICK_MOVE_DEADZONE {
-                joystick._stick_left_direction.x as f32 / 32767.0
-            } else if joystick._stick_right_direction.x.abs() > JOYSTICK_MOVE_DEADZONE {
-                joystick._stick_right_direction.x as f32 / 32767.0
+            let stick_x = if joystick._stick_left_direction.x.saturating_abs() > JOYSTICK_MOVE_DEADZONE {
+                (joystick._stick_left_direction.x as f32 / JOYSTICK_MAX_VALUE).clamp(-1.0, 1.0)
+            } else if joystick._stick_right_direction.x.saturating_abs() > JOYSTICK_MOVE_DEADZONE {
+                (joystick._stick_right_direction.x as f32 / JOYSTICK_MAX_VALUE).clamp(-1.0, 1.0)
             } else {
                 0.0
             };
-            let stick_y = if joystick._stick_left_direction.y.abs() > JOYSTICK_MOVE_DEADZONE {
-                joystick._stick_left_direction.y as f32 / 32767.0
-            } else if joystick._stick_right_direction.y.abs() > JOYSTICK_MOVE_DEADZONE {
-                joystick._stick_right_direction.y as f32 / 32767.0
+            let stick_y = if joystick._stick_left_direction.y.saturating_abs() > JOYSTICK_MOVE_DEADZONE {
+                (joystick._stick_left_direction.y as f32 / JOYSTICK_MAX_VALUE).clamp(-1.0, 1.0)
+            } else if joystick._stick_right_direction.y.saturating_abs() > JOYSTICK_MOVE_DEADZONE {
+                (joystick._stick_right_direction.y as f32 / JOYSTICK_MAX_VALUE).clamp(-1.0, 1.0)
             } else {
                 0.0
             };

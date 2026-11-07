@@ -740,8 +740,8 @@ impl GameInput {
         .iter()
         .any(|&key| keyboard.get_key_pressed(key) || keyboard.get_key_hold(key));
 
-        let is_stick_move = joystick._stick_left_direction.x.abs() > JOYSTICK_MOVE_DEADZONE
-            || joystick._stick_left_direction.y.abs() > JOYSTICK_MOVE_DEADZONE;
+        let is_stick_move = joystick._stick_left_direction.x.saturating_abs() > JOYSTICK_MOVE_DEADZONE
+            || joystick._stick_left_direction.y.saturating_abs() > JOYSTICK_MOVE_DEADZONE;
 
         is_key_move || is_stick_move
     }
@@ -1351,6 +1351,9 @@ mod tests {
         keyboard.clear_key_hold();
 
         joystick._stick_left_direction.x = 4000;
+        assert!(GameInput::is_moving(&keyboard, &joystick));
+        assert!(GameInput::is_any_input(&keyboard, &joystick, &mouse));
+        joystick._stick_left_direction.x = i16::MIN;
         assert!(GameInput::is_moving(&keyboard, &joystick));
         assert!(GameInput::is_any_input(&keyboard, &joystick, &mouse));
         joystick._stick_left_direction.x = 0;

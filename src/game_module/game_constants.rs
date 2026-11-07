@@ -34,7 +34,8 @@ pub const GAME_VIEW_MODE: GameViewMode = GameViewMode::GameViewMode3D;
 
 pub const DEFAULT_GAME_SAVE_DATA: &str = "save_data/00";
 
-pub const JOYSTICK_SENSITIVITY: f32 = 0.1 / 32767.0;
+pub const JOYSTICK_MAX_VALUE: f32 = i16::MAX as f32;
+pub const JOYSTICK_SENSITIVITY: f32 = 0.1 / JOYSTICK_MAX_VALUE;
 pub const JOYSTICK_MOVE_DEADZONE: i16 = 3000;
 pub const GAMEPAD_CURSOR_SPEED: f32 = 1000.0; // pixels per second at full stick tilt
 
