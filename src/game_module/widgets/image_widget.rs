@@ -1,3 +1,4 @@
+use crate::game_module::game_service_locator::{get_game_scene_manager, is_application_valid};
 use nalgebra::Vector2;
 use rust_engine_3d::core::engine_service_locator::get_engine_resources;
 use rust_engine_3d::scene::material_instance::MaterialInstanceData;
@@ -8,6 +9,9 @@ use rust_engine_3d::utilities::math;
 use rust_engine_3d::utilities::system::{RcRefCell, ptr_as_mut};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 use std::rc::Rc;
+
+const HALF_FADE_PROGRESS: f32 = 0.5;
+const FULL_FADE_OPACITY: f32 = 1.0;
 
 pub struct ImageLayout<'a> {
     pub _background_layout: Rc<WidgetDefault<'a>>,
@@ -197,19 +201,22 @@ impl<'a> ImageLayout<'a> {
     }
 
     pub fn update_game_image(&mut self, delta_time: f64, force: bool) {
+        let is_scene_loading = is_application_valid() && get_game_scene_manager().is_scene_loading();
         let prev_progress = self.get_progress(self._fade_time);
         if prev_progress < 1.0 || force {
             // progress
             self._done_manual_fade_out = false;
             let mut next_fade_time = self._fade_time + self._fade_speed * delta_time as f32;
             let mut progress = self.get_progress(next_fade_time);
-            if prev_progress <= 0.5 && 0.5 < progress || force {
-                if self._auto_fade_inout {
+            if prev_progress <= HALF_FADE_PROGRESS && HALF_FADE_PROGRESS < progress || force {
+                if self._auto_fade_inout && (!is_scene_loading || force) {
                     self.change_game_image();
                 } else {
-                    progress = 0.5;
-                    next_fade_time = self._initial_fade_time * 0.5;
-                    self._done_manual_fade_out = true;
+                    progress = HALF_FADE_PROGRESS;
+                    next_fade_time = self._initial_fade_time * HALF_FADE_PROGRESS;
+                    if !self._auto_fade_inout {
+                        self._done_manual_fade_out = true;
+                    }
                 }
             }
             self._fade_time = next_fade_time;
@@ -219,8 +226,8 @@ impl<'a> ImageLayout<'a> {
                 self._fade_speed = 1.0;
                 self._opacity = self._fadein_opacity;
                 self._image_brightness = self._fadein_image_brightness;
-            } else if progress <= 0.5 {
-                let curved_progress = 0f32.max(1f32.min((progress * 2.0).powf(0.5)));
+            } else if progress <= HALF_FADE_PROGRESS {
+                let curved_progress = 0f32.max(1f32.min((progress * 2.0).powf(HALF_FADE_PROGRESS)));
                 self._opacity = math::lerp(self._prev_opacity, self._fadeout_opacity, curved_progress);
                 self._image_brightness = math::lerp(
                     self._prev_image_brightness,
@@ -228,7 +235,7 @@ impl<'a> ImageLayout<'a> {
                     progress * 2.0,
                 );
             } else {
-                let curved_progress = 0f32.max(1f32.min(((progress - 0.5) * 2.0).powf(2.0)));
+                let curved_progress = 0f32.max(1f32.min(((progress - HALF_FADE_PROGRESS) * 2.0).powf(2.0)));
                 self._opacity = math::lerp(self._prev_opacity, self._fadein_opacity, curved_progress);
                 self._image_brightness = math::lerp(
                     self._prev_image_brightness,
@@ -238,15 +245,30 @@ impl<'a> ImageLayout<'a> {
             }
 
             // set opacity
+            let effective_opacity = if is_scene_loading && !force {
+                FULL_FADE_OPACITY
+            } else {
+                self._opacity
+            };
             let background_layout = ptr_as_mut(self._background_layout.as_ref());
             let ui_component = background_layout.get_ui_component_mut();
-            ui_component.set_opacity(self._opacity);
-            ui_component.set_visible(0.0 < self._opacity);
+            ui_component.set_opacity(effective_opacity);
+            ui_component.set_visible(0.0 < effective_opacity);
 
             let image_widget = ptr_as_mut(self._image_layout.as_ref());
             let ui_component = image_widget.get_ui_component_mut();
             let r = (self._image_brightness * 255.0) as u32;
             ui_component.set_color(get_color32(r, r, r, 255));
+        } else {
+            let effective_opacity = if is_scene_loading {
+                FULL_FADE_OPACITY
+            } else {
+                self._opacity
+            };
+            let background_layout = ptr_as_mut(self._background_layout.as_ref());
+            let ui_component = background_layout.get_ui_component_mut();
+            ui_component.set_opacity(effective_opacity);
+            ui_component.set_visible(0.0 < effective_opacity);
         }
     }
 }

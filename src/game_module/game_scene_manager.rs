@@ -85,6 +85,9 @@ impl Stages {
 pub enum GameSceneState {
     None,
     Loading,
+    WaitingResources,
+    WaitingScenarioResources,
+    FinalizingCapture,
     LoadCompleted,
 }
 
@@ -388,6 +391,9 @@ impl<'a> GameSceneManager<'a> {
                 self.goto_game_scene(game_scene_data_name);
                 return;
             }
+            if !self.is_game_scene_state(GameSceneState::LoadCompleted) {
+                return;
+            }
             self._teleport_stage = None;
         }
 
@@ -538,7 +544,6 @@ impl<'a> GameSceneManager<'a> {
         self._character_manager.load_characters_save_data(&game_scene_save_data._characters);
         self._item_manager.load_items_save_data(&game_scene_save_data._items);
         self._prop_manager.load_props_save_data(&game_scene_save_data._props);
-        self._character_manager.post_process_after_characters_loading();
     }
 
     pub fn spawn_game_scene_objects(&mut self, game_scene_data: &GameSceneDataCreateInfo) {
@@ -701,26 +706,50 @@ impl<'a> GameSceneManager<'a> {
         self._game_scene_state == state
     }
 
-    pub fn update_game_scenarios(&mut self, any_key_hold: bool, any_key_pressed: bool, delta_time: f64) {
-        let current_game_scene_data_name = self._current_game_scene_data_name.clone();
-        if !self._reservation_scenarios.is_empty() {
-            let current_game_scene_state = self._game_scene_state;
-            for scenario_type in self._reservation_scenarios.clone().iter() {
-                let scenario_data_create_info =
-                    get_game_resources().get_scenario_data(scenario_type.get_scenario_data_name());
-                let scenario = self.open_game_scenario_data(*scenario_type, &scenario_data_create_info.borrow(), true);
-                if current_game_scene_state == GameSceneState::LoadCompleted {
-                    let game_scene_data_name = scenario_data_create_info.borrow().get_game_scene_data_name();
-                    if game_scene_data_name.is_empty()
-                        || current_game_scene_data_name == scenario_data_create_info.borrow().get_game_scene_data_name()
-                    {
-                        scenario
-                            .borrow_mut()
-                            .on_open_game_scene(scenario_data_create_info.borrow().get_game_scene_data_name().as_str());
-                    }
+    pub fn is_scene_loading(&self) -> bool {
+        matches!(
+            self._game_scene_state,
+            GameSceneState::Loading
+                | GameSceneState::WaitingResources
+                | GameSceneState::WaitingScenarioResources
+                | GameSceneState::FinalizingCapture
+        ) || matches!(
+            self._next_game_scene_state,
+            GameSceneState::Loading
+                | GameSceneState::WaitingResources
+                | GameSceneState::WaitingScenarioResources
+                | GameSceneState::FinalizingCapture
+        )
+    }
+
+    fn process_reservation_scenarios(&mut self) {
+        if self._reservation_scenarios.is_empty() {
+            return;
+        }
+        let reservation_scenarios = std::mem::take(&mut self._reservation_scenarios);
+        for scenario_type in reservation_scenarios.iter() {
+            let scenario_data_create_info =
+                get_game_resources().get_scenario_data(scenario_type.get_scenario_data_name());
+            let scenario =
+                self.open_game_scenario_data(*scenario_type, &scenario_data_create_info.borrow(), true).clone();
+            if !self.is_scene_loading() && self._game_scene_state == GameSceneState::LoadCompleted {
+                let game_scene_data_name = scenario_data_create_info.borrow().get_game_scene_data_name();
+                if game_scene_data_name.is_empty() || self._current_game_scene_data_name == game_scene_data_name {
+                    scenario.borrow_mut().on_open_game_scene(game_scene_data_name.as_str());
                 }
             }
-            self._reservation_scenarios.clear();
+        }
+    }
+
+    pub fn update_game_scenarios(&mut self, any_key_hold: bool, any_key_pressed: bool, delta_time: f64) {
+        self.process_reservation_scenarios();
+
+        if self.is_scene_loading() {
+            self._is_play_scenario_mode = self._scenarios.values().any(|s| s.borrow().is_play_scenario_mode());
+            if let Some(game_scene_data_name) = self._reservation_game_scene.take() {
+                self.goto_game_scene(&game_scene_data_name);
+            }
+            return;
         }
 
         self._is_play_scenario_mode = false;
@@ -741,6 +770,13 @@ impl<'a> GameSceneManager<'a> {
                     true
                 }
             });
+        }
+
+        if !self._reservation_scenarios.is_empty() {
+            self.process_reservation_scenarios();
+            if !self._is_play_scenario_mode {
+                self._is_play_scenario_mode = self._scenarios.values().any(|s| s.borrow().is_play_scenario_mode());
+            }
         }
 
         if let Some(game_scene_data_name) = self._reservation_game_scene.take() {
@@ -777,15 +813,37 @@ impl<'a> GameSceneManager<'a> {
                         self._character_manager.create_character("player", &character_create_info, true);
                     };
 
-                    // post process after loading
-                    self._character_manager.post_process_after_characters_loading();
-                    self._item_manager.post_process_after_item_loading();
-                    self._prop_manager.post_process_after_prop_loading();
-                    get_game_ui_manager_mut().select_item(game_save_data._selected_inventory_item_index);
+                    self.set_next_game_scene_state(GameSceneState::WaitingResources);
+                }
+            }
+            GameSceneState::WaitingResources => {
+                if get_scene_manager().is_load_complete() {
+                    let selected_inventory_item_index =
+                        get_game_client().get_game_save_data().borrow()._selected_inventory_item_index;
 
                     for scenario in self._scenarios.values() {
                         scenario.borrow_mut().on_open_game_scene(self._current_game_scene_data_name.as_str());
                     }
+
+                    self._item_manager.post_process_after_item_loading();
+                    self._prop_manager.post_process_after_prop_loading();
+                    get_game_ui_manager_mut().select_item(selected_inventory_item_index);
+
+                    self.set_next_game_scene_state(GameSceneState::WaitingScenarioResources);
+                }
+            }
+            GameSceneState::WaitingScenarioResources => {
+                if get_scene_manager().is_load_complete() {
+                    let scene_manager = get_scene_manager_mut();
+                    scene_manager.reset_frame_count_for_refresh_light_probe();
+                    scene_manager.set_start_capture_height_map(true);
+                    self.set_next_game_scene_state(GameSceneState::FinalizingCapture);
+                }
+            }
+            GameSceneState::FinalizingCapture => {
+                if get_scene_manager().is_load_complete() {
+                    // post process after loading
+                    self._character_manager.post_process_after_characters_loading();
 
                     self.inspect_and_register_discovered_world_data();
                     self.set_next_game_scene_state(GameSceneState::LoadCompleted);

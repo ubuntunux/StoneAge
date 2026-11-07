@@ -996,6 +996,7 @@ mod tests {
         // 2. 모델 데이터 생성
         let model_data = newRcRefCell(ModelData {
             _model_data_name: String::from("test_model"),
+            _mesh_name: String::from("test_mesh"),
             _local_transform: nalgebra::Matrix4::identity(),
             _mesh_data: unready_mesh.clone(),
             _is_render_camera: true,
@@ -1076,6 +1077,7 @@ mod tests {
 
         let create_dummy_model = |name: &str| ModelData {
             _model_data_name: name.to_string(),
+            _mesh_name: String::from("quad"),
             _local_transform: nalgebra::Matrix4::identity(),
             _mesh_data: dummy_mesh.clone(),
             _is_render_camera: true,
@@ -1342,5 +1344,264 @@ mod tests {
         let expected_total = (1920 * 1080 * 8) + (2048 * 2048 * 4);
         assert_eq!(total_rt_bytes, expected_total);
         assert_eq!(rt_map.len(), 2);
+    }
+
+    #[test]
+    fn test_scene_loading_gating_and_lifecycle() {
+        use crate::game_module::game_scene_manager::GameSceneState;
+        use rust_engine_3d::scene::bounding_box::BoundingBox;
+        use rust_engine_3d::scene::mesh::MeshData;
+        use rust_engine_3d::scene::model::ModelData;
+        use rust_engine_3d::scene::render_object::{RenderObjectCreateInfo, RenderObjectData, SceneObjectType};
+
+        // 1. GameSceneState 전이 흐름 검증
+        let mut state = GameSceneState::Loading;
+        assert_ne!(state, GameSceneState::LoadCompleted);
+
+        // 오브젝트 스폰 완료 후 WaitingResources로 전환
+        state = GameSceneState::WaitingResources;
+        assert_ne!(state, GameSceneState::LoadCompleted);
+
+        // 시나리오 오픈 및 추가 스폰 오브젝트 대기
+        state = GameSceneState::WaitingScenarioResources;
+        assert_ne!(state, GameSceneState::LoadCompleted);
+
+        // 비동기 리소스 로딩 완료 시 FinalizingCapture로 전환
+        state = GameSceneState::FinalizingCapture;
+        assert_ne!(state, GameSceneState::LoadCompleted);
+
+        // 큐브맵/하이트맵 최종 재캡처 완료 시 비로소 LoadCompleted로 승격
+        state = GameSceneState::LoadCompleted;
+        assert_eq!(state, GameSceneState::LoadCompleted);
+
+        // 2. ModelData와 RenderObject의 Gating 및 Re-baking 연계 검증
+        let unready_mesh = newRcRefCell(MeshData {
+            _name: String::from("unready_mesh"),
+            _bound_box: BoundingBox::default(),
+            _skeleton_data_list: Vec::new(),
+            _animation_data_list: Vec::new(),
+            _geometry_data_list: Vec::new(),
+        });
+
+        let model_data = newRcRefCell(ModelData {
+            _model_data_name: String::from("terrain_model"),
+            _mesh_name: String::from("terrain_mesh"),
+            _local_transform: nalgebra::Matrix4::identity(),
+            _mesh_data: unready_mesh.clone(),
+            _is_render_camera: true,
+            _is_render_shadow: true,
+            _material_instance_data_list: Vec::new(),
+            _collision: rust_engine_3d::scene::collision::CollisionData::default(),
+            _socket_data_map: std::collections::HashMap::new(),
+        });
+
+        let create_info = RenderObjectCreateInfo {
+            _scene_object_type: SceneObjectType::Terrain,
+            _model_data_name: String::from("terrain_model"),
+            _position: nalgebra::Vector3::zeros(),
+            _rotation: nalgebra::Vector3::zeros(),
+            _scale: nalgebra::Vector3::new(1.0, 1.0, 1.0),
+        };
+
+        let (mut render_object, _transform) = RenderObjectData::create_render_object_data(
+            uuid::Uuid::new_v4(),
+            &String::from("terrain_object"),
+            &model_data,
+            &create_info,
+            None,
+        );
+
+        // 미로딩 상태: 하이트맵 대상이지만 ready가 아니므로 렌더링 불가
+        assert!(!render_object.is_ready());
+        assert!(!render_object.is_visible());
+        assert!(render_object._is_render_height_map);
+
+        // 지오메트리 로딩 완료 모사
+        let dummy_geometry = newRcRefCell(rust_engine_3d::vulkan_context::geometry_buffer::GeometryData {
+            _geometry_name: String::from("geom_0"),
+            _vertex_buffer_data: rust_engine_3d::vulkan_context::buffer::BufferData::default(),
+            _index_buffer_data: rust_engine_3d::vulkan_context::buffer::BufferData::default(),
+            _vertex_index_count: 3,
+            _geometry_bounding_box: BoundingBox::default(),
+        });
+        unready_mesh.borrow_mut()._geometry_data_list.push(dummy_geometry);
+
+        // 준비 완료 후 가시화 승격 및 Re-baking 트리거 성공
+        assert!(render_object.check_and_update_ready_state());
+        assert!(render_object.is_ready());
+        assert!(render_object.is_visible());
+    }
+
+    #[test]
+    fn test_static_instancing_and_height_map_async_ready_promotion() {
+        use nalgebra::Vector3;
+        use rust_engine_3d::scene::animation::AnimationBuffer;
+        use rust_engine_3d::scene::bounding_box::BoundingBox;
+        use rust_engine_3d::scene::capture_height_map::CaptureHeightMap;
+        use rust_engine_3d::scene::mesh::MeshData;
+        use rust_engine_3d::scene::model::ModelData;
+        use rust_engine_3d::scene::render_object::{
+            AnimationLayer, RenderObjectCreateInfo, RenderObjectData, RenderObjectSaveData, SceneObjectType,
+        };
+        use rust_engine_3d::scene::scene_manager::SceneManager;
+
+        // 1. CaptureHeightMap readback 대기 중 조기 완료 방지 검증
+        let mut capture = CaptureHeightMap::create_capture_height_map(uuid::Uuid::new_v4());
+        assert!(capture.is_capture_height_map_complete());
+        capture.set_start_capture_height_map(true);
+        assert!(!capture.is_capture_height_map_complete());
+        capture.set_start_capture_height_map(false);
+        capture._read_back_frames.push(10);
+        capture.set_capture_height_map_complete();
+        // GPU readback 프레임이 남아 있으면 아직 완료로 판정하면 안 됨
+        assert!(!capture.is_capture_height_map_complete());
+        assert!(capture.need_to_read_back_height_map(10));
+        assert!(capture.is_capture_height_map_complete());
+
+        // 2. Static instancing 컨테이너의 비동기 준비 상태 승격 및 월드 바운딩 박스 재계산 검증
+        let mut scene_manager = SceneManager::create_scene_manager();
+        let placeholder_mesh = newRcRefCell(MeshData {
+            _name: String::from("quad_placeholder"),
+            _bound_box: BoundingBox::create_bounding_box(&Vector3::new(-0.5, -0.5, -0.5), &Vector3::new(0.5, 0.5, 0.5)),
+            _skeleton_data_list: Vec::new(),
+            _animation_data_list: Vec::new(),
+            _geometry_data_list: Vec::new(),
+        });
+        let model_data = newRcRefCell(ModelData {
+            _model_data_name: String::from("cliff_model"),
+            _mesh_name: String::from("cliff_mesh"),
+            _local_transform: nalgebra::Matrix4::new_translation(&Vector3::new(0.0, 5.0, 0.0)),
+            _mesh_data: placeholder_mesh.clone(),
+            _is_render_camera: true,
+            _is_render_shadow: true,
+            _material_instance_data_list: Vec::new(),
+            _collision: rust_engine_3d::scene::collision::CollisionData::default(),
+            _socket_data_map: std::collections::HashMap::new(),
+        });
+
+        let (container_obj, _container_transform) = RenderObjectData::create_render_object_data(
+            uuid::Uuid::new_v4(),
+            &String::from("cliff_instancing_container"),
+            &model_data,
+            &RenderObjectCreateInfo::default(),
+            None,
+        );
+        let container_rc = newRcRefCell(container_obj);
+
+        let (mut child_obj, _child_transform) = RenderObjectData::create_render_object_data(
+            uuid::Uuid::new_v4(),
+            &String::from("cliff_child_0"),
+            &model_data,
+            &RenderObjectCreateInfo {
+                _scene_object_type: SceneObjectType::Default,
+                _model_data_name: String::from("cliff_model"),
+                _position: Vector3::zeros(),
+                _rotation: Vector3::zeros(),
+                _scale: Vector3::new(1.0, 1.0, 1.0),
+            },
+            None,
+        );
+        // 애니메이션 미초기화 상태에서 세이브 데이터 로드 및 레이어 접근 시 패닉 없음을 검증
+        let dummy_save = RenderObjectSaveData {
+            _render_object_name: String::from("cliff_child_0"),
+            _animation_play_infos: Vec::new(),
+            _animation_buffer: Some(AnimationBuffer::create_animation_buffer(4)),
+        };
+        child_obj.load_render_object_save_data(&dummy_save);
+        assert!(!child_obj.has_animation());
+        let _ = child_obj.get_animation_play_info(AnimationLayer::ActionLayer);
+
+        let child_rc = newRcRefCell(child_obj);
+        container_rc.borrow_mut().register_instancing_render_object(&child_rc);
+        let container_id = container_rc.borrow().get_object_id();
+        scene_manager._static_render_object_map.insert(container_id, container_rc.clone());
+
+        assert!(!scene_manager.are_all_render_objects_ready());
+
+        // 실제 메쉬 로딩 완료 시뮬레이션 (더 큰 바운딩 박스 교체)
+        let real_bbox =
+            BoundingBox::create_bounding_box(&Vector3::new(-10.0, -5.0, -10.0), &Vector3::new(10.0, 20.0, 10.0));
+        let dummy_geometry = newRcRefCell(rust_engine_3d::vulkan_context::geometry_buffer::GeometryData {
+            _geometry_name: String::from("cliff_geom"),
+            _vertex_buffer_data: rust_engine_3d::vulkan_context::buffer::BufferData::default(),
+            _index_buffer_data: rust_engine_3d::vulkan_context::buffer::BufferData::default(),
+            _vertex_index_count: 36,
+            _geometry_bounding_box: real_bbox.clone(),
+        });
+        placeholder_mesh.borrow_mut()._bound_box = real_bbox;
+        placeholder_mesh.borrow_mut()._geometry_data_list.push(dummy_geometry);
+
+        assert!(container_rc.borrow_mut().check_and_update_ready_state());
+        assert!(scene_manager.are_all_render_objects_ready());
+        assert!(child_rc.borrow().is_ready());
+        assert_eq!(container_rc.borrow().get_instancing_render_object_transforms().len(), 1);
+        assert_eq!(
+            container_rc.borrow().get_instancing_render_object_transforms()[0][(1, 3)],
+            5.0
+        );
+        assert!((container_rc.borrow().get_bounding_box()._max.y - 25.0).abs() < 1e-3);
+    }
+
+    #[test]
+    fn test_capture_reset_and_pending_push_constants_on_async_ready() {
+        use nalgebra::Vector3;
+        use rust_engine_3d::renderer::push_constants::PushConstantParameter;
+        use rust_engine_3d::scene::bounding_box::BoundingBox;
+        use rust_engine_3d::scene::capture_height_map::CaptureHeightMap;
+        use rust_engine_3d::scene::mesh::MeshData;
+        use rust_engine_3d::scene::model::ModelData;
+        use rust_engine_3d::scene::render_object::{RenderObjectCreateInfo, RenderObjectData};
+
+        // 1. CaptureHeightMap reset_capture_height_map 검증 (씬 종료 시 잔류 readback 제거)
+        let mut capture = CaptureHeightMap::create_capture_height_map(uuid::Uuid::new_v4());
+        capture.set_start_capture_height_map(true);
+        capture._read_back_frames.push(42);
+        assert!(!capture.is_capture_height_map_complete());
+        capture.reset_capture_height_map();
+        assert!(capture.is_capture_height_map_complete());
+        assert!(capture._read_back_frames.is_empty());
+
+        // 2. 미준비(unready) 상태에서 설정한 PushConstant 파라미터가 ready 승격 시 보존/소진되는지 검증
+        let unready_mesh = newRcRefCell(MeshData {
+            _name: String::from("pending_pc_mesh"),
+            _bound_box: BoundingBox::create_bounding_box(&Vector3::new(-1.0, -1.0, -1.0), &Vector3::new(1.0, 1.0, 1.0)),
+            _skeleton_data_list: Vec::new(),
+            _animation_data_list: Vec::new(),
+            _geometry_data_list: Vec::new(),
+        });
+        let model_data = newRcRefCell(ModelData {
+            _model_data_name: String::from("pending_pc_model"),
+            _mesh_name: String::from("pending_pc_mesh"),
+            _local_transform: nalgebra::Matrix4::identity(),
+            _mesh_data: unready_mesh.clone(),
+            _is_render_camera: true,
+            _is_render_shadow: true,
+            _material_instance_data_list: Vec::new(),
+            _collision: rust_engine_3d::scene::collision::CollisionData::default(),
+            _socket_data_map: std::collections::HashMap::new(),
+        });
+        let (mut render_object, _transform) = RenderObjectData::create_render_object_data(
+            uuid::Uuid::new_v4(),
+            &String::from("pending_pc_obj"),
+            &model_data,
+            &RenderObjectCreateInfo::default(),
+            None,
+        );
+        assert!(!render_object.is_ready());
+        render_object.set_push_constant_parameter("_alpha", &PushConstantParameter::Float(0.5));
+        assert!(render_object._pending_push_constants.contains_key("_alpha"));
+
+        let dummy_geometry = newRcRefCell(rust_engine_3d::vulkan_context::geometry_buffer::GeometryData {
+            _geometry_name: String::from("geom_pc"),
+            _vertex_buffer_data: rust_engine_3d::vulkan_context::buffer::BufferData::default(),
+            _index_buffer_data: rust_engine_3d::vulkan_context::buffer::BufferData::default(),
+            _vertex_index_count: 3,
+            _geometry_bounding_box: BoundingBox::default(),
+        });
+        unready_mesh.borrow_mut()._geometry_data_list.push(dummy_geometry);
+
+        assert!(render_object.check_and_update_ready_state());
+        assert!(render_object.is_ready());
+        assert!(render_object._pending_push_constants.is_empty());
     }
 }

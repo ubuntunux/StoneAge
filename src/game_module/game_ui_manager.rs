@@ -1324,9 +1324,7 @@ impl<'a> GameUIManager<'a> {
                 );
                 let window_size = engine_core_mut._window_size;
                 let update_mouse_pos = true;
-                engine_core_mut
-                    ._mouse_move_data
-                    .update_mouse_move_f64(&delta, &window_size, update_mouse_pos);
+                engine_core_mut._mouse_move_data.update_mouse_move_f64(&delta, &window_size, update_mouse_pos);
             }
 
             let mouse_pos = &get_engine_core()._mouse_move_data._mouse_pos;

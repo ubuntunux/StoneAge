@@ -25,6 +25,10 @@ pub fn clear_game_service_locator() {
     }
 }
 
+pub fn is_application_valid() -> bool {
+    unsafe { !APPLICATION_PTR.is_null() }
+}
+
 // Global Getters
 pub fn get_application<'a>() -> &'a Application<'a> {
     ptr_as_ref(unsafe { APPLICATION_PTR as *const Application<'a> })
