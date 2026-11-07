@@ -1,0 +1,2 @@
+RUSTFLAGS="-L /mnt/Workspace/StoneAge -L /usr/lib/x86_64-linux-gnu/wine/x86_64-windows -C link-arg=-lucrt" cargo build --release --target x86_64-pc-windows-gnu
+wine ./target/x86_64-pc-windows-gnu/release/stone_age.exe -- development

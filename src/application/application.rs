@@ -38,19 +38,40 @@ pub struct Application<'a> {
 
 impl<'a> ApplicationBase<'a> for Application<'a> {
     fn initialize_application(&'a mut self, _window_size: &Vector2<i32>) {
+        let step_timer = std::time::Instant::now();
         self._game_resources.initialize_game_resources();
         self._game_resources.load_game_resources();
+        log::info!(
+            "[StartupTimer]   GameResources::load_game_resources: {:.2}ms",
+            step_timer.elapsed().as_secs_f64() * 1000.0
+        );
+
+        let step_timer = std::time::Instant::now();
         let current_window_size = get_engine_core()._window_size;
         self._game_client.initialize_game_client();
         self._game_controller.initialize_game_controller();
         self._game_ui_manager.initialize_game_ui_manager();
         self._game_scene_manager.initialize_game_scene_manager(&current_window_size);
         self._editor_ui_manager.initialize_editor_ui_manager();
+        log::info!(
+            "[StartupTimer]   Game managers initialize: {:.2}ms",
+            step_timer.elapsed().as_secs_f64() * 1000.0
+        );
 
         // start game
         get_renderer_data_mut().set_render_scene(false);
+        let step_timer = std::time::Instant::now();
         self._game_ui_manager.build_game_ui(&current_window_size);
+        log::info!(
+            "[StartupTimer]   GameUIManager::build_game_ui: {:.2}ms",
+            step_timer.elapsed().as_secs_f64() * 1000.0
+        );
+        let step_timer = std::time::Instant::now();
         self._editor_ui_manager.build_editor_ui(&current_window_size);
+        log::info!(
+            "[StartupTimer]   EditorUIManager::build_editor_ui: {:.2}ms",
+            step_timer.elapsed().as_secs_f64() * 1000.0
+        );
         self.set_game_mode(true);
         get_engine_core_mut().center_mouse_pos();
     }

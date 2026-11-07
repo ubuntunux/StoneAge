@@ -101,21 +101,29 @@ impl<'a> ImageLayout<'a> {
         auto_fade_inout: bool,
     ) {
         if let Some(ref material_instance_refcell) = material_instance {
-            let material_instance_ref = material_instance_refcell.borrow();
-            let aspect = material_instance_ref
+            let texture_name = material_instance_refcell
+                .borrow()
                 ._material_parameters
                 .get("texture_color")
                 .and_then(|param| param.as_str())
-                .map(|texture_name| {
-                    let texture = get_engine_resources().get_texture_data(texture_name);
-                    let tex_borrow = texture.borrow();
+                .map(|s| s.to_string());
+
+            let aspect = if let Some(ref name) = texture_name {
+                let engine_resources = get_engine_resources();
+                if let Some(texture_rc) = engine_resources.get_loaded_texture_data(name) {
+                    let tex_borrow = texture_rc.borrow();
                     if tex_borrow._image_height > 0 {
                         tex_borrow._image_width as f32 / tex_borrow._image_height as f32
                     } else {
                         1.0
                     }
-                })
-                .unwrap_or(1.0);
+                } else {
+                    engine_resources.request_texture_data(name);
+                    1.0
+                }
+            } else {
+                1.0
+            };
             self._next_image_aspect = aspect;
             self._fadeout_opacity = 1.0;
             self._fadeout_image_brightness = 0.0;
@@ -269,6 +277,40 @@ impl<'a> ImageLayout<'a> {
             let ui_component = background_layout.get_ui_component_mut();
             ui_component.set_opacity(effective_opacity);
             ui_component.set_visible(0.0 < effective_opacity);
+        }
+
+        // Dynamically update aspect ratio when async-loaded texture becomes available
+        if let Some(ref mat_cell) = self._material_instance {
+            let texture_name = mat_cell
+                .borrow()
+                ._material_parameters
+                .get("texture_color")
+                .and_then(|param| param.as_str())
+                .map(|s| s.to_string());
+            if let Some(ref name) = texture_name {
+                let engine_resources = get_engine_resources();
+                if let Some(texture_rc) = engine_resources.get_loaded_texture_data(name) {
+                    let tex_borrow = texture_rc.borrow();
+                    if tex_borrow._image_height > 0 {
+                        let aspect = tex_borrow._image_width as f32 / tex_borrow._image_height as f32;
+                        if (aspect - self._image_aspect).abs() > 0.001 && self._window_size.y > 0 {
+                            self._image_aspect = aspect;
+                            let window_aspect: f32 = self._window_size.x as f32 / self._window_size.y as f32;
+                            let image_widget = ptr_as_mut(self._image_layout.as_ref());
+                            let ui_component = image_widget.get_ui_component_mut();
+                            if window_aspect < self._image_aspect {
+                                ui_component.set_size_hint_x(Some(self._image_size_hint));
+                                ui_component
+                                    .set_size_hint_y(Some(window_aspect / self._image_aspect * self._image_size_hint));
+                            } else {
+                                ui_component
+                                    .set_size_hint_x(Some(self._image_aspect / window_aspect * self._image_size_hint));
+                                ui_component.set_size_hint_y(Some(self._image_size_hint));
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
