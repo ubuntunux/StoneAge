@@ -135,7 +135,7 @@ impl<'a> GameController<'a> {
         let mut done_auto_blend_mode = true;
 
         // blend distance
-        let pivot = player.borrow().get_bounding_box()._center + Vector3::new(0.0, CAMERA_OFFSET_Y, 0.0);
+        let pivot = player.borrow().get_camera_pivot();
         let rotation_matrix: Matrix4<f32> = math::make_rotation_matrix(self._camera_pitch, self._camera_yaw, 0f32);
         let goal_camera_position = pivot - rotation_matrix.column(2).xyz() * self._camera_goal_distance;
         let mut to_goal_camera = goal_camera_position - main_camera._transform_object.get_position();
@@ -208,7 +208,7 @@ impl<'a> GameController<'a> {
         self._camera_position = position;
 
         let calculated_distance = if let Some(player) = get_character_manager().get_maybe_player() {
-            let pivot = player.borrow().get_bounding_box()._center + Vector3::new(0.0, CAMERA_OFFSET_Y, 0.0);
+            let pivot = player.borrow().get_camera_pivot();
             Some((pivot - self._camera_position).magnitude())
         } else {
             None
@@ -285,13 +285,32 @@ impl<'a> GameController<'a> {
         }
     }
 
-    pub fn update_camera_shake(&self, main_camera: &CameraObjectData, hit_blink_time: f32) -> Vector3<f32> {
+    pub fn get_camera_rotation_matrix(&self) -> Matrix4<f32> {
+        math::make_rotation_matrix(self._camera_pitch, self._camera_yaw, 0.0)
+    }
+
+    pub fn get_camera_front(&self) -> Vector3<f32> {
+        let rotation_matrix = self.get_camera_rotation_matrix();
+        rotation_matrix.column(2).xyz()
+    }
+
+    pub fn get_camera_right(&self) -> Vector3<f32> {
+        let rotation_matrix = self.get_camera_rotation_matrix();
+        rotation_matrix.column(0).xyz()
+    }
+
+    pub fn get_camera_up(&self) -> Vector3<f32> {
+        let rotation_matrix = self.get_camera_rotation_matrix();
+        rotation_matrix.column(1).xyz()
+    }
+
+    pub fn update_camera_shake(&self, _main_camera: &CameraObjectData, hit_blink_time: f32) -> Vector3<f32> {
         let shake_ratio = hit_blink_time / HIT_BLINK_TIME;
         let shake_amount = shake_ratio * CAMERA_SHAKE_INTENSITY;
         let shake_x = (hit_blink_time * CAMERA_SHAKE_SPEED_X).sin() * shake_amount;
         let shake_y = (hit_blink_time * CAMERA_SHAKE_SPEED_Y).cos() * shake_amount;
-        let camera_right = *main_camera._transform_object.get_right();
-        let camera_up = *main_camera._transform_object.get_up();
+        let camera_right = self.get_camera_right();
+        let camera_up = self.get_camera_up();
         camera_right * shake_x + camera_up * shake_y
     }
 
@@ -299,13 +318,12 @@ impl<'a> GameController<'a> {
         main_camera._transform_object.set_pitch(self._camera_pitch);
         main_camera._transform_object.set_yaw(self._camera_yaw);
         main_camera._transform_object.set_roll(0.0);
-        main_camera._transform_object.update_transform_object();
 
-        let pivot = player.get_bounding_box()._center + Vector3::new(0.0, CAMERA_OFFSET_Y, 0.0);
-        let camera_dir = -main_camera._transform_object.get_front();
+        let pivot = player.get_camera_pivot();
+        let camera_dir = -self.get_camera_front();
         let mut prev_camera_position = self._camera_position;
         let mut camera_position = pivot + camera_dir * self._camera_distance;
-        let camera_move_delta = self._camera_position - prev_camera_position;
+        let camera_move_delta = camera_position - prev_camera_position;
         let scene_manager = get_scene_manager();
 
         // check collide with block
@@ -395,6 +413,15 @@ impl<'a> GameController<'a> {
         player: &RcRefCell<Character<'a>>,
     ) {
         let delta_time: f32 = time_data._delta_time_with_scale as f32;
+
+        self.update_camera_rotation_and_zoom(
+            joystick_input_data,
+            keyboard_input_data,
+            mouse_move_data,
+            delta_time,
+            main_camera,
+        );
+
         let input = GamePlayInputState::from_input(keyboard_input_data, joystick_input_data, mouse_input_data);
 
         if input._help {
@@ -478,14 +505,14 @@ impl<'a> GameController<'a> {
             }
 
             if move_direction.x != 0.0 || move_direction.z != 0.0 {
-                let mut camera_front = *main_camera._transform_object.get_front();
-                let mut camera_right = *main_camera._transform_object.get_right();
-                camera_front.y = 0.0;
-                camera_right.y = 0.0;
-                camera_front.normalize_mut();
-                camera_right.normalize_mut();
+                let camera_front = self.get_camera_front();
+                let camera_right = self.get_camera_right();
+                let mut camera_front_xz = Vector3::new(camera_front.x, 0.0, camera_front.z);
+                let mut camera_right_xz = Vector3::new(camera_right.x, 0.0, camera_right.z);
+                camera_front_xz.normalize_mut();
+                camera_right_xz.normalize_mut();
 
-                move_direction = camera_right * move_direction.x + camera_front * move_direction.z;
+                move_direction = camera_right_xz * move_direction.x + camera_front_xz * move_direction.z;
                 move_direction.normalize_mut();
 
                 player_mut.set_move(&move_direction);
@@ -595,20 +622,38 @@ impl<'a> GameController<'a> {
                 }
             }
         }
-
-        self.process_camera_inputs(
-            joystick_input_data,
-            keyboard_input_data,
-            mouse_move_data,
-            delta_time,
-            main_camera,
-            player_mut,
-        );
     }
 
     pub fn update_fixed_camera_transform(&self, main_camera: &mut CameraObjectData) {
         main_camera._transform_object.set_position(&self._camera_fixed_position);
         main_camera._transform_object.set_rotation(&self._camera_fixed_rotation);
+    }
+
+    pub fn update_camera_rotation_and_zoom(
+        &mut self,
+        joystick_input_data: &JoystickInputData,
+        keyboard_input_data: &KeyboardInputData,
+        mouse_move_data: &MouseMoveData,
+        delta_time: f32,
+        main_camera: &mut CameraObjectData,
+    ) {
+        if self._is_camera_fixed {
+            return;
+        }
+
+        let camera_control =
+            CameraInput::get_camera_control_state(keyboard_input_data, joystick_input_data, mouse_move_data);
+
+        self.update_game_camera(
+            camera_control._pitch,
+            camera_control._yaw,
+            camera_control._zoom,
+            delta_time,
+        );
+
+        main_camera._transform_object.set_pitch(self._camera_pitch);
+        main_camera._transform_object.set_yaw(self._camera_yaw);
+        main_camera._transform_object.set_roll(0.0);
     }
 
     pub fn process_camera_inputs(
@@ -625,16 +670,30 @@ impl<'a> GameController<'a> {
             return;
         }
 
-        let camera_control =
-            CameraInput::get_camera_control_state(keyboard_input_data, joystick_input_data, mouse_move_data);
-
-        self.update_game_camera(
-            camera_control._pitch,
-            camera_control._yaw,
-            camera_control._zoom,
+        self.update_camera_rotation_and_zoom(
+            joystick_input_data,
+            keyboard_input_data,
+            mouse_move_data,
             delta_time,
+            main_camera,
         );
         self.apply_game_camera_transform(main_camera, player_mut);
+    }
+
+    pub fn post_update_camera(
+        &mut self,
+        main_camera: &mut CameraObjectData,
+        player: &RcRefCell<Character<'a>>,
+        delta_time: f32,
+    ) {
+        if self._is_camera_fixed {
+            self.update_fixed_camera_transform(main_camera);
+        } else if self.is_game_camera_auto_blend_mode() {
+            self.update_game_camera_auto_blend(main_camera, player, delta_time);
+        } else {
+            let mut player_mut = player.borrow_mut();
+            self.apply_game_camera_transform(main_camera, &mut player_mut);
+        }
     }
 
     pub fn update_game_controller_fishing(
@@ -649,6 +708,15 @@ impl<'a> GameController<'a> {
         player: &RcRefCell<Character<'a>>,
     ) {
         let delta_time: f32 = time_data._delta_time_with_scale as f32;
+
+        self.update_camera_rotation_and_zoom(
+            joystick_input_data,
+            keyboard_input_data,
+            mouse_move_data,
+            delta_time,
+            main_camera,
+        );
+
         let fishing_input = FishingInputState::from_input(keyboard_input_data, joystick_input_data, mouse_input_data);
 
         let mut player_mut = player.borrow_mut();
@@ -673,15 +741,6 @@ impl<'a> GameController<'a> {
         } else if player_mut.is_action(ActionAnimationState::FishingBegin) && !fishing_input._attack_hold {
             player_mut.release_fishing_cast();
         }
-
-        self.process_camera_inputs(
-            joystick_input_data,
-            keyboard_input_data,
-            mouse_move_data,
-            delta_time,
-            main_camera,
-            &mut player_mut,
-        );
     }
 
     pub fn update_game_controller_deploy(
@@ -696,6 +755,15 @@ impl<'a> GameController<'a> {
         player: &RcRefCell<Character<'a>>,
     ) {
         let delta_time: f32 = time_data._delta_time_with_scale as f32;
+
+        self.update_camera_rotation_and_zoom(
+            joystick_input_data,
+            keyboard_input_data,
+            mouse_move_data,
+            delta_time,
+            main_camera,
+        );
+
         let input = GamePlayInputState::from_input(keyboard_input_data, joystick_input_data, mouse_input_data);
 
         let mut player_mut = player.borrow_mut();
@@ -725,14 +793,14 @@ impl<'a> GameController<'a> {
             }
 
             if move_direction.x != 0.0 || move_direction.z != 0.0 {
-                let mut camera_front = *main_camera._transform_object.get_front();
-                let mut camera_right = *main_camera._transform_object.get_right();
-                camera_front.y = 0.0;
-                camera_right.y = 0.0;
-                camera_front.normalize_mut();
-                camera_right.normalize_mut();
+                let camera_front = self.get_camera_front();
+                let camera_right = self.get_camera_right();
+                let mut camera_front_xz = Vector3::new(camera_front.x, 0.0, camera_front.z);
+                let mut camera_right_xz = Vector3::new(camera_right.x, 0.0, camera_right.z);
+                camera_front_xz.normalize_mut();
+                camera_right_xz.normalize_mut();
 
-                move_direction = camera_right * move_direction.x + camera_front * move_direction.z;
+                move_direction = camera_right_xz * move_direction.x + camera_front_xz * move_direction.z;
                 move_direction.normalize_mut();
 
                 player_mut.set_move(&move_direction);
@@ -764,15 +832,5 @@ impl<'a> GameController<'a> {
             get_prop_manager_mut().get_placement_preview_mut().cancel_placement();
             get_game_client_mut().set_next_game_phase(GamePhase::GamePlay);
         }
-
-        // 6. Camera control
-        self.process_camera_inputs(
-            joystick_input_data,
-            keyboard_input_data,
-            mouse_move_data,
-            delta_time,
-            main_camera,
-            &mut player_mut,
-        );
     }
 }

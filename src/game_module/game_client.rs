@@ -306,25 +306,17 @@ impl<'a> GameClient<'a> {
                                 self.set_next_game_phase(GamePhase::PlayGameScenario);
                             } else if game_scene_manager.is_teleport_mode() {
                                 self.set_next_game_phase(GamePhase::Teleport);
-                            } else {
-                                if game_controller.is_game_camera_auto_blend_mode() {
-                                    game_controller.update_game_camera_auto_blend(
-                                        scene_manager.get_main_camera_mut(),
-                                        character_manager.get_player(),
-                                        time_data._delta_time_with_scale as f32,
-                                    );
-                                } else {
-                                    game_controller.update_game_controller(
-                                        time_data,
-                                        joystick_input_data,
-                                        keyboard_input_data,
-                                        mouse_move_data,
-                                        mouse_input_data,
-                                        &mouse_delta,
-                                        scene_manager.get_main_camera_mut(),
-                                        character_manager.get_player(),
-                                    );
-                                }
+                            } else if !game_controller.is_game_camera_auto_blend_mode() {
+                                game_controller.update_game_controller(
+                                    time_data,
+                                    joystick_input_data,
+                                    keyboard_input_data,
+                                    mouse_move_data,
+                                    mouse_input_data,
+                                    &mouse_delta,
+                                    scene_manager.get_main_camera_mut(),
+                                    character_manager.get_player(),
+                                );
                             }
                         }
                     }
@@ -722,5 +714,20 @@ impl<'a> GameClient<'a> {
         }
 
         game_scene_manager.update_game_scene_manager(any_key_hold, any_key_pressed, delta_time);
+        self.post_update_camera(delta_time as f32);
+    }
+
+    pub fn post_update_camera(&mut self, delta_time: f32) {
+        let game_scene_manager = get_game_scene_manager();
+        if game_scene_manager.is_play_scenario_mode() {
+            return;
+        }
+
+        let character_manager = get_character_manager();
+        if let Some(player) = character_manager.get_maybe_player() {
+            let scene_manager = get_scene_manager_mut();
+            let main_camera = scene_manager.get_main_camera_mut();
+            get_game_controller_mut().post_update_camera(main_camera, player, delta_time);
+        }
     }
 }

@@ -612,6 +612,13 @@ impl<'a> Character<'a> {
         self.get_bounding_box().get_center()
     }
 
+    pub fn get_camera_pivot(&self) -> Vector3<f32> {
+        let position = self.get_position();
+        let extents_y = self.get_bounding_box()._extents.y;
+        let height_offset = if extents_y > 0.0 { extents_y } else { 1.0 } + CAMERA_OFFSET_Y;
+        Vector3::new(position.x, position.y + height_offset, position.z)
+    }
+
     pub fn check_arrival_with_radius(&self, target_position: &Vector3<f32>, radius: f32, ignore_y_axis: bool) -> bool {
         self._controller.check_arrival_with_radius(target_position, radius, ignore_y_axis)
     }
