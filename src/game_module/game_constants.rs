@@ -240,6 +240,7 @@ pub const GAME_MUSIC: &str = "game_music";
 pub const AUDIO_WRAP_UP_THE_DAY: &str = "wrap_up_the_day_music";
 
 // UI
+pub const DEFAULT_WAIT_FOR_ALL_RESOURCES: bool = true;
 pub const DEFAULT_FADE_TIME: f32 = 2.0;
 pub const MATERIAL_UI_NONE: &str = "";
 pub const MATERIAL_UI_POINTER: &str = "ui/ui_pointer";

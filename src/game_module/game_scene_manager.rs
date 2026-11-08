@@ -4,8 +4,8 @@ use crate::game_module::actors::items::{ItemCreateInfo, ItemManager, ItemSaveDat
 use crate::game_module::actors::props::{PropCreateInfo, PropManager, PropSaveData};
 use crate::game_module::game_audio_manager::GameAudioManager;
 use crate::game_module::game_constants::{
-    CHARACTER_DATA_NAME_MONKEY_ARU, GAME_VIEW_MODE, GameViewMode, TEMPERATURE_MAX, TEMPERATURE_MIN, TIME_OF_DAWN,
-    TIME_OF_DAY_SPEED, TIME_OF_MORNING, TIME_OF_NIGHT,
+    CHARACTER_DATA_NAME_MONKEY_ARU, DEFAULT_WAIT_FOR_ALL_RESOURCES, GAME_VIEW_MODE, GameViewMode, TEMPERATURE_MAX,
+    TEMPERATURE_MIN, TIME_OF_DAWN, TIME_OF_DAY_SPEED, TIME_OF_MORNING, TIME_OF_NIGHT,
 };
 use crate::game_module::game_service_locator::{
     get_game_client, get_game_client_mut, get_game_controller_mut, get_game_resources, get_game_resources_mut,
@@ -137,6 +137,7 @@ pub struct GameSceneManager<'a> {
     pub _date: u32,
     pub _game_scene_state: GameSceneState,
     pub _next_game_scene_state: GameSceneState,
+    pub _wait_for_all_resources: bool,
     pub _weather: Box<Weather>,
     pub _game_audio_manager: Box<GameAudioManager>,
     pub _discovered_world_data: HashMap<String, DiscoveredWorldData>,
@@ -201,6 +202,7 @@ impl<'a> GameSceneManager<'a> {
             _date: 1,
             _game_scene_state: GameSceneState::None,
             _next_game_scene_state: GameSceneState::None,
+            _wait_for_all_resources: DEFAULT_WAIT_FOR_ALL_RESOURCES,
             _weather: Box::new(Weather::default()),
             _game_audio_manager: Box::new(GameAudioManager::default()),
             _discovered_world_data: Default::default(),
@@ -706,6 +708,14 @@ impl<'a> GameSceneManager<'a> {
         self._game_scene_state == state
     }
 
+    pub fn is_wait_for_all_resources(&self) -> bool {
+        self._wait_for_all_resources
+    }
+
+    pub fn set_wait_for_all_resources(&mut self, wait_for_all_resources: bool) {
+        self._wait_for_all_resources = wait_for_all_resources;
+    }
+
     pub fn is_scene_loading(&self) -> bool {
         matches!(
             self._game_scene_state,
@@ -817,7 +827,13 @@ impl<'a> GameSceneManager<'a> {
                 }
             }
             GameSceneState::WaitingResources => {
-                if get_scene_manager().is_essential_load_complete() {
+                let is_load_complete = if self._wait_for_all_resources {
+                    get_scene_manager().is_load_complete()
+                } else {
+                    get_scene_manager().is_essential_load_complete()
+                };
+
+                if is_load_complete {
                     let selected_inventory_item_index =
                         get_game_client().get_game_save_data().borrow()._selected_inventory_item_index;
 
@@ -833,19 +849,35 @@ impl<'a> GameSceneManager<'a> {
                 }
             }
             GameSceneState::WaitingScenarioResources => {
-                let scene_manager = get_scene_manager_mut();
-                scene_manager.reset_frame_count_for_refresh_light_probe();
+                let is_load_complete = if self._wait_for_all_resources {
+                    get_scene_manager().is_load_complete()
+                } else {
+                    true
+                };
 
-                // post process after loading
-                self._character_manager.post_process_after_characters_loading();
+                if is_load_complete {
+                    let scene_manager = get_scene_manager_mut();
+                    scene_manager.reset_frame_count_for_refresh_light_probe();
 
-                self.inspect_and_register_discovered_world_data();
-                self.set_next_game_scene_state(GameSceneState::LoadCompleted);
+                    // post process after loading
+                    self._character_manager.post_process_after_characters_loading();
+
+                    self.inspect_and_register_discovered_world_data();
+                    self.set_next_game_scene_state(GameSceneState::LoadCompleted);
+                }
             }
             GameSceneState::FinalizingCapture => {
-                self._character_manager.post_process_after_characters_loading();
-                self.inspect_and_register_discovered_world_data();
-                self.set_next_game_scene_state(GameSceneState::LoadCompleted);
+                let is_load_complete = if self._wait_for_all_resources {
+                    get_scene_manager().is_load_complete()
+                } else {
+                    true
+                };
+
+                if is_load_complete {
+                    self._character_manager.post_process_after_characters_loading();
+                    self.inspect_and_register_discovered_world_data();
+                    self.set_next_game_scene_state(GameSceneState::LoadCompleted);
+                }
             }
             GameSceneState::None | GameSceneState::LoadCompleted => {
                 self._weather.update_weather(delta_time);
@@ -954,5 +986,48 @@ impl<'a> GameSceneManager<'a> {
 
     pub fn get_discovered_world_data(&self, stage_data_name: &str) -> Option<&DiscoveredWorldData> {
         self._discovered_world_data.get(stage_data_name)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_wait_for_all_resources_flag_defaults_and_toggle() {
+        let mut manager = GameSceneManager::create_game_scene_manager();
+        assert!(manager.is_wait_for_all_resources());
+        assert_eq!(manager._wait_for_all_resources, DEFAULT_WAIT_FOR_ALL_RESOURCES);
+
+        manager.set_wait_for_all_resources(false);
+        assert!(!manager.is_wait_for_all_resources());
+
+        manager.set_wait_for_all_resources(true);
+        assert!(manager.is_wait_for_all_resources());
+    }
+
+    #[test]
+    fn test_is_scene_loading_states() {
+        let mut manager = GameSceneManager::create_game_scene_manager();
+
+        manager._game_scene_state = GameSceneState::None;
+        manager._next_game_scene_state = GameSceneState::None;
+        assert!(!manager.is_scene_loading());
+
+        manager._game_scene_state = GameSceneState::Loading;
+        assert!(manager.is_scene_loading());
+
+        manager._game_scene_state = GameSceneState::WaitingResources;
+        assert!(manager.is_scene_loading());
+
+        manager._game_scene_state = GameSceneState::WaitingScenarioResources;
+        assert!(manager.is_scene_loading());
+
+        manager._game_scene_state = GameSceneState::FinalizingCapture;
+        assert!(manager.is_scene_loading());
+
+        manager._game_scene_state = GameSceneState::LoadCompleted;
+        manager._next_game_scene_state = GameSceneState::LoadCompleted;
+        assert!(!manager.is_scene_loading());
     }
 }
