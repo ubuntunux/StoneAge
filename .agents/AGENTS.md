@@ -1,13 +1,13 @@
-# Project Coding Style & Guidelines for StoneAge (RustEngine3D)
+# StoneAge (RustEngine3D) Project Rules & Conventions
 
-These guidelines capture the coding patterns, architectural conventions, formatting standards, and communication preferences derived from codebase analysis and interaction history.
+This file defines the project-specific rules, architectural patterns, and practical lessons learned from the entire project history (~280+ archived coding sessions) for AI agents working on this codebase.
 
 ---
 
-## 1. Code Naming & Field Conventions
+## 1. Code Style & Naming Conventions
 
-### 1.1 Struct Member Fields
-- **Underscore Prefix (`_field_name`)**: All struct fields (both `pub` and private) MUST begin with an underscore prefix.
+### 1.1 Struct Fields
+- **Underscore Prefix (`_field_name`)**: All struct fields (both `pub` and private) **MUST** begin with an underscore prefix.
   ```rust
   pub struct InventorySlotWidget<'a> {
       pub _inventory_widget: *const InventoryWidget<'a>,
@@ -17,54 +17,81 @@ These guidelines capture the coding patterns, architectural conventions, formatt
   ```
 - **Unused Parameters**: Prefix unused parameters or local variables with an underscore (e.g., `_window_size: &Vector2<i32>`).
 
-### 1.2 Functions & Variables
-- Use standard Rust `snake_case` for function names, methods, and local variables.
-- Structs, Enums, Traits, and Type Aliases use `PascalCase`.
+### 1.2 Constants & No Magic Numbers
+- Define named `SCREAMING_SNAKE_CASE` `const` constants in [game_constants.rs](file:///mnt/Workspace/StoneAge/src/game_module/game_constants.rs) or module headers instead of hardcoding numeric values, dimensions, sound asset paths, or texture keys.
 
-### 1.3 Constants & Magic Values
-- **Define Explicit `const`**: Prefer defining named `const` constants (in `game_constants.rs` or module/file header) for fixed parameters, UI dimensions, layout margins, sound asset paths, texture names, and numeric literals instead of hardcoding magic numbers or string literals directly inside business/UI logic.
-- **Naming**: Use `SCREAMING_SNAKE_CASE` for global, module, and local `const` definitions.
-  ```rust
-  pub const TOTAL_INVENTORY_SLOTS: usize = MAX_INVENTORY_ROWS * SLOTS_PER_ROW;
-  pub const INVALID_ITEM_INDEX: usize = usize::MAX;
-  pub const ITEM_BAR_WIDGET_POS_Y_FROM_BOTTOM: f32 = 50.0;
-  ```
+### 1.3 Error Handling & Safety
+- **No Blind `.unwrap()`**: Use defensive pattern matching (`if let`, `unwrap_or(...)`, bounds checking).
+- Avoid `i16::MIN.abs()` overflow panic when handling gamepad axis inputs; use `saturating_abs()` or clamp to `-i16::MAX`.
+- **Comments**: Keep comments minimal and in **English**. Do not clutter code with verbose explanations. Preserve existing docstrings.
 
 ---
 
 ## 2. Architecture & Design Patterns
 
 ### 2.1 Service Locator Pattern
-- Access managers, engine resources, audio, scene, and UI components via service locators rather than passing large context/manager instances through function parameters.
-  - Examples: `get_game_ui_manager()`, `get_game_ui_manager_mut()`, `get_character_manager()`, `get_character_manager_mut()`, `get_item_manager_mut()`, `get_scene_manager()`, `get_audio_manager_mut()`, `get_engine_resources()`.
-- **Avoid Parameter Bloat**: Do NOT add `&mut EngineResources` or manager instances as arguments to helper functions when service locators can provide them globally.
+- Access all core managers and engine resources globally via service locators. **Do NOT pass manager references as function arguments**.
+  - Game layer: `get_game_ui_manager()`, `get_game_ui_manager_mut()`, `get_character_manager()`, `get_character_manager_mut()`, `get_item_manager_mut()`.
+  - Engine layer: `get_engine_resources()`, `get_engine_resources_mut()`, `get_audio_manager_mut()`, `get_scene_manager()`.
 
-### 2.2 Shared Pointers & Reference Management
-- Use `RcRefCell<T>`, `newRcRefCell`, `ptr_as_mut`, and `ptr_as_ref` from `rust_engine_3d::utilities::system` for safe reference borrowing and pointer operations.
-- Raw pointers (e.g., `*const WidgetDefault<'a>`) are reserved for non-owning back-references or widget parent pointers.
+### 2.2 Resource Loading & Streaming Architecture
+1. **Engine Resource Policy (`is_engine_resource`)**:
+   - Only fundamental engine resources located in `ENGINE_RESOURCE_PATH` (default fallback materials, `common/default` texture, shaders, render targets) load synchronously at startup and remain pinned.
+   - **Never hardcode game asset lists to load synchronously**.
+2. **Late-Binding & Dynamic Async Loading**:
+   - All character, prop, scene mesh, and texture assets are loaded asynchronously via worker threads.
+   - Textures bind placeholder `DEFAULT_TEXTURE_NAME` initially, and descriptors are updated when background decoding finishes.
+3. **Visibility Gating & Anti-Popin**:
+   - Objects that are not fully ready (`!render_object.is_ready()`) must **not** be rendered as dummy quads or default materials.
+   - Scene transitions use `set_image_auto_fade_inout` to hide asset streaming until `is_load_complete()` or `is_essential_load_complete()` triggers.
+4. **Terrain Heightmap**:
+   - Terrain mesh is loaded synchronously on scene open (`force_sync`) so that `CaptureHeightMap` can complete before character movement begins.
 
-### 2.3 UI & Component Architecture
-- UI Widgets should follow standard lifecycle method naming:
-  - `open_*(&mut self)` / `close_*(&mut self)` / `is_opened_*(&self) -> bool`
-  - `update_*_widget(...)` / `refresh_*_widget(&mut self)` / `changed_window_size(&mut self, ...)`
-- **UI Layout Properties**: When updating or creating UI components, respect layout properties (`_base_contents_area_size`, `_base_ui_size`, `_required_contents_size_hint`) and alignment (`HorizontalAlign`, `VerticalAlign`, `UILayoutType`).
+### 2.3 UI & Layout Guidelines
+- **2-Pass Layout System**:
+  - `UIComponentData`: Logical definitions (`_pos`, `_size`, `_margin`, `_pivot`, `_pos_hint_x/y`).
+  - `UIComponentInstance`: Calculated geometry (`_ui_area`, `_render_area`, `_contents_area`).
+  - Do NOT apply `_pos` or `_pos_hint` directly to children inside a `BoxLayout` (use `FloatLayout` for absolute anchor/ratio positioning).
+  - Set `_enable_dpi_scale` once upon widget construction, never dynamically inside frame update loops.
+- **Mouse Snapping**:
+  - When menus or dialogs open, snap mouse focus to the default action button via `move_mouse_to_ui_component`.
+- **L-Stick Separation**:
+  - `WidgetNavRepeatController` only consumes D-Pad and WASD/Arrow navigation to prevent L-Stick movement from disturbing UI focus.
+- **Preserve Widget Hierarchy**: Never delete or bypass intermediate container widgets (e.g. `content_layout`) when switching tabs or refactoring.
 
 ---
 
-## 3. Formatting, Error Handling & Safety
+## 3. Critical Engine & Platform Pitfalls
 
-### 3.1 Formatting Guidelines
-- Respect `max_width = 120` line length limit (configured in `rustfmt.toml`).
-- Keep code clean, organized, and compliant with `cargo fmt`.
-
-### 3.2 Error Handling & Panic Prevention
-- Avoid blind `.unwrap()` or unchecked array/slice indexing.
-- Include defensive bounds checks (e.g., `if target_slot != INVALID_ITEM_INDEX && target_slot < TOTAL_INVENTORY_SLOTS`).
+- **Vulkan Descriptors & Destroyed Samplers**:
+  - Any texture referenced by an active descriptor set must be pinned (`entry.pin()`). Never unload or GC textures that are still bound to pipeline descriptors.
+- **Window Resize / Alt+Tab (Minimize)**:
+  - When minimized, `WindowEvent::Resized(0, 0)` is received. Do **not** overwrite `_window_size` with 0 (skip rendering and postpone swapchain recreation).
+  - Handle `VK_SUBOPTIMAL_KHR` by setting a flag to recreate once, rather than recreating the swapchain in an infinite loop every frame.
+- **Transform Previous State (Motion Blur & Camera Jitter)**:
+  - Previous matrices (`_prev_*`) must be backed up strictly **once per frame** using the engine frame index (`CURRENT_FRAME`). Multiple updates per frame must not overwrite the previous frame's matrix history.
+  - Camera pivot must be attached to a stable character anchor (`Character::get_camera_pivot()`), not the dynamic bounding box AABB.
+- **Application Exit & Resource Cleanup**:
+  - Ensure `EngineCore::terminate_application()` is invoked before window destruction to avoid Vulkan framebuffer and queue leaks upon exit.
 
 ---
 
-## 4. Communication & Response Style
+## 4. AI Interaction & Workflows
 
-- **Language**: Respond in Korean (한국어).
-- **Conciseness**: Keep responses clear, professional, and focused on technical delivery.
-- **Clickable File Links**: Always link modified files and code symbols using markdown links with the `file://` scheme (e.g., [inventory_widget.rs](file:///mnt/Workspace/StoneAge/src/game_module/widgets/game_menu_widget/inventory_widget.rs#L25-L35)).
+### 4.1 Step-by-Step Delivery
+- When handling large refactorings or multi-faceted feature additions, break them down into **Phase-by-Phase milestones** (Data types → Logic → UI/Presentation).
+- If the user explicitly asks for analysis or review ("코드 수정은 하지마"), do not alter files—deliver analysis only.
+
+### 4.2 Verification & Git Commits
+- **Always verify code** using:
+  ```bash
+  cargo fmt --check
+  cargo check
+  cargo test --workspace
+  ```
+- **Execution commands**:
+  - Linux Development: `cargo run --release -- development`
+  - Windows cross-compilation (Wine): `./run_windows_development.sh`
+- **Git Commit Messages**:
+  - Follow Conventional Commits format (`feat(module): ...`, `fix(renderer): ...`).
+  - **Always write separate commit messages** for the `RustEngine3D` engine submodule and `StoneAge` game repo.
