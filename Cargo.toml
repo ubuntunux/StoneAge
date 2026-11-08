@@ -10,7 +10,7 @@ edition = "2024"
 
 [dependencies]
 rust_engine_3d = { path = "RustEngine3D" }
-ash = { version = "0.38.0+1.3.281", default-features = false, features = ["linked", "debug", "std"] }
+ash = { version = "0.38.0", default-features = false, features = ["linked", "debug", "std"] }
 log = "0.4"
 nalgebra = {version = "0.35", features = ["serde-serialize"]}
 rand = "0.10"
