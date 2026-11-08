@@ -94,4 +94,4 @@ This file defines the project-specific rules, architectural patterns, and practi
   - Windows cross-compilation (Wine): `./run_windows_development.sh`
 - **Git Commit Messages**:
   - Follow Conventional Commits format (`feat(module): ...`, `fix(renderer): ...`).
-  - **Always write separate commit messages** for the `RustEngine3D` engine submodule and `StoneAge` game repo.
+  - **Unified Git Commit Log**: Upon completing the requested tasks, always provide a final Git commit log in English at the end of the response, combining changes for both `StoneAge` and `RustEngine3D` into a single unified log ready for submission.
