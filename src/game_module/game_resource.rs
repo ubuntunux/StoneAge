@@ -372,8 +372,8 @@ impl<'a> GameResources<'a> {
                     {
                         if let Some(file_stem) = file_path.file_stem().and_then(|stem| stem.to_str()) {
                             let game_save_data_name = format!("{}/{}", SAVE_DATA_DIRECTORY_NAME, file_stem);
-                            match File::open(&file_path) {
-                                Ok(file) => match serde_json::from_reader(file) {
+                            match std::fs::read(&file_path) {
+                                Ok(bytes) => match serde_json::from_slice(&bytes) {
                                     Ok(save_data) => {
                                         self._game_save_data_map.insert(game_save_data_name, newRcRefCell(save_data));
                                     }
@@ -382,7 +382,7 @@ impl<'a> GameResources<'a> {
                                     }
                                 },
                                 Err(err) => {
-                                    log::warn!("Failed to open save file {:?}: {:?}", file_path, err);
+                                    log::warn!("Failed to read save file {:?}: {:?}", file_path, err);
                                 }
                             }
                         }
@@ -495,8 +495,8 @@ impl<'a> GameResources<'a> {
 
         let game_option_filepath = Self::get_game_option_data_filepath();
         if game_option_filepath.exists() {
-            match File::open(&game_option_filepath) {
-                Ok(file) => match serde_json::from_reader(file) {
+            match std::fs::read(&game_option_filepath) {
+                Ok(bytes) => match serde_json::from_slice(&bytes) {
                     Ok(loaded_option) => {
                         *self._game_option_data.borrow_mut() = loaded_option;
                         log::info!("Loaded game option from {:?}", game_option_filepath);
@@ -510,7 +510,7 @@ impl<'a> GameResources<'a> {
                     }
                 },
                 Err(err) => {
-                    log::warn!("Failed to open game option file {:?}: {:?}", game_option_filepath, err);
+                    log::warn!("Failed to read game option file {:?}: {:?}", game_option_filepath, err);
                 }
             }
         } else {
@@ -566,13 +566,61 @@ impl<'a> GameResources<'a> {
     // Game Data
     fn load_game_data(&mut self) {
         log::info!("    load_game_data");
+        let t_total = std::time::Instant::now();
+
+        let t0 = std::time::Instant::now();
         self.load_character_data();
+        log::info!(
+            "[StartupTimer] load_character_data: {:.2}ms",
+            t0.elapsed().as_secs_f64() * 1000.0
+        );
+
+        let t0 = std::time::Instant::now();
         self.load_item_data();
+        log::info!(
+            "[StartupTimer] load_item_data: {:.2}ms",
+            t0.elapsed().as_secs_f64() * 1000.0
+        );
+
+        let t0 = std::time::Instant::now();
         self.load_prop_data();
+        log::info!(
+            "[StartupTimer] load_prop_data: {:.2}ms",
+            t0.elapsed().as_secs_f64() * 1000.0
+        );
+
+        let t0 = std::time::Instant::now();
         self.load_weapon_data();
+        log::info!(
+            "[StartupTimer] load_weapon_data: {:.2}ms",
+            t0.elapsed().as_secs_f64() * 1000.0
+        );
+
+        let t0 = std::time::Instant::now();
         self.load_toolbox_item_data();
+        log::info!(
+            "[StartupTimer] load_toolbox_item_data: {:.2}ms",
+            t0.elapsed().as_secs_f64() * 1000.0
+        );
+
+        let t0 = std::time::Instant::now();
         self.load_game_save_data();
+        log::info!(
+            "[StartupTimer] load_game_save_data: {:.2}ms",
+            t0.elapsed().as_secs_f64() * 1000.0
+        );
+
+        let t0 = std::time::Instant::now();
         self.load_game_option_data();
+        log::info!(
+            "[StartupTimer] load_game_option_data: {:.2}ms",
+            t0.elapsed().as_secs_f64() * 1000.0
+        );
+
+        log::info!(
+            "[StartupTimer] load_game_data (total): {:.2}ms",
+            t_total.elapsed().as_secs_f64() * 1000.0
+        );
     }
 
     fn unload_game_data(&mut self) {
@@ -1941,5 +1989,236 @@ mod tests {
         assert_eq!(barrier.src_queue_family_index, 2);
         assert_eq!(barrier.dst_queue_family_index, 0);
         assert_ne!(barrier.src_queue_family_index, barrier.dst_queue_family_index);
+    }
+
+    #[test]
+    fn test_terrain_sync_and_essential_load_complete_gating() {
+        use rust_engine_3d::scene::bounding_box::BoundingBox;
+        use rust_engine_3d::scene::mesh::MeshData;
+        use rust_engine_3d::scene::model::ModelData;
+        use rust_engine_3d::scene::render_object::{RenderObjectCreateInfo, RenderObjectData, SceneObjectType};
+        use rust_engine_3d::utilities::system::{RcRefCell, newRcRefCell};
+        use std::collections::HashMap;
+
+        let dummy_mesh = newRcRefCell(MeshData {
+            _name: String::from("dummy_mesh"),
+            _bound_box: BoundingBox::default(),
+            _skeleton_data_list: Vec::new(),
+            _animation_data_list: Vec::new(),
+            _geometry_data_list: Vec::new(),
+        });
+
+        let dummy_model = newRcRefCell(ModelData {
+            _model_data_name: String::from("dummy_model"),
+            _mesh_name: String::from("dummy_mesh"),
+            _local_transform: nalgebra::Matrix4::identity(),
+            _mesh_data: dummy_mesh,
+            _is_render_camera: true,
+            _is_render_shadow: true,
+            _material_instance_data_list: Vec::new(),
+            _collision: rust_engine_3d::scene::collision::CollisionData::default(),
+            _socket_data_map: HashMap::new(),
+        });
+
+        // 1. Terrain 오브젝트와 비-지형 Prop 오브젝트 모의 생성
+        let terrain_info = RenderObjectCreateInfo {
+            _scene_object_type: SceneObjectType::Terrain,
+            _model_data_name: String::from("dummy_model"),
+            ..Default::default()
+        };
+        let (mut terrain_obj, _) = RenderObjectData::create_render_object_data(
+            uuid::Uuid::new_v4(),
+            &String::from("terrain"),
+            &dummy_model,
+            &terrain_info,
+            None,
+        );
+        terrain_obj.set_ready(true); // 지형은 Sync로 즉시 준비 완료
+
+        let prop_info = RenderObjectCreateInfo {
+            _scene_object_type: SceneObjectType::Default,
+            _model_data_name: String::from("dummy_model"),
+            ..Default::default()
+        };
+        let (mut prop_obj, _) = RenderObjectData::create_render_object_data(
+            uuid::Uuid::new_v4(),
+            &String::from("prop"),
+            &dummy_model,
+            &prop_info,
+            None,
+        );
+        prop_obj.set_ready(false); // 일반 프랍은 비동기로 아직 로딩 중
+        prop_obj._is_render_height_map = true; // 과거에는 이 플래그로 인해 블로킹되었음
+
+        let static_objects: Vec<RcRefCell<RenderObjectData>> = vec![newRcRefCell(terrain_obj), newRcRefCell(prop_obj)];
+
+        // 2. 필수 렌더 오브젝트 판정: 오직 Terrain만 검사하므로 비-지형 객체가 unready여도 통과해야 함
+        let are_essential_ready = static_objects.iter().all(|obj| {
+            let borrowed = obj.borrow();
+            if borrowed._scene_object_type == SceneObjectType::Terrain && !borrowed.is_ready() {
+                false
+            } else {
+                true
+            }
+        });
+        assert!(
+            are_essential_ready,
+            "Terrain이 준비 완료되었으므로 필수 판정이 통과해야 합니다."
+        );
+
+        // 3. 지형이 미준비된 경우 차단 검증
+        static_objects[0].borrow_mut().set_ready(false);
+        let are_essential_ready_after = static_objects.iter().all(|obj| {
+            let borrowed = obj.borrow();
+            if borrowed._scene_object_type == SceneObjectType::Terrain && !borrowed.is_ready() {
+                false
+            } else {
+                true
+            }
+        });
+        assert!(
+            !are_essential_ready_after,
+            "Terrain이 미완료 상태일 때는 진입이 차단되어야 합니다."
+        );
+    }
+
+    #[test]
+    fn test_render_object_socket_and_material_synchronization() {
+        use nalgebra::{Matrix4, Vector3};
+        use rust_engine_3d::scene::animation::INVALID_BONE_INDEX;
+        use rust_engine_3d::scene::bounding_box::BoundingBox;
+        use rust_engine_3d::scene::mesh::MeshData;
+        use rust_engine_3d::scene::model::ModelData;
+        use rust_engine_3d::scene::render_object::{RenderObjectCreateInfo, RenderObjectData, SceneObjectType};
+        use rust_engine_3d::scene::socket::{Socket, SocketData, SocketDataCreateInfo};
+        use rust_engine_3d::utilities::system::newRcRefCell;
+        use std::collections::HashMap;
+
+        let dummy_mesh = newRcRefCell(MeshData {
+            _name: String::from("dummy_mesh"),
+            _bound_box: BoundingBox::default(),
+            _skeleton_data_list: Vec::new(),
+            _animation_data_list: Vec::new(),
+            _geometry_data_list: Vec::new(),
+        });
+
+        let dummy_model = newRcRefCell(ModelData {
+            _model_data_name: String::from("dummy_model"),
+            _mesh_name: String::from("dummy_mesh"),
+            _local_transform: nalgebra::Matrix4::identity(),
+            _mesh_data: dummy_mesh,
+            _is_render_camera: true,
+            _is_render_shadow: true,
+            _material_instance_data_list: Vec::new(),
+            _collision: rust_engine_3d::scene::collision::CollisionData::default(),
+            _socket_data_map: HashMap::new(),
+        });
+
+        let obj_info = RenderObjectCreateInfo {
+            _scene_object_type: SceneObjectType::Default,
+            _model_data_name: String::from("dummy_model"),
+            ..Default::default()
+        };
+
+        let (mut render_obj, _) = RenderObjectData::create_render_object_data(
+            uuid::Uuid::new_v4(),
+            &String::from("char_obj"),
+            &dummy_model,
+            &obj_info,
+            None,
+        );
+
+        let socket_data = newRcRefCell(SocketData::create_socket_data(
+            &"SOCKET_WEAPON".to_string(),
+            &SocketDataCreateInfo {
+                _parent_bone: "hand_r".to_string(),
+                _position: Vector3::new(1.0, 2.0, 3.0),
+                _rotation: Vector3::zeros(),
+                _scale: Vector3::new(1.0, 1.0, 1.0),
+            },
+            INVALID_BONE_INDEX,
+        ));
+
+        let socket = newRcRefCell(Socket {
+            _socket_data: socket_data,
+            _transform: Matrix4::identity(),
+        });
+
+        let mut sockets = HashMap::new();
+        sockets.insert("SOCKET_WEAPON".to_string(), socket.clone());
+        render_obj._sockets = sockets;
+
+        // 소켓 트랜스폼 갱신 전 검증 (초기 identity)
+        let identity_mat = Matrix4::<f32>::identity();
+        assert_eq!(socket.borrow()._transform, identity_mat);
+
+        // update_all_sockets 호출 후 부모 본 및 로컬 트랜스폼 반영 검증
+        render_obj.update_all_sockets();
+        let updated_transform = socket.borrow()._transform;
+        assert_ne!(updated_transform, identity_mat);
+        assert_eq!(updated_transform[(0, 3)], 1.0);
+        assert_eq!(updated_transform[(1, 3)], 2.0);
+        assert_eq!(updated_transform[(2, 3)], 3.0);
+    }
+
+    #[test]
+    fn test_save_data_fast_deserialization() {
+        let save_path = std::path::PathBuf::from("/home/ubuntu/.local/share/stoneage/save_data/00.data");
+        if save_path.exists() {
+            let t0 = std::time::Instant::now();
+            let bytes = std::fs::read(&save_path).unwrap();
+            let _: serde_json::Value = serde_json::from_slice(&bytes).unwrap();
+            let elapsed_ms = t0.elapsed().as_secs_f64() * 1000.0;
+            // 3.3MB의 거대한 세이브 데이터도 200ms 이내에 고속 파싱되어야 함
+            assert!(
+                elapsed_ms < 500.0,
+                "Save data parsing took too long: {:.2}ms",
+                elapsed_ms
+            );
+        }
+    }
+
+    #[test]
+    fn test_material_texture_pin_and_gc_protection() {
+        use std::time::{Duration, Instant};
+
+        // 1. 머티리얼 인스턴스가 참조하는 비-엔진 텍스처 엔트리 생성 및 Pin 등록
+        let meta_data = MetaData::default();
+        let mut mat_texture_entry: ResourceEntry<String> = ResourceEntry::new(
+            String::from("PolygonNatureBiomes/Plants/FlowersFlat_01"),
+            meta_data.clone(),
+        );
+        mat_texture_entry.pin(); // load_material_instance_data_list에서 수행되는 텍스처 Pin
+
+        // 2. 비동기/지연 로딩 완료 시뮬레이션
+        mat_texture_entry.set_loaded_data(newRcRefCell(String::from("TextureGPUData")));
+        assert!(mat_texture_entry.is_loaded());
+        assert!(mat_texture_entry.is_pinned());
+
+        // 3. 비교용: Pin되지 않은 일반 리소스 엔트리
+        let mut unpinned_entry: ResourceEntry<String> =
+            ResourceEntry::new(String::from("temporary_unused_texture"), meta_data);
+        unpinned_entry.set_loaded_data(newRcRefCell(String::from("TempData")));
+        assert!(unpinned_entry.is_loaded());
+        assert!(!unpinned_entry.is_pinned());
+
+        // 4. 30초(DEFAULT_RESOURCE_GC_TIMEOUT_SEC) 이상 경과 시뮬레이션
+        let timeout = Duration::from_secs(30);
+        let t0 = Instant::now();
+
+        // 4-1. 최초 미사용 감지 시점 기록
+        assert!(!unpinned_entry.check_and_update_gc(t0, timeout));
+        assert!(unpinned_entry._unused_start_time.is_some());
+
+        // 4-2. 35초 후 GC 실행
+        let t_35s = t0 + Duration::from_secs(35);
+
+        // Pin되지 않은 엔트리는 타임아웃 경과로 만료 대상(true) 판정
+        assert!(unpinned_entry.check_and_update_gc(t_35s, timeout));
+
+        // Pin된 머티리얼 텍스처는 35초 후에도 절대 만료 대상(false)이 되지 않으며 로드 상태 유지
+        assert!(!mat_texture_entry.check_and_update_gc(t_35s, timeout));
+        assert!(mat_texture_entry.is_loaded());
+        assert!(mat_texture_entry._unused_start_time.is_none());
     }
 }

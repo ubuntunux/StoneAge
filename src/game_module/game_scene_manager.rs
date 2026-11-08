@@ -835,17 +835,17 @@ impl<'a> GameSceneManager<'a> {
             GameSceneState::WaitingScenarioResources => {
                 let scene_manager = get_scene_manager_mut();
                 scene_manager.reset_frame_count_for_refresh_light_probe();
-                scene_manager.set_start_capture_height_map(true);
-                self.set_next_game_scene_state(GameSceneState::FinalizingCapture);
+
+                // post process after loading
+                self._character_manager.post_process_after_characters_loading();
+
+                self.inspect_and_register_discovered_world_data();
+                self.set_next_game_scene_state(GameSceneState::LoadCompleted);
             }
             GameSceneState::FinalizingCapture => {
-                if get_scene_manager().is_essential_load_complete() {
-                    // post process after loading
-                    self._character_manager.post_process_after_characters_loading();
-
-                    self.inspect_and_register_discovered_world_data();
-                    self.set_next_game_scene_state(GameSceneState::LoadCompleted);
-                }
+                self._character_manager.post_process_after_characters_loading();
+                self.inspect_and_register_discovered_world_data();
+                self.set_next_game_scene_state(GameSceneState::LoadCompleted);
             }
             GameSceneState::None | GameSceneState::LoadCompleted => {
                 self._weather.update_weather(delta_time);

@@ -68,22 +68,20 @@ pub fn apply_render_quality_level(quality_level: RenderQualityLevel) {
         constants::ENABLE_UPSCALE = new_upscale;
         match quality_level {
             RenderQualityLevel::Low | RenderQualityLevel::Medium => {
-                constants::CURRENT_RENDER_OPTION = std::mem::transmute(
-                    RenderOption::RenderOcean as u32
-                        | RenderOption::RenderAtmosphere as u32
-                        | RenderOption::RenderSky as u32
-                        | RenderOption::RenderShadow as u32,
-                );
+                constants::CURRENT_RENDER_OPTION = RenderOption::RenderOcean as u32
+                    | RenderOption::RenderAtmosphere as u32
+                    | RenderOption::RenderSky as u32
+                    | RenderOption::RenderShadow as u32;
             }
             RenderQualityLevel::High => {
-                constants::CURRENT_RENDER_OPTION = RenderOption::ALL;
+                constants::CURRENT_RENDER_OPTION = RenderOption::ALL as u32;
             }
         }
     }
 
     if is_engine_core_valid() {
         let renderer_data = get_renderer_data_mut();
-        renderer_data._render_option = unsafe { constants::CURRENT_RENDER_OPTION as u32 };
+        renderer_data._render_option = unsafe { constants::CURRENT_RENDER_OPTION };
 
         if prev_upscale != new_upscale {
             get_renderer_context_mut().set_need_recreate_swapchain(true);
