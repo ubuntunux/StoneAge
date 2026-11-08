@@ -788,7 +788,7 @@ impl<'a> GameSceneManager<'a> {
         self._game_scene_state = self._next_game_scene_state;
         match self._game_scene_state {
             GameSceneState::Loading => {
-                if get_scene_manager().is_load_complete() {
+                if get_scene_manager().is_essential_load_complete() {
                     let game_save_data = get_game_client().get_game_save_data().borrow();
                     if let Some(game_scene_save_data) =
                         game_save_data._game_scenes.get(&self._current_game_scene_data_name).as_ref()
@@ -817,7 +817,7 @@ impl<'a> GameSceneManager<'a> {
                 }
             }
             GameSceneState::WaitingResources => {
-                if get_scene_manager().is_load_complete() {
+                if get_scene_manager().is_essential_load_complete() {
                     let selected_inventory_item_index =
                         get_game_client().get_game_save_data().borrow()._selected_inventory_item_index;
 
@@ -833,15 +833,13 @@ impl<'a> GameSceneManager<'a> {
                 }
             }
             GameSceneState::WaitingScenarioResources => {
-                if get_scene_manager().is_load_complete() {
-                    let scene_manager = get_scene_manager_mut();
-                    scene_manager.reset_frame_count_for_refresh_light_probe();
-                    scene_manager.set_start_capture_height_map(true);
-                    self.set_next_game_scene_state(GameSceneState::FinalizingCapture);
-                }
+                let scene_manager = get_scene_manager_mut();
+                scene_manager.reset_frame_count_for_refresh_light_probe();
+                scene_manager.set_start_capture_height_map(true);
+                self.set_next_game_scene_state(GameSceneState::FinalizingCapture);
             }
             GameSceneState::FinalizingCapture => {
-                if get_scene_manager().is_load_complete() {
+                if get_scene_manager().is_essential_load_complete() {
                     // post process after loading
                     self._character_manager.post_process_after_characters_loading();
 

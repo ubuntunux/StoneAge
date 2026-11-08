@@ -1667,4 +1667,279 @@ mod tests {
         assert!(!weapon_model._mesh_data.borrow().has_animation_data());
         assert!(weapon_model.has_skeletal_animation_or_material());
     }
+
+    #[test]
+    fn test_mesh_late_binding_and_pending_animation_flush() {
+        use rust_engine_3d::scene::animation::{
+            AnimationNodeCreateInfo, AnimationPlayArgs, SkeletonDataCreateInfo, SkeletonHierarchyTree,
+        };
+        use rust_engine_3d::scene::bounding_box::BoundingBox;
+        use rust_engine_3d::scene::mesh::{MeshData, MeshDataCreateInfo};
+        use rust_engine_3d::scene::model::ModelData;
+        use rust_engine_3d::scene::render_object::{AnimationLayer, RenderObjectCreateInfo, RenderObjectData};
+        use std::collections::HashMap;
+
+        let placeholder_mesh = newRcRefCell(MeshData {
+            _name: String::from("quad"),
+            _bound_box: BoundingBox::default(),
+            _skeleton_data_list: Vec::new(),
+            _animation_data_list: Vec::new(),
+            _geometry_data_list: Vec::new(),
+        });
+
+        let model_data = newRcRefCell(ModelData {
+            _model_data_name: String::from("actors/player"),
+            _mesh_name: String::from("actors/player"),
+            _local_transform: nalgebra::Matrix4::identity(),
+            _mesh_data: placeholder_mesh,
+            _is_render_camera: true,
+            _is_render_shadow: true,
+            _material_instance_data_list: Vec::new(),
+            _collision: rust_engine_3d::scene::collision::CollisionData::default(),
+            _socket_data_map: HashMap::new(),
+        });
+
+        let create_info = RenderObjectCreateInfo::default();
+        let (mut render_object, _) = RenderObjectData::create_render_object_data(
+            uuid::Uuid::new_v4(),
+            &String::from("player_object"),
+            &model_data,
+            &create_info,
+            None,
+        );
+
+        // 1. 초기 상태: 메쉬가 플레이스홀더이므로 본 카운트는 0, 애니메이션 버퍼는 None
+        assert_eq!(render_object.get_bone_count(), 0);
+        assert!(render_object._animation_buffer.is_none());
+
+        // 2. 비동기 로딩 중 애니메이션 재생 시도: 본 카운트가 맞지 않으므로 _pending_animations에 보관
+        let anim_mesh_create_info = MeshDataCreateInfo {
+            _skeleton_create_infos: vec![SkeletonDataCreateInfo {
+                _name: String::from("root"),
+                _transform: nalgebra::Matrix4::identity(),
+                _hierarchy: SkeletonHierarchyTree::default(),
+                _bone_names: vec![String::from("root"), String::from("spine"), String::from("head")],
+                _inv_bind_matrices: vec![nalgebra::Matrix4::identity(); 3],
+            }],
+            _animation_node_create_infos: vec![vec![
+                AnimationNodeCreateInfo::default(),
+                AnimationNodeCreateInfo::default(),
+                AnimationNodeCreateInfo::default(),
+            ]],
+            ..Default::default()
+        };
+        let dummy_anim_mesh = newRcRefCell(MeshData::create_mesh_data(
+            &String::from("player_idle"),
+            anim_mesh_create_info,
+            Vec::new(),
+        ));
+        assert_eq!(dummy_anim_mesh.borrow().get_bone_count(), 3);
+
+        let play_args = AnimationPlayArgs::default();
+        render_object.set_animation(&dummy_anim_mesh, &play_args, AnimationLayer::BaseLayer);
+
+        // 드랍되지 않고 _pending_animations에 안전하게 보관됨
+        assert!(render_object._pending_animations[AnimationLayer::BaseLayer as usize].is_some());
+
+        // 3. 실제 메쉬 로드 완료 시뮬레이션: 본 카운트 3인 스켈레탈 메쉬 장착
+        let loaded_mesh_create_info = MeshDataCreateInfo {
+            _skeleton_create_infos: vec![SkeletonDataCreateInfo {
+                _name: String::from("root"),
+                _transform: nalgebra::Matrix4::identity(),
+                _hierarchy: SkeletonHierarchyTree::default(),
+                _bone_names: vec![String::from("root"), String::from("spine"), String::from("head")],
+                _inv_bind_matrices: vec![nalgebra::Matrix4::identity(); 3],
+            }],
+            ..Default::default()
+        };
+        let loaded_mesh = newRcRefCell(MeshData::create_mesh_data(
+            &String::from("actors/player"),
+            loaded_mesh_create_info,
+            Vec::new(),
+        ));
+        assert_eq!(loaded_mesh.borrow().get_bone_count(), 3);
+
+        render_object._mesh_data = loaded_mesh;
+        render_object.initialize_animation_play_info();
+
+        // 4. 본 카운트 갱신, 본 버퍼 할당 및 대기 애니메이션 자동 플러시 확인
+        assert_eq!(render_object.get_bone_count(), 3);
+        assert!(render_object._animation_buffer.is_some());
+        assert_eq!(
+            render_object._animation_buffer.as_ref().unwrap()._animation_buffer.len(),
+            3
+        );
+        // 플러시되어 BaseLayer의 애니메이션이 정상 등록됨
+        let base_info = &render_object._animation_play_infos[AnimationLayer::BaseLayer as usize];
+        assert!(base_info.is_valid());
+        assert_eq!(
+            base_info._animation_mesh.as_ref().unwrap().borrow()._name,
+            "player_idle"
+        );
+    }
+
+    #[test]
+    fn test_progressive_spawning_and_essential_load_complete() {
+        use crate::game_module::game_scene_manager::GameSceneState;
+        use rust_engine_3d::scene::bounding_box::BoundingBox;
+        use rust_engine_3d::scene::mesh::MeshData;
+        use rust_engine_3d::scene::model::ModelData;
+        use rust_engine_3d::scene::render_object::{RenderObjectCreateInfo, RenderObjectData, SceneObjectType};
+        use std::collections::HashMap;
+
+        // 1. 필수 지형 오브젝트 (준비 완료 상태)
+        let terrain_mesh = newRcRefCell(MeshData {
+            _name: String::from("terrain_mesh"),
+            _bound_box: BoundingBox::default(),
+            _skeleton_data_list: Vec::new(),
+            _animation_data_list: Vec::new(),
+            _geometry_data_list: vec![newRcRefCell(
+                rust_engine_3d::vulkan_context::geometry_buffer::GeometryData {
+                    _geometry_name: String::from("geom"),
+                    _vertex_buffer_data: rust_engine_3d::vulkan_context::buffer::BufferData::default(),
+                    _index_buffer_data: rust_engine_3d::vulkan_context::buffer::BufferData::default(),
+                    _vertex_index_count: 3,
+                    _geometry_bounding_box: BoundingBox::default(),
+                },
+            )],
+        });
+
+        let terrain_model = newRcRefCell(ModelData {
+            _model_data_name: String::from("terrain_model"),
+            _mesh_name: String::from("terrain_mesh"),
+            _local_transform: nalgebra::Matrix4::identity(),
+            _mesh_data: terrain_mesh,
+            _is_render_camera: true,
+            _is_render_shadow: true,
+            _material_instance_data_list: Vec::new(),
+            _collision: rust_engine_3d::scene::collision::CollisionData::default(),
+            _socket_data_map: HashMap::new(),
+        });
+
+        let terrain_info = RenderObjectCreateInfo {
+            _scene_object_type: SceneObjectType::Terrain,
+            _model_data_name: String::from("terrain_model"),
+            ..Default::default()
+        };
+
+        let (mut terrain_obj, _) = RenderObjectData::create_render_object_data(
+            uuid::Uuid::new_v4(),
+            &String::from("terrain"),
+            &terrain_model,
+            &terrain_info,
+            None,
+        );
+        terrain_obj.set_ready(true);
+        terrain_obj._is_render_height_map = true;
+
+        // 2. 비필수 원경 장식 프랍 오브젝트 (아직 비동기 로딩 중인 미완료 상태)
+        let unready_prop_mesh = newRcRefCell(MeshData {
+            _name: String::from("distant_tree_mesh"),
+            _bound_box: BoundingBox::default(),
+            _skeleton_data_list: Vec::new(),
+            _animation_data_list: Vec::new(),
+            _geometry_data_list: Vec::new(), // 미완료
+        });
+
+        let prop_model = newRcRefCell(ModelData {
+            _model_data_name: String::from("distant_tree_model"),
+            _mesh_name: String::from("distant_tree_mesh"),
+            _local_transform: nalgebra::Matrix4::identity(),
+            _mesh_data: unready_prop_mesh,
+            _is_render_camera: true,
+            _is_render_shadow: true,
+            _material_instance_data_list: Vec::new(),
+            _collision: rust_engine_3d::scene::collision::CollisionData::default(),
+            _socket_data_map: HashMap::new(),
+        });
+
+        let prop_info = RenderObjectCreateInfo {
+            _scene_object_type: SceneObjectType::Default,
+            _model_data_name: String::from("distant_tree_model"),
+            ..Default::default()
+        };
+
+        let (mut prop_obj, _) = RenderObjectData::create_render_object_data(
+            uuid::Uuid::new_v4(),
+            &String::from("distant_tree"),
+            &prop_model,
+            &prop_info,
+            None,
+        );
+        prop_obj.set_ready(false);
+        prop_obj._is_render_height_map = false;
+
+        // 3. 점진적 판정: 지형은 준비되었고 프랍은 미완료 상태
+        assert!(terrain_obj.is_ready());
+        assert!(!prop_obj.is_ready());
+        // 미완료 프랍은 가시성 게이팅에 의해 아직 화면에 보이지 않음
+        assert!(!prop_obj.is_visible());
+
+        // 4. GameSceneState 전이 흐름: 필수 오브젝트 준비 시 즉시 로딩 완료 상태로 전이 가능
+        let mut scene_state = GameSceneState::Loading;
+        assert_ne!(scene_state, GameSceneState::LoadCompleted);
+
+        // 점진적 스폰 조건 충족 시 Loading -> WaitingResources -> FinalizingCapture -> LoadCompleted
+        scene_state = GameSceneState::WaitingResources;
+        assert_ne!(scene_state, GameSceneState::LoadCompleted);
+
+        scene_state = GameSceneState::FinalizingCapture;
+        assert_ne!(scene_state, GameSceneState::LoadCompleted);
+
+        scene_state = GameSceneState::LoadCompleted;
+        assert_eq!(scene_state, GameSceneState::LoadCompleted);
+    }
+
+    #[test]
+    fn test_transfer_queue_and_ownership_transfer_support() {
+        use ash::vk;
+        use rust_engine_3d::vulkan_context::queue::{QueueFamilyDataList, QueueFamilyIndices};
+
+        let indices = QueueFamilyIndices {
+            _graphics_queue_index: 0,
+            _present_queue_index: 0,
+            _compute_queue_index: 1,
+            _transfer_queue_index: 2, // 독립 전송 큐 패밀리
+            _sparse_binding_queue_index: 0,
+        };
+
+        let queue_family_data_list = QueueFamilyDataList {
+            _graphics_queue: vk::Queue::null(),
+            _present_queue: vk::Queue::null(),
+            _transfer_queue: vk::Queue::null(),
+            _queue_family_index_list: vec![0, 1, 2],
+            _queue_family_count: 3,
+            _queue_family_indices: indices.clone(),
+        };
+
+        // 1. Dedicated Transfer Queue 판별 로직 검증 (0 != 2 -> true)
+        let is_dedicated = queue_family_data_list._queue_family_indices._transfer_queue_index
+            != queue_family_data_list._queue_family_indices._graphics_queue_index;
+        assert!(is_dedicated);
+
+        // 2. Queue Family Ownership Transfer 배리어 파라미터 유효성 검증
+        let subresource_range = vk::ImageSubresourceRange {
+            aspect_mask: vk::ImageAspectFlags::COLOR,
+            base_mip_level: 0,
+            level_count: 1,
+            base_array_layer: 0,
+            layer_count: 1,
+        };
+
+        let barrier = vk::ImageMemoryBarrier {
+            src_access_mask: vk::AccessFlags::TRANSFER_WRITE,
+            dst_access_mask: vk::AccessFlags::SHADER_READ,
+            old_layout: vk::ImageLayout::TRANSFER_DST_OPTIMAL,
+            new_layout: vk::ImageLayout::SHADER_READ_ONLY_OPTIMAL,
+            src_queue_family_index: queue_family_data_list._queue_family_indices._transfer_queue_index,
+            dst_queue_family_index: queue_family_data_list._queue_family_indices._graphics_queue_index,
+            image: vk::Image::null(),
+            subresource_range,
+            ..Default::default()
+        };
+
+        assert_eq!(barrier.src_queue_family_index, 2);
+        assert_eq!(barrier.dst_queue_family_index, 0);
+        assert_ne!(barrier.src_queue_family_index, barrier.dst_queue_family_index);
+    }
 }

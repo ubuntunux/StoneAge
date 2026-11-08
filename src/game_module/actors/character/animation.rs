@@ -26,7 +26,8 @@ const DEAD_ANIMATION_BLEND_TIME: f32 = 0.1;
 
 impl<'a> Character<'a> {
     pub fn post_process_restore_animation(&mut self) {
-        let character_data = ptr_as_ref(self._character_data.as_ptr());
+        let character_data = ptr_as_mut(self._character_data.as_ptr());
+        character_data._animation_data.refresh_animation_meshes();
         let animation_data = &character_data._animation_data;
         let render_object = ptr_as_mut(self._render_object.as_ptr());
 
@@ -210,7 +211,8 @@ impl<'a> Character<'a> {
         let current_move_animation_state = self._animation_state._move_animation_state;
         let next_move_animation_state = self._animation_state._next_move_animation_state;
         let next_move_animation_speed = self._animation_state._next_move_animation_speed;
-        let character_data = ptr_as_ref(self._character_data.as_ptr());
+        let character_data = ptr_as_mut(self._character_data.as_ptr());
+        character_data._animation_data.refresh_animation_meshes();
         let animation_data = &character_data._animation_data;
         let render_object = ptr_as_mut(self._render_object.as_ptr());
 
@@ -311,7 +313,8 @@ impl<'a> Character<'a> {
         let next_action_animation_state = self._animation_state._next_action_animation_state;
         self._animation_state._next_action_animation_state = None;
         let next_action_animation_speed = self._animation_state._next_action_animation_speed;
-        let character_data = ptr_as_ref(self._character_data.as_ptr());
+        let character_data = ptr_as_mut(self._character_data.as_ptr());
+        character_data._animation_data.refresh_animation_meshes();
         let animation_data = &character_data._animation_data;
         let render_object = ptr_as_mut(self._render_object.as_ptr());
         let item_manager = get_game_scene_manager().get_item_manager_mut();

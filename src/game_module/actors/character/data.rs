@@ -270,6 +270,7 @@ impl CharacterAudioData {
 }
 
 pub struct CharacterAnimationData {
+    pub _create_info: CharacterAnimationDataCreateInfo,
     pub _attack_animation: RcRefCell<MeshData>,
     pub _attack_animation_speed: f32,
     pub _dance_animation: RcRefCell<MeshData>,
@@ -312,6 +313,7 @@ impl CharacterAnimationData {
     ) -> CharacterAnimationData {
         let engine_resources = get_engine_resources();
         CharacterAnimationData {
+            _create_info: animation_data_create_info.clone(),
             _attack_animation: engine_resources.get_mesh_data(&animation_data_create_info._attack_animation).clone(),
             _attack_animation_speed: animation_data_create_info._attack_animation_speed,
             _dance_animation: engine_resources.get_mesh_data(&animation_data_create_info._dance_animation).clone(),
@@ -363,6 +365,63 @@ impl CharacterAnimationData {
                 .get_animation_layer_data(&animation_data_create_info._upper_animation_layer)
                 .clone(),
         }
+    }
+
+    fn check_and_refresh_mesh(slot: &mut RcRefCell<MeshData>, mesh_name: &str) {
+        if !mesh_name.is_empty() && !slot.borrow().has_animation_data() {
+            let engine_resources = get_engine_resources();
+            if let Some(loaded) = engine_resources.get_loaded_mesh_data(mesh_name) {
+                if loaded.borrow().has_animation_data() {
+                    *slot = loaded;
+                }
+            }
+        }
+    }
+
+    pub fn refresh_animation_meshes(&mut self) {
+        Self::check_and_refresh_mesh(&mut self._attack_animation, &self._create_info._attack_animation);
+        Self::check_and_refresh_mesh(&mut self._dance_animation, &self._create_info._dance_animation);
+        Self::check_and_refresh_mesh(&mut self._dead_animation, &self._create_info._dead_animation);
+        Self::check_and_refresh_mesh(&mut self._eating_animation, &self._create_info._eating_animation);
+        Self::check_and_refresh_mesh(&mut self._hit_animation, &self._create_info._hit_animation);
+        Self::check_and_refresh_mesh(&mut self._hungry_animation, &self._create_info._hungry_animation);
+        Self::check_and_refresh_mesh(&mut self._idle_animation, &self._create_info._idle_animation);
+        Self::check_and_refresh_mesh(&mut self._jump_animation, &self._create_info._jump_animation);
+        Self::check_and_refresh_mesh(&mut self._kick_animation, &self._create_info._kick_animation);
+        Self::check_and_refresh_mesh(
+            &mut self._laying_down_animation,
+            &self._create_info._laying_down_animation,
+        );
+        Self::check_and_refresh_mesh(&mut self._pickup_animation, &self._create_info._pickup_animation);
+        Self::check_and_refresh_mesh(
+            &mut self._power_attack_animation,
+            &self._create_info._power_attack_animation,
+        );
+        Self::check_and_refresh_mesh(&mut self._roll_animation, &self._create_info._roll_animation);
+        Self::check_and_refresh_mesh(&mut self._run_animation, &self._create_info._run_animation);
+        Self::check_and_refresh_mesh(
+            &mut self._running_jump_animation,
+            &self._create_info._running_jump_animation,
+        );
+        Self::check_and_refresh_mesh(
+            &mut self._sit_down_loop_animation,
+            &self._create_info._sit_down_loop_animation,
+        );
+        Self::check_and_refresh_mesh(&mut self._sleep_animation, &self._create_info._sleep_animation);
+        Self::check_and_refresh_mesh(&mut self._wake_up_animation, &self._create_info._wake_up_animation);
+        Self::check_and_refresh_mesh(&mut self._walk_animation, &self._create_info._walk_animation);
+        Self::check_and_refresh_mesh(
+            &mut self._fishing_begin_animation,
+            &self._create_info._fishing_begin_animation,
+        );
+        Self::check_and_refresh_mesh(
+            &mut self._fishing_loop_animation,
+            &self._create_info._fishing_loop_animation,
+        );
+        Self::check_and_refresh_mesh(
+            &mut self._fishing_end_animation,
+            &self._create_info._fishing_end_animation,
+        );
     }
 
     pub fn get_move_animation_spec(
