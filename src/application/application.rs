@@ -97,7 +97,12 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
     }
 
     fn focused(&mut self, focused: bool) {
-        self.set_game_mode(focused);
+        if self._is_game_mode {
+            get_engine_core_mut().set_grab_mode(focused);
+            if focused {
+                get_engine_core_mut().center_mouse_pos();
+            }
+        }
     }
 
     fn update_event(&mut self) {
