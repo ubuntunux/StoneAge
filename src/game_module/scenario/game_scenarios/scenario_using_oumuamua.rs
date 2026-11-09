@@ -57,6 +57,7 @@ pub enum ScenarioPhase {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[serde(default)]
 pub struct ScenarioUsingOumuamuaQuestSaveData {
     pub _has_quest: bool,
     pub _quest_title: Option<String>,
@@ -83,7 +84,9 @@ impl ScenarioUsingOumuamuaQuestSaveData {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[serde(default)]
 pub struct ScenarioUsingOumuamuaSaveData {
+    #[serde(default, skip_serializing_if = "ScenarioDataCreateInfo::is_empty")]
     pub _scenario_create_info: ScenarioDataCreateInfo,
     pub _scenario_phase: String,
     pub _next_scenario_phase: String,
@@ -473,25 +476,32 @@ impl<'a> ScenarioBase<'a> for ScenarioUsingOumuamua<'a> {
         self._scenario_create_info = scenario_save_data._scenario_create_info.clone();
         self._scenario_track.load_scenario_track_data(&scenario_save_data._scenario_track_create_info);
 
-        if let Ok(save_data) = serde_json::from_str::<ScenarioUsingOumuamuaSaveData>(&scenario_save_data._scenario_data)
-        {
-            self._scenario_create_info = save_data._scenario_create_info;
-            if let Ok(phase) = save_data._scenario_phase.parse::<ScenarioPhase>() {
-                self._scenario_track._scenario_phase = phase;
+        match serde_json::from_str::<ScenarioUsingOumuamuaSaveData>(&scenario_save_data._scenario_data) {
+            Ok(save_data) => {
+                if !save_data._scenario_create_info.is_empty() {
+                    self._scenario_create_info = save_data._scenario_create_info;
+                }
+                if let Ok(phase) = save_data._scenario_phase.parse::<ScenarioPhase>() {
+                    self._scenario_track._scenario_phase = phase;
+                }
+                if let Ok(next_phase) = save_data._next_scenario_phase.parse::<ScenarioPhase>() {
+                    self._scenario_track._next_scenario_phase = next_phase;
+                }
+                self._scenario_track._phase_duration = save_data._phase_duration;
+                self._scenario_track._next_phase_duration = save_data._next_phase_duration;
+                self._scenario_track._phase_time = save_data._phase_time;
+                self.load_quest_save_data(&save_data._quest_save_data);
             }
-            if let Ok(next_phase) = save_data._next_scenario_phase.parse::<ScenarioPhase>() {
-                self._scenario_track._next_scenario_phase = next_phase;
+            Err(error) => {
+                log::error!("Failed to deserialize ScenarioUsingOumuamuaSaveData: {error:?}");
             }
-            self._scenario_track._phase_duration = save_data._phase_duration;
-            self._scenario_track._next_phase_duration = save_data._next_phase_duration;
-            self._scenario_track._phase_time = save_data._phase_time;
-            self.load_quest_save_data(&save_data._quest_save_data);
         }
+        self._scenario_create_info.restore_static_scene_from_template(self.get_scenario_type());
     }
 
     fn get_scenario_save_data(&self) -> GameScenarioCreateInfo {
         let scenario_save_data = ScenarioUsingOumuamuaSaveData {
-            _scenario_create_info: self._scenario_create_info.clone(),
+            _scenario_create_info: ScenarioDataCreateInfo::default(),
             _scenario_phase: self._scenario_track._scenario_phase.to_string(),
             _next_scenario_phase: self._scenario_track._next_scenario_phase.to_string(),
             _phase_duration: self._scenario_track._phase_duration,
@@ -501,7 +511,7 @@ impl<'a> ScenarioBase<'a> for ScenarioUsingOumuamua<'a> {
         };
         GameScenarioCreateInfo {
             _scenario_type: self.get_scenario_type(),
-            _scenario_create_info: self._scenario_create_info.clone(),
+            _scenario_create_info: self._scenario_create_info.get_save_data(),
             _scenario_track_create_info: self._scenario_track.save_scenario_track_data(),
             _scenario_data: serde_json::to_string(&scenario_save_data).unwrap_or_default(),
         }
@@ -529,6 +539,7 @@ impl<'a> ScenarioBase<'a> for ScenarioUsingOumuamua<'a> {
     fn on_open_game_scene(&mut self, _game_scene_data_name: &str) {
         let game_scene_manager = get_game_scene_manager_mut();
         game_scene_manager.spawn_game_scenario_objects(&self._scenario_create_info);
+        self._scenario_create_info.reset();
         self._player = get_character_manager().get_maybe_player().clone();
         self._prop_monolith = game_scene_manager.get_prop_manager().get_prop_by_name(PROP_NAME_MONOLITH).cloned();
 
@@ -670,5 +681,64 @@ impl<'a> ScenarioBase<'a> for ScenarioUsingOumuamua<'a> {
                 self._scenario_track.update_scenario_phase_time(delta_time as f32);
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_scenario_using_oumuamua_save_data_deserialization_without_scenario_create_info() {
+        let json_data = r#"{
+            "_scenario_phase": "None",
+            "_next_scenario_phase": "None",
+            "_phase_duration": null,
+            "_next_phase_duration": null,
+            "_phase_time": 0.0,
+            "_quest_save_data": {
+                "_has_quest": true,
+                "_quest_title": "Gather materials",
+                "_sub_quest_gather_wood": {"_is_completed": true},
+                "_sub_quest_gather_energy_ball": {"_is_completed": false}
+            }
+        }"#;
+
+        let save_data: ScenarioUsingOumuamuaSaveData =
+            serde_json::from_str(json_data).expect("ScenarioUsingOumuamuaSaveData deserialization should succeed");
+        assert_eq!(save_data._scenario_phase, "None");
+        assert!(save_data._scenario_create_info.is_empty());
+        assert!(save_data._quest_save_data._has_quest);
+
+        let wood_quest =
+            save_data._quest_save_data._sub_quest_gather_wood.expect("_sub_quest_gather_wood must be present");
+        assert!(wood_quest._is_completed);
+
+        let energy_quest = save_data
+            ._quest_save_data
+            ._sub_quest_gather_energy_ball
+            .expect("_sub_quest_gather_energy_ball must be present");
+        assert!(!energy_quest._is_completed);
+    }
+
+    #[test]
+    fn test_scenario_using_oumuamua_save_data_roundtrip_omits_empty_create_info() {
+        let save_data = ScenarioUsingOumuamuaSaveData {
+            _scenario_create_info: ScenarioDataCreateInfo::default(),
+            _scenario_phase: "Teleport".to_string(),
+            _next_scenario_phase: "Teleport".to_string(),
+            _phase_duration: None,
+            _next_phase_duration: None,
+            _phase_time: 5.0,
+            _quest_save_data: ScenarioUsingOumuamuaQuestSaveData::default(),
+        };
+
+        let serialized = serde_json::to_string(&save_data).expect("Serialization failed");
+        assert!(!serialized.contains("_scenario_create_info"));
+
+        let deserialized: ScenarioUsingOumuamuaSaveData =
+            serde_json::from_str(&serialized).expect("Deserialization failed");
+        assert_eq!(deserialized._scenario_phase, "Teleport");
+        assert!(deserialized._scenario_create_info.is_empty());
     }
 }

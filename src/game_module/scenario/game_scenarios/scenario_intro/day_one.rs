@@ -54,6 +54,7 @@ enum ScenarioPhase {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[serde(default)]
 struct ScenarioDayOneSaveData {
     _load_pos_alien_alpha: Vector3<f32>,
     _load_pos_alien_beta: Vector3<f32>,
@@ -324,10 +325,16 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
 
     fn load_scenario_save_data(&mut self, scenario_save_data: &GameScenarioCreateInfo) {
         self._scenario_create_info = scenario_save_data._scenario_create_info.clone();
+        self._scenario_create_info.restore_static_scene_from_template(self.get_scenario_type());
         self._scenario_track.load_scenario_track_data(&scenario_save_data._scenario_track_create_info);
-        if let Ok(data) = serde_json::from_str::<ScenarioDayOneSaveData>(&scenario_save_data._scenario_data) {
-            self._load_pos_alien_alpha = data._load_pos_alien_alpha;
-            self._load_pos_alien_beta = data._load_pos_alien_beta;
+        match serde_json::from_str::<ScenarioDayOneSaveData>(&scenario_save_data._scenario_data) {
+            Ok(data) => {
+                self._load_pos_alien_alpha = data._load_pos_alien_alpha;
+                self._load_pos_alien_beta = data._load_pos_alien_beta;
+            }
+            Err(error) => {
+                log::error!("Failed to deserialize ScenarioDayOneSaveData: {error:?}");
+            }
         }
     }
 
@@ -338,7 +345,7 @@ impl<'a> ScenarioBase<'a> for ScenarioDayOne<'a> {
         };
         GameScenarioCreateInfo {
             _scenario_type: self.get_scenario_type(),
-            _scenario_create_info: self._scenario_create_info.clone(),
+            _scenario_create_info: self._scenario_create_info.get_save_data(),
             _scenario_track_create_info: self._scenario_track.save_scenario_track_data(),
             _scenario_data: serde_json::to_string(&save_data).unwrap_or_default(),
         }

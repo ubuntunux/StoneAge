@@ -30,6 +30,7 @@ enum ScenarioPhase {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[serde(default)]
 struct ScenarioWrapUpTheDaySaveData {
     pub _sleep_timer: f32,
     pub _skip_wakeup: bool,
@@ -102,10 +103,16 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
 
     fn load_scenario_save_data(&mut self, scenario_save_data: &GameScenarioCreateInfo) {
         self._scenario_create_info = scenario_save_data._scenario_create_info.clone();
+        self._scenario_create_info.restore_static_scene_from_template(self.get_scenario_type());
         self._scenario_track.load_scenario_track_data(&scenario_save_data._scenario_track_create_info);
-        if let Ok(data) = serde_json::from_str::<ScenarioWrapUpTheDaySaveData>(&scenario_save_data._scenario_data) {
-            self._sleep_timer = data._sleep_timer;
-            self._skip_wakeup = data._skip_wakeup;
+        match serde_json::from_str::<ScenarioWrapUpTheDaySaveData>(&scenario_save_data._scenario_data) {
+            Ok(data) => {
+                self._sleep_timer = data._sleep_timer;
+                self._skip_wakeup = data._skip_wakeup;
+            }
+            Err(error) => {
+                log::error!("Failed to deserialize ScenarioWrapUpTheDaySaveData: {error:?}");
+            }
         }
     }
 
@@ -116,7 +123,7 @@ impl<'a> ScenarioBase<'a> for ScenarioWrapUpTheDay<'a> {
         };
         GameScenarioCreateInfo {
             _scenario_type: self.get_scenario_type(),
-            _scenario_create_info: self._scenario_create_info.clone(),
+            _scenario_create_info: self._scenario_create_info.get_save_data(),
             _scenario_track_create_info: self._scenario_track.save_scenario_track_data(),
             _scenario_data: serde_json::to_string(&save_data).unwrap_or_default(),
         }

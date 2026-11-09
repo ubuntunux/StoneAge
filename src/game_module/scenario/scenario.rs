@@ -78,6 +78,7 @@ pub struct ScenarioDataCreateInfo {
     pub _player: CharacterCreateInfoMap,
     pub _props: PropCreateInfoMap,
     pub _game_scenes: GameSceneCreateInfoMap,
+    #[serde(skip_serializing_if = "SceneDataCreateInfo::is_empty")]
     pub _scene: SceneDataCreateInfo,
 }
 
@@ -88,6 +89,34 @@ impl ScenarioDataCreateInfo {
 
     pub fn reset(&mut self) {
         *self = ScenarioDataCreateInfo::default();
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self._characters.is_empty()
+            && self._items.is_empty()
+            && self._player.is_empty()
+            && self._props.is_empty()
+            && self._game_scenes.is_empty()
+            && self._scene.is_empty()
+    }
+
+    pub fn get_save_data(&self) -> ScenarioDataCreateInfo {
+        ScenarioDataCreateInfo {
+            _characters: self._characters.clone(),
+            _items: self._items.clone(),
+            _player: self._player.clone(),
+            _props: self._props.clone(),
+            _game_scenes: self._game_scenes.clone(),
+            _scene: SceneDataCreateInfo::default(),
+        }
+    }
+
+    pub fn restore_static_scene_from_template(&mut self, scenario_type: ScenarioType) {
+        if !self.is_empty() {
+            let template_data = crate::game_module::game_service_locator::get_game_resources()
+                .get_scenario_data(scenario_type.get_scenario_data_name());
+            self._scene = template_data.borrow()._scene.clone();
+        }
     }
 
     pub fn spawn_and_reset_if_matching(&mut self, game_scene_data_name: &str) {
@@ -138,4 +167,118 @@ pub trait ScenarioBase<'a> {
     fn on_close_game_scene(&mut self, game_scene_data_name: &str);
     fn on_open_game_scene(&mut self, game_scene_data_name: &str);
     fn update_game_scenario(&mut self, any_key_hold: bool, any_key_pressed: bool, delta_time: f64);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::game_module::actors::character::CharacterCreateInfo;
+    use crate::game_module::actors::items::ItemCreateInfo;
+    use crate::game_module::actors::props::PropCreateInfo;
+    use rust_engine_3d::scene::render_object::{RenderObjectCreateInfo, RenderObjectSaveData};
+
+    #[test]
+    fn test_scenario_save_data_excludes_static_scene_objects_and_preserves_dynamic_entities() {
+        let mut scenario_create_info = ScenarioDataCreateInfo::default();
+
+        // 1. Add dynamic entities (character, item, prop, player)
+        scenario_create_info._characters.insert(
+            String::from("dino"),
+            CharacterCreateInfo {
+                _character_data_name: String::from("characters/trex"),
+                ..Default::default()
+            },
+        );
+        scenario_create_info._items.insert(
+            String::from("apple"),
+            ItemCreateInfo {
+                _item_data_name: String::from("items/apple"),
+                ..Default::default()
+            },
+        );
+        scenario_create_info._props.insert(
+            String::from("torch"),
+            PropCreateInfo {
+                _prop_data_name: String::from("props/campfire"),
+                ..Default::default()
+            },
+        );
+        scenario_create_info._player.insert(
+            String::from("player"),
+            CharacterCreateInfo {
+                _character_data_name: String::from("characters/aru"),
+                ..Default::default()
+            },
+        );
+
+        // 2. Add static scene object (terrain / static mesh)
+        scenario_create_info._scene._static_objects.insert(
+            String::from("terrain_mountain"),
+            RenderObjectCreateInfo {
+                _model_data_name: String::from("environments/mountain"),
+                ..Default::default()
+            },
+        );
+        assert!(!scenario_create_info._scene.is_empty());
+
+        // 3. Obtain save data via get_save_data()
+        let save_data = scenario_create_info.get_save_data();
+
+        // 4. Verify dynamic entities are preserved
+        assert_eq!(save_data._characters.len(), 1);
+        assert_eq!(save_data._items.len(), 1);
+        assert_eq!(save_data._props.len(), 1);
+        assert_eq!(save_data._player.len(), 1);
+
+        // 5. Verify static scene objects are stripped
+        assert!(save_data._scene.is_empty());
+
+        // 6. Verify serialized JSON omits _scene entirely
+        let json_str = serde_json::to_string(&save_data).expect("Serialization failed");
+        assert!(!json_str.contains("terrain_mountain"));
+        assert!(!json_str.contains("\"_scene\":"));
+        assert!(json_str.contains("characters/trex"));
+        assert!(json_str.contains("items/apple"));
+        assert!(json_str.contains("props/campfire"));
+
+        // 7. Verify deserialization restores dynamic data safely
+        let deserialized: ScenarioDataCreateInfo = serde_json::from_str(&json_str).expect("Deserialization failed");
+        assert_eq!(deserialized._characters.len(), 1);
+        assert_eq!(deserialized._items.len(), 1);
+        assert_eq!(deserialized._props.len(), 1);
+        assert_eq!(deserialized._player.len(), 1);
+        assert!(deserialized._scene.is_empty());
+    }
+
+    #[test]
+    fn test_render_object_save_data_skips_animation_buffer_and_transforms() {
+        use rust_engine_3d::scene::animation::AnimationPlayInfoSaveData;
+
+        let play_info = AnimationPlayInfoSaveData {
+            _prev_animation_play_time: 1.0,
+            _animation_play_time: 1.5,
+            _animation_end_time: Some(2.0),
+            _animation_transforms: Vec::new(),
+            _last_animation_transforms: Vec::new(),
+            _animation_index: 0,
+            ..Default::default()
+        };
+
+        let render_save_data = RenderObjectSaveData {
+            _render_object_name: String::from("actor_character"),
+            _animation_play_infos: vec![play_info],
+            _animation_buffer: None,
+        };
+
+        let json_str = serde_json::to_string(&render_save_data).expect("Serialization failed");
+        assert!(!json_str.contains("_animation_buffer"));
+        assert!(!json_str.contains("_animation_transforms"));
+
+        let deserialized: RenderObjectSaveData = serde_json::from_str(&json_str).expect("Deserialization failed");
+        assert_eq!(deserialized._render_object_name, "actor_character");
+        assert!(deserialized._animation_buffer.is_none());
+        assert_eq!(deserialized._animation_play_infos.len(), 1);
+        assert!(deserialized._animation_play_infos[0]._animation_transforms.is_empty());
+        assert!(deserialized._animation_play_infos[0]._last_animation_transforms.is_empty());
+    }
 }

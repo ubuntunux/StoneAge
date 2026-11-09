@@ -68,6 +68,7 @@ enum ScenarioPhase {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[serde(default)]
 pub struct ScenarioIntroQuestSaveData {
     pub _has_quest: bool,
     pub _quest_title: Option<String>,
@@ -95,7 +96,9 @@ impl ScenarioIntroQuestSaveData {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[serde(default)]
 struct ScenarioIntroSaveData {
+    #[serde(default, skip_serializing_if = "ScenarioDataCreateInfo::is_empty")]
     pub _scenario_create_info: ScenarioDataCreateInfo,
     pub _scenario_phase: String,
     pub _next_scenario_phase: String,
@@ -106,6 +109,7 @@ struct ScenarioIntroSaveData {
     pub _wakeup_delay_aru: f32,
     pub _wakeup_delay_ewa: f32,
     pub _wakeup_delay_koa: f32,
+    pub _is_sleeping_completed: bool,
     #[serde(default)]
     pub _quest_save_data: ScenarioIntroQuestSaveData,
 }
@@ -142,6 +146,7 @@ pub struct ScenarioIntro<'a> {
     _around_end_rotation: Vector3<f32>,
     _scenario_track: ScenarioTrack<ScenarioPhase>,
     _story_board_phase: usize,
+    _is_sleeping_completed: bool,
 }
 
 impl<'a> ScenarioIntro<'a> {
@@ -181,6 +186,7 @@ impl<'a> ScenarioIntro<'a> {
             _around_end_rotation: AROUND_END_ROT,
             _scenario_track: ScenarioTrack::new(ScenarioPhase::None, ScenarioPhase::Begin),
             _story_board_phase: 0,
+            _is_sleeping_completed: false,
         })
     }
 
@@ -554,9 +560,10 @@ impl<'a> ScenarioIntro<'a> {
             scenario_wrap_up_the_day.borrow_mut().set_skip_wakeup(true);
             if scenario_wrap_up_the_day.borrow().is_sleeping() {
                 self.complete_sub_quest_sleep();
+                self._is_sleeping_completed = true;
             }
             return true;
-        } else if is_quest_item_completed(&self._sub_quest_sleep) {
+        } else if is_quest_item_completed(&self._sub_quest_sleep) || self._is_sleeping_completed {
             self.complete_sub_quest_sleep();
             self.clear_all();
             game_scene_manager.request_open_game_scenario(ScenarioType::ScenarioIntro_Ufo);
@@ -802,19 +809,26 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
 
     fn load_scenario_save_data(&mut self, scenario_save_data: &GameScenarioCreateInfo) {
         self._scenario_create_info = scenario_save_data._scenario_create_info.clone();
+        self._scenario_create_info.restore_static_scene_from_template(self.get_scenario_type());
         self._scenario_track.load_scenario_track_data(&scenario_save_data._scenario_track_create_info);
-        if let Ok(data) = serde_json::from_str::<ScenarioIntroSaveData>(&scenario_save_data._scenario_data) {
-            self._story_board_phase = data._story_board_phase;
-            self._wakeup_delay_aru = data._wakeup_delay_aru;
-            self._wakeup_delay_ewa = data._wakeup_delay_ewa;
-            self._wakeup_delay_koa = data._wakeup_delay_koa;
-            self.load_quest_save_data(&data._quest_save_data);
+        match serde_json::from_str::<ScenarioIntroSaveData>(&scenario_save_data._scenario_data) {
+            Ok(data) => {
+                self._story_board_phase = data._story_board_phase;
+                self._wakeup_delay_aru = data._wakeup_delay_aru;
+                self._wakeup_delay_ewa = data._wakeup_delay_ewa;
+                self._wakeup_delay_koa = data._wakeup_delay_koa;
+                self._is_sleeping_completed = data._is_sleeping_completed;
+                self.load_quest_save_data(&data._quest_save_data);
+            }
+            Err(error) => {
+                log::error!("Failed to deserialize ScenarioIntroSaveData: {error:?}");
+            }
         }
     }
 
     fn get_scenario_save_data(&self) -> GameScenarioCreateInfo {
         let save_data = ScenarioIntroSaveData {
-            _scenario_create_info: self._scenario_create_info.clone(),
+            _scenario_create_info: ScenarioDataCreateInfo::default(),
             _scenario_phase: self._scenario_track._scenario_phase.to_string(),
             _next_scenario_phase: self._scenario_track._next_scenario_phase.to_string(),
             _phase_duration: self._scenario_track._phase_duration,
@@ -824,12 +838,13 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
             _wakeup_delay_aru: self._wakeup_delay_aru,
             _wakeup_delay_ewa: self._wakeup_delay_ewa,
             _wakeup_delay_koa: self._wakeup_delay_koa,
+            _is_sleeping_completed: self._is_sleeping_completed,
             _quest_save_data: self.get_quest_save_data(),
         };
 
         GameScenarioCreateInfo {
             _scenario_type: self.get_scenario_type(),
-            _scenario_create_info: self._scenario_create_info.clone(),
+            _scenario_create_info: self._scenario_create_info.get_save_data(),
             _scenario_track_create_info: self._scenario_track.save_scenario_track_data(),
             _scenario_data: serde_json::to_string(&save_data).unwrap_or_default(),
         }
@@ -856,6 +871,7 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
 
     fn complete_sub_quest_sleep(&mut self) {
         self.complete_sub_quest_sleep();
+        self._is_sleeping_completed = true;
     }
 
     fn is_end_of_scenario(&self) -> bool {
@@ -1248,5 +1264,75 @@ impl<'a> ScenarioBase<'a> for ScenarioIntro<'a> {
                 self._scenario_track.update_scenario_phase_time(delta_time as f32);
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_scenario_intro_save_data_deserialization_without_scenario_create_info() {
+        let json_data = r#"{
+            "_scenario_phase": "ReturnHome",
+            "_next_scenario_phase": "ReturnHome",
+            "_phase_duration": null,
+            "_next_phase_duration": null,
+            "_phase_time": 17.299238,
+            "_story_board_phase": 0,
+            "_wakeup_delay_aru": -6.266387,
+            "_wakeup_delay_ewa": -4.766388,
+            "_wakeup_delay_koa": -4.266389,
+            "_is_sleeping_completed": false,
+            "_quest_save_data": {
+                "_has_quest": true,
+                "_quest_title": "Gather food for the hungry family.",
+                "_sub_quest_go_to_the_forest": {"_is_completed": true},
+                "_sub_quest_hit_the_tree": {"_is_completed": true},
+                "_sub_quest_gather_food": {"_is_completed": true},
+                "_sub_quest_return_home": {"_is_completed": true},
+                "_sub_quest_ask_ewa_to_cook": {"_is_completed": true},
+                "_sub_quest_eat_food": {"_is_completed": true},
+                "_sub_quest_sleep": {"_is_completed": false}
+            }
+        }"#;
+
+        let save_data: ScenarioIntroSaveData =
+            serde_json::from_str(json_data).expect("ScenarioIntroSaveData deserialization should succeed");
+        assert_eq!(save_data._scenario_phase, "ReturnHome");
+        assert!(save_data._scenario_create_info.is_empty());
+        assert!(save_data._quest_save_data._has_quest);
+        assert!(!save_data._is_sleeping_completed);
+
+        let sleep_quest = save_data._quest_save_data._sub_quest_sleep.expect("_sub_quest_sleep must be present");
+        assert!(!sleep_quest._is_completed);
+
+        let eat_quest = save_data._quest_save_data._sub_quest_eat_food.expect("_sub_quest_eat_food must be present");
+        assert!(eat_quest._is_completed);
+    }
+
+    #[test]
+    fn test_scenario_intro_save_data_roundtrip_omits_empty_create_info() {
+        let save_data = ScenarioIntroSaveData {
+            _scenario_create_info: ScenarioDataCreateInfo::default(),
+            _scenario_phase: "ReturnHome".to_string(),
+            _next_scenario_phase: "ReturnHome".to_string(),
+            _phase_duration: None,
+            _next_phase_duration: None,
+            _phase_time: 10.0,
+            _story_board_phase: 0,
+            _wakeup_delay_aru: 0.0,
+            _wakeup_delay_ewa: 0.0,
+            _wakeup_delay_koa: 0.0,
+            _is_sleeping_completed: false,
+            _quest_save_data: ScenarioIntroQuestSaveData::default(),
+        };
+
+        let serialized = serde_json::to_string(&save_data).expect("Serialization failed");
+        assert!(!serialized.contains("_scenario_create_info"));
+
+        let deserialized: ScenarioIntroSaveData = serde_json::from_str(&serialized).expect("Deserialization failed");
+        assert_eq!(deserialized._scenario_phase, "ReturnHome");
+        assert!(deserialized._scenario_create_info.is_empty());
     }
 }

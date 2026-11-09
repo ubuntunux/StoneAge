@@ -42,6 +42,7 @@ pub enum ScenarioPhase {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[serde(default)]
 struct ScenarioRevolutionSaveData {
     pub _position_timer: f32,
     pub _position_y: f32,
@@ -135,10 +136,16 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
 
     fn load_scenario_save_data(&mut self, scenario_save_data: &GameScenarioCreateInfo) {
         self._scenario_create_info = scenario_save_data._scenario_create_info.clone();
+        self._scenario_create_info.restore_static_scene_from_template(self.get_scenario_type());
         self._scenario_track.load_scenario_track_data(&scenario_save_data._scenario_track_create_info);
-        if let Ok(data) = serde_json::from_str::<ScenarioRevolutionSaveData>(&scenario_save_data._scenario_data) {
-            self._position_timer = data._position_timer;
-            self._position_y = data._position_y;
+        match serde_json::from_str::<ScenarioRevolutionSaveData>(&scenario_save_data._scenario_data) {
+            Ok(data) => {
+                self._position_timer = data._position_timer;
+                self._position_y = data._position_y;
+            }
+            Err(error) => {
+                log::error!("Failed to deserialize ScenarioRevolutionSaveData: {error:?}");
+            }
         }
     }
 
@@ -149,7 +156,7 @@ impl<'a> ScenarioBase<'a> for ScenarioRevolution<'a> {
         };
         GameScenarioCreateInfo {
             _scenario_type: self.get_scenario_type(),
-            _scenario_create_info: self._scenario_create_info.clone(),
+            _scenario_create_info: self._scenario_create_info.get_save_data(),
             _scenario_track_create_info: self._scenario_track.save_scenario_track_data(),
             _scenario_data: serde_json::to_string(&save_data).unwrap_or_default(),
         }

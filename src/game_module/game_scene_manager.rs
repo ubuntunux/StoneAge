@@ -274,11 +274,10 @@ impl<'a> GameSceneManager<'a> {
 
         self._completed_game_scenarios = game_save_data._completed_game_scenarios.clone();
         for game_scenario_create_info in game_save_data._game_scenarios.iter() {
-            let opened_scenario = self.open_game_scenario_data(
-                game_scenario_create_info._scenario_type,
-                &game_scenario_create_info._scenario_create_info,
-                false,
-            );
+            let mut scenario_create_info = game_scenario_create_info._scenario_create_info.clone();
+            scenario_create_info.restore_static_scene_from_template(game_scenario_create_info._scenario_type);
+            let opened_scenario =
+                self.open_game_scenario_data(game_scenario_create_info._scenario_type, &scenario_create_info, false);
             opened_scenario.borrow_mut().load_scenario_save_data(game_scenario_create_info);
         }
 
@@ -350,10 +349,12 @@ impl<'a> GameSceneManager<'a> {
         game_save_data._player_records = get_game_ui_manager()._player_records.clone();
         game_save_data._discovered_world_data = self._discovered_world_data.clone();
 
-        game_save_data._game_scenes.insert(
-            self.get_current_game_scene_data_name().clone(),
-            self.get_game_scene_save_data(),
-        );
+        if !self.get_current_game_scene_data_name().is_empty() {
+            game_save_data._game_scenes.insert(
+                self.get_current_game_scene_data_name().clone(),
+                self.get_game_scene_save_data(),
+            );
+        }
         game_save_data._completed_game_scenarios = self._completed_game_scenarios.clone();
         game_save_data._game_scenarios =
             self._scenarios.values().map(|scenario| scenario.borrow().get_scenario_save_data()).collect();
