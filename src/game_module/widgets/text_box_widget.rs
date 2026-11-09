@@ -402,3 +402,21 @@ impl<'a> TextBoxWidget<'a> {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_text_box_korean_content() {
+        let korean_text = String::from("스톤에이지 월드에 오신 것을 환영합니다!");
+        let content = TextBoxContent::Text(korean_text.clone());
+        if let TextBoxContent::Text(text) = content {
+            assert_eq!(text, korean_text);
+            assert!(text.contains("스톤에이지"));
+            assert!(text.contains("환영합니다"));
+        } else {
+            panic!("Expected TextBoxContent::Text");
+        }
+    }
+}
