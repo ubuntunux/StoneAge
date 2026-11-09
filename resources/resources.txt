@@ -15,6 +15,10 @@ resources/effects/effect_test.effect
 resources/effects/rain.effect
 resources/engine_resources/effects/default.effect
 resources/engine_resources/externals/blender_assets.cats.txt
+resources/engine_resources/externals/fonts/D2Coding-Regular.ttf
+resources/engine_resources/externals/fonts/NanumGothicCoding-Regular.ttf
+resources/engine_resources/externals/fonts/Pretendard-Bold.ttf
+resources/engine_resources/externals/fonts/Pretendard-Regular.ttf
 resources/engine_resources/externals/fonts/UbuntuSansMono-Bold.ttf
 resources/engine_resources/externals/fonts/UbuntuSansMono-Regular.ttf
 resources/engine_resources/externals/sounds/default.wav
@@ -68,6 +72,10 @@ resources/engine_resources/externals/textures/fonts/D2Coding-Regular_Korean.meta
 resources/engine_resources/externals/textures/fonts/D2Coding-Regular_Korean.png
 resources/engine_resources/externals/textures/fonts/NanumGothicCoding-Regular_Korean.meta
 resources/engine_resources/externals/textures/fonts/NanumGothicCoding-Regular_Korean.png
+resources/engine_resources/externals/textures/fonts/Pretendard-Bold_Basic_Latin.png
+resources/engine_resources/externals/textures/fonts/Pretendard-Bold_Korean.meta
+resources/engine_resources/externals/textures/fonts/Pretendard-Bold_Korean.png
+resources/engine_resources/externals/textures/fonts/Pretendard-Regular_Basic_Latin.png
 resources/engine_resources/externals/textures/fonts/UbuntuSansMono-Bold_Basic_Latin.meta
 resources/engine_resources/externals/textures/fonts/UbuntuSansMono-Bold_Basic_Latin.png
 resources/engine_resources/externals/textures/fonts/UbuntuSansMono-Regular_Basic_Latin.meta
@@ -76,6 +84,9 @@ resources/engine_resources/externals/textures/mutant/mutant_diffuse.png
 resources/engine_resources/externals/textures/mutant/mutant_normal.png
 resources/engine_resources/fonts/D2Coding-Regular_Korean.font
 resources/engine_resources/fonts/NanumGothicCoding-Regular_Korean.font
+resources/engine_resources/fonts/Pretendard-Bold_Basic_Latin.font
+resources/engine_resources/fonts/Pretendard-Bold_Korean.font
+resources/engine_resources/fonts/Pretendard-Regular_Basic_Latin.font
 resources/engine_resources/fonts/UbuntuSansMono-Bold_Basic_Latin.font
 resources/engine_resources/fonts/UbuntuSansMono-Regular_Basic_Latin.font
 resources/engine_resources/material_instances/color_blue.matinst
