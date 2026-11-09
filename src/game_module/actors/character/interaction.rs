@@ -5,17 +5,18 @@ use crate::game_module::actors::items::ItemCreateInfo;
 use crate::game_module::behavior::behavior_base::BehaviorState;
 use crate::game_module::game_client::GamePhase;
 use crate::game_module::game_constants::{
-    AUDIO_PICKUP_ITEM, DEFAULT_GATE_NAME, INTIMACY_FEEDING_MULTIPLIER, INTIMACY_INTERACTION_ADD, ITEM_ENERGY_BALL,
-    TAME_ENERGY_BALL_PICKUP_DELAY, TAME_ENERGY_BALL_VELOCITY_Y,
+    AUDIO_PICKUP_ITEM, AUDIO_QUEST_COMPLETE, DEFAULT_GATE_NAME, INTIMACY_FEEDING_MULTIPLIER, INTIMACY_INTERACTION_ADD,
+    ITEM_ENERGY_BALL, MATERIAL_WORLDMAP, TAME_ENERGY_BALL_PICKUP_DELAY, TAME_ENERGY_BALL_VELOCITY_Y,
 };
 use crate::game_module::game_service_locator::{
     get_character_manager_mut, get_game_client, get_game_client_mut, get_game_scene_manager,
     get_game_scene_manager_mut, get_game_ui_manager, get_game_ui_manager_mut,
 };
 use crate::game_module::scenario::scenario::ScenarioType;
+use crate::game_module::widgets::toolbox_widget::item_tab_widget::ToolboxIconType;
 use nalgebra::Vector3;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
-use rust_engine_3d::core::engine_service_locator::get_audio_manager_mut;
+use rust_engine_3d::core::engine_service_locator::{get_audio_manager_mut, get_engine_resources};
 use rust_engine_3d::utilities::system::RcRefCell;
 
 const PICKUP_ANIMATION_SPEED: f32 = 2.0;
@@ -47,6 +48,32 @@ impl<'a> Character<'a> {
                 InteractionObject::PropMonolith(prop) => {
                     self.look_at(prop.borrow().get_position());
                     self.set_move_idle();
+
+                    let (linked_stage, _linked_monolith) = {
+                        let prop_borrow = prop.borrow();
+                        let stage = prop_borrow
+                            .get_instance_parameters("_linked_stage")
+                            .and_then(|v| v.as_str().map(String::from));
+                        let monolith = prop_borrow
+                            .get_instance_parameters("_linked_monolith")
+                            .and_then(|v| v.as_str().map(String::from));
+                        (stage, monolith)
+                    };
+
+                    if let Some(stage_name) = linked_stage
+                        && let Some(icon_type) = ToolboxIconType::from_stage_data_name(&stage_name)
+                    {
+                        let unlocked = get_game_ui_manager().get_unlocked_toolbox_items();
+                        if !unlocked.contains(&icon_type) {
+                            get_game_ui_manager_mut().add_teleport_destination(icon_type);
+                            let title = format!("New Destination Discovered: {}", icon_type.as_str());
+                            let icon_material =
+                                get_engine_resources().get_material_instance_data(MATERIAL_WORLDMAP).clone();
+                            get_game_ui_manager_mut().notify_message(&title, Some(icon_material));
+                            get_audio_manager_mut().play_audio_bank(AUDIO_QUEST_COMPLETE, AudioLoop::ONCE, None);
+                        }
+                    }
+
                     get_game_client_mut().set_next_game_phase(GamePhase::Interaction);
                     get_game_ui_manager_mut().open_toolbox_interaction_menu(prop);
                 }

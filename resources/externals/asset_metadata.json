@@ -3263,7 +3263,7 @@
             "asset_path": "environments/rock",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/models/environments/rock.blend",
             "guid": "",
-            "mtime": 1790515587.7746212,
+            "mtime": 1793552814.3400903,
             "data": {}
         }
     ],
@@ -4289,69 +4289,21 @@
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/trex_02/trex_02.blend": [
+    "/mnt/Workspace/StoneAge/resources/externals/meshes/props/spirit_ball.blend": [
         {
             "asset_type": "MATERIAL_INSTANCE",
-            "asset_path": "characters/trex_02",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/trex_02/trex_02.blend",
+            "asset_path": "props/spirit_ball",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/props/spirit_ball.blend",
             "guid": "",
-            "mtime": 1790438512.3081713,
+            "mtime": 1793552814.3294108,
             "data": {}
         },
         {
             "asset_type": "MESH",
-            "asset_path": "characters/trex_02/attack",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/trex_02/trex_02.blend",
+            "asset_path": "props/spirit_ball",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/props/spirit_ball.blend",
             "guid": "",
-            "mtime": 1790438512.3081713,
-            "data": {}
-        },
-        {
-            "asset_type": "MESH",
-            "asset_path": "characters/trex_02/base",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/trex_02/trex_02.blend",
-            "guid": "",
-            "mtime": 1790438512.3081713,
-            "data": {}
-        },
-        {
-            "asset_type": "MESH",
-            "asset_path": "characters/trex_02/death",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/trex_02/trex_02.blend",
-            "guid": "",
-            "mtime": 1790438512.3081713,
-            "data": {}
-        },
-        {
-            "asset_type": "MESH",
-            "asset_path": "characters/trex_02/eat",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/trex_02/trex_02.blend",
-            "guid": "",
-            "mtime": 1790438512.3081713,
-            "data": {}
-        },
-        {
-            "asset_type": "MESH",
-            "asset_path": "characters/trex_02/idle",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/trex_02/trex_02.blend",
-            "guid": "",
-            "mtime": 1790438512.3081713,
-            "data": {}
-        },
-        {
-            "asset_type": "MESH",
-            "asset_path": "characters/trex_02/run",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/trex_02/trex_02.blend",
-            "guid": "",
-            "mtime": 1790438512.3081713,
-            "data": {}
-        },
-        {
-            "asset_type": "MESH",
-            "asset_path": "characters/trex_02/walk",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/trex_02/trex_02.blend",
-            "guid": "",
-            "mtime": 1790438512.3081713,
+            "mtime": 1793552814.3294108,
             "data": {}
         }
     ],
@@ -4361,7 +4313,7 @@
             "asset_path": "characters/aru",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/aru/aru.blend",
             "guid": "",
-            "mtime": 1790510944.2824087,
+            "mtime": 1793552814.1332302,
             "data": {}
         },
         {
@@ -4369,25 +4321,73 @@
             "asset_path": "characters/aru/aru",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/aru/aru.blend",
             "guid": "",
-            "mtime": 1790510944.2824087,
+            "mtime": 1793552814.1332302,
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/meshes/props/spirit_ball.blend": [
+    "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/trex_02/trex_02.blend": [
         {
             "asset_type": "MATERIAL_INSTANCE",
-            "asset_path": "props/spirit_ball",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/props/spirit_ball.blend",
+            "asset_path": "characters/trex_02",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/trex_02/trex_02.blend",
             "guid": "",
-            "mtime": 1793538426.7066326,
+            "mtime": 1793552814.3140736,
             "data": {}
         },
         {
             "asset_type": "MESH",
-            "asset_path": "props/spirit_ball",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/props/spirit_ball.blend",
+            "asset_path": "characters/trex_02/attack",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/trex_02/trex_02.blend",
             "guid": "",
-            "mtime": 1793538426.7066326,
+            "mtime": 1793552814.3140736,
+            "data": {}
+        },
+        {
+            "asset_type": "MESH",
+            "asset_path": "characters/trex_02/base",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/trex_02/trex_02.blend",
+            "guid": "",
+            "mtime": 1793552814.3140736,
+            "data": {}
+        },
+        {
+            "asset_type": "MESH",
+            "asset_path": "characters/trex_02/death",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/trex_02/trex_02.blend",
+            "guid": "",
+            "mtime": 1793552814.3140736,
+            "data": {}
+        },
+        {
+            "asset_type": "MESH",
+            "asset_path": "characters/trex_02/eat",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/trex_02/trex_02.blend",
+            "guid": "",
+            "mtime": 1793552814.3140736,
+            "data": {}
+        },
+        {
+            "asset_type": "MESH",
+            "asset_path": "characters/trex_02/idle",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/trex_02/trex_02.blend",
+            "guid": "",
+            "mtime": 1793552814.3140736,
+            "data": {}
+        },
+        {
+            "asset_type": "MESH",
+            "asset_path": "characters/trex_02/run",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/trex_02/trex_02.blend",
+            "guid": "",
+            "mtime": 1793552814.3140736,
+            "data": {}
+        },
+        {
+            "asset_type": "MESH",
+            "asset_path": "characters/trex_02/walk",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/characters/trex_02/trex_02.blend",
+            "guid": "",
+            "mtime": 1793552814.3140736,
             "data": {}
         }
     ],
@@ -7797,7 +7797,7 @@
             "asset_path": "props/energy_ball",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/meshes/props/energy_ball.blend",
             "guid": "",
-            "mtime": 1793538433.9583097,
+            "mtime": 1793552814.322559,
             "data": {}
         }
     ],
@@ -7911,26 +7911,6 @@
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/family/ewa.blend": [
-        {
-            "asset_type": "GAME_CHARACTER",
-            "asset_path": "family/ewa",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/family/ewa.blend",
-            "guid": "",
-            "mtime": 1788791595.0370512,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/family/koa.blend": [
-        {
-            "asset_type": "GAME_CHARACTER",
-            "asset_path": "family/koa",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/family/koa.blend",
-            "guid": "",
-            "mtime": 1788791569.3248594,
-            "data": {}
-        }
-    ],
     "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/family/monkey_aru.blend": [
         {
             "asset_type": "GAME_CHARACTER",
@@ -7941,33 +7921,13 @@
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/family/monkey_ewa.blend": [
-        {
-            "asset_type": "GAME_CHARACTER",
-            "asset_path": "family/monkey_ewa",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/family/monkey_ewa.blend",
-            "guid": "",
-            "mtime": 1788976096.4599774,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/family/monkey_koa.blend": [
-        {
-            "asset_type": "GAME_CHARACTER",
-            "asset_path": "family/monkey_koa",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/family/monkey_koa.blend",
-            "guid": "",
-            "mtime": 1788976088.0524006,
-            "data": {}
-        }
-    ],
     "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/iguanodon.blend": [
         {
             "asset_type": "GAME_CHARACTER",
             "asset_path": "iguanodon",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/iguanodon.blend",
             "guid": "",
-            "mtime": 1790419934.6486814,
+            "mtime": 1793552813.7644603,
             "data": {}
         }
     ],
@@ -7977,7 +7937,7 @@
             "asset_path": "pachycephalosaurus",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/pachycephalosaurus.blend",
             "guid": "",
-            "mtime": 1790435889.2547638,
+            "mtime": 1793552813.777047,
             "data": {}
         }
     ],
@@ -7987,7 +7947,7 @@
             "asset_path": "pachycephalosaurus_01",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/pachycephalosaurus_01.blend",
             "guid": "",
-            "mtime": 1790435880.9527004,
+            "mtime": 1793552813.7895162,
             "data": {}
         }
     ],
@@ -7997,7 +7957,7 @@
             "asset_path": "parasaurolophus",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/parasaurolophus.blend",
             "guid": "",
-            "mtime": 1790435869.0095973,
+            "mtime": 1793552813.802014,
             "data": {}
         }
     ],
@@ -8007,7 +7967,7 @@
             "asset_path": "stegosaurus_green",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/stegosaurus_green.blend",
             "guid": "",
-            "mtime": 1790436770.2419608,
+            "mtime": 1793552813.815635,
             "data": {}
         }
     ],
@@ -8017,37 +7977,7 @@
             "asset_path": "stegosaurus_red",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/stegosaurus_red.blend",
             "guid": "",
-            "mtime": 1790436795.5479887,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/triceratops_01.blend": [
-        {
-            "asset_type": "GAME_CHARACTER",
-            "asset_path": "triceratops_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/triceratops_01.blend",
-            "guid": "",
-            "mtime": 1790437303.0635014,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/velociraptor.blend": [
-        {
-            "asset_type": "GAME_CHARACTER",
-            "asset_path": "velociraptor",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/velociraptor.blend",
-            "guid": "",
-            "mtime": 1790437424.9567657,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/velociraptor_01.blend": [
-        {
-            "asset_type": "GAME_CHARACTER",
-            "asset_path": "velociraptor_01",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/velociraptor_01.blend",
-            "guid": "",
-            "mtime": 1790437496.4675913,
+            "mtime": 1793552813.8337204,
             "data": {}
         }
     ],
@@ -8057,7 +7987,77 @@
             "asset_path": "trex_02",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/trex_02.blend",
             "guid": "",
-            "mtime": 1790438748.7952669,
+            "mtime": 1793552813.8473105,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/triceratops_01.blend": [
+        {
+            "asset_type": "GAME_CHARACTER",
+            "asset_path": "triceratops_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/triceratops_01.blend",
+            "guid": "",
+            "mtime": 1793552813.858826,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/velociraptor.blend": [
+        {
+            "asset_type": "GAME_CHARACTER",
+            "asset_path": "velociraptor",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/velociraptor.blend",
+            "guid": "",
+            "mtime": 1793552813.8698838,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/velociraptor_01.blend": [
+        {
+            "asset_type": "GAME_CHARACTER",
+            "asset_path": "velociraptor_01",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/velociraptor_01.blend",
+            "guid": "",
+            "mtime": 1793552813.8814337,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/family/ewa.blend": [
+        {
+            "asset_type": "GAME_CHARACTER",
+            "asset_path": "family/ewa",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/family/ewa.blend",
+            "guid": "",
+            "mtime": 1793552369.8476493,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/family/koa.blend": [
+        {
+            "asset_type": "GAME_CHARACTER",
+            "asset_path": "family/koa",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/family/koa.blend",
+            "guid": "",
+            "mtime": 1793552369.869349,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/family/monkey_ewa.blend": [
+        {
+            "asset_type": "GAME_CHARACTER",
+            "asset_path": "family/monkey_ewa",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/family/monkey_ewa.blend",
+            "guid": "",
+            "mtime": 1793552369.879341,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/family/monkey_koa.blend": [
+        {
+            "asset_type": "GAME_CHARACTER",
+            "asset_path": "family/monkey_koa",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/characters/family/monkey_koa.blend",
+            "guid": "",
+            "mtime": 1793552369.8893287,
             "data": {}
         }
     ],
@@ -8187,7 +8187,7 @@
             "asset_path": "monolith",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/props/monolith.blend",
             "guid": "",
-            "mtime": 1793107598.4150412,
+            "mtime": 1793552813.935871,
             "data": {}
         }
     ],
@@ -8267,7 +8267,7 @@
             "asset_path": "iguanodon/upper_animation_layer",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/animation_layers/iguanodon/upper_animation_layer.blend",
             "guid": "",
-            "mtime": 1790415854.047424,
+            "mtime": 1793552813.7343445,
             "data": {}
         }
     ],
@@ -8277,7 +8277,7 @@
             "asset_path": "stegosaurus/upper_animation_layer",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/animation_layers/stegosaurus/upper_animation_layer.blend",
             "guid": "",
-            "mtime": 1790436306.298765,
+            "mtime": 1793552813.7480059,
             "data": {}
         }
     ],
@@ -8339,16 +8339,6 @@
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/stage_ufo.blend": [
-        {
-            "asset_type": "GAME_SCENE",
-            "asset_path": "stage_ufo",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/stage_ufo.blend",
-            "guid": "",
-            "mtime": 1788703835.404839,
-            "data": {}
-        }
-    ],
     "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/world_map.blend": [
         {
             "asset_type": "GAME_SCENE",
@@ -8359,23 +8349,23 @@
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/stage_cave.blend": [
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/desert.blend": [
         {
             "asset_type": "GAME_SCENE",
-            "asset_path": "stage_cave",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/stage_cave.blend",
+            "asset_path": "desert",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/desert.blend",
             "guid": "",
-            "mtime": 1792513562.5485582,
+            "mtime": 1794236767.8183167,
             "data": {}
         }
     ],
-    "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/intro_stage.blend": [
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/forest.blend": [
         {
             "asset_type": "GAME_SCENE",
-            "asset_path": "intro_stage",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/intro_stage.blend",
+            "asset_path": "forest",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/forest.blend",
             "guid": "",
-            "mtime": 1793465659.5921535,
+            "mtime": 1794235417.2865713,
             "data": {}
         }
     ],
@@ -8385,7 +8375,17 @@
             "asset_path": "jungle",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/jungle.blend",
             "guid": "",
-            "mtime": 1793532156.2803338,
+            "mtime": 1794236851.9335976,
+            "data": {}
+        }
+    ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/stage_cave.blend": [
+        {
+            "asset_type": "GAME_SCENE",
+            "asset_path": "stage_cave",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/game_scenes/stage_cave.blend",
+            "guid": "",
+            "mtime": 1794236380.9555879,
             "data": {}
         }
     ],
@@ -8489,13 +8489,23 @@
             "data": {}
         }
     ],
+    "/mnt/Workspace/StoneAge/resources/externals/game_data/scenario/scenario_intro/day_one.blend": [
+        {
+            "asset_type": "GAME_SCENARIO",
+            "asset_path": "scenario_intro/day_one",
+            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/scenario/scenario_intro/day_one.blend",
+            "guid": "",
+            "mtime": 1794236567.688478,
+            "data": {}
+        }
+    ],
     "/mnt/Workspace/StoneAge/resources/externals/game_data/scenario/scenario_intro/intro.blend": [
         {
             "asset_type": "GAME_SCENARIO",
             "asset_path": "scenario_intro/intro",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/scenario/scenario_intro/intro.blend",
             "guid": "",
-            "mtime": 1792343954.3871233,
+            "mtime": 1794165848.8657675,
             "data": {}
         }
     ],
@@ -8505,7 +8515,7 @@
             "asset_path": "scenario_intro/revolution",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/scenario/scenario_intro/revolution.blend",
             "guid": "",
-            "mtime": 1792344979.656592,
+            "mtime": 1793552813.9534764,
             "data": {}
         }
     ],
@@ -8515,17 +8525,7 @@
             "asset_path": "scenario_intro/ufo",
             "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/scenario/scenario_intro/ufo.blend",
             "guid": "",
-            "mtime": 1792427577.4286995,
-            "data": {}
-        }
-    ],
-    "/mnt/Workspace/StoneAge/resources/externals/game_data/scenario/scenario_intro/day_one.blend": [
-        {
-            "asset_type": "GAME_SCENARIO",
-            "asset_path": "scenario_intro/day_one",
-            "filepath": "/mnt/Workspace/StoneAge/resources/externals/game_data/scenario/scenario_intro/day_one.blend",
-            "guid": "",
-            "mtime": 1793293828.2994976,
+            "mtime": 1794239566.4971466,
             "data": {}
         }
     ]

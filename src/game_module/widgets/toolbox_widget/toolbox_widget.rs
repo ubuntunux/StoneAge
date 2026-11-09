@@ -301,15 +301,7 @@ impl<'a> ToolboxWidget<'a> {
             vec![get_toolbox_item_data(ToolboxIconType::WoodenWeapon)],
         );
 
-        let teleport_tab = ToolboxTabWidget::create_toolbox_tab_widget(
-            "teleport",
-            content_mut,
-            vec![
-                get_toolbox_item_data(ToolboxIconType::MapHome),
-                get_toolbox_item_data(ToolboxIconType::MapForest),
-                get_toolbox_item_data(ToolboxIconType::MapUfo),
-            ],
-        );
+        let teleport_tab = ToolboxTabWidget::create_toolbox_tab_widget("teleport", content_mut, vec![]);
 
         let widget = ToolboxWidget {
             _parent_widget: parent_widget,
@@ -528,6 +520,9 @@ impl<'a> ToolboxWidget<'a> {
                 }
             }
         }
+        for item in &self._teleport_tab._items {
+            unlocked.insert(item._data._icon_type);
+        }
         unlocked
     }
 
@@ -543,10 +538,21 @@ impl<'a> ToolboxWidget<'a> {
             }
             tab.update_detail_panel();
         }
+        for icon_type in unlocked_set {
+            if icon_type.stage_data_name().is_some() && !self._teleport_tab.has_item(*icon_type) {
+                self._teleport_tab.add_item(get_toolbox_item_data(*icon_type));
+            }
+        }
         for item in &mut self._teleport_tab._items {
             item._state = ToolboxItemState::Unlocked;
         }
         self._teleport_tab.update_detail_panel();
+    }
+
+    pub fn add_teleport_destination(&mut self, icon_type: ToolboxIconType) {
+        if !self._teleport_tab.has_item(icon_type) {
+            self._teleport_tab.add_item(get_toolbox_item_data(icon_type));
+        }
     }
 
     pub fn get_last_opened_tab(&self) -> ToolboxTab {

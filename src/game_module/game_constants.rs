@@ -307,6 +307,7 @@ pub const ITEM_WOODEN_CLUB: &str = "items/wooden_club";
 
 // props
 pub const DEFAULT_GATE_NAME: &str = "gate";
+pub const DEFAULT_MONOLITH_NAME: &str = "monolith";
 pub const PROP_NAME_TABLE: &str = "table";
 pub const PROP_NAME_MONOLITH: &str = "monolith";
 pub const PROP_NAME_INTRO_TREE: &str = "birch_tree_00";

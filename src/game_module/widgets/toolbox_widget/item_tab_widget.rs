@@ -1,5 +1,5 @@
 use crate::game_module::actors::items::ItemDataType;
-use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, AUDIO_QUEST_COMPLETE, DEFAULT_GATE_NAME};
+use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, AUDIO_QUEST_COMPLETE, DEFAULT_MONOLITH_NAME};
 use crate::game_module::game_service_locator::{
     get_game_scene_manager, get_game_scene_manager_mut, get_game_ui_manager, get_game_ui_manager_mut,
 };
@@ -73,7 +73,8 @@ pub enum ToolboxIconType {
     WoodenWeapon,
     MapForest,
     MapHome,
-    MapUfo,
+    MapJungle,
+    MapDesert,
 }
 
 impl ToolboxIconType {
@@ -97,7 +98,8 @@ impl ToolboxIconType {
             ToolboxIconType::WoodenWeapon => "Wooden Weapon Knowledge",
             ToolboxIconType::MapForest => "Forest",
             ToolboxIconType::MapHome => "Home",
-            ToolboxIconType::MapUfo => "UFO",
+            ToolboxIconType::MapJungle => "Jungle",
+            ToolboxIconType::MapDesert => "Desert",
         }
     }
 
@@ -127,7 +129,8 @@ impl ToolboxIconType {
             ToolboxIconType::WoodenClub | ToolboxIconType::WoodenWeapon => "items/wooden_club",
             ToolboxIconType::MapHome => "items/wood",
             ToolboxIconType::MapForest => "items/wood",
-            ToolboxIconType::MapUfo => "items/wood",
+            ToolboxIconType::MapJungle => "items/wood",
+            ToolboxIconType::MapDesert => "items/wood",
         }
     }
 
@@ -151,16 +154,32 @@ impl ToolboxIconType {
             ToolboxIconType::WoodenWeapon => "[WOOD_WEAPON]",
             ToolboxIconType::MapForest => "[FOREST]",
             ToolboxIconType::MapHome => "[HOME]",
-            ToolboxIconType::MapUfo => "[UFO]",
+            ToolboxIconType::MapJungle => "[JUNGLE]",
+            ToolboxIconType::MapDesert => "[DESERT]",
         }
     }
 
     pub fn stage_data_name(&self) -> Option<&'static str> {
         match self {
-            ToolboxIconType::MapForest => Some("game_scenes/intro_stage"),
+            ToolboxIconType::MapForest => Some("game_scenes/forest"),
             ToolboxIconType::MapHome => Some("game_scenes/stage_cave"),
-            ToolboxIconType::MapUfo => Some("game_scenes/stage_ufo"),
+            ToolboxIconType::MapJungle => Some("game_scenes/jungle"),
+            ToolboxIconType::MapDesert => Some("game_scenes/desert"),
             _ => None,
+        }
+    }
+
+    pub fn from_stage_data_name(stage_name: &str) -> Option<Self> {
+        if stage_name == "game_scenes/forest" {
+            Some(ToolboxIconType::MapForest)
+        } else if stage_name == "game_scenes/stage_cave" {
+            Some(ToolboxIconType::MapHome)
+        } else if stage_name == "game_scenes/jungle" {
+            Some(ToolboxIconType::MapJungle)
+        } else if stage_name == "game_scenes/desert" {
+            Some(ToolboxIconType::MapDesert)
+        } else {
+            None
         }
     }
 
@@ -194,7 +213,8 @@ impl ToolboxIconType {
             ToolboxIconType::WoodenClub | ToolboxIconType::WoodenWeapon => "toolbox_items/knowledge/wooden_weapon",
             ToolboxIconType::MapHome => "toolbox_items/teleport/map_home",
             ToolboxIconType::MapForest => "toolbox_items/teleport/map_forest",
-            ToolboxIconType::MapUfo => "toolbox_items/teleport/map_ufo",
+            ToolboxIconType::MapJungle => "toolbox_items/teleport/map_jungle",
+            ToolboxIconType::MapDesert => "toolbox_items/teleport/map_desert",
         }
     }
 
@@ -602,7 +622,7 @@ impl<'a> ToolboxTabWidget<'a> {
             }
             ToolboxItemState::Unlocked => {
                 if let Some(stage_name) = item._data._icon_type.stage_data_name() {
-                    get_game_scene_manager_mut().set_teleport_stage(stage_name, DEFAULT_GATE_NAME);
+                    get_game_scene_manager_mut().set_teleport_stage(stage_name, DEFAULT_MONOLITH_NAME);
                     get_audio_manager_mut().play_audio_bank(AUDIO_QUEST_COMPLETE, AudioLoop::ONCE, None);
                     get_game_ui_manager_mut().close_toolbox();
                 }
@@ -954,6 +974,33 @@ impl<'a> ToolboxTabWidget<'a> {
             _detail_ing_widgets: vec![ing_widget],
             _is_visible: false,
         })
+    }
+
+    pub fn has_item(&self, icon_type: ToolboxIconType) -> bool {
+        self._items.iter().any(|item| item._data._icon_type == icon_type)
+    }
+
+    pub fn add_item(&mut self, data: ToolboxItemData) {
+        if self.has_item(data._icon_type) {
+            return;
+        }
+
+        let new_index = self._items.len();
+        let list_container_mut = ptr_as_mut(self._list_container.as_ref());
+        let mut item_widget = ToolboxItemWidget::create(list_container_mut, data, new_index);
+
+        if self._is_visible {
+            let tab_ptr = self as *mut ToolboxTabWidget<'a> as *mut c_void;
+            item_widget._tab_ptr = tab_ptr;
+            let item_ptr = item_widget.as_ref() as *const ToolboxItemWidget<'a> as *const c_void;
+            ptr_as_mut(item_widget._layout.as_ref()).get_ui_component_mut().set_user_data(item_ptr);
+            ptr_as_mut(item_widget._action_btn.as_ref()).get_ui_component_mut().set_user_data(item_ptr);
+        }
+
+        self._items.push(item_widget);
+        if self._is_visible && self._items.len() == 1 {
+            self.select_item(0);
+        }
     }
 
     pub fn open(&mut self) {

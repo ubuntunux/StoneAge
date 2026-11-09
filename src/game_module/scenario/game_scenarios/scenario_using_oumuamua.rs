@@ -741,4 +741,26 @@ mod tests {
         assert_eq!(deserialized._scenario_phase, "Teleport");
         assert!(deserialized._scenario_create_info.is_empty());
     }
+
+    #[test]
+    fn test_teleport_stage_discovery_and_icon_type_mapping() {
+        assert_eq!(
+            ToolboxIconType::from_stage_data_name("game_scenes/jungle"),
+            Some(ToolboxIconType::MapJungle)
+        );
+        assert_eq!(
+            ToolboxIconType::from_stage_data_name("game_scenes/stage_cave"),
+            Some(ToolboxIconType::MapHome)
+        );
+        assert_eq!(
+            ToolboxIconType::from_stage_data_name("game_scenes/forest"),
+            Some(ToolboxIconType::MapForest)
+        );
+        assert_eq!(
+            ToolboxIconType::from_stage_data_name("game_scenes/forest"),
+            Some(ToolboxIconType::MapForest)
+        );
+        assert_eq!(ToolboxIconType::MapJungle.stage_data_name(), Some("game_scenes/jungle"));
+        assert_eq!(ToolboxIconType::MapJungle.as_str(), "Jungle");
+    }
 }

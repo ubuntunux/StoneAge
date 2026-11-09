@@ -554,6 +554,20 @@ impl<'a> GameUIManager<'a> {
         }
     }
 
+    pub fn notify_message(
+        &mut self,
+        title: &str,
+        material_instance: Option<
+            rust_engine_3d::utilities::system::RcRefCell<
+                rust_engine_3d::scene::material_instance::MaterialInstanceData<'a>,
+            >,
+        >,
+    ) {
+        if let Some(notification_widget) = self._item_acquire_notification_widget.as_mut() {
+            notification_widget.notify_message(title, material_instance);
+        }
+    }
+
     pub fn show_fishing_popup(&mut self, item_data_name: &str, is_perfect: bool) {
         if let Some(fishing_popup) = self._fishing_popup_widget.as_mut() {
             fishing_popup.show_popup(item_data_name, is_perfect);
@@ -899,6 +913,11 @@ impl<'a> GameUIManager<'a> {
     pub fn load_unlocked_toolbox_items(&mut self, unlocked_set: &HashSet<ToolboxIconType>) {
         if let Some(toolbox_widget) = self._toolbox_widget.as_mut() {
             toolbox_widget.load_unlocked_items(unlocked_set);
+        }
+    }
+    pub fn add_teleport_destination(&mut self, icon_type: ToolboxIconType) {
+        if let Some(toolbox_widget) = self._toolbox_widget.as_mut() {
+            toolbox_widget.add_teleport_destination(icon_type);
         }
     }
     pub fn get_last_opened_toolbox_tab(&self) -> ToolboxTab {

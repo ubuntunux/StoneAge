@@ -74,8 +74,8 @@
         }
     },
     "_game_scenes": {
-        "intro_stage": {
-            "_game_scene_data_name": "game_scenes/intro_stage",
+        "forest": {
+            "_game_scene_data_name": "game_scenes/forest",
             "_position": [
                 0.0,
                 0.0,
@@ -152,6 +152,10 @@
     "_player": {},
     "_props": {
         "monolith": {
+            "_instance_parameters": {
+                "_linked_monolith": "monolith",
+                "_linked_stage": "game_scenes/jungle"
+            },
             "_position": [
                 29.219982147216797,
                 1.2787047624588013,

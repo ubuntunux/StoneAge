@@ -6,10 +6,11 @@ use crate::game_module::widgets::item_acquire_notification::{
     NOTIFICATION_ROW_MARGIN,
 };
 use rust_engine_3d::core::engine_service_locator::get_engine_resources;
+use rust_engine_3d::scene::material_instance::MaterialInstanceData;
 use rust_engine_3d::scene::ui::{
     HorizontalAlign, Orientation, PIVOT_TOP_LEFT, UILayoutType, UIManager, UIWidgetTypes, VerticalAlign, WidgetDefault,
 };
-use rust_engine_3d::utilities::system::ptr_as_mut;
+use rust_engine_3d::utilities::system::{RcRefCell, ptr_as_mut};
 use rust_engine_3d::vulkan_context::vulkan_context::get_color32;
 
 impl<'a> ItemAcquireNotificationWidget<'a> {
@@ -138,6 +139,23 @@ impl<'a> ItemAcquireNotificationWidget<'a> {
         let slot = &self._slots[slot_index];
         let icon_ui = ptr_as_mut(slot._icon_widget).get_ui_component_mut();
         icon_ui.set_material_instance(Some(material_instance));
+    }
+
+    pub fn notify_message(&mut self, title: &str, material_instance: Option<RcRefCell<MaterialInstanceData<'a>>>) {
+        if self._entries.len() >= MAX_NOTIFICATION_SLOTS {
+            self._entries.remove(0);
+        }
+
+        self._entries.push(ItemAcquireEntry {
+            _item_data_name: String::new(),
+            _item_name: title.to_string(),
+            _remaining_time: NOTIFICATION_DISPLAY_DURATION,
+        });
+
+        let slot_index = self._entries.len() - 1;
+        let slot = &self._slots[slot_index];
+        let icon_ui = ptr_as_mut(slot._icon_widget).get_ui_component_mut();
+        icon_ui.set_material_instance(material_instance);
     }
 
     pub fn update(&mut self, delta_time: f32) {
