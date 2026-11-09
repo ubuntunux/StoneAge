@@ -757,10 +757,12 @@ mod tests {
             Some(ToolboxIconType::MapForest)
         );
         assert_eq!(
-            ToolboxIconType::from_stage_data_name("game_scenes/forest"),
-            Some(ToolboxIconType::MapForest)
+            ToolboxIconType::from_stage_data_name("game_scenes/desert"),
+            Some(ToolboxIconType::MapDesert)
         );
         assert_eq!(ToolboxIconType::MapJungle.stage_data_name(), Some("game_scenes/jungle"));
         assert_eq!(ToolboxIconType::MapJungle.as_str(), "Jungle");
+        assert_eq!(ToolboxIconType::MapDesert.stage_data_name(), Some("game_scenes/desert"));
+        assert_eq!(ToolboxIconType::MapDesert.as_str(), "Desert");
     }
 }

@@ -668,6 +668,17 @@ impl<'a> ToolboxTabWidget<'a> {
         }
 
         if self._selected_index >= self._items.len() {
+            ptr_as_mut(self._detail_name_lbl.as_ref()).get_ui_component_mut().set_text("");
+            ToolboxItemWidget::setup_item_icon(&self._detail_icon, "", false);
+            ptr_as_mut(self._detail_req_text.as_ref()).get_ui_component_mut().set_enable(false);
+            ptr_as_mut(self._detail_req_box.as_ref()).get_ui_component_mut().set_enable(false);
+            for ing_widget in self._detail_ing_widgets.iter_mut() {
+                ptr_as_mut(ing_widget._layout.as_ref()).get_ui_component_mut().set_enable(false);
+            }
+            self.disable_all_map_info();
+            if let Some(desc_lbl) = self._detail_info_labels.get(INFO_LABEL_INDEX_DESC) {
+                ptr_as_mut(desc_lbl.as_ref()).get_ui_component_mut().set_text("");
+            }
             return;
         }
 
@@ -978,6 +989,13 @@ impl<'a> ToolboxTabWidget<'a> {
 
     pub fn has_item(&self, icon_type: ToolboxIconType) -> bool {
         self._items.iter().any(|item| item._data._icon_type == icon_type)
+    }
+
+    pub fn clear_items(&mut self) {
+        ptr_as_mut(self._list_container.as_ref()).clear_widgets();
+        self._items.clear();
+        self._selected_index = 0;
+        self.update_detail_panel();
     }
 
     pub fn add_item(&mut self, data: ToolboxItemData) {

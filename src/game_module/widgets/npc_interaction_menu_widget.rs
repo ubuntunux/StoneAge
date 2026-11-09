@@ -665,6 +665,9 @@ impl<'a> NpcInteractionMenuWidget<'a> {
                     .place_table_storage_item_on_table(target_table, slot_idx);
             }
             NpcInteractionOption::ToolboxTab(tab) => {
+                if let Some(target_prop) = target_prop {
+                    get_game_ui_manager_mut().set_target_monolith(Some(target_prop));
+                }
                 get_game_ui_manager_mut().set_last_opened_toolbox_tab(tab);
                 get_game_client_mut().set_next_game_phase(GamePhase::OpenToolbox);
             }

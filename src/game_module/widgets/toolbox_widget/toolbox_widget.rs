@@ -1,6 +1,9 @@
 use crate::game_module::actors::character::Character;
 use crate::game_module::actors::items::ItemDataType;
-use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, AUDIO_SELECT_ITEM};
+use crate::game_module::actors::props::Prop;
+use crate::game_module::game_constants::{
+    AUDIO_PICKUP_ITEM, AUDIO_QUEST_COMPLETE, AUDIO_SELECT_ITEM, MATERIAL_WORLDMAP,
+};
 use crate::game_module::game_controller::WidgetNavRepeatController;
 use crate::game_module::game_input::UiInput;
 use crate::game_module::game_service_locator::{
@@ -13,7 +16,7 @@ use crate::game_module::widgets::toolbox_widget::item_tab_widget::{
 use nalgebra::Vector2;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::core::engine_core::TimeData;
-use rust_engine_3d::core::engine_service_locator::get_audio_manager_mut;
+use rust_engine_3d::core::engine_service_locator::{get_audio_manager_mut, get_engine_resources};
 use rust_engine_3d::core::input::{JoystickInputData, KeyboardInputData, MouseInputData, MouseMoveData};
 use rust_engine_3d::scene::ui::{
     HorizontalAlign, Orientation, PIVOT_CENTER, UIComponentInstance, UILayoutType, UIManager, UIWidgetTypes,
@@ -114,6 +117,7 @@ pub struct ToolboxWidget<'a> {
     pub _last_opened_tab: ToolboxTab,
     pub _selected_item_index: usize,
     pub _nav_repeat_controller: WidgetNavRepeatController,
+    pub _target_monolith: Option<RcRefCell<Prop<'a>>>,
 }
 
 fn get_toolbox_item_data(icon_type: ToolboxIconType) -> ToolboxItemData {
@@ -318,6 +322,7 @@ impl<'a> ToolboxWidget<'a> {
             _last_opened_tab: ToolboxTab::Ability,
             _selected_item_index: 0,
             _nav_repeat_controller: WidgetNavRepeatController::new(),
+            _target_monolith: None,
         };
 
         widget.update_tab_buttons_user_data();
@@ -358,6 +363,8 @@ impl<'a> ToolboxWidget<'a> {
         self._knowledge_tab.close();
         self._teleport_tab.close();
 
+        let mut target_item_index = 0;
+
         // Activate selected tab
         let active_btn = match tab {
             ToolboxTab::Ability => {
@@ -375,6 +382,9 @@ impl<'a> ToolboxWidget<'a> {
                 {
                     get_game_scene_manager_mut().inspect_and_register_discovered_world_data();
                 }
+                if let Some(new_idx) = self.check_and_unlock_monolith_destination() {
+                    target_item_index = new_idx;
+                }
                 self._teleport_tab.open();
                 &self._tab_btn_teleport
             }
@@ -382,7 +392,7 @@ impl<'a> ToolboxWidget<'a> {
 
         ptr_as_mut(active_btn.as_ref()).get_ui_component_mut().set_color(TAB_ACTIVE_COLOR);
 
-        self._selected_item_index = 0;
+        self._selected_item_index = target_item_index;
         self.update_item_selection();
 
         let sel_idx = self._selected_item_index;
@@ -432,6 +442,7 @@ impl<'a> ToolboxWidget<'a> {
             self._teleport_tab.close();
             ptr_as_mut(self._parent_widget).remove_widget(self._layer.as_ref());
             self._is_opened_toolbox = false;
+            self._target_monolith = None;
         }
     }
 
@@ -538,6 +549,7 @@ impl<'a> ToolboxWidget<'a> {
             }
             tab.update_detail_panel();
         }
+        self._teleport_tab.clear_items();
         for icon_type in unlocked_set {
             if icon_type.stage_data_name().is_some() && !self._teleport_tab.has_item(*icon_type) {
                 self._teleport_tab.add_item(get_toolbox_item_data(*icon_type));
@@ -562,5 +574,37 @@ impl<'a> ToolboxWidget<'a> {
     pub fn set_last_opened_tab(&mut self, tab: ToolboxTab) {
         self._last_opened_tab = tab;
         self._active_tab = self._last_opened_tab;
+    }
+
+    pub fn get_target_monolith(&self) -> Option<&RcRefCell<Prop<'a>>> {
+        self._target_monolith.as_ref()
+    }
+
+    pub fn set_target_monolith(&mut self, monolith: Option<RcRefCell<Prop<'a>>>) {
+        self._target_monolith = monolith;
+    }
+
+    pub fn check_and_unlock_monolith_destination(&mut self) -> Option<usize> {
+        if let Some(prop) = &self._target_monolith {
+            let linked_stage = {
+                let prop_borrow = prop.borrow();
+                prop_borrow.get_instance_parameters("_linked_stage").and_then(|v| v.as_str().map(String::from))
+            };
+
+            if let Some(stage_name) = linked_stage
+                && let Some(icon_type) = ToolboxIconType::from_stage_data_name(&stage_name)
+            {
+                if !self._teleport_tab.has_item(icon_type) {
+                    let new_index = self._teleport_tab._items.len();
+                    self.add_teleport_destination(icon_type);
+                    let title = format!("New Destination Discovered: {}", icon_type.as_str());
+                    let icon_material = get_engine_resources().get_material_instance_data(MATERIAL_WORLDMAP).clone();
+                    get_game_ui_manager_mut().notify_message(&title, Some(icon_material));
+                    get_audio_manager_mut().play_audio_bank(AUDIO_QUEST_COMPLETE, AudioLoop::ONCE, None);
+                    return Some(new_index);
+                }
+            }
+        }
+        None
     }
 }

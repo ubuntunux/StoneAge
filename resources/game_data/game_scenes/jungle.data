@@ -546,6 +546,10 @@
             ]
         },
         "monolith.001": {
+            "_instance_parameters": {
+                "_linked_monolith": "monolith",
+                "_linked_stage": "game_scenes/desert"
+            },
             "_position": [
                 37.34241485595703,
                 2.7004034519195557,

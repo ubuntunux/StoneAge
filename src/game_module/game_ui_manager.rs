@@ -313,6 +313,7 @@ impl<'a> GameUIManager<'a> {
         self.load_unlocked_toolbox_items(&std::collections::HashSet::new());
         self.set_last_opened_toolbox_tab(ToolboxTab::Ability);
         self.close_toolbox();
+        self.set_target_monolith(None);
         self._registered_popups.clear();
     }
 
@@ -932,6 +933,14 @@ impl<'a> GameUIManager<'a> {
             toolbox_widget.set_last_opened_tab(tab);
         }
     }
+    pub fn get_target_monolith(&self) -> Option<&RcRefCell<Prop<'a>>> {
+        self._toolbox_widget.as_ref().and_then(|w| w.get_target_monolith())
+    }
+    pub fn set_target_monolith(&mut self, monolith: Option<RcRefCell<Prop<'a>>>) {
+        if let Some(toolbox_widget) = self._toolbox_widget.as_mut() {
+            toolbox_widget.set_target_monolith(monolith);
+        }
+    }
     pub fn update_toolbox_widget(
         &mut self,
         time_data: &TimeData,
@@ -1491,6 +1500,7 @@ impl<'a> GameUIManager<'a> {
     }
 
     pub fn open_toolbox_interaction_menu(&mut self, target_toolbox: RcRefCell<Prop<'a>>) {
+        self.set_target_monolith(Some(target_toolbox.clone()));
         if let Some(menu) = self._npc_interaction_menu_widget.as_mut() {
             menu.open_toolbox_interaction_menu(target_toolbox);
         }
