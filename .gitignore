@@ -23,3 +23,5 @@ resources/game_data/save_data/*.data
 resources/game_data/game_option/*.data
 resources.txt
 .log
+*.zip
+
