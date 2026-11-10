@@ -1,9 +1,9 @@
 use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, AUDIO_SELECT_ITEM};
 use crate::game_module::game_input::UiInput;
 use crate::game_module::game_option::{
-    CAMERA_ROTATION_SPEED_STEP, FONT_SCALE_STEP, GameOptionData, Language, MAX_CAMERA_ROTATION_SPEED, MAX_FONT_SCALE,
-    MAX_UI_SCALE, MAX_VOLUME, MIN_CAMERA_ROTATION_SPEED, MIN_FONT_SCALE, MIN_UI_SCALE, MIN_VOLUME, UI_SCALE_STEP,
-    VOLUME_STEP,
+    CAMERA_ROTATION_SPEED_STEP, FONT_SCALE_STEP, FontType, GameOptionData, Language, MAX_CAMERA_ROTATION_SPEED,
+    MAX_FONT_SCALE, MAX_UI_SCALE, MAX_VOLUME, MIN_CAMERA_ROTATION_SPEED, MIN_FONT_SCALE, MIN_UI_SCALE, MIN_VOLUME,
+    UI_SCALE_STEP, VOLUME_STEP,
 };
 use crate::game_module::game_service_locator::{get_game_resources, get_game_resources_mut};
 use crate::game_module::widgets::drop_down_combo_box_widget::DropDownComboBoxWidget;
@@ -45,6 +45,13 @@ const STATUS_FONT_SIZE: f32 = 18.0;
 
 const LANGUAGE_ITEMS: [Language; 2] = [Language::English, Language::Korean];
 const LANGUAGE_NAMES: [&str; 2] = ["English", "한글"];
+
+const FONT_ITEMS: [FontType; 3] = [
+    FontType::UbuntuSansMono,
+    FontType::D2Coding,
+    FontType::NanumGothicCoding,
+];
+const FONT_NAMES: [&str; 3] = ["Ubuntu Sans Mono", "D2Coding", "Nanum Gothic Coding"];
 
 const WINDOW_MODE_ITEMS: [WindowMode; 3] = [
     WindowMode::WindowMode,
@@ -160,6 +167,7 @@ pub fn get_next_nav_index(
 #[repr(usize)]
 pub enum OptionItemType {
     Language,
+    Font,
     WindowMode,
     Monitor,
     Resolution,
@@ -179,6 +187,7 @@ impl OptionItemType {
     pub fn display_name(&self) -> &'static str {
         match self {
             OptionItemType::Language => "Language",
+            OptionItemType::Font => "Font",
             OptionItemType::WindowMode => "Window Mode",
             OptionItemType::Monitor => "Display Monitor",
             OptionItemType::Resolution => "Resolution",
@@ -206,6 +215,7 @@ impl OptionItemType {
         matches!(
             self,
             OptionItemType::Language
+                | OptionItemType::Font
                 | OptionItemType::WindowMode
                 | OptionItemType::Monitor
                 | OptionItemType::Resolution
@@ -358,6 +368,16 @@ impl<'a> GameOptionWidget<'a> {
         let widget = ptr_as_mut(user_data as *const GameOptionWidget<'a>);
         if index < LANGUAGE_ITEMS.len() {
             widget._game_option_data.set_language(LANGUAGE_ITEMS[index]);
+            widget._game_option_data.apply();
+            widget.refresh_all_values();
+            widget.clear_status_message();
+        }
+    }
+
+    pub fn callback_font_changed(user_data: *const c_void, index: usize) {
+        let widget = ptr_as_mut(user_data as *const GameOptionWidget<'a>);
+        if index < FONT_ITEMS.len() {
+            widget._game_option_data.set_font(FONT_ITEMS[index]);
             widget._game_option_data.apply();
             widget.refresh_all_values();
             widget.clear_status_message();
@@ -610,6 +630,23 @@ impl<'a> GameOptionWidget<'a> {
                         );
                         combo.set_callback_selection_changed(Some((
                             Self::callback_language_changed,
+                            widget_ptr as *const c_void,
+                        )));
+                        combo
+                    }
+                    OptionItemType::Font => {
+                        let mut combo = DropDownComboBoxWidget::create_from_enum(
+                            row_mut,
+                            overlay_root,
+                            "font_combo",
+                            &FONT_ITEMS,
+                            &FONT_NAMES,
+                            initial_option._font,
+                            COMBO_BOX_WIDTH,
+                            STEPPER_BTN_SIZE,
+                        );
+                        combo.set_callback_selection_changed(Some((
+                            Self::callback_font_changed,
                             widget_ptr as *const c_void,
                         )));
                         combo
@@ -957,6 +994,15 @@ impl<'a> GameOptionWidget<'a> {
                 };
                 self._game_option_data.set_language(LANGUAGE_ITEMS[prev_idx]);
             }
+            OptionItemType::Font => {
+                let current_idx = FONT_ITEMS.iter().position(|&f| f == self._game_option_data._font).unwrap_or(0);
+                let prev_idx = if current_idx == 0 {
+                    FONT_ITEMS.len() - 1
+                } else {
+                    current_idx - 1
+                };
+                self._game_option_data.set_font(FONT_ITEMS[prev_idx]);
+            }
             OptionItemType::WindowMode => {
                 let current_idx =
                     WINDOW_MODE_ITEMS.iter().position(|&m| m == self._game_option_data._window_mode).unwrap_or(0);
@@ -1058,6 +1104,11 @@ impl<'a> GameOptionWidget<'a> {
                 let next_idx = (current_idx + 1) % LANGUAGE_ITEMS.len();
                 self._game_option_data.set_language(LANGUAGE_ITEMS[next_idx]);
             }
+            OptionItemType::Font => {
+                let current_idx = FONT_ITEMS.iter().position(|&f| f == self._game_option_data._font).unwrap_or(0);
+                let next_idx = (current_idx + 1) % FONT_ITEMS.len();
+                self._game_option_data.set_font(FONT_ITEMS[next_idx]);
+            }
             OptionItemType::WindowMode => {
                 let current_idx =
                     WINDOW_MODE_ITEMS.iter().position(|&m| m == self._game_option_data._window_mode).unwrap_or(0);
@@ -1138,6 +1189,7 @@ impl<'a> GameOptionWidget<'a> {
         }
         match item_type {
             OptionItemType::Language
+            | OptionItemType::Font
             | OptionItemType::WindowMode
             | OptionItemType::Monitor
             | OptionItemType::Resolution
@@ -1181,6 +1233,13 @@ impl<'a> GameOptionWidget<'a> {
                     if let Some(combo) = row._combo_box.as_mut() {
                         let current_idx =
                             LANGUAGE_ITEMS.iter().position(|&l| l == self._game_option_data._language).unwrap_or(0);
+                        combo.set_selected_index(current_idx);
+                    }
+                }
+                OptionItemType::Font => {
+                    if let Some(combo) = row._combo_box.as_mut() {
+                        let current_idx =
+                            FONT_ITEMS.iter().position(|&f| f == self._game_option_data._font).unwrap_or(0);
                         combo.set_selected_index(current_idx);
                     }
                 }
@@ -1437,27 +1496,32 @@ mod tests {
         assert!(OptionItemType::Language.is_combo());
         assert!(!OptionItemType::Language.is_toggle());
 
-        assert_eq!(OptionItemType::from_repr(1), Some(OptionItemType::WindowMode));
+        assert_eq!(OptionItemType::from_repr(1), Some(OptionItemType::Font));
+        assert_eq!(OptionItemType::Font.display_name(), "Font");
+        assert!(OptionItemType::Font.is_combo());
+        assert!(!OptionItemType::Font.is_toggle());
+
+        assert_eq!(OptionItemType::from_repr(2), Some(OptionItemType::WindowMode));
         assert_eq!(OptionItemType::WindowMode.display_name(), "Window Mode");
         assert!(OptionItemType::WindowMode.is_combo());
         assert!(!OptionItemType::WindowMode.is_toggle());
 
-        assert_eq!(OptionItemType::from_repr(2), Some(OptionItemType::Monitor));
+        assert_eq!(OptionItemType::from_repr(3), Some(OptionItemType::Monitor));
         assert_eq!(OptionItemType::Monitor.display_name(), "Display Monitor");
         assert!(OptionItemType::Monitor.is_combo());
         assert!(!OptionItemType::Monitor.is_toggle());
 
-        assert_eq!(OptionItemType::from_repr(3), Some(OptionItemType::Resolution));
+        assert_eq!(OptionItemType::from_repr(4), Some(OptionItemType::Resolution));
         assert_eq!(OptionItemType::Resolution.display_name(), "Resolution");
         assert!(OptionItemType::Resolution.is_combo());
         assert!(!OptionItemType::Resolution.is_toggle());
 
-        assert_eq!(OptionItemType::from_repr(4), Some(OptionItemType::RenderQualityLevel));
+        assert_eq!(OptionItemType::from_repr(5), Some(OptionItemType::RenderQualityLevel));
         assert_eq!(OptionItemType::RenderQualityLevel.display_name(), "Render Quality");
         assert!(OptionItemType::RenderQualityLevel.is_combo());
         assert!(!OptionItemType::RenderQualityLevel.is_toggle());
 
-        assert_eq!(OptionItemType::from_repr(5), Some(OptionItemType::Vsync));
+        assert_eq!(OptionItemType::from_repr(6), Some(OptionItemType::Vsync));
         assert_eq!(OptionItemType::Vsync.display_name(), "VSync");
         assert!(!OptionItemType::Vsync.is_combo());
         assert!(OptionItemType::Vsync.is_toggle());
@@ -1465,15 +1529,28 @@ mod tests {
         assert!(OptionItemType::MuteAudio.is_toggle());
         assert!(!OptionItemType::MuteAudio.is_combo());
 
-        assert_eq!(OptionItemType::from_repr(12), Some(OptionItemType::UiScale));
+        assert_eq!(OptionItemType::from_repr(13), Some(OptionItemType::UiScale));
         assert_eq!(OptionItemType::UiScale.display_name(), "UI Scale");
         assert!(!OptionItemType::UiScale.is_combo());
         assert!(!OptionItemType::UiScale.is_toggle());
 
-        assert_eq!(OptionItemType::from_repr(13), Some(OptionItemType::FontScale));
+        assert_eq!(OptionItemType::from_repr(14), Some(OptionItemType::FontScale));
         assert_eq!(OptionItemType::FontScale.display_name(), "Font Scale");
         assert!(!OptionItemType::FontScale.is_combo());
         assert!(!OptionItemType::FontScale.is_toggle());
+    }
+
+    #[test]
+    fn test_font_items_consistency() {
+        assert_eq!(FONT_ITEMS.len(), FONT_NAMES.len());
+        assert_eq!(FONT_ITEMS.len(), 3);
+        assert_eq!(FONT_NAMES[0], "Ubuntu Sans Mono");
+        assert_eq!(FONT_NAMES[1], "D2Coding");
+        assert_eq!(FONT_NAMES[2], "Nanum Gothic Coding");
+
+        assert_eq!(FontType::UbuntuSansMono.display_name(), "Ubuntu Sans Mono");
+        assert_eq!(FontType::D2Coding.display_name(), "D2Coding");
+        assert_eq!(FontType::NanumGothicCoding.display_name(), "Nanum Gothic Coding");
     }
 
     #[test]
@@ -1527,7 +1604,7 @@ mod tests {
     fn test_option_navigation_vertical_and_horizontal() {
         let is_all_enabled = |_idx: usize| true;
 
-        // Down through all option items sequentially (0 to 12) without skipping or premature cycling
+        // Down through all option items sequentially without skipping or premature cycling
         let last_option_idx = OptionItemType::COUNT - 1;
         let mut curr = 0;
         for expected_next in 1..=last_option_idx {
@@ -1536,7 +1613,7 @@ mod tests {
             curr = next.unwrap();
         }
 
-        // Down from the last option item (12) moves to Reset Default button (13)
+        // Down from the last option item moves to Reset Default button
         assert_eq!(
             get_next_nav_index(last_option_idx, 0, 1, is_all_enabled),
             Some(NAV_INDEX_RESET)
@@ -1545,13 +1622,13 @@ mod tests {
         // Down from Reset button wraps back to the first option item (0)
         assert_eq!(get_next_nav_index(NAV_INDEX_RESET, 0, 1, is_all_enabled), Some(0));
 
-        // Up from Reset button moves up to the last option item (12)
+        // Up from Reset button moves up to the last option item
         assert_eq!(
             get_next_nav_index(NAV_INDEX_RESET, 0, -1, is_all_enabled),
             Some(last_option_idx)
         );
 
-        // Up through all option items sequentially (12 down to 0)
+        // Up through all option items sequentially
         let mut curr_up = last_option_idx;
         for expected_prev in (0..last_option_idx).rev() {
             let prev = get_next_nav_index(curr_up, 0, -1, is_all_enabled);

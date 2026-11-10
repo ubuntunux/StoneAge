@@ -5,7 +5,7 @@ use rust_engine_3d::core::engine_service_locator::{
     get_audio_manager_mut, get_engine_core_mut, get_renderer_context_mut, get_renderer_data_mut, is_engine_core_valid,
 };
 use rust_engine_3d::renderer::renderer_data::{RenderOption, RenderQualityLevel};
-use rust_engine_3d::scene::ui::{set_global_font_scale, set_global_ui_scale};
+use rust_engine_3d::scene::ui::{set_global_font_data_name, set_global_font_scale, set_global_ui_scale};
 use serde::{Deserialize, Serialize};
 use std::sync::atomic::{AtomicU32, Ordering};
 use strum_macros::{Display, EnumCount, EnumIter, EnumString, FromRepr};
@@ -42,7 +42,64 @@ impl Language {
     }
 }
 
+#[derive(
+    Serialize,
+    Deserialize,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    Display,
+    FromRepr,
+    EnumCount,
+    EnumIter,
+    EnumString,
+    Default,
+)]
+#[repr(usize)]
+pub enum FontType {
+    #[default]
+    UbuntuSansMono,
+    D2Coding,
+    NanumGothicCoding,
+}
+
+impl FontType {
+    pub fn display_name(&self) -> &'static str {
+        match self {
+            FontType::UbuntuSansMono => "Ubuntu Sans Mono",
+            FontType::D2Coding => "D2Coding",
+            FontType::NanumGothicCoding => "Nanum Gothic Coding",
+        }
+    }
+
+    pub fn get_font_name(&self) -> &'static str {
+        match self {
+            FontType::UbuntuSansMono => "UbuntuSansMono-Regular_Basic_Latin",
+            FontType::D2Coding => "D2Coding-Regular_Korean",
+            FontType::NanumGothicCoding => "NanumGothicCoding-Regular_Korean",
+        }
+    }
+
+    pub fn supports_korean(&self) -> bool {
+        match self {
+            FontType::UbuntuSansMono => false,
+            FontType::D2Coding | FontType::NanumGothicCoding => true,
+        }
+    }
+
+    pub fn default_for_language(language: Language) -> Self {
+        match language {
+            Language::English => FontType::UbuntuSansMono,
+            Language::Korean => FontType::D2Coding,
+        }
+    }
+}
+
 pub const DEFAULT_LANGUAGE: Language = Language::English;
+pub const DEFAULT_FONT: FontType = FontType::UbuntuSansMono;
 pub const DEFAULT_MASTER_VOLUME: f32 = 0.5;
 pub const DEFAULT_BGM_VOLUME: f32 = 1.0;
 pub const DEFAULT_SFX_VOLUME: f32 = 1.0;
@@ -81,6 +138,7 @@ static GLOBAL_CAMERA_ROTATION_SPEED: AtomicU32 = AtomicU32::new(0x3f800000); // 
 static GLOBAL_UI_SCALE: AtomicU32 = AtomicU32::new(0x3f800000); // 1.0f32
 static GLOBAL_FONT_SCALE: AtomicU32 = AtomicU32::new(0x3f800000); // 1.0f32
 static GLOBAL_LANGUAGE: AtomicU32 = AtomicU32::new(DEFAULT_LANGUAGE as u32);
+static GLOBAL_FONT: AtomicU32 = AtomicU32::new(DEFAULT_FONT as u32);
 
 pub fn get_global_language() -> Language {
     Language::from_repr(GLOBAL_LANGUAGE.load(Ordering::Relaxed) as usize).unwrap_or(DEFAULT_LANGUAGE)
@@ -88,6 +146,14 @@ pub fn get_global_language() -> Language {
 
 pub fn set_global_language(language: Language) {
     GLOBAL_LANGUAGE.store(language as u32, Ordering::Relaxed);
+}
+
+pub fn get_global_font() -> FontType {
+    FontType::from_repr(GLOBAL_FONT.load(Ordering::Relaxed) as usize).unwrap_or(DEFAULT_FONT)
+}
+
+pub fn set_global_font(font: FontType) {
+    GLOBAL_FONT.store(font as u32, Ordering::Relaxed);
 }
 
 pub fn get_global_camera_rotation_speed() -> f32 {
@@ -136,6 +202,7 @@ pub fn apply_render_quality_level(quality_level: RenderQualityLevel) {
 #[serde(default)]
 pub struct GameOptionData {
     pub _language: Language,
+    pub _font: FontType,
     pub _master_volume: f32,
     pub _bgm_volume: f32,
     pub _sfx_volume: f32,
@@ -155,6 +222,7 @@ impl Default for GameOptionData {
     fn default() -> Self {
         GameOptionData {
             _language: DEFAULT_LANGUAGE,
+            _font: DEFAULT_FONT,
             _master_volume: DEFAULT_MASTER_VOLUME,
             _bgm_volume: DEFAULT_BGM_VOLUME,
             _sfx_volume: DEFAULT_SFX_VOLUME,
@@ -186,13 +254,21 @@ impl GameOptionData {
             (self._sfx_volume * self._master_volume).clamp(MIN_VOLUME, MAX_VOLUME)
         };
 
+        let effective_font = if self._language == Language::Korean && !self._font.supports_korean() {
+            FontType::D2Coding
+        } else {
+            self._font
+        };
+
         GLOBAL_LANGUAGE.store(self._language as u32, Ordering::Relaxed);
+        GLOBAL_FONT.store(effective_font as u32, Ordering::Relaxed);
         GLOBAL_CAMERA_ROTATION_SPEED.store(self._camera_rotation_speed.to_bits(), Ordering::Relaxed);
         GLOBAL_UI_SCALE.store(self._ui_scale.to_bits(), Ordering::Relaxed);
         GLOBAL_FONT_SCALE.store(self._font_scale.to_bits(), Ordering::Relaxed);
 
         set_global_ui_scale(self._ui_scale);
         set_global_font_scale(self._font_scale);
+        set_global_font_data_name(effective_font.get_font_name());
 
         unsafe {
             constants::IGNORE_MONITOR_REFRESH_RATE = !self._vsync;
@@ -212,6 +288,13 @@ impl GameOptionData {
 
     pub fn set_language(&mut self, language: Language) {
         self._language = language;
+        if language == Language::Korean && !self._font.supports_korean() {
+            self._font = FontType::D2Coding;
+        }
+    }
+
+    pub fn set_font(&mut self, font: FontType) {
+        self._font = font;
     }
 
     pub fn set_master_volume(&mut self, volume: f32) {
@@ -267,6 +350,7 @@ mod tests {
     fn test_game_option_default_and_serialization() {
         let default_option = GameOptionData::default();
         assert_eq!(default_option._language, DEFAULT_LANGUAGE);
+        assert_eq!(default_option._font, DEFAULT_FONT);
         assert_eq!(default_option._master_volume, DEFAULT_MASTER_VOLUME);
         assert_eq!(default_option._bgm_volume, DEFAULT_BGM_VOLUME);
         assert_eq!(default_option._sfx_volume, DEFAULT_SFX_VOLUME);
@@ -285,18 +369,21 @@ mod tests {
         let deserialized: GameOptionData = serde_json::from_str(&json_str).expect("Deserialization failed");
         assert_eq!(default_option, deserialized);
         assert_eq!(deserialized._language, DEFAULT_LANGUAGE);
+        assert_eq!(deserialized._font, DEFAULT_FONT);
         assert_eq!(deserialized._monitor_index, None);
         assert_eq!(deserialized._render_quality_level, DEFAULT_RENDER_QUALITY_LEVEL);
         assert_eq!(deserialized._vsync, DEFAULT_VSYNC);
 
         let mut custom_option = default_option.clone();
         custom_option.set_language(Language::Korean);
+        custom_option.set_font(FontType::NanumGothicCoding);
         custom_option.set_monitor_index(Some(2));
         custom_option.set_render_quality_level(RenderQualityLevel::High);
         custom_option.set_vsync(true);
         let custom_json = serde_json::to_string(&custom_option).expect("Serialization failed");
         let custom_deserialized: GameOptionData = serde_json::from_str(&custom_json).expect("Deserialization failed");
         assert_eq!(custom_deserialized._language, Language::Korean);
+        assert_eq!(custom_deserialized._font, FontType::NanumGothicCoding);
         assert_eq!(custom_deserialized._monitor_index, Some(2));
         assert_eq!(custom_deserialized._render_quality_level, RenderQualityLevel::High);
         assert_eq!(custom_deserialized._vsync, true);
