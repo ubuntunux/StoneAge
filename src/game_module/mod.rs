@@ -5,6 +5,7 @@ pub mod game_client;
 pub mod game_constants;
 pub mod game_controller;
 pub mod game_input;
+pub mod game_localization;
 pub mod game_option;
 pub mod game_resource;
 pub mod game_scene_manager;

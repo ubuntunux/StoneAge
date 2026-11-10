@@ -1,0 +1,13 @@
+{
+    "_language": "Korean",
+    "_texts": {
+        "MenuTabInventory": "인벤토리",
+        "MenuTabCraft": "제작",
+        "MenuTabRecords": "기록",
+        "MenuTabTaming": "테이밍",
+        "MenuTabFriendlyNpc": "동료 NPC",
+        "MenuTabSaveLoad": "저장 / 로드",
+        "MenuTabOption": "옵션",
+        "MenuTabDebug": "디버그"
+    }
+}

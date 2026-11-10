@@ -3,16 +3,17 @@ use crate::game_module::actors::items::ItemData;
 use crate::game_module::actors::props::PropData;
 use crate::game_module::actors::weapons::WeaponData;
 use crate::game_module::actors::weapons::WeaponDataCreateInfo;
-use crate::game_module::game_option::GameOptionData;
+use crate::game_module::game_localization::{LocalizationData, TextId};
+use crate::game_module::game_option::{GameOptionData, Language, get_global_language};
 use crate::game_module::game_scene_manager::GameSceneDataCreateInfo;
 use crate::game_module::save_data::save_data::GameSaveData;
 use crate::game_module::scenario::scenario::ScenarioDataCreateInfo;
 use crate::game_module::widgets::toolbox_widget::item_tab_widget::ToolboxItemData;
-use rust_engine_3d::core::engine_service_locator::get_engine_resources;
+use rust_engine_3d::core::engine_service_locator::{get_engine_resources, is_engine_core_valid};
 use rust_engine_3d::resource::resource::{
     APPLICATION_RESOURCE_PATH, DEFAULT_RESOURCE_GC_TIMEOUT_SEC, LOG_RESOURCE_LIFECYCLE, MetaData,
     RESOURCE_GC_CHECK_INTERVAL_SEC, ResourceDataContainer, ResourceEntry, ResourceEntryMap,
-    get_resource_entry_data_must, get_unique_resource_name, update_resource_entry_map_gc,
+    get_resource_entry_data_must, get_unique_resource_name, update_resource_entry_map_gc, walk_directory,
 };
 use rust_engine_3d::utilities::system::{self, RcRefCell, newRcRefCell};
 use serde_json::{self};
@@ -29,6 +30,10 @@ pub const SCENARIO_FILE_PATH: &str = "game_data/scenario";
 pub const WEAPON_DATA_FILE_PATH: &str = "game_data/weapons";
 pub const GAME_SAVE_DATA_FILE_PATH: &str = "game_data/save_data";
 pub const TOOLBOX_ITEM_DATA_FILE_PATH: &str = "game_data/toolbox_items";
+pub const LOCALIZATION_DATA_FILE_PATH: &str = "game_data/localization";
+pub const LOCALIZATION_DATA_DIRECTORY: &str = "localization";
+pub const LOCALIZATION_ENGLISH: &str = "localization/english";
+pub const LOCALIZATION_KOREAN: &str = "localization/korean";
 pub const GAME_OPTION_DATA_FILE_PATH: &str = "game_data/game_option";
 pub const GAME_OPTION_DATA_FILE_NAME: &str = "game_option";
 
@@ -50,6 +55,7 @@ pub type PropDataMap = ResourceEntryMap<PropData>;
 pub type ScenarioDataCreateInfoMap = ResourceEntryMap<ScenarioDataCreateInfo>;
 pub type WeaponDataMap<'a> = ResourceEntryMap<WeaponData<'a>>;
 pub type ToolboxItemDataMap = ResourceEntryMap<ToolboxItemData>;
+pub type LocalizationDataMap = ResourceEntryMap<LocalizationData>;
 
 #[derive(Clone)]
 pub struct GameResources<'a> {
@@ -61,6 +67,7 @@ pub struct GameResources<'a> {
     _prop_data_map: PropDataMap,
     _weapon_data_map: WeaponDataMap<'a>,
     _toolbox_item_data_map: ToolboxItemDataMap,
+    _localization_data_map: LocalizationDataMap,
     pub _game_option_data: RcRefCell<GameOptionData>,
     pub _gc_check_timer: f32,
     pub _gc_timeout_sec: f32,
@@ -77,6 +84,7 @@ impl<'a> GameResources<'a> {
             _prop_data_map: PropDataMap::new(),
             _weapon_data_map: WeaponDataMap::new(),
             _toolbox_item_data_map: ToolboxItemDataMap::new(),
+            _localization_data_map: LocalizationDataMap::new(),
             _game_option_data: newRcRefCell(GameOptionData::default()),
             _gc_check_timer: 0.0,
             _gc_timeout_sec: DEFAULT_RESOURCE_GC_TIMEOUT_SEC,
@@ -84,7 +92,20 @@ impl<'a> GameResources<'a> {
         Box::new(game_resources)
     }
     pub fn collect_resources(&self, dir: &Path, extensions: &[&str]) -> Vec<PathBuf> {
-        get_engine_resources().collect_resources(dir, extensions)
+        if is_engine_core_valid() {
+            get_engine_resources().collect_resources(dir, extensions)
+        } else {
+            let actual_dir = if dir.exists() {
+                dir.to_path_buf()
+            } else {
+                PathBuf::from(APPLICATION_RESOURCE_PATH).join(dir)
+            };
+            if actual_dir.is_dir() {
+                walk_directory(&actual_dir, extensions, &[])
+            } else {
+                Vec::new()
+            }
+        }
     }
     pub fn initialize_game_resources(&mut self) {}
 
@@ -604,6 +625,13 @@ impl<'a> GameResources<'a> {
         );
 
         let t0 = std::time::Instant::now();
+        self.load_localization_data();
+        log::info!(
+            "[StartupTimer] load_localization_data: {:.2}ms",
+            t0.elapsed().as_secs_f64() * 1000.0
+        );
+
+        let t0 = std::time::Instant::now();
         self.load_game_save_data();
         log::info!(
             "[StartupTimer] load_game_save_data: {:.2}ms",
@@ -626,6 +654,7 @@ impl<'a> GameResources<'a> {
     fn unload_game_data(&mut self) {
         self.unload_game_option_data();
         self.unload_game_save_data();
+        self.unload_localization_data();
         self.unload_toolbox_item_data();
         self.unload_weapon_data();
         self.unload_prop_data();
@@ -864,6 +893,92 @@ impl<'a> GameResources<'a> {
             },
         )
     }
+
+    // localization data
+    fn load_localization_data(&mut self) {
+        let game_data_directory = PathBuf::from(GAME_DATA_DIRECTORY);
+        let localization_data_directory = PathBuf::from(LOCALIZATION_DATA_FILE_PATH);
+
+        let game_data_files: Vec<PathBuf> = self.collect_resources(&localization_data_directory, &[EXT_GAME_DATA]);
+        for game_data_file in game_data_files {
+            let localization_data_name =
+                get_unique_resource_name(&self._localization_data_map, &game_data_directory, &game_data_file);
+            let meta_data = MetaData::new(&game_data_file, &game_data_file);
+            let entry = ResourceEntry::new(localization_data_name.clone(), meta_data);
+            self._localization_data_map.insert(localization_data_name, entry);
+        }
+    }
+
+    fn unload_localization_data(&mut self) {
+        self._localization_data_map.clear();
+    }
+
+    pub fn has_localization_data(&self, resource_name: &str) -> bool {
+        self.resolve_localization_data_key(resource_name).is_some()
+    }
+
+    pub fn resolve_localization_data_key<'b>(&'b self, resource_name: &'b str) -> Option<&'b str> {
+        if self._localization_data_map.contains_key(resource_name) {
+            Some(resource_name)
+        } else if let Some((k, _)) = self
+            ._localization_data_map
+            .iter()
+            .find(|(k, _)| k.as_str() == resource_name || k.ends_with(&format!("/{}", resource_name)))
+        {
+            Some(k.as_str())
+        } else {
+            None
+        }
+    }
+
+    pub fn get_localization_data(&self, resource_name: &str) -> &RcRefCell<LocalizationData> {
+        let key = self.resolve_localization_data_key(resource_name).unwrap_or(resource_name);
+        get_resource_entry_data_must(
+            "localization_data",
+            &self._localization_data_map,
+            key,
+            |_resource_name, meta| {
+                let loaded_contents = system::load(&meta._resource_file_path);
+                match serde_json::from_reader(loaded_contents) {
+                    Ok(data) => Some(data),
+                    Err(err) => {
+                        log::error!(
+                            "Failed to deserialize localization data {:?}: {:?}",
+                            meta._resource_file_path,
+                            err
+                        );
+                        None
+                    }
+                }
+            },
+        )
+    }
+
+    pub fn get_localization_data_by_language(&self, language: Language) -> &RcRefCell<LocalizationData> {
+        let name = match language {
+            Language::English => LOCALIZATION_ENGLISH,
+            Language::Korean => LOCALIZATION_KOREAN,
+        };
+        self.get_localization_data(name)
+    }
+
+    pub fn get_text(&self, text_id: TextId) -> String {
+        self.get_text_by_language(text_id, get_global_language())
+    }
+
+    pub fn get_text_by_language(&self, text_id: TextId, language: Language) -> String {
+        let resource_name = match language {
+            Language::English => LOCALIZATION_ENGLISH,
+            Language::Korean => LOCALIZATION_KOREAN,
+        };
+        if self.has_localization_data(resource_name) {
+            let loc_data = self.get_localization_data(resource_name).borrow();
+            if let Some(text) = loc_data.get_text(text_id) {
+                return text.to_string();
+            }
+        }
+        text_id.get_default_text_by_language(language).to_string()
+    }
 }
 
 #[cfg(test)]
@@ -877,6 +992,41 @@ mod tests {
         assert_eq!(path1, path2);
         assert_eq!(path1.extension().and_then(|s| s.to_str()), Some(EXT_GAME_DATA));
         assert!(path1.ends_with(format!("save_data/00.{}", EXT_GAME_DATA)));
+    }
+
+    #[test]
+    fn test_game_resources_localization_data_load_and_get() {
+        let mut resources = GameResources::create_game_resources();
+        resources.load_localization_data();
+
+        assert!(resources.has_localization_data(LOCALIZATION_ENGLISH));
+        assert!(resources.has_localization_data(LOCALIZATION_KOREAN));
+        assert!(resources.has_localization_data("english"));
+        assert!(resources.has_localization_data("korean"));
+
+        let en_data = resources.get_localization_data_by_language(Language::English).borrow();
+        assert_eq!(en_data.get_text(TextId::MenuTabInventory), Some("Inventory"));
+        assert_eq!(en_data.get_text(TextId::MenuTabSaveLoad), Some("Save / Load"));
+
+        let ko_data = resources.get_localization_data_by_language(Language::Korean).borrow();
+        assert_eq!(ko_data.get_text(TextId::MenuTabInventory), Some("인벤토리"));
+        assert_eq!(ko_data.get_text(TextId::MenuTabSaveLoad), Some("저장 / 로드"));
+
+        drop(en_data);
+        drop(ko_data);
+
+        assert_eq!(
+            resources.get_text_by_language(TextId::MenuTabInventory, Language::English),
+            "Inventory"
+        );
+        assert_eq!(
+            resources.get_text_by_language(TextId::MenuTabInventory, Language::Korean),
+            "인벤토리"
+        );
+
+        resources.unload_localization_data();
+        assert!(!resources.has_localization_data(LOCALIZATION_ENGLISH));
+        assert!(!resources.has_localization_data(LOCALIZATION_KOREAN));
     }
 
     #[test]

@@ -1,0 +1,13 @@
+{
+    "_language": "English",
+    "_texts": {
+        "MenuTabInventory": "Inventory",
+        "MenuTabCraft": "Craft",
+        "MenuTabRecords": "Records",
+        "MenuTabTaming": "Taming",
+        "MenuTabFriendlyNpc": "NPC Friends",
+        "MenuTabSaveLoad": "Save / Load",
+        "MenuTabOption": "Option",
+        "MenuTabDebug": "Debug"
+    }
+}

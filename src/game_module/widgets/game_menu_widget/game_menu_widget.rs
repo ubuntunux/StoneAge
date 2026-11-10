@@ -1,6 +1,8 @@
 use crate::game_module::actors::character::Character;
 use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, AUDIO_SELECT_ITEM};
 use crate::game_module::game_input::UiInput;
+use crate::game_module::game_localization::{TextId, get_text, get_text_by_language};
+use crate::game_module::game_option::{Language, get_global_language};
 use crate::game_module::widgets::craft_widget::CraftWidget;
 use crate::game_module::widgets::game_menu_widget::friendly_npc_list_widget::FriendlyNpcListWidget;
 use crate::game_module::widgets::game_menu_widget::game_debug_menu_widget::GameDebugMenuWidget;
@@ -25,6 +27,7 @@ use std::rc::Rc;
 
 const TAB_BUTTON_WIDTH: f32 = 78.0;
 const TAB_BUTTON_HEIGHT: f32 = 35.0;
+const TAB_BUTTON_FONT_SIZE: f32 = 20.0;
 const TAB_BUTTON_COLOR_ACTIVE: u32 = get_color32(195, 118, 58, 240);
 const TAB_BUTTON_COLOR_INACTIVE: u32 = get_color32(165, 130, 90, 230);
 
@@ -41,6 +44,27 @@ pub enum GameMenuTab {
 }
 
 impl GameMenuTab {
+    pub fn text_id(&self) -> TextId {
+        match self {
+            GameMenuTab::Inventory => TextId::MenuTabInventory,
+            GameMenuTab::Craft => TextId::MenuTabCraft,
+            GameMenuTab::Records => TextId::MenuTabRecords,
+            GameMenuTab::TamingList => TextId::MenuTabTaming,
+            GameMenuTab::FriendlyNpcList => TextId::MenuTabFriendlyNpc,
+            GameMenuTab::SaveLoad => TextId::MenuTabSaveLoad,
+            GameMenuTab::GameOption => TextId::MenuTabOption,
+            GameMenuTab::DebugMenu => TextId::MenuTabDebug,
+        }
+    }
+
+    pub fn display_name(&self) -> String {
+        get_text(self.text_id())
+    }
+
+    pub fn display_name_by_language(&self, language: Language) -> String {
+        get_text_by_language(self.text_id(), language)
+    }
+
     pub fn next(&self) -> Self {
         match self {
             GameMenuTab::Inventory => GameMenuTab::Craft,
@@ -89,6 +113,7 @@ pub struct GameMenuWidget<'a> {
     pub _game_debug_menu_widget: Box<GameDebugMenuWidget<'a>>,
     pub _active_tab: GameMenuTab,
     pub _is_opened_game_menu: bool,
+    pub _current_language: Language,
 }
 
 impl<'a> GameMenuWidget<'a> {
@@ -204,7 +229,7 @@ impl<'a> GameMenuWidget<'a> {
         ui_component.set_size(TAB_BUTTON_WIDTH, TAB_BUTTON_HEIGHT);
         ui_component.set_margin(4.0);
         ui_component.set_text(text);
-        ui_component.set_font_size(22.0);
+        ui_component.set_font_size(TAB_BUTTON_FONT_SIZE);
         ui_component.set_font_color(get_color32(255, 255, 255, 255));
         ui_component.set_round(5.0);
         ui_component.set_color(TAB_BUTTON_COLOR_INACTIVE);
@@ -253,56 +278,56 @@ impl<'a> GameMenuWidget<'a> {
 
         let inventory_tab_btn = Self::create_tab_button(
             "inventory_tab_btn",
-            "Inventory",
+            &GameMenuTab::Inventory.display_name(),
             GameMenuWidget::callback_tab_inventory,
             header_layout_mut,
         );
 
         let craft_tab_btn = Self::create_tab_button(
             "craft_tab_btn",
-            "Craft",
+            &GameMenuTab::Craft.display_name(),
             GameMenuWidget::callback_tab_craft,
             header_layout_mut,
         );
 
         let records_tab_btn = Self::create_tab_button(
             "records_tab_btn",
-            "Records",
+            &GameMenuTab::Records.display_name(),
             GameMenuWidget::callback_tab_records,
             header_layout_mut,
         );
 
         let taming_tab_btn = Self::create_tab_button(
             "taming_tab_btn",
-            "Taming",
+            &GameMenuTab::TamingList.display_name(),
             GameMenuWidget::callback_tab_taming,
             header_layout_mut,
         );
 
         let friendly_npc_tab_btn = Self::create_tab_button(
             "friendly_npc_tab_btn",
-            "NPC Friends",
+            &GameMenuTab::FriendlyNpcList.display_name(),
             GameMenuWidget::callback_tab_friendly_npc,
             header_layout_mut,
         );
 
         let saveload_tab_btn = Self::create_tab_button(
             "saveload_tab_btn",
-            "Save / Load",
+            &GameMenuTab::SaveLoad.display_name(),
             GameMenuWidget::callback_tab_saveload,
             header_layout_mut,
         );
 
         let option_tab_btn = Self::create_tab_button(
             "option_tab_btn",
-            "Option",
+            &GameMenuTab::GameOption.display_name(),
             GameMenuWidget::callback_tab_option,
             header_layout_mut,
         );
 
         let debug_tab_btn = Self::create_tab_button(
             "debug_tab_btn",
-            "Debug",
+            &GameMenuTab::DebugMenu.display_name(),
             GameMenuWidget::callback_tab_debug,
             header_layout_mut,
         );
@@ -370,6 +395,7 @@ impl<'a> GameMenuWidget<'a> {
             _game_debug_menu_widget: game_debug_menu_widget,
             _active_tab: GameMenuTab::SaveLoad,
             _is_opened_game_menu: false,
+            _current_language: get_global_language(),
         });
 
         // Set user_data on header buttons to point to game_menu_widget instance
@@ -393,6 +419,13 @@ impl<'a> GameMenuWidget<'a> {
             (&self._option_tab_btn, GameMenuTab::GameOption),
             (&self._debug_tab_btn, GameMenuTab::DebugMenu),
         ]
+    }
+
+    pub fn refresh_tab_texts(&mut self) {
+        for (btn, tab_type) in self.all_tab_buttons() {
+            let ui_component = ptr_as_mut(btn.as_ref()).get_ui_component_mut();
+            ui_component.set_text(&tab_type.display_name());
+        }
     }
 
     pub fn changed_window_size(&mut self, window_size: &Vector2<i32>) {
@@ -458,6 +491,12 @@ impl<'a> GameMenuWidget<'a> {
     }
 
     pub fn open_game_menu(&mut self, tab: Option<GameMenuTab>) {
+        let global_language = get_global_language();
+        if self._current_language != global_language {
+            self._current_language = global_language;
+            self.refresh_tab_texts();
+        }
+
         let target_tab = tab.unwrap_or(self._active_tab);
         if !self._is_opened_game_menu {
             ptr_as_mut(self._layer.as_ref()).get_ui_component_mut().set_enable(true);
@@ -545,8 +584,116 @@ impl<'a> GameMenuWidget<'a> {
             }
         }
 
+        let global_language = get_global_language();
+        if self._current_language != global_language {
+            self._current_language = global_language;
+            self.refresh_tab_texts();
+        }
+
         if !modal_consumed && UiInput::is_cancel(keyboard_input_data, joystick_input_data) {
             self.close_game_menu();
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::game_module::game_option::{DEFAULT_LANGUAGE, set_global_language};
+
+    #[test]
+    fn test_game_menu_tab_navigation() {
+        let tab = GameMenuTab::Inventory;
+        assert_eq!(tab.next(), GameMenuTab::Craft);
+        assert_eq!(tab.prev(), GameMenuTab::DebugMenu);
+        assert_eq!(GameMenuTab::DebugMenu.next(), GameMenuTab::Inventory);
+    }
+
+    #[test]
+    fn test_game_menu_tab_text_ids_and_display_name() {
+        assert_eq!(GameMenuTab::Inventory.text_id(), TextId::MenuTabInventory);
+        assert_eq!(GameMenuTab::Craft.text_id(), TextId::MenuTabCraft);
+        assert_eq!(GameMenuTab::Records.text_id(), TextId::MenuTabRecords);
+        assert_eq!(GameMenuTab::TamingList.text_id(), TextId::MenuTabTaming);
+        assert_eq!(GameMenuTab::FriendlyNpcList.text_id(), TextId::MenuTabFriendlyNpc);
+        assert_eq!(GameMenuTab::SaveLoad.text_id(), TextId::MenuTabSaveLoad);
+        assert_eq!(GameMenuTab::GameOption.text_id(), TextId::MenuTabOption);
+        assert_eq!(GameMenuTab::DebugMenu.text_id(), TextId::MenuTabDebug);
+
+        assert_eq!(
+            GameMenuTab::Inventory.display_name_by_language(Language::English),
+            "Inventory"
+        );
+        assert_eq!(
+            GameMenuTab::Inventory.display_name_by_language(Language::Korean),
+            "인벤토리"
+        );
+
+        assert_eq!(GameMenuTab::Craft.display_name_by_language(Language::English), "Craft");
+        assert_eq!(GameMenuTab::Craft.display_name_by_language(Language::Korean), "제작");
+
+        assert_eq!(
+            GameMenuTab::Records.display_name_by_language(Language::English),
+            "Records"
+        );
+        assert_eq!(GameMenuTab::Records.display_name_by_language(Language::Korean), "기록");
+
+        assert_eq!(
+            GameMenuTab::TamingList.display_name_by_language(Language::English),
+            "Taming"
+        );
+        assert_eq!(
+            GameMenuTab::TamingList.display_name_by_language(Language::Korean),
+            "테이밍"
+        );
+
+        assert_eq!(
+            GameMenuTab::FriendlyNpcList.display_name_by_language(Language::English),
+            "NPC Friends"
+        );
+        assert_eq!(
+            GameMenuTab::FriendlyNpcList.display_name_by_language(Language::Korean),
+            "동료 NPC"
+        );
+
+        assert_eq!(
+            GameMenuTab::SaveLoad.display_name_by_language(Language::English),
+            "Save / Load"
+        );
+        assert_eq!(
+            GameMenuTab::SaveLoad.display_name_by_language(Language::Korean),
+            "저장 / 로드"
+        );
+
+        assert_eq!(
+            GameMenuTab::GameOption.display_name_by_language(Language::English),
+            "Option"
+        );
+        assert_eq!(
+            GameMenuTab::GameOption.display_name_by_language(Language::Korean),
+            "옵션"
+        );
+
+        assert_eq!(
+            GameMenuTab::DebugMenu.display_name_by_language(Language::English),
+            "Debug"
+        );
+        assert_eq!(
+            GameMenuTab::DebugMenu.display_name_by_language(Language::Korean),
+            "디버그"
+        );
+    }
+
+    #[test]
+    fn test_game_menu_tab_global_language_display() {
+        set_global_language(Language::English);
+        assert_eq!(GameMenuTab::Inventory.display_name(), "Inventory");
+        assert_eq!(GameMenuTab::SaveLoad.display_name(), "Save / Load");
+
+        set_global_language(Language::Korean);
+        assert_eq!(GameMenuTab::Inventory.display_name(), "인벤토리");
+        assert_eq!(GameMenuTab::SaveLoad.display_name(), "저장 / 로드");
+
+        set_global_language(DEFAULT_LANGUAGE);
     }
 }

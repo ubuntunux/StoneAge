@@ -1,7 +1,7 @@
 use crate::game_module::game_constants::{AUDIO_PICKUP_ITEM, AUDIO_SELECT_ITEM};
 use crate::game_module::game_input::UiInput;
 use crate::game_module::game_option::{
-    CAMERA_ROTATION_SPEED_STEP, FONT_SCALE_STEP, GameOptionData, MAX_CAMERA_ROTATION_SPEED, MAX_FONT_SCALE,
+    CAMERA_ROTATION_SPEED_STEP, FONT_SCALE_STEP, GameOptionData, Language, MAX_CAMERA_ROTATION_SPEED, MAX_FONT_SCALE,
     MAX_UI_SCALE, MAX_VOLUME, MIN_CAMERA_ROTATION_SPEED, MIN_FONT_SCALE, MIN_UI_SCALE, MIN_VOLUME, UI_SCALE_STEP,
     VOLUME_STEP,
 };
@@ -42,6 +42,9 @@ const STEPPER_BTN_FONT_SIZE: f32 = 24.0;
 const TOGGLE_BTN_FONT_SIZE: f32 = 20.0;
 const ACTION_BTN_FONT_SIZE: f32 = 20.0;
 const STATUS_FONT_SIZE: f32 = 18.0;
+
+const LANGUAGE_ITEMS: [Language; 2] = [Language::English, Language::Korean];
+const LANGUAGE_NAMES: [&str; 2] = ["English", "한글"];
 
 const WINDOW_MODE_ITEMS: [WindowMode; 3] = [
     WindowMode::WindowMode,
@@ -156,6 +159,7 @@ pub fn get_next_nav_index(
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Display, FromRepr, EnumCount, EnumIter, EnumString)]
 #[repr(usize)]
 pub enum OptionItemType {
+    Language,
     WindowMode,
     Monitor,
     Resolution,
@@ -174,6 +178,7 @@ pub enum OptionItemType {
 impl OptionItemType {
     pub fn display_name(&self) -> &'static str {
         match self {
+            OptionItemType::Language => "Language",
             OptionItemType::WindowMode => "Window Mode",
             OptionItemType::Monitor => "Display Monitor",
             OptionItemType::Resolution => "Resolution",
@@ -200,7 +205,8 @@ impl OptionItemType {
     pub fn is_combo(&self) -> bool {
         matches!(
             self,
-            OptionItemType::WindowMode
+            OptionItemType::Language
+                | OptionItemType::WindowMode
                 | OptionItemType::Monitor
                 | OptionItemType::Resolution
                 | OptionItemType::RenderQualityLevel
@@ -346,6 +352,16 @@ impl<'a> GameOptionWidget<'a> {
         let widget = ptr_as_mut(ui_component.get_user_data() as *const GameOptionWidget<'a>);
         widget.reset_to_defaults();
         true
+    }
+
+    pub fn callback_language_changed(user_data: *const c_void, index: usize) {
+        let widget = ptr_as_mut(user_data as *const GameOptionWidget<'a>);
+        if index < LANGUAGE_ITEMS.len() {
+            widget._game_option_data.set_language(LANGUAGE_ITEMS[index]);
+            widget._game_option_data.apply();
+            widget.refresh_all_values();
+            widget.clear_status_message();
+        }
     }
 
     pub fn callback_window_mode_changed(user_data: *const c_void, index: usize) {
@@ -581,6 +597,23 @@ impl<'a> GameOptionWidget<'a> {
 
             if item_type.is_combo() {
                 let combo_box = match item_type {
+                    OptionItemType::Language => {
+                        let mut combo = DropDownComboBoxWidget::create_from_enum(
+                            row_mut,
+                            overlay_root,
+                            "language_combo",
+                            &LANGUAGE_ITEMS,
+                            &LANGUAGE_NAMES,
+                            initial_option._language,
+                            COMBO_BOX_WIDTH,
+                            STEPPER_BTN_SIZE,
+                        );
+                        combo.set_callback_selection_changed(Some((
+                            Self::callback_language_changed,
+                            widget_ptr as *const c_void,
+                        )));
+                        combo
+                    }
                     OptionItemType::WindowMode => {
                         let mut combo = DropDownComboBoxWidget::create_from_enum(
                             row_mut,
@@ -914,6 +947,16 @@ impl<'a> GameOptionWidget<'a> {
             return;
         }
         match item_type {
+            OptionItemType::Language => {
+                let current_idx =
+                    LANGUAGE_ITEMS.iter().position(|&l| l == self._game_option_data._language).unwrap_or(0);
+                let prev_idx = if current_idx == 0 {
+                    LANGUAGE_ITEMS.len() - 1
+                } else {
+                    current_idx - 1
+                };
+                self._game_option_data.set_language(LANGUAGE_ITEMS[prev_idx]);
+            }
             OptionItemType::WindowMode => {
                 let current_idx =
                     WINDOW_MODE_ITEMS.iter().position(|&m| m == self._game_option_data._window_mode).unwrap_or(0);
@@ -1009,6 +1052,12 @@ impl<'a> GameOptionWidget<'a> {
             return;
         }
         match item_type {
+            OptionItemType::Language => {
+                let current_idx =
+                    LANGUAGE_ITEMS.iter().position(|&l| l == self._game_option_data._language).unwrap_or(0);
+                let next_idx = (current_idx + 1) % LANGUAGE_ITEMS.len();
+                self._game_option_data.set_language(LANGUAGE_ITEMS[next_idx]);
+            }
             OptionItemType::WindowMode => {
                 let current_idx =
                     WINDOW_MODE_ITEMS.iter().position(|&m| m == self._game_option_data._window_mode).unwrap_or(0);
@@ -1088,7 +1137,8 @@ impl<'a> GameOptionWidget<'a> {
             return;
         }
         match item_type {
-            OptionItemType::WindowMode
+            OptionItemType::Language
+            | OptionItemType::WindowMode
             | OptionItemType::Monitor
             | OptionItemType::Resolution
             | OptionItemType::RenderQualityLevel => {
@@ -1127,6 +1177,13 @@ impl<'a> GameOptionWidget<'a> {
         let res_enabled = is_resolution_selectable(self._game_option_data._window_mode);
         for row in self._rows.iter_mut() {
             match row._item_type {
+                OptionItemType::Language => {
+                    if let Some(combo) = row._combo_box.as_mut() {
+                        let current_idx =
+                            LANGUAGE_ITEMS.iter().position(|&l| l == self._game_option_data._language).unwrap_or(0);
+                        combo.set_selected_index(current_idx);
+                    }
+                }
                 OptionItemType::WindowMode => {
                     if let Some(combo) = row._combo_box.as_mut() {
                         let current_idx = WINDOW_MODE_ITEMS
@@ -1274,7 +1331,7 @@ impl<'a> GameOptionWidget<'a> {
             }
         }
         if !self.is_nav_index_enabled(self._selected_index) {
-            self._selected_index = OptionItemType::WindowMode as usize;
+            self._selected_index = OptionItemType::Language as usize;
         }
         self.update_selection_visuals();
     }
@@ -1375,27 +1432,32 @@ mod tests {
 
     #[test]
     fn test_option_item_types() {
-        assert_eq!(OptionItemType::from_repr(0), Some(OptionItemType::WindowMode));
+        assert_eq!(OptionItemType::from_repr(0), Some(OptionItemType::Language));
+        assert_eq!(OptionItemType::Language.display_name(), "Language");
+        assert!(OptionItemType::Language.is_combo());
+        assert!(!OptionItemType::Language.is_toggle());
+
+        assert_eq!(OptionItemType::from_repr(1), Some(OptionItemType::WindowMode));
         assert_eq!(OptionItemType::WindowMode.display_name(), "Window Mode");
         assert!(OptionItemType::WindowMode.is_combo());
         assert!(!OptionItemType::WindowMode.is_toggle());
 
-        assert_eq!(OptionItemType::from_repr(1), Some(OptionItemType::Monitor));
+        assert_eq!(OptionItemType::from_repr(2), Some(OptionItemType::Monitor));
         assert_eq!(OptionItemType::Monitor.display_name(), "Display Monitor");
         assert!(OptionItemType::Monitor.is_combo());
         assert!(!OptionItemType::Monitor.is_toggle());
 
-        assert_eq!(OptionItemType::from_repr(2), Some(OptionItemType::Resolution));
+        assert_eq!(OptionItemType::from_repr(3), Some(OptionItemType::Resolution));
         assert_eq!(OptionItemType::Resolution.display_name(), "Resolution");
         assert!(OptionItemType::Resolution.is_combo());
         assert!(!OptionItemType::Resolution.is_toggle());
 
-        assert_eq!(OptionItemType::from_repr(3), Some(OptionItemType::RenderQualityLevel));
+        assert_eq!(OptionItemType::from_repr(4), Some(OptionItemType::RenderQualityLevel));
         assert_eq!(OptionItemType::RenderQualityLevel.display_name(), "Render Quality");
         assert!(OptionItemType::RenderQualityLevel.is_combo());
         assert!(!OptionItemType::RenderQualityLevel.is_toggle());
 
-        assert_eq!(OptionItemType::from_repr(4), Some(OptionItemType::Vsync));
+        assert_eq!(OptionItemType::from_repr(5), Some(OptionItemType::Vsync));
         assert_eq!(OptionItemType::Vsync.display_name(), "VSync");
         assert!(!OptionItemType::Vsync.is_combo());
         assert!(OptionItemType::Vsync.is_toggle());
@@ -1403,15 +1465,26 @@ mod tests {
         assert!(OptionItemType::MuteAudio.is_toggle());
         assert!(!OptionItemType::MuteAudio.is_combo());
 
-        assert_eq!(OptionItemType::from_repr(11), Some(OptionItemType::UiScale));
+        assert_eq!(OptionItemType::from_repr(12), Some(OptionItemType::UiScale));
         assert_eq!(OptionItemType::UiScale.display_name(), "UI Scale");
         assert!(!OptionItemType::UiScale.is_combo());
         assert!(!OptionItemType::UiScale.is_toggle());
 
-        assert_eq!(OptionItemType::from_repr(12), Some(OptionItemType::FontScale));
+        assert_eq!(OptionItemType::from_repr(13), Some(OptionItemType::FontScale));
         assert_eq!(OptionItemType::FontScale.display_name(), "Font Scale");
         assert!(!OptionItemType::FontScale.is_combo());
         assert!(!OptionItemType::FontScale.is_toggle());
+    }
+
+    #[test]
+    fn test_language_items_consistency() {
+        assert_eq!(LANGUAGE_ITEMS.len(), LANGUAGE_NAMES.len());
+        assert_eq!(LANGUAGE_ITEMS.len(), 2);
+        assert_eq!(LANGUAGE_NAMES[0], "English");
+        assert_eq!(LANGUAGE_NAMES[1], "한글");
+
+        assert_eq!(Language::English.display_name(), "English");
+        assert_eq!(Language::Korean.display_name(), "한글");
     }
 
     #[test]
