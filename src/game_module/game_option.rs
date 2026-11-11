@@ -64,6 +64,7 @@ pub enum FontType {
     UbuntuSansMono,
     D2Coding,
     NanumGothicCoding,
+    Pretendard,
 }
 
 impl FontType {
@@ -72,6 +73,7 @@ impl FontType {
             FontType::UbuntuSansMono => "Ubuntu Sans Mono",
             FontType::D2Coding => "D2Coding",
             FontType::NanumGothicCoding => "Nanum Gothic Coding",
+            FontType::Pretendard => "Pretendard",
         }
     }
 
@@ -80,13 +82,14 @@ impl FontType {
             FontType::UbuntuSansMono => "UbuntuSansMono-Regular_Basic_Latin",
             FontType::D2Coding => "D2Coding-Regular_Korean",
             FontType::NanumGothicCoding => "NanumGothicCoding-Regular_Korean",
+            FontType::Pretendard => "Pretendard-Regular_Korean",
         }
     }
 
     pub fn supports_korean(&self) -> bool {
         match self {
             FontType::UbuntuSansMono => false,
-            FontType::D2Coding | FontType::NanumGothicCoding => true,
+            FontType::D2Coding | FontType::NanumGothicCoding | FontType::Pretendard => true,
         }
     }
 
@@ -387,6 +390,10 @@ mod tests {
         assert_eq!(custom_deserialized._monitor_index, Some(2));
         assert_eq!(custom_deserialized._render_quality_level, RenderQualityLevel::High);
         assert_eq!(custom_deserialized._vsync, true);
+
+        assert_eq!(FontType::Pretendard.display_name(), "Pretendard");
+        assert_eq!(FontType::Pretendard.get_font_name(), "Pretendard-Regular_Korean");
+        assert!(FontType::Pretendard.supports_korean());
     }
 
     #[test]

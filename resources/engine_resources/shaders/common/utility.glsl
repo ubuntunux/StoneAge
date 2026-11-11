@@ -251,8 +251,8 @@ vec4 safe_normalize(vec4 vector)
 #if SHADER_STAGE_FLAG == FRAGMENT
 float distance_field_font_opacity(float dist)
 {
-    const float edge = 0.85;
-    const float afwidth = fwidth(dist) * 0.85;
+    const float edge = 0.87;
+    const float afwidth = fwidth(dist) * 1.0;
     return smoothstep(edge - afwidth, edge + afwidth, dist);
 
 //    const float threshold = 0.6;

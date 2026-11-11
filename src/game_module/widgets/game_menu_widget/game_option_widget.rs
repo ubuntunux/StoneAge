@@ -46,12 +46,13 @@ const STATUS_FONT_SIZE: f32 = 18.0;
 const LANGUAGE_ITEMS: [Language; 2] = [Language::English, Language::Korean];
 const LANGUAGE_NAMES: [&str; 2] = ["English", "한글"];
 
-const FONT_ITEMS: [FontType; 3] = [
+const FONT_ITEMS: [FontType; 4] = [
     FontType::UbuntuSansMono,
     FontType::D2Coding,
     FontType::NanumGothicCoding,
+    FontType::Pretendard,
 ];
-const FONT_NAMES: [&str; 3] = ["Ubuntu Sans Mono", "D2Coding", "Nanum Gothic Coding"];
+const FONT_NAMES: [&str; 4] = ["Ubuntu Sans Mono", "D2Coding", "Nanum Gothic Coding", "Pretendard"];
 
 const WINDOW_MODE_ITEMS: [WindowMode; 3] = [
     WindowMode::WindowMode,
@@ -1543,14 +1544,16 @@ mod tests {
     #[test]
     fn test_font_items_consistency() {
         assert_eq!(FONT_ITEMS.len(), FONT_NAMES.len());
-        assert_eq!(FONT_ITEMS.len(), 3);
+        assert_eq!(FONT_ITEMS.len(), 4);
         assert_eq!(FONT_NAMES[0], "Ubuntu Sans Mono");
         assert_eq!(FONT_NAMES[1], "D2Coding");
         assert_eq!(FONT_NAMES[2], "Nanum Gothic Coding");
+        assert_eq!(FONT_NAMES[3], "Pretendard");
 
         assert_eq!(FontType::UbuntuSansMono.display_name(), "Ubuntu Sans Mono");
         assert_eq!(FontType::D2Coding.display_name(), "D2Coding");
         assert_eq!(FontType::NanumGothicCoding.display_name(), "Nanum Gothic Coding");
+        assert_eq!(FontType::Pretendard.display_name(), "Pretendard");
     }
 
     #[test]
