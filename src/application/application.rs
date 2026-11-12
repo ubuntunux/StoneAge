@@ -7,6 +7,7 @@ use crate::game_module::game_scene_manager::GameSceneManager;
 use crate::game_module::game_service_locator;
 use crate::game_module::game_ui_manager::{EditorUIManager, GameUIManager};
 
+use crate::game_module::game_constants::DEPLOY;
 use crate::game_module::game_service_locator::{
     get_editor_ui_manager_mut, get_game_scene_manager, get_game_ui_manager, get_game_ui_manager_mut,
 };
@@ -228,6 +229,12 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
     }
 
     fn update_application(&mut self, delta_time: f64) {
+        if unsafe { DEPLOY } {
+            log::info!("[Deploy] Shader compilation and resource loading complete. Terminating application.");
+            self.set_will_terminate_application();
+            return;
+        }
+
         get_font_manager_mut().clear_logs();
 
         // update managers

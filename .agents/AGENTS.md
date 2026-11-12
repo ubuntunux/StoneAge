@@ -75,6 +75,7 @@ This file defines the project-specific rules, architectural patterns, and practi
   - Camera pivot must be attached to a stable character anchor (`Character::get_camera_pivot()`), not the dynamic bounding box AABB.
 - **Application Exit & Resource Cleanup**:
   - Ensure `EngineCore::terminate_application()` is invoked before window destruction to avoid Vulkan framebuffer and queue leaks upon exit.
+  - When `will_terminate_application()` is flagged during `update_application()`, immediately return from `update_event_and_render_scene()` to prevent presenting unrendered swapchain images in `VK_IMAGE_LAYOUT_UNDEFINED`.
 
 ---
 
@@ -101,8 +102,10 @@ This file defines the project-specific rules, architectural patterns, and practi
   - Run `cargo test --workspace` only when relevant unit/integration tests exist or when core logic/math algorithms are touched (skip for pure UI layout/visual resource tweaks if headless Vulkan device tests fail).
 - **Execution commands**:
   - Linux Development: `cargo run --release -- development`
+  - Shader Compile & Resource Preparation (Deploy mode): `cargo run --release -- deploy`
   - Windows cross-compilation (Wine): `./run_windows_development.sh`
-- **Submodule & Git Commit Messages**:
+- **Git Commit & Push Policy (STRICT)**:
+  - **NEVER** execute `git commit` or `git push` automatically. Always leave changes uncommitted in the working tree unless explicitly instructed by the user to commit or push.
   - Follow Conventional Commits format (`feat(module): ...`, `fix(renderer): ...`).
-  - **Submodule Handling (`RustEngine3D`)**: If changes touch `RustEngine3D/`, commit inside the submodule first, then commit the updated submodule commit pointer in `StoneAge`.
-  - **Unified Git Commit Log**: Upon completing the requested tasks, always provide a final Git commit log in English at the end of the response, combining changes for both `StoneAge` and `RustEngine3D` into a single unified log ready for submission.
+  - **Submodule Handling (`RustEngine3D`)**: When committing is explicitly requested, commit inside `RustEngine3D/` first, then commit the updated submodule pointer in `StoneAge`.
+  - **Unified Git Commit Log**: Provide suggested Git commit messages in English at the end of the response for user review/submission without executing them yourself.

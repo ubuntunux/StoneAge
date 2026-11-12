@@ -34,6 +34,20 @@ def run_command(cmd: list[str], env: dict[str, str] | None = None, cwd: Path = R
         sys.exit(result.returncode)
 
 
+def compile_shaders() -> None:
+    """
+    Compiles engine and game shaders into SPIR-V shader caches and updates resources.txt
+    by running the application with the '-- deploy' flag.
+    In deploy mode, the application initializes resources, compiles shaders, and cleanly
+    terminates before executing game updates.
+    """
+    print("=" * 60)
+    print("Compiling Shaders & Preparing Resources (cargo run --release -- deploy)...")
+    print("=" * 60)
+    run_command(["cargo", "run", "--release", "--", "deploy"])
+    print("\n[OK] Shader compilation and resource preparation completed successfully.")
+
+
 def build_linux() -> None:
     """Builds the release binary for Linux."""
     print("=" * 60)
@@ -197,6 +211,11 @@ def main() -> None:
         help="Skip release building and only package existing binaries and resources.",
     )
     parser.add_argument(
+        "--skip-shader-compile",
+        action="store_true",
+        help="Skip shader compilation step.",
+    )
+    parser.add_argument(
         "--output",
         "-o",
         type=str,
@@ -207,6 +226,11 @@ def main() -> None:
 
     total_start = time.time()
     output_zip = (ROOT_DIR / args.output).resolve()
+
+    if not args.skip_shader_compile:
+        compile_shaders()
+    else:
+        print("[INFO] Skipping shader compilation as requested (--skip-shader-compile).")
 
     if not args.skip_build:
         build_linux()
