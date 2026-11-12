@@ -93,6 +93,14 @@ impl FontType {
         }
     }
 
+    pub fn get_stroke_bias(&self) -> f32 {
+        match self {
+            FontType::UbuntuSansMono => 0.6,
+            FontType::NanumGothicCoding => 0.25,
+            FontType::D2Coding | FontType::Pretendard => 0.0,
+        }
+    }
+
     pub fn default_for_language(language: Language) -> Self {
         match language {
             Language::English => FontType::UbuntuSansMono,
@@ -394,6 +402,10 @@ mod tests {
         assert_eq!(FontType::Pretendard.display_name(), "Pretendard");
         assert_eq!(FontType::Pretendard.get_font_name(), "Pretendard-Regular_Korean");
         assert!(FontType::Pretendard.supports_korean());
+        assert_eq!(FontType::UbuntuSansMono.get_stroke_bias(), 0.6);
+        assert_eq!(FontType::NanumGothicCoding.get_stroke_bias(), 0.25);
+        assert_eq!(FontType::D2Coding.get_stroke_bias(), 0.0);
+        assert_eq!(FontType::Pretendard.get_stroke_bias(), 0.0);
     }
 
     #[test]
