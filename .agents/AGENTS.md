@@ -46,6 +46,8 @@ This file defines the project-specific rules, architectural patterns, and practi
    - Scene transitions use `set_image_auto_fade_inout` to hide asset streaming until `is_load_complete()` or `is_essential_load_complete()` triggers.
 4. **Terrain Heightmap**:
    - Terrain mesh is loaded synchronously on scene open (`force_sync`) so that `CaptureHeightMap` can complete before character movement begins.
+5. **Resource Manifest Sync (`resources.txt`)**:
+   - `resources.txt` is updated at startup and re-synced after `initialize_application()` and before Deploy exit via `update_resource_list_file()` so that dynamically compiled shaders (`shader_caches/`) are guaranteed to be recorded even when caches are freshly generated.
 
 ### 2.3 UI & Layout Guidelines
 - **2-Pass Layout System**:

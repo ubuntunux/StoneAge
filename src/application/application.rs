@@ -19,8 +19,8 @@ use rust_engine_3d::constants;
 use rust_engine_3d::constants::DEVELOPMENT;
 use rust_engine_3d::core::engine_core::{self, ApplicationBase};
 use rust_engine_3d::core::engine_service_locator::{
-    get_engine_core, get_engine_core_mut, get_font_manager_mut, get_renderer_data_mut, get_scene_manager,
-    get_ui_manager_mut,
+    get_engine_core, get_engine_core_mut, get_engine_resources_mut, get_font_manager_mut, get_renderer_data_mut,
+    get_scene_manager, get_ui_manager_mut,
 };
 use rust_engine_3d::resource::resource::CallbackLoadRenderPassCreateInfo;
 use rust_engine_3d::utilities::logger;
@@ -230,7 +230,10 @@ impl<'a> ApplicationBase<'a> for Application<'a> {
 
     fn update_application(&mut self, delta_time: f64) {
         if unsafe { DEPLOY } {
-            log::info!("[Deploy] Shader compilation and resource loading complete. Terminating application.");
+            log::info!(
+                "[Deploy] Shader compilation and resource loading complete. Updating resources.txt and terminating application."
+            );
+            get_engine_resources_mut().update_resource_list_file();
             self.set_will_terminate_application();
             return;
         }
