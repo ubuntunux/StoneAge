@@ -58,6 +58,8 @@ This file defines the project-specific rules, architectural patterns, and practi
 - **L-Stick Separation**:
   - `WidgetNavRepeatController` only consumes D-Pad and WASD/Arrow navigation to prevent L-Stick movement from disturbing UI focus.
 - **Preserve Widget Hierarchy**: Never delete or bypass intermediate container widgets (e.g. `content_layout`) when switching tabs or refactoring.
+- **Raw Pointers for Widget Graphs**:
+  - UI widgets intentionally use `*const` / `*mut` raw pointers (e.g., `*const InventoryWidget<'a>`) to avoid cyclic reference memory leaks and borrowing collisions in complex widget trees. Do NOT attempt to refactor them into `Rc<RefCell<T>>` or safe references unless explicitly requested.
 
 ---
 
@@ -82,16 +84,25 @@ This file defines the project-specific rules, architectural patterns, and practi
 - When handling large refactorings or multi-faceted feature additions, break them down into **Phase-by-Phase milestones** (Data types → Logic → UI/Presentation).
 - If the user explicitly asks for analysis or review ("코드 수정은 하지마"), do not alter files—deliver analysis only.
 
-### 4.2 Verification & Git Commits
-- **Always verify code** using:
-  ```bash
-  cargo fmt --check
-  cargo check
-  cargo test --workspace
-  ```
+### 4.2 Knowledge Accumulation & Continuous Learning (MANDATORY)
+- **Continuous Knowledge Accumulation**: At the end of every task or whenever a non-trivial bug/fix, architectural pattern, edge case, or user-specific coding constraint is identified:
+  - You **MUST automatically append or update** the relevant section in this [AGENTS.md](file:///mnt/Workspace/StoneAge/.agents/AGENTS.md) file (or create/update a dedicated topic under `doc/` if extensive).
+  - **Pruning & Brevity Principle**: Keep additions concise (1-2 bullet points). Avoid bloating the file with one-off trivial fixes. Merge or refine existing entries when concepts overlap.
+  - Explicitly inform the user in the final summary of what new knowledge, pitfall, or convention was permanently recorded.
+  - This guarantees that future AI sessions do not repeat mistakes and continuously build upon past discoveries.
+
+### 4.3 Verification & Git Commits
+- **Verification Workflow**:
+  - Code formatting & compile checks are mandatory:
+    ```bash
+    cargo fmt --check
+    cargo check
+    ```
+  - Run `cargo test --workspace` only when relevant unit/integration tests exist or when core logic/math algorithms are touched (skip for pure UI layout/visual resource tweaks if headless Vulkan device tests fail).
 - **Execution commands**:
   - Linux Development: `cargo run --release -- development`
   - Windows cross-compilation (Wine): `./run_windows_development.sh`
-- **Git Commit Messages**:
+- **Submodule & Git Commit Messages**:
   - Follow Conventional Commits format (`feat(module): ...`, `fix(renderer): ...`).
+  - **Submodule Handling (`RustEngine3D`)**: If changes touch `RustEngine3D/`, commit inside the submodule first, then commit the updated submodule commit pointer in `StoneAge`.
   - **Unified Git Commit Log**: Upon completing the requested tasks, always provide a final Git commit log in English at the end of the response, combining changes for both `StoneAge` and `RustEngine3D` into a single unified log ready for submission.
