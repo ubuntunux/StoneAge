@@ -55,13 +55,18 @@ This file defines the project-specific rules, architectural patterns, and practi
   - `UIComponentInstance`: Calculated geometry (`_ui_area`, `_render_area`, `_contents_area`).
   - Do NOT apply `_pos` or `_pos_hint` directly to children inside a `BoxLayout` (use `FloatLayout` for absolute anchor/ratio positioning).
   - Set `_enable_dpi_scale` once upon widget construction, never dynamically inside frame update loops.
-- **Mouse Snapping**:
-  - When menus or dialogs open, snap mouse focus to the default action button via `move_mouse_to_ui_component`.
+- **Mouse Snapping & Cursor Z-Order**:
+  - When menus or dialogs open, schedule delayed gamepad snapping via `request_mouse_snap_to_widget`, and on directional key/D-Pad navigation, snap the cursor immediately via `move_mouse_to_ui_component` (guarding `touch_over` handlers with `delta != (0, 0)` so stationary snapped cursors don't override keyboard selection).
+  - Always attach `CrossHairWidget` after fullscreen background/menu layers (`_game_image`, `_start_menu_widget`) and parent modal sub-popups to their host menu layer so the cursor renders on top.
 - **L-Stick Separation**:
   - `WidgetNavRepeatController` only consumes D-Pad and WASD/Arrow navigation to prevent L-Stick movement from disturbing UI focus.
 - **Preserve Widget Hierarchy**: Never delete or bypass intermediate container widgets (e.g. `content_layout`) when switching tabs or refactoring.
 - **Raw Pointers for Widget Graphs**:
   - UI widgets intentionally use `*const` / `*mut` raw pointers (e.g., `*const InventoryWidget<'a>`) to avoid cyclic reference memory leaks and borrowing collisions in complex widget trees. Do NOT attempt to refactor them into `Rc<RefCell<T>>` or safe references unless explicitly requested.
+- **Start Menu & Popup Modal Encapsulation (Stardew Valley Warm Wood/Parchment Palette)**:
+  - Modal popups (e.g. Load Game, Options) host composite tab widgets (`SaveLoadWidget`, `GameOptionWidget`) inside an intermediate content container. Frame containers intercept touches via a no-op handler so clicks inside don't propagate, while clicking the backdrop dismisses the popup.
+  - Startup flow transitions: `GamePhase::Start` (intro image auto fade-in) -> `GamePhase::TitleScreen` (waits for fade-in or key press) -> `GamePhase::StartMenu` (opens StartMenu with crosshair cursor enabled).
+  - Menu panels, popups, and buttons use a unified Stardew Valley warm parchment/wood palette (parchment panel `(240, 222, 186)`, dark wood border `(135, 78, 42)`, warm beige button `(245, 232, 205)` with dark brown text `(75, 45, 20)`, and golden-apricot highlight `(255, 220, 145)` with orange-gold border `(255, 160, 40)` and `> text <` decorator for active focus).
 
 ---
 

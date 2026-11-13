@@ -29,6 +29,7 @@ use crate::game_module::widgets::player_hud::PlayerHud;
 use crate::game_module::widgets::popup_widget::PopupWindowWidget;
 use crate::game_module::widgets::quest_widgets::quest_title::QuestTitle;
 use crate::game_module::widgets::quest_widgets::quest_widget::{QuestItemBase, QuestWidget};
+use crate::game_module::widgets::start_menu_widget::StartMenuWidget;
 use crate::game_module::widgets::table_storage_widget::TableStorageWidget;
 use crate::game_module::widgets::target_status_bar::TargetStatusWidget;
 use crate::game_module::widgets::text_box_widget::{
@@ -70,6 +71,7 @@ pub struct GameUIManager<'a> {
     pub _game_image: Option<Box<ImageLayout<'a>>>,
     pub _key_binding_widget_manager: Option<Box<KeyBindingWidgetManager<'a>>>,
     pub _cross_hair: Option<Box<CrossHairWidget<'a>>>,
+    pub _start_menu_widget: Option<Box<StartMenuWidget<'a>>>,
     pub _game_menu_widget: Option<Box<GameMenuWidget<'a>>>,
     pub _player_hud: Option<Box<PlayerHud<'a>>>,
     pub _text_box_widget: Option<Box<TextBoxWidget<'a>>>,
@@ -163,6 +165,7 @@ impl<'a> GameUIManager<'a> {
             _game_image: None,
             _key_binding_widget_manager: None,
             _cross_hair: None,
+            _start_menu_widget: None,
             _game_menu_widget: None,
             _text_box_widget: None,
             _target_status_bar: None,
@@ -282,12 +285,13 @@ impl<'a> GameUIManager<'a> {
         self._game_menu_widget = Some(GameMenuWidget::create_game_menu_widget(game_menu_layout_mut));
 
         // root layer
-        self._cross_hair = Some(Box::new(CrossHairWidget::create_cross_hair(root_widget)));
         self._game_image = Some(ImageLayout::create_image_layout(
             root_widget,
             window_size,
             MATERIAL_INTRO_IMAGE,
         ));
+        self._start_menu_widget = Some(StartMenuWidget::create_start_menu_widget(root_widget));
+        self._cross_hair = Some(Box::new(CrossHairWidget::create_cross_hair(root_widget)));
         unsafe {
             if DEVELOPMENT {
                 self._debug_ui_widget = Some(DebugUIWidget::create_debug_ui_widget(root_widget));
@@ -396,6 +400,45 @@ impl<'a> GameUIManager<'a> {
         self._debug_ui_widget.as_mut().unwrap().set_enable(enable);
     }
 
+    // start menu
+    pub fn is_opened_start_menu(&self) -> bool {
+        if let Some(start_menu_widget) = self._start_menu_widget.as_ref() {
+            start_menu_widget.is_opened()
+        } else {
+            false
+        }
+    }
+    pub fn open_start_menu(&mut self) {
+        if let Some(start_menu_widget) = self._start_menu_widget.as_mut() {
+            start_menu_widget.open_start_menu();
+        }
+    }
+    pub fn close_start_menu(&mut self) {
+        if let Some(start_menu_widget) = self._start_menu_widget.as_mut() {
+            start_menu_widget.close_start_menu();
+        }
+    }
+    pub fn update_start_menu_widget(
+        &mut self,
+        time_data: &TimeData,
+        joystick_input_data: &JoystickInputData,
+        keyboard_input_data: &KeyboardInputData,
+        mouse_move_data: &MouseMoveData,
+        mouse_input_data: &MouseInputData,
+        mouse_delta: &Vector2<f32>,
+    ) {
+        if let Some(start_menu_widget) = self._start_menu_widget.as_mut() {
+            start_menu_widget.update(
+                time_data,
+                joystick_input_data,
+                keyboard_input_data,
+                mouse_move_data,
+                mouse_input_data,
+                mouse_delta,
+            );
+        }
+    }
+
     // game menu
     pub fn is_opened_game_debug_menu(&self) -> bool {
         if let Some(game_menu_widget) = self._game_menu_widget.as_ref() {
@@ -430,13 +473,13 @@ impl<'a> GameUIManager<'a> {
         if let Some(game_menu_widget) = self._game_menu_widget.as_mut() {
             game_menu_widget.open_game_menu(tab);
         }
-        self.set_cross_hair_visible(true);
+        //self.set_cross_hair_visible(true);
     }
     pub fn close_game_menu(&mut self) {
         if let Some(game_menu_widget) = self._game_menu_widget.as_mut() {
             game_menu_widget.close_game_menu();
         }
-        self.set_cross_hair_visible(false);
+        //self.set_cross_hair_visible(false);
         if let Some(item_bar) = self._item_bar_widget.as_mut() {
             let slot = item_bar.get_selected_item_index();
             item_bar.select_item(slot);
@@ -1295,6 +1338,9 @@ impl<'a> GameUIManager<'a> {
         self._time_of_day.as_mut().unwrap().changed_window_size(window_size);
         self._item_bar_widget.as_mut().unwrap().changed_window_size(window_size);
         self._game_menu_widget.as_mut().unwrap().changed_window_size(window_size);
+        if let Some(start_menu_widget) = self._start_menu_widget.as_mut() {
+            start_menu_widget.changed_window_size(window_size);
+        }
     }
 
     pub fn update_game_ui(&mut self, delta_time: f64) {

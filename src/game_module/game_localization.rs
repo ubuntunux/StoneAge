@@ -15,6 +15,13 @@ pub enum TextId {
     MenuTabSaveLoad,
     MenuTabOption,
     MenuTabDebug,
+    StartMenuNewGame,
+    StartMenuLoadGame,
+    StartMenuOptions,
+    StartMenuExit,
+    ExitConfirmPrompt,
+    PopupYes,
+    PopupNo,
 }
 
 impl TextId {
@@ -28,6 +35,13 @@ impl TextId {
             TextId::MenuTabSaveLoad => "MenuTabSaveLoad",
             TextId::MenuTabOption => "MenuTabOption",
             TextId::MenuTabDebug => "MenuTabDebug",
+            TextId::StartMenuNewGame => "StartMenuNewGame",
+            TextId::StartMenuLoadGame => "StartMenuLoadGame",
+            TextId::StartMenuOptions => "StartMenuOptions",
+            TextId::StartMenuExit => "StartMenuExit",
+            TextId::ExitConfirmPrompt => "ExitConfirmPrompt",
+            TextId::PopupYes => "PopupYes",
+            TextId::PopupNo => "PopupNo",
         }
     }
 
@@ -56,6 +70,27 @@ impl TextId {
 
             (TextId::MenuTabDebug, Language::English) => "Debug",
             (TextId::MenuTabDebug, Language::Korean) => "디버그",
+
+            (TextId::StartMenuNewGame, Language::English) => "New Game",
+            (TextId::StartMenuNewGame, Language::Korean) => "새 게임",
+
+            (TextId::StartMenuLoadGame, Language::English) => "Load Game",
+            (TextId::StartMenuLoadGame, Language::Korean) => "불러오기",
+
+            (TextId::StartMenuOptions, Language::English) => "Options",
+            (TextId::StartMenuOptions, Language::Korean) => "옵션",
+
+            (TextId::StartMenuExit, Language::English) => "Exit",
+            (TextId::StartMenuExit, Language::Korean) => "종료",
+
+            (TextId::ExitConfirmPrompt, Language::English) => "Are you sure you want to exit?",
+            (TextId::ExitConfirmPrompt, Language::Korean) => "게임을 종료하시겠습니까?",
+
+            (TextId::PopupYes, Language::English) => "Yes",
+            (TextId::PopupYes, Language::Korean) => "예",
+
+            (TextId::PopupNo, Language::English) => "No",
+            (TextId::PopupNo, Language::Korean) => "아니오",
         }
     }
 

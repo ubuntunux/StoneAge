@@ -5,7 +5,8 @@ use crate::game_module::game_option::{
     MAX_FONT_SCALE, MAX_UI_SCALE, MAX_VOLUME, MIN_CAMERA_ROTATION_SPEED, MIN_FONT_SCALE, MIN_UI_SCALE, MIN_VOLUME,
     UI_SCALE_STEP, VOLUME_STEP,
 };
-use crate::game_module::game_service_locator::{get_game_resources, get_game_resources_mut};
+use crate::game_module::game_service_locator::{get_game_resources, get_game_resources_mut, get_game_ui_manager_mut};
+use crate::game_module::game_ui_manager::move_mouse_to_ui_component;
 use crate::game_module::widgets::drop_down_combo_box_widget::DropDownComboBoxWidget;
 use nalgebra::Vector2;
 use rust_engine_3d::audio::audio_manager::AudioLoop;
@@ -868,11 +869,15 @@ impl<'a> GameOptionWidget<'a> {
             ptr_as_mut(self._rows_container.as_ref()).get_ui_component_mut().set_scroll_pos_y(0.0);
             self.update_selection_visuals();
             self._is_opened = true;
+            if let Some(first_row) = self._rows.first() {
+                get_game_ui_manager_mut().request_mouse_snap_to_widget(&first_row._row_widget);
+            }
         }
     }
 
     pub fn close_game_option_widget(&mut self) {
         if self._is_opened {
+            get_game_ui_manager_mut().clear_pending_mouse_snap();
             self.close_all_dropdowns();
             let parent_mut = ptr_as_mut(self._parent_widget);
             parent_mut.remove_widget(self._layer.as_ref());
@@ -888,6 +893,14 @@ impl<'a> GameOptionWidget<'a> {
             if play_audio {
                 get_audio_manager_mut().play_audio_bank(AUDIO_SELECT_ITEM, AudioLoop::ONCE, None);
             }
+        }
+    }
+
+    fn move_mouse_to_selected_item(&self) {
+        if self._selected_index < self._rows.len() {
+            move_mouse_to_ui_component(self._rows[self._selected_index]._row_widget.get_ui_component());
+        } else if self._selected_index == NAV_INDEX_RESET {
+            move_mouse_to_ui_component(self._reset_btn.get_ui_component());
         }
     }
 
@@ -1446,11 +1459,13 @@ impl<'a> GameOptionWidget<'a> {
                 get_next_nav_index(self._selected_index, 0, -1, |idx| self.is_nav_index_enabled(idx))
             {
                 self.set_selected_index(next_idx, true);
+                self.move_mouse_to_selected_item();
             }
         } else if UiInput::is_down(keyboard_input_data, joystick_input_data) {
             if let Some(next_idx) = get_next_nav_index(self._selected_index, 0, 1, |idx| self.is_nav_index_enabled(idx))
             {
                 self.set_selected_index(next_idx, true);
+                self.move_mouse_to_selected_item();
             }
         } else if UiInput::is_left(keyboard_input_data, joystick_input_data) {
             if self._selected_index < OptionItemType::COUNT {
@@ -1461,6 +1476,7 @@ impl<'a> GameOptionWidget<'a> {
                 get_next_nav_index(self._selected_index, -1, 0, |idx| self.is_nav_index_enabled(idx))
             {
                 self.set_selected_index(next_idx, true);
+                self.move_mouse_to_selected_item();
             }
         } else if UiInput::is_right(keyboard_input_data, joystick_input_data) {
             if self._selected_index < OptionItemType::COUNT {
@@ -1471,6 +1487,7 @@ impl<'a> GameOptionWidget<'a> {
                 get_next_nav_index(self._selected_index, 1, 0, |idx| self.is_nav_index_enabled(idx))
             {
                 self.set_selected_index(next_idx, true);
+                self.move_mouse_to_selected_item();
             }
         } else if UiInput::is_confirm(keyboard_input_data, joystick_input_data) {
             if self._selected_index < OptionItemType::COUNT {

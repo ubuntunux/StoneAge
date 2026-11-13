@@ -17,6 +17,7 @@ pub mod npc_interaction_menu_widget;
 pub mod player_hud;
 pub mod popup_widget;
 pub mod quest_widgets;
+pub mod start_menu_widget;
 pub mod status_bar_widget;
 pub mod table_storage_widget;
 pub mod target_status_bar;

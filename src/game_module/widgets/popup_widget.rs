@@ -70,9 +70,9 @@ impl<'a> PopupWindowWidget<'a> {
             ui_comp.set_pos_hint(Some(0.5), Some(0.5));
             ui_comp.set_size(440.0, 210.0);
             ui_comp.set_padding(16.0);
-            ui_comp.set_color(get_color32(20, 26, 36, 250));
-            ui_comp.set_border_color(get_color32(70, 140, 210, 255));
-            ui_comp.set_border(2.0);
+            ui_comp.set_color(get_color32(240, 222, 186, 248));
+            ui_comp.set_border_color(get_color32(135, 78, 42, 255));
+            ui_comp.set_border(2.5);
             ui_comp.set_round(10.0);
             ui_comp.set_ignore_parent_renderable_area(true);
         }
@@ -87,7 +87,7 @@ impl<'a> PopupWindowWidget<'a> {
             ui_comp.set_margin(10.0);
             ui_comp.set_text(popup_text);
             ui_comp.set_font_size(24.0);
-            ui_comp.set_font_color(get_color32(240, 245, 255, 255));
+            ui_comp.set_font_color(get_color32(75, 45, 20, 255));
             ui_comp.set_color(get_color32(0, 0, 0, 0));
         }
         ptr_as_mut(popup_layer_frame.as_ref()).add_widget(&text_widget);
@@ -117,7 +117,9 @@ impl<'a> PopupWindowWidget<'a> {
             ui_comp.set_text(ok_button_text);
             ui_comp.set_font_size(22.0);
             ui_comp.set_font_color(get_color32(255, 255, 255, 255));
-            ui_comp.set_color(get_color32(40, 130, 190, 255));
+            ui_comp.set_color(get_color32(118, 168, 68, 240));
+            ui_comp.set_border_color(get_color32(72, 115, 38, 255));
+            ui_comp.set_border(2.0);
             ui_comp.set_round(6.0);
             ui_comp.set_touchable(true);
             if let Some(callback) = ok_callback {
@@ -138,7 +140,9 @@ impl<'a> PopupWindowWidget<'a> {
                 ui_comp.set_text(cancel_text);
                 ui_comp.set_font_size(22.0);
                 ui_comp.set_font_color(get_color32(255, 255, 255, 255));
-                ui_comp.set_color(get_color32(100, 105, 115, 255));
+                ui_comp.set_color(get_color32(185, 95, 65, 240));
+                ui_comp.set_border_color(get_color32(145, 65, 40, 200));
+                ui_comp.set_border(2.0);
                 ui_comp.set_round(6.0);
                 ui_comp.set_touchable(true);
                 if let Some(callback) = cancel_callback {

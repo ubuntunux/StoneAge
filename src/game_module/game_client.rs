@@ -26,6 +26,7 @@ pub enum GamePhase {
     None,
     Start,
     TitleScreen,
+    StartMenu,
     BeginLoading,
     LoadingProgress,
     GameDebugMenu,
@@ -70,7 +71,7 @@ impl<'a> GameClient<'a> {
             _next_game_phase: GamePhase::Start,
             _game_save_data_name: DEFAULT_GAME_SAVE_DATA.to_string(),
             _game_save_data: newBoxRefCell(GameSaveData::default()),
-            _request_load_game_save_data: true,
+            _request_load_game_save_data: false,
             _request_new_game: false,
             _is_available_interaction: true,
             _sleep_timer: 0.0,
@@ -204,17 +205,38 @@ impl<'a> GameClient<'a> {
                 GamePhase::Start => {
                     if state == State::Begin {
                         get_renderer_data_mut().set_render_scene(true);
-                        game_ui_manager.set_image_auto_fade_inout(MATERIAL_INTRO_IMAGE, 0.0);
+                        game_ui_manager.set_image_auto_fade_inout(MATERIAL_INTRO_IMAGE, DEFAULT_FADE_TIME);
                         self.set_next_game_phase(GamePhase::TitleScreen);
                     }
                 }
                 GamePhase::TitleScreen => {
-                    if state == State::Update && any_key_pressed {
-                        self.set_next_game_phase(GamePhase::BeginLoading);
+                    if state == State::Update && (game_ui_manager.is_done_game_image_progress() || any_key_pressed) {
+                        self.set_next_game_phase(GamePhase::StartMenu);
                     }
                 }
+                GamePhase::StartMenu => match state {
+                    State::Begin => {
+                        game_ui_manager.set_cross_hair_visible(true);
+                        game_ui_manager.open_start_menu();
+                    }
+                    State::Update => {
+                        game_ui_manager.update_start_menu_widget(
+                            time_data,
+                            joystick_input_data,
+                            keyboard_input_data,
+                            mouse_move_data,
+                            mouse_input_data,
+                            &mouse_delta,
+                        );
+                    }
+                    State::End => {
+                        game_ui_manager.close_start_menu();
+                        game_ui_manager.set_cross_hair_visible(false);
+                    }
+                },
                 GamePhase::BeginLoading => match state {
                     State::Begin => {
+                        game_ui_manager.close_start_menu();
                         game_ui_manager.show_game_ui(false);
                         game_ui_manager.set_image_manual_fade_inout(MATERIAL_UI_NONE, DEFAULT_FADE_TIME);
                     }

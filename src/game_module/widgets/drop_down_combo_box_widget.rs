@@ -1,4 +1,5 @@
 use crate::game_module::game_constants::AUDIO_SELECT_ITEM;
+use crate::game_module::game_ui_manager::move_mouse_to_ui_component;
 use nalgebra::{Vector2, Vector4};
 use rust_engine_3d::audio::audio_manager::AudioLoop;
 use rust_engine_3d::core::engine_service_locator::get_audio_manager_mut;
@@ -144,13 +145,18 @@ impl<'a> DropDownComboBoxWidget<'a> {
     pub fn callback_item_over(
         ui_component: &rust_engine_3d::scene::ui::UIComponentInstance<'a>,
         _pos: &Vector2<f32>,
-        _delta: &Vector2<f32>,
+        delta: &Vector2<f32>,
     ) -> bool {
+        if delta.x == 0.0 && delta.y == 0.0 {
+            return false;
+        }
         let user_data = ptr_as_ref(ui_component.get_user_data() as *const DropDownItemUserData<'a>);
         let combo = ptr_as_mut(user_data._combo_ptr);
-        combo._hovered_index = user_data._index;
-        combo.update_item_visuals();
-        get_audio_manager_mut().play_audio_bank(AUDIO_SELECT_ITEM, AudioLoop::ONCE, None);
+        if combo._hovered_index != user_data._index {
+            combo._hovered_index = user_data._index;
+            combo.update_item_visuals();
+            get_audio_manager_mut().play_audio_bank(AUDIO_SELECT_ITEM, AudioLoop::ONCE, None);
+        }
         true
     }
 
@@ -539,6 +545,9 @@ impl<'a> DropDownComboBoxWidget<'a> {
             self.update_item_visuals();
             self.scroll_hovered_item_into_view();
             get_audio_manager_mut().play_audio_bank(AUDIO_SELECT_ITEM, AudioLoop::ONCE, None);
+            if let Some(target_item) = self._item_widgets.get(self._hovered_index) {
+                move_mouse_to_ui_component(target_item.get_ui_component());
+            }
         }
     }
 
@@ -552,6 +561,9 @@ impl<'a> DropDownComboBoxWidget<'a> {
             self.update_item_visuals();
             self.scroll_hovered_item_into_view();
             get_audio_manager_mut().play_audio_bank(AUDIO_SELECT_ITEM, AudioLoop::ONCE, None);
+            if let Some(target_item) = self._item_widgets.get(self._hovered_index) {
+                move_mouse_to_ui_component(target_item.get_ui_component());
+            }
         }
     }
 
