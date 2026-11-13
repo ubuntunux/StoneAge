@@ -845,50 +845,57 @@ impl<'a> StartMenuWidget<'a> {
             self.refresh_texts();
         }
 
-        if self.is_exit_popup_opened() {
-            return;
-        }
+        let delta_time: f32 = time_data._delta_time_with_scale as f32;
+        let (should_move, dir_opt) =
+            self._nav_repeat_controller.update(keyboard_input_data, joystick_input_data, delta_time);
 
-        if self._active_popup == StartMenuPopup::LoadGame {
+        if self.is_exit_popup_opened() {
+            if should_move && let Some((dir_x, _dir_y)) = dir_opt {
+                if let Some(popup) = self._exit_confirm_popup.as_ref() {
+                    if let Ok(guard) = popup.try_borrow_mut() {
+                        get_audio_manager_mut().play_audio_bank(AUDIO_PICKUP_ITEM, AudioLoop::ONCE, None);
+                        if dir_x < 0 {
+                            move_mouse_to_ui_component(guard._ok_btn.as_ref().get_ui_component());
+                        } else if 0 < dir_x {
+                            move_mouse_to_ui_component(guard._cancel_btn.as_ref().unwrap().as_ref().get_ui_component());
+                        }
+                    }
+                }
+            }
+        } else if self._active_popup == StartMenuPopup::LoadGame {
             self._save_load_widget.update_save_load_widget(time_data, joystick_input_data, keyboard_input_data);
             if !self._save_load_widget.is_opened_save_load_widget() {
                 self.close_load_game_popup();
             }
-            return;
-        }
-
-        if self._active_popup == StartMenuPopup::Options {
+        } else if self._active_popup == StartMenuPopup::Options {
             let modal_consumed =
                 self._game_option_widget.update_game_option_widget(joystick_input_data, keyboard_input_data);
             if !modal_consumed && UiInput::is_cancel(keyboard_input_data, joystick_input_data) {
                 self.close_options_popup();
             }
-            return;
         }
-
-        let delta_time: f32 = time_data._delta_time_with_scale as f32;
-        let (should_move, dir_opt) =
-            self._nav_repeat_controller.update(keyboard_input_data, joystick_input_data, delta_time);
-
-        if should_move && let Some((_dir_x, dir_y)) = dir_opt {
-            if dir_y < 0 {
-                self.set_selected_button(self._selected_button.prev(), true);
-                move_mouse_to_ui_component(self.get_selected_button_widget().get_ui_component());
-            } else if dir_y > 0 {
-                self.set_selected_button(self._selected_button.next(), true);
-                move_mouse_to_ui_component(self.get_selected_button_widget().get_ui_component());
+        else
+        {
+            if should_move && let Some((_dir_x, dir_y)) = dir_opt {
+                if dir_y < 0 {
+                    self.set_selected_button(self._selected_button.prev(), true);
+                    move_mouse_to_ui_component(self.get_selected_button_widget().get_ui_component());
+                } else if dir_y > 0 {
+                    self.set_selected_button(self._selected_button.next(), true);
+                    move_mouse_to_ui_component(self.get_selected_button_widget().get_ui_component());
+                }
             }
-        }
 
-        if UiInput::is_confirm(keyboard_input_data, joystick_input_data) {
-            match self._selected_button {
-                StartMenuButton::NewGame => self.start_new_game(),
-                StartMenuButton::LoadGame => self.open_load_game_popup(),
-                StartMenuButton::Options => self.open_options_popup(),
-                StartMenuButton::Exit => self.open_exit_confirm_popup(),
+            if UiInput::is_confirm(keyboard_input_data, joystick_input_data) {
+                match self._selected_button {
+                    StartMenuButton::NewGame => self.start_new_game(),
+                    StartMenuButton::LoadGame => self.open_load_game_popup(),
+                    StartMenuButton::Options => self.open_options_popup(),
+                    StartMenuButton::Exit => self.open_exit_confirm_popup(),
+                }
+            } else if UiInput::is_cancel(keyboard_input_data, joystick_input_data) {
+                self.open_exit_confirm_popup();
             }
-        } else if UiInput::is_cancel(keyboard_input_data, joystick_input_data) {
-            self.open_exit_confirm_popup();
         }
     }
 }
