@@ -463,7 +463,7 @@ impl<'a> StartMenuWidget<'a> {
         ui_comp.set_round(5.0);
         load_frame_mut.add_widget(&load_content);
 
-        let save_load_widget = SaveLoadWidget::create_save_load_widget(load_content_mut, layer_mut);
+        let save_load_widget = SaveLoadWidget::create_save_load_widget(load_content_mut, layer_mut, false);
 
         // Options Popup Layer
         let options_popup_layer = UIManager::create_widget("options_popup_layer", UIWidgetTypes::Default);

@@ -42,25 +42,45 @@ pub enum SlotButtonFocus {
 }
 
 impl SlotButtonFocus {
-    pub fn next(self, has_save_data: bool) -> Self {
+    pub fn next(self, has_save_data: bool, enable_save: bool) -> Self {
         if !has_save_data {
-            return SlotButtonFocus::Save;
+            return if enable_save {
+                SlotButtonFocus::Save
+            } else {
+                SlotButtonFocus::Load
+            };
         }
         match self {
-            SlotButtonFocus::Load => SlotButtonFocus::Save,
+            SlotButtonFocus::Load => {
+                if enable_save {
+                    SlotButtonFocus::Save
+                } else {
+                    SlotButtonFocus::Delete
+                }
+            }
             SlotButtonFocus::Save => SlotButtonFocus::Delete,
             SlotButtonFocus::Delete => SlotButtonFocus::Delete,
         }
     }
 
-    pub fn prev(self, has_save_data: bool) -> Self {
+    pub fn prev(self, has_save_data: bool, enable_save: bool) -> Self {
         if !has_save_data {
-            return SlotButtonFocus::Save;
+            return if enable_save {
+                SlotButtonFocus::Save
+            } else {
+                SlotButtonFocus::Load
+            };
         }
         match self {
             SlotButtonFocus::Load => SlotButtonFocus::Load,
             SlotButtonFocus::Save => SlotButtonFocus::Load,
-            SlotButtonFocus::Delete => SlotButtonFocus::Save,
+            SlotButtonFocus::Delete => {
+                if enable_save {
+                    SlotButtonFocus::Save
+                } else {
+                    SlotButtonFocus::Load
+                }
+            }
         }
     }
 }
@@ -116,6 +136,7 @@ pub struct SaveLoadSlotWidget<'a> {
     pub _is_opened: bool,
     pub _nav_repeat_controller: WidgetNavRepeatController,
     pub _need_rebuild_slot_list: bool,
+    pub _enable_save: bool,
 }
 
 impl<'a> SaveLoadSlotWidget<'a> {
@@ -164,10 +185,12 @@ impl<'a> SaveLoadSlotWidget<'a> {
     ) -> bool {
         let slot_item = ptr_as_ref(ui_component.get_user_data() as *const SaveLoadSlotItem<'a>);
         let slot_widget = ptr_as_mut(slot_item._slot_widget);
-        slot_widget.set_focus_target(
-            SaveLoadFocusTarget::Slot(slot_item._slot_index, SlotButtonFocus::Save),
-            false,
-        );
+        if slot_widget._enable_save {
+            slot_widget.set_focus_target(
+                SaveLoadFocusTarget::Slot(slot_item._slot_index, SlotButtonFocus::Save),
+                false,
+            );
+        }
         true
     }
 
@@ -321,6 +344,7 @@ impl<'a> SaveLoadSlotWidget<'a> {
     pub fn create_save_load_slot_widget(
         parent_widget: &mut WidgetDefault<'a>,
         root_widget: &mut WidgetDefault<'a>,
+        enable_save: bool
     ) -> Box<SaveLoadSlotWidget<'a>> {
         let layer = UIManager::create_widget("save_load_slot_layer", UIWidgetTypes::Default);
         let layer_mut = ptr_as_mut(layer.as_ref());
@@ -446,10 +470,18 @@ impl<'a> SaveLoadSlotWidget<'a> {
             _slot_items: Vec::new(),
             _slot_names: Vec::new(),
             _selected_slot_index: 0,
-            _focus_target: SaveLoadFocusTarget::Slot(0, SlotButtonFocus::Save),
+            _focus_target: SaveLoadFocusTarget::Slot(
+                0,
+                if enable_save {
+                    SlotButtonFocus::Save
+                } else {
+                    SlotButtonFocus::Load
+                },
+            ),
             _is_opened: false,
             _nav_repeat_controller: WidgetNavRepeatController::new(),
             _need_rebuild_slot_list: false,
+            _enable_save: enable_save,
         });
 
         let ptr_self = slot_widget.as_ref() as *const SaveLoadSlotWidget<'a> as *const c_void;
@@ -501,7 +533,7 @@ impl<'a> SaveLoadSlotWidget<'a> {
             } else {
                 self.refresh_slot_states();
             }
-            let default_btn = if self.has_save_data_at(0) {
+            let default_btn = if self.has_save_data_at(0) || !self._enable_save {
                 SlotButtonFocus::Load
             } else {
                 SlotButtonFocus::Save
@@ -636,8 +668,14 @@ impl<'a> SaveLoadSlotWidget<'a> {
             action_ui.set_text("SAVE");
             action_ui.set_font_size(22.0);
             action_ui.set_font_color(get_color32(255, 255, 255, 255));
-            action_ui.set_color(get_color32(118, 168, 68, 240));
-            action_ui.set_touchable(true);
+
+            if self._enable_save {
+                action_ui.set_color(get_color32(118, 168, 68, 240));
+                action_ui.set_touchable(true);
+            } else {
+                action_ui.set_color(get_color32(210, 185, 150, 255));
+                action_ui.set_touchable(false);
+            }
         }
         ptr_as_mut(slot_card.as_ref()).add_widget(&save_btn);
 
@@ -789,6 +827,7 @@ impl<'a> SaveLoadSlotWidget<'a> {
             text_ui.set_text(&slot_info_text);
 
             set_button_enabled(&item._load_btn, has_save_data, BTN_LOAD_COLOR, BTN_DISABLED_COLOR);
+            set_button_enabled(&item._save_btn, self._enable_save, BTN_SAVE_COLOR, BTN_DISABLED_COLOR);
             set_button_enabled(&item._delete_btn, has_save_data, BTN_DELETE_COLOR, BTN_DISABLED_COLOR);
         }
     }
@@ -815,7 +854,9 @@ impl<'a> SaveLoadSlotWidget<'a> {
             };
             ptr_as_mut::<WidgetDefault<'a>>(item._load_btn.as_ref()).get_ui_component_mut().set_color(load_color);
 
-            let save_color = if focused_btn == Some(SlotButtonFocus::Save) {
+            let save_color = if !self._enable_save {
+                BTN_DISABLED_COLOR
+            } else if focused_btn == Some(SlotButtonFocus::Save) {
                 BTN_SAVE_FOCUSED_COLOR
             } else {
                 BTN_SAVE_COLOR
@@ -913,7 +954,7 @@ impl<'a> SaveLoadSlotWidget<'a> {
 
     pub fn set_selected_slot(&mut self, index: usize, force: bool) {
         if index < self._slot_items.len() {
-            let default_btn = if self.has_save_data_at(index) {
+            let default_btn = if self.has_save_data_at(index) || !self._enable_save {
                 SlotButtonFocus::Load
             } else {
                 SlotButtonFocus::Save
@@ -995,6 +1036,9 @@ impl<'a> SaveLoadSlotWidget<'a> {
     }
 
     pub fn save_slot(&mut self, slot_index: usize) {
+        if !self._enable_save {
+            return;
+        }
         if slot_index < self._slot_names.len() {
             let slot_name = self._slot_names[slot_index].clone();
             let game_client = get_game_client_mut();
@@ -1043,10 +1087,14 @@ impl<'a> SaveLoadSlotWidget<'a> {
             self._nav_repeat_controller.update(keyboard_input_data, joystick_input_data, delta_time);
 
         if should_move && let Some((dir_x, dir_y)) = dir_opt {
-            let next_target =
-                Self::compute_next_focus_target(self._focus_target, dir_x, dir_y, self._slot_items.len(), |idx| {
-                    self.has_save_data_at(idx)
-                });
+            let next_target = Self::compute_next_focus_target(
+                self._focus_target,
+                dir_x,
+                dir_y,
+                self._slot_items.len(),
+                self._enable_save,
+                |idx| self.has_save_data_at(idx),
+            );
 
             if let Some(target) = next_target {
                 self.set_focus_target(target, false);
@@ -1069,7 +1117,9 @@ impl<'a> SaveLoadSlotWidget<'a> {
                         }
                     }
                     SlotButtonFocus::Save => {
-                        self.save_slot(idx);
+                        if self._enable_save {
+                            self.save_slot(idx);
+                        }
                     }
                     SlotButtonFocus::Delete => {
                         if self.has_save_data_at(idx) {
@@ -1091,12 +1141,13 @@ impl<'a> SaveLoadSlotWidget<'a> {
         dir_x: i32,
         dir_y: i32,
         slot_count: usize,
+        enable_save: bool,
         has_save_data: impl Fn(usize) -> bool,
     ) -> Option<SaveLoadFocusTarget> {
         match curr_target {
             SaveLoadFocusTarget::NewGame => {
                 if dir_y > 0 {
-                    let btn = if has_save_data(0) {
+                    let btn = if has_save_data(0) || !enable_save {
                         SlotButtonFocus::Load
                     } else {
                         SlotButtonFocus::Save
@@ -1110,7 +1161,7 @@ impl<'a> SaveLoadSlotWidget<'a> {
             }
             SaveLoadFocusTarget::ExitGame => {
                 if dir_y > 0 {
-                    let btn = if has_save_data(0) {
+                    let btn = if has_save_data(0) || !enable_save {
                         SlotButtonFocus::Load
                     } else {
                         SlotButtonFocus::Save
@@ -1129,9 +1180,15 @@ impl<'a> SaveLoadSlotWidget<'a> {
                     } else {
                         let target_idx = idx - 1;
                         let next_btn = if has_save_data(target_idx) {
-                            btn
-                        } else {
+                            if !enable_save && btn == SlotButtonFocus::Save {
+                                SlotButtonFocus::Load
+                            } else {
+                                btn
+                            }
+                        } else if enable_save {
                             SlotButtonFocus::Save
+                        } else {
+                            SlotButtonFocus::Load
                         };
                         Some(SaveLoadFocusTarget::Slot(target_idx, next_btn))
                     }
@@ -1139,17 +1196,23 @@ impl<'a> SaveLoadSlotWidget<'a> {
                     let max_index = slot_count.saturating_sub(1);
                     let target_idx = (idx + 1).min(max_index);
                     let next_btn = if has_save_data(target_idx) {
-                        btn
-                    } else {
+                        if !enable_save && btn == SlotButtonFocus::Save {
+                            SlotButtonFocus::Load
+                        } else {
+                            btn
+                        }
+                    } else if enable_save {
                         SlotButtonFocus::Save
+                    } else {
+                        SlotButtonFocus::Load
                     };
                     Some(SaveLoadFocusTarget::Slot(target_idx, next_btn))
                 } else if dir_x != 0 {
                     let has_data = has_save_data(idx);
                     let next_btn = if dir_x > 0 {
-                        btn.next(has_data)
+                        btn.next(has_data, enable_save)
                     } else {
-                        btn.prev(has_data)
+                        btn.prev(has_data, enable_save)
                     };
                     Some(SaveLoadFocusTarget::Slot(idx, next_btn))
                 } else {
@@ -1175,6 +1238,7 @@ mod tests {
             0,
             -1,
             slot_count,
+            true,
             has_save_data,
         );
         assert_eq!(next, Some(SaveLoadFocusTarget::NewGame));
@@ -1185,6 +1249,7 @@ mod tests {
             0,
             -1,
             slot_count,
+            true,
             has_save_data,
         );
         assert_eq!(next, Some(SaveLoadFocusTarget::Slot(0, SlotButtonFocus::Save)));
@@ -1195,6 +1260,7 @@ mod tests {
             0,
             1,
             slot_count,
+            true,
             has_save_data,
         );
         assert_eq!(next, Some(SaveLoadFocusTarget::Slot(0, SlotButtonFocus::Load)));
@@ -1205,6 +1271,7 @@ mod tests {
             0,
             1,
             slot_count,
+            true,
             has_save_data,
         );
         assert_eq!(next, Some(SaveLoadFocusTarget::Slot(0, SlotButtonFocus::Load)));
@@ -1215,6 +1282,7 @@ mod tests {
             1,
             0,
             slot_count,
+            true,
             has_save_data,
         );
         assert_eq!(next, Some(SaveLoadFocusTarget::ExitGame));
@@ -1225,6 +1293,7 @@ mod tests {
             -1,
             0,
             slot_count,
+            true,
             has_save_data,
         );
         assert_eq!(next, Some(SaveLoadFocusTarget::ExitGame));
@@ -1235,6 +1304,7 @@ mod tests {
             -1,
             0,
             slot_count,
+            true,
             has_save_data,
         );
         assert_eq!(next, Some(SaveLoadFocusTarget::NewGame));
@@ -1245,6 +1315,7 @@ mod tests {
             1,
             0,
             slot_count,
+            true,
             has_save_data,
         );
         assert_eq!(next, Some(SaveLoadFocusTarget::NewGame));
@@ -1255,6 +1326,7 @@ mod tests {
             0,
             1,
             slot_count,
+            true,
             has_save_data,
         );
         assert_eq!(next, Some(SaveLoadFocusTarget::Slot(1, SlotButtonFocus::Save)));
@@ -1265,6 +1337,7 @@ mod tests {
             0,
             1,
             slot_count,
+            true,
             has_save_data,
         );
         assert_eq!(next, Some(SaveLoadFocusTarget::Slot(2, SlotButtonFocus::Save)));
@@ -1283,6 +1356,7 @@ mod tests {
             1,
             0,
             slot_count,
+            true,
             has_save_data,
         );
         assert_eq!(next, Some(SaveLoadFocusTarget::Slot(0, SlotButtonFocus::Save)));
@@ -1292,6 +1366,7 @@ mod tests {
             1,
             0,
             slot_count,
+            true,
             has_save_data,
         );
         assert_eq!(next, Some(SaveLoadFocusTarget::Slot(0, SlotButtonFocus::Delete)));
@@ -1301,6 +1376,7 @@ mod tests {
             1,
             0,
             slot_count,
+            true,
             has_save_data,
         );
         assert_eq!(next, Some(SaveLoadFocusTarget::Slot(0, SlotButtonFocus::Delete)));
@@ -1311,6 +1387,7 @@ mod tests {
             -1,
             0,
             slot_count,
+            true,
             has_save_data,
         );
         assert_eq!(next, Some(SaveLoadFocusTarget::Slot(0, SlotButtonFocus::Save)));
@@ -1320,6 +1397,7 @@ mod tests {
             -1,
             0,
             slot_count,
+            true,
             has_save_data,
         );
         assert_eq!(next, Some(SaveLoadFocusTarget::Slot(0, SlotButtonFocus::Load)));
@@ -1329,6 +1407,7 @@ mod tests {
             -1,
             0,
             slot_count,
+            true,
             has_save_data,
         );
         assert_eq!(next, Some(SaveLoadFocusTarget::Slot(0, SlotButtonFocus::Load)));
@@ -1341,6 +1420,7 @@ mod tests {
             1,
             0,
             slot_count,
+            true,
             has_no_save_data,
         );
         assert_eq!(next, Some(SaveLoadFocusTarget::Slot(0, SlotButtonFocus::Save)));
@@ -1350,8 +1430,30 @@ mod tests {
             -1,
             0,
             slot_count,
+            true,
             has_no_save_data,
         );
         assert_eq!(next, Some(SaveLoadFocusTarget::Slot(0, SlotButtonFocus::Save)));
+
+        // enable_save = false 인 경우: Save 버튼은 선택할 수 없으므로 Load <-> Delete로 바로 이동
+        let next = SaveLoadSlotWidget::compute_next_focus_target(
+            SaveLoadFocusTarget::Slot(0, SlotButtonFocus::Load),
+            1,
+            0,
+            slot_count,
+            false,
+            has_save_data,
+        );
+        assert_eq!(next, Some(SaveLoadFocusTarget::Slot(0, SlotButtonFocus::Delete)));
+
+        let next = SaveLoadSlotWidget::compute_next_focus_target(
+            SaveLoadFocusTarget::Slot(0, SlotButtonFocus::Delete),
+            -1,
+            0,
+            slot_count,
+            false,
+            has_save_data,
+        );
+        assert_eq!(next, Some(SaveLoadFocusTarget::Slot(0, SlotButtonFocus::Load)));
     }
 }

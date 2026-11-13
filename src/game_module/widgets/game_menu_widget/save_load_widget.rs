@@ -13,8 +13,9 @@ impl<'a> SaveLoadWidget<'a> {
     pub fn create_save_load_widget(
         parent_widget: &mut WidgetDefault<'a>,
         root_widget: &mut WidgetDefault<'a>,
+        enable_save: bool
     ) -> Box<SaveLoadWidget<'a>> {
-        let save_load_slot_widget = SaveLoadSlotWidget::create_save_load_slot_widget(parent_widget, root_widget);
+        let save_load_slot_widget = SaveLoadSlotWidget::create_save_load_slot_widget(parent_widget, root_widget, enable_save);
         Box::new(SaveLoadWidget {
             _parent_widget: parent_widget,
             _save_load_slot_widget: save_load_slot_widget,
